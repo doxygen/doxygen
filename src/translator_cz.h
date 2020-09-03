@@ -85,7 +85,7 @@
 //    something else.  It is difficult to find the general translation
 //    for all kinds in the Czech language.
 
-class TranslatorCzech : public Translator
+class TranslatorCzech : public TranslatorAdapter_1_8_15
 {
   public:
     // --- Language control methods -------------------
@@ -96,7 +96,18 @@ class TranslatorCzech : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[T2A]{fontenc}\n"
-             "\\usepackage[czech]{babel}\n";
+             "\\usepackage[czech]{babel}\n"
+             "\\usepackage{regexpatch}\n"
+             "\\makeatletter\n"
+             "% Change the `-` delimiter to an active character\n"
+             "\\xpatchparametertext\\@@@cmidrule{-}{\\cA-}{}{}\n"
+             "\\xpatchparametertext\\@cline{-}{\\cA-}{}{}\n"
+             "\\makeatother\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "cs";
     }
 
     // --- Language translation methods -------------------
@@ -1971,14 +1982,6 @@ class TranslatorCzech : public Translator
       return "Dokumentace metody";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Návrhové schéma";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -2034,8 +2037,6 @@ class TranslatorCzech : public Translator
       else        result+="z následujících souborů:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

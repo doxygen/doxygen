@@ -175,7 +175,7 @@
 //
 
 
-// Should be sorted most-authorative to least-authorative
+// Should be sorted most-authoritative to least-authoritative
 
 #if defined(__SC__)
 #define _CC_SYM_
@@ -357,7 +357,9 @@ typedef const char     *pcchar;
 typedef __int64            int64;
 typedef unsigned __int64   uint64;
 #else
+#if !defined(_OS_AIX_) || !defined(_H_INTTYPES)
 typedef long long          int64;
+#endif
 typedef unsigned long long uint64;
 #endif
 
@@ -398,7 +400,7 @@ inline int qRound( double d )
 
 
 //
-// Size-dependent types (architechture-dependent byte order)
+// Size-dependent types (architecture-dependent byte order)
 //
 
 // QT_CLEAN_NAMESPACE is not defined by default; it would break too
@@ -505,7 +507,6 @@ Q_EXPORT bool qSysInfo( int *wordSize, bool *bigEndian );
 #pragma warning(disable: 4244)
 #pragma warning(disable: 4275)
 #pragma warning(disable: 4514)
-#pragma warning(disable: 4800)
 #pragma warning(disable: 4097)
 #pragma warning(disable: 4706)
 #elif defined(_CC_BOR_)

@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -260,3 +258,11 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
   }
 }
 
+bool InputStrList::isEmpty()
+{
+  foreach (QString s, m_strList)
+  {
+    if (!s.isEmpty()) return false;
+  }
+  return true;
+}

@@ -842,7 +842,7 @@ void RefHandler::endRef()
 {
   m_linkText = m_curString;
   m_parent->setDelegate(0);
-  debug(2,"End ref: text=`%s'\n",m_linkText.data());
+  debug(2,"End ref: text='%s'\n",m_linkText.data());
 }
 
 
@@ -1098,7 +1098,7 @@ void HighlightHandler::startHighlight(const QXmlAttributes& attrib)
 void HighlightHandler::endHighlight()
 {
   addTextNode();
-  debug(2,"end highlight class=`%s'\n",m_hlString.data());
+  debug(2,"end highlight class='%s'\n",m_hlString.data());
   m_parent->setDelegate(0);
 }
 
@@ -1297,7 +1297,7 @@ void FormulaHandler::startFormula(const QXmlAttributes& attrib)
 void FormulaHandler::endFormula()
 {
   m_text = m_curString;
-  debug(2,"formula id=`%s' text=`%s'\n",m_id.data(),m_text.data());
+  debug(2,"formula id='%s' text='%s'\n",m_id.data(),m_text.data());
   m_parent->setDelegate(0);
 }
 
@@ -1323,7 +1323,7 @@ void AnchorHandler::startAnchor(const QXmlAttributes& attrib)
 
 void AnchorHandler::endAnchor()
 {
-  debug(2,"anchor id=`%s'\n",m_id.data());
+  debug(2,"anchor id='%s'\n",m_id.data());
   m_parent->setDelegate(0);
 }
 
@@ -1351,7 +1351,7 @@ void ImageHandler::startImage(const QXmlAttributes& attrib)
 void ImageHandler::endImage()
 {
   m_caption = m_curString;
-  debug(2,"image name=`%s' caption=`%s'\n",m_name.data(),m_caption.data());
+  debug(2,"image name='%s' caption='%s'\n",m_name.data(),m_caption.data());
   m_parent->setDelegate(0);
 }
 
@@ -1379,7 +1379,7 @@ void DotFileHandler::startDotFile(const QXmlAttributes& attrib)
 void DotFileHandler::endDotFile()
 {
   m_caption = m_curString;
-  debug(2,"image name=`%s' caption=`%s'\n",m_name.data(),m_caption.data());
+  debug(2,"image name='%s' caption='%s'\n",m_name.data(),m_caption.data());
   m_parent->setDelegate(0);
 }
 
@@ -1409,7 +1409,7 @@ void IndexEntryHandler::startIndexEntry(const QXmlAttributes& /*attrib*/)
 
 void IndexEntryHandler::endIndexEntry()
 {
-  debug(2,"index entry primary=`%s' secondary=`%s'\n",
+  debug(2,"index entry primary='%s' secondary='%s'\n",
       m_primary.data(),m_secondary.data());
   m_parent->setDelegate(0);
 }

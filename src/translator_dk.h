@@ -116,8 +116,12 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     virtual QCString latexLanguageSupportCommand()
     {
       return
-	"\\usepackage[danish]{babel}\n"
-	"\\usepackage[T1]{fontenc}\n";
+	"\\usepackage[danish]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "da";
     }
 
     // --- Language translation methods -------------------
@@ -1767,6 +1771,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
     }
 
 
+
 /*---------- For internal use: ----------------------------------------*/
   protected:
 	/*! For easy flexible-noun implementation.
@@ -1776,7 +1781,7 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 			const char* base, const char* plurSuffix)
     {
       QCString result(base);
-      if (first_capital) result.at(0) = toupper(result.at(0));
+      if (first_capital) result[0] = (char)toupper(result[0]);
       if (!singular)  result+=plurSuffix;
       return result;
     }

@@ -1,0 +1,41 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2018 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+#ifndef EMOJIENTITY_H
+#define EMOJIENTITY_H
+
+#include <qdict.h>
+#include <qfile.h>
+
+class FTextStream;
+
+/** @brief Singleton helper class to map emoji entities to other formats */
+class EmojiEntityMapper
+{
+  public:
+    static EmojiEntityMapper *instance();
+    static void deleteInstance();
+    const char *name(int index) const;
+    const char *unicode(int index) const;
+    void writeEmojiFile(QFile &file);
+    int symbol2index(const QCString &symName) const;
+
+  private:
+    EmojiEntityMapper();
+   ~EmojiEntityMapper();
+    static EmojiEntityMapper *s_instance;
+    QDict<int> *m_name2symGh;
+};
+
+#endif

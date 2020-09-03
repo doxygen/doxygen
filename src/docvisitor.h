@@ -37,6 +37,7 @@ class DocAutoListItem;
 class DocPara;
 class DocRoot;
 class DocSymbol;
+class DocEmoji;
 class DocURL;
 class DocStyleChange;
 class DocSimpleSect;
@@ -78,7 +79,6 @@ class DocLinkedWord;
 class DocParamSect;
 class DocParamList;
 class DocInternalRef;
-class DocCopy; // TODO: no longer generated => remove
 class DocText;
 class DocSimpleSectSep;
 class DocHtmlBlockQuote;
@@ -101,6 +101,7 @@ class DocVisitor
     virtual void visit(DocWord *) = 0;
     virtual void visit(DocWhiteSpace *) = 0;
     virtual void visit(DocSymbol *) = 0;
+    virtual void visit(DocEmoji *) = 0;
     virtual void visit(DocURL *) = 0;
     virtual void visit(DocStyleChange *) = 0;
     virtual void visit(DocVerbatim *) = 0;
@@ -185,8 +186,6 @@ class DocVisitor
     virtual void visitPost(DocXRefItem *) = 0;
     virtual void visitPre(DocInternalRef *) = 0;
     virtual void visitPost(DocInternalRef *) = 0;
-    virtual void visitPre(DocCopy *) = 0;
-    virtual void visitPost(DocCopy *) = 0;
     virtual void visitPre(DocText *) = 0;
     virtual void visitPost(DocText *) = 0;
     virtual void visitPre(DocHtmlBlockQuote *) = 0;

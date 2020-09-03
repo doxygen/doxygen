@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of the QString class, and related Unicode
 ** functions.
@@ -64,6 +64,7 @@ public:
     QChar( short rc );
     QChar( uint rc );
     QChar( int rc );
+    QChar &operator=(const QChar &c);
 
     QT_STATIC_CONST QChar null;            // 0000
     QT_STATIC_CONST QChar replacement;     // FFFD
@@ -147,8 +148,8 @@ public:
     QString decomposition() const;
     Decomposition decompositionTag() const;
 
-    char latin1() const { return rw ? 0 : cl; }
-    ushort unicode() const { return (rw << 8) | cl; }
+    char latin1() const { return rw ? 0 : (char)cl; }
+    ushort unicode() const { return (ushort)((rw << 8) | cl); }
 #ifndef QT_NO_CAST_ASCII
     // like all ifdef'd code this is undocumented
     operator char() const { return latin1(); }
@@ -266,6 +267,15 @@ inline QChar::QChar( int rc )
 #endif
 }
 
+inline QChar &QChar::operator=(const QChar &c)
+{
+  rw = c.rw;
+  cl = c.cl;
+#ifdef QT_QSTRING_UCS_4
+  grp = 0;
+#endif
+  return *this;
+}
 
 inline int operator==( char ch, QChar c )
 {
@@ -333,7 +343,7 @@ struct Q_EXPORT QStringData : public QShared {
     QStringData() :
 	unicode(0), ascii(0), len(0), maxl(0), dirtyascii(0) { ref(); }
     QStringData(QChar *u, uint l, uint m) :
-	unicode(u), ascii(0), len(l), maxl(m), dirtyascii(0) { }
+	unicode(u), ascii(0), len(l), maxl(m&0x3FFFFFFF), dirtyascii(0) { }
 
     ~QStringData() { if ( unicode ) delete[] ((char*)unicode);
                      if ( ascii ) delete[] ascii; }
@@ -369,6 +379,38 @@ public:
     QString    &operator=( QChar c );
     QString    &operator=( char c );
 
+	enum Direction
+	{
+		/// No strongly directional text.
+		/*!
+		* As return value for direction() or baseDirection(), it means that the source string
+		* is missing or empty, or contains neither left-to-right nor right-to-left characters.
+		*/
+		DirNeutral = 0x0,
+		/// Left-to-right text.
+		/*!
+		* - As return value for direction(), it means that the source string
+		*   contains no right-to-left characters.
+		* - As return value for basicDirection(), it means that the first strong character
+		*   of the source string has a left-to-right direction.
+		*/
+		DirLTR = 0x1,
+		/// Right-to-left text.
+		/*!
+		* - As return value for direction(), it means that the source string
+		*   contains no left-to-right characters.
+		* - As return value for basicDirection(), it means that the first strong character
+		*   of the source string has a right-to-left direction.
+		*/
+		DirRTL = 0x2,
+		/// Mixed-directional text
+		/*!
+		* As return value for direction(), it means that the source string
+		* contains both left-to-right and right-to-left characters.
+		*/
+		DirMixed = 0x3
+	};
+
     //QT_STATIC_CONST QString null;
     //bool	isNull()	const;
 
@@ -377,7 +419,7 @@ public:
     inline QString(const Null &): d(shared_null) { d->ref(); }
     inline QString &operator=(const Null &) { *this = QString(); return *this; }
     inline bool isNull() const { return d == shared_null; }
-    
+
     bool	isEmpty()	const;
     uint	length()	const;
     void	truncate( uint pos );
@@ -535,8 +577,9 @@ public:
 #endif
     // new functions for BiDi
     void compose();
-    QChar::Direction basicDirection();
-    QString visual(int index = 0, int len = -1);
+	QString::Direction direction() const;
+	QString::Direction basicDirection() const;
+	QString visual(int index = 0, int len = -1);
 
 #ifndef QT_NO_COMPAT
     const char* data() const { return latin1(); }
@@ -570,6 +613,7 @@ class Q_EXPORT QCharRef {
     QString& s;
     uint p;
     QCharRef(QString* str, uint pos) : s(*str), p(pos) { }
+    QCharRef(const QCharRef &ref) : s(ref.s), p(ref.p) { }
 
 public:
     // Most QChar operations repeated here...

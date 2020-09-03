@@ -26,7 +26,7 @@
 #ifndef TRANSLATOR_RU_H
 #define TRANSLATOR_RU_H
 
-class TranslatorRussian : public Translator
+class TranslatorRussian : public TranslatorAdapter_1_8_15
 {
   public:
     /*! Used for identification of the language. */
@@ -35,9 +35,10 @@ class TranslatorRussian : public Translator
 
     /* Used to get the command(s) for the language support. */
     virtual QCString latexLanguageSupportCommand()
-    {
-        return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n";
-    }
+    { return "\\usepackage[T2A]{fontenc}\n\\usepackage[russian]{babel}\n"; }
+
+    virtual QCString trISOLang()
+    { return "ru"; }
 
     // --- Language translation methods -------------------
 
@@ -83,26 +84,26 @@ class TranslatorRussian : public Translator
     { return "Подробнее..."; }
 
     /*! put in the class documentation */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trListOfAllMembers()
     {
       return "Полный список членов класса";
     }
 
     /*! used as the title of the "list of all members" page of a class */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trMemberList()
     {
       return "Cписок членов класса";
     }
 
     /*! this is the first part of a sentence that is followed by a class name */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trThisIsTheListOfAllMembers()
     { return "Полный список членов класса "; }
 
     /*! this is the remainder of the sentence after the class name */
-    /* Dosn't use when optimization for C is on. */
+    /* Isn't used when optimization for C is on. */
     virtual QCString trIncludingInheritedMembers()
     { return ", включая наследуемые из базового класса"; }
 
@@ -1904,14 +1905,6 @@ class TranslatorRussian : public Translator
       return "Документация метода";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Обзор дизайна";
-    }
-
 ///////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 ///////////////////////////////////////////////////////////////////////
@@ -1967,8 +1960,6 @@ class TranslatorRussian : public Translator
       if (single) result+="а:"; else result+="ов:";
       return result;
     }
-
-///////////////////////////////////////////////////////////////////////
 };
 
 #endif

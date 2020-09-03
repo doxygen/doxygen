@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
-        <programlisting>
+        <programlisting filename=".py">
           <codeline>
             <highlight class="comment">#<sp/>comment<sp/>in<sp/>Python</highlight>
             <highlight class="normal"/>
@@ -25,7 +27,7 @@
         </programlisting>
       </para>
       <para>
-        <programlisting>
+        <programlisting filename=".cpp">
           <codeline>
             <highlight class="comment">//<sp/>comment<sp/>in<sp/>a<sp/>code<sp/>block</highlight>
             <highlight class="normal"/>
@@ -34,6 +36,13 @@
             <highlight class="normal"/>
             <highlight class="keyword">class<sp/></highlight>
             <highlight class="normal">Cpp<sp/>{};</highlight>
+          </codeline>
+        </programlisting>
+      </para>
+      <para>
+        <programlisting>
+          <codeline>
+            <highlight class="normal">//<sp/>implicit<sp/>code<sp/>language</highlight>
           </codeline>
         </programlisting>
       </para>

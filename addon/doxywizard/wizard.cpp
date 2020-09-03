@@ -1,3 +1,15 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #include "wizard.h"
 #include "input.h"
 #include "doxywizard.h"
@@ -357,8 +369,8 @@ void ColorPicker::paintEvent(QPaintEvent*)
   p.drawPixmap(1, coff, *m_pix);
   const QPalette &g = palette();
   qDrawShadePanel(&p, r, g, true);
-  p.setPen(g.foreground().color());
-  p.setBrush(g.foreground());
+  p.setPen(g.windowText().color());
+  p.setBrush(g.windowText());
   QPolygon a;
   int y = m_mode==Hue ?        hue2y(m_hue) : 
           m_mode==Saturation ? sat2y(m_sat) :
@@ -1210,18 +1222,23 @@ void Step4::setCallerGraphEnabled(int state)
 
 void Step4::init()
 {
+  int id = 0;
   if (getBoolOption(m_modelData,STR_HAVE_DOT))
   {
     m_diagramModeGroup->button(2)->setChecked(true); // Dot
+    id = 2;
   }
   else if (getBoolOption(m_modelData,STR_CLASS_DIAGRAMS))
   {
     m_diagramModeGroup->button(1)->setChecked(true); // Builtin diagrams
+    id = 1;
   }
   else
   {
     m_diagramModeGroup->button(0)->setChecked(true); // no diagrams
+    id = 0;
   }
+  m_dotGroup->setEnabled(id==2);
   m_dotClass->setChecked(getBoolOption(m_modelData,STR_CLASS_GRAPH));
   m_dotCollaboration->setChecked(getBoolOption(m_modelData,STR_COLLABORATION_GRAPH));
   m_dotInheritance->setChecked(getBoolOption(m_modelData,STR_GRAPHICAL_HIERARCHY));

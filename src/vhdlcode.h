@@ -1,16 +1,35 @@
 #ifndef VHDLCODE_H
 #define VHDLCODE_H
 
+#include "parserintf.h"
+
 class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 
-void parseVhdlCode(CodeOutputInterface &,const char *,const QCString &, 
-            bool ,const char *,FileDef *fd,
-            int startLine,int endLine,bool inlineFragment,
-            MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
-            bool collectXRefs);
-void resetVhdlCodeParserState();
 void codeFreeVhdlScanner();
+
+class VHDLCodeParser : public CodeParserInterface
+{
+  public:
+    virtual ~VHDLCodeParser() {}
+    void parseCode(CodeOutputInterface &codeOutIntf,
+                   const char *scopeName,
+                   const QCString &input,
+                   SrcLangExt lang,
+                   bool isExampleBlock,
+                   const char *exampleName=0,
+                   FileDef *fileDef=0,
+                   int startLine=-1,
+                   int endLine=-1,
+                   bool inlineFragment=FALSE,
+                   const MemberDef *memberDef=0,
+                   bool showLineNumbers=TRUE,
+                   const Definition *searchCtx=0,
+                   bool collectXRefs=TRUE
+                  );
+    void resetCodeParserState() {}
+};
+
 
 #endif 

@@ -30,12 +30,12 @@ has its own advantages and disadvantages:
 
 <h2>1. Client side searching</h2>
    The easiest way to enable searching is to enable the built-in client
-   side search engine. This engine is implemented using Javascript and DHTML
+   side search engine. This engine is implemented using JavaScript and DHTML
    only and runs entirely on the clients browser. So no additional tooling is
    required to make it work. 
  
    To enable it set 
-   \ref cfg_searchengine "SEARCHENGINE" to \c YES in the config file
+   \ref cfg_searchengine "SEARCHENGINE" to \c YES in the configuration file
    and make sure \ref cfg_server_based_search "SERVER_BASED_SEARCH" is set
    to \c NO.
 
@@ -53,7 +53,7 @@ has its own advantages and disadvantages:
 
    To enable this set both
    \ref cfg_searchengine "SEARCHENGINE" and 
-   \ref cfg_server_based_search "SERVER_BASED_SEARCH" to \c YES in the config
+   \ref cfg_server_based_search "SERVER_BASED_SEARCH" to \c YES in the configuration
    file and set \ref cfg_external_search "EXTERNAL_SEARCH" to \c NO.
 
    Advantages over the client side search engine are that it provides full
@@ -72,7 +72,7 @@ has its own advantages and disadvantages:
    searching, meaning that you could use your own indexer and search engine 
    of choice. To make life easier doxygen ships with an example indexer 
    (doxyindexer) and search engine (doxysearch.cgi) based on 
-   the <a href="http://xapian.org/">Xapian</a> open source search engine 
+   the <a href="https://xapian.org/">Xapian</a> open source search engine 
    library.
 
    To enable this search method set 
@@ -100,9 +100,9 @@ has its own advantages and disadvantages:
    and Windows even supports it natively.
 
    To enable this set \ref cfg_generate_htmlhelp "GENERATE_HTMLHELP" to \c YES
-   in the config file. To let doxygen compile the HTML Help file for you,
+   in the configuration file. To let doxygen compile the HTML Help file for you,
    you also need to specify the path to the HTML compiler (hhc.exe) using the
-   \ref cfg_hhc_location "HHC_LOCATION" config option and the name of the
+   \ref cfg_hhc_location "HHC_LOCATION" configuration option and the name of the
    resulting CHM file using \ref cfg_chm_file "CHM_FILE".
    
    An advantage of this method is that the result is a single file that can
@@ -122,11 +122,11 @@ has its own advantages and disadvantages:
    provided by Apple).
 
    To enable the creation of doc sets set \ref cfg_generate_docset "GENERATE_DOCSET"
-   to \c YES in the config file. There are a couple of other doc set related
+   to \c YES in the configuration file. There are a couple of other doc set related
    options you may want to set. After doxygen has finished you will find
    a Makefile in the HTML output directory. Running "make install" on this
    Makefile will compile and install the doc set.
-   See <a href="https://developer.apple.com/library/mac/#featuredarticles/DoxygenXcode/_index.html">this 
+   See <a href="https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html">this 
    article</a> for more info.
 
    Advantage of this method is that it nicely integrates with the Xcode
@@ -139,7 +139,7 @@ has its own advantages and disadvantages:
 <h2>6. Qt Compressed Help</h2> 
    If you develop for or want to install the Qt application framework,
    you will get an application 
-   called <a href="http://qt-project.org/doc/qt-4.8/assistant-manual.html">Qt assistant</a>. 
+   called <a href="https://doc.qt.io/archives/qt-4.8/assistant-manual.html">Qt assistant</a>. 
    This is a help viewer for Qt Compressed Help files (<code>.qch</code>).
 
    To enable this feature set \ref cfg_generate_qhp "GENERATE_QHP" to \c YES.
@@ -147,7 +147,7 @@ has its own advantages and disadvantages:
    \ref cfg_qhp_namespace "QHP_NAMESPACE", 
    \ref cfg_qhg_location "QHG_LOCATION", 
    \ref cfg_qhp_virtual_folder "QHP_VIRTUAL_FOLDER".
-   See <a href="http://doc.qt.digia.com/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
+   See <a href="https://doc.qt.io/archives/qq/qq28-qthelp.html#htmlfilesandhelpprojects">this article</a> 
    for more info.
 
    Feature wise the Qt compressed help feature is comparable with the CHM 

@@ -97,6 +97,7 @@ public:
 
     // ownership
     void setAutoDelete( bool enable )   { QGList::setAutoDelete(enable); }
+    bool autoDelete() const             { return QGList::autoDelete(); }
 
 private:
     // new to be reimplemented methods

@@ -1,14 +1,9 @@
-if (build_wizard)
-
 # search for Qt5
 if (NOT force_qt4)
-  find_package(Qt5Core QUIET)
+  find_package(Qt5Core QUIET CONFIG)
   if (Qt5Core_FOUND)
     message(STATUS "Using Qt5")
     find_package(Qt5 COMPONENTS Widgets Gui Xml)
-    macro(qt_use_modules)
-        qt5_use_modules(${ARGN})
-    endmacro()
     macro(qt_wrap_cpp)
         qt5_wrap_cpp(${ARGN})
     endmacro()
@@ -25,8 +20,6 @@ if (NOT Qt5Core_FOUND)
     message(STATUS "Using Qt4")
   endif()
   find_package(Qt4 REQUIRED COMPONENTS QtCore QtXml QtGui)
-  macro(qt_use_modules)
-  endmacro()
   macro(qt_wrap_cpp)
       qt4_wrap_cpp(${ARGN})
   endmacro()
@@ -37,7 +30,7 @@ endif()
 
 include_directories(
 	.
-	${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/libversion
 	${CMAKE_SOURCE_DIR}/qtools
 	${GENERATED_SRC}
 )
@@ -64,8 +57,10 @@ CONTENT "#ifndef SETTINGS_H
 set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERATED 1)
 
 # generate version.cpp
-file(GENERATE OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
-    CONTENT "char versionString[]=\"${VERSION}\";"
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/VERSION ${CMAKE_SOURCE_DIR}/src/version.py
+    OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/version.cpp PROPERTIES GENERATED 1)
 
@@ -76,7 +71,17 @@ OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
-FLEX_TARGET(config_doxyw config_doxyw.l ${GENERATED_SRC_WIZARD}/config_doxyw.cpp COMPILE_FLAGS "${LEX_FLAGS}")
+set(LEX_FILES config_doxyw) 
+foreach(lex_file ${LEX_FILES})
+    add_custom_command(
+	    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/addon/doxywizard/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+	OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+    )
+    set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.l.h PROPERTIES GENERATED 1)
+
+    FLEX_TARGET(${lex_file}        ${lex_file}.l        ${GENERATED_SRC_WIZARD}/${lex_file}.cpp        COMPILE_FLAGS "${LEX_FLAGS}")
+endforeach()
 
 qt_wrap_cpp(doxywizard_MOC
 doxywizard.h
@@ -100,17 +105,18 @@ inputstring.cpp
 inputint.cpp
 inputstrlist.cpp
 ${GENERATED_SRC_WIZARD}/settings.h
-${GENERATED_SRC_WIZARD}/version.cpp
 ${GENERATED_SRC_WIZARD}/config_doxyw.cpp
+${GENERATED_SRC_WIZARD}/config_doxyw.l.h
 ${GENERATED_SRC_WIZARD}/configdoc.cpp
 ${doxywizard_MOC}
 ${doxywizard_RESOURCES_RCC}
+doxywizard.rc
 )
-qt_use_modules(doxywizard Core Gui Widgets Xml)
-target_link_libraries(doxywizard
-${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY}
-)
+
+if(Qt5Core_FOUND)
+  target_link_libraries(doxywizard Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Xml doxygen_version)
+else()
+  target_link_libraries(doxywizard ${QT_LIBRARIES} ${QT_QTMAIN_LIBRARY} doxygen_version)
+endif()
 
 install(TARGETS doxywizard DESTINATION bin)
-
-endif()

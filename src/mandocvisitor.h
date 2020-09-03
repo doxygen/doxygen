@@ -40,6 +40,7 @@ class ManDocVisitor : public DocVisitor
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
     void visit(DocSymbol *);
+    void visit(DocEmoji *);
     void visit(DocURL *);
     void visit(DocLineBreak *);
     void visit(DocHorRuler *);
@@ -127,8 +128,6 @@ class ManDocVisitor : public DocVisitor
     void visitPost(DocXRefItem *);
     void visitPre(DocInternalRef *);
     void visitPost(DocInternalRef *);
-    void visitPre(DocCopy *);
-    void visitPost(DocCopy *);
     void visitPre(DocText *);
     void visitPost(DocText *);
     void visitPre(DocHtmlBlockQuote *);

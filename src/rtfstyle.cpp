@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -39,6 +39,43 @@ QCString rtf_documentId;
 QCString rtf_keywords;
 
 char rtf_Style_Reset[] = "\\pard\\plain ";
+
+#define RTF_LatexToc(lvl,nest,nxt,pos,twps)                                                                 \
+                                                                                                            \
+  { "LatexTOC"#lvl,                                                                                            \
+    "\\s"#nest"\\li"#pos"\\sa"#twps"\\sb"#twps"\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",\
+    "\\sbasedon0 \\snext"#nxt" LatexTOC "#lvl                                                               \
+  }
+
+#define RTF_ListBullet(lvl,nest,nxt,pos,lvl2)                        \
+  { "ListBullet"#lvl,                                                \
+    "\\s"#nest"\\fi-360\\li"#pos"\\widctlpar\\jclisttab\\tx"#pos"{\\*\\pn \\pnlvlbody\\ilvl0\\ls"#lvl2"\\pnrnot0\\pndec }\\ls1\\adjustright \\fs20\\cgrid ", \
+    "\\sbasedon0 \\snext"#nxt" \\sautoupd List Bullet "#lvl          \
+  }
+
+#define RTF_ListEnum(lvl,nest,nxt,pos)                       \
+  { "ListEnum"#lvl,                                          \
+    "\\s"#nest"\\fi-360\\li"#pos"\\widctlpar\\fs20\\cgrid ", \
+    "\\sbasedon0 \\snext"#nxt" \\sautoupd List Enum "#lvl    \
+  }
+
+#define RTF_CodeExample(lvl,nest,nxt,pos)                                                    \
+  { "CodeExample"#lvl,                                                                       \
+    "\\s"#nest"\\li"#pos"\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ", \
+    "\\sbasedon0 \\snext"#nxt" Code Example "#lvl                                            \
+  }
+
+#define RTF_ListContinue(lvl,nest,nxt,pos)                                              \
+  { "ListContinue"#lvl,                                                                 \
+    "\\s"#nest"\\li"#pos"\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",  \
+    "\\sbasedon0 \\snext"#nxt" List Continue "#lvl                                      \
+  }
+
+#define RTF_DescContinue(lvl,nest,nxt,pos)                                              \
+  { "DescContinue"#lvl,                                                                 \
+    "\\s"#nest"\\li"#pos"\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",                  \
+    "\\sbasedon0 \\snext"#nxt" DescContinue "#lvl                                       \
+  }
 
 Rtf_Style_Default rtf_Style_Default[] =
 {
@@ -90,273 +127,119 @@ Rtf_Style_Default rtf_Style_Default[] =
     "\\s30\\li360\\sa60\\sb120\\keepn\\widctlpar\\adjustright \\b\\f1\\fs20\\cgrid ",
     "\\sbasedon0 \\snext30 GroupHeader"
   },
-  { "CodeExample0",
-    "\\s40\\li0\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext41 Code Example 0"
-  },
-  { "CodeExample1",
-    "\\s41\\li360\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext42 Code Example 1"
-  },
-  { "CodeExample2",
-    "\\s42\\li720\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext43 Code Example 2"
-  },
-  { "CodeExample3",
-    "\\s43\\li1080\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext44 Code Example 3"
-  },
-  { "CodeExample4",
-    "\\s44\\li1440\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext45 Code Example 4"
-  },
-  { "CodeExample5",
-    "\\s45\\li1800\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext46 Code Example 5"
-  },
-  { "CodeExample6",
-    "\\s46\\li2160\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext47 Code Example 6"
-  },
-  { "CodeExample7",
-    "\\s47\\li2520\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext48 Code Example 7"
-  },
-  { "CodeExample8",
-    "\\s48\\li2880\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext49 Code Example 8"
-  },
-  { "CodeExample9",
-    "\\s49\\li3240\\widctlpar\\adjustright \\shading1000\\cbpat8 \\f2\\fs16\\cgrid ",
-    "\\sbasedon0 \\snext49 Code Example 9"
-  },
-  { "ListContinue0",
-    "\\s50\\li0\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext51 List Continue 0"
-  },
-  { "ListContinue1",
-    "\\s51\\li360\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext52 List Continue 1"
-  },
-  { "ListContinue2",
-    "\\s52\\li720\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext53 List Continue 2"
-  },
-  { "ListContinue3",
-    "\\s53\\li1080\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext54 List Continue 3"
-  },
-  { "ListContinue4",
-    "\\s54\\li1440\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext55 List Continue 4"
-  },
-  { "ListContinue5",
-    "\\s55\\li1800\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext56 List Continue 5"
-  },
-  { "ListContinue6",
-    "\\s56\\li2160\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext57 List Continue 6"
-  },
-  { "ListContinue7",
-    "\\s57\\li2520\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext58 List Continue 7"
-  },
-  { "ListContinue8",
-    "\\s58\\li2880\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext59 List Continue 8"
-  },
-  { "ListContinue9",
-    "\\s59\\li3240\\sa60\\sb30\\qj\\widctlpar\\qj\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext59 List Continue 9"
-  },
-  { "DescContinue0",
-    "\\s60\\li0\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext61 DescContinue 0"
-  },
-  { "DescContinue1",
-    "\\s61\\li360\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext62 DescContinue 1"
-  },
-  { "DescContinue2",
-    "\\s62\\li720\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext63 DescContinue 2"
-  },
-  { "DescContinue3",
-    "\\s63\\li1080\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext64 DescContinue 3"
-  },
-  { "DescContinue4",
-    "\\s64\\li1440\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext65 DescContinue 4"
-  },
-  { "DescContinue5",
-    "\\s65\\li1800\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext66 DescContinue 5"
-  },
-  { "DescContinue6",
-    "\\s66\\li2160\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext67 DescContinue 6"
-  },
-  { "DescContinue7",
-    "\\s67\\li2520\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext68 DescContinue 7"
-  },
-  { "DescContinue8",
-    "\\s68\\li2880\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext69 DescContinue 8"
-  },
-  { "DescContinue9",
-    "\\s69\\li3240\\widctlpar\\ql\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext69 DescContinue 9"
-  },
-  { "LatexTOC0",
-    "\\s70\\li0\\sa30\\sb30\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext81 LatexTOC 0"
-  },
-  { "LatexTOC1",
-    "\\s71\\li360\\sa27\\sb27\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext82 LatexTOC 1"
-  },
-  { "LatexTOC2",
-    "\\s72\\li720\\sa24\\sb24\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext83 LatexTOC 2"
-  },
-  { "LatexTOC3",
-    "\\s73\\li1080\\sa21\\sb21\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext84 LatexTOC 3"
-  },
-  { "LatexTOC4",
-    "\\s74\\li1440\\sa18\\sb18\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext85 LatexTOC 4"
-  },
-  { "LatexTOC5",
-    "\\s75\\li1800\\sa15\\sb15\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext86 LatexTOC 5"
-  },
-  { "LatexTOC6",
-    "\\s76\\li2160\\sa12\\sb12\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext87 LatexTOC 6"
-  },
-  { "LatexTOC7",
-    "\\s77\\li2520\\sa9\\sb9\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext88 LatexTOC 7"
-  },
-  { "LatexTOC8",
-    "\\s78\\li2880\\sa6\\sb6\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext89 LatexTOC 8"
-  },
-  { "LatexTOC9",
-    "\\s79\\li3240\\sa3\\sb3\\widctlpar\\tqr\\tldot\\tx8640\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext89 LatexTOC 9"
-  },
-  { "ListBullet0",
-    "\\s80\\fi-360\\li360\\widctlpar\\jclisttab\\tx360{\\*\\pn \\pnlvlbody\\ilvl0\\ls1\\pnrnot0\\pndec }\\ls1\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext81 \\sautoupd List Bullet 0"
-  },
-  { "ListBullet1",
-    "\\s81\\fi-360\\li720\\widctlpar\\jclisttab\\tx720{\\*\\pn \\pnlvlbody\\ilvl0\\ls2\\pnrnot0\\pndec }\\ls2\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext82 \\sautoupd List Bullet 1"
-  },
-  { "ListBullet2",
-    "\\s82\\fi-360\\li1080\\widctlpar\\jclisttab\\tx1080{\\*\\pn \\pnlvlbody\\ilvl0\\ls3\\pnrnot0\\pndec }\\ls3\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext83 \\sautoupd List Bullet 2"
-  },
-  { "ListBullet3",
-    "\\s83\\fi-360\\li1440\\widctlpar\\jclisttab\\tx1440{\\*\\pn \\pnlvlbody\\ilvl0\\ls4\\pnrnot0\\pndec }\\ls4\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext84 \\sautoupd List Bullet 3"
-  },
-  { "ListBullet4",
-    "\\s84\\fi-360\\li1800\\widctlpar\\jclisttab\\tx1800{\\*\\pn \\pnlvlbody\\ilvl0\\ls5\\pnrnot0\\pndec }\\ls5\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext85 \\sautoupd List Bullet 4"
-  },
-  { "ListBullet5",
-    "\\s85\\fi-360\\li2160\\widctlpar\\jclisttab\\tx2160{\\*\\pn \\pnlvlbody\\ilvl0\\ls6\\pnrnot0\\pndec }\\ls6\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext86 \\sautoupd List Bullet 5"
-  },
-  { "ListBullet6",
-    "\\s86\\fi-360\\li2520\\widctlpar\\jclisttab\\tx2520{\\*\\pn \\pnlvlbody\\ilvl0\\ls7\\pnrnot0\\pndec }\\ls7\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext87 \\sautoupd List Bullet 6"
-  },
-  { "ListBullet7",
-    "\\s87\\fi-360\\li2880\\widctlpar\\jclisttab\\tx2880{\\*\\pn \\pnlvlbody\\ilvl0\\ls8\\pnrnot0\\pndec }\\ls8\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext88 \\sautoupd List Bullet 7"
-  },
-  { "ListBullet8",
-    "\\s88\\fi-360\\li3240\\widctlpar\\jclisttab\\tx3240{\\*\\pn \\pnlvlbody\\ilvl0\\ls9\\pnrnot0\\pndec }\\ls9\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext89 \\sautoupd List Bullet 8"
-  },
-  { "ListBullet9",
-    "\\s89\\fi-360\\li3600\\widctlpar\\jclisttab\\tx3600{\\*\\pn \\pnlvlbody\\ilvl0\\ls10\\pnrnot0\\pndec }\\ls10\\adjustright \\fs20\\cgrid ",
-    "\\sbasedon0 \\snext89 \\sautoupd List Bullet 9"
-  },
-  { "ListEnum0",
-    "\\s90\\fi-360\\li360\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext91 \\sautoupd List Enum 0"
-  },
-  { "ListEnum1",
-    "\\s91\\fi-360\\li720\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext92 \\sautoupd List Enum 1"
-  },
-  { "ListEnum2",
-    "\\s92\\fi-360\\li1080\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext93 \\sautoupd List Enum 2"
-  },
-  { "ListEnum3",
-    "\\s93\\fi-360\\li1440\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext94 \\sautoupd List Enum 3"
-  },
-  { "ListEnum4",
-    "\\s94\\fi-360\\li1800\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext95 \\sautoupd List Enum 4"
-  },
-  { "ListEnum5",
-    "\\s95\\fi-360\\li2160\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext96 \\sautoupd List Enum 5"
-  },
-  { "ListEnum6",
-    "\\s96\\fi-360\\li2520\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext96 \\sautoupd List Enum 5"
-  },
-  { "ListEnum7",
-    "\\s97\\fi-360\\li2880\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext98 \\sautoupd List Enum 7"
-  },
-  { "ListEnum8",
-    "\\s98\\fi-360\\li3240\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext99 \\sautoupd List Enum 8"
-  },
-  { "ListEnum9",
-    "\\s99\\fi-360\\li3600\\widctlpar\\fs20\\cgrid ",
-    "\\sbasedon0 \\snext99 \\sautoupd List Enum 9"
-  },
+
+  RTF_CodeExample( 0, 40, 41,   0),
+  RTF_CodeExample( 1, 41, 42, 360),
+  RTF_CodeExample( 2, 42, 43, 720),
+  RTF_CodeExample( 3, 43, 44,1080),
+  RTF_CodeExample( 4, 44, 45,1440),
+  RTF_CodeExample( 5, 45, 46,1800),
+  RTF_CodeExample( 6, 46, 47,2160),
+  RTF_CodeExample( 7, 47, 48,2520),
+  RTF_CodeExample( 8, 48, 49,2880),
+  RTF_CodeExample( 9, 49, 50,3240),
+  RTF_CodeExample(10, 50, 51,3600),
+  RTF_CodeExample(11, 51, 52,3960),
+  RTF_CodeExample(12, 52, 53,4320),
+  RTF_CodeExample(13, 53, 53,4680),
+
+  RTF_ListContinue( 0, 60, 61,   0),
+  RTF_ListContinue( 1, 61, 62, 360),
+  RTF_ListContinue( 2, 62, 63, 720),
+  RTF_ListContinue( 3, 63, 64,1080),
+  RTF_ListContinue( 4, 64, 65,1440),
+  RTF_ListContinue( 5, 65, 66,1800),
+  RTF_ListContinue( 6, 66, 67,2160),
+  RTF_ListContinue( 7, 67, 68,2520),
+  RTF_ListContinue( 8, 68, 69,2880),
+  RTF_ListContinue( 9, 69, 70,3240),
+  RTF_ListContinue(10, 70, 71,3600),
+  RTF_ListContinue(11, 71, 72,3960),
+  RTF_ListContinue(12, 72, 73,4320),
+  RTF_ListContinue(13, 73, 73,4680),
+
+  RTF_DescContinue( 0, 80, 81,   0),
+  RTF_DescContinue( 1, 81, 82, 360),
+  RTF_DescContinue( 2, 82, 83, 720),
+  RTF_DescContinue( 3, 83, 84,1080),
+  RTF_DescContinue( 4, 84, 85,1440),
+  RTF_DescContinue( 5, 85, 86,1800),
+  RTF_DescContinue( 6, 86, 87,2160),
+  RTF_DescContinue( 7, 87, 88,2520),
+  RTF_DescContinue( 8, 88, 89,2880),
+  RTF_DescContinue( 9, 89, 90,3240),
+  RTF_DescContinue(10, 90, 91,3600),
+  RTF_DescContinue(11, 91, 92,3960),
+  RTF_DescContinue(12, 92, 93,4320),
+  RTF_DescContinue(13, 93, 93,4680),
+
+  RTF_LatexToc( 0,100,101,   0,30),
+  RTF_LatexToc( 1,101,102, 360,27),
+  RTF_LatexToc( 2,102,103, 720,24),
+  RTF_LatexToc( 3,103,104,1080,21),
+  RTF_LatexToc( 4,104,105,1440,18),
+  RTF_LatexToc( 5,105,106,1800,15),
+  RTF_LatexToc( 6,106,107,2160,12),
+  RTF_LatexToc( 7,107,108,2520, 9),
+  RTF_LatexToc( 8,108,109,2880, 6),
+  RTF_LatexToc( 9,109,110,3240, 3),
+  RTF_LatexToc(10,110,111,3600, 3),
+  RTF_LatexToc(11,111,112,3960, 3),
+  RTF_LatexToc(12,112,113,4320, 3),
+  RTF_LatexToc(13,113,113,4680, 3),
+
+  RTF_ListBullet( 0,120,121, 360, 1),
+  RTF_ListBullet( 1,121,122, 720, 2),
+  RTF_ListBullet( 2,122,123,1080, 3),
+  RTF_ListBullet( 3,123,124,1440, 4),
+  RTF_ListBullet( 4,124,125,1800, 5),
+  RTF_ListBullet( 5,125,126,2160, 6),
+  RTF_ListBullet( 6,126,127,2520, 7),
+  RTF_ListBullet( 7,127,128,2880, 8),
+  RTF_ListBullet( 8,128,129,3240, 9),
+  RTF_ListBullet( 9,129,130,3600,10),
+  RTF_ListBullet(10,130,131,3960,11),
+  RTF_ListBullet(11,131,132,4320,12),
+  RTF_ListBullet(12,132,133,4680,13),
+  RTF_ListBullet(13,133,133,5040,14),
+
+  RTF_ListEnum( 0,140,141, 360),
+  RTF_ListEnum( 1,141,142, 720),
+  RTF_ListEnum( 2,142,143,1080),
+  RTF_ListEnum( 3,143,144,1440),
+  RTF_ListEnum( 4,144,145,1800),
+  RTF_ListEnum( 5,145,146,2160),
+  RTF_ListEnum( 6,146,147,2520),
+  RTF_ListEnum( 7,147,148,2880),
+  RTF_ListEnum( 8,148,149,3240),
+  RTF_ListEnum( 9,149,150,3600),
+  RTF_ListEnum(10,150,151,3960),
+  RTF_ListEnum(11,151,152,4320),
+  RTF_ListEnum(12,152,153,4680),
+  RTF_ListEnum(13,153,153,5040),
+
   { 0,
     0,
     0
   }
 };
 
-const QRegExp StyleData::s_clause("\\\\s[0-9]+\\s*");
+static const QRegExp s_clause("\\\\s[0-9]+\\s*");
 
 StyleData::StyleData(const char* reference, const char* definition)
 {
-  int start = s_clause.match(reference); ASSERT(start >= 0);
-  reference += start;
-  index = (int)atol(reference + 2); ASSERT(index > 0);
+  const char *ref = reference;
 
-  ASSERT(reference != 0);
-  size_t size = 1 + strlen(reference);
-  memcpy(this->reference = new char[size], reference, size);
+  int start = s_clause.match(ref); ASSERT(start >= 0);
+  ref += start;
+  m_index = (int)atol(ref + 2); ASSERT(m_index > 0);
 
-  ASSERT(definition != 0);
-  size = 1 + strlen(definition);
-  memcpy(this->definition = new char[size], definition, size);
+  m_reference = ref;
+  m_definition = definition;
 }
 
 StyleData::~StyleData()
 {
-  delete[] reference;
-  delete[] definition;
 }
 
 bool StyleData::setStyle(const char* s, const char* styleName)
@@ -373,7 +256,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     return FALSE;
   }
   s += start;
-  index = (int)atol(s + 2); ASSERT(index > 0);
+  m_index = (int)atol(s + 2); ASSERT(m_index > 0);
 
   // search for the end of pure formatting codes
   const char* end = s + len;
@@ -411,16 +294,10 @@ bool StyleData::setStyle(const char* s, const char* styleName)
     else // plain name without leading \\snext
       break;
   }
-  delete[] reference;
-  reference = new char[ref_len + 1];
-  memcpy(reference, s, ref_len); 
-  reference[ref_len] = 0;
+  m_reference = s;
   if (haveNewDefinition)
   {
-    delete[] definition;
-    size_t size = 1 + strlen(end);
-    definition = new char[size];
-    memcpy(definition, end, size);
+    m_definition = end;
   }
   return TRUE;
 }

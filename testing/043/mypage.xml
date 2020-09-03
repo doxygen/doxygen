@@ -1,10 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="mypage" kind="page">
     <compoundname>mypage</compoundname>
     <title>Page Title</title>
     <innerpage refid="another">Another Page</innerpage>
+    <tableofcontents>
+      <tocsect>
+        <name>Section Title.</name>
+        <reference>mypage_1mysect</reference>
+        <tableofcontents>
+          <tocsect>
+            <name>Subsection Title.</name>
+            <reference>mypage_1mysubsect</reference>
+            <tableofcontents>
+              <tocsect>
+                <name>Subsubsection Title.</name>
+                <reference>mypage_1mysubsubsect</reference>
+                <tableofcontents>
+                  <tocsect>
+                    <name>Paragraph Title.</name>
+                    <reference>mypage_1mypara</reference>
+                  </tocsect>
+                </tableofcontents>
+              </tocsect>
+            </tableofcontents>
+          </tocsect>
+        </tableofcontents>
+      </tocsect>
+      <tocsect>
+        <name>Another Section Title.</name>
+        <reference>mypage_1mysect2</reference>
+      </tocsect>
+    </tableofcontents>
+    <briefdescription>
+      <para>Page brief description. </para>
+    </briefdescription>
     <detaileddescription>
+      <para>Page brief description.</para>
       <para>Text at page level. See <ref refid="mypage_1mysect" kindref="member">Section Title.</ref> for more. </para>
       <sect1 id="mypage_1mysect">
         <title>Section Title.</title>

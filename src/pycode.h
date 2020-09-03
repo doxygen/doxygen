@@ -25,7 +25,7 @@
 #ifndef PYCODE_H
 #define PYCODE_H
 
-#include "types.h"
+#include "parserintf.h"
 
 class CodeOutputInterface;
 class FileDef;
@@ -33,11 +33,26 @@ class MemberDef;
 class QCString;
 class Definition;
 
-extern void parsePythonCode(CodeOutputInterface &,const char *,const QCString &,
-             bool ,const char *,FileDef *fd,
-	     int startLine,int endLine,bool inlineFragment,
-             MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
-             bool collectXRefs);
-extern void resetPythonCodeParserState();
+class PythonCodeParser : public CodeParserInterface
+{
+  public:
+    void parseCode(CodeOutputInterface &codeOutIntf,
+                   const char *scopeName,
+                   const QCString &input,
+                   SrcLangExt lang,
+                   bool isExampleBlock,
+                   const char *exampleName=0,
+                   FileDef *fileDef=0,
+                   int startLine=-1,
+                   int endLine=-1,
+                   bool inlineFragment=FALSE,
+                   const MemberDef *memberDef=0,
+                   bool showLineNumbers=TRUE,
+                   const Definition *searchCtx=0,
+                   bool collectXrefs=TRUE
+                  );
+    void resetCodeParserState();
+};
+
 
 #endif

@@ -23,7 +23,7 @@ class TooltipManager
   public:
     static TooltipManager *instance();
     void clearTooltips();
-    void addTooltip(Definition *d);
+    void addTooltip(const Definition *d);
     void writeTooltips(CodeOutputInterface &ol);
 
   private:

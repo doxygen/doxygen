@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,65 +14,37 @@
  */
 
 #include <stdarg.h>
+#include <algorithm>
 #include <stdio.h>
-
-#include <qdict.h>
+#include <map>
+#include <string>
+#include <chrono>
 
 #include "debug.h"
 #include "message.h"
 
 //------------------------------------------------------------------------
 
-/** Helper struct representing a mapping from debug label to a debug ID */
-struct LabelMap
+static std::map< std::string, Debug::DebugMask > s_labels =
 {
-  const char *name;
-  Debug::DebugMask event;
+  { "findmembers",       Debug::FindMembers       },
+  { "functions",         Debug::Functions         },
+  { "variables",         Debug::Variables         },
+  { "preprocessor",      Debug::Preprocessor      },
+  { "classes",           Debug::Classes           },
+  { "commentcnv",        Debug::CommentCnv        },
+  { "commentscan",       Debug::CommentScan       },
+  { "validate",          Debug::Validate          },
+  { "printtree",         Debug::PrintTree         },
+  { "time",              Debug::Time              },
+  { "extcmd",            Debug::ExtCmd            },
+  { "markdown",          Debug::Markdown          },
+  { "filteroutput",      Debug::FilterOutput      },
+  { "lex",               Debug::Lex               },
+  { "plantuml",          Debug::Plantuml          },
+  { "fortranfixed2free", Debug::FortranFixed2Free },
+  { "cite",              Debug::Cite              }
 };
-
-static LabelMap s_labels[] =
-{
-  { "findmembers",  Debug::FindMembers  },
-  { "functions",    Debug::Functions    },
-  { "variables",    Debug::Variables    },
-  { "preprocessor", Debug::Preprocessor },
-  { "classes",      Debug::Classes      },
-  { "commentcnv",   Debug::CommentCnv   },
-  { "commentscan",  Debug::CommentScan  },
-  { "validate",     Debug::Validate     },
-  { "printtree",    Debug::PrintTree    },
-  { "time",         Debug::Time         },
-  { "extcmd",       Debug::ExtCmd       },
-  { "markdown",     Debug::Markdown     },
-  { "filteroutput", Debug::FilterOutput },
-  { "lex",          Debug::Lex },
-  { 0,             (Debug::DebugMask)0  }
-};
-
-/** Class representing a mapping from debug labels to debug IDs. */
-class LabelMapper
-{
-  public:
-    LabelMapper() : m_map(17) 
-    {
-      m_map.setAutoDelete(TRUE);
-      LabelMap *p = s_labels;
-      while (p->name)
-      {
-        m_map.insert(p->name,new Debug::DebugMask(p->event));
-        p++;
-      }
-    }
-    Debug::DebugMask *find(const char *s) const 
-    {
-      if (s==0) return 0;
-      return m_map.find(s);
-    }
-  private:
-    QDict<Debug::DebugMask> m_map;
-};
-
-static LabelMapper g_labelMapper;
 
 //------------------------------------------------------------------------
 
@@ -92,17 +62,24 @@ void Debug::print(DebugMask mask,int prio,const char *fmt,...)
   }
 }
 
+static char asciiToLower(char in) {
+    if (in <= 'Z' && in >= 'A')
+        return in - ('Z' - 'z');
+    return in;
+}
+
 static int labelToEnumValue(const char *l)
 {
-  QCString label=l;
-  Debug::DebugMask *event = g_labelMapper.find(label.lower());
-  if (event) return *event; else return 0;
+  std::string s = l;
+  std::transform(s.begin(),s.end(),s.begin(),asciiToLower);
+  auto it = s_labels.find(s);
+  return (it!=s_labels.end()) ? it->second : 0;
 }
 
 int Debug::setFlag(const char *lab)
 {
   int retVal = labelToEnumValue(lab);
-  curMask = (DebugMask)(curMask | labelToEnumValue(lab));   
+  curMask = (DebugMask)(curMask | labelToEnumValue(lab));
   return retVal;
 }
 
@@ -121,14 +98,42 @@ bool Debug::isFlagSet(DebugMask mask)
   return (curMask & mask)!=0;
 }
 
-void Debug::printFlags(void)
+void Debug::printFlags()
 {
-  int i;
-  for (i = 0; i < (int)(sizeof(s_labels)/sizeof(*s_labels)); i++)
+  for (const auto &v : s_labels)
   {
-     if (s_labels[i].name)
-     {
-        msg("\t%s\n",s_labels[i].name);
-     }
+     msg("\t%s\n",v.first.c_str());
   }
 }
+
+//------------------------------------------------------------------------
+
+class Timer
+{
+  public:
+    void start()
+    {
+      m_startTime = std::chrono::system_clock::now();
+    }
+    double elapsedTimeS()
+    {
+      return (std::chrono::duration_cast<
+                  std::chrono::milliseconds>(
+                  std::chrono::system_clock::now() - m_startTime).count()) / 1000.0;
+    }
+  private:
+    std::chrono::time_point<std::chrono::system_clock> m_startTime;
+};
+
+static Timer g_runningTime;
+
+void Debug::startTimer()
+{
+  g_runningTime.start();
+}
+
+double Debug::elapsedTime()
+{
+  return g_runningTime.elapsedTimeS();
+}
+

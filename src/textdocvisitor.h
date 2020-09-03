@@ -40,6 +40,7 @@ class TextDocVisitor : public DocVisitor
     void visit(DocLinkedWord *w)  { filter(w->word()); }
     void visit(DocWhiteSpace *)   { m_t << " ";       }
     void visit(DocSymbol *);
+    void visit(DocEmoji *);
     void visit(DocURL *u)         { filter(u->url());  }
     void visit(DocLineBreak *)    { m_t << " ";       }
     void visit(DocHorRuler *)     {}
@@ -124,8 +125,6 @@ class TextDocVisitor : public DocVisitor
     void visitPost(DocXRefItem *) {}
     void visitPre(DocInternalRef *) {}
     void visitPost(DocInternalRef *) {}
-    void visitPre(DocCopy *) {}
-    void visitPost(DocCopy *) {}
     void visitPre(DocText *) {}
     void visitPost(DocText *) {}
     void visitPre(DocHtmlBlockQuote *) {}

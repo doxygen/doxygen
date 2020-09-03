@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="077__no__xml__namespace__members__in__file__scope_8h" kind="file" language="C++">
+    <compoundname>077_no_xml_namespace_members_in_file_scope.h</compoundname>
+    <innernamespace refid="namespace_namespace">Namespace</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="077_no_xml_namespace_members_in_file_scope.h"/>
+  </compounddef>
+</doxygen>

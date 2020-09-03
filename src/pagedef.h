@@ -26,62 +26,51 @@ class OutputList;
 class FTextStream;
 
 /** @brief A model of a page symbol. */
-class PageDef : public Definition
+class PageDef : virtual public Definition
 {
   public:
-    PageDef(const char *f,int l,const char *n,const char *d,const char *t);
-   ~PageDef();
+    virtual ~PageDef() {}
 
     // setters
-    void setFileName(const char *name);
-    void setShowToc(bool b);
+    virtual void setFileName(const char *name) = 0;
+    virtual void setLocalToc(const LocalToc &tl) = 0;
+    virtual void setShowLineNo(bool) = 0;
 
     // getters
-    DefType definitionType() const { return TypePage; }
-    bool isLinkableInProject() const 
-    { 
-      return /*hasDocumentation() &&*/ !isReference();
-    }
-    bool isLinkable() const 
-    {
-      return isLinkableInProject() || isReference();
-    } 
+    virtual DefType definitionType() const = 0;
+    virtual bool isLinkableInProject() const = 0;
+    virtual bool isLinkable() const = 0;
+    virtual QCString getOutputFileBase() const = 0;
+    virtual QCString anchor() const = 0;
+    virtual void findSectionsInDocumentation() = 0;
+    virtual QCString title() const = 0;
+    virtual GroupDef *  getGroupDef() const = 0;
+    virtual PageSDict * getSubPages() const = 0;
+    virtual void addInnerCompound(const Definition *) = 0;
+    virtual bool visibleInIndex() const = 0;
+    virtual bool documentedPage() const = 0;
+    virtual bool hasSubPages() const = 0;
+    virtual bool hasParentPage() const = 0;
+    virtual bool hasTitle() const = 0;
+    virtual LocalToc localToc() const = 0;
+    virtual void setPageScope(Definition *) = 0;
+    virtual Definition *getPageScope() const = 0;
+    virtual QCString displayName(bool=TRUE) const = 0;
+    virtual bool showLineNo() const = 0;
 
-    // functions to get a uniform interface with Definitions
-    QCString getOutputFileBase() const;
-    QCString anchor() const { return QCString(); }
-    void findSectionsInDocumentation();
-    QCString title() const { return m_title; }
-    GroupDef *  getGroupDef() const;
-    PageSDict * getSubPages() const { return m_subPageDict; }
-    void addInnerCompound(Definition *d);
-    bool visibleInIndex() const;
-    bool documentedPage() const;
-    bool hasSubPages() const;
-    bool hasParentPage() const;
-    bool showToc() const { return m_showToc; }
-    void setPageScope(Definition *d){ m_pageScope = d; }
-    Definition *getPageScope() const { return m_pageScope; }
-    QCString displayName(bool=TRUE) const { return !m_title.isEmpty() ? m_title : Definition::name(); }
+    virtual void writeDocumentation(OutputList &) = 0;
+    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void setNestingLevel(int) = 0;
+    virtual void writePageDocumentation(OutputList &) = 0;
 
-    void writeDocumentation(OutputList &ol);
-    void writeTagFile(FTextStream &);
-
-  private:
-    void setNestingLevel(int l);
-    void writePageDocumentation(OutputList &ol);
-    QCString m_fileName;
-    QCString m_title;
-    PageSDict *m_subPageDict;                 // list of pages in the group
-    Definition *m_pageScope;
-    int m_nestingLevel;
-    bool m_showToc;
 };
+
+PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t);
 
 class PageSDict : public SDict<PageDef>
 {
   public:
-    PageSDict(int size) : SDict<PageDef>(size) {}
+    PageSDict(uint size) : SDict<PageDef>(size) {}
     virtual ~PageSDict() {}
   private:
     int compareValues(const PageDef *i1,const PageDef *i2) const

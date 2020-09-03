@@ -55,14 +55,14 @@ both statements, i.e.:
 \endverbatim
 
 In case you want to expand the \c CONST_STRING macro, you should set the
-\ref cfg_macro_expansion "MACRO_EXPANSION" tag in the config file 
+\ref cfg_macro_expansion "MACRO_EXPANSION" tag in the configuration file 
 to \c YES. Then the result after preprocessing becomes:
 
 \verbatim
 #define VERSION
 #define CONST_STRING
 
-  static const char * version = "1.xx";
+  static const char * version = "2.xx";
 \endverbatim
 
 Note that doxygen will now expand \e all macro definitions 
@@ -130,7 +130,7 @@ without macro expansion doxygen will get confused, but we may not want to
 expand the \c REFIID macro, because it is documented and the user that reads 
 the documentation should use it when implementing the interface.
 
-By setting the following in the config file:
+By setting the following in the configuration file:
 
 \verbatim
 ENABLE_PREPROCESSING = YES
@@ -263,6 +263,10 @@ This will instruct doxygen to dump the input sources to standard output after
 preprocessing has been done (Hint: set <code>QUIET = YES</code> and 
 <code>WARNINGS = NO</code> in the configuration file to disable any other 
 output).
+
+Note preprocessing is not done for all languages. Preprocessing is enabled for files
+that use the "C" scanner (with the exception of 'java', 'd' and 'php'), Fortran files
+(only in case the extension contains at least one upper case character) and vhdl files.
 
 \htmlonly
 Go to the <a href="autolink.html">next</a> section or return to the

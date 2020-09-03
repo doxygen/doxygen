@@ -381,7 +381,7 @@ void QDataStream::setByteOrder( int bo )
   \fn void QDataStream::setVersion( int v )
   Sets the version number of the data serialization format.
 
-  In order to accomodate for new functionality, the datastream
+  In order to accommodate for new functionality, the datastream
   serialization format of some Qt classes has changed in some versions of
   Qt. If you want to read data that was created by an earlier version of
   Qt, or write data that can be read by a program that was compiled with
@@ -403,7 +403,7 @@ void QDataStream::setByteOrder( int bo )
 
 static Q_INT32 read_int_ascii( QDataStream *s )
 {
-    register int n = 0;
+    int n = 0;
     char buf[40];
     while ( TRUE ) {
 	buf[n] = s->device()->getch();
@@ -462,7 +462,7 @@ QDataStream &QDataStream::operator>>( Q_INT16 &i )
     } else if ( noswap ) {			// no conversion needed
 	dev->readBlock( (char *)&i, sizeof(Q_INT16) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&i);
+	uchar *p = (uchar *)(&i);
 	char b[2];
 	dev->readBlock( b, 2 );
 	*p++ = b[1];
@@ -491,7 +491,7 @@ QDataStream &QDataStream::operator>>( Q_INT32 &i )
     } else if ( noswap ) {			// no conversion needed
 	dev->readBlock( (char *)&i, sizeof(Q_INT32) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&i);
+	uchar *p = (uchar *)(&i);
 	char b[4];
 	dev->readBlock( b, 4 );
 	*p++ = b[3];
@@ -521,7 +521,7 @@ QDataStream &QDataStream::operator>>( Q_INT64 &i )
     } else if ( noswap ) {			// no conversion needed
 	dev->readBlock( (char *)&i, sizeof(Q_INT64) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&i);
+	uchar *p = (uchar *)(&i);
 	char b[sizeof(Q_INT64)];
 	dev->readBlock( b, sizeof(Q_INT64) );
 	if ( sizeof(Q_INT64) == 8 ) {
@@ -540,7 +540,7 @@ QDataStream &QDataStream::operator>>( Q_INT64 &i )
 
 static double read_double_ascii( QDataStream *s )
 {
-    register int n = 0;
+    int n = 0;
     char buf[80];
     while ( TRUE ) {
 	buf[n] = s->device()->getch();
@@ -566,7 +566,7 @@ QDataStream &QDataStream::operator>>( float &f )
     } else if ( noswap ) {			// no conversion needed
 	dev->readBlock( (char *)&f, sizeof(float) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&f);
+	uchar *p = (uchar *)(&f);
 	char b[4];
 	dev->readBlock( b, 4 );
 	*p++ = b[3];
@@ -591,7 +591,7 @@ QDataStream &QDataStream::operator>>( double &f )
     } else if ( noswap ) {			// no conversion needed
 	dev->readBlock( (char *)&f, sizeof(double) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&f);
+	uchar *p = (uchar *)(&f);
 	char b[8];
 	dev->readBlock( b, 8 );
 	*p++ = b[7];
@@ -670,7 +670,7 @@ QDataStream &QDataStream::readRawBytes( char *s, uint len )
 {
     CHECK_STREAM_PRECOND
     if ( printable ) {				// printable data
-	register Q_INT8 *p = (Q_INT8*)s;
+	Q_INT8 *p = (Q_INT8*)s;
 	while ( len-- )
 	    *this >> *p++;
     } else {					// read data char array
@@ -730,11 +730,11 @@ QDataStream &QDataStream::operator<<( Q_INT16 i )
     if ( printable ) {				// printable data
 	char buf[16];
 	sprintf( buf, "%d\n", i );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&i, sizeof(Q_INT16) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&i);
+	uchar *p = (uchar *)(&i);
 	char b[2];
 	b[1] = *p++;
 	b[0] = *p;
@@ -761,11 +761,11 @@ QDataStream &QDataStream::operator<<( Q_INT32 i )
     if ( printable ) {				// printable data
 	char buf[16];
 	sprintf( buf, "%d\n", i );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&i, sizeof(Q_INT32) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&i);
+	uchar *p = (uchar *)(&i);
 	char b[4];
 	b[3] = *p++;
 	b[2] = *p++;
@@ -793,11 +793,11 @@ QDataStream &QDataStream::operator<<( Q_INT64 i )
     if ( printable ) {				// printable data
 	char buf[20];
 	sprintf( buf, "%ld\n", i );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&i, sizeof(Q_INT64) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&i);
+	uchar *p = (uchar *)(&i);
 	char b[sizeof(Q_INT64)];
 	if ( sizeof(Q_INT64) == 8 ) {
 	    b[7] = *p++;
@@ -813,13 +813,6 @@ QDataStream &QDataStream::operator<<( Q_INT64 i )
     }
     return *this;
 }
-
-/*!
-  \fn QDataStream &QDataStream::operator<<( uint i )
-  Writes an unsigned integer to the stream as a 32-bit unsigned integer
-  (Q_UINT32).
-  Returns a reference to the stream.
-*/
 
 /*!
   \fn QDataStream &QDataStream::operator<<( int i )
@@ -839,13 +832,13 @@ QDataStream &QDataStream::operator<<( float f )
     if ( printable ) {				// printable data
 	char buf[32];
 	sprintf( buf, "%g\n", (double)f );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else {
 	float g = f;				// fixes float-on-stack problem
 	if ( noswap ) {				// no conversion needed
 	    dev->writeBlock( (char *)&g, sizeof(float) );
 	} else {				// swap bytes
-	    register uchar *p = (uchar *)(&g);
+	    uchar *p = (uchar *)(&g);
 	    char b[4];
 	    b[3] = *p++;
 	    b[2] = *p++;
@@ -869,11 +862,11 @@ QDataStream &QDataStream::operator<<( double f )
     if ( printable ) {				// printable data
 	char buf[32];
 	sprintf( buf, "%g\n", f );
-	dev->writeBlock( buf, strlen(buf) );
+	dev->writeBlock( buf, (int)strlen(buf) );
     } else if ( noswap ) {			// no conversion needed
 	dev->writeBlock( (char *)&f, sizeof(double) );
     } else {					// swap bytes
-	register uchar *p = (uchar *)(&f);
+	uchar *p = (uchar *)(&f);
 	char b[8];
 	b[7] = *p++;
 	b[6] = *p++;
@@ -939,7 +932,7 @@ QDataStream &QDataStream::writeRawBytes( const char *s, uint len )
 {
     CHECK_STREAM_PRECOND
     if ( printable ) {				// write printable
-	register char *p = (char *)s;
+	char *p = (char *)s;
 	while ( len-- )
 	    *this << *p++;
     } else {					// write data char array

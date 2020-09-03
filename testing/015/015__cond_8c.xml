@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="015__cond_8c" kind="file" language="C++">
     <compoundname>015_cond.c</compoundname>
     <sectiondef kind="func">
@@ -11,15 +11,17 @@
         <briefdescription>
         </briefdescription>
         <detaileddescription>
+          <para>Function to be shown. </para>
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="015_cond.c" line="20" column="1" bodyfile="015_cond.c" bodystart="20" bodyend="22"/>
+        <location file="015_cond.c" line="21" column="6" bodyfile="015_cond.c" bodystart="21" bodyend="23"/>
       </memberdef>
     </sectiondef>
     <briefdescription>
     </briefdescription>
     <detaileddescription>
+      <para>Text <emphasis>argument</emphasis> more text. </para>
     </detaileddescription>
     <location file="015_cond.c"/>
   </compounddef>

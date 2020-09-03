@@ -20,7 +20,7 @@
 <ul>
 <li>Doxygen is <em>not</em> a real compiler, it is only a lexical scanner.
     This means that it can and will not detect errors in your source code.
-<li>Doxygen has a build in preprocessor, but this works slightly different than
+<li>Doxygen has a built-in preprocessor, but this works slightly different than
     the C preprocessor. Doxygen assumes a header file is properly guarded against
     multiple inclusion, and that each include file is standalone (i.e. it could be placed
     at the top of a source file without causing compiler errors). As long as this is
@@ -89,14 +89,13 @@ know why.
 
 \section bug_reports How to report a bug
 
-Bugs are tracked in GNOME's <a href="http://bugzilla.gnome.org">bugzilla</a> database.
+Bugs are tracked in GitHub's <a href="https://github.com/doxygen/doxygen/issues">issue tracker</a>.
 Before submitting a 
-<a href="http://bugzilla.gnome.org/enter_bug.cgi?product=doxygen">new bug</a>,
-first <a href="http://bugzilla.gnome.org/query.cgi?format=advanced&product=doxygen">search</a>
-through the database if the same bug has already been submitted by others (the doxygen
-product will be preselected).
+<a href="https://github.com/doxygen/doxygen/issues/new">new bug</a>,
+first <a href="https://github.com/doxygen/doxygen/issues">search</a>
+through the database if the same bug has already been submitted by others.
 If you believe you have found a new bug, 
-please <a href="http://bugzilla.gnome.org/enter_bug.cgi?product=doxygen">report it</a>.
+please <a href="https://github.com/doxygen/doxygen/issues/new">report it</a>.
 
 If you are unsure whether or not something is a bug, please ask help
 on the <a href="http://sourceforge.net/mail/?group_id=5971">users mailing list</a> 
@@ -109,11 +108,11 @@ always try to include the following information in your bug report:
 - The version of doxygen you are using (for instance 1.5.3, use 
   `doxygen --version` if you are not sure).
 - The name and version number of your operating system (for instance 
-  SuSE Linux 6.4)
+  Ubuntu Linux 18.04 LTS)
 - It is usually a good idea to send along the configuration file as well, 
   but please use doxygen with the <code>-s</code> flag while generating it
   to keep it small (use <code>doxygen -s -u [configName]</code> to strip
-  the comments from an existing config file). 
+  the comments from an existing configuration file). 
 - The easiest (and often the only) way for me to fix bugs is if you can 
   attach a small example demonstrating the problem you have to the bug report, so I can
   reproduce it on my machine. Please make sure the example is valid
@@ -129,7 +128,7 @@ please use PATCH as a keyword in the bug entry form.
 
 If you have ideas how to fix existing bugs and limitations please discuss them on 
 the <a href="http://sourceforge.net/mail/?group_id=5971">developers mailing list</a> 
-(subscription required). Patches can also be sent directly to dimitri@stack.nl if 
+(subscription required). Patches can also be sent directly to doxygen@gmail.com if 
 you prefer not to send them via the bug tracker or mailing list.
 
 For patches please use

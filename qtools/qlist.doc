@@ -168,7 +168,7 @@
 /*!
   \fn bool QList::operator==(const QList<type> &list ) const
 
-  Compares this list with \a list. Retruns TRUE if the lists
+  Compares this list with \a list. Returns TRUE if the lists
   contain the same data, else FALSE.
 */
 
@@ -858,7 +858,7 @@
 
 /*!
   \fn type *QListIterator::operator*()
-  Asterix operator. Returns a pointer to the current iterator item.
+  Asterisk operator. Returns a pointer to the current iterator item.
   Same as current().
 */
 

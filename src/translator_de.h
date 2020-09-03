@@ -130,13 +130,20 @@
 //   2016/03/15 Carsten Schumann (carsten at familie-schumann dot info)
 //    - Updated for "new since 1.8.4" version
 //
+//   2017/10/12 Arnd Weber (arnd dot weber at bafg dot de)
+//              Beatrix Konz
+//    - Updated for 1.8.13
+//    - Resynced trMemberDataDocumentation() and trFileMembers() to include the
+//      boolean switch OPTIMIZE_OUTPUT_FOR_C
+//    - Replaced "\t" by "    "
+//
 //   Todo:
 //    - see FIXME
 
 #ifndef TRANSLATOR_DE_H
 #define TRANSLATOR_DE_H
 
-class TranslatorGerman : public TranslatorAdapter_1_8_4
+class TranslatorGerman : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -157,6 +164,11 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[ngerman]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "de";
     }
 
     // --- Language translation methods -------------------
@@ -187,8 +199,15 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
 
     /*! header that is put before the list of member attributes. */
     virtual QCString trMemberDataDocumentation()
-    { /* No difference if "OPTIMIZE_OUTPUT_FOR_C" is set! */
-      return "Dokumentation der Datenelemente";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Dokumentation der Felder";
+      }
+      else
+      {
+        return "Dokumentation der Datenelemente";
+      }
     }
 
     /*! this is the text of a link put after brief descriptions. */
@@ -277,8 +296,16 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
 
     /*! This is put above each page as a link to all members of files. */
     virtual QCString trFileMembers()
-    /* No difference if "OPTIMIZE_OUTPUT_FOR_C" is set! */
-    { return "Datei-Elemente"; }
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Globale Elemente";
+      }
+      else
+      {
+        return "Datei-Elemente";
+      }
+    }
 
     /*! This is put above each page as a link to all related pages. */
     virtual QCString trRelatedPages()
@@ -294,8 +321,17 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
 
     /*! This is an introduction to the class hierarchy. */
     virtual QCString trClassHierarchyDescription()
-    { return "Die Liste der Ableitungen ist -mit Einschränkungen- "
-             "alphabetisch sortiert:";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Hier folgt eine hierarchische Auflistung der "
+               "Entwurfseinheiten:";
+      }
+      else
+      {
+        return "Die Liste der Ableitungen ist -mit Einschränkungen- "
+               "alphabetisch sortiert:";
+      }
     }
 
     /*! This is an introduction to the list with all files. */
@@ -312,13 +348,13 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-	return "Hier folgt die Aufzählung aller Datenstrukturen "
-	       "mit einer Kurzbeschreibung:";
+    return "Hier folgt die Aufzählung aller Datenstrukturen "
+           "mit einer Kurzbeschreibung:";
       }
       else
       {
-	return "Hier folgt die Aufzählung aller Klassen, Strukturen, "
-	       "Varianten und Schnittstellen mit einer Kurzbeschreibung:";
+    return "Hier folgt die Aufzählung aller Klassen, Strukturen, "
+           "Varianten und Schnittstellen mit einer Kurzbeschreibung:";
       }
     }
 
@@ -421,7 +457,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     virtual QCString trCompoundIndex()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
-	return "Datenstruktur-Verzeichnis";
+    return "Datenstruktur-Verzeichnis";
       else
         return "Klassen-Verzeichnis";
     }
@@ -446,6 +482,10 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Datenstruktur-Dokumentation";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+          return trDesignUnitDocumentation();
       }
       else
       {
@@ -608,7 +648,6 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     /*! this text is used in the title page of a LaTeX document. */
     virtual QCString trGeneratedBy()
     { return "Erzeugt von"; }
-	
 
 //////////////////////////////////////////////////////////////////////////
 // new since 0.49-990307
@@ -1200,9 +1239,13 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     virtual QCString trClasses()
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
         return "Datenstrukturen";
+      }
       else
+      {
         return "Klassen";
+      }
     }
 
     /*! Used as the title of a Java package */
@@ -1535,7 +1578,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       else
       {
         return "Es wurden <b>$num</b> Dokumente zu Ihrer Suchanfrage "
-	       "gefunden. Die besten Treffer werden zuerst angezeigt.";
+           "gefunden. Die besten Treffer werden zuerst angezeigt.";
       }
     }
     /*! This string is put before the list of matched words, for each search
@@ -1584,7 +1627,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
      */
     virtual QCString trDirDescription()
     { return "Diese Verzeichnishierarchie ist -mit Einschränkungen- "
-	     "alphabetisch sortiert:";
+         "alphabetisch sortiert:";
     }
 
     /*! This returns the title of a directory page. The name of the
@@ -1651,7 +1694,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
 
     /*! This is an introduction to the annotated compound list (Fortran). */
     virtual QCString trCompoundListDescriptionFortran()
-	  { return "Hier folgen die Datentypen mit Kurzbeschreibungen:"; }
+      { return "Hier folgen die Datentypen mit Kurzbeschreibungen:"; }
 
     /*! This is an introduction to the page with all data types (Fortran). */
     virtual QCString trCompoundMembersDescriptionFortran(bool extractAll)
@@ -1958,9 +2001,9 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
     virtual QCString trEnumGeneratedFromFiles(bool single)
     { QCString result = "Die Dokumentation für diesen enum wurde aus ";
       if (single)
-		result += "der folgenden Datei";
-	  else
-		result += "den folgenden Dateien";
+        result += "der folgenden Datei";
+      else
+        result += "den folgenden Dateien";
       result+=" generiert:";
       return result;
     }
@@ -2034,16 +2077,10 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       return "Methodendokumentation";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Übersicht";
-    }
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
+
     /** old style UNO IDL services: implemented interfaces */
     virtual QCString trInterfaces()
     { return "Exportierte Interfaces"; }
@@ -2071,6 +2108,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       result+=" Dienstreferenz";
       return result;
     }
+
     /** UNO IDL singleton page title */
     virtual QCString trSingletonReference(const char *sName)
     {
@@ -2078,6 +2116,7 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       result+=" Singleton-Referenz";
       return result;
     }
+
     /** UNO IDL service page */
     virtual QCString trServiceGeneratedFromFiles(bool single)
     {
@@ -2086,18 +2125,139 @@ class TranslatorGerman : public TranslatorAdapter_1_8_4
       if (single) result+="folgender Datei: "; else result+="folgenden Dateien: ";
       return result;
     }
+
     /** UNO IDL singleton page */
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       QCString result=(QCString)"Die Dokumentation für diesen Singleton wurde generiert aus ";
-
       if (single) result+="folgender Datei:"; else result+="folgenden Dateien:";
       return result;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
 
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Entwurfseinheiten-Hierarchie"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Auflistung der Entwurfseinheiten"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Entwurfseinheiten-Elemente"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "Hier folgt die Aufzählung aller Entwurfseinheiten und deren "
+               "Elemente mit einer Kurzbeschreibung:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Entwurfseinheiten-Verzeichnis"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Entwurfseinheiten"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Funktionen/Prozeduren/Prozesse"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          if (single) return "Bibliothek";
+          else        return "Bibliotheken";
+        case VhdlDocGen::PACKAGE:
+          if (single) return "Paket";
+          else        return "Pakete";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Signal";
+          else        return "Signale";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Komponente";
+          else        return "Komponenten";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Konstante";
+          else        return "Konstanten";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Entwurfseinheit";
+          else        return "Entwurfseinheiten";
+        case VhdlDocGen::TYPE:
+          if (single) return "Typ";
+          else        return "Typen";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Subtyp";
+          else        return "Subtypen";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Funktion";
+          else        return "Funktionen";
+        case VhdlDocGen::RECORD:
+          if (single) return "Datenstruktur";
+          else        return "Datenstrukturen";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Prozedur";
+          else        return "Prozeduren";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Architektur";
+          else        return "Architekturen";
+        case VhdlDocGen::ATTRIBUTE:
+          if (single) return "Attribut";
+          else        return "Attribute";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Prozess";
+          else        return "Prozesse";
+        case VhdlDocGen::PORT:
+          if (single) return "Schnittstelle";
+          else        return "Schnittstellen";
+        case VhdlDocGen::USE:
+          if (single) return "Use Klausel";
+          else        return "Use Klauseln";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Parameter";
+          else        return "Parameter";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Paketkörper";
+        case VhdlDocGen::UNITS:
+          return "Einheiten";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Geteilte Variable";
+          else        return "Geteilte Variablen";
+        case VhdlDocGen::VFILE:
+          if (single) return "Datei";
+          else        return "Dateien";
+        case VhdlDocGen::GROUP:
+          if (single) return "Gruppe";
+          else        return "Gruppen";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Instanziierung";
+          else        return "Instanziierungen";
+        case VhdlDocGen::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliase";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Konfiguration";
+          else        return "Konfigurationen";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Verschiedenes";
+        case VhdlDocGen::UCF_CONST:
+          return "Constraints";
+        default:
+          return "Klasse";
+      }
+    }
+    virtual QCString trCustomReference(const char *name)
+    { return QCString(name)+"-Referenz"; }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Entwurfseinheiten-Dokumentation"; }
 
 };
 

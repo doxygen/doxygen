@@ -24,19 +24,24 @@ class FTextStream;
 //! @{
 //! some convenience macros for accessing the config options
 //! mainly done like this for backward compatibility
-#if DYNAMIC_LOOKUP // for debug purposes
-#define Config_getString(val) (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
-#define Config_getBool(val)   (ConfigValues::instance().*((ConfigValues::InfoBool*)ConfigValues::instance().get(#val))->item)
-#define Config_getInt(val)    (ConfigValues::instance().*((ConfigValues::InfoInt*)ConfigValues::instance().get(#val))->item)
-#define Config_getEnum(val)   (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
-#define Config_getList(val)   (ConfigValues::instance().*((ConfigValues::InfoList*)ConfigValues::instance().get(#val))->item)
-#else // direct access
-#define Config_getString(val) (ConfigValues::instance().val)
-#define Config_getBool(val)   (ConfigValues::instance().val)
-#define Config_getInt(val)    (ConfigValues::instance().val)
-#define Config_getEnum(val)   (ConfigValues::instance().val)
-#define Config_getList(val)   (ConfigValues::instance().val)
-#endif
+//#if DYNAMIC_LOOKUP // for debug purposes
+//#define Config_getString(val) (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
+//#define Config_getBool(val)   (ConfigValues::instance().*((ConfigValues::InfoBool*)ConfigValues::instance().get(#val))->item)
+//#define Config_getInt(val)    (ConfigValues::instance().*((ConfigValues::InfoInt*)ConfigValues::instance().get(#val))->item)
+//#define Config_getEnum(val)   (ConfigValues::instance().*((ConfigValues::InfoString*)ConfigValues::instance().get(#val))->item)
+//#define Config_getList(val)   (ConfigValues::instance().*((ConfigValues::InfoList*)ConfigValues::instance().get(#val))->item)
+//#else // direct access
+#define Config_getString(name) (ConfigValues::instance().name())
+#define Config_getBool(name)   (ConfigValues::instance().name())
+#define Config_getInt(name)    (ConfigValues::instance().name())
+#define Config_getEnum(name)   (ConfigValues::instance().name())
+#define Config_getList(name)   (ConfigValues::instance().name())
+#define Config_updateString(name,value) (ConfigValues::instance().update_##name(value));
+#define Config_updateBool(name,value)   (ConfigValues::instance().update_##name(value));
+#define Config_updateInt(name,value)    (ConfigValues::instance().update_##name(value));
+#define Config_updateEnum(name,value)   (ConfigValues::instance().update_##name(value));
+#define Config_updateList(name,...)   (ConfigValues::instance().update_##name(__VA_ARGS__));
+//#endif
 //! @}
 
 /** \brief Public function to deal with the configuration file. */
@@ -51,6 +56,11 @@ namespace Config
    */
   void writeTemplate(FTextStream &t,bool shortList,bool updateOnly=FALSE);
 
+  /*! Writes a the differences between the current configuration and the
+   *  template configuration to stream \a t.
+   */
+  void compareDoxyfile(FTextStream &t);
+
   /*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be
    *  opened or read.
@@ -60,8 +70,10 @@ namespace Config
   /*! Post processed the parsed data. Replaces raw string values by the actual values.
    *  and replaces environment variables.
    *  \param clearHeaderAndFooter set to TRUE when writing header and footer templates.
+   *  \param compare signals if we in Doxyfile compare (`-x`) mode are or not. Influences
+   *  setting of the default value.
    */
-  void postProcess(bool clearHeaderAndFooter);
+  void postProcess(bool clearHeaderAndFooter, bool compare = FALSE);
 
   /*! Check the validity of the parsed options and correct or warn the user where needed. */
   void checkAndCorrect();

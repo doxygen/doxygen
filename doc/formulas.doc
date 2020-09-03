@@ -17,9 +17,8 @@
 /*! \page formulas Including formulas 
 
 Doxygen allows you to put \LaTeX formulas in the
-output (this works only for the HTML and \LaTeX output, 
-not for the RTF nor for the man page output). To be able to include 
-formulas (as images) in the HTML documentation, you will also need to 
+output (this works only for the HTML, \LaTeX and RTF output. To be able to include 
+formulas (as images) in the HTML and RTF documentation, you will also need to 
 have the following tools installed
 <ul>
 <li>\c latex: the \LaTeX compiler, needed to parse the formulas. 
@@ -30,9 +29,9 @@ have the following tools installed
     to bitmaps. I have used Aladdin GhostScript 8.0 for testing.
 </ul>
 For the HTML output there is also an alternative solution using
-<a href="http://www.mathjax.org">MathJax</a> which does not
+<a href="https://www.mathjax.org">MathJax</a> which does not
 require the above tools. If you enable \ref cfg_use_mathjax "USE_MATHJAX" in
-the config then the latex formulas will be copied to the HTML "as is" and a
+the configuration then the latex formulas will be copied to the HTML "as is" and a
 client side javascript will parse them and turn them into (interactive) images.
 
 There are three ways to include formulas in the documentation.
@@ -101,8 +100,25 @@ the section should contain valid command for the specific environment.
 
 \warning Currently, doxygen is not very fault tolerant in recovering 
 from typos in formulas. It may be necessary to remove the
-file <code>formula.repository</code> that is written to the html directory to 
-get rid of an incorrect formula.
+files <code>formula.repository</code> that are written to the html, rtf etc. directories to 
+get rid of an incorrect formula as well as the <code>form_*</code> files.
+
+To have the possibility to define your own \LaTeX commands, for e.g. formula building blocks
+or consistent writing of certain words, the configuration option \ref cfg_formula_macrofile "FORMULA_MACROFILE"
+can be used. to supply a file with \LaTeX commands.
+This file can contain \LaTeX `\newcommand` and `\renewcommand` commands and they are included
+formulas (image version and MathJax version) as well as in the generated \LaTeX output (for PDF generation).<br>
+The `\newcommand` (and `\renewcommand`) are restricted to a version without optional
+parameters so only the following types are supported:
+```
+\newcommand{\cmd}{replacement}
+\newcommand{\cmd}[nr]{replacement}
+```
+e.g.
+```
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\ccSum}[3]{\sum_{#1}^{#2}{#3}}
+```
 
 \htmlonly
 Go to the <a href="tables.html">next</a> section or return to the

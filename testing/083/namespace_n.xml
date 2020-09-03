@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="namespace_n" kind="namespace" language="C++">
+    <compoundname>N</compoundname>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="namespace_n_1a406e233433deabc7b1612470373d53e0" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int N::var</definition>
+        <argsstring/>
+        <name>var</name>
+        <briefdescription>
+          <para>variable declaration </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed docs. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="083_decl_def.cpp" line="11" column="5" bodyfile="083_decl_def.cpp" bodystart="11" bodyend="-1" declfile="decl_def.h" declline="5" declcolumn="12"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespace_n_1a0c776dda1c868f653e020c9ee8dc83bb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void N::foo</definition>
+        <argsstring>(int param)</argsstring>
+        <name>foo</name>
+        <param>
+          <type>int</type>
+          <declname>param</declname>
+        </param>
+        <briefdescription>
+          <para>function declaration </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed docs. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="083_decl_def.cpp" line="14" column="6" bodyfile="083_decl_def.cpp" bodystart="14" bodyend="16" declfile="decl_def.h" declline="8" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>Namespace </para>
+    </detaileddescription>
+    <location file="083_decl_def.cpp" line="7" column="1"/>
+  </compounddef>
+</doxygen>

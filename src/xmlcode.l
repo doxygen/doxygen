@@ -13,12 +13,15 @@
  *
  */
 /******************************************************************************
- * Parser for syntax hightlighting and references for XML
+ * Parser for syntax highlighting and references for XML
  * written by Weston Thayer
  ******************************************************************************/
 
 %option never-interactive
 %option prefix="xmlcodeYY"
+%top{
+#include <stdint.h>
+}
 
 %{
 
@@ -35,6 +38,7 @@
 #include "config.h"
 #include "filedef.h"
 #include "tooltip.h"
+#include "message.h"
 
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_INPUT 1
@@ -49,7 +53,7 @@ static int           g_inputPosition;   //!< read offset during parsing
 static int           g_inputLines;      //!< number of line in the code fragment
 static int           g_yyLineNr;        //!< current line number
 static bool          g_needsTermination;
-static Definition   *g_searchCtx;
+static const Definition   *g_searchCtx;
 
 static bool          g_exampleBlock;
 static QCString      g_exampleName;
@@ -67,6 +71,10 @@ static Definition *  g_currentDefinition;
 static MemberDef *   g_currentMemberDef;
 static bool          g_includeCodeFragment;
 static const char *  g_currentFontClass;
+
+#if USE_STATE2STRING
+static const char *stateToString(int state);
+#endif
 
 static void codify(const char* text) 
 { 
@@ -332,14 +340,13 @@ void parseXmlCode(
     int startLine,
     int endLine,
     bool inlineFragment,
-    MemberDef *,
-    bool,Definition *searchCtx,
+    const MemberDef *,
+    bool,const Definition *searchCtx,
     bool /*collectXRefs*/
     ) 
 {  
   if (s.isEmpty()) return;
-  
-  TooltipManager::instance()->clearTooltips();
+  printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
   
   g_code = &od;
   g_inputString   = s;
@@ -367,7 +374,7 @@ void parseXmlCode(
   if (exBlock && fd==0)
   {
     // create a dummy filedef for the example
-    g_sourceFileDef = new FileDef("",(exName?exName:"generated"));
+    g_sourceFileDef = createFileDef("",(exName?exName:"generated"));
     cleanupSourceDef = TRUE;
   }
   
@@ -388,10 +395,6 @@ void parseXmlCode(
   {
     endCodeLine();
   }
-  if (fd)
-  {
-    TooltipManager::instance()->writeTooltips(*g_code);
-  }
   if (cleanupSourceDef)
   {
     // delete the temporary file definition used for this example
@@ -399,6 +402,7 @@ void parseXmlCode(
     g_sourceFileDef=0;
   }
   
+  printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;
 }
 
@@ -408,11 +412,34 @@ void resetXmlCodeParserState()
   g_currentMemberDef = 0;
 }
 
-#if !defined(YY_FLEX_SUBMINOR_VERSION) 
-extern "C" { // some bogus code to keep the compiler happy
-  void xmlcodeYYdummy() { yy_flex_realloc(0,0); } 
-}
-#elif YY_FLEX_MAJOR_VERSION<=2 && YY_FLEX_MINOR_VERSION<=5 && YY_FLEX_SUBMINOR_VERSION<33
-#error "You seem to be using a version of flex newer than 2.5.4. These are currently incompatible with 2.5.4, and do NOT work with doxygen! Please use version 2.5.4 or expect things to be parsed wrongly! A bug report has been submitted (#732132)."
-#endif
+//----------------------------------------------------------------------------
 
+void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
+               const char *scopeName,
+               const QCString &input,
+               SrcLangExt,
+               bool isExampleBlock,
+               const char *exampleName,
+               FileDef *fileDef,
+               int startLine,
+               int endLine,
+               bool inlineFragment,
+               const MemberDef *memberDef,
+               bool showLineNumbers,
+               const Definition *searchCtx,
+               bool collectXRefs
+              )
+{
+  parseXmlCode(codeOutIntf,scopeName,input,isExampleBlock,exampleName,
+                fileDef,startLine,endLine,inlineFragment,memberDef,
+                showLineNumbers,searchCtx,collectXRefs);
+}
+
+void XMLCodeParser::resetCodeParserState()
+{
+  resetXmlCodeParserState();
+}
+
+#if USE_STATE2STRING
+#include "xmlcode.l.h"
+#endif

@@ -16,6 +16,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <string.h>
 #include <qcstring.h>
 
 /** @file
@@ -53,8 +54,10 @@ enum SrcLangExt
   SrcLangExt_Fortran  = 0x01000,
   SrcLangExt_VHDL     = 0x02000,
   SrcLangExt_XML      = 0x04000,
-  SrcLangExt_Tcl      = 0x08000,
-  SrcLangExt_Markdown = 0x10000
+  //SrcLangExt_Tcl      = 0x08000, // no longer supported
+  SrcLangExt_Markdown = 0x10000,
+  SrcLangExt_SQL      = 0x20000,
+  SrcLangExt_Slice    = 0x40000
 };
 
 /** Grouping info */
@@ -89,16 +92,9 @@ struct Grouping
   }
 
   Grouping( const char *gn, GroupPri_t p ) : groupname(gn), pri(p) {}
-  Grouping( const Grouping &g ) : groupname(g.groupname), pri(g.pri) {}
   QCString groupname;   //!< name of the group
   GroupPri_t pri;       //!< priority of this definition
 
-};
-
-struct ListItemInfo
-{
-  QCString type;
-  int itemId;
 };
 
 enum MemberListType
@@ -190,15 +186,20 @@ enum MemberListType
   MemberListType_interfaceMembers        = 71 + MemberListType_detailedLists,
   MemberListType_services                = 72,
   MemberListType_serviceMembers          = 73 + MemberListType_detailedLists,
+
+  MemberListType_decSequenceMembers      = 74 + MemberListType_declarationLists,
+  MemberListType_docSequenceMembers      = 75 + MemberListType_documentationLists,
+  MemberListType_decDictionaryMembers    = 76 + MemberListType_declarationLists,
+  MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
 };
 
-enum MemberType 
-{ 
+enum MemberType
+{
   MemberType_Define,
-  MemberType_Function, 
-  MemberType_Variable, 
-  MemberType_Typedef, 
-  MemberType_Enumeration, 
+  MemberType_Function,
+  MemberType_Variable,
+  MemberType_Typedef,
+  MemberType_Enumeration,
   MemberType_EnumValue,
   MemberType_Signal,
   MemberType_Slot,
@@ -208,6 +209,8 @@ enum MemberType
   MemberType_Event,
   MemberType_Interface,
   MemberType_Service,
+  MemberType_Sequence,
+  MemberType_Dictionary
 };
 
 enum FortranFormat
@@ -215,6 +218,58 @@ enum FortranFormat
   FortranFormat_Unknown,
   FortranFormat_Free,
   FortranFormat_Fixed
+};
+
+class LocalToc
+{
+  public:
+    enum Type {
+      None                   = 0, // initial value
+      Html                   = 0, // index / also to be used as bit position in mask (1 << Html)
+      Latex                  = 1, // ...
+      Xml                    = 2, // ...
+      Docbook                = 3, // ...
+      numTocTypes            = 4  // number of enum values
+    };
+    LocalToc() : m_mask(None) { memset(m_level,0,sizeof(m_level)); }
+
+    // setters
+    void enableHtml(int level)
+    {
+      m_mask|=(1<<Html);
+      m_level[Html]=level;
+    }
+    void enableLatex(int level)
+    {
+      m_mask|=(1<<Latex);
+      m_level[Latex]=level;
+    }
+    void enableXml(int level)
+    {
+      m_mask|=(1<<Xml);
+      m_level[Xml]=level;
+    }
+    void enableDocbook(int level)
+    {
+      m_mask|=(1<<Docbook);
+      m_level[Docbook]=level;
+    }
+
+    // getters
+    bool isHtmlEnabled()  const { return (m_mask & (1<<Html))!=0;  }
+    bool isLatexEnabled() const { return (m_mask & (1<<Latex))!=0; }
+    bool isXmlEnabled()   const { return (m_mask & (1<<Xml))!=0;   }
+    bool isDocbookEnabled()   const { return (m_mask & (1<<Docbook))!=0;   }
+    bool nothingEnabled() const { return m_mask == None; }
+    int htmlLevel()       const { return m_level[Html]; }
+    int latexLevel()      const { return m_level[Latex]; }
+    int xmlLevel()        const { return m_level[Xml]; }
+    int docbookLevel()    const { return m_level[Docbook]; }
+    int mask()            const { return m_mask; }
+
+  private:
+    int m_mask;
+    int m_level[numTocTypes];
 };
 
 #endif

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="086__style__tags_8h" kind="file" language="C++">
+    <compoundname>086_style_tags.h</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>In the following the word tag has the style as indicated before it.<itemizedlist><listitem><para>This is a bold <bold>tag</bold>.</para></listitem><listitem><para>This is a <computeroutput>strong</computeroutput> bold <bold>tag</bold>.</para></listitem><listitem><para>This is an italic <emphasis>tag</emphasis>.</para></listitem><listitem><para>This is an <computeroutput>em</computeroutput> italic <emphasis>tag</emphasis>.</para></listitem><listitem><para>This is a strike through <strike>tag</strike>.</para></listitem><listitem><para>This is a <computeroutput>s</computeroutput> strike through <s>tag</s>.</para></listitem><listitem><para>This is an underline <underline>tag</underline>.</para></listitem><listitem><para>This is an <computeroutput>ins</computeroutput> inserted <ins>tag</ins>.</para></listitem><listitem><para>This is a deleted <del>tag</del>.</para></listitem><listitem><para>This is a typewriter <computeroutput>tag</computeroutput>. </para></listitem></itemizedlist>
+</para>
+    </detaileddescription>
+    <location file="086_style_tags.h"/>
+  </compounddef>
+</doxygen>

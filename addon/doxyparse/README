@@ -1,0 +1,40 @@
+doxyparse
+=========
+
+This directory contains an "source parsing engine" based on doxyapp code.
+
+More info and source code repository: https://github.com/analizo/doxygen
+
+## build dependencies
+
+  apt-get install flex bison cmake build-essential python
+
+## build
+
+  cmake -G "Unix Makefiles" -Dbuild_parse=ON
+  make
+
+## install
+
+  sudo make install
+
+## release
+
+* ensure analizo testsuite passing on newer doxyparse version
+* update debian/changelog, commit, push
+* create git tag, push to github analizo/doxyparse
+* build on amd64 and i386 archs, upload tar.gz to github
+  * tar -zcf doxyparse_<VERSION>_amd64.tar.gz -C bin/ doxyparse
+  * tar -zcf doxyparse_<VERSION>_i386.tar.gz -C bin/ doxyparse
+* build debian packages for amd64 and i386, update analizo.org repository
+    * (see analizo.github.io/README.md file for updating repository instructions)
+    * upload the deb files to github release tag also
+* check if a alien-doxyparse release is necessary and do it on cpan
+
+AUTHORS
+
+Antonio Terceiro <terceiro@softwarelivre.org>
+João M. Miranda <joaomm88@gmail.com>
+Joenio Costa <joenio@joenio.me>
+Paulo Meirelles <paulo@softwarelivre.org>
+Vinicius Daros <vkdaros@mercurio.eclipse.ime.usp.br>

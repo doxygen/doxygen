@@ -1,3 +1,15 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #include "expert.h"
 #include "inputbool.h"
 #include "inputstring.h"
@@ -386,6 +398,7 @@ static QString getDocsForNode(const QDomElement &child)
 
   // Remove / replace doxygen markup strings
   // the regular expressions are hard to read so the intention will be given
+  // Note: see also configgen.py in the src directory for other doxygen parts
   QRegExp regexp;
   // remove \n at end and replace by a space
   regexp.setPattern(SA("\\n$"));
@@ -420,6 +433,8 @@ static QString getDocsForNode(const QDomElement &child)
   docs.replace(regexp,SA("\"External Indexing and Searching\""));
   regexp.setPattern(SA("\\\\ref[ ]+external"));
   docs.replace(regexp,SA("\"Linking to external documentation\""));
+  regexp.setPattern(SA("\\\\ref[ ]+formulas"));
+  docs.replace(regexp,SA("\"Including formulas\""));
   // fallback for not handled
   docs.replace(SA("\\\\ref"),SA(""));
   // \b word -> <b>word<\b>
@@ -765,9 +780,10 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
           t << convertToComment(option->templateDocs());
           t << endl;
         }
-        t << name.leftJustified(MAX_OPTION_LENGTH) << "= ";
-        if (option)
+        t << name.leftJustified(MAX_OPTION_LENGTH) << "=";
+        if (option && !option->isEmpty())
         {
+          t << " ";
           option->writeValue(t,codec);
         }
         t << endl;
@@ -780,7 +796,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
 bool Expert::writeConfig(QTextStream &t,bool brief)
 {
   // write global header
-  t << "# Doxyfile " << versionString << endl << endl; 
+  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
   if (!brief)
   {
     t << convertToComment(m_header);

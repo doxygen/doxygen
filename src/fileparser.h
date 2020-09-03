@@ -18,15 +18,11 @@
 
 #include "parserintf.h"
 
-/** @brief General file parser */
-class FileParser : public ParserInterface
+/** @brief Generic code parser */
+class FileCodeParser : public CodeParserInterface
 {
   public:
-    virtual ~FileParser() {}
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,Entry *, bool, QStrList &) {}
-    bool needsPreprocessing(const QCString &) { return FALSE; }
+    virtual ~FileCodeParser() {}
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
@@ -37,14 +33,12 @@ class FileParser : public ParserInterface
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
-                   MemberDef *memberDef=0,
+                   const MemberDef *memberDef=0,
                    bool showLineNumbers=TRUE,
-                   Definition *searchCtx=0,
+                   const Definition *searchCtx=0,
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState() {}
-    void parsePrototype(const char *) {}
 };
-
 
 #endif

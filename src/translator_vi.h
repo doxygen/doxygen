@@ -78,9 +78,27 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
      */
     virtual QCString latexLanguageSupportCommand()
     {
+      return
+        "\\usepackage[vietnamese]{babel}\n";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
     }
-
+    virtual QCString latexCommandName()
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = "xelatex";
+      }
+      return latex_command;
+    }
+    virtual QCString trISOLang()
+    {
+      return "vi";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */

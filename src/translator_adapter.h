@@ -41,7 +41,138 @@ class TranslatorAdapterBase : public Translator
 
 };
 
-class TranslatorAdapter_1_8_4 : public TranslatorAdapterBase
+class TranslatorAdapter_1_8_19 : public TranslatorAdapterBase
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.19"); }
+
+    virtual QCString trDesignUnitDocumentation()
+    { return english.trDesignUnitDocumentation(); }
+};
+
+class TranslatorAdapter_1_8_15 : public TranslatorAdapter_1_8_19
+{
+  public:
+    virtual QCString updateNeededMessage()
+    { return createUpdateNeededMessage(idLanguage(),"release 1.8.15"); }
+
+    virtual QCString trDesignUnitHierarchy()
+    { return english.trDesignUnitHierarchy(); }
+
+    virtual QCString trDesignUnitList()
+    { return english.trDesignUnitList(); }
+
+    virtual QCString trDesignUnitMembers()
+    { return english.trDesignUnitMembers(); }
+
+    virtual QCString trDesignUnitListDescription()
+    { return english.trDesignUnitListDescription(); }
+
+    virtual QCString trDesignUnitIndex()
+    { return english.trDesignUnitIndex(); }
+
+    virtual QCString trDesignUnits()
+    { return english.trDesignUnits(); }
+
+    virtual QCString trFunctionAndProc()
+    { return english.trFunctionAndProc(); }
+
+    virtual QCString trVhdlType(uint64 type,bool single)
+    { return english.trVhdlType(type,single); }
+
+    virtual QCString trCustomReference(const char *name)
+    { return english.trCustomReference(name); }
+
+    virtual QCString trConstants()
+    { return english.trConstants(); }
+
+    virtual QCString trConstantDocumentation()
+    { return english.trConstantDocumentation(); }
+
+    virtual QCString trSequences()
+    { return english.trSequences(); }
+
+    virtual QCString trSequenceDocumentation()
+    { return english.trSequenceDocumentation(); }
+
+    virtual QCString trDictionaries()
+    { return english.trDictionaries(); }
+
+    virtual QCString trDictionaryDocumentation()
+    { return english.trDictionaryDocumentation(); }
+
+    virtual QCString trSliceInterfaces()
+    { return english.trSliceInterfaces(); }
+
+    virtual QCString trInterfaceIndex()
+    { return english.trInterfaceIndex(); }
+
+    virtual QCString trInterfaceList()
+    { return english.trInterfaceList(); }
+
+    virtual QCString trInterfaceListDescription()
+    { return english.trInterfaceListDescription(); }
+
+    virtual QCString trInterfaceHierarchy()
+    { return english.trInterfaceHierarchy(); }
+
+    virtual QCString trInterfaceHierarchyDescription()
+    { return english.trInterfaceHierarchyDescription(); }
+
+    virtual QCString trInterfaceDocumentation()
+    { return english.trInterfaceDocumentation(); }
+
+    virtual QCString trStructs()
+    { return english.trStructs(); }
+
+    virtual QCString trStructIndex()
+    { return english.trStructIndex(); }
+
+    virtual QCString trStructList()
+    { return english.trStructList(); }
+
+    virtual QCString trStructListDescription()
+    { return english.trStructListDescription(); }
+
+    virtual QCString trStructDocumentation()
+    { return english.trStructDocumentation(); }
+
+    virtual QCString trExceptionIndex()
+    { return english.trExceptionIndex(); }
+
+    virtual QCString trExceptionList()
+    { return english.trExceptionList(); }
+
+    virtual QCString trExceptionListDescription()
+    { return english.trExceptionListDescription(); }
+
+    virtual QCString trExceptionHierarchy()
+    { return english.trExceptionHierarchy(); }
+
+    virtual QCString trExceptionHierarchyDescription()
+    { return english.trExceptionHierarchyDescription(); }
+
+    virtual QCString trExceptionDocumentation()
+    { return english.trExceptionDocumentation(); }
+
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    { return english.trCompoundReferenceSlice(clName,compType,isLocal); }
+
+    virtual QCString trOperations()
+    { return english.trOperations(); }
+
+    virtual QCString trOperationDocumentation()
+    { return english.trOperationDocumentation(); }
+
+    virtual QCString trDataMembers()
+    { return english.trDataMembers(); }
+
+    virtual QCString trDataMemberDocumentation()
+    { return english.trDataMemberDocumentation(); }
+};
+
+class TranslatorAdapter_1_8_4 : public TranslatorAdapter_1_8_15
 {
   public:
     virtual QCString updateNeededMessage()
@@ -95,9 +226,6 @@ class TranslatorAdapter_1_8_2 : public TranslatorAdapter_1_8_4
 
     virtual QCString trMethodDocumentation()
     { return english.trMethodDocumentation(); }
-
-    virtual QCString trDesignOverview()
-    { return english.trDesignOverview(); }
 };
 
 
@@ -150,16 +278,6 @@ class TranslatorAdapter_1_7_5 : public TranslatorAdapter_1_8_0
 
     virtual QCString trDirDepGraph(const char *name)
     { return english.trDirDepGraph(name); }
-};
-
-/** Adapter class for languages that only contain translations up to
- *  version 1.6.3.
- */
-class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.6.3"); }
 
     virtual QCString trFileIn(const char *name)
     { return english.trFileIn(name); }
@@ -174,7 +292,7 @@ class TranslatorAdapter_1_6_3 : public TranslatorAdapter_1_7_5
 /** Adapter class for languages that only contain translations up to
  *  version 1.6.0.
  */
-class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
+class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_7_5
 {
   public:
     virtual QCString updateNeededMessage()
@@ -194,16 +312,6 @@ class TranslatorAdapter_1_6_0 : public TranslatorAdapter_1_6_3
 
     virtual QCString trNoMatches()
     { return english.trNoMatches(); }
-};
-
-/** Adapter class for languages that only contain translations up to
- *  version 1.5.4
- */
-class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
-{
-  public:
-    virtual QCString updateNeededMessage()
-    { return createUpdateNeededMessage(idLanguage(),"release 1.5.4"); }
 
     virtual QCString trMemberFunctionDocumentationFortran()
     { return english.trMemberFunctionDocumentationFortran(); }
@@ -278,7 +386,7 @@ class TranslatorAdapter_1_5_4 : public TranslatorAdapter_1_6_0
 /** Adapter class for languages that only contain translations up to
  *  version 1.4.6
  */
-class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
+class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_6_0
 {
   public:
     virtual QCString updateNeededMessage()
@@ -295,4 +403,3 @@ class TranslatorAdapter_1_4_6 : public TranslatorAdapter_1_5_4
 };
 
 #endif
-

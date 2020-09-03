@@ -32,7 +32,7 @@
 #ifndef TRANSLATOR_SK_H
 #define TRANSLATOR_SK_H
 
-class TranslatorSlovak : public Translator
+class TranslatorSlovak : public TranslatorAdapter_1_8_15
 {
   public:
     // --- Language control methods -------------------
@@ -41,8 +41,18 @@ class TranslatorSlovak : public Translator
     { return "slovak"; }
 
     virtual QCString latexLanguageSupportCommand()
-    { return "\\usepackage[slovak]{babel}\n"; }
-
+    { return "\\usepackage[slovak]{babel}\n"
+             "\\usepackage{regexpatch}\n"
+             "\\makeatletter\n"
+             "% Change the `-` delimiter to an active character\n"
+             "\\xpatchparametertext\\@@@cmidrule{-}{\\cA-}{}{}\n"
+             "\\xpatchparametertext\\@cline{-}{\\cA-}{}{}\n"
+             "\\makeatother\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "sk";
+    }
     // --- Language translation methods -------------------
 
     /*! used in the compound documentation before a list of related functions. */
@@ -1901,14 +1911,6 @@ class TranslatorSlovak : public Translator
       return "Dokumentácia metódy";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Návrhová schéma";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1965,7 +1967,6 @@ class TranslatorSlovak : public Translator
       return result;
     }
 
-//////////////////////////////////////////////////////////////////////////
 };
 
 #endif // TRANSLATOR_SK_H

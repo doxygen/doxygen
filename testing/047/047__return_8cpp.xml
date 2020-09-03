@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="047__return_8cpp" kind="file" language="C++">
     <compoundname>047_return.cpp</compoundname>
     <sectiondef kind="func">
@@ -16,7 +16,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="047_return.cpp" line="9" column="1"/>
+        <location file="047_return.cpp" line="9" column="5" declfile="047_return.cpp" declline="9" declcolumn="5"/>
       </memberdef>
       <memberdef kind="function" id="047__return_8cpp_1aa1d4878589351db8276c79f98ed9fb7d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -31,7 +31,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="047_return.cpp" line="14" column="1"/>
+        <location file="047_return.cpp" line="14" column="5" declfile="047_return.cpp" declline="14" declcolumn="5"/>
       </memberdef>
       <memberdef kind="function" id="047__return_8cpp_1abee09dd9ed9ce93df5a931d16faac09a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>int</type>
@@ -46,7 +46,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="047_return.cpp" line="19" column="1"/>
+        <location file="047_return.cpp" line="19" column="5" declfile="047_return.cpp" declline="19" declcolumn="5"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

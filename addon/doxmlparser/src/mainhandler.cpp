@@ -20,6 +20,8 @@
 #include "graphhandler.h"
 #include "dochandler.h"
 #include "memberhandler.h"
+#include "linkedtexthandler.h"
+#include "paramhandler.h"
 #include "debug.h"
 
 
@@ -170,12 +172,12 @@ void MainHandler::dump()
   CompoundEntry *ce;
   for (cli.toFirst();(ce=cli.current());++cli)
   {
-    debug(2,"compound id=`%s' name=`%s'\n",ce->id.data(),ce->name.data());
+    debug(2,"compound id='%s' name='%s'\n",ce->id.data(),ce->name.data());
     QDictIterator<MemberEntry> mdi(ce->memberDict);
     MemberEntry *me;
     for (mdi.toFirst();(me=mdi.current());++mdi)
     {
-      debug(2,"  member id=`%s' name=`%s'\n",me->id.data(),me->name.data());
+      debug(2,"  member id='%s' name='%s'\n",me->id.data(),me->name.data());
     }
   }
 }

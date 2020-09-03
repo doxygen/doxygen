@@ -52,13 +52,13 @@ The data flow is shown in the following diagram:
 
 The first step is to make the search engine available via a web server.
 If you use `doxysearch.cgi` this means making the
-<a href="http://en.wikipedia.org/wiki/Common_Gateway_Interface">CGI</a> binary
+<a href="https://en.wikipedia.org/wiki/Common_Gateway_Interface">CGI</a> binary
 available from the web server (i.e. be able to run it from a 
 browser via an URL starting with http:)
 
 How to setup a web server is outside the scope of this document,
 but if you for instance have Apache installed, you could simply copy the 
-`doxysearch.cgi` file from doxygen's `bin` dir to the `cgi-bin` of the
+`doxysearch.cgi` file from doxygen's `bin` directory to the `cgi-bin` directory of the
 Apache web server. Read the <a href="http://httpd.apache.org/docs/2.2/howto/cgi.html">apache documentation</a> for details.
 
 To test if `doxysearch.cgi` is accessible start your web browser and
@@ -73,11 +73,11 @@ You should get the following message:
 If you use Internet Explorer you may be prompted to download a file,
 which will then contain this message. 
 
-Since we didn't create or install a doxysearch.db it is ok for the test to
+Since we didn't create or install a doxysearch.db it is OK for the test to
 fail for this reason. How to correct this is discussed in the next section.
 
 Before continuing with the next section add the above 
-URL (without the `?test` part) to the `SEARCHENGINE_URL` tag in
+URL (without the `?test` part) to the \ref cfg_searchengine_url "SEARCHENGINE_URL" tag in
 doxygen's configuration file:
 
     SEARCHENGINE_URL = http://yoursite.com/path/to/cgi/doxysearch.cgi
@@ -135,7 +135,8 @@ and then copy the resulting `doxysearch.db` to the directory where also
 
 The `searchdata.xml` file doesn't contain any absolute paths or links, 
 so how can the search results from multiple projects be linked back to the right documentation set?
-This is where the `EXTERNAL_SEARCH_ID` and `EXTRA_SEARCH_MAPPINGS` options come into play.
+This is where the \ref cfg_external_search_id "EXTERNAL_SEARCH_ID" and
+\ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" options come into play.
 
 To be able to identify the different projects, one needs to
 set a unique ID using \ref cfg_external_search_id "EXTERNAL_SEARCH_ID"
@@ -168,8 +169,8 @@ and the search results will link to the right documentation set.
 
 When you modify the source code, you should re-run doxygen to get up to date
 documentation again. When using external searching you also need to update the
-search index by re-running `doxyindexer`. You could wrap the call to doxygen
-and doxyindexer together in a script to make this process easier.
+search index by re-running `doxyindexer`. You could wrap the call to `doxygen`
+and `doxyindexer` together in a script to make this process easier.
 
 \section extsearch_api Programming interface
 
@@ -187,7 +188,7 @@ The next subsections describe these interfaces in more detail.
 \subsection extsearch_api_index Indexer input format
 
 The search data produced by doxygen follows the 
-<a href="http://wiki.apache.org/solr/UpdateXmlMessages">Solr XML index message</a>
+<a href="https://cwiki.apache.org/confluence/display/solr/UpdateXmlMessages">Solr XML index message</a>
 format.
 
 The input for the indexer is an XML file, which consists of one `<add>` tag containing 
@@ -224,12 +225,12 @@ Each field has a name. The following field names are supported:
 - *text*: the documentation associated with the item. Note that only words are present, no markup.
 
 @note Due to the potentially large size of the XML file, it is recommended to use a 
-<a href="http://en.wikipedia.org/wiki/Simple_API_for_XML">SAX based parser</a> to process it.
+<a href="https://en.wikipedia.org/wiki/Simple_API_for_XML">SAX based parser</a> to process it.
 
 \subsection extsearch_api_search_in Search URL format
 
 When the search engine is invoked from a doxygen generated HTML page, a number of parameters are
-passed to via the <a href="http://en.wikipedia.org/wiki/Query_string">query string</a>.
+passed to via the <a href="https://en.wikipedia.org/wiki/Query_string">query string</a>.
 
 The following fields are passed:
 - *q*:  the query text as entered by the user
@@ -247,14 +248,14 @@ It represents a query for the word 'list' (`q=list`) requesting 20 search result
 starting with the result number 20 (`p=1`) and using callback 'dummy' (`cb=dummy`):
 
 
-@note The values are <a href="http://en.wikipedia.org/wiki/Percent-encoding">URL encoded</a> so they
+@note The values are <a href="https://en.wikipedia.org/wiki/Percent-encoding">URL encoded</a> so they
 have to be decoded before they can be used.
 
 \subsection extsearch_api_search_out Search results format
 
 When invoking the search engine as shown in the previous subsection, it should reply with
 the results. The format of the reply is
-<a href="http://en.wikipedia.org/wiki/JSONP">JSON with padding</a>, which is basically
+<a href="https://en.wikipedia.org/wiki/JSONP">JSON with padding</a>, which is basically
 a javascript struct wrapped in a function call. The name of function should be the name of
 the callback (as passed with the *cb* field in the query).
 

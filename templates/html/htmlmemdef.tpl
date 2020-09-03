@@ -29,7 +29,6 @@
           <tr><td class="memname">
             {{ member.definition }}
             {# write argument list #}
-            {# TODO: TCL #}
             {% if member.hasParameters %}
               {% if member.isObjCMethod %}
                 {% if member.parameters %}

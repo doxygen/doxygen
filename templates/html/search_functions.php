@@ -1,4 +1,4 @@
-<script language="PHP">
+<?php
 require_once "search_config.php";
 
 function end_form($value)
@@ -7,17 +7,12 @@ function end_form($value)
   global $translator;
   if ($config['DISABLE_INDEX'] == false)
   {
-  echo "            <input type=\"text\" id=\"MSearchField\" name=\"query\" value=\"$value\" size=\"20\" accesskey=\"S\" onfocus=\"searchBox.OnSearchFieldFocus(true)\" onblur=\"searchBox.OnSearchFieldFocus(false)\"/>\n            </form>\n          </div><div class=\"right\"></div>\n        </div>\n      </li>\n    </ul>\n  </div>\n</div>\n";
+    echo "</div>\n";
   }
   if ($config['GENERATE_TREEVIEW'])
   {
     echo $translator['split_bar'];
   }
-}
-
-function end_page()
-{
-  echo "</body></html>";
 }
 
 function search_results()
@@ -361,6 +356,5 @@ function main()
   end_form(preg_replace("/[^a-zA-Z0-9\-\_\.\x80-\xFF]/i", " ", $query ));
   // report results to the user
   report_results($sorted);
-  end_page();
 }
-</script>
+?>

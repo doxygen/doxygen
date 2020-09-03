@@ -17,44 +17,39 @@
  */
 %option never-interactive
 %option prefix="constexpYY"
+%option nounput
+%option reentrant bison-bridge
+%option extra-type="struct constexpYY_state *"
+%top{
+#include <stdint.h>
+}
 
 %{
 
 #include "constexp.h"  
+#include "constexp_p.h"  
 #include "cppvalue.h"
-#include "ce_parse.h" // generated header file
+#include "ce_parse.hpp" // generated header file
 #include "message.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-  
-QCString    g_strToken;  
-CPPValue    g_resultValue;
-int         g_constExpLineNr;
-QCString    g_constExpFileName;
 
-static const char *g_inputString;
-static int         g_inputPosition;
+#define USE_STATE2STRING 0
+
+#if USE_STATE2STRING
+static const char *stateToString(int state);
+#endif
+
+static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner);
 
 #undef  YY_INPUT
-#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static int yyread(char *buf,int max_size)
-{
-  int c=0;
-  while( c < max_size && g_inputString[g_inputPosition] )
-  {
-    *buf = g_inputString[g_inputPosition++] ;
-    c++; buf++;
-  }
-  return c;
-}
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
 
 %}
 
 CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 
-%option nounput
 
 %%
 
@@ -83,44 +78,90 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 "("             		   { return TOK_LPAREN; }
 ")"             		   { return TOK_RPAREN; }
 "'"(([^\'\n\r\\]+)|(\\(([ntvbrfa\\?'\"])|([0-9]+)|([xX][0-9a-fA-F]+))))"'"   { 
-                                     g_strToken=yytext;  
+                                     yyextra->strToken=yytext;  
 				     return TOK_CHARACTER; 
 				   }
-0[0-7]*{CONSTSUFFIX}?              { g_strToken=yytext; 
+0[0-7]*{CONSTSUFFIX}?              { yyextra->strToken=yytext; 
   				     return TOK_OCTALINT; 
 				   }
-[1-9][0-9]*{CONSTSUFFIX}?          { g_strToken=yytext; 
+[1-9][0-9]*{CONSTSUFFIX}?          { yyextra->strToken=yytext; 
   				     return TOK_DECIMALINT; 
 				   }
-(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { g_strToken=yytext+2; 
+(0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->strToken=yytext+2; 
                                      return TOK_HEXADECIMALINT; 
                                    }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
-                                     g_strToken=yytext; return TOK_FLOAT; 
+                                     yyextra->strToken=yytext; return TOK_FLOAT; 
                                    }
 ([0-9]+[eE])([\-\+])?[0-9]+([fFlL])? { 
-                                     g_strToken=yytext; return TOK_FLOAT; 
+                                     yyextra->strToken=yytext; return TOK_FLOAT; 
 			           }
 .				   
 \n
 
 %%
 
-bool parseconstexp(const char *fileName,int lineNr,const QCString &s)
+static yy_size_t yyread(char *buf,yy_size_t max_size,yyscan_t yyscanner)
 {
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yy_size_t c=0;
+  while( c < max_size && yyextra->inputString[yyextra->inputPosition] )
+  {
+    *buf = yyextra->inputString[yyextra->inputPosition++] ;
+    c++; buf++;
+  }
+  return c;
+}
+
+struct ConstExpressionParser::Private
+{
+  yyscan_t yyscanner;
+  struct constexpYY_state constexpYY_extra;
+};
+
+
+ConstExpressionParser::ConstExpressionParser()
+{
+  p = new Private;
+  constexpYYlex_init_extra(&p->constexpYY_extra, &p->yyscanner);
+}
+
+ConstExpressionParser::~ConstExpressionParser()
+{
+  constexpYYlex_destroy(p->yyscanner);
+  delete p;
+}
+
+bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString &s)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+
+#ifdef FLEX_DEBUG
+  constexpYYset_debug(1,p->yyscanner);
+#endif
+
+  yyextra->constExpFileName = fileName;
+  yyextra->constExpLineNr = lineNr;
+  yyextra->inputString = s;
+  yyextra->inputPosition = 0;
+  constexpYYrestart( yyin, p->yyscanner );
+
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
-  //printf("Expression: `%s'\n",s.data());
-  g_constExpFileName = fileName;
-  g_constExpLineNr = lineNr;
-  g_inputString = s;
-  g_inputPosition = 0;
-  constexpYYrestart( constexpYYin );
-  constexpYYparse();
+  //printf("Expression: '%s'\n",s.data());
+
+  constexpYYparse(p->yyscanner);
+
   //printf("Result: %ld\n",(long)g_resultValue);
   printlex(yy_flex_debug, FALSE, __FILE__, fileName);
-  return (long)g_resultValue!=0;
+  bool result = (long)yyextra->resultValue!=0;
+
+  return result;
 }
 
 extern "C" {
-  int constexpYYwrap() { return 1; }
+  int constexpYYwrap(yyscan_t yyscanner) { return 1; }
 }
+
+#if USE_STATE2STRING
+#include "constexp.l.h"
+#endif

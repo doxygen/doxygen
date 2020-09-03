@@ -26,121 +26,102 @@
 
 class MemberList;
 class ClassDef;
-class ClassList;
 class OutputList;
 class ClassSDict;
 class MemberDef;
-class NamespaceList;
 class MemberGroupSDict;
 class NamespaceSDict;
 class FTextStream;
 
-/** A model of a namespace symbol. */
-class NamespaceDef : public Definition
+/** An abstract interface of a namespace symbol. */
+class NamespaceDef : virtual public Definition
 {
   public:
-    NamespaceDef(const char *defFileName,int defLine,int defColumn,
+    virtual ~NamespaceDef() {}
+    virtual DefType definitionType() const = 0;
+    virtual QCString getOutputFileBase() const = 0;
+    virtual QCString anchor() const = 0;
+    virtual void insertUsedFile(FileDef *fd) = 0;
+
+    virtual void writeDocumentation(OutputList &ol) = 0;
+    virtual void writeMemberPages(OutputList &ol) = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
+    virtual void writeTagFile(FTextStream &) = 0;
+
+    virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertNamespace(const NamespaceDef *nd) = 0;
+    virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it
+
+    virtual void computeAnchors() = 0;
+    virtual void countMembers() = 0;
+    virtual int numDocMembers() const = 0;
+    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
+    virtual const NamespaceSDict *getUsedNamespaces() const = 0;
+    virtual void addUsingDeclaration(const Definition *def) = 0;
+    virtual const SDict<Definition> *getUsedClasses() const = 0;
+    virtual void combineUsingRelations() = 0;
+    virtual QCString displayName(bool=TRUE) const = 0;
+    virtual QCString localName() const = 0;
+    virtual void setInline(bool isInline) = 0;
+
+    virtual bool isConstantGroup() const = 0;
+    virtual bool isModule()        const = 0;
+    virtual bool isLibrary() const = 0;
+    virtual bool isInline() const = 0;
+
+    virtual bool isLinkableInProject() const = 0;
+    virtual bool isLinkable() const = 0;
+    virtual bool hasDetailedDescription() const = 0;
+    virtual void addMembersToMemberGroup() = 0;
+    virtual void distributeMemberGroupDocumentation() = 0;
+    virtual void findSectionsInDocumentation() = 0;
+    virtual void sortMemberLists() = 0;
+
+    virtual Definition *findInnerCompound(const char *name) const = 0;
+    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addListReferences() = 0;
+    virtual void setFileName(const QCString &fn) = 0;
+
+    virtual bool subGrouping() const = 0;
+
+    virtual MemberList *getMemberList(MemberListType lt) const = 0;
+    virtual const QList<MemberList> &getMemberLists() const = 0;
+    virtual MemberDef    *getMemberByName(const QCString &) const = 0;
+
+    /*! Returns the user defined member groups */
+    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+
+    /*! Returns the classes contained in this namespace */
+    virtual ClassSDict *getClassSDict() const = 0;
+
+    /*! Returns the Slice interfaces contained in this namespace */
+    virtual ClassSDict *getInterfaceSDict() const = 0;
+
+    /*! Returns the Slice structs contained in this namespace */
+    virtual ClassSDict *getStructSDict() const = 0;
+
+    /*! Returns the Slice exceptions contained in this namespace */
+    virtual ClassSDict *getExceptionSDict() const = 0;
+
+    /*! Returns the namespaces contained in this namespace */
+    virtual const NamespaceSDict *getNamespaceSDict() const = 0;
+
+    virtual QCString title() const = 0;
+    virtual QCString compoundTypeString() const = 0;
+
+    virtual void setMetaData(const QCString &m) = 0;
+    virtual void setVisited(bool v) = 0;
+    virtual bool isVisited() const = 0;
+};
+
+/** Factory method to create new NamespaceDef instance */
+NamespaceDef *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
                  const char *name,const char *ref=0,
                  const char *refFile=0,const char*type=0,
                  bool isPublished=false);
-   ~NamespaceDef();
-    DefType definitionType() const { return TypeNamespace; }
-    QCString getOutputFileBase() const;
-    QCString anchor() const { return QCString(); }
-    void insertUsedFile(FileDef *fd);
-    
-    void writeDocumentation(OutputList &ol);
-    void writeMemberPages(OutputList &ol);
-    void writeQuickMemberLinks(OutputList &ol,MemberDef *currentMd) const;
-    void writeTagFile(FTextStream &);
 
-    void insertClass(ClassDef *cd);
-    void insertNamespace(NamespaceDef *nd);
-    void insertMember(MemberDef *md);
-
-    void computeAnchors();
-    int countMembers();
-    void addUsingDirective(NamespaceDef *nd);
-    NamespaceSDict *getUsedNamespaces() const;
-    void addUsingDeclaration(Definition *def);
-    SDict<Definition> *getUsedClasses() const { return usingDeclList; }
-    void combineUsingRelations();
-    QCString displayName(bool=TRUE) const;
-    QCString localName() const;
-
-    bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
-    bool isModule()        const { return MODULE == m_type; }
-    bool isLibrary() const { return LIBRARY == m_type; }
-
-    bool isLinkableInProject() const;
-    bool isLinkable() const;
-    bool hasDetailedDescription() const;
-    void addMembersToMemberGroup();
-    void distributeMemberGroupDocumentation();
-    void findSectionsInDocumentation();
-    void sortMemberLists();
-
-    virtual Definition *findInnerCompound(const char *name);
-    void addInnerCompound(Definition *d);
-    void addListReferences();
-    void setFileName(const QCString &fn);
-
-    bool subGrouping() const { return m_subGrouping; }
-    
-    MemberList *getMemberList(MemberListType lt) const;
-    const QList<MemberList> &getMemberLists() const { return m_memberLists; }
-    MemberDef    *getMemberByName(const QCString &) const;
-
-    /*! Returns the user defined member groups */
-    MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
-
-    /*! Returns the classes contained in this namespace */
-    ClassSDict *getClassSDict() const { return classSDict; }
-
-    /*! Returns the namespaces contained in this namespace */
-    NamespaceSDict *getNamespaceSDict() const { return namespaceSDict; }
-
-    QCString title() const;
-    QCString compoundTypeString() const;
-
-    bool visited;
-
-  private:
-    MemberList *createMemberList(MemberListType lt);
-    void addMemberToList(MemberListType lt,MemberDef *md);
-    void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
-    void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
-    void writeDetailedDescription(OutputList &ol,const QCString &title);
-    void writeBriefDescription(OutputList &ol);
-    void startMemberDeclarations(OutputList &ol);
-    void endMemberDeclarations(OutputList &ol);
-    void writeClassDeclarations(OutputList &ol,const QCString &title);
-    void writeInlineClasses(OutputList &ol);
-    void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
-            bool isConstantGroup=false);
-    void writeMemberGroups(OutputList &ol);
-    void writeAuthorSection(OutputList &ol);
-    void startMemberDocumentation(OutputList &ol);
-    void endMemberDocumentation(OutputList &ol);
-    void writeSummaryLinks(OutputList &ol);
-    void addNamespaceAttributes(OutputList &ol);
-
-    QCString              fileName;
-    FileList              files;
-
-    NamespaceSDict       *usingDirList;
-    SDict<Definition>    *usingDeclList;
-    SDict<Definition>    *m_innerCompounds;
-
-    MemberSDict          *m_allMembersDict;
-    QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *memberGroupSDict;
-    ClassSDict           *classSDict;
-    NamespaceSDict       *namespaceSDict;
-    bool                  m_subGrouping;
-    enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
-    bool m_isPublished;
-};
+/** Factory method to create an alias of an existing namespace. Used for inline namespaces. */
+NamespaceDef *createNamespaceDefAlias(const Definition *newScope, const NamespaceDef *nd);
 
 /** A list of NamespaceDef objects. */
 class NamespaceList : public QList<NamespaceDef>
@@ -165,7 +146,7 @@ class NamespaceListIterator : public QListIterator<NamespaceDef>
 class NamespaceDict : public QDict<NamespaceDef>
 {
   public:
-    NamespaceDict(int size) : QDict<NamespaceDef>(size) {}
+    NamespaceDict(uint size) : QDict<NamespaceDef>(size) {}
    ~NamespaceDict() {}
 };
 
@@ -173,7 +154,7 @@ class NamespaceDict : public QDict<NamespaceDef>
 class NamespaceSDict : public SDict<NamespaceDef>
 {
   public:
-    NamespaceSDict(int size=17) : SDict<NamespaceDef>(size) {}
+    NamespaceSDict(uint size=17) : SDict<NamespaceDef>(size) {}
    ~NamespaceSDict() {}
     void writeDeclaration(OutputList &ol,const char *title,
             bool isConstantGroup=false, bool localName=FALSE);

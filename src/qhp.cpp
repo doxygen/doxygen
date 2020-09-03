@@ -23,7 +23,7 @@
 #include "doxygen.h"
 #include "filedef.h"
 
-#include <qstringlist.h>
+#include <qcstringlist.h>
 #include <string.h>
 #include <qfile.h>
 
@@ -101,10 +101,10 @@ void Qhp::initialize()
     { "name", filterName, 0 };
     m_doc.open("customFilter", tagAttributes);
 
-    QStringList customFilterAttributes = QStringList::split(QChar(' '), Config_getString(QHP_CUST_FILTER_ATTRS));
+    QCStringList customFilterAttributes = QCStringList::split(' ', Config_getString(QHP_CUST_FILTER_ATTRS));
     for (int i = 0; i < (int)customFilterAttributes.count(); i++)
     {
-      m_doc.openCloseContent("filterAttribute", customFilterAttributes[i].utf8());
+      m_doc.openCloseContent("filterAttribute", customFilterAttributes[i]);
     }
     m_doc.close("customFilter");
   }
@@ -112,15 +112,15 @@ void Qhp::initialize()
   m_doc.open("filterSection");
 
   // Add section attributes
-  QStringList sectionFilterAttributes = QStringList::split(QChar(' '),
+  QCStringList sectionFilterAttributes = QCStringList::split(' ',
       Config_getString(QHP_SECT_FILTER_ATTRS));
-  if (!sectionFilterAttributes.contains(QString("doxygen")))
+  if (!sectionFilterAttributes.contains("doxygen"))
   {
     sectionFilterAttributes << "doxygen";
   }
   for (int i = 0; i < (int)sectionFilterAttributes.count(); i++)
   {
-    m_doc.openCloseContent("filterAttribute", sectionFilterAttributes[i].utf8());
+    m_doc.openCloseContent("filterAttribute", sectionFilterAttributes[i]);
   }
 
   m_toc.open("toc");
@@ -168,8 +168,7 @@ void Qhp::finalize()
   QFile file(fileName);
   if (!file.open(IO_WriteOnly))
   {
-    err("Could not open file %s for writing\n", fileName.data());
-    exit(1);
+    term("Could not open file %s for writing\n", fileName.data());
   }
   m_doc.dumpTo(file);
 }
@@ -193,7 +192,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
                           const char * /*ref*/, const char * file, 
                           const char *anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,
-                          Definition * /*def*/)
+                          const Definition * /*def*/)
 {
   //printf("Qhp::addContentsItem(%s) %d\n",name,m_sectionLevel);
   // Backup difference before modification
@@ -214,7 +213,7 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
   }
 }
 
-void Qhp::addIndexItem(Definition *context,MemberDef *md,
+void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
                        const char *sectionAnchor,const char *word)
 {
   (void)word;

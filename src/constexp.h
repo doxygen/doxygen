@@ -19,15 +19,17 @@
 #ifndef _CONSTEXP_H
 #define _CONSTEXP_H
 
-#include "cppvalue.h"
 #include <qcstring.h>
 
-extern bool parseconstexp(const char *fileName,int line,const QCString &s);
-extern int constexpYYparse();
-extern int constexpYYdebug;
-extern QCString g_strToken;
-extern CPPValue g_resultValue;
-extern QCString g_constExpFileName;
-extern int      g_constExpLineNr;
+class ConstExpressionParser
+{
+  public:
+    ConstExpressionParser();
+   ~ConstExpressionParser();
+    bool parse(const char *fileName,int line,const QCString &expression);
+  private:
+    struct Private;
+    Private *p;
+};
 
 #endif

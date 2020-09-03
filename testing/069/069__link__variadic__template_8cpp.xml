@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="069__link__variadic__template_8cpp" kind="file" language="C++">
+    <compoundname>069_link_variadic_template.cpp</compoundname>
+    <innerclass refid="class_test" prot="public">Test</innerclass>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1affb6da6cff1b57cdf8efc0123dceac9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A function </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="40" column="6" declfile="069_link_variadic_template.cpp" declline="40" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1aa7e4936a17759246bce60256cf224e16" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, Args &amp;... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>Args &amp;...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="45" column="6" declfile="069_link_variadic_template.cpp" declline="45" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1ad6fc2d2a6cb8980f3e0eaacbd2ae41fe" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, Args &amp;&amp;... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>Args &amp;&amp;...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="50" column="6" declfile="069_link_variadic_template.cpp" declline="50" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1a708a5bf22646ed7233fe61b83182811a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, const Args &amp;... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const Args &amp;...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="55" column="6" declfile="069_link_variadic_template.cpp" declline="55" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1aed64c596fea5f4f5e719006539922f7c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, const Args &amp;&amp;... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const Args &amp;&amp;...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="60" column="6" declfile="069_link_variadic_template.cpp" declline="60" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1a0ad18d95a1dc2dbacee657c43f719187" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, Args *... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>Args *...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="65" column="6" declfile="069_link_variadic_template.cpp" declline="65" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1a2331eedd0a1db9da5de0ad0faef78a4e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, Args **... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>Args **...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="70" column="6" declfile="069_link_variadic_template.cpp" declline="70" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1a72bd94e61df947347f98a2a6214e9342" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, const Args *... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const Args *...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="75" column="6" declfile="069_link_variadic_template.cpp" declline="75" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1a0bd03c39aa36ae51d2b8d87e04cf7eab" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, const Args **... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>const Args **...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="80" column="6" declfile="069_link_variadic_template.cpp" declline="80" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="069__link__variadic__template_8cpp_1abb1e0338f72ae46a1240ada65d6a397c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>Args</declname>
+            <defname>Args</defname>
+          </param>
+        </templateparamlist>
+        <type>void</type>
+        <definition>void func</definition>
+        <argsstring>(int p, Args... args)</argsstring>
+        <name>func</name>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type>Args...</type>
+          <declname>args</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>A variadic template function overload </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="069_link_variadic_template.cpp" line="85" column="6" declfile="069_link_variadic_template.cpp" declline="85" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <para>
+        <simplesect kind="attention">
+          <para>
+            <parblock>
+              <para>At the time of writing, the part between &lt;&gt; is totally ignored: func&lt;Args...&gt;(Args... args) is interpreted as func(Args... args).</para>
+              <para>Beware that a function parameter with either a &amp; or * operator, e.g. 'const Args&amp;... args', requires \link and \ref to specify such parameter as verbatim, i.e. 'const Args&amp;... args'. At the time of writing, the form func(const Args&amp;...) will fail, unless the function parameter was declared just as 'const Args&amp;...'. </para>
+            </parblock>
+          </para>
+        </simplesect>
+      </para>
+      <para>
+        <ref refid="class_test_1a64d85df31d518e39726467315a9b05e3" kindref="member">variadic template method</ref>
+      </para>
+      <para>Links to the variadic template function overloads: <itemizedlist><listitem><para><ref refid="069__link__variadic__template_8cpp_1aa7e4936a17759246bce60256cf224e16" kindref="member">First overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1ad6fc2d2a6cb8980f3e0eaacbd2ae41fe" kindref="member">Second overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1a708a5bf22646ed7233fe61b83182811a" kindref="member">Third overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1aed64c596fea5f4f5e719006539922f7c" kindref="member">Fourth overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1a0ad18d95a1dc2dbacee657c43f719187" kindref="member">Fifth overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1a2331eedd0a1db9da5de0ad0faef78a4e" kindref="member">Sixth overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1a72bd94e61df947347f98a2a6214e9342" kindref="member">Seventh overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1a0bd03c39aa36ae51d2b8d87e04cf7eab" kindref="member">Eighth overload</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1abb1e0338f72ae46a1240ada65d6a397c" kindref="member">Ninth overload</ref></para></listitem></itemizedlist>
+The following are interpreted the same: <itemizedlist><listitem><para><ref refid="069__link__variadic__template_8cpp_1a708a5bf22646ed7233fe61b83182811a" kindref="member">without template argument</ref></para></listitem><listitem><para><ref refid="069__link__variadic__template_8cpp_1a708a5bf22646ed7233fe61b83182811a" kindref="member">with template argument</ref></para></listitem></itemizedlist>
+See the <ref refid="class_test" kindref="compound">test</ref> class. </para>
+    </detaileddescription>
+    <location file="069_link_variadic_template.cpp"/>
+  </compounddef>
+</doxygen>

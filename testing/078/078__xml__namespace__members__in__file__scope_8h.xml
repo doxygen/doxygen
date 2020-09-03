@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="078__xml__namespace__members__in__file__scope_8h" kind="file" language="C++">
+    <compoundname>078_xml_namespace_members_in_file_scope.h</compoundname>
+    <innernamespace refid="namespace_namespace">Namespace</innernamespace>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="078__xml__namespace__members__in__file__scope_8h_1add172b93283b1ab7612c3ca6cc5dcfea" prot="public" static="no" strong="yes">
+        <type/>
+        <name>Enum</name>
+        <briefdescription>
+          <para>An enum. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="078_xml_namespace_members_in_file_scope.h" line="15" column="1" bodyfile="078_xml_namespace_members_in_file_scope.h" bodystart="15" bodyend="15"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="078__xml__namespace__members__in__file__scope_8h_1a0f1fe1a972c7c4196988a1bdde63ec77" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void Namespace::foo</definition>
+        <argsstring>()</argsstring>
+        <name>foo</name>
+        <briefdescription>
+          <para>A function. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>Detailed documentation. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="078_xml_namespace_members_in_file_scope.h" line="12" column="6" declfile="078_xml_namespace_members_in_file_scope.h" declline="12" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="078_xml_namespace_members_in_file_scope.h"/>
+  </compounddef>
+</doxygen>

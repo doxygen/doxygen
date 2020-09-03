@@ -139,7 +139,7 @@
   In addition you can search items in the list with the find() function. It exists in a const
   and a non const version. It starts searching from the beginning of the list, but another
   flavor of the find() function allows you to specify where searching should start.
-  If you just want to know wether a certain item is at least once in the list, then you
+  If you just want to know whether a certain item is at least once in the list, then you
   can use the contains() function.
 
   Since QValueList is value based there is no need to care about deleting elements in the
@@ -199,9 +199,9 @@
   \fn QValueList::~QValueList()
   Destroys the list. References to the values in the list and all iterators
   of this list become invalidated. Since QValueList is highly tuned for performance
-  you wont see warnings if you use invalid iterators,
+  you won't see warnings if you use invalid iterators,
   because it is impossible for
-  an iterator to check wether it is valid or not.
+  an iterator to check whether it is valid or not.
 */
 
 /*!
@@ -258,16 +258,16 @@
 /*!
   \fn const T& QValueList::operator[] ( uint i ) const
   Returns a const reference to the item with index \e i in the list.
-  It is up to you to check wether this item really exists. You can do that easily
-  with the count() function. However this operator does not check wether \e i
+  It is up to you to check whether this item really exists. You can do that easily
+  with the count() function. However this operator does not check whether \e i
   is in range and will deliver undefined results if it does not exist.
 */
 
 /*!
   \fn T& QValueList::operator[] ( uint i )
   Returns a reference to the item with index \e i in the list.
-  It is up to you to check wether this item really exists. You can do that easily
-  with the count() function. However this operator does not check wether \e i
+  It is up to you to check whether this item really exists. You can do that easily
+  with the count() function. However this operator does not check whether \e i
   is in range and will deliver undefined results if it does not exist.
   In contrast to the const operator[] you may manipulate the value returned by this
   operator.
@@ -566,7 +566,7 @@
   QValueList is highly optimized for performance and memory usage.
   On the other hand that means that you have to be a bit more careful
   by what you are doing. QValueList does not know about all its iterators
-  and the iterators dont even know to which list they belong. That makes
+  and the iterators don't even know to which list they belong. That makes
   things fast and slim but a bit dangerous because it is up to you to make
   sure that iterators you are using are still valid. QListIterator will be able
   to give warnings while QValueListIterator may end up in an undefined state.
@@ -615,19 +615,19 @@
 
 /*!
   \fn T& QValueListIterator::operator*()
-  Asterix operator. Returns a reference to the current iterator item.
+  Asterisk operator. Returns a reference to the current iterator item.
 */
 
 /*!
   \fn const T& QValueListIterator::operator*() const
-  Asterix operator. Returns a reference to the current iterator item.
+  Asterisk operator. Returns a reference to the current iterator item.
 */
 
 /*!
   \fn QValueListIterator<T>& QValueListIterator::operator++()
   Prefix ++ makes the succeeding item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the end of the list. Incrementing
+  The iterator can not check whether it reached the end of the list. Incrementing
   the iterator as returned by end() causes undefined results.
 */
 
@@ -635,7 +635,7 @@
   \fn QValueListIterator<T> QValueListIterator::operator++(int)
   Postfix ++ makes the succeeding item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the end of the list. Incrementing
+  The iterator can not check whether it reached the end of the list. Incrementing
   the iterator as returned by end() causes undefined results.
 */
 
@@ -643,7 +643,7 @@
   \fn QValueListIterator<T>& QValueListIterator::operator--()
   Prefix -- makes the previous item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the beginning of the list. Decrementing
+  The iterator can not check whether it reached the beginning of the list. Decrementing
   the iterator as returned by begin() causes undefined results.
 */
 
@@ -651,7 +651,7 @@
   \fn QValueListIterator<T> QValueListIterator::operator--(int)
   Postfix -- makes the previous item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the beginning of the list. Decrementing
+  The iterator can not check whether it reached the beginning of the list. Decrementing
   the iterator as returned by begin() causes undefined results.
 */
 
@@ -680,7 +680,7 @@
   list. It does not allow to modify the values of the list since this would
   break the const semantics.
 
-  For more informations on QValueList iterators see QValueListIterator.
+  For more information on QValueList iterators see QValueListIterator.
 
   \sa QValueListIterator, QValueList
 */
@@ -726,14 +726,14 @@
 
 /*!
   \fn const T& QValueListConstIterator::operator*() const
-  Asterix operator. Returns a reference to the current iterator item.
+  Asterisk operator. Returns a reference to the current iterator item.
 */
 
 /*!
   \fn QValueListConstIterator<T>& QValueListConstIterator::operator++()
   Prefix ++ makes the succeeding item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the end of the list. Incrementing
+  The iterator can not check whether it reached the end of the list. Incrementing
   the iterator as returned by end() causes undefined results.
 */
 
@@ -741,7 +741,7 @@
   \fn QValueListConstIterator<T> QValueListConstIterator::operator++(int)
   Postfix ++ makes the succeeding item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the end of the list. Incrementing
+  The iterator can not check whether it reached the end of the list. Incrementing
   the iterator as returned by end() causes undefined results.
 */
 
@@ -749,7 +749,7 @@
   \fn QValueListConstIterator<T>& QValueListConstIterator::operator--()
   Prefix -- makes the previous item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the beginning of the list. Decrementing
+  The iterator can not check whether it reached the beginning of the list. Decrementing
   the iterator as returned by begin() causes undefined results.
 */
 
@@ -757,7 +757,7 @@
   \fn QValueListConstIterator<T> QValueListConstIterator::operator--(int)
   Postfix -- makes the previous item current and returns
   an iterator pointing to the new current item.
-  The iterator can not check wether it reached the beginning of the list. Decrementing
+  The iterator can not check whether it reached the beginning of the list. Decrementing
   the iterator as returned by begin() causes undefined results.
 */
 

@@ -22,7 +22,7 @@ static const int g_numberHtmlMappedCmds = 11;
 
 //! @brief Structure defining all HTML4 entities, doxygen extensions and doxygen commands representing special symbols.
 //! @details In case an entity does not exist a NULL is given for the entity. The first column contains the symbolic code
-//!          for the entity, see also doxparser.h The second column contains the name of the enitity (without the starting \& and
+//!          for the entity, see also doxparser.h The second column contains the name of the entity (without the starting \& and
 //!          ending ;)
 static struct htmlEntityInfo
 {
@@ -263,7 +263,7 @@ static struct htmlEntityInfo
   { SYM(clubs),    "\xe2\x99\xa3", "&clubs;",    "<clubs/>",             "&#9827;",       "{$\\clubsuit$}",         NULL,     "\\u9827?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(hearts),   "\xe2\x99\xa5", "&hearts;",   "<hearts/>",            "&#9829;",       "{$\\heartsuit$}",        NULL,     "\\u9829?",    { NULL,         DocSymbol::Perl_unknown }},
   { SYM(diams),    "\xe2\x99\xa6", "&diams;",    "<diams/>",             "&#9830;",       "{$\\diamondsuit$}",      NULL,     "\\u9830?",    { NULL,         DocSymbol::Perl_unknown }},
-  { SYM(quot),     "\"",           "&quot;",     "\"",                   "&quot;",        "\"",                     "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
+  { SYM(quot),     "\"",           "&quot;",     "\"",                   "&quot;",        "\"{}",                   "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
   { SYM(amp),      "&",            "&amp;",      "&amp;",                "&amp;",         "\\&",                    "&",      "&",           { "&",          DocSymbol::Perl_char    }},
   { SYM(lt),       "<",            "&lt;",       "&lt;",                 "&lt;",          "<",                      "<",      "<",           { "<",          DocSymbol::Perl_char    }},
   { SYM(gt),       ">",            "&gt;",       "&gt;",                 "&gt;",          ">",                      ">",      ">",           { ">",          DocSymbol::Perl_char    }},
@@ -311,10 +311,12 @@ static struct htmlEntityInfo
   { SYM(DoubleColon), "::",        "::",         "::",                   "::",            "::",                     "::",     "::",          { "::",         DocSymbol::Perl_string  }},
   { SYM(Percent),  "%",            "%",          "%",                    "%",             "\\%",                    "%",      "%",           { "%",          DocSymbol::Perl_char    }},
   { SYM(Pipe),     "|",            "|",          "|",                    "|",             "$|$",                    "|",      "|",           { "|",          DocSymbol::Perl_char    }},
-  { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"",                     "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
+  { SYM(Quot),     "\"",           "\"",         "\"",                   "&quot;",        "\"{}",                   "\"",     "\"",          { "\"",         DocSymbol::Perl_char    }},
   { SYM(Minus),    "-",            "-",          "-",                    "-",             "-\\/",                   "-",      "-",           { "-",          DocSymbol::Perl_char    }},
   { SYM(Plus),     "+",            "+",          "+",                    "+",             "+",                      "+",      "+",           { "+",          DocSymbol::Perl_char    }},
-  { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          DocSymbol::Perl_char    }}
+  { SYM(Dot),      ".",            ".",          ".",                    ".",             ".",                      ".",      ".",           { ".",          DocSymbol::Perl_char    }},
+  { SYM(Colon),    ":",            ":",          ":",                    ":",             ":",                      ":",      ":",           { ":",          DocSymbol::Perl_char    }},
+  { SYM(Equal),    "=",            "=",          "=",                    "=",             "=",                      "=",      "=",           { "=",          DocSymbol::Perl_char    }}
 };
 
 static const int g_numHtmlEntities = (int)(sizeof(g_htmlEntities)/ sizeof(*g_htmlEntities));

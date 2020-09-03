@@ -55,7 +55,7 @@ CommandMap cmdMap[] =
   { "endverbatim",   CMD_ENDVERBATIM },
   { "endxmlonly",    CMD_ENDXMLONLY },
   { "exception",     CMD_EXCEPTION },
-  { "form",          CMD_FORMULA },
+  { "_form",         CMD_FORMULA },
   { "htmlinclude",   CMD_HTMLINCLUDE },
   { "htmlonly",      CMD_HTMLONLY },
   { "image",         CMD_IMAGE },
@@ -111,6 +111,7 @@ CommandMap cmdMap[] =
   { "\\",            CMD_BSLASH },
   { "@",             CMD_AT },
   { "<",             CMD_LESS },
+  { "=",             CMD_EQUAL },
   { ">",             CMD_GREATER },
   { "&",             CMD_AMP },
   { "$",             CMD_DOLLAR },
@@ -147,6 +148,11 @@ CommandMap cmdMap[] =
   { "--",            CMD_NDASH },
   { "---",           CMD_MDASH },
   { "_setscope",     CMD_SETSCOPE },
+  { "emoji",         CMD_EMOJI },
+  { "rtfinclude",    CMD_RTFINCLUDE },
+  { "docbookinclude",CMD_DOCBOOKINCLUDE },
+  { "maninclude",    CMD_MANINCLUDE },
+  { "xmlinclude",    CMD_XMLINCLUDE },
   { 0,               0 },
 };
 
@@ -193,6 +199,11 @@ CommandMap htmlTagMap[] =
   { "span",       HTML_SPAN },
   { "div",        HTML_DIV },
   { "blockquote", HTML_BLOCKQUOTE },
+  { "strike",     HTML_STRIKE },
+  { "s",          HTML_S },
+  { "u",          HTML_UNDERLINE },
+  { "ins",        HTML_INS },
+  { "del",        HTML_DEL },
 
   { "c",            XML_C },
   // { "code",       XML_CODE },  <= ambiguous <code> is also a HTML tag
@@ -233,14 +244,14 @@ int Mapper::map(const char *n)
   return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
 }
 
-QString Mapper::find(const int n)
+QCString Mapper::find(const int n)
 {
   QDictIterator<int> mapIterator(m_map);
   for (int *curVal = mapIterator.toFirst();(curVal = mapIterator.current());++mapIterator)
   {
     if (*curVal == n || (*curVal == (n | SIMPLESECT_BIT))) return mapIterator.currentKey();
   }
-  return NULL;
+  return QCString();
 }
 
 Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)

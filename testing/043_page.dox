@@ -2,6 +2,10 @@
 // check: mypage.xml
 // check: another.xml
 /** \page mypage Page Title
+ *  \brief Page brief description.
+ *
+ *  @tableofcontents{xml,html,latex,docbook}
+ *
  *  Text at page level. See \ref mysect for more.
  *  \section mysect Section Title.
  *  Text at section level. See \ref mysubsect for more.

@@ -1,5 +1,5 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
-It's required at least cmake version 2.8.12
+It's required at least cmake version 3.3.
 
 The first step is to create a build directory where the output should be stored.
 Doxygen can be fully build outside of the source tree.
@@ -27,6 +27,7 @@ Visual Studio or other compiler environments like MinGW)
 Doxygen's cmake configuration provides a number of options:
 - build_wizard    Build the GUI frontend for doxygen.
 - build_app       Example showing how to embed doxygen in an application.
+- build_parse     Parses source code and dumps the dependencies between the code elements.
 - build_xmlparser Example showing how to parse doxygen's XML output.
 - build_search    Build external search tools (doxysearch and doxyindexer).
 - build_doc       Build user manual.

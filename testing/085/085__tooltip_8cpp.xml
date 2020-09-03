@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="085__tooltip_8cpp" kind="file" language="C++">
+    <compoundname>085_tooltip.cpp</compoundname>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="085__tooltip_8cpp_1ace0cca79d3f7e7c96b6edcb1b8d31e66" prot="public" static="no">
+        <name>FOPEN_MACRO</name>
+        <param>
+          <defname>fn</defname>
+        </param>
+        <param>
+          <defname>mod</defname>
+        </param>
+        <initializer>  if ((<ref refid="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" kindref="member">unit</ref> = fopen(fn, mod)) == NULL) \
+  {                                    \
+    msg(OPEN_ERR,strerror(errno));     \
+  }</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>a general open macro </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="085_tooltip.cpp" line="11" column="9" bodyfile="085_tooltip.cpp" bodystart="11" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="define" id="085__tooltip_8cpp_1a11a2c0486e2bbd915f975a3517817de6" prot="public" static="no">
+        <name>FCLOSE_MACRO</name>
+        <initializer>  if (fclose(<ref refid="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" kindref="member">unit</ref>) != 0)               \
+  {                                    \
+    msg(CLOSE_ERR,strerror(errno));    \
+  }</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>a general close macro </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="085_tooltip.cpp" line="18" column="9" bodyfile="085_tooltip.cpp" bodystart="18" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="085__tooltip_8cpp_1a5cccf7694b5d688466063895f39ee5d1" prot="public" static="no" mutable="no">
+        <type>FILE *</type>
+        <definition>FILE* unit</definition>
+        <argsstring/>
+        <name>unit</name>
+        <initializer>= NULL</initializer>
+        <briefdescription>
+          <para>the unit </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="085_tooltip.cpp" line="8" column="6" bodyfile="085_tooltip.cpp" bodystart="8" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="085_tooltip.cpp"/>
+  </compounddef>
+</doxygen>

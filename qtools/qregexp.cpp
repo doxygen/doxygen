@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QRegExp class
 **
@@ -901,8 +901,6 @@ static uint *dump( uint *p )
 #endif // DEBUG
 
 
-static const int maxlen = 1024;			// max length of regexp array
-static uint rxarray[ maxlen ];			// tmp regexp array
 
 /*!
   \internal
@@ -913,6 +911,9 @@ static uint rxarray[ maxlen ];			// tmp regexp array
 
 void QRegExp::compile()
 {
+    const int maxlen = 1024;			// max length of regexp array
+    uint rxarray[ maxlen ];			// tmp regexp array
+
     if ( rxdata ) {				// delete old data
 	delete [] rxdata;
 	rxdata = 0;
@@ -1006,7 +1007,7 @@ void QRegExp::compile()
 			numFields++;
 		    }
 		    if ( d >= rxarray + maxlen ) {	// pattern too long
-			error = PatOverflow;		
+			error = PatOverflow;
 			return;
 		    }
 		    if ( !pl ) {		// At least ']' should be left

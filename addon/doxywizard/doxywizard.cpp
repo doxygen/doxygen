@@ -1,3 +1,15 @@
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby 
+ * granted. No representations are made about the suitability of this software 
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ */
+
 #include "doxywizard.h"
 #include "version.h"
 #include "expert.h"
@@ -208,7 +220,7 @@ void MainWindow::updateWorkingDir()
 
 void MainWindow::manual()
 {
-  QDesktopServices::openUrl(QUrl(QString::fromLatin1("http://www.doxygen.org/manual.html")));
+  QDesktopServices::openUrl(QUrl(QString::fromLatin1("http://www.doxygen.org/manual/index.html")));
 }
 
 void MainWindow::about()
@@ -216,9 +228,9 @@ void MainWindow::about()
   QString msg;
   QTextStream t(&msg,QIODevice::WriteOnly);
   t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
-       QString::fromLatin1(versionString)+
+       QString::fromLatin1(getDoxygenVersion())+
        QString::fromLatin1(" on your source files.</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2015</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2019</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
@@ -267,7 +279,7 @@ void MainWindow::saveConfig(const QString &fileName)
 {
   if (fileName.isEmpty()) return;
   QFile f(fileName);
-  if (!f.open(QIODevice::WriteOnly)) 
+  if (!f.open(QIODevice::WriteOnly | QIODevice::Text ))
   {
     QMessageBox::warning(this,
         tr("Error saving"),
@@ -331,7 +343,7 @@ void MainWindow::clearRecent()
     m_recentFiles.clear();
     for (int i=0;i<MAX_RECENT_FILES;i++)
     {
-      m_settings.setValue(QString().sprintf("recent/config%d",i++),QString::fromLatin1(""));
+      m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),QString::fromLatin1(""));
     }
     m_settings.sync();
   }
@@ -377,7 +389,7 @@ void MainWindow::loadSettings()
   /* due to prepend use list in reversed order */
   for (int i=MAX_RECENT_FILES;i>=0;i--)
   {
-    QString entry = m_settings.value(QString().sprintf("recent/config%d",i)).toString();
+    QString entry = m_settings.value(QString::fromLatin1("recent/config%1").arg(i)).toString();
     if (!entry.isEmpty() && QFileInfo(entry).exists())
     {
       addRecentFileList(entry);
@@ -436,11 +448,11 @@ void MainWindow::updateRecentFile(void)
   foreach( QString str, m_recentFiles ) 
   {
     m_recentMenu->addAction(str);
-    m_settings.setValue(QString().sprintf("recent/config%d",i++),str);
+    m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),str);
   }
   for (;i<MAX_RECENT_FILES;i++)
   {
-    m_settings.setValue(QString().sprintf("recent/config%d",i++),QString::fromLatin1(""));
+    m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i),QString::fromLatin1(""));
   }
 }
 
@@ -536,7 +548,11 @@ void MainWindow::readStdout()
     {
       text1 += text;
       m_outputLog->clear();
-      m_outputLog->append(APPQT(text1.trimmed()));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+      m_outputLog->append(APPQT(text1.toHtmlEscaped().trimmed()));
+#else
+      m_outputLog->append(APPQT(Qt::escape(text1).trimmed()));
+#endif
     }
   }
 }
@@ -678,7 +694,14 @@ int main(int argc,char **argv)
     if (!qstrcmp(argv[1],"--help"))
     {
       QMessageBox msgBox;
-      msgBox.setText(QString().sprintf("Usage: %s [config file]",argv[0]));
+      msgBox.setText(QString::fromLatin1("Usage: %1 [config file]").arg(QString::fromLatin1(argv[0])));
+      msgBox.exec();
+      exit(0);
+    }
+    else if (!qstrcmp(argv[1],"--version"))
+    {
+      QMessageBox msgBox;
+      msgBox.setText(QString::fromLatin1("Doxywizard version: %1").arg(QString::fromLatin1(getFullVersion())));
       msgBox.exec();
       exit(0);
     }
@@ -686,7 +709,7 @@ int main(int argc,char **argv)
   if (argc > 2)
   {
     QMessageBox msgBox;
-    msgBox.setText(QString().sprintf("Too many arguments specified\n\nUsage: %s [config file]",argv[0]));
+    msgBox.setText(QString::fromLatin1("Too many arguments specified\n\nUsage: %1 [config file]").arg(QString::fromLatin1(argv[0])));
     msgBox.exec();
     exit(1);
   }

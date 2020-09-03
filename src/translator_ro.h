@@ -42,7 +42,7 @@
 #define TRANSLATOR_RO_H
 
 
-class TranslatorRomanian : public Translator
+class TranslatorRomanian : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -73,6 +73,10 @@ class TranslatorRomanian : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[romanian]{babel}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "ro";
     }
 
     // --- Language translation methods -------------------
@@ -1943,14 +1947,6 @@ class TranslatorRomanian : public Translator
       return "Documentația Metodelor";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Vedere de Ansamblu a Designului";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -2012,8 +2008,6 @@ class TranslatorRomanian : public Translator
         result += "următoarele fișiere:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

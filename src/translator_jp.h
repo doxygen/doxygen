@@ -69,7 +69,7 @@ Doxygen の開発の方でもそれはそれでいーんじゃん？みたいな
 #ifndef TRANSLATOR_JP_H
 #define TRANSLATOR_JP_H
 
-class TranslatorJapanese : public Translator
+class TranslatorJapanese : public TranslatorAdapter_1_8_15
 {
   public:
     virtual QCString idLanguage()
@@ -77,7 +77,23 @@ class TranslatorJapanese : public Translator
 
     virtual QCString latexLanguageSupportCommand()
     {
+      return "\\usepackage{CJKutf8}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "ja";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
+    }
+    virtual QCString latexDocumentPre()
+    {
+      return "\\begin{CJK}{UTF8}{min}\n";
+    }
+    virtual QCString latexDocumentPost()
+    {
+      return "\\end{CJK}\n";
     }
 
     /*! used in the compound documentation before a list of related functions. */
@@ -146,7 +162,7 @@ class TranslatorJapanese : public Translator
     /*! this is the remainder of the sentence after the class name */
     virtual QCString trIncludingInheritedMembers()
     { return " の全メンバ一覧です。"; }
-    /* trThisIsTheListOfAllMembers から続くように定義すること */    
+    /* trThisIsTheListOfAllMembers から続くように定義すること */
 
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
@@ -256,7 +272,7 @@ class TranslatorJapanese : public Translator
       }
       return "詳解が付けられているファイルの一覧です。";
     }
-    
+
 
     /*! This is an introduction to the annotated compound list. */
     virtual QCString trCompoundListDescription()
@@ -832,7 +848,7 @@ class TranslatorJapanese : public Translator
     {
       return "非推奨";
     }
-    
+
     /*! this text is put before a collaboration diagram */
     virtual QCString trCollaborationDiagram(const char *clName)
     {
@@ -1839,7 +1855,7 @@ class TranslatorJapanese : public Translator
 
     /*! Used file list for a Java enum */
     virtual QCString trEnumGeneratedFromFiles(bool)
-    { 
+    {
       return "次のファイルからこの列挙についての詳解を抽出しました:";
     }
 
@@ -1867,7 +1883,7 @@ class TranslatorJapanese : public Translator
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      
+
       QCString opt = enable ? "有効" : "無効";
       return "クリックで同期表示が"+opt+"になります";
     }
@@ -1911,14 +1927,6 @@ class TranslatorJapanese : public Translator
     virtual QCString trMethodDocumentation()
     {
       return "メソッド詳解";
-    }
-
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "デザイン概観";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1972,8 +1980,6 @@ class TranslatorJapanese : public Translator
       return "次のファイルからこの Singleton について"
              "の詳解を抽出しました:";
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

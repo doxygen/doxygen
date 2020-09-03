@@ -21,44 +21,44 @@
 #include "cppvalue.h"
 #include "constexp.h"
 
-CPPValue parseOctal()
+CPPValue parseOctal(const QCString& token)
 {
   long val = 0;
-  for (const char *p = g_strToken.data(); *p != 0; p++)
+  for (const char *p = token.data(); *p != 0; p++)
   {
     if (*p >= '0' && *p <= '7') val = val * 8 + *p - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue parseDecimal()
+CPPValue parseDecimal(const QCString& token)
 {
   long val = 0;
-  for (const char *p = g_strToken.data(); *p != 0; p++)
+  for (const char *p = token.data(); *p != 0; p++)
   {
     if (*p >= '0' && *p <= '9') val = val * 10 + *p - '0';
   }
   return CPPValue(val);
 }
 
-CPPValue parseHexadecimal()
+CPPValue parseHexadecimal(const QCString& token)
 {
   long val = 0;
-  for (const char *p = g_strToken.data(); *p != 0; p++)
+  for (const char *p = token.data(); *p != 0; p++)
   {
     if      (*p >= '0' && *p <= '9') val = val * 16 + *p - '0';
     else if (*p >= 'a' && *p <= 'f') val = val * 16 + *p - 'a' + 10;
     else if (*p >= 'A' && *p <= 'F') val = val * 16 + *p - 'A' + 10;
   }
-  //printf("parseHexadecimal %s->%x\n",g_strToken.data(),val);
+  //printf("parseHexadecimal %s->%x\n",token.data(),val);
   return CPPValue(val);
 }
 
-CPPValue parseCharacter() // does not work for '\n' and the alike 
+CPPValue parseCharacter(const QCString& token) // does not work for '\n' and the alike 
 {
-  if (g_strToken[1]=='\\')
+  if (token[1]=='\\')
   {
-    switch(g_strToken[2])
+    switch(token[2])
     {
       case 'n':  return CPPValue((long)'\n');
       case 't':  return CPPValue((long)'\t');
@@ -79,17 +79,17 @@ CPPValue parseCharacter() // does not work for '\n' and the alike
       case '5':  // fall through
       case '6':  // fall through
       case '7':  // fall through
-                 return parseOctal();
+                 return parseOctal(token);
       case 'x': 
-      case 'X':  return parseHexadecimal();
-      default:   printf("Invalid escape sequence %s found!\n",g_strToken.data()); 
+      case 'X':  return parseHexadecimal(token);
+      default:   printf("Invalid escape sequence %s found!\n",token.data()); 
                  return CPPValue(0L); 
     }
   }
-  return CPPValue((long)g_strToken[1]);
+  return CPPValue((long)token[1]);
 }
 
-CPPValue parseFloat()
+CPPValue parseFloat(const QCString& token)
 {
-  return CPPValue(atof(g_strToken));
+  return CPPValue(atof(token));
 }

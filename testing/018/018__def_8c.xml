@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="018__def_8c" kind="file" language="C++">
     <compoundname>018_def.c</compoundname>
     <sectiondef kind="define">
@@ -17,7 +17,8 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="enum">
-      <memberdef kind="enum" id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no">
+      <memberdef kind="enum" id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130a" prot="public" static="no" strong="no">
+        <type/>
         <name>E</name>
         <enumvalue id="018__def_8c_1aa57b8491d1d8fc1014dd54bcf83b130aab1710e6a49014ba389d57c8753c530f4" prot="public">
           <name>E1</name>
@@ -56,7 +57,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" line="12" column="1" bodyfile="018_def.c" bodystart="12" bodyend="-1"/>
+        <location file="018_def.c" line="12" column="13" bodyfile="018_def.c" bodystart="12" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="var">
@@ -73,7 +74,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" line="9" column="1" bodyfile="018_def.c" bodystart="9" bodyend="-1"/>
+        <location file="018_def.c" line="9" column="5" bodyfile="018_def.c" bodystart="9" bodyend="-1"/>
       </memberdef>
     </sectiondef>
     <sectiondef kind="func">
@@ -92,7 +93,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" line="10" column="1" bodyfile="018_def.c" bodystart="10" bodyend="10"/>
+        <location file="018_def.c" line="10" column="6" bodyfile="018_def.c" bodystart="10" bodyend="10"/>
       </memberdef>
       <memberdef kind="function" id="018__def_8c_1a2652ccbfb85efa2df3c70ba6c4628f8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>
@@ -112,7 +113,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="018_def.c" line="11" column="1" bodyfile="018_def.c" bodystart="11" bodyend="11"/>
+        <location file="018_def.c" line="11" column="6" bodyfile="018_def.c" bodystart="11" bodyend="11"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

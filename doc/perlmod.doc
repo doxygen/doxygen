@@ -56,7 +56,7 @@ Perl and it's the main purpose of including the Perl Module backend in
 doxygen.  See \ref doxydocs_format "below" for details on how
 to do this.
 
-<-- want to use \LaTeX but not possible in headings -->
+<!-- want to use \LaTeX but not possible in headings -->
 \section perlmod_latex Using the LaTeX generator.
 
 <p>The Perl Module-based \LaTeX generator is pretty experimental and

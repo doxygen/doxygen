@@ -15,7 +15,7 @@
  *
  */
 /*! \page starting Getting started
-\tableofcontents
+\tableofcontents{html,latex}
 
 The executable \c doxygen is the main program that parses the sources and 
 generates the documentation. See section \ref doxygen_usage for more
@@ -38,7 +38,7 @@ tries to be complete):
 
 First, assure that your programming language has a reasonable chance of being
 recognized by doxygen. These languages are supported by default: C, C++, C#,
-Objective-C, IDL, Java, VHDL, PHP, Python, Tcl, Fortran, and D. It
+Objective-C, IDL, Java, VHDL, PHP, Python, Fortran and D. It
 is possible to configure certain file type extensions to use certain parsers:
 see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details. 
 Also, completely different languages can be supported by using preprocessor 
@@ -77,7 +77,7 @@ You can probably leave the values of most tags in a generated template
 configuration file to their default value.  See section \ref config for 
 more details about the configuration file. 
 
-If you do not wish to edit the config file with a text editor, you should 
+If you do not wish to edit the configuration file with a text editor, you should 
 have a look at \ref doxywizard_usage "doxywizard", which is a GUI 
 front-end that can create, read and write doxygen configuration files, 
 and allows setting configuration options by entering them via dialogs.
@@ -106,38 +106,33 @@ To omit all \c test directories from a source tree for instance, one could use:
 Doxygen looks at the file's extension to determine how to parse a file,
 using the following table:
 
-Extension | Language
----------:|---------
-.idl      |IDL
-.ddl      |IDL
-.odl      |IDL
-.java     |Java
-.cs       |C#
-.d        |D
-.php      |PHP
-.php4     |PHP
-.php5     |PHP
-.inc      |PHP
-.phtml    |PHP
-.m        |Objective-C
-.M        |Objective-C
-.mm       |Objective-C
-.py       |Python
-.f        |Fortran
-.for      |Fortran
-.f90      |Fortran
-.f95      |Fortran
-.f03      |Fortran
-.f08      |Fortran
-.vhd      |VHDL
-.vhdl     |VHDL
-.tcl      |TCL
-.ucf      |VHDL
-.qsf      |VHDL
-.md       |Markdown
-.markdown |Markdown
+Extension | Language | Extension | Language     | Extension | Language
+---------:|--------- | ---------:|------------- | ---------:|---------
+.dox      |C / C++   | .idl      |IDL           | .f        |Fortran
+.doc      |C / C++   | .ddl      |IDL           | .for      |Fortran
+.c        |C / C++   | .odl      |IDL           | .f90      |Fortran
+.cc       |C / C++   | .java     |Java          | .f95      |Fortran
+.cxx      |C / C++   | .cs       |C#            | .f03      |Fortran
+.cpp      |C / C++   | .d        |D             | .f08      |Fortran
+.c++      |C / C++   | .php      |PHP           | .f18      |Fortran
+.ii       |C / C++   | .php4     |PHP           | .vhd      |VHDL
+.ixx      |C / C++   | .php5     |PHP           | .vhdl     |VHDL
+.ipp      |C / C++   | .inc      |PHP           | .ucf      |VHDL
+.i++      |C / C++   | .phtml    |PHP           | .qsf      |VHDL
+.inl      |C / C++   | .m        |Objective-C   | &nbsp;    |&nbsp;
+.h        |C / C++   | .M        |Objective-C   | .md       |Markdown
+.H        |C / C++   | .py       |Python        | .markdown |Markdown
+.hh       |C / C++   | .pyw      |Python        | .ice      |Slice
+.HH       |C / C++   | | | | |
+.hxx      |C / C++   | | | | |
+.hpp      |C / C++   | | | | |
+.h++      |C / C++   | | | | |
+.mm       |C / C++   | | | | |
+.txt      |C / C++   | | | | |
 
-Any other extension is parsed as if it is a C/C++ file.
+Any other extension is not parsed unless it is added to
+\ref cfg_file_patterns "FILE_PATTERNS" and the appropriate
+\ref cfg_extension_mapping "EXTENSION_MAPPING" is set.
 
 \anchor extract_all
 If you start using doxygen for an existing project (thus without any 
@@ -192,7 +187,7 @@ IE8, IE9, and Opera to test the generated output).
 
 Some of the features the HTML section (such as 
 \ref cfg_generate_treeview "GENERATE_TREEVIEW" or the search engine) 
-require a browser that supports Dynamic HTML and Javascript enabled. 
+require a browser that supports Dynamic HTML and JavaScript enabled. 
 
 \subsection latex_out LaTeX output
 \addindex LaTeX
@@ -263,7 +258,7 @@ capabilities of the man page format, so some information
 \subsection docbook_out DocBook output
 \addindex docbook
 Doxygen can also generate output in the 
-<a href="http://www.docbook.org/">DocBook</a> format. How to process the
+<a href="https://docbook.org/">DocBook</a> format. How to process the
 DocBook output is beyond the scope of this manual.
 
 \section step3 Step 3: Documenting the sources

@@ -23,6 +23,7 @@ Xet Erixon           <xet@xeqt.com>
 Mikael Hallin        <mikaelhallin@yahoo.se>           2003-07-28
 Björn Palmqvist      <bjorn@aidium.se>                 2014-02-01
 Magnus Österlund     <magnus.osterlund@capgemini.com>  2016-09-12
+Björn Palmqvist      <bjorn@aidium.se>                 2020-01-08
 ==================================================================================
 Uppdateringar.
 1999/04/29
@@ -66,20 +67,46 @@ Problem!
    Deprecated: nån hygglig svensk översättning???
 
    Skicka gärna synpunkter.
+
 2015/01/09
 * Uppdaterat den till senaste versionen 1.8.9.1
+
 2015/09/12
 * Fixat lite särksirvningar och inkonsekvenser
+
+2020/01/08
+* Uppdaterat den till senaste språkversionen 1.8.15
+
+Bytte ut Deprecated från Föråldrad till Obsolet
+
+VHDL översättningarna är kanske inte perfekta, då jag endast använt de en gång tidigare.
+Jag lämnade use clause orörd, då jag inte hittade en lämplig översättning för den.
+
+English:
+* Updated the language translation to 1.8.15
+
+Changed Deprecated from Föråldrad to Obsolet
+
+The VHDL translations may not perfect, as I only used it once before.
+I left use clause untouched as I didn't find a suitable translation for it.
+
+2020/08/14
+* Uppdaterat översättningarna till 1.8.19
+English:
+* Updated the language translation to 1.8.19
+
 ===================================================================================
   Ordlista
 ===================================================================================
   ENGELSKA          SVENSKA
 * Attribute         Attribut
-* Category          Lategori
+* Category          Kategori
 * Class             Klass
 * Compound          Sammansatt
-* Deprecated        Föråldrad
+* Deprecated        Obsolet
 * Directory         Katalog
+* Dictionary        Uppslagsverk       // Frågan om de är de som menas i de fallet
+* Entity            Entitet
 * Enum              Enum
 * Enumeration       Egenuppräknande
 * Event             Händelse
@@ -89,6 +116,7 @@ Problem!
 * Function          Funktion
 * Inherited         Ärvd
 * Interface         Gränssnitt
+* Library           Biblotek
 * Macro             Makro
 * Member            Medlem
 * Member Data       Medlemsdata
@@ -103,16 +131,19 @@ Problem!
 * Protected         Skyddad
 * Protocol          Protokoll
 * Public            Publik
+* Record            Post            // Ge gärna exempel på bättre översättning
 * Service           Tjänst
 * Signal            Signal
-* Slot              Slot            //Ge gärna exempel på bättre översättning
+* Slot              Slot            // Ge gärna exempel på bättre översättning
 * Static            Statisk
 * Struct            Struktur
 * Subprogram        Underprogram
 * Subroutine        Subrutin
+* Subtype           Undertyp
 * Template          Mall
 * Typedef           Typdefinition
 * Union             Union
+* Unit              Enhet           // Lämplig översättning i VHDL kontextet?
 * Variable          Variabel
 ===================================================================================
 */
@@ -144,6 +175,11 @@ class TranslatorSwedish : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[swedish]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "sv";
     }
 
     // --- Language translation methods -------------------
@@ -881,7 +917,7 @@ class TranslatorSwedish : public Translator
 
     virtual QCString trDeprecated()
     {
-      return "Föråldrad";
+      return "Obsolet";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1041,7 +1077,7 @@ class TranslatorSwedish : public Translator
     virtual QCString trInclByDepGraph()
     {
       return "Den här grafen visar vilka filer som direkt eller "
-	      "indirekt inkluderar denna filen:";
+             "indirekt inkluderar denna filen:";
     }
     virtual QCString trSince()
     {
@@ -1152,7 +1188,7 @@ class TranslatorSwedish : public Translator
     /*! Used as a section header for IDL properties */
     virtual QCString trProperties()
     {
-		return "Egenskaper";
+      return "Egenskaper";
     }
     /*! Used as a section header for IDL property documentation */
     virtual QCString trPropertyDocumentation()
@@ -1230,8 +1266,8 @@ class TranslatorSwedish : public Translator
      * Charset Name       Charset Value(hex)  Codepage number
      * ------------------------------------------------------
      * ANSI_CHARSET              0 (x00)            1252
-	 * </pre>
-	 */
+     * </pre>
+     */
     virtual QCString trRTFansicp()
     {
       return "1252";
@@ -1552,7 +1588,7 @@ class TranslatorSwedish : public Translator
      *  and the fact that it is sorted alphabetically per level
      */
     virtual QCString trDirDescription()
-	{ return "Den här katalogen är grovt sorterad, "
+    { return "Den här katalogen är grovt sorterad, "
              "men inte helt, i alfabetisk ordning:";
     }
 
@@ -1952,7 +1988,7 @@ class TranslatorSwedish : public Translator
      */
     virtual QCString trPanelSynchronisationTooltip(bool enable)
     {
-      QCString opt = enable ? "aktivera" : "inaktivera"; 
+      QCString opt = enable ? "aktivera" : "inaktivera";
       return "klicka för att "+opt+" panelsynkronisering";
     }
 
@@ -1995,14 +2031,6 @@ class TranslatorSwedish : public Translator
     virtual QCString trMethodDocumentation()
     {
       return "Metoddokumentation";
-    }
-
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Designöversikt";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2055,13 +2083,272 @@ class TranslatorSwedish : public Translator
     virtual QCString trSingletonGeneratedFromFiles(bool single)
     {
       // single is true implies a single file
-      QCString result=(QCString)"Dokumentationen för denna singleton"
+      QCString result=(QCString)"Dokumentationen för denna singleton "
                                 "genererades från följande fil";
       if (single) result+=":"; else result+="er:";
       return result;
     }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Designenhetshirarki"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Designenhetslista"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Designenhetsmedlemmar"; }
+    /** VHDL design unit list description
+     * Orginal: Here is a list of all design unit members with links to
+     *          the Entities they belong to:
+     */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "Här är en lista av alla designenhetsmedlemmar med länkar till "
+               "entiteterna som de hör till:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Designenhetsindex"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Designenheter"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Funktioner/Procedurer/Processer"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          return "Biblotek";
+        case VhdlDocGen::PACKAGE:
+          return "Paket";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Signal";
+          else        return "Signaler";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Komponent";
+          else        return "Komponenter";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Konstant";
+          else        return "Konstanter";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Entitet";
+          else        return "Entiteter";
+        case VhdlDocGen::TYPE:
+          if (single) return "Typ";
+          else        return "Typer";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Undertyp";
+          else        return "Undertyper";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Funktion";
+          else        return "Funktioner";
+        case VhdlDocGen::RECORD:
+          if (single) return "Post";
+          else        return "Poster";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Procedur";
+          else        return "Procedurer";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Arkitektur";
+          else        return "Arkitekturer";
+        case VhdlDocGen::ATTRIBUTE:
+          return "Attribut";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Process";
+          else        return "Processer";
+        case VhdlDocGen::PORT:
+          if (single) return "Port";
+          else        return "Portar";
+        case VhdlDocGen::USE:
+          if (single) return "use clause";
+          else        return "Use Clauses";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Generisk";
+          else        return "Generiska";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Paketinehåll";
+        case VhdlDocGen::UNITS:
+          return "Enheter";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Delad Variabel";
+          else        return "Delade Variabler";
+        case VhdlDocGen::VFILE:
+          if (single) return "Fil";
+          else        return "Filer";
+        case VhdlDocGen::GROUP:
+          if (single) return "Grupp";
+          else        return "Grupper";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Instantiation";
+          else        return "Instantiations";
+        case VhdlDocGen::ALIAS:
+          return "Alias";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Konfiguration";
+          else        return "Konfigurationer";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Diverse";
+        case VhdlDocGen::UCF_CONST:
+          return "Begränsningar";
+        default:
+          return "Klass";
+      }
+    }
+    virtual QCString trCustomReference(const char *name)
+    { return QCString(name)+"referens"; }
+
+    /* Slice */
+    virtual QCString trConstants()
+    {
+        return "Konstanter";
+    }
+    virtual QCString trConstantDocumentation()
+    {
+        return "Konstantdokumentation";
+    }
+    virtual QCString trSequences()
+    {
+        return "Sekvenser";
+    }
+    virtual QCString trSequenceDocumentation()
+    {
+        return "Sekvensdokumentation";
+    }
+    virtual QCString trDictionaries()
+    {
+        return "Uppslagsverk";
+    }
+    virtual QCString trDictionaryDocumentation()
+    {
+        return "Uppslagsverksdokumentation";
+    }
+    virtual QCString trSliceInterfaces()
+    {
+        return "Gränssnitt";
+    }
+    virtual QCString trInterfaceIndex()
+    {
+        return "Gränssnittsindex";
+    }
+    virtual QCString trInterfaceList()
+    {
+        return "Gränssnittslist";
+    }
+    /** Orginal: Here are the interfaces with brief descriptions: */
+    virtual QCString trInterfaceListDescription()
+    {
+        return "Här är gränssnitten med en kort beskrivning";
+    }
+    virtual QCString trInterfaceHierarchy()
+    {
+        return "Gränssnittshirarkin";
+    }
+    /** Orginal: This inheritance list is sorted roughly, but not completely, alphabetically: */
+    virtual QCString trInterfaceHierarchyDescription()
+    {
+        return "Denna arvslista är grovt sorterad, men inte helt, i alfabetisk ordning:";
+    }
+    virtual QCString trInterfaceDocumentation()
+    {
+        return "Gränssnittsdokumentation";
+    }
+    virtual QCString trStructs()
+    {
+        return "Strukturer";
+    }
+    virtual QCString trStructIndex()
+    {
+        return "Strukturindex";
+    }
+    virtual QCString trStructList()
+    {
+        return "Strukturlist";
+    }
+    /** Orginal: Here are the structs with brief descriptions: */
+    virtual QCString trStructListDescription()
+    {
+        return "Här är strukturerna med en kort beskrivning:";
+    }
+    virtual QCString trStructDocumentation()
+    {
+        return "Strukturdokumentation";
+    }
+    virtual QCString trExceptionIndex()
+    {
+        return "Undantagsindex";
+    }
+    virtual QCString trExceptionList()
+    {
+        return "Undantagslista";
+    }
+    /** Orginal: Here are the exceptions with brief descriptions: */
+    virtual QCString trExceptionListDescription()
+    {
+        return "Här är undantagen med en kort beskrivning:";
+    }
+    virtual QCString trExceptionHierarchy()
+    {
+        return "Undantagshirarki";
+    }
+    /** Orginal:  This inheritance list is sorted roughly, but not completely, alphabetically: */
+    virtual QCString trExceptionHierarchyDescription()
+    {
+        return "Denna arvslista är grovt sorterad, men inte helt, i alfabetisk ordning:";
+    }
+    virtual QCString trExceptionDocumentation()
+    {
+        return "Undantagsdokumentation";
+    }
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result=(QCString)clName;
+      if (isLocal) result+=" Lokal";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" Klass"; break;
+        case ClassDef::Struct:     result+=" Struktur"; break;
+        case ClassDef::Union:      result+=" Unions"; break;
+        case ClassDef::Interface:  result+=" Gränssnitts"; break;
+        case ClassDef::Protocol:   result+=" Protokoll"; break;
+        case ClassDef::Category:   result+=" Kategori"; break;
+        case ClassDef::Exception:  result+=" Undantags"; break;
+        default: break;
+      }
+      result+="referens";
+      return result;
+    }
+    virtual QCString trOperations()
+    {
+        return "Operationer";
+    }
+    virtual QCString trOperationDocumentation()
+    {
+        return "Operationsdokumentation";
+    }
+    virtual QCString trDataMembers()
+    {
+        return "Datamedlemmar";
+    }
+    virtual QCString trDataMemberDocumentation()
+    {
+        return "Datamedlemsdokumentation";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "Designenhetsdokumentation"; }
 
 };
-
 #endif

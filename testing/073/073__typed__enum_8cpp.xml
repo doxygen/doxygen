@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="073__typed__enum_8cpp" kind="file" language="C++">
+    <compoundname>073_typed_enum.cpp</compoundname>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="073__typed__enum_8cpp_1aa72902e6181db009a6a84502f81612c2" prot="public" static="no" strong="yes">
+        <type>unsigned short</type>
+        <name>E</name>
+        <briefdescription>
+          <para>A strongly-typed enum. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="073_typed_enum.cpp" line="7" column="1" bodyfile="073_typed_enum.cpp" bodystart="7" bodyend="7"/>
+      </memberdef>
+      <memberdef kind="enum" id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5" prot="public" static="no" strong="yes">
+        <type>unsigned char</type>
+        <name>Mem</name>
+        <enumvalue id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5a2ad9d63b69c4a10a5cc9cad923133bc4" prot="public">
+          <name>Bottom</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5ac946366be0e03f425017b1a97b4a7fbb" prot="public">
+          <name>NotMem</name>
+          <initializer>= 1U &lt;&lt; 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5a165d3d525f6d0cbd55e42cc3058cafcc" prot="public">
+          <name>Ptr</name>
+          <initializer>= 1U &lt;&lt; 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5abd34ea97de15a451a2117e2e4cd49c12" prot="public">
+          <name>Lval</name>
+          <initializer>= 1U &lt;&lt; 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5adba5553473d129a7985fb532dc249ff4" prot="public">
+          <name>Mem</name>
+          <initializer>= Ptr | Lval</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="073__typed__enum_8cpp_1a2890437f40d5bcd72710a06cd6a934f5aa4ffdcf0dc1f31b9acaf295d75b51d00" prot="public">
+          <name>Top</name>
+          <initializer>= NotMem | Mem</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+          <para>Strongly types enum when values that has the same name as the enum. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="073_typed_enum.cpp" line="10" column="1" bodyfile="073_typed_enum.cpp" bodystart="10" bodyend="17"/>
+      </memberdef>
+      <memberdef kind="enum" id="073__typed__enum_8cpp_1a06fc87d81c62e9abb8790b6e5713c55b" prot="public" static="no" strong="no">
+        <type/>
+        <name>@0</name>
+        <enumvalue id="073__typed__enum_8cpp_1a06fc87d81c62e9abb8790b6e5713c55ba52c998ad250c15a855ff5559e6d0d1d6" prot="public">
+          <name>Unnamed1</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="073_typed_enum.cpp" line="19" column="1" bodyfile="073_typed_enum.cpp" bodystart="19" bodyend="21"/>
+      </memberdef>
+      <memberdef kind="enum" id="073__typed__enum_8cpp_1adf764cbdea00d65edcd07bb9953ad2b7" prot="public" static="no" strong="no">
+        <type/>
+        <name>@1</name>
+        <enumvalue id="073__typed__enum_8cpp_1adf764cbdea00d65edcd07bb9953ad2b7a7b130af0c5cb18bfee8c60994fe1d5ee" prot="public">
+          <name>Unnamed2</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="073_typed_enum.cpp" line="23" column="1" bodyfile="073_typed_enum.cpp" bodystart="23" bodyend="25"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="073_typed_enum.cpp"/>
+  </compounddef>
+</doxygen>

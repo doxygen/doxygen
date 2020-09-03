@@ -52,7 +52,7 @@
   The key is used for inserting and looking up an item. QDict has
   \l QString keys, which are Unicode strings.  If you want to use
   non-Unicode, plain 8-bit \c char* keys, use the QAsciiDict template.
-  A QDict has the same performace as a QAsciiDict.
+  A QDict has the same performance as a QAsciiDict.
 
   The dictionary has very fast insertion and lookup.
 
@@ -171,11 +171,11 @@
 
   Setting \e size to a suitably large \link primes.html prime
   number\endlink (equal to or greater than the expected number of entries)
-  makes the hash distribution better and hence the loopup faster.
+  makes the hash distribution better and hence the lookup faster.
 
   Setting \e caseSensitive to TRUE will treat "abc" and "Abc" as different
   keys.  Setting it to FALSE will make the dictionary ignore case.
-  Case insensitive comparison includes the whole Unicode alphabeth.
+  Case insensitive comparison includes the whole Unicode alphabet.
 */
 
 /*!

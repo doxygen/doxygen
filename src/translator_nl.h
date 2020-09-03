@@ -35,9 +35,9 @@ class TranslatorDutch : public Translator
      *  </pre>
      */
     QCString latexLanguageSupportCommand()
-    {
-      return "\\usepackage[dutch]{babel}\n";
-    }
+    { return "\\usepackage[dutch]{babel}\n"; }
+    QCString trISOLang()
+    { return "nl"; }
     QCString trRelatedFunctions()
     { return "Gerelateerde functies"; }
     QCString trRelatedSubscript()
@@ -93,8 +93,15 @@ class TranslatorDutch : public Translator
     QCString trSearch()
     { return "Zoeken"; }
     QCString trClassHierarchyDescription()
-    { return "Deze inheritance lijst is min of meer alfabetisch "
-             "gesorteerd:";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_VHDL))
+      {
+        return "Hieronder is een hi&euml;rarchische lijst met alle entiteiten:";
+      }
+      else
+      {
+        return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:";
+      }
     }
     QCString trFileListDescription(bool extractAll)
     {
@@ -1523,14 +1530,6 @@ class TranslatorDutch : public Translator
       return "Methode Documentatie";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Ontwerp Overzicht";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1586,6 +1585,203 @@ class TranslatorDutch : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Ontwerp Eenheid Hi&euml;rarchie"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Ontwerp Eenheid Lijst"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Ontwerp Eenheid Members"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+      return "hieronder volgt de lijst met all ontwerp eenheden met links "
+             "naar de entiteiten waar ze bij behoren:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Ontwerp Eenheid Index"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Ontwerp Eenheden"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Functies/Procedures/Processen"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          if (single) return "Bibliotheek";
+          else        return "Bibliotheken";
+        case VhdlDocGen::PACKAGE:
+          if (single) return "Package";
+          else        return "Packages";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Signal";
+          else        return "Signals";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Bestanddeel";
+          else        return "Bestanddelen";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Konstante";
+          else        return "Konstanten";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Entiteit";
+          else        return "Entiteiten";
+        case VhdlDocGen::TYPE:
+          if (single) return "Type";
+          else        return "Types";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Ondertype";
+          else        return "Ondertypes";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Funktie";
+          else        return "Funkties";
+        case VhdlDocGen::RECORD:
+          if (single) return "Record";
+          else        return "Records";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Procedure";
+          else        return "Procedures";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Architectuur";
+          else        return "Architecturen";
+        case VhdlDocGen::ATTRIBUTE:
+          if (single) return "Attribuut";
+          else        return "Attributen";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Proces";
+          else        return "Processen";
+        case VhdlDocGen::PORT:
+          if (single) return "Poort";
+          else        return "Porten";
+        case VhdlDocGen::USE:
+          if (single) return "gebruiks clausule";
+          else        return "Gebruiks Clausules";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Algemeen";
+          else        return "Algemene";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Package Body";
+        case VhdlDocGen::UNITS:
+          return "Eenheden";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Gedeelde Variable";
+          else        return "Gedeelde Variablen";
+        case VhdlDocGen::VFILE:
+          if (single) return "Bestand";
+          else        return "Bestanden";
+        case VhdlDocGen::GROUP:
+          if (single) return "Groep";
+          else        return "Groepen";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Instanti&euml;ring";
+          else        return "Instanti&euml;ringen";
+        case VhdlDocGen::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliases";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Configuratie";
+          else        return "Configuraties";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Diverse";
+        case VhdlDocGen::UCF_CONST:
+          return "Limiteringen";
+        default:
+          return "Klasse";
+      }
+    }
+    virtual QCString trCustomReference(const char *name)
+    { return QCString(name)+" Referentie"; }
+
+    /* Slice */
+    virtual QCString trConstants()
+    { return "Konstanten"; }
+    virtual QCString trConstantDocumentation()
+    { return "Documentatie van konstanten"; }
+    virtual QCString trSequences()
+    { return "Reeksen"; }
+    virtual QCString trSequenceDocumentation()
+    { return "Documentatie van reeksen"; }
+    virtual QCString trDictionaries()
+    { return "Vertalingslijsten"; }
+    virtual QCString trDictionaryDocumentation()
+    { return "Documentatie van vertalingslijsten"; }
+    virtual QCString trSliceInterfaces()
+    { return "Interfaces"; }
+    virtual QCString trInterfaceIndex()
+    { return "Index van interfaces"; }
+    virtual QCString trInterfaceList()
+    { return "Lijst van interfaces"; }
+    virtual QCString trInterfaceListDescription()
+    { return "Hieronder volgt de lijst met alle interfaces, elk met een korte beschrijving:"; }
+    virtual QCString trInterfaceHierarchy()
+    { return "Interface Hi&euml;rarchie"; }
+    virtual QCString trInterfaceHierarchyDescription()
+    { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
+    virtual QCString trInterfaceDocumentation()
+    { return "Documentatie van interfaces"; }
+    virtual QCString trStructs()
+    { return "Structs"; }
+    virtual QCString trStructIndex()
+    { return "Index van struct"; }
+    virtual QCString trStructList()
+    { return "Lijst van struct"; }
+    virtual QCString trStructListDescription()
+    { return "Hieronder volgt de lijst met alle structs, elk met een korte beschrijving:"; }
+    virtual QCString trStructDocumentation()
+    { return "Documentatie van structs"; }
+    virtual QCString trExceptionIndex()
+    { return "Index van exceptions"; }
+    virtual QCString trExceptionList()
+    { return "Lijst van exceptions"; }
+    virtual QCString trExceptionListDescription()
+    { return "Hieronder volgt de lijst met alle exeptions, elk met een korte beschrijving:"; }
+    virtual QCString trExceptionHierarchy()
+    { return "Exception Hi&euml;rarchie"; }
+    virtual QCString trExceptionHierarchyDescription()
+    { return "Deze inheritance lijst is min of meer alfabetisch gesorteerd:"; }
+    virtual QCString trExceptionDocumentation()
+    { return "Documentatie van exceptions"; }
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result=(QCString)clName;
+      if (isLocal) result+=" Lokale";
+      switch(compType)
+      {
+        case ClassDef::Class:  result+=" Class"; break;
+        case ClassDef::Struct: result+=" Struct"; break;
+        case ClassDef::Union:  result+=" Union"; break;
+        case ClassDef::Interface:  result+=" Interface"; break;
+        case ClassDef::Protocol:  result+=" Protocol"; break;
+        case ClassDef::Category:  result+=" Category"; break;
+        case ClassDef::Exception:  result+=" Exception"; break;
+        default: break;
+      }
+      result+=" Referentie";
+      return result;
+    }
+    virtual QCString trOperations()
+    { return "Bewerkingen"; }
+    virtual QCString trOperationDocumentation()
+    { return "Documentatie van bewerkingen"; }
+    virtual QCString trDataMembers()
+    { return "Data members"; }
+    virtual QCString trDataMemberDocumentation()
+    { return "Documentatie van data members"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trDesignUnitDocumentation()
+    { return "Ontwerp Eenheid Documentatie"; }
 };
 
 #endif

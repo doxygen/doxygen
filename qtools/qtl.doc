@@ -38,7 +38,7 @@
 
 \title Qt Template library
 
-Thq Qt Template Library is a set of templates within Qt dealing with
+The Qt Template Library is a set of templates within Qt dealing with
 containers of objects.  It provides a list of objects, a stack of
 objects, a map (or dictionary) from one type to another, and
 associated iterators and algorithms.
@@ -111,7 +111,7 @@ end() returns an iterator that points \e after the last
 element. end() marks an invalid position, it can never be
 dereferenced. It's the break condition in any iteration, may it be
 from begin() or fromLast(). For maximum speed, use increment or
-decrement iterators with the prefix operator (++it, --it) instead of the the
+decrement iterators with the prefix operator (++it, --it) instead of the
 postfix one (it++, it--), since the former is slightly faster.
 
 The same concept applies to the other container classes:

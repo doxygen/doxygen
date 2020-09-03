@@ -2,8 +2,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,8 @@
  *         !     NOT operator
  */
 
+#include <algorithm>
+
 #include "condparser.h"
 #include "config.h"
 #include "message.h"
@@ -27,7 +29,7 @@
 
 /**
  * parses and evaluates the given expression.
- * @returns 
+ * @returns
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
@@ -51,7 +53,7 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
 
 #if 0
     // check for garbage at the end of the expression
-    // an expression ends with a character '\0' and token_type = delimeter
+    // an expression ends with a character '\0' and token_type = delimiter
     if (m_tokenType!=DELIMITER || !m_token.isEmpty())
     {
       if (m_tokenType == DELIMITER)
@@ -84,7 +86,7 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
 
 
 /**
- * checks if the given char c is a delimeter
+ * checks if the given char c is a delimiter
  * minus is checked apart, can be unary minus
  */
 static bool isDelimiter(const char c)
@@ -100,9 +102,9 @@ static bool isAlpha(const char c)
   return (c>='A' && c<='Z') || (c>='a' && c<='z') || c=='_';
 }
 
-static bool isAlphaNum(const char c)
+static bool isAlphaNumSpec(const char c)
 {
-  return isAlpha(c) || (c>='0' && c<='9');
+  return isAlpha(c) || (c>='0' && c<='9') || c=='-' || c=='.' || (((unsigned char)c)>=0x80);
 }
 
 /**
@@ -123,13 +125,13 @@ int CondParser::getOperatorId(const QCString &opName)
 
 /**
  * Get next token in the current string expr.
- * Uses the data in m_expr pointed to by m_e to 
+ * Uses the data in m_expr pointed to by m_e to
  * produce m_tokenType and m_token, set m_err in case of an error
  */
 void CondParser::getToken()
 {
   m_tokenType = NOTHING;
-  m_token.resize(0);     
+  m_token.resize(0);
 
   //printf("\tgetToken e:{%c}, ascii=%i, col=%i\n", *e, *e, e-expr);
 
@@ -155,7 +157,7 @@ void CondParser::getToken()
     return;
   }
 
-  // check for operators (delimeters)
+  // check for operators (delimiters)
   if (isDelimiter(*m_e))
   {
     m_tokenType = DELIMITER;
@@ -170,7 +172,7 @@ void CondParser::getToken()
   if (isAlpha(*m_e))
   {
     m_tokenType = VARIABLE;
-    while (isAlphaNum(*m_e))
+    while (isAlphaNumSpec(*m_e))
     {
       m_token += *m_e++;
     }
@@ -256,7 +258,7 @@ bool CondParser::parseLevel3()
 
 bool CondParser::parseVar()
 {
-  bool ans = 0;
+  bool ans = false;
   switch (m_tokenType)
   {
     case VARIABLE:
@@ -283,7 +285,7 @@ bool CondParser::parseVar()
 }
 
 /**
- * evaluate an operator for given valuess
+ * evaluate an operator for given values
  */
 bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
 {
@@ -303,7 +305,7 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
  */
 bool CondParser::evalVariable(const char *varName)
 {
-  if (Config_getList(ENABLED_SECTIONS).find(varName)==-1) return FALSE;
-  return TRUE;
+  const StringVector &list = Config_getList(ENABLED_SECTIONS);
+  return std::find(list.begin(),list.end(),varName)!=list.end();
 }
 

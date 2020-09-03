@@ -83,8 +83,7 @@ def xopen(fname, mode='r', encoding='utf-8-sig'):
     the default 'utf-8-sig' is used (skips the BOM automatically).
     '''
 
-    major, minor, patch = (int(e) for e in platform.python_version_tuple())
-    if major == 2:
+    if sys.version_info[0] == 2:
         return open(fname, mode=mode) # Python 2 without encoding
     else:
         return open(fname, mode=mode, encoding=encoding) # Python 3 with encoding
@@ -142,8 +141,8 @@ class Transl:
         self.baseClassId = None
         self.readableStatus = None   # 'up-to-date', '1.2.3', '1.3', etc.
         self.status = None           # '', '1.2.03', '1.3.00', etc.
-        self.lang = None             # like 'Brasilian'
-        self.langReadable = None     # like 'Brasilian Portuguese'
+        self.lang = None             # like 'Brazilian'
+        self.langReadable = None     # like 'Brazilian Portuguese'
         self.note = None             # like 'should be cleaned up'
         self.prototypeDic = {}       # uniPrototype -> prototype
         self.translateMeText = 'translate me!'
@@ -1227,12 +1226,24 @@ class TrManager:
         doxy_default = os.path.join(self.script_path, '..')
         self.doxy_path = os.path.abspath(os.getenv('DOXYGEN', doxy_default))
 
-        # Get the explicit arguments of the script.
-        self.script_argLst = sys.argv[1:]
-
         # Build the path names based on the Doxygen's root knowledge.
         self.doc_path = os.path.join(self.doxy_path, 'doc')
         self.src_path = os.path.join(self.doxy_path, 'src')
+        #  Normally the original sources aren't in the current directory
+        # (as we are in the build directory) so we have to specify the
+        # original source /documentation / ... directory.
+        self.org_src_path = self.src_path
+        self.org_doc_path = self.doc_path
+        self.org_doxy_path = self.doxy_path
+        if (len(sys.argv) > 1 and os.path.isdir(os.path.join(sys.argv[1], 'src'))):
+            self.org_src_path = os.path.join(sys.argv[1], 'src')
+            self.org_doc_path = os.path.join(sys.argv[1], 'doc')
+            self.org_doxy_path = sys.argv[1]
+            # Get the explicit arguments of the script.
+            self.script_argLst = sys.argv[2:]
+        else:
+            # Get the explicit arguments of the script.
+            self.script_argLst = sys.argv[1:]
 
         # Create the empty dictionary for Transl object identified by the
         # class identifier of the translator.
@@ -1283,7 +1294,7 @@ class TrManager:
         # The translator.h must exist (the Transl object will check it),
         # create the object for it and let it build the dictionary of
         # required methods.
-        tr = Transl(os.path.join(self.src_path, 'translator.h'), self)
+        tr = Transl(os.path.join(self.org_src_path, 'translator.h'), self)
         self.requiredMethodsDic = tr.collectPureVirtualPrototypes()
         tim = tr.getmtime()
         if tim > self.lastModificationTime:
@@ -1291,7 +1302,7 @@ class TrManager:
 
         # The translator_adapter.h must exist (the Transl object will check it),
         # create the object for it and store the reference in the dictionary.
-        tr = Transl(os.path.join(self.src_path, 'translator_adapter.h'), self)
+        tr = Transl(os.path.join(self.org_src_path, 'translator_adapter.h'), self)
         self.adaptMethodsDic = tr.collectAdapterPrototypes()
         tim = tr.getmtime()
         if tim > self.lastModificationTime:
@@ -1303,11 +1314,11 @@ class TrManager:
         if self.script_argLst:
             lst = ['translator_' + x + '.h' for x in self.script_argLst]
             for fname in lst:
-                if not os.path.isfile(os.path.join(self.src_path, fname)):
+                if not os.path.isfile(os.path.join(self.org_src_path, fname)):
                     sys.stderr.write("\a\nFile '%s' not found!\n" % fname)
                     sys.exit(1)
         else:
-            lst = os.listdir(self.src_path)
+            lst = os.listdir(self.org_src_path)
             lst = [x for x in lst if x[:11] == 'translator_'
                                    and x[-2:] == '.h'
                                    and x != 'translator_adapter.h']
@@ -1316,7 +1327,7 @@ class TrManager:
         # content of the file. Then insert the object to the dictionary
         # accessed via classId.
         for fname in lst:
-            fullname = os.path.join(self.src_path, fname)
+            fullname = os.path.join(self.org_src_path, fname)
             tr = Transl(fullname, self)
             tr.processing()
             assert(tr.classId != 'Translator')
@@ -1395,7 +1406,7 @@ class TrManager:
                     self.numLang -= 1    # the couple will be counted as one
 
         # Extract the version of Doxygen.
-        f = xopen(os.path.join(self.doxy_path, 'VERSION'))
+        f = xopen(os.path.join(self.org_doxy_path, 'VERSION'))
         self.doxVersion = f.readline().strip()
         f.close()
 
@@ -1414,15 +1425,15 @@ class TrManager:
         are searched in doxygen/src directory.
         """
         files = []
-        for item in os.listdir(self.src_path):
+        for item in os.listdir(self.org_src_path):
             # Split the bare name to get the extension.
             name, ext = os.path.splitext(item)
             ext = ext.lower()
 
             # Include only .cpp and .h files (case independent) and exclude
             # the files where the checked identifiers are defined.
-            if ext == '.cpp' or (ext == '.h' and name.find('translator') == -1):
-                fname = os.path.join(self.src_path, item)
+            if ext == '.cpp' or ext ==  '.l' or (ext == '.h' and name.find('translator') == -1):
+                fname = os.path.join(self.org_src_path, item)
                 assert os.path.isfile(fname) # assumes no directory with the ext
                 files.append(fname)          # full name
         return files
@@ -1445,12 +1456,14 @@ class TrManager:
         assert os.path.isfile(fname)
         f = xopen(fname)
         cont = f.read()
+        cont = ''.join(cont.split('\n')) # otherwise the 'match' function won't work.
         f.close()
 
         # Remove the items for identifiers that were found in the file.
         while lst_in:
             item = lst_in.pop(0)
-            if cont.find(item) != -1:
+            rexItem = re.compile('.*' + item + ' *\(')
+            if rexItem.match(cont):
                 del dic[item]
 
 
@@ -1548,7 +1561,7 @@ class TrManager:
         # The e-mail addresses of the maintainers will be collected to
         # the auxiliary file in the order of translator classes listed
         # in the translator report.
-        fmail = xopen('mailto.txt', 'w')
+        fmail = xopen(os.path.join(self.doc_path, 'mailto.txt'), 'w')
 
         # Write the list of "up-to-date" translator classes.
         if self.upToDateIdLst:
@@ -1711,7 +1724,7 @@ class TrManager:
 
         Fills the dictionary classId -> [(name, e-mail), ...]."""
 
-        fname = os.path.join(self.doc_path, self.maintainersFileName)
+        fname = os.path.join(self.org_doc_path, self.maintainersFileName)
 
         # Include the maintainers file to the group of files checked with
         # respect to the modification time.
@@ -1766,7 +1779,7 @@ class TrManager:
         # Check the last modification time of the template file. It is the
         # last file from the group that decide whether the documentation
         # should or should not be generated.
-        fTplName = os.path.join(self.doc_path, self.languageTplFileName)
+        fTplName = os.path.join(self.org_doc_path, self.languageTplFileName)
         tim = os.path.getmtime(fTplName)
         if tim > self.lastModificationTime:
             self.lastModificationTime = tim
@@ -1812,9 +1825,9 @@ class TrManager:
         tplDic['numLangStr'] = str(self.numLang)
 
         # Define templates for HTML table parts of the documentation.
-        htmlTableTpl = '''\
+        htmlTableTpl = '''
             \\htmlonly
-			</p>
+            </p>
             <table align="center" cellspacing="0" cellpadding="0" border="0">
             <tr bgcolor="#000000">
             <td>
@@ -1833,7 +1846,7 @@ class TrManager:
             </td>
             </tr>
             </table>
-			<p>
+            <p>
             \\endhtmlonly
             '''
         htmlTableTpl = textwrap.dedent(htmlTableTpl)
@@ -1990,7 +2003,8 @@ class TrManager:
 if __name__ == '__main__':
 
     # The Python 2.6+ or 3.3+ is required.
-    major, minor, patch = (int(e) for e in platform.python_version_tuple())
+    major = sys.version_info[0]
+    minor = sys.version_info[1]
     if (major == 2 and minor < 6) or (major == 3 and minor < 0):
         print('Python 2.6+ or Python 3.0+ are required for the script')
         sys.exit(1)

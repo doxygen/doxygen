@@ -1,12 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>Some text. <image type="html" name="sample.png"/>
  <image type="latex" name="sample.png" width="5cm">Doxygen logo</image>
- More text. </para>
+ <image type="docbook" name="sample.png"/>
+ More text.</para>
+      <para>SVG image with caption:<linebreak/>
+<image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.svg">A caption</image>
+</para>
+      <para>PNG image with caption:<linebreak/>
+<image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.png">A caption</image>
+</para>
+      <para>SVG image without caption:<linebreak/>
+<image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.svg"/>
+</para>
+      <para>PNG image without caption:<linebreak/>
+<image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.png"/>
+</para>
+      <para>Inline SVG image with caption:<linebreak/>
+This image is inline <image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.svg" inline="yes">MIT license</image>
+ within the text.</para>
+      <para>Inline PNG image with caption:<linebreak/>
+This image is inline <image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.png" inline="yes">MIT license</image>
+ within the text.</para>
+      <para>Markdown style linked SVG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.svg" inline="yes"/></ulink></para>
+      <para>Markdown style linked PNG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.png" inline="yes"/></ulink></para>
+      <para>HTML style linked SVG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.svg" inline="yes"/></ulink></para>
+      <para>HTML style linked PNG image:<linebreak/>
+<ulink url="http://opensource.org/licenses/MIT"><image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.png" inline="yes"/></ulink></para>
+      <para>HTML style unlinked SVG image:<linebreak/>
+<image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.svg" inline="yes"/>
+</para>
+      <para>HTML style unlinked PNG image:<linebreak/>
+<image type="html" name="http://img.shields.io/badge/license-MIT-brightgreen.png" inline="yes"/>
+</para>
+      <para>Some markdown image tests<linebreak/>
+<image type="html" name="https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
+ <ulink url="http://www.doxygen.nl?foo&amp;bar">Some normal link</ulink></para>
+      <para>
+        <image type="html" name="https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
+        <ulink url="http://www.doxygen.nl?foo&amp;bar">Some normal link</ulink>
+      </para>
     </detaileddescription>
   </compounddef>
 </doxygen>

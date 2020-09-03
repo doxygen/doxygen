@@ -6,8 +6,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -25,7 +25,6 @@
 #include "htmlattrib.h"
 
 class Definition;
-class MemberGroup;
 
 enum Tokens
 {
@@ -34,12 +33,13 @@ enum Tokens
   TK_WHITESPACE    = 3,
   TK_LISTITEM      = 4,
   TK_ENDLIST       = 5,
-  TK_COMMAND       = 6,
+  TK_COMMAND_AT    = 6, //! Command starting with `@`
   TK_HTMLTAG       = 7,
   TK_SYMBOL        = 8,
   TK_NEWPARA       = 9,
   TK_RCSTAG        = 10,
   TK_URL           = 11,
+  TK_COMMAND_BS    = 12, //! Command starting with `\`
 
   RetVal_OK             = 0x10000,
   RetVal_SimpleSec      = 0x10001,
@@ -70,9 +70,7 @@ enum Tokens
 /** @brief Data associated with a token used by the comment block parser. */
 struct TokenInfo
 {
-  // unknown token
-  char unknownChar;
-  
+  TokenInfo() : isEnumList(FALSE), indent(0), id(-1), endTag(FALSE), emptyTag(FALSE), paramDir(Unspecified) {}
   // command token
   QCString name;
 
@@ -80,10 +78,10 @@ struct TokenInfo
   QCString text;
 
   // comment blocks
-  
+
   // list token info
-  bool isEnumList;
-  int indent;
+  bool isEnumList = false;
+  int indent = 0;
 
   // sections
   QCString sectionId;
@@ -96,22 +94,23 @@ struct TokenInfo
   QCString verb;
 
   // xrefitem
-  int id;
+  int id = -1;
 
   // html tag
   HtmlAttribList attribs;
-  bool endTag;
-  bool emptyTag;
+  bool endTag = false;
+  bool emptyTag = false;
+  QCString attribsStr;
 
   // whitespace
   QCString chars;
 
   // url
-  bool isEMailAddr;
+  bool isEMailAddr = false;
 
   // param attributes
   enum ParamDir { In=1, Out=2, InOut=3, Unspecified=0 };
-  ParamDir paramDir;
+  ParamDir paramDir = Unspecified;
 };
 
 // globals
@@ -123,9 +122,9 @@ extern FILE *doctokenizerYYin;
 const char *tokToString(int token);
 
 // operations on the scanner
-void doctokenizerYYFindSections(const char *input,Definition *d,
-                                MemberGroup *mg,const char *fileName);
-void doctokenizerYYinit(const char *input,const char *fileName);
+void doctokenizerYYFindSections(const char *input,const Definition *d,
+                                const char *fileName);
+void doctokenizerYYinit(const char *input,const char *fileName,bool markdownSupport);
 void doctokenizerYYcleanup();
 void doctokenizerYYpushContext();
 bool doctokenizerYYpopContext();
@@ -163,5 +162,8 @@ void doctokenizerYYendAutoList();
 void doctokenizerYYsetStatePlantUML();
 void doctokenizerYYsetStateSetScope();
 void doctokenizerYYsetStatePlantUMLOpt();
+void doctokenizerYYsetStateOptions();
+void doctokenizerYYsetStateBlock();
+void doctokenizerYYsetStateEmoji();
 
 #endif

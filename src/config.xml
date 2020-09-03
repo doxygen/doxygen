@@ -4,13 +4,13 @@
       <![CDATA[
 /*
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -41,28 +41,28 @@ Each statement consists of a \c TAG_NAME written in capitals,
 followed by the equal sign (<code>=</code>) and one or more values. If the same tag
 is assigned more than once, the last assignment overwrites any earlier
 assignment. For tags that take a list as their argument,
-the <code>+=</code> operator can be used instead of <code>=</code> to append 
-new values to the list. Values are sequences of non-blanks. If the value should 
+the <code>+=</code> operator can be used instead of <code>=</code> to append
+new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
-as the last character of a line. Environment variables can be expanded 
+as the last character of a line. Environment variables can be expanded
 using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
 \verbatim
 @INCLUDE = config_file_name
-\endverbatim 
-The include file is searched in the current working directory. You can 
+\endverbatim
+The include file is searched in the current working directory. You can
 also specify a list of directories that should be searched before looking
-in the current working directory. Do this by putting a <code>\@INCLUDE_PATH</code> tag 
+in the current working directory. Do this by putting a <code>\@INCLUDE_PATH</code> tag
 with these paths before the <code>\@INCLUDE</code> tag, e.g.:
 \verbatim
 @INCLUDE_PATH = my_config_dir
 \endverbatim
 
 The configuration options can be divided into several categories.
-Below is an alphabetical index of the tags that are recognized 
+Below is an alphabetical index of the tags that are recognized
 followed by the descriptions of the tags grouped by category.
 ]]>
     </docs>
@@ -91,26 +91,25 @@ Values that contain spaces should be placed between quotes (\" \").
       <![CDATA[
 \section config_examples Examples
 
-Suppose you have a simple project consisting of two files: a source file 
+Suppose you have a simple project consisting of two files: a source file
 \c example.cc and a header file \c example.h.
 Then a minimal configuration file is as simple as:
 \verbatim
 INPUT            = example.cc example.h
 \endverbatim
 
-Assuming the example makes use of Qt classes and \c perl is located 
+Assuming the example makes use of Qt classes and \c perl is located
 in <code>/usr/bin</code>, a more realistic configuration file would be:
 \verbatim
 PROJECT_NAME     = Example
 INPUT            = example.cc example.h
 WARNINGS         = YES
 TAGFILES         = qt.tag
-PERL_PATH        = /usr/local/bin/perl
 SEARCHENGINE     = NO
 \endverbatim
 
-To generate the documentation for the 
-<a href="http://www.stack.nl/~dimitri/qdbttabular/index.html">QdbtTabular</a> package
+To generate the documentation for the
+<a href="https://sourceforge.net/projects/qdbttabular/">QdbtTabular</a> package
 I have used the following configuration file:
 \verbatim
 PROJECT_NAME     = QdbtTabular
@@ -120,12 +119,11 @@ INPUT            = examples/examples.doc src
 FILE_PATTERNS    = *.cc *.h
 INCLUDE_PATH     = examples
 TAGFILES         = qt.tag
-PERL_PATH        = /usr/bin/perl
 SEARCHENGINE     = YES
 \endverbatim
 
 To regenerate the Qt-1.44 documentation from the sources, you could use the
-following config file:
+following configuration file:
 \verbatim
 PROJECT_NAME         = Qt
 OUTPUT_DIRECTORY     = qt_docs
@@ -160,7 +158,7 @@ INPUT                = $(QTDIR)/doc \
                        $(QTDIR)/src/dialogs \
                        $(QTDIR)/src/tools
 FILE_PATTERNS        = *.cpp *.h q*.doc
-INCLUDE_PATH         = $(QTDIR)/include 
+INCLUDE_PATH         = $(QTDIR)/include
 RECURSIVE            = YES
 \endverbatim
 
@@ -212,10 +210,10 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='DOXYFILE_ENCODING' format='string' defval='UTF-8'>
       <docs>
 <![CDATA[
- This tag specifies the encoding used for all characters in the config file that 
+ This tag specifies the encoding used for all characters in the configuration file that
  follow. The default is UTF-8 which is also the encoding used for all text before
  the first occurrence of this tag. Doxygen uses \c libiconv (or the iconv built into
- \c libc) for the transcoding. See http://www.gnu.org/software/libiconv for the list of
+ \c libc) for the transcoding. See https://www.gnu.org/software/libiconv/ for the list of
  possible encodings.
 ]]>
       </docs>
@@ -224,8 +222,8 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  The \c PROJECT_NAME tag is a single word (or a sequence of words
- surrounded by double-quotes, unless you are using Doxywizard) that should identify the project for which the 
- documentation is generated. This name is used in the title of most 
+ surrounded by double-quotes, unless you are using Doxywizard) that should identify the project for which the
+ documentation is generated. This name is used in the title of most
  generated pages and in a few other places.
 ]]>
       </docs>
@@ -242,9 +240,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='PROJECT_BRIEF' format='string' defval=''>
       <docs>
 <![CDATA[
- Using the \c PROJECT_BRIEF tag one can provide an optional one line description 
- for a project that appears at the top of each page and should give viewer 
- a quick idea about the purpose of the project. Keep the description short. 
+ Using the \c PROJECT_BRIEF tag one can provide an optional one line description
+ for a project that appears at the top of each page and should give viewer
+ a quick idea about the purpose of the project. Keep the description short.
 ]]>
       </docs>
     </option>
@@ -252,9 +250,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='PROJECT_LOGO' format='image' defval=''>
       <docs>
 <![CDATA[
- With the \c PROJECT_LOGO tag one can specify a logo or an icon that is 
- included in the documentation. The maximum height of the logo should not 
- exceed 55 pixels and the maximum width should not exceed 200 pixels. 
+ With the \c PROJECT_LOGO tag one can specify a logo or an icon that is
+ included in the documentation. The maximum height of the logo should not
+ exceed 55 pixels and the maximum width should not exceed 200 pixels.
  Doxygen will copy the logo to the output directory.
 ]]>
       </docs>
@@ -262,9 +260,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='string' id='OUTPUT_DIRECTORY' format='dir' defval=''>
       <docs>
 <![CDATA[
- The \c OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
- path into which the generated documentation will be written. 
- If a relative path is entered, it will be relative to the location 
+ The \c OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
+ path into which the generated documentation will be written.
+ If a relative path is entered, it will be relative to the location
  where doxygen was started. If left blank the current directory will be used.
 ]]>
       </docs>
@@ -273,11 +271,11 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c CREATE_SUBDIRS tag is set to \c YES then doxygen will create
- 4096 sub-directories (in 2 levels) under the output directory of each output 
- format and will distribute the generated files over these directories. 
+ 4096 sub-directories (in 2 levels) under the output directory of each output
+ format and will distribute the generated files over these directories.
  Enabling this option can be useful when feeding doxygen a huge amount of source
  files, where putting all generated files in the same directory would otherwise
- causes performance problems for the file system. 
+ causes performance problems for the file system.
 ]]>
       </docs>
     </option>
@@ -285,8 +283,8 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c ALLOW_UNICODE_NAMES tag is set to \c YES,
- doxygen will allow non-ASCII characters to appear in the names of generated files. 
- If set to \c NO, non-ASCII characters will be escaped, for example _xE3_x81_x84 
+ doxygen will allow non-ASCII characters to appear in the names of generated files.
+ If set to \c NO, non-ASCII characters will be escaped, for example _xE3_x81_x84
  will be used for Unicode U+3044.
 ]]>
       </docs>
@@ -343,6 +341,19 @@ Go to the <a href="commands.html">next</a> section or return to the
       <value name='Ukrainian'/>
       <value name='Vietnamese'/>
     </option>
+    <option type='enum' id='OUTPUT_TEXT_DIRECTION' defval='None'>
+      <docs>
+<![CDATA[
+ The \c OUTPUT_TEXT_DIRECTION tag is used to specify the direction in which all
+ documentation generated by doxygen is written. Doxygen will use this
+ information to generate all generated output in the proper direction.
+]]>
+      </docs>
+      <value name='None'/>
+      <value name='LTR'/>
+      <value name='RTL'/>
+      <value name='Context'/>
+    </option>
     <option type='bool' id='BRIEF_MEMBER_DESC' defval='1'>
       <docs>
 <![CDATA[
@@ -356,12 +367,12 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='REPEAT_BRIEF' defval='1'>
       <docs>
 <![CDATA[
- If the \c REPEAT_BRIEF tag is set to \c YES, doxygen will 
- prepend the brief description of a member or function before the detailed 
- description 
- <br>Note: 
+ If the \c REPEAT_BRIEF tag is set to \c YES, doxygen will
+ prepend the brief description of a member or function before the detailed
+ description
+ <br>Note:
  If both \ref cfg_hide_undoc_members "HIDE_UNDOC_MEMBERS" and
- \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" are set to \c NO, the 
+ \ref cfg_brief_member_desc "BRIEF_MEMBER_DESC" are set to \c NO, the
  brief descriptions will be completely suppressed.
 ]]>
       </docs>
@@ -375,7 +386,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  stripped from the text and the result, after processing the whole list, is used
  as the annotated text. Otherwise, the brief description is used as-is. If left
  blank, the following values are used (`$name` is automatically replaced with the
- name of the entity): 
+ name of the entity):
 ]]>
       </docs>
       <value name='The $name class'/>
@@ -393,7 +404,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='ALWAYS_DETAILED_SEC' defval='0'>
       <docs>
 <![CDATA[
- If the \c ALWAYS_DETAILED_SEC and \ref cfg_repeat_brief "REPEAT_BRIEF" tags 
+ If the \c ALWAYS_DETAILED_SEC and \ref cfg_repeat_brief "REPEAT_BRIEF" tags
  are both set to \c YES then
  doxygen will generate a detailed section even if there is only a brief
  description.
@@ -424,12 +435,12 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  The \c STRIP_FROM_PATH tag
  can be used to strip a user-defined part of the path. Stripping is
- only done if one of the specified strings matches the left-hand part of the 
+ only done if one of the specified strings matches the left-hand part of the
  path. The tag can be used to show relative paths in the file list.
  If left blank the directory from which doxygen is run is used as the
  path to strip.
- <br>Note that you can specify absolute paths here, but also 
- relative paths, which will be relative from the directory where doxygen is 
+ <br>Note that you can specify absolute paths here, but also
+ relative paths, which will be relative from the directory where doxygen is
  started.
 ]]>
       </docs>
@@ -438,11 +449,11 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
       <docs>
 <![CDATA[
- The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
+ The \c STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
  the path mentioned in the documentation of a class, which tells
- the reader which header file to include in order to use a class. 
+ the reader which header file to include in order to use a class.
  If left blank only the name of the header file containing the class
- definition is used. Otherwise one should specify the list of include paths that 
+ definition is used. Otherwise one should specify the list of include paths that
  are normally passed to the compiler using the `-I` flag.
 ]]>
       </docs>
@@ -461,9 +472,20 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
   If the \c JAVADOC_AUTOBRIEF tag is set to \c YES then doxygen
   will interpret the first line (until the first dot) of a Javadoc-style
-  comment as the brief description. If set to \c NO, the 
+  comment as the brief description. If set to \c NO, the
   Javadoc-style will behave just like regular Qt-style comments
   (thus requiring an explicit \ref cmdbrief "\@brief" command for a brief description.)
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='JAVADOC_BANNER' defval='0'>
+      <docs>
+<![CDATA[
+  If the \c JAVADOC_BANNER tag is set to \c YES then doxygen
+  will interpret a line such as \verbatim /***************\endverbatim as being the
+  beginning of a Javadoc-style comment "banner". If set to \c NO, the
+  Javadoc-style will behave just like regular comments and it will
+  not be interpreted by doxygen.
 ]]>
       </docs>
     </option>
@@ -488,6 +510,16 @@ Go to the <a href="commands.html">next</a> section or return to the
   description. Set this tag to \c YES if you prefer the old behavior instead.
   <br>Note that setting this tag to \c YES also means that rational rose comments
   are not recognized any more.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='PYTHON_DOCSTRING' defval='1'>
+      <docs>
+<![CDATA[
+  By default Python docstrings are displayed as preformatted text
+  and doxygen's special commands cannot be used. By setting \c PYTHON_DOCSTRING to
+  \c NO the doxygen's special commands can be used and the contents of the docstring
+  documentation blocks is shown as doxygen documentation.
 ]]>
       </docs>
     </option>
@@ -521,38 +553,55 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  This tag can be used to specify a number of aliases that act
- as commands in the documentation. An alias has the form: 
+ as commands in the documentation. An alias has the form:
 \verbatim
  name=value
 \endverbatim
- For example adding 
+ For example adding
 \verbatim
- "sideeffect=@par Side Effects:\n" 
+ "sideeffect=@par Side Effects:\n"
 \endverbatim
  will allow you to
- put the command \c \\sideeffect (or \c \@sideeffect) in the documentation, which 
+ put the command \c \\sideeffect (or \c \@sideeffect) in the documentation, which
  will result in a user-defined paragraph with heading "Side Effects:".
- You can put \ref cmdn "\\n"'s in the value part of an alias to insert newlines.
+ You can put \ref cmdn "\\n"'s in the value part of an alias to insert newlines
+ (in the resulting output).
+ You can put `^^` in the value part of an alias to insert a newline as if
+ a physical newline was in the original file.
 ]]>
       </docs>
-    </option>
-    <option type='list' id='TCL_SUBST' format='string'>
-      <docs>
+      <docs doxyfile='0' documentation='0'>
 <![CDATA[
- This tag can be used to specify a number of word-keyword mappings (TCL only). 
- A mapping has the form <code>"name=value"</code>. For example adding 
- <code>"class=itcl::class"</code> will allow you to use the command class in the 
- <code>itcl::class</code> meaning.
+ When you need a literal `{` or `}` or `,` in the value part of an alias you have to
+ escape them by means of a backslash, this can lead to conflicts with the
+ commands \c \\{ and \c \\} for these it is advised to use the version \c @{ and \c @} or
+ use a double escape (\c \\\\{ and \c \\\\})
+]]>
+      </docs>
+      <docs doxywizard='0' documentation='0'>
+<![CDATA[
+ When you need a literal `{` or `}` or `,` in the value part of an alias you have to
+ escape them by means of a backslash (\c \\), this can lead to conflicts with the
+ commands \c \\{ and \c \\} for these it is advised to use the version \c @{ and \c @} or
+ use a double escape (\c \\\\{ and \c \\\\})
+]]>
+      </docs>
+      <docs doxyfile='0' doxywizard='0'>
+<![CDATA[
+ When you need a literal `{` or `}` or `,` in the value part of an alias you have to
+ escape them by means of a backslash (`\`), this can lead to conflicts with the
+ commands \c \\{ and \c \\} for these it is advised to use the version \c @@{ and \c @@} or
+ use a double escape (\c \\\\{ and \c \\\\})
 ]]>
       </docs>
     </option>
     <option type='bool' id='OPTIMIZE_OUTPUT_FOR_C' defval='0'>
       <docs>
 <![CDATA[
- Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists 
- of C sources only. Doxygen will then generate output that is more tailored 
- for C. For instance, some of the names that are used will be different. 
- The list of all members will be omitted, etc. 
+ Set the \c OPTIMIZE_OUTPUT_FOR_C tag to \c YES if your project consists
+ of C sources only. Doxygen will then generate output that is more tailored
+ for C. For instance, some of the names that are used will be different.
+ The list of all members will be omitted, etc.
 ]]>
       </docs>
     </option>
@@ -560,16 +609,16 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  Set the \c OPTIMIZE_OUTPUT_JAVA tag to \c YES if your project consists of Java or
- Python sources only. Doxygen will then generate output that is more tailored 
- for that language. For instance, namespaces will be presented as packages, 
- qualified scopes will look different, etc. 
+ Python sources only. Doxygen will then generate output that is more tailored
+ for that language. For instance, namespaces will be presented as packages,
+ qualified scopes will look different, etc.
 ]]>
       </docs>
     </option>
     <option type='bool' id='OPTIMIZE_FOR_FORTRAN' defval='0'>
       <docs>
 <![CDATA[
- Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran 
+ Set the \c OPTIMIZE_FOR_FORTRAN tag to \c YES if your project consists of Fortran
  sources. Doxygen will then generate output that is tailored for Fortran.
 ]]>
       </docs>
@@ -577,8 +626,18 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='OPTIMIZE_OUTPUT_VHDL' defval='0'>
       <docs>
 <![CDATA[
- Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL 
+ Set the \c OPTIMIZE_OUTPUT_VHDL tag to \c YES if your project consists of VHDL
  sources. Doxygen will then generate output that is tailored for VHDL.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='OPTIMIZE_OUTPUT_SLICE' defval='0'>
+      <docs>
+<![CDATA[
+ Set the \c OPTIMIZE_OUTPUT_SLICE tag to \c YES if your project consists of Slice
+ sources only. Doxygen will then generate output that is more tailored
+ for that language. For instance, namespaces will be presented as modules,
+ types will be separated into more groups, etc.
 ]]>
       </docs>
     </option>
@@ -589,18 +648,18 @@ Go to the <a href="commands.html">next</a> section or return to the
  With this tag you can assign which parser to use for a given extension.
  Doxygen has a built-in mapping, but you can override or extend it using this tag.
  The format is <code>ext=language</code>, where \c ext is a file extension, and language is one of
- the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,
- Objective-C, Python, Fortran (fixed format Fortran: FortranFixed,
+ the parsers supported by doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, D, PHP,
+ md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (fixed format Fortran: FortranFixed,
  free formatted Fortran: FortranFree, unknown formatted Fortran: Fortran. In
  the later case the parser tries to guess whether the code is fixed or free
- formatted code, this is the default for Fortran type files), VHDL. 
+ formatted code, this is the default for Fortran type files).
 
  For instance to make doxygen treat
  <code>.inc</code> files as Fortran files (default is PHP), and <code>.f</code> files as C (default is Fortran),
  use: `inc=Fortran f=C`.
 
  <br>Note: For files without extension you can use `no_extension` as a placeholder.
- <br>Note that for custom extensions you also need to set \ref cfg_file_patterns "FILE_PATTERNS" otherwise the 
+ <br>Note that for custom extensions you also need to set \ref cfg_file_patterns "FILE_PATTERNS" otherwise the
  files are not read by doxygen.
 ]]>
       </docs>
@@ -608,16 +667,16 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='MARKDOWN_SUPPORT' defval='1'>
       <docs>
 <![CDATA[
- If the \c MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all 
- comments according to the Markdown format, which allows for more readable 
- documentation. See http://daringfireball.net/projects/markdown/ for details. 
- The output of markdown processing is further processed by doxygen, so you 
- can mix doxygen, HTML, and XML commands with Markdown formatting. 
- Disable only in case of backward compatibilities issues. 
+ If the \c MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all
+ comments according to the Markdown format, which allows for more readable
+ documentation. See https://daringfireball.net/projects/markdown/ for details.
+ The output of markdown processing is further processed by doxygen, so you
+ can mix doxygen, HTML, and XML commands with Markdown formatting.
+ Disable only in case of backward compatibilities issues.
 ]]>
       </docs>
     </option>
-    <option type='int' id='TOC_INCLUDE_HEADINGS' minval='0' maxval='99' defval='0' depends='MARKDOWN_SUPPORT'>
+    <option type='int' id='TOC_INCLUDE_HEADINGS' minval='0' maxval='99' defval='5' depends='MARKDOWN_SUPPORT'>
       <docs>
 <![CDATA[
  When the \c TOC_INCLUDE_HEADINGS tag is set to a non-zero value, all headings
@@ -630,9 +689,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='AUTOLINK_SUPPORT' defval='1'>
       <docs>
 <![CDATA[
- When enabled doxygen tries to link words that correspond to documented classes, 
- or namespaces to their corresponding documentation. Such a link can be 
- prevented in individual cases by putting a \c % sign in front of the word or 
+ When enabled doxygen tries to link words that correspond to documented classes,
+ or namespaces to their corresponding documentation. Such a link can be
+ prevented in individual cases by putting a \c % sign in front of the word or
  globally by setting \c AUTOLINK_SUPPORT to \c NO.
 ]]>
       </docs>
@@ -660,10 +719,10 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='SIP_SUPPORT' defval='0'>
       <docs>
 <![CDATA[
- Set the \c SIP_SUPPORT tag to \c YES if your project consists 
- of <a href="http://www.riverbankcomputing.co.uk/software/sip/intro">sip</a> sources only. 
- Doxygen will parse them like normal C++ but will assume all classes use public 
- instead of private inheritance when no explicit protection keyword is present. 
+ Set the \c SIP_SUPPORT tag to \c YES if your project consists
+ of <a href="https://www.riverbankcomputing.com/software/sip/intro">sip</a> sources only.
+ Doxygen will parse them like normal C++ but will assume all classes use public
+ instead of private inheritance when no explicit protection keyword is present.
 ]]>
       </docs>
     </option>
@@ -673,8 +732,8 @@ Go to the <a href="commands.html">next</a> section or return to the
  For Microsoft's IDL there are \c propget and \c propput attributes to indicate getter
  and setter methods for a property. Setting this option to \c YES
  will make doxygen to replace the get and set methods by a property in the
- documentation. This will only work if the methods are indeed getting or 
- setting a simple type. If this is not the case, or you want to show the 
+ documentation. This will only work if the methods are indeed getting or
+ setting a simple type. If this is not the case, or you want to show the
  methods anyway, you should set this option to \c NO.
 ]]>
       </docs>
@@ -705,16 +764,16 @@ Go to the <a href="commands.html">next</a> section or return to the
  the same type (for instance a group of public functions) to be put as a
  subgroup of that type (e.g. under the Public Functions section). Set it to
  \c NO to prevent subgrouping. Alternatively, this can be done per class using
- the \ref cmdnosubgrouping "\\nosubgrouping" command. 
+ the \ref cmdnosubgrouping "\\nosubgrouping" command.
 ]]>
       </docs>
     </option>
     <option type='bool' id='INLINE_GROUPED_CLASSES' defval='0'>
       <docs>
 <![CDATA[
- When the \c INLINE_GROUPED_CLASSES tag is set to \c YES, classes, structs and 
- unions are shown inside the group in which they are included 
- (e.g. using \ref cmdingroup "\\ingroup") instead of on a separate page (for HTML and Man pages) 
+ When the \c INLINE_GROUPED_CLASSES tag is set to \c YES, classes, structs and
+ unions are shown inside the group in which they are included
+ (e.g. using \ref cmdingroup "\\ingroup") instead of on a separate page (for HTML and Man pages)
  or section (for \f$\mbox{\LaTeX}\f$ and RTF).
  <br>Note that this feature does not work in
  combination with \ref cfg_separate_member_pages "SEPARATE_MEMBER_PAGES".
@@ -724,11 +783,11 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='INLINE_SIMPLE_STRUCTS' defval='0'>
       <docs>
 <![CDATA[
- When the \c INLINE_SIMPLE_STRUCTS tag is set to \c YES, structs, classes, and 
- unions with only public data fields or simple typedef fields will be shown 
- inline in the documentation of the scope in which they are defined (i.e. file, 
- namespace, or group documentation), provided this scope is documented. If set 
- to \c NO, structs, classes, and unions are shown on a separate 
+ When the \c INLINE_SIMPLE_STRUCTS tag is set to \c YES, structs, classes, and
+ unions with only public data fields or simple typedef fields will be shown
+ inline in the documentation of the scope in which they are defined (i.e. file,
+ namespace, or group documentation), provided this scope is documented. If set
+ to \c NO, structs, classes, and unions are shown on a separate
  page (for HTML and Man pages) or section (for \f$\mbox{\LaTeX}\f$ and RTF).
 ]]>
       </docs>
@@ -737,29 +796,44 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  When \c TYPEDEF_HIDES_STRUCT tag is enabled, a typedef of a struct, union, or enum
- is documented as struct, union, or enum with the name of the typedef. So 
- <code>typedef struct TypeS {} TypeT</code>, will appear in the documentation as a struct 
- with name \c TypeT. When disabled the typedef will appear as a member of a file, 
- namespace, or class. And the struct will be named \c TypeS. This can typically 
- be useful for C code in case the coding convention dictates that all compound 
+ is documented as struct, union, or enum with the name of the typedef. So
+ <code>typedef struct TypeS {} TypeT</code>, will appear in the documentation as a struct
+ with name \c TypeT. When disabled the typedef will appear as a member of a file,
+ namespace, or class. And the struct will be named \c TypeS. This can typically
+ be useful for C code in case the coding convention dictates that all compound
  types are typedef'ed and only the typedef is referenced, never the tag name.
 ]]>
       </docs>
     </option>
     <option type='int' id='LOOKUP_CACHE_SIZE' minval='0' maxval='9' defval='0'>
-      <!-- be carefull when changing these formulas as they are hard coded in the conversion script -->
+      <!-- be careful when changing these formulas as they are hard coded in the conversion script -->
       <docs>
 <![CDATA[
- The size of the symbol lookup cache can be 
- set using \c LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given 
- their name and scope. Since this can be an expensive process and often the 
- same symbol appears multiple times in the code, doxygen keeps a cache of 
- pre-resolved symbols. If the cache is too small doxygen will become slower. 
- If the cache is too large, memory is wasted. The cache size is given by this 
- formula: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0, 
- corresponding to a cache size of \f$2^{16} = 65536\f$ symbols. 
+ The size of the symbol lookup cache can be
+ set using \c LOOKUP_CACHE_SIZE. This cache is used to resolve symbols given
+ their name and scope. Since this can be an expensive process and often the
+ same symbol appears multiple times in the code, doxygen keeps a cache of
+ pre-resolved symbols. If the cache is too small doxygen will become slower.
+ If the cache is too large, memory is wasted. The cache size is given by this
+ formula: \f$2^{(16+\mbox{LOOKUP\_CACHE\_SIZE})}\f$. The valid range is 0..9, the default is 0,
+ corresponding to a cache size of \f$2^{16} = 65536\f$ symbols.
  At the end of a run doxygen will report the cache usage and suggest the
  optimal cache size from a speed point of view.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='NUM_PROC_THREADS' defval='1' minval='0' maxval='32'>
+      <docs>
+<![CDATA[
+ The \c NUM_PROC_THREADS specifies the number threads doxygen is allowed to use during
+ processing. When set to \c 0 doxygen will based this on the number of cores
+ available in the system. You can set it explicitly to a value larger than 0
+ to get more control over the balance between CPU load and processing speed.
+ At this moment only the input processing can be done using multiple threads.
+ Since this is still an experimental feature the default is set to 1,
+ which efficively disables parallel processing. Please report any issues you
+ encounter.
+ Generating dot graphs in parallel is controlled by the \c DOT_NUM_THREADS setting.
 ]]>
       </docs>
     </option>
@@ -768,14 +842,14 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='EXTRACT_ALL' defval='0'>
       <docs>
 <![CDATA[
- If the \c EXTRACT_ALL tag is set to \c YES, doxygen will assume all 
- entities in documentation are documented, even if no documentation was 
- available. Private class members and static file members will be hidden 
- unless the \ref cfg_extract_private "EXTRACT_PRIVATE" respectively 
+ If the \c EXTRACT_ALL tag is set to \c YES, doxygen will assume all
+ entities in documentation are documented, even if no documentation was
+ available. Private class members and static file members will be hidden
+ unless the \ref cfg_extract_private "EXTRACT_PRIVATE" respectively
  \ref cfg_extract_static "EXTRACT_STATIC" tags are set to \c YES.
 
- \note This will also disable the warnings about undocumented members 
- that are normally produced when \ref cfg_warnings "WARNINGS" is 
+ \note This will also disable the warnings about undocumented members
+ that are normally produced when \ref cfg_warnings "WARNINGS" is
  set to \c YES.
 ]]>
       </docs>
@@ -783,16 +857,24 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='EXTRACT_PRIVATE' defval='0'>
       <docs>
 <![CDATA[
- If the \c EXTRACT_PRIVATE tag is set to \c YES, all private members of a 
+ If the \c EXTRACT_PRIVATE tag is set to \c YES, all private members of a
  class will be included in the documentation.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='EXTRACT_PRIV_VIRTUAL' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c EXTRACT_PRIV_VIRTUAL tag is set to \c YES, documented private
+ virtual methods of a class will be included in the documentation.
 ]]>
       </docs>
     </option>
     <option type='bool' id='EXTRACT_PACKAGE' defval='0'>
       <docs>
 <![CDATA[
- If the \c EXTRACT_PACKAGE tag is set to \c YES, all members with package 
- or internal scope will be included in the documentation. 
+ If the \c EXTRACT_PACKAGE tag is set to \c YES, all members with package
+ or internal scope will be included in the documentation.
 ]]>
       </docs>
     </option>
@@ -807,8 +889,8 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='EXTRACT_LOCAL_CLASSES' defval='1'>
       <docs>
 <![CDATA[
- If the \c EXTRACT_LOCAL_CLASSES tag is set to \c YES, classes (and structs) 
- defined locally in source files will be included in the documentation. 
+ If the \c EXTRACT_LOCAL_CLASSES tag is set to \c YES, classes (and structs)
+ defined locally in source files will be included in the documentation.
  If set to \c NO, only classes defined in header files are included. Does not
  have any effect for Java sources.
 ]]>
@@ -817,7 +899,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='EXTRACT_LOCAL_METHODS' defval='0'>
       <docs>
 <![CDATA[
- This flag is only useful for Objective-C code. If set to \c YES, local 
+ This flag is only useful for Objective-C code. If set to \c YES, local
  methods, which are defined in the implementation section but not in
  the interface are included in the documentation.
  If set to \c NO, only methods in the interface are included.
@@ -838,7 +920,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c HIDE_UNDOC_MEMBERS tag is set to \c YES, doxygen will hide all
- undocumented members inside documented classes or files. 
+ undocumented members inside documented classes or files.
  If set to \c NO these members will be included in the
  various overviews, but no documentation section is generated.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
@@ -849,7 +931,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c HIDE_UNDOC_CLASSES tag is set to \c YES, doxygen will hide all
- undocumented classes that are normally visible in the class hierarchy. 
+ undocumented classes that are normally visible in the class hierarchy.
  If set to \c NO, these classes will be included in the
  various overviews.
  This option has no effect if \ref cfg_extract_all "EXTRACT_ALL" is enabled.
@@ -860,7 +942,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c HIDE_FRIEND_COMPOUNDS tag is set to \c YES, doxygen will hide all
- friend (class|struct|union) declarations.
+ friend declarations.
  If set to \c NO, these declarations will be included in the
  documentation.
 ]]>
@@ -869,9 +951,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='HIDE_IN_BODY_DOCS' defval='0'>
       <docs>
 <![CDATA[
- If the \c HIDE_IN_BODY_DOCS tag is set to \c YES, doxygen will hide any 
+ If the \c HIDE_IN_BODY_DOCS tag is set to \c YES, doxygen will hide any
  documentation blocks found inside the body of a function.
- If set to \c NO, these blocks will be appended to the 
+ If set to \c NO, these blocks will be appended to the
  function's detailed documentation block.
 ]]>
       </docs>
@@ -886,24 +968,24 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='portable_fileSystemIsCaseSensitive()'>
+    <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='Portable::fileSystemIsCaseSensitive()'>
       <docs>
 <![CDATA[
  If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen
  will only generate file names in lower-case letters. If set to
  \c YES, upper-case letters are also allowed. This is useful if you have
  classes or files whose names only differ in case and if your file system
- supports case sensitive file names. Windows and Mac users are advised to set this
- option to \c NO.
+ supports case sensitive file names. Windows (including Cygwin) and
+ Mac users are advised to set this option to \c NO.
 ]]>
       </docs>
     </option>
     <option type='bool' id='HIDE_SCOPE_NAMES' defval='0'>
       <docs>
 <![CDATA[
- If the \c HIDE_SCOPE_NAMES tag is set to \c NO then doxygen 
+ If the \c HIDE_SCOPE_NAMES tag is set to \c NO then doxygen
  will show members with their full class and namespace scopes in the
- documentation. If set to \c YES, the scope will be hidden. 
+ documentation. If set to \c YES, the scope will be hidden.
 ]]>
       </docs>
     </option>
@@ -912,7 +994,7 @@ Go to the <a href="commands.html">next</a> section or return to the
 <![CDATA[
  If the \c HIDE_COMPOUND_REFERENCE tag is set to \c NO (default) then
  doxygen will append additional text to a page's title, such as Class Reference.
- If set to \c YES the compound reference will be hidden. 
+ If set to \c YES the compound reference will be hidden.
 ]]>
       </docs>
     </option>
@@ -920,7 +1002,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c SHOW_INCLUDE_FILES tag is set to \c YES then doxygen
- will put a list of the files that are included by a file in the documentation 
+ will put a list of the files that are included by a file in the documentation
  of that file.
 ]]>
       </docs>
@@ -928,7 +1010,7 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='SHOW_GROUPED_MEMB_INC' defval='0'>
       <docs>
 <![CDATA[
- If the SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen 
+ If the SHOW_GROUPED_MEMB_INC tag is set to \c YES then Doxygen
  will add for each grouped member an include statement to the documentation,
  telling the reader which file to include in order to use the member.
 ]]>
@@ -937,8 +1019,8 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='FORCE_LOCAL_INCLUDES' defval='0'>
       <docs>
 <![CDATA[
- If the \c FORCE_LOCAL_INCLUDES tag is set to \c YES then doxygen 
- will list include files with double quotes in the documentation 
+ If the \c FORCE_LOCAL_INCLUDES tag is set to \c YES then doxygen
+ will list include files with double quotes in the documentation
  rather than with sharp brackets.
 ]]>
       </docs>
@@ -990,9 +1072,9 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='SORT_GROUP_NAMES' defval='0'>
       <docs>
 <![CDATA[
- If the \c SORT_GROUP_NAMES tag is set to \c YES then doxygen will sort the 
+ If the \c SORT_GROUP_NAMES tag is set to \c YES then doxygen will sort the
  hierarchy of group names into alphabetical order. If set to \c NO
- the group names will appear in their defined order. 
+ the group names will appear in their defined order.
 ]]>
       </docs>
     </option>
@@ -1004,7 +1086,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  \c NO, the class list will be sorted only by class name,
  not including the namespace part.
  \note This option is not very useful if \ref cfg_hide_scope_names "HIDE_SCOPE_NAMES" is set to \c YES.
- \note This option applies only to the class list, not to the 
+ \note This option applies only to the class list, not to the
        alphabetical list.
 ]]>
       </docs>
@@ -1013,10 +1095,10 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  If the \c STRICT_PROTO_MATCHING option is enabled and doxygen fails to
- do proper type resolution of all parameters of a function it will reject a  
+ do proper type resolution of all parameters of a function it will reject a
  match between the prototype and the implementation of a member function even
  if there is only one candidate or it is obvious which candidate to choose
- by doing a simple string match. By disabling \c STRICT_PROTO_MATCHING doxygen 
+ by doing a simple string match. By disabling \c STRICT_PROTO_MATCHING doxygen
  will still accept a match between prototype and implementation in such cases.
 ]]>
       </docs>
@@ -1025,7 +1107,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  The \c GENERATE_TODOLIST tag can be used to enable (\c YES) or
- disable (\c NO) the todo list. This list is created by 
+ disable (\c NO) the todo list. This list is created by
  putting \ref cmdtodo "\\todo" commands in the documentation.
 ]]>
       </docs>
@@ -1034,7 +1116,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  The \c GENERATE_TESTLIST tag can be used to enable (\c YES) or
- disable (\c NO) the test list. This list is created by 
+ disable (\c NO) the test list. This list is created by
  putting \ref cmdtest "\\test" commands in the documentation.
 ]]>
       </docs>
@@ -1043,7 +1125,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  The \c GENERATE_BUGLIST tag can be used to enable (\c YES) or
- disable (\c NO) the bug list. This list is created by 
+ disable (\c NO) the bug list. This list is created by
  putting \ref cmdbug "\\bug" commands in the documentation.
 ]]>
       </docs>
@@ -1052,7 +1134,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  The \c GENERATE_DEPRECATEDLIST tag can be used to enable (\c YES) or
- disable (\c NO) the deprecated list. This list is created by 
+ disable (\c NO) the deprecated list. This list is created by
  putting \ref cmddeprecated "\\deprecated"
  commands in the documentation.
 ]]>
@@ -1062,7 +1144,7 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  The \c ENABLED_SECTIONS tag can be used to enable conditional
- documentation sections, marked by \ref cmdif "\\if" \<section_label\> ... 
+ documentation sections, marked by \ref cmdif "\\if" \<section_label\> ...
  \ref cmdendif "\\endif" and \ref cmdcond "\\cond" \<section_label\> ...
  \ref cmdendcond "\\endcond" blocks.
 ]]>
@@ -1114,14 +1196,16 @@ Go to the <a href="commands.html">next</a> section or return to the
  The \c FILE_VERSION_FILTER tag can be used to specify a program or script that
  doxygen should invoke to get the current version for each file (typically from the
  version control system). Doxygen will invoke the program by executing (via
- <code>popen()</code>) the command <code>command input-file</code>, where \c command is 
- the value of the \c FILE_VERSION_FILTER tag, and \c input-file is the name 
- of an input file provided by doxygen. 
+ <code>popen()</code>) the command <code>command input-file</code>, where \c command is
+ the value of the \c FILE_VERSION_FILTER tag, and \c input-file is the name
+ of an input file provided by doxygen.
  Whatever the program writes to standard output is used as the file version.
 ]]>
       </docs>
       <docs doxywizard='0' doxyfile='0'>
 <![CDATA[
+<br>
+<br>
 Example of using a shell script as a filter for Unix:
 \verbatim
  FILE_VERSION_FILTER = "/bin/sh versionfilter.sh"
@@ -1131,8 +1215,8 @@ Example shell script for CVS:
 \verbatim
 #!/bin/sh
 cvs status $1 | sed -n 's/^[ \]*Working revision:[ \t]*\([0-9][0-9\.]*\).*/\1/p'
-\endverbatim 
-<br> 
+\endverbatim
+<br>
 Example shell script for Subversion:
 \verbatim
 #!/bin/sh
@@ -1141,7 +1225,7 @@ svn stat -v $1 | sed -n 's/^[ A-Z?\*|!]\{1,15\}/r/;s/ \{1,15\}/\/r/;s/ .*//p'
 <br>
 Example filter for ClearCase:
 \verbatim
-FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
+FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 \endverbatim
 ]]>
       </docs>
@@ -1160,8 +1244,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  doxygen's defaults, run doxygen with the `-l` option. You can optionally specify a
  file name after the option, if omitted \c DoxygenLayout.xml will be used as the name
  of the layout file.
- <br>Note that if you run doxygen from a directory containing 
- a file called \c DoxygenLayout.xml, doxygen will parse it automatically even if 
+ <br>Note that if you run doxygen from a directory containing
+ a file called \c DoxygenLayout.xml, doxygen will parse it automatically even if
  the \c LAYOUT_FILE tag is left empty.
 ]]>
       </docs>
@@ -1169,11 +1253,11 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='list' id='CITE_BIB_FILES' format='file'>
       <docs>
 <![CDATA[
- The \c CITE_BIB_FILES tag can be used to specify one or more \c bib files 
- containing the reference definitions. This must be a list of <code>.bib</code> files. The 
- <code>.bib</code> extension is automatically appended if omitted. This requires the 
- \c bibtex tool to be installed. See also http://en.wikipedia.org/wiki/BibTeX for
- more info. For \f$\mbox{\LaTeX}\f$ the style of the bibliography can be controlled 
+ The \c CITE_BIB_FILES tag can be used to specify one or more \c bib files
+ containing the reference definitions. This must be a list of <code>.bib</code> files. The
+ <code>.bib</code> extension is automatically appended if omitted. This requires the
+ \c bibtex tool to be installed. See also https://en.wikipedia.org/wiki/BibTeX for
+ more info. For \f$\mbox{\LaTeX}\f$ the style of the bibliography can be controlled
  using \ref cfg_latex_bib_style "LATEX_BIB_STYLE".
  To use this feature you need \c bibtex and \c perl available in the search path.
  See also \ref cmdcite "\\cite" for info how to create references.
@@ -1194,7 +1278,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c WARNINGS tag can be used to turn on/off the warning messages that are
- generated to standard error (\c stderr) by doxygen. If \c WARNINGS is set to 
+ generated to standard error (\c stderr) by doxygen. If \c WARNINGS is set to
  \c YES this implies that the warnings are on.
 <br>
  \b Tip: Turn warnings on while writing the documentation.
@@ -1216,18 +1300,20 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If the \c WARN_IF_DOC_ERROR tag is set to \c YES, doxygen will generate warnings for
  potential errors in the documentation, such as not documenting some
  parameters in a documented function, or documenting parameters that
- don't exist or using markup commands wrongly. 
+ don't exist or using markup commands wrongly.
 ]]>
       </docs>
     </option>
     <option type='bool' id='WARN_NO_PARAMDOC' defval='0'>
       <docs>
 <![CDATA[
- This \c WARN_NO_PARAMDOC option can be enabled to get warnings for 
+ This \c WARN_NO_PARAMDOC option can be enabled to get warnings for
  functions that are documented, but have no documentation for their parameters
  or return value. If set to \c NO, doxygen will only warn about
  wrong or incomplete parameter documentation, but not about the absence of
  documentation.
+ If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
+ automatically be disabled.
 ]]>
       </docs>
     </option>
@@ -1243,13 +1329,13 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c WARN_FORMAT tag determines the format of the warning messages that
- doxygen can produce. The string should contain the <code>\$file</code>, 
- <code>\$line</code>, and <code>\$text</code> 
+ doxygen can produce. The string should contain the <code>\$file</code>,
+ <code>\$line</code>, and <code>\$text</code>
  tags, which will be replaced by the file and line number from which the
  warning originated and the warning text.
- Optionally the format may contain 
- <code>$version</code>, which will be replaced by the version of the file (if it could 
- be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER") 
+ Optionally the format may contain
+ <code>$version</code>, which will be replaced by the version of the file (if it could
+ be obtained via \ref cfg_file_version_filter "FILE_VERSION_FILTER")
 ]]>
       </docs>
     </option>
@@ -1257,7 +1343,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
- and error messages should be written. If left blank the output is written 
+ and error messages should be written. If left blank the output is written
  to standard error (`stderr`).
 ]]>
       </docs>
@@ -1267,9 +1353,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='list' id='INPUT' format='filedir'>
       <docs>
 <![CDATA[
- The \c INPUT tag is used to specify the files and/or directories that contain 
- documented source files. You may enter file names like 
- \c myfile.cpp or directories like \c /usr/src/myproject. 
+ The \c INPUT tag is used to specify the files and/or directories that contain
+ documented source files. You may enter file names like
+ \c myfile.cpp or directories like \c /usr/src/myproject.
  Separate the files or directories with spaces. See also
  \ref cfg_file_patterns "FILE_PATTERNS"  and
  \ref cfg_extension_mapping "EXTENSION_MAPPING"
@@ -1282,10 +1368,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='string' id='INPUT_ENCODING' format='string' defval='UTF-8'>
       <docs>
 <![CDATA[
- This tag can be used to specify the character encoding of the source files that 
+ This tag can be used to specify the character encoding of the source files that
  doxygen parses. Internally doxygen uses the UTF-8 encoding.
- Doxygen uses `libiconv` (or the `iconv` built into `libc`) for the transcoding. 
- See <a href="http://www.gnu.org/software/libiconv">the libiconv documentation</a> for 
+ Doxygen uses `libiconv` (or the `iconv` built into `libc`) for the transcoding.
+ See <a href="https://www.gnu.org/software/libiconv/">the libiconv documentation</a> for
  the list of possible encodings.
 ]]>
       </docs>
@@ -1293,9 +1379,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='list' id='FILE_PATTERNS' format='string'>
       <docs>
 <![CDATA[
- If the value of the \ref cfg_input "INPUT" tag contains directories, you can use the 
- \c FILE_PATTERNS tag to specify one or more wildcard patterns 
- (like `*.cpp` and `*.h`) to filter out the source-files 
+ If the value of the \ref cfg_input "INPUT" tag contains directories, you can use the
+ \c FILE_PATTERNS tag to specify one or more wildcard patterns
+ (like `*.cpp` and `*.h`) to filter out the source-files
  in the directories.<br>
  Note that for custom extensions or not directly supported extensions you also
  need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
@@ -1333,20 +1419,23 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <value name='*.markdown'/>
       <value name='*.md'/>
       <value name='*.mm'/>
-      <value name='*.dox'/>
+      <value name='*.dox' desc='(to be provided as doxygen C comment)'/>
+      <value name='*.doc' desc='(to be provided as doxygen C comment)'/>
+      <value name='*.txt' desc='(to be provided as doxygen C comment)'/>
       <value name='*.py'/>
       <value name='*.pyw'/>
       <value name='*.f90'/>
       <value name='*.f95'/>
       <value name='*.f03'/>
       <value name='*.f08'/>
+      <value name='*.f18'/>
       <value name='*.f'/>
       <value name='*.for'/>
-      <value name='*.tcl'/>
       <value name='*.vhd'/>
       <value name='*.vhdl'/>
       <value name='*.ucf'/>
       <value name='*.qsf'/>
+      <value name='*.ice'/>
     </option>
     <option type='bool' id='RECURSIVE' defval='0'>
       <docs>
@@ -1369,7 +1458,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='bool' id='EXCLUDE_SYMLINKS' defval='0'>
       <docs>
 <![CDATA[
- The \c EXCLUDE_SYMLINKS tag can be used to select whether or not files or directories 
+ The \c EXCLUDE_SYMLINKS tag can be used to select whether or not files or directories
  that are symbolic links (a Unix file system feature) are excluded from the input.
 ]]>
       </docs>
@@ -1380,8 +1469,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  If the value of the \ref cfg_input "INPUT" tag contains directories, you can use the
  \c EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
  certain files from those directories.
- <br>Note that the wildcards are matched 
- against the file with absolute path, so to exclude all test directories 
+ <br>Note that the wildcards are matched
+ against the file with absolute path, so to exclude all test directories
  for example use the pattern `*``/test/``*`
 ]]>
       </docs>
@@ -1389,13 +1478,13 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='list' id='EXCLUDE_SYMBOLS' format='string'>
       <docs>
 <![CDATA[
- The \c EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
- (namespaces, classes, functions, etc.) that should be excluded from the 
- output. The symbol name can be a fully qualified name, a word, or if the 
- wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`, 
- `AClass::ANamespace`, `ANamespace::*Test` 
- <br>Note that the wildcards are matched against the file with absolute path, 
- so to exclude all test directories use the pattern 
+ The \c EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
+ (namespaces, classes, functions, etc.) that should be excluded from the
+ output. The symbol name can be a fully qualified name, a word, or if the
+ wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`,
+ `AClass::ANamespace`, `ANamespace::*Test`
+ <br>Note that the wildcards are matched against the file with absolute path,
+ so to exclude all test directories use the pattern
  `*``/test/``*`
 ]]>
       </docs>
@@ -1412,7 +1501,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='list' id='EXAMPLE_PATTERNS' format='string'>
       <docs>
 <![CDATA[
- If the value of the \ref cfg_example_path "EXAMPLE_PATH" tag contains directories, 
+ If the value of the \ref cfg_example_path "EXAMPLE_PATH" tag contains directories,
  you can use the
  \c EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like `*.cpp`
  and `*.h`) to filter out the source-files in the directories. If left
@@ -1426,8 +1515,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <![CDATA[
  If the \c EXAMPLE_RECURSIVE tag is set to \c YES then subdirectories will be
  searched for input files to be used with the \ref cmdinclude "\\include" or
- \ref cmddontinclude "\\dontinclude" 
- commands irrespective of the value of the \ref cfg_recursive "RECURSIVE" tag. 
+ \ref cmddontinclude "\\dontinclude"
+ commands irrespective of the value of the \ref cfg_recursive "RECURSIVE" tag.
 ]]>
       </docs>
     </option>
@@ -1435,7 +1524,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  The \c IMAGE_PATH tag can be used to specify one or more files or
- directories that contain images that are to be included in the 
+ directories that contain images that are to be included in the
  documentation (see the \ref cmdimage "\\image" command).
 ]]>
       </docs>
@@ -1452,9 +1541,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  where <code>\<filter\></code>
  is the value of the \c INPUT_FILTER tag, and <code>\<input-file\></code> is the name of an
  input file. Doxygen will then use the output that the filter program writes
- to standard output.  If \ref cfg_filter_patterns "FILTER_PATTERNS" is specified, this tag will be ignored. 
- <br>Note that the filter must not add or remove lines; it is applied before the 
- code is scanned, but not when the output code is generated. If lines are added 
+ to standard output.  If \ref cfg_filter_patterns "FILTER_PATTERNS" is specified, this tag will be ignored.
+ <br>Note that the filter must not add or remove lines; it is applied before the
+ code is scanned, but not when the output code is generated. If lines are added
  or removed, the anchors will not be placed correctly.
  <br>Note that for custom extensions or not directly supported extensions you also
  need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
@@ -1471,7 +1560,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
  filter if there is a match. The filters are a list of the form:
  pattern=filter (like `*.cpp=my_cpp_filter`). See \ref cfg_input_filter "INPUT_FILTER" for further
  information on how filters are used. If the \c FILTER_PATTERNS tag is empty or if
- none of the patterns match the file name, \ref cfg_input_filter "INPUT_FILTER" is 
+ none of the patterns match the file name, \ref cfg_input_filter "INPUT_FILTER" is
  applied.
  <br>Note that for custom extensions or not directly supported extensions you also
  need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
@@ -1484,7 +1573,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <![CDATA[
  If the \c FILTER_SOURCE_FILES tag is set to \c YES, the input filter (if set using
  \ref cfg_input_filter "INPUT_FILTER") will also be used to filter the input
- files that are used for producing the source files to browse 
+ files that are used for producing the source files to browse
  (i.e. when \ref cfg_source_browser "SOURCE_BROWSER" is set to \c YES).
 ]]>
       </docs>
@@ -1492,10 +1581,10 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='list' id='FILTER_SOURCE_PATTERNS' format='string' depends='FILTER_SOURCE_FILES'>
       <docs>
 <![CDATA[
- The \c FILTER_SOURCE_PATTERNS tag can be used to specify source filters per 
- file pattern. A pattern will override the setting 
- for \ref cfg_filter_patterns "FILTER_PATTERN" (if any) 
- and it is also possible to disable source filtering for a specific pattern 
+ The \c FILTER_SOURCE_PATTERNS tag can be used to specify source filters per
+ file pattern. A pattern will override the setting
+ for \ref cfg_filter_patterns "FILTER_PATTERN" (if any)
+ and it is also possible to disable source filtering for a specific pattern
  using `*.ext=` (so without naming a filter).
 ]]>
       </docs>
@@ -1503,9 +1592,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='string' id='USE_MDFILE_AS_MAINPAGE' format='string' defval=''>
       <docs>
 <![CDATA[
- If the \c USE_MDFILE_AS_MAINPAGE tag refers to the name of a markdown file that 
- is part of the input, its contents will be placed on the main page (`index.html`). 
- This can be useful if you have a project on for instance GitHub and want to reuse 
+ If the \c USE_MDFILE_AS_MAINPAGE tag refers to the name of a markdown file that
+ is part of the input, its contents will be placed on the main page (`index.html`).
+ This can be useful if you have a project on for instance GitHub and want to reuse
  the introduction page also for the doxygen output.
 ]]>
       </docs>
@@ -1543,8 +1632,8 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  If the \c REFERENCED_BY_RELATION tag is set to \c YES
- then for each documented function all documented
- functions referencing it will be listed. 
+ then for each documented entity all documented
+ functions referencing it will be listed.
 ]]>
       </docs>
     </option>
@@ -1553,7 +1642,7 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
 <![CDATA[
  If the \c REFERENCES_RELATION tag is set to \c YES
  then for each documented function all documented entities
- called/used by that function will be listed. 
+ called/used by that function will be listed.
 ]]>
       </docs>
     </option>
@@ -1561,9 +1650,9 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
       <docs>
 <![CDATA[
  If the \c REFERENCES_LINK_SOURCE tag is set to \c YES
- and \ref cfg_source_browser "SOURCE_BROWSER" tag is set to \c YES then the hyperlinks from 
+ and \ref cfg_source_browser "SOURCE_BROWSER" tag is set to \c YES then the hyperlinks from
  functions in \ref cfg_references_relation "REFERENCES_RELATION" and
- \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" lists will 
+ \ref cfg_referenced_by_relation "REFERENCED_BY_RELATION" lists will
  link to the source code.  Otherwise they will link to the documentation.
 ]]>
       </docs>
@@ -1571,11 +1660,11 @@ FILE_VERSION_INFO = "cleartool desc -fmt \%Vn"
     <option type='bool' id='SOURCE_TOOLTIPS' defval='1' depends='SOURCE_BROWSER'>
       <docs>
 <![CDATA[
-If SOURCE_TOOLTIPS is enabled (the default) then hovering a hyperlink in the 
-source code will show a tooltip with additional information such as prototype, 
-brief description and links to the definition and documentation. Since this will 
-make the HTML file larger and loading of large files a bit slower, you can opt 
-to disable this feature. 
+If SOURCE_TOOLTIPS is enabled (the default) then hovering a hyperlink in the
+source code will show a tooltip with additional information such as prototype,
+brief description and links to the definition and documentation. Since this will
+make the HTML file larger and loading of large files a bit slower, you can opt
+to disable this feature.
 ]]>
       </docs>
     </option>
@@ -1585,12 +1674,12 @@ to disable this feature.
  If the \c USE_HTAGS tag is set to \c YES then the references to source code
  will point to the HTML generated by the \c htags(1) tool instead of doxygen
  built-in source browser. The \c htags tool is part of GNU's global source
- tagging system (see http://www.gnu.org/software/global/global.html). You 
- will need version 4.8.6 or higher. 
+ tagging system (see https://www.gnu.org/software/global/global.html). You
+ will need version 4.8.6 or higher.
 <br>
  To use it do the following:
  -# Install the latest version of \c global
- -# Enable \ref cfg_source_browser "SOURCE_BROWSER" and \c USE_HTAGS in the config file
+ -# Enable \ref cfg_source_browser "SOURCE_BROWSER" and \c USE_HTAGS in the configuration file
  -# Make sure the \ref cfg_input "INPUT" points to the root of the source tree
  -# Run \c doxygen as normal
 <br>
@@ -1616,26 +1705,42 @@ to disable this feature.
     <option type='bool' id='CLANG_ASSISTED_PARSING' setting='USE_LIBCLANG' defval='0'>
       <docs>
 <![CDATA[
-  If the \c CLANG_ASSISTED_PARSING tag is set to \c YES then doxygen will use the 
-  <a href="http://clang.llvm.org/">clang parser</a> for more accurate parsing 
-  at the cost of reduced performance. This can be particularly helpful with 
-  template rich C++ code for which doxygen's built-in parser lacks the 
+  If the \c CLANG_ASSISTED_PARSING tag is set to \c YES then doxygen will use the
+  <a href="http://clang.llvm.org/">clang parser</a> for more accurate parsing
+  at the cost of reduced performance. This can be particularly helpful with
+  template rich C++ code for which doxygen's built-in parser lacks the
   necessary type information.
 
   @note The availability of this option depends on whether or not doxygen
-  was generated with the `-Duse-libclang=ON` option for CMake.
+  was generated with the `-Duse_libclang=ON` option for CMake.
 ]]>
       </docs>
     </option>
     <option type='list' id='CLANG_OPTIONS' format='string' setting='USE_LIBCLANG' depends='CLANG_ASSISTED_PARSING'>
       <docs>
 <![CDATA[
- If clang assisted parsing is enabled you can provide the compiler with command 
- line options that you would normally use when invoking the compiler. Note that 
- the include paths will already be set by doxygen for the files and directories 
+ If clang assisted parsing is enabled you can provide the compiler with command
+ line options that you would normally use when invoking the compiler. Note that
+ the include paths will already be set by doxygen for the files and directories
  specified with \ref cfg_input "INPUT" and \ref cfg_include_path "INCLUDE_PATH".
 ]]>
       </docs>
+    </option>
+    <option type='string' id='CLANG_DATABASE_PATH' setting='USE_LIBCLANG' defval=''>
+      <docs>
+<![CDATA[
+ If clang assisted parsing is enabled you can provide the clang parser with the
+ path to the directory containing a file called compile_commands.json.
+ This file is the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
+ compilation database</a> containing the options used when the source files were built.
+ This is equivalent to specifying the "-p" option to a clang tool, such as clang-check.
+ These options will then be passed to the parser. Any options specified with
+ \ref cfg_clang_options "CLANG_OPTIONS" will be added as well.
+
+ @note The availability of this option depends on whether or not doxygen
+ was generated with the `-Duse_libclang=ON` option for CMake.
+ ]]>
+        </docs>
     </option>
   </group>
   <group name='Index' docs='Configuration options related to the alphabetical class index'>
@@ -1643,7 +1748,7 @@ to disable this feature.
       <docs>
 <![CDATA[
  If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
- of all compounds will be generated. Enable this if the project contains 
+ of all compounds will be generated. Enable this if the project contains
  a lot of classes, structs, unions or interfaces.
 ]]>
       </docs>
@@ -1651,7 +1756,7 @@ to disable this feature.
     <option type='int' id='COLS_IN_ALPHA_INDEX' minval='1' maxval='20' defval='5' depends='ALPHABETICAL_INDEX'>
       <docs>
 <![CDATA[
- The \c COLS_IN_ALPHA_INDEX tag can be 
+ The \c COLS_IN_ALPHA_INDEX tag can be
  used to specify the number of columns in which the alphabetical index list will be split.
 ]]>
       </docs>
@@ -1659,9 +1764,9 @@ to disable this feature.
     <option type='list' id='IGNORE_PREFIX' format='string' depends='ALPHABETICAL_INDEX'>
       <docs>
 <![CDATA[
- In case all classes in a project start with a common prefix, all classes will 
+ In case all classes in a project start with a common prefix, all classes will
  be put under the same header in the alphabetical index.
- The \c IGNORE_PREFIX tag can be used to specify a prefix 
+ The \c IGNORE_PREFIX tag can be used to specify a prefix
  (or a list of prefixes) that should be ignored while generating the index headers.
 ]]>
       </docs>
@@ -1688,7 +1793,7 @@ to disable this feature.
     <option type='string' id='HTML_FILE_EXTENSION' format='string' defval='.html' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_FILE_EXTENSION tag can be used to specify the file extension for 
+ The \c HTML_FILE_EXTENSION tag can be used to specify the file extension for
  each generated HTML page (for example: <code>.htm, .php, .asp</code>).
 ]]>
       </docs>
@@ -1696,10 +1801,10 @@ to disable this feature.
     <option type='string' id='HTML_HEADER' format='file' defval='' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_HEADER tag can be used to specify a user-defined HTML 
- header file for each generated HTML page. 
- If the tag is left blank doxygen will generate a 
- standard header. 
+ The \c HTML_HEADER tag can be used to specify a user-defined HTML
+ header file for each generated HTML page.
+ If the tag is left blank doxygen will generate a
+ standard header.
 <br>
  To get valid HTML the header file that
  includes any scripts and style sheets that doxygen
@@ -1715,7 +1820,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  the default header that doxygen normally uses.
 
  @note The header is subject to change so you typically
- have to regenerate the default header when upgrading to a newer version of 
+ have to regenerate the default header when upgrading to a newer version of
  doxygen.
 ]]>
       </docs>
@@ -1728,7 +1833,7 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  <dt><code>\$date</code><dd>will be replaced with the current date.
  <dt><code>\$year</code><dd>will be replaces with the current year.
  <dt><code>\$doxygenversion</code><dd>will be replaced with the version of doxygen
- <dt><code>\$projectname</code><dd>will be replaced with the name of 
+ <dt><code>\$projectname</code><dd>will be replaced with the name of
             the project (see \ref cfg_project_name "PROJECT_NAME")
  <dt><code>\$projectnumber</code><dd>will be replaced with the project number
             (see \ref cfg_project_number "PROJECT_NUMBER")
@@ -1736,25 +1841,25 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
             description (see \ref cfg_project_brief "PROJECT_BRIEF")
  <dt><code>\$projectlogo</code><dd>will be replaced with the project logo
             (see \ref cfg_project_logo "PROJECT_LOGO")
- <dt><code>\$treeview</code><dd>will be replaced with links to 
-            the javascript and style sheets needed for the navigation tree 
-            (or an empty string when \ref cfg_generate_treeview "GENERATE_TREEVIEW" 
+ <dt><code>\$treeview</code><dd>will be replaced with links to
+            the javascript and style sheets needed for the navigation tree
+            (or an empty string when \ref cfg_generate_treeview "GENERATE_TREEVIEW"
             is disabled).
- <dt><code>\$search</code><dd>will be replaced with a links to 
-            the javascript and style sheets needed for the search engine 
-            (or an empty string when \ref cfg_searchengine "SEARCHENGINE" 
+ <dt><code>\$search</code><dd>will be replaced with a links to
+            the javascript and style sheets needed for the search engine
+            (or an empty string when \ref cfg_searchengine "SEARCHENGINE"
             is disabled).
- <dt><code>\$mathjax</code><dd>will be replaced with a links to 
-            the javascript and style sheets needed for the MathJax feature 
+ <dt><code>\$mathjax</code><dd>will be replaced with a links to
+            the javascript and style sheets needed for the MathJax feature
             (or an empty string when \ref cfg_use_mathjax "USE_MATHJAX" is disabled).
  <dt><code>\$relpath^</code><dd>
- If \ref cfg_create_subdirs "CREATE_SUBDIRS" is enabled, the command <code>\$relpath^</code> can be 
+ If \ref cfg_create_subdirs "CREATE_SUBDIRS" is enabled, the command <code>\$relpath^</code> can be
  used to produce a relative path to the root of the HTML output directory,
  e.g. use <code>\$relpath^doxygen.css</code>, to refer to the standard style sheet.
  </dl>
 
- To cope with differences in the layout of the header and footer that depend on 
- configuration settings, the header can also contain special blocks that 
+ To cope with differences in the layout of the header and footer that depend on
+ configuration settings, the header can also contain special blocks that
  will be copied to the output or skipped depending on the configuration.
  Such blocks have the following form:
 \verbatim
@@ -1783,9 +1888,9 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
       when the \ref cfg_project_logo "PROJECT_LOGO" option is not empty.
  <dt><code>TITLEAREA</code><dd>Content within this block is copied to the output
      when a title is visible at the top of each page. This is the case
-     if either \ref cfg_project_name "PROJECT_NAME", 
-     \ref cfg_project_brief "PROJECT_BRIEF", \ref cfg_project_logo "PROJECT_LOGO" 
-     is filled in or if both \ref cfg_disable_index "DISABLE_INDEX" and 
+     if either \ref cfg_project_name "PROJECT_NAME",
+     \ref cfg_project_brief "PROJECT_BRIEF", \ref cfg_project_logo "PROJECT_LOGO"
+     is filled in or if both \ref cfg_disable_index "DISABLE_INDEX" and
      \ref cfg_searchengine "SEARCHENGINE" are enabled.
  </dl>
 ]]>
@@ -1800,12 +1905,12 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     <option type='string' id='HTML_FOOTER' format='file' defval='' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_FOOTER tag can be used to specify a user-defined HTML footer for 
- each generated HTML page. 
+ The \c HTML_FOOTER tag can be used to specify a user-defined HTML footer for
+ each generated HTML page.
  If the tag is left blank doxygen will generate a standard footer.
 
- See \ref cfg_html_header "HTML_HEADER" for more information on 
- how to generate a default footer and what special commands can be 
+ See \ref cfg_html_header "HTML_HEADER" for more information on
+ how to generate a default footer and what special commands can be
  used inside the footer.
 
  See also section \ref doxygen_usage for information on how to generate
@@ -1816,17 +1921,17 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     <option type='string' id='HTML_STYLESHEET' format='file' defval='' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_STYLESHEET tag can be used to specify a user-defined cascading 
- style sheet that is used by each HTML page. It can be used to 
- fine-tune the look of the HTML output. If left blank doxygen 
- will generate a default style sheet. 
- 
+ The \c HTML_STYLESHEET tag can be used to specify a user-defined cascading
+ style sheet that is used by each HTML page. It can be used to
+ fine-tune the look of the HTML output. If left blank doxygen
+ will generate a default style sheet.
+
  See also section \ref doxygen_usage for information on how to generate
  the style sheet that doxygen normally uses.
 
- \note It is recommended to use 
+ \note It is recommended to use
  \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" instead of this tag,
- as it is more robust and 
+ as it is more robust and
  this tag (<code>HTML_STYLESHEET</code>) will in the future become obsolete.
 ]]>
       </docs>
@@ -1834,12 +1939,12 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
     <option type='list' id='HTML_EXTRA_STYLESHEET' format='file' defval='' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_EXTRA_STYLESHEET tag can be used to specify additional 
- user-defined cascading style sheets that are included after the standard 
- style sheets created by doxygen. Using this option one can overrule 
- certain style aspects. This is preferred over using \ref cfg_html_stylesheet "HTML_STYLESHEET" 
- since it does not replace the standard style sheet and is therefore more 
- robust against future updates. Doxygen will copy the style sheet files to 
+ The \c HTML_EXTRA_STYLESHEET tag can be used to specify additional
+ user-defined cascading style sheets that are included after the standard
+ style sheets created by doxygen. Using this option one can overrule
+ certain style aspects. This is preferred over using \ref cfg_html_stylesheet "HTML_STYLESHEET"
+ since it does not replace the standard style sheet and is therefore more
+ robust against future updates. Doxygen will copy the style sheet files to
  the output directory.
  \note The order of the extra style sheet files is of importance (e.g. the last
  style sheet in the list overrules the setting of the previous ones in the list).
@@ -1888,12 +1993,12 @@ hr.footer {
     <option type='list' id='HTML_EXTRA_FILES' format='file' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_EXTRA_FILES tag can be used to specify one or more extra images or 
- other source files which should be copied to the HTML output directory. Note 
- that these files will be copied to the base HTML output directory. Use the 
+ The \c HTML_EXTRA_FILES tag can be used to specify one or more extra images or
+ other source files which should be copied to the HTML output directory. Note
+ that these files will be copied to the base HTML output directory. Use the
  <code>$relpath^</code> marker in the \ref cfg_html_header "HTML_HEADER" and/or
- \ref cfg_html_footer "HTML_FOOTER" files to load these 
- files. In the \ref cfg_html_stylesheet "HTML_STYLESHEET" file, use the file name only. Also note that 
+ \ref cfg_html_footer "HTML_FOOTER" files to load these
+ files. In the \ref cfg_html_stylesheet "HTML_STYLESHEET" file, use the file name only. Also note that
  the files will be copied as-is; there are no commands or markers available.
 ]]>
       </docs>
@@ -1901,32 +2006,32 @@ hr.footer {
     <option type='int' id='HTML_COLORSTYLE_HUE' minval='0' maxval='359' defval='220' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_COLORSTYLE_HUE tag controls the color of the HTML output. 
- Doxygen will adjust the colors in the style sheet and background images 
- according to this color. Hue is specified as an angle on a colorwheel, 
- see http://en.wikipedia.org/wiki/Hue for more information. 
- For instance the value 0 represents red, 60 is yellow, 120 is green, 
- 180 is cyan, 240 is blue, 300 purple, and 360 is red again. 
+ The \c HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
+ Doxygen will adjust the colors in the style sheet and background images
+ according to this color. Hue is specified as an angle on a colorwheel,
+ see https://en.wikipedia.org/wiki/Hue for more information.
+ For instance the value 0 represents red, 60 is yellow, 120 is green,
+ 180 is cyan, 240 is blue, 300 purple, and 360 is red again.
 ]]>
       </docs>
     </option>
     <option type='int' id='HTML_COLORSTYLE_SAT' minval='0' maxval='255' defval='100' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of 
- the colors in the HTML output. For a value of 0 the output will use 
- grayscales only. A value of 255 will produce the most vivid colors. 
+ The \c HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of
+ the colors in the HTML output. For a value of 0 the output will use
+ grayscales only. A value of 255 will produce the most vivid colors.
 ]]>
       </docs>
     </option>
     <option type='int' id='HTML_COLORSTYLE_GAMMA' minval='40' maxval='240' defval='80' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- The \c HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to 
- the luminance component of the colors in the HTML output. Values below 
- 100 gradually make the output lighter, whereas values above 100 make 
- the output darker. The value divided by 100 is the actual gamma applied, 
- so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2, 
+ The \c HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to
+ the luminance component of the colors in the HTML output. Values below
+ 100 gradually make the output lighter, whereas values above 100 make
+ the output darker. The value divided by 100 is the actual gamma applied,
+ so 80 represents a gamma of 0.8, The value 220 represents a gamma of 2.2,
  and 100 does not change the gamma.
 ]]>
       </docs>
@@ -1934,10 +2039,22 @@ hr.footer {
     <option type='bool' id='HTML_TIMESTAMP' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- If the \c HTML_TIMESTAMP tag is set to \c YES then the footer of 
- each generated HTML page will contain the date and time when the page 
- was generated. Setting this to \c YES can help to show when doxygen was last run 
+ If the \c HTML_TIMESTAMP tag is set to \c YES then the footer of
+ each generated HTML page will contain the date and time when the page
+ was generated. Setting this to \c YES can help to show when doxygen was last run
  and thus if the documentation is up to date.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='HTML_DYNAMIC_MENUS' defval='1' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ If the \c HTML_DYNAMIC_MENUS tag is set to \c YES then the generated HTML
+ documentation will contain a main index with vertical navigation menus that
+ are dynamically created via JavaScript. If disabled, the navigation index will consists of
+ multiple levels of tabs that are statically embedded in every HTML page.
+ Disable this option to support browsers that do not have JavaScript, like
+ the Qt help browser.
 ]]>
       </docs>
     </option>
@@ -1946,20 +2063,20 @@ hr.footer {
 <![CDATA[
  If the \c HTML_DYNAMIC_SECTIONS tag is set to \c YES then the generated HTML
  documentation will contain sections that can be hidden and shown after the
- page has loaded. 
+ page has loaded.
 ]]>
       </docs>
     </option>
     <option type='int' id='HTML_INDEX_NUM_ENTRIES' minval='0' maxval='9999' defval='100' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- With \c HTML_INDEX_NUM_ENTRIES one can control the preferred number of 
- entries shown in the various tree structured indices initially; the user 
- can expand and collapse entries dynamically later on. Doxygen will expand 
- the tree to such a level that at most the specified number of entries are 
- visible (unless a fully collapsed tree already exceeds this amount). 
- So setting the number of entries 1 will produce a full collapsed tree by 
- default. 0 is a special value representing an infinite number of entries 
+ With \c HTML_INDEX_NUM_ENTRIES one can control the preferred number of
+ entries shown in the various tree structured indices initially; the user
+ can expand and collapse entries dynamically later on. Doxygen will expand
+ the tree to such a level that at most the specified number of entries are
+ visible (unless a fully collapsed tree already exceeds this amount).
+ So setting the number of entries 1 will produce a full collapsed tree by
+ default. 0 is a special value representing an infinite number of entries
  and will result in a full expanded tree by default.
 ]]>
       </docs>
@@ -1968,16 +2085,16 @@ hr.footer {
       <docs>
 <![CDATA[
  If the \c GENERATE_DOCSET tag is set to \c YES, additional index files
- will be generated that can be used as input for 
- <a href="http://developer.apple.com/tools/xcode/">Apple's Xcode 3
+ will be generated that can be used as input for
+ <a href="https://developer.apple.com/xcode/">Apple's Xcode 3
  integrated development environment</a>, introduced with OSX 10.5 (Leopard).
  To create a documentation set, doxygen will generate a Makefile in the
  HTML output directory. Running \c make will produce the docset in that
- directory and running <code>make install</code> will install the docset in 
- <code>~/Library/Developer/Shared/Documentation/DocSets</code> 
+ directory and running <code>make install</code> will install the docset in
+ <code>~/Library/Developer/Shared/Documentation/DocSets</code>
  so that Xcode will find it at startup. See
- http://developer.apple.com/tools/creatingdocsetswithdoxygen.html for
- more information.
+ https://developer.apple.com/library/archive/featuredarticles/DoxygenXcode/_index.html
+ for more information.
 ]]>
       </docs>
     </option>
@@ -1986,7 +2103,7 @@ hr.footer {
 <![CDATA[
  This tag determines the name of the docset
  feed. A documentation feed provides an umbrella under which multiple
- documentation sets from a single provider (such as a company or product suite) 
+ documentation sets from a single provider (such as a company or product suite)
  can be grouped.
 ]]>
       </docs>
@@ -1996,7 +2113,7 @@ hr.footer {
 <![CDATA[
  This tag specifies a string that
  should uniquely identify the documentation set bundle. This should be a
- reverse domain-name style string, e.g. <code>com.mycompany.MyDocSet</code>. 
+ reverse domain-name style string, e.g. <code>com.mycompany.MyDocSet</code>.
  Doxygen will append <code>.docset</code> to the name.
 ]]>
       </docs>
@@ -2005,8 +2122,8 @@ hr.footer {
       <docs>
 <![CDATA[
 The \c DOCSET_PUBLISHER_ID
-tag specifies a string that should uniquely identify 
-the documentation publisher. This should be a reverse domain-name style 
+tag specifies a string that should uniquely identify
+the documentation publisher. This should be a reverse domain-name style
 string, e.g. <code>com.mycompany.MyDocSet.documentation</code>.
 ]]>
       </docs>
@@ -2022,14 +2139,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
  If the \c GENERATE_HTMLHELP tag is set to \c YES then
- doxygen generates three additional HTML index files: 
- \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a 
- project file that can be read by 
- <a href="http://www.microsoft.com/en-us/download/details.aspx?id=21138">
+ doxygen generates three additional HTML index files:
+ \c index.hhp, \c index.hhc, and \c index.hhk. The \c index.hhp is a
+ project file that can be read by
+ <a href="https://www.microsoft.com/en-us/download/details.aspx?id=21138">
  Microsoft's HTML Help Workshop</a>
  on Windows.
 <br>
- The HTML Help Workshop contains a compiler that can convert all HTML output 
+ The HTML Help Workshop contains a compiler that can convert all HTML output
  generated by doxygen into a single compiled HTML file (`.chm`). Compiled
  HTML files are now used as the Windows 98 help format, and will replace
  the old Windows help format (`.hlp`) on all Windows platforms in the future.
@@ -2053,7 +2170,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
   The \c HHC_LOCATION tag can
-  be used to specify the location (absolute path including file name) of 
+  be used to specify the location (absolute path including file name) of
   the HTML help compiler (\c hhc.exe). If non-empty, doxygen will try to run
   the HTML help compiler on the generated \c index.hhp.
 ]]>
@@ -2064,16 +2181,16 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c GENERATE_CHI flag
  controls if a separate `.chi` index file is generated (\c YES) or that
- it should be included in the master `.chm` file (\c NO).
+ it should be included in the main `.chm` file (\c NO).
 ]]>
       </docs>
     </option>
     <option type='string' id='CHM_INDEX_ENCODING' format='string' defval='' depends='GENERATE_HTMLHELP'>
       <docs>
 <![CDATA[
- The \c CHM_INDEX_ENCODING 
- is used to encode HtmlHelp index (\c hhk), content (\c hhc) and project file 
- content. 
+ The \c CHM_INDEX_ENCODING
+ is used to encode HtmlHelp index (\c hhk), content (\c hhc) and project file
+ content.
 ]]>
       </docs>
     </option>
@@ -2090,8 +2207,8 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='TOC_EXPAND' defval='0' depends='GENERATE_HTMLHELP'>
       <docs>
 <![CDATA[
- The \c TOC_EXPAND flag can be set to \c YES to add extra items for 
- group members to the table of contents of the HTML help documentation 
+ The \c TOC_EXPAND flag can be set to \c YES to add extra items for
+ group members to the table of contents of the HTML help documentation
  and to the tree view.
 ]]>
       </docs>
@@ -2121,7 +2238,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c QHP_NAMESPACE tag specifies the namespace to use when generating
  Qt Help Project output. For more information please see
- <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#namespace">Qt Help Project / Namespace</a>.
 ]]>
       </docs>
     </option>
@@ -2130,7 +2247,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  The \c QHP_VIRTUAL_FOLDER tag specifies the namespace to use when
  generating Qt Help Project output. For more information please see
- <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
+ <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#virtual-folders">Qt Help Project / Virtual Folders</a>.
 ]]>
       </docs>
     </option>
@@ -2138,7 +2255,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
   If the \c QHP_CUST_FILTER_NAME tag is set, it specifies the name of a custom filter to add. For more information please see
-  <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+  <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
 ]]>
       </docs>
     </option>
@@ -2147,7 +2264,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
   The \c QHP_CUST_FILTER_ATTRS tag specifies the list of the attributes of the custom filter to add.
   For more information please see
-  <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+  <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
 ]]>
       </docs>
     </option>
@@ -2155,7 +2272,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
   The \c QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's filter section matches.
-  <a href="http://qt-project.org/doc/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
+  <a href="https://doc.qt.io/archives/qt-4.8/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
 ]]>
       </docs>
     </option>
@@ -2170,15 +2287,15 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='GENERATE_ECLIPSEHELP' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- If the \c GENERATE_ECLIPSEHELP tag is set to \c YES, additional index files  
- will be generated, together with the HTML files, they form an `Eclipse` help 
- plugin. 
+ If the \c GENERATE_ECLIPSEHELP tag is set to \c YES, additional index files
+ will be generated, together with the HTML files, they form an `Eclipse` help
+ plugin.
 
- To install this plugin and make it available under the help contents 
- menu in `Eclipse`, the contents of the directory containing the HTML and XML 
- files needs to be copied into the plugins directory of eclipse. The name of 
- the directory within the plugins directory should be the same as 
- the \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" value. 
+ To install this plugin and make it available under the help contents
+ menu in `Eclipse`, the contents of the directory containing the HTML and XML
+ files needs to be copied into the plugins directory of eclipse. The name of
+ the directory within the plugins directory should be the same as
+ the \ref cfg_eclipse_doc_id "ECLIPSE_DOC_ID" value.
 
  After copying `Eclipse` needs to be restarted before the help appears.
 ]]>
@@ -2187,8 +2304,8 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='string' id='ECLIPSE_DOC_ID' format='string' defval='org.doxygen.Project' depends='GENERATE_ECLIPSEHELP'>
       <docs>
 <![CDATA[
- A unique identifier for the `Eclipse` help plugin. When installing the plugin 
- the directory name containing the HTML and XML files should also have 
+ A unique identifier for the `Eclipse` help plugin. When installing the plugin
+ the directory name containing the HTML and XML files should also have
  this name. Each documentation set should have its own identifier.
 ]]>
       </docs>
@@ -2200,8 +2317,8 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  might be necessary to disable the index and replace it with your own.
  The \c DISABLE_INDEX tag can be used to turn on/off the condensed index (tabs) at
  top of each HTML page. A value of \c NO enables the index and the
- value \c YES disables it. Since the tabs in the index contain the same 
- information as the navigation tree, you can set this option to \c YES if 
+ value \c YES disables it. Since the tabs in the index contain the same
+ information as the navigation tree, you can set this option to \c YES if
  you also set \ref cfg_generate_treeview "GENERATE_TREEVIEW" to \c YES.
 ]]>
       </docs>
@@ -2224,7 +2341,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  the \ref cfg_project_name "PROJECT_NAME".
 
  Since the tree basically has the same information as the tab index, you could
- consider setting \ref cfg_disable_index "DISABLE_INDEX" to \c YES when 
+ consider setting \ref cfg_disable_index "DISABLE_INDEX" to \c YES when
  enabling this option.
 ]]>
       </docs>
@@ -2234,7 +2351,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
  The \c ENUM_VALUES_PER_LINE tag can be used to set the number of enum values
- that doxygen will group on one line in the generated HTML documentation. 
+ that doxygen will group on one line in the generated HTML documentation.
  <br>Note that a value of 0 will completely suppress the enum values from
  appearing in the overview section.
 ]]>
@@ -2252,10 +2369,22 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='EXT_LINKS_IN_WINDOW' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- If the \c EXT_LINKS_IN_WINDOW option is set to \c YES, doxygen will open 
- links to external symbols imported via tag files in a separate window. 
+ If the \c EXT_LINKS_IN_WINDOW option is set to \c YES, doxygen will open
+ links to external symbols imported via tag files in a separate window.
 ]]>
       </docs>
+    </option>
+    <option type='enum' id='HTML_FORMULA_FORMAT' defval='png' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+ If the \c HTML_FORMULA_FORMAT option is set to \c svg, doxygen will use the pdf2svg
+ tool (see https://github.com/dawbarton/pdf2svg) or inkscape (see https://inkscape.org)
+ to generate formulas as SVG images instead of
+ PNGs for the HTML output. These images will generally look nicer at scaled resolutions.
+]]>
+      </docs>
+      <value name="png" desc="(the default)"/>
+      <value name="svg" desc="(looks nicer but requires the pdf2svg or inkscape tool)"/>
     </option>
     <option type='int' id='FORMULA_FONTSIZE' minval='8' maxval='50' defval='10' depends='GENERATE_HTML'>
       <docs>
@@ -2263,7 +2392,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  Use this tag to change the font size of \f$\mbox{\LaTeX}\f$ formulas included
  as images in the HTML documentation.
  When you change the font size after a successful doxygen run you need
- to manually remove any `form_*.png` images from the HTML 
+ to manually remove any `form_*.png` images from the HTML
  output directory to force them to be regenerated.
 ]]>
       </docs>
@@ -2271,23 +2400,33 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='FORMULA_TRANSPARENT' defval='1' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- Use the \c FORMULA_TRANPARENT tag to determine whether or not the images 
- generated for formulas are transparent PNGs. Transparent PNGs are 
- not supported properly for IE 6.0, but are supported on all modern browsers. 
- <br>Note that when changing this option you need to delete any `form_*.png` files 
- in the HTML output directory before the changes have effect. 
+ Use the \c FORMULA_TRANSPARENT tag to determine whether or not the images
+ generated for formulas are transparent PNGs. Transparent PNGs are
+ not supported properly for IE 6.0, but are supported on all modern browsers.
+ <br>Note that when changing this option you need to delete any `form_*.png` files
+ in the HTML output directory before the changes have effect.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='FORMULA_MACROFILE' format='file' defval=''>
+      <docs>
+<![CDATA[
+ The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and 
+ `\renewcommand` commands to create new \f$\mbox{\LaTeX}\f$ commands to be used
+ in formulas as building blocks.
+ See the section \ref formulas for details.
 ]]>
       </docs>
     </option>
     <option type='bool' id='USE_MATHJAX' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
- Enable the \c USE_MATHJAX option to render \f$\mbox{\LaTeX}\f$ formulas using MathJax 
- (see http://www.mathjax.org) which uses client side Javascript for the 
- rendering instead of using pre-rendered bitmaps. Use this if you do not 
- have \f$\mbox{\LaTeX}\f$ installed or if you want to formulas look prettier in the HTML 
- output. When enabled you may also need to install MathJax separately and 
- configure the path to it using the \ref cfg_mathjax_relpath "MATHJAX_RELPATH" 
+ Enable the \c USE_MATHJAX option to render \f$\mbox{\LaTeX}\f$ formulas using MathJax
+ (see https://www.mathjax.org) which uses client side JavaScript for the
+ rendering instead of using pre-rendered bitmaps. Use this if you do not
+ have \f$\mbox{\LaTeX}\f$ installed or if you want to formulas look prettier in the HTML
+ output. When enabled you may also need to install MathJax separately and
+ configure the path to it using the \ref cfg_mathjax_relpath "MATHJAX_RELPATH"
  option.
 ]]>
       </docs>
@@ -2295,7 +2434,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='enum' id='MATHJAX_FORMAT' defval='HTML-CSS' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
- When MathJax is enabled you can set the default output format to be used for 
+ When MathJax is enabled you can set the default output format to be used for
  the MathJax output.
  See <a href="http://docs.mathjax.org/en/latest/output.html">the MathJax site</a>
  for more details.
@@ -2305,24 +2444,24 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <value name="NativeMML" desc="(i.e. MathML)"/>
       <value name="SVG"/>
     </option>
-    <option type='string' id='MATHJAX_RELPATH' format='string' defval='http://cdn.mathjax.org/mathjax/latest' depends='USE_MATHJAX'>
+    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdn.jsdelivr.net/npm/mathjax@2' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
- When MathJax is enabled you need to specify the location relative to the 
- HTML output directory using the \c MATHJAX_RELPATH option. The destination 
- directory should contain the `MathJax.js` script. For instance, if the \c mathjax 
- directory is located at the same level as the HTML output directory, then 
- \c MATHJAX_RELPATH should be <code>../mathjax</code>. The default value points to 
- the MathJax Content Delivery Network so you can quickly see the result without 
- installing MathJax.  However, it is strongly recommended to install a local 
- copy of MathJax from http://www.mathjax.org before deployment.
+ When MathJax is enabled you need to specify the location relative to the
+ HTML output directory using the \c MATHJAX_RELPATH option. The destination
+ directory should contain the `MathJax.js` script. For instance, if the \c mathjax
+ directory is located at the same level as the HTML output directory, then
+ \c MATHJAX_RELPATH should be <code>../mathjax</code>. The default value points to
+ the MathJax Content Delivery Network so you can quickly see the result without
+ installing MathJax.  However, it is strongly recommended to install a local
+ copy of MathJax from https://www.mathjax.org before deployment.
 ]]>
       </docs>
     </option>
     <option type='list' id='MATHJAX_EXTENSIONS' format='string' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
- The \c MATHJAX_EXTENSIONS tag can be used to specify one or more MathJax extension 
+ The \c MATHJAX_EXTENSIONS tag can be used to specify one or more MathJax extension
  names that should be enabled during MathJax rendering. For example
 \verbatim
 MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
@@ -2333,9 +2472,9 @@ MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
     <option type='string' id='MATHJAX_CODEFILE' format='string' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
- The \c MATHJAX_CODEFILE tag can be used to specify a file with javascript 
- pieces of code that will be used on startup of the MathJax code. 
- See 
+ The \c MATHJAX_CODEFILE tag can be used to specify a file with javascript
+ pieces of code that will be used on startup of the MathJax code.
+ See
 <a href="http://docs.mathjax.org/en/latest/output.html">the MathJax site</a>
  for more details.
 ]]>
@@ -2352,7 +2491,7 @@ MATHJAX_CODEFILE = disableRenderer.js
   MathJax.Hub.Config({
    menuSettings: {
     showRenderer: false,
-   } 
+   }
   });
 \endverbatim
 ]]>
@@ -2367,24 +2506,24 @@ MATHJAX_CODEFILE = disableRenderer.js
       <docs>
 <![CDATA[
  When the \c SEARCHENGINE tag is enabled doxygen will generate a search box
- for the HTML output. The underlying search engine uses javascript 
+ for the HTML output. The underlying search engine uses javascript
  and DHTML and should work on any modern browser. Note that when using
- HTML help (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"), 
+ HTML help (\ref cfg_generate_htmlhelp "GENERATE_HTMLHELP"),
  Qt help (\ref cfg_generate_qhp "GENERATE_QHP"), or docsets
- (\ref cfg_generate_docset "GENERATE_DOCSET") there is already a search 
- function so this one should typically be disabled. For large projects 
- the javascript based search engine can be slow, then enabling 
- \ref cfg_server_based_search "SERVER_BASED_SEARCH" may provide a 
- better solution. 
+ (\ref cfg_generate_docset "GENERATE_DOCSET") there is already a search
+ function so this one should typically be disabled. For large projects
+ the javascript based search engine can be slow, then enabling
+ \ref cfg_server_based_search "SERVER_BASED_SEARCH" may provide a
+ better solution.
 
  It is possible to search using the keyboard;
  to jump to the search box use <code>\<access key\> + S</code> (what the <code>\<access key\></code> is
  depends on the OS and browser, but it is typically <code>\<CTRL\></code>, <code>\<ALT\></code>/<code>\<option\></code>, or both).
- Inside the search box use the <code>\<cursor down key\></code> to jump into the search 
+ Inside the search box use the <code>\<cursor down key\></code> to jump into the search
  results window, the results can be navigated using the <code>\<cursor keys\></code>.
  Press <code>\<Enter\></code> to select an item or <code>\<escape\></code> to cancel the search. The
  filter options can be selected when the cursor is inside the search box
- by pressing <code>\<Shift\>+\<cursor down\></code>. Also here use the <code>\<cursor keys\></code> to 
+ by pressing <code>\<Shift\>+\<cursor down\></code>. Also here use the <code>\<cursor keys\></code> to
  select a filter and <code>\<Enter\></code> or <code>\<escape\></code> to activate or cancel the filter option.
 ]]>
       </docs>
@@ -2392,14 +2531,14 @@ MATHJAX_CODEFILE = disableRenderer.js
     <option type='bool' id='SERVER_BASED_SEARCH' defval='0' depends='SEARCHENGINE'>
       <docs>
 <![CDATA[
-When the \c SERVER_BASED_SEARCH tag is enabled the search engine will be 
-implemented using a web server instead of a web client using Javascript. 
+When the \c SERVER_BASED_SEARCH tag is enabled the search engine will be
+implemented using a web server instead of a web client using JavaScript.
 
-There are two flavors of web server based searching depending on the 
-\ref cfg_external_search "EXTERNAL_SEARCH" setting. When disabled, 
-doxygen will generate a PHP script for searching and an index file used 
-by the script. When \ref cfg_external_search "EXTERNAL_SEARCH" is 
-enabled the indexing and searching needs to be provided by external tools. 
+There are two flavors of web server based searching depending on the
+\ref cfg_external_search "EXTERNAL_SEARCH" setting. When disabled,
+doxygen will generate a PHP script for searching and an index file used
+by the script. When \ref cfg_external_search "EXTERNAL_SEARCH" is
+enabled the indexing and searching needs to be provided by external tools.
 See the section \ref extsearch for details.
 ]]>
       </docs>
@@ -2407,15 +2546,15 @@ See the section \ref extsearch for details.
     <option type='bool' id='EXTERNAL_SEARCH' defval='0' depends='SEARCHENGINE'>
       <docs>
 <![CDATA[
- When \c EXTERNAL_SEARCH tag is enabled doxygen will no longer generate the PHP 
- script for searching. Instead the search results are written to an XML file 
- which needs to be processed by an external indexer. Doxygen will invoke an 
- external search engine pointed to by the 
- \ref cfg_searchengine_url "SEARCHENGINE_URL" option to obtain 
+ When \c EXTERNAL_SEARCH tag is enabled doxygen will no longer generate the PHP
+ script for searching. Instead the search results are written to an XML file
+ which needs to be processed by an external indexer. Doxygen will invoke an
+ external search engine pointed to by the
+ \ref cfg_searchengine_url "SEARCHENGINE_URL" option to obtain
  the search results.
- <br>Doxygen ships with an example indexer (\c doxyindexer) and 
- search engine (<code>doxysearch.cgi</code>) which are based on the open source search 
- engine library <a href="http://xapian.org/">Xapian</a>.
+ <br>Doxygen ships with an example indexer (\c doxyindexer) and
+ search engine (<code>doxysearch.cgi</code>) which are based on the open source search
+ engine library <a href="https://xapian.org/">Xapian</a>.
  <br>See the section \ref extsearch for details.
 ]]>
       </docs>
@@ -2423,12 +2562,12 @@ See the section \ref extsearch for details.
     <option type='string' id='SEARCHENGINE_URL' format='string' defval='' depends='SEARCHENGINE'>
       <docs>
 <![CDATA[
- The \c SEARCHENGINE_URL should point to a search engine hosted by a web server 
- which will return the search results when \ref cfg_external_search "EXTERNAL_SEARCH" 
+ The \c SEARCHENGINE_URL should point to a search engine hosted by a web server
+ which will return the search results when \ref cfg_external_search "EXTERNAL_SEARCH"
  is enabled.
- <br>Doxygen ships with an example indexer (\c doxyindexer) and 
- search engine (<code>doxysearch.cgi</code>) which are based on the open source search 
- engine library <a href="http://xapian.org/">Xapian</a>.
+ <br>Doxygen ships with an example indexer (\c doxyindexer) and
+ search engine (<code>doxysearch.cgi</code>) which are based on the open source search
+ engine library <a href="https://xapian.org/">Xapian</a>.
  See the section \ref extsearch for details.
 ]]>
       </docs>
@@ -2436,9 +2575,9 @@ See the section \ref extsearch for details.
     <option type='string' id='SEARCHDATA_FILE' format='file' defval='searchdata.xml' depends='SEARCHENGINE'>
       <docs>
 <![CDATA[
-When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and 
-\ref cfg_external_search "EXTERNAL_SEARCH" are both enabled the unindexed 
-search data is written to a file for indexing by an external tool. With the 
+When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and
+\ref cfg_external_search "EXTERNAL_SEARCH" are both enabled the unindexed
+search data is written to a file for indexing by an external tool. With the
 \c SEARCHDATA_FILE tag the name of this file can be specified.
 ]]>
       </docs>
@@ -2446,10 +2585,10 @@ search data is written to a file for indexing by an external tool. With the
     <option type='string' id='EXTERNAL_SEARCH_ID' format='string' defval='' depends='SEARCHENGINE'>
       <docs>
 <![CDATA[
-When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and 
-\ref cfg_external_search "EXTERNAL_SEARCH" are both enabled the 
-\c EXTERNAL_SEARCH_ID tag can be used as an identifier for the project. This is 
-useful in combination with \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS" 
+When \ref cfg_server_based_search "SERVER_BASED_SEARCH" and
+\ref cfg_external_search "EXTERNAL_SEARCH" are both enabled the
+\c EXTERNAL_SEARCH_ID tag can be used as an identifier for the project. This is
+useful in combination with \ref cfg_extra_search_mappings "EXTRA_SEARCH_MAPPINGS"
 to search through multiple projects and redirect the results back to the right project.
 ]]>
       </docs>
@@ -2457,16 +2596,16 @@ to search through multiple projects and redirect the results back to the right p
     <option type='list' id='EXTRA_SEARCH_MAPPINGS' format='string' depends='SEARCHENGINE'>
       <docs>
 <![CDATA[
- The \c EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through doxygen 
- projects other than the one defined by this configuration file, but that are 
- all added to the same external search index. Each project needs to have a 
- unique id set via \ref cfg_external_search_id "EXTERNAL_SEARCH_ID". 
- The search mapping then maps the id of to a relative location where the 
- documentation can be found. 
+ The \c EXTRA_SEARCH_MAPPINGS tag can be used to enable searching through doxygen
+ projects other than the one defined by this configuration file, but that are
+ all added to the same external search index. Each project needs to have a
+ unique id set via \ref cfg_external_search_id "EXTERNAL_SEARCH_ID".
+ The search mapping then maps the id of to a relative location where the
+ documentation can be found.
 
- The format is: 
+ The format is:
 \verbatim
-EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ... 
+EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
 \endverbatim
 ]]>
       </docs>
@@ -2484,28 +2623,44 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
     <option type='string' id='LATEX_OUTPUT' format='dir' defval='latex' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_OUTPUT tag is used to specify where the \f$\mbox{\LaTeX}\f$ 
+ The \c LATEX_OUTPUT tag is used to specify where the \f$\mbox{\LaTeX}\f$
  docs will be put.
  If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
  put in front of it.
 ]]>
       </docs>
     </option>
-    <option type='string' id='LATEX_CMD_NAME' format='file' defval='latex' depends='GENERATE_LATEX'>
+    <option type='string' id='LATEX_CMD_NAME' format='file' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_CMD_NAME tag can be used to specify the \f$\mbox{\LaTeX}\f$ command name to be invoked. 
- <br>Note that when enabling \ref cfg_use_pdflatex "USE_PDFLATEX" this option is only used for
- generating bitmaps for formulas in the HTML output, but not in the
- \c Makefile that is written to the output directory.
+ The \c LATEX_CMD_NAME tag can be used to specify the \f$\mbox{\LaTeX}\f$ command name to be invoked.
+ <br>Note that when  not enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \c latex when
+ enabling \ref cfg_use_pdflatex "USE_PDFLATEX" the default is \c pdflatex and when in the later case
+ \c latex is chosen this is overwritten by \c pdflatex. For specific output languages the default can
+ have been set differently, this depends on the implementation of the output language.
 ]]>
       </docs>
     </option>
     <option type='string' id='MAKEINDEX_CMD_NAME' format='file' defval='makeindex' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c MAKEINDEX_CMD_NAME tag can be used to specify the command name to 
+ The \c MAKEINDEX_CMD_NAME tag can be used to specify the command name to
  generate index for \f$\mbox{\LaTeX}\f$.
+
+ @note This tag is used in the `Makefile` / `make.bat`.
+ \sa  \ref cfg_latex_makeindex_cmd "LATEX_MAKEINDEX_CMD" for the part in the generated output file (`.tex`).
+]]>
+      </docs>
+    </option>
+    <option type='string' id='LATEX_MAKEINDEX_CMD' defval='makeindex' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ The \c LATEX_MAKEINDEX_CMD tag can be used to specify the command name to
+ generate index for \f$\mbox{\LaTeX}\f$. In case there is no backslash (`\`) as first character it
+ will be automatically added in the \f$\mbox{\LaTeX}\f$ code.
+
+ @note This tag is used in the generated output file (`.tex`).
+ \sa  \ref cfg_makeindex_cmd_name "MAKEINDEX_CMD_NAME" for the part in the `Makefile` / `make.bat`.
 ]]>
       </docs>
     </option>
@@ -2533,7 +2688,7 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
     <option type='list' id='EXTRA_PACKAGES' format='string' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$ 
+ The \c EXTRA_PACKAGES tag can be used to specify one or more \f$\mbox{\LaTeX}\f$
  package names that should be included in the \f$\mbox{\LaTeX}\f$ output. The package
  can be specified just by its name or with the correct syntax as to be used with the
  \f$\mbox{\LaTeX}\f$ `\usepackage` command.
@@ -2541,7 +2696,7 @@ EXTRA_SEARCH_MAPPINGS = tagname1=loc1 tagname2=loc2 ...
  To get the `times` font for instance you can specify :
 \verbatim
   EXTRA_PACKAGES=times
-or 
+or
   EXTRA_PACKAGES={times}
 \endverbatim
  To use the option `intlimits` with the `amsmath` package you can specify:
@@ -2555,21 +2710,21 @@ or
     <option type='string' id='LATEX_HEADER' format='file' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_HEADER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ 
- header for the generated \f$\mbox{\LaTeX}\f$ document. 
- The header should contain everything until the first chapter. 
+ The \c LATEX_HEADER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$
+ header for the generated \f$\mbox{\LaTeX}\f$ document.
+ The header should contain everything until the first chapter.
 
- If it is left blank doxygen will generate a 
- standard header. See section \ref doxygen_usage for information on how to 
+ If it is left blank doxygen will generate a
+ standard header. See section \ref doxygen_usage for information on how to
  let doxygen write the default header to a separate file.
- 
+
  <br>Note: Only use a user-defined header if you know what you are doing!
 
  The following commands have a special meaning inside the header:
  <code>\$title</code>, <code>\$datetime</code>, <code>\$date</code>,
- <code>\$doxygenversion</code>, <code>\$projectname</code>, 
- <code>\$projectnumber</code>, <code>\$projectbrief</code>, 
- <code>\$projectlogo</code>. 
+ <code>\$doxygenversion</code>, <code>\$projectname</code>,
+ <code>\$projectnumber</code>, <code>\$projectbrief</code>,
+ <code>\$projectlogo</code>.
  Doxygen will replace <code>\$title</code> with the empty string, for the replacement values of the
  other commands the user is referred to \ref cfg_html_header "HTML_HEADER".
 ]]>
@@ -2578,14 +2733,14 @@ or
     <option type='string' id='LATEX_FOOTER' format='file' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_FOOTER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ footer for 
- the generated \f$\mbox{\LaTeX}\f$ document. The footer should contain everything after 
- the last chapter. If it is left blank doxygen will generate a 
+ The \c LATEX_FOOTER tag can be used to specify a personal \f$\mbox{\LaTeX}\f$ footer for
+ the generated \f$\mbox{\LaTeX}\f$ document. The footer should contain everything after
+ the last chapter. If it is left blank doxygen will generate a
  standard footer.
- See \ref cfg_latex_header "LATEX_HEADER" for more information on 
- how to generate a default footer and what special commands can be 
+ See \ref cfg_latex_header "LATEX_HEADER" for more information on
+ how to generate a default footer and what special commands can be
  used inside the footer.
- 
+
  <br>Note: Only use a user-defined footer if you know what you are doing!
 ]]>
       </docs>
@@ -2593,10 +2748,10 @@ or
     <option type='list' id='LATEX_EXTRA_STYLESHEET' format='file' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_EXTRA_STYLESHEET tag can be used to specify additional 
- user-defined \f$\mbox{\LaTeX}\f$ style sheets that are included after the standard 
- style sheets created by doxygen. Using this option one can overrule 
- certain style aspects. Doxygen will copy the style sheet files to 
+ The \c LATEX_EXTRA_STYLESHEET tag can be used to specify additional
+ user-defined \f$\mbox{\LaTeX}\f$ style sheets that are included after the standard
+ style sheets created by doxygen. Using this option one can overrule
+ certain style aspects. Doxygen will copy the style sheet files to
  the output directory.
  \note The order of the extra style sheet files is of importance (e.g. the last
  style sheet in the list overrules the setting of the previous ones in the list).
@@ -2617,8 +2772,8 @@ or
     <option type='bool' id='PDF_HYPERLINKS' defval='1' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c PDF_HYPERLINKS tag is set to \c YES, the \f$\mbox{\LaTeX}\f$ that 
- is generated is prepared for conversion to PDF (using \c ps2pdf or \c pdflatex). 
+ If the \c PDF_HYPERLINKS tag is set to \c YES, the \f$\mbox{\LaTeX}\f$ that
+ is generated is prepared for conversion to PDF (using \c ps2pdf or \c pdflatex).
  The PDF file will
  contain links (just like the HTML output) instead of page references.
  This makes the output suitable for online browsing using a PDF viewer.
@@ -2628,9 +2783,12 @@ or
     <option type='bool' id='USE_PDFLATEX' defval='1' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use
- \c pdflatex to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
- files.  Set this option to \c YES, to get a higher quality PDF documentation. 
+ If the \c USE_PDFLATEX tag is set to \c YES, doxygen will use the engine
+ as specified with \ref cfg_latex_cmd_name "LATEX_CMD_NAME"
+ to generate the PDF file directly from the \f$\mbox{\LaTeX}\f$
+ files.  Set this option to \c YES, to get a higher quality PDF documentation.
+<br>
+ See also section \ref cfg_latex_cmd_name "LATEX_CMD_NAME" for selecting the engine.
 ]]>
       </docs>
     </option>
@@ -2638,9 +2796,9 @@ or
       <docs>
 <![CDATA[
  If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \c \\batchmode
- command to the generated \f$\mbox{\LaTeX}\f$ files. This will 
- instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of 
- asking the user for help. This option is also used when generating formulas 
+ command to the generated \f$\mbox{\LaTeX}\f$ files. This will
+ instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of
+ asking the user for help. This option is also used when generating formulas
  in HTML.
 ]]>
       </docs>
@@ -2649,17 +2807,17 @@ or
       <docs>
 <![CDATA[
  If the \c LATEX_HIDE_INDICES tag is set to \c YES then doxygen will not
- include the index chapters (such as File Index, Compound Index, etc.) 
- in the output. 
+ include the index chapters (such as File Index, Compound Index, etc.)
+ in the output.
 ]]>
       </docs>
     </option>
     <option type='bool' id='LATEX_SOURCE_CODE' defval='0' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- If the \c LATEX_SOURCE_CODE tag is set to \c YES then doxygen will include 
- source code with syntax highlighting in the \f$\mbox{\LaTeX}\f$ output. 
- <br>Note that which sources are shown also depends on other settings 
+ If the \c LATEX_SOURCE_CODE tag is set to \c YES then doxygen will include
+ source code with syntax highlighting in the \f$\mbox{\LaTeX}\f$ output.
+ <br>Note that which sources are shown also depends on other settings
  such as \ref cfg_source_browser "SOURCE_BROWSER".
 ]]>
       </docs>
@@ -2667,9 +2825,9 @@ or
     <option type='string' id='LATEX_BIB_STYLE' format='string' defval='plain' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_BIB_STYLE tag can be used to specify the style to use for the 
- bibliography, e.g. \c plainnat, or \c ieeetr. 
- See http://en.wikipedia.org/wiki/BibTeX and \ref cmdcite "\\cite"
+ The \c LATEX_BIB_STYLE tag can be used to specify the style to use for the
+ bibliography, e.g. \c plainnat, or \c ieeetr.
+ See https://en.wikipedia.org/wiki/BibTeX and \ref cmdcite "\\cite"
  for more info.
 ]]>
       </docs>
@@ -2681,6 +2839,16 @@ or
  each generated page will contain the date and time when the page
  was generated. Setting this to \c NO can help when comparing the output of
  multiple runs.
+]]>
+      </docs>
+    </option>
+    <option type='string' id='LATEX_EMOJI_DIRECTORY' format='dir' defval='' depends='GENERATE_LATEX'>
+      <docs>
+<![CDATA[
+ The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute) 
+ path from which the emoji images will be read.
+ If a relative path is entered, it will be relative to the \ref cfg_latex_output "LATEX_OUTPUT"
+ directory. If left blank the \ref cfg_latex_output "LATEX_OUTPUT" directory will be used.
 ]]>
       </docs>
     </option>
@@ -2730,7 +2898,7 @@ or
       <docs>
 <![CDATA[
  Load stylesheet definitions from file. Syntax is similar to doxygen's
- config file, i.e. a series of assignments. You only have to provide
+ configuration file, i.e. a series of assignments. You only have to provide
  replacements, missing definitions are set to their default value.
 <br>
  See also section \ref doxygen_usage for information on how to generate
@@ -2743,8 +2911,8 @@ or
       <docs>
 <![CDATA[
  Set optional variables used in the generation of an RTF document.
- Syntax is similar to doxygen's config file. 
- A template extensions file can be generated using 
+ Syntax is similar to doxygen's configuration file.
+ A template extensions file can be generated using
  <code>doxygen -e rtf extensionFile</code>.
 ]]>
       </docs>
@@ -2774,8 +2942,8 @@ or
 <![CDATA[
  The \c MAN_OUTPUT tag is used to specify where the man pages will be put.
  If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
- put in front of it. 
- A directory \c man3 will be created inside the directory specified by 
+ put in front of it.
+ A directory \c man3 will be created inside the directory specified by
  \c MAN_OUTPUT.
 ]]>
       </docs>
@@ -2802,10 +2970,10 @@ or
     <option type='bool' id='MAN_LINKS' defval='0' depends='GENERATE_MAN'>
       <docs>
 <![CDATA[
- If the \c MAN_LINKS tag is set to \c YES and doxygen generates man output, 
- then it will generate one additional man file for each entity documented in 
- the real man page(s). These additional files only source the real man page, 
- but without them the \c man command would be unable to find the correct page. 
+ If the \c MAN_LINKS tag is set to \c YES and doxygen generates man output,
+ then it will generate one additional man file for each entity documented in
+ the real man page(s). These additional files only source the real man page,
+ but without them the \c man command would be unable to find the correct page.
 ]]>
       </docs>
     </option>
@@ -2816,15 +2984,15 @@ or
 <![CDATA[
  If the \c GENERATE_XML tag is set to \c YES, doxygen will
  generate an XML file that captures the structure of
- the code including all documentation. 
+ the code including all documentation.
 ]]>
       </docs>
     </option>
     <option type='string' id='XML_OUTPUT' format='dir' defval='xml' depends='GENERATE_XML'>
       <docs>
 <![CDATA[
- The \c XML_OUTPUT tag is used to specify where the XML pages will be put. 
- If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be 
+ The \c XML_OUTPUT tag is used to specify where the XML pages will be put.
+ If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
  put in front of it.
 ]]>
       </docs>
@@ -2839,12 +3007,21 @@ or
 ]]>
       </docs>
     </option>
+    <option type='bool' id='XML_NS_MEMB_FILE_SCOPE' defval='0' depends='GENERATE_XML'>
+      <docs>
+<![CDATA[
+ If the \c XML_NS_MEMB_FILE_SCOPE tag is set to \c YES, doxygen
+ will include namespace members in file scope as well, matching the HTML
+ output.
+]]>
+      </docs>
+    </option>
   </group>
   <group name='Docbook' docs='Configuration options related to the DOCBOOK output'>
     <option type='bool' id='GENERATE_DOCBOOK' defval='0'>
       <docs>
 <![CDATA[
-If the \c GENERATE_DOCBOOK tag is set to \c YES, doxygen will generate Docbook files 
+If the \c GENERATE_DOCBOOK tag is set to \c YES, doxygen will generate Docbook files
 that can be used to generate PDF.
 ]]>
       </docs>
@@ -2852,8 +3029,8 @@ that can be used to generate PDF.
     <option type='string' id='DOCBOOK_OUTPUT' format='dir' defval='docbook' depends='GENERATE_DOCBOOK'>
       <docs>
 <![CDATA[
-The \c DOCBOOK_OUTPUT tag is used to specify where the Docbook pages will be put. 
-If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be put in 
+The \c DOCBOOK_OUTPUT tag is used to specify where the Docbook pages will be put.
+If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be put in
 front of it.
 ]]>
       </docs>
@@ -2874,17 +3051,16 @@ front of it.
       <docs>
 <![CDATA[
  If the \c GENERATE_AUTOGEN_DEF tag is set to \c YES, doxygen will
- generate an AutoGen Definitions (see http://autogen.sf.net) file
+ generate an AutoGen Definitions (see http://autogen.sourceforge.net/) file
  that captures the structure of the code including all
- documentation. Note that this feature is still experimental 
- and incomplete at the moment. 
+ documentation. Note that this feature is still experimental
+ and incomplete at the moment.
 ]]>
       </docs>
     </option>
   </group>
-<!--
-  <group name='Sqlite3' docs='Configuration options related to Sqlite3 output'>
-    <option type='bool' id='GENERATE_SQLITE3' defval='0'>
+  <group name='Sqlite3' setting='USE_SQLITE3' docs='Configuration options related to Sqlite3 output'>
+    <option type='bool' id='GENERATE_SQLITE3' setting='USE_SQLITE3' defval='0'>
       <docs>
 <![CDATA[
 If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
@@ -2892,18 +3068,26 @@ If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
 ]]>
       </docs>
     </option>
-    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' depends='GENERATE_SQLITE3'>
+    <option type='string' id='SQLITE3_OUTPUT' format='dir' defval='sqlite3' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
       <docs>
 <![CDATA[
-The \c SQLITE3_OUTPUT tag is used to specify where the \c Sqlite3 database will be put. 
-If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be 
+The \c SQLITE3_OUTPUT tag is used to specify where the \c Sqlite3 database will be put.
+If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
 put in front of it.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='SQLITE3_RECREATE_DB' defval='1' setting='USE_SQLITE3' depends='GENERATE_SQLITE3'>
+      <docs>
+<![CDATA[
+The \c SQLITE3_OVERWRITE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
+database file will be recreated with each doxygen run.
+If set to \c NO, doxygen will warn if an a database file is already found and not modify it.
 ]]>
       </docs>
     </option>
 
   </group>
--->
   <group name='PerlMod' docs='Configuration options related to the Perl module output'>
     <option type='bool' id='GENERATE_PERLMOD' defval='0'>
       <docs>
@@ -2911,7 +3095,7 @@ put in front of it.
  If the \c GENERATE_PERLMOD tag is set to \c YES, doxygen will
  generate a Perl module file that captures the structure of
  the code including all documentation.
- <br>Note that this 
+ <br>Note that this
  feature is still experimental and incomplete at the
  moment.
 ]]>
@@ -2920,28 +3104,28 @@ put in front of it.
     <option type='bool' id='PERLMOD_LATEX' defval='0' depends='GENERATE_PERLMOD'>
       <docs>
 <![CDATA[
- If the \c PERLMOD_LATEX tag is set to \c YES, doxygen will generate 
- the necessary \c Makefile rules, \c Perl scripts and \f$\mbox{\LaTeX}\f$ code to be able 
- to generate PDF and DVI output from the Perl module output. 
+ If the \c PERLMOD_LATEX tag is set to \c YES, doxygen will generate
+ the necessary \c Makefile rules, \c Perl scripts and \f$\mbox{\LaTeX}\f$ code to be able
+ to generate PDF and DVI output from the Perl module output.
 ]]>
       </docs>
     </option>
     <option type='bool' id='PERLMOD_PRETTY' defval='1' depends='GENERATE_PERLMOD'>
       <docs>
 <![CDATA[
- If the \c PERLMOD_PRETTY tag is set to \c YES, the Perl module output will be 
- nicely formatted so it can be parsed by a human reader.  This is useful 
+ If the \c PERLMOD_PRETTY tag is set to \c YES, the Perl module output will be
+ nicely formatted so it can be parsed by a human reader.  This is useful
  if you want to understand what is going on. On the other hand, if this
  tag is set to \c NO, the size of the Perl module output will be much smaller
- and Perl will parse it just the same. 
+ and Perl will parse it just the same.
 ]]>
       </docs>
     </option>
     <option type='string' id='PERLMOD_MAKEVAR_PREFIX' format='string' defval='' depends='GENERATE_PERLMOD'>
       <docs>
 <![CDATA[
- The names of the make variables in the generated `doxyrules.make` file 
- are prefixed with the string contained in \c PERLMOD_MAKEVAR_PREFIX. 
+ The names of the make variables in the generated `doxyrules.make` file
+ are prefixed with the string contained in \c PERLMOD_MAKEVAR_PREFIX.
  This is useful so different `doxyrules.make` files included by the same
  `Makefile` don't overwrite each other's variables.
 ]]>
@@ -2954,7 +3138,7 @@ put in front of it.
 <![CDATA[
  If the \c ENABLE_PREPROCESSING tag is set to \c YES, doxygen will
  evaluate all C-preprocessor directives found in the sources and include
- files. 
+ files.
 ]]>
       </docs>
     </option>
@@ -2962,7 +3146,7 @@ put in front of it.
       <docs>
 <![CDATA[
  If the \c MACRO_EXPANSION tag is set to \c YES, doxygen will expand all macro
- names in the source code. If set to \c NO, only conditional 
+ names in the source code. If set to \c NO, only conditional
  compilation will be performed. Macro expansion can be done in a controlled
  way by setting \ref cfg_expand_only_predef "EXPAND_ONLY_PREDEF" to \c YES.
 ]]>
@@ -2997,10 +3181,10 @@ put in front of it.
     <option type='list' id='INCLUDE_FILE_PATTERNS' format='string' depends='ENABLE_PREPROCESSING'>
       <docs>
 <![CDATA[
- You can use the \c INCLUDE_FILE_PATTERNS tag to specify one or more wildcard 
- patterns (like `*.h` and `*.hpp`) to filter out the header-files in the 
- directories. If left blank, the patterns specified with \ref cfg_file_patterns "FILE_PATTERNS" will 
- be used. 
+ You can use the \c INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
+ patterns (like `*.h` and `*.hpp`) to filter out the header-files in the
+ directories. If left blank, the patterns specified with \ref cfg_file_patterns "FILE_PATTERNS" will
+ be used.
 ]]>
       </docs>
     </option>
@@ -3010,7 +3194,7 @@ put in front of it.
  The \c PREDEFINED tag can be used to specify one or more macro names that
  are defined before the preprocessor is started (similar to the `-D` option of
  e.g. \c gcc). The argument of the tag is a list of macros of the form:
- <code>name</code> or <code>name=definition</code> (no spaces). 
+ <code>name</code> or <code>name=definition</code> (no spaces).
  If the definition and the \c "=" are omitted,  \c "=1" is assumed. To prevent
  a macro definition from being undefined via \c \#undef or recursively expanded
  use the <code>:=</code> operator instead of the \c = operator.
@@ -3025,18 +3209,18 @@ put in front of it.
  this tag can be used to specify a list of macro names that should be expanded.
  The macro definition that is found in the sources will be used.
  Use the \ref cfg_predefined "PREDEFINED" tag if you want to use a different macro definition that
- overrules the definition found in the source code. 
+ overrules the definition found in the source code.
 ]]>
       </docs>
     </option>
     <option type='bool' id='SKIP_FUNCTION_MACROS' defval='1' depends='ENABLE_PREPROCESSING'>
       <docs>
 <![CDATA[
- If the \c SKIP_FUNCTION_MACROS tag is set to \c YES then 
- doxygen's preprocessor will remove all references to function-like macros that are alone 
- on a line, have an all uppercase name, and do not end with a semicolon. 
- Such function macros are typically 
- used for boiler-plate code, and will confuse the parser if not removed. 
+ If the \c SKIP_FUNCTION_MACROS tag is set to \c YES then
+ doxygen's preprocessor will remove all references to function-like macros that are alone
+ on a line, have an all uppercase name, and do not end with a semicolon.
+ Such function macros are typically
+ used for boiler-plate code, and will confuse the parser if not removed.
 ]]>
       </docs>
     </option>
@@ -3045,25 +3229,25 @@ put in front of it.
     <option type='list' id='TAGFILES' format='file'>
       <docs>
 <![CDATA[
- The \c TAGFILES tag can be used to specify one or more tag files. 
+ The \c TAGFILES tag can be used to specify one or more tag files.
 
-For each 
-tag file the location of the external documentation should be added. The 
-format of a tag file without this location is as follows: 
+For each
+tag file the location of the external documentation should be added. The
+format of a tag file without this location is as follows:
 \verbatim
-  TAGFILES = file1 file2 ... 
+  TAGFILES = file1 file2 ...
 \endverbatim
-Adding location for the tag files is done as follows: 
+Adding location for the tag files is done as follows:
 \verbatim
-  TAGFILES = file1=loc1 "file2 = loc2" ... 
+  TAGFILES = file1=loc1 "file2 = loc2" ...
 \endverbatim
 where `loc1` and `loc2` can be relative or absolute paths or URLs.
  See the section \ref external for more information about the use of tag files.
 
  \note
-  Each tag file must have a unique name 
+  Each tag file must have a unique name
   (where the name does \e NOT include the path).
-  If a tag file is not located in the directory in which doxygen 
+  If a tag file is not located in the directory in which doxygen
   is run, you must also specify the path to the tagfile here.
 ]]>
       </docs>
@@ -3073,7 +3257,7 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 <![CDATA[
  When a file name is specified after \c GENERATE_TAGFILE, doxygen will create
  a tag file that is based on the input files it reads.
- See section \ref external for more information about the usage of 
+ See section \ref external for more information about the usage of
  tag files.
 ]]>
       </docs>
@@ -3099,17 +3283,9 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
     <option type='bool' id='EXTERNAL_PAGES' defval='1'>
       <docs>
 <![CDATA[
- If the \c EXTERNAL_PAGES tag is set to \c YES, all external pages will be listed 
- in the related pages index. If set to \c NO, only the current project's 
- pages will be listed. 
-]]>
-      </docs>
-    </option>
-    <option type='string' id='PERL_PATH' format='file' defval='/usr/bin/perl' abspath='1'>
-      <docs>
-<![CDATA[
- The \c PERL_PATH should be the absolute path and name of the perl script
- interpreter (i.e. the result of `'which perl'`).
+ If the \c EXTERNAL_PAGES tag is set to \c YES, all external pages will be listed
+ in the related pages index. If set to \c NO, only the current project's
+ pages will be listed.
 ]]>
       </docs>
     </option>
@@ -3120,29 +3296,18 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
 <![CDATA[
  If the \c CLASS_DIAGRAMS tag is set to \c YES, doxygen will
  generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
- super classes. Setting the tag to \c NO turns the diagrams off. Note that 
- this option also works with \ref cfg_have_dot "HAVE_DOT" disabled, but it is recommended to 
- install and use \c dot, since it yields more powerful graphs. 
-]]>
-      </docs>
-    </option>
-    <option type='string' id='MSCGEN_PATH' format='dir' defval=''>
-      <docs>
-<![CDATA[
- You can define message sequence charts within doxygen comments using the \ref cmdmsc "\\msc" 
- command. Doxygen will then run the <a href="http://www.mcternan.me.uk/mscgen/">mscgen tool</a>) to 
- produce the chart and insert it in the documentation. The <code>MSCGEN_PATH</code> tag allows you to 
- specify the directory where the \c mscgen tool resides. If left empty the tool is assumed to 
- be found in the default search path.
+ super classes. Setting the tag to \c NO turns the diagrams off. Note that
+ this option also works with \ref cfg_have_dot "HAVE_DOT" disabled, but it is recommended to
+ install and use \c dot, since it yields more powerful graphs.
 ]]>
       </docs>
     </option>
     <option type='string' id='DIA_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
-You can include diagrams made with dia in doxygen documentation. Doxygen will then run 
-dia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows 
-you to specify the directory where the dia binary resides. If left empty dia is assumed 
+You can include diagrams made with dia in doxygen documentation. Doxygen will then run
+dia to produce the diagram and insert it in the documentation. The DIA_PATH tag allows
+you to specify the directory where the dia binary resides. If left empty dia is assumed
 to be found in the default search path.
 ]]>
       </docs>
@@ -3160,9 +3325,9 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  If you set the \c HAVE_DOT tag to \c YES then doxygen will assume the \c dot tool is
- available from the \c path. This tool is part of 
- <a href="http://www.graphviz.org/">Graphviz</a>, a graph 
- visualization toolkit from AT\&T and Lucent Bell Labs. The other options in 
+ available from the \c path. This tool is part of
+ <a href="http://www.graphviz.org/">Graphviz</a>, a graph
+ visualization toolkit from AT\&T and Lucent Bell Labs. The other options in
  this section have no effect if this option is set to \c NO
 ]]>
       </docs>
@@ -3170,11 +3335,11 @@ to be found in the default search path.
     <option type='int' id='DOT_NUM_THREADS' defval='0' minval='0' maxval='32' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- The \c DOT_NUM_THREADS specifies the number of \c dot invocations doxygen is 
- allowed to run in parallel. When set to \c 0 doxygen will 
- base this on the number of processors available in the system. You can set it 
- explicitly to a value larger than 0 to get control over the balance 
- between CPU load and processing speed.  
+ The \c DOT_NUM_THREADS specifies the number of \c dot invocations doxygen is
+ allowed to run in parallel. When set to \c 0 doxygen will
+ base this on the number of processors available in the system. You can set it
+ explicitly to a value larger than 0 to get control over the balance
+ between CPU load and processing speed.
 ]]>
       </docs>
     </option>
@@ -3182,11 +3347,11 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  When you want a differently looking font in the dot files that doxygen generates
- you can specify the font name 
- using \c DOT_FONTNAME. You need to make sure dot is able to find the font, 
- which can be done by putting it in a standard location or by setting the 
- \c DOTFONTPATH environment variable or by setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the 
- directory containing the font. 
+ you can specify the font name
+ using \c DOT_FONTNAME. You need to make sure dot is able to find the font,
+ which can be done by putting it in a standard location or by setting the
+ \c DOTFONTPATH environment variable or by setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
+ directory containing the font.
 ]]>
       </docs>
     </option>
@@ -3201,8 +3366,8 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  By default doxygen will tell \c dot to use the default font as specified with \ref cfg_dot_fontname "DOT_FONTNAME".
- If you specify a 
- different font using \ref cfg_dot_fontname "DOT_FONTNAME" you can set the path where \c dot 
+ If you specify a
+ different font using \ref cfg_dot_fontname "DOT_FONTNAME" you can set the path where \c dot
  can find it using this tag.
 ]]>
       </docs>
@@ -3212,7 +3377,7 @@ to be found in the default search path.
 <![CDATA[
  If the \c CLASS_GRAPH tag is set to \c YES then doxygen
  will generate a graph for each documented class showing the direct and
- indirect inheritance relations. Setting this tag to \c YES will force 
+ indirect inheritance relations. Setting this tag to \c YES will force
  the \ref cfg_class_diagrams "CLASS_DIAGRAMS" tag to \c NO.
 ]]>
       </docs>
@@ -3247,10 +3412,10 @@ to be found in the default search path.
     <option type='int' id='UML_LIMIT_NUM_FIELDS' defval='10' minval='0' maxval='100' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- If the \ref cfg_uml_look "UML_LOOK" tag is enabled, the fields and methods are shown inside 
- the class node. If there are many fields or methods and many nodes the 
- graph may become too big to be useful. The \c UML_LIMIT_NUM_FIELDS 
- threshold limits the number of items for each type to make the size more 
+ If the \ref cfg_uml_look "UML_LOOK" tag is enabled, the fields and methods are shown inside
+ the class node. If there are many fields or methods and many nodes the
+ graph may become too big to be useful. The \c UML_LIMIT_NUM_FIELDS
+ threshold limits the number of items for each type to make the size more
  manageable. Set this to 0 for no limit. Note that the threshold may be
  exceeded by 50% before the limit is enforced. So when you set the threshold
  to 10, up to 15 fields may appear, but if the number exceeds 15, the
@@ -3261,7 +3426,7 @@ to be found in the default search path.
     <option type='bool' id='TEMPLATE_RELATIONS' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- If the \c TEMPLATE_RELATIONS tag is set to \c YES then 
+ If the \c TEMPLATE_RELATIONS tag is set to \c YES then
  the inheritance and collaboration graphs will show the relations between templates and their instances.
 ]]>
       </docs>
@@ -3270,7 +3435,7 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  If the \c INCLUDE_GRAPH, \ref cfg_enable_preprocessing "ENABLE_PREPROCESSING" and
- \ref cfg_search_includes "SEARCH_INCLUDES" 
+ \ref cfg_search_includes "SEARCH_INCLUDES"
  tags are set to \c YES then doxygen will generate a graph for each documented file
  showing the direct and indirect include dependencies of the file with other
  documented files.
@@ -3291,12 +3456,12 @@ to be found in the default search path.
     <option type='bool' id='CALL_GRAPH' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- If the \c CALL_GRAPH tag is set to \c YES then doxygen will 
- generate a call dependency graph for every global function or class method. 
+ If the \c CALL_GRAPH tag is set to \c YES then doxygen will
+ generate a call dependency graph for every global function or class method.
  <br>Note that enabling this option will significantly increase the time of a run.
- So in most cases it will be better to enable call graphs for selected 
- functions only using the \ref cmdcallgraph "\\callgraph" command. 
- Disabling a call graph can be accomplished by means of the command 
+ So in most cases it will be better to enable call graphs for selected
+ functions only using the \ref cmdcallgraph "\\callgraph" command.
+ Disabling a call graph can be accomplished by means of the command
  \ref cmdhidecallgraph "\\hidecallgraph".
 ]]>
       </docs>
@@ -3304,12 +3469,12 @@ to be found in the default search path.
     <option type='bool' id='CALLER_GRAPH' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- If the \c CALLER_GRAPH tag is set to \c YES then doxygen will 
- generate a caller dependency graph for every global function or class method. 
+ If the \c CALLER_GRAPH tag is set to \c YES then doxygen will
+ generate a caller dependency graph for every global function or class method.
  <br>Note that enabling this option will significantly increase the time of a run.
- So in most cases it will be better to enable caller graphs for selected 
- functions only using the \ref cmdcallergraph "\\callergraph" command. 
- Disabling a caller graph can be accomplished by means of the command 
+ So in most cases it will be better to enable caller graphs for selected
+ functions only using the \ref cmdcallergraph "\\callergraph" command.
+ Disabling a caller graph can be accomplished by means of the command
  \ref cmdhidecallergraph "\\hidecallergraph".
 ]]>
       </docs>
@@ -3317,7 +3482,7 @@ to be found in the default search path.
     <option type='bool' id='GRAPHICAL_HIERARCHY' defval='1' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- If the \c GRAPHICAL_HIERARCHY tag is set to \c YES then 
+ If the \c GRAPHICAL_HIERARCHY tag is set to \c YES then
  doxygen will graphical hierarchy of all classes instead of a textual one.
 ]]>
       </docs>
@@ -3325,7 +3490,7 @@ to be found in the default search path.
     <option type='bool' id='DIRECTORY_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- If the \c DIRECTORY_GRAPH tag is set 
+ If the \c DIRECTORY_GRAPH tag is set
  to \c YES then doxygen will show the dependencies a directory has on other directories
  in a graphical way. The dependency relations are determined by the \c \#include
  relations between the files in the directories.
@@ -3339,7 +3504,7 @@ to be found in the default search path.
  generated by \c dot. For an explanation of the image formats see the section output formats
  in the documentation of the \c dot tool
  (<a href="http://www.graphviz.org/">Graphviz</a>).
- \note If you choose \c svg you need to set 
+ \note If you choose \c svg you need to set
  \ref cfg_html_file_extension "HTML_FILE_EXTENSION" to \c xhtml in order to make the SVG files
  visible in IE 9+ (other browsers do not have this requirement).
 ]]>
@@ -3361,10 +3526,10 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  If \ref cfg_dot_image_format "DOT_IMAGE_FORMAT" is set to \c svg, then this option can be set to \c YES to
- enable generation of interactive SVG images that allow zooming and panning. 
- <br>Note that this requires a modern browser other than Internet Explorer. 
+ enable generation of interactive SVG images that allow zooming and panning.
+ <br>Note that this requires a modern browser other than Internet Explorer.
  Tested and working are Firefox, Chrome, Safari, and Opera.
- \note For IE 9+ you need to set \ref cfg_html_file_extension "HTML_FILE_EXTENSION" to \c xhtml in order 
+ \note For IE 9+ you need to set \ref cfg_html_file_extension "HTML_FILE_EXTENSION" to \c xhtml in order
  to make the SVG files visible. Older versions of IE do not have SVG support.
 ]]>
       </docs>
@@ -3372,15 +3537,15 @@ to be found in the default search path.
     <option type='string' id='DOT_PATH' format='dir' defval='' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- The \c DOT_PATH tag can be used to specify the path where the \c dot tool can be found. 
- If left blank, it is assumed the \c dot tool can be found in the \c path. 
+ The \c DOT_PATH tag can be used to specify the path where the \c dot tool can be found.
+ If left blank, it is assumed the \c dot tool can be found in the \c path.
 ]]>
       </docs>
     </option>
     <option type='list' id='DOTFILE_DIRS' format='dir' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- The \c DOTFILE_DIRS tag can be used to specify one or more directories that 
+ The \c DOTFILE_DIRS tag can be used to specify one or more directories that
  contain dot files that are included in the documentation (see the
  \ref cmddotfile "\\dotfile" command).
 ]]>
@@ -3389,7 +3554,7 @@ to be found in the default search path.
     <option type='list' id='MSCFILE_DIRS' format='dir'>
       <docs>
 <![CDATA[
- The \c MSCFILE_DIRS tag can be used to specify one or more directories that 
+ The \c MSCFILE_DIRS tag can be used to specify one or more directories that
  contain msc files that are included in the documentation (see the
  \ref cmdmscfile "\\mscfile" command).
 ]]>
@@ -3398,7 +3563,7 @@ to be found in the default search path.
     <option type='list' id='DIAFILE_DIRS' format='dir'>
       <docs>
 <![CDATA[
- The \c DIAFILE_DIRS tag can be used to specify one or more directories that 
+ The \c DIAFILE_DIRS tag can be used to specify one or more directories that
  contain dia files that are included in the documentation (see the
  \ref cmddiafile "\\diafile" command).
 ]]>
@@ -3407,9 +3572,9 @@ to be found in the default search path.
     <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
- When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where 
- java can find the \c plantuml.jar file. If left blank, it is assumed PlantUML is not used or 
- called during a preprocessing step. Doxygen will generate a warning when it encounters a 
+ When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
+ java can find the \c plantuml.jar file. If left blank, it is assumed PlantUML is not used or
+ called during a preprocessing step. Doxygen will generate a warning when it encounters a
  \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
 ]]>
       </docs>
@@ -3417,7 +3582,7 @@ to be found in the default search path.
     <option type='string' id='PLANTUML_CFG_FILE' format='file' defval=''>
       <docs>
 <![CDATA[
- When using plantuml, the \c PLANTUML_CFG_FILE tag can be used to specify a configuration 
+ When using plantuml, the \c PLANTUML_CFG_FILE tag can be used to specify a configuration
  file for plantuml.
 ]]>
       </docs>
@@ -3426,16 +3591,16 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  When using plantuml, the specified paths are searched for files specified by the \c !include
- statement in a plantuml block. 
+ statement in a plantuml block.
 ]]>
       </docs>
     </option>
     <option type='int' id='DOT_GRAPH_MAX_NODES' minval='0' maxval='10000' defval='50' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- The \c DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of 
+ The \c DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of
  nodes that will be shown in the graph. If the number of nodes in a graph
- becomes larger than this value, doxygen will truncate the graph, which is 
+ becomes larger than this value, doxygen will truncate the graph, which is
  visualized by representing a node as a red box. Note that doxygen if the number
  of direct children of the root node in a graph is already larger than
  \c DOT_GRAPH_MAX_NODES then the graph will not be shown at all. Also note
@@ -3446,7 +3611,7 @@ to be found in the default search path.
     <option type='int' id='MAX_DOT_GRAPH_DEPTH' minval='0' maxval='1000' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
- The \c MAX_DOT_GRAPH_DEPTH tag can be used to set the maximum depth of the 
+ The \c MAX_DOT_GRAPH_DEPTH tag can be used to set the maximum depth of the
  graphs generated by \c dot. A depth value of 3 means that only nodes reachable
  from the root by following a path via at most 3 edges will be shown. Nodes
  that lay further from the root node will be omitted. Note that setting this
@@ -3460,12 +3625,12 @@ to be found in the default search path.
       <docs>
 <![CDATA[
  Set the \c DOT_TRANSPARENT tag to \c YES to generate images with a transparent
- background. This is disabled by default, because dot on Windows does not 
+ background. This is disabled by default, because dot on Windows does not
  seem to support this out of the box.
  <br>
- Warning: Depending on the platform used, 
- enabling this option may lead to badly anti-aliased labels on the edges of 
- a graph (i.e. they become hard to read). 
+ Warning: Depending on the platform used,
+ enabling this option may lead to badly anti-aliased labels on the edges of
+ a graph (i.e. they become hard to read).
 ]]>
       </docs>
     </option>
@@ -3515,5 +3680,8 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
     <option type='obsolete' id='XML_SCHEMA'/>
     <option type='obsolete' id='XML_DTD'/>
+    <option type='obsolete' id='PERL_PATH'/>
+    <option type='obsolete' id='MSCGEN_PATH'/>
+    <option type='obsolete' id='TCL_SUBST'/>
   </group>
 </doxygenconfig>

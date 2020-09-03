@@ -40,7 +40,7 @@
 
 #ifndef QT_H
 #include "qcollection.h"
-#include "qstring.h"
+#include "qcstring.h"
 #endif // QT_H
 
 class QGDictIterator;
@@ -60,14 +60,14 @@ protected:
     QBaseBucket		*next;
 };
 
-class QStringBucket : public QBaseBucket
+class QCStringBucket : public QBaseBucket
 {
 public:
-    QStringBucket( const QString &k, QCollection::Item d, QBaseBucket *n )
+    QCStringBucket( const QCString &k, QCollection::Item d, QBaseBucket *n )
 	: QBaseBucket(d,n), key(k)		{}
-    const QString  &getKey() const		{ return key; }
+    const QCString  &getKey() const		{ return key; }
 private:
-    QString	    key;
+    QCString	    key;
 };
 
 class QAsciiBucket : public QBaseBucket
@@ -106,7 +106,7 @@ class Q_EXPORT QGDict : public QCollection	// generic dictionary class
 public:
     uint	count() const	{ return numItems; }
     uint	size()	const	{ return vlen; }
-    QCollection::Item look_string( const QString& key, QCollection::Item,
+    QCollection::Item look_string( const QCString& key, QCollection::Item,
 				   int );
     QCollection::Item look_ascii( const char *key, QCollection::Item, int );
     QCollection::Item look_int( long key, QCollection::Item, int );
@@ -124,11 +124,11 @@ protected:
 
     QGDict     &operator=( const QGDict & );
 
-    bool	remove_string( const QString &key, QCollection::Item item=0 );
+    bool	remove_string( const QCString &key, QCollection::Item item=0 );
     bool	remove_ascii( const char *key, QCollection::Item item=0 );
     bool	remove_int( long key, QCollection::Item item=0 );
     bool	remove_ptr( void *key, QCollection::Item item=0 );
-    QCollection::Item take_string( const QString &key );
+    QCollection::Item take_string( const QCString &key );
     QCollection::Item take_ascii( const char *key );
     QCollection::Item take_int( long key );
     QCollection::Item take_ptr( void *key );
@@ -136,7 +136,7 @@ protected:
     void	clear();
     void	resize( uint );
 
-    int		hashKeyString( const QString & );
+    int		hashKeyString( const QCString & );
     int		hashKeyAscii( const char * );
 
     void	statistics() const;
@@ -154,7 +154,7 @@ private:
     uint	copyk	: 1;
     QGDItList  *iterators;
     void	   unlink_common( int, QBaseBucket *, QBaseBucket * );
-    QStringBucket *unlink_string( const QString &,
+    QCStringBucket *unlink_string( const QCString &,
 				  QCollection::Item item = 0 );
     QAsciiBucket  *unlink_ascii( const char *, QCollection::Item item = 0 );
     QIntBucket    *unlink_int( long, QCollection::Item item = 0 );
@@ -176,7 +176,7 @@ public:
     QCollection::Item toFirst();
 
     QCollection::Item get()	     const;
-    QString	      getKeyString() const;
+    QCString	      getKeyString() const;
     const char	     *getKeyAscii()  const;
     intptr_t	      getKeyInt()    const;
     void	     *getKeyPtr()    const;
@@ -198,9 +198,9 @@ inline QCollection::Item QGDictIterator::get() const
     return curNode ? curNode->getData() : 0;
 }
 
-inline QString QGDictIterator::getKeyString() const
+inline QCString QGDictIterator::getKeyString() const
 {
-    return curNode ? ((QStringBucket*)curNode)->getKey() : QString::null;
+    return curNode ? ((QCStringBucket*)curNode)->getKey() : QCString();
 }
 
 inline const char *QGDictIterator::getKeyAscii() const

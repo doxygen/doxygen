@@ -72,7 +72,7 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
     ClassDef *cd=0;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
-      if (cd->name().find('@')==-1 &&
+      if (!cd->isAnonymous() &&
           (filter==0 || *filter==cd->compoundType())
          )
       {
@@ -92,7 +92,7 @@ bool ClassSDict::declVisible(const ClassDef::CompoundType *filter) const
 }
 
 void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
-                                  const char *header,bool localNames)
+                                  const char *header,bool localNames) const
 {
   static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   if (count()>0)
@@ -103,12 +103,13 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
       //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
-      if (cd->name().find('@')==-1 &&
+      if (!cd->isAnonymous() &&
           !cd->isExtension() &&
           (cd->protection()!=Private || extractPrivate) &&
           (filter==0 || *filter==cd->compoundType())
          )
       {
+        //printf("writeDeclarationLink()\n");
         cd->writeDeclarationLink(ol,found,header,localNames);
       }
     }
@@ -116,7 +117,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
   }
 }
 
-void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
+void ClassSDict::writeDocumentation(OutputList &ol,const Definition * container) const
 {
   static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
 
@@ -136,9 +137,10 @@ void ClassSDict::writeDocumentation(OutputList &ol,Definition * container)
       //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
       //  container,cd->partOfGroups() ? cd->partOfGroups()->count() : 0);
 
-      if (cd->name().find('@')==-1 &&
+      if (!cd->isAnonymous() &&
           cd->isLinkableInProject() &&
           cd->isEmbeddedInOuterScope() &&
+          !cd->isAlias() &&
           (container==0 || cd->partOfGroups()==0) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group
          )
       {
@@ -164,9 +166,8 @@ void GenericsSDict::insert(const QCString &key,ClassDef *cd)
 {
   int i=key.find('<');
   if (i==-1) return;
-  ArgumentList argList;
-  stringToArgumentList(key.mid(i),&argList);
-  int c = argList.count();
+  auto argList = stringToArgumentList(SrcLangExt_CSharp, key.mid(i));
+  int c = (int)argList->size();
   if (c==0) return;
   GenericsCollection *collection = m_dict.find(key.left(i));
   if (collection==0) // new name
@@ -197,9 +198,8 @@ ClassDef *GenericsSDict::find(const QCString &key)
     GenericsCollection *collection = m_dict.find(key.left(i));
     if (collection)
     {
-      ArgumentList argList;
-      stringToArgumentList(key.mid(i),&argList);
-      int c = argList.count();
+      auto argList = stringToArgumentList(SrcLangExt_CSharp,key.mid(i));
+      int c = (int)argList->size();
       return collection->find(c);
     }
   }

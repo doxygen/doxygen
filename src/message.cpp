@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -14,14 +14,13 @@
  */
 
 #include <stdio.h>
-#include <qdatetime.h>
 #include "config.h"
-#include "util.h"
 #include "debug.h"
-#include "doxygen.h"
 #include "portable.h"
-#include "filedef.h"
 #include "message.h"
+#include "doxygen.h"
+
+#include <mutex>
 
 static QCString outputFormat;
 static const char *warning_str = "warning: ";
@@ -34,6 +33,9 @@ static const char *error_str = "error: ";
 //                            // 6 = $line,$file,$text
 
 static FILE *warnFile = stderr;
+
+
+static std::mutex g_mutex;
 
 void initWarningFormat()
 {
@@ -90,7 +92,7 @@ void initWarningFormat()
 
   if (!Config_getString(WARN_LOGFILE).isEmpty())
   {
-    warnFile = portable_fopen(Config_getString(WARN_LOGFILE),"w");
+    warnFile = Portable::fopen(Config_getString(WARN_LOGFILE),"w");
   }
   if (!warnFile) // point it to something valid, because warn() relies on it
   {
@@ -108,9 +110,10 @@ void msg(const char *fmt, ...)
 {
   if (!Config_getBool(QUIET))
   {
+    std::unique_lock<std::mutex> lock(g_mutex);
     if (Debug::isFlagSet(Debug::Time))
     {
-      printf("%.3f sec: ",((double)Doxygen::runningTime.elapsed())/1000.0);
+      printf("%.3f sec: ",((double)Debug::elapsedTime()));
     }
     va_list args;
     va_start(args, fmt);
@@ -125,15 +128,6 @@ static void format_warn(const char *file,int line,const char *text)
   QCString lineSubst; lineSubst.setNum(line);
   QCString textSubst = text;
   QCString versionSubst;
-  if (file) // get version from file name
-  {
-    bool ambig;
-    FileDef *fd=findFileDef(Doxygen::inputNameDict,file,ambig);
-    if (fd)
-    {
-      versionSubst = fd->getVersion();
-    }
-  }
   // substitute markers by actual values
   bool warnAsError = Config_getBool(WARN_AS_ERROR);
   QCString msgText =
@@ -156,10 +150,25 @@ static void format_warn(const char *file,int line,const char *text)
   }
   msgText += '\n';
 
-  // print resulting message
-  fwrite(msgText.data(),1,msgText.length(),warnFile);
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    // print resulting message
+    fwrite(msgText.data(),1,msgText.length(),warnFile);
+  }
   if (warnAsError)
   {
+    exit(1);
+  }
+}
+
+static void handle_warn_as_error(void)
+{
+  static bool warnAsError = Config_getBool(WARN_AS_ERROR);
+  if (warnAsError)
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    QCString msgText = " (warning treated as error, aborting now)\n";
+    fwrite(msgText.data(),1,msgText.length(),warnFile);
     exit(1);
   }
 }
@@ -167,17 +176,29 @@ static void format_warn(const char *file,int line,const char *text)
 static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!enabled) return; // warning type disabled
-  const int bufSize = 40960;
-  char text[bufSize];
+
+  va_list argsCopy;
+  va_copy(argsCopy, args);
+
   int l=0;
   if (prefix)
   {
-    qstrncpy(text,prefix,bufSize);
-    l=strlen(prefix);
+    l=(int)strlen(prefix);
   }
-  vsnprintf(text+l, bufSize-l, fmt, args);
+  // determine needed buffersize based on:
+  // format + arguments
+  // prefix
+  // 1 position for `\0`
+  int bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
+  char *text = (char *)malloc(sizeof(char) * bufSize);
+  if (prefix)
+  {
+    qstrncpy(text,prefix,bufSize);
+  }
+  vsnprintf(text+l, bufSize-l, fmt, argsCopy);
   text[bufSize-1]='\0';
   format_warn(file,line,text);
+  free(text);
 }
 
 void warn(const char *file,int line,const char *fmt, ...)
@@ -221,6 +242,7 @@ void warn_uncond(const char *fmt, ...)
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(warning_str) + fmt).data(), args);
   va_end(args);
+  handle_warn_as_error();
 }
 
 void err(const char *fmt, ...)
@@ -229,6 +251,7 @@ void err(const char *fmt, ...)
   va_start(args, fmt);
   vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
   va_end(args);
+  handle_warn_as_error();
 }
 
 extern void err_full(const char *file,int line,const char *fmt, ...)
@@ -237,6 +260,23 @@ extern void err_full(const char *file,int line,const char *fmt, ...)
   va_start(args, fmt);
   do_warn(TRUE, file, line, error_str, fmt, args);
   va_end(args);
+}
+
+void term(const char *fmt, ...)
+{
+  {
+    std::unique_lock<std::mutex> lock(g_mutex);
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(warnFile, (QCString(error_str) + fmt).data(), args);
+    va_end(args);
+    if (warnFile != stderr)
+    {
+      for (int i = 0; i < (int)strlen(error_str); i++) fprintf(warnFile, " ");
+      fprintf(warnFile, "%s\n", "Exiting...");
+    }
+  }
+  exit(1);
 }
 
 void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
@@ -250,6 +290,7 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
     enter_txt_uc = "Finished";
   }
 
+  std::unique_lock<std::mutex> lock(g_mutex);
   if (dbg)
   {
     if (fileName)

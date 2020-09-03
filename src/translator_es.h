@@ -34,7 +34,7 @@
  * Updated to 1.8.4 by Bartomeu Creus Navarro (17-julio-2013)
  */
 
-class TranslatorSpanish : public Translator
+class TranslatorSpanish : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -66,6 +66,11 @@ class TranslatorSpanish : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[spanish]{babel}";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "es";
     }
 
     // --- Language translation methods -------------------
@@ -1992,14 +1997,6 @@ class TranslatorSpanish : public Translator
       return "Método de documentación";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Diseño información general";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -2057,6 +2054,252 @@ class TranslatorSpanish : public Translator
     }
 
 //////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "Jerarquía de unidades de diseño"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "Lista de unidades de diseño"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "Miembros de las unidades de diseño"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "Aquí hay una lista de todos los miembros de la unidad de diseño con "
+            "enlaces a las entidades a las que pertenecen:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "Indice de unidades de diseño"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "Unidades de Diseño"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "Funciones/Procedimientos/Procesos"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          if (single) return "Libreria";
+          else        return "Librerias";
+        case VhdlDocGen::PACKAGE:
+          if (single) return "Paquete";
+          else        return "Paquetes";
+        case VhdlDocGen::SIGNAL:
+          if (single) return "Señal";
+          else        return "Señales";
+        case VhdlDocGen::COMPONENT:
+          if (single) return "Componente";
+          else        return "Componentes";
+        case VhdlDocGen::CONSTANT:
+          if (single) return "Constante";
+          else        return "Constantes";
+        case VhdlDocGen::ENTITY:
+          if (single) return "Entidad";
+          else        return "Entidades";
+        case VhdlDocGen::TYPE:
+          if (single) return "Tipo";
+          else        return "Tipos";
+        case VhdlDocGen::SUBTYPE:
+          if (single) return "Subtipo";
+          else        return "Subtipos";
+        case VhdlDocGen::FUNCTION:
+          if (single) return "Función";
+          else        return "Funciones";
+        case VhdlDocGen::RECORD:
+          if (single) return "Registro";
+          else        return "Registros";
+        case VhdlDocGen::PROCEDURE:
+          if (single) return "Procedimiento";
+          else        return "Procedimientos";
+        case VhdlDocGen::ARCHITECTURE:
+          if (single) return "Arquitectura";
+          else        return "Arquitecturas";
+        case VhdlDocGen::ATTRIBUTE:
+          if (single) return "Atributo";
+          else        return "Atributos";
+        case VhdlDocGen::PROCESS:
+          if (single) return "Proceso";
+          else        return "Procesos";
+        case VhdlDocGen::PORT:
+          if (single) return "Puerto";
+          else        return "Puertos";
+        case VhdlDocGen::USE:
+          if (single) return "cláusula de uso";
+          else        return "Cláusulas de uso";
+        case VhdlDocGen::GENERIC:
+          if (single) return "Genérico";
+          else        return "Genéricos";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "Cuerpo del paquete";
+        case VhdlDocGen::UNITS:
+          return "Unidades";
+        case VhdlDocGen::SHAREDVARIABLE:
+          if (single) return "Variable Compartida";
+          else        return "Variable Compartidas";
+        case VhdlDocGen::VFILE:
+          if (single) return "Fichero";
+          else        return "Ficheros";
+        case VhdlDocGen::GROUP:
+          if (single) return "Grupo";
+          else        return "Grupos";
+        case VhdlDocGen::INSTANTIATION:
+          if (single) return "Instanciación";
+          else        return "Instanciaciones";
+        case VhdlDocGen::ALIAS:
+          if (single) return "Alias";
+          else        return "Aliases";
+        case VhdlDocGen::CONFIG:
+          if (single) return "Configuración";
+          else        return "Configuraciones";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "Varios";
+        case VhdlDocGen::UCF_CONST:
+          return "Restricciones";
+        default:
+          return "Clase";
+      }
+    }
+    virtual QCString trCustomReference(const char *name)
+    { return "Referencia"+QCString(name); }
+
+    virtual QCString trConstants()
+    {
+        return "Constantes";
+    }
+    virtual QCString trConstantDocumentation()
+    {
+        return "Documentación de constante";
+    }
+    virtual QCString trSequences()
+    {
+        return "Secuencias";
+    }
+    virtual QCString trSequenceDocumentation()
+    {
+        return "Documentación de secuencia";
+    }
+    virtual QCString trDictionaries()
+    {
+        return "Diccionarios";
+    }
+    virtual QCString trDictionaryDocumentation()
+    {
+        return "Documentación de diccionario";
+    }
+    virtual QCString trSliceInterfaces()
+    {
+        return "Interfaces";
+    }
+    virtual QCString trInterfaceIndex()
+    {
+        return "Indice de interfaces";
+    }
+    virtual QCString trInterfaceList()
+    {
+        return "Lista de interfaces";
+    }
+    virtual QCString trInterfaceListDescription()
+    {
+        return "Aquí están las interfaces con una breve descripción:";
+    }
+    virtual QCString trInterfaceHierarchy()
+    {
+        return "Jerarquía de interfaces";
+    }
+    virtual QCString trInterfaceHierarchyDescription()
+    {
+        return "Este listado de herencia está ordenado de forma aproximada, pero no completamente en orden alfabético:";
+    }
+    virtual QCString trInterfaceDocumentation()
+    {
+        return "Documentación de interfaz";
+    }
+    virtual QCString trStructs()
+    {
+        return "Estructuras";
+    }
+    virtual QCString trStructIndex()
+    {
+        return "Indice de estructuras";
+    }
+    virtual QCString trStructList()
+    {
+        return "Lista de estructuras";
+    }
+    virtual QCString trStructListDescription()
+    {
+        return "Aquí están las estructuras de datos con una breve descripción:";
+    }
+    virtual QCString trStructDocumentation()
+    {
+        return "Documentación estructura";
+    }
+    virtual QCString trExceptionIndex()
+    {
+        return "Indice de excepciones";
+    }
+    virtual QCString trExceptionList()
+    {
+        return "Lista de excepciones";
+    }
+    virtual QCString trExceptionListDescription()
+    {
+        return "Aquí están las excepciones con una breve descripción:";
+    }
+    virtual QCString trExceptionHierarchy()
+    {
+        return "Jerarquía de excepciones";
+    }
+    virtual QCString trExceptionHierarchyDescription()
+    {
+        return "Este listado de herencia está ordenado de forma aproximada, pero no completamente en orden alfabético:";
+    }
+    virtual QCString trExceptionDocumentation()
+    {
+        return "Documentación de excepción";
+    }
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result="Referencia de";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" la Clase"; break;
+        case ClassDef::Struct:     result+=" la Estructura"; break;
+        case ClassDef::Union:      result+=" la Unión"; break;
+        case ClassDef::Interface:  result+=" la Interfaz"; break;
+        case ClassDef::Protocol:   result+="l Protocolo"; break;
+        case ClassDef::Category:   result+=" la Categoría"; break;
+        case ClassDef::Exception:  result+=" la Excepción"; break;
+        default: break;
+      }
+      if (isLocal) result+=" Local";
+      result+=(QCString)clName;
+      return result;
+    }
+    virtual QCString trOperations()
+    {
+        return "Operaciones";
+    }
+    virtual QCString trOperationDocumentation()
+    {
+        return "Documentación de operación";
+    }
+    virtual QCString trDataMembers()
+    {
+        return "Miembros de datos";
+    }
+    virtual QCString trDataMemberDocumentation()
+    {
+        return "Documentación miembro de datos";
+    }
 
 };
 

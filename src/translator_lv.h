@@ -76,8 +76,13 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      */
     virtual QCString latexLanguageSupportCommand()
     {
-      return "\\usepackage[LV]{fontenc}\n"
+      return "\\usepackage[T2A]{fontenc}\n"
              "\\usepackage[latvian]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "lv";
     }
 
     // --- Language translation methods -------------------
@@ -1943,8 +1948,6 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     {
       return "Dizaina pārskats";
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

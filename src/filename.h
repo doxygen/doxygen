@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,57 +16,31 @@
 #ifndef FILENAME_H
 #define FILENAME_H
 
-#include <qdict.h>
-#include <qlist.h>
-#include "filedef.h"
+#include <memory>
+#include <vector>
+
+#include "linkedmap.h"
+
+class FileDef;
 
 /** Class representing all files with a certain base name */
-class FileName : public FileList
+class FileName : public std::vector< std::unique_ptr<FileDef> >
 {
   public:
-    FileName(const char *fn,const char *name);
-   ~FileName();
-    const char *fileName() const { return name; }
-    const char *fullName() const { return fName; }
-    void generateDiskNames();
+    FileName(const char *nm,const char *fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
+    const char *fileName() const { return m_name; }
+    const char *fullName() const { return m_fName; }
+    const char *path() const { return m_pathName; }
 
   private:
-    int compareValues(const FileDef *item1,const FileDef *item2) const;
-    QCString name;
-    QCString fName;
+    QCString m_name;
+    QCString m_fName;
+    QCString m_pathName;
 };
 
-/** Iterator for FileDef objects in a FileName list. */
-class FileNameIterator : public QListIterator<FileDef>
+/** Ordered dictionary of FileName objects. */
+class FileNameLinkedMap : public LinkedMap<FileName>
 {
-  public:
-    FileNameIterator(const FileName &list);
-};
-
-/** Class representing a list of FileName objects. */
-class FileNameList : public QList<FileName>
-{
-  public:
-    FileNameList();
-   ~FileNameList();
-    void generateDiskNames();
-  private:
-    int compareValues(const FileName *item1,const FileName *item2) const;
-};
-
-/** Iterator for FileName objects in a FileNameList. */
-class FileNameListIterator : public QListIterator<FileName>
-{
-  public:
-    FileNameListIterator( const FileNameList &list );
-};
-
-/** Unsorted dictionary of FileName objects. */
-class FileNameDict : public QDict<FileName>
-{
-  public:
-    FileNameDict(uint size);
-   ~FileNameDict() {}
 };
 
 #endif

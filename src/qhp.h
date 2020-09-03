@@ -34,8 +34,8 @@ class Qhp : public IndexIntf
     void addContentsItem(bool isDir, const char * name, const char * ref,
                          const char * file, const char * anchor,
                          bool separateIndex,bool addToNavIndex,
-                         Definition *def);
-    void addIndexItem(Definition *context, MemberDef *md,
+                         const Definition *def);
+    void addIndexItem(const Definition *context, const MemberDef *md,
                       const char *sectionAnchor, const char *title);
     void addIndexFile(const char * name);
     void addImageFile(const char * name);

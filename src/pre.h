@@ -18,12 +18,20 @@
 #ifndef PRE_H
 #define PRE_H
 
+#include <memory>
+
 class BufStr;
 
-void initPreprocessor();
-void cleanUpPreprocessor();
-void addSearchDir(const char *dir);
-void preprocessFile(const char *fileName,BufStr &input,BufStr &output);
-void preFreeScanner();
+class Preprocessor
+{
+  public:
+    Preprocessor();
+   ~Preprocessor();
+    void processFile(const char *fileName,BufStr &input,BufStr &output);
+    void addSearchDir(const char *dir);
+ private:
+   struct Private;
+   std::unique_ptr<Private> p;
+};
 
 #endif

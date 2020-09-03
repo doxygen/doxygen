@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="bug" kind="page">
     <compoundname>bug</compoundname>
     <title>Bug List</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>
         <variablelist>
           <varlistentry>
-            <term><anchor id="bug_1_bug000001"/>Class <ref refid="class_bug" kindref="compound">Bug</ref></term>
+            <term>Class <ref refid="class_bug" kindref="compound">Bug</ref>  </term>
           </varlistentry>
           <listitem>
-            <para>Class bug.  </para>
+            <para><anchor id="bug_1_bug000001"/>Class bug.  </para>
           </listitem>
           <varlistentry>
-            <term><anchor id="bug_1_bug000002"/>Member <ref refid="class_bug_1a1f720954dd97cd1203e80501a6eae74c" kindref="member">Bug::foo</ref>  ()</term>
+            <term>Member <ref refid="class_bug_1a1f720954dd97cd1203e80501a6eae74c" kindref="member">Bug::foo</ref>  ()</term>
           </varlistentry>
           <listitem>
-            <para>Function bug<itemizedlist><listitem><para>list item 1 in bug</para></listitem><listitem><para>list item 2 in bug</para></listitem></itemizedlist>
-</para>
+            <para><anchor id="bug_1_bug000002"/>Function bug<itemizedlist><listitem><para>list item 1 in bug</para></listitem><listitem><para>list item 2 in bug</para></listitem></itemizedlist></para>
           </listitem>
         </variablelist>
       </para>

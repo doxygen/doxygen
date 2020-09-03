@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -27,21 +27,14 @@ class ManGenerator : public OutputGenerator
 {
   public:
     ManGenerator();
-   ~ManGenerator();
-    
-    //OutputGenerator *copy()  { return new ManGenerator; } 
-    //OutputGenerator *clone() { return new ManGenerator(*this); }
-    //void append(const OutputGenerator *o);
-    void enable() 
-    { if (genStack->top()) active=*genStack->top(); else active=TRUE; }
-    void disable() { active=FALSE; }
-    void enableIf(OutputType o)  { if (o==Man) enable(); }
-    void disableIf(OutputType o) { if (o==Man) disable(); }
-    void disableIfNot(OutputType o) { if (o!=Man) disable(); }
-    bool isEnabled(OutputType o) { return (o==Man && active); } 
-    OutputGenerator *get(OutputType o) { return (o==Man) ? this : 0; }
+    ManGenerator(const ManGenerator &g);
+    ManGenerator &operator=(const ManGenerator &g);
+    virtual ~ManGenerator();
+    virtual std::unique_ptr<OutputGenerator> clone() const;
 
-    void writeDoc(DocNode *,Definition *,MemberDef *);
+    OutputType type() const { return Man; }
+
+    void writeDoc(DocNode *,const Definition *,const MemberDef *);
 
     static void init();
     void startFile(const char *name,const char *manName,const char *title);
@@ -60,19 +53,19 @@ class ManGenerator : public OutputGenerator
     void endTitleHead(const char *,const char *);
     void startTitle();
     void endTitle();
-    
+
     void newParagraph();
-    void startParagraph();
+    void startParagraph(const char *classDef);
     void endParagraph();
     void writeString(const char *text);
     void startIndexListItem() {}
     void endIndexListItem() {}
     void startIndexList() {}
-    void endIndexList()   { newParagraph(); } 
+    void endIndexList()   { newParagraph(); }
     void startIndexKey() {}
-    void endIndexKey()   {} 
+    void endIndexKey()   {}
     void startIndexValue(bool) {}
-    void endIndexValue(const char *,bool)   {} 
+    void endIndexValue(const char *,bool)   {}
     void startItemList()  {}
     void endItemList()    { newParagraph(); }
     void startIndexItem(const char *ref,const char *file);
@@ -91,17 +84,18 @@ class ManGenerator : public OutputGenerator
     void endTextLink() {}
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void startTypewriter() { t << "\\fC"; firstCol=FALSE; }
-    void endTypewriter()   { t << "\\fP"; firstCol=FALSE; }
+    void startTypewriter() { t << "\\fC"; m_firstCol=FALSE; }
+    void endTypewriter()   { t << "\\fP"; m_firstCol=FALSE; }
     void startGroupHeader(int);
     void endGroupHeader(int);
     void startMemberSections() {}
     void endMemberSections() {}
     void startHeaderSection() {}
     void endHeaderSection();
-    void startMemberHeader(const char *);
+    void startMemberHeader(const char *,int);
     void endMemberHeader();
     void insertMemberAlign(bool) {}
+    void insertMemberAlignLeft(int,bool){}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
     //void writeListItem();
@@ -131,13 +125,13 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment();
     void endCodeFragment();
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; }
+    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; m_col=0; }
     void startCodeLine(bool) {}
-    void endCodeLine() { codify("\n"); col=0; }
-    void startEmphasis() { t << "\\fI"; firstCol=FALSE; }
-    void endEmphasis()   { t << "\\fP"; firstCol=FALSE; }
-    void startBold()     { t << "\\fB"; firstCol=FALSE; }
-    void endBold()       { t << "\\fP"; firstCol=FALSE; }
+    void endCodeLine() { codify("\n"); m_col=0; }
+    void startEmphasis() { t << "\\fI"; m_firstCol=FALSE; }
+    void endEmphasis()   { t << "\\fP"; m_firstCol=FALSE; }
+    void startBold()     { t << "\\fB"; m_firstCol=FALSE; }
+    void endBold()       { t << "\\fP"; m_firstCol=FALSE; }
     void startDescription() {}
     void endDescription()   {}
     void startDescItem();
@@ -151,7 +145,7 @@ class ManGenerator : public OutputGenerator
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
-    void writeEndAnnoItem(const char *) { t << endl; firstCol=TRUE; }
+    void writeEndAnnoItem(const char *) { t << endl; m_firstCol=TRUE; }
     void startSubsection();
     void endSubsection();
     void startSubsubsection();
@@ -160,23 +154,23 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *,const char *) { t << "\n.RI \""; firstCol=FALSE; }
-    void endMemberDescription()   { t << "\""; firstCol=FALSE; }
-    void startMemberDeclaration() {} 
+    void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; m_firstCol=FALSE; }
+    void endMemberDescription()   { t << "\""; m_firstCol=FALSE; }
+    void startMemberDeclaration() {}
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes);
     void endDescList()        {}
-    void startSimpleSect(SectionTypes,const char *,const char *,const char *);
-    void endSimpleSect();
+    void startExamples();
+    void endExamples();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
     //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
-    void startSection(const char *,const char *,SectionInfo::SectionType);
-    void endSection(const char *,SectionInfo::SectionType);
+    void startSection(const char *,const char *,SectionType);
+    void endSection(const char *,SectionType);
     void addIndexItem(const char *,const char *) {}
     void startIndent()        {}
     void endIndent()          {}
@@ -195,28 +189,27 @@ class ManGenerator : public OutputGenerator
     void startContents() {}
     void endContents() {}
     void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
-    
-    void startDescTable(const char *t) 
-    { startSimpleSect(EnumValues,0,0,t); startDescForItem(); }
-    void endDescTable() { endDescForItem(); endSimpleSect(); }
+
+    void startDescTable(const char *t);
+    void endDescTable();
     void startDescTableRow() {}
     void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
-    void startDescTableData() { t << endl; firstCol=TRUE; }
+    void startDescTableData() { t << endl; m_firstCol=TRUE; }
     void endDescTableData() {}
 
     void startDotGraph() {}
-    void endDotGraph(const DotClassGraph &) {}
+    void endDotGraph(DotClassGraph &) {}
     void startInclDepGraph() {}
-    void endInclDepGraph(const DotInclDepGraph &) {}
+    void endInclDepGraph(DotInclDepGraph &) {}
     void startGroupCollaboration() {}
-    void endGroupCollaboration(const DotGroupCollaboration &) {}
+    void endGroupCollaboration(DotGroupCollaboration &) {}
     void startCallGraph() {}
-    void endCallGraph(const DotCallGraph &) {}
-    void startDirDepGraph() {} 
-    void endDirDepGraph(const DotDirDeps &) {}
-    void writeGraphicalHierarchy(const DotGfxHierarchyTable &) {}
+    void endCallGraph(DotCallGraph &) {}
+    void startDirDepGraph() {}
+    void endDirDepGraph(DotDirDeps &) {}
+    void writeGraphicalHierarchy(DotGfxHierarchyTable &) {}
 
     void startTextBlock(bool) {}
     void endTextBlock(bool) {}
@@ -260,19 +253,17 @@ class ManGenerator : public OutputGenerator
     void endLabels();
 
     void writeCodeAnchor(const char *) {}
-    void setCurrentDoc(Definition *,const char *,bool) {}
+    void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
 
   private:
-    bool firstCol;
-    bool paragraph;
-    int col;
-    bool upperCase;
-    bool insideTabbing;
-    bool inHeader;
+    bool m_firstCol = true;
+    bool m_paragraph = true;
+    int  m_col = 0;
+    bool m_upperCase = false;
+    bool m_insideTabbing = false;
+    bool m_inHeader = false;
 
-    ManGenerator(const ManGenerator &g);
-    ManGenerator &operator=(const ManGenerator &g);
 };
 
 #endif

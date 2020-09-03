@@ -26,7 +26,6 @@
 class GroupDef;
 class MemberGroup;
 class MemberGroupList;
-class StorageIntf;
 
 /** A list of MemberDef objects. */
 class MemberList : private QList<MemberDef>
@@ -49,60 +48,69 @@ class MemberList : private QList<MemberDef>
     MemberDef *getFirst() const;
     MemberDef *take(uint index);
 
-
-    int varCount() const       { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
-    int funcCount() const      { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
-    int enumCount() const      { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
-    int enumValueCount() const { ASSERT(m_numDecMembers!=-1); return m_enumValCnt; }
-    int typedefCount() const   { ASSERT(m_numDecMembers!=-1); return m_typeCnt;    }
-    int protoCount() const     { ASSERT(m_numDecMembers!=-1); return m_protoCnt;   }
-    int defineCount() const    { ASSERT(m_numDecMembers!=-1); return m_defCnt;     }
-    int friendCount() const    { ASSERT(m_numDecMembers!=-1); return m_friendCnt;  }
-    int numDecMembers() const  { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
-    int numDocMembers() const  { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
-    bool needsSorting() const  { return m_needsSorting; }
-    void countDecMembers(bool countEnumValues=FALSE,GroupDef *gd=0);
-    void countDocMembers(bool countEnumValues=FALSE);
-    int countInheritableMembers(ClassDef *inheritedFrom) const;
+/*
+    int varCount() const         { ASSERT(m_numDecMembers!=-1); return m_varCnt;     }
+    int funcCount() const        { ASSERT(m_numDecMembers!=-1); return m_funcCnt;    }
+    int enumCount() const        { ASSERT(m_numDecMembers!=-1); return m_enumCnt;    }
+    int enumValueCount() const   { ASSERT(m_numDecMembers!=-1); return m_enumValCnt; }
+    int typedefCount() const     { ASSERT(m_numDecMembers!=-1); return m_typeCnt;    }
+    int sequenceCount() const    { ASSERT(m_numDecMembers!=-1); return m_seqCnt;     }
+    int dictionaryCount() const  { ASSERT(m_numDecMembers!=-1); return m_dictCnt;    }
+    int protoCount() const       { ASSERT(m_numDecMembers!=-1); return m_protoCnt;   }
+    int defineCount() const      { ASSERT(m_numDecMembers!=-1); return m_defCnt;     }
+    int friendCount() const      { ASSERT(m_numDecMembers!=-1); return m_friendCnt;  }
+*/
+    int numDecMembers() const    { ASSERT(m_numDecMembers!=-1); return m_numDecMembers; }
+    int numDecEnumValues() const { return m_numDecEnumValues; }
+    int numDocMembers() const    { ASSERT(m_numDocMembers!=-1); return m_numDocMembers; }
+    int numDocEnumValues() const { return m_numDocEnumValues; }
+    bool needsSorting() const    { return m_needsSorting; }
+    void countDecMembers();
+    void countDocMembers();
+    int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd, GroupDef *gd,
-               ClassDef *inheritedFrom,const char *inheritId);
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,
+               const ClassDef *inheritedFrom,const char *inheritId) const;
     void writeDeclarations(OutputList &ol,
-               ClassDef *cd,NamespaceDef *nd,FileDef *fd,GroupDef *gd,
+               const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                const char *title,const char *subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
-               ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods);
+               const ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods) const;
     void writeDocumentation(OutputList &ol,const char *scopeName,
-               Definition *container,const char *title,bool showEnumValues=FALSE,bool showInline=FALSE);
-    void writeSimpleDocumentation(OutputList &ol,Definition *container);
+               const Definition *container,const char *title,
+               bool showEnumValues=FALSE,bool showInline=FALSE) const;
+    void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const char *scopeName, Definition *container);
+               const char *scopeName, const Definition *container) const;
     void writeTagFile(FTextStream &);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
     void setInGroup(bool inGroup) { m_inGroup=inGroup; }
     void setInFile(bool inFile) { m_inFile=inFile; }
     void addListReferences(Definition *def);
-    void findSectionsInDocumentation();
+    void findSectionsInDocumentation(const Definition *d);
     void setNeedsSorting(bool b);
     MemberGroupList *getMemberGroupList() const { return memberGroupList; }
-
-    void marshal(StorageIntf *s);
-    void unmarshal(StorageIntf *s);
+    void setAnonymousEnumType();
 
   private:
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;
-    int countEnumValues(MemberDef *md,bool setAnonEnumType) const;
+    int countEnumValues(const MemberDef *md) const;
+    /*
     int m_varCnt;
     int m_funcCnt;
     int m_enumCnt;
-    int m_enumValCnt;
     int m_typeCnt;
+    int m_seqCnt;
+    int m_dictCnt;
     int m_protoCnt;
     int m_defCnt;
     int m_friendCnt; 
+    */
     int m_numDecMembers; // number of members in the brief part of the memberlist
+    int m_numDecEnumValues;
     int m_numDocMembers; // number of members in the detailed part of the memberlist
+    int m_numDocEnumValues;
     MemberGroupList *memberGroupList;
     bool m_inGroup; // is this list part of a group definition
     bool m_inFile;  // is this list part of a file definition
@@ -123,7 +131,7 @@ class MemberListIterator : public QListIterator<MemberDef>
 class MemberDict : public QDict<MemberDef>
 {
   public:
-    MemberDict(int size) : QDict<MemberDef>(size) {}
+    MemberDict(uint size) : QDict<MemberDef>(size) {}
     virtual ~MemberDict() {}
 };
 
@@ -131,7 +139,7 @@ class MemberDict : public QDict<MemberDef>
 class MemberSDict : public SDict<MemberDef>
 {
   public:
-    MemberSDict(int size=17) : SDict<MemberDef>(size) {}
+    MemberSDict(uint size=17) : SDict<MemberDef>(size) {}
     virtual ~MemberSDict() {}
   private:
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;

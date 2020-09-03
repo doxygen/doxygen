@@ -21,6 +21,7 @@ from xml.dom import minidom, Node
 def transformDocs(doc):
 	# join lines, unless it is an empty line
 	# remove doxygen layout constructs
+        # Note: also look at expert.cpp of doxywizard for doxywizard parts
 	doc = doc.strip()
 	doc = doc.replace("\n", " ")
 	doc = doc.replace("\r", " ")
@@ -57,13 +58,14 @@ def transformDocs(doc):
 				 doc)
 	doc = re.sub('\\\\ref +external', '"Linking to external documentation"',
 				 doc)
+	doc = re.sub('\\\\ref +formulas', '"Including formulas"', doc)
 	# fallback for not handled
 	doc = re.sub('\\\\ref', '', doc)
 	#<a href="address">description</a> -> description (see: address)
 	doc = re.sub('<a +href="([^"]*)" *>([^<]*)</a>', '\\2 (see: \\1)', doc)
 	# LaTeX name as formula -> LaTeX
 	doc = doc.replace("\\f$\\mbox{\\LaTeX}\\f$", "LaTeX")
-	# Other forula's (now just 2) so explicitely mentioned.
+	# Other formula's (now just 2) so explicitly mentioned.
 	doc = doc.replace("\\f$2^{(16+\\mbox{LOOKUP\\_CACHE\\_SIZE})}\\f$",
 					  "2^(16+LOOKUP_CACHE_SIZE)")
 	doc = doc.replace("\\f$2^{16} = 65536\\f$", "2^16=65536")
@@ -272,7 +274,7 @@ def parseOption(node):
 				print("              \"%s\"" % (line))
 		print("             );")
 		if defval != '':
-			print("  cs->setDefaultValue(\"%s\");" % (defval))
+			print("  cs->setDefaultValue(\"%s\");" % (defval.replace('\\','\\\\')))
 		if format == 'file':
 			print("  cs->setWidgetType(ConfigString::File);")
 		elif format == 'image':
@@ -343,6 +345,9 @@ def parseOption(node):
 def parseGroups(node):
 	name = node.getAttribute('name')
 	doc = node.getAttribute('docs')
+	setting = node.getAttribute('setting')
+	if len(setting) > 0:
+		print("#if %s" % (setting))
 	print("%s%s" % ("  //-----------------------------------------",
 					"----------------------------------"))
 	print("  cfg->addInfo(\"%s\",\"%s\");" % (name, doc))
@@ -352,9 +357,12 @@ def parseGroups(node):
 	for n in node.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			parseOption(n)
+	if len(setting) > 0:
+		print("#endif")
 
-def parseGroupMap(node):
-	map = { 'bool':'bool', 'string':'QCString', 'enum':'QCString', 'int':'int', 'list':'QStrList' }
+
+def parseGroupMapGetter(node):
+	map = { 'bool':'bool', 'string':'const QCString &', 'enum':'const QCString &', 'int':'int', 'list':'const StringVector &' }
 	for n in node.childNodes:
 		if n.nodeType == Node.ELEMENT_NODE:
 			setting = n.getAttribute('setting')
@@ -363,7 +371,35 @@ def parseGroupMap(node):
 			type = n.getAttribute('type')
 			name = n.getAttribute('id')
 			if type in map:
-				print("    %-8s %s;" % (map[type],name))
+				print("    %-20s %-30s const                  { return m_%s; }" % (map[type],name+'()',name))
+			if len(setting) > 0:
+				print("#endif")
+
+def parseGroupMapSetter(node):
+	map = { 'bool':'bool', 'string':'const QCString &', 'enum':'const QCString &', 'int':'int', 'list':'const StringVector &' }
+	for n in node.childNodes:
+		if n.nodeType == Node.ELEMENT_NODE:
+			setting = n.getAttribute('setting')
+			if len(setting) > 0:
+				print("#if %s" % (setting))
+			type = n.getAttribute('type')
+			name = n.getAttribute('id')
+			if type in map:
+				print("    %-20s update_%-46s { m_%s = v; return m_%s; }" % (map[type],name+'('+map[type]+' v)',name,name))
+			if len(setting) > 0:
+				print("#endif")
+
+def parseGroupMapVar(node):
+	map = { 'bool':'bool', 'string':'QCString', 'enum':'QCString', 'int':'int', 'list':'StringVector' }
+	for n in node.childNodes:
+		if n.nodeType == Node.ELEMENT_NODE:
+			setting = n.getAttribute('setting')
+			if len(setting) > 0:
+				print("#if %s" % (setting))
+			type = n.getAttribute('type')
+			name = n.getAttribute('id')
+			if type in map:
+				print("    %-12s m_%s;" % (map[type],name))
 			if len(setting) > 0:
 				print("#endif")
 
@@ -377,7 +413,7 @@ def parseGroupInit(node):
 			type = n.getAttribute('type')
 			name = n.getAttribute('id')
 			if type in map:
-				print("  %-25s = ConfigImpl::instance()->get%s(__FILE__,__LINE__,\"%s\");" % (name,map[type],name))
+				print("  %-25s = ConfigImpl::instance()->get%s(__FILE__,__LINE__,\"%s\");" % ('m_'+name,map[type],name))
 			if len(setting) > 0:
 				print("#endif")
 
@@ -391,7 +427,7 @@ def parseGroupMapInit(node):
 			type = n.getAttribute('type')
 			name = n.getAttribute('id')
 			if type in map:
-				print("  m_map.insert(\"%s\",new Info%s(&ConfigValues::%s));" % (name,map[type],name))
+				print("    { %-25s Info{ %-13s &ConfigValues::m_%s }}," % ('\"'+name+'\",','Info::'+map[type]+',',name))
 			if len(setting) > 0:
 				print("#endif")
 
@@ -529,7 +565,7 @@ def parseOptionDoc(node, first):
 				if defval != '':
 					print("")
 					print("The default value is: <code>%s</code>." % (
-						defval))
+						defval.replace('\\','\\\\')))
 			print("")
 		# depends handling
 		if (node.hasAttribute('depends')):
@@ -650,6 +686,7 @@ def main():
 		print("#include <qdict.h>")
 		print("#include <qstrlist.h>")
 		print("#include <qcstring.h>")
+		print("#include \"containers.h\"")
 		print("#include \"settings.h\"")
 		print("")
 		print("class ConfigValues")
@@ -659,42 +696,38 @@ def main():
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
-					parseGroupMap(n)
+					parseGroupMapGetter(n)
+		for n in elem.childNodes:
+			if n.nodeType == Node.ELEMENT_NODE:
+				if (n.nodeName == "group"):
+					parseGroupMapSetter(n)
 		print("    void init();")
-		print("    struct Info")
-		print("    {")
-		print("      enum Type { Bool, Int, String, List, Unknown };")
-		print("      Info(Type t) : type(t) {}")
-		print("      virtual ~Info() {}")
-		print("      Type type;")
-		print("    };")
-		print("    struct InfoBool : public Info")
-		print("    {")
-		print("      InfoBool(bool ConfigValues::*ptm) : Info(Info::Bool), item(ptm) {}")
-		print("      bool ConfigValues::*item;")
-		print("    };")
-		print("    struct InfoInt : public Info")
-		print("    {")
-		print("      InfoInt(int ConfigValues::*ptm) : Info(Info::Int), item(ptm) {}")
-		print("      int ConfigValues::*item;")
-		print("    };")
-		print("    struct InfoString : public Info")
-		print("    {")
-		print("      InfoString(QCString ConfigValues::*ptm) : Info(Info::String), item(ptm) {}")
-		print("      QCString ConfigValues::*item;")
-		print("    };")
-		print("    struct InfoList : public Info")
-		print("    {")
-		print("      InfoList(QStrList ConfigValues::*ptm) : Info(Info::List), item(ptm) {}")
-		print("      QStrList ConfigValues::*item;")
-		print("    };")
-		print("    const Info *get(const char *tag) const")
-		print("    {")
-		print("      return m_map.find(tag);")
-		print("    }")
+		print("    struct Info");
+		print("    {");
+		print("      enum Type { Bool, Int, String, List, Unknown };");
+		print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}");
+		print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}");
+		print("      Info(Type t,QCString     ConfigValues::*s) : type(t), value(s) {}");
+		print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}");
+		print("      Type type;");
+		print("      union Item");
+		print("      {");
+		print("        Item(bool         ConfigValues::*v) : b(v) {}");
+		print("        Item(int          ConfigValues::*v) : i(v) {}");
+		print("        Item(QCString     ConfigValues::*v) : s(v) {}");
+		print("        Item(StringVector ConfigValues::*v) : l(v) {}");
+		print("        bool         ConfigValues::*b;");
+		print("        int          ConfigValues::*i;");
+		print("        QCString     ConfigValues::*s;");
+		print("        StringVector ConfigValues::*l;");
+		print("      } value;");
+		print("    };");
+		print("    const Info *get(const char *tag) const;");
 		print("  private:")
-		print("    ConfigValues();")
-		print("    QDict<Info> m_map;")
+		for n in elem.childNodes:
+			if n.nodeType == Node.ELEMENT_NODE:
+				if (n.nodeName == "group"):
+					parseGroupMapVar(n)
 		print("};")
 		print("")
 		print("#endif")
@@ -705,18 +738,27 @@ def main():
 		print(" */")
 		print("#include \"configvalues.h\"")
 		print("#include \"configimpl.h\"")
+		print("#include <unordered_map>")
 		print("")
-		print("ConfigValues::ConfigValues() : m_map(257)")
-		print("{")
-		print("  m_map.setAutoDelete(TRUE);")
+		print("const ConfigValues::Info *ConfigValues::get(const char *tag) const");
+		print("{");
+		print("  static const std::unordered_map< std::string, Info > configMap =");
+		print("  {");
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
 					parseGroupMapInit(n)
-		print("}")
+		print("  };");
+		print("  auto it = configMap.find(tag);");
+		print("  return it!=configMap.end() ? &it->second : nullptr;");
+		print("}");
 		print("")
 		print("void ConfigValues::init()")
 		print("{")
+		print("  static bool first = TRUE;")
+		print("  if (!first) return;")
+		print("  first = FALSE;")
+		print("")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):

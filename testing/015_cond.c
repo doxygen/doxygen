@@ -1,4 +1,4 @@
-// objective: test the \cond command
+// objective: test the `cond` command
 // check: 015__cond_8c.xml
 // config: ENABLED_SECTIONS = COND_ENABLED
 
@@ -17,12 +17,14 @@ void func();
 /// \endcond
 
 /// \cond COND_ENABLED
+/// Function to be shown.
 void cond_enabled()
 {
 }
 /// \endcond
 
 /** \cond COND_DISABLED */
+    Function not to be shown.
 void cond_disabled()
 {
 }

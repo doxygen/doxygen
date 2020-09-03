@@ -48,7 +48,7 @@ class ClassListIterator : public QListIterator<ClassDef>
 class ClassDict : public QDict<ClassDef>
 {
   public:
-    ClassDict(int size) : QDict<ClassDef>(size) {}
+    ClassDict(uint size) : QDict<ClassDef>(size) {}
    ~ClassDict() {}
 };
 
@@ -56,11 +56,11 @@ class ClassDict : public QDict<ClassDef>
 class ClassSDict : public SDict<ClassDef>
 {
   public:
-    ClassSDict(int size=17) : SDict<ClassDef>(size) {}
+    ClassSDict(uint size=17) : SDict<ClassDef>(size) {}
    ~ClassSDict() {}
     void writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter=0,
-                         const char *header=0,bool localNames=FALSE);
-    void writeDocumentation(OutputList &ol,Definition *container=0);
+                         const char *header=0,bool localNames=FALSE) const;
+    void writeDocumentation(OutputList &ol,const Definition *container=0) const;
     bool declVisible(const ClassDef::CompoundType *filter=0) const;
   private:
     int compareValues(const ClassDef *item1,const ClassDef *item2) const;

@@ -12,7 +12,8 @@
  * input used in their production; they are not affected by this license.
  *
  */
-#include <qdict.h>
+
+#include <map>
 #include <qfile.h>
 #include <qcstring.h>
 #include <qglobal.h>
@@ -28,8 +29,7 @@
 class ResourceMgr::Private
 {
   public:
-    Private() : resources(257) {}
-    QDict<Resource> resources;
+    std::map<std::string,Resource> resources;
 };
 
 ResourceMgr &ResourceMgr::instance()
@@ -38,37 +38,34 @@ ResourceMgr &ResourceMgr::instance()
   return theInstance;
 }
 
-ResourceMgr::ResourceMgr()
+ResourceMgr::ResourceMgr() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ResourceMgr::~ResourceMgr()
 {
-  delete p;
 }
 
-void ResourceMgr::registerResources(const Resource resources[],int numResources)
+void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
 {
-  for (int i=0;i<numResources;i++)
+  for (auto &res : resources)
   {
-    p->resources.insert(resources[i].name,&resources[i]);
+    p->resources.insert({res.name,res});
   }
 }
 
 bool ResourceMgr::writeCategory(const char *categoryName,const char *targetDir) const
 {
-  QDictIterator<Resource> it(p->resources);
-  const Resource *res;
-  for (it.toFirst();(res=it.current());++it)
+  for (auto &kv : p->resources)
   {
-    if (qstrcmp(res->category,categoryName)==0)
+    Resource &res = kv.second;
+    if (qstrcmp(res.category,categoryName)==0)
     {
-      QCString pathName = QCString(targetDir)+"/"+res->name;
+      QCString pathName = QCString(targetDir)+"/"+res.name;
       QFile f(pathName);
-      if (!f.open(IO_WriteOnly) || f.writeBlock((const char *)res->data,res->size)!=res->size)
+      if (!f.open(IO_WriteOnly) || f.writeBlock((const char *)res.data,res.size)!=res.size)
       {
-        err("Failed to write resource '%s' to directory '%s'\n",res->name,targetDir);
+        err("Failed to write resource '%s' to directory '%s'\n",res.name,targetDir);
         return FALSE;
       }
     }
@@ -97,14 +94,14 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
         {
           QCString n = name;
           n = n.left(n.length()-4)+".png"; // replace .lum by .png
-          uchar *p = (uchar*)res->data;
-          int width   = (p[0]<<8)+p[1];
-          int height  = (p[2]<<8)+p[3];
+          uchar *data = (uchar*)res->data;
+          ushort width   = (data[0]<<8)+data[1];
+          ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
           images[0].name    = n;
           images[0].width   = width;
           images[0].height  = height;
-          images[0].content = &p[4];
+          images[0].content = &data[4];
           images[0].alpha   = 0;
           images[1].name    = 0; // terminator
           writeColoredImgData(targetDir,images);
@@ -115,15 +112,15 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
         {
           QCString n = name;
           n = n.left(n.length()-5)+".png"; // replace .luma by .png
-          uchar *p = (uchar*)res->data;
-          int width   = (p[0]<<8)+p[1];
-          int height  = (p[2]<<8)+p[3];
+          uchar *data = (uchar*)res->data;
+          ushort width   = (data[0]<<8)+data[1];
+          ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
           images[0].name    = n;
           images[0].width   = width;
           images[0].height  = height;
-          images[0].content = &p[4];
-          images[0].alpha   = &p[4+width*height];
+          images[0].content = &data[4];
+          images[0].alpha   = &data[4+width*height];
           images[1].name    = 0; // terminator
           writeColoredImgData(targetDir,images);
           return TRUE;
@@ -144,12 +141,24 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
             }
             else
             {
-              t << substitute(buf,"$doxygenversion",versionString);
+              t << substitute(buf,"$doxygenversion",getDoxygenVersion());
             }
             return TRUE;
           }
         }
         break;
+      case Resource::SVG:
+        {
+          QFile f(pathName);
+          if (f.open(IO_WriteOnly))
+          {
+            QCString buf(res->size+1);
+            memcpy(buf.rawData(),res->data,res->size);
+            FTextStream t(&f);
+            t << replaceColorMarkers(buf);
+            return TRUE;
+          }
+        }
     }
   }
   else
@@ -166,7 +175,9 @@ bool ResourceMgr::copyResource(const char *name,const char *targetDir) const
 
 const Resource *ResourceMgr::get(const char *name) const
 {
-  return p->resources.find(name);
+  auto it = p->resources.find(name);
+  if (it!=p->resources.end()) return &it->second;
+  return 0;
 }
 
 QCString ResourceMgr::getAsString(const char *name) const

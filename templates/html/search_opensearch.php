@@ -1,4 +1,4 @@
-<script language="PHP">
+<?php
 require "search_functions.php";
 
 $mode = array_key_exists('v', $_GET)?$_GET['v']:"";
@@ -125,4 +125,4 @@ function invalid_format($query, array $results)
   print "Search results for '$query':\n\n";
   print_r($results);
 }
-</script>
+?>

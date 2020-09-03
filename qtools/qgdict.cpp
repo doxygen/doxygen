@@ -83,36 +83,9 @@ public:
   Returns the hash key for \e key, when key is a string.
 */
 
-int QGDict::hashKeyString( const QString &key )
+int QGDict::hashKeyString( const QCString &key )
 {
-#if defined(CHECK_NULL)
-    if ( key.isNull() ) 
-	qWarning( "QGDict::hashStringKey: Invalid null key" ); 
-#endif
-    int i;
-    register uint h=0;
-    uint g;
-    int len = key.length();
-    const QChar *p = key.unicode();
-    if ( cases ) {				// case sensitive
-	for ( i=0; i<len; i++ ) {
-	    h = (h<<4) + p[i].cell();
-	    if ( (g = h & 0xf0000000) )
-		h ^= g >> 24;
-	    h &= ~g;
-	}
-    } else {					// case insensitive
-	for ( i=0; i<len; i++ ) {
-	    h = (h<<4) + p[i].lower().cell();
-	    if ( (g = h & 0xf0000000) )
-		h ^= g >> 24;
-	    h &= ~g;
-	}
-    }
-    int index = h;
-    if ( index < 0 )				// adjust index to table size
-	index = -index;
-    return index;
+    return hashKeyAscii(key.data());
 }
 
 /*!
@@ -129,8 +102,8 @@ int QGDict::hashKeyAscii( const char *key )
         return 0;
     }
 #endif
-    register const char *k = key;
-    register uint h=0;
+    const char *k = key;
+    uint h=0;
     uint g;
     if ( cases ) {				// case sensitive
 	while ( *k ) {
@@ -337,7 +310,7 @@ QGDict &QGDict::operator=( const QGDict &dict )
 */
 
 
-/*! \fn QString QGDictIterator::getKeyString() const
+/*! \fn QCString QGDictIterator::getKeyString() const
 
   \internal
 */
@@ -379,21 +352,21 @@ QGDict &QGDict::operator=( const QGDict &dict )
   The do-it-all function; op is one of op_find, op_insert, op_replace
 */
 
-QCollection::Item QGDict::look_string( const QString &key, QCollection::Item d, int op )
+QCollection::Item QGDict::look_string( const QCString &key, QCollection::Item d, int op )
 {
-    QStringBucket *n;
+    QCStringBucket *n;
     int	index = hashKeyString(key) % vlen;
     if ( op == op_find ) {			// find
 	if ( cases ) {
-	    for ( n=(QStringBucket*)vec[index]; n;
-		  n=(QStringBucket*)n->getNext() ) {
+	    for ( n=(QCStringBucket*)vec[index]; n;
+		  n=(QCStringBucket*)n->getNext() ) {
 		if ( key == n->getKey() )
 		    return n->getData();	// item found
 	    }
 	} else {
-	    QString k = key.lower();
-	    for ( n=(QStringBucket*)vec[index]; n;
-		  n=(QStringBucket*)n->getNext() ) {
+	    QCString k = key.lower();
+	    for ( n=(QCStringBucket*)vec[index]; n;
+		  n=(QCStringBucket*)n->getNext() ) {
 		if ( k == n->getKey().lower() )
 		    return n->getData();	// item found
 	    }
@@ -405,7 +378,7 @@ QCollection::Item QGDict::look_string( const QString &key, QCollection::Item d, 
 	    remove_string( key );
     }
     // op_insert or op_replace
-    n = new QStringBucket(key,newItem(d),vec[index]);
+    n = new QCStringBucket(key,newItem(d),vec[index]);
     CHECK_PTR( n );
 #if defined(CHECK_NULL)
     if ( n->getData() == 0 )
@@ -542,10 +515,10 @@ void QGDict::resize( uint newsize )
 	switch ( keytype ) {
 	    case StringKey:
 		{
-		    QStringBucket *n=(QStringBucket *)old_vec[index];
+		    QCStringBucket *n=(QCStringBucket *)old_vec[index];
 		    while ( n ) {
 			look_string( n->getKey(), n->getData(), op_insert );
-			QStringBucket *t=(QStringBucket *)n->getNext();
+			QCStringBucket *t=(QCStringBucket *)n->getNext();
 			delete n;
 			n = t;
 		    }
@@ -624,16 +597,16 @@ void QGDict::unlink_common( int index, QBaseBucket *node, QBaseBucket *prev )
     numItems--;
 }
 
-QStringBucket *QGDict::unlink_string( const QString &key, QCollection::Item d )
+QCStringBucket *QGDict::unlink_string( const QCString &key, QCollection::Item d )
 {
     if ( numItems == 0 )			// nothing in dictionary
 	return 0;
-    QStringBucket *n;
-    QStringBucket *prev = 0;
+    QCStringBucket *n;
+    QCStringBucket *prev = 0;
     int index = hashKeyString(key) % vlen;
     if ( cases ) {
-	for ( n=(QStringBucket*)vec[index]; n;
-	      n=(QStringBucket*)n->getNext() ) {
+	for ( n=(QCStringBucket*)vec[index]; n;
+	      n=(QCStringBucket*)n->getNext() ) {
 	    bool found = (key == n->getKey());
 	    if ( found && d )
 		found = (n->getData() == d);
@@ -644,9 +617,9 @@ QStringBucket *QGDict::unlink_string( const QString &key, QCollection::Item d )
 	    prev = n;
 	}
     } else {
-	QString k = key.lower();
-	for ( n=(QStringBucket*)vec[index]; n;
-	      n=(QStringBucket*)n->getNext() ) {
+	QCString k = key.lower();
+	for ( n=(QCStringBucket*)vec[index]; n;
+	      n=(QCStringBucket*)n->getNext() ) {
 	    bool found = (k == n->getKey().lower());
 	    if ( found && d )
 		found = (n->getData() == d);
@@ -729,9 +702,9 @@ QPtrBucket *QGDict::unlink_ptr( void *key, QCollection::Item d )
   item when several items have the same key).
 */
 
-bool QGDict::remove_string( const QString &key, QCollection::Item item )
+bool QGDict::remove_string( const QCString &key, QCollection::Item item )
 {
-    QStringBucket *n = unlink_string( key, item );
+    QCStringBucket *n = unlink_string( key, item );
     if ( n ) {
 	deleteItem( n->getData() );
 	delete n;
@@ -785,9 +758,9 @@ bool QGDict::remove_ptr( void *key, QCollection::Item item )
 
 /*!  \internal */
 
-QCollection::Item QGDict::take_string( const QString &key )
+QCollection::Item QGDict::take_string( const QCString &key )
 {
-    QStringBucket *n = unlink_string( key );
+    QCStringBucket *n = unlink_string( key );
     Item d;
     if ( n ) {
 	d = n->getData();
@@ -864,9 +837,9 @@ void QGDict::clear()
 	    switch ( keytype ) {
 		case StringKey:
 		    {
-			QStringBucket *n=(QStringBucket *)vec[j];
+			QCStringBucket *n=(QCStringBucket *)vec[j];
 			while ( n ) {
-			    QStringBucket *next = (QStringBucket*)n->getNext();
+			    QCStringBucket *next = (QCStringBucket*)n->getNext();
 			    deleteItem( n->getData() );
 			    delete n;
 			    n = next;
@@ -930,14 +903,14 @@ void QGDict::clear()
 void QGDict::statistics() const
 {
 #if defined(DEBUG)
-    QString line;
+    QCString line;
     line.fill( '-', 60 );
     double real, ideal;
-    qDebug( "%s",line.ascii() );
+    qDebug( "%s",line.data() );
     qDebug( "DICTIONARY STATISTICS:" );
     if ( count() == 0 ) {
 	qDebug( "Empty!" );
-	qDebug( "%s", line.ascii() );
+	qDebug( "%s", line.data() );
 	return;
     }
     real = 0.0;
@@ -966,7 +939,7 @@ void QGDict::statistics() const
     qDebug( "Real dist  = %g", real );
     qDebug( "Rand dist  = %g", ideal );
     qDebug( "Real/Rand  = %g", real/ideal );
-    qDebug( "%s",line.ascii() );
+    qDebug( "%s",line.data() );
 #endif // DEBUG
 }
 
@@ -1004,7 +977,7 @@ QDataStream &QGDict::read( QDataStream &s )
 	switch ( keytype ) {
 	    case StringKey:
 		{
-		    QString k;
+		    QCString k;
 		    s >> k;
 		    read( s, d );
 		    look_string( k, d, op_insert );
@@ -1060,7 +1033,7 @@ QDataStream& QGDict::write( QDataStream &s ) const
 	while ( n ) {				// write all buckets
 	    switch ( keytype ) {
 		case StringKey:
-		    s << ((QStringBucket*)n)->getKey();
+		    s << ((QCStringBucket*)n)->getKey();
 		    break;
 		case AsciiKey:
 		    s << ((QAsciiBucket*)n)->getKey();
@@ -1101,7 +1074,7 @@ QDataStream& QGDict::write( QDataStream &s ) const
 QGDictIterator::QGDictIterator( const QGDict &d )
 {
     dict = (QGDict *)&d;			// get reference to dict
-    toFirst();					// set to first noe
+    toFirst();					// set to first node
     if ( !dict->iterators ) {
 	dict->iterators = new QGDItList;	// create iterator list
 	CHECK_PTR( dict->iterators );
@@ -1170,8 +1143,8 @@ QCollection::Item QGDictIterator::toFirst()
 	curNode = 0;
 	return 0;
     }
-    register uint i = 0;
-    register QBaseBucket **v = dict->vec;
+    uint i = 0;
+    QBaseBucket **v = dict->vec;
     while ( !(*v++) )
 	i++;
     curNode = dict->vec[i];
@@ -1217,8 +1190,8 @@ QCollection::Item QGDictIterator::operator++()
 	return 0;
     curNode = curNode->getNext();
     if ( !curNode ) {				// no next bucket
-	register uint i = curIndex + 1;		// look from next vec element
-	register QBaseBucket **v = &dict->vec[i];
+	uint i = curIndex + 1;		// look from next vec element
+	QBaseBucket **v = &dict->vec[i];
 	while ( i < dict->size() && !(*v++) )
 	    i++;
 	if ( i == dict->size() ) {		// nothing found

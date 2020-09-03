@@ -1,4 +1,4 @@
-// objective: test \attention, \not, \remark, \warning, and \par commands
+// objective: test \attention, \note, \remark, \warning, and \par commands
 // check: indexpage.xml
 /** \mainpage
  *  \attention Attention message.

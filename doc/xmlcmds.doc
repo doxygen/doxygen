@@ -17,7 +17,7 @@
 /*! \page xmlcmds XML Commands
 
 Doxygen supports most of the XML commands that are typically used in C# 
-code comments. The XML tags are defined in Appendix E of the
+code comments. The XML tags are defined in Appendix D of the
 <a href="http://www.ecma-international.org/publications/standards/Ecma-334.htm">ECMA-334</a> 
 standard, which defines the C# language. Unfortunately, the specification is
 not very precise and a number of the examples given are of poor quality.
@@ -70,6 +70,9 @@ Here is the list of tags supported by doxygen:
 <li><tt>\<typeparamref name="paramName"\></tt> Refers to a parameter with name
                          "paramName". Similar to using \ref cmda "\\a".
 <li><tt>\<value\></tt>   Identifies a property. Ignored by doxygen.
+<li><tt>\<![CDATA[...]]\></tt> The text inside this tag (on the ...) is  handled as normal
+                         doxygen comment except for the XML special characters `<`, `>` and
+                         `&` that are used as if they were escaped.
 </ul>
 
 Here is an example of a typical piece of code using some of the above commands:
@@ -101,7 +104,7 @@ class Engine
 
 
 \htmlonly
-Go to the <a href="langhowto.html">next</a> section or return to the
+Go to the <a href="emojisup.html">next</a> section or return to the
  <a href="index.html">index</a>.
 \endhtmlonly
 

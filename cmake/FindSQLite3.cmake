@@ -71,8 +71,16 @@ else (SQLITE3_LIBRARIES AND SQLITE3_INCLUDE_DIRS)
   endif (SQLITE3_INCLUDE_DIRS AND SQLITE3_LIBRARIES)
 
   if (SQLITE3_FOUND)
+
+    # Extract version from header file
+    find_file(SQLITE3_HEADER "sqlite3.h" HINTS ${SQLITE3_INCLUDE_DIRS})
+    if(SQLITE3_HEADER)
+      file(STRINGS "${SQLITE3_HEADER}" _DEF_TMP REGEX "^#define SQLITE_VERSION +\\\"[^\\\"]+\\\"")
+      string (REGEX REPLACE ".*\\\"(([0-9]+[.]?)+).*" "\\1" SQLITE3_VERSION "${_DEF_TMP}")
+    endif (SQLITE3_HEADER)
+
     if (NOT Sqlite3_FIND_QUIETLY)
-      message(STATUS "Found Sqlite3: ${SQLITE3_LIBRARIES}")
+      message(STATUS "Found Sqlite3: ${SQLITE3_LIBRARIES} (found version \"${SQLITE3_VERSION}\")")
     endif (NOT Sqlite3_FIND_QUIETLY)
   else (SQLITE3_FOUND)
     if (Sqlite3_FIND_REQUIRED)

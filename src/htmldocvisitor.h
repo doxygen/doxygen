@@ -33,7 +33,7 @@ class CodeOutputInterface;
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,Definition *ctx);
+    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const Definition *ctx);
     
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -43,6 +43,7 @@ class HtmlDocVisitor : public DocVisitor
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
     void visit(DocSymbol *);
+    void visit(DocEmoji *);
     void visit(DocURL *);
     void visit(DocLineBreak *);
     void visit(DocHorRuler *);
@@ -126,8 +127,6 @@ class HtmlDocVisitor : public DocVisitor
     void visitPost(DocXRefItem *);
     void visitPre(DocInternalRef *);
     void visitPost(DocInternalRef *);
-    void visitPre(DocCopy *);
-    void visitPost(DocCopy *);
     void visitPre(DocText *);
     void visitPost(DocText *);
     void visitPre(DocHtmlBlockQuote *);
@@ -170,7 +169,7 @@ class HtmlDocVisitor : public DocVisitor
     bool m_insidePre;
     bool m_hide;
     QStack<bool> m_enabled;
-    Definition *m_ctx;
+    const Definition *m_ctx;
     QCString m_langExt;
 };
 

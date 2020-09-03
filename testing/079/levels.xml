@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="levels" kind="page">
+    <compoundname>levels</compoundname>
+    <title>A page with two-level TOC</title>
+    <tableofcontents>
+      <tocsect>
+        <name>A section that's in TOC</name>
+        <reference>levels_1first</reference>
+        <tableofcontents>
+          <tocsect>
+            <name>A subsection that's in TOC</name>
+            <reference>levels_1first2</reference>
+          </tocsect>
+        </tableofcontents>
+      </tocsect>
+      <tocsect>
+        <name>A section that's in TOC again</name>
+        <reference>levels_1second</reference>
+      </tocsect>
+    </tableofcontents>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+      <sect1 id="levels_1first">
+        <title>A section that's in TOC</title>
+        <sect2 id="levels_1first2">
+          <title>A subsection that's in TOC</title>
+          <sect3 id="levels_1first3">
+            <title>A subsubsection that's not in TOC</title>
+            <para>Nay!</para>
+          </sect3>
+        </sect2>
+      </sect1>
+      <sect1 id="levels_1second">
+        <title>A section that's in TOC again</title>
+        <para>Yay! </para>
+      </sect1>
+    </detaileddescription>
+  </compounddef>
+</doxygen>

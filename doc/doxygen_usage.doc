@@ -80,8 +80,8 @@ doxygen -w html header.html footer.html stylesheet.css <config_file>
 doxygen -w latex header.tex footer.tex doxygen.sty <config_file>
 \endverbatim
 If you need non-default options (for instance to use extra \LaTeX packages) 
-you need to make a config file with those options set correctly and then specify
-that config file after the generated files (make a backup of the configuration
+you need to make a configuration file with those options set correctly and then specify
+that configuration file after the generated files (make a backup of the configuration
 file first so you don't loose it in case you forget to specify one of the 
 output files).
 <li>For RTF output, you can generate the default style sheet file (see

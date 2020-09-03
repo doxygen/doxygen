@@ -21,6 +21,7 @@
 #include "message.h"
 #include "util.h"
 #include "htmlentity.h"
+#include "emoji.h"
 
 //-------------------------------------------------------------------------
 
@@ -37,6 +38,18 @@ void TextDocVisitor::visit(DocSymbol *s)
   }
 }
 
+void TextDocVisitor::visit(DocEmoji *s)
+{
+  const char *res = EmojiEntityMapper::instance()->name(s->index());
+  if (res)
+  {
+    filter(res);
+  }
+  else
+  {
+    filter(s->name());
+  }
+}
 
 void TextDocVisitor::filter(const char *str)
 { 
@@ -50,11 +63,6 @@ void TextDocVisitor::filter(const char *str)
     switch(c)
     {
       case '\n':  m_t << " ";      break;
-      case '"':   m_t << "&quot;"; break;
-      case '\'':  m_t << "&#39;";  break;
-      case '<':   m_t << "&lt;";   break;
-      case '>':   m_t << "&gt;";   break;
-      case '&':   m_t << "&amp;";  break;
       default:    m_t << c;
     }
   }

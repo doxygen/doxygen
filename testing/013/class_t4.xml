@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="class_t4" kind="class" language="C++" prot="public">
     <compoundname>T4</compoundname>
     <includes refid="013__class_8h" local="yes">inc/013_class.h</includes>
@@ -8,7 +8,7 @@
     <detaileddescription>
       <para>class <ref refid="class_t4" kindref="compound">T4</ref> </para>
     </detaileddescription>
-    <location file="013_class.h" line="23" column="1" bodyfile="013_class.h" bodystart="22" bodyend="24"/>
+    <location file="013_class.h" line="22" column="1" bodyfile="013_class.h" bodystart="23" bodyend="24"/>
     <listofallmembers>
     </listofallmembers>
   </compounddef>

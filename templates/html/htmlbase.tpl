@@ -1,5 +1,5 @@
 {% block header %}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
@@ -16,16 +16,20 @@
 <script type="text/javascript" src="{{ page.relPath }}navtreedata.js"></script>
 <script type="text/javascript" src="{{ page.relPath }}navtree.js"></script>
 <script type="text/javascript">
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(initResizable);
+	/* @license-end */
 </script>
 {% endif %}
 {% if not config.DISABLE_INDEX %}
 <script type="text/javascript" src="menudata.js"></script>
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 $(function() {
   initMenu('',{% if config.SEARCHENGINE %}true{% else %}false{% endif %},'{{ tr.search }}');
 });
+/* @license-end */
 </script>
 {% endif %}
 {% if config.SEARCHENGINE %}
@@ -36,14 +40,18 @@ $(function() {
 <script type="text/javascript" src="{{ page.relPath }}search/search.js"></script>
   {% if config.SERVER_BASED_SEARCH %}
 <script type="text/javascript">
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(function() {
     if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
   });
+	/* @license-end */
 </script>
 <link rel="search" href="{{ page.relPath }}search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="{{ config.PROJECT_NAME }}"/>
   {% else %}
 <script type="text/javascript">
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(function() { init_search(); });
+	/* @license-end */
 </script>
   {% endif %}
 {% endif %}
@@ -92,7 +100,7 @@ $(function() {
    <div id="MSearchBox" class="MSearchBoxInactive">
     <div class="left">
      <form id="FSearchBox" action="{{ page.relPath }}{% if config.EXTERNAL_SEARCH %}search{{ doxygen.htmlFileExtension }}{% else %}search.php{% endif %}" method="get">
-      <img id="MSearchSelect" src="{{ page.relPath }}search/mag.png" alt=""/>
+      <img id="MSearchSelect" src="{{ page.relPath }}search/mag.svg" alt=""/>
       <input type="text" id="MSearchField" name="query" value="{{ tr.search }}" size="20" accesskey="S"
                 onfocus="searchBox.OnSearchFieldFocus(true)"
                 onblur="searchBox.OnSearchFieldFocus(false)"/>
@@ -103,7 +111,7 @@ $(function() {
   {% else %}{# !SERVER_BASED_SEARCH #}
    <div id="MSearchBox" class="MSearchBoxInactive">
     <span class="left">
-      <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.png"
+      <img id="MSearchSelect" src="{{ page.relPath }}search/mag_sel.svg"
            onmouseover="return searchBox.OnSearchSelectShow()"
            onmouseout="return searchBox.OnSearchSelectHide()"
            alt=""/>
@@ -113,7 +121,7 @@ $(function() {
            onkeyup="searchBox.OnSearchFieldChange(event)"/>
     </span><span class="right">
         <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img
-           id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.png"
+           id="MSearchCloseImg" border="0" src="{{ page.relPath }}search/close.svg"
            alt=""/></a>
     </span>
    </div>
@@ -131,7 +139,9 @@ $(function() {
 {% block search %}
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}');
+/* @license-end */
 </script>
 {% endif %}
 {% endblock %}
@@ -160,7 +170,9 @@ var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ 
   </div>
 </div>
 <script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix %}{{ page_postfix }}{% endif %}{{ config.HTML_FILE_EXTENSION }}','{{ page.relPath }}');});
+/* @license-end */
 </script>
 <div id="doc-content">
 {% endif %}
@@ -216,8 +228,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-    <a href="http://www.doxygen.org/index.html">
-    <img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a> {{ doxygen.version }} </li>
+    <a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }} </li>
   </ul>
 </div>
 {% else %}
@@ -227,7 +238,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.png" alt="doxygen"/></a> 
+&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a>
   {{ doxygen.version }}
   </small></address>
 {% endif %}

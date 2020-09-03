@@ -72,8 +72,7 @@ void EclipseHelp::initialize()
   m_tocfile = new QFile(name);
   if (!m_tocfile->open(IO_WriteOnly)) 
   {
-    err("Could not open file %s for writing\n", name.data());
-    exit(1);
+    term("Could not open file %s for writing\n", name.data());
   }
 
   // -- initialize its text stream
@@ -115,7 +114,7 @@ void EclipseHelp::finalize()
   QFile pluginFile(name);
   if (pluginFile.open(IO_WriteOnly))
   {
-    QString docId = Config_getString(ECLIPSE_DOC_ID);
+    QCString docId = Config_getString(ECLIPSE_DOC_ID);
     FTextStream t(&pluginFile);
     t << "<plugin name=\""  << docId << "\" id=\"" << docId << "\"" << endl;
     t << "        version=\"1.0.0\" provider-name=\"Doxygen\">" << endl;
@@ -174,7 +173,7 @@ void EclipseHelp::addContentsItem(
     const char *anchor,
     bool /* separateIndex */,
     bool /* addToNavIndex */,
-    Definition * /*def*/) 
+    const Definition * /*def*/) 
 {
   // -- write the topic tag 
   closedTag();
@@ -216,8 +215,8 @@ void EclipseHelp::addContentsItem(
 }
 
 void EclipseHelp::addIndexItem(
-    Definition * /* context */,
-    MemberDef * /* md */,
+    const Definition * /* context */,
+    const MemberDef * /* md */,
     const char * /* sectionAnchor */,
     const char * /* title */)
 {

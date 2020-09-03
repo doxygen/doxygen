@@ -4,4 +4,6 @@
 // config: CITE_BIB_FILES = $INPUTDIR/sample.bib
 /** \mainpage
  *  See \cite knuth79 for more info.
+ *  
+ *  Other references with cross references see \cite Be09 and \cite BertholdHeinzVigerske2009 for more info.
  */

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
+  <compounddef id="081__brief__lists_8h" kind="file" language="C++">
+    <compoundname>081_brief_lists.h</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="081__brief__lists_8h_1a319a01268f470ad2ab65e6838e13cc05" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void c_subr1</definition>
+        <argsstring>(void)</argsstring>
+        <name>c_subr1</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>Just with minus. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <itemizedlist>
+              <listitem>
+                <para>Item 1</para>
+              </listitem>
+              <listitem>
+                <para>Item 2 </para>
+              </listitem>
+            </itemizedlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="081_brief_lists.h" line="8" column="6" declfile="081_brief_lists.h" declline="8" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="081__brief__lists_8h_1a6724979ae3655ed6eb8b377337119d94" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void c_subr2</definition>
+        <argsstring>(void)</argsstring>
+        <name>c_subr2</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>With minus and hash. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <orderedlist>
+              <listitem>
+                <para>Item 3</para>
+              </listitem>
+              <listitem>
+                <para>Item 4 </para>
+              </listitem>
+            </orderedlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="081_brief_lists.h" line="13" column="6" declfile="081_brief_lists.h" declline="13" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="081__brief__lists_8h_1a32cca553d19c1f483a6c308000517353" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void c_subr3</definition>
+        <argsstring>(void)</argsstring>
+        <name>c_subr3</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>With numbers. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <orderedlist>
+              <listitem>
+                <para>Item 5</para>
+              </listitem>
+              <listitem>
+                <para>Item 6 </para>
+              </listitem>
+            </orderedlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="081_brief_lists.h" line="18" column="6" declfile="081_brief_lists.h" declline="18" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="081__brief__lists_8h_1a350caf1b2bbbbb18b9b4f08bb799f86b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void c_subr4</definition>
+        <argsstring>(void)</argsstring>
+        <name>c_subr4</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+          <para>With asterisk. </para>
+        </briefdescription>
+        <detaileddescription>
+          <para>
+            <itemizedlist>
+              <listitem>
+                <para>Item 7</para>
+              </listitem>
+              <listitem>
+                <para>Item 8 </para>
+              </listitem>
+            </itemizedlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="081_brief_lists.h" line="23" column="6" declfile="081_brief_lists.h" declline="23" declcolumn="6"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="081_brief_lists.h"/>
+  </compounddef>
+</doxygen>

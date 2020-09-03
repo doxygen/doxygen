@@ -18,7 +18,7 @@
 #ifndef FORTRANCODE_H
 #define FORTRANCODE_H
 
-#include "types.h"
+#include "parserintf.h"
 
 class CodeOutputInterface;
 class FileDef;
@@ -26,13 +26,44 @@ class MemberDef;
 class QCString;
 class Definition;
 
-void parseFortranCode(CodeOutputInterface &,const char *,const QCString &, 
-            bool ,const char *,FileDef *fd,
-            int startLine,int endLine,bool inlineFragment,
-            MemberDef *memberDef,bool showLineNumbers,Definition *searchCtx,
-            bool collectRefs, FortranFormat format);
-void resetFortranCodeParserState();
 void codeFreeScanner();
 
-const int fixedCommentAfter = 72;
+
+class FortranCodeParser : public CodeParserInterface
+{
+  public:
+    FortranCodeParser(FortranFormat format=FortranFormat_Unknown) : m_format(format) { }
+    void parseCode(CodeOutputInterface &codeOutIntf,
+                   const char *scopeName,
+                   const QCString &input,
+                   SrcLangExt lang,
+                   bool isExampleBlock,
+                   const char *exampleName=0,
+                   FileDef *fileDef=0,
+                   int startLine=-1,
+                   int endLine=-1,
+                   bool inlineFragment=FALSE,
+                   const MemberDef *memberDef=0,
+                   bool showLineNumbers=TRUE,
+                   const Definition *searchCtx=0,
+                   bool collectXRefs=TRUE
+                  );
+    void resetCodeParserState();
+
+  private:
+    FortranFormat m_format;
+};
+
+class FortranCodeParserFree : public FortranCodeParser
+{
+  public:
+    FortranCodeParserFree() : FortranCodeParser(FortranFormat_Free) { }
+};
+
+class FortranCodeParserFixed : public FortranCodeParser
+{
+  public:
+    FortranCodeParserFixed() : FortranCodeParser(FortranFormat_Fixed) { }
+};
+
 #endif

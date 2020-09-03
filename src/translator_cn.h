@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public Translator
+class TranslatorChinese : public TranslatorAdapter_1_8_15
 {
   public:
     /*! Used for identification of the language. The identification
@@ -53,7 +53,23 @@ class TranslatorChinese : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     {
+      return "\\usepackage{CJKutf8}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "zh";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
+    }
+    virtual QCString latexDocumentPre()
+    {
+      return "\\begin{CJK}{UTF8}{min}\n";
+    }
+    virtual QCString latexDocumentPost()
+    {
+      return "\\end{CJK}\n";
     }
 
     /*! used in the compound documentation before a list of related functions.
@@ -100,7 +116,7 @@ class TranslatorChinese : public Translator
     virtual QCString trMore()
     { return "更多..."; }
 
-    /*! put in the class documention */
+    /*! put in the class documentation */
     virtual QCString trListOfAllMembers()
     { return "所有成员列表"; }
 
@@ -843,7 +859,7 @@ class TranslatorChinese : public Translator
 
     virtual QCString trReferencedBy()
     {
-      return "参考自";
+      return "被这些函数引用";
     }
 
     virtual QCString trRemarks()
@@ -1204,7 +1220,7 @@ class TranslatorChinese : public Translator
      */
     virtual QCString trReferences()
     {
-      return "参考";
+      return "引用了";
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1850,14 +1866,6 @@ class TranslatorChinese : public Translator
       return "函数文档";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "设计概要";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1908,7 +1916,6 @@ class TranslatorChinese : public Translator
       return "该单例的文档由下列文件生成:";
     }
 
-//////////////////////////////////////////////////////////////////////////
 };
 
 #endif

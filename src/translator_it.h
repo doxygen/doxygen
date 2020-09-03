@@ -89,7 +89,7 @@
 #ifndef TRANSLATOR_IT_H
 #define TRANSLATOR_IT_H
 
-class TranslatorItalian : public Translator
+class TranslatorItalian : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -110,6 +110,11 @@ class TranslatorItalian : public Translator
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[italian]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "it";
     }
 
     // --- Language translation methods -------------------
@@ -1912,14 +1917,6 @@ class TranslatorItalian : public Translator
       return "Documentazione dei metodi";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "Panoramica del progetto";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1975,8 +1972,6 @@ class TranslatorItalian : public Translator
       if (single) result+="dal seguente file:"; else result+="dai seguenti file:";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

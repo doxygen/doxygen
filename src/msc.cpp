@@ -24,6 +24,7 @@
 #include "index.h"
 #include "util.h"
 #include "ftextstream.h"
+#include "mscgen_api.h"
 
 #include <qdir.h>
 
@@ -50,7 +51,7 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
     bool isRef = FALSE;
     int numBytes = f.readLine(buf,maxLineLen);
     buf[numBytes-1]='\0';
-    //printf("ReadLine `%s'\n",buf);
+    //printf("ReadLine '%s'\n",buf);
     if (qstrncmp(buf,"rect",4)==0)
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
@@ -94,102 +95,73 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,MscOutputFormat format)
 {
   QCString absOutFile = outDir;
-  absOutFile+=portable_pathSeparator();
+  absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
-  // chdir to the output dir, so dot can find the font file.
-  QCString oldDir = QDir::currentDirPath().utf8();
-  // go to the html output directory (i.e. path)
-  QDir::setCurrent(outDir);
-  //printf("Going to dir %s\n",QDir::currentDirPath().data());
-  QCString mscExe = Config_getString(MSCGEN_PATH)+"mscgen"+portable_commandExtension();
-  QCString mscArgs;
-  QCString imgName = outFile;
+  mscgen_format_t msc_format;
+  QCString imgName = absOutFile;
   switch (format)
   {
     case MSC_BITMAP:
-      mscArgs+="-T png";
+      msc_format = mscgen_format_png;
       imgName+=".png";
       break;
     case MSC_EPS:
-      mscArgs+="-T eps";
+      msc_format = mscgen_format_eps;
       imgName+=".eps";
       break;
     case MSC_SVG:
-      mscArgs+="-T svg";
+      msc_format = mscgen_format_svg;
       imgName+=".svg";
       break;
     default:
-      goto error; // I am not very fond of goto statements, but when in Rome...
+      return;
   }
-  mscArgs+=" -i \"";
-  mscArgs+=inFile;
- 
-  mscArgs+="\" -o \"";
-  mscArgs+=imgName+"\"";
-  int exitCode;
-//  printf("*** running: %s %s outDir:%s %s\n",mscExe.data(),mscArgs.data(),outDir,outFile);
-  portable_sysTimerStart();
-  if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
+  int code;
+  if ((code=mscgen_generate(inFile,imgName,msc_format))!=0)
   {
-    portable_sysTimerStop();
-    goto error;
+    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),inFile);
+    return;
   }
-  portable_sysTimerStop();
+
   if ( (format==MSC_EPS) && (Config_getBool(USE_PDFLATEX)) )
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         outFile,outFile);
-    portable_sysTimerStart();
-    if (portable_system("epstopdf",epstopdfArgs)!=0)
+                         absOutFile.data(),absOutFile.data());
+    Portable::sysTimerStart();
+    if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
       err("Problems running epstopdf. Check your TeX installation!\n");
     }
-    portable_sysTimerStop();
+    Portable::sysTimerStop();
   }
 
   Doxygen::indexList->addImageFile(imgName);
 
-error:
-  QDir::setCurrent(oldDir);
 }
 
-QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
-                                const QCString& relPath,const QCString& context)
+static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
+                                const QCString& relPath,const QCString& context,
+                                bool writeSVGMap)
 {
   QCString outFile = inFile + ".map";
 
-
-  //printf("*** running:getMscImageMapFromFile \n");
-  // chdir to the output dir, so dot can find the font file.
-  QCString oldDir = QDir::currentDirPath().utf8();
-  // go to the html output directory (i.e. path)
-  QDir::setCurrent(outDir);
-  //printf("Going to dir %s\n",QDir::currentDirPath().data());
-
-  QCString mscExe = Config_getString(MSCGEN_PATH)+"mscgen"+portable_commandExtension();
-  QCString mscArgs = "-T ismap -i \"";
-  mscArgs+=inFile;
-  mscArgs+="\" -o \"";
-  mscArgs+=outFile + "\"";
-
-  int exitCode;
-  portable_sysTimerStart();
-  if ((exitCode=portable_system(mscExe,mscArgs,FALSE))!=0)
+  int code;
+  if ((code=mscgen_generate(inFile,outFile,
+                            writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
   {
-    portable_sysTimerStop();
-    QDir::setCurrent(oldDir);
+    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+        mscgen_error2str(code),inFile.data());
     return "";
   }
-  portable_sysTimerStop();
-  
+
   QGString result;
   FTextStream tmpout(&result);
   convertMapFile(tmpout, outFile, relPath, context);
   QDir().remove(outFile);
 
-  QDir::setCurrent(oldDir);
   return result.data();
 }
 
@@ -217,9 +189,16 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  t << "\" alt=\""
-    << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
-  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context);
-  t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG);
+  if (!imap.isEmpty())
+  {
+    t << "\" alt=\""
+      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
+    t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+  }
+  else
+  {
+    t << "\" alt=\"" << baseName << "\" border=\"0\"/>" << endl;
+  }
 }
 

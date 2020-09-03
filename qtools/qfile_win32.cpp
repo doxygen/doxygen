@@ -515,7 +515,7 @@ int QFile::readBlock( char *p, uint len )
 	    setStatus(IO_ReadError);
 	}
     } else {					// buffered file
-	nread = fread( p, 1, len, fh );
+	nread = (int)fread( p, 1, len, fh );
 	if ( (uint)nread != len ) {
 	    if ( ferror( fh ) || nread==0 )
 		setStatus(IO_ReadError);
@@ -562,7 +562,7 @@ int QFile::writeBlock( const char *p, uint len )
     if ( isRaw() )				// raw file
 	nwritten = WRITE( fd, p, len );
     else					// buffered file
-	nwritten = fwrite( p, 1, len, fh );
+	nwritten = (int)fwrite( p, 1, len, fh );
     if ( nwritten != (int)len ) {		// write error
 	if ( errno == ENOSPC )			// disk is full
 	    setStatus( IO_ResourceError );

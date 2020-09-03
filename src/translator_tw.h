@@ -41,7 +41,7 @@
 // Translator class (by the local maintainer) when the localized
 // translator is made up-to-date again.
 
-class TranslatorChinesetraditional : public Translator
+class TranslatorChinesetraditional : public TranslatorAdapter_1_8_15
 {
   public:
 
@@ -72,7 +72,23 @@ class TranslatorChinesetraditional : public Translator
      */
     virtual QCString latexLanguageSupportCommand()
     {
+      return "\\usepackage{CJKutf8}\n";
+    }
+    virtual QCString latexFontenc()
+    {
       return "";
+    }
+    virtual QCString latexDocumentPre()
+    {
+      return "\\begin{CJK}{UTF8}{min}\n";
+    }
+    virtual QCString latexDocumentPost()
+    {
+      return "\\end{CJK}\n";
+    }
+    virtual QCString trISOLang()
+    {
+      return "zh-Hant";
     }
 
     // --- Language translation methods -------------------
@@ -1901,14 +1917,6 @@ class TranslatorChinesetraditional : public Translator
       return "方法文件";
     }
 
-    /*! Used as the title of the design overview picture created for the
-     *  VHDL output.
-     */
-    virtual QCString trDesignOverview()
-    {
-      return "設計概述";
-    }
-
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
 //////////////////////////////////////////////////////////////////////////
@@ -1964,8 +1972,6 @@ class TranslatorChinesetraditional : public Translator
       result+=":";
       return result;
     }
-
-//////////////////////////////////////////////////////////////////////////
 
 };
 

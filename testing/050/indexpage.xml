@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
+    <briefdescription>
+    </briefdescription>
     <detaileddescription>
       <para>Some normal text. <verbatim>A verbatim section with a /* C comment */ in it
 </verbatim> Showing a file as verbatim <verbatim>@book{knuth79,
@@ -11,6 +13,31 @@
         year = "1979",
         publisher = "American Mathematical Society and Digital Press",
         address = "Stanford"
+}
+@InCollection{    BertholdHeinzVigerske2009,
+  author        = {T. Berthold and S. Heinz and S. Vigerske},
+  title         = {Extending a {CIP} framework to solve {MIQCP}s},
+  crossref      = {LeLe12},
+  pages         = {427--444},
+  url           = {http://doi.org/10.1007/978-1-4614-1927-3_15}
+}
+@Book{            LeLe12,
+  title         = {Mixed Integer Nonlinear Programming},
+  booktitle     = {Mixed Integer Nonlinear Programming},
+  publisher     = {Springer},
+  year          = {2012},
+  editor        = {Jon Lee and Sven Leyffer},
+  volume        = {154},
+  series        = {The IMA Volumes in Mathematics and its Applications},
+  url           = {http://doi.org/10.1007/978-1-4614-1927-3},
+  issn          = {978-1-4614-1926-6}
+}
+@InCollection{    Be09,
+  author        = {P. Belotti},
+  title         = {Disjunctive cuts for non-convex {MINLP}},
+  crossref      = {LeLe12},
+  pages         = {117--144},
+  url           = {http://doi.org/10.1007/978-1-4614-1927-3_5}
 }
 </verbatim> More text after the verbatim section. </para>
     </detaileddescription>

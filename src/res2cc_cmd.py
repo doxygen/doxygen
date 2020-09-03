@@ -58,6 +58,7 @@ class File(object):
 		if ext=='.lum':  return LumFile(directory,subdir,fname)
 		if ext=='.luma': return LumaFile(directory,subdir,fname)
 		if ext=='.css':  return CSSFile(directory,subdir,fname)
+		if ext=='.svg':  return SVGFile(directory,subdir,fname)
 		return VerbatimFile(directory,subdir,fname)
 
 class VerbatimFile(File):
@@ -75,6 +76,14 @@ class CSSFile(File):
 		self.writeBytes(self.inputFile.read(),outputFile)
 	def writeDirEntry(self,outputFile):
 		print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::CSS }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
+
+class SVGFile(File):
+	def __init__(self,directory,subdir,fileName):
+		File.__init__(self,directory,subdir,fileName,"r")
+	def writeContents(self,outputFile):
+		self.writeBytes(self.inputFile.read(),outputFile)
+	def writeDirEntry(self,outputFile):
+		print("  { \"%s\", \"%s\", %s_data, %s_len, Resource::SVG }," % (self.subdir,self.fileName,self.bareName,self.bareName), file=outputFile)
 
 class LumFile(File):
 	def __init__(self,directory,subdir,fileName):
@@ -98,21 +107,19 @@ def main():
 	directory = sys.argv[1]
 	files = []
 	for dirName, subdirList, fileList in walk(directory):
-		for fname in sorted(fileList):
+		for fname in fileList:
 			subdir = dirName[len(directory)+1:] if dirName.startswith(directory) else dirName
 			if subdir:
 				files.append(File.factory(directory,subdir,fname))
+	files.sort(key=lambda f: f.subdir + "/" + f.fileName)
 	outputFile = open(sys.argv[2],"w")
 	print("#include \"resourcemgr.h\"\n",file=outputFile)
 	for f in files:
 		f.writeContents(outputFile)
-	print("static Resource resourceDir[] =",file=outputFile)
-	print("{",file=outputFile)
+	print("void initResources() { ResourceMgr::instance().registerResources({",file=outputFile)
 	for f in files:
 		f.writeDirEntry(outputFile)
-	print("};",file=outputFile)
-	print("static int resourceDir_len = %s;" % len(files), file=outputFile)
-	print("void initResources() { ResourceMgr::instance().registerResources(resourceDir,resourceDir_len); }",file=outputFile)
+	print("});}",file=outputFile)
 
 if __name__ == '__main__':
 	main()

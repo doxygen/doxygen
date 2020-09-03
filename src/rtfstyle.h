@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -42,7 +39,7 @@ struct RTFListItemInfo
   int number;
 };
 
-const int rtf_maxIndentLevels = 10;
+const int rtf_maxIndentLevels = 13;
 
 extern RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
 
@@ -63,15 +60,18 @@ struct StyleData
   // to define a tag in the header reference + definition is required
   // to use a tag in the body of the document only reference is required
 
-  unsigned index;   // index in style-sheet, i.e. number in s-clause
-  char* reference;  // everything required to apply the style
-  char* definition; // additional tags like \snext and style name
+  public:
+    StyleData(const char* reference, const char* definition);
+    ~StyleData();
+    bool setStyle(const char* s, const char* styleName);
+    const char *reference() const { return m_reference.c_str(); }
+    const char *definition() const { return m_definition.c_str(); }
+    uint index() const { return m_index; }
 
-  StyleData(const char* reference, const char* definition);
-  ~StyleData();
-  bool setStyle(const char* s, const char* styleName);
-
-  static const QRegExp s_clause;
+  private:
+    uint m_index; // index in style-sheet, i.e. number in s-clause
+    std::string m_reference;    // everything required to apply the style
+    std::string m_definition;   // additional tags like \snext and style name
 };
 
 extern QDict<StyleData> rtf_Style;

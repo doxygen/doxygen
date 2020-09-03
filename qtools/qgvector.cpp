@@ -68,7 +68,7 @@
   the QVector collection class.
 
   QGVector has some virtual functions that may be reimplemented in
-  subclasses to to customize behavior.
+  subclasses to customize behavior.
 
   <ul>
   <li> compareItems() compares two collection/vector items.
@@ -411,8 +411,8 @@ void QGVector::sort()				// sort vector
 {
     if ( count() == 0 )				// no elements
 	return;
-    register Item *start = &vec[0];
-    register Item *end	= &vec[len-1];
+    Item *start = &vec[0];
+    Item *end	= &vec[len-1];
     Item tmp;
     while ( TRUE ) {				// put all zero elements behind
 	while ( start < end && *start != 0 )

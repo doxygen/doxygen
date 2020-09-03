@@ -16,7 +16,7 @@
  */
 /*! \page customize Customizing the output
 
-\tableofcontents
+\tableofcontents{html,latex}
 
 Doxygen provides various levels of customization. 
 The section \ref minor_tweaks "Minor Tweaks" discusses what to 
@@ -90,7 +90,7 @@ that are disabled by default:
 
 To tweak things like fonts or colors, margins, or other look \& feel
 aspects of the HTML output in detail, you can create a different 
-<a href="http://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
+<a href="https://www.w3schools.com/css/default.asp">cascading style sheet</a>. 
 You can also let doxygen use a custom header and footer for each HTML 
 page it generates, for instance to make the output conform to the style 
 used on the rest of your web site.
@@ -114,7 +114,7 @@ This will create 3 files:
   referencing those extra files
   via \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET".
 
-You should edit these files and then reference them from the config file.
+You should edit these files and then reference them from the configuration file.
 - \ref cfg_html_header "HTML_HEADER" = \c header.html
 - \ref cfg_html_footer "HTML_FOOTER" = \c footer.html
 - \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET" = \c my_customdoxygen.css
@@ -158,7 +158,7 @@ doxygen -l
 optionally the name of the layout file can be specified, if omitted
 \c DoxygenLayout.xml will be used.
 
-The next step is to mention the layout file in the config file
+The next step is to mention the layout file in the configuration file
 \verbatim
 LAYOUT_FILE = DoxygenLayout.xml
 \endverbatim
@@ -289,7 +289,12 @@ The following generic elements are possible for each page:
 <dt>\c detaileddescription
   <dd>Represents the detailed description on a page.
 <dt>\c authorsection
-  <dd>Represents the author section of a page (only used for man pages).
+  <dd>Represents the author section of a page (only used for man pages). This is
+      a separate section for man pages with a text like:
+      `Generated automatically by Doxygen for My Project from the source code.`
+      This should not be misinterpreted with the doxygen commands \ref cmdauthor
+      "\\author" or \ref cmdauthors "\\authors" that generate an author paragraph
+      inside a detailed description.
 <dt>\c memberdecl
   <dd>Represents the quick overview of members on a page (member declarations).
       This elements has child elements per type of member list.
@@ -367,7 +372,8 @@ generated output!
 
 If the above two methods still do not provide enough flexibility, you
 can also use the XML output produced by doxygen as a basis to
-generate the output you like. To do this set GENERATE_XML to YES.
+generate the output you like. To do this set
+\ref cfg_generate_xml "GENERATE_XML" to \c YES.
 
 The XML output consists of an index file named \c index.xml which
 lists all items extracted by doxygen with references to the other XML files
@@ -390,7 +396,7 @@ files as one big DOM tree would not fit into memory.
 
 See <a href="https://github.com/michaeljones/breathe">the Breathe project</a> for
 an example that uses doxygen XML output from Python to bridge it with the 
-<a href="http://sphinx.pocoo.org/">Sphinx</a> document generator.
+<a href="http://www.sphinx-doc.org/en/stable/">Sphinx</a> document generator.
 
 
 \htmlonly

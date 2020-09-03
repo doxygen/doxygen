@@ -34,7 +34,7 @@ class MemberDef;
 /*! Initialize the search indexer */
 void initSearchIndexer();
 /*! Cleanup the search indexer */
-void finializeSearchIndexer();
+void finalizeSearchIndexer();
 
 //------- server side search index ----------------------
 
@@ -72,7 +72,7 @@ class SearchIndexIntf
     enum Kind { Internal, External };
     SearchIndexIntf(Kind k) : m_kind(k) {}
     virtual ~SearchIndexIntf() {}
-    virtual void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile) = 0;
+    virtual void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) = 0;
     virtual void addWord(const char *word,bool hiPriority) = 0;
     virtual void write(const char *file) = 0;
     Kind kind() const { return m_kind; }
@@ -84,7 +84,7 @@ class SearchIndex : public SearchIndexIntf
 {
   public:
     SearchIndex();
-    void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile);
+    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
@@ -103,7 +103,7 @@ class SearchIndexExternal : public SearchIndexIntf
   public:
     SearchIndexExternal();
    ~SearchIndexExternal();
-    void setCurrentDoc(Definition *ctx,const char *anchor,bool isSourceFile);
+    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
@@ -112,22 +112,27 @@ class SearchIndexExternal : public SearchIndexIntf
 
 //------- client side search index ----------------------
 
-#define SEARCH_INDEX_ALL         0
-#define SEARCH_INDEX_CLASSES     1
-#define SEARCH_INDEX_NAMESPACES  2
-#define SEARCH_INDEX_FILES       3
-#define SEARCH_INDEX_FUNCTIONS   4
-#define SEARCH_INDEX_VARIABLES   5
-#define SEARCH_INDEX_TYPEDEFS    6
-#define SEARCH_INDEX_ENUMS       7
-#define SEARCH_INDEX_ENUMVALUES  8
-#define SEARCH_INDEX_PROPERTIES  9
-#define SEARCH_INDEX_EVENTS     10
-#define SEARCH_INDEX_RELATED    11
-#define SEARCH_INDEX_DEFINES    12
-#define SEARCH_INDEX_GROUPS     13
-#define SEARCH_INDEX_PAGES      14
-#define NUM_SEARCH_INDICES      15
+#define SEARCH_INDEX_ALL           0
+#define SEARCH_INDEX_CLASSES       1
+#define SEARCH_INDEX_INTERFACES    2
+#define SEARCH_INDEX_STRUCTS       3
+#define SEARCH_INDEX_EXCEPTIONS    4
+#define SEARCH_INDEX_NAMESPACES    5
+#define SEARCH_INDEX_FILES         6
+#define SEARCH_INDEX_FUNCTIONS     7
+#define SEARCH_INDEX_VARIABLES     8
+#define SEARCH_INDEX_TYPEDEFS      9
+#define SEARCH_INDEX_SEQUENCES    10
+#define SEARCH_INDEX_DICTIONARIES 11
+#define SEARCH_INDEX_ENUMS        12
+#define SEARCH_INDEX_ENUMVALUES   13
+#define SEARCH_INDEX_PROPERTIES   14
+#define SEARCH_INDEX_EVENTS       15
+#define SEARCH_INDEX_RELATED      16
+#define SEARCH_INDEX_DEFINES      17
+#define SEARCH_INDEX_GROUPS       18
+#define SEARCH_INDEX_PAGES        19
+#define NUM_SEARCH_INDICES        20
 
 class SearchDefinitionList : public QList<Definition>
 {
@@ -143,10 +148,10 @@ class SearchDefinitionList : public QList<Definition>
 class SearchIndexList : public SDict< SearchDefinitionList >
 {
   public:
-    typedef Definition ElementType;
+    typedef const Definition ElementType;
     SearchIndexList(uint letter);
    ~SearchIndexList();
-    void append(Definition *d);
+    void append(const Definition *d);
     uint letter() const;
   private:
     int compareValues(const SearchDefinitionList *md1, const SearchDefinitionList *md2) const;
@@ -160,8 +165,8 @@ struct SearchIndexInfo
   QCString text;
 };
 
-void createJavascriptSearchIndex();
-void writeJavascriptSearchIndex();
+void createJavaScriptSearchIndex();
+void writeJavaScriptSearchIndex();
 const SearchIndexInfo *getSearchIndices();
 
 #endif

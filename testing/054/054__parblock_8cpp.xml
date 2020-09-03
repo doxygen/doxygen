@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="054__parblock_8cpp" kind="file" language="C++">
     <compoundname>054_parblock.cpp</compoundname>
     <sectiondef kind="func">
@@ -8,6 +8,96 @@
         <definition>void function</definition>
         <argsstring>(int client, int *resource, int parblock, int *test, int p)</argsstring>
         <name>function</name>
+        <param>
+          <type>int</type>
+          <declname>client</declname>
+        </param>
+        <param>
+          <type>int *</type>
+          <declname>resource</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>parblock</declname>
+        </param>
+        <param>
+          <type>int *</type>
+          <declname>test</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+          <para>call by target-specific code to manage resources required by the client.</para>
+          <para>
+            <parameterlist kind="param">
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">client</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>ID of client requesting resource. </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">resource</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>Requested resource </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">parblock</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>
+                    <parblock>
+                      <para>This is a test for the @parblock command.</para>
+                      <para>A list if values for the parblock param:<itemizedlist><listitem><para>Item 1. This is short one-line description.</para></listitem><listitem><para>Item 2. This is a long bullet item; sometimes they wrap on multiple lines like this one.</para></listitem></itemizedlist>
+</para>
+                      <para>This is the second paragraph description for the @parblock parameter. Always end the text inside the @parblock command with an @endparblock command. </para>
+                    </parblock>
+                  </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="out">test</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>This is a test parameter for this function to see if it is included in the parameter table </para>
+                </parameterdescription>
+              </parameteritem>
+              <parameteritem>
+                <parameternamelist>
+                  <parametername direction="in">p</parametername>
+                </parameternamelist>
+                <parameterdescription>
+                  <para>
+                    <parblock>
+                      <para>First paragraph of the param description.</para>
+                      <para>Second paragraph of the param description. </para>
+                    </parblock>
+                  </para>
+                </parameterdescription>
+              </parameteritem>
+            </parameterlist>
+          </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="054_parblock.cpp" line="33" column="6" declfile="054_parblock.cpp" declline="33" declcolumn="6"/>
+      </memberdef>
+      <memberdef kind="function" id="054__parblock_8cpp_1a5cded03ec9e6fd626da35ab05f624f39" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void function_2</definition>
+        <argsstring>(int client, int *resource, int parblock, int *test, int p)</argsstring>
+        <name>function_2</name>
         <param>
           <type>int</type>
           <declname>client</declname>
@@ -91,7 +181,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="054_parblock.cpp" line="32" column="1"/>
+        <location file="054_parblock.cpp" line="60" column="6" declfile="054_parblock.cpp" declline="60" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

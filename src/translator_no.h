@@ -72,8 +72,12 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
     virtual QCString latexLanguageSupportCommand()
     {
       return
-        "\\usepackage[norwegian]{babel}\n"
-        "\\usepackage[T1]{fontenc}\n";
+        "\\usepackage[norsk]{babel}\n";
+    }
+
+    virtual QCString trISOLang()
+    {
+      return "nn";
     }
 
     // --- Language translation methods -------------------
@@ -1564,6 +1568,7 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
               "generert for deg. Den skiller seg ut fra "
               "funksjonen ovenfor i argument(ene) den aksepterer.";
     }
+
 };
 
 #endif

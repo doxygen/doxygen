@@ -10,7 +10,9 @@
 */
 
 /*! 
-   Computes the absolute value of its argument \a x.
+   \brief Computes the absolute value of its argument \a x.
+   \param x input value.
+   \returns absolute value of \a x.
 */
 #define ABS(x) (((x)>0)?(x):-(x))
 #define MAX(x,y) ((x)>(y)?(x):(y))

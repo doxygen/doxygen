@@ -19,6 +19,8 @@
 #define TRANSLATOR_H
 
 #include "classdef.h"
+#include "config.h"
+#include "vhdldocgen.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator
@@ -41,6 +43,42 @@ class Translator
 
     virtual QCString idLanguage() = 0;
     virtual QCString latexLanguageSupportCommand() = 0;
+    /*!
+     * Sets the LaTeX font encoding to be used. The default is set to `T1`,
+     * in case another font encoding has to be used this can be specified with
+     * this routine. In case no font encoding is required the empty string
+     * can be returned.
+     */
+    virtual QCString latexFontenc() { return "T1"; }
+    virtual QCString latexFont() {
+      return "\\usepackage[scaled=.90]{helvet}\n"
+             "\\usepackage{courier}\n"
+             "\\renewcommand{\\familydefault}{\\sfdefault}\n";
+    }
+    /*!
+     * Sets the commands to be inserted directly after the `\\begin{document}`
+     * in the LaTeX document.
+     */
+    virtual QCString latexDocumentPre() { return ""; }
+    /*!
+     * Sets the commands to be inserted directly before the `\\end{document}`
+     * in the LaTeX document.
+     */
+    virtual QCString latexDocumentPost() { return ""; }
+    /*!
+     * Set the name to be used as latex command.
+     */
+    virtual QCString latexCommandName()
+    {
+      QCString latex_command = Config_getString(LATEX_CMD_NAME);
+      if (latex_command.isEmpty()) latex_command = "latex";
+      if (Config_getBool(USE_PDFLATEX))
+      {
+        if (latex_command == "latex") latex_command = "pdflatex";
+      }
+      return latex_command;
+    }
+    virtual QCString trISOLang() = 0;
 
     // --- Language translation methods -------------------
 
@@ -556,7 +594,6 @@ class Translator
     virtual QCString trClassMethods() = 0;
     virtual QCString trInstanceMethods() = 0;
     virtual QCString trMethodDocumentation() = 0;
-    virtual QCString trDesignOverview() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // new since 1.8.4
@@ -570,6 +607,56 @@ class Translator
     virtual QCString trSingletonReference(const char *sName) = 0;
     virtual QCString trServiceGeneratedFromFiles(bool single) = 0;
     virtual QCString trSingletonGeneratedFromFiles(bool single) = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDesignUnitHierarchy() = 0;
+    virtual QCString trDesignUnitList() = 0;
+    virtual QCString trDesignUnitMembers() = 0;
+    virtual QCString trDesignUnitListDescription() = 0;
+    virtual QCString trDesignUnitIndex() = 0;
+    virtual QCString trDesignUnits() = 0;
+    virtual QCString trFunctionAndProc() = 0;
+    virtual QCString trVhdlType(uint64 type,bool single) = 0;
+    virtual QCString trCustomReference(const char *name) = 0;
+
+    virtual QCString trConstants() = 0;
+    virtual QCString trConstantDocumentation() = 0;
+    virtual QCString trSequences() = 0;
+    virtual QCString trSequenceDocumentation() = 0;
+    virtual QCString trDictionaries() = 0;
+    virtual QCString trDictionaryDocumentation() = 0;
+    virtual QCString trSliceInterfaces() = 0;
+    virtual QCString trInterfaceIndex() = 0;
+    virtual QCString trInterfaceList() = 0;
+    virtual QCString trInterfaceListDescription() = 0;
+    virtual QCString trInterfaceHierarchy() = 0;
+    virtual QCString trInterfaceHierarchyDescription() = 0;
+    virtual QCString trInterfaceDocumentation() = 0;
+    virtual QCString trStructs() = 0;
+    virtual QCString trStructIndex() = 0;
+    virtual QCString trStructList() = 0;
+    virtual QCString trStructListDescription() = 0;
+    virtual QCString trStructDocumentation() = 0;
+    virtual QCString trExceptionIndex() = 0;
+    virtual QCString trExceptionList() = 0;
+    virtual QCString trExceptionListDescription() = 0;
+    virtual QCString trExceptionHierarchy() = 0;
+    virtual QCString trExceptionHierarchyDescription() = 0;
+    virtual QCString trExceptionDocumentation() = 0;
+    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal) = 0;
+    virtual QCString trOperations() = 0;
+    virtual QCString trOperationDocumentation() = 0;
+    virtual QCString trDataMembers() = 0;
+    virtual QCString trDataMemberDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trDesignUnitDocumentation() = 0;
 };
 
 #endif
