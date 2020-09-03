@@ -1043,6 +1043,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg1,CategoryDocArg1>.         { // ignore other stuff
                                         }
 
+<ClassDocArg2>{DOCNL}                   {
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
+                                          BEGIN( Comment );
+                                        }
 <ClassDocArg2>{FILE}|"<>"               { // second argument; include file
                                           yyextra->current->includeFile = yytext;
                                           BEGIN( ClassDocArg3 );
@@ -1050,12 +1056,6 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg2>{LC}                      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                        }
-<ClassDocArg2>{DOCNL}                   {
-                                          //addOutput(yyscanner,'\n');
-                                          //if (*yytext=='\n') yyextra->lineNr++;
-                                          unput('\n');
-                                          BEGIN( Comment );
                                         }
 <ClassDocArg2>.                         { // ignore other stuff
                                         }
