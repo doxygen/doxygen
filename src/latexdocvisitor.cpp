@@ -354,7 +354,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         static bool verbatimListings = Config_getBool(VERBATIM_LISTINGS);
 
         if (verbatimListings) {
-          m_t << "\n\\begin{DoxyVerbatimCode}"
+          m_t << "\n\\begin{DoxyVerbatimCode}";
           m_t << "{" << usedTableLevels() << "}{" << lang << "} %" << langExt <<"\n";
           m_t << s->text() << "\n";
           m_t << "\\end{DoxyVerbatimCode}\n";

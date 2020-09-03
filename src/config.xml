@@ -279,6 +279,17 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='VERBATIM_LISTINGS' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c VERBATIM_LISTINGS tag is set to \c YES then doxygen will uses
+ \begin{DoxyVerbatimCode} \end{DoxyVerbatimCode} LaTeX commands for enclosing source code.
+ Source code is provided as is (verbatim).
+ When it is set to \c NO then doxygen uses \begin{DoxyCode}. The source code is processed and 
+ provided as LaTeX commands
+]]>
+      </docs>
+    </option>
     <option type='bool' id='ALLOW_UNICODE_NAMES' defval='0'>
       <docs>
 <![CDATA[
