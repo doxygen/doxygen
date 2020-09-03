@@ -148,9 +148,11 @@ static void writeBoxMemberList(FTextStream &t,
         else
         {
           t << prot << " ";
+          t << DotNode::convertLabel(mma->typeString());
+          t << " ";
           t << DotNode::convertLabel(mma->name());
           if (!mma->isObjCMethod() &&
-            (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << "()";
+            (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << DotNode::convertLabel(mma->argsString());
           t << "\\l";
           count++;
         }
