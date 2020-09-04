@@ -30,6 +30,7 @@
 
 #include <memory>
 #include <algorithm>
+#include <unordered_map>
 
 #include <stdio.h>
 #include <assert.h>
@@ -223,7 +224,7 @@ struct codeYY_state
 {
   CodeOutputInterface * code = 0;
 
-  ClassSDict    *codeClassSDict = 0;
+  std::unordered_map< std::string, std::unique_ptr<ClassDef> > codeClassMap;
   QCString      curClassName;
   QStrList      curClassBases;
 
@@ -884,16 +885,21 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					    if (getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,yyextra->curClassName)==0)
 					    {
 					      DBG_CTX((stderr,"Adding new class %s\n",yyextra->curClassName.data()));
-					      ClassDef *ncd=createClassDef("<code>",1,1,
-				 		  yyextra->curClassName,ClassDef::Class,0,0,FALSE);
-					      yyextra->codeClassSDict->append(yyextra->curClassName,ncd);
+                                              std::unique_ptr<ClassDef> ncd { createClassDef("<code>",1,1,
+				 		  yyextra->curClassName,ClassDef::Class,0,0,FALSE) };
+					      yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(ncd)));
 					      // insert base classes.
 					      char *s=yyextra->curClassBases.first();
 					      while (s)
 					      {
-						const ClassDef *bcd=yyextra->codeClassSDict->find(s);
+						const ClassDef *bcd=0;
+                                                auto it = yyextra->codeClassMap.find(s);
+                                                if (it!=yyextra->codeClassMap.end())
+                                                {
+                                                  bcd=it->second.get();
+                                                }
 						if (bcd==0) bcd=getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,s);
-						if (bcd && bcd!=ncd)
+						if (bcd && bcd!=ncd.get())
 						{
 						  ncd->insertBaseClass(const_cast<ClassDef*>(bcd),s,Public,Normal);
 						}
@@ -2326,12 +2332,18 @@ void VariableContext::addVariable(yyscan_t yyscanner,const QCString &type,const 
   DBG_CTX((stderr,"** addVariable trying: type='%s' name='%s' g_currentDefinition=%s\n",
 	ltype.data(),lname.data(),g_currentDefinition?g_currentDefinition->name().data():"<none>"));
   Scope *scope = m_scopes.count()==0 ? &m_globalScope : m_scopes.getLast();
-  const ClassDef *varType;
+  const ClassDef *varType = 0;
+  auto it = yyextra->codeClassMap.find(ltype.str());
+  if (it!=yyextra->codeClassMap.end()) // look for class definitions inside the code block
+  {
+    varType = it->second.get();
+  }
+  if (varType==0) // look for global class definitions
+  {
+    varType = getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,ltype);
+  }
   int i=0;
-  if (
-      (varType=yyextra->codeClassSDict->find(ltype)) ||  // look for class definitions inside the code block
-      (varType=getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,ltype)) // look for global class definitions
-     ) 
+  if (varType)
   {
     DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",ltype.data(),lname.data()));
     scope->append(lname,varType); // add it to a list
@@ -2342,13 +2354,19 @@ void VariableContext::addVariable(yyscan_t yyscanner,const QCString &type,const 
     QCString typeName(ltype.left(i));
     ClassDef* newDef = 0;
     QCString templateArgs(ltype.right(ltype.length() - i));
-    if ( !typeName.isEmpty() &&
-         ( // look for class definitions inside the code block
-	   (varType=yyextra->codeClassSDict->find(typeName)) ||
-           // otherwise look for global class definitions
-           (varType=getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,typeName,0,0,TRUE,TRUE))
-	 ) && // and it must be a template
-         !varType->templateArguments().empty())
+    it = yyextra->codeClassMap.find(typeName.str());
+    if (!typeName.isEmpty())
+    {
+      if (it!=yyextra->codeClassMap.end()) // look for class definitions inside the code block
+      {
+        varType = it->second.get();
+      }
+      else // otherwise look for global class definitions
+      {
+        varType = getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,typeName,0,0,TRUE,TRUE);
+      }
+    }
+    if (varType && !varType->templateArguments().empty()) // and it must be a template
     {
       newDef = varType->getVariableInstance( templateArgs );
     }
@@ -3352,7 +3370,7 @@ static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,cons
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //CodeClassDef *ccd=0;
-  ClassDef *ccd=0;
+  const ClassDef *ccd=0;
   QCString locScope=yyextra->classScope;
   QCString locFunc=removeRedundantWhiteSpace(funcName);
   if (yyextra->lang==SrcLangExt_PHP && locFunc.startsWith("self::")) locFunc=locFunc.mid(4);
@@ -3412,33 +3430,51 @@ static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,cons
       funcWithFullScope = locScope+"::"+funcWithScope;
     }
   }
-  if (!fullScope.isEmpty() && (ccd=yyextra->codeClassSDict->find(fullScope)))
+
+  if (!fullScope.isEmpty())
   {
-    //printf("using classScope %s\n",yyextra->classScope.data());
-    if (ccd->baseClasses())
+    auto it = yyextra->codeClassMap.find(fullScope.str());
+    if (it!=yyextra->codeClassMap.end())
     {
-      BaseClassListIterator bcli(*ccd->baseClasses());
-      for ( ; bcli.current() ; ++bcli)
+      ccd = it->second.get();
+    }
+    if (ccd)
+    {
+      //printf("using classScope %s\n",yyextra->classScope.data());
+      if (ccd->baseClasses())
       {
-	if (getLink(yyscanner,bcli.current()->classDef->name(),locFunc,ol,funcName)) 
-	{
-	  goto exit;
-	}
+        BaseClassListIterator bcli(*ccd->baseClasses());
+        for ( ; bcli.current() ; ++bcli)
+        {
+          if (getLink(yyscanner,bcli.current()->classDef->name(),locFunc,ol,funcName)) 
+          {
+            goto exit;
+          }
+        }
       }
     }
   }
-  if (!locScope.isEmpty() && fullScope!=locScope && (ccd=yyextra->codeClassSDict->find(locScope)))
+
+  if (!locScope.isEmpty())
   {
-    //printf("using classScope %s\n",yyextra->classScope.data());
-    if (ccd->baseClasses())
+    auto it = yyextra->codeClassMap.find(locScope.str());
+    if (it!=yyextra->codeClassMap.end())
     {
-      BaseClassListIterator bcli(*ccd->baseClasses());
-      for ( ; bcli.current() ; ++bcli)
+      ccd = it->second.get();
+    }
+    if (fullScope!=locScope && ccd)
+    {
+      //printf("using classScope %s\n",yyextra->classScope.data());
+      if (ccd->baseClasses())
       {
-	if (getLink(yyscanner,bcli.current()->classDef->name(),funcWithScope,ol,funcName)) 
-	{
-	  goto exit;
-	}
+        BaseClassListIterator bcli(*ccd->baseClasses());
+        for ( ; bcli.current() ; ++bcli)
+        {
+          if (getLink(yyscanner,bcli.current()->classDef->name(),funcWithScope,ol,funcName)) 
+          {
+            goto exit;
+          }
+        }
       }
     }
   }
@@ -3926,14 +3962,13 @@ CCodeParser::CCodeParser() : p(std::make_unique<CCodeParser::Private>())
 #ifdef FLEX_DEBUG
   codeYYset_debug(1,p->yyscanner);
 #endif
+  resetCodeParserState();
 }
 
 CCodeParser::~CCodeParser()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->classScopeLengthStack.clear();
-  delete yyextra->codeClassSDict;
-  yyextra->codeClassSDict=0;
   codeYYlex_destroy(p->yyscanner);
 }
 
@@ -3945,10 +3980,7 @@ void CCodeParser::resetCodeParserState()
   yyextra->theVarContext.clear();
   yyextra->classScopeLengthStack.setAutoDelete(TRUE);
   yyextra->classScopeLengthStack.clear();
-  delete yyextra->codeClassSDict;
-  yyextra->codeClassSDict = new ClassSDict(17);
-  yyextra->codeClassSDict->setAutoDelete(TRUE);
-  yyextra->codeClassSDict->clear();
+  yyextra->codeClassMap.clear();
   yyextra->curClassBases.clear();
   yyextra->anchorCount = 0;
 }
@@ -3968,10 +4000,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
 
   printlex(yy_flex_debug, TRUE, __FILE__, fd ? fd->fileName().data(): NULL);
 
-  if (yyextra->codeClassSDict==0)
-  {
-    resetCodeParserState();
-  }
   yyextra->code = &od;
   yyextra->inputString   = s;
   yyextra->inputPosition = 0;
