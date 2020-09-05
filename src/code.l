@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -32,6 +30,8 @@
 #include <algorithm>
 #include <unordered_map>
 #include <stack>
+#include <vector>
+#include <string>
 
 #include <stdio.h>
 #include <assert.h>
@@ -127,8 +127,6 @@ class VariableContext
     void addVariable(yyscan_t yyscanner,const QCString &type,const QCString &name);
     const ClassDef *findVariable(const QCString &name);
 
-    size_t size() const { return m_scopes.size(); }
-
   private:
     Scope        m_globalScope;
     std::vector<Scope> m_scopes;
@@ -141,7 +139,7 @@ class CallContext
   public:
     struct Ctx
     {
-      Ctx(QCString _name, QCString _type) : name(_name), type(_type) {}
+      Ctx(QCString name_, QCString type_) : name(name_), type(type_) {}
       QCString name;
       QCString type;
       const Definition *d = 0;
@@ -158,19 +156,19 @@ class CallContext
       DBG_CTX((stderr,"** Set call context %s (%p)\n",d==0 ? "<null>" : d->name().data(),d));
       ctx.d=d;
     }
-    void pushScope(QCString _name, QCString _type)
+    void pushScope(QCString name_, QCString type_)
     {
-      m_defList.push_back(Ctx(_name,_type));
+      m_defList.push_back(Ctx(name_,type_));
       DBG_CTX((stderr,"** Push call context %zu\n",m_defList.size()));
     }
-    void popScope(QCString &_name, QCString &_type)
+    void popScope(QCString &name_, QCString &type_)
     {
       if (m_defList.size()>1)
       {
         DBG_CTX((stderr,"** Pop call context %zu\n",m_defList.size()));
 	const Ctx &ctx = m_defList.back();
-	_name = ctx.name;
-	_type = ctx.type;
+	name_ = ctx.name;
+	type_ = ctx.type;
 	m_defList.pop_back();
       }
       else
@@ -2379,13 +2377,12 @@ const ClassDef *VariableContext::findVariable(const QCString &name)
 {
   if (name.isEmpty()) return 0;
   const ClassDef *result = 0;
-  QCString key = name;
-  // search from inner to outer scope
 
+  // search from inner to outer scope
   auto it = std::rbegin(m_scopes);
   while (it != std::rend(m_scopes))
   {
-    auto it2 = it->find(key.str());
+    auto it2 = it->find(name.str());
     if (it2 != std::end(*it))
     {
       result = it2->second;
@@ -2396,7 +2393,7 @@ const ClassDef *VariableContext::findVariable(const QCString &name)
   }
   // nothing found -> also try the global scope
   auto it2 = m_globalScope.find(name.str());
-  if (it2!=m_globalScope.end())
+  if (it2 != m_globalScope.end())
   {
     result = it2->second;
   }
@@ -3422,18 +3419,14 @@ static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,cons
     {
       ccd = it->second.get();
     }
-    if (ccd)
+    if (ccd && ccd->baseClasses())
     {
-      //printf("using classScope %s\n",yyextra->classScope.data());
-      if (ccd->baseClasses())
+      BaseClassListIterator bcli(*ccd->baseClasses());
+      for ( ; bcli.current() ; ++bcli)
       {
-        BaseClassListIterator bcli(*ccd->baseClasses());
-        for ( ; bcli.current() ; ++bcli)
+        if (getLink(yyscanner,bcli.current()->classDef->name(),locFunc,ol,funcName))
         {
-          if (getLink(yyscanner,bcli.current()->classDef->name(),locFunc,ol,funcName)) 
-          {
-            goto exit;
-          }
+          goto exit;
         }
       }
     }
