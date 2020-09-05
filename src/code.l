@@ -2325,7 +2325,7 @@ void VariableContext::addVariable(yyscan_t yyscanner,const QCString &type,const 
   if (varType)
   {
     DBG_CTX((stderr,"** addVariable type='%s' name='%s'\n",ltype.data(),lname.data()));
-    scope->emplace(std::make_pair(lname,varType)); // add it to a list
+    scope->emplace(std::make_pair(lname.str(),varType)); // add it to a list
   }
   else if ((i=ltype.find('<'))!=-1)
   {
@@ -2352,7 +2352,7 @@ void VariableContext::addVariable(yyscan_t yyscanner,const QCString &type,const 
     if (newDef)
     {
       DBG_CTX((stderr,"** addVariable type='%s' templ='%s' name='%s'\n",typeName.data(),templateArgs.data(),lname.data()));
-      scope->emplace(std::make_pair(lname, newDef));
+      scope->emplace(std::make_pair(lname.str(), newDef));
     }
     else
     {
@@ -2367,7 +2367,7 @@ void VariableContext::addVariable(yyscan_t yyscanner,const QCString &type,const 
                             // TODO: make this work for namespaces as well!
     {
       DBG_CTX((stderr,"** addVariable: dummy context for '%s'\n",lname.data()));
-      scope->emplace(std::make_pair(lname,dummyContext));
+      scope->emplace(std::make_pair(lname.str(),dummyContext));
     }
     else
     {
