@@ -862,10 +862,8 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					    if (getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,yyextra->curClassName)==0)
 					    {
 					      DBG_CTX((stderr,"Adding new class %s\n",yyextra->curClassName.data()));
-                                              std::unique_ptr<ClassDef> ncd_p { createClassDef("<code>",1,1,
+                                              std::unique_ptr<ClassDef> ncd { createClassDef("<code>",1,1,
 				 		  yyextra->curClassName,ClassDef::Class,0,0,FALSE) };
-                                              ClassDef *ncd = ncd_p.get();
-					      yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(ncd_p)));
 					      // insert base classes.
 					      char *s=yyextra->curClassBases.first();
 					      while (s)
@@ -877,12 +875,13 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                                   bcd=it->second.get();
                                                 }
 						if (bcd==0) bcd=getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,s);
-						if (bcd && bcd!=ncd)
+						if (bcd && bcd!=ncd.get())
 						{
 						  ncd->insertBaseClass(const_cast<ClassDef*>(bcd),s,Public,Normal);
 						}
 						s=yyextra->curClassBases.next();
 					      }
+					      yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(ncd)));
 					    }
 					    //printf("yyextra->codeClassList.count()=%d\n",yyextra->codeClassList.count());
 					  }
