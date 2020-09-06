@@ -178,7 +178,7 @@ The next step is to install modern versions of \c bison and \c flex
 (see https://sourceforge.net/projects/winflexbison/. After installation and adding them to
 your `path` rename `win_flex.exe` to `flex.exe` and `win_bison.exe` to `bison.exe`)
 \addindex python
-Furthermore you have to install \c python (version 2.6 or higher, see https://www.python.org).
+Furthermore you have to install \c python (version 2.7 or higher, see https://www.python.org).
 These packages are needed during the compilation process.
 
 Download doxygen's source tarball and put it somewhere (e.g. use <code>c:\\tools</code>)
