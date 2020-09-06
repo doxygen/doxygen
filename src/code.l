@@ -3916,8 +3916,8 @@ static void saveObjCContext(yyscan_t yyscanner)
   newCtx->objectVar = 0;
   newCtx->method = 0;
   //printf("save state=%d\n",YY_START);
-  yyextra->contextMap.emplace(std::make_pair(yyextra->currentCtxId,std::move(newCtx)));
   yyextra->currentCtx = newCtx.get();
+  yyextra->contextMap.emplace(std::make_pair(yyextra->currentCtxId,std::move(newCtx)));
   yyextra->braceCount = 0;
   yyextra->currentCtxId++;
 }
