@@ -9473,7 +9473,7 @@ static int readDir(QFileInfo *fi,
         {
           if (errorIfNotExist)
           {
-            warn_uncond("source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+            warn_uncond("source '%s' is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
           }
         }
         else if (cfi->isFile() &&
@@ -9553,7 +9553,7 @@ int readFileOrDirectory(const char *s,
       {
         if (errorIfNotExist)
         {
-          warn_uncond("source %s is not a readable file or directory... skipping.\n",s);
+          warn_uncond("source '%s' is not a readable file or directory... skipping.\n",s);
         }
       }
       else if (!Config_getBool(EXCLUDE_SYMLINKS) || !fi.isSymLink())
