@@ -2263,7 +2263,7 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   if (al.volatileSpecifier()) result+=" volatile";
   if (al.refQualifier()==RefQualifierLValue) result+=" &";
   else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
-  if (!al.trailingReturnType().isEmpty()) result+=" -> "+al.trailingReturnType();
+  if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
   if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
