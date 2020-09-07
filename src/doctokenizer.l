@@ -1243,10 +1243,16 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 			 return TK_WORD;
   		       }
 <St_Pattern>[^\r\n]+   {
+                         if (QCString(yytext).contains("\\ilinebr")) REJECT;
                          g_token->name = yytext;
                          g_token->name = g_token->name.stripWhiteSpace();
 			 return TK_WORD;
   		       }
+<St_Pattern>[^\r\n]+/"\\ilinebr"   {
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         return TK_WORD;
+                       }
 <St_Link>{LINKMASK}|{REFWORD}    {
                          g_token->name = yytext;
 			 return TK_WORD;
