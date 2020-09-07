@@ -20,7 +20,7 @@
       </memberdef>
     </sectiondef>
     <sectiondef kind="public-func">
-      <memberdef kind="function" id="interface_integer_1a7b55035e1b0e8e7d4c8587f54a760819" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+      <memberdef kind="function" id="interface_integer_1a38588240d29ef9ff5a3217a03fc1acc7" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>int</type>
         <definition>int Integer::integer</definition>
         <argsstring>()</argsstring>
@@ -34,7 +34,7 @@
         </inbodydescription>
         <location file="011_category.m" line="8" column="6"/>
       </memberdef>
-      <memberdef kind="function" id="interface_integer_1ad2f47761103b2442ff7b3fbfe33ec6c9" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+      <memberdef kind="function" id="interface_integer_1ac6b178632e55f634e3a9249b7b39aa56" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
         <type>id</type>
         <definition>id Integer::integer:</definition>
         <argsstring>(int _integer)</argsstring>
@@ -86,11 +86,11 @@
         <scope>Integer</scope>
         <name>integer</name>
       </member>
-      <member refid="interface_integer_1a7b55035e1b0e8e7d4c8587f54a760819" prot="public" virt="virtual">
+      <member refid="interface_integer_1a38588240d29ef9ff5a3217a03fc1acc7" prot="public" virt="virtual">
         <scope>Integer</scope>
         <name>integer</name>
       </member>
-      <member refid="interface_integer_1ad2f47761103b2442ff7b3fbfe33ec6c9" prot="public" virt="virtual">
+      <member refid="interface_integer_1ac6b178632e55f634e3a9249b7b39aa56" prot="public" virt="virtual">
         <scope>Integer</scope>
         <name>integer:</name>
       </member>

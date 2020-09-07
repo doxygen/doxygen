@@ -152,7 +152,8 @@ bool getDefs(const QCString &scopeName,
                     bool forceEmptyScope=FALSE,
                     const FileDef *currentFile=0,
                     bool checkCV=FALSE,
-                    const char *forceTagFile=0
+                    const char *forceTagFile=0,
+                    const objCMethod objCMeth=NoObjCMeth
                    );
 
 QCString getFileFilter(const char* name,bool isSourceCode);

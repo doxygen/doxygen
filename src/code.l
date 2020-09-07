@@ -319,15 +319,18 @@ static bool getLinkInScope(yyscan_t yyscanner,const QCString &c,  // scope
 			   const char *memberText, // exact text
 			   CodeOutputInterface &ol,
 			   const char *text,
-			   bool varOnly=FALSE
+			   bool varOnly=FALSE,
+                           const objCMethod objCMeth=NoObjCMeth
 			  );
 static bool getLink(yyscan_t yyscanner,const char *className,
                     const char *memberName,
 		    CodeOutputInterface &ol,
 		    const char *text=0,
-		    bool varOnly=FALSE);
+		    bool varOnly=FALSE,
+                    const objCMethod objCMeth=NoObjCMeth
+                   );
 static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol,const char *clName,
-                                      bool typeOnly=FALSE,bool varOnly=FALSE);
+                                      bool typeOnly=FALSE,bool varOnly=FALSE, const objCMethod objCMeth=NoObjCMeth);
 static bool generateClassMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,MemberDef *xmd,const char *memName);
 static bool generateClassMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const Definition *def,const char *memName);
 static void generateMemberLink(yyscan_t yyscanner,CodeOutputInterface &ol,const QCString &varName,
@@ -431,7 +434,8 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 %x      TemplDecl
 %x      TemplCast
 %x	CallEnd
-%x      ObjCMethod
+%x      ObjCMethodStat
+%x      ObjCMethodInst
 %x	ObjCParams
 %x	ObjCParamType
 %x      ObjCCall
@@ -499,10 +503,13 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					  {
 					    //printf("Method!\n");
   					    yyextra->code->codify(yytext);
-					    BEGIN(ObjCMethod);
+                                            if (*yytext == '+')
+					      BEGIN(ObjCMethodStat);
+                                            else
+					      BEGIN(ObjCMethodInst);
 					  }
   					}
-<ObjCMethod>":"				{
+<ObjCMethodStat,ObjCMethodInst>":"				{
   					  yyextra->code->codify(yytext);
 					  BEGIN(ObjCParams);
   					}
@@ -510,7 +517,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   					  yyextra->code->codify(yytext);
   					  BEGIN(ObjCParamType);
 					}
-<ObjCParams,ObjCMethod>";"|"{"		{
+<ObjCParams,ObjCMethodStat,ObjCMethodInst>";"|"{"		{
   					  yyextra->code->codify(yytext);
 					  if (*yytext=='{')
 					  {
@@ -554,13 +561,18 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					  yyextra->theVarContext.addVariable(yyscanner,yyextra->parmType,yyextra->parmName);
 					  yyextra->parmType.resize(0);yyextra->parmName.resize(0);
   					}
-<ObjCMethod,ObjCParams,ObjCParamType>{ID} {
-					  generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
+<ObjCMethodStat,ObjCMethodInst,ObjCParams,ObjCParamType>{ID} {
+                                          if (YY_START == ObjCMethodStat)
+					    generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext,FALSE,FALSE,ObjCMethStat);
+                                          else if (YY_START == ObjCMethodInst)
+					    generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext,FALSE,FALSE,ObjCMethInst);
+                                          else
+					    generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
   					}
-<ObjCMethod,ObjCParams,ObjCParamType>.	{
+<ObjCMethodStat,ObjCMethodInst,ObjCParams,ObjCParamType>.	{
   					  yyextra->code->codify(yytext);
   					}
-<ObjCMethod,ObjCParams,ObjCParamType>\n	{
+<ObjCMethodStat,ObjCMethodInst,ObjCParams,ObjCParamType>\n	{
   					  codifyLines(yyscanner,yytext);
   					}
 <ReadInclude>[^\n\"\>]+/(">"|"\"")  	{
@@ -1119,14 +1131,14 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 					    BEGIN(FuncCall);
 					  }
   					}
-<Body,TemplDecl,ObjCMethod>{TYPEKW}/{B}* {
+<Body,TemplDecl,ObjCMethodStat,ObjCMethodInst>{TYPEKW}/{B}* {
   					  startFontClass(yyscanner,"keywordtype");
 					  yyextra->code->codify(yytext);
 					  endFontClass(yyscanner);
 					  addType(yyscanner);
   					  yyextra->name+=yytext; 
   					}
-<Body,TemplDecl,ObjCMethod>{TYPEKWSL}/{B}* {
+<Body,TemplDecl,ObjCMethodStat,ObjCMethodInst>{TYPEKWSL}/{B}* {
                                           if (yyextra->lang!=SrcLangExt_Slice)
                                           {
                                             REJECT;
@@ -2871,7 +2883,8 @@ static bool getLinkInScope(yyscan_t yyscanner,
 			   const char *memberText, // exact text
 			   CodeOutputInterface &ol,
 			   const char *text,
-			   bool varOnly
+		           bool varOnly,
+                           const objCMethod objCMeth
 			  )
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -2881,7 +2894,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
   const NamespaceDef *nd = 0;
   const GroupDef     *gd = 0;
   DBG_CTX((stderr,"getLinkInScope: trying '%s'::'%s' varOnly=%d\n",c.data(),m.data(),varOnly));
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef,FALSE,yyextra->forceTagReference) && 
+  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef,FALSE,yyextra->forceTagReference,objCMeth) && 
       (!varOnly || md->isVariable()))
   {
     if (md->isLinkable())
@@ -2936,19 +2949,20 @@ static bool getLink(yyscan_t yyscanner,
                     const char *memberName,
 		    CodeOutputInterface &ol,
 		    const char *text,
-		    bool varOnly)
+		    bool varOnly,
+                    const objCMethod objCMeth)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("getLink(%s,%s) yyextra->curClassName=%s\n",className,memberName,yyextra->curClassName.data());
   QCString m=removeRedundantWhiteSpace(memberName);
   QCString c=className;
-  if (!getLinkInScope(yyscanner,c,m,memberName,ol,text,varOnly))
+  if (!getLinkInScope(yyscanner,c,m,memberName,ol,text,varOnly,objCMeth))
   {
     if (!yyextra->curClassName.isEmpty())
     {
       if (!c.isEmpty()) c.prepend("::");
       c.prepend(yyextra->curClassName);
-      return getLinkInScope(yyscanner,c,m,memberName,ol,text,varOnly);
+      return getLinkInScope(yyscanner,c,m,memberName,ol,text,varOnly,objCMeth);
     }
     return FALSE;
   }
@@ -2959,7 +2973,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
                                       CodeOutputInterface &ol,
                                       const char *clName,
                                       bool typeOnly,
-                                      bool varOnly)
+                                      bool varOnly,
+                                      const objCMethod objCMeth)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   int i=0;
@@ -3018,7 +3033,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           nd?nd->name().data():"<null>"));
     if (cd==0 && md==0) // also see if it is variable or enum or enum value
     {
-      if (getLink(yyscanner,yyextra->classScope,clName,ol,clName,varOnly))
+      if (getLink(yyscanner,yyextra->classScope,clName,ol,clName,varOnly,objCMeth))
       {
 	return;
       }
