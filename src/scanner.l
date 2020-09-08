@@ -4583,13 +4583,29 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           lineCount(yyscanner);
                                           yyextra->current->argList.setTrailingReturnType(" -> ");
                                           yyextra->current->args += " -> ";
+					  yyextra->roundCount=0;
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>[{;]                    {
+                                          if (yyextra->roundCount!= 0) REJECT;
                                           unput(*yytext);
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>.                       {
+                                          if (*yytext == '(') yyextra->roundCount++;
+                                          else if (*yytext == ')')
+                                          {
+                                            if (yyextra->roundCount)
+                                            {
+                                              yyextra->roundCount--;
+                                            }
+                                            else
+                                            {
+                                              warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                   "Found ')' without opening '(' for '%s)...'",
+                                                   yyextra->current->argList.trailingReturnType().data());
+                                            }
+                                          }
                                           yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
                                           yyextra->current->args+=yytext;
                                         }
