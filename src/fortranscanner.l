@@ -2687,6 +2687,9 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
   char *tmpBuf = NULL;
   initParser(yyscanner);
 
+
+  if (fileBuf==0 || fileBuf[0]=='\0') return;
+
   yyextra->defaultProtection = Public;
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
