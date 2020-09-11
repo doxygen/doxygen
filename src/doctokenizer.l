@@ -6,8 +6,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -49,7 +49,7 @@
 #define USE_STATE2STRING 0
 
 #define TK_COMMAND_SEL() (yytext[0] == '@' ? TK_COMMAND_AT : TK_COMMAND_BS)
-  
+
 //--------------------------------------------------------------------------
 
 // context for tokenizer phase
@@ -187,7 +187,7 @@ static void processSection()
   }
   else
   {
-    warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data()); 
+    warn(g_fileName,yylineno,"Found section/anchor %s without context\n",g_secLabel.data());
   }
   SectionInfo *si = SectionManager::instance().find(g_secLabel);
   if (si)
@@ -203,10 +203,10 @@ static void handleHtmlTag()
   g_token->attribs.clear();
   g_token->endTag = FALSE;
   g_token->emptyTag = FALSE;
-  
+
   // Check for end tag
   int startNamePos=1;
-  if (tagText.at(1)=='/') 
+  if (tagText.at(1)=='/')
   {
     g_token->endTag = TRUE;
     startNamePos++;
@@ -234,7 +234,7 @@ static void handleHtmlTag()
     // check for end of the tag
     if (c == '>') break;
     // Check for XML style "empty" tag.
-    if (c == '/') 
+    if (c == '/')
     {
       g_token->emptyTag = TRUE;
       break;
@@ -244,42 +244,42 @@ static void handleHtmlTag()
     while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
     endName=i;
     HtmlAttrib opt;
-    opt.name  = tagText.mid(startName,endName-startName).lower(); 
+    opt.name  = tagText.mid(startName,endName-startName).lower();
     // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); } 
+    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
     if (tagText.at(i)=='=') // option has value
     {
       c=tagText.at(++i);
       // skip spaces
-      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); } 
+      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
       if (tagText.at(i)=='\'') // option '...'
       {
         c=tagText.at(++i);
-	startAttrib=i;
-	
-	// search for matching quote 
-        while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); } 
-	endAttrib=i;
+        startAttrib=i;
+
+        // search for matching quote
+        while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); }
+        endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       else if (tagText.at(i)=='"') // option "..."
       {
         c=tagText.at(++i);
-	startAttrib=i;
-	// search for matching quote 
-        while (i<(int)yyleng && c!='"') { c=tagText.at(++i); } 
-	endAttrib=i;
+        startAttrib=i;
+        // search for matching quote
+        while (i<(int)yyleng && c!='"') { c=tagText.at(++i); }
+        endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
       else // value without any quotes
       {
-	startAttrib=i;
-	// search for separator or end symbol
-        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); } 
-	endAttrib=i;
+        startAttrib=i;
+        // search for separator or end symbol
+        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); }
+        endAttrib=i;
         if (i<(int)yyleng) { c=tagText.at(++i);}
       }
-      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib); 
+      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib);
       if (opt.name == "align") opt.value = opt.value.lower();
       else if (opt.name == "valign")
       {
@@ -296,7 +296,7 @@ static void handleHtmlTag()
   }
   g_token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
 }
-  
+
 static QCString stripEmptyLines(const QCString &s)
 {
   if (s.isEmpty()) return QCString();
@@ -307,11 +307,11 @@ static QCString stripEmptyLines(const QCString &s)
   {
     int c;
     while ((c=s[p]) && (c==' ' || c=='\t')) p++;
-    if (s[p]=='\n') 
+    if (s[p]=='\n')
     {
-      start=++p; 
+      start=++p;
     }
-    else 
+    else
     {
       break;
     }
@@ -323,7 +323,7 @@ static QCString stripEmptyLines(const QCString &s)
   {
     int c;
     while ((c=s[p]) && (c==' ' || c=='\t')) p--;
-    if (s[p]=='\n') 
+    if (s[p]=='\n')
     {
       end=p;
     }
@@ -385,14 +385,14 @@ FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#]
 FILEECHAR [a-z_A-Z0-9\-\+&#]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
-LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)? 
+LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
 SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
 SPCMD3    {CMD}_form#[0-9]+
 SPCMD4    {CMD}"::"
 SPCMD5    {CMD}":"
-INOUT	  "in"|"out"|("in"{BLANK}*","?{BLANK}*"out")|("out"{BLANK}*","?{BLANK}*"in")
+INOUT     "in"|"out"|("in"{BLANK}*","?{BLANK}*"out")|("out"{BLANK}*","?{BLANK}*"in")
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 VARARGS   "..."
 TEMPCHAR  [a-z_A-Z0-9.,: \t\*\&\(\)\[\]]
@@ -427,7 +427,7 @@ WORD2     "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
 WORD2NQ   "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 CAPTION   [cC][aA][pP][tT][iI][oO][nN]
-HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">" 
+HTMLTAG   "<"(("/")?){ID}({WS}+{ATTRIB})*{WS}*(("/")?)">"
 HTMLKEYL  "strong"|"center"|"table"|"caption"|"small"|"code"|"dfn"|"var"|"img"|"pre"|"sub"|"sup"|"tr"|"td"|"th"|"ol"|"ul"|"li"|"tt"|"kbd"|"em"|"hr"|"dl"|"dt"|"dd"|"br"|"i"|"a"|"b"|"p"|"strike"|"u"|"del"|"ins"|"s"
 HTMLKEYU  "STRONG"|"CENTER"|"TABLE"|"CAPTION"|"SMALL"|"CODE"|"DFN"|"VAR"|"IMG"|"PRE"|"SUB"|"SUP"|"TR"|"TD"|"TH"|"OL"|"UL"|"LI"|"TT"|"KBD"|"EM"|"HR"|"DL"|"DT"|"DD"|"BR"|"I"|"A"|"B"|"P"|"STRIKE"|"U"|"DEL"|"INS"|"S"
 HTMLKEYW  {HTMLKEYL}|{HTMLKEYU}
@@ -493,15 +493,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 
 %%
 <St_Para>\r            /* skip carriage return */
-<St_Para>^{LISTITEM}   { /* list item */ 
+<St_Para>^{LISTITEM}   { /* list item */
                          QCString text=yytext;
-			 int dashPos = text.findRev('-');
-			 g_token->isEnumList = text.at(dashPos+1)=='#';
+                         int dashPos = text.findRev('-');
+                         g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
-			 g_token->indent     = computeIndent(yytext,dashPos);
+                         g_token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
-<St_Para>^{MLISTITEM}  { /* list item */ 
+<St_Para>^{MLISTITEM}  { /* list item */
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
@@ -517,7 +517,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>^{OLISTITEM}  { /* numbered list item */ 
+<St_Para>^{OLISTITEM}  { /* numbered list item */
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
@@ -534,15 +534,15 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */ 
+<St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          QCString text=extractPartAfterNewLine(yytext);
-			 int dashPos = text.findRev('-');
-			 g_token->isEnumList = text.at(dashPos+1)=='#';
+                         int dashPos = text.findRev('-');
+                         g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
-			 g_token->indent     = computeIndent(text,dashPos);
+                         g_token->indent     = computeIndent(text,dashPos);
                          return TK_LISTITEM;
                        }
-<St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */ 
+<St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
@@ -558,7 +558,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */ 
+<St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
@@ -575,41 +575,41 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                            return TK_LISTITEM;
                          }
                        }
-<St_Para>^{ENDLIST}       { /* end list */ 
+<St_Para>^{ENDLIST}       { /* end list */
                          int dotPos = QCString(yytext).findRev('.');
-			 g_token->indent     = computeIndent(yytext,dotPos);
+                         g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
-<St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */ 
+<St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          QCString text=extractPartAfterNewLine(yytext);
                          int dotPos = text.findRev('.');
-			 g_token->indent = computeIndent(text,dotPos);
+                         g_token->indent = computeIndent(text,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
-  			 g_token->name = "javalink";
-			 return TK_COMMAND_AT;
-  		       }
+                         g_token->name = "javalink";
+                         return TK_COMMAND_AT;
+                       }
 <St_Para>"{"{BLANK}*"@inheritDoc"{BLANK}*"}" {
-  			 g_token->name = "inheritdoc";
-			 return TK_COMMAND_AT;
-		       }
+                         g_token->name = "inheritdoc";
+                         return TK_COMMAND_AT;
+                       }
 <St_Para>"@_fakenl"    { // artificial new line
-                         yylineno++; 
-  		       }
+                         //yylineno++;
+                       }
 <St_Para>{SPCMD3}      {
-  			 g_token->name = "_form";
-			 bool ok;
-			 g_token->id = QCString(yytext).right((int)yyleng-7).toInt(&ok);
-			 ASSERT(ok);
-			 return TK_COMMAND_SEL();
-  		       }
+                         g_token->name = "_form";
+                         bool ok;
+                         g_token->id = QCString(yytext).right((int)yyleng-7).toInt(&ok);
+                         ASSERT(ok);
+                         return TK_COMMAND_SEL();
+                       }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
-                         yylineno++;
+                         //yylineno++;
                          g_token->name = yytext+1;
-			 g_token->name = g_token->name.stripWhiteSpace();
-			 g_token->paramDir=TokenInfo::Unspecified;
-			 return TK_COMMAND_SEL();
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         g_token->paramDir=TokenInfo::Unspecified;
+                         return TK_COMMAND_SEL();
                        }
 <St_Para>"\\ilinebr"   {
                        }
@@ -618,108 +618,108 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Para>{SPCMD5}      |
 <St_Para>{SPCMD4}      { /* special command */
                          g_token->name = yytext+1;
-			 g_token->name = g_token->name.stripWhiteSpace();
-			 g_token->paramDir=TokenInfo::Unspecified;
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
-  		       }
+                       }
 <St_Para>{PARAMIO}     { /* param [in,out] command */
-  			 g_token->name = "param";
-			 QCString s(yytext);
-			 bool isIn  = s.find("in")!=-1;
-			 bool isOut = s.find("out")!=-1;
-			 if (isIn)
-			 {
-			   if (isOut)
-			   {
-			     g_token->paramDir=TokenInfo::InOut;
-			   }
-			   else
-			   {
-			     g_token->paramDir=TokenInfo::In;
-			   }
-			 }
-			 else if (isOut)
-			 {
-			   g_token->paramDir=TokenInfo::Out;
-			 }
-			 else
-			 {
-			   g_token->paramDir=TokenInfo::Unspecified;
-			 }
-			 return TK_COMMAND_SEL();
-  		       }
+                         g_token->name = "param";
+                         QCString s(yytext);
+                         bool isIn  = s.find("in")!=-1;
+                         bool isOut = s.find("out")!=-1;
+                         if (isIn)
+                         {
+                           if (isOut)
+                           {
+                             g_token->paramDir=TokenInfo::InOut;
+                           }
+                           else
+                           {
+                             g_token->paramDir=TokenInfo::In;
+                           }
+                         }
+                         else if (isOut)
+                         {
+                           g_token->paramDir=TokenInfo::Out;
+                         }
+                         else
+                         {
+                           g_token->paramDir=TokenInfo::Unspecified;
+                         }
+                         return TK_COMMAND_SEL();
+                       }
 <St_Para>{URLPROTOCOL}{URLMASK}/[,\.] { // URL, or URL.
                          g_token->name=yytext;
-			 g_token->isEMailAddr=FALSE;
-			 return TK_URL;
+                         g_token->isEMailAddr=FALSE;
+                         return TK_URL;
                        }
 <St_Para>{URLPROTOCOL}{URLMASK} { // URL
                          g_token->name=yytext;
-			 g_token->isEMailAddr=FALSE;
-			 return TK_URL;
+                         g_token->isEMailAddr=FALSE;
+                         return TK_URL;
                        }
 <St_Para>"<"{URLPROTOCOL}{URLMASK}">" { // URL
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
-			 g_token->isEMailAddr=FALSE;
-			 return TK_URL;
+                         g_token->isEMailAddr=FALSE;
+                         return TK_URL;
                        }
 <St_Para>{MAILADDR}    { // Mail address
                          g_token->name=yytext;
                          g_token->name.stripPrefix("mailto:");
-			 g_token->isEMailAddr=TRUE;
-			 return TK_URL;
+                         g_token->isEMailAddr=TRUE;
+                         return TK_URL;
                        }
 <St_Para>"<"{MAILADDR}">" { // Mail address
                          g_token->name=yytext;
                          g_token->name = g_token->name.mid(1,g_token->name.length()-2);
                          g_token->name.stripPrefix("mailto:");
-			 g_token->isEMailAddr=TRUE;
-			 return TK_URL;
+                         g_token->isEMailAddr=TRUE;
+                         return TK_URL;
                        }
 <St_Para>"<"{MAILADDR2}">" { // anti spam mail address
                          g_token->name=yytext;
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_Para>"$"{ID}":"[^:\n$][^\n$]*"$" { /* RCS tag */
                          QCString tagName(yytext+1);
-			 int index=tagName.find(':');
-  			 g_token->name = tagName.left(index);
-			 int text_begin = index+2;
-			 int text_end = tagName.length()-1;
-			 if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
-			 {
-				 ++text_begin;
-				 if (tagName[text_end-1]=='#')
-					 --text_end;
-			 }
-			 g_token->text = tagName.mid(text_begin,text_end-text_begin);
-			 return TK_RCSTAG;
-  		       }
+                         int index=tagName.find(':');
+                         g_token->name = tagName.left(index);
+                         int text_begin = index+2;
+                         int text_end = tagName.length()-1;
+                         if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
+                         {
+                                 ++text_begin;
+                                 if (tagName[text_end-1]=='#')
+                                         --text_end;
+                         }
+                         g_token->text = tagName.mid(text_begin,text_end-text_begin);
+                         return TK_RCSTAG;
+                       }
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
                          QCString name = &yytext[2];
-			 name = name.left(name.length()-1);
-			 QCString value = Portable::getenv(name);
-			 for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
+                         name = name.left(name.length()-1);
+                         QCString value = Portable::getenv(name);
+                         for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
-<St_Para>{HTMLTAG}     { /* html tag */ 
+<St_Para>{HTMLTAG}     { /* html tag */
                          handleHtmlTag();
                          return TK_HTMLTAG;
                        }
-<St_Para,St_Text>"&"{ID}";" { /* special symbol */ 
+<St_Para,St_Text>"&"{ID}";" { /* special symbol */
                          g_token->name = yytext;
                          return TK_SYMBOL;
                        }
 
   /********* patterns for linkable words ******************/
 
-<St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html 
-				  * tag to be recognized as a templated classes 
-				  */ 
+<St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html
+                                  * tag to be recognized as a templated classes
+                                  */
                          g_token->name = yytext;
                          return TK_LNKWORD;
-  			}
+                        }
 <St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
@@ -727,34 +727,34 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Para>{LNKWORD3}    {
                          g_token->name = yytext;
                          return TK_LNKWORD;
-  		       }
+                       }
 <St_Para>{LNKWORD1}{FUNCARG}{CVSPEC}[^a-z_A-Z0-9] {
                          g_token->name = yytext;
                          g_token->name = g_token->name.left(g_token->name.length()-1);
-			 unput(yytext[(int)yyleng-1]);
+                         unput(yytext[(int)yyleng-1]);
                          return TK_LNKWORD;
                        }
   /********* patterns for normal words ******************/
 
 <St_Para,St_Text>[\-+0-9] |
 <St_Para,St_Text>{WORD1} |
-<St_Para,St_Text>{WORD2} { /* function call */ 
+<St_Para,St_Text>{WORD2} { /* function call */
                          if (yytext[0]=='%') // strip % if present
-			   g_token->name = &yytext[1];
-			 else
+                           g_token->name = &yytext[1];
+                         else
                            g_token->name = yytext;
                          return TK_WORD;
 
-			 /* the following is dummy code to please the 
-			  * compiler, removing this results in a warning 
-			  * on my machine 
-			  */ 
-			 goto find_rule;
+                         /* the following is dummy code to please the
+                          * compiler, removing this results in a warning
+                          * on my machine
+                          */
+                         goto find_rule;
                        }
 <St_Text>({ID}".")+{ID} {
                           g_token->name = yytext;
                           return TK_WORD;
-  			}
+                        }
 <St_Para,St_Text>"operator"/{BLANK}*"<"[a-zA-Z_0-9]+">" { // Special case: word "operator" followed by a HTML command
                                                           // avoid interpretation as "operator <"
                            g_token->name = yytext;
@@ -764,14 +764,14 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
   /*******************************************************/
 
 <St_Para,St_Text>{BLANK}+      |
-<St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */ 
+<St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */
                          g_token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_Text>[\\@<>&$#%~]  {
                          g_token->name = yytext;
                          return TK_COMMAND_SEL();
-  		       }
+                       }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (g_insidePre || g_autoListLevel==0)
                          {
@@ -798,11 +798,11 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          {
                            unput(' ');
                          }
-                         // tell flex that after putting the last indent 
+                         // tell flex that after putting the last indent
                          // back we are at the beginning of the line
                          YY_CURRENT_BUFFER->yy_at_bol=1;
                          // start of a new paragraph
-  		         return TK_NEWPARA;
+                         return TK_NEWPARA;
                        }
 <St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
                          g_token->name = yytext;
@@ -825,8 +825,8 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_Code,St_XmlCode>[^\\@\n<]+  |
 <St_Code,St_XmlCode>\n          |
 <St_Code,St_XmlCode>.           {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_HtmlOnlyOption>" [block]" { // the space is added in commentscan.l
                          g_token->name="block";
                          BEGIN(St_HtmlOnly);
@@ -845,77 +845,77 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_HtmlOnly>[^\\@\n$]+    |
 <St_HtmlOnly>\n            |
 <St_HtmlOnly>.             {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_ManOnly>{CMD}"endmanonly" {
                          return RetVal_OK;
                        }
 <St_ManOnly>[^\\@\n$]+    |
 <St_ManOnly>\n            |
 <St_ManOnly>.             {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_RtfOnly>{CMD}"endrtfonly" {
                          return RetVal_OK;
                        }
 <St_RtfOnly>[^\\@\n$]+    |
 <St_RtfOnly>\n            |
 <St_RtfOnly>.             {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_LatexOnly>{CMD}"endlatexonly" {
                          return RetVal_OK;
                        }
 <St_LatexOnly>[^\\@\n]+     |
 <St_LatexOnly>\n            |
 <St_LatexOnly>.             {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_XmlOnly>{CMD}"endxmlonly" {
                          return RetVal_OK;
                        }
 <St_XmlOnly>[^\\@\n]+  |
 <St_XmlOnly>\n         |
 <St_XmlOnly>.          {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_DbOnly>{CMD}"enddocbookonly" {
                          return RetVal_OK;
                        }
 <St_DbOnly>[^\\@\n]+  |
 <St_DbOnly>\n         |
 <St_DbOnly>.          {
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_Verbatim>{CMD}"endverbatim" {
-  			 g_token->verb=stripEmptyLines(g_token->verb);
+                         g_token->verb=stripEmptyLines(g_token->verb);
                          return RetVal_OK;
                        }
 <St_Verbatim>[^\\@\n]+ |
 <St_Verbatim>\n        |
 <St_Verbatim>.         { /* Verbatim text */
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
                        }
 <St_Dot>[^\\@\n]+      |
 <St_Dot>\n             |
 <St_Dot>.              { /* dot text */
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_Msc>{CMD}("endmsc")  {
                          return RetVal_OK;
                        }
 <St_Msc>[^\\@\n]+      |
 <St_Msc>\n             |
 <St_Msc>.              { /* msc text */
-  			 g_token->verb+=yytext;
-  		       }
+                         g_token->verb+=yytext;
+                       }
 <St_PlantUMLOpt>{BLANK}*"{"[^}]*"}" { // case 1: file name is specified as {filename}
                          g_token->sectionId = QCString(yytext).stripWhiteSpace();
                          // skip curly brackets around the optional image name
-			 g_token->sectionId = g_token->sectionId.mid(1,g_token->sectionId.length()-2).stripWhiteSpace();
+                         g_token->sectionId = g_token->sectionId.mid(1,g_token->sectionId.length()-2).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
@@ -947,117 +947,121 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_PlantUML>[^\\@\n]+ |
 <St_PlantUML>\n        |
 <St_PlantUML>.         { /* plantuml text */
-  			 g_token->verb+=yytext;
-  		       }
-<St_Title>"\""	       { // quoted title
-  			 BEGIN(St_TitleQ);
-  		       }
+                         g_token->verb+=yytext;
+                       }
+<St_Title>"\""         { // quoted title
+                         BEGIN(St_TitleQ);
+                       }
 <St_Title>[ \t]+       {
                          g_token->chars=yytext;
-  			 return TK_WHITESPACE;
+                         return TK_WHITESPACE;
                        }
-<St_Title>.	       { // non-quoted title
-  			 unput(*yytext);
-			 BEGIN(St_TitleN);
-                       }
-<St_Title>\n	       {
+<St_Title>.            { // non-quoted title
                          unput(*yytext);
-  			 return 0;
-  		       }
+                         BEGIN(St_TitleN);
+                       }
+<St_Title>\n           {
+                         unput(*yytext);
+                         return 0;
+                       }
 <St_Title>"\\ilinebr"  {
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
+                         return 0;
                        }
 <St_TitleN>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
-  		         return TK_SYMBOL;
+                         return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
-  		       }
-<St_TitleN>(\n|"\\ilinebr") { /* new line => end of title */
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
                        }
-<St_TitleN>{SPCMD1}    |   
-<St_TitleN>{SPCMD2}    { /* special command */ 
+<St_TitleN>\n          { /* new line => end of title */
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_TitleN>"\\ilinebr" { /* new line => end of title */
+                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         return 0;
+                       }
+<St_TitleN>{SPCMD1}    |
+<St_TitleN>{SPCMD2}    { /* special command */
                          g_token->name = yytext+1;
-			 g_token->paramDir=TokenInfo::Unspecified;
+                         g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_TitleN>{ID}"="     { /* attribute */
                          if (yytext[0]=='%') // strip % if present
-			   g_token->name = &yytext[1];
-			 else
+                           g_token->name = &yytext[1];
+                         else
                            g_token->name = yytext;
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_TitleN>[\-+0-9]    |
 <St_TitleN>{WORD1}     |
 <St_TitleN>{WORD2}     { /* word */
                          if (yytext[0]=='%') // strip % if present
-			   g_token->name = &yytext[1];
-			 else
+                           g_token->name = &yytext[1];
+                         else
                            g_token->name = yytext;
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_TitleN>[ \t]+      {
                          g_token->chars=yytext;
-  			 return TK_WHITESPACE;
+                         return TK_WHITESPACE;
                        }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
                          g_token->name = yytext;
-  		         return TK_SYMBOL;
+                         return TK_SYMBOL;
                        }
 <St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
+                         return 0;
                        }
-<St_TitleQ>{SPCMD1}    |   
-<St_TitleQ>{SPCMD2}    { /* special command */ 
+<St_TitleQ>{SPCMD1}    |
+<St_TitleQ>{SPCMD2}    { /* special command */
                          g_token->name = yytext+1;
-			 g_token->paramDir=TokenInfo::Unspecified;
+                         g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_TitleQ>{WORD1NQ}   |
 <St_TitleQ>{WORD2NQ}   { /* word */
                          g_token->name = yytext;
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_TitleQ>[ \t]+      {
                          g_token->chars=yytext;
-  			 return TK_WHITESPACE;
+                         return TK_WHITESPACE;
                        }
-<St_TitleQ>"\""	       { /* closing quote => end of title */
-  			 BEGIN(St_TitleA);
-  			 return 0;
+<St_TitleQ>"\""        { /* closing quote => end of title */
+                         BEGIN(St_TitleA);
+                         return 0;
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
-  			 g_token->name = yytext;
-			 g_token->name = g_token->name.left(g_token->name.find('=')).stripWhiteSpace();
-  			 BEGIN(St_TitleV);
-  		       }
+                         g_token->name = yytext;
+                         g_token->name = g_token->name.left(g_token->name.find('=')).stripWhiteSpace();
+                         BEGIN(St_TitleV);
+                       }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
-  			 g_token->chars = yytext;
-			 BEGIN(St_TitleN);
-			 return TK_WORD;
-  		       }
+                         g_token->chars = yytext;
+                         BEGIN(St_TitleN);
+                         return TK_WORD;
+                       }
 <St_TitleV,St_TitleA>. {
-  			 unput(*yytext);
-  			 return 0;
+                         unput(*yytext);
+                         return 0;
                        }
 <St_TitleV,St_TitleA>(\n|"\\ilinebr") {
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
+                         return 0;
                        }
 
 <St_Anchor>{LABELID}{WS}? { // anchor
-  			 g_token->name = QCString(yytext).stripWhiteSpace();
-  			 return TK_WORD;
-  		       }
-<St_Anchor>.	       {
-  			 unput(*yytext);
-			 return 0;
-  		       }
+                         g_token->name = QCString(yytext).stripWhiteSpace();
+                         return TK_WORD;
+                       }
+<St_Anchor>.           {
+                         unput(*yytext);
+                         return 0;
+                       }
 <St_Cite>{CITEID}      { // label to cite
                          if (yytext[0] =='"')
                          {
@@ -1068,59 +1072,59 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          {
                            g_token->name=yytext;
                          }
-			 return TK_WORD;
-  		       }
+                         return TK_WORD;
+                       }
 <St_Cite>{BLANK}       { // white space
-  			 unput(' ');
-  			 return 0;
+                         unput(' ');
+                         return 0;
                        }
 <St_Cite>(\n|"\\ilinebr")  { // new line
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
-  		       }
-<St_Cite>.	       { // any other character
+                         return 0;
+                       }
+<St_Cite>.             { // any other character
                          unput(*yytext);
-  			 return 0;
-  		       }
+                         return 0;
+                       }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("const")[a-z_A-Z0-9] { // see bug776988
-  			 g_token->name=yytext;
-			 return TK_WORD;
+                         g_token->name=yytext;
+                         return TK_WORD;
                        }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("volatile")[a-z_A-Z0-9] { // see bug776988
-  			 g_token->name=yytext;
-			 return TK_WORD;
+                         g_token->name=yytext;
+                         return TK_WORD;
                        }
 <St_Ref>{REFWORD}      { // label to refer to
-  			 g_token->name=yytext;
-			 return TK_WORD;
-  		       }
+                         g_token->name=yytext;
+                         return TK_WORD;
+                       }
 <St_Ref>{BLANK}        { // white space
-  			 unput(' ');
-  			 return 0;
+                         unput(' ');
+                         return 0;
                        }
 <St_Ref>{WS}+"\""{WS}* { // white space following by quoted string
-  			 BEGIN(St_Ref2);
+                         BEGIN(St_Ref2);
                        }
 <St_Ref>(\n|"\\ilinebr") { // new line
                          for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
-  			 return 0;
-  		       }
-<St_Ref>.	       { // any other character
+                         return 0;
+                       }
+<St_Ref>.              { // any other character
                          unput(*yytext);
-  			 return 0;
-  		       }
+                         return 0;
+                       }
 <St_IntRef>[A-Z_a-z0-9.:/#\-\+\(\)]+ {
                          g_token->name = yytext;
-			 return TK_WORD;
-  		       }
+                         return TK_WORD;
+                       }
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
 <St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK}|{FILEMASK} {
                          g_token->name = yytext;
                          g_token->name = g_token->name.stripWhiteSpace();
-			 return TK_WORD;
-  		       }
+                         return TK_WORD;
+                       }
 <St_SetScope>{SCOPEMASK}"<" {
                          g_token->name = yytext;
                          g_token->name = g_token->name.stripWhiteSpace();
@@ -1146,26 +1150,26 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                        }
 <St_Ref2>"&"{ID}";"    { /* symbol */
                          g_token->name = yytext;
-  		         return TK_SYMBOL;
+                         return TK_SYMBOL;
                        }
 <St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
-  			 return 0;
+                         return 0;
                        }
-<St_Ref2>{SPCMD1}      |   
-<St_Ref2>{SPCMD2}      { /* special command */ 
+<St_Ref2>{SPCMD1}      |
+<St_Ref2>{SPCMD2}      { /* special command */
                          g_token->name = yytext+1;
-			 g_token->paramDir=TokenInfo::Unspecified;
+                         g_token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_Ref2>{WORD1NQ}     |
 <St_Ref2>{WORD2NQ}     {
                          /* word */
                          g_token->name = yytext;
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_Ref2>[ \t]+        {
                          g_token->chars=yytext;
-  			 return TK_WHITESPACE;
+                         return TK_WHITESPACE;
                        }
 <St_XRefItem>{LABELID} {
                          g_token->name=yytext;
@@ -1174,39 +1178,39 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          BEGIN(St_XRefItem2);
                        }
 <St_XRefItem2>[0-9]+"." {
-  			 QCString numStr=yytext;
-			 numStr=numStr.left((int)yyleng-1);
-			 g_token->id=numStr.toInt();
-			 return RetVal_OK;
-  		       }
+                         QCString numStr=yytext;
+                         numStr=numStr.left((int)yyleng-1);
+                         g_token->id=numStr.toInt();
+                         return RetVal_OK;
+                       }
 <St_Para,St_Title,St_Ref2>"<!--"     { /* html style comment block */
                          g_commentState = YY_START;
-                         BEGIN(St_Comment); 
+                         BEGIN(St_Comment);
                        }
 <St_Param>"\""[^\n\"]+"\"" {
-  			 g_token->name = yytext+1;
-			 g_token->name = g_token->name.left((int)yyleng-2);
-			 return TK_WORD;
+                         g_token->name = yytext+1;
+                         g_token->name = g_token->name.left((int)yyleng-2);
+                         return TK_WORD;
                        }
 <St_Param>({PHPTYPE}{BLANK}*("["{BLANK}*"]")*{BLANK}*"|"{BLANK}*)*{PHPTYPE}{BLANK}*("["{BLANK}*"]")*{WS}+("&")?"$"{LABELID} {
-  			 QCString params = yytext;
-			 int j = params.find('&');
-			 int i = params.find('$');
-			 if (j<i && j!=-1) i=j;
-			 QCString types = params.left(i).stripWhiteSpace();
-			 g_token->name = types+"#"+params.mid(i);
-			 return TK_WORD;
-  		       }
+                         QCString params = yytext;
+                         int j = params.find('&');
+                         int i = params.find('$');
+                         if (j<i && j!=-1) i=j;
+                         QCString types = params.left(i).stripWhiteSpace();
+                         g_token->name = types+"#"+params.mid(i);
+                         return TK_WORD;
+                       }
 <St_Param>[^ \t\n,@\\]+  {
-  			 g_token->name = yytext;
+                         g_token->name = yytext;
                          if (g_token->name.at(static_cast<uint>(yyleng)-1)==':')
                          {
                            g_token->name=g_token->name.left(static_cast<uint>(yyleng)-1);
                          }
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_Param>{WS}*","{WS}*  /* param separator */
-<St_Param>{WS}	       {
+<St_Param>{WS}         {
                          g_token->chars=yytext;
                          return TK_WHITESPACE;
                        }
@@ -1234,31 +1238,34 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          return 0;
                        }
 <St_File>{FILEMASK}    {
-  			 g_token->name = yytext;
-			 return TK_WORD;  
-  		       }
+                         g_token->name = yytext;
+                         return TK_WORD;
+                       }
 <St_File>"\""[^\n\"]+"\"" {
-  		         QCString text=yytext;
-			 g_token->name = text.mid(1,text.length()-2);
-			 return TK_WORD;
-  		       }
-<St_Pattern>[^\r\n]+   {
-                         if (QCString(yytext).contains("\\ilinebr")) REJECT;
-                         g_token->name = yytext;
-                         g_token->name = g_token->name.stripWhiteSpace();
-			 return TK_WORD;
-  		       }
-<St_Pattern>[^\r\n]+/"\\ilinebr"   {
-                         g_token->name = yytext;
+                         QCString text=yytext;
+                         g_token->name = text.mid(1,text.length()-2);
+                         return TK_WORD;
+                       }
+<St_Pattern>[^\\\r\n]+   {
+                         g_token->name += yytext;
+                       }
+<St_Pattern>"\\ilinebr" {
                          g_token->name = g_token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
+<St_Pattern>\n         {
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         return TK_WORD;
+                       }
+<St_Pattern>.          {
+                         g_token->name += yytext;
+                       }
 <St_Link>{LINKMASK}|{REFWORD}    {
                          g_token->name = yytext;
-			 return TK_WORD;
+                         return TK_WORD;
                        }
 <St_Comment>"-->"      { /* end of html comment */
-                         BEGIN(g_commentState); 
+                         BEGIN(g_commentState);
                        }
 <St_Comment>[^-]+      /* inside html comment */
 <St_Comment>.          /* inside html comment */
@@ -1268,7 +1275,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 <St_SkipTitle>.
 <St_SkipTitle>(\n|"\\ilinebr") { return 0; }
 
-     /* State for the pass used to find the anchors and sections */ 
+     /* State for the pass used to find the anchors and sections */
 
 <St_Sections>[^\n@\\<]+
 <St_Sections>{CMD}("<"|{CMD})
@@ -1290,142 +1297,142 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                                         }
                                       }
                                     }
-<St_Sections>{CMD}"anchor"{BLANK}+  { 
-                                      g_secType = SectionType::Anchor; 
-				      BEGIN(St_SecLabel1); 
+<St_Sections>{CMD}"anchor"{BLANK}+  {
+                                      g_secType = SectionType::Anchor;
+                                      BEGIN(St_SecLabel1);
                                     }
-<St_Sections>{CMD}"section"{BLANK}+ { 
-                                      g_secType = SectionType::Section; 
-                                      BEGIN(St_SecLabel2); 
+<St_Sections>{CMD}"section"{BLANK}+ {
+                                      g_secType = SectionType::Section;
+                                      BEGIN(St_SecLabel2);
                                     }
-<St_Sections>{CMD}"subsection"{BLANK}+ { 
-                                      g_secType = SectionType::Subsection; 
-                                      BEGIN(St_SecLabel2); 
+<St_Sections>{CMD}"subsection"{BLANK}+ {
+                                      g_secType = SectionType::Subsection;
+                                      BEGIN(St_SecLabel2);
                                     }
-<St_Sections>{CMD}"subsubsection"{BLANK}+ { 
-                                      g_secType = SectionType::Subsubsection; 
-                                      BEGIN(St_SecLabel2); 
+<St_Sections>{CMD}"subsubsection"{BLANK}+ {
+                                      g_secType = SectionType::Subsubsection;
+                                      BEGIN(St_SecLabel2);
                                     }
-<St_Sections>{CMD}"paragraph"{BLANK}+ { 
-                                      g_secType = SectionType::Paragraph; 
-                                      BEGIN(St_SecLabel2); 
+<St_Sections>{CMD}"paragraph"{BLANK}+ {
+                                      g_secType = SectionType::Paragraph;
+                                      BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
                                       g_endMarker="endverbatim";
-				      BEGIN(St_SecSkip);
-  				    }
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
                                       g_endMarker="enddot";
-				      BEGIN(St_SecSkip);
-  				    }
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"msc"/[^a-z_A-Z0-9] {
                                       g_endMarker="endmsc";
-				      BEGIN(St_SecSkip);
-  				    }
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"startuml"/[^a-z_A-Z0-9] {
                                       g_endMarker="enduml";
-				      BEGIN(St_SecSkip);
-  				    }
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endhtmlonly";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"latexonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endlatexonly";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"manonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endmanonly";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"rtfonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endrtfonly";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"xmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endxmlonly";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"docbookonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="enddocbookonly";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
                                       g_endMarker="endcode";
-				      BEGIN(St_SecSkip);
-  				    }
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>"<!--"                 {
                                       g_endMarker="-->";
-				      BEGIN(St_SecSkip);
+                                      BEGIN(St_SecSkip);
                                     }
-<St_SecSkip>{CMD}{ID}		    {
+<St_SecSkip>{CMD}{ID}               {
                                       if (qstrcmp(yytext+1,g_endMarker)==0)
-				      {
-					BEGIN(St_Sections);
-				      }
+                                      {
+                                        BEGIN(St_Sections);
+                                      }
                                     }
-<St_SecSkip>"-->"		    {
+<St_SecSkip>"-->"                   {
                                       if (qstrcmp(yytext,g_endMarker)==0)
-				      {
-					BEGIN(St_Sections);
-				      }
+                                      {
+                                        BEGIN(St_Sections);
+                                      }
                                     }
 <St_SecSkip>[^a-z_A-Z0-9\-\\\@]+
 <St_SecSkip>.
 <St_SecSkip>(\n|"\\ilinebr")
 <St_Sections>.
 <St_Sections>(\n|"\\ilinebr")
-<St_SecLabel1>{LABELID} { 
+<St_SecLabel1>{LABELID} {
                          g_secLabel = yytext;
                          processSection();
                          BEGIN(St_Sections);
                        }
-<St_SecLabel2>{LABELID}{BLANK}+ | 
-<St_SecLabel2>{LABELID}         { 
+<St_SecLabel2>{LABELID}{BLANK}+ |
+<St_SecLabel2>{LABELID}         {
                          g_secLabel = yytext;
-			 g_secLabel = g_secLabel.stripWhiteSpace();
+                         g_secLabel = g_secLabel.stripWhiteSpace();
                          BEGIN(St_SecTitle);
                        }
 <St_SecTitle>[^\n]+    |
 <St_SecTitle>[^\n]*\n  {
                          g_secTitle = yytext;
-			 g_secTitle = g_secTitle.stripWhiteSpace();
+                         g_secTitle = g_secTitle.stripWhiteSpace();
                          if (g_secTitle.right(8)=="\\ilinebr")
                          {
                            g_secTitle.left(g_secTitle.length()-8);
                          }
                          processSection();
                          BEGIN(St_Sections);
-		       }
+                       }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(g_fileName,yylineno,"Unexpected character '%s' while looking for section label or title",yytext); 
+                         warn(g_fileName,yylineno,"Unexpected character '%s' while looking for section label or title",yytext);
                        }
 
 <St_Snippet>[^\\\n]+   {
-  			 g_token->name += yytext;
+                         g_token->name += yytext;
                        }
 <St_Snippet>"\\"       {
-  			 g_token->name += yytext;
+                         g_token->name += yytext;
                        }
 <St_Snippet>(\n|"\\ilinebr")  {
-			 g_token->name = g_token->name.stripWhiteSpace();
-			 return TK_WORD;
-  		       }
-   
-     /* Generic rules that work for all states */ 
-<*>\n                  { 
-                         warn(g_fileName,yylineno,"Unexpected new line character"); 
-		       }
+                         g_token->name = g_token->name.stripWhiteSpace();
+                         return TK_WORD;
+                       }
+
+     /* Generic rules that work for all states */
+<*>\n                  {
+                         warn(g_fileName,yylineno,"Unexpected new line character");
+                       }
 <*>"\\ilinebr"         {
                        }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
-                         //warn(g_fileName,yylineno,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext); 
-			 g_token->name = yytext;
-			 return TK_COMMAND_SEL();
+                         //warn(g_fileName,yylineno,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext);
+                         g_token->name = yytext;
+                         return TK_COMMAND_SEL();
                        }
-<*>.                   { 
+<*>.                   {
                          warn(g_fileName,yylineno,"Unexpected character '%s'",yytext);
-		       }
+                       }
 %%
 
 //--------------------------------------------------------------------------
@@ -1571,6 +1578,7 @@ void doctokenizerYYsetStateFile()
 
 void doctokenizerYYsetStatePattern()
 {
+  g_token->name = "";
   BEGIN(St_Pattern);
 }
 
