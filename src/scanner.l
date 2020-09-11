@@ -4611,20 +4611,6 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->args+=yytext;
                                         }
 <TrailingReturn>.                       {
-                                          if (*yytext == '(') yyextra->roundCount++;
-                                          else if (*yytext == ')')
-                                          {
-                                            if (yyextra->roundCount)
-                                            {
-                                              yyextra->roundCount--;
-                                            }
-                                            else
-                                            {
-                                              warn(yyextra->yyFileName,yyextra->yyLineNr,
-                                                   "Found ')' without opening '(' for '%s)...'",
-                                                   yyextra->current->argList.trailingReturnType().data());
-                                            }
-                                          }
                                           yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
                                           yyextra->current->args+=yytext;
                                         }
