@@ -164,7 +164,7 @@ DefinesPerFileList Doxygen::macroDefinitions;
 bool             Doxygen::clangAssistedParsing = FALSE;
 
 // locally accessible globals
-static std::unordered_map< std::string, const Entry* > g_classEntries;
+static std::map< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
 static QDict<void>      g_compoundKeywordDict(7);  // keywords recognised as compounds
 static OutputList      *g_outputList = 0;          // list of output generating objects
