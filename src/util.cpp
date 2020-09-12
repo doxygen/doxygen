@@ -2263,7 +2263,7 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   if (al.volatileSpecifier()) result+=" volatile";
   if (al.refQualifier()==RefQualifierLValue) result+=" &";
   else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
-  if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
+  if (!al.trailingReturnType().isEmpty()) result+=" -> "+al.trailingReturnType();
   if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
@@ -6297,7 +6297,7 @@ void filterLatexString(FTextStream &t,const char *str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
