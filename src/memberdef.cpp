@@ -4050,6 +4050,18 @@ void MemberDefImpl::warnIfUndocumented() const
     warnIfUndocumentedParams();
   }
 }
+static QCString stripTrailingReturn(const QCString trailRet)
+{
+  QCString ret = trailRet;
+
+  ret = ret.stripWhiteSpace();
+  if (ret.startsWith("->"))
+  {
+    ret = ret.mid(2).stripWhiteSpace();
+    return ret;
+  }
+  return trailRet;
+}
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
@@ -4058,7 +4070,17 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   bool isPython = getLanguage()==SrcLangExt_Python;
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+
   bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
+  if (!isVoidReturn && returnType == "auto")
+  {
+    const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
+    if (!defArgList.trailingReturnType().isEmpty())
+    {
+      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
+      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
+    }
+  }
 
   if (!m_impl->hasDocumentedParams && hasParamCommand)
   {
