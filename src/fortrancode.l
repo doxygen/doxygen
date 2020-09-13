@@ -132,8 +132,8 @@ struct fortrancodeYY_state
 {
   QCString      docBlock;                   //!< contents of all lines of a documentation block
   QCString      currentModule=0;            //!< name of the current enclosing module
-  UseSDict  *   useMembers= new UseSDict;  //!< info about used modules
-  UseEntry  *   useEntry = 0;              //!< current use statement info
+  UseSDict  *   useMembers= 0;              //!< info about used modules
+  UseEntry  *   useEntry = 0;               //!< current use statement info
   QList<Scope>  scopeStack;
   bool          isExternal = false;
   QCString      str="";         //!> contents of fortran string
@@ -1407,10 +1407,12 @@ FortranCodeParser::FortranCodeParser(FortranFormat format) : p(std::make_unique<
   fortrancodeYYset_debug(1,p->yyscanner);
 #endif
   resetCodeParserState();
+  p->state.useMembers = new UseSDict;
 }
 
 FortranCodeParser::~FortranCodeParser()
 {
+  delete p->state.useMembers;
   fortrancodeYYlex_destroy(p->yyscanner);
 }
 
