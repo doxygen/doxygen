@@ -395,9 +395,6 @@ void SQLCodeParser::resetCodeParserState()
   yyextra->currentMemberDef = 0;
 }
 
-
-//---------------------------------------------------------------------------------
-
 void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                const char *scopeName,
                const QCString &input,
@@ -416,6 +413,8 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
+  if (input.isEmpty()) return;
 
   printlex(yy_flex_debug, true, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 
