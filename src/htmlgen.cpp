@@ -1136,10 +1136,17 @@ void HtmlGenerator::startFile(const char *name,const char *,
   bool searchEngine = Config_getBool(SEARCHENGINE);
   if (searchEngine /*&& !generateTreeView*/)
   {
+    QCString htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
+    htmlFileExtension=htmlFileExtension.stripWhiteSpace();
+    if (htmlFileExtension.isEmpty())
+    {
+      htmlFileExtension = ".html";
+    }
+
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "');\n";
+		t << "var searchBox = new SearchBoxExt(\"searchBox\", \""
+      << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "','" << htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
   }
@@ -2666,6 +2673,13 @@ void HtmlGenerator::writeSearchPage()
   QFile f(fileName);
   if (f.open(IO_WriteOnly))
   {
+    QCString htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
+    htmlFileExtension=htmlFileExtension.stripWhiteSpace();
+    if (htmlFileExtension.isEmpty())
+    {
+      htmlFileExtension = ".html";
+    }
+
     FTextStream t(&f);
     t << substituteHtmlKeywords(g_header,"Search","");
 
@@ -2673,8 +2687,8 @@ void HtmlGenerator::writeSearchPage()
       << getDoxygenVersion() << " -->" << endl;
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",false,'" << theTranslator->trSearch() << "');\n";
+		t << "var searchBox = new SearchBoxExt(\"searchBox\", \""
+      << "search\",false,'" << theTranslator->trSearch() << "','" << htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))

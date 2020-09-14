@@ -946,6 +946,13 @@ void writeJavaScriptSearchIndex()
   // write index files
   QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
+  QCString htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
+  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
+  if (htmlFileExtension.isEmpty())
+  {
+    htmlFileExtension = ".html";
+  }
+
   for (i=0;i<NUM_SEARCH_INDICES;i++) // for each index
   {
     SIntDict<SearchIndexList>::Iterator it(g_searchIndexInfo[i].symbolList);
@@ -956,7 +963,7 @@ void writeJavaScriptSearchIndex()
       QCString baseName;
       baseName.sprintf("%s_%x",g_searchIndexInfo[i].name.data(),p);
 
-      QCString fileName = searchDirName + "/"+baseName+".html";
+      QCString fileName = searchDirName + "/"+baseName+htmlFileExtension;
       QCString dataFileName = searchDirName + "/"+baseName+".js";
 
       QFile outFile(fileName);
@@ -1268,7 +1275,7 @@ void writeJavaScriptSearchIndex()
     ResourceMgr::instance().copyResource("search.js",searchDirName);
   }
   {
-    QFile f(searchDirName+"/nomatches.html");
+    QFile f(searchDirName+"/nomatches"+htmlFileExtension);
     if (f.open(IO_WriteOnly))
     {
       FTextStream t(&f);
