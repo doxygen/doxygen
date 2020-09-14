@@ -1283,6 +1283,10 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   if (c->isHeading())
   {
     m_t << "\\cellcolor{\\tableheadbgcolor}\\textbf{ ";
+  } 
+  else 
+  {
+    if (c->isFirst()) m_t << "\\hspace{0pt}";
   }
   if (cs>1)
   {
@@ -1307,7 +1311,11 @@ void LatexDocVisitor::visitPost(DocHtmlCell *c)
     setInColSpan(FALSE);
     m_t << "}";
   }
-  if (!c->isLast()) m_t << "&";
+  if (!c->isLast()) {
+    m_t << "&";
+    if (!c->isHeading()) m_t << "\\hspace{0pt}";
+  }
+
 }
 
 void LatexDocVisitor::visitPre(DocInternal *)
