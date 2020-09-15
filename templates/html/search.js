@@ -80,12 +80,7 @@ function getYPos(item)
           storing this instance.  Is needed to be able to set timeouts.
    resultPath - path to use for external files
 */
-function SearchBox(name, resultsPath, inFrame, label)
-{
-  SearchBoxExt(name, resultsPath, inFrame, label, ".html")
-}
-
-function SearchBoxExt(name, resultsPath, inFrame, label, extension)
+function SearchBox(name, resultsPath, inFrame, label, extension)
 {
   if (!name || !resultsPath) {  alert("Missing parameters to SearchBox."); }
   if (!extension || extension == "") { extension = ".html"; }
