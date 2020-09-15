@@ -1108,45 +1108,6 @@ static void replaceComment(yyscan_t yyscanner,int offset)
   }
 }
 
-// simplified way to know if this is fixed form
-// duplicate in fortrancode.l
-static bool recognizeFixedForm(const char* contents)
-{
-  int column=0;
-  bool skipLine=FALSE;
-
-  for(int i=0;;i++) {
-    column++;
-
-    switch(contents[i]) {
-      case '\n':
-        column=0;
-        skipLine=FALSE;
-        break;
-      case ' ':
-        break;
-      case '\000':
-        return FALSE;
-      case 'C':
-      case 'c':
-      case '*':
-        if(column==1) return TRUE;
-        if(skipLine) break;
-        return FALSE;
-      case '!':
-        if(column>1 && column<7) return FALSE;
-        skipLine=TRUE;
-        break;
-      default:
-        if(skipLine) break;
-        if(column==7) return TRUE;
-        return FALSE;
-    }
-  }
-  return FALSE;
-}
-
-
 /*! This function does three things:
  *  -# It converts multi-line C++ style comment blocks (that are aligned)
  *     to C style comment blocks (if MULTILINE_CPP_IS_BRIEF is set to NO).
@@ -1183,7 +1144,8 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
-    yyextra->isFixedForm = recognizeFixedForm(inBuf->data());
+    FortranFormat fmt = convertFileNameFortranParserCode(fileName);
+    yyextra->isFixedForm = recognizeFixedForm(inBuf->data(),fmt);
   }
 
   if (yyextra->lang==SrcLangExt_Markdown)
