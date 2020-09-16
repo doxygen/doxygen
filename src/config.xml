@@ -916,11 +916,12 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='EXTRACT_ANON_ARGUMENTS' defval='0'>
+    <option type='bool' id='RESOLVE_UNNAMED_PARAMS' defval='1'>
       <docs>
 <![CDATA[
- If this flag is set to \c YES, the name of anonymous arguments in declarations will be
- extracted from the definitions. By default anonymous arguments will stay nameless.
+ If this flag is set to \c YES, the name of an unnamed parameter in a declaration will be
+ determined by the corresponding definition. By default unnamed parameters remain unnamed
+ in the output.
 ]]>
       </docs>
     </option>

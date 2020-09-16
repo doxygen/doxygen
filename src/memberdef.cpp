@@ -277,7 +277,6 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setDeclFile(const QCString &df,int line,int column);
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al);
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al);
-    virtual void extractArgumentNames(const MemberDef& md);
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists);
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void setType(const char *t);
@@ -331,6 +330,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool onlyText=FALSE) const;
     virtual void addToSearchIndex() const;
+    virtual void resolveUnnamedParameters(const MemberDef *md);
 
   private:
     void _computeLinkableInProject();
@@ -790,7 +790,6 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setDeclFile(const QCString &df,int line,int column) {}
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) {}
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) {}
-    virtual void extractArgumentNames(const MemberDef& md) {}
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) {}
     virtual void setTypeConstraints(const ArgumentList &al) {}
     virtual void setType(const char *t) {}
@@ -852,6 +851,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void warnIfUndocumented() const {}
     virtual void warnIfUndocumentedParams() const {}
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const {}
+    virtual void resolveUnnamedParameters(const MemberDef *md) {}
   private:
     MemberGroup *m_memberGroup; // group's member definition
 };
@@ -5487,12 +5487,12 @@ const ArgumentList &MemberDefImpl::declArgumentList() const
   return m_impl->declArgList;
 }
 
-void MemberDefImpl::extractArgumentNames(const MemberDef& md)
+void MemberDefImpl::resolveUnnamedParameters(const MemberDef *md)
 {
   ArgumentList &decAl = m_impl->declArgList;
   ArgumentList &defAl = m_impl->defArgList;
-  const ArgumentList &decAlSrc = md.declArgumentList();
-  const ArgumentList &defAlSrc = md.argumentList();
+  const ArgumentList &decAlSrc = md->declArgumentList();
+  const ArgumentList &defAlSrc = md->argumentList();
   auto decSrc = decAlSrc.begin(), defSrc = defAlSrc.begin();
   for (auto decIt = decAl.begin(), defIt = defAl.begin();
        decIt != decAl.end() && defIt != defAl.end() && decSrc != decAlSrc.end() && defSrc != defAlSrc.end();
@@ -6001,13 +6001,16 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
     {
       defA.docs = decA.docs;
     }
-    if (decA.name.isEmpty() && !defA.name.isEmpty())
+    if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
     {
+      if (decA.name.isEmpty() && !defA.name.isEmpty())
+      {
         decA.name = defA.name;
-    }
-    else if (defA.name.isEmpty() && !decA.name.isEmpty())
-    {
+      }
+      else if (defA.name.isEmpty() && !decA.name.isEmpty())
+      {
         defA.name = decA.name;
+      }
     }
   }
 }
@@ -6040,9 +6043,9 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       //    mdec->getFileDef()->name().data(),mdec->documentation().data()
       //    );
 
-      if (Config_getBool(EXTRACT_ANON_ARGUMENTS))
+      if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
       {
-        mdec->extractArgumentNames(*mdef);
+        mdec->resolveUnnamedParameters(mdef);
       }
 
       // first merge argument documentation

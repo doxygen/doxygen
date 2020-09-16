@@ -336,7 +336,7 @@ class MemberDef : virtual public Definition
     // argument related members
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) = 0;
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) = 0;
-    virtual void extractArgumentNames(const MemberDef& md) = 0;
+    virtual void resolveUnnamedParameters(const MemberDef *md) = 0;
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setType(const char *t) = 0;
