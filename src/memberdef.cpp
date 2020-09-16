@@ -277,6 +277,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setDeclFile(const QCString &df,int line,int column);
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al);
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al);
+    virtual void extractArgumentNames(const MemberDef& md);
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists);
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void setType(const char *t);
@@ -789,6 +790,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void setDeclFile(const QCString &df,int line,int column) {}
     virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) {}
     virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) {}
+    virtual void extractArgumentNames(const MemberDef& md) {}
     virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) {}
     virtual void setTypeConstraints(const ArgumentList &al) {}
     virtual void setType(const char *t) {}
@@ -5485,6 +5487,54 @@ const ArgumentList &MemberDefImpl::declArgumentList() const
   return m_impl->declArgList;
 }
 
+void MemberDefImpl::extractArgumentNames(const MemberDef& md)
+{
+  ArgumentList &decAl = m_impl->declArgList;
+  ArgumentList &defAl = m_impl->defArgList;
+  const ArgumentList &decAlSrc = md.declArgumentList();
+  const ArgumentList &defAlSrc = md.argumentList();
+  auto decSrc = decAlSrc.begin(), defSrc = defAlSrc.begin();
+  for (auto decIt = decAl.begin(), defIt = defAl.begin();
+       decIt != decAl.end() && defIt != defAl.end() && decSrc != decAlSrc.end() && defSrc != defAlSrc.end();
+       ++decIt, ++defIt, ++decSrc, ++defSrc++)
+  {
+    Argument &decA = *decIt;
+    Argument &defA = *defIt;
+    const Argument &decAS = *decSrc;
+    const Argument &defAS = *defSrc;
+    if (decA.name.isEmpty())
+    {
+      if (!defA.name.isEmpty())
+      {
+        decA.name = defA.name;
+      }
+      else if (!decAS.name.isEmpty())
+      {
+        decA.name = decAS.name;
+      }
+      else if (!defAS.name.isEmpty())
+      {
+        decA.name = defAS.name;
+      }
+    }
+    if (defA.name.isEmpty())
+    {
+      if (!decA.name.isEmpty())
+      {
+        defA.name = decA.name;
+      }
+      else if (!decAS.name.isEmpty())
+      {
+        defA.name = decAS.name;
+      }
+      else if (!defAS.name.isEmpty())
+      {
+        defA.name = defAS.name;
+      }
+    }
+  }
+}
+
 const ArgumentList &MemberDefImpl::templateArguments() const
 {
   return m_impl->tArgList;
@@ -5951,6 +6001,14 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
     {
       defA.docs = decA.docs;
     }
+    if (decA.name.isEmpty() && !defA.name.isEmpty())
+    {
+        decA.name = defA.name;
+    }
+    else if (defA.name.isEmpty() && !decA.name.isEmpty())
+    {
+        defA.name = decA.name;
+    }
   }
 }
 
@@ -5981,6 +6039,11 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       //    mdef->getFileDef()->name().data(),mdef->documentation().data(),
       //    mdec->getFileDef()->name().data(),mdec->documentation().data()
       //    );
+
+      if (Config_getBool(EXTRACT_ANON_ARGUMENTS))
+      {
+        mdec->extractArgumentNames(*mdef);
+      }
 
       // first merge argument documentation
       transferArgumentDocumentation(mdecAl,mdefAl);
@@ -6042,7 +6105,6 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       }
       mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
       mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
-
 
       // copy group info.
       if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)

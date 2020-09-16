@@ -916,6 +916,14 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='EXTRACT_ANON_ARGUMENTS' defval='0'>
+      <docs>
+<![CDATA[
+ If this flag is set to \c YES, the name of anonymous arguments in declarations will be
+ extracted from the definitions. By default anonymous arguments will stay nameless.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='HIDE_UNDOC_MEMBERS' defval='0'>
       <docs>
 <![CDATA[
