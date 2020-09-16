@@ -1,10 +1,10 @@
 find_package(Iconv)
 
 include_directories(
-	${CMAKE_SOURCE_DIR}/src
-	${CMAKE_SOURCE_DIR}/libversion
+	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/libversion
 	${GENERATED_SRC}
-	${CMAKE_SOURCE_DIR}/qtools
+	${PROJECT_SOURCE_DIR}/qtools
 	${ICONV_INCLUDE_DIR}
 	${CLANG_INCLUDEDIR}
 )

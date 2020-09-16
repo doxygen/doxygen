@@ -1,7 +1,7 @@
 
 include_directories(
 	../include
-	${CMAKE_SOURCE_DIR}/qtools
+	${PROJECT_SOURCE_DIR}/qtools
 )
 
 add_executable(doxmlparser_test
