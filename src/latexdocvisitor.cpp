@@ -351,13 +351,22 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code:
       {
-        m_t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
-	LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-        Doxygen::parserManager->getCodeParser(lang)
-                               .parseCode(m_ci,s->context(),s->text(),langExt,
-                                          s->isExample(),s->exampleFile());
-	LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-        m_t << "\\end{DoxyCode}\n";
+        static bool verbatimListings = Config_getBool(LATEX_VERBATIM_LISTINGS);
+
+        if (verbatimListings) {
+          m_t << "\n\\begin{DoxyVerbatimCode}";
+          m_t << "{" << usedTableLevels() << "}{" << lang << "}\n";
+          m_t << s->text() << "\n";
+          m_t << "\\end{DoxyVerbatimCode}\n";
+        } else {
+          m_t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
+          LatexCodeGenerator::setDoxyCodeOpen(TRUE);
+                Doxygen::parserManager->getCodeParser(lang)
+                                      .parseCode(m_ci,s->context(),s->text(),langExt,
+                                                  s->isExample(),s->exampleFile());
+          LatexCodeGenerator::setDoxyCodeOpen(FALSE);
+          m_t << "\\end{DoxyCode}\n";
+        }
       }
       break;
     case DocVerbatim::Verbatim:
@@ -1957,4 +1966,3 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
 }
-
