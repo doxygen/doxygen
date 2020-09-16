@@ -1,13 +1,13 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/qtools
-    ${CMAKE_SOURCE_DIR}/libmd5
-    ${CMAKE_SOURCE_DIR}/liblodepng
-    ${CMAKE_SOURCE_DIR}/libmscgen
-    ${CMAKE_SOURCE_DIR}/libversion
-    ${CMAKE_SOURCE_DIR}/vhdlparser
-    ${CMAKE_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/qtools
+    ${PROJECT_SOURCE_DIR}/libmd5
+    ${PROJECT_SOURCE_DIR}/liblodepng
+    ${PROJECT_SOURCE_DIR}/libmscgen
+    ${PROJECT_SOURCE_DIR}/libversion
+    ${PROJECT_SOURCE_DIR}/vhdlparser
+    ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
     ${GENERATED_SRC}
 )
@@ -78,7 +78,7 @@ set_source_files_properties(${GENERATED_SRC}/ce_parse.h PROPERTIES GENERATED 1)
 # lang_cfg.h
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/lang_cfg.h"
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
+    COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lang_cfg.cmake ${GENERATED_SRC}/lang_cfg.h ${LANG_CODES}
     DEPENDS ${LANGUAGE_FILES}
     OUTPUT ${GENERATED_SRC}/lang_cfg.h
 )
@@ -86,15 +86,15 @@ set_source_files_properties(${GENERATED_SRC}/lang_cfg.h PROPERTIES GENERATED 1)
 
 # all resource files
 if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
-    file(GLOB RESOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/templates/*/*)
+    file(GLOB RESOURCES CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/templates/*/*)
 else()
-    file(GLOB RESOURCES ${CMAKE_SOURCE_DIR}/templates/*/*)
+    file(GLOB RESOURCES ${PROJECT_SOURCE_DIR}/templates/*/*)
 endif()
 
 # resources.cpp
 add_custom_command(
     COMMENT  "Generating ${GENERATED_SRC}/resources.cpp"
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${CMAKE_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
+    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py ${PROJECT_SOURCE_DIR}/templates ${GENERATED_SRC}/resources.cpp
     DEPENDS ${RESOURCES} ${CMAKE_CURRENT_LIST_DIR}/res2cc_cmd.py
     OUTPUT ${GENERATED_SRC}/resources.cpp
 )
@@ -138,9 +138,9 @@ foreach(lex_file ${LEX_FILES})
     set_source_files_properties(${GENERATED_SRC}/${lex_file}.l.h PROPERTIES GENERATED 1)
     # for code coverage we need the flex sources in the build src directory
     add_custom_command(
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/${lex_file}.l ${CMAKE_BINARY_DIR}/src/${lex_file}.l
-        DEPENDS ${CMAKE_SOURCE_DIR}/src/${lex_file}.l
-        OUTPUT  ${CMAKE_BINARY_DIR}/src/${lex_file}.l
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/${lex_file}.l ${PROJECT_BINARY_DIR}/src/${lex_file}.l
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/${lex_file}.l
+        OUTPUT  ${PROJECT_BINARY_DIR}/src/${lex_file}.l
     )
 
     FLEX_TARGET(${lex_file}
@@ -156,9 +156,9 @@ BISON_TARGET(constexp
              COMPILE_FLAGS "${YACC_FLAGS}")
 
 add_custom_command(
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/constexp.y ${CMAKE_BINARY_DIR}/src
-    DEPENDS ${CMAKE_SOURCE_DIR}/src/constexp.y
-    OUTPUT  ${CMAKE_BINARY_DIR}/src/constexp.y
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/constexp.y ${PROJECT_BINARY_DIR}/src
+    DEPENDS ${PROJECT_SOURCE_DIR}/src/constexp.y
+    OUTPUT  ${PROJECT_BINARY_DIR}/src/constexp.y
 )
 
 add_library(doxycfg STATIC
