@@ -5714,7 +5714,7 @@ QCString normalizeNonTemplateArgumentsInString(
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
     bool found=FALSE;
-    for (const Argument formArg : formalArgs)
+    for (const Argument &formArg : formalArgs)
     {
       if (formArg.name == n)
       {
