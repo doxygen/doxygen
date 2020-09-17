@@ -1,4 +1,4 @@
-find_package(Xapian REQUIRED)
+find_package(xapian REQUIRED)
 find_package(ZLIB REQUIRED)
 
 if (WIN32)
