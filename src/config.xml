@@ -916,6 +916,15 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='RESOLVE_UNNAMED_PARAMS' defval='1'>
+      <docs>
+<![CDATA[
+ If this flag is set to \c YES, the name of an unnamed parameter in a declaration will be
+ determined by the corresponding definition. By default unnamed parameters remain unnamed
+ in the output.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='HIDE_UNDOC_MEMBERS' defval='0'>
       <docs>
 <![CDATA[

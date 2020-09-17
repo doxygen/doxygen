@@ -651,6 +651,7 @@ STARTDOCSYMS      "##"
     {B}":"{B}		    { // function without arguments
 			      yyextra->specialBlock = TRUE; // expecting a docstring
 			      yyextra->bodyEntry = yyextra->current;
+                              yyextra->current->bodyLine  = yyextra->yyLineNr;
                               BEGIN(FunctionBody);
 			    }
 
@@ -1426,7 +1427,7 @@ STARTDOCSYMS      "##"
                                }
 
 <*>"'"                         {
-       fprintf(stderr,"Quote: %d\n",YY_START);
+                                 //fprintf(stderr,"Quote: %d\n",YY_START);
                                }
 
 <*>.                           {
@@ -1757,8 +1758,8 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
     std::shared_ptr<Entry> ce = rt->children()[i];
     if (!ce->program.isEmpty())
     {
-      //printf("-- %s ---------\n%s\n---------------\n",
-      //  ce->name.data(),ce->program.data());
+      //fprintf(stderr,"parseCompounds: -- %s (line %d) ---------\n%s\n---------------\n",
+      //  ce->name.data(), ce->bodyLine, ce->program.data());
       // init scanner state
       yyextra->inputString = ce->program;
       yyextra->inputPosition = 0;

@@ -2002,11 +2002,11 @@ class TrManager:
 
 if __name__ == '__main__':
 
-    # The Python 2.6+ or 3.3+ is required.
+    # The Python 2.7+ or 3.3+ is required.
     major = sys.version_info[0]
     minor = sys.version_info[1]
-    if (major == 2 and minor < 6) or (major == 3 and minor < 0):
-        print('Python 2.6+ or Python 3.0+ are required for the script')
+    if (major == 2 and minor < 7) or (major == 3 and minor < 0):
+        print('Python 2.7+ or Python 3.0+ are required for the script')
         sys.exit(1)
 
     # The translator manager builds the Transl objects, parses the related

@@ -330,6 +330,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool onlyText=FALSE) const;
     virtual void addToSearchIndex() const;
+    virtual void resolveUnnamedParameters(const MemberDef *md);
 
   private:
     void _computeLinkableInProject();
@@ -850,6 +851,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual void warnIfUndocumented() const {}
     virtual void warnIfUndocumentedParams() const {}
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const {}
+    virtual void resolveUnnamedParameters(const MemberDef *md) {}
   private:
     MemberGroup *m_memberGroup; // group's member definition
 };
@@ -4050,6 +4052,18 @@ void MemberDefImpl::warnIfUndocumented() const
     warnIfUndocumentedParams();
   }
 }
+static QCString stripTrailingReturn(const QCString trailRet)
+{
+  QCString ret = trailRet;
+
+  ret = ret.stripWhiteSpace();
+  if (ret.startsWith("->"))
+  {
+    ret = ret.mid(2).stripWhiteSpace();
+    return ret;
+  }
+  return trailRet;
+}
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
@@ -4058,7 +4072,17 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
   bool isPython = getLanguage()==SrcLangExt_Python;
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
   bool isFortranSubroutine = isFortran && returnType.find("subroutine")!=-1;
+
   bool isVoidReturn = (returnType=="void") || (returnType.right(5)==" void");
+  if (!isVoidReturn && returnType == "auto")
+  {
+    const ArgumentList &defArgList=isDocsForDefinition() ?  argumentList() : declArgumentList();
+    if (!defArgList.trailingReturnType().isEmpty())
+    {
+      QCString strippedTrailingReturn = stripTrailingReturn(defArgList.trailingReturnType());
+      isVoidReturn = (strippedTrailingReturn=="void") || (strippedTrailingReturn.right(5)==" void");
+    }
+  }
 
   if (!m_impl->hasDocumentedParams && hasParamCommand)
   {
@@ -5463,6 +5487,54 @@ const ArgumentList &MemberDefImpl::declArgumentList() const
   return m_impl->declArgList;
 }
 
+void MemberDefImpl::resolveUnnamedParameters(const MemberDef *md)
+{
+  ArgumentList &decAl = m_impl->declArgList;
+  ArgumentList &defAl = m_impl->defArgList;
+  const ArgumentList &decAlSrc = md->declArgumentList();
+  const ArgumentList &defAlSrc = md->argumentList();
+  auto decSrc = decAlSrc.begin(), defSrc = defAlSrc.begin();
+  for (auto decIt = decAl.begin(), defIt = defAl.begin();
+       decIt != decAl.end() && defIt != defAl.end() && decSrc != decAlSrc.end() && defSrc != defAlSrc.end();
+       ++decIt, ++defIt, ++decSrc, ++defSrc++)
+  {
+    Argument &decA = *decIt;
+    Argument &defA = *defIt;
+    const Argument &decAS = *decSrc;
+    const Argument &defAS = *defSrc;
+    if (decA.name.isEmpty())
+    {
+      if (!defA.name.isEmpty())
+      {
+        decA.name = defA.name;
+      }
+      else if (!decAS.name.isEmpty())
+      {
+        decA.name = decAS.name;
+      }
+      else if (!defAS.name.isEmpty())
+      {
+        decA.name = defAS.name;
+      }
+    }
+    if (defA.name.isEmpty())
+    {
+      if (!decA.name.isEmpty())
+      {
+        defA.name = decA.name;
+      }
+      else if (!decAS.name.isEmpty())
+      {
+        defA.name = decAS.name;
+      }
+      else if (!defAS.name.isEmpty())
+      {
+        defA.name = defAS.name;
+      }
+    }
+  }
+}
+
 const ArgumentList &MemberDefImpl::templateArguments() const
 {
   return m_impl->tArgList;
@@ -5929,6 +6001,17 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
     {
       defA.docs = decA.docs;
     }
+    if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
+    {
+      if (decA.name.isEmpty() && !defA.name.isEmpty())
+      {
+        decA.name = defA.name;
+      }
+      else if (defA.name.isEmpty() && !decA.name.isEmpty())
+      {
+        defA.name = decA.name;
+      }
+    }
   }
 }
 
@@ -5959,6 +6042,11 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       //    mdef->getFileDef()->name().data(),mdef->documentation().data(),
       //    mdec->getFileDef()->name().data(),mdec->documentation().data()
       //    );
+
+      if (Config_getBool(RESOLVE_UNNAMED_PARAMS))
+      {
+        mdec->resolveUnnamedParameters(mdef);
+      }
 
       // first merge argument documentation
       transferArgumentDocumentation(mdecAl,mdefAl);
@@ -6020,7 +6108,6 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
       }
       mdec->mergeMemberSpecifiers(mdef->getMemberSpecifiers());
       mdef->mergeMemberSpecifiers(mdec->getMemberSpecifiers());
-
 
       // copy group info.
       if (mdec->getGroupDef()==0 && mdef->getGroupDef()!=0)

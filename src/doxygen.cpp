@@ -164,7 +164,7 @@ DefinesPerFileList Doxygen::macroDefinitions;
 bool             Doxygen::clangAssistedParsing = FALSE;
 
 // locally accessible globals
-static std::unordered_map< std::string, const Entry* > g_classEntries;
+static std::map< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
 static QDict<void>      g_compoundKeywordDict(7);  // keywords recognised as compounds
 static OutputList      *g_outputList = 0;          // list of output generating objects
@@ -9473,7 +9473,7 @@ static int readDir(QFileInfo *fi,
         {
           if (errorIfNotExist)
           {
-            warn_uncond("source %s is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
+            warn_uncond("source '%s' is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
           }
         }
         else if (cfi->isFile() &&
@@ -9553,7 +9553,7 @@ int readFileOrDirectory(const char *s,
       {
         if (errorIfNotExist)
         {
-          warn_uncond("source %s is not a readable file or directory... skipping.\n",s);
+          warn_uncond("source '%s' is not a readable file or directory... skipping.\n",s);
         }
       }
       else if (!Config_getBool(EXCLUDE_SYMLINKS) || !fi.isSymLink())
@@ -10838,14 +10838,14 @@ void parseInput()
       if (!dir.mkdir(outputDirectory))
       {
         err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-	    "exist and cannot be created\n",outputDirectory.data());
+            "exist and cannot be created\n",outputDirectory.data());
         cleanUpDoxygen();
         exit(1);
       }
       else
       {
-	msg("Notice: Output directory '%s' does not exist. "
-	    "I have created it for you.\n", outputDirectory.data());
+        msg("Notice: Output directory '%s' does not exist. "
+            "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);
     }

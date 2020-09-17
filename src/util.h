@@ -502,4 +502,7 @@ int usedTableLevels();
 void incUsedTableLevels();
 void decUsedTableLevels();
 
+bool recognizeFixedForm(const char* contents, FortranFormat format);
+FortranFormat convertFileNameFortranParserCode(QCString fn);
+
 #endif

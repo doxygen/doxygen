@@ -1828,7 +1828,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           if (nc != '=')
           // avoid splitting operator&=
-	  {
+          {
             *dst++=' ';
           }
         }
@@ -2263,7 +2263,7 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   if (al.volatileSpecifier()) result+=" volatile";
   if (al.refQualifier()==RefQualifierLValue) result+=" &";
   else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
-  if (!al.trailingReturnType().isEmpty()) result+=" -> "+al.trailingReturnType();
+  if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
   if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
@@ -5714,7 +5714,7 @@ QCString normalizeNonTemplateArgumentsInString(
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
     bool found=FALSE;
-    for (const Argument formArg : formalArgs)
+    for (const Argument &formArg : formalArgs)
     {
       if (formArg.name == n)
       {
@@ -6297,7 +6297,7 @@ void filterLatexString(FTextStream &t,const char *str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
@@ -8474,3 +8474,56 @@ int usedTableLevels()
 }
 
 //------------------------------------------------------
+// simplified way to know if this is fixed form
+bool recognizeFixedForm(const char* contents, FortranFormat format)
+{
+  int column=0;
+  bool skipLine=FALSE;
+
+  if (format == FortranFormat_Fixed) return TRUE;
+  if (format == FortranFormat_Free)  return FALSE;
+
+  for(int i=0;;i++) {
+    column++;
+
+    switch(contents[i]) {
+      case '\n':
+        column=0;
+        skipLine=FALSE;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return FALSE;
+      case '#':
+        skipLine=TRUE;
+        break;
+      case 'C':
+      case 'c':
+      case '*':
+        if (column==1) return TRUE;
+        if (skipLine) break;
+        return FALSE;
+      case '!':
+        if (column>1 && column<7) return FALSE;
+        skipLine=TRUE;
+        break;
+      default:
+        if (skipLine) break;
+        if (column>=7) return TRUE;
+        return FALSE;
+    }
+  }
+  return FALSE;
+}
+
+FortranFormat convertFileNameFortranParserCode(QCString fn)
+{
+  QCString ext = getFileNameExtension(fn);
+  QCString parserName = Doxygen::parserManager->getParserName(ext.data());
+
+  if (parserName == "fortranfixed") return FortranFormat_Fixed;
+  else if (parserName == "fortranfree") return FortranFormat_Free;
+
+  return FortranFormat_Unknown;
+}
