@@ -10838,14 +10838,14 @@ void parseInput()
       if (!dir.mkdir(outputDirectory))
       {
         err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-	    "exist and cannot be created\n",outputDirectory.data());
+            "exist and cannot be created\n",outputDirectory.data());
         cleanUpDoxygen();
         exit(1);
       }
       else
       {
-	msg("Notice: Output directory '%s' does not exist. "
-	    "I have created it for you.\n", outputDirectory.data());
+        msg("Notice: Output directory '%s' does not exist. "
+            "I have created it for you.\n", outputDirectory.data());
       }
       dir.cd(outputDirectory);
     }

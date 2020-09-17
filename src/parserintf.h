@@ -149,18 +149,19 @@ class ParserManager
 
     struct ParserPair
     {
-      ParserPair(OutlineParserFactory opf, std::unique_ptr<CodeParserInterface> cpi)
-        : outlineParserFactory(opf), codeParserInterface(std::move(cpi))
+      ParserPair(OutlineParserFactory opf, std::unique_ptr<CodeParserInterface> cpi, const QCString pn)
+        : outlineParserFactory(opf), codeParserInterface(std::move(cpi)), parserName(pn)
       {
       }
 
       OutlineParserFactory outlineParserFactory;
       std::unique_ptr<CodeParserInterface> codeParserInterface;
+      QCString parserName;
     };
 
     ParserManager(OutlineParserFactory outlineParserFactory,
                   std::unique_ptr<CodeParserInterface> codeParserInterface)
-      : m_defaultParsers(outlineParserFactory,std::move(codeParserInterface))
+      : m_defaultParsers(outlineParserFactory,std::move(codeParserInterface), "")
     {
     }
 
@@ -176,7 +177,7 @@ class ParserManager
                                          std::unique_ptr<CodeParserInterface> codeParserInterface)
     {
       m_parsers.emplace(std::string(name),
-                        ParserPair(outlineParserFactory,std::move(codeParserInterface)));
+                        ParserPair(outlineParserFactory,std::move(codeParserInterface),name));
     }
 
     /** Registers a file \a extension with a parser with name \a parserName.
@@ -214,6 +215,15 @@ class ParserManager
     CodeParserInterface &getCodeParser(const char *extension)
     {
       return *getParsers(extension).codeParserInterface;
+    }
+
+    /** Gets the name of the parser associated with given \a extension.
+     *  If there is no parser explicitly registered for the supplied extension,
+     *  te empty string  will be reurned.
+     */
+    QCString getParserName(const char *extension)
+    {
+      return getParsers(extension).parserName;
     }
 
   private:

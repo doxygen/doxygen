@@ -1828,7 +1828,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           if (nc != '=')
           // avoid splitting operator&=
-	  {
+          {
             *dst++=' ';
           }
         }
@@ -8474,3 +8474,56 @@ int usedTableLevels()
 }
 
 //------------------------------------------------------
+// simplified way to know if this is fixed form
+bool recognizeFixedForm(const char* contents, FortranFormat format)
+{
+  int column=0;
+  bool skipLine=FALSE;
+
+  if (format == FortranFormat_Fixed) return TRUE;
+  if (format == FortranFormat_Free)  return FALSE;
+
+  for(int i=0;;i++) {
+    column++;
+
+    switch(contents[i]) {
+      case '\n':
+        column=0;
+        skipLine=FALSE;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return FALSE;
+      case '#':
+        skipLine=TRUE;
+        break;
+      case 'C':
+      case 'c':
+      case '*':
+        if (column==1) return TRUE;
+        if (skipLine) break;
+        return FALSE;
+      case '!':
+        if (column>1 && column<7) return FALSE;
+        skipLine=TRUE;
+        break;
+      default:
+        if (skipLine) break;
+        if (column>=7) return TRUE;
+        return FALSE;
+    }
+  }
+  return FALSE;
+}
+
+FortranFormat convertFileNameFortranParserCode(QCString fn)
+{
+  QCString ext = getFileNameExtension(fn);
+  QCString parserName = Doxygen::parserManager->getParserName(ext.data());
+
+  if (parserName == "fortranfixed") return FortranFormat_Fixed;
+  else if (parserName == "fortranfree") return FortranFormat_Free;
+
+  return FortranFormat_Unknown;
+}
