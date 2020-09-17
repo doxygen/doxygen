@@ -6297,7 +6297,7 @@ void filterLatexString(FTextStream &t,const char *str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
