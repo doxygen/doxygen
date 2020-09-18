@@ -1323,7 +1323,6 @@ STARTDOCSYMS      "##"
     \n/{B}"#"		{ // continuation of the comment on the next line
       			  yyextra->docBlock+='\n';
 			  yyextra->docBrief = FALSE;
-                          startCommentBlock(yyscanner,FALSE);
 			  incLineNr(yyscanner);
       			}
     [^#\n]+             { // any other stuff
@@ -1627,7 +1626,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   }
 
   int position = 0;
-  bool needsEntry;
+  bool needsEntry = false;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   Markdown markdown(yyextra->yyFileName,lineNr);
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
@@ -1712,7 +1711,7 @@ static void initSpecialBlock(yyscan_t yyscanner)
   yyextra->docBrief = TRUE;
   yyextra->docBlock.resize(0);
   yyextra->commentIndent = yyextra->curIndent;
-  startCommentBlock(yyscanner,TRUE);
+  startCommentBlock(yyscanner,FALSE);
 }
 
 static void searchFoundDef(yyscan_t yyscanner)
