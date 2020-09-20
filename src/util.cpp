@@ -31,7 +31,6 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qdatetime.h>
-#include <qcache.h>
 
 #include "util.h"
 #include "message.h"
@@ -1028,7 +1027,6 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
   }
 done:
   accessStack.pop();
-  //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -1196,7 +1194,6 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
 done:
   //printf("  > result=%d\n",result);
   accessStack.pop();
-  //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -1208,7 +1205,7 @@ int computeQualifiedIndex(const QCString &name)
 
 static void getResolvedSymbol(const Definition *scope,
                        const FileDef *fileScope,
-                       Definition *d,
+                       const Definition *d,
                        const QCString &explicitScopePart,
                        const std::unique_ptr<ArgumentList> &actTemplParams,
                        int &minDistance,
@@ -1224,7 +1221,7 @@ static void getResolvedSymbol(const Definition *scope,
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember &&
-       ((dynamic_cast<MemberDef*>(d))->isTypedef() || (dynamic_cast<MemberDef*>(d))->isEnumerate())
+       ((dynamic_cast<const MemberDef*>(d))->isTypedef() || (dynamic_cast<const MemberDef*>(d))->isEnumerate())
       )
      )
   {
@@ -1237,7 +1234,7 @@ static void getResolvedSymbol(const Definition *scope,
       // see if we are dealing with a class or a typedef
       if (d->definitionType()==Definition::TypeClass) // d is a class
       {
-        ClassDef *cd = dynamic_cast<ClassDef *>(d);
+        const ClassDef *cd = dynamic_cast<const ClassDef *>(d);
         //printf("cd=%s\n",cd->name().data());
         if (!cd->isTemplateArgument()) // skip classes that
           // are only there to
@@ -1282,7 +1279,7 @@ static void getResolvedSymbol(const Definition *scope,
       }
       else if (d->definitionType()==Definition::TypeMember)
       {
-        MemberDef *md = dynamic_cast<MemberDef *>(d);
+        const MemberDef *md = dynamic_cast<const MemberDef *>(d);
         //printf("  member isTypedef()=%d\n",md->isTypedef());
         if (md->isTypedef()) // d is a typedef
         {
@@ -1365,6 +1362,8 @@ static void getResolvedSymbol(const Definition *scope,
   //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,bestResolvedType.data());
 }
 
+static std::mutex g_cacheMutex;
+
 /* Find the fully qualified class name referred to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
@@ -1411,7 +1410,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   }
 
   //printf("Looking for symbol %s\n",name.data());
-  DefinitionIntf *di = Doxygen::symbolMap->find(name);
+  const DefinitionIntf *di = Doxygen::symbolMap->find(name);
   // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
   if (di==0)
@@ -1468,26 +1467,30 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   }
   *p='\0';
 
-  LookupInfo *pval=Doxygen::lookupCache->find(key);
-  //printf("Searching for %s result=%p\n",key.data(),pval);
-  if (pval)
+  LookupInfo *pval = 0;
   {
-    //printf("LookupInfo %p %p '%s' %p\n",
-    //    pval->classDef, pval->typeDef, pval->templSpec.data(),
-    //    pval->resolvedType.data());
-    if (pTemplSpec)    *pTemplSpec=pval->templSpec;
-    if (pTypeDef)      *pTypeDef=pval->typeDef;
-    if (pResolvedType) *pResolvedType=pval->resolvedType;
-    //printf("] cachedMatch=%s\n",
-    //    pval->classDef?pval->classDef->name().data():"<none>");
-    //if (pTemplSpec)
-    //  printf("templSpec=%s\n",pTemplSpec->data());
-    return pval->classDef;
-  }
-  else // not found yet; we already add a 0 to avoid the possibility of
-    // endless recursion.
-  {
-    Doxygen::lookupCache->insert(key,new LookupInfo);
+    std::lock_guard<std::mutex> lock(g_cacheMutex);
+    pval=Doxygen::lookupCache->find(key.str());
+    //printf("Searching for %s result=%p\n",key.data(),pval);
+    if (pval)
+    {
+      //printf("LookupInfo %p %p '%s' %p\n",
+      //    pval->classDef, pval->typeDef, pval->templSpec.data(),
+      //    pval->resolvedType.data());
+      if (pTemplSpec)    *pTemplSpec=pval->templSpec;
+      if (pTypeDef)      *pTypeDef=pval->typeDef;
+      if (pResolvedType) *pResolvedType=pval->resolvedType;
+      //printf("] cachedMatch=%s\n",
+      //    pval->classDef?pval->classDef->name().data():"<none>");
+      //if (pTemplSpec)
+      //  printf("templSpec=%s\n",pTemplSpec->data());
+      return pval->classDef;
+    }
+    else // not found yet; we already add a 0 to avoid the possibility of
+      // endless recursion.
+    {
+      pval = Doxygen::lookupCache->insert(key.str(),LookupInfo());
+    }
   }
 
   const ClassDef *bestMatch=0;
@@ -1533,17 +1536,13 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
   //    bestMatch,bestResolvedType.data());
 
-  pval=Doxygen::lookupCache->find(key);
   if (pval)
   {
+    std::lock_guard<std::mutex> lock(g_cacheMutex);
     pval->classDef     = bestMatch;
     pval->typeDef      = bestTypedef;
     pval->templSpec    = bestTemplSpec;
     pval->resolvedType = bestResolvedType;
-  }
-  else
-  {
-    Doxygen::lookupCache->insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
@@ -4487,7 +4486,7 @@ struct FindFileCacheElem
   bool isAmbig;
 };
 
-static QCache<FindFileCacheElem> g_findFileDefCache(5000);
+static Cache<std::string,FindFileCacheElem> g_findFileDefCache(5000);
 
 static std::mutex g_findFileDefMutex;
 
@@ -4504,8 +4503,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   QCString key = addr;
   key+=n;
 
-  g_findFileDefCache.setAutoDelete(TRUE);
-  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key);
+  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key.str());
   //printf("key=%s cachedResult=%p\n",key.data(),cachedResult);
   if (cachedResult)
   {
@@ -4515,7 +4513,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   }
   else
   {
-    cachedResult = new FindFileCacheElem(0,FALSE);
+    cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(0,FALSE));
   }
 
   QCString name=QDir::cleanDirPath(n).utf8();
@@ -4543,8 +4541,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
       if (path.isEmpty() || isSamePath)
       {
         cachedResult->fileDef = fd.get();
-        g_findFileDefCache.insert(key,cachedResult);
-        //printf("=1 ===> add to cache %p\n",fd);
         return fd.get();
       }
     }
@@ -4563,12 +4559,10 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
           lastMatch=fd;
         }
       }
-      //printf(">1 ===> add to cache %p\n",fd);
 
       ambig=(count>1);
       cachedResult->isAmbig = ambig;
       cachedResult->fileDef = lastMatch;
-      g_findFileDefCache.insert(key,cachedResult);
       return lastMatch;
     }
   }
@@ -4577,8 +4571,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
     //printf("not found!\n");
   }
 exit:
-  //printf("0  ===> add to cache %p: %s\n",cachedResult,n);
-  g_findFileDefCache.insert(key,cachedResult);
   //delete cachedResult;
   return 0;
 }
@@ -4732,9 +4724,9 @@ bool hasVisibleRoot(const BaseClassList *bcl)
 // note that this function is not reentrant due to the use of static growBuf!
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
-  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
-  static bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
-  static GrowBuf growBuf;
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
+  static THREAD_LOCAL GrowBuf growBuf;
   growBuf.clear();
   if (name==0) return "";
   signed char c;

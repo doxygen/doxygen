@@ -145,7 +145,7 @@ QDict<DefinitionIntf> *Doxygen::symbolMap = 0;
 QDict<Definition> *Doxygen::clangUsrMap = 0;
 bool             Doxygen::outputToWizard=FALSE;
 QDict<int> *     Doxygen::htmlDirMap = 0;
-QCache<LookupInfo> *Doxygen::lookupCache;
+Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirSDict        *Doxygen::directories;
 SDict<DirRelation> Doxygen::dirRelations(257);
 ParserManager   *Doxygen::parserManager = 0;
@@ -8047,15 +8047,20 @@ static void flushCachedTemplateRelations()
   // as there can be new template instances in the inheritance path
   // to this class. Optimization: only remove those classes that
   // have inheritance instances as direct or indirect sub classes.
-  QCacheIterator<LookupInfo> ci(*Doxygen::lookupCache);
-  LookupInfo *li=0;
-  for (ci.toFirst();(li=ci.current());++ci)
+  StringVector elementsToRemove;
+  for (const auto &ci : *Doxygen::lookupCache)
   {
-    if (li->classDef)
+    const LookupInfo &li = ci.second;
+    if (li.classDef)
     {
-      Doxygen::lookupCache->remove(ci.currentKey());
+      elementsToRemove.push_back(ci.first);
     }
   }
+  for (const auto &k : elementsToRemove)
+  {
+    Doxygen::lookupCache->remove(k);
+  }
+
   // remove all cached typedef resolutions whose target is a
   // template class as this may now be a template instance
   // for each global function name
@@ -8099,15 +8104,19 @@ static void flushUnresolvedRelations()
   // class A { class I {} };
   // class B : public A {};
   // class C : public B::I {};
-  //
-  QCacheIterator<LookupInfo> ci(*Doxygen::lookupCache);
-  LookupInfo *li=0;
-  for (ci.toFirst();(li=ci.current());++ci)
+
+  StringVector elementsToRemove;
+  for (const auto &ci : *Doxygen::lookupCache)
   {
-    if (li->classDef==0 && li->typeDef==0)
+    const LookupInfo &li = ci.second;
+    if (li.classDef==0 && li.typeDef==0)
     {
-      Doxygen::lookupCache->remove(ci.currentKey());
+      elementsToRemove.push_back(ci.first);
     }
+  }
+  for (const auto &k : elementsToRemove)
+  {
+    Doxygen::lookupCache->remove(k);
   }
 
   // for each global function name
@@ -10861,8 +10870,7 @@ void parseInput()
   if (cacheSize<0) cacheSize=0;
   if (cacheSize>9) cacheSize=9;
   uint lookupSize = 65536 << cacheSize;
-  Doxygen::lookupCache = new QCache<LookupInfo>(lookupSize,lookupSize);
-  Doxygen::lookupCache->setAutoDelete(TRUE);
+  Doxygen::lookupCache = new Cache<std::string,LookupInfo>(lookupSize);
 
 #ifdef HAS_SIGNALS
   signal(SIGINT, stopDoxygen);
@@ -11691,9 +11699,9 @@ void generateOutput()
   }
 
   int cacheParam;
-  msg("lookup cache used %d/%d hits=%d misses=%d\n",
-      Doxygen::lookupCache->count(),
+  msg("lookup cache used %ld/%ld hits=%lld misses=%lld\n",
       Doxygen::lookupCache->size(),
+      Doxygen::lookupCache->capacity(),
       Doxygen::lookupCache->hits(),
       Doxygen::lookupCache->misses());
   cacheParam = computeIdealCacheParam(Doxygen::lookupCache->misses()*2/3); // part of the cache is flushed, hence the 2/3 correction factor

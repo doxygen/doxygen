@@ -17,7 +17,6 @@
 #define DOXYGEN_H
 
 #include <qdatetime.h>
-#include <qcache.h>
 #include <qstrlist.h>
 #include <qdict.h>
 #include <qintdict.h>
@@ -29,6 +28,7 @@
 #include "dirdef.h"
 #include "memberlist.h"
 #include "define.h"
+#include "cache.h"
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
@@ -78,11 +78,11 @@ class StringDict : public QDict<QCString>
 
 struct LookupInfo
 {
-  LookupInfo() : classDef(0), typeDef(0) {}
+  LookupInfo() = default;
   LookupInfo(const ClassDef *cd,const MemberDef *td,QCString ts,QCString rt)
     : classDef(cd), typeDef(td), templSpec(ts),resolvedType(rt) {}
-  const ClassDef  *classDef;
-  const MemberDef *typeDef;
+  const ClassDef  *classDef = 0;
+  const MemberDef *typeDef = 0;
   QCString   templSpec;
   QCString   resolvedType;
 };
@@ -127,7 +127,7 @@ class Doxygen
     static QDict<Definition>        *clangUsrMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
-    static QCache<LookupInfo>       *lookupCache;
+    static Cache<std::string,LookupInfo> *lookupCache;
     static DirSDict                 *directories;
     static SDict<DirRelation>        dirRelations;
     static ParserManager            *parserManager;
