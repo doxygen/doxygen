@@ -115,11 +115,13 @@ struct TokenInfo
 
 // globals
 extern TokenInfo *g_token;
-extern int doctokenizerYYlineno;
 extern FILE *doctokenizerYYin;
 
 // helper functions
 const char *tokToString(int token);
+
+void setDoctokinizerLineNr(int lineno);
+int getDoctokinizerLineNr(void);
 
 // operations on the scanner
 void doctokenizerYYFindSections(const char *input,const Definition *d,
