@@ -2264,7 +2264,7 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
   }
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
   m_out.addStr("\n");
-  m_out.addStr("@endcode\n");
+  m_out.addStr("@endcode");
 }
 
 QCString Markdown::processQuotations(const QCString &s,int refIndent)
