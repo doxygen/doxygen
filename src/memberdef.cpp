@@ -4838,6 +4838,7 @@ ClassDef *MemberDefImpl::accessorClass() const
 
 void MemberDefImpl::findSectionsInDocumentation()
 {
+  docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
 }
 

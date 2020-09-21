@@ -311,6 +311,7 @@ void FileDefImpl::distributeMemberGroupDocumentation()
 
 void FileDefImpl::findSectionsInDocumentation()
 {
+  docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
   if (m_memberGroupSDict)
   {

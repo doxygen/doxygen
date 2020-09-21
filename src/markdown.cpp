@@ -2662,6 +2662,7 @@ QCString markdownFileNameToId(const QCString &fileName)
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
   QCString baseName = substitute(substitute(substitute(baseFn," ","_"),"/","_"),":","_");
+  //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(baseName));
   return "md_"+baseName;
 }
 

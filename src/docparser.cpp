@@ -2448,8 +2448,8 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     }
     m_isSubPage    = pd && pd->hasParentPage();
     if (sec->type()!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
-    //printf("m_text=%s,m_ref=%s,m_file=%s,m_refToAnchor=%d type=%d\n",
-    //    m_text.data(),m_ref.data(),m_file.data(),m_refToAnchor,sec->type);
+    //printf("m_text=%s,m_ref=%s,m_file=%s,type=%d\n",
+    //    m_text.data(),m_ref.data(),m_file.data(),m_refType);
     return;
   }
   else if (resolveLink(context,target,TRUE,&compound,anchor))

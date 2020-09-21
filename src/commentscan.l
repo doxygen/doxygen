@@ -666,6 +666,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             optList = QCStringList::split(',',optStr);
                                           }
                                           auto it = docCmdMap.find(cmdName.data());
+                                          //printf("lookup command '%s' found=%d\n",cmdName.data(),it!=docCmdMap.end());
                                           if (it!=docCmdMap.end()) // special action is required
                                           {
                                             int i=0;
