@@ -11699,7 +11699,7 @@ void generateOutput()
   }
 
   int cacheParam;
-  msg("lookup cache used %ld/%ld hits=%lld misses=%lld\n",
+  msg("lookup cache used %ld/%ld hits=%llu misses=%llu\n",
       Doxygen::lookupCache->size(),
       Doxygen::lookupCache->capacity(),
       Doxygen::lookupCache->hits(),
