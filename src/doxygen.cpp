@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <memory>
+#include <cinttypes>
 
 #include "version.h"
 #include "doxygen.h"
@@ -11699,7 +11700,7 @@ void generateOutput()
   }
 
   int cacheParam;
-  msg("lookup cache used %ld/%ld hits=%llu misses=%llu\n",
+  msg("lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
       Doxygen::lookupCache->size(),
       Doxygen::lookupCache->capacity(),
       Doxygen::lookupCache->hits(),
