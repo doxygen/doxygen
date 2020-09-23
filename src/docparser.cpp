@@ -102,7 +102,7 @@ static QCString               g_relPath;
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
 static QDict<void>            g_retvalsFound;
-static QDict<void>            g_paramsFound;
+static QDict<DocParamSect::Direction>             g_paramsFound;
 static const MemberDef *      g_memberDef;
 static bool                   g_isExample;
 static QCString               g_exampleName;
@@ -138,7 +138,7 @@ struct DocParserContext
   bool         hasReturnCommand;
   const MemberDef *  memberDef;
   QDict<void>  retvalsFound;
-  QDict<void>  paramsFound;
+  QDict<DocParamSect::Direction>   paramsFound;
   bool         isExample;
   QCString     exampleName;
   QCString     searchUrl;
@@ -398,13 +398,17 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
   return result;
 }
 
+static const DocParamSect::Direction   paramUnspecified = DocParamSect::Unspecified;
+static const DocParamSect::Direction   paramIn = DocParamSect::In;
+static const DocParamSect::Direction   paramOut = DocParamSect::Out;
+static const DocParamSect::Direction   paramInOut = DocParamSect::InOut;
 /*! Collects the parameters found with \@param command
  *  in a global list g_paramsFound. If
  *  the parameter is not an actual parameter of the current
  *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
-static void checkArgumentName(const QCString &name)
+static void checkArgumentName(const QCString &name, const int paramDir)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
@@ -432,9 +436,23 @@ static void checkArgumentName(const QCString &name)
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName)
       {
-	g_paramsFound.insert(aName,(void *)(0x8));
-	found=TRUE;
-	break;
+        switch(paramDir)
+        {
+          case DocParamSect::Unspecified:
+            g_paramsFound.insert(aName,&paramUnspecified);
+            break;
+          case DocParamSect::In:
+            g_paramsFound.insert(aName,&paramIn);
+            break;
+          case DocParamSect::Out:
+            g_paramsFound.insert(aName,&paramOut);
+            break;
+          case DocParamSect::InOut:
+            g_paramsFound.insert(aName,&paramInOut);
+            break;
+        }
+        found=TRUE;
+        break;
       }
     }
     if (!found)
@@ -502,7 +520,8 @@ static void checkUnOrMultipleDocumentedParams()
       int notArgCnt=0;
       for (const Argument &a: al)
       {
-        int count = 0;
+        int totCount = 0;
+        int count[4] = {0};
         QCString argName = g_memberDef->isDefine() ? a.type : a.name;
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
@@ -518,14 +537,22 @@ static void checkUnOrMultipleDocumentedParams()
         }
         else
         {
-          QDictIterator<void> it1(g_paramsFound);
-          void *item1;
+          QDictIterator<DocParamSect::Direction> it1(g_paramsFound);
+          DocParamSect::Direction *item1;
           for (;(item1=it1.current());++it1)
           {
-            if (argName == it1.currentKey()) count++;
+            if (argName == it1.currentKey())
+            {
+              totCount++;
+              count[*item1] += 1;
+            }
           }
         }
-        if (count > 1)
+
+        // only 1 param statement or just 1 In and 1 Out param statement
+        if (!((totCount == 1) ||
+              (totCount == 2 && count[DocParamSect::In] == 1 && count[DocParamSect::Out] == 1)
+           ))
         {
           warn_doc_error(g_memberDef->getDefFileName(),
                          g_memberDef->getDefLine(),
@@ -4633,13 +4660,13 @@ int DocParamList::parse(const QCString &cmdName)
         handleParameterType(this,m_paramTypes,g_token->name.left(typeSeparator));
         g_token->name = g_token->name.mid(typeSeparator+1);
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name, g_token->paramDir);
         ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
       }
       else
       {
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name, g_token->paramDir);
       }
     }
     else if (m_type==DocParamSect::RetVal)
@@ -4690,7 +4717,7 @@ int DocParamList::parseXml(const QCString &paramName)
   if (m_type==DocParamSect::Param)
   {
     g_hasParamCommand=TRUE;
-    checkArgumentName(g_token->name);
+    checkArgumentName(g_token->name, g_token->paramDir);
   }
   else if (m_type==DocParamSect::RetVal)
   {
