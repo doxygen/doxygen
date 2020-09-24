@@ -6063,14 +6063,17 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
       // a page name is a label as well!
       QCString file;
+      QCString orgFile;
       int line  = -1;
       if (gd)
       {
         file=gd->getOutputFileBase();
+        orgFile=gd->getOutputFileBase();
       }
       else
       {
-        file=pd->docFile();
+        file=pd->getOutputFileBase();
+        orgFile=pd->docFile();
         line = pd->topLine();
       }
       const SectionInfo *si = SectionManager::instance().find(pd->name());
@@ -6078,11 +6081,11 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       {
         if (si->lineNr() != -1)
         {
-          warn(file,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName().data(),si->lineNr());
+          warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName().data(),si->lineNr());
         }
         else
         {
-          warn(file,line,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName().data());
+          warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName().data());
         }
       }
       else
