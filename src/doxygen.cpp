@@ -10047,15 +10047,15 @@ void readConfiguration(int argc, char **argv)
         debugLabel=getArg(argc,argv,optind);
         if (!debugLabel)
         {
-          err("option \"-d\" is missing debug specifier.\n");
           devUsage();
           cleanUpDoxygen();
-          exit(1);
+          exit(0);
         }
         retVal = Debug::setFlag(debugLabel);
         if (!retVal)
         {
           err("option \"-d\" has unknown debug specifier: \"%s\".\n",debugLabel);
+          devUsage();
           cleanUpDoxygen();
           exit(1);
         }
