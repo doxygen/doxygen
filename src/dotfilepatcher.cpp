@@ -174,6 +174,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
         if (!ref.isEmpty())
         {
           result = externalLinkTarget(true);
+          if (!result.isEmpty())targetAlreadySet=true;
         }
         result+= href+"=\"";
         result+=externalRef(relPath,ref,TRUE);
