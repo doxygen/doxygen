@@ -20,8 +20,22 @@
 \RequirePackage{amssymb}
 \RequirePackage{stackengine}
 \RequirePackage[normalem]{ulem} % for strikeout, but don't modify emphasis
+\RequirePackage{tcolorbox} % for verbatim listings with line numbers and border
+\RequirePackage[space=true]{accsupp} % non copyable line numbers
+\RequirePackage{fancybox} % For return symbol
+\tcbuselibrary{skins,breakable,listings}
 
 %---------- Internal commands used in this style file ----------------
+
+% Do not copy line numbers in listings
+\newcommand{\noncopynumber}[1]{%
+    \BeginAccSupp{method=escape,ActualText={}}%
+    #1%
+    \EndAccSupp{}%
+}
+
+% Return symbol in verbatim listings
+\newcommand{\return}{\mbox{\scriptsize$\hookleftarrow$}}
 
 \newcommand{\ensurespace}[1]{%
   \begingroup%
@@ -132,6 +146,71 @@
   \settowidth{\CodeWidthChar}{?}%
   \settoheight{\CodeHeightChar}{?}%
 }
+
+% Verbatim listings
+
+\newtcblisting{DoxyVerbatimCode}[2]
+{
+    boxrule=0.4pt,%
+    colback=black!2!white,%
+    enhanced,breakable,%
+    listing only,%
+    top=0mm,%
+    boxsep=0mm,%
+    left=1mm,%
+    listing options={%
+      xleftmargin=0.1cm,%
+      language=,%
+      inputencoding=utf8,%
+      extendedchars=true,%
+      basicstyle=\ttfamily\normalsize,%
+      frame=none,%
+      showspaces=false, showstringspaces=false,%
+      tabsize=1, aboveskip=2mm, belowskip=0mm,%
+      lineskip=2pt, numbers=left, stepnumber=1, numbersep=4mm,%
+      numberstyle=\tiny\noncopynumber,%
+      numberblanklines=false,%
+      breaklines=true, breakatwhitespace=true,prebreak=\return,breakindent=0pt,%
+      texcl=true,%
+      columns=fullflexible,%
+      upquote=true,%
+      keepspaces=true,%
+      literate={></}{}{0\discretionary{>\return}{</}{></}}
+               {","}{}{0\discretionary{",\return}{"}{","}}
+               {','}{}{0\discretionary{',\return}{"}{','}}
+               {//}{}{0\discretionary{//\return}{}{//}}
+               {/>}{}{0\discretionary{/>\return}{}{/>}}
+               {\&}{}{0\discretionary{\&\return}{}{\&}}
+               {;}{}{0\discretionary{;\return}{}{;}}
+               {,}{}{0\discretionary{,\return}{}{,}}
+               {]}{}{0\discretionary{]\return}{}{]}}
+               {/}{}{0\discretionary{/\return}{}{/}}
+               {=}{}{0\discretionary{=\return}{}{=}}
+               {+}{}{0\discretionary{+\return}{}{+}}
+               {)}{}{0\discretionary{)\return}{}{)}}
+               {\}}{}{0\discretionary{\}\return}{}{\}}}
+               {:}{}{0\discretionary{:\return}{}{:}}
+          {*}{{\char42}}1
+          {-}{{\char45}}1
+          {\_}{{\char95}}1
+          {\$}{{\char36}}1
+          {\\}{{\char92}}1
+          {.}{{\char46}}1
+          {\{}{{\char123}}1
+          {\|}{{\char124}}1
+          {\}}{{\char125}}1
+          {/}{/}1
+        {Ö}{{\"O}}1
+        {Ä}{{\"A}}1
+        {Ü}{{\"U}}1
+        {ß}{{\ss}}1
+        {ü}{{\"u}}1
+        {ä}{{\"a}}1
+        {ö}{{\"o}}1
+        {~}{{\selectfont\textasciitilde}}1
+    }
+}
+
 
 % Redefining not defined characters, i.e. "Replacement Character" in tex output.
 \def\ucr{\adjustbox{width=\CodeWidthChar,height=\CodeHeightChar}{\stackinset{c}{}{c}{-.2pt}{%
@@ -372,7 +451,7 @@
 
 % Used for parameters within a detailed function description
 \newenvironment{DoxyParamCaption}{%
-  \renewcommand{\item}[2][]{\\ \hspace*{2.0cm} ##1 {\em ##2}}% 
+  \renewcommand{\item}[2][]{\\ \hspace*{2.0cm} ##1 {\em ##2}}%
 }{%
 }
 

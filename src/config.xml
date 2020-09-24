@@ -2420,7 +2420,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='string' id='FORMULA_MACROFILE' format='file' defval=''>
       <docs>
 <![CDATA[
- The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and 
+ The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and
  `\renewcommand` commands to create new \f$\mbox{\LaTeX}\f$ commands to be used
  in formulas as building blocks.
  See the section \ref formulas for details.
@@ -2767,6 +2767,13 @@ or
 ]]>
       </docs>
     </option>
+    <option type='bool' id='LATEX_VERBATIM_LISTINGS' defval='0'>
+      <docs>
+<![CDATA[
+ If the \c LATEX_VERBATIM_LISTINGS tag is set to \c YES then doxygen will use verbatim \f$\mbox{\LaTeX}\f$ environment for source code listings. You can redefine it in the \f$\mbox{\LaTeX}\f$ header file (\ref cfg_latex_header "LATEX_HEADER") or in the \ref \f$\mbox{\LaTeX}\f$ stylesheet ( \ref cfg_latex_extra_stylesheet "LATEX_EXTRA_STYLESHEET"). The environment is named \c DoxyVerbatimCode.
+]]>
+      </docs>
+    </option>
     <option type='list' id='LATEX_EXTRA_FILES' format='file' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
@@ -2854,7 +2861,7 @@ or
     <option type='string' id='LATEX_EMOJI_DIRECTORY' format='dir' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute) 
+ The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute)
  path from which the emoji images will be read.
  If a relative path is entered, it will be relative to the \ref cfg_latex_output "LATEX_OUTPUT"
  directory. If left blank the \ref cfg_latex_output "LATEX_OUTPUT" directory will be used.
