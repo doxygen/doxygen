@@ -4499,7 +4499,7 @@ static void writeIndex(OutputList &ol)
     {
       ol.startHeaderSection();
       ol.startTitleHead(0);
-      ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->docLine(),
+      ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->topLine(),
                   Doxygen::mainPage,0,Doxygen::mainPage->title(),TRUE,FALSE,
                   0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       headerWritten = TRUE;

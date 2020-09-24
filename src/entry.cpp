@@ -78,6 +78,7 @@ Entry::Entry(const Entry &e)
   doc         = e.doc;
   docLine     = e.docLine;
   docFile     = e.docFile;
+  topLine     = e.topLine;
   brief       = e.brief;
   briefLine   = e.briefLine;
   briefFile   = e.briefFile;
@@ -196,6 +197,7 @@ void Entry::reset()
   doc.resize(0);
   docFile.resize(0);
   docLine=-1;
+  topLine=-1;
   relates.resize(0);
   relatesType=Simple;
   brief.resize(0);
