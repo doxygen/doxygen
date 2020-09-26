@@ -59,9 +59,7 @@
 #ifdef ENABLE_TRACING
 #define IOSTREAM      stdout
 #define DATA_BUFSIZE  20
-#ifdef __MINGW32__
-#define PRETTY_FUNC __PRETTY_FUNCTION__
-#elif defined(_WIN32) && !defined(CYGWIN)
+#ifdef defined(_WIN32) && !defined(CYGWIN) && !defined(__MINGW32__)
 #define PRETTY_FUNC __FUNCSIG__
 #else
 #define PRETTY_FUNC __PRETTY_FUNCTION__
