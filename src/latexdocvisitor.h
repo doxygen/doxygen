@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -25,19 +25,19 @@
 #include <qlist.h>
 
 class FTextStream;
-class CodeOutputInterface;
+class LatexCodeGenerator;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
+    LatexDocVisitor(FTextStream &t,LatexCodeGenerator &ci,
                     const char *langExt,bool insideTabbing);
-    
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
+
     void visit(DocWord *);
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
@@ -59,7 +59,7 @@ class LatexDocVisitor : public DocVisitor
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
+
     void visitPre(DocAutoList *);
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
@@ -141,7 +141,7 @@ class LatexDocVisitor : public DocVisitor
 
     struct ActiveRowSpan
     {
-      ActiveRowSpan(DocHtmlCell *c,int rs,int cs,int col) 
+      ActiveRowSpan(DocHtmlCell *c,int rs,int cs,int col)
         : cell(c), rowSpan(rs), colSpan(cs), column(col) {}
       DocHtmlCell *cell;
       int rowSpan;
@@ -152,9 +152,9 @@ class LatexDocVisitor : public DocVisitor
     typedef QList<ActiveRowSpan> RowSpanList;
 
     //--------------------------------------
-    // helper functions 
+    // helper functions
     //--------------------------------------
-    
+
     void filter(const char *str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
@@ -184,7 +184,7 @@ class LatexDocVisitor : public DocVisitor
     //--------------------------------------
 
     FTextStream &m_t;
-    CodeOutputInterface &m_ci;
+    LatexCodeGenerator &m_ci;
     bool m_insidePre;
     bool m_insideItem;
     bool m_hide;
@@ -195,7 +195,7 @@ class LatexDocVisitor : public DocVisitor
 
     struct TableState
     {
-      TableState() : numCols(0), currentColumn(0), inRowSpan(FALSE), 
+      TableState() : numCols(0), currentColumn(0), inRowSpan(FALSE),
                      inColSpan(FALSE), firstRow(FALSE)
       { rowSpans.setAutoDelete(TRUE); }
       RowSpanList rowSpans;

@@ -4726,9 +4726,8 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
 {
   bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
   bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
-  static THREAD_LOCAL GrowBuf growBuf;
-  growBuf.clear();
   if (name==0) return "";
+  GrowBuf growBuf;
   signed char c;
   const signed char *p=(const signed char*)name;
   while ((c=*p++)!=0)
@@ -5222,9 +5221,8 @@ QCString stripScope(const char *name)
 QCString convertToId(const char *s)
 {
   static const char hex[] = "0123456789ABCDEF";
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const char *p=s;
   char c;
   bool first=TRUE;
@@ -5263,9 +5261,8 @@ QCString correctId(QCString s)
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s, bool keepEntities)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5315,9 +5312,8 @@ QCString convertToXML(const char *s, bool keepEntities)
 /*! Converts a string to an DocBook-encoded string */
 QCString convertToDocBook(const char *s)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const unsigned char *q;
   int cnt;
   const unsigned char *p=(const unsigned char *)s;
@@ -5375,9 +5371,8 @@ QCString convertToDocBook(const char *s)
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const char *s,bool keepEntities)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
@@ -5422,9 +5417,8 @@ QCString convertToHtml(const char *s,bool keepEntities)
 
 QCString convertToJSString(const char *s, bool applyTextDir)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   if (applyTextDir)
     growBuf.addStr(getJsDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
@@ -5444,9 +5438,8 @@ QCString convertToJSString(const char *s, bool applyTextDir)
 
 QCString convertToPSString(const char *s)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5466,7 +5459,7 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 {
   QGString result;
   FTextStream t(&result);
-  filterLatexString(t,s,insideTabbing,FALSE,FALSE,keepSpaces);
+  filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
   return result.data();
 }
 
@@ -5478,8 +5471,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
   static QRegExp entityPat("&[a-zA-Z]+[0-9]*;");
 
   if (s.length()==0) return result;
-  static GrowBuf growBuf;
-  growBuf.clear();
+  GrowBuf growBuf;
   int p,i=0,l;
   while ((p=entityPat.match(s,i,&l))!=-1)
   {
@@ -6158,7 +6150,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
 }
 
 void filterLatexString(FTextStream &t,const char *str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool keepSpaces)
+    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
 {
   if (str==0) return;
   //if (strlen(str)<2) stackTrace();
@@ -6195,7 +6187,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '$':  t << "\\$"; break;
         case '"':  t << "\"{}"; break;
         case '-':  t << "-\\/"; break;
-        case '^':  (usedTableLevels()>0) ? t << "\\string^" : t << (char)c;    break;
+        case '^':  insideTable ? t << "\\string^" : t << (char)c;    break;
         case '~':  t << "\\string~";    break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
@@ -6332,7 +6324,13 @@ QCString latexEscapeLabelName(const char *s)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp,TRUE);
+        filterLatexString(t,tmp,
+                          true,  // insideTabbing
+                          false, // insidePre
+                          false, // insideItem
+                          false, // insideTable
+                          false  // keepSpaces
+                         );
         break;
     }
   }
@@ -6371,7 +6369,13 @@ QCString latexEscapeIndexChars(const char *s)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp.data(),TRUE);
+        filterLatexString(t,tmp.data(),
+                          true,   // insideTabbing
+                          false,  // insidePre
+                          false,  // insideItem
+                          false,  // insideTable
+                          false   // keepSpaces
+                         );
         break;
     }
   }
@@ -8446,23 +8450,6 @@ void writeLatexSpecialFormulaChars(FTextStream &t)
          "  \\newunicodechar{" << psup2  << "}{${}^{2}$}% Superscript two\n"
          "  \\newunicodechar{" << psup3  << "}{${}^{3}$}% Superscript three\n"
          "\n";
-}
-
-//------------------------------------------------------
-
-static int g_usedTableLevels = 0;
-
-void incUsedTableLevels()
-{
-  g_usedTableLevels++;
-}
-void decUsedTableLevels()
-{
-  g_usedTableLevels--;
-}
-int usedTableLevels()
-{
-  return g_usedTableLevels;
 }
 
 //------------------------------------------------------

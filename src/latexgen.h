@@ -52,7 +52,13 @@ class LatexCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *) {}
     void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
-    static void setDoxyCodeOpen(bool val);
+    void startCodeFragment(const char *style);
+    void endCodeFragment();
+
+    // extra methods not part of CodeOutputInterface
+    void incUsedTableLevel() { m_usedTableLevel++; }
+    void decUsedTableLevel() { m_usedTableLevel--; }
+    int usedTableLevel() const { return m_usedTableLevel; }
 
   private:
     void _writeCodeLink(const char *className,
@@ -60,12 +66,14 @@ class LatexCodeGenerator : public CodeOutputInterface
                         const char *anchor,const char *name,
                         const char *tooltip);
     void docify(const char *str);
-    bool m_streamSet;
+    bool m_streamSet = false;
     FTextStream m_t;
     QCString m_relPath;
     QCString m_sourceFileName;
-    int m_col;
-    bool m_prettyCode;
+    int m_col = 0;
+    bool m_prettyCode = false;
+    bool m_doxyCodeLineOpen = false;
+    int m_usedTableLevel = 0;
 };
 
 /** Generator for LaTeX output. */
@@ -108,6 +116,10 @@ class LatexGenerator : public OutputGenerator
     { m_codeGen.endFontClass(); }
     void writeCodeAnchor(const char *anchor)
     { m_codeGen.writeCodeAnchor(anchor); }
+    void startCodeFragment(const char *style)
+    { m_codeGen.startCodeFragment(style); }
+    void endCodeFragment()
+    { m_codeGen.endCodeFragment(); }
     // ---------------------------
 
 
@@ -194,8 +206,6 @@ class LatexGenerator : public OutputGenerator
 
     void writeRuler() { t << endl << endl; }
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment();
-    void endCodeFragment();
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
     void startBold()     { t << "{\\bfseries "; }

@@ -1236,26 +1236,26 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
     {
       //printf("Adding code fragment '%s' ext='%s'\n",
       //    codeFragment.data(),m_impl->defFileExt.data());
-      CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
-      intf.resetCodeParserState();
+      auto intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
+      intf->resetCodeParserState();
       //printf("Read:\n'%s'\n\n",codeFragment.data());
       const MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 
-      ol.startCodeFragment();
-      intf.parseCode(ol,               // codeOutIntf
-                     scopeName,        // scope
-                     codeFragment,     // input
-                     m_impl->lang,     // lang
-                     FALSE,            // isExample
-                     0,                // exampleName
-                     m_impl->body->fileDef,  // fileDef
-                     actualStart,      // startLine
-                     actualEnd,        // endLine
-                     TRUE,             // inlineFragment
-                     thisMd,           // memberDef
-                     TRUE              // show line numbers
-                    );
+      ol.startCodeFragment("DoxyCode");
+      intf->parseCode(ol,               // codeOutIntf
+                      scopeName,        // scope
+                      codeFragment,     // input
+                      m_impl->lang,     // lang
+                      FALSE,            // isExample
+                      0,                // exampleName
+                      m_impl->body->fileDef,  // fileDef
+                      actualStart,      // startLine
+                      actualEnd,        // endLine
+                      TRUE,             // inlineFragment
+                      thisMd,           // memberDef
+                      TRUE              // show line numbers
+                     );
       ol.endCodeFragment();
     }
   }

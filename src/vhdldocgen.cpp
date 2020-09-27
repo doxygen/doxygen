@@ -2357,7 +2357,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 
 void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname)
 {
-  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".vhd");
+  auto intf = Doxygen::parserManager->getCodeParser(".vhd");
  // pIntf->resetCodeParserState();
 
   QCString codeFragment=mdef->documentation();
@@ -2382,8 +2382,8 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
 
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
-  ol.startCodeFragment();
-  intf.parseCode(      ol,               // codeOutIntf
+  ol.startCodeFragment("DoxyCode");
+  intf->parseCode(     ol,               // codeOutIntf
                        0,                // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang

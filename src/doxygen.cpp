@@ -7584,6 +7584,66 @@ static void generateFileSources()
     else
 #endif
     {
+#define MULTITHREADED_SOURCE_GENERATOR 0 // not ready to be enabled yet
+#if MULTITHREADED_SOURCE_GENERATOR
+      std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+      if (numThreads==0)
+      {
+        numThreads = std::thread::hardware_concurrency();
+      }
+      msg("Generating code files using %zu threads.\n",numThreads);
+      struct SourceContext
+      {
+        SourceContext(FileDef *fd_,bool gen_,OutputList ol_)
+          : fd(fd_), generateSourceFile(gen_), ol(ol_) {}
+        FileDef *fd;
+        bool generateSourceFile;
+        OutputList ol;
+      };
+      ThreadPool threadPool(numThreads);
+      std::vector< std::future< std::shared_ptr<SourceContext> > > results;
+      for (const auto &fn : *Doxygen::inputNameLinkedMap)
+      {
+        for (const auto &fd : *fn)
+        {
+          bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate;
+          auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
+          if (generateSourceFile)
+          {
+            msg("Generating code for file %s...\n",fd->docName().data());
+            fd->writeSourceHeader(ctx->ol);
+          }
+          else
+          {
+            msg("Parsing code for file %s...\n",fd->docName().data());
+          }
+          auto processFile = [ctx]() {
+            StringVector filesInSameTu;
+            ctx->fd->getAllIncludeFilesRecursively(filesInSameTu);
+            if (ctx->generateSourceFile) // sources need to be shown in the output
+            {
+              ctx->fd->writeSourceBody(ctx->ol,nullptr);
+            }
+            else if (!ctx->fd->isReference() && Doxygen::parseSourcesNeeded)
+              // we needed to parse the sources even if we do not show them
+            {
+              ctx->fd->parseSource(nullptr);
+            }
+            return ctx;
+          };
+          results.emplace_back(threadPool.queue(processFile));
+        }
+      }
+      for (auto &f : results)
+      {
+        std::shared_ptr<SourceContext> ctx = f.get();
+        if (ctx->generateSourceFile)
+        {
+          ctx->fd->writeSourceFooter(ctx->ol);
+        }
+      }
+
+#else // single threaded version
       for (const auto &fn : *Doxygen::inputNameLinkedMap)
       {
         for (const auto &fd : *fn)
@@ -7593,7 +7653,9 @@ static void generateFileSources()
           if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
           {
             msg("Generating code for file %s...\n",fd->docName().data());
-            fd->writeSource(*g_outputList,nullptr);
+            fd->writeSourceHeader(*g_outputList);
+            fd->writeSourceBody(*g_outputList,nullptr);
+            fd->writeSourceFooter(*g_outputList);
           }
           else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
             // we needed to parse the sources even if we do not show them
@@ -7603,6 +7665,7 @@ static void generateFileSources()
           }
         }
       }
+#endif
     }
   }
 }
@@ -8634,8 +8697,8 @@ static void generateExampleDocs()
   for (pdi.toFirst();(pd=pdi.current());++pdi)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
-    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".c"); // TODO: do this on code type
-    intf.resetCodeParserState();
+    auto intf = Doxygen::parserManager->getCodeParser(".c"); // TODO: do this on code type
+    intf->resetCodeParserState();
     QCString n=pd->getOutputFileBase();
     startFile(*g_outputList,n,n,pd->name());
     startTitle(*g_outputList,n);
@@ -9835,7 +9898,7 @@ class NullOutlineParser : public OutlineParserInterface
 };
 
 
-template<class T> std::function< std::unique_ptr<T>() > make_output_parser_factory()
+template<class T> std::function< std::unique_ptr<T>() > make_parser_factory()
 {
   return []() { return std::make_unique<T>(); };
 }
@@ -9852,26 +9915,26 @@ void initDoxygen()
   Portable::correct_path();
 
   Debug::startTimer();
-  Doxygen::parserManager = new ParserManager(            make_output_parser_factory<NullOutlineParser>(),
-                                                         std::make_unique<FileCodeParser>());
-  Doxygen::parserManager->registerParser("c",            make_output_parser_factory<COutlineParser>(),
-                                                         std::make_unique<CCodeParser>());
-  Doxygen::parserManager->registerParser("python",       make_output_parser_factory<PythonOutlineParser>(),
-                                                         std::make_unique<PythonCodeParser>());
-  Doxygen::parserManager->registerParser("fortran",      make_output_parser_factory<FortranOutlineParser>(),
-                                                         std::make_unique<FortranCodeParser>());
-  Doxygen::parserManager->registerParser("fortranfree",  make_output_parser_factory<FortranOutlineParserFree>(),
-                                                         std::make_unique<FortranCodeParserFree>());
-  Doxygen::parserManager->registerParser("fortranfixed", make_output_parser_factory<FortranOutlineParserFixed>(),
-                                                         std::make_unique<FortranCodeParserFixed>());
-  Doxygen::parserManager->registerParser("vhdl",         make_output_parser_factory<VHDLOutlineParser>(),
-                                                         std::make_unique<VHDLCodeParser>());
-  Doxygen::parserManager->registerParser("xml",          make_output_parser_factory<NullOutlineParser>(),
-                                                         std::make_unique<XMLCodeParser>());
-  Doxygen::parserManager->registerParser("sql",          make_output_parser_factory<NullOutlineParser>(),
-                                                         std::make_unique<SQLCodeParser>());
-  Doxygen::parserManager->registerParser("md",           make_output_parser_factory<MarkdownOutlineParser>(),
-                                                         std::make_unique<FileCodeParser>());
+  Doxygen::parserManager = new ParserManager(            make_parser_factory<NullOutlineParser>(),
+                                                         make_parser_factory<FileCodeParser>());
+  Doxygen::parserManager->registerParser("c",            make_parser_factory<COutlineParser>(),
+                                                         make_parser_factory<CCodeParser>());
+  Doxygen::parserManager->registerParser("python",       make_parser_factory<PythonOutlineParser>(),
+                                                         make_parser_factory<PythonCodeParser>());
+  Doxygen::parserManager->registerParser("fortran",      make_parser_factory<FortranOutlineParser>(),
+                                                         make_parser_factory<FortranCodeParser>());
+  Doxygen::parserManager->registerParser("fortranfree",  make_parser_factory<FortranOutlineParserFree>(),
+                                                         make_parser_factory<FortranCodeParserFree>());
+  Doxygen::parserManager->registerParser("fortranfixed", make_parser_factory<FortranOutlineParserFixed>(),
+                                                         make_parser_factory<FortranCodeParserFixed>());
+  Doxygen::parserManager->registerParser("vhdl",         make_parser_factory<VHDLOutlineParser>(),
+                                                         make_parser_factory<VHDLCodeParser>());
+  Doxygen::parserManager->registerParser("xml",          make_parser_factory<NullOutlineParser>(),
+                                                         make_parser_factory<XMLCodeParser>());
+  Doxygen::parserManager->registerParser("sql",          make_parser_factory<NullOutlineParser>(),
+                                                         make_parser_factory<SQLCodeParser>());
+  Doxygen::parserManager->registerParser("md",           make_parser_factory<MarkdownOutlineParser>(),
+                                                         make_parser_factory<FileCodeParser>());
 
   // register any additional parsers here...
 

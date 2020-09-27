@@ -229,8 +229,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::writeRuler); }
     void writeAnchor(const char *fileName,const char *name)
     { forall(&OutputGenerator::writeAnchor,fileName,name); }
-    void startCodeFragment()
-    { forall(&OutputGenerator::startCodeFragment); }
+    void startCodeFragment(const char *style)
+    { forall(&OutputGenerator::startCodeFragment,style); }
     void endCodeFragment()
     { forall(&OutputGenerator::endCodeFragment); }
     void startCodeLine(bool hasLineNumbers)

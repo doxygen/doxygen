@@ -306,9 +306,8 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      Doxygen::parserManager->getCodeParser(lang)
-                             .parseCode(m_ci,s->context(),s->text(),langExt,
-                                        s->isExample(),s->exampleFile());
+      getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
+                                    s->isExample(),s->exampleFile());
       //m_t << "\\par" << endl;
       m_t << "}" << endl;
       break;
@@ -433,8 +432,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
          m_t << rtf_Style_Reset << getStyle("CodeExample");
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,inc->context(),
+         getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
@@ -455,8 +453,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << "{" << endl;
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      Doxygen::parserManager->getCodeParser(inc->extension())
-                             .parseCode(m_ci,inc->context(),
+      getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                         inc->text(),langExt,inc->isExample(),
                                         inc->exampleFile(),
                                         0,     // fileDef
@@ -492,8 +489,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
       m_t << "{" << endl;
       if (!m_lastIsPara) m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
-      Doxygen::parserManager->getCodeParser(inc->extension())
-                             .parseCode(m_ci,
+      getCodeParser(inc->extension()).parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
                                         langExt,
@@ -509,8 +505,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
          m_t << "{" << endl;
          if (!m_lastIsPara) m_t << "\\par" << endl;
          m_t << rtf_Style_Reset << getStyle("CodeExample");
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -567,8 +562,7 @@ void RTFDocVisitor::visit(DocIncOperator *op)
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getCodeParser(locLangExt)
-                             .parseCode(m_ci,op->context(),op->text(),langExt,
+      getCodeParser(locLangExt).parseCode(m_ci,op->context(),op->text(),langExt,
                                         op->isExample(),op->exampleFile(),
                                         fd,     // fileDef
                                         op->line(),    // startLine

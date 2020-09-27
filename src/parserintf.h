@@ -137,6 +137,7 @@ class CodeParserInterface
 //-----------------------------------------------------------------------------
 
 using OutlineParserFactory = std::function<std::unique_ptr<OutlineParserInterface>()>;
+using CodeParserFactory    = std::function<std::unique_ptr<CodeParserInterface>()>;
 
 /** \brief Manages programming language parsers.
  *
@@ -145,39 +146,42 @@ using OutlineParserFactory = std::function<std::unique_ptr<OutlineParserInterfac
  */
 class ParserManager
 {
-  public:
 
     struct ParserPair
     {
-      ParserPair(OutlineParserFactory opf, std::unique_ptr<CodeParserInterface> cpi, const QCString pn)
-        : outlineParserFactory(opf), codeParserInterface(std::move(cpi)), parserName(pn)
+      ParserPair(OutlineParserFactory opf, CodeParserFactory cpf, const QCString pn)
+        : outlineParserFactory(opf), codeParserFactory(cpf), parserName(pn)
       {
       }
 
       OutlineParserFactory outlineParserFactory;
-      std::unique_ptr<CodeParserInterface> codeParserInterface;
+      CodeParserFactory    codeParserFactory;
       QCString parserName;
     };
 
+  public:
+    /** Create the parser manager
+     *  @param outlineParserFactory the fallback outline parser factory to use for unknown extensions
+     *  @param codeParserFactory    the fallback code parser factory to use for unknown extensions
+     */
     ParserManager(OutlineParserFactory outlineParserFactory,
-                  std::unique_ptr<CodeParserInterface> codeParserInterface)
-      : m_defaultParsers(outlineParserFactory,std::move(codeParserInterface), "")
+                  CodeParserFactory    codeParserFactory)
+      : m_defaultParsers(outlineParserFactory,codeParserFactory, "")
     {
     }
 
     /** Registers an additional parser.
      *  @param[in] name          A symbolic name of the parser, i.e. "c",
      *                           "python", "fortran", "vhdl", ...
-     *  @param[in] outlineParser The language parser (scanner) that is to be used for the
-     *                           given name.
-     *  @param[in] codeParser    The code parser that is to be used for the
-     *                           given name.
+     *  @param[in] outlineParserFactory A factory method to create a language parser (scanner) that
+     *                           is to be used for the given name.
+     *  @param[in] codeParserFactory    A factory method to create a code parser that is to be used
+     *                           for the given name.
      */
     void registerParser(const char *name,OutlineParserFactory outlineParserFactory,
-                                         std::unique_ptr<CodeParserInterface> codeParserInterface)
+                                         CodeParserFactory    codeParserFactory)
     {
-      m_parsers.emplace(std::string(name),
-                        ParserPair(outlineParserFactory,std::move(codeParserInterface),name));
+      m_parsers.emplace(std::string(name),ParserPair(outlineParserFactory,codeParserFactory,name));
     }
 
     /** Registers a file \a extension with a parser with name \a parserName.
@@ -199,7 +203,7 @@ class ParserManager
       return TRUE;
     }
 
-    /** Gets the interface to the parser associated with given \a extension.
+    /** Gets the interface to the parser associated with a given \a extension.
      *  If there is no parser explicitly registered for the supplied extension,
      *  the interface to the default parser will be returned.
      */
@@ -208,13 +212,20 @@ class ParserManager
       return getParsers(extension).outlineParserFactory();
     }
 
-    /** Gets the interface to the parser associated with given \a extension.
+    /** Gets the interface to the parser associated with a given \a extension.
      *  If there is no parser explicitly registered for the supplied extension,
      *  the interface to the default parser will be returned.
      */
-    CodeParserInterface &getCodeParser(const char *extension)
+    std::unique_ptr<CodeParserInterface> getCodeParser(const char *extension)
     {
-      return *getParsers(extension).codeParserInterface;
+      auto factory = getCodeParserFactory(extension);
+      return factory();
+    }
+
+    /** Get the factory for create code parser objects with a given \a extension. */
+    CodeParserFactory &getCodeParserFactory(const char *extension)
+    {
+      return getParsers(extension).codeParserFactory;
     }
 
     /** Gets the name of the parser associated with given \a extension.
