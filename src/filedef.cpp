@@ -211,7 +211,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
     virtual void setCurrentDoc(const Definition *,const char *,bool) {}
     virtual void addWord(const char *,bool) {}
     virtual void startCodeFragment(const char *) {}
-    virtual void endCodeFragment() {}
+    virtual void endCodeFragment(const char *) {}
 };
 
 //---------------------------------------------------------------------------
@@ -1219,10 +1219,10 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
   {
-    ol.startCodeFragment();
+    ol.startCodeFragment("DoxyCode");
     clangParser->switchToFile(this);
     clangParser->writeSources(ol,this);
-    ol.endCodeFragment();
+    ol.endCodeFragment("DoxyCode");
   }
   else
 #endif
@@ -1258,7 +1258,7 @@ void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
         0,                  // searchCtx
         !needs2PassParsing  // collectXRefs
         );
-    ol.endCodeFragment();
+    ol.endCodeFragment("DoxyCode");
   }
 }
 

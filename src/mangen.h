@@ -124,7 +124,7 @@ class ManGenerator : public OutputGenerator
     void writeRuler()    {}
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment(const char *);
-    void endCodeFragment();
+    void endCodeFragment(const char *);
     void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; m_col=0; }
     void startCodeLine(bool) {}
     void endCodeLine() { codify("\n"); m_col=0; }

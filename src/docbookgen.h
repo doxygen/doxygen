@@ -54,7 +54,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void addWord(const char *,bool);
     void finish();
     void startCodeFragment(const char *style);
-    void endCodeFragment();
+    void endCodeFragment(const char *style);
 
   private:
     FTextStream m_t;
@@ -132,8 +132,8 @@ class DocbookGenerator : public OutputGenerator
     { m_codeGen.writeCodeAnchor(anchor); }
     void startCodeFragment(const char *style)
     { m_codeGen.startCodeFragment(style); }
-    void endCodeFragment()
-    { m_codeGen.endCodeFragment(); }
+    void endCodeFragment(const char *style)
+    { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
     void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md);

@@ -248,7 +248,7 @@ DB_GEN_C
   m_t << "<programlisting>";
 }
 
-void DocbookCodeGenerator::endCodeFragment()
+void DocbookCodeGenerator::endCodeFragment(const char *)
 {
 DB_GEN_C
   //endCodeLine checks is there is still an open code line, if so closes it.

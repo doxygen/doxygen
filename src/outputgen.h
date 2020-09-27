@@ -136,7 +136,7 @@ class CodeOutputInterface
      */
     virtual void startCodeFragment(const char *style) = 0;
     /*! Ends a block of code */
-    virtual void endCodeFragment() = 0;
+    virtual void endCodeFragment(const char *style) = 0;
 };
 
 /** Base Interface used for generating output outside of the

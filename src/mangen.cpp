@@ -399,7 +399,7 @@ void ManGenerator::startCodeFragment(const char *)
   m_paragraph=FALSE;
 }
 
-void ManGenerator::endCodeFragment()
+void ManGenerator::endCodeFragment(const char *)
 {
   if (!m_firstCol) t << endl;
   t << ".fi" << endl;

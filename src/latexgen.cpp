@@ -260,12 +260,12 @@ void LatexCodeGenerator::startCodeFragment(const char *style)
   m_t << "\n\\begin{" << style << "}{" << m_usedTableLevel << "}\n";
 }
 
-void LatexCodeGenerator::endCodeFragment()
+void LatexCodeGenerator::endCodeFragment(const char *style)
 {
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 
-  m_t << "\\end{DoxyCode}\n";
+  m_t << "\\end{" << style << "}\n";
 }
 
 

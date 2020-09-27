@@ -2397,7 +2397,7 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
                        TRUE              // show line numbers
                       );
 
-  ol.endCodeFragment();
+  ol.endCodeFragment("DoxyCode");
   ol.popGeneratorState();
 
   if (cname.isEmpty()) return;

@@ -912,7 +912,7 @@ void HtmlCodeGenerator::startCodeFragment(const char *)
   if (m_streamSet) m_t << "<div class=\"fragment\">";
 }
 
-void HtmlCodeGenerator::endCodeFragment()
+void HtmlCodeGenerator::endCodeFragment(const char *)
 {
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();

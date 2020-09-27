@@ -1256,7 +1256,7 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
                       thisMd,           // memberDef
                       TRUE              // show line numbers
                      );
-      ol.endCodeFragment();
+      ol.endCodeFragment("DoxyCode");
     }
   }
   ol.popGeneratorState();

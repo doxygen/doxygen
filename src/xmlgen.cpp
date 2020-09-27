@@ -346,7 +346,7 @@ void XMLCodeGenerator::startCodeFragment(const char *)
   m_t << "    <programlisting>" << endl;
 }
 
-void XMLCodeGenerator::endCodeFragment()
+void XMLCodeGenerator::endCodeFragment(const char *)
 {
   m_t << "    </programlisting>" << endl;
 }
@@ -451,7 +451,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
                 0,           // memberDef
                 TRUE         // showLineNumbers
                 );
-  xmlGen->endCodeFragment();
+  xmlGen->endCodeFragment("DoxyCode");
   xmlGen->finish();
   delete xmlGen;
 }

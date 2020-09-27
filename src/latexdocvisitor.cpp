@@ -354,7 +354,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         m_ci.startCodeFragment("DoxyCode");
         getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
                                       s->isExample(),s->exampleFile());
-        m_ci.endCodeFragment();
+        m_ci.endCodeFragment("DoxyCode");
       }
       break;
     case DocVerbatim::Verbatim:
@@ -474,7 +474,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                                   TRUE   // show line numbers
        				                 );
         delete fd;
-        m_ci.endCodeFragment();
+        m_ci.endCodeFragment("DoxyCodeInclude");
       }
       break;
     case DocInclude::Include:
@@ -490,7 +490,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                                   0,     // memberDef
                                                   FALSE
                                                  );
-        m_ci.endCodeFragment();
+        m_ci.endCodeFragment("DoxyCodeInclude");
       }
       break;
     case DocInclude::DontInclude:
@@ -519,7 +519,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                                   inc->isExample(),
                                                   inc->exampleFile()
                                                  );
-        m_ci.endCodeFragment();
+        m_ci.endCodeFragment("DoxyCodeInclude");
       }
       break;
     case DocInclude::SnipWithLines:
@@ -541,7 +541,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
                                                   TRUE   // show line number
                                                  );
         delete fd;
-        m_ci.endCodeFragment();
+        m_ci.endCodeFragment("DoxyCodeInclude");
       }
       break;
     case DocInclude::SnippetDoc:
@@ -594,7 +594,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())
   {
     popEnabled();
-    if (!m_hide) m_ci.endCodeFragment();
+    if (!m_hide) m_ci.endCodeFragment("DoxyCodeInclude");
   }
   else
   {

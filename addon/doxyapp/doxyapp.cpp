@@ -63,7 +63,7 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
     void startCodeFragment(const char *) {}
-    void endCodeFragment() {}
+    void endCodeFragment(const char *) {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context)

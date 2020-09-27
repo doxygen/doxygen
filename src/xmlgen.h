@@ -40,7 +40,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void setCurrentDoc(const Definition *,const char *,bool){}
     void addWord(const char *,bool){}
     void startCodeFragment(const char *);
-    void endCodeFragment();
+    void endCodeFragment(const char *);
 
     void finish();
 

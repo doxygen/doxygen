@@ -53,7 +53,7 @@ class LatexCodeGenerator : public CodeOutputInterface
     void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
     void startCodeFragment(const char *style);
-    void endCodeFragment();
+    void endCodeFragment(const char *style);
 
     // extra methods not part of CodeOutputInterface
     void incUsedTableLevel() { m_usedTableLevel++; }
@@ -118,8 +118,8 @@ class LatexGenerator : public OutputGenerator
     { m_codeGen.writeCodeAnchor(anchor); }
     void startCodeFragment(const char *style)
     { m_codeGen.startCodeFragment(style); }
-    void endCodeFragment()
-    { m_codeGen.endCodeFragment(); }
+    void endCodeFragment(const char *style)
+    { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
 

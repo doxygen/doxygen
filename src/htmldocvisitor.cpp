@@ -537,7 +537,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
                                         TRUE,  // show line numbers
                                         m_ctx  // search context
                                        );
-      m_ci.endCodeFragment();
+      m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(s);
       break;
     case DocVerbatim::Verbatim:
@@ -684,7 +684,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                         FALSE, // show line numbers
                                         m_ctx  // search context
                                        );
-      m_ci.endCodeFragment();
+      m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(inc);
       break;
     case DocInclude::IncWithLines:
@@ -708,7 +708,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            m_ctx  // search context
                                            );
          delete fd;
-         m_ci.endCodeFragment();
+         m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
       break;
@@ -752,7 +752,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            FALSE, // show line number
                                            m_ctx  // search context
                                           );
-         m_ci.endCodeFragment();
+         m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
       break;
@@ -777,7 +777,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            m_ctx  // search context
                                           );
          delete fd;
-         m_ci.endCodeFragment();
+         m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
       break;
@@ -837,7 +837,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())
   {
     popEnabled();
-    if (!m_hide) m_ci.endCodeFragment();
+    if (!m_hide) m_ci.endCodeFragment("DoxyCode");
     forceStartParagraph(op);
   }
   else

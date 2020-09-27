@@ -1940,7 +1940,7 @@ void RTFGenerator::startCodeFragment(const char *)
   t << rtf_Style_Reset << rtf_Code_DepthStyle();
 }
 
-void RTFGenerator::endCodeFragment()
+void RTFGenerator::endCodeFragment(const char *)
 {
   endCodeLine();
 
