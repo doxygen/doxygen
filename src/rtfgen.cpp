@@ -48,8 +48,6 @@
 #include "filename.h"
 #include "namespacedef.h"
 
-static bool DoxyCodeLineOpen = FALSE;
-
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
 
@@ -1935,22 +1933,15 @@ void RTFGenerator::writeRTFReference(const char *label)
   t << " \\\\*MERGEFORMAT}{\\fldrslt pagenum}}";
 }
 
-void RTFGenerator::startCodeFragment()
+void RTFGenerator::startCodeFragment(const char *)
 {
   DBG_RTF(t << "{\\comment (startCodeFragment) }"    << endl)
   t << "{" << endl;
-  //newParagraph();
   t << rtf_Style_Reset << rtf_Code_DepthStyle();
-  //styleStack.push(rtf_Style_CodeExample);
 }
 
 void RTFGenerator::endCodeFragment()
 {
-  //newParagraph();
-  //styleStack.pop();
-  //printf("RTFGenerator::endCodeFragment() top=%s\n",styleStack.top());
-  //t << rtf_Style_Reset << styleStack.top() << endl;
-  //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 
   DBG_RTF(t << "{\\comment (endCodeFragment) }"    << endl)
@@ -3043,7 +3034,7 @@ void RTFGenerator::writeLineNumber(const char *ref,const char *fileName,const ch
 {
   bool rtfHyperlinks = Config_getBool(RTF_HYPERLINKS);
 
-  DoxyCodeLineOpen = TRUE;
+  m_doxyCodeLineOpen = true;
   QCString lineNumber;
   lineNumber.sprintf("%05d",l);
   if (m_prettyCode)
@@ -3070,13 +3061,13 @@ void RTFGenerator::writeLineNumber(const char *ref,const char *fileName,const ch
 }
 void RTFGenerator::startCodeLine(bool)
 {
-  DoxyCodeLineOpen = TRUE;
+  m_doxyCodeLineOpen = true;
   m_col=0;
 }
 void RTFGenerator::endCodeLine()
 {
-  if (DoxyCodeLineOpen) lineBreak();
-  DoxyCodeLineOpen = FALSE;
+  if (m_doxyCodeLineOpen) lineBreak();
+  m_doxyCodeLineOpen = false;
 }
 
 void RTFGenerator::startLabels()

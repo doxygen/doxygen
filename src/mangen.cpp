@@ -391,7 +391,7 @@ void ManGenerator::endItemListItem()
 {
 }
 
-void ManGenerator::startCodeFragment()
+void ManGenerator::startCodeFragment(const char *)
 {
   newParagraph();
   t << ".nf" << endl;

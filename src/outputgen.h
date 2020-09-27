@@ -127,6 +127,16 @@ class CodeOutputInterface
 
     virtual void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile) = 0;
     virtual void addWord(const char *word,bool hiPriority) = 0;
+
+    /*! Starts a source code fragment. The fragment will be
+     *  fed to the code parser (see code.h) for syntax highlighting
+     *  and cross-referencing. The fragment ends by a call to
+     *  endCodeFragment()
+     *  @param style The kind of code fragment.
+     */
+    virtual void startCodeFragment(const char *style) = 0;
+    /*! Ends a block of code */
+    virtual void endCodeFragment() = 0;
 };
 
 /** Base Interface used for generating output outside of the
@@ -239,20 +249,6 @@ class BaseOutputDocInterface : public CodeOutputInterface
 
     /*! Ends a section of text displayed in italic. */
     virtual void endEmphasis() = 0;
-
-    /*! Starts a source code fragment. The fragment will be
-     *  fed to the code parser (see code.h) for syntax highlighting
-     *  and cross-referencing. The fragment ends by a call to
-     *  endCodeFragment()
-     */
-    virtual void startCodeFragment() = 0;
-
-    /*! Ends a source code fragment
-     */
-    virtual void endCodeFragment() = 0;
-
-
-
 
     /*! Writes a horizontal ruler to the output */
     virtual void writeRuler() = 0;

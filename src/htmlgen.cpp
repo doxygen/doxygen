@@ -16,8 +16,10 @@
  */
 
 #include <stdlib.h>
-
 #include <assert.h>
+
+#include <mutex>
+
 #include <qdir.h>
 #include <qregexp.h>
 #include "message.h"
@@ -58,8 +60,6 @@ static QCString g_header;
 static QCString g_footer;
 static QCString g_mathjax_code;
 static QCString g_latex_macro;
-
-static bool DoxyCodeLineOpen = FALSE;
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
@@ -608,12 +608,11 @@ static QCString substituteHtmlKeywords(const QCString &str,
 //--------------------------------------------------------------------------
 
 HtmlCodeGenerator::HtmlCodeGenerator()
-   : m_streamSet(FALSE), m_col(0)
 {
 }
 
 HtmlCodeGenerator::HtmlCodeGenerator(FTextStream &t,const QCString &relPath)
-   : m_col(0), m_relPath(relPath)
+   : m_relPath(relPath)
 {
   setTextStream(t);
 }
@@ -726,10 +725,10 @@ void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
   qsnprintf(lineNumber,maxLineNrStr,"%5d",l);
   qsnprintf(lineAnchor,maxLineNrStr,"l%05d",l);
 
-  if (!DoxyCodeLineOpen)
+  if (!m_lineOpen)
   {
     m_t << "<div class=\"line\">";
-    DoxyCodeLineOpen = TRUE;
+    m_lineOpen = TRUE;
   }
 
   m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
@@ -868,10 +867,10 @@ void HtmlCodeGenerator::startCodeLine(bool)
   if (m_streamSet)
   {
     m_col=0;
-    if (!DoxyCodeLineOpen)
+    if (!m_lineOpen)
     {
       m_t << "<div class=\"line\">";
-      DoxyCodeLineOpen = TRUE;
+      m_lineOpen = TRUE;
     }
   }
 }
@@ -885,10 +884,10 @@ void HtmlCodeGenerator::endCodeLine()
       m_t << " ";
       m_col++;
     }
-    if (DoxyCodeLineOpen)
+    if (m_lineOpen)
     {
       m_t << "</div>\n";
-      DoxyCodeLineOpen = FALSE;
+      m_lineOpen = FALSE;
     }
   }
 }
@@ -907,6 +906,20 @@ void HtmlCodeGenerator::writeCodeAnchor(const char *anchor)
 {
   if (m_streamSet) m_t << "<a name=\"" << anchor << "\"></a>";
 }
+
+void HtmlCodeGenerator::startCodeFragment(const char *)
+{
+  if (m_streamSet) m_t << "<div class=\"fragment\">";
+}
+
+void HtmlCodeGenerator::endCodeFragment()
+{
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
+  if (m_streamSet) m_t << "</div><!-- fragment -->";
+}
+
 
 //--------------------------------------------------------------------------
 
@@ -1114,6 +1127,8 @@ void HtmlGenerator::writeFooterFile(QFile &file)
   t << ResourceMgr::instance().getAsString("footer.html");
 }
 
+static std::mutex g_indexLock;
+
 void HtmlGenerator::startFile(const char *name,const char *,
                               const char *title)
 {
@@ -1125,7 +1140,10 @@ void HtmlGenerator::startFile(const char *name,const char *,
   startPlainFile(fileName);
   m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(m_relPath);
-  Doxygen::indexList->addIndexFile(fileName);
+  {
+    std::lock_guard<std::mutex> lock(g_indexLock);
+    Doxygen::indexList->addIndexFile(fileName);
+  }
 
   m_lastFile = fileName;
   t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),m_relPath);
@@ -2859,19 +2877,6 @@ void HtmlGenerator::endConstraintList()
   t << "</dd>" << endl;
   t << "</dl>" << endl;
   t << "</div>" << endl;
-}
-
-void HtmlGenerator::startCodeFragment()
-{
-  t << PREFRAG_START;
-}
-
-void HtmlGenerator::endCodeFragment()
-{
-  //endCodeLine checks is there is still an open code line, if so closes it.
-  endCodeLine();
-
-  t << PREFRAG_END;
 }
 
 void HtmlGenerator::lineBreak(const char *style)

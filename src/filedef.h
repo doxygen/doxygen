@@ -150,7 +150,9 @@ class FileDef : virtual public Definition
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeTagFile(FTextStream &t) = 0;
 
-    virtual void writeSource(OutputList &ol,ClangTUParser *clangParser) = 0;
+    virtual void writeSourceHeader(OutputList &ol) = 0;
+    virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) = 0;
+    virtual void writeSourceFooter(OutputList &ol) = 0;
     virtual void parseSource(ClangTUParser *clangParser) = 0;
     virtual void setDiskName(const QCString &name) = 0;
 

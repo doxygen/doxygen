@@ -316,9 +316,11 @@ DB_VIS_C
   {
     case DocVerbatim::Code: // fall though
       m_t << "<literallayout><computeroutput>";
-      Doxygen::parserManager->getCodeParser(m_langExt)
-         .parseCode(m_ci,s->context(),s->text(),langExt,
-            s->isExample(),s->exampleFile());
+      getCodeParser(m_langExt).parseCode(m_ci,s->context(),
+                                         s->text(),
+                                         langExt,
+                                         s->isExample(),
+                                         s->exampleFile());
       m_t << "</computeroutput></literallayout>";
       break;
     case DocVerbatim::Verbatim:
@@ -425,24 +427,22 @@ DB_VIS_C
         m_t << "<literallayout><computeroutput>";
         QFileInfo cfi( inc->file() );
         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-        Doxygen::parserManager->getCodeParser(inc->extension())
-           .parseCode(m_ci,inc->context(),
-              inc->text(),
-              langExt,
-              inc->isExample(),
-              inc->exampleFile(), fd);
+        getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
+                                                  inc->text(),
+                                                  langExt,
+                                                  inc->isExample(),
+                                                  inc->exampleFile(), fd);
         delete fd;
         m_t << "</computeroutput></literallayout>";
       }
       break;
     case DocInclude::Include:
       m_t << "<literallayout><computeroutput>";
-      Doxygen::parserManager->getCodeParser(inc->extension())
-         .parseCode(m_ci,inc->context(),
-            inc->text(),
-            langExt,
-            inc->isExample(),
-            inc->exampleFile());
+      getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
+                                                inc->text(),
+                                                langExt,
+                                                inc->isExample(),
+                                                inc->exampleFile());
       m_t << "</computeroutput></literallayout>";
       break;
     case DocInclude::DontInclude:
@@ -463,14 +463,13 @@ DB_VIS_C
       break;
     case DocInclude::Snippet:
       m_t << "<literallayout><computeroutput>";
-      Doxygen::parserManager->getCodeParser(inc->extension())
-         .parseCode(m_ci,
-            inc->context(),
-            extractBlock(inc->text(),inc->blockId()),
-            langExt,
-            inc->isExample(),
-            inc->exampleFile()
-            );
+      getCodeParser(inc->extension()).parseCode(m_ci,
+                                                inc->context(),
+                                                extractBlock(inc->text(),inc->blockId()),
+                                                langExt,
+                                                inc->isExample(),
+                                                inc->exampleFile()
+                                               );
       m_t << "</computeroutput></literallayout>";
       break;
     case DocInclude::SnipWithLines:
@@ -478,8 +477,7 @@ DB_VIS_C
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
          m_t << "<literallayout><computeroutput>";
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -531,17 +529,16 @@ DB_VIS_C
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getCodeParser(locLangExt)
-         .parseCode(m_ci,op->context(),
-            op->text(),langExt,op->isExample(),
-            op->exampleFile(),
-            fd,     // fileDef
-            op->line(),    // startLine
-            -1,    // endLine
-            FALSE, // inline fragment
-            0,     // memberDef
-            op->showLineNo()  // show line numbers
-         );
+      getCodeParser(locLangExt).parseCode(m_ci,op->context(),
+                                        op->text(),langExt,op->isExample(),
+                                        op->exampleFile(),
+                                        fd,     // fileDef
+                                        op->line(),    // startLine
+                                        -1,    // endLine
+                                        FALSE, // inline fragment
+                                        0,     // memberDef
+                                        op->showLineNo()  // show line numbers
+                                       );
       if (fd) delete fd;
     }
     pushEnabled();

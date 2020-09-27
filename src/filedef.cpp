@@ -101,7 +101,9 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeSummaryLinks(OutputList &ol) const;
     virtual void writeTagFile(FTextStream &t);
-    virtual void writeSource(OutputList &ol,ClangTUParser *clangParser);
+    virtual void writeSourceHeader(OutputList &ol);
+    virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser);
+    virtual void writeSourceFooter(OutputList &ol);
     virtual void parseSource(ClangTUParser *clangParser);
     virtual void setDiskName(const QCString &name);
     virtual void insertMember(MemberDef *md);
@@ -208,6 +210,8 @@ class DevNullCodeDocInterface : public CodeOutputInterface
     virtual void linkableSymbol(int, const char *,Definition *,Definition *) {}
     virtual void setCurrentDoc(const Definition *,const char *,bool) {}
     virtual void addWord(const char *,bool) {}
+    virtual void startCodeFragment(const char *) {}
+    virtual void endCodeFragment() {}
 };
 
 //---------------------------------------------------------------------------
@@ -1150,14 +1154,12 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
 }
 
 /*! Write a source listing of this file to the output */
-void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
+void FileDefImpl::writeSourceHeader(OutputList &ol)
 {
   bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
-  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
   bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
   bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
-  DevNullCodeDocInterface devNullIntf;
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
@@ -1207,7 +1209,12 @@ void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
     ol.endTextLink();
     ol.popGeneratorState();
   }
+}
 
+void FileDefImpl::writeSourceBody(OutputList &ol,ClangTUParser *clangParser)
+{
+  bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
+  DevNullCodeDocInterface devNullIntf;
 #if USE_LIBCLANG
   if (Doxygen::clangAssistedParsing && clangParser &&
       (getLanguage()==SrcLangExt_Cpp || getLanguage()==SrcLangExt_ObjC))
@@ -1220,9 +1227,9 @@ void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
   else
 #endif
   {
-    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
-    intf.resetCodeParserState();
-    ol.startCodeFragment();
+    auto intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
+    intf->resetCodeParserState();
+    ol.startCodeFragment("DoxyCode");
     bool needs2PassParsing =
         Doxygen::parseSourcesNeeded &&                // we need to parse (filtered) sources for cross-references
         !filterSourceFiles &&                         // but user wants to show sources as-is
@@ -1231,13 +1238,13 @@ void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
     if (needs2PassParsing)
     {
       // parse code for cross-references only (see bug707641)
-      intf.parseCode(devNullIntf,0,
+      intf->parseCode(devNullIntf,0,
                        fileToString(absFilePath(),TRUE,TRUE),
                        getLanguage(),
                        FALSE,0,this
                       );
     }
-    intf.parseCode(ol,0,
+    intf->parseCode(ol,0,
         fileToString(absFilePath(),filterSourceFiles,TRUE),
         getLanguage(),      // lang
         FALSE,              // isExampleBlock
@@ -1253,6 +1260,10 @@ void FileDefImpl::writeSource(OutputList &ol,ClangTUParser *clangParser)
         );
     ol.endCodeFragment();
   }
+}
+
+void FileDefImpl::writeSourceFooter(OutputList &ol)
+{
   ol.endContents();
   endFileWithNavPath(this,ol);
   ol.enableAll();
@@ -1272,9 +1283,9 @@ void FileDefImpl::parseSource(ClangTUParser *clangParser)
   else
 #endif
   {
-    CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
-    intf.resetCodeParserState();
-    intf.parseCode(
+    auto intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
+    intf->resetCodeParserState();
+    intf->parseCode(
             devNullIntf,0,
             fileToString(absFilePath(),filterSourceFiles,TRUE),
             getLanguage(),

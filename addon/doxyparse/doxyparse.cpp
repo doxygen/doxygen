@@ -70,6 +70,8 @@ class Doxyparse : public CodeOutputInterface
     void startCodeLine(bool) {}
     void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
+    void startCodeFragment(const char *) {}
+    void endCodeFragment() {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -90,19 +92,19 @@ static bool is_c_code = true;
 static void findXRefSymbols(FileDef *fd)
 {
   // get the interface to a parser that matches the file extension
-  CodeParserInterface &intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
+  auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
 
   // get the programming language from the file name
   SrcLangExt lang = getLanguageFromFileName(fd->name());
 
   // reset the parsers state
-  intf.resetCodeParserState();
+  intf->resetCodeParserState();
 
   // create a new backend object
   Doxyparse *parse = new Doxyparse(fd);
 
   // parse the source code
-  intf.parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
+  intf->parseCode(*parse, 0, fileToString(fd->absFilePath()), lang, FALSE, 0, fd);
 
   // dismiss the object.
   delete parse;

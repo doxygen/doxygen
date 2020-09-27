@@ -62,6 +62,8 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *) {}
     void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
+    void startCodeFragment(const char *) {}
+    void endCodeFragment() {}
 
     // here we are presented with the symbols found by the code parser
     void linkableSymbol(int l, const char *sym,Definition *symDef,Definition *context)
@@ -109,19 +111,19 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
 static void findXRefSymbols(FileDef *fd)
 {
   // get the interface to a parser that matches the file extension
-  CodeParserInterface &intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
+  auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
 
   // get the programming language from the file name
   SrcLangExt lang = getLanguageFromFileName(fd->name());
 
   // reset the parsers state
-  intf.resetCodeParserState();
+  intf->resetCodeParserState();
 
   // create a new backend object
   XRefDummyCodeGenerator *xrefGen = new XRefDummyCodeGenerator(fd);
 
   // parse the source code
-  intf.parseCode(*xrefGen,
+  intf->parseCode(*xrefGen,
                 0,
                 fileToString(fd->absFilePath()),
                 lang,

@@ -240,6 +240,7 @@ add_library(doxymain STATIC
     docgroup.cpp
     docparser.cpp
     docsets.cpp
+    docvisitor.cpp
     dot.cpp
     dotcallgraph.cpp
     dotclassgraph.cpp

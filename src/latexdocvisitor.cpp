@@ -175,7 +175,7 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(FTextStream &t,CodeOutputInterface &ci,
+LatexDocVisitor::LatexDocVisitor(FTextStream &t,LatexCodeGenerator &ci,
                                  const char *langExt,bool insideTabbing)
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
@@ -351,13 +351,10 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   {
     case DocVerbatim::Code:
       {
-        m_t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
-	LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-        Doxygen::parserManager->getCodeParser(lang)
-                               .parseCode(m_ci,s->context(),s->text(),langExt,
-                                          s->isExample(),s->exampleFile());
-	LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-        m_t << "\\end{DoxyCode}\n";
+        m_ci.startCodeFragment("DoxyCode");
+        getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
+                                      s->isExample(),s->exampleFile());
+        m_ci.endCodeFragment();
       }
       break;
     case DocVerbatim::Verbatim:
@@ -461,44 +458,40 @@ void LatexDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::IncWithLines:
       {
-         m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
-	 LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,inc->context(),
-                                           inc->text(),
-                                           langExt,
-                                           inc->isExample(),
-                                           inc->exampleFile(),
-                                           fd,   // fileDef,
-                                           -1,    // start line
-                                           -1,    // end line
-                                           FALSE, // inline fragment
-                                           0,     // memberDef
-                                           TRUE   // show line numbers
-					  );
-         delete fd;
-	 LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-         m_t << "\\end{DoxyCodeInclude}" << endl;
+        m_ci.startCodeFragment("DoxyCodeInclude");
+        QFileInfo cfi( inc->file() );
+        FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
+                                                  inc->text(),
+                                                  langExt,
+                                                  inc->isExample(),
+                                                  inc->exampleFile(),
+                                                  fd,    // fileDef,
+                                                  -1,    // start line
+                                                  -1,    // end line
+                                                  FALSE, // inline fragment
+                                                  0,     // memberDef
+                                                  TRUE   // show line numbers
+       				                 );
+        delete fd;
+        m_ci.endCodeFragment();
       }
       break;
     case DocInclude::Include:
-      m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
-      LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-      Doxygen::parserManager->getCodeParser(inc->extension())
-                             .parseCode(m_ci,inc->context(),
-                                        inc->text(),langExt,inc->isExample(),
-                                        inc->exampleFile(),
-                                        0,     // fileDef
-                                        -1,    // startLine
-                                        -1,    // endLine
-                                        TRUE,  // inlineFragment
-                                        0,     // memberDef
-                                        FALSE
-			  		);
-      LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-      m_t << "\\end{DoxyCodeInclude}\n";
+      {
+        m_ci.startCodeFragment("DoxyCodeInclude");
+        getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
+                                                  inc->text(),langExt,inc->isExample(),
+                                                  inc->exampleFile(),
+                                                  0,     // fileDef
+                                                  -1,    // startLine
+                                                  -1,    // endLine
+                                                  TRUE,  // inlineFragment
+                                                  0,     // memberDef
+                                                  FALSE
+                                                 );
+        m_ci.endCodeFragment();
+      }
       break;
     case DocInclude::DontInclude:
     case DocInclude::DontIncWithLines:
@@ -518,43 +511,37 @@ void LatexDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::Snippet:
       {
-         m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
-         LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
-                                           inc->context(),
-                                           extractBlock(inc->text(),inc->blockId()),
-                                           langExt,
-                                           inc->isExample(),
-                                           inc->exampleFile()
-                                          );
-         LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-         m_t << "\\end{DoxyCodeInclude}" << endl;
+        m_ci.startCodeFragment("DoxyCodeInclude");
+        getCodeParser(inc->extension()).parseCode(m_ci,
+                                                  inc->context(),
+                                                  extractBlock(inc->text(),inc->blockId()),
+                                                  langExt,
+                                                  inc->isExample(),
+                                                  inc->exampleFile()
+                                                 );
+        m_ci.endCodeFragment();
       }
       break;
     case DocInclude::SnipWithLines:
       {
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
-         LatexCodeGenerator::setDoxyCodeOpen(TRUE);
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
-                                           inc->context(),
-                                           extractBlock(inc->text(),inc->blockId()),
-                                           langExt,
-                                           inc->isExample(),
-                                           inc->exampleFile(),
-                                           fd,
-                                           lineBlock(inc->text(),inc->blockId()),
-                                           -1,    // endLine
-                                           FALSE, // inlineFragment
-                                           0,     // memberDef
-                                           TRUE   // show line number
-                                          );
-         delete fd;
-         LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-         m_t << "\\end{DoxyCodeInclude}" << endl;
+        QFileInfo cfi( inc->file() );
+        FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        m_ci.startCodeFragment("DoxyCodeInclude");
+        getCodeParser(inc->extension()).parseCode(m_ci,
+                                                  inc->context(),
+                                                  extractBlock(inc->text(),inc->blockId()),
+                                                  langExt,
+                                                  inc->isExample(),
+                                                  inc->exampleFile(),
+                                                  fd,
+                                                  lineBlock(inc->text(),inc->blockId()),
+                                                  -1,    // endLine
+                                                  FALSE, // inlineFragment
+                                                  0,     // memberDef
+                                                  TRUE   // show line number
+                                                 );
+        delete fd;
+        m_ci.endCodeFragment();
       }
       break;
     case DocInclude::SnippetDoc:
@@ -571,8 +558,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
   if (op->isFirst())
   {
-    if (!m_hide) m_t << "\n\\begin{DoxyCodeInclude}{" << usedTableLevels() << "}\n";
-    LatexCodeGenerator::setDoxyCodeOpen(TRUE);
+    if (!m_hide) m_ci.startCodeFragment("DoxyCodeInclude");
     pushEnabled();
     m_hide = TRUE;
   }
@@ -591,16 +577,15 @@ void LatexDocVisitor::visit(DocIncOperator *op)
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getCodeParser(locLangExt)
-                             .parseCode(m_ci,op->context(),op->text(),langExt,
-                                        op->isExample(),op->exampleFile(),
-                                        fd,     // fileDef
-                                        op->line(),    // startLine
-                                        -1,    // endLine
-                                        FALSE, // inline fragment
-                                        0,     // memberDef
-                                        op->showLineNo()  // show line numbers
-                                       );
+      getCodeParser(locLangExt).parseCode(m_ci,op->context(),op->text(),langExt,
+                                          op->isExample(),op->exampleFile(),
+                                          fd,     // fileDef
+                                          op->line(),    // startLine
+                                          -1,    // endLine
+                                          FALSE, // inline fragment
+                                          0,     // memberDef
+                                          op->showLineNo()  // show line numbers
+                                         );
       if (fd) delete fd;
     }
     pushEnabled();
@@ -609,8 +594,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->isLast())
   {
     popEnabled();
-    LatexCodeGenerator::setDoxyCodeOpen(FALSE);
-    if (!m_hide) m_t << "\n\\end{DoxyCodeInclude}\n";
+    if (!m_hide) m_ci.endCodeFragment();
   }
   else
   {
@@ -1504,7 +1488,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
   if (m_hide) return;
   bool hasInOutSpecs = s->hasInOutSpecifier();
   bool hasTypeSpecs  = s->hasTypeSpecifier();
-  incUsedTableLevels();
+  m_ci.incUsedTableLevel();
   switch(s->type())
   {
     case DocParamSect::Param:
@@ -1535,7 +1519,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
 void LatexDocVisitor::visitPost(DocParamSect *s)
 {
   if (m_hide) return;
-  decUsedTableLevels();
+  m_ci.decUsedTableLevel();
   switch(s->type())
   {
     case DocParamSect::Param:
@@ -1754,7 +1738,13 @@ void LatexDocVisitor::visitPost(DocParBlock *)
 
 void LatexDocVisitor::filter(const char *str)
 {
-  filterLatexString(m_t,str,m_insideTabbing,m_insidePre,m_insideItem);
+  filterLatexString(m_t,str,
+                    m_insideTabbing,
+                    m_insidePre,
+                    m_insideItem,
+                    m_ci.usedTableLevel()>0,  // insideTable
+                    false                     // keepSpaces
+                   );
 }
 
 void LatexDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor,bool refToTable)
