@@ -27,9 +27,9 @@ struct DocVisitor::Private
   std::unordered_map< std::string, std::unique_ptr<CodeParserInterface> > parserFactoryMap;
 };
 
-DocVisitor::DocVisitor(int id) : p(std::make_unique<Private>())
+DocVisitor::DocVisitor(int id) : m_p(std::make_unique<Private>())
 {
-  p->id = id;
+  m_p->id = id;
 }
 
 DocVisitor::~DocVisitor()
@@ -42,11 +42,11 @@ CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
   // for each extension we create a code parser once per visitor, so that
   // the context of the same parser object is reused thoughout multiple passes for instance
   // for code fragments shown via dontinclude.
-  auto it = p->parserFactoryMap.find(ext);
-  if (it==p->parserFactoryMap.end())
+  auto it = m_p->parserFactoryMap.find(ext);
+  if (it==m_p->parserFactoryMap.end())
   {
     auto factory = Doxygen::parserManager->getCodeParserFactory(extension);
-    auto result = p->parserFactoryMap.insert(std::make_pair(ext,factory()));
+    auto result = m_p->parserFactoryMap.insert(std::make_pair(ext,factory()));
     it = result.first;
   }
   return *it->second.get();
@@ -54,5 +54,5 @@ CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
 
 int DocVisitor::id() const
 {
-  return p->id;
+  return m_p->id;
 }

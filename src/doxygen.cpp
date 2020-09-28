@@ -7514,8 +7514,9 @@ static void generateFileSources()
             {
               msg("Generating code for file %s...\n",fd->docName().data());
               clangParser->parse();
-              fd->writeSource(*g_outputList,clangParser.get());
-
+              fd->writeSourceHeader(*g_outputList);
+              fd->writeSourceBody(*g_outputList,clangParser.get());
+              fd->writeSourceFooter(*g_outputList);
             }
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
@@ -7539,7 +7540,9 @@ static void generateFileSources()
                   if (ifd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
                   {
                     msg(" Generating code for file %s...\n",ifd->docName().data());
-                    ifd->writeSource(*g_outputList,clangParser.get());
+                    ifd->writeSourceHeader(*g_outputList);
+                    ifd->writeSourceBody(*g_outputList,clangParser.get());
+                    ifd->writeSourceFooter(*g_outputList);
                   }
                   else if (!ifd->isReference() && Doxygen::parseSourcesNeeded)
                     // we needed to parse the sources even if we do not show them
@@ -7567,15 +7570,18 @@ static void generateFileSources()
             {
               msg("Generating code for file %s...\n",fd->docName().data());
               clangParser->parse();
-              fd->writeSource(*g_outputList,clangParser.get());
-
+              fd->writeSourceHeader(*g_outputList);
+              fd->writeSourceBody(*g_outputList,clangParser.get());
+              fd->writeSourceFooter(*g_outputList);
             }
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
               msg("Parsing code for file %s...\n",fd->docName().data());
               clangParser->parse();
-              fd->parseSource(clangParser.get());
+              fd->writeSourceHeader(*g_outputList);
+              fd->writeSourceBody(*g_outputList,clangParser.get());
+              fd->writeSourceFooter(*g_outputList);
             }
           }
         }

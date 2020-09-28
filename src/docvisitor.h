@@ -90,7 +90,7 @@ class CodeParserInterface;
 class DocVisitor
 {
     struct Private;
-    std::unique_ptr<Private> p;
+    std::unique_ptr<Private> m_p;
   public:
     DocVisitor(int id);
     virtual ~DocVisitor();
