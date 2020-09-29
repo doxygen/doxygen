@@ -329,3 +329,4 @@ DOT_MULTI_TARGETS      = NO
 GENERATE_LEGEND        = YES
 DOT_CLEANUP            = NO
 DOT_MAX_FOLD           = 17
+DOT_UML_DETAILS        = NO

@@ -3668,6 +3668,14 @@ remove the intermediate dot files that are used to generate the various graphs.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='DOT_UML_DETAILS' defval='0' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+If the \c DOT_UML_DETAILS tag is set to \c YES, doxygen will
+add details in the uml graphs.
+]]>
+      </docs>
+    </option>
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
     <option type='obsolete' id='QTHELP_FILE'/>
