@@ -2729,6 +2729,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   }
   int lineNr=1;
 
+  p->commentScanner.enterFile(fileName,lineNr);
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
@@ -2760,6 +2761,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   {
     root->moveToSubEntryAndKeep(current);
   }
+  p->commentScanner.leaveFile(fileName,lineNr);
 }
 
 void MarkdownOutlineParser::parsePrototype(const char *text)
