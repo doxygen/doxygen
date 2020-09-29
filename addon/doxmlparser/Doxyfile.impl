@@ -215,6 +215,7 @@ EXTRA_SEARCH_MAPPINGS  =
 GENERATE_LATEX         = NO
 LATEX_OUTPUT           =
 LATEX_CMD_NAME         =
+PDF_DST_FILE           = 
 MAKEINDEX_CMD_NAME     = makeindex
 LATEX_MAKEINDEX_CMD    = makeindex
 COMPACT_LATEX          = NO

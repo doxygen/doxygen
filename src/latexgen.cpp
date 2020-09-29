@@ -306,6 +306,7 @@ static void writeLatexMakefile()
   }
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   QCString latex_command = theTranslator->latexCommandName();
+  QCString pdf_dst_file = Config_getString(PDF_DST_FILE);
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
   FTextStream t(&file);
@@ -380,7 +381,12 @@ static void writeLatexMakefile()
       << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
       << "\t    done" << endl
       << "\t" << mkidx_command << " refman.idx" << endl
-      << "\t$(LATEX_CMD) refman" << endl << endl;
+      << "\t$(LATEX_CMD) refman" << endl;
+    if(!pdf_dst_file.isEmpty())
+    {
+      t << "\tcp refman.pdf " << pdf_dst_file << endl;
+    }
+    t << endl;
   }
 
   t << endl

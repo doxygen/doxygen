@@ -1495,6 +1495,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
       m_t << "\n\\begin{DoxyParams}";
       if      (hasInOutSpecs && hasTypeSpecs) m_t << "[2]"; // 2 extra cols
       else if (hasInOutSpecs || hasTypeSpecs) m_t << "[1]"; // 1 extra col
+      else m_t << "[0]"; // no extra cols
       m_t << "{";
       filter(theTranslator->trParameters());
       break;
@@ -1644,7 +1645,7 @@ void LatexDocVisitor::visitPost(DocParamList *pl)
                   parentType==DocParamSect::TemplateParam;
   if (useTable)
   {
-    m_t << "\\\\" << endl
+    m_t << "\\\\" 
         << "\\hline" << endl;
   }
 }
