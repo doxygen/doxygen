@@ -187,7 +187,7 @@ QCString DotNode::convertLabel(const QCString &l)
   int len=p.length();
   int charsLeft=len;
   int sinceLast=0;
-  int foldLen=117; // ideal text length
+  int foldLen = Config_getInt(DOT_MAX_FOLD); // ideal text length
   while (idx < p.length())
   {
     c = p[idx++];

@@ -3661,6 +3661,13 @@ remove the intermediate dot files that are used to generate the various graphs.
 ]]>
       </docs>
     </option>
+    <option type='int' id='DOT_MAX_FOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ The \c DOT_MAX_FOLD tag can be used to set the length to fold text of dot graphs.
+]]>
+      </docs>
+    </option>
     <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
     <option type='obsolete' id='DETAILS_AT_TOP'/>
     <option type='obsolete' id='QTHELP_FILE'/>
