@@ -391,7 +391,7 @@ void ManGenerator::endItemListItem()
 {
 }
 
-void ManGenerator::startCodeFragment()
+void ManGenerator::startCodeFragment(const char *)
 {
   newParagraph();
   t << ".nf" << endl;
@@ -399,7 +399,7 @@ void ManGenerator::startCodeFragment()
   m_paragraph=FALSE;
 }
 
-void ManGenerator::endCodeFragment()
+void ManGenerator::endCodeFragment(const char *)
 {
   if (!m_firstCol) t << endl;
   t << ".fi" << endl;

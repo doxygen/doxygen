@@ -31,7 +31,6 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qdatetime.h>
-#include <qcache.h>
 
 #include "util.h"
 #include "message.h"
@@ -1028,7 +1027,6 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
   }
 done:
   accessStack.pop();
-  //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -1196,7 +1194,6 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
 done:
   //printf("  > result=%d\n",result);
   accessStack.pop();
-  //Doxygen::lookupCache.insert(key,new int(result));
   return result;
 }
 
@@ -1208,7 +1205,7 @@ int computeQualifiedIndex(const QCString &name)
 
 static void getResolvedSymbol(const Definition *scope,
                        const FileDef *fileScope,
-                       Definition *d,
+                       const Definition *d,
                        const QCString &explicitScopePart,
                        const std::unique_ptr<ArgumentList> &actTemplParams,
                        int &minDistance,
@@ -1224,7 +1221,7 @@ static void getResolvedSymbol(const Definition *scope,
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember &&
-       ((dynamic_cast<MemberDef*>(d))->isTypedef() || (dynamic_cast<MemberDef*>(d))->isEnumerate())
+       ((dynamic_cast<const MemberDef*>(d))->isTypedef() || (dynamic_cast<const MemberDef*>(d))->isEnumerate())
       )
      )
   {
@@ -1237,7 +1234,7 @@ static void getResolvedSymbol(const Definition *scope,
       // see if we are dealing with a class or a typedef
       if (d->definitionType()==Definition::TypeClass) // d is a class
       {
-        ClassDef *cd = dynamic_cast<ClassDef *>(d);
+        const ClassDef *cd = dynamic_cast<const ClassDef *>(d);
         //printf("cd=%s\n",cd->name().data());
         if (!cd->isTemplateArgument()) // skip classes that
           // are only there to
@@ -1282,7 +1279,7 @@ static void getResolvedSymbol(const Definition *scope,
       }
       else if (d->definitionType()==Definition::TypeMember)
       {
-        MemberDef *md = dynamic_cast<MemberDef *>(d);
+        const MemberDef *md = dynamic_cast<const MemberDef *>(d);
         //printf("  member isTypedef()=%d\n",md->isTypedef());
         if (md->isTypedef()) // d is a typedef
         {
@@ -1365,6 +1362,8 @@ static void getResolvedSymbol(const Definition *scope,
   //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,bestResolvedType.data());
 }
 
+static std::mutex g_cacheMutex;
+
 /* Find the fully qualified class name referred to by the input class
  * or typedef name against the input scope.
  * Loops through scope and each of its parent scopes looking for a
@@ -1411,7 +1410,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   }
 
   //printf("Looking for symbol %s\n",name.data());
-  DefinitionIntf *di = Doxygen::symbolMap->find(name);
+  const DefinitionIntf *di = Doxygen::symbolMap->find(name);
   // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
   if (di==0)
@@ -1468,26 +1467,30 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   }
   *p='\0';
 
-  LookupInfo *pval=Doxygen::lookupCache->find(key);
-  //printf("Searching for %s result=%p\n",key.data(),pval);
-  if (pval)
+  LookupInfo *pval = 0;
   {
-    //printf("LookupInfo %p %p '%s' %p\n",
-    //    pval->classDef, pval->typeDef, pval->templSpec.data(),
-    //    pval->resolvedType.data());
-    if (pTemplSpec)    *pTemplSpec=pval->templSpec;
-    if (pTypeDef)      *pTypeDef=pval->typeDef;
-    if (pResolvedType) *pResolvedType=pval->resolvedType;
-    //printf("] cachedMatch=%s\n",
-    //    pval->classDef?pval->classDef->name().data():"<none>");
-    //if (pTemplSpec)
-    //  printf("templSpec=%s\n",pTemplSpec->data());
-    return pval->classDef;
-  }
-  else // not found yet; we already add a 0 to avoid the possibility of
-    // endless recursion.
-  {
-    Doxygen::lookupCache->insert(key,new LookupInfo);
+    std::lock_guard<std::mutex> lock(g_cacheMutex);
+    pval=Doxygen::lookupCache->find(key.str());
+    //printf("Searching for %s result=%p\n",key.data(),pval);
+    if (pval)
+    {
+      //printf("LookupInfo %p %p '%s' %p\n",
+      //    pval->classDef, pval->typeDef, pval->templSpec.data(),
+      //    pval->resolvedType.data());
+      if (pTemplSpec)    *pTemplSpec=pval->templSpec;
+      if (pTypeDef)      *pTypeDef=pval->typeDef;
+      if (pResolvedType) *pResolvedType=pval->resolvedType;
+      //printf("] cachedMatch=%s\n",
+      //    pval->classDef?pval->classDef->name().data():"<none>");
+      //if (pTemplSpec)
+      //  printf("templSpec=%s\n",pTemplSpec->data());
+      return pval->classDef;
+    }
+    else // not found yet; we already add a 0 to avoid the possibility of
+      // endless recursion.
+    {
+      pval = Doxygen::lookupCache->insert(key.str(),LookupInfo());
+    }
   }
 
   const ClassDef *bestMatch=0;
@@ -1533,17 +1536,13 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
   //    bestMatch,bestResolvedType.data());
 
-  pval=Doxygen::lookupCache->find(key);
   if (pval)
   {
+    std::lock_guard<std::mutex> lock(g_cacheMutex);
     pval->classDef     = bestMatch;
     pval->typeDef      = bestTypedef;
     pval->templSpec    = bestTemplSpec;
     pval->resolvedType = bestResolvedType;
-  }
-  else
-  {
-    Doxygen::lookupCache->insert(key,new LookupInfo(bestMatch,bestTypedef,bestTemplSpec,bestResolvedType));
   }
   //printf("] bestMatch=%s distance=%d\n",
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
@@ -1828,7 +1827,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           if (nc != '=')
           // avoid splitting operator&=
-	  {
+          {
             *dst++=' ';
           }
         }
@@ -2263,7 +2262,7 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   if (al.volatileSpecifier()) result+=" volatile";
   if (al.refQualifier()==RefQualifierLValue) result+=" &";
   else if (al.refQualifier()==RefQualifierRValue) result+=" &&";
-  if (!al.trailingReturnType().isEmpty()) result+=" -> "+al.trailingReturnType();
+  if (!al.trailingReturnType().isEmpty()) result+=al.trailingReturnType();
   if (al.pureSpecifier()) result+=" =0";
   return removeRedundantWhiteSpace(result);
 }
@@ -4487,7 +4486,7 @@ struct FindFileCacheElem
   bool isAmbig;
 };
 
-static QCache<FindFileCacheElem> g_findFileDefCache(5000);
+static Cache<std::string,FindFileCacheElem> g_findFileDefCache(5000);
 
 static std::mutex g_findFileDefMutex;
 
@@ -4504,8 +4503,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   QCString key = addr;
   key+=n;
 
-  g_findFileDefCache.setAutoDelete(TRUE);
-  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key);
+  FindFileCacheElem *cachedResult = g_findFileDefCache.find(key.str());
   //printf("key=%s cachedResult=%p\n",key.data(),cachedResult);
   if (cachedResult)
   {
@@ -4515,7 +4513,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   }
   else
   {
-    cachedResult = new FindFileCacheElem(0,FALSE);
+    cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(0,FALSE));
   }
 
   QCString name=QDir::cleanDirPath(n).utf8();
@@ -4543,8 +4541,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
       if (path.isEmpty() || isSamePath)
       {
         cachedResult->fileDef = fd.get();
-        g_findFileDefCache.insert(key,cachedResult);
-        //printf("=1 ===> add to cache %p\n",fd);
         return fd.get();
       }
     }
@@ -4563,12 +4559,10 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
           lastMatch=fd;
         }
       }
-      //printf(">1 ===> add to cache %p\n",fd);
 
       ambig=(count>1);
       cachedResult->isAmbig = ambig;
       cachedResult->fileDef = lastMatch;
-      g_findFileDefCache.insert(key,cachedResult);
       return lastMatch;
     }
   }
@@ -4577,8 +4571,6 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
     //printf("not found!\n");
   }
 exit:
-  //printf("0  ===> add to cache %p: %s\n",cachedResult,n);
-  g_findFileDefCache.insert(key,cachedResult);
   //delete cachedResult;
   return 0;
 }
@@ -4732,11 +4724,10 @@ bool hasVisibleRoot(const BaseClassList *bcl)
 // note that this function is not reentrant due to the use of static growBuf!
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
-  static bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
-  static bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
-  static GrowBuf growBuf;
-  growBuf.clear();
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool allowUnicodeNames = Config_getBool(ALLOW_UNICODE_NAMES);
   if (name==0) return "";
+  GrowBuf growBuf;
   signed char c;
   const signed char *p=(const signed char*)name;
   while ((c=*p++)!=0)
@@ -5230,9 +5221,8 @@ QCString stripScope(const char *name)
 QCString convertToId(const char *s)
 {
   static const char hex[] = "0123456789ABCDEF";
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const char *p=s;
   char c;
   bool first=TRUE;
@@ -5271,9 +5261,8 @@ QCString correctId(QCString s)
 /*! Converts a string to an XML-encoded string */
 QCString convertToXML(const char *s, bool keepEntities)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5323,9 +5312,8 @@ QCString convertToXML(const char *s, bool keepEntities)
 /*! Converts a string to an DocBook-encoded string */
 QCString convertToDocBook(const char *s)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const unsigned char *q;
   int cnt;
   const unsigned char *p=(const unsigned char *)s;
@@ -5383,9 +5371,8 @@ QCString convertToDocBook(const char *s)
 /*! Converts a string to a HTML-encoded string */
 QCString convertToHtml(const char *s,bool keepEntities)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   growBuf.addStr(getHtmlDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
   char c;
@@ -5430,9 +5417,8 @@ QCString convertToHtml(const char *s,bool keepEntities)
 
 QCString convertToJSString(const char *s, bool applyTextDir)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   if (applyTextDir)
     growBuf.addStr(getJsDirEmbeddingChar(getTextDirByConfig(s)));
   const char *p=s;
@@ -5452,9 +5438,8 @@ QCString convertToJSString(const char *s, bool applyTextDir)
 
 QCString convertToPSString(const char *s)
 {
-  static GrowBuf growBuf;
-  growBuf.clear();
   if (s==0) return "";
+  GrowBuf growBuf;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5474,7 +5459,7 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 {
   QGString result;
   FTextStream t(&result);
-  filterLatexString(t,s,insideTabbing,FALSE,FALSE,keepSpaces);
+  filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
   return result.data();
 }
 
@@ -5486,8 +5471,7 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
   static QRegExp entityPat("&[a-zA-Z]+[0-9]*;");
 
   if (s.length()==0) return result;
-  static GrowBuf growBuf;
-  growBuf.clear();
+  GrowBuf growBuf;
   int p,i=0,l;
   while ((p=entityPat.match(s,i,&l))!=-1)
   {
@@ -5714,7 +5698,7 @@ QCString normalizeNonTemplateArgumentsInString(
     result += name.mid(p,i-p);
     QCString n = name.mid(i,l);
     bool found=FALSE;
-    for (const Argument formArg : formalArgs)
+    for (const Argument &formArg : formalArgs)
     {
       if (formArg.name == n)
       {
@@ -6166,7 +6150,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
 }
 
 void filterLatexString(FTextStream &t,const char *str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool keepSpaces)
+    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
 {
   if (str==0) return;
   //if (strlen(str)<2) stackTrace();
@@ -6203,7 +6187,7 @@ void filterLatexString(FTextStream &t,const char *str,
         case '$':  t << "\\$"; break;
         case '"':  t << "\"{}"; break;
         case '-':  t << "-\\/"; break;
-        case '^':  (usedTableLevels()>0) ? t << "\\string^" : t << (char)c;    break;
+        case '^':  insideTable ? t << "\\string^" : t << (char)c;    break;
         case '~':  t << "\\string~";    break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
@@ -6297,7 +6281,7 @@ void filterLatexString(FTextStream &t,const char *str,
         default:
                    //if (!insideTabbing && forceBreaks && c!=' ' && *p!=' ')
                    if (!insideTabbing &&
-                       ((c>='A' && c<='Z' && pc!=' ' && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
+                       ((c>='A' && c<='Z' && pc!=' ' && !(pc>='A' && pc <= 'Z') && pc!='\0' && *p) || (c==':' && pc!=':') || (pc=='.' && isId(c)))
                       )
                    {
                      t << "\\+";
@@ -6340,7 +6324,13 @@ QCString latexEscapeLabelName(const char *s)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp,TRUE);
+        filterLatexString(t,tmp,
+                          true,  // insideTabbing
+                          false, // insidePre
+                          false, // insideItem
+                          false, // insideTable
+                          false  // keepSpaces
+                         );
         break;
     }
   }
@@ -6379,7 +6369,13 @@ QCString latexEscapeIndexChars(const char *s)
           p++;
         }
         tmp[i]=0;
-        filterLatexString(t,tmp.data(),TRUE);
+        filterLatexString(t,tmp.data(),
+                          true,   // insideTabbing
+                          false,  // insidePre
+                          false,  // insideItem
+                          false,  // insideTable
+                          false   // keepSpaces
+                         );
         break;
     }
   }
@@ -8457,20 +8453,56 @@ void writeLatexSpecialFormulaChars(FTextStream &t)
 }
 
 //------------------------------------------------------
-
-static int g_usedTableLevels = 0;
-
-void incUsedTableLevels()
+// simplified way to know if this is fixed form
+bool recognizeFixedForm(const char* contents, FortranFormat format)
 {
-  g_usedTableLevels++;
-}
-void decUsedTableLevels()
-{
-  g_usedTableLevels--;
-}
-int usedTableLevels()
-{
-  return g_usedTableLevels;
+  int column=0;
+  bool skipLine=FALSE;
+
+  if (format == FortranFormat_Fixed) return TRUE;
+  if (format == FortranFormat_Free)  return FALSE;
+
+  for(int i=0;;i++) {
+    column++;
+
+    switch(contents[i]) {
+      case '\n':
+        column=0;
+        skipLine=FALSE;
+        break;
+      case ' ':
+        break;
+      case '\000':
+        return FALSE;
+      case '#':
+        skipLine=TRUE;
+        break;
+      case 'C':
+      case 'c':
+      case '*':
+        if (column==1) return TRUE;
+        if (skipLine) break;
+        return FALSE;
+      case '!':
+        if (column>1 && column<7) return FALSE;
+        skipLine=TRUE;
+        break;
+      default:
+        if (skipLine) break;
+        if (column>=7) return TRUE;
+        return FALSE;
+    }
+  }
+  return FALSE;
 }
 
-//------------------------------------------------------
+FortranFormat convertFileNameFortranParserCode(QCString fn)
+{
+  QCString ext = getFileNameExtension(fn);
+  QCString parserName = Doxygen::parserManager->getParserName(ext.data());
+
+  if (parserName == "fortranfixed") return FortranFormat_Fixed;
+  else if (parserName == "fortranfree") return FortranFormat_Free;
+
+  return FortranFormat_Unknown;
+}

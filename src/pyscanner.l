@@ -651,6 +651,7 @@ STARTDOCSYMS      "##"
     {B}":"{B}		    { // function without arguments
 			      yyextra->specialBlock = TRUE; // expecting a docstring
 			      yyextra->bodyEntry = yyextra->current;
+                              yyextra->current->bodyLine  = yyextra->yyLineNr;
                               BEGIN(FunctionBody);
 			    }
 
@@ -1322,7 +1323,6 @@ STARTDOCSYMS      "##"
     \n/{B}"#"		{ // continuation of the comment on the next line
       			  yyextra->docBlock+='\n';
 			  yyextra->docBrief = FALSE;
-                          startCommentBlock(yyscanner,FALSE);
 			  incLineNr(yyscanner);
       			}
     [^#\n]+             { // any other stuff
@@ -1426,7 +1426,7 @@ STARTDOCSYMS      "##"
                                }
 
 <*>"'"                         {
-       fprintf(stderr,"Quote: %d\n",YY_START);
+                                 //fprintf(stderr,"Quote: %d\n",YY_START);
                                }
 
 <*>.                           {
@@ -1626,7 +1626,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   }
 
   int position = 0;
-  bool needsEntry;
+  bool needsEntry = false;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   Markdown markdown(yyextra->yyFileName,lineNr);
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
@@ -1711,7 +1711,7 @@ static void initSpecialBlock(yyscan_t yyscanner)
   yyextra->docBrief = TRUE;
   yyextra->docBlock.resize(0);
   yyextra->commentIndent = yyextra->curIndent;
-  startCommentBlock(yyscanner,TRUE);
+  startCommentBlock(yyscanner,FALSE);
 }
 
 static void searchFoundDef(yyscan_t yyscanner)
@@ -1757,8 +1757,8 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
     std::shared_ptr<Entry> ce = rt->children()[i];
     if (!ce->program.isEmpty())
     {
-      //printf("-- %s ---------\n%s\n---------------\n",
-      //  ce->name.data(),ce->program.data());
+      //fprintf(stderr,"parseCompounds: -- %s (line %d) ---------\n%s\n---------------\n",
+      //  ce->name.data(), ce->bodyLine, ce->program.data());
       // init scanner state
       yyextra->inputString = ce->program;
       yyextra->inputPosition = 0;

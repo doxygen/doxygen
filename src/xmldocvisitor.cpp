@@ -252,9 +252,8 @@ void XmlDocVisitor::visit(DocVerbatim *s)
           m_t << " filename=\"" << lang << "\">";
       else
           m_t << ">";
-      Doxygen::parserManager->getCodeParser(lang)
-                             .parseCode(m_ci,s->context(),s->text(),langExt,
-                                        s->isExample(),s->exampleFile());
+      getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
+                                    s->isExample(),s->exampleFile());
       m_t << "</programlisting>";
       break;
     case DocVerbatim::Verbatim:
@@ -332,8 +331,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,inc->context(),
+         getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
@@ -351,8 +349,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::Include:
       m_t << "<programlisting filename=\"" << inc->file() << "\">";
-      Doxygen::parserManager->getCodeParser(inc->extension())
-                             .parseCode(m_ci,inc->context(),
+      getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                         inc->text(),
                                         langExt,
                                         inc->isExample(),
@@ -411,8 +408,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::Snippet:
       m_t << "<programlisting filename=\"" << inc->file() << "\">";
-      Doxygen::parserManager->getCodeParser(inc->extension())
-                             .parseCode(m_ci,
+      getCodeParser(inc->extension()).parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
                                         langExt,
@@ -426,8 +422,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
@@ -480,17 +475,16 @@ void XmlDocVisitor::visit(DocIncOperator *op)
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
 
-      Doxygen::parserManager->getCodeParser(locLangExt)
-                             .parseCode(m_ci,op->context(),
-                                        op->text(),langExt,op->isExample(),
-                                        op->exampleFile(),
-                                        fd,     // fileDef
-                                        op->line(),    // startLine
-                                        -1,    // endLine
-                                        FALSE, // inline fragment
-                                        0,     // memberDef
-                                        op->showLineNo()  // show line numbers
-                                       );
+      getCodeParser(locLangExt).parseCode(m_ci,op->context(),
+                                          op->text(),langExt,op->isExample(),
+                                          op->exampleFile(),
+                                          fd,     // fileDef
+                                          op->line(),    // startLine
+                                          -1,    // endLine
+                                          FALSE, // inline fragment
+                                          0,     // memberDef
+                                          op->showLineNo()  // show line numbers
+                                         );
       if (fd) delete fd;
     }
     pushEnabled();

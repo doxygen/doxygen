@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -53,7 +50,7 @@ enum contexts_t
     INTERDD,   // 8
     INTERTD    // 9
 };
-static const char *contexts[10] = 
+static const char *contexts[10] =
 { "",          // 0
   "startli",   // 1
   "startdd",   // 2
@@ -281,8 +278,8 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 //-------------------------------------------------------------------------
 
 HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
-                               const Definition *ctx) 
-  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE), 
+                               const Definition *ctx)
+  : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE),
                                  m_hide(FALSE), m_ctx(ctx)
 {
   if (ctx) m_langExt=ctx->getDefFileExtension();
@@ -439,12 +436,12 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
       if (s->enable()) m_t << "<sup" << htmlAttribsToString(s->attribs()) << ">";    else m_t << "</sup>";
       break;
     case DocStyleChange::Center:
-      if (s->enable()) 
+      if (s->enable())
       {
         forceEndParagraph(s);
-        m_t << "<center" << htmlAttribsToString(s->attribs()) << ">"; 
+        m_t << "<center" << htmlAttribsToString(s->attribs()) << ">";
       }
-      else 
+      else
       {
         m_t << "</center>";
         forceStartParagraph(s);
@@ -468,12 +465,12 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
       }
       break;
     case DocStyleChange::Div:
-      if (s->enable()) 
+      if (s->enable())
       {
         forceEndParagraph(s);
-        m_t << "<div" << htmlAttribsToString(s->attribs()) << ">";  
+        m_t << "<div" << htmlAttribsToString(s->attribs()) << ">";
       }
-      else 
+      else
       {
         m_t << "</div>";
         forceStartParagraph(s);
@@ -490,7 +487,7 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
 static void visitPreCaption(FTextStream &t, DocVerbatim *s)
 {
   if (s->hasCaption())
-  { 
+  {
     t << "<div class=\"caption\">" << endl;
   }
 }
@@ -523,11 +520,10 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   SrcLangExt langExt = getLanguageFromFileName(lang);
   switch(s->type())
   {
-    case DocVerbatim::Code: 
+    case DocVerbatim::Code:
       forceEndParagraph(s);
-      m_t << PREFRAG_START;
-      Doxygen::parserManager->getCodeParser(lang)
-                             .parseCode(m_ci,
+      m_ci.startCodeFragment("DoxyCode");
+      getCodeParser(lang).parseCode(m_ci,
                                         s->context(),
                                         s->text(),
                                         langExt,
@@ -541,14 +537,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
                                         TRUE,  // show line numbers
                                         m_ctx  // search context
                                        );
-      m_t << PREFRAG_END;
+      m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(s);
       break;
-    case DocVerbatim::Verbatim: 
+    case DocVerbatim::Verbatim:
       forceEndParagraph(s);
-      m_t << /*PREFRAG_START <<*/ "<pre class=\"fragment\">";
+      m_t << "<pre class=\"fragment\">";
       filter(s->text());
-      m_t << "</pre>" /*<< PREFRAG_END*/;
+      m_t << "</pre>";
       forceStartParagraph(s);
       break;
     case DocVerbatim::HtmlOnly:
@@ -558,12 +554,12 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         if (s->isBlock()) forceStartParagraph(s);
       }
       break;
-    case DocVerbatim::ManOnly: 
-    case DocVerbatim::LatexOnly: 
-    case DocVerbatim::XmlOnly: 
+    case DocVerbatim::ManOnly:
+    case DocVerbatim::LatexOnly:
+    case DocVerbatim::XmlOnly:
     case DocVerbatim::RtfOnly:
     case DocVerbatim::DocbookOnly:
-      /* nothing */ 
+      /* nothing */
       break;
 
     case DocVerbatim::Dot:
@@ -572,8 +568,8 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         QCString fileName(4096);
 
         forceEndParagraph(s);
-        fileName.sprintf("%s%d%s", 
-            (Config_getString(HTML_OUTPUT)+"/inline_dotgraph_").data(), 
+        fileName.sprintf("%s%d%s",
+            (Config_getString(HTML_OUTPUT)+"/inline_dotgraph_").data(),
             dotindex++,
             ".dot"
            );
@@ -606,8 +602,8 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         static int mscindex = 1;
         QCString baseName(4096);
 
-        baseName.sprintf("%s%d", 
-            (Config_getString(HTML_OUTPUT)+"/inline_mscgraph_").data(), 
+        baseName.sprintf("%s%d",
+            (Config_getString(HTML_OUTPUT)+"/inline_mscgraph_").data(),
             mscindex++
             );
         QFile file(baseName+".msc");
@@ -671,11 +667,10 @@ void HtmlDocVisitor::visit(DocInclude *inc)
   SrcLangExt langExt = getLanguageFromFileName(inc->extension());
   switch(inc->type())
   {
-    case DocInclude::Include: 
+    case DocInclude::Include:
       forceEndParagraph(inc);
-      m_t << PREFRAG_START;
-      Doxygen::parserManager->getCodeParser(inc->extension())
-                             .parseCode(m_ci,                 
+      m_ci.startCodeFragment("DoxyCode");
+      getCodeParser(inc->extension()).parseCode(m_ci,
                                         inc->context(),
                                         inc->text(),
                                         langExt,
@@ -687,24 +682,23 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                         TRUE,  // inlineFragment
                                         0,     // memberDef
                                         FALSE, // show line numbers
-                                        m_ctx  // search context 
+                                        m_ctx  // search context
                                        );
-      m_t << PREFRAG_END;
+      m_ci.endCodeFragment("DoxyCode");
       forceStartParagraph(inc);
       break;
     case DocInclude::IncWithLines:
-      { 
+      {
          forceEndParagraph(inc);
-         m_t << PREFRAG_START;
+         m_ci.startCodeFragment("DoxyCode");
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            inc->text(),
                                            langExt,
                                            inc->isExample(),
-                                           inc->exampleFile(), 
+                                           inc->exampleFile(),
                                            fd,   // fileDef,
                                            -1,    // start line
                                            -1,    // end line
@@ -714,7 +708,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            m_ctx  // search context
                                            );
          delete fd;
-         m_t << PREFRAG_END;
+         m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
       break;
@@ -733,24 +727,23 @@ void HtmlDocVisitor::visit(DocInclude *inc)
         if (inc->isBlock()) forceStartParagraph(inc);
       }
       break;
-    case DocInclude::VerbInclude: 
+    case DocInclude::VerbInclude:
       forceEndParagraph(inc);
-      m_t << /*PREFRAG_START <<*/ "<pre class=\"fragment\">";
+      m_t << "<pre class=\"fragment\">";
       filter(inc->text());
-      m_t << "</pre>" /*<< PREFRAG_END*/;
+      m_t << "</pre>";
       forceStartParagraph(inc);
       break;
     case DocInclude::Snippet:
       {
          forceEndParagraph(inc);
-         m_t << PREFRAG_START;
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
+         m_ci.startCodeFragment("DoxyCode");
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
                                            inc->isExample(),
-                                           inc->exampleFile(), 
+                                           inc->exampleFile(),
                                            0,
                                            -1,    // startLine
                                            -1,    // endLine
@@ -759,23 +752,22 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            FALSE, // show line number
                                            m_ctx  // search context
                                           );
-         m_t << PREFRAG_END;
+         m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
       break;
     case DocInclude::SnipWithLines:
       {
          forceEndParagraph(inc);
-         m_t << PREFRAG_START;
+         m_ci.startCodeFragment("DoxyCode");
          QFileInfo cfi( inc->file() );
          FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
-         Doxygen::parserManager->getCodeParser(inc->extension())
-                                .parseCode(m_ci,
+         getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
                                            langExt,
                                            inc->isExample(),
-                                           inc->exampleFile(), 
+                                           inc->exampleFile(),
                                            fd,
                                            lineBlock(inc->text(),inc->blockId()),
                                            -1,    // endLine
@@ -785,12 +777,12 @@ void HtmlDocVisitor::visit(DocInclude *inc)
                                            m_ctx  // search context
                                           );
          delete fd;
-         m_t << PREFRAG_END;
+         m_ci.endCodeFragment("DoxyCode");
          forceStartParagraph(inc);
       }
       break;
-    case DocInclude::SnippetDoc: 
-    case DocInclude::IncludeDoc: 
+    case DocInclude::SnippetDoc:
+    case DocInclude::IncludeDoc:
       err("Internal inconsistency: found switch SnippetDoc / IncludeDoc in file: %s"
           "Please create a bug report\n",__FILE__);
       break;
@@ -801,20 +793,20 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
 {
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
   //    op->type(),op->isFirst(),op->isLast(),op->text().data());
-  if (op->isFirst()) 
+  if (op->isFirst())
   {
     forceEndParagraph(op);
-    if (!m_hide) m_t << PREFRAG_START;
+    if (!m_hide) m_ci.startCodeFragment("DoxyCode");
     pushEnabled();
     m_hide=TRUE;
   }
   QCString locLangExt = getFileNameExtension(op->includeFileName());
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
-  if (op->type()!=DocIncOperator::Skip) 
+  if (op->type()!=DocIncOperator::Skip)
   {
     popEnabled();
-    if (!m_hide) 
+    if (!m_hide)
     {
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
@@ -822,8 +814,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
         QFileInfo cfi( op->includeFileName() );
         fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
       }
-      Doxygen::parserManager->getCodeParser(locLangExt)
-                             .parseCode(
+      getCodeParser(locLangExt).parseCode(
                                 m_ci,
                                 op->context(),
                                 op->text(),
@@ -843,10 +834,10 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
     pushEnabled();
     m_hide=TRUE;
   }
-  if (op->isLast())  
+  if (op->isLast())
   {
     popEnabled();
-    if (!m_hide) m_t << PREFRAG_END;
+    if (!m_hide) m_ci.endCodeFragment("DoxyCode");
     forceStartParagraph(op);
   }
   else
@@ -859,7 +850,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
 {
   if (m_hide) return;
   bool bDisplay = !f->isInline();
-  if (bDisplay) 
+  if (bDisplay)
   {
     forceEndParagraph(f);
     m_t << "<p class=\"formulaDsp\">" << endl;
@@ -869,7 +860,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
   {
     QCString text = f->text();
     bool closeInline = FALSE;
-    if (!bDisplay && !text.isEmpty() && text.at(0)=='$' && 
+    if (!bDisplay && !text.isEmpty() && text.at(0)=='$' &&
                       text.at(text.length()-1)=='$')
     {
       closeInline=TRUE;
@@ -884,7 +875,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
   }
   else
   {
-    m_t << "<img class=\"formula" 
+    m_t << "<img class=\"formula"
       << (bDisplay ? "Dsp" : "Inl");
     m_t << "\" alt=\"";
     filterQuotedCdataAttr(f->text());
@@ -919,7 +910,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
 void HtmlDocVisitor::visit(DocIndexEntry *e)
 {
   QCString anchor = convertIndexWordToAnchor(e->entry());
-  if (e->member()) 
+  if (e->member())
   {
     anchor.prepend(e->member()->anchor()+"_");
   }
@@ -941,7 +932,7 @@ void HtmlDocVisitor::visit(DocSimpleSectSep *)
 void HtmlDocVisitor::visit(DocCite *cite)
 {
   if (m_hide) return;
-  if (!cite->file().isEmpty()) 
+  if (!cite->file().isEmpty())
   {
     startLink(cite->ref(),cite->file(),cite->relPath(),cite->anchor());
   }
@@ -950,7 +941,7 @@ void HtmlDocVisitor::visit(DocCite *cite)
     m_t << "<b>[";
   }
   filter(cite->text());
-  if (!cite->file().isEmpty()) 
+  if (!cite->file().isEmpty())
   {
     endLink();
   }
@@ -978,7 +969,7 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
     // 1.
     //   a.
     //     i.
-    //       A. 
+    //       A.
     //         1. (repeat)...
     //
     m_t << "<ol type=\"" << types[l->depth() % NUM_HTML_LIST_TYPES] << "\"";
@@ -1013,20 +1004,20 @@ void HtmlDocVisitor::visitPre(DocAutoListItem *)
   m_t << "<li>";
 }
 
-void HtmlDocVisitor::visitPost(DocAutoListItem *li) 
+void HtmlDocVisitor::visitPost(DocAutoListItem *li)
 {
   if (m_hide) return;
   m_t << "</li>";
   if (!li->isPreformatted()) m_t << "\n";
 }
 
-template<class T> 
+template<class T>
 bool isFirstChildNode(T *parent, DocNode *node)
 {
    return parent->children().getFirst()==node;
 }
 
-template<class T> 
+template<class T>
 bool isLastChildNode(T *parent, DocNode *node)
 {
    return parent->children().getLast()==node;
@@ -1070,7 +1061,7 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
   isLast=FALSE;
   if (p && p->parent())
   {
-    switch (p->parent()->kind()) 
+    switch (p->parent()->kind())
     {
       case DocNode::Kind_ParBlock:
         { // hierarchy: node N -> para -> parblock -> para
@@ -1215,7 +1206,7 @@ static int getParagraphContext(DocPara *p,bool &isFirst,bool &isLast)
   return t;
 }
 
-void HtmlDocVisitor::visitPre(DocPara *p) 
+void HtmlDocVisitor::visitPre(DocPara *p)
 {
   if (m_hide) return;
 
@@ -1223,9 +1214,9 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //       p->parent() ? p->parent()->kind() : -1);
 
   bool needsTag = FALSE;
-  if (p && p->parent()) 
+  if (p && p->parent())
   {
-    switch (p->parent()->kind()) 
+    switch (p->parent()->kind())
     {
       case DocNode::Kind_Section:
       case DocNode::Kind_Internal:
@@ -1250,7 +1241,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   }
 
   // if the first element of a paragraph is something that should be outside of
-  // the paragraph (<ul>,<dl>,<table>,..) then that will already started the 
+  // the paragraph (<ul>,<dl>,<table>,..) then that will already started the
   // paragraph and we don't need to do it here
   bool paragraphAlreadyStarted = false;
   uint nodeIndex = 0;
@@ -1296,9 +1287,9 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   //       p->parent() ? p->parent()->kind() : -1);
 
   bool needsTag = FALSE;
-  if (p->parent()) 
+  if (p->parent())
   {
-    switch (p->parent()->kind()) 
+    switch (p->parent()->kind())
     {
       case DocNode::Kind_Section:
       case DocNode::Kind_Internal:
@@ -1323,7 +1314,7 @@ void HtmlDocVisitor::visitPost(DocPara *p)
   }
 
   // if the last element of a paragraph is something that should be outside of
-  // the paragraph (<ul>,<dl>,<table>) then that will already have ended the 
+  // the paragraph (<ul>,<dl>,<table>) then that will already have ended the
   // paragraph and we don't need to do it here
   int nodeIndex = p->children().count()-1;
   if (nodeIndex>=0)
@@ -1372,21 +1363,21 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
     m_t << "<dl class=\"section " << s->typeString() << "\"><dt>";
   switch(s->type())
   {
-    case DocSimpleSect::See: 
+    case DocSimpleSect::See:
       m_t << theTranslator->trSeeAlso(); break;
-    case DocSimpleSect::Return: 
+    case DocSimpleSect::Return:
       m_t << theTranslator->trReturns(); break;
-    case DocSimpleSect::Author: 
+    case DocSimpleSect::Author:
       m_t << theTranslator->trAuthor(TRUE,TRUE); break;
-    case DocSimpleSect::Authors: 
+    case DocSimpleSect::Authors:
       m_t << theTranslator->trAuthor(TRUE,FALSE); break;
-    case DocSimpleSect::Version: 
+    case DocSimpleSect::Version:
       m_t << theTranslator->trVersion(); break;
-    case DocSimpleSect::Since: 
+    case DocSimpleSect::Since:
       m_t << theTranslator->trSince(); break;
-    case DocSimpleSect::Date: 
+    case DocSimpleSect::Date:
       m_t << theTranslator->trDate(); break;
-    case DocSimpleSect::Note: 
+    case DocSimpleSect::Note:
       m_t << theTranslator->trNote(); break;
     case DocSimpleSect::Warning:
       m_t << theTranslator->trWarning(); break;
@@ -1454,7 +1445,7 @@ void HtmlDocVisitor::visitPre(DocSimpleListItem *)
   m_t << "<li>";
 }
 
-void HtmlDocVisitor::visitPost(DocSimpleListItem *li) 
+void HtmlDocVisitor::visitPost(DocSimpleListItem *li)
 {
   if (m_hide) return;
   m_t << "</li>";
@@ -1472,7 +1463,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
   m_t << "</h" << s->level() << ">\n";
 }
 
-void HtmlDocVisitor::visitPost(DocSection *s) 
+void HtmlDocVisitor::visitPost(DocSection *s)
 {
   forceStartParagraph(s);
 }
@@ -1481,26 +1472,26 @@ void HtmlDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  if (s->type()==DocHtmlList::Ordered) 
+  if (s->type()==DocHtmlList::Ordered)
   {
-    m_t << "<ol" << htmlAttribsToString(s->attribs()); 
+    m_t << "<ol" << htmlAttribsToString(s->attribs());
   }
-  else 
+  else
   {
     m_t << "<ul" << htmlAttribsToString(s->attribs());
   }
   m_t << getDirHtmlClassOfNode(getTextDirByConfig(s)) << ">\n";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlList *s) 
+void HtmlDocVisitor::visitPost(DocHtmlList *s)
 {
   if (m_hide) return;
-  if (s->type()==DocHtmlList::Ordered) 
+  if (s->type()==DocHtmlList::Ordered)
   {
-    m_t << "</ol>"; 
+    m_t << "</ol>";
   }
   else
-  { 
+  {
     m_t << "</ul>";
   }
   if (!s->isPreformatted()) m_t << "\n";
@@ -1514,7 +1505,7 @@ void HtmlDocVisitor::visitPre(DocHtmlListItem *i)
   if (!i->isPreformatted()) m_t << "\n";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlListItem *) 
+void HtmlDocVisitor::visitPost(DocHtmlListItem *)
 {
   if (m_hide) return;
   m_t << "</li>\n";
@@ -1527,7 +1518,7 @@ void HtmlDocVisitor::visitPre(DocHtmlDescList *dl)
   m_t << "<dl" << htmlAttribsToString(dl->attribs()) << ">\n";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlDescList *dl) 
+void HtmlDocVisitor::visitPost(DocHtmlDescList *dl)
 {
   if (m_hide) return;
   m_t << "</dl>\n";
@@ -1542,7 +1533,7 @@ void HtmlDocVisitor::visitPre(DocHtmlDescTitle *dt)
     << ">";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlDescTitle *) 
+void HtmlDocVisitor::visitPost(DocHtmlDescTitle *)
 {
   if (m_hide) return;
   m_t << "</dt>\n";
@@ -1551,12 +1542,12 @@ void HtmlDocVisitor::visitPost(DocHtmlDescTitle *)
 void HtmlDocVisitor::visitPre(DocHtmlDescData *dd)
 {
   if (m_hide) return;
-  m_t << "<dd" << htmlAttribsToString(dd->attribs()) 
+  m_t << "<dd" << htmlAttribsToString(dd->attribs())
     << getDirHtmlClassOfNode(getTextDirByConfig(dd))
     << ">";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlDescData *) 
+void HtmlDocVisitor::visitPost(DocHtmlDescData *)
 {
   if (m_hide) return;
   m_t << "</dd>\n";
@@ -1598,7 +1589,7 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
   }
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlTable *t) 
+void HtmlDocVisitor::visitPost(DocHtmlTable *t)
 {
   if (m_hide) return;
   m_t << "</table>\n";
@@ -1611,7 +1602,7 @@ void HtmlDocVisitor::visitPre(DocHtmlRow *tr)
   m_t << "<tr" << htmlAttribsToString(tr->attribs()) << ">\n";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlRow *) 
+void HtmlDocVisitor::visitPost(DocHtmlRow *)
 {
   if (m_hide) return;
   m_t << "</tr>\n";
@@ -1620,17 +1611,17 @@ void HtmlDocVisitor::visitPost(DocHtmlRow *)
 void HtmlDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
-  if (c->isHeading()) 
+  if (c->isHeading())
   {
-    m_t << "<th" << htmlAttribsToString(c->attribs()) << ">"; 
+    m_t << "<th" << htmlAttribsToString(c->attribs()) << ">";
   }
-  else 
+  else
   {
     m_t << "<td" << htmlAttribsToString(c->attribs()) << ">";
   }
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlCell *c) 
+void HtmlDocVisitor::visitPost(DocHtmlCell *c)
 {
   if (m_hide) return;
   if (c->isHeading()) m_t << "</th>"; else m_t << "</td>";
@@ -1642,7 +1633,7 @@ void HtmlDocVisitor::visitPre(DocHtmlCaption *c)
   m_t << "<caption" << htmlAttribsToString(c->attribs()) << ">";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlCaption *) 
+void HtmlDocVisitor::visitPost(DocHtmlCaption *)
 {
   if (m_hide) return;
   m_t << "</caption>\n";
@@ -1655,7 +1646,7 @@ void HtmlDocVisitor::visitPre(DocInternal *)
   //m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
 }
 
-void HtmlDocVisitor::visitPost(DocInternal *) 
+void HtmlDocVisitor::visitPost(DocInternal *)
 {
   if (m_hide) return;
   //forceStartParagraph(i);
@@ -1676,7 +1667,7 @@ void HtmlDocVisitor::visitPre(DocHRef *href)
   }
 }
 
-void HtmlDocVisitor::visitPost(DocHRef *) 
+void HtmlDocVisitor::visitPost(DocHRef *)
 {
   if (m_hide) return;
   m_t << "</a>";
@@ -1686,13 +1677,13 @@ void HtmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
   if (m_hide) return;
   forceEndParagraph(header);
-  m_t << "<h" << header->level() 
-      << htmlAttribsToString(header->attribs()) 
+  m_t << "<h" << header->level()
+      << htmlAttribsToString(header->attribs())
       << getDirHtmlClassOfNode(getTextDirByConfig(header))
       << ">";
 }
 
-void HtmlDocVisitor::visitPost(DocHtmlHeader *header) 
+void HtmlDocVisitor::visitPost(DocHtmlHeader *header)
 {
   if (m_hide) return;
   m_t << "</h" << header->level() << ">\n";
@@ -1834,12 +1825,12 @@ void HtmlDocVisitor::visitPre(DocDotFile *df)
   m_t << "<div class=\"dotgraph\">" << endl;
   writeDotFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
-  { 
+  {
     m_t << "<div class=\"caption\">" << endl;
   }
 }
 
-void HtmlDocVisitor::visitPost(DocDotFile *df) 
+void HtmlDocVisitor::visitPost(DocDotFile *df)
 {
   if (m_hide) return;
   if (df->hasCaption())
@@ -1855,11 +1846,11 @@ void HtmlDocVisitor::visitPre(DocMscFile *df)
   m_t << "<div class=\"mscgraph\">" << endl;
   writeMscFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
-  { 
+  {
     m_t << "<div class=\"caption\">" << endl;
   }
 }
-void HtmlDocVisitor::visitPost(DocMscFile *df) 
+void HtmlDocVisitor::visitPost(DocMscFile *df)
 {
   if (m_hide) return;
   if (df->hasCaption())
@@ -1895,7 +1886,7 @@ void HtmlDocVisitor::visitPre(DocLink *lnk)
   startLink(lnk->ref(),lnk->file(),lnk->relPath(),lnk->anchor());
 }
 
-void HtmlDocVisitor::visitPost(DocLink *) 
+void HtmlDocVisitor::visitPost(DocLink *)
 {
   if (m_hide) return;
   endLink();
@@ -1904,7 +1895,7 @@ void HtmlDocVisitor::visitPost(DocLink *)
 void HtmlDocVisitor::visitPre(DocRef *ref)
 {
   if (m_hide) return;
-  if (!ref->file().isEmpty()) 
+  if (!ref->file().isEmpty())
   {
     // when ref->isSubPage()==TRUE we use ref->file() for HTML and
     // ref->anchor() for LaTeX/RTF
@@ -1913,7 +1904,7 @@ void HtmlDocVisitor::visitPre(DocRef *ref)
   if (!ref->hasLinkText()) filter(ref->targetTitle());
 }
 
-void HtmlDocVisitor::visitPost(DocRef *ref) 
+void HtmlDocVisitor::visitPost(DocRef *ref)
 {
   if (m_hide) return;
   if (!ref->file().isEmpty()) endLink();
@@ -1928,7 +1919,7 @@ void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 
 }
 
-void HtmlDocVisitor::visitPost(DocSecRefItem *) 
+void HtmlDocVisitor::visitPost(DocSecRefItem *)
 {
   if (m_hide) return;
   m_t << "</a></li>\n";
@@ -1942,7 +1933,7 @@ void HtmlDocVisitor::visitPre(DocSecRefList *s)
   m_t << "<ul class=\"multicol\">" << endl;
 }
 
-void HtmlDocVisitor::visitPost(DocSecRefList *s) 
+void HtmlDocVisitor::visitPost(DocSecRefList *s)
 {
   if (m_hide) return;
   m_t << "</ul>" << endl;
@@ -1960,7 +1951,7 @@ void HtmlDocVisitor::visitPost(DocSecRefList *s)
 //  }
 //}
 //
-//void HtmlDocVisitor::visitPost(DocLanguage *l) 
+//void HtmlDocVisitor::visitPost(DocLanguage *l)
 //{
 //  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
 //  if (l->id().lower()!=langId.lower())
@@ -1977,19 +1968,19 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
   QCString heading;
   switch(s->type())
   {
-    case DocParamSect::Param: 
-      heading=theTranslator->trParameters(); 
+    case DocParamSect::Param:
+      heading=theTranslator->trParameters();
       className="params";
       break;
-    case DocParamSect::RetVal: 
-      heading=theTranslator->trReturnValues(); 
+    case DocParamSect::RetVal:
+      heading=theTranslator->trReturnValues();
       className="retval";
       break;
-    case DocParamSect::Exception: 
-      heading=theTranslator->trExceptions(); 
+    case DocParamSect::Exception:
+      heading=theTranslator->trExceptions();
       className="exception";
       break;
-    case DocParamSect::TemplateParam: 
+    case DocParamSect::TemplateParam:
       heading=theTranslator->trTemplateParameters();
       className="tparams";
       break;
@@ -2052,11 +2043,11 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type); 
+        visit((DocWord*)type);
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type); 
+        visit((DocLinkedWord*)type);
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
@@ -2076,11 +2067,11 @@ void HtmlDocVisitor::visitPre(DocParamList *pl)
     if (!first) m_t << ","; else first=FALSE;
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param); 
+      visit((DocWord*)param);
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param); 
+      visit((DocLinkedWord*)param);
     }
   }
   m_t << "</td><td>";
@@ -2102,12 +2093,12 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
   bool anonymousEnum = x->file()=="@";
   if (!anonymousEnum)
   {
-    m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(x), x->key())  
+    m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(x), x->key())
         << "><dt><b><a class=\"el\" href=\""
         << x->relPath() << addHtmlExtensionIfMissing(x->file())
         << "#" << x->anchor() << "\">";
   }
-  else 
+  else
   {
     m_t << "<dl class=\"" << x->key() << "\"><dt><b>";
   }
@@ -2131,7 +2122,7 @@ void HtmlDocVisitor::visitPre(DocInternalRef *ref)
   startLink(0,ref->file(),ref->relPath(),ref->anchor());
 }
 
-void HtmlDocVisitor::visitPost(DocInternalRef *) 
+void HtmlDocVisitor::visitPost(DocInternalRef *)
 {
   if (m_hide) return;
   endLink();
@@ -2180,7 +2171,7 @@ void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
     m_t << "<p>";
     m_t << "flowchart: " ; // TODO: translate me
     m_t << "<a href=\"";
-    m_t << fname.data(); 
+    m_t << fname.data();
     m_t << ".svg\">";
     m_t << VhdlDocGen::getFlowMember()->name().data();
     m_t << "</a>";
@@ -2214,7 +2205,7 @@ void HtmlDocVisitor::visitPost(DocParBlock *)
 
 
 void HtmlDocVisitor::filter(const char *str)
-{ 
+{
   if (str==0) return;
   const char *p=str;
   char c;

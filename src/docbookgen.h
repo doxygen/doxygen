@@ -53,8 +53,8 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void setCurrentDoc(const Definition *,const char *,bool);
     void addWord(const char *,bool);
     void finish();
-    void startCodeFragment();
-    void endCodeFragment();
+    void startCodeFragment(const char *style);
+    void endCodeFragment(const char *style);
 
   private:
     FTextStream m_t;
@@ -130,6 +130,10 @@ class DocbookGenerator : public OutputGenerator
     { m_codeGen.endFontClass(); }
     void writeCodeAnchor(const char *anchor)
     { m_codeGen.writeCodeAnchor(anchor); }
+    void startCodeFragment(const char *style)
+    { m_codeGen.startCodeFragment(style); }
+    void endCodeFragment(const char *style)
+    { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
     void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md);
@@ -169,35 +173,33 @@ class DocbookGenerator : public OutputGenerator
     void writeChar(char);
     void writeString(const char *);
     void startParagraph(const char *);
-    void endParagraph(void);
+    void endParagraph();
     void writeObjectLink(const char *,const char *,const char *,const char *);
     void startHtmlLink(const char *){DB_GEN_NEW};
-    void endHtmlLink(void){DB_GEN_NEW};
-    void startBold(void);
-    void endBold(void);
-    void startTypewriter(void);
-    void endTypewriter(void);
-    void startEmphasis(void){DB_GEN_NEW};
-    void endEmphasis(void){DB_GEN_NEW};
-    void startCodeFragment(void);
-    void endCodeFragment(void);
-    void writeRuler(void);
-    void startDescription(void){DB_GEN_NEW};
-    void endDescription(void){DB_GEN_NEW};
-    void startDescItem(void){DB_GEN_NEW};
-    void startDescForItem(void){DB_GEN_EMPTY};
-    void endDescForItem(void){DB_GEN_EMPTY};
-    void endDescItem(void){DB_GEN_NEW};
-    void startCenter(void){DB_GEN_NEW};
-    void endCenter(void){DB_GEN_NEW};
-    void startSmall(void){DB_GEN_NEW};
-    void endSmall(void){DB_GEN_NEW};
-    void startExamples(void);
-    void endExamples(void);
+    void endHtmlLink(){DB_GEN_NEW};
+    void startBold();
+    void endBold();
+    void startTypewriter();
+    void endTypewriter();
+    void startEmphasis(){DB_GEN_NEW};
+    void endEmphasis(){DB_GEN_NEW};
+    void writeRuler();
+    void startDescription(){DB_GEN_NEW};
+    void endDescription(){DB_GEN_NEW};
+    void startDescItem(){DB_GEN_NEW};
+    void startDescForItem(){DB_GEN_EMPTY};
+    void endDescForItem(){DB_GEN_EMPTY};
+    void endDescItem(){DB_GEN_NEW};
+    void startCenter(){DB_GEN_NEW};
+    void endCenter(){DB_GEN_NEW};
+    void startSmall(){DB_GEN_NEW};
+    void endSmall(){DB_GEN_NEW};
+    void startExamples();
+    void endExamples();
     void startParamList(BaseOutputDocInterface::ParamListTypes,const char *){DB_GEN_NEW};
-    void endParamList(void){DB_GEN_NEW};
-    void startTitle(void){DB_GEN_NEW};
-    void endTitle(void){DB_GEN_NEW};
+    void endParamList(){DB_GEN_NEW};
+    void startTitle(){DB_GEN_NEW};
+    void endTitle(){DB_GEN_NEW};
     void writeAnchor(const char *,const char *){DB_GEN_EMPTY};
     void startSection(const char *,const char *,SectionType);
     void endSection(const char *,SectionType);
@@ -205,21 +207,21 @@ class DocbookGenerator : public OutputGenerator
     void addIndexItem(const char *,const char *);
     void writeNonBreakableSpace(int);
     void startDescTable(const char *);
-    void endDescTable(void);
-    void startDescTableRow(void);
-    void endDescTableRow(void);
-    void startDescTableTitle(void);
-    void endDescTableTitle(void);
-    void startDescTableData(void);
-    void endDescTableData(void);
+    void endDescTable();
+    void startDescTableRow();
+    void endDescTableRow();
+    void startDescTableTitle();
+    void endDescTableTitle();
+    void startDescTableData();
+    void endDescTableData();
     void startTextLink(const char *,const char *){DB_GEN_NEW};
-    void endTextLink(void){DB_GEN_NEW};
-    void startPageRef(void){DB_GEN_NEW};
+    void endTextLink(){DB_GEN_NEW};
+    void startPageRef(){DB_GEN_NEW};
     void endPageRef(const char *,const char *){DB_GEN_NEW};
-    void startSubsection(void){DB_GEN_NEW};
-    void endSubsection(void){DB_GEN_NEW};
-    void startSubsubsection(void);
-    void endSubsubsection(void);
+    void startSubsection(){DB_GEN_NEW};
+    void endSubsection(){DB_GEN_NEW};
+    void startSubsubsection();
+    void endSubsubsection();
 
 
     void startGroupHeader(int);

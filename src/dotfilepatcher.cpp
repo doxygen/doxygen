@@ -174,6 +174,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
         if (!ref.isEmpty())
         {
           result = externalLinkTarget(true);
+          if (!result.isEmpty())targetAlreadySet=true;
         }
         result+= href+"=\"";
         result+=externalRef(relPath,ref,TRUE);
@@ -460,7 +461,7 @@ bool DotFilePatcher::run() const
         convertMapFile(tt,map->mapFile,map->relPath,map->urlOnly,map->context);
         if (!result.isEmpty())
         {
-          t << "<map name=\"" << map->label << "\" id=\"" << correctId(map->label) << "\">" << endl;
+          t << "<map name=\"" << correctId(map->label) << "\" id=\"" << correctId(map->label) << "\">" << endl;
           t << result;
           t << "</map>" << endl;
         }

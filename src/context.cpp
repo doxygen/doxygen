@@ -1301,8 +1301,8 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
 static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const QCString &relPath,
                                  const QCString &code,int startLine=-1,int endLine=-1,bool showLineNumbers=FALSE)
 {
-  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(md->getDefFileExtension());
-  intf.resetCodeParserState();
+  auto intf = Doxygen::parserManager->getCodeParser(md->getDefFileExtension());
+  intf->resetCodeParserState();
   QGString s;
   FTextStream t(&s);
   switch (g_globals.outputFormat)
@@ -1310,14 +1310,14 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        intf.parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+        intf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
             startLine,endLine,TRUE,md,showLineNumbers,md);
       }
       break;
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,md->docFile());
-        intf.parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+        intf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
             startLine,endLine,TRUE,md,showLineNumbers,md);
       }
       break;
@@ -1332,8 +1332,8 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
 static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
 {
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
-  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
-  intf.resetCodeParserState();
+  auto intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
+  intf->resetCodeParserState();
   QGString s;
   FTextStream t(&s);
   switch (g_globals.outputFormat)
@@ -1341,7 +1341,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        intf.parseCode(codeGen,0,
+        intf->parseCode(codeGen,0,
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -1360,7 +1360,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,fd->docFile());
-        intf.parseCode(codeGen,0,
+        intf->parseCode(codeGen,0,
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
@@ -3896,13 +3896,25 @@ class TextGeneratorLatex : public TextGeneratorIntf
         if (f && anchor) m_ts << "_";
         if (anchor) m_ts << anchor;
         m_ts << "}{";
-        filterLatexString(m_ts,text);
+        filterLatexString(m_ts,text,
+                          false, // insideTabbing
+                          false, // insidePre
+                          false, // insideItem
+                          false, // insideTable
+                          false  // keepSpaces
+                         );
         m_ts << "}}";
       }
       else
       {
         m_ts << "\\textbf{ ";
-        filterLatexString(m_ts,text);
+        filterLatexString(m_ts,text,
+                          false, // insideTabbing
+                          false, // insidePre
+                          false, // insideItem
+                          false, // insideTable
+                          false  // keepSpaces
+                         );
         m_ts << "}";
       }
     }

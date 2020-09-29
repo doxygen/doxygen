@@ -60,7 +60,7 @@ void RefList::generatePage()
 
   std::sort(m_entries.begin(),m_entries.end(),
             [](std::unique_ptr<RefItem> &left,std::unique_ptr<RefItem> &right)
-            { return qstricmp(left->title(),left->title()); });
+            { return qstricmp(left->title(),right->title()) < 0; });
   //RefItem *item;
   QCString doc;
   int cnt = 0;

@@ -666,6 +666,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                             optList = QCStringList::split(',',optStr);
                                           }
                                           auto it = docCmdMap.find(cmdName.data());
+                                          //printf("lookup command '%s' found=%d\n",cmdName.data(),it!=docCmdMap.end());
                                           if (it!=docCmdMap.end()) // special action is required
                                           {
                                             int i=0;
@@ -1043,6 +1044,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg1,CategoryDocArg1>.         { // ignore other stuff
                                         }
 
+<ClassDocArg2>{DOCNL}                   {
+                                          //addOutput(yyscanner,'\n');
+                                          //if (*yytext=='\n') yyextra->lineNr++;
+                                          unput('\n');
+                                          BEGIN( Comment );
+                                        }
 <ClassDocArg2>{FILE}|"<>"               { // second argument; include file
                                           yyextra->current->includeFile = yytext;
                                           BEGIN( ClassDocArg3 );
@@ -1050,12 +1057,6 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg2>{LC}                      { // line continuation
                                           yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
-                                        }
-<ClassDocArg2>{DOCNL}                   {
-                                          //addOutput(yyscanner,'\n');
-                                          //if (*yytext=='\n') yyextra->lineNr++;
-                                          unput('\n');
-                                          BEGIN( Comment );
                                         }
 <ClassDocArg2>.                         { // ignore other stuff
                                         }
@@ -3234,7 +3235,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->guards = std::stack<GuardedSection>();
   yyextra->langParser     = parser;
   yyextra->current        = curEntry;
-  yyextra->current->docLine = (lineNr > 1 ? lineNr-1: 1);
+  yyextra->current->docLine = (lineNr > 1 ? lineNr : 1);
   if (comment.isEmpty()) return FALSE; // avoid empty strings
   yyextra->inputString    = comment;
   yyextra->inputString.append(" ");

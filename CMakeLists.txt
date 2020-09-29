@@ -34,9 +34,9 @@ option(enable_coverage "Enable coverage reporting for gcc/clang [development]" O
 
 SET(enlarge_lex_buffers "262144" CACHE INTERNAL "Sets the lex input and read buffers to the specified size")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Sanitizers")
-set(TOP "${CMAKE_SOURCE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Sanitizers")
+set(TOP "${PROJECT_SOURCE_DIR}")
 include(version)
 
 set(sqlite3  "0" CACHE INTERNAL "used in settings.h")
@@ -71,7 +71,7 @@ if (WIN32)
     if ((NOT CMAKE_GENERATOR MATCHES "MinGW Makefiles") AND 
         (NOT CMAKE_GENERATOR MATCHES "MSYS Makefiles"))
         if (NOT ICONV_DIR)
-          set(ICONV_DIR "${CMAKE_SOURCE_DIR}/winbuild")
+          set(ICONV_DIR "${PROJECT_SOURCE_DIR}/winbuild")
         endif()
         set(CMAKE_REQUIRED_DEFINITIONS "-DLIBICONV_STATIC")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj") # needed for language.cpp on 64bit
@@ -120,10 +120,10 @@ find_package(Iconv REQUIRED)
 include_directories(${ICONV_INCLUDE_DIR})
 
 
-#set(DOXYDOCS ${CMAKE_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")
+#set(DOXYDOCS ${PROJECT_SOURCE_DIR}/doc CACHE INTERNAL "Path to doxygen docs")
 set(DOXYDOCS ${PROJECT_BINARY_DIR}/doc)
 set(ENV{DOXYGEN_DOCDIR} ${DOXYDOCS})
-set(GENERATED_SRC "${CMAKE_BINARY_DIR}/generated_src" CACHE INTERNAL "Stores generated files")
+set(GENERATED_SRC "${PROJECT_BINARY_DIR}/generated_src" CACHE INTERNAL "Stores generated files")
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
@@ -135,7 +135,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${EXECUTABLE_OUTPUT_PATH})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${EXECUTABLE_OUTPUT_PATH})
 
 # gather lang codes for translation
-file(GLOB lang_files RELATIVE "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/src/translator_??.h")
+file(GLOB lang_files RELATIVE "${PROJECT_SOURCE_DIR}/src" "${PROJECT_SOURCE_DIR}/src/translator_??.h")
 if (english_only) # user only wants English
   set(lcodes "ENONLY")
 else ()

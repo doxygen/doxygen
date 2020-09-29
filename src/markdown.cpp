@@ -2264,7 +2264,7 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
   }
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
   m_out.addStr("\n");
-  m_out.addStr("@endcode\n");
+  m_out.addStr("@endcode");
 }
 
 QCString Markdown::processQuotations(const QCString &s,int refIndent)
@@ -2662,6 +2662,7 @@ QCString markdownFileNameToId(const QCString &fileName)
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
   QCString baseName = substitute(substitute(substitute(baseFn," ","_"),"/","_"),":","_");
+  //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(baseName));
   return "md_"+baseName;
 }
 
@@ -2728,6 +2729,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   }
   int lineNr=1;
 
+  p->commentScanner.enterFile(fileName,lineNr);
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
@@ -2759,6 +2761,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   {
     root->moveToSubEntryAndKeep(current);
   }
+  p->commentScanner.leaveFile(fileName,lineNr);
 }
 
 void MarkdownOutlineParser::parsePrototype(const char *text)

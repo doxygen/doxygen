@@ -242,17 +242,22 @@ void DocbookCodeGenerator::finish()
 {
   endCodeLine();
 }
-void DocbookCodeGenerator::startCodeFragment()
+void DocbookCodeGenerator::startCodeFragment(const char *)
 {
-  m_t << "<literallayout><computeroutput>" << endl;
+DB_GEN_C
+  m_t << "<programlisting>";
 }
-void DocbookCodeGenerator::endCodeFragment()
+
+void DocbookCodeGenerator::endCodeFragment(const char *)
 {
+DB_GEN_C
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 
-  m_t << "</computeroutput></literallayout>" << endl;
+  m_t << "</programlisting>";
 }
+
+//-------------------------------------------------------------------------------
 
 DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_OUTPUT))
 {
@@ -732,12 +737,12 @@ void DocbookGenerator::endMemberItem()
 DB_GEN_C
   t << "</para>" << endl;
 }
-void DocbookGenerator::startBold(void)
+void DocbookGenerator::startBold()
 {
 DB_GEN_C
   t << "<emphasis role=\"strong\">";
 }
-void DocbookGenerator::endBold(void)
+void DocbookGenerator::endBold()
 {
 DB_GEN_C
   t << "</emphasis>";
@@ -755,7 +760,7 @@ DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
   t << "<section>" << endl;
   t << "<title>";
 }
-void DocbookGenerator::writeRuler(void)
+void DocbookGenerator::writeRuler()
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("m_inGroup " << m_inGroup)
@@ -945,12 +950,12 @@ void DocbookGenerator::endExamples()
 DB_GEN_C
   t << "</simplesect>" << endl;
 }
-void DocbookGenerator::startSubsubsection(void)
+void DocbookGenerator::startSubsubsection()
 {
 DB_GEN_C
   t << "<simplesect><title>";
 }
-void DocbookGenerator::endSubsubsection(void)
+void DocbookGenerator::endSubsubsection()
 {
 DB_GEN_C
   t << "</title></simplesect>" << endl;
@@ -994,19 +999,6 @@ DB_GEN_C
   {
     if (closeBracket) t << ")";
   }
-}
-void DocbookGenerator::startCodeFragment()
-{
-DB_GEN_C
-    t << "<programlisting>";
-}
-void DocbookGenerator::endCodeFragment()
-{
-DB_GEN_C
-  //endCodeLine checks is there is still an open code line, if so closes it.
-  endCodeLine();
-
-    t << "</programlisting>";
 }
 void DocbookGenerator::startMemberTemplateParams()
 {

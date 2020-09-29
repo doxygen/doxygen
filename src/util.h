@@ -351,10 +351,11 @@ QCString unescapeCharsInString(const char *s);
 void addGroupListToTitle(OutputList &ol,const Definition *d);
 
 void filterLatexString(FTextStream &t,const char *str,
-                       bool insideTabbing=FALSE,
-                       bool insidePre=FALSE,
-                       bool insideItem=FALSE,
-                       bool keepSpaces=FALSE);
+                       bool insideTabbing,
+                       bool insidePre,
+                       bool insideItem,
+                       bool insideTable,
+                       bool keepSpaces);
 
 QCString latexEscapeLabelName(const char *s);
 QCString latexEscapeIndexChars(const char *s);
@@ -498,8 +499,7 @@ bool openOutputFile(const char *outFile,QFile &f);
 void writeExtraLatexPackages(FTextStream &t);
 void writeLatexSpecialFormulaChars(FTextStream &t);
 
-int usedTableLevels();
-void incUsedTableLevels();
-void decUsedTableLevels();
+bool recognizeFixedForm(const char* contents, FortranFormat format);
+FortranFormat convertFileNameFortranParserCode(QCString fn);
 
 #endif

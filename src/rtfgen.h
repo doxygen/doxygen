@@ -125,8 +125,8 @@ class RTFGenerator : public OutputGenerator
     void writeRuler() { rtfwriteRuler_thin(); }
 
     void writeAnchor(const char *fileName,const char *name);
-    void startCodeFragment();
-    void endCodeFragment();
+    void startCodeFragment(const char *style);
+    void endCodeFragment(const char *style);
     void writeLineNumber(const char *,const char *,const char *,int l);
     void startCodeLine(bool);
     void endCodeLine();
@@ -293,6 +293,7 @@ class RTFGenerator : public OutputGenerator
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
+    bool m_doxyCodeLineOpen = false;
 };
 
 #endif

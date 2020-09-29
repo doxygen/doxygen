@@ -10,7 +10,6 @@ qdir.cpp
 qfile.cpp
 qfileinfo.cpp
 qgarray.cpp
-qgcache.cpp
 qgdict.cpp
 qglist.cpp
 qglobal.cpp

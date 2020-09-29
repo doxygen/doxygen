@@ -176,14 +176,14 @@ static bool matchExcludedSymbols(const char *name)
       QRegExp re(substitute(pattern,"*",".*"),TRUE);
       int pl;
       int i = re.match(symName,0,&pl);
-      //printf("  %d = re.match(%s) pattern=%s\n",i,symName.data(),pattern.data());
+      //printf("  %d = re.match(%s) pattern=%s pl=%d len=%d\n",i,symName.data(),pattern.data(),pl,symName.length());
       if (i!=-1) // wildcard match
       {
         uint ui=(uint)i;
         uint sl=symName.length();
         // check if it is a whole word match
-        if ((ui==0     || pattern.at(0)=='*'     || (!isId(symName.at(ui-1))  && !forceStart)) &&
-            (ui+pl==sl || pattern.at(ui+pl)=='*' || (!isId(symName.at(ui+pl)) && !forceEnd))
+        if ((ui==0     || pattern.at(0)=='*'                  || (!isId(symName.at(ui-1))  && !forceStart)) &&
+            (ui+pl==sl || pattern.at(pattern.length()-1)=='*' || (!isId(symName.at(ui+pl)) && !forceEnd))
            )
         {
           //printf("--> name=%s pattern=%s match at %d\n",symName.data(),pattern.data(),i);
@@ -612,6 +612,8 @@ void DefinitionImpl::_setBriefDescription(const char *b,const char *briefFile,in
                          outputLanguage!="Chinese" &&
                          outputLanguage!="Korean";
   QCString brief = b;
+  brief = brief.stripWhiteSpace();
+  brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
   brief = brief.stripWhiteSpace();
   if (brief.isEmpty()) return;
   uint bl = brief.length();
@@ -1234,27 +1236,27 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
     {
       //printf("Adding code fragment '%s' ext='%s'\n",
       //    codeFragment.data(),m_impl->defFileExt.data());
-      CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
-      intf.resetCodeParserState();
+      auto intf = Doxygen::parserManager->getCodeParser(m_impl->defFileExt);
+      intf->resetCodeParserState();
       //printf("Read:\n'%s'\n\n",codeFragment.data());
       const MemberDef *thisMd = 0;
       if (definitionType()==TypeMember) thisMd = dynamic_cast <const MemberDef*>(this);
 
-      ol.startCodeFragment();
-      intf.parseCode(ol,               // codeOutIntf
-                     scopeName,        // scope
-                     codeFragment,     // input
-                     m_impl->lang,     // lang
-                     FALSE,            // isExample
-                     0,                // exampleName
-                     m_impl->body->fileDef,  // fileDef
-                     actualStart,      // startLine
-                     actualEnd,        // endLine
-                     TRUE,             // inlineFragment
-                     thisMd,           // memberDef
-                     TRUE              // show line numbers
-                    );
-      ol.endCodeFragment();
+      ol.startCodeFragment("DoxyCode");
+      intf->parseCode(ol,               // codeOutIntf
+                      scopeName,        // scope
+                      codeFragment,     // input
+                      m_impl->lang,     // lang
+                      FALSE,            // isExample
+                      0,                // exampleName
+                      m_impl->body->fileDef,  // fileDef
+                      actualStart,      // startLine
+                      actualEnd,        // endLine
+                      TRUE,             // inlineFragment
+                      thisMd,           // memberDef
+                      TRUE              // show line numbers
+                     );
+      ol.endCodeFragment("DoxyCode");
     }
   }
   ol.popGeneratorState();

@@ -44,18 +44,14 @@
 #include "resourcemgr.h"
 #include "portable.h"
 
-static bool DoxyCodeOpen = FALSE;
-static bool DoxyCodeLineOpen = FALSE;
-//-------------------------------
-
 LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFileName)
-  : m_relPath(relPath), m_sourceFileName(sourceFileName), m_col(0)
+  : m_relPath(relPath), m_sourceFileName(sourceFileName)
 {
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
   setTextStream(t);
 }
 
-LatexCodeGenerator::LatexCodeGenerator() : m_streamSet(FALSE), m_col(0)
+LatexCodeGenerator::LatexCodeGenerator()
 {
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }
@@ -85,8 +81,8 @@ void LatexCodeGenerator::codify(const char *str)
     //char cs[5];
     int spacesToNextTabStop;
     int tabSize = Config_getInt(TAB_SIZE);
-    static signed char *result = NULL;
-    static int lresult = 0;
+    static THREAD_LOCAL signed char *result = NULL;
+    static THREAD_LOCAL int lresult = 0;
     int i;
     while ((c=*p))
     {
@@ -108,7 +104,9 @@ void LatexCodeGenerator::codify(const char *str)
                    m_col+=spacesToNextTabStop;
                    p++;
                    break;
-        case '\n': (usedTableLevels()>0 && !DoxyCodeOpen) ? m_t << "\\newline\n" : m_t << '\n'; m_col=0; p++;
+        case '\n': m_t << '\n';
+                   m_col=0;
+                   p++;
                    break;
         default:
                    i=0;
@@ -149,14 +147,13 @@ void LatexCodeGenerator::codify(const char *str)
                      COPYCHAR();
                    }
                    result[i]=0; // add terminator
-                   //if (m_prettyCode)
-                   //{
-                     filterLatexString(m_t,(const char *)result,FALSE,TRUE);
-                   //}
-                   //else
-                   //{
-                   //  t << result;
-                   //}
+                   filterLatexString(m_t,(const char *)result,
+                                     false, // insideTabbing
+                                     true,  // insidePre
+                                     false, // insideItem
+                                     m_usedTableLevel>0, // insideTable
+                                     false  // keepSpaces
+                                    );
                    break;
       }
     }
@@ -192,10 +189,10 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
 {
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!DoxyCodeLineOpen)
+  if (!m_doxyCodeLineOpen)
   {
     m_t << "\\DoxyCodeLine{";
-    DoxyCodeLineOpen = TRUE;
+    m_doxyCodeLineOpen = TRUE;
   }
   if (m_prettyCode)
   {
@@ -231,19 +228,19 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
 void LatexCodeGenerator::startCodeLine(bool)
 {
   m_col=0;
-  if (!DoxyCodeLineOpen)
+  if (!m_doxyCodeLineOpen)
   {
     m_t << "\\DoxyCodeLine{";
-    DoxyCodeLineOpen = TRUE;
+    m_doxyCodeLineOpen = TRUE;
   }
 }
 
 void LatexCodeGenerator::endCodeLine()
 {
-  if (DoxyCodeLineOpen)
+  if (m_doxyCodeLineOpen)
   {
     m_t << "}";
-    DoxyCodeLineOpen = FALSE;
+    m_doxyCodeLineOpen = FALSE;
   }
   codify("\n");
 }
@@ -258,10 +255,19 @@ void LatexCodeGenerator::endFontClass()
   m_t << "}";
 }
 
-void LatexCodeGenerator::setDoxyCodeOpen(bool val)
+void LatexCodeGenerator::startCodeFragment(const char *style)
 {
-  DoxyCodeOpen = val;
+  m_t << "\n\\begin{" << style << "}{" << m_usedTableLevel << "}\n";
 }
+
+void LatexCodeGenerator::endCodeFragment(const char *style)
+{
+  //endCodeLine checks is there is still an open code line, if so closes it.
+  endCodeLine();
+
+  m_t << "\\end{" << style << "}\n";
+}
+
 
 //-------------------------------
 
@@ -650,7 +656,13 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   {
     generatedBy = theTranslator->trGeneratedBy();
   }
-  filterLatexString(tg, generatedBy, FALSE,FALSE,FALSE);
+  filterLatexString(tg, generatedBy,
+                    false, // insideTabbing
+                    false, // insidePre
+                    false, // insideItem
+                    false, // insideTable
+                    false  // keepSpaces
+                   );
   t << "% Headers & footers\n"
        "\\usepackage{fancyhdr}\n"
        "\\pagestyle{fancyplain}\n"
@@ -1823,7 +1835,13 @@ void LatexGenerator::endSection(const char *lab,SectionType)
 
 void LatexGenerator::docify(const char *str)
 {
-  filterLatexString(t,str,m_insideTabbing,FALSE,FALSE);
+  filterLatexString(t,str,
+                    m_insideTabbing, // insideTabbing
+                    false,           // insidePre
+                    false,           // insideItem
+                    m_codeGen.usedTableLevel()>0,  // insideTable
+                    false            // keepSpaces
+                   );
 }
 
 void LatexGenerator::writeChar(char c)
@@ -1960,13 +1978,13 @@ void LatexGenerator::writeNonBreakableSpace(int)
 
 void LatexGenerator::startDescTable(const char *title)
 {
-  incUsedTableLevels();
+  m_codeGen.incUsedTableLevel();
   t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
 }
 
 void LatexGenerator::endDescTable()
 {
-  decUsedTableLevels();
+  m_codeGen.decUsedTableLevel();
   t << "\\end{DoxyEnumFields}" << endl;
 }
 
@@ -2214,7 +2232,7 @@ void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
 {
   LatexDocVisitor *visitor =
-    new LatexDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);
+    new LatexDocVisitor(t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);
   n->accept(visitor);
   delete visitor;
 }
@@ -2260,21 +2278,6 @@ void LatexGenerator::endConstraintList()
   t << "\\end{Desc}" << endl;
 }
 
-void LatexGenerator::startCodeFragment()
-{
-  t << "\n\\begin{DoxyCode}{" << usedTableLevels() << "}\n";
-  DoxyCodeOpen = TRUE;
-}
-
-void LatexGenerator::endCodeFragment()
-{
-  //endCodeLine checks is there is still an open code line, if so closes it.
-  endCodeLine();
-
-  t << "\\end{DoxyCode}\n";
-  DoxyCodeOpen = FALSE;
-}
-
 void LatexGenerator::startInlineHeader()
 {
   if (Config_getBool(COMPACT_LATEX))
@@ -2306,7 +2309,7 @@ void LatexGenerator::lineBreak(const char *)
 
 void LatexGenerator::startMemberDocSimple(bool isEnum)
 {
-  incUsedTableLevels();
+  m_codeGen.incUsedTableLevel();
   if (isEnum)
   {
     t << "\\begin{DoxyEnumFields}{";
@@ -2322,7 +2325,7 @@ void LatexGenerator::startMemberDocSimple(bool isEnum)
 
 void LatexGenerator::endMemberDocSimple(bool isEnum)
 {
-  decUsedTableLevels();
+  m_codeGen.decUsedTableLevel();
   if (isEnum)
   {
     t << "\\end{DoxyEnumFields}" << endl;

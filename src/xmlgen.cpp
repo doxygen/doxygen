@@ -226,6 +226,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
     FTextStream &m_t;
 };
 
+//-------------------------------------------------------------------------------------------
 
 /** Generator for producing XML formatted source code. */
 void XMLCodeGenerator::codify(const char *text)
@@ -340,6 +341,18 @@ void XMLCodeGenerator::finish()
   if (m_insideCodeLine) endCodeLine();
 }
 
+void XMLCodeGenerator::startCodeFragment(const char *)
+{
+  m_t << "    <programlisting>" << endl;
+}
+
+void XMLCodeGenerator::endCodeFragment(const char *)
+{
+  m_t << "    </programlisting>" << endl;
+}
+
+//-------------------------------------------------------------------------------------------
+
 static void writeTemplateArgumentList(FTextStream &t,
                                       const ArgumentList &al,
                                       const Definition *scope,
@@ -420,11 +433,12 @@ static void writeXMLDocBlock(FTextStream &t,
 
 void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
 {
-  CodeParserInterface &intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
+  auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
-  intf.resetCodeParserState();
+  intf->resetCodeParserState();
   XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
-  intf.parseCode(*xmlGen,    // codeOutIntf
+  xmlGen->startCodeFragment("DoxyCode");
+  intf->parseCode(*xmlGen,    // codeOutIntf
                 0,           // scopeName
                 fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
                 langExt,     // lang
@@ -437,6 +451,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
                 0,           // memberDef
                 TRUE         // showLineNumbers
                 );
+  xmlGen->endCodeFragment("DoxyCode");
   xmlGen->finish();
   delete xmlGen;
 }
@@ -1639,9 +1654,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   t << "    </detaileddescription>" << endl;
   if (Config_getBool(XML_PROGRAMLISTING))
   {
-    t << "    <programlisting>" << endl;
     writeXMLCodeBlock(t,fd);
-    t << "    </programlisting>" << endl;
   }
   t << "    <location file=\"" << convertToXML(stripFromPath(fd->getDefFileName())) << "\"/>" << endl;
   t << "  </compounddef>" << endl;

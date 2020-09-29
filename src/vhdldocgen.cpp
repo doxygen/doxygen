@@ -55,6 +55,7 @@
 #include "filename.h"
 #include "membergroup.h"
 #include "memberdef.h"
+#include "membername.h"
 #include "plantuml.h"
 #include "vhdljjparser.h"
 #include "VhdlParser.h"
@@ -2356,7 +2357,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 
 void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname)
 {
-  CodeParserInterface &intf = Doxygen::parserManager->getCodeParser(".vhd");
+  auto intf = Doxygen::parserManager->getCodeParser(".vhd");
  // pIntf->resetCodeParserState();
 
   QCString codeFragment=mdef->documentation();
@@ -2381,8 +2382,8 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
 
   codeFragment.prepend("\n");
   ol.pushGeneratorState();
-  ol.startCodeFragment();
-  intf.parseCode(      ol,               // codeOutIntf
+  ol.startCodeFragment("DoxyCode");
+  intf->parseCode(     ol,               // codeOutIntf
                        0,                // scope
                        codeFragment,     // input
                        SrcLangExt_VHDL,  // lang
@@ -2396,7 +2397,7 @@ void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString
                        TRUE              // show line numbers
                       );
 
-  ol.endCodeFragment();
+  ol.endCodeFragment("DoxyCode");
   ol.popGeneratorState();
 
   if (cname.isEmpty()) return;
@@ -2739,14 +2740,14 @@ static void addInstance(ClassDef* classEntity, ClassDef* ar,
 
 ferr:
   QCString uu=cur->name;
-  MemberDef *md=createMemberDef(
+  std::unique_ptr<MemberDef> md { createMemberDef(
       ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, 0,
       Public, Normal, cur->stat,Member,
       MemberType_Variable,
       ArgumentList(),
       ArgumentList(),
-      "");
+      "") };
 
   if (ar->getOutputFileBase())
   {
@@ -2774,7 +2775,9 @@ ferr:
   //label.replace(epr,":");
   //info+=label;
   //fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
-  ar->insertMember(md);
+  ar->insertMember(md.get());
+  MemberName *mn = Doxygen::functionNameLinkedMap->add(uu);
+  mn->push_back(std::move(md));
 
 }
 

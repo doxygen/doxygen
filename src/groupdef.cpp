@@ -228,6 +228,7 @@ void GroupDefImpl::distributeMemberGroupDocumentation()
 
 void GroupDefImpl::findSectionsInDocumentation()
 {
+  docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
   MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
   MemberGroup *mg;

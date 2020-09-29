@@ -114,7 +114,10 @@ void VHDLOutlineParser::Private::parseVhdlfile(const char *fileName,
   catch( std::exception &){ /* fprintf(stderr,"\n[%s]",e.what()); */ }
   //  fprintf(stderr,"\n\nparsed lines: %d\n",yyLineNr);
   //  fprintf(stderr,"\n\nerrors : %d\n\n",myErr->getErrorCount());
+  //
   delete vhdlParser;
+  delete tokenManager;
+  delete stream;
 }
 
 VHDLOutlineParser::VHDLOutlineParser() : p(std::make_unique<Private>())

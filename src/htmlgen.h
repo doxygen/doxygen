@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -20,11 +18,6 @@
 
 #include "outputgen.h"
 #include "ftextstream.h"
-
-//#define PREFRAG_START "<div class=\"fragment\"><pre class=\"fragment\">"
-//#define PREFRAG_END   "</pre></div>"
-#define PREFRAG_START "<div class=\"fragment\">"
-#define PREFRAG_END   "</div><!-- fragment -->"
 
 class QFile;
 
@@ -54,6 +47,8 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void writeCodeAnchor(const char *anchor);
     void setCurrentDoc(const Definition *,const char *,bool) {}
     void addWord(const char *,bool) {}
+    void startCodeFragment(const char *style);
+    void endCodeFragment(const char *);
 
   private:
     void _writeCodeLink(const char *className,
@@ -61,10 +56,11 @@ class HtmlCodeGenerator : public CodeOutputInterface
                         const char *anchor,const char *name,
                         const char *tooltip);
     void docify(const char *str);
-    bool m_streamSet;
+    bool m_streamSet = false;
     FTextStream m_t;
-    int m_col;
+    int m_col = 0;
     QCString m_relPath;
+    bool m_lineOpen = false;
 };
 
 /** Generator for HTML output */
@@ -113,6 +109,10 @@ class HtmlGenerator : public OutputGenerator
     { m_codeGen.endFontClass(); }
     void writeCodeAnchor(const char *anchor)
     { m_codeGen.writeCodeAnchor(anchor); }
+    void startCodeFragment(const char *style)
+    { m_codeGen.startCodeFragment(style); }
+    void endCodeFragment(const char *style)
+    { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
     void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile);
@@ -208,8 +208,6 @@ class HtmlGenerator : public OutputGenerator
     void writeRuler()    { t << "<hr/>"; }
     void writeAnchor(const char *,const char *name)
                          { t << "<a name=\"" << name <<"\" id=\"" << name << "\"></a>"; }
-    void startCodeFragment();
-    void endCodeFragment();
     void startEmphasis() { t << "<em>";  }
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }

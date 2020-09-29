@@ -349,6 +349,7 @@ void NamespaceDefImpl::distributeMemberGroupDocumentation()
 
 void NamespaceDefImpl::findSectionsInDocumentation()
 {
+  docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
   MemberGroupSDict::Iterator mgli(*memberGroupSDict);
   MemberGroup *mg;

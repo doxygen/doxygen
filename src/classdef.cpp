@@ -1248,6 +1248,7 @@ void ClassDefImpl::distributeMemberGroupDocumentation()
 
 void ClassDefImpl::findSectionsInDocumentation()
 {
+  docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
   if (m_impl->memberGroupSDict)
   {

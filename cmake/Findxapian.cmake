@@ -1,4 +1,4 @@
-# Find Xapian search engine library
+# Find xapian search engine library
 #
 #  XAPIAN_FOUND - system has Xapian
 #  XAPIAN_INCLUDE_DIR - the Xapian include directory
@@ -11,7 +11,7 @@
 
 if(XAPIAN_INCLUDE_DIR AND XAPIAN_LIBRARIES)
     # Already in cache, be silent
-    set(Xapian_FIND_QUIETLY TRUE)
+    set(xapian_FIND_QUIETLY TRUE)
 endif(XAPIAN_INCLUDE_DIR AND XAPIAN_LIBRARIES)
 
 FIND_PATH(XAPIAN_INCLUDE_DIR xapian/version.h)
@@ -25,16 +25,16 @@ ELSE(XAPIAN_INCLUDE_DIR AND XAPIAN_LIBRARIES)
 ENDIF(XAPIAN_INCLUDE_DIR AND XAPIAN_LIBRARIES)
 
 IF(XAPIAN_FOUND)
-   IF(NOT Xapian_FIND_QUIETLY)
-      MESSAGE(STATUS "Found Xapian: ${XAPIAN_LIBRARIES}")
-   ENDIF(NOT Xapian_FIND_QUIETLY)
+   IF(NOT xapian_FIND_QUIETLY)
+      MESSAGE(STATUS "Found xapian: ${XAPIAN_LIBRARIES}")
+   ENDIF(NOT xapian_FIND_QUIETLY)
 ELSE(XAPIAN_FOUND)
-   IF(Xapian_FIND_REQUIRED)
-      MESSAGE(FATAL_ERROR "Could not find Xapian")
-   ENDIF(Xapian_FIND_REQUIRED)
-   IF(NOT Xapian_FIND_QUIETLY)
-      MESSAGE(STATUS "Could not find Xapian")
-   ENDIF(NOT Xapian_FIND_QUIETLY)
+   IF(xapian_FIND_REQUIRED)
+      MESSAGE(FATAL_ERROR "Could not find xapian")
+   ENDIF(xapian_FIND_REQUIRED)
+   IF(NOT xapian_FIND_QUIETLY)
+      MESSAGE(STATUS "Could not find xapian")
+   ENDIF(NOT xapian_FIND_QUIETLY)
 ENDIF(XAPIAN_FOUND)
 
 # show the XAPIAN_INCLUDE_DIR and XAPIAN_LIBRARIES variables only in the advanced view
