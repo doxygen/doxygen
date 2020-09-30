@@ -7507,7 +7507,11 @@ static void generateFileSources()
       {
         for (const auto &fd : *fn)
         {
-          if (fd->isSource() && !fd->isReference())
+          if (fd->isSource() && !fd->isReference() &&
+              ((fd->generateSourceFile() && !g_useOutputTemplate) ||
+               (!fd->isReference() && Doxygen::parseSourcesNeeded)
+              )
+             )
           {
             auto clangParser = ClangParser::instance()->createTUParser(fd.get());
             if (fd->generateSourceFile() && !g_useOutputTemplate) // sources need to be shown in the output
@@ -7565,9 +7569,9 @@ static void generateFileSources()
         {
           if (processedFiles.find(fd->absFilePath().str())==processedFiles.end()) // not yet processed
           {
-            auto clangParser = ClangParser::instance()->createTUParser(fd.get());
             if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
             {
+              auto clangParser = ClangParser::instance()->createTUParser(fd.get());
               msg("Generating code for file %s...\n",fd->docName().data());
               clangParser->parse();
               fd->writeSourceHeader(*g_outputList);
@@ -7577,6 +7581,7 @@ static void generateFileSources()
             else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
+              auto clangParser = ClangParser::instance()->createTUParser(fd.get());
               msg("Parsing code for file %s...\n",fd->docName().data());
               clangParser->parse();
               fd->writeSourceHeader(*g_outputList);

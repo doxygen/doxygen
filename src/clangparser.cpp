@@ -129,7 +129,7 @@ class ClangTUParser::Private
     std::vector<CXUnsavedFile> ufs;
     std::vector<CXCursor> cursors;
     std::unordered_map<std::string,uint> fileMapping;
-    CXTranslationUnit tu;
+    CXTranslationUnit tu = 0;
     CXToken *tokens = 0;
     uint numTokens = 0;
     StringVector filesInSameTU;
@@ -858,7 +858,7 @@ class ClangParser::Private
       QCString clangCompileDatabase = Config_getString(CLANG_DATABASE_PATH);
       // load a clang compilation database (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
       db = clang::tooling::CompilationDatabase::loadFromDirectory(clangCompileDatabase.data(), error);
-      if (clangCompileDatabase!="0" && db==nullptr)
+      if (!clangCompileDatabase.isEmpty() && clangCompileDatabase!="0" && db==nullptr)
       {
           // user specified a path, but DB file was not found
           err("%s using clang compilation database path of: \"%s\"\n", error.c_str(),
@@ -884,6 +884,7 @@ ClangParser::~ClangParser()
 
 std::unique_ptr<ClangTUParser> ClangParser::createTUParser(const FileDef *fd) const
 {
+  //printf("ClangParser::createTUParser()\n");
   return std::make_unique<ClangTUParser>(*this,fd);
 }
 
