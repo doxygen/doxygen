@@ -30,7 +30,7 @@ class ClangTUParser
     void parse();
 
     /** Switches to another file within the translation unit started with start().
-     *  @param[in] fileName The name of the file to switch to.
+     *  @param[in] fd The file definition with the name of the file to switch to.
      */
     void switchToFile(FileDef *fd);
 
