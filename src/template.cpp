@@ -338,7 +338,7 @@ int TemplateList::release()
 
 uint TemplateList::count() const
 {
-  return p->elems.size();
+  return static_cast<uint>(p->elems.size());
 }
 
 void TemplateList::append(const TemplateVariant &v)
