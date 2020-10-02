@@ -9106,8 +9106,8 @@ static void generateDiskNames()
       // as the common prefix between the first and last entry
       const FileEntry &first = fileEntries[0];
       const FileEntry &last =  fileEntries[size-1];
-      int first_path_size = static_cast<int>(first.path.size());
-      int last_path_size  = static_cast<int>(last.path.size());
+      int first_path_size = static_cast<int>(first.path.size())-1; // -1 to skip trailing slash
+      int last_path_size  = static_cast<int>(last.path.size())-1;  // -1 to skip trailing slash
       int j=0;
       for (int i=0;i<first_path_size && i<last_path_size;i++)
       {
