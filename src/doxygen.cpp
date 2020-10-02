@@ -11587,7 +11587,7 @@ void generateOutput()
   generateExampleDocs();
   g_s.end();
 
-  warn_flush(void);
+  warn_flush();
 
   g_s.begin("Generating file sources...\n");
   generateFileSources();
