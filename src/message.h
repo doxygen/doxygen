@@ -35,6 +35,7 @@ extern void err(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern void err_full(const char *file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void term(const char *fmt, ...) PRINTFLIKE(1, 2);
 void initWarningFormat();
+void warn_flush(void);
 
 extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);
 
