@@ -8376,7 +8376,7 @@ bool mainPageHasTitle()
   return Doxygen::mainPage!=0 && Doxygen::mainPage->hasTitle();
 }
 
-QCString getDotImageExtension(void)
+QCString getDotImageExtension()
 {
   QCString imgExt = Config_getEnum(DOT_IMAGE_FORMAT);
   int i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
