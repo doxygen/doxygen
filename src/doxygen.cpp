@@ -11587,6 +11587,8 @@ void generateOutput()
   generateExampleDocs();
   g_s.end();
 
+  warn_flush();
+
   g_s.begin("Generating file sources...\n");
   generateFileSources();
   g_s.end();
@@ -11691,6 +11693,8 @@ void generateOutput()
 
   if (g_useOutputTemplate) generateOutputViaTemplate();
 
+  warn_flush();
+
   if (generateRtf)
   {
     g_s.begin("Combining RTF output...\n");
@@ -11701,9 +11705,13 @@ void generateOutput()
     g_s.end();
   }
 
+  warn_flush();
+
   g_s.begin("Running plantuml with JAVA...\n");
   PlantumlManager::instance()->run();
   g_s.end();
+
+  warn_flush();
 
   if (Config_getBool(HAVE_DOT))
   {
@@ -11752,6 +11760,9 @@ void generateOutput()
     QDir::setCurrent(oldDir);
     g_s.end();
   }
+
+  warn_flush();
+
   if ( generateHtml &&
        Config_getBool(GENERATE_QHP) &&
       !Config_getString(QHG_LOCATION).isEmpty())
