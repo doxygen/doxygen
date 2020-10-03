@@ -196,7 +196,7 @@ int Portable::system(const char *command,const char *args,bool commandHasConsole
 
 }
 
-unsigned int Portable::pid(void)
+unsigned int Portable::pid()
 {
   unsigned int pid;
 #if !defined(_WIN32) || defined(__CYGWIN__)
@@ -322,7 +322,7 @@ FILE *Portable::fopen(const char *fileName,const char *mode)
 #endif
 }
 
-char  Portable::pathSeparator(void)
+char  Portable::pathSeparator()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   return '\\';
@@ -331,7 +331,7 @@ char  Portable::pathSeparator(void)
 #endif
 }
 
-char  Portable::pathListSeparator(void)
+char  Portable::pathListSeparator()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   return ';';
@@ -386,7 +386,7 @@ bool Portable::checkForExecutable(const char *fileName)
 #endif
 }
 
-const char *Portable::ghostScriptCommand(void)
+const char *Portable::ghostScriptCommand()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     static char *gsexe = NULL;
@@ -410,7 +410,7 @@ const char *Portable::ghostScriptCommand(void)
 #endif
 }
 
-const char *Portable::commandExtension(void)
+const char *Portable::commandExtension()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return ".exe";
@@ -419,7 +419,7 @@ const char *Portable::commandExtension(void)
 #endif
 }
 
-bool Portable::fileSystemIsCaseSensitive(void)
+bool Portable::fileSystemIsCaseSensitive()
 {
 #if defined(_WIN32) || defined(macintosh) || defined(__MACOSX__) || defined(__APPLE__) || defined(__CYGWIN__)
   return FALSE;
@@ -446,17 +446,17 @@ int Portable::pclose(FILE *stream)
   #endif
 }
 
-void Portable::sysTimerStart(void)
+void Portable::sysTimerStart()
 {
   g_time.start();
 }
 
-void Portable::sysTimerStop(void)
+void Portable::sysTimerStop()
 {
   g_sysElapsedTime+=((double)g_time.elapsed())/1000.0;
 }
 
-double Portable::getSysElapsedTime(void)
+double Portable::getSysElapsedTime()
 {
   return g_sysElapsedTime;
 }
@@ -492,7 +492,7 @@ bool Portable::isAbsolutePath(const char *fileName)
  *
  * This routine was inspired by the cause for bug 766059 was that in the Windows path there were forward slashes.
  */
-void Portable::correct_path(void)
+void Portable::correct_path()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   const char *p = Portable::getenv("PATH");
@@ -511,7 +511,7 @@ void Portable::unlink(const char *fileName)
 #endif
 }
 
-void Portable::setShortDir(void)
+void Portable::setShortDir()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   long     length = 0;

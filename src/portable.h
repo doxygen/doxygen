@@ -20,7 +20,7 @@ typedef off_t portable_off_t;
 namespace Portable
 {
   int            system(const char *command,const char *args,bool commandHasConsole=true);
-  unsigned int   pid(void);
+  unsigned int   pid();
   const char *   getenv(const char *variable);
   void           setenv(const char *variable,const char *value);
   void           unsetenv(const char *variable);
@@ -28,20 +28,20 @@ namespace Portable
   portable_off_t ftell(FILE *f);
   FILE *         fopen(const char *fileName,const char *mode);
   void           unlink(const char *fileName);
-  char           pathSeparator(void);
-  char           pathListSeparator(void);
-  const char *   ghostScriptCommand(void);
-  const char *   commandExtension(void);
+  char           pathSeparator();
+  char           pathListSeparator();
+  const char *   ghostScriptCommand();
+  const char *   commandExtension();
   bool           fileSystemIsCaseSensitive();
   FILE *         popen(const char *name,const char *type);
   int            pclose(FILE *stream);
-  void           sysTimerStart(void);
-  void           sysTimerStop(void);
-  double         getSysElapsedTime(void);
+  void           sysTimerStart();
+  void           sysTimerStop();
+  double         getSysElapsedTime();
   void           sleep(int ms);
   bool           isAbsolutePath(const char *fileName);
-  void           correct_path(void);
-  void           setShortDir(void);
+  void           correct_path();
+  void           setShortDir();
   const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
   const char *   devNull();
   bool           checkForExecutable(const char *fileName);
