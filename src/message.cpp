@@ -222,9 +222,12 @@ void warn_simple(const char *file,int line,const char *text)
 
 void warn_undoc(const char *file,int line,const char *fmt, ...)
 {
+  static bool warnIfUndocumented = Config_getBool(WARN_IF_UNDOCUMENTED);
+  static bool extractAll = Config_getBool(EXTRACT_ALL);
+  static bool warnExtractAll = Config_getBool(WARN_EXTRACT_ALL);
   va_list args;
   va_start(args, fmt);
-  do_warn(Config_getBool(WARN_IF_UNDOCUMENTED), file, line, warning_str, fmt, args);
+  do_warn(warnIfUndocumented || (extractAll && warnExtractAll), file, line, warning_str, fmt, args);
   va_end(args);
 }
 
