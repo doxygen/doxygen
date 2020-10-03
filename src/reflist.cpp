@@ -124,6 +124,6 @@ void RefList::generatePage()
   //printf("generatePage('%s')\n",doc.data());
   if (cnt>0) 
   {
-    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,RefItemVector(),0,0,TRUE);
+    addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),0,0,TRUE);
   }
 }

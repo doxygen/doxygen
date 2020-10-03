@@ -35,6 +35,7 @@ class PageDef : virtual public Definition
     virtual void setFileName(const char *name) = 0;
     virtual void setLocalToc(const LocalToc &tl) = 0;
     virtual void setShowLineNo(bool) = 0;
+    virtual void setTopLine(int) = 0;
 
     // getters
     virtual DefType definitionType() const = 0;
@@ -57,6 +58,7 @@ class PageDef : virtual public Definition
     virtual Definition *getPageScope() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual bool showLineNo() const = 0;
+    virtual int  topLine() const = 0;
 
     virtual void writeDocumentation(OutputList &) = 0;
     virtual void writeTagFile(FTextStream &) = 0;
@@ -65,7 +67,7 @@ class PageDef : virtual public Definition
 
 };
 
-PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t);
+PageDef *createPageDef(const char *f,int l,int p,const char *n,const char *d,const char *t);
 
 class PageSDict : public SDict<PageDef>
 {

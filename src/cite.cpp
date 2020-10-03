@@ -368,7 +368,7 @@ void CitationManager::generatePage()
   //printf("doc=[%s]\n",doc.data());
 
   // 7. add it as a page
-  addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1);
+  addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1,1);
 
   // 8. for latex we just copy the bib files to the output and let
   //    latex do this work.
