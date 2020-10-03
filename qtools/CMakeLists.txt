@@ -14,7 +14,6 @@ qgdict.cpp
 qglist.cpp
 qglobal.cpp
 qgstring.cpp
-qgvector.cpp
 qiodevice.cpp
 qregexp.cpp
 qstring.cpp

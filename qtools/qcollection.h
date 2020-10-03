@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of base class for all collection classes
 **
@@ -43,7 +43,6 @@
 #endif // QT_H
 
 
-class QGVector;
 class QGList;
 class QGDict;
 

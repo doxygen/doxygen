@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** QList and QListIterator class documentation
 **
@@ -680,15 +680,6 @@
 
   \sa first(), last(), next(), current()
 */
-
-/*!
-  \fn void QList::toVector( QGVector *vec ) const
-  Stores all list items in the vector \e vec.
-
-  The vector must be have the same item type, otherwise the result
-  will be undefined.
-*/
-
 
 /*****************************************************************************
   QListIterator documentation
