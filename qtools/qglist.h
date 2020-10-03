@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QGList and QGListIterator classes
 **
@@ -68,7 +68,6 @@ private:
 class Q_EXPORT QGList : public QCollection	// doubly linked generic list
 {
 friend class QGListIterator;
-friend class QGVector;				// needed by QGVector::toList
 public:
     uint  count() const;			// return number of nodes
 
@@ -121,8 +120,6 @@ protected:
     QCollection::Item last();		// set last item in list curr
     QCollection::Item next();		// set next item in list curr
     QCollection::Item prev();		// set prev item in list curr
-
-    void  toVector( QGVector * ) const;		// put items in vector
 
     virtual int compareItems( QCollection::Item, QCollection::Item );
 

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,11 +18,15 @@
 #ifndef _SEARCHINDEX_H
 #define _SEARCHINDEX_H
 
+#include <memory>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <string>
+
 #include <qintdict.h>
 #include <qlist.h>
-#include <qdict.h>
 #include <qintdict.h>
-#include <qvector.h>
 #include "sortdict.h"
 #include "definition.h"
 #include "util.h"
@@ -40,7 +44,7 @@ void finalizeSearchIndexer();
 
 struct URL
 {
-  URL(const char *n,const char *u) : name(n), url(u) {} 
+  URL(QCString n,QCString u) : name(n), url(u) {}
   QCString name;
   QCString url;
 };
@@ -56,14 +60,15 @@ struct URLInfo
 class IndexWord
 {
   public:
-    IndexWord(const char *word);
+    using URLInfoMap = std::unordered_map<int,URLInfo>;
+    IndexWord(QCString word);
     void addUrlIndex(int,bool);
-    const QIntDict<URLInfo> &urls() const { return m_urls; }
+    URLInfoMap urls() const { return m_urls; }
     QCString word() const { return m_word; }
 
   private:
     QCString    m_word;
-    QIntDict<URLInfo> m_urls;
+    URLInfoMap  m_urls;
 };
 
 class SearchIndexIntf
@@ -84,16 +89,16 @@ class SearchIndex : public SearchIndexIntf
 {
   public:
     SearchIndex();
-    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
-    void addWord(const char *word,bool hiPriority);
-    void write(const char *file);
+    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) override;
+    void addWord(const char *word,bool hiPriority) override;
+    void write(const char *file) override;
   private:
     void addWord(const char *word,bool hiPrio,bool recurse);
-    QDict<IndexWord> m_words;
-    QVector< QList<IndexWord> > m_index;
-    QDict<int> m_url2IdMap;
-    QIntDict<URL> m_urls;
-    int m_urlIndex;
+    std::unordered_map<std::string,int> m_words;
+    std::vector< std::vector< IndexWord> > m_index;
+    std::unordered_map<std::string,int> m_url2IdMap;
+    std::map<int,URL> m_urls;
+    int m_urlIndex = -1;
 };
 
 
@@ -102,12 +107,11 @@ class SearchIndexExternal : public SearchIndexIntf
     struct Private;
   public:
     SearchIndexExternal();
-   ~SearchIndexExternal();
     void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
     void write(const char *file);
   private:
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //------- client side search index ----------------------

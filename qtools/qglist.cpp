@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QGList and QGListIterator classes
 **
@@ -36,7 +36,6 @@
 **********************************************************************/
 
 #include "qglist.h"
-#include "qgvector.h"
 #include "qdatastream.h"
 
 
@@ -243,10 +242,10 @@ bool QGList::operator==( const QGList &list ) const
 {
     if ( count() != list.count() )
 	return FALSE;
-    
+
     if ( count() == 0 )
 	return TRUE;
-    
+
     QLNode *n1 = firstNode;
     QLNode *n2 = list.firstNode;
     while ( n1 && n2 ) {
@@ -256,7 +255,7 @@ bool QGList::operator==( const QGList &list ) const
 	n1 = n1->next;
 	n2 = n2->next;
     }
-    
+
     return TRUE;
 }
 
@@ -865,25 +864,6 @@ QCollection::Item QGList::prev()
     return 0;
 }
 
-
-/*!
-  \internal
-  Converts the list to a vector.
-*/
-
-void QGList::toVector( QGVector *vector ) const
-{
-    vector->clear();
-    if ( !vector->resize( count() ) )
-	return;
-    QLNode *n = firstNode;
-    uint i = 0;
-    while ( n ) {
-	vector->insert( i, n->data );
-	n = n->next;
-	i++;
-    }
-}
 
 void QGList::heapSortPushDown( QCollection::Item* heap, int first, int last )
 {

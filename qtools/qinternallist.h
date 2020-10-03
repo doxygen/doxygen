@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QList template/macro class
 **
@@ -88,7 +88,6 @@ public:
     type *last()			{ return (type *)QGList::last(); }
     type *next()			{ return (type *)QGList::next(); }
     type *prev()			{ return (type *)QGList::prev(); }
-    void  toVector( QGVector *vec )const{ QGList::toVector(vec); }
 private:
     void  deleteItem( QCollection::Item d );
 };
