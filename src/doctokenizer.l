@@ -439,6 +439,7 @@ REFWORD4_NOCV  (({SCOPEPRE}*"operator"{OPMASKOP2})|(("::"|"#"){SCOPEPRE}*"operat
 REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
 REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
+RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
 
 %option noyywrap
 %option yylineno
@@ -681,7 +682,7 @@ REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
                          g_token->name=yytext;
                          return TK_WORD;
                        }
-<St_Para>"$"{ID}":"[^:\n$][^\n$]*"$" { /* RCS tag */
+<St_Para>{RCSID} { /* RCS tag */
                          QCString tagName(yytext+1);
                          int index=tagName.find(':');
                          g_token->name = tagName.left(index);
