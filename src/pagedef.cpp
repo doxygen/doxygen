@@ -32,13 +32,12 @@
 class PageDefImpl : public DefinitionImpl, public PageDef
 {
   public:
-    PageDefImpl(const char *f,int l,int p,const char *n,const char *d,const char *t);
+    PageDefImpl(const char *f,int l,const char *n,const char *d,const char *t);
     virtual ~PageDefImpl();
 
     virtual void setFileName(const char *name);
     virtual void setLocalToc(const LocalToc &tl);
     virtual void setShowLineNo(bool);
-    virtual void setTopLine(int);
     virtual DefType definitionType() const { return TypePage; }
     virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
     virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
@@ -59,7 +58,6 @@ class PageDefImpl : public DefinitionImpl, public PageDef
     virtual Definition *getPageScope() const { return m_pageScope; }
     virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionImpl::name(); }
     virtual bool showLineNo() const;
-    virtual int topLine() const;
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeTagFile(FTextStream &);
     virtual void setNestingLevel(int l);
@@ -73,17 +71,16 @@ class PageDefImpl : public DefinitionImpl, public PageDef
     int m_nestingLevel;
     LocalToc m_localToc;
     bool m_showLineNo;
-    int  m_topLine;
 };
 
-PageDef *createPageDef(const char *f,int l,int p,const char *n,const char *d,const char *t)
+PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t)
 {
-  return new PageDefImpl(f,l,p,n,d,t);
+  return new PageDefImpl(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------
 
-PageDefImpl::PageDefImpl(const char *f,int l,int p,const char *n,
+PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
                  const char *d,const char *t)
  : DefinitionImpl(f,l,1,n), m_title(t)
 {
@@ -93,7 +90,6 @@ PageDefImpl::PageDefImpl(const char *f,int l,int p,const char *n,
   m_nestingLevel = 0;
   m_fileName = ::convertNameToFile(n,FALSE,TRUE);
   m_showLineNo = FALSE;
-  m_topLine=p;
 }
 
 PageDefImpl::~PageDefImpl()
@@ -234,7 +230,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),topLine(),this,0,si->title(),TRUE,FALSE,
+      ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
                      0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endSection(si->label(),si->type());
     }
@@ -254,7 +250,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
-    ol.generateDoc(docFile(),topLine(),this,0,si->title(),TRUE,FALSE,
+    ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
                    0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     //stringToSearchIndex(getOutputFileBase(),
     //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
@@ -396,16 +392,6 @@ void PageDefImpl::setShowLineNo(bool b)
 bool PageDefImpl::showLineNo() const
 {
   return m_showLineNo;
-}
-
-void PageDefImpl::setTopLine(int p)
-{
-  m_topLine = p;
-}
-
-int PageDefImpl::topLine() const
-{
-  return m_topLine;
 }
 
 bool PageDefImpl::hasTitle() const

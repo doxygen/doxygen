@@ -438,7 +438,7 @@ static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
 
-#define unputDocnl  for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]);
+#define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
 //-----------------------------------------------------------------------------
 
@@ -956,7 +956,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after \\enum."
                                               );
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
@@ -979,7 +979,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                                "missing argument after "
                                                "\\namespace."
                                               );
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
@@ -1002,7 +1002,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                                "missing argument after "
                                                "\\package."
                                               );
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           BEGIN( Comment );
@@ -1040,7 +1040,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <ClassDocArg1,CategoryDocArg1>.         { // ignore other stuff
@@ -1049,7 +1049,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <ClassDocArg2>{DOCNL}                   {
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <ClassDocArg2>{FILE}|"<>"               { // second argument; include file
@@ -1073,7 +1073,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                         }
 <ClassDocArg3>{DOCNL}                   {
                                           //if (*yytext=='\n') yyextra->lineNr++;
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <ClassDocArg3>.                         { // ignore other stuff
@@ -1104,7 +1104,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <GroupDocArg1>.                         { // ignore other stuff
@@ -1127,7 +1127,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                                  "\\defgroup %s", yyextra->current->name.data()
                                                 );
                                           }
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
@@ -1152,7 +1152,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                                "missing argument after "
                                                "\\page."
                                               );
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
@@ -1160,7 +1160,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <PageDocArg1>.                          { // ignore other stuff
                                         }
 <PageDocArg2>{DOCNL}                    { // second argument; page title
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
@@ -1194,7 +1194,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* --------- handle arguments of the file/dir/example command ------------ */
 
 <FileDocArg1>{DOCNL}                    { // no file name specified
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
@@ -1292,7 +1292,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           warn(yyextra->fileName,yyextra->lineNr,
                                               "Missing argument of '\\%s' command",yyextra->currentCmd.data()
                                               );
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
                                           BEGIN( Comment );
@@ -1306,7 +1306,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <LineParam>{DOCNL}                      { // end of argument
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <LineParam>{LC}                         { // line continuation
@@ -1670,7 +1670,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <NameParam>{DOCNL}                      { // end of argument
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <NameParam>{LC}                         { // line continuation
@@ -1708,7 +1708,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           }
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <InGroupParam>{LC}                      { // line continuation
@@ -1726,7 +1726,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           {
                                             //if (*yytext=='\n') yyextra->lineNr++;
                                             //addOutput(yyscanner,'\n');
-                                            unputDocnl;
+                                            unput_string(yytext,yyleng);
                                             yyextra->langParser->parsePrototype(yyextra->functionProto);
                                             BEGIN( Comment );
                                           }
@@ -1813,7 +1813,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <ExtendsParam>.                         { // ignore other stuff
@@ -1850,7 +1850,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
-                                          unputDocnl;
+                                          unput_string(yytext,yyleng);
                                           BEGIN( Comment );
                                         }
 <CiteLabel>.                            { // invalid character for cite label
@@ -2785,7 +2785,7 @@ static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s)
     yyextra->current->section = s;
     yyextra->current->fileName = yyextra->fileName;
     yyextra->current->startLine = yyextra->lineNr;
-    yyextra->current->topLine = yyextra->lineNr;
+    yyextra->current->docLine = yyextra->lineNr;
     return FALSE;
   }
 }

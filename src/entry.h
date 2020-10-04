@@ -264,7 +264,6 @@ class Entry
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
     int          docLine;     //!< line number at which the documentation was found
-    int          topLine;     //!< line number at which the page / section definition was found
     QCString     docFile;     //!< file in which the documentation was found
     QCString     brief;       //!< brief description (doc block)
     int          briefLine;   //!< line number at which the brief desc. was found
