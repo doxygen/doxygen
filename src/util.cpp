@@ -6004,7 +6004,9 @@ found:
 
 PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     const QCString &doc,
-    const char *fileName,int startLine,
+    const char *fileName,
+    int docLine,
+    int startLine,
     const RefItemVector &sli,
     GroupDef *gd,
     const TagInfo *tagInfo,
@@ -6017,9 +6019,9 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
   if ((pd=Doxygen::pageSDict->find(name)) && !tagInfo)
   {
     if (!xref) warn(fileName,startLine,"multiple use of page label '%s', (other occurrence: %s, line: %d)",
-         name,pd->docFile().data(),pd->docLine());
+         name,pd->docFile().data(),pd->getStartBodyLine());
     // append documentation block to the page.
-    pd->setDocumentation(doc,fileName,startLine);
+    pd->setDocumentation(doc,fileName,docLine);
     //printf("Adding page docs '%s' pi=%p name=%s\n",doc.data(),pd,name);
     // append (x)refitems to the page.
     pd->setRefItems(sli);
@@ -6033,7 +6035,8 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
 
     QCString title=ptitle.stripWhiteSpace();
-    pd=createPageDef(fileName,startLine,baseName,doc,title);
+    pd=createPageDef(fileName,docLine,baseName,doc,title);
+    pd->setBodySegment(startLine,startLine,-1);
 
     pd->setRefItems(sli);
     pd->setLanguage(lang);
@@ -6055,24 +6058,29 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 
       // a page name is a label as well!
       QCString file;
+      QCString orgFile;
+      int line  = -1;
       if (gd)
       {
         file=gd->getOutputFileBase();
+        orgFile=gd->getOutputFileBase();
       }
       else
       {
         file=pd->getOutputFileBase();
+        orgFile=pd->docFile();
+        line = pd->getStartBodyLine();
       }
       const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
       {
         if (si->lineNr() != -1)
         {
-          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName().data(),si->lineNr());
+          warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",pd->name().data(),si->fileName().data(),si->lineNr());
         }
         else
         {
-          warn(file,-1,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName().data());
+          warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s)",pd->name().data(),si->fileName().data());
         }
       }
       else

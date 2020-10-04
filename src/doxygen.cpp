@@ -347,7 +347,9 @@ static void addRelatedPage(Entry *root)
   }
 
   PageDef *pd = addRelatedPage(root->name,root->args,doc,
-      root->docFile,root->docLine,
+      root->docFile,
+      root->docLine,
+      root->startLine,
       root->sli,
       gd,root->tagInfo(),
       FALSE,
@@ -8442,6 +8444,7 @@ static void findMainPage(Entry *root)
   {
     if (Doxygen::mainPage==0 && root->tagInfo()==0)
     {
+      //printf("mainpage: docLine=%d startLine=%d\n",root->docLine,root->startLine);
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
       //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
@@ -8450,6 +8453,7 @@ static void findMainPage(Entry *root)
                               indexName, root->brief+root->doc+root->inbodyDocs,title);
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      Doxygen::mainPage->setBodySegment(root->startLine,root->startLine,-1);
       Doxygen::mainPage->setFileName(indexName);
       Doxygen::mainPage->setLocalToc(root->localToc);
       addPageToContext(Doxygen::mainPage,root);
@@ -8485,7 +8489,7 @@ static void findMainPage(Entry *root)
     {
       warn(root->fileName,root->startLine,
            "found more than one \\mainpage comment block! (first occurrence: %s, line %d), Skipping current block!",
-           Doxygen::mainPage->docFile().data(),Doxygen::mainPage->docLine());
+           Doxygen::mainPage->docFile().data(),Doxygen::mainPage->getStartBodyLine());
     }
   }
   for (const auto &e : root->children()) findMainPage(e.get());

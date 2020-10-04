@@ -230,7 +230,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
     if (si->title() != manPageName)
     {
-      ol.generateDoc(docFile(),docLine(),this,0,si->title(),TRUE,FALSE,
+      ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
                      0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endSection(si->label(),si->type());
     }
@@ -250,7 +250,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     ol.startPageDoc(si->title());
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
-    ol.generateDoc(docFile(),docLine(),this,0,si->title(),TRUE,FALSE,
+    ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
                    0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     //stringToSearchIndex(getOutputFileBase(),
     //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
