@@ -84,8 +84,8 @@ static QStack<DocLexerContext> g_lexerStack;
 
 static int g_yyLineNr = 0;
 
-static void lineCount();
-static void lineCount(const char* text);
+#define lineCount(s,len) do { for(int i=0;i<len;i++) if (s[i]=='\n') g_yyLineNr++; } while(0)
+
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
@@ -499,7 +499,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 %%
 <St_Para>\r            /* skip carriage return */
 <St_Para>^{LISTITEM}   { /* list item */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          QCString text=yytext;
                          int dashPos = text.findRev('-');
                          g_token->isEnumList = text.at(dashPos+1)=='#';
@@ -514,7 +514,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                          else
                          {
-                           lineCount(yytext);
+                           lineCount(yytext,yyleng);
                            QCString text=yytext;
                            static QRegExp re("[*+]");
                            int listPos = text.findRev(re);
@@ -542,7 +542,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(yytext);
                          int dashPos = text.findRev('-');
                          g_token->isEnumList = text.at(dashPos+1)=='#';
@@ -557,7 +557,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                          else
                          {
-                           lineCount(yytext);
+                           lineCount(yytext,yyleng);
                            QCString text=extractPartAfterNewLine(yytext);
                            static QRegExp re("[*+]");
                            int markPos = text.findRev(re);
@@ -568,14 +568,14 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
                          }
                          else
                          {
-                           lineCount(yytext);
+                           lineCount(yytext,yyleng);
                            QCString text=extractPartAfterNewLine(yytext);
                            static QRegExp re("[1-9]");
                            int digitPos = text.find(re);
@@ -587,13 +587,13 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          int dotPos = QCString(yytext).findRev('.');
                          g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(yytext);
                          int dotPos = text.findRev('.');
                          g_token->indent = computeIndent(text,dotPos);
@@ -618,7 +618,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_COMMAND_SEL();
                        }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          //g_yyLineNr++;
                          g_token->name = yytext+1;
                          g_token->name = g_token->name.stripWhiteSpace();
@@ -718,7 +718,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
                        }
 <St_Para>{HTMLTAG}     { /* html tag */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          handleHtmlTag();
                          return TK_HTMLTAG;
                        }
@@ -754,7 +754,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Para,St_Text>[\-+0-9] |
 <St_Para,St_Text>{WORD1} |
 <St_Para,St_Text>{WORD2} { /* function call */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
                            g_token->name = &yytext[1];
                          else
@@ -781,7 +781,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 
 <St_Para,St_Text>{BLANK}+      |
 <St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->chars=yytext;
                          return TK_WHITESPACE;
                        }
@@ -794,24 +794,24 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            REJECT;
                          }
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
                          if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
                          {
                            REJECT;
                          }
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n{BLANK}* {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->indent=computeIndent(yytext,(int)yyleng);
                          int i;
                          // put back the indentation (needed for list items)
@@ -838,17 +838,17 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          BEGIN(St_Code);
                        }
 <St_Code>{WS}*{CMD}"endcode" {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
 <St_XmlCode>{WS}*"</code>" {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          return RetVal_OK;
                        }
 <St_Code,St_XmlCode>[^\\@\n<]+  |
 <St_Code,St_XmlCode>\n          |
 <St_Code,St_XmlCode>.           {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_HtmlOnlyOption>" [block]" { // the space is added in commentscan.l
@@ -869,7 +869,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_HtmlOnly>[^\\@\n$]+    |
 <St_HtmlOnly>\n            |
 <St_HtmlOnly>.             {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_ManOnly>{CMD}"endmanonly" {
@@ -878,7 +878,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_ManOnly>[^\\@\n$]+    |
 <St_ManOnly>\n            |
 <St_ManOnly>.             {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_RtfOnly>{CMD}"endrtfonly" {
@@ -887,7 +887,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_RtfOnly>[^\\@\n$]+    |
 <St_RtfOnly>\n            |
 <St_RtfOnly>.             {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_LatexOnly>{CMD}"endlatexonly" {
@@ -896,7 +896,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_LatexOnly>[^\\@\n]+     |
 <St_LatexOnly>\n            |
 <St_LatexOnly>.             {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_XmlOnly>{CMD}"endxmlonly" {
@@ -905,7 +905,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_XmlOnly>[^\\@\n]+  |
 <St_XmlOnly>\n         |
 <St_XmlOnly>.          {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_DbOnly>{CMD}"enddocbookonly" {
@@ -914,7 +914,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_DbOnly>[^\\@\n]+  |
 <St_DbOnly>\n         |
 <St_DbOnly>.          {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_Verbatim>{CMD}"endverbatim" {
@@ -924,7 +924,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Verbatim>[^\\@\n]+ |
 <St_Verbatim>\n        |
 <St_Verbatim>.         { /* Verbatim text */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_Dot>{CMD}"enddot"  {
@@ -933,7 +933,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Dot>[^\\@\n]+      |
 <St_Dot>\n             |
 <St_Dot>.              { /* dot text */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_Msc>{CMD}("endmsc")  {
@@ -942,7 +942,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Msc>[^\\@\n]+      |
 <St_Msc>\n             |
 <St_Msc>.              { /* msc text */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_PlantUMLOpt>{BLANK}*"{"[^}]*"}" { // case 1: file name is specified as {filename}
@@ -980,7 +980,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_PlantUML>[^\\@\n]+ |
 <St_PlantUML>\n        |
 <St_PlantUML>.         { /* plantuml text */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
 <St_Title>"\""         { // quoted title
@@ -1007,7 +1007,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                        }
 <St_TitleN>\n          { /* new line => end of title */
                          unput(*yytext);
@@ -1033,7 +1033,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_TitleN>[\-+0-9]    |
 <St_TitleN>{WORD1}     |
 <St_TitleN>{WORD2}     { /* word */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
                            g_token->name = &yytext[1];
                          else
@@ -1077,7 +1077,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          BEGIN(St_TitleV);
                        }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->chars = yytext;
                          BEGIN(St_TitleN);
                          return TK_WORD;
@@ -1092,7 +1092,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 
 <St_Anchor>{LABELID}{WS}? { // anchor
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->name = QCString(yytext).stripWhiteSpace();
                          return TK_WORD;
                        }
@@ -1141,7 +1141,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return 0;
                        }
 <St_Ref>{WS}+"\""{WS}* { // white space following by quoted string
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          BEGIN(St_Ref2);
                        }
 <St_Ref>(\n|"\\ilinebr") { // new line
@@ -1192,7 +1192,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_SYMBOL;
                        }
 <St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          return 0;
                        }
 <St_Ref2>{SPCMD1}      |
@@ -1233,7 +1233,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_WORD;
                        }
 <St_Param>({PHPTYPE}{BLANK}*("["{BLANK}*"]")*{BLANK}*"|"{BLANK}*)*{PHPTYPE}{BLANK}*("["{BLANK}*"]")*{WS}+("&")?"$"{LABELID} {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          QCString params = yytext;
                          int j = params.find('&');
                          int i = params.find('$');
@@ -1252,7 +1252,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Param>{WS}*","{WS}*  /* param separator */
 <St_Param>{WS}         {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->chars=yytext;
                          return TK_WHITESPACE;
                        }
@@ -1261,7 +1261,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Options>{WS}*","{WS}*
 <St_Options>{WS}       { /* option separator */
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->name+=",";
                        }
 <St_Options>"}"        {
@@ -1297,7 +1297,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_WORD;
                        }
 <St_Pattern>\n         {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->name = g_token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
@@ -1318,7 +1318,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 
 <St_SkipTitle>.
 <St_SkipTitle>(\n|"\\ilinebr") {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          return 0;
                          }
 
@@ -1327,7 +1327,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Sections>[^\n@\\<]+
 <St_Sections>{CMD}("<"|{CMD})
 <St_Sections>"<"{CAPTION}({WS}+{ATTRIB})*">" {
-                                      lineCount(yytext);
+                                      lineCount(yytext,yyleng);
                                       QCString tag=yytext;
                                       int s=tag.find("id=");
                                       if (s!=-1) // command has id attribute
@@ -1431,7 +1431,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Sections>.
 <St_Sections>(\n|"\\ilinebr")
 <St_SecLabel1>{LABELID} {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_secLabel = yytext;
                          processSection();
                          BEGIN(St_Sections);
@@ -1444,7 +1444,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_SecTitle>[^\n]+    |
 <St_SecTitle>[^\n]*\n  {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_secTitle = yytext;
                          g_secTitle = g_secTitle.stripWhiteSpace();
                          if (g_secTitle.right(8)=="\\ilinebr")
@@ -1465,14 +1465,14 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          g_token->name += yytext;
                        }
 <St_Snippet>(\n|"\\ilinebr")  {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          g_token->name = g_token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
 
      /* Generic rules that work for all states */
 <*>\n                  {
-                         lineCount(yytext);
+                         lineCount(yytext,yyleng);
                          warn(g_fileName,g_yyLineNr,"Unexpected new line character");
                        }
 <*>"\\ilinebr"         {
@@ -1746,19 +1746,6 @@ void setDoctokinizerLineNr(int lineno)
 int getDoctokinizerLineNr(void)
 {
   return g_yyLineNr;
-}
-
-static void lineCount()
-{
-  g_yyLineNr++;
-}
-
-static void lineCount(const char* text)
-{
-  for (const char* c=text ; *c ; ++c )
-  {
-    if (*c == '\n') g_yyLineNr++;
-  }
 }
 
 
