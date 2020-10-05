@@ -51,7 +51,7 @@ if (use_libclang)
         find_package(LLVM CONFIG REQUIRED)
         find_package(Clang CONFIG REQUIRED)
     if (CMAKE_SYSTEM MATCHES "Darwin")
-        set(MACOS_VERSION_MIN 10.11)
+        set(MACOS_VERSION_MIN 10.14)
     endif()
 endif()
 
