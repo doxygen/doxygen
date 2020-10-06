@@ -112,3 +112,8 @@ void InputInt::writeValue(QTextStream &t,QTextCodec *)
   t << m_val;
 }
 
+
+bool InputInt::isDefault()
+{
+  return m_val == m_default;
+}

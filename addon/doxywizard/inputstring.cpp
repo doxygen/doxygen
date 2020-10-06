@@ -253,6 +253,11 @@ void InputString::writeValue(QTextStream &t,QTextCodec *codec)
   writeStringValue(t,codec,m_str);
 }
 
+bool InputString::isDefault()
+{
+  return m_str == m_default;
+}
+
 QString InputString::checkEnumVal(const QString &value)
 {
   QString val = value.trimmed().toLower();

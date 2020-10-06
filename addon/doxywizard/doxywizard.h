@@ -61,6 +61,7 @@ class MainWindow : public QMainWindow
     void runComplete();
     void showHtmlOutput();
     void saveLog();
+    void showCondensedSettings();
     void showSettings();
     void configChanged();
     void clearRecent();

@@ -38,6 +38,7 @@ class InputBool : public QObject, public Input
     void addDependency(Input *option) { m_dependencies+=option; }
     void setEnabled(bool);
     void updateDependencies();
+    bool isDefault();
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
 
