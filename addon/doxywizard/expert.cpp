@@ -756,15 +756,18 @@ void Expert::loadConfig(const QString &fileName)
 }
 
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
-                       bool brief)
+                       bool brief,bool condensed)
 {
   if (!brief)
   {
     t << endl;
   }
-  t << "#---------------------------------------------------------------------------" << endl;
-  t << "# " << elem.attribute(SA("docs")) << endl;
-  t << "#---------------------------------------------------------------------------" << endl;
+  if (!condensed)
+  {
+    t << "#---------------------------------------------------------------------------" << endl;
+    t << "# " << elem.attribute(SA("docs")) << endl;
+    t << "#---------------------------------------------------------------------------" << endl;
+  }
   // write options...
   QDomElement childElem = elem.firstChildElement();
   while (!childElem.isNull())
@@ -784,24 +787,29 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
           t << convertToComment(option->templateDocs());
           t << endl;
         }
-        t << name.leftJustified(MAX_OPTION_LENGTH) << "=";
-        if (option && !option->isEmpty())
+        bool toPrint = true;
+        if (option && condensed) toPrint = !option->isDefault();
+        if (toPrint)
         {
-          t << " ";
-          option->writeValue(t,codec);
+          t << name.leftJustified(MAX_OPTION_LENGTH) << "=";
+          if (option && !option->isEmpty())
+          {
+            t << " ";
+            option->writeValue(t,codec);
+          }
+          t << endl;
         }
-        t << endl;
       }
     }
     childElem = childElem.nextSiblingElement();
   }
 }
 
-bool Expert::writeConfig(QTextStream &t,bool brief)
+bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
 {
   // write global header
   t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
-  if (!brief)
+  if (!brief && !condensed)
   {
     t << convertToComment(m_header);
   }
@@ -821,7 +829,7 @@ bool Expert::writeConfig(QTextStream &t,bool brief)
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,codec,brief);
+      saveTopic(t,childElem,codec,brief,condensed);
     }
     childElem = childElem.nextSiblingElement();
   }

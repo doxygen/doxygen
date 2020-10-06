@@ -40,6 +40,7 @@ class Input
     virtual void setEnabled(bool) = 0;
     virtual void updateDependencies() = 0;
     virtual void reset() = 0;
+    virtual bool isDefault() = 0;
     virtual void writeValue(QTextStream &t,QTextCodec *codec) = 0;
     virtual void setTemplateDocs(const QString &docs) = 0;
     virtual bool isEmpty() { return false; };

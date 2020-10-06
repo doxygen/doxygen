@@ -38,7 +38,7 @@ class Expert : public QSplitter, public DocIntf
     void loadSettings(QSettings *);
     void saveSettings(QSettings *);
     void loadConfig(const QString &fileName);
-    bool writeConfig(QTextStream &t,bool brief);
+    bool writeConfig(QTextStream &t,bool brief,bool condensed);
     QByteArray saveInnerState () const;
     bool restoreInnerState ( const QByteArray & state );
     const QHash<QString,Input*> &modelData() const { return m_options; }
@@ -67,7 +67,7 @@ class Expert : public QSplitter, public DocIntf
 
   private:
     void createTopics(const QDomElement &);
-    void saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,bool brief);
+    void saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,bool brief,bool dondensed);
 
     QSplitter               *m_splitter;
     QTextBrowser            *m_helper;
