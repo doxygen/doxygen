@@ -139,10 +139,14 @@ void Expert::createTopics(const QDomElement &rootElem)
     {
       // Remove _ from a group name like: Source_Browser
       QString name = childElem.attribute(SA("name")).replace(SA("_"),SA(" "));
-      items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
-      QWidget *widget = createTopicWidget(childElem);
-      m_topics[name] = widget;
-      m_topicStack->addWidget(widget);
+      QString setting = childElem.attribute(SA("setting"));
+      if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
+      {
+        items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
+        QWidget *widget = createTopicWidget(childElem);
+        m_topics[name] = widget;
+        m_topicStack->addWidget(widget);
+      }
     }
     childElem = childElem.nextSiblingElement();
   }
