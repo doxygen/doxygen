@@ -79,6 +79,7 @@ class MainWindow : public QMainWindow
     bool discardUnsavedChanges(bool saveOption=true);
 
     QLineEdit *m_workingDir;
+    QLineEdit *m_runOptions;
     QPushButton *m_selWorkingDir;
     QPushButton *m_run;
     QPushButton *m_saveLog;

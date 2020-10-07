@@ -108,6 +108,12 @@ MainWindow::MainWindow()
   m_saveLog->setEnabled(false);
   QPushButton *showSettings = new QPushButton(tr("Show configuration"));
   QPushButton *showCondensedSettings = new QPushButton(tr("Show condensed configuration"));
+  // select extra run options
+  m_runOptions = new QLineEdit;
+
+  runTabLayout->addWidget(new QLabel(tr("Step 3: Specify (optional) options for running doxygen")));
+  runTabLayout->addWidget(m_runOptions);
+
   runLayout->addWidget(m_run);
   runLayout->addWidget(m_runStatus);
   runLayout->addStretch(1);
@@ -501,6 +507,9 @@ void MainWindow::runDoxygen()
     m_runProcess->setEnvironment(env);
 
     QStringList args;
+    QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),Qt::SkipEmptyParts);
+
+    args << runOptions;
     args << QString::fromLatin1("-b"); // make stdout unbuffered
     args << QString::fromLatin1("-");  // read config from stdin
 
