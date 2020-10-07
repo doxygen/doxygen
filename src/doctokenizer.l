@@ -84,7 +84,7 @@ static QStack<DocLexerContext> g_lexerStack;
 
 static int g_yyLineNr = 0;
 
-#define lineCount(s,len) do { for(int i=0;i<len;i++) if (s[i]=='\n') g_yyLineNr++; } while(0)
+#define lineCount(s,len) do { for(int i=0;i<(int)len;i++) if (s[i]=='\n') g_yyLineNr++; } while(0)
 
 
 #if USE_STATE2STRING
