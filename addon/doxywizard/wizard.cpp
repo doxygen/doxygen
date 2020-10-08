@@ -56,6 +56,7 @@
 #define STR_GENERATE_MAN          QString::fromLatin1("GENERATE_MAN")
 #define STR_GENERATE_RTF          QString::fromLatin1("GENERATE_RTF")
 #define STR_GENERATE_XML          QString::fromLatin1("GENERATE_XML")
+#define STR_GENERATE_DOCBOOK      QString::fromLatin1("GENERATE_DOCBOOK")
 #define STR_GENERATE_HTMLHELP     QString::fromLatin1("GENERATE_HTMLHELP")
 #define STR_GENERATE_TREEVIEW     QString::fromLatin1("GENERATE_TREEVIEW")
 #define STR_USE_PDFLATEX          QString::fromLatin1("USE_PDFLATEX")
@@ -957,16 +958,20 @@ Step3::Step3(Wizard *wizard,const QHash<QString,Input*> &modelData)
   // GENERATE_RTF
   m_xmlEnabled=new QCheckBox(tr("XML"));
   // GENERATE_XML
+  m_docbookEnabled=new QCheckBox(tr("Docbook"));
+  // GENERATE_DOCBOOK
   gbox->addWidget(m_manEnabled,3,0);
   gbox->addWidget(m_rtfEnabled,4,0);
   gbox->addWidget(m_xmlEnabled,5,0);
+  gbox->addWidget(m_docbookEnabled,6,0);
 
-  gbox->setRowStretch(6,1);
+  gbox->setRowStretch(7,1);
   connect(m_htmlOptions,SIGNAL(toggled(bool)),SLOT(setHtmlEnabled(bool)));
   connect(m_texOptions,SIGNAL(toggled(bool)),SLOT(setLatexEnabled(bool)));
   connect(m_manEnabled,SIGNAL(stateChanged(int)),SLOT(setManEnabled(int)));
   connect(m_rtfEnabled,SIGNAL(stateChanged(int)),SLOT(setRtfEnabled(int)));
   connect(m_xmlEnabled,SIGNAL(stateChanged(int)),SLOT(setXmlEnabled(int)));
+  connect(m_docbookEnabled,SIGNAL(stateChanged(int)),SLOT(setDocbookEnabled(int)));
   connect(m_searchEnabled,SIGNAL(stateChanged(int)),SLOT(setSearchEnabled(int)));
   connect(m_htmlOptionsGroup,SIGNAL(buttonClicked(int)),
           SLOT(setHtmlOptions(int)));
@@ -1012,6 +1017,11 @@ void Step3::setRtfEnabled(int state)
 void Step3::setXmlEnabled(int state)
 {
   updateBoolOption(m_modelData,STR_GENERATE_XML,state==Qt::Checked);
+}
+
+void Step3::setDocbookEnabled(int state)
+{
+  updateBoolOption(m_modelData,STR_GENERATE_DOCBOOK,state==Qt::Checked);
 }
 
 void Step3::setSearchEnabled(int state)
@@ -1064,6 +1074,7 @@ void Step3::init()
   m_manEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_MAN));
   m_rtfEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_RTF));
   m_xmlEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_XML));
+  m_docbookEnabled->setChecked(getBoolOption(m_modelData,STR_GENERATE_DOCBOOK));
   m_searchEnabled->setChecked(getBoolOption(m_modelData,STR_SEARCHENGINE));
   if (getBoolOption(m_modelData,STR_GENERATE_HTMLHELP))
   {
