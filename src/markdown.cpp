@@ -2529,6 +2529,7 @@ QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
   }
   if (i<end1 && isAtxHeader(data+i,end1-i,title,id,FALSE)>0)
   {
+    docs+="\n";
     docs+=docs_org.mid(end1);
   }
   else
