@@ -112,3 +112,8 @@ void InputBool::writeValue(QTextStream &t,QTextCodec *codec)
     t << codec->fromUnicode(QString::fromLatin1("NO"));
 }
 
+bool InputBool::isDefault()
+{
+  return m_state == m_default;
+}
+

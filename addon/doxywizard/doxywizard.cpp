@@ -107,9 +107,17 @@ MainWindow::MainWindow()
   m_saveLog = new QPushButton(tr("Save log..."));
   m_saveLog->setEnabled(false);
   QPushButton *showSettings = new QPushButton(tr("Show configuration"));
+  QPushButton *showCondensedSettings = new QPushButton(tr("Show condensed configuration"));
+  // select extra run options
+  m_runOptions = new QLineEdit;
+
+  runTabLayout->addWidget(new QLabel(tr("Step 3: Specify (optional) options for running doxygen")));
+  runTabLayout->addWidget(m_runOptions);
+
   runLayout->addWidget(m_run);
   runLayout->addWidget(m_runStatus);
   runLayout->addStretch(1);
+  runLayout->addWidget(showCondensedSettings);
   runLayout->addWidget(showSettings);
   runLayout->addWidget(m_saveLog);
 
@@ -162,6 +170,7 @@ MainWindow::MainWindow()
   connect(m_run,SIGNAL(clicked()),SLOT(runDoxygen()));
   connect(m_launchHtml,SIGNAL(clicked()),SLOT(showHtmlOutput()));
   connect(m_saveLog,SIGNAL(clicked()),SLOT(saveLog()));
+  connect(showCondensedSettings,SIGNAL(clicked()),SLOT(showCondensedSettings()));
   connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
   connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
@@ -288,7 +297,7 @@ void MainWindow::saveConfig(const QString &fileName)
     return;
   }
   QTextStream t(&f);
-  m_expert->writeConfig(t,false);
+  m_expert->writeConfig(t,false,false);
   updateConfigFileName(fileName);
   m_modified = false;
   updateTitle();
@@ -498,6 +507,9 @@ void MainWindow::runDoxygen()
     m_runProcess->setEnvironment(env);
 
     QStringList args;
+    QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),QString::SkipEmptyParts);
+
+    args << runOptions;
     args << QString::fromLatin1("-b"); // make stdout unbuffered
     args << QString::fromLatin1("-");  // read config from stdin
 
@@ -511,7 +523,7 @@ void MainWindow::runDoxygen()
       return;
     }
     QTextStream t(m_runProcess);
-    m_expert->writeConfig(t,false);
+    m_expert->writeConfig(t,false,false);
     m_runProcess->closeWriteChannel();
 
     if (m_runProcess->state() == QProcess::NotRunning)
@@ -625,7 +637,18 @@ void MainWindow::showSettings()
 {
   QString text;
   QTextStream t(&text);
-  m_expert->writeConfig(t,true);
+  m_expert->writeConfig(t,true,false);
+  m_outputLog->clear();
+  m_outputLog->append(APPQT(text));
+  m_outputLog->ensureCursorVisible();
+  m_saveLog->setEnabled(true);
+}
+
+void MainWindow::showCondensedSettings()
+{
+  QString text;
+  QTextStream t(&text);
+  m_expert->writeConfig(t,true,true);
   m_outputLog->clear();
   m_outputLog->append(APPQT(text));
   m_outputLog->ensureCursorVisible();

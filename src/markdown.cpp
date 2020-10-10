@@ -2130,6 +2130,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
   TRACE(data);
   int i=0,end;
   //printf("writeCodeBlock: data={%s}\n",QCString(data).left(size).data());
+  // no need for \ilinebr here as the prvious like was empty and was skipped
   m_out.addStr("@verbatim\n");
   int emptyLines=0;
   while (i<size)
@@ -2164,7 +2165,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
       break;
     }
   }
-  m_out.addStr("@endverbatim\n");
+  m_out.addStr("@endverbatim\\ilinebr ");
   while (emptyLines>0) // write skipped empty lines
   {
     // add empty line
