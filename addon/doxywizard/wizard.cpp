@@ -1127,7 +1127,7 @@ Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
 
   m_dotGroup = new QGroupBox(tr("Dot graphs to generate"));
     QVBoxLayout *vbox = new QVBoxLayout;
-    m_dotClass=new QCheckBox(tr("Class diagrams"));
+    m_dotClass=new QCheckBox(tr("Class graphs"));
     // CLASS_GRAPH
     m_dotCollaboration=new QCheckBox(tr("Collaboration diagrams"));
     // COLLABORATION_GRAPH
