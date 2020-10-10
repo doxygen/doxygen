@@ -78,7 +78,7 @@ class ScopedTypeVariant
       m_variant = Local;
       m_u.localDef = new LocalDef;
     }
-    //! copy contructor
+    //! copy constructor
     ScopedTypeVariant(const ScopedTypeVariant &stv)
     {
       m_variant = stv.m_variant;
