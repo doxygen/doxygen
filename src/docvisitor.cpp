@@ -40,7 +40,7 @@ CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
 {
   std::string ext(extension?extension:"");
   // for each extension we create a code parser once per visitor, so that
-  // the context of the same parser object is reused thoughout multiple passes for instance
+  // the context of the same parser object is reused throughout multiple passes for instance
   // for code fragments shown via dontinclude.
   auto it = m_p->parserFactoryMap.find(ext);
   if (it==m_p->parserFactoryMap.end())
