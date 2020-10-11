@@ -2927,18 +2927,19 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     {
       if (md==0) // not found as a typedef
       {
+        AccessStack accessStack;
         md = setCallContextForVar(yyscanner,clName);
         //printf("setCallContextForVar(%s) md=%p yyextra->currentDefinition=%p\n",clName,md,yyextra->currentDefinition);
         if (md && yyextra->currentDefinition)
         {
           DBG_CTX((stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
               md->name().data(),yyextra->currentDefinition->name().data(),
-              isAccessibleFrom(yyextra->currentDefinition,yyextra->sourceFileDef,md),
+              isAccessibleFrom(accessStack,yyextra->currentDefinition,yyextra->sourceFileDef,md),
               md->getOuterScope()->name().data()));
         }
 
         if (md && yyextra->currentDefinition &&
-            isAccessibleFrom(yyextra->currentDefinition,yyextra->sourceFileDef,md)==-1)
+            isAccessibleFrom(accessStack,yyextra->currentDefinition,yyextra->sourceFileDef,md)==-1)
         {
           md=0; // variable not accessible
         }

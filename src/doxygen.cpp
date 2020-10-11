@@ -7647,9 +7647,15 @@ static void generateFileSources()
           results.emplace_back(threadPool.queue(processFile));
         }
       }
+      // first wait until all files are processed
+      std::vector< std::shared_ptr<SourceContext> > syncedResults;
       for (auto &f : results)
       {
-        std::shared_ptr<SourceContext> ctx = f.get();
+        syncedResults.push_back(f.get());
+      }
+      // next write all footers
+      for (auto &ctx : syncedResults)
+      {
         if (ctx->generateSourceFile)
         {
           ctx->fd->writeSourceFooter(ctx->ol);

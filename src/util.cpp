@@ -429,7 +429,8 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
           //    tmd->getOuterScope()->name().data(), mContext);
           if (tmd->isTypedef() /*&& tmd->getOuterScope()==resScope*/)
           {
-            int dist=isAccessibleFrom(resScope,0,tmd);
+            AccessStack accessStack;
+            int dist=isAccessibleFrom(accessStack,resScope,0,tmd);
             if (dist!=-1 && (md==0 || dist<minDist))
             {
               md = tmd;
@@ -506,7 +507,6 @@ NamespaceDef *getResolvedNamespace(const char *name)
 }
 
 static QDict<MemberDef> g_resolvedTypedefs;
-static QDict<Definition> g_visitedNamespaces;
 
 // forward declaration
 static const ClassDef *getResolvedClassRec(const Definition *scope,
@@ -516,8 +516,6 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
                               QCString *pTemplSpec,
                               QCString *pResolvedType
                              );
-int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,const Definition *item,
-                     const QCString &explicitScopePart);
 
 /*! Returns the class representing the value of the typedef represented by \a md
  *  within file \a fileScope.
@@ -685,8 +683,10 @@ static QCString substTypedef(const Definition *scope,const FileDef *fileScope,co
         MemberDef *md = dynamic_cast<MemberDef *>(d);
         if (md->isTypedef()) // d is a typedef
         {
+          VisitedNamespaces visitedNamespaces;
+          AccessStack accessStack;
           // test accessibility of typedef within scope.
-          int distance = isAccessibleFromWithExpScope(scope,fileScope,d,"");
+          int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,"");
           if (distance!=-1 && distance<minDistance)
             // definition is accessible and a better match
           {
@@ -705,7 +705,9 @@ static QCString substTypedef(const Definition *scope,const FileDef *fileScope,co
     if (md->isTypedef()) // d is a typedef
     {
       // test accessibility of typedef within scope.
-      int distance = isAccessibleFromWithExpScope(scope,fileScope,d,"");
+      VisitedNamespaces visitedNamespaces;
+      AccessStack accessStack;
+      int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,"");
       if (distance!=-1) // definition is accessible
       {
         bestMatch = md;
@@ -824,12 +826,12 @@ bool accessibleViaUsingClass(const SDict<Definition> *cl,
   return FALSE;
 }
 
-bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
+bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
+                                 const NamespaceSDict *nl,
                                  const FileDef *fileScope,
                                  const Definition *item,
                                  const QCString &explicitScopePart="")
 {
-  static QDict<void> visitedDict;
   if (nl) // check used namespaces for the class
   {
     NamespaceSDict::Iterator nli(*nl);
@@ -848,17 +850,17 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
       if (item->getLanguage()==SrcLangExt_Cpp)
       {
         QCString key=und->name();
-        if (und->getUsedNamespaces() && visitedDict.find(key)==0)
+        if (und->getUsedNamespaces() && visited.find(key.str())==visited.end())
         {
-          visitedDict.insert(key,(void *)0x08);
+          visited.insert(key.str());
 
-          if (accessibleViaUsingNamespace(und->getUsedNamespaces(),fileScope,item,explicitScopePart))
+          if (accessibleViaUsingNamespace(visited,und->getUsedNamespaces(),fileScope,item,explicitScopePart))
           {
             //printf("] found it via recursion\n");
             return TRUE;
           }
 
-          visitedDict.remove(key);
+          visited.erase(key.str());
         }
       }
       //printf("] Try via used namespace done\n");
@@ -867,89 +869,15 @@ bool accessibleViaUsingNamespace(const NamespaceSDict *nl,
   return FALSE;
 }
 
-const int MAX_STACK_SIZE = 1000;
-
-/** Helper class representing the stack of items considered while resolving
- *  the scope.
- */
-class AccessStack
-{
-  public:
-    AccessStack() : m_index(0) {}
-    void push(const Definition *scope,const FileDef *fileScope,const Definition *item)
-    {
-      if (m_index<MAX_STACK_SIZE)
-      {
-        m_elements[m_index].scope     = scope;
-        m_elements[m_index].fileScope = fileScope;
-        m_elements[m_index].item      = item;
-        m_index++;
-      }
-    }
-    void push(const Definition *scope,const FileDef *fileScope,const Definition *item,const QCString &expScope)
-    {
-      if (m_index<MAX_STACK_SIZE)
-      {
-        m_elements[m_index].scope     = scope;
-        m_elements[m_index].fileScope = fileScope;
-        m_elements[m_index].item      = item;
-        m_elements[m_index].expScope  = expScope;
-        m_index++;
-      }
-    }
-    void pop()
-    {
-      if (m_index>0) m_index--;
-    }
-    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item)
-    {
-      int i=0;
-      for (i=0;i<m_index;i++)
-      {
-        AccessElem *e = &m_elements[i];
-        if (e->scope==scope && e->fileScope==fileScope && e->item==item)
-        {
-          return TRUE;
-        }
-      }
-      return FALSE;
-    }
-    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item,const QCString &expScope)
-    {
-      int i=0;
-      for (i=0;i<m_index;i++)
-      {
-        AccessElem *e = &m_elements[i];
-        if (e->scope==scope && e->fileScope==fileScope && e->item==item && e->expScope==expScope)
-        {
-          return TRUE;
-        }
-      }
-      return FALSE;
-    }
-
-  private:
-    /** Element in the stack. */
-    struct AccessElem
-    {
-      const Definition *scope;
-      const FileDef *fileScope;
-      const Definition *item;
-      QCString expScope;
-    };
-    int m_index;
-    AccessElem m_elements[MAX_STACK_SIZE];
-};
 
 /* Returns the "distance" (=number of levels up) from item to scope, or -1
  * if item in not inside scope.
  */
-int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item)
+int isAccessibleFrom(AccessStack &accessStack,const Definition *scope,const FileDef *fileScope,const Definition *item)
 {
   //printf("<isAccessibleFrom(scope=%s,item=%s itemScope=%s)\n",
   //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
 
-  static AccessStack accessStack;
   if (accessStack.find(scope,fileScope,item))
   {
     return -1;
@@ -991,7 +919,8 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
         goto done;
       }
       NamespaceSDict *nl = fileScope->getUsedNamespaces();
-      if (accessibleViaUsingNamespace(nl,fileScope,item))
+      StringUnorderedSet visited;
+      if (accessibleViaUsingNamespace(visited,nl,fileScope,item))
       {
         //printf("> found via used namespace\n");
         goto done;
@@ -1014,14 +943,15 @@ int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Defi
         goto done;
       }
       const NamespaceSDict *nl = nscope->getUsedNamespaces();
-      if (accessibleViaUsingNamespace(nl,fileScope,item))
+      StringUnorderedSet visited;
+      if (accessibleViaUsingNamespace(visited,nl,fileScope,item))
       {
         //printf("> found via used namespace\n");
         goto done;
       }
     }
     // repeat for the parent scope
-    i=isAccessibleFrom(scope->getOuterScope(),fileScope,item);
+    i=isAccessibleFrom(accessStack,scope->getOuterScope(),fileScope,item);
     //printf("> result=%d\n",i);
     result= (i==-1) ? -1 : i+2;
   }
@@ -1046,16 +976,16 @@ done:
  *   not found and then A::I is searched in the global scope, which matches and
  *   thus the result is 1.
  */
-int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,
-                     const Definition *item,const QCString &explicitScopePart)
+int isAccessibleFromWithExpScope(VisitedNamespaces &visitedNamespaces,
+                                 AccessStack &accessStack, const Definition *scope,const FileDef *fileScope,
+                                 const Definition *item,const QCString &explicitScopePart)
 {
   if (explicitScopePart.isEmpty())
   {
     // handle degenerate case where there is no explicit scope.
-    return isAccessibleFrom(scope,fileScope,item);
+    return isAccessibleFrom(accessStack,scope,fileScope,item);
   }
 
-  static AccessStack accessStack;
   if (accessStack.find(scope,fileScope,item,explicitScopePart))
   {
     return -1;
@@ -1104,7 +1034,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
       int i=-1;
       if (newScope->definitionType()==Definition::TypeNamespace)
       {
-        g_visitedNamespaces.insert(newScope->name(),newScope);
+        visitedNamespaces.insert({newScope->name().str(),newScope});
         // this part deals with the case where item is a class
         // A::B::C but is explicit referenced as A::C, where B is imported
         // in A via a using directive.
@@ -1132,10 +1062,10 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
           const NamespaceDef *nd;
           for (nli.toFirst();(nd=nli.current());++nli)
           {
-            if (g_visitedNamespaces.find(nd->name())==0)
+            if (visitedNamespaces.find(nd->name().str())==visitedNamespaces.end())
             {
               //printf("Trying for namespace %s\n",nd->name().data());
-              i = isAccessibleFromWithExpScope(scope,fileScope,item,nd->name());
+              i = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,item,nd->name());
               if (i!=-1)
               {
                 //printf("> found via explicit scope of used namespace\n");
@@ -1148,7 +1078,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
       // repeat for the parent scope
       if (scope!=Doxygen::globalScope)
       {
-        i = isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
+        i = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope->getOuterScope(),fileScope,
             item,explicitScopePart);
       }
       //printf("  | result=%d\n",i);
@@ -1162,7 +1092,8 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
     {
       const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(scope);
       const NamespaceSDict *nl = nscope->getUsedNamespaces();
-      if (accessibleViaUsingNamespace(nl,fileScope,item,explicitScopePart))
+      StringUnorderedSet visited;
+      if (accessibleViaUsingNamespace(visited,nl,fileScope,item,explicitScopePart))
       {
         //printf("> found in used namespace\n");
         goto done;
@@ -1173,7 +1104,8 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
       if (fileScope)
       {
         const NamespaceSDict *nl = fileScope->getUsedNamespaces();
-        if (accessibleViaUsingNamespace(nl,fileScope,item,explicitScopePart))
+        StringUnorderedSet visited;
+        if (accessibleViaUsingNamespace(visited,nl,fileScope,item,explicitScopePart))
         {
           //printf("> found in used namespace\n");
           goto done;
@@ -1184,7 +1116,7 @@ int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScop
     }
     else // continue by looking into the parent scope
     {
-      int i=isAccessibleFromWithExpScope(scope->getOuterScope(),fileScope,
+      int i=isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope->getOuterScope(),fileScope,
           item,explicitScopePart);
       //printf("> result=%d\n",i);
       result= (i==-1) ? -1 : i+2;
@@ -1225,9 +1157,10 @@ static void getResolvedSymbol(const Definition *scope,
       )
      )
   {
-    g_visitedNamespaces.clear();
+    VisitedNamespaces visitedNamespaces;
+    AccessStack accessStack;
     // test accessibility of definition within scope.
-    int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
+    int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,explicitScopePart);
     //printf("  %s; distance %s (%p) is %d\n",scope->name().data(),d->name().data(),d,distance);
     if (distance!=-1) // definition is accessible
     {
@@ -6850,8 +6783,9 @@ MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
     {
       if (d->definitionType()==Definition::TypeMember)
       {
-        g_visitedNamespaces.clear();
-        int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
+        VisitedNamespaces visitedNamespaces;
+        AccessStack accessStack;
+        int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,explicitScopePart);
         if (distance!=-1 && distance<minDistance)
         {
           minDistance = distance;
@@ -6865,8 +6799,9 @@ MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
   {
     //printf("unique match!\n");
     Definition *d = (Definition *)di;
-    g_visitedNamespaces.clear();
-    int distance = isAccessibleFromWithExpScope(scope,fileScope,d,explicitScopePart);
+    VisitedNamespaces visitedNamespaces;
+    AccessStack accessStack;
+    int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,explicitScopePart);
     if (distance!=-1 && distance<minDistance)
     {
       minDistance = distance;

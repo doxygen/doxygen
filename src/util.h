@@ -23,6 +23,7 @@
  */
 
 #include <memory>
+#include <unordered_map>
 
 #include <qlist.h>
 #include <ctype.h>
@@ -116,6 +117,56 @@ class LetterToIndexMap : public SIntDict<T>
       return (int)l1->letter()-(int)l2->letter();
     }
 };
+
+//--------------------------------------------------------------------
+
+const int MAX_STACK_SIZE = 100;
+
+/** Helper class representing the stack of items considered while resolving
+ *  the scope.
+ */
+class AccessStack
+{
+    /** Element in the stack. */
+    struct AccessElem
+    {
+      AccessElem(const Definition *d,const FileDef *f,const Definition *i,QCString e = QCString()) : scope(d), fileScope(f), item(i), expScope(e) {}
+      const Definition *scope;
+      const FileDef *fileScope;
+      const Definition *item;
+      QCString expScope;
+    };
+  public:
+    void push(const Definition *scope,const FileDef *fileScope,const Definition *item)
+    {
+      m_elements.push_back(AccessElem(scope,fileScope,item));
+    }
+    void push(const Definition *scope,const FileDef *fileScope,const Definition *item,const QCString &expScope)
+    {
+      m_elements.push_back(AccessElem(scope,fileScope,item,expScope));
+    }
+    void pop()
+    {
+      if (!m_elements.empty()) m_elements.pop_back();
+    }
+    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item)
+    {
+      auto it = std::find_if(m_elements.begin(),m_elements.end(),
+                             [&](const AccessElem &e) { return e.scope==scope && e.fileScope==fileScope && e.item==item; });
+      return it!=m_elements.end();
+    }
+    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item,const QCString &expScope)
+    {
+      auto it = std::find_if(m_elements.begin(),m_elements.end(),
+                             [&](const AccessElem &e) { return e.scope==scope && e.fileScope==fileScope && e.item==item && e.expScope==expScope; });
+      return it!=m_elements.end();
+    }
+
+  private:
+    std::vector<AccessElem> m_elements;
+};
+
+using VisitedNamespaces = std::unordered_map<std::string,const Definition *>;
 
 //--------------------------------------------------------------------
 
@@ -378,10 +429,17 @@ QCString stripExtension(const char *fName);
 
 void replaceNamespaceAliases(QCString &scope,int i);
 
-int isAccessibleFrom(const Definition *scope,const FileDef *fileScope,const Definition *item);
+int isAccessibleFrom(AccessStack &accessStack,
+                     const Definition *scope,
+                     const FileDef *fileScope,
+                     const Definition *item);
 
-int isAccessibleFromWithExpScope(const Definition *scope,const FileDef *fileScope,const Definition *item,
-                     const QCString &explicitScopePart);
+int isAccessibleFromWithExpScope(VisitedNamespaces &visitedNamespaces,
+                                 AccessStack &accessStack,
+                                 const Definition *scope,
+                                 const FileDef *fileScope,
+                                 const Definition *item,
+                                 const QCString &explicitScopePart);
 
 int computeQualifiedIndex(const QCString &name);
 
