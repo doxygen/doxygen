@@ -311,6 +311,11 @@ class TranslatorFinnish : public TranslatorAdapter_1_6_0
       {
         return "Tässä ovat tietueet lyhyen selitteen kanssa:"; // "Here are the data structures with brief descriptions:"
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Tässä ovat luokat " // "Here are the classes
+             "lyhyen selitteen kanssa:"; // "with brief descriptions:"
+      }
       else
       {
         return "Tässä ovat luokat, tietueet ja " // "Here are the classes, structs and "

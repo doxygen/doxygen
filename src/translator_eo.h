@@ -252,6 +252,10 @@ class TranslatorEsperanto : public TranslatorAdapter_1_8_4
       {
         return "Jen datumstrukturoj kun mallongaj priskriboj:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Jen la klasoj kun mallongaj priskriboj:";
+      }
       else
       {
         return "Jen la klasoj, strukturoj, kunigoj kaj interfacoj "

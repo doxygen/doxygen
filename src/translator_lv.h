@@ -256,6 +256,10 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       {
         return "Šeit ir visas datu struktūras ar īsu aprakstu:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Šeit ir visas klases ar īsu aprakstu:";
+      }
       else
       {
         return "Šeit ir visas klases, struktūras, "

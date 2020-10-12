@@ -111,8 +111,22 @@ class TranslatorDutch : public Translator
       return result;
     }
     QCString trCompoundListDescription()
-    { return "Hieronder volgen de klassen, structs en "
-             "unions met voor elk een korte beschrijving:";
+    {
+      if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
+      {
+        return "Hieronder volgen de structs "
+               "met voor elk een korte beschrijving:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Hieronder volgen de klassen "
+               "met voor elk een korte beschrijving:";
+      }
+      else
+      {
+        return "Hieronder volgen de klassen, structs en "
+               "unions met voor elk een korte beschrijving:";
+      }
     }
     QCString trCompoundMembersDescription(bool extractAll)
     {

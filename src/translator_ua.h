@@ -208,6 +208,10 @@ class TranslatorUkrainian : public TranslatorAdapter_1_8_4
       {
         return  "Структури даних з коротким описом." ;
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return  "Класи з коротким описом." ;
+      }
       else
       {
         return  "Класи, структури, об'єднання та інтерфейси  з коротким описом." ;

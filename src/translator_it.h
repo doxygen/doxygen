@@ -291,6 +291,10 @@ class TranslatorItalian : public TranslatorAdapter_1_8_15
       {
         return "Queste sono le strutture dati con una loro breve descrizione:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Queste sono le classi con una loro breve descrizione:";
+      }
       else
       {
         return "Queste sono le classi, le struct, le union e le interfacce con una loro breve descrizione:";

@@ -270,6 +270,10 @@ class TranslatorVietnamese : public TranslatorAdapter_1_6_0
       {
         return "Đây là cấu trúc cơ sở dữ liệu với mô tả tóm tắt:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Đây là các classes với các mô tả tóm tắt:";
+      }
       else
       {
         return "Đây là các classes, structs, "

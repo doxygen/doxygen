@@ -243,6 +243,10 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
       {
         return "Lista de estructuras con una breve descripción:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Lista de las clases con una breve descripción:";
+      }
       else
       {
        return "Lista de las clases, estructuras, "

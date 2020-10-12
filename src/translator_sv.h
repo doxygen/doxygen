@@ -353,6 +353,10 @@ class TranslatorSwedish : public Translator
       {
         return "Här följer datastrukturerna med korta beskrivningar:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Här följer klasserna med korta beskrivningar:";
+      }
       else
       {
         return "Här följer klasserna, strukterna, unionerna och "

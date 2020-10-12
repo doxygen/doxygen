@@ -247,6 +247,10 @@ class TranslatorGreek : public TranslatorAdapter_1_8_15
       {
         return "Ακολουθούν οι δομές δεδομένων με σύντομες περιγραφές:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Ακολουθούν οι κλάσεις με σύντομες περιγραφές:";
+      }
       else
       {
         return "Ακολουθούν οι κλάσεις, οι δομές, "

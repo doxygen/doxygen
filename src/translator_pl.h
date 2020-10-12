@@ -234,6 +234,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       {
         return "Tutaj znajdują się struktury danych wraz z ich krótkimi opisami:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Tutaj znajdują się klasy wraz z ich krótkimi opisami:";
+      }
       else
       {
         return "Tutaj znajdują się klasy, struktury, "

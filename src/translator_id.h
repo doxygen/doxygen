@@ -234,6 +234,10 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       {
         return "Berikut ini daftar struktur data, dengan penjelasan singkat:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Berikut ini daftar kelas, dengan penjelasan singkat:";
+      }
       else
       {
         return "Berikut ini daftar kelas, struct, union, dan interface, dengan penjelasan singkat:";

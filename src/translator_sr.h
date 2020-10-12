@@ -235,6 +235,10 @@ class TranslatorSerbian : public TranslatorAdapter_1_6_0
       {
         return "Spisak struktura sa kratkim opisima:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Spisak klasa sa kratkim opisima:";
+      }
       else
       {
         return "Spisak klasa, struktura, unija i interfejsa sa kratkim opisima:";

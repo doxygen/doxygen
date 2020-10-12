@@ -267,6 +267,10 @@ class TranslatorBrazilian : public TranslatorAdapter_1_8_19
       {
         return "Aqui estão as estruturas de dados, uniões e suas respectivas descrições:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Aqui estão as classes e suas respectivas descrições:";
+      }
       else
       {
         return "Aqui estão as classes, estruturas, uniões e interfaces e suas respectivas descrições:";
