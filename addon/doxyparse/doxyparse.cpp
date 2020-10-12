@@ -360,13 +360,10 @@ static void classInformation(ClassDef* cd) {
     cModule(cd);
   } else {
     printModule(cd->name().data());
-    BaseClassList* baseClasses = cd->baseClasses();
-    if (baseClasses) {
+    if (!cd->baseClasses().empty()) {
       printInherits();
-      BaseClassListIterator bci(*baseClasses);
-      BaseClassDef* bcd;
-      for (bci.toFirst(); (bcd = bci.current()); ++bci) {
-        printInheritance(bcd->classDef->name().data());
+      for (const auto &bcd : cd->baseClasses()) {
+        printInheritance(bcd.classDef->name().data());
       }
     }
     if(cd->isAbstract()) {

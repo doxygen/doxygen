@@ -234,22 +234,16 @@ void VhdlDocGen::writeOverview()
     writeVhdlEntityToolTip(t,cd);
     delete port;
 
-    BaseClassList *bl=cd->baseClasses();
-    if (bl)
+    for (const auto &bcd : cd->baseClasses())
     {
-      BaseClassListIterator bcli(*bl);
-      BaseClassDef *bcd;
-      for ( ; (bcd=bcli.current()) ; ++bcli )
-      {
-        ClassDef *bClass=bcd->classDef;
-        QCString dotn=cd->name()+":";
-        dotn+=cd->name();
-        QCString csc=bClass->name()+":";
-        csc+=bClass->name();
-        //  fprintf(stderr,"\n <%s| %s>",dotn.data(),csc.data());
-        writeVhdlDotLink(t,dotn,csc,0);
-      }
-    }// if bl
+      ClassDef *bClass=bcd.classDef;
+      QCString dotn=cd->name()+":";
+      dotn+=cd->name();
+      QCString csc=bClass->name()+":";
+      csc+=bClass->name();
+      //  fprintf(stderr,"\n <%s| %s>",dotn.data(),csc.data());
+      writeVhdlDotLink(t,dotn,csc,0);
+    }
   }// for
 
   endDot(t);
@@ -2846,24 +2840,20 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
     return FALSE;
   }
 
-  if (cd->subClasses())
+  for (const auto &bcd :cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    for ( ; bcli.current() && !found ; ++bcli)
+    const ClassDef *ccd=bcd.classDef;
+    if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
+    //printf("isSubClass() subclass %s\n",ccd->name().data());
+    if (ccd==scd)
     {
-      const ClassDef *ccd=bcli.current()->classDef;
-      if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
-      //printf("isSubClass() subclass %s\n",ccd->name().data());
-      if (ccd==scd)
+      found=TRUE;
+    }
+    else
+    {
+      if (level <256)
       {
-        found=TRUE;
-      }
-      else
-      {
-        if (level <256)
-        {
-          found=ccd->isBaseClass(scd,followInstances,level+1);
-        }
+        found=ccd->isBaseClass(scd,followInstances,level+1);
       }
     }
   }
@@ -2872,35 +2862,33 @@ bool VhdlDocGen::isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int
 
 void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
 {
-  if (cd->baseClasses())
+  BaseClassList bcl = cd->baseClasses();
+  for (auto &bcd : bcl)
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    for ( ; bcli.current()  ; ++bcli)
+    ClassDef *ccd = bcd.classDef;
+    if (ccd==ent)
     {
-      ClassDef *ccd=bcli.current()->classDef;
-      if (ccd==ent)
+      QCString n = bcd.usedName;
+      int i = n.find('(');
+      if(i<0)
       {
-        QCString n = bcli.current()->usedName;
-        int i = n.find('(');
-        if(i<0)
-        {
-          bcli.current()->usedName.append("(2)");
-          return;
-        }
-        static QRegExp reg("[0-9]+");
-        QCString s=n.left(i);
-        QCString r=n.right(n.length()-i);
-        QCString t=r;
-        VhdlDocGen::deleteAllChars(r,')');
-        VhdlDocGen::deleteAllChars(r,'(');
-        r.setNum(r.toInt()+1);
-        t.replace(reg,r.data());
-        s.append(t.data());
-        bcli.current()->usedName=s;
-        bcli.current()->templSpecifiers=t;
+        bcd.usedName.append("(2)");
+        return;
       }
+      static QRegExp reg("[0-9]+");
+      QCString s=n.left(i);
+      QCString r=n.right(n.length()-i);
+      QCString t=r;
+      VhdlDocGen::deleteAllChars(r,')');
+      VhdlDocGen::deleteAllChars(r,'(');
+      r.setNum(r.toInt()+1);
+      t.replace(reg,r.data());
+      s.append(t.data());
+      bcd.usedName=s;
+      bcd.templSpecifiers=t;
     }
   }
+  cd->updateBaseClasses(bcl);
 }
 
 

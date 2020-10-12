@@ -2554,16 +2554,11 @@ int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
     return -1;
   }
   int m=maxInheritanceDepth;
-  if (cd->baseClasses())
+  for (const auto &bcdi : cd->baseClasses())
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    BaseClassDef *bcdi;
-    for (;(bcdi=bcli.current());++bcli)
-    {
-      int mc=minClassDistance(bcdi->classDef,bcd,level+1);
-      if (mc<m) m=mc;
-      if (m<0) break;
-    }
+    int mc=minClassDistance(bcdi.classDef,bcd,level+1);
+    if (mc<m) m=mc;
+    if (m<0) break;
   }
   return m;
 }
@@ -2584,14 +2579,12 @@ Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,
     err("Internal inconsistency: found class %s seem to have a recursive "
         "inheritance relation! Please send a bug report to doxygen@gmail.com\n",cd->name().data());
   }
-  else if (cd->baseClasses())
+  else if (prot!=Private)
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    const BaseClassDef *bcdi;
-    for (;(bcdi=bcli.current()) && prot!=Private;++bcli)
+    for (const auto &bcdi : cd->baseClasses())
     {
-      Protection baseProt = classInheritedProtectionLevel(bcdi->classDef,bcd,bcdi->prot,level+1);
-      if (baseProt==Private)   prot=Private;
+      Protection baseProt = classInheritedProtectionLevel(bcdi.classDef,bcd,bcdi.prot,level+1);
+      if (baseProt==Private)        prot=Private;
       else if (baseProt==Protected) prot=Protected;
     }
   }
@@ -2600,14 +2593,12 @@ exit:
   return prot;
 }
 
-void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
+void trimBaseClassScope(BaseClassList bcl,QCString &s,int level=0)
 {
   //printf("trimBaseClassScope level=%d '%s'\n",level,s.data());
-  BaseClassListIterator bcli(*bcl);
-  BaseClassDef *bcd;
-  for (;(bcd=bcli.current());++bcli)
+  for (const auto &bcd : bcl)
   {
-    ClassDef *cd=bcd->classDef;
+    ClassDef *cd=bcd.classDef;
     //printf("Trying class %s\n",cd->name().data());
     int spos=s.find(cd->name()+"::");
     if (spos!=-1)
@@ -2617,8 +2608,10 @@ void trimBaseClassScope(BaseClassList *bcl,QCString &s,int level=0)
           );
     }
     //printf("base class '%s'\n",cd->name().data());
-    if (cd->baseClasses())
+    if (!cd->baseClasses().empty())
+    {
       trimBaseClassScope(cd->baseClasses(),s,level+1);
+    }
   }
 }
 
@@ -4579,14 +4572,12 @@ int getPrefixIndex(const QCString &name)
 
 //----------------------------------------------------------------------------
 
-static void initBaseClassHierarchy(BaseClassList *bcl)
+static void initBaseClassHierarchy(BaseClassList bcl)
 {
-  if (bcl==0) return;
-  BaseClassListIterator bcli(*bcl);
-  for ( ; bcli.current(); ++bcli)
+  for (const auto &bcd : bcl)
   {
-    ClassDef *cd=bcli.current()->classDef;
-    if (cd->baseClasses()==0) // no base classes => new root
+    ClassDef *cd = bcd.classDef;
+    if (cd->baseClasses().empty()) // no base classes => new root
     {
       initBaseClassHierarchy(cd->baseClasses());
     }
@@ -4597,23 +4588,22 @@ static void initBaseClassHierarchy(BaseClassList *bcl)
 
 bool classHasVisibleChildren(const ClassDef *cd)
 {
-  BaseClassList *bcl;
+  BaseClassList bcl;
 
   if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
   {
-    if (cd->baseClasses()==0) return FALSE;
+    if (cd->baseClasses().empty()) return FALSE;
     bcl=cd->baseClasses();
   }
   else
   {
-    if (cd->subClasses()==0) return FALSE;
+    if (cd->subClasses().empty()) return FALSE;
     bcl=cd->subClasses();
   }
 
-  BaseClassListIterator bcli(*bcl);
-  for ( ; bcli.current() ; ++bcli)
+  for (const auto &bcd : bcl)
   {
-    if (bcli.current()->classDef->isVisibleInHierarchy())
+    if (bcd.classDef->isVisibleInHierarchy())
     {
       return TRUE;
     }
@@ -4637,17 +4627,13 @@ void initClassHierarchy(ClassSDict *cl)
 
 //----------------------------------------------------------------------------
 
-bool hasVisibleRoot(const BaseClassList *bcl)
+bool hasVisibleRoot(BaseClassList bcl)
 {
-  if (bcl)
+  for (const auto &bcd : bcl)
   {
-    BaseClassListIterator bcli(*bcl);
-    for ( ; bcli.current(); ++bcli)
-    {
-      const ClassDef *cd=bcli.current()->classDef;
-      if (cd->isVisibleInHierarchy()) return TRUE;
-      hasVisibleRoot(cd->baseClasses());
-    }
+    const ClassDef *cd=bcd.classDef;
+    if (cd->isVisibleInHierarchy()) return TRUE;
+    hasVisibleRoot(cd->baseClasses());
   }
   return FALSE;
 }

@@ -43,14 +43,14 @@ void DotGfxHierarchyTable::computeTheGraph()
   md5stream << "  rankdir=\"LR\";" << endl;
   for (dnli2.toFirst();(node=dnli2.current());++dnli2)
   {
-    if (node->subgraphId()==m_rootSubgraphNode->subgraphId()) 
+    if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
       node->clearWriteFlag();
     }
   }
   for (dnli2.toFirst();(node=dnli2.current());++dnli2)
   {
-    if (node->subgraphId()==m_rootSubgraphNode->subgraphId()) 
+    if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
       node->write(md5stream,Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
     }
@@ -107,71 +107,66 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
 void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideSuper)
 {
   //printf("addHierarchy '%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
-  if (cd->subClasses())
+  for (const auto &bcd : cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    BaseClassDef *bcd;
-    for ( ; (bcd=bcli.current()) ; ++bcli )
+    ClassDef *bClass=bcd.classDef;
+    //printf("  Trying sub class='%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
+    if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
-      ClassDef *bClass=bcd->classDef; 
-      //printf("  Trying sub class='%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
-      if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
+      DotNode *bn;
+      //printf("  Node '%s' Found visible class='%s'\n",n->label().data(),
+      //                                              bClass->name().data());
+      if ((bn=m_usedNodes->find(bClass->name()))) // node already present
       {
-        DotNode *bn;
-        //printf("  Node '%s' Found visible class='%s'\n",n->label().data(),
-        //                                              bClass->name().data());
-        if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
+        if (n->children()==0 || n->children()->findRef(bn)==-1) // no arrow yet
         {
-          if (n->children()==0 || n->children()->findRef(bn)==-1) // no arrow yet
-          {
-            n->addChild(bn,bcd->prot);
-            bn->addParent(n);
-            //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
-            //       n->label().data(),
-            //       bn->label().data(),
-            //       bn->children() ? bn->children()->count() : 0,
-            //       bn->parents()  ? bn->parents()->count()  : 0
-            //     );
-          }
-          //else
-          //{
-          //  printf("  Class already has an arrow!\n");
-          //}
+          n->addChild(bn,bcd.prot);
+          bn->addParent(n);
+          //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
+          //       n->label().data(),
+          //       bn->label().data(),
+          //       bn->children() ? bn->children()->count() : 0,
+          //       bn->parents()  ? bn->parents()->count()  : 0
+          //     );
         }
-        else 
+        //else
+        //{
+        //  printf("  Class already has an arrow!\n");
+        //}
+      }
+      else
+      {
+        QCString tmp_url="";
+        if (bClass->isLinkable() && !bClass->isHidden())
         {
-          QCString tmp_url="";
-          if (bClass->isLinkable() && !bClass->isHidden())
+          tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
+          if (!bClass->anchor().isEmpty())
           {
-            tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
-            if (!bClass->anchor().isEmpty())
-            {
-              tmp_url+="#"+bClass->anchor();
-            }
+            tmp_url+="#"+bClass->anchor();
           }
-          QCString tooltip = bClass->briefDescriptionAsTooltip();
-          bn = new DotNode(getNextNodeNumber(),
+        }
+        QCString tooltip = bClass->briefDescriptionAsTooltip();
+        bn = new DotNode(getNextNodeNumber(),
             bClass->displayName(),
             tooltip,
             tmp_url.data()
-          );
-          n->addChild(bn,bcd->prot);
-          bn->addParent(n);
-          //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
-          //   n->label().data(),
-          //   bn->label().data(),
-          //   bn->children() ? bn->children()->count() : 0,
-          //   bn->parents()  ? bn->parents()->count()  : 0
-          //  );
-          //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
-          m_usedNodes->insert(bClass->name(),bn); // add node to the used list
-        }
-        if (!bClass->isVisited() && !hideSuper && bClass->subClasses())
-        {
-          bool wasVisited=bClass->isVisited();
-          bClass->setVisited(TRUE);
-          addHierarchy(bn,bClass,wasVisited);
-        }
+            );
+        n->addChild(bn,bcd.prot);
+        bn->addParent(n);
+        //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
+        //   n->label().data(),
+        //   bn->label().data(),
+        //   bn->children() ? bn->children()->count() : 0,
+        //   bn->parents()  ? bn->parents()->count()  : 0
+        //  );
+        //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
+        m_usedNodes->insert(bClass->name(),bn); // add node to the used list
+      }
+      if (!bClass->isVisited() && !hideSuper && !bClass->subClasses().empty())
+      {
+        bool wasVisited=bClass->isVisited();
+        bClass->setVisited(TRUE);
+        addHierarchy(bn,bClass,wasVisited);
       }
     }
   }
@@ -200,7 +195,7 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
       ) // root node in the forest
     {
       QCString tmp_url="";
-      if (cd->isLinkable() && !cd->isHidden()) 
+      if (cd->isLinkable() && !cd->isHidden())
       {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
         if (!cd->anchor().isEmpty())
@@ -217,8 +212,8 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
 
       //m_usedNodes->clear();
       m_usedNodes->insert(cd->name(),n);
-      m_rootNodes->insert(0,n);   
-      if (!cd->isVisited() && cd->subClasses())
+      m_rootNodes->insert(0,n);
+      if (!cd->isVisited() && !cd->subClasses().empty())
       {
         addHierarchy(n,cd,cd->isVisited());
         cd->setVisited(TRUE);
@@ -232,7 +227,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::Compound
   , m_classType(ct)
 {
   m_rootNodes = new QList<DotNode>;
-  m_usedNodes = new QDict<DotNode>(1009); 
+  m_usedNodes = new QDict<DotNode>(1009);
   m_usedNodes->setAutoDelete(TRUE);
   m_rootSubgraphs = new DotNodeList;
 
@@ -245,7 +240,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::Compound
   // m_usedNodes now contains all nodes in the graph
 
   // color the graph into a set of independent subgraphs
-  bool done=FALSE; 
+  bool done=FALSE;
   int curColor=0;
   QListIterator<DotNode> dnli(*m_rootNodes);
   while (!done) // there are still nodes to color
@@ -263,7 +258,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::Compound
         n->colorConnectedNodes(curColor);
         curColor++;
         const DotNode *dn=n->findDocNode();
-        if (dn!=0) 
+        if (dn!=0)
           m_rootSubgraphs->inSort(dn);
         else
           m_rootSubgraphs->inSort(n);

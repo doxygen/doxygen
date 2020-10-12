@@ -37,7 +37,6 @@ class ClassSDict;
 class OutputList;
 class FileDef;
 class FileList;
-class BaseClassList;
 class NamespaceDef;
 class MemberDef;
 class ExampleSDict;
@@ -52,6 +51,38 @@ class StringDict;
 struct IncludeInfo;
 class ClassDefImpl;
 class FTextStream;
+class ClassDef;
+
+/** Class that contains information about an inheritance relation.
+ */
+struct BaseClassDef
+{
+  BaseClassDef(ClassDef *cd,const char *n,Protection p, Specifier v,const char *t) :
+        classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
+
+  /** Class definition that this relation inherits from. */
+  ClassDef *classDef;
+
+  /** name used in the inheritance list
+   * (may be a typedef name instead of the class name)
+   */
+  QCString   usedName;
+
+  /** Protection level of the inheritance relation:
+   *  Public, Protected, or Private
+   */
+  Protection prot;
+
+  /** Virtualness of the inheritance relation:
+   *  Normal, or Virtual
+   */
+  Specifier  virt;
+
+  /** Template arguments used for the base class */
+  QCString templSpecifiers;
+};
+
+using BaseClassList = std::vector<BaseClassDef>;
 
 /** A abstract class representing of a compound symbol.
  *
@@ -126,11 +157,17 @@ class ClassDef : virtual public Definition
     /** Returns the list of base classes from which this class directly
      *  inherits.
      */
-    virtual BaseClassList *baseClasses() const = 0;
+    virtual BaseClassList baseClasses() const = 0;
+
+    /** Update the list of base classes to the one passed */
+    virtual void updateBaseClasses(BaseClassList bcd) = 0;
 
     /** Returns the list of sub classes that directly derive from this class
      */
-    virtual BaseClassList *subClasses() const = 0;
+    virtual BaseClassList subClasses() const = 0;
+
+    /** Update the list of sub classes to the one passed */
+    virtual void updateSubClasses(BaseClassList bcd) = 0;
 
     /** Returns a dictionary of all members. This includes any inherited
      *  members. Members are sorted alphabetically.
@@ -476,65 +513,6 @@ class UsesClassDictIterator : public QDictIterator<UsesClassDef>
     UsesClassDictIterator(const QDict<UsesClassDef> &d)
       : QDictIterator<UsesClassDef>(d) {}
    ~UsesClassDictIterator() {}
-};
-
-//------------------------------------------------------------------------
-
-/** Class that contains information about an inheritance relation.
- */
-struct BaseClassDef
-{
-  BaseClassDef(ClassDef *cd,const char *n,Protection p, Specifier v,const char *t) :
-        classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
-
-  /** Class definition that this relation inherits from. */
-  ClassDef *classDef;
-
-  /** name used in the inheritance list
-   * (may be a typedef name instead of the class name)
-   */
-  QCString   usedName;
-
-  /** Protection level of the inheritance relation:
-   *  Public, Protected, or Private
-   */
-  Protection prot;
-
-  /** Virtualness of the inheritance relation:
-   *  Normal, or Virtual
-   */
-  Specifier  virt;
-
-  /** Template arguments used for the base class */
-  QCString templSpecifiers;
-};
-
-/** List of base classes.
- *
- *  The classes are alphabetically sorted on name if inSort() is used.
- */
-class BaseClassList : public QList<BaseClassDef>
-{
-  public:
-   ~BaseClassList() {}
-    int compareValues(const BaseClassDef *item1,const BaseClassDef *item2) const
-    {
-      const ClassDef *c1=item1->classDef;
-      const ClassDef *c2=item2->classDef;
-      if (c1==0 || c2==0)
-        return FALSE;
-      else
-        return qstricmp(c1->name(),c2->name());
-    }
-};
-
-/** Iterator for a list of base classes.
- */
-class BaseClassListIterator : public QListIterator<BaseClassDef>
-{
-  public:
-    BaseClassListIterator(const BaseClassList &bcl) :
-      QListIterator<BaseClassDef>(bcl) {}
 };
 
 //------------------------------------------------------------------------

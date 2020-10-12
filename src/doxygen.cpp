@@ -7348,7 +7348,7 @@ static void computeMemberRelations()
         if (md!=bmd)
         {
           const ClassDef *mcd  = md->getClassDef();
-          if (mcd && mcd->baseClasses())
+          if (mcd && !mcd->baseClasses().empty())
           {
             const ClassDef *bmcd = bmd->getClassDef();
             //printf("Check relation between '%s'::'%s' (%p) and '%s'::'%s' (%p)\n",
@@ -7469,8 +7469,8 @@ static void buildCompleteMemberLists()
   for (cli.toFirst();(cd=cli.current());++cli)
   {
     if (// !cd->isReference() && // not an external class
-         cd->subClasses()==0 && // is a root of the hierarchy
-         cd->baseClasses()) // and has at least one base class
+         cd->subClasses().empty() && // is a root of the hierarchy
+         !cd->baseClasses().empty()) // and has at least one base class
     {
       //printf("*** merging members for %s\n",cd->name().data());
       cd->mergeMembers();
@@ -7648,20 +7648,14 @@ static void generateFileSources()
         }
       }
       // first wait until all files are processed
-      std::vector< std::shared_ptr<SourceContext> > syncedResults;
       for (auto &f : results)
       {
-        syncedResults.push_back(f.get());
-      }
-      // next write all footers
-      for (auto &ctx : syncedResults)
-      {
+        auto ctx = f.get();
         if (ctx->generateSourceFile)
         {
           ctx->fd->writeSourceFooter(ctx->ol);
         }
       }
-
 #else // single threaded version
       for (const auto &fn : *Doxygen::inputNameLinkedMap)
       {

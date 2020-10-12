@@ -358,60 +358,50 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
   t << "  cp-id     = '" << cd->getOutputFileBase() << "';" << endl;
   t << "  cp-name   = '" << cd->name() << "';" << endl;
 
-  if (cd->baseClasses())
+  for (const auto &bcd : cd->baseClasses())
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    t << "  cp-ref     = {" << endl << "    ref-type = base;" << endl;
+    t << "    ref-id   = '"
+      << bcd.classDef->getOutputFileBase() << "';" << endl;
+    t << "    ref-prot = ";
+    switch (bcd.prot)
     {
-      t << "  cp-ref     = {" << endl << "    ref-type = base;" << endl;
-      t << "    ref-id   = '"
-        << bcd->classDef->getOutputFileBase() << "';" << endl;
-      t << "    ref-prot = ";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public;"    << endl; break;
-        case Package: // package scope is not possible
-        case Protected: t << "protected;" << endl; break;
-        case Private:   t << "private;"   << endl; break;
-      }
-      t << "    ref-virt = ";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual;";  break;
-        case Virtual: t << "virtual;";      break;
-        case Pure:    t << "pure-virtual;"; break;
-      }
-      t << endl << "  };" << endl;
+      case Public:    t << "public;"    << endl; break;
+      case Package: // package scope is not possible
+      case Protected: t << "protected;" << endl; break;
+      case Private:   t << "private;"   << endl; break;
     }
+    t << "    ref-virt = ";
+    switch(bcd.virt)
+    {
+      case Normal:  t << "non-virtual;";  break;
+      case Virtual: t << "virtual;";      break;
+      case Pure:    t << "pure-virtual;"; break;
+    }
+    t << endl << "  };" << endl;
   }
 
-  if (cd->subClasses())
+  for (const auto &bcd : cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    t << "  cp-ref     = {" << endl << "    ref-type = derived;" << endl;
+    t << "    ref-id   = '"
+      << bcd.classDef->getOutputFileBase() << "';" << endl;
+    t << "    ref-prot = ";
+    switch (bcd.prot)
     {
-      t << "  cp-ref     = {" << endl << "    ref-type = derived;" << endl;
-      t << "    ref-id   = '"
-        << bcd->classDef->getOutputFileBase() << "';" << endl;
-      t << "    ref-prot = ";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public;"    << endl; break;
-        case Package: // packet scope is not possible!
-        case Protected: t << "protected;" << endl; break;
-        case Private:   t << "private;"   << endl; break;
-      }
-      t << "    ref-virt = ";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual;";  break;
-        case Virtual: t << "virtual;";      break;
-        case Pure:    t << "pure-virtual;"; break;
-      }
-      t << endl << "  };" << endl;
+      case Public:    t << "public;"    << endl; break;
+      case Package: // packet scope is not possible!
+      case Protected: t << "protected;" << endl; break;
+      case Private:   t << "private;"   << endl; break;
     }
+    t << "    ref-virt = ";
+    switch (bcd.virt)
+    {
+      case Normal:  t << "non-virtual;";  break;
+      case Virtual: t << "virtual;";      break;
+      case Pure:    t << "pure-virtual;"; break;
+    }
+    t << endl << "  };" << endl;
   }
 
   int numMembers = 0;

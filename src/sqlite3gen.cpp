@@ -2012,37 +2012,27 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   step(compounddef_insert);
 
   // + list of direct super classes
-  if (cd->baseClasses())
+  for (const auto &bcd : cd->baseClasses())
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    const BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
-    {
-      struct Refid base_refid = insertRefid(bcd->classDef->getOutputFileBase());
-      struct Refid derived_refid = insertRefid(cd->getOutputFileBase());
-      bindIntParameter(compoundref_insert,":base_rowid", base_refid.rowid);
-      bindIntParameter(compoundref_insert,":derived_rowid", derived_refid.rowid);
-      bindIntParameter(compoundref_insert,":prot",bcd->prot);
-      bindIntParameter(compoundref_insert,":virt",bcd->virt);
-      step(compoundref_insert);
-    }
+    struct Refid base_refid = insertRefid(bcd.classDef->getOutputFileBase());
+    struct Refid derived_refid = insertRefid(cd->getOutputFileBase());
+    bindIntParameter(compoundref_insert,":base_rowid", base_refid.rowid);
+    bindIntParameter(compoundref_insert,":derived_rowid", derived_refid.rowid);
+    bindIntParameter(compoundref_insert,":prot",bcd.prot);
+    bindIntParameter(compoundref_insert,":virt",bcd.virt);
+    step(compoundref_insert);
   }
 
   // + list of direct sub classes
-  if (cd->subClasses())
+  for (const auto &bcd : cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    const BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
-    {
-      struct Refid derived_refid = insertRefid(bcd->classDef->getOutputFileBase());
-      struct Refid base_refid = insertRefid(cd->getOutputFileBase());
-      bindIntParameter(compoundref_insert,":base_rowid", base_refid.rowid);
-      bindIntParameter(compoundref_insert,":derived_rowid", derived_refid.rowid);
-      bindIntParameter(compoundref_insert,":prot",bcd->prot);
-      bindIntParameter(compoundref_insert,":virt",bcd->virt);
-      step(compoundref_insert);
-    }
+    struct Refid derived_refid = insertRefid(bcd.classDef->getOutputFileBase());
+    struct Refid base_refid = insertRefid(cd->getOutputFileBase());
+    bindIntParameter(compoundref_insert,":base_rowid", base_refid.rowid);
+    bindIntParameter(compoundref_insert,":derived_rowid", derived_refid.rowid);
+    bindIntParameter(compoundref_insert,":prot",bcd.prot);
+    bindIntParameter(compoundref_insert,":virt",bcd.virt);
+    step(compoundref_insert);
   }
 
   // + list of inner classes

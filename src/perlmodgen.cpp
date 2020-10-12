@@ -1831,31 +1831,31 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
 
-  if (cd->baseClasses())
+  if (!cd->baseClasses().empty())
   {
     m_output.openList("base");
-    BaseClassListIterator bcli(*cd->baseClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    for (const auto &bcd : cd->baseClasses())
+    {
       m_output.openHash()
-	.addFieldQuotedString("name", bcd->classDef->displayName())
-	.addFieldQuotedString("virtualness", getVirtualnessName(bcd->virt))
-	.addFieldQuotedString("protection", getProtectionName(bcd->prot))
+	.addFieldQuotedString("name", bcd.classDef->displayName())
+	.addFieldQuotedString("virtualness", getVirtualnessName(bcd.virt))
+	.addFieldQuotedString("protection", getProtectionName(bcd.prot))
 	.closeHash();
+    }
     m_output.closeList();
   }
 
-  if (cd->subClasses())
+  if (!cd->subClasses().empty())
   {
     m_output.openList("derived");
-    BaseClassListIterator bcli(*cd->subClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    for (const auto &bcd : cd->subClasses())
+    {
       m_output.openHash()
-	.addFieldQuotedString("name", bcd->classDef->displayName())
-	.addFieldQuotedString("virtualness", getVirtualnessName(bcd->virt))
-	.addFieldQuotedString("protection", getProtectionName(bcd->prot))
+	.addFieldQuotedString("name", bcd.classDef->displayName())
+	.addFieldQuotedString("virtualness", getVirtualnessName(bcd.virt))
+	.addFieldQuotedString("protection", getProtectionName(bcd.prot))
 	.closeHash();
+    }
     m_output.closeList();
   }
 

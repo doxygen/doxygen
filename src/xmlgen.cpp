@@ -1294,73 +1294,63 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
   t << "    <compoundname>";
   writeXMLString(t,cd->name());
   t << "</compoundname>" << endl;
-  if (cd->baseClasses())
+  for (const auto &bcd : cd->baseClasses())
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    t << "    <basecompoundref ";
+    if (bcd.classDef->isLinkable())
     {
-      t << "    <basecompoundref ";
-      if (bcd->classDef->isLinkable())
-      {
-        t << "refid=\"" << classOutputFileBase(bcd->classDef) << "\" ";
-      }
-      t << "prot=\"";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public";    break;
-        case Protected: t << "protected"; break;
-        case Private:   t << "private";   break;
-        case Package: ASSERT(0); break;
-      }
-      t << "\" virt=\"";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual";  break;
-        case Virtual: t << "virtual";      break;
-        case Pure:    t <<"pure-virtual"; break;
-      }
-      t << "\">";
-      if (!bcd->templSpecifiers.isEmpty())
-      {
-        t << convertToXML(
-              insertTemplateSpecifierInScope(
-              bcd->classDef->name(),bcd->templSpecifiers)
-           );
-      }
-      else
-      {
-        t << convertToXML(bcd->classDef->displayName());
-      }
-      t  << "</basecompoundref>" << endl;
+      t << "refid=\"" << classOutputFileBase(bcd.classDef) << "\" ";
     }
+    t << "prot=\"";
+    switch (bcd.prot)
+    {
+      case Public:    t << "public";    break;
+      case Protected: t << "protected"; break;
+      case Private:   t << "private";   break;
+      case Package: ASSERT(0); break;
+    }
+    t << "\" virt=\"";
+    switch(bcd.virt)
+    {
+      case Normal:  t << "non-virtual";  break;
+      case Virtual: t << "virtual";      break;
+      case Pure:    t <<"pure-virtual"; break;
+    }
+    t << "\">";
+    if (!bcd.templSpecifiers.isEmpty())
+    {
+      t << convertToXML(
+          insertTemplateSpecifierInScope(
+            bcd.classDef->name(),bcd.templSpecifiers)
+          );
+    }
+    else
+    {
+      t << convertToXML(bcd.classDef->displayName());
+    }
+    t  << "</basecompoundref>" << endl;
   }
-  if (cd->subClasses())
+  for (const auto &bcd : cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    t << "    <derivedcompoundref refid=\""
+      << classOutputFileBase(bcd.classDef)
+      << "\" prot=\"";
+    switch (bcd.prot)
     {
-      t << "    <derivedcompoundref refid=\""
-        << classOutputFileBase(bcd->classDef)
-        << "\" prot=\"";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public";    break;
-        case Protected: t << "protected"; break;
-        case Private:   t << "private";   break;
-        case Package: ASSERT(0); break;
-      }
-      t << "\" virt=\"";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual";  break;
-        case Virtual: t << "virtual";      break;
-        case Pure:    t << "pure-virtual"; break;
-      }
-      t << "\">" << convertToXML(bcd->classDef->displayName())
-        << "</derivedcompoundref>" << endl;
+      case Public:    t << "public";    break;
+      case Protected: t << "protected"; break;
+      case Private:   t << "private";   break;
+      case Package: ASSERT(0); break;
     }
+    t << "\" virt=\"";
+    switch (bcd.virt)
+    {
+      case Normal:  t << "non-virtual";  break;
+      case Virtual: t << "virtual";      break;
+      case Pure:    t << "pure-virtual"; break;
+    }
+    t << "\">" << convertToXML(bcd.classDef->displayName())
+      << "</derivedcompoundref>" << endl;
   }
 
   IncludeInfo *ii=cd->includeInfo();

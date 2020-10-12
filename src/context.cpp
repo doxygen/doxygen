@@ -6670,14 +6670,11 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addDerivedClasses(const BaseClassList *bcl,bool hideSuper)
+    void addDerivedClasses(BaseClassList bcl,bool hideSuper)
     {
-      if (bcl==0) return;
-      BaseClassListIterator bcli(*bcl);
-      BaseClassDef *bcd;
-      for (bcli.toFirst() ; (bcd=bcli.current()) ; ++bcli)
+      for (const auto &bcd : bcl)
       {
-        const ClassDef *cd=bcd->classDef;
+        const ClassDef *cd=bcd.classDef;
         if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
         {
           continue;
@@ -6815,7 +6812,7 @@ void NestingContext::addClassHierarchy(const ClassSDict &classSDict,bool rootOnl
   p->addClassHierarchy(classSDict,rootOnly);
 }
 
-void NestingContext::addDerivedClasses(const BaseClassList *bcl,bool hideSuper)
+void NestingContext::addDerivedClasses(BaseClassList bcl,bool hideSuper)
 {
   p->addDerivedClasses(bcl,hideSuper);
 }
@@ -8536,29 +8533,24 @@ class InheritanceListContext::Private : public GenericNodeListContext
     }
 };
 
-InheritanceListContext::InheritanceListContext(const BaseClassList *list, bool baseClasses) : RefCountedContext("InheritanceListContext")
+InheritanceListContext::InheritanceListContext(BaseClassList list, bool baseClasses) : RefCountedContext("InheritanceListContext")
 {
   p = new Private;
-  if (list)
+  for (const auto &bcd : list)
   {
-    BaseClassListIterator li(*list);
-    BaseClassDef *bcd;
-    for (li.toFirst();(bcd=li.current());++li)
+    const ClassDef *cd=bcd.classDef;
+    QCString name;
+    if (baseClasses)
     {
-      const ClassDef *cd=bcd->classDef;
-      QCString name;
-      if (baseClasses)
-      {
-        name = insertTemplateSpecifierInScope(
-                     cd->displayName(),bcd->templSpecifiers);
-      }
-      else
-      {
-        name = cd->displayName();
-      }
-      //printf("InheritanceListContext: adding %s baseClass=%d\n",name.data(),baseClasses);
-      p->addClass(cd,name);
+      name = insertTemplateSpecifierInScope(
+          cd->displayName(),bcd.templSpecifiers);
     }
+    else
+    {
+      name = cd->displayName();
+    }
+    //printf("InheritanceListContext: adding %s baseClass=%d\n",name.data(),baseClasses);
+    p->addClass(cd,name);
   }
 }
 
@@ -9282,31 +9274,26 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
                               int lt2, const QCString &title,bool additionalList,
                               QPtrDict<void> *visitedClasses)
     {
-      if (cd->baseClasses())
+      for (const auto &ibcd : cd->baseClasses())
       {
-        BaseClassListIterator it(*cd->baseClasses());
-        BaseClassDef *ibcd;
-        for (it.toFirst();(ibcd=it.current());++it)
+        ClassDef *icd=ibcd.classDef;
+        if (icd->isLinkable())
         {
-          ClassDef *icd=ibcd->classDef;
-          if (icd->isLinkable())
+          int lt1,lt3;
+          convertProtectionLevel(lt,ibcd.prot,&lt1,&lt3);
+          if (lt2==-1 && lt3!=-1)
           {
-            int lt1,lt3;
-            convertProtectionLevel(lt,ibcd->prot,&lt1,&lt3);
-            if (lt2==-1 && lt3!=-1)
+            lt2=lt3;
+          }
+          if (visitedClasses->find(icd)==0)
+          {
+            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+            if (lt1!=-1)
             {
-              lt2=lt3;
-            }
-            if (visitedClasses->find(icd)==0)
-            {
-              visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
-              if (lt1!=-1)
-              {
-                // add member info for members of cd with list type lt
-                addInheritedMembers(inheritedFrom,icd,lt,(MemberListType)lt1,lt2,title,additionalList);
-                // recurse down the inheritance tree
-                findInheritedMembers(inheritedFrom,icd,(MemberListType)lt1,lt2,title,additionalList,visitedClasses);
-              }
+              // add member info for members of cd with list type lt
+              addInheritedMembers(inheritedFrom,icd,lt,(MemberListType)lt1,lt2,title,additionalList);
+              // recurse down the inheritance tree
+              findInheritedMembers(inheritedFrom,icd,(MemberListType)lt1,lt2,title,additionalList,visitedClasses);
             }
           }
         }

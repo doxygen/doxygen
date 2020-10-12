@@ -81,8 +81,10 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual QCString displayName(bool includeScope=TRUE) const;
     virtual CompoundType compoundType() const;
     virtual QCString compoundTypeString() const;
-    virtual BaseClassList *baseClasses() const;
-    virtual BaseClassList *subClasses() const;
+    virtual BaseClassList baseClasses() const;
+    virtual void updateBaseClasses(BaseClassList bcd);
+    virtual BaseClassList subClasses() const;
+    virtual void updateSubClasses(BaseClassList bcd);
     virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const;
     virtual Protection protection() const;
     virtual bool isLinkableInProject() const;
@@ -318,9 +320,9 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     { return getCdAlias()->compoundType(); }
     virtual QCString compoundTypeString() const
     { return getCdAlias()->compoundTypeString(); }
-    virtual BaseClassList *baseClasses() const
+    virtual BaseClassList baseClasses() const
     { return getCdAlias()->baseClasses(); }
-    virtual BaseClassList *subClasses() const
+    virtual BaseClassList subClasses() const
     { return getCdAlias()->subClasses(); }
     virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const
     { return getCdAlias()->memberNameInfoLinkedMap(); }
@@ -510,6 +512,8 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     virtual void addGroupedInheritedMembers(OutputList &,MemberListType,
                               const ClassDef *,const QCString &) const {}
     virtual void writeTagFile(FTextStream &) {}
+    virtual void updateBaseClasses(BaseClassList) {}
+    virtual void updateSubClasses(BaseClassList) {}
 
     virtual void setVisited(bool visited) const { m_visited = visited; }
     virtual bool isVisited() const { return m_visited; }
@@ -567,11 +571,11 @@ class ClassDefImpl::IMPL
     /*! List of base class (or super-classes) from which this class derives
      *  directly.
      */
-    BaseClassList *inherits = 0;
+    BaseClassList inherits;
 
     /*! List of sub-classes that directly derive from this class
      */
-    BaseClassList *inheritedBy = 0;
+    BaseClassList inheritedBy;
 
     /*! Namespace this class is part of
      *  (this is the inner most namespace in case of nested namespaces)
@@ -703,8 +707,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
     fileName=ctStr+name;
   }
   exampleSDict = 0;
-  inherits    = 0;
-  inheritedBy = 0;
   incInfo=0;
   prot=Public;
   nspace=0;
@@ -756,8 +758,6 @@ ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
 
 ClassDefImpl::IMPL::~IMPL()
 {
-  delete inherits;
-  delete inheritedBy;
   delete exampleSDict;
   delete usesImplClassDict;
   delete usedByImplClassDict;
@@ -855,13 +855,7 @@ void ClassDefImpl::insertBaseClass(ClassDef *cd,const char *n,Protection p,
                                Specifier s,const char *t)
 {
   //printf("*** insert base class %s into %s\n",cd->name().data(),name().data());
-  //inherits->inSort(new BaseClassDef(cd,p,s,t));
-  if (m_impl->inherits==0)
-  {
-    m_impl->inherits = new BaseClassList;
-    m_impl->inherits->setAutoDelete(TRUE);
-  }
-  m_impl->inherits->append(new BaseClassDef(cd,n,p,s,t));
+  m_impl->inherits.push_back(BaseClassDef(cd,n,p,s,t));
   m_impl->isSimple = FALSE;
 }
 
@@ -872,12 +866,7 @@ void ClassDefImpl::insertSubClass(ClassDef *cd,Protection p,
   //printf("*** insert sub class %s into %s\n",cd->name().data(),name().data());
   static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   if (!extractPrivate && cd->protection()==Private) return;
-  if (m_impl->inheritedBy==0)
-  {
-    m_impl->inheritedBy   = new BaseClassList;
-    m_impl->inheritedBy->setAutoDelete(TRUE);
-  }
-  m_impl->inheritedBy->inSort(new BaseClassDef(cd,0,p,s,t));
+  m_impl->inheritedBy.push_back(BaseClassDef(cd,0,p,s,t));
   m_impl->isSimple = FALSE;
 }
 
@@ -1287,22 +1276,22 @@ void ClassDefImpl::insertUsedFile(FileDef *fd)
   }
 }
 
-static void writeInheritanceSpecifier(OutputList &ol,BaseClassDef *bcd)
+static void writeInheritanceSpecifier(OutputList &ol,const BaseClassDef &bcd)
 {
-  if (bcd->prot!=Public || bcd->virt!=Normal)
+  if (bcd.prot!=Public || bcd.virt!=Normal)
   {
     ol.startTypewriter();
     ol.docify(" [");
-    QStrList sl;
-    if      (bcd->prot==Protected) sl.append("protected");
-    else if (bcd->prot==Private)   sl.append("private");
-    if      (bcd->virt==Virtual)   sl.append("virtual");
-    const char *s=sl.first();
-    while (s)
+    StringVector sl;
+    if      (bcd.prot==Protected) sl.push_back("protected");
+    else if (bcd.prot==Private)   sl.push_back("private");
+    if      (bcd.virt==Virtual)   sl.push_back("virtual");
+    bool first=true;
+    for (const auto &s : sl)
     {
-      ol.docify(s);
-      s=sl.next();
-      if (s) ol.docify(", ");
+      if (!first) ol.docify(", ");
+      ol.docify(s.c_str());
+      first=false;
     }
     ol.docify("]");
     ol.endTypewriter();
@@ -1660,24 +1649,15 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
 int ClassDefImpl::countInheritanceNodes() const
 {
   int count=0;
-  BaseClassDef *ibcd;
-  if (m_impl->inheritedBy)
+  for (const auto &ibcd : m_impl->inheritedBy)
   {
-    BaseClassListIterator it(*m_impl->inheritedBy);
-    for (;(ibcd=it.current());++it)
-    {
-      ClassDef *icd=ibcd->classDef;
-      if ( icd->isVisibleInHierarchy()) count++;
-    }
+    const ClassDef *icd=ibcd.classDef;
+    if ( icd->isVisibleInHierarchy()) count++;
   }
-  if (m_impl->inherits)
+  for (const auto &ibcd : m_impl->inherits)
   {
-    BaseClassListIterator it(*m_impl->inherits);
-    for (;(ibcd=it.current());++it)
-    {
-      ClassDef *icd=ibcd->classDef;
-      if ( icd->isVisibleInHierarchy()) count++;
-    }
+    const ClassDef *icd=ibcd.classDef;
+    if ( icd->isVisibleInHierarchy()) count++;
   }
   return count;
 }
@@ -1727,12 +1707,12 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     ol.disableAllBut(OutputGenerator::Man);
   }
 
-  if (m_impl->inherits && m_impl->inherits->count()>0)
+  if (!m_impl->inherits.empty())
   {
     ol.startParagraph();
     //parseText(ol,theTranslator->trInherits()+" ");
 
-    QCString inheritLine = theTranslator->trInheritsList((int)m_impl->inherits->count());
+    QCString inheritLine = theTranslator->trInheritsList((int)m_impl->inherits.size());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
@@ -1741,15 +1721,15 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
       ol.parseText(inheritLine.mid(index,newIndex-index));
       bool ok;
       uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef *bcd=m_impl->inherits->at(entryIndex);
-      if (ok && bcd)
+      BaseClassDef &bcd=m_impl->inherits.at(entryIndex);
+      if (ok)
       {
-        ClassDef *cd=bcd->classDef;
+        ClassDef *cd=bcd.classDef;
 
         // use the class name but with the template arguments as given
         // in the inheritance relation
         QCString displayName = insertTemplateSpecifierInScope(
-            cd->displayName(),bcd->templSpecifiers);
+            cd->displayName(),bcd.templSpecifiers);
 
         if (cd->isLinkable())
         {
@@ -1774,10 +1754,10 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   }
 
   // write subclasses
-  if (m_impl->inheritedBy && m_impl->inheritedBy->count()>0)
+  if (!m_impl->inheritedBy.empty())
   {
     ol.startParagraph();
-    QCString inheritLine = theTranslator->trInheritedByList((int)m_impl->inheritedBy->count());
+    QCString inheritLine = theTranslator->trInheritedByList((int)m_impl->inheritedBy.size());
     QRegExp marker("@[0-9]+");
     int index=0,newIndex,matchLen;
     // now replace all markers in inheritLine with links to the classes
@@ -1786,10 +1766,10 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
       ol.parseText(inheritLine.mid(index,newIndex-index));
       bool ok;
       uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef *bcd=m_impl->inheritedBy->at(entryIndex);
-      if (ok && bcd)
+      BaseClassDef &bcd=m_impl->inheritedBy.at(entryIndex);
+      if (ok)
       {
-        ClassDef *cd=bcd->classDef;
+        ClassDef *cd=bcd.classDef;
         if (cd->isLinkable())
         {
           ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
@@ -1935,35 +1915,30 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
     ol.docify("class ");
   }
   ol.docify(stripScope(name()));
-  if (m_impl->inherits)
+  if (!m_impl->inherits.empty())
   {
     if (m_impl->spec & (Entry::Interface|Entry::Exception))
     {
       ol.docify(" extends ");
-      BaseClassListIterator it(*m_impl->inherits);
-      BaseClassDef *ibcd;
-      for (;(ibcd=it.current());++it)
+      bool first=true;
+      for (const auto &ibcd : m_impl->inherits)
       {
-        ClassDef *icd = ibcd->classDef;
+        if (!first) ol.docify(", ");
+        ClassDef *icd = ibcd.classDef;
         ol.docify(icd->name());
-        if (!it.atLast())
-        {
-          ol.docify(", ");
-        }
+        first=false;
       }
     }
     else
     {
       // Must be a class.
-      bool implements = FALSE;
-      BaseClassListIterator it(*m_impl->inherits);
-      BaseClassDef *ibcd;
-      for (;(ibcd=it.current());++it)
+      bool implements = false;
+      for (const auto &ibcd : m_impl->inherits)
       {
-        ClassDef *icd = ibcd->classDef;
+        ClassDef *icd = ibcd.classDef;
         if (icd->isInterface())
         {
-          implements = TRUE;
+          implements = true;
         }
         else
         {
@@ -1974,20 +1949,14 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
       if (implements)
       {
         ol.docify(" implements ");
-        bool first = TRUE;
-        for (ibcd=it.toFirst();(ibcd=it.current());++it)
+        bool first = true;
+        for (const auto &ibcd : m_impl->inherits)
         {
-          ClassDef *icd = ibcd->classDef;
+          ClassDef *icd = ibcd.classDef;
           if (icd->isInterface())
           {
-            if (!first)
-            {
-              ol.docify(", ");
-            }
-            else
-            {
-              first = FALSE;
-            }
+            if (!first) ol.docify(", ");
+            first = false;
             ol.docify(icd->name());
           }
         }
@@ -2223,32 +2192,27 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
   {
     tagFile << "    <templarg>" << convertToXML(a.name) << "</templarg>" << endl;
   }
-  if (m_impl->inherits)
+  for (const auto &ibcd : m_impl->inherits)
   {
-    BaseClassListIterator it(*m_impl->inherits);
-    BaseClassDef *ibcd;
-    for (it.toFirst();(ibcd=it.current());++it)
+    ClassDef *cd=ibcd.classDef;
+    if (cd && cd->isLinkable())
     {
-      ClassDef *cd=ibcd->classDef;
-      if (cd && cd->isLinkable())
+      if (!Config_getString(GENERATE_TAGFILE).isEmpty())
       {
-        if (!Config_getString(GENERATE_TAGFILE).isEmpty())
+        tagFile << "    <base";
+        if (ibcd.prot==Protected)
         {
-          tagFile << "    <base";
-          if (ibcd->prot==Protected)
-          {
-            tagFile << " protection=\"protected\"";
-          }
-          else if (ibcd->prot==Private)
-          {
-            tagFile << " protection=\"private\"";
-          }
-          if (ibcd->virt==Virtual)
-          {
-            tagFile << " virtualness=\"virtual\"";
-          }
-          tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+          tagFile << " protection=\"protected\"";
         }
+        else if (ibcd.prot==Private)
+        {
+          tagFile << " protection=\"private\"";
+        }
+        if (ibcd.virt==Virtual)
+        {
+          tagFile << " virtualness=\"virtual\"";
+        }
+        tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
       }
     }
   }
@@ -3338,28 +3302,28 @@ bool ClassDefImpl::hasNonReferenceSuperClass() const
   {
     return TRUE; // we're done if this class is not a reference
   }
-  if (m_impl->inheritedBy)
+  for (const auto &ibcd : m_impl->inheritedBy)
   {
-    BaseClassListIterator bcli(*m_impl->inheritedBy);
-    for ( ; bcli.current() && !found ; ++bcli ) // for each super class
+    ClassDef *bcd=ibcd.classDef;
+    // recurse into the super class branch
+    found = found || bcd->hasNonReferenceSuperClass();
+    if (!found)
     {
-      ClassDef *bcd=bcli.current()->classDef;
-      // recurse into the super class branch
-      found = found || bcd->hasNonReferenceSuperClass();
-      if (!found)
+      // look for template instances that might have non-reference super classes
+      QDict<ClassDef> *cil = bcd->getTemplateInstances();
+      if (cil)
       {
-        // look for template instances that might have non-reference super classes
-        QDict<ClassDef> *cil = bcd->getTemplateInstances();
-        if (cil)
+        QDictIterator<ClassDef> tidi(*cil);
+        for ( ; tidi.current() && !found ; ++tidi) // for each template instance
         {
-          QDictIterator<ClassDef> tidi(*cil);
-          for ( ; tidi.current() && !found ; ++tidi) // for each template instance
-          {
-            // recurse into the template instance branch
-            found = found || tidi.current()->hasNonReferenceSuperClass();
-          }
+          // recurse into the template instance branch
+          found = found || tidi.current()->hasNonReferenceSuperClass();
         }
       }
+    }
+    else
+    {
+      break;
     }
   }
   return found;
@@ -3497,21 +3461,12 @@ bool ClassDefImpl::isBaseClass(const ClassDef *bcd, bool followInstances,int lev
     err("Possible recursive class relation while inside %s and looking for base class %s\n",qPrint(name()),qPrint(bcd->name()));
     return FALSE;
   }
-  if (baseClasses())
+  for (const auto &bclass : baseClasses())
   {
-    // Beware: trying to optimise the iterator away using ->first() & ->next()
-    // causes bug 625531
-    BaseClassListIterator bcli(*baseClasses());
-    for ( ; bcli.current() && !found ; ++bcli)
-    {
-      const ClassDef *ccd=bcli.current()->classDef;
-      if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
-      //printf("isBaseClass() baseclass %s\n",ccd->name().data());
-      if (ccd==bcd)
-        found=TRUE;
-      else
-        found=ccd->isBaseClass(bcd,followInstances,level+1);
-    }
+    const ClassDef *ccd = bclass.classDef;
+    if (!followInstances && ccd->templateMaster()) ccd=ccd->templateMaster();
+    found = (ccd==bcd) || ccd->isBaseClass(bcd,followInstances,level+1);
+    if (found) break;
   }
   return found;
 }
@@ -3526,17 +3481,11 @@ bool ClassDefImpl::isSubClass(ClassDef *cd,int level) const
     err("Possible recursive class relation while inside %s and looking for derived class %s\n",qPrint(name()),qPrint(cd->name()));
     return FALSE;
   }
-  if (subClasses())
+  for (const auto &iscd : subClasses())
   {
-    BaseClassListIterator bcli(*subClasses());
-    for ( ; bcli.current() && !found ; ++bcli)
-    {
-      ClassDef *ccd=bcli.current()->classDef;
-      if (ccd==cd)
-        found=TRUE;
-      else
-        found=ccd->isSubClass(cd,level+1);
-    }
+    ClassDef *ccd=iscd.classDef;
+    found = (ccd==cd) || ccd->isSubClass(cd,level+1);
+    if (found) break;
   }
   return found;
 }
@@ -3569,212 +3518,206 @@ void ClassDefImpl::mergeMembers()
   //printf("  mergeMembers for %s\n",name().data());
   static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
   static bool extractPrivate         = Config_getBool(EXTRACT_PRIVATE);
-  if (baseClasses())
+  for (const auto &bcd : baseClasses())
   {
-    //printf("  => has base classes!\n");
-    BaseClassListIterator bcli(*baseClasses());
-    BaseClassDef *bcd;
-    for ( ; (bcd=bcli.current()) ; ++bcli )
+    ClassDef *bClass=bcd.classDef;
+
+    // merge the members in the base class of this inheritance branch first
+    bClass->mergeMembers();
+
+    const MemberNameInfoLinkedMap &srcMnd  = bClass->memberNameInfoLinkedMap();
+    MemberNameInfoLinkedMap &dstMnd        = m_impl->allMemberNameInfoLinkedMap;
+
+    for (auto &srcMni : srcMnd)
     {
-      ClassDef *bClass=bcd->classDef;
-
-      // merge the members in the base class of this inheritance branch first
-      bClass->mergeMembers();
-
-      const MemberNameInfoLinkedMap &srcMnd  = bClass->memberNameInfoLinkedMap();
-      MemberNameInfoLinkedMap &dstMnd        = m_impl->allMemberNameInfoLinkedMap;
-
-      for (auto &srcMni : srcMnd)
+      //printf("    Base member name %s\n",srcMni->memberName());
+      MemberNameInfo *dstMni;
+      if ((dstMni=dstMnd.find(srcMni->memberName())))
+        // a member with that name is already in the class.
+        // the member may hide or reimplement the one in the sub class
+        // or there may be another path to the base class that is already
+        // visited via another branch in the class hierarchy.
       {
-        //printf("    Base member name %s\n",srcMni->memberName());
-        MemberNameInfo *dstMni;
-        if ((dstMni=dstMnd.find(srcMni->memberName())))
-          // a member with that name is already in the class.
-          // the member may hide or reimplement the one in the sub class
-          // or there may be another path to the base class that is already
-          // visited via another branch in the class hierarchy.
+        for (auto &srcMi : *srcMni)
         {
-          for (auto &srcMi : *srcMni)
+          MemberDef *srcMd = srcMi->memberDef();
+          bool found=FALSE;
+          bool ambiguous=FALSE;
+          bool hidden=FALSE;
+          const ClassDef *srcCd = srcMd->getClassDef();
+          for (auto &dstMi : *dstMni)
           {
-            MemberDef *srcMd = srcMi->memberDef();
-            bool found=FALSE;
-            bool ambiguous=FALSE;
-            bool hidden=FALSE;
-            const ClassDef *srcCd = srcMd->getClassDef();
-            for (auto &dstMi : *dstMni)
+            MemberDef *dstMd = dstMi->memberDef();
+            if (srcMd!=dstMd) // different members
             {
-              MemberDef *dstMd = dstMi->memberDef();
-              if (srcMd!=dstMd) // different members
+              const ClassDef *dstCd = dstMd->getClassDef();
+              //printf("  Is %s a base class of %s?\n",srcCd->name().data(),dstCd->name().data());
+              if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE))
+                // member is in the same or a base class
               {
-                const ClassDef *dstCd = dstMd->getClassDef();
-                //printf("  Is %s a base class of %s?\n",srcCd->name().data(),dstCd->name().data());
-                if (srcCd==dstCd || dstCd->isBaseClass(srcCd,TRUE))
-                  // member is in the same or a base class
-                {
-                  ArgumentList &srcAl = srcMd->argumentList();
-                  ArgumentList &dstAl = dstMd->argumentList();
-                  found=matchArguments2(
-                      srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
-                      dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
-                      TRUE
-                      );
-                  //printf("  Yes, matching (%s<->%s): %d\n",
-                  //    argListToString(srcMd->argumentList()).data(),
-                  //    argListToString(dstMd->argumentList()).data(),
-                  //    found);
-                  hidden = hidden  || !found;
-                }
-                else // member is in a non base class => multiple inheritance
-                  // using the same base class.
-                {
-                  //printf("$$ Existing member %s %s add scope %s\n",
-                  //    dstMi->ambiguityResolutionScope.data(),
-                  //    dstMd->name().data(),
-                  //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
-
-                  QCString scope=dstMi->scopePath().left((uint)dstMi->scopePath().find(sep)+sepLen);
-                  if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
-                  {
-                    dstMi->setAmbiguityResolutionScope(scope+dstMi->ambiguityResolutionScope());
-                  }
-                  ambiguous=TRUE;
-                }
+                ArgumentList &srcAl = srcMd->argumentList();
+                ArgumentList &dstAl = dstMd->argumentList();
+                found=matchArguments2(
+                    srcMd->getOuterScope(),srcMd->getFileDef(),&srcAl,
+                    dstMd->getOuterScope(),dstMd->getFileDef(),&dstAl,
+                    TRUE
+                    );
+                //printf("  Yes, matching (%s<->%s): %d\n",
+                //    argListToString(srcMd->argumentList()).data(),
+                //    argListToString(dstMd->argumentList()).data(),
+                //    found);
+                hidden = hidden  || !found;
               }
-              else // same members
+              else // member is in a non base class => multiple inheritance
+                // using the same base class.
               {
-                // do not add if base class is virtual or
-                // if scope paths are equal or
-                // if base class is an interface (and thus implicitly virtual).
-                //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
-                if ((srcMi->virt()!=Normal && dstMi->virt()!=Normal) ||
-                    bClass->name()+sep+srcMi->scopePath() == dstMi->scopePath() ||
-                    dstMd->getClassDef()->compoundType()==Interface
-                   )
-                {
-                  found=TRUE;
-                }
-                else // member can be reached via multiple paths in the
-                  // inheritance tree
-                {
-                  //printf("$$ Existing member %s %s add scope %s\n",
-                  //    dstMi->ambiguityResolutionScope.data(),
-                  //    dstMd->name().data(),
-                  //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
+                //printf("$$ Existing member %s %s add scope %s\n",
+                //    dstMi->ambiguityResolutionScope.data(),
+                //    dstMd->name().data(),
+                //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
 
-                  QCString scope=dstMi->scopePath().left((uint)dstMi->scopePath().find(sep)+sepLen);
-                  if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
-                  {
-                    dstMi->setAmbiguityResolutionScope(dstMi->ambiguityResolutionScope()+scope);
-                  }
-                  ambiguous=TRUE;
+                QCString scope=dstMi->scopePath().left((uint)dstMi->scopePath().find(sep)+sepLen);
+                if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
+                {
+                  dstMi->setAmbiguityResolutionScope(scope+dstMi->ambiguityResolutionScope());
                 }
+                ambiguous=TRUE;
               }
-              if (found) break;
             }
-            //printf("member %s::%s hidden %d ambiguous %d srcMi->ambigClass=%p\n",
-            //    srcCd->name().data(),srcMd->name().data(),hidden,ambiguous,srcMi->ambigClass);
-
-            // TODO: fix the case where a member is hidden by inheritance
-            //       of a member with the same name but with another prototype,
-            //       while there is more than one path to the member in the
-            //       base class due to multiple inheritance. In this case
-            //       it seems that the member is not reachable by prefixing a
-            //       scope name either (according to my compiler). Currently,
-            //       this case is shown anyway.
-            if (!found && srcMd->protection()!=Private && !srcMd->isFriend())
+            else // same members
             {
-              Protection prot=srcMd->protection();
-              if (bcd->prot==Protected && prot==Public)       prot=bcd->prot;
-              else if (bcd->prot==Private)                    prot=bcd->prot;
+              // do not add if base class is virtual or
+              // if scope paths are equal or
+              // if base class is an interface (and thus implicitly virtual).
+              //printf("same member found srcMi->virt=%d dstMi->virt=%d\n",srcMi->virt,dstMi->virt);
+              if ((srcMi->virt()!=Normal && dstMi->virt()!=Normal) ||
+                  bClass->name()+sep+srcMi->scopePath() == dstMi->scopePath() ||
+                  dstMd->getClassDef()->compoundType()==Interface
+                 )
+              {
+                found=TRUE;
+              }
+              else // member can be reached via multiple paths in the
+                // inheritance tree
+              {
+                //printf("$$ Existing member %s %s add scope %s\n",
+                //    dstMi->ambiguityResolutionScope.data(),
+                //    dstMd->name().data(),
+                //    dstMi->scopePath.left(dstMi->scopePath.find("::")+2).data());
+
+                QCString scope=dstMi->scopePath().left((uint)dstMi->scopePath().find(sep)+sepLen);
+                if (scope!=dstMi->ambiguityResolutionScope().left(scope.length()))
+                {
+                  dstMi->setAmbiguityResolutionScope(dstMi->ambiguityResolutionScope()+scope);
+                }
+                ambiguous=TRUE;
+              }
+            }
+            if (found) break;
+          }
+          //printf("member %s::%s hidden %d ambiguous %d srcMi->ambigClass=%p\n",
+          //    srcCd->name().data(),srcMd->name().data(),hidden,ambiguous,srcMi->ambigClass);
+
+          // TODO: fix the case where a member is hidden by inheritance
+          //       of a member with the same name but with another prototype,
+          //       while there is more than one path to the member in the
+          //       base class due to multiple inheritance. In this case
+          //       it seems that the member is not reachable by prefixing a
+          //       scope name either (according to my compiler). Currently,
+          //       this case is shown anyway.
+          if (!found && srcMd->protection()!=Private && !srcMd->isFriend())
+          {
+            Protection prot=srcMd->protection();
+            if (bcd.prot==Protected && prot==Public)  prot=bcd.prot;
+            else if (bcd.prot==Private)               prot=bcd.prot;
+
+            if (inlineInheritedMembers)
+            {
+              if (!isStandardFunc(srcMd))
+              {
+                //printf("    insertMember '%s'\n",srcMd->name().data());
+                internalInsertMember(srcMd,prot,FALSE);
+              }
+            }
+
+            Specifier virt=srcMi->virt();
+            if (virt==Normal && bcd.virt!=Normal) virt=bcd.virt;
+
+            std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE);
+            newMi->setScopePath(bClass->name()+sep+srcMi->scopePath());
+            if (ambiguous)
+            {
+              //printf("$$ New member %s %s add scope %s::\n",
+              //     srcMi->ambiguityResolutionScope.data(),
+              //     srcMd->name().data(),
+              //     bClass->name().data());
+
+              QCString scope=bClass->name()+sep;
+              if (scope!=srcMi->ambiguityResolutionScope().left(scope.length()))
+              {
+                newMi->setAmbiguityResolutionScope(scope+srcMi->ambiguityResolutionScope());
+              }
+            }
+            if (hidden)
+            {
+              if (srcMi->ambigClass()==0)
+              {
+                newMi->setAmbigClass(bClass);
+                newMi->setAmbiguityResolutionScope(bClass->name()+sep);
+              }
+              else
+              {
+                newMi->setAmbigClass(srcMi->ambigClass());
+                newMi->setAmbiguityResolutionScope(srcMi->ambigClass()->name()+sep);
+              }
+            }
+            dstMni->push_back(std::move(newMi));
+          }
+        }
+      }
+      else // base class has a member that is not in the sub class => copy
+      {
+        // create a deep copy of the list (only the MemberInfo's will be
+        // copied, not the actual MemberDef's)
+        MemberNameInfo *newMni = dstMnd.add(srcMni->memberName());
+
+        // copy the member(s) from the base to the sub class
+        for (auto &mi : *srcMni)
+        {
+          if (!mi->memberDef()->isFriend()) // don't inherit friends
+          {
+            Protection prot = mi->prot();
+            if (bcd.prot==Protected)
+            {
+              if (prot==Public) prot=Protected;
+            }
+            else if (bcd.prot==Private)
+            {
+              prot=Private;
+            }
+            //printf("%s::%s: prot=%d bcd.prot=%d result=%d\n",
+            //    name().data(),mi->memberDef->name().data(),mi->prot,
+            //    bcd.prot,prot);
+
+            if (prot!=Private || extractPrivate)
+            {
+              Specifier virt=mi->virt();
+              if (virt==Normal && bcd.virt!=Normal) virt=bcd.virt;
 
               if (inlineInheritedMembers)
               {
-                if (!isStandardFunc(srcMd))
+                if (!isStandardFunc(mi->memberDef()))
                 {
-                  //printf("    insertMember '%s'\n",srcMd->name().data());
-                  internalInsertMember(srcMd,prot,FALSE);
+                  //printf("    insertMember '%s'\n",mi->memberDef->name().data());
+                  internalInsertMember(mi->memberDef(),prot,FALSE);
                 }
               }
-
-              Specifier virt=srcMi->virt();
-              if (virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-
-              std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(srcMd,prot,virt,TRUE);
-              newMi->setScopePath(bClass->name()+sep+srcMi->scopePath());
-              if (ambiguous)
-              {
-                //printf("$$ New member %s %s add scope %s::\n",
-                //     srcMi->ambiguityResolutionScope.data(),
-                //     srcMd->name().data(),
-                //     bClass->name().data());
-
-                QCString scope=bClass->name()+sep;
-                if (scope!=srcMi->ambiguityResolutionScope().left(scope.length()))
-                {
-                  newMi->setAmbiguityResolutionScope(scope+srcMi->ambiguityResolutionScope());
-                }
-              }
-              if (hidden)
-              {
-                if (srcMi->ambigClass()==0)
-                {
-                  newMi->setAmbigClass(bClass);
-                  newMi->setAmbiguityResolutionScope(bClass->name()+sep);
-                }
-                else
-                {
-                  newMi->setAmbigClass(srcMi->ambigClass());
-                  newMi->setAmbiguityResolutionScope(srcMi->ambigClass()->name()+sep);
-                }
-              }
-              dstMni->push_back(std::move(newMi));
-            }
-          }
-        }
-        else // base class has a member that is not in the sub class => copy
-        {
-          // create a deep copy of the list (only the MemberInfo's will be
-          // copied, not the actual MemberDef's)
-          MemberNameInfo *newMni = dstMnd.add(srcMni->memberName());
-
-          // copy the member(s) from the base to the sub class
-          for (auto &mi : *srcMni)
-          {
-            if (!mi->memberDef()->isFriend()) // don't inherit friends
-            {
-              Protection prot = mi->prot();
-              if (bcd->prot==Protected)
-              {
-                if (prot==Public) prot=Protected;
-              }
-              else if (bcd->prot==Private)
-              {
-                prot=Private;
-              }
-              //printf("%s::%s: prot=%d bcd->prot=%d result=%d\n",
-              //    name().data(),mi->memberDef->name().data(),mi->prot,
-              //    bcd->prot,prot);
-
-              if (prot!=Private || extractPrivate)
-              {
-                Specifier virt=mi->virt();
-                if (virt==Normal && bcd->virt!=Normal) virt=bcd->virt;
-
-                if (inlineInheritedMembers)
-                {
-                  if (!isStandardFunc(mi->memberDef()))
-                  {
-                    //printf("    insertMember '%s'\n",mi->memberDef->name().data());
-                    internalInsertMember(mi->memberDef(),prot,FALSE);
-                  }
-                }
-                //printf("Adding!\n");
-                std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(mi->memberDef(),prot,virt,TRUE);
-                newMi->setScopePath(bClass->name()+sep+mi->scopePath());
-                newMi->setAmbigClass(mi->ambigClass());
-                newMi->setAmbiguityResolutionScope(mi->ambiguityResolutionScope());
-                newMni->push_back(std::move(newMi));
-              }
+              //printf("Adding!\n");
+              std::unique_ptr<MemberInfo> newMi = std::make_unique<MemberInfo>(mi->memberDef(),prot,virt,TRUE);
+              newMi->setScopePath(bClass->name()+sep+mi->scopePath());
+              newMi->setAmbigClass(mi->ambigClass());
+              newMi->setAmbiguityResolutionScope(mi->ambiguityResolutionScope());
+              newMni->push_back(std::move(newMi));
             }
           }
         }
@@ -3803,28 +3746,20 @@ void ClassDefImpl::mergeCategory(ClassDef *category)
     category->setArtificial(TRUE);
 
     // copy base classes/protocols from extension
-    if (category->baseClasses())
+    for (const auto &bcd : category->baseClasses())
     {
-      BaseClassListIterator bcli(*category->baseClasses());
-      BaseClassDef *bcd;
-      for ( ; (bcd=bcli.current()) ; ++bcli )
+      insertBaseClass(bcd.classDef,bcd.usedName,bcd.prot,bcd.virt,bcd.templSpecifiers);
+      // correct bcd.classDef so that they do no longer derive from
+      // category, but from this class!
+      BaseClassList scl = bcd.classDef->subClasses();
+      for (auto &scd : scl)
       {
-        insertBaseClass(bcd->classDef,bcd->usedName,bcd->prot,bcd->virt,bcd->templSpecifiers);
-        // correct bcd->classDef so that they do no longer derive from
-        // category, but from this class!
-        if (bcd->classDef->subClasses())
+        if (scd.classDef==category)
         {
-          BaseClassListIterator scli(*bcd->classDef->subClasses());
-          BaseClassDef *scd;
-          for ( ; (scd=scli.current()) ; ++scli )
-          {
-            if (scd->classDef==category)
-            {
-              scd->classDef=this;
-            }
-          }
+          scd.classDef=this;
         }
       }
+      bcd.classDef->updateSubClasses(scl);
     }
   }
   // make methods private for categories defined in the .m file
@@ -4537,26 +4472,21 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
   //    name().data(),lt,process,count,invert);
   if ((process^invert) || showAlways)
   {
-    if (m_impl->inherits)
+    for (const auto &ibcd : m_impl->inherits)
     {
-      BaseClassListIterator it(*m_impl->inherits);
-      BaseClassDef *ibcd;
-      for (it.toFirst();(ibcd=it.current());++it)
+      ClassDef *icd=ibcd.classDef;
+      int lt1,lt2;
+      if (icd->isLinkable())
       {
-        ClassDef *icd=ibcd->classDef;
-        int lt1,lt2;
-        if (icd->isLinkable())
+        convertProtectionLevel(lt,ibcd.prot,&lt1,&lt2);
+        //printf("%s: convert %d->(%d,%d) prot=%d\n",
+        //    icd->name().data(),lt,lt1,lt2,ibcd->prot);
+        if (visitedClasses->find(icd)==0)
         {
-          convertProtectionLevel(lt,ibcd->prot,&lt1,&lt2);
-          //printf("%s: convert %d->(%d,%d) prot=%d\n",
-          //    icd->name().data(),lt,lt1,lt2,ibcd->prot);
-          if (visitedClasses->find(icd)==0)
+          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+          if (lt1!=-1)
           {
-            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
-            if (lt1!=-1)
-            {
-              inhCount+=icd->countMemberDeclarations((MemberListType)lt1,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
-            }
+            inhCount+=icd->countMemberDeclarations((MemberListType)lt1,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
           }
         }
       }
@@ -4678,35 +4608,30 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
   //    name().data(),lt,process,invert,showAlways);
   if ((process^invert) || showAlways)
   {
-    if (m_impl->inherits)
+    for (const auto &ibcd : m_impl->inherits)
     {
-      BaseClassListIterator it(*m_impl->inherits);
-      BaseClassDef *ibcd;
-      for (it.toFirst();(ibcd=it.current());++it)
+      ClassDef *icd=ibcd.classDef;
+      if (icd->isLinkable())
       {
-        ClassDef *icd=ibcd->classDef;
-        if (icd->isLinkable())
+        int lt1,lt3;
+        convertProtectionLevel(lt,ibcd.prot,&lt1,&lt3);
+        if (lt2==-1 && lt3!=-1)
         {
-          int lt1,lt3;
-          convertProtectionLevel(lt,ibcd->prot,&lt1,&lt3);
-          if (lt2==-1 && lt3!=-1)
+          lt2=lt3;
+        }
+        //printf("%s:convert %d->(%d,%d) prot=%d\n",icd->name().data(),lt,lt1,lt2,ibcd->prot);
+        if (visitedClasses->find(icd)==0)
+        {
+          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+          if (lt1!=-1)
           {
-            lt2=lt3;
+            icd->writeMemberDeclarations(ol,(MemberListType)lt1,
+                title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
           }
-          //printf("%s:convert %d->(%d,%d) prot=%d\n",icd->name().data(),lt,lt1,lt2,ibcd->prot);
-          if (visitedClasses->find(icd)==0)
-          {
-            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
-            if (lt1!=-1)
-            {
-              icd->writeMemberDeclarations(ol,(MemberListType)lt1,
-                  title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
-            }
-          }
-          else
-          {
-            //printf("%s: class already visited!\n",icd->name().data());
-          }
+        }
+        else
+        {
+          //printf("%s: class already visited!\n",icd->name().data());
         }
       }
     }
@@ -4822,14 +4747,24 @@ ClassDefImpl::CompoundType ClassDefImpl::compoundType() const
   return m_impl->compType;
 }
 
-BaseClassList *ClassDefImpl::baseClasses() const
+BaseClassList ClassDefImpl::baseClasses() const
 {
   return m_impl->inherits;
 }
 
-BaseClassList *ClassDefImpl::subClasses() const
+void ClassDefImpl::updateBaseClasses(BaseClassList bcd)
+{
+  m_impl->inherits = bcd;
+}
+
+BaseClassList ClassDefImpl::subClasses() const
 {
   return m_impl->inheritedBy;
+}
+
+void ClassDefImpl::updateSubClasses(BaseClassList bcd)
+{
+  m_impl->inheritedBy = bcd;
 }
 
 const MemberNameInfoLinkedMap &ClassDefImpl::memberNameInfoLinkedMap() const

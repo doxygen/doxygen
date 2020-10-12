@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <algorithm>
 
 #include <qlist.h>
 #include <ctype.h>
@@ -47,7 +48,6 @@ class OutputDocInterface;
 class MemberDef;
 class ExampleSDict;
 class ClassSDict;
-class BaseClassList;
 class GroupDef;
 class NamespaceSDict;
 class ClassList;
@@ -310,7 +310,7 @@ QCString replaceAnonymousScopes(const QCString &s,const char *replacement=0);
 
 void initClassHierarchy(ClassSDict *cl);
 
-bool hasVisibleRoot(const BaseClassList *bcl);
+bool hasVisibleRoot(BaseClassList bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool namespaceHasVisibleChild(const NamespaceDef *nd,bool includeClasses,bool filterClasses,ClassDef::CompoundType ct);
 bool classVisibleInIndex(const ClassDef *cd);

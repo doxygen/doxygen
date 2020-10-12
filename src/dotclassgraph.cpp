@@ -266,18 +266,11 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
 
   if (m_graphType == Inheritance || m_graphType==Collaboration)
   {
-    BaseClassList *bcl = base ? cd->baseClasses() : cd->subClasses();
-    if (bcl)
+    for (const auto &bcd : base ? cd->baseClasses() : cd->subClasses())
     {
-      BaseClassListIterator bcli(*bcl);
-      BaseClassDef *bcd;
-      for ( ; (bcd=bcli.current()) ; ++bcli )
-      {
-        //printf("-------- inheritance relation %s->%s templ='%s'\n",
-        //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
-        addClass(bcd->classDef,n,bcd->prot,0,bcd->usedName,
-          bcd->templSpecifiers,base,distance);
-      }
+      //printf("-------- inheritance relation %s->%s templ='%s'\n",
+      //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
+      addClass(bcd.classDef,n,bcd.prot,0,bcd.usedName,bcd.templSpecifiers,base,distance);
     }
   }
   if (m_graphType == Collaboration)

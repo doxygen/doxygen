@@ -2462,7 +2462,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
                                    const char *text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   {
     std::lock_guard<std::mutex> lock(g_tooltipMutex);
     TooltipManager::instance()->addTooltip(d);
@@ -3502,20 +3502,14 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
                 {
                   cd = cd->categoryOf();
                 }
-                const BaseClassList *bcd = cd->baseClasses();
-                if (bcd) // get direct base class (there should be only one)
+                for (const auto &bclass : cd->baseClasses())
                 {
-                  BaseClassListIterator bli(*bcd);
-                  BaseClassDef *bclass;
-                  for (bli.toFirst();(bclass=bli.current());++bli)
+                  if (bclass.classDef->compoundType()!=ClassDef::Protocol)
                   {
-                    if (bclass->classDef->compoundType()!=ClassDef::Protocol)
+                    ctx->objectType = bclass.classDef;
+                    if (ctx->objectType && !ctx->methodName.isEmpty())
                     {
-                      ctx->objectType = bclass->classDef;
-                      if (ctx->objectType && !ctx->methodName.isEmpty())
-                      {
-                        ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
-                      }
+                      ctx->method = ctx->objectType->getMemberByName(ctx->methodName);
                     }
                   }
                 }

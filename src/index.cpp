@@ -451,14 +451,13 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-static void writeClassTree(OutputList &ol,const BaseClassList *bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
+static void writeClassTree(OutputList &ol,BaseClassList bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
 {
-  if (bcl==0) return;
-  BaseClassListIterator bcli(*bcl);
+  if (bcl.empty()) return;
   bool started=FALSE;
-  for ( ; bcli.current() ; ++bcli)
+  for (const auto &bcd : bcl)
   {
-    ClassDef *cd=bcli.current()->classDef;
+    ClassDef *cd=bcd.classDef;
     if (cd->getLanguage()==SrcLangExt_VHDL && (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS)
     {
       continue;
@@ -513,7 +512,7 @@ static void writeClassTree(OutputList &ol,const BaseClassList *bcl,bool hideSupe
         {
           if (cd->getLanguage()==SrcLangExt_VHDL)
           {
-            ftv->addContentsItem(hasChildren,bcli.current()->usedName,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
+            ftv->addContentsItem(hasChildren,bcd.usedName,cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
           }
           else
           {
@@ -963,7 +962,7 @@ static int countClassesInTreeList(const ClassSDict &cl, ClassDef::CompoundType c
     {
       if (cd->isVisibleInHierarchy()) // should it be visible
       {
-        if (cd->subClasses()) // should have sub classes
+        if (!cd->subClasses().empty()) // should have sub classes
         {
           count++;
         }
