@@ -255,6 +255,10 @@ class TranslatorNorwegian : public TranslatorAdapter_1_4_6
       {
 	return "Her er datastrukturene med korte beskrivelser:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+	return "Her er klasser med korte beskrivelser:";
+      }
       else
       {
 	return "Her er klasser, struct'er, "

@@ -251,6 +251,10 @@ class TranslatorCatalan : public TranslatorAdapter_1_8_0
       {
         return "Aquestes són les estructures de dades acompanyades amb breus descripcions:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Aquestes són les classes acompanyades amb breus descripcions:";
+      }
       else
       {
         return "Aquestes són les classes, estructures, "

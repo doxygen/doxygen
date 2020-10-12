@@ -212,6 +212,10 @@ class TranslatorRussian : public TranslatorAdapter_1_8_15
       {
         return "Структуры данных с их кратким описанием.";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Классы с их кратким описанием.";
+      }
       else
       {
         return "Классы с их кратким описанием.";

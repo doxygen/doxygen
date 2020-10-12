@@ -236,6 +236,10 @@ class TranslatorMacedonian : public TranslatorAdapter_1_6_0
       {
         return "Список на структури со кратки описи:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Список на класи со кратки описи:";
+      }
       else
       {
         return "Список на класи, структури, унии и интерфејси "

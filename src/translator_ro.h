@@ -254,6 +254,10 @@ class TranslatorRomanian : public TranslatorAdapter_1_8_15
       {
         return "Lista structurilor de date, cu scurte descrieri:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Lista claselor, cu scurte descrieri:";
+      }
       else
       {
         return "Lista claselor, structurilor, uniunilor şi interfeţelor"

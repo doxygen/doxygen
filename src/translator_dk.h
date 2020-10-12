@@ -284,6 +284,8 @@ class TranslatorDanish : public TranslatorAdapter_1_8_0
 
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C)) {
         return "Her er datastrukturerne med korte beskrivelser:";
+      } else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE)) {
+        return "Her er klasserne med korte beskrivelser:";
       } else {
         return "Her er klasserne, datastrukturerne, "
                "unionerne og grænsefladerne med korte beskrivelser:";

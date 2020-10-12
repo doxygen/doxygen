@@ -241,6 +241,10 @@ class TranslatorLithuanian : public TranslatorAdapter_1_4_6
       {
         return "Duomenų struktūros su trumpais aprašymais:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Klasės su trumpais aprašymais:";
+      }
       else
       {
         return "Klasės, struktūros, "

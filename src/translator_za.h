@@ -235,6 +235,10 @@ class TranslatorAfrikaans : public TranslatorAdapter_1_6_0
       {
         return " Data strukture met kort beskrywings:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Klasse met kort beskrywings:";
+      }
       else
       {
         return "Klasse, structs, "

@@ -348,13 +348,17 @@ class TranslatorGerman : public TranslatorAdapter_1_8_15
     {
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
-    return "Hier folgt die Aufzählung aller Datenstrukturen "
-           "mit einer Kurzbeschreibung:";
+        return "Hier folgt die Aufzählung aller Datenstrukturen "
+               "mit einer Kurzbeschreibung:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Hier folgt die Aufzählung aller Klassen mit einer Kurzbeschreibung:";
       }
       else
       {
-    return "Hier folgt die Aufzählung aller Klassen, Strukturen, "
-           "Varianten und Schnittstellen mit einer Kurzbeschreibung:";
+        return "Hier folgt die Aufzählung aller Klassen, Strukturen, "
+               "Varianten und Schnittstellen mit einer Kurzbeschreibung:";
       }
     }
 

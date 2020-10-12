@@ -267,6 +267,10 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_19
       {
         return "Lista das estruturas de dados com uma breve descrição:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Lista de classes com uma breve descrição:";
+      }
       else
       {
         return "Lista de classes, estruturas, uniões e interfaces com uma breve descrição:";

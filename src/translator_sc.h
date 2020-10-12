@@ -254,6 +254,10 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       {
         return "Овде су структуре са кратким описима:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Овде су класе са кратким описима:";
+      }
       else
       {
         return "Овде су класе, структуре, "

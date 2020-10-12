@@ -276,6 +276,10 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       {
         return "Az összes adatszerkezet listája rövid leírásokkal:";
       }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Az összes osztály listája rövid leírásokkal:";
+      }
       else
       {
         return "Az összes osztály, struktúra, unió és interfész "
