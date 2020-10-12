@@ -209,7 +209,7 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
   {
     //fprintf(stderr,"addWord(%s) at index %d\n",word,idx);
     m_index[idx].push_back(IndexWord(wStr));
-    it = m_words.insert({ wStr.str(), m_index[idx].size()-1 }).first;
+    it = m_words.insert({ wStr.str(), static_cast<int>(m_index[idx].size())-1 }).first;
   }
   m_index[idx][it->second].addUrlIndex(m_urlIndex,hiPriority);
   int i;
@@ -239,10 +239,10 @@ void SearchIndex::addWord(const char *word,bool hiPriority)
 
 static void writeInt(QFile &f,size_t index)
 {
-  f.putch(index>>24);
-  f.putch((index>>16)&0xff);
-  f.putch((index>>8)&0xff);
-  f.putch(index&0xff);
+  f.putch(static_cast<int>(index>>24));
+  f.putch(static_cast<int>((index>>16)&0xff));
+  f.putch(static_cast<int>((index>>8)&0xff));
+  f.putch(static_cast<int>(index&0xff));
 }
 
 static void writeString(QFile &f,const char *s)
