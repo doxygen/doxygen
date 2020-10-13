@@ -148,7 +148,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // store the original directory
   if (!d.exists())
   {
-    term("Output dir %s does not exist!\n",path);
+    term("Output directory '%s' does not exist!\n",path);
   }
   QCString oldDir = QDir::currentDirPath().utf8();
   QCString macroFile = Config_getString(FORMULA_MACROFILE);
@@ -167,7 +167,6 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   QCString texName="_formulas.tex";
   IntVector formulasToGenerate;
   QFile f(texName);
-  bool formulaError=FALSE;
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
@@ -214,8 +213,9 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
     {
       err("Problems running latex. Check your installation or look "
           "for typos in _formulas.tex and check _formulas.log!\n");
-      formulaError=TRUE;
-      //return;
+      Portable::sysTimerStop();
+      QDir::setCurrent(oldDir);
+      return;
     }
     Portable::sysTimerStop();
     //printf("Running dvips...\n");
@@ -439,12 +439,12 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
     if (RM_TMP_FILES)
     {
       thisDir.remove("_formulas.dvi");
-      if (!formulaError) thisDir.remove("_formulas.log"); // keep file in case of errors
+      thisDir.remove("_formulas.log"); // keep file in case of errors
       thisDir.remove("_formulas.aux");
     }
   }
   // remove the latex file itself
-  if (RM_TMP_FILES && !formulaError) thisDir.remove("_formulas.tex");
+  if (RM_TMP_FILES) thisDir.remove("_formulas.tex");
 
   // write/update the formula repository so we know what text the
   // generated images represent (we use this next time to avoid regeneration
