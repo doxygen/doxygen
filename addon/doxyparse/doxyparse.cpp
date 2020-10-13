@@ -163,8 +163,8 @@ static void printPrototypeYes() {
 static void printNumberOfLines(int lines) {
   printf("          lines_of_code: %d\n", lines);
 }
-static void printNumberOfArguments(int arguments) {
-  printf("          parameters: %d\n", arguments);
+static void printNumberOfArguments(size_t arguments) {
+  printf("          parameters: %zu\n", arguments);
 }
 static void printUses() {
   printf("          uses:\n");
