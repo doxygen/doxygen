@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -22,6 +22,7 @@
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QLabel>
+#include <QCheckBox>
 #include <QTextBrowser>
 #include <QStatusBar>
 #include <QProcess>
@@ -57,14 +58,14 @@ MainWindow::MainWindow()
   : m_settings(QString::fromLatin1("Doxygen.org"), QString::fromLatin1("Doxywizard"))
 {
   QMenu *file = menuBar()->addMenu(tr("File"));
-  file->addAction(tr("Open..."), 
+  file->addAction(tr("Open..."),
                   this, SLOT(openConfig()), Qt::CTRL+Qt::Key_O);
   m_recentMenu = file->addMenu(tr("Open recent"));
-  file->addAction(tr("Save"), 
+  file->addAction(tr("Save"),
                   this, SLOT(saveConfig()), Qt::CTRL+Qt::Key_S);
-  file->addAction(tr("Save as..."), 
+  file->addAction(tr("Save as..."),
                   this, SLOT(saveConfigAs()), Qt::SHIFT+Qt::CTRL+Qt::Key_S);
-  file->addAction(tr("Quit"),  
+  file->addAction(tr("Quit"),
                   this, SLOT(quit()), Qt::CTRL+Qt::Key_Q);
 
   QMenu *settings = menuBar()->addMenu(tr("Settings"));
@@ -76,17 +77,20 @@ MainWindow::MainWindow()
                   this,SLOT(clearRecent()));
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
-  help->addAction(tr("Online manual"), 
+  help->addAction(tr("Online manual"),
                   this, SLOT(manual()), Qt::Key_F1);
-  help->addAction(tr("About"), 
+  help->addAction(tr("About"),
                   this, SLOT(about()) );
 
   m_expert = new Expert;
   m_wizard = new Wizard(m_expert->modelData());
 
   // ----------- top part ------------------
+  QWidget *mainPart = new QWidget;
+  QVBoxLayout *mainLayout = new QVBoxLayout(mainPart);
   QWidget *topPart = new QWidget;
   QVBoxLayout *rowLayout = new QVBoxLayout(topPart);
+  mainLayout->addWidget(topPart);
 
   // select working directory
   QHBoxLayout *dirLayout = new QHBoxLayout;
@@ -107,19 +111,43 @@ MainWindow::MainWindow()
   m_saveLog = new QPushButton(tr("Save log..."));
   m_saveLog->setEnabled(false);
   QPushButton *showSettings = new QPushButton(tr("Show configuration"));
-  QPushButton *showCondensedSettings = new QPushButton(tr("Show condensed configuration"));
+
+  m_showCondensedSettings = new QCheckBox(this);
+  m_showCondensedSettings->setText(tr("Condensed"));
+  m_showCondensedSettings->setChecked(false);
+  m_showCondensedSettings->setToolTip(tr("Show only configuration settings different from default settings"));
+
   // select extra run options
   m_runOptions = new QLineEdit;
 
-  runTabLayout->addWidget(new QLabel(tr("Step 3: Specify (optional) options for running doxygen")));
+  runTabLayout->addWidget(new QLabel(tr("Step 3: Specify additional command line options for running doxygen")));
   runTabLayout->addWidget(m_runOptions);
 
-  runLayout->addWidget(m_run);
-  runLayout->addWidget(m_runStatus);
+  QVBoxLayout *runVLayout = new QVBoxLayout;
+  runLayout->addLayout(runVLayout);
+  QHBoxLayout *runVHLayout = new QHBoxLayout;
+  runVLayout->addLayout(runVHLayout);
+  runVHLayout->addWidget(m_run);
+  runVHLayout->addWidget(m_runStatus);
+
+  QHBoxLayout *runVH2Layout = new QHBoxLayout;
+  runVLayout->addLayout(runVH2Layout);
+  m_launchHtml = new QPushButton(tr("Show HTML output"));
+  runVH2Layout->addWidget(m_launchHtml);
+  runVH2Layout->addStretch(1); // to have launch button not being stretched
+
   runLayout->addStretch(1);
-  runLayout->addWidget(showCondensedSettings);
-  runLayout->addWidget(showSettings);
-  runLayout->addWidget(m_saveLog);
+
+  QVBoxLayout *settingsLayout = new QVBoxLayout;
+  runLayout->addLayout(settingsLayout);
+  settingsLayout->addWidget(m_showCondensedSettings);
+  settingsLayout->addWidget(showSettings);
+
+  QVBoxLayout *saveLayout = new QVBoxLayout;
+  runLayout->addLayout(saveLayout);
+  saveLayout->addWidget(m_saveLog);
+  saveLayout->setAlignment(Qt::AlignTop);
+  // saveLayout->addWidget(new QWidget); // to have the save button at the top
 
   // output produced by Doxygen
   runTabLayout->addLayout(runLayout);
@@ -134,12 +162,12 @@ MainWindow::MainWindow()
   grid->addWidget(m_outputLog,0,0);
   grid->setColumnStretch(0,1);
   grid->setRowStretch(0,1);
-  QHBoxLayout *launchLayout = new QHBoxLayout;
-  m_launchHtml = new QPushButton(tr("Show HTML output"));
-  launchLayout->addWidget(m_launchHtml);
+  //QHBoxLayout *launchLayout = new QHBoxLayout;
+  //m_launchHtml = new QPushButton(tr("Show HTML output"));
+  //launchLayout->addWidget(m_launchHtml);
 
-  launchLayout->addStretch(1);
-  grid->addLayout(launchLayout,1,0);
+  //launchLayout->addStretch(1);
+  //grid->addLayout(launchLayout,1,0);
   runTabLayout->addLayout(grid);
 
   m_tabs = new QTabWidget;
@@ -150,9 +178,9 @@ MainWindow::MainWindow()
   rowLayout->addWidget(new QLabel(tr("Step 1: Specify the working directory from which doxygen will run")));
   rowLayout->addLayout(dirLayout);
   rowLayout->addWidget(new QLabel(tr("Step 2: Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation")));
-  rowLayout->addWidget(m_tabs);
+  mainLayout->addWidget(m_tabs);
 
-  setCentralWidget(topPart);
+  setCentralWidget(mainPart);
   statusBar()->showMessage(tr("Welcome to Doxygen"),messageTimeout);
 
   m_runProcess = new QProcess;
@@ -170,7 +198,6 @@ MainWindow::MainWindow()
   connect(m_run,SIGNAL(clicked()),SLOT(runDoxygen()));
   connect(m_launchHtml,SIGNAL(clicked()),SLOT(showHtmlOutput()));
   connect(m_saveLog,SIGNAL(clicked()),SLOT(saveLog()));
-  connect(showCondensedSettings,SIGNAL(clicked()),SLOT(showCondensedSettings()));
   connect(showSettings,SIGNAL(clicked()),SLOT(showSettings()));
   connect(m_expert,SIGNAL(changed()),SLOT(configChanged()));
   connect(m_wizard,SIGNAL(done()),SLOT(selectRunTab()));
@@ -318,7 +345,7 @@ bool MainWindow::saveConfig()
 
 bool MainWindow::saveConfigAs()
 {
-  QString fileName = QFileDialog::getSaveFileName(this, QString(), 
+  QString fileName = QFileDialog::getSaveFileName(this, QString(),
              m_workingDir->text()+QString::fromLatin1("/Doxyfile"));
   if (fileName.isEmpty()) return false;
   saveConfig(fileName);
@@ -356,7 +383,7 @@ void MainWindow::clearRecent()
     }
     m_settings.sync();
   }
-  
+
 }
 
 void MainWindow::resetToDefaults()
@@ -438,7 +465,7 @@ void MainWindow::addRecentFileList(const QString &fileName)
 {
   int i=m_recentFiles.indexOf(fileName);
   if (i!=-1) m_recentFiles.removeAt(i);
-  
+
   // not found
   if (m_recentFiles.count() < MAX_RECENT_FILES) // append
   {
@@ -454,7 +481,7 @@ void MainWindow::updateRecentFile(void)
 {
   m_recentMenu->clear();
   int i=0;
-  foreach( QString str, m_recentFiles ) 
+  foreach( QString str, m_recentFiles )
   {
     m_recentMenu->addAction(str);
     m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),str);
@@ -477,18 +504,18 @@ void MainWindow::runDoxygen()
 {
   if (!m_running)
   {
-    QString doxygenPath; 
+    QString doxygenPath;
 #if defined(Q_OS_MACX)
     doxygenPath = qApp->applicationDirPath()+QString::fromLatin1("/../Resources/");
     qDebug() << tr("Doxygen path: ") << doxygenPath;
-    if ( !QFile(doxygenPath + QString::fromLatin1("doxygen")).exists() ) 
+    if ( !QFile(doxygenPath + QString::fromLatin1("doxygen")).exists() )
     {
       // No Doxygen binary in the resources, if there is a system Doxygen binary, use that instead
       if ( QFile(QString::fromLatin1("/usr/local/bin/doxygen")).exists() )
       {
         doxygenPath = QString::fromLatin1("/usr/local/bin/");
       }
-      else 
+      else
       {
         qDebug() << tr("Can't find the doxygen command, make sure it's in your $$PATH");
         doxygenPath = QString::fromLatin1("");
@@ -502,7 +529,7 @@ void MainWindow::runDoxygen()
     m_runProcess->setWorkingDirectory(m_workingDir->text());
     QStringList env=QProcess::systemEnvironment();
     // set PWD environment variable to m_workingDir
-    env.replaceInStrings(QRegExp(QString::fromLatin1("^PWD=(.*)"),Qt::CaseInsensitive), 
+    env.replaceInStrings(QRegExp(QString::fromLatin1("^PWD=(.*)"),Qt::CaseInsensitive),
                          QString::fromLatin1("PWD=")+m_workingDir->text());
     m_runProcess->setEnvironment(env);
 
@@ -613,7 +640,7 @@ void MainWindow::showHtmlOutput()
 
 void MainWindow::saveLog()
 {
-  QString fn = QFileDialog::getSaveFileName(this, tr("Save log file"), 
+  QString fn = QFileDialog::getSaveFileName(this, tr("Save log file"),
         m_workingDir->text()+
         QString::fromLatin1("/doxygen_log.txt"));
   if (!fn.isEmpty())
@@ -637,18 +664,14 @@ void MainWindow::showSettings()
 {
   QString text;
   QTextStream t(&text);
-  m_expert->writeConfig(t,true,false);
-  m_outputLog->clear();
-  m_outputLog->append(APPQT(text));
-  m_outputLog->ensureCursorVisible();
-  m_saveLog->setEnabled(true);
-}
-
-void MainWindow::showCondensedSettings()
-{
-  QString text;
-  QTextStream t(&text);
-  m_expert->writeConfig(t,true,true);
+  if (m_showCondensedSettings->isChecked())
+  {
+    m_expert->writeConfig(t,true,true);
+  }
+  else
+  {
+    m_expert->writeConfig(t,true,false);
+  }
   m_outputLog->clear();
   m_outputLog->append(APPQT(text));
   m_outputLog->ensureCursorVisible();
