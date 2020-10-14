@@ -4343,11 +4343,9 @@ MemberDef *MemberDefImpl::createTemplateInstanceMember(
         const ArgumentList &formalArgs,const std::unique_ptr<ArgumentList> &actualArgs) const
 {
   //printf("  Member %s %s %s\n",typeString(),name().data(),argsString());
-  std::unique_ptr<ArgumentList> actualArgList;
+  std::unique_ptr<ArgumentList> actualArgList = std::make_unique<ArgumentList>(m_impl->defArgList);
   if (!m_impl->defArgList.empty())
   {
-    actualArgList = std::make_unique<ArgumentList>(m_impl->defArgList);
-
     // replace formal arguments with actuals
     for (Argument &arg : *actualArgList)
     {
@@ -4355,10 +4353,6 @@ MemberDef *MemberDefImpl::createTemplateInstanceMember(
     }
     actualArgList->setTrailingReturnType(
        substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs));
-  }
-  else
-  {
-    actualArgList = std::make_unique<ArgumentList>();
   }
 
   QCString methodName=name();

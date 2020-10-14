@@ -283,7 +283,7 @@ QCString removeRedundantWhiteSpace(const QCString &s);
 
 QCString argListToString(const ArgumentList &al,bool useCanonicalType=FALSE,bool showDefVals=TRUE);
 
-QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang);
+QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefaults=true);
 
 QCString generateMarker(int id);
 

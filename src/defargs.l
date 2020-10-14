@@ -511,6 +511,8 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <FuncQual>"volatile"		    	{
 					  yyextra->argList->setVolatileSpecifier(TRUE);
 					}
+<FuncQual>"override"                    {
+                                        }
 <FuncQual>"&"		    	        {
                                           yyextra->argList->setRefQualifier(RefQualifierLValue);
 					}
@@ -790,7 +792,7 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const char *
     yyextra->argList->setNoParameters(TRUE);
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
-  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(al).data());
+  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(*al).data());
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   defargsYYlex_destroy(yyscanner);
   return al;

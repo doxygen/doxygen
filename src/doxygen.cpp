@@ -4111,7 +4111,7 @@ static bool findTemplateInstanceRelation(const Entry *root,
   //printf("\n");
 
   bool existingClass = (templSpec ==
-                        tempArgListToString(templateClass->templateArguments(),root->lang)
+                        tempArgListToString(templateClass->templateArguments(),root->lang,false)
                        );
   if (existingClass) return TRUE;
 
@@ -4382,7 +4382,7 @@ static bool findClassRelation(
                                                     // instance (for instance if a class
                                                     // derived from a template argument)
         {
-          //printf("baseClass=%p templSpec=%s\n",baseClass,templSpec.data());
+          //printf("baseClass=%s templSpec=%s\n",baseClass->name().data(),templSpec.data());
           ClassDef *templClass=getClass(baseClass->name()+templSpec);
           if (templClass)
           {
@@ -7352,14 +7352,13 @@ static void computeMemberRelations()
           {
             const ClassDef *bmcd = bmd->getClassDef();
             //printf("Check relation between '%s'::'%s' (%p) and '%s'::'%s' (%p)\n",
-            //      mcd->name().data(),md->name().data(),md,
-            //       bmcd->name().data(),bmd->name().data(),bmd
+            //       mcd->name().data(),md->name().data(),md.get(),
+            //       bmcd->name().data(),bmd->name().data(),bmd.get()
             //      );
             if (bmcd && mcd && bmcd!=mcd &&
-                (bmd->virtualness()!=Normal || bmd->getLanguage()==SrcLangExt_Python ||
-                 bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
-                 bmcd->compoundType()==ClassDef::Interface ||
-                 bmcd->compoundType()==ClassDef::Protocol
+                (bmd->virtualness()!=Normal ||
+                 bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
+                 bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
                 ) &&
                 md->isFunction() &&
                 mcd->isLinkable() &&
@@ -7370,8 +7369,8 @@ static void computeMemberRelations()
               const ArgumentList &bmdAl = bmd->argumentList();
               const ArgumentList &mdAl =  md->argumentList();
               //printf(" Base argList='%s'\n Super argList='%s'\n",
-              //        argListToString(bmdAl.pointer()).data(),
-              //        argListToString(mdAl.pointer()).data()
+              //        argListToString(bmdAl).data(),
+              //        argListToString(mdAl).data()
               //      );
               if (
                   matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
@@ -7380,6 +7379,7 @@ static void computeMemberRelations()
                     )
                  )
               {
+                //printf("match!\n");
                 MemberDef *rmd;
                 if ((rmd=md->reimplements())==0 ||
                     minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef())
@@ -7390,6 +7390,10 @@ static void computeMemberRelations()
                 }
                 //printf("%s: add reimplementedBy member %s\n",bmcd->name().data(),mcd->name().data());
                 bmd->insertReimplementedBy(md.get());
+              }
+              else
+              {
+                //printf("no match!\n");
               }
             }
           }
@@ -7947,7 +7951,8 @@ static void inheritDocumentation()
   {
     for (const auto &md : *mn)
     {
-      //printf("%04d Member '%s'\n",count++,md->name().data());
+      //static int count=0;
+      //printf("%04d Member '%s'\n",count++,md->qualifiedName().data());
       if (md->documentation().isEmpty() && md->briefDescription().isEmpty())
       { // no documentation yet
         MemberDef *bmd = md->reimplements();

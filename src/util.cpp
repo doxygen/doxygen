@@ -2200,55 +2200,57 @@ QCString argListToString(const ArgumentList &al,bool useCanonicalType,bool showD
   return removeRedundantWhiteSpace(result);
 }
 
-QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang)
+QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool includeDefault)
 {
   QCString result;
   if (al.empty()) return result;
   result="<";
-  auto it = al.begin();
-  while (it!=al.end())
+  bool first=true;
+  for (const auto &a : al)
   {
-    Argument a = *it;
-    if (!a.name.isEmpty()) // add template argument name
+    if (a.defval.isEmpty() || includeDefault)
     {
-      if (a.type.left(4)=="out") // C# covariance
+      if (!first) result+=", ";
+      if (!a.name.isEmpty()) // add template argument name
       {
-        result+="out ";
-      }
-      else if (a.type.left(3)=="in") // C# contravariance
-      {
-        result+="in ";
-      }
-      if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
-      {
-        result+=a.type+" ";
-      }
-      result+=a.name;
-    }
-    else // extract name from type
-    {
-      int i=a.type.length()-1;
-      while (i>=0 && isId(a.type.at(i))) i--;
-      if (i>0)
-      {
-        result+=a.type.right(a.type.length()-i-1);
-        if (a.type.find("...")!=-1)
+        if (a.type.left(4)=="out") // C# covariance
         {
-          result+="...";
+          result+="out ";
+        }
+        else if (a.type.left(3)=="in") // C# contravariance
+        {
+          result+="in ";
+        }
+        if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
+        {
+          result+=a.type+" ";
+        }
+        result+=a.name;
+      }
+      else // extract name from type
+      {
+        int i=a.type.length()-1;
+        while (i>=0 && isId(a.type.at(i))) i--;
+        if (i>0)
+        {
+          result+=a.type.right(a.type.length()-i-1);
+          if (a.type.find("...")!=-1)
+          {
+            result+="...";
+          }
+        }
+        else // nothing found -> take whole name
+        {
+          result+=a.type;
         }
       }
-      else // nothing found -> take whole name
+      if (!a.typeConstraint.isEmpty() && lang==SrcLangExt_Java)
       {
-        result+=a.type;
+        result+=" extends "; // TODO: now Java specific, C# has where...
+        result+=a.typeConstraint;
       }
+      first=false;
     }
-    if (!a.typeConstraint.isEmpty() && lang==SrcLangExt_Java)
-    {
-      result+=" extends "; // TODO: now Java specific, C# has where...
-      result+=a.typeConstraint;
-    }
-    ++it;
-    if (it!=al.end()) result+=", ";
   }
   result+=">";
   return removeRedundantWhiteSpace(result);
@@ -2814,8 +2816,10 @@ static QCString getCanonicalTypeForIdentifier(
   {
     symName=word;
   }
-  //printf("getCanonicalTypeForIdentifier(%s,[%s->%s]) start\n",
-  //    word.data(),tSpec?tSpec->data():"<none>",templSpec.data());
+  //printf("getCanonicalTypeForIdentifier(%s d=%s fs=%s ,[%s->%s]) start\n",
+  //    word.data(),
+  //    d ? d->name().data() : "<null>",fs ? fs->name().data() : "<null>",
+  //    tSpec?tSpec->data():"<none>",templSpec.data());
 
   const ClassDef *cd = 0;
   const MemberDef *mType = 0;
@@ -2908,7 +2912,13 @@ static QCString getCanonicalTypeForIdentifier(
     //printf("word=%s typeString=%s\n",word.data(),mType->typeString());
     if (word!=mType->typeString())
     {
-      result = getCanonicalTypeForIdentifier(d,fs,mType->typeString(),tSpec,count+1);
+      QCString type = mType->typeString();
+      if (type.startsWith("typename "))
+      {
+        type.stripPrefix("typename ");
+        type = stripTemplateSpecifiersFromScope(type,FALSE);
+      }
+      result = getCanonicalTypeForIdentifier(d,fs,type,tSpec,count+1);
     }
     else
     {
@@ -2960,7 +2970,6 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
   {
     //printf("     i=%d p=%d\n",i,p);
     if (i>pp) canType += type.mid(pp,i-pp);
-
 
     QCString ct = getCanonicalTypeForIdentifier(d,fs,word,&templSpec);
 
@@ -3032,9 +3041,9 @@ static bool matchArgument2(
 {
   //printf(">> match argument: %s::'%s|%s' (%s) <-> %s::'%s|%s' (%s)\n",
   //    srcScope ? srcScope->name().data() : "",
-  //    srcA->type.data(),srcA->name.data(),srcA->canType.data(),
+  //    srcA.type.data(),srcA.name.data(),srcA.canType.data(),
   //    dstScope ? dstScope->name().data() : "",
-  //    dstA->type.data(),dstA->name.data(),dstA->canType.data());
+  //    dstA.type.data(),dstA.name.data(),dstA.canType.data());
 
   //if (srcA->array!=dstA->array) // nomatch for char[] against char
   //{
