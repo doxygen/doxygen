@@ -40,10 +40,3 @@
 \usepackage{xpatch}
 \xpatchcmd{\part}{plain}{empty}{}{}
 
-% Define caption that is also suitable in a table
-\makeatletter
-\def\doxyfigcaption{%
-\refstepcounter{figure}%
-\@dblarg{\@caption{figure}}}
-\makeatother
-
