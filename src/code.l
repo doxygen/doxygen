@@ -1810,6 +1810,14 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           yyextra->type.resize(0); yyextra->name.resize(0);
                                           BEGIN( Body );
                                         }
+<SkipInits>{ID}{B}*"{"                  {
+                                          QCString text = yytext;
+                                          int bracketPos = text.find('{');
+                                          int spacePos = text.find(' ');
+                                          int len = spacePos==-1 ? bracketPos : spacePos;
+                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,text.left(len));
+                                          yyextra->code->codify(yytext+len);
+                                        }
 <SkipInits>{ID}                         {
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
