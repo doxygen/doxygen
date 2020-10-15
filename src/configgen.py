@@ -62,7 +62,7 @@ def transformDocs(doc):
 	# fallback for not handled
 	doc = re.sub('\\\\ref', '', doc)
 	#<a href="address">description</a> -> description (see: address)
-	doc = re.sub('<a +href="([^"]*)" *>([^<]*)</a>', '\\2 (see: \\1)', doc)
+	doc = re.sub('<a +href="([^"]*)" *>([^<]*)</a>', '\\2 (see: \n\\1)', doc)
 	# LaTeX name as formula -> LaTeX
 	doc = doc.replace("\\f$\\mbox{\\LaTeX}\\f$", "LaTeX")
 	# Other formula's (now just 2) so explicitly mentioned.
