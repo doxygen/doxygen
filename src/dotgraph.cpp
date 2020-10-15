@@ -239,7 +239,7 @@ void DotGraph::generateCode(FTextStream &t)
       t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << correctId(getMapLabel()) << "\" alt=\"" << getImgAltText() << "\"/>";
       if (!m_noDivTag) t << "</div>";
       t << endl;
-      if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, getMapLabel()))
+      if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, correctId(getMapLabel())))
       {
         int mapId = DotManager::instance()->
           createFilePatcher(m_fileName.data())->
