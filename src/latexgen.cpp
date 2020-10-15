@@ -774,7 +774,8 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // End of preamble, now comes the document contents
   t << "%===== C O N T E N T S =====\n"
        "\n"
-       "\\begin{document}\n";
+       "\\begin{document}\n"
+       "\\raggedbottom\n";
   QCString documentPre = theTranslator->latexDocumentPre();
   if (!documentPre.isEmpty())
   {
