@@ -808,6 +808,7 @@ int Markdown::processLink(const char *data,int,int size)
   }
   contentStart=i;
   int level=1;
+  int nlTotal=0;
   int nl=0;
   // find the matching ]
   while (i<size)
@@ -831,6 +832,8 @@ int Markdown::processLink(const char *data,int,int size)
     }
     i++;
   }
+  nlTotal += nl;
+  nl = 0;
   if (i>=size) return 0; // premature end of comment -> no link
   contentEnd=i;
   convertStringFragment(content,data+contentStart,contentEnd-contentStart);
@@ -843,9 +846,12 @@ int Markdown::processLink(const char *data,int,int size)
   if (i<size && data[i]=='\n') // one newline allowed here
   {
     i++;
+    nl++;
     // skip more whitespace
     while (i<size && data[i]==' ') i++;
   }
+  nlTotal += nl;
+  nl = 0;
 
   bool explicitTitle=FALSE;
   if (i<size && data[i]=='(') // inline link
@@ -854,7 +860,6 @@ int Markdown::processLink(const char *data,int,int size)
     while (i<size && data[i]==' ') i++;
     if (i<size && data[i]=='<') i++;
     linkStart=i;
-    nl=0;
     int braceCount=1;
     while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
     {
@@ -876,6 +881,8 @@ int Markdown::processLink(const char *data,int,int size)
         i++;
       }
     }
+    nlTotal += nl;
+    nl = 0;
     if (i>=size || data[i]=='\n') return 0;
     convertStringFragment(link,data+linkStart,i-linkStart);
     link = link.stripWhiteSpace();
@@ -985,6 +992,8 @@ int Markdown::processLink(const char *data,int,int size)
   {
     return 0;
   }
+  nlTotal += nl;
+  nl = 0;
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
@@ -1066,6 +1075,7 @@ int Markdown::processLink(const char *data,int,int size)
       m_out.addStr("<a href=\"");
       m_out.addStr(link);
       m_out.addStr("\"");
+      for (int i = 0; i < nlTotal; i++) m_out.addStr("\n");
       if (!title.isEmpty())
       {
         m_out.addStr(" title=\"");
