@@ -168,6 +168,8 @@ EXPCHAR           [#(){}\[\],:.%/\\=`*~|&<>!;+-]
 NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
+SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
+CALLANY           "("[^)]*")"
 BORDER            ([^A-Za-z0-9])
 
 POUNDCOMMENT      "##"
@@ -340,6 +342,11 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
       "cls."{IDENTIFIER}            {
                                       codify(yyscanner,"cls.");
                                       findMemberLink(yyscanner,*yyextra->code,&yytext[4]);
+                                    }
+      "@"{SCOPE}{CALLANY}?          { // decorator
+                                      startFontClass(yyscanner,"preprocessor");
+                                      codify(yyscanner,yytext);
+                                      endFontClass(yyscanner);
                                     }
 }
 

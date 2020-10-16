@@ -113,6 +113,7 @@ struct pyscannerYY_state
   int                     search_count = 0;
   QCString                argType;
   bool                    funcParamsEnd = FALSE;
+  std::vector<QCString>   decorators;
 };
 
 //-----------------------------------------------------------------------------
@@ -175,6 +176,7 @@ NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*  
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
+CALL              "("[^)]*")"
 BORDER            ([^A-Za-z0-9])
 
 TRISINGLEQUOTE    {STRINGPREFIX}?"'''"(!)?
@@ -335,6 +337,8 @@ STARTDOCSYMS      "##"
     "@staticmethod"  {
        			yyextra->stat=TRUE;
       		      }
+    "@"{SCOPE}{CALL}? { // decorator
+                      }
     {SCRIPTCOMMENT}   { // Unix type script comment
                         if (yyextra->yyLineNr != 1) REJECT;
       		      }
