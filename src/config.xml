@@ -660,7 +660,8 @@ Go to the <a href="commands.html">next</a> section or return to the
 
  <br>Note: For files without extension you can use `no_extension` as a placeholder.
  <br>Note that for custom extensions you also need to set \ref cfg_file_patterns "FILE_PATTERNS" otherwise the
- files are not read by doxygen.
+ files are not read by doxygen. When specifying `no_extension` you should add `*`
+ to the \ref cfg_file_patterns "FILE_PATTERNS".
 ]]>
       </docs>
     </option>
