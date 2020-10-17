@@ -1075,7 +1075,7 @@ int Markdown::processLink(const char *data,int,int size)
       m_out.addStr("<a href=\"");
       m_out.addStr(link);
       m_out.addStr("\"");
-      for (int i = 0; i < nlTotal; i++) m_out.addStr("\n");
+      for (i = 0; i < nlTotal; i++) m_out.addStr("\n");
       if (!title.isEmpty())
       {
         m_out.addStr(" title=\"");
