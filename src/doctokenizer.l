@@ -568,7 +568,6 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
-                         lineCount(yytext,yyleng);
                          if (!g_markdownSupport || g_insidePre)
                          {
                            REJECT;
