@@ -10533,7 +10533,7 @@ void adjustConfiguration()
       }
       else
       {
-        msg("Adding custom extension mapping: .%s will be treated as language %s\n",
+        msg("Adding custom extension mapping: '%s' will be treated as language '%s'\n",
             ext.data(),language.data());
       }
     }
