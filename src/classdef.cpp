@@ -82,9 +82,9 @@ class ClassDefImpl : public DefinitionImpl, public ClassDef
     virtual CompoundType compoundType() const;
     virtual QCString compoundTypeString() const;
     virtual BaseClassList baseClasses() const;
-    virtual void updateBaseClasses(BaseClassList bcd);
+    virtual void updateBaseClasses(const BaseClassList &bcd);
     virtual BaseClassList subClasses() const;
-    virtual void updateSubClasses(BaseClassList bcd);
+    virtual void updateSubClasses(const BaseClassList &bcd);
     virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const;
     virtual Protection protection() const;
     virtual bool isLinkableInProject() const;
@@ -512,8 +512,8 @@ class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
     virtual void addGroupedInheritedMembers(OutputList &,MemberListType,
                               const ClassDef *,const QCString &) const {}
     virtual void writeTagFile(FTextStream &) {}
-    virtual void updateBaseClasses(BaseClassList) {}
-    virtual void updateSubClasses(BaseClassList) {}
+    virtual void updateBaseClasses(const BaseClassList &) {}
+    virtual void updateSubClasses(const BaseClassList &) {}
 
     virtual void setVisited(bool visited) const { m_visited = visited; }
     virtual bool isVisited() const { return m_visited; }
@@ -4752,7 +4752,7 @@ BaseClassList ClassDefImpl::baseClasses() const
   return m_impl->inherits;
 }
 
-void ClassDefImpl::updateBaseClasses(BaseClassList bcd)
+void ClassDefImpl::updateBaseClasses(const BaseClassList &bcd)
 {
   m_impl->inherits = bcd;
 }
@@ -4762,7 +4762,7 @@ BaseClassList ClassDefImpl::subClasses() const
   return m_impl->inheritedBy;
 }
 
-void ClassDefImpl::updateSubClasses(BaseClassList bcd)
+void ClassDefImpl::updateSubClasses(const BaseClassList &bcd)
 {
   m_impl->inheritedBy = bcd;
 }

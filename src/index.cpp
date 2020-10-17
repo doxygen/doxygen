@@ -451,7 +451,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-static void writeClassTree(OutputList &ol,BaseClassList bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
+static void writeClassTree(OutputList &ol,const BaseClassList &bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
 {
   if (bcl.empty()) return;
   bool started=FALSE;

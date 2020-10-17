@@ -310,7 +310,7 @@ QCString replaceAnonymousScopes(const QCString &s,const char *replacement=0);
 
 void initClassHierarchy(ClassSDict *cl);
 
-bool hasVisibleRoot(BaseClassList bcl);
+bool hasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool namespaceHasVisibleChild(const NamespaceDef *nd,bool includeClasses,bool filterClasses,ClassDef::CompoundType ct);
 bool classVisibleInIndex(const ClassDef *cd);

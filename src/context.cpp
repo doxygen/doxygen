@@ -6670,7 +6670,7 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addDerivedClasses(BaseClassList bcl,bool hideSuper)
+    void addDerivedClasses(const BaseClassList &bcl,bool hideSuper)
     {
       for (const auto &bcd : bcl)
       {
@@ -6812,7 +6812,7 @@ void NestingContext::addClassHierarchy(const ClassSDict &classSDict,bool rootOnl
   p->addClassHierarchy(classSDict,rootOnly);
 }
 
-void NestingContext::addDerivedClasses(BaseClassList bcl,bool hideSuper)
+void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper)
 {
   p->addDerivedClasses(bcl,hideSuper);
 }
@@ -8533,7 +8533,7 @@ class InheritanceListContext::Private : public GenericNodeListContext
     }
 };
 
-InheritanceListContext::InheritanceListContext(BaseClassList list, bool baseClasses) : RefCountedContext("InheritanceListContext")
+InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool baseClasses) : RefCountedContext("InheritanceListContext")
 {
   p = new Private;
   for (const auto &bcd : list)

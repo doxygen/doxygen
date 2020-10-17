@@ -160,14 +160,14 @@ class ClassDef : virtual public Definition
     virtual BaseClassList baseClasses() const = 0;
 
     /** Update the list of base classes to the one passed */
-    virtual void updateBaseClasses(BaseClassList bcd) = 0;
+    virtual void updateBaseClasses(const BaseClassList &bcd) = 0;
 
     /** Returns the list of sub classes that directly derive from this class
      */
     virtual BaseClassList subClasses() const = 0;
 
     /** Update the list of sub classes to the one passed */
-    virtual void updateSubClasses(BaseClassList bcd) = 0;
+    virtual void updateSubClasses(const BaseClassList &bcd) = 0;
 
     /** Returns a dictionary of all members. This includes any inherited
      *  members. Members are sorted alphabetically.

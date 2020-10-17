@@ -452,7 +452,7 @@ class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStr
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
-    void addChildren(BaseClassList bcl,bool hideSuper);
+    void addChildren(const BaseClassList &bcl,bool hideSuper);
 
   private:
     ClassInheritanceNodeContext(const ClassDef *);
@@ -550,7 +550,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addModules(const GroupSDict &modules);
     void addModules(const GroupList &modules);
     void addClassHierarchy(const ClassSDict &clDict,bool rootOnly);
-    void addDerivedClasses(BaseClassList bcl,bool hideSuper);
+    void addDerivedClasses(const BaseClassList &bcl,bool hideSuper);
 
   private:
     NestingContext(const NestingNodeContext *parent,int level);
@@ -926,7 +926,7 @@ class InheritanceNodeContext : public RefCountedContext, public TemplateStructIn
 class InheritanceListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static InheritanceListContext *alloc(BaseClassList list,bool baseClasses)
+    static InheritanceListContext *alloc(const BaseClassList &list,bool baseClasses)
     { return new InheritanceListContext(list,baseClasses); }
 
     // TemplateListIntf
@@ -937,7 +937,7 @@ class InheritanceListContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    InheritanceListContext(BaseClassList list,bool baseClasses);
+    InheritanceListContext(const BaseClassList &list,bool baseClasses);
    ~InheritanceListContext();
     class Private;
     Private *p;

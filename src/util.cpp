@@ -2595,7 +2595,7 @@ exit:
   return prot;
 }
 
-void trimBaseClassScope(BaseClassList bcl,QCString &s,int level=0)
+void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
 {
   //printf("trimBaseClassScope level=%d '%s'\n",level,s.data());
   for (const auto &bcd : bcl)
@@ -4581,7 +4581,7 @@ int getPrefixIndex(const QCString &name)
 
 //----------------------------------------------------------------------------
 
-static void initBaseClassHierarchy(BaseClassList bcl)
+static void initBaseClassHierarchy(const BaseClassList &bcl)
 {
   for (const auto &bcd : bcl)
   {
@@ -4636,7 +4636,7 @@ void initClassHierarchy(ClassSDict *cl)
 
 //----------------------------------------------------------------------------
 
-bool hasVisibleRoot(BaseClassList bcl)
+bool hasVisibleRoot(const BaseClassList &bcl)
 {
   for (const auto &bcd : bcl)
   {
