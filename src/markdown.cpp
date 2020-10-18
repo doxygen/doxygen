@@ -2070,11 +2070,15 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
   }
   else // nothing interesting -> just output the line
   {
-    m_out.addStr(data,size);
+    int tmpSize = size;
+    if (data[size-1] == '\n') tmpSize--;
+    m_out.addStr(data,tmpSize);
+    
     if (hasLineBreak(data,size))
     {
-      m_out.addStr("<br>\n");
+      m_out.addStr("<br>");
     }
+    if (tmpSize != size) m_out.addChar('\n');
   }
 }
 
