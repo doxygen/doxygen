@@ -1619,9 +1619,7 @@ static void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool 
         {
           ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
               cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd);
-          if (addToIndex &&
-              /*cd->partOfGroups()==0 &&*/
-              (cd->getOuterScope()==0 ||
+          if ((cd->getOuterScope()==0 ||
                cd->getOuterScope()->definitionType()!=Definition::TypeClass
               )
              )
@@ -1629,7 +1627,7 @@ static void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool 
             addMembersToIndex(cd,LayoutDocManager::Class,
                               cd->displayName(FALSE),
                               cd->anchor(),
-                              cd->partOfGroups()==0 && !cd->isSimple());
+                              addToIndex && cd->partOfGroups()==0 && !cd->isSimple());
           }
           if (count>0)
           {
@@ -1711,7 +1709,8 @@ static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
           (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
 
-        bool hasChildren = namespaceHasNestedNamespace(nd);
+        bool hasChildren = namespaceHasNestedNamespace(nd) ||
+                           namespaceHasNestedClass(nd,false,ClassDef::Class);
         bool isLinkable  = nd->isLinkableInProject();
         int visibleMembers = countVisibleMembers(nd);
 
@@ -1750,6 +1749,7 @@ static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
           {
             ftv->incContentsDepth();
             writeNamespaceTree(nd->getNamespaceSDict(),ftv,FALSE,addToIndex);
+            writeClassTree(nd->getClassSDict(),ftv,FALSE,FALSE,ClassDef::Class);
             writeNamespaceMembers(nd,addToIndex);
             ftv->decContentsDepth();
           }
