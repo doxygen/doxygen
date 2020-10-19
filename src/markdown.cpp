@@ -784,7 +784,7 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
     m_out.addStr(title);
     m_out.addStr("\"");
   }
-  m_out.addStr("\n");
+  m_out.addStr("\\ilinebr");
 }
 
 int Markdown::processLink(const char *data,int,int size)
