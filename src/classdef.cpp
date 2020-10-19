@@ -3420,16 +3420,14 @@ bool ClassDefImpl::isLinkable() const
 /*! the class is visible in a class diagram, or class hierarchy */
 bool ClassDefImpl::isVisibleInHierarchy() const
 {
-  static bool allExternals     = Config_getBool(ALLEXTERNALS);
-  static bool hideUndocClasses = Config_getBool(HIDE_UNDOC_CLASSES);
-  static bool extractStatic    = Config_getBool(EXTRACT_STATIC);
+  bool allExternals     = Config_getBool(ALLEXTERNALS);
+  bool hideUndocClasses = Config_getBool(HIDE_UNDOC_CLASSES);
+  bool extractStatic    = Config_getBool(EXTRACT_STATIC);
 
   return // show all classes or a subclass is visible
-      (allExternals || hasNonReferenceSuperClass()) &&
+      ((allExternals && !isArtificial()) || hasNonReferenceSuperClass()) &&
       // and not an anonymous compound
       !isAnonymous() &&
-      // not an artificially introduced class
-      /*!isArtificial() &&*/  // 1.8.2: allowed these to appear
       // and not privately inherited
       protectionLevelVisible(m_impl->prot) &&
       // documented or shown anyway or documentation is external

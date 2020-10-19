@@ -4469,7 +4469,7 @@ static bool findClassRelation(
             if (baseClassTypeDef==0)
             {
               //printf("       => findTemplateInstanceRelation: %p\n",baseClassTypeDef);
-              findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,isArtificial);
+              findTemplateInstanceRelation(root,context,baseClass,templSpec,templateNames,baseClass->isArtificial());
             }
           }
           else if (mode==DocumentedOnly || mode==Undocumented)
