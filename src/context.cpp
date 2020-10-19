@@ -6541,7 +6541,7 @@ class NestingContext::Private : public GenericNodeListContext
         if (!nd->isAnonymous() &&
             (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
         {
-          bool hasChildren = namespaceHasVisibleChild(nd,addClasses,false,ClassDef::Class);
+          bool hasChildren = namespaceHasNestedNamespace(nd);
           bool isLinkable  = nd->isLinkableInProject();
           if (isLinkable || hasChildren)
           {

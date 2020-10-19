@@ -8031,54 +8031,65 @@ uint getUtf8CodeToUpper( const QCString& s, int idx )
 }
 
 //--------------------------------------------------------------------------------------
-
-bool namespaceHasVisibleChild(const NamespaceDef *nd,bool includeClasses,bool filterClasses,ClassDef::CompoundType ct)
+//
+bool namespaceHasNestedNamespace(const NamespaceDef *nd)
 {
+  NamespaceSDict::Iterator cnli(*nd->getNamespaceSDict());
+  const NamespaceDef *cnd;
+  for (cnli.toFirst();(cnd=cnli.current());++cnli)
+  {
+    if (cnd->isLinkableInProject() && !cnd->isAnonymous())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct)
+{
+  //printf(">namespaceHasVisibleChild(%s,includeClasses=%d)\n",nd->name().data(),includeClasses);
   if (nd->getNamespaceSDict())
   {
     NamespaceSDict::Iterator cnli(*nd->getNamespaceSDict());
     const NamespaceDef *cnd;
     for (cnli.toFirst();(cnd=cnli.current());++cnli)
     {
-      if (cnd->isLinkableInProject() && !cnd->isAnonymous())
+      if (namespaceHasNestedClass(cnd,filterClasses,ct))
       {
-        return TRUE;
-      }
-      else if (namespaceHasVisibleChild(cnd,includeClasses,filterClasses,ct))
-      {
+        //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",nd->name().data(),includeClasses);
         return TRUE;
       }
     }
   }
-  if (includeClasses)
-  {
-    const ClassSDict *d = nd->getClassSDict();
-    if (filterClasses)
-    {
-      if (ct == ClassDef::Interface)
-      {
-        d = nd->getInterfaceSDict();
-      }
-      else if (ct == ClassDef::Struct)
-      {
-        d = nd->getStructSDict();
-      }
-      else if (ct == ClassDef::Exception)
-      {
-        d = nd->getExceptionSDict();
-      }
-    }
 
-    if (d)
+  const ClassSDict *d = nd->getClassSDict();
+  if (filterClasses)
+  {
+    if (ct == ClassDef::Interface)
     {
-      ClassSDict::Iterator cli(*d);
-      const ClassDef *cd;
-      for (;(cd=cli.current());++cli)
+      d = nd->getInterfaceSDict();
+    }
+    else if (ct == ClassDef::Struct)
+    {
+      d = nd->getStructSDict();
+    }
+    else if (ct == ClassDef::Exception)
+    {
+      d = nd->getExceptionSDict();
+    }
+  }
+
+  if (d)
+  {
+    ClassSDict::Iterator cli(*d);
+    const ClassDef *cd;
+    for (;(cd=cli.current());++cli)
+    {
+      if (cd->isLinkableInProject() && cd->templateMaster()==0)
       {
-        if (cd->isLinkableInProject() && cd->templateMaster()==0)
-        {
-          return TRUE;
-        }
+        //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",nd->name().data(),includeClasses);
+        return TRUE;
       }
     }
   }
