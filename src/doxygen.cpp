@@ -3709,59 +3709,10 @@ static void transferFunctionReferences()
             )
          ) /* match found */
       {
-        MemberSDict *defDict = mdef->getReferencesMembers();
-        MemberSDict *decDict = mdec->getReferencesMembers();
-        if (defDict!=0)
-        {
-          MemberSDict::IteratorDict msdi(*defDict);
-          MemberDef *rmd;
-          for (msdi.toFirst();(rmd=msdi.current());++msdi)
-          {
-            if (decDict==0 || decDict->find(rmd->name())==0)
-            {
-              mdec->addSourceReferences(rmd);
-            }
-          }
-        }
-        if (decDict!=0)
-        {
-          MemberSDict::IteratorDict msdi(*decDict);
-          MemberDef *rmd;
-          for (msdi.toFirst();(rmd=msdi.current());++msdi)
-          {
-            if (defDict==0 || defDict->find(rmd->name())==0)
-            {
-              mdef->addSourceReferences(rmd);
-            }
-          }
-        }
-
-        defDict = mdef->getReferencedByMembers();
-        decDict = mdec->getReferencedByMembers();
-        if (defDict!=0)
-        {
-          MemberSDict::IteratorDict msdi(*defDict);
-          MemberDef *rmd;
-          for (msdi.toFirst();(rmd=msdi.current());++msdi)
-          {
-            if (decDict==0 || decDict->find(rmd->name())==0)
-            {
-              mdec->addSourceReferencedBy(rmd);
-            }
-          }
-        }
-        if (decDict!=0)
-        {
-          MemberSDict::IteratorDict msdi(*decDict);
-          MemberDef *rmd;
-          for (msdi.toFirst();(rmd=msdi.current());++msdi)
-          {
-            if (defDict==0 || defDict->find(rmd->name())==0)
-            {
-              mdef->addSourceReferencedBy(rmd);
-            }
-          }
-        }
+        mdef->mergeReferences(mdec);
+        mdec->mergeReferences(mdef);
+        mdef->mergeReferencedBy(mdec);
+        mdec->mergeReferencedBy(mdef);
       }
     }
   }
@@ -7651,7 +7602,6 @@ static void generateFileSources()
           results.emplace_back(threadPool.queue(processFile));
         }
       }
-      // first wait until all files are processed
       for (auto &f : results)
       {
         auto ctx = f.get();
@@ -7855,6 +7805,32 @@ static void sortMemberLists()
   for (gli.toFirst();(gd=gli.current());++gli)
   {
     gd->sortMemberLists();
+  }
+}
+
+//----------------------------------------------------------------------------
+
+void computeTooltipTexts()
+{
+  QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
+  DefinitionIntf *intf;
+  for (;(intf=di.current());++di)
+  {
+    if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
+    {
+      DefinitionListIterator dli(*(DefinitionList*)intf);
+      Definition *d;
+      // for each symbol
+      for (dli.toFirst();(d=dli.current());++dli)
+      {
+        d->computeTooltip();
+      }
+    }
+    else // single symbol
+    {
+      Definition *d = (Definition *)intf;
+      if (d!=Doxygen::globalScope) d->computeTooltip();
+    }
   }
 }
 
@@ -11441,6 +11417,10 @@ void parseInput()
 
   g_s.begin("Correcting members for VHDL...\n");
   vhdlCorrectMemberProperties();
+  g_s.end();
+
+  g_s.begin("Computing tooltip texts...\n");
+  computeTooltipTexts();
   g_s.end();
 
   if (Config_getBool(SORT_GROUP_NAMES))

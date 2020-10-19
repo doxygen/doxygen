@@ -109,6 +109,7 @@ struct vhdlcodeYY_state
 
   bool          lexInit = false;
   int           braceCount = 0;
+  TooltipManager tooltipManager;
 };
 
 
@@ -1229,7 +1230,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  TooltipManager::instance()->addTooltip(d);
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1656,6 +1657,10 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
     yyextra->sourceFileDef=0;
   }
   yyextra->startCode=false;
+
+  // write the tooltips
+  yyextra->tooltipManager.writeTooltips(od);
+
   printlex(yy_flex_debug, false, __FILE__, fd ? fd->fileName().data(): NULL);
 }
 

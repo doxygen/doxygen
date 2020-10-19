@@ -175,6 +175,7 @@ struct codeYY_state
   QCString        forceTagReference;
   VariableContext theVarContext;
   CallContext     theCallContext;
+  TooltipManager  tooltipManager;
 };
 
 static bool isCastKeyword(const QCString &s);
@@ -241,7 +242,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 //-------------------------------------------------------------------
 
 static std::mutex g_searchIndexMutex;
-static std::mutex g_tooltipMutex;
+static std::mutex g_docCrossReferenceMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -2471,10 +2472,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  {
-    std::lock_guard<std::mutex> lock(g_tooltipMutex);
-    TooltipManager::instance()->addTooltip(d);
-  }
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -2764,6 +2762,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
             md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
         {
+          std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
           addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
         }
         //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
@@ -2924,6 +2923,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
+        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
       }
     }
@@ -2978,6 +2978,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
+            std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
             addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
           }
           return;
@@ -3038,6 +3039,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           /*xmd!=yyextra->currentMemberDef &&*/ yyextra->insideBody && yyextra->collectXRefs)
       {
+        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(yyextra->currentMemberDef,xmd);
       }
 
@@ -3457,6 +3459,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->method,name);
               if (yyextra->currentMemberDef && yyextra->collectXRefs)
               {
+                std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
                 addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(ctx->method));
               }
             }
@@ -3531,6 +3534,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               writeMultiLineCodeLink(yyscanner,*yyextra->code,ctx->objectVar,object);
               if (yyextra->currentMemberDef && yyextra->collectXRefs)
               {
+                std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
                 addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(ctx->objectVar));
               }
             }
@@ -3903,6 +3907,8 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
+  // write the tooltips
+  yyextra->tooltipManager.writeTooltips(od);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;

@@ -243,71 +243,58 @@ void generateDEFForMember(MemberDef *md,
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
 
-  MemberSDict *mdict = md->getReferencesMembers();
-  if (mdict)
+  QCString refPrefix = "  " + memPrefix + "ref-";
+  auto refList = md->getReferencesMembers();
+  for (const auto &rmd : refList)
   {
-    MemberSDict::Iterator mdi(*mdict);
-    MemberDef *rmd;
-    QCString refPrefix = "  " + memPrefix + "ref-";
-
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
+    if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
     {
-      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
+      t << memPrefix << "referenceto = {" << endl;
+      t << refPrefix << "id = '"
+        << rmd->getBodyDef()->getOutputFileBase()
+        << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
+        << rmd->anchor() << "';" << endl;
+
+      t << refPrefix << "line = '"
+        << rmd->getStartBodyLine() << "';" << endl;
+
+      QCString scope = rmd->getScopeString();
+      QCString name = rmd->name();
+      if (!scope.isEmpty() && scope!=def->name())
       {
-        t << memPrefix << "referenceto = {" << endl;
-        t << refPrefix << "id = '"
-          << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
-          << rmd->anchor() << "';" << endl;
-
-        t << refPrefix << "line = '"
-          << rmd->getStartBodyLine() << "';" << endl;
-
-        QCString scope = rmd->getScopeString();
-        QCString name = rmd->name();
-        if (!scope.isEmpty() && scope!=def->name())
-        {
-          name.prepend(scope+"::");
-        }
-
-        t << refPrefix << "name = ";
-        writeDEFString(t,name);
-        t << ';' << endl << "    };" << endl;
+        name.prepend(scope+"::");
       }
-    } /* for (mdi.toFirst...) */
+
+      t << refPrefix << "name = ";
+      writeDEFString(t,name);
+      t << ';' << endl << "    };" << endl;
+    }
   }
-  mdict = md->getReferencedByMembers();
-  if (mdict)
+  auto refByList = md->getReferencedByMembers();
+  for (const auto &rmd : refByList)
   {
-    MemberSDict::Iterator mdi(*mdict);
-    MemberDef *rmd;
-    QCString refPrefix = "  " + memPrefix + "ref-";
-
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
+    if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
     {
-      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
+      t << memPrefix << "referencedby = {" << endl;
+      t << refPrefix << "id = '"
+        << rmd->getBodyDef()->getOutputFileBase()
+        << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
+        << rmd->anchor() << "';" << endl;
+
+      t << refPrefix << "line = '"
+        << rmd->getStartBodyLine() << "';" << endl;
+
+      QCString scope = rmd->getScopeString();
+      QCString name = rmd->name();
+      if (!scope.isEmpty() && scope!=def->name())
       {
-        t << memPrefix << "referencedby = {" << endl;
-        t << refPrefix << "id = '"
-          << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
-          << rmd->anchor() << "';" << endl;
-
-        t << refPrefix << "line = '"
-          << rmd->getStartBodyLine() << "';" << endl;
-
-        QCString scope = rmd->getScopeString();
-        QCString name = rmd->name();
-        if (!scope.isEmpty() && scope!=def->name())
-        {
-          name.prepend(scope+"::");
-        }
-
-        t << refPrefix << "name = ";
-        writeDEFString(t,name);
-        t << ';' << endl << "    };" << endl;
+        name.prepend(scope+"::");
       }
-    } /* for (mdi.toFirst...) */
+
+      t << refPrefix << "name = ";
+      writeDEFString(t,name);
+      t << ';' << endl << "    };" << endl;
+    }
   }
 
   t << "    }; /* " << Prefix << "-member */" << endl;

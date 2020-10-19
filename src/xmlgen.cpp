@@ -1021,23 +1021,15 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   }
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
-  MemberSDict *mdict = md->getReferencesMembers();
-  if (mdict)
+  auto refList = md->getReferencesMembers();
+  for (const auto &refmd : refList)
   {
-    MemberSDict::Iterator mdi(*mdict);
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
-    {
-      writeMemberReference(t,def,rmd,"references");
-    }
+    writeMemberReference(t,def,refmd,"references");
   }
-  mdict = md->getReferencedByMembers();
-  if (mdict)
+  auto refByList = md->getReferencedByMembers();
+  for (const auto &refmd : refByList)
   {
-    MemberSDict::Iterator mdi(*mdict);
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
-    {
-      writeMemberReference(t,def,rmd,"referencedby");
-    }
+    writeMemberReference(t,def,refmd,"referencedby");
   }
 
   t << "      </memberdef>" << endl;

@@ -954,6 +954,8 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
     { return new MemberListContext(ml); }
     static MemberListContext *alloc(MemberSDict *ml,bool doSort)
     { return new MemberListContext(ml,doSort); }
+    static MemberListContext *alloc(std::vector<const MemberDef *> &&ml)
+    { return new MemberListContext(std::move(ml)); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -966,6 +968,7 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
     MemberListContext();
     MemberListContext(const MemberList *ml);
     MemberListContext(MemberSDict *ml,bool doSort);
+    MemberListContext(std::vector<const MemberDef *> &&ml);
    ~MemberListContext();
     class Private;
     Private *p;

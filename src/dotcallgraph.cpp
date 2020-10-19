@@ -1,6 +1,6 @@
 /******************************************************************************
 *
-* Copyright (C) 1997-2019 by Dimitri van Heesch.
+* Copyright (C) 1997-2020 by Dimitri van Heesch.
 *
 * Permission to use, copy, modify, and distribute this software and its
 * documentation under the terms of the GNU General Public License is hereby
@@ -34,51 +34,45 @@ static QCString getUniqueId(const MemberDef *md)
 
 void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
 {
-  MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
-  if (refs)
+  auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
   {
-    refs->sort();
-    MemberSDict::Iterator mri(*refs);
-    MemberDef *rmd;
-    for (;(rmd=mri.current());++mri)
+    if (rmd->showInCallGraph())
     {
-      if (rmd->showInCallGraph())
+      QCString uniqueId = getUniqueId(rmd);
+      DotNode *bn  = m_usedNodes->find(uniqueId);
+      if (bn) // file is already a node in the graph
       {
-        QCString uniqueId = getUniqueId(rmd);
-        DotNode *bn  = m_usedNodes->find(uniqueId);
-        if (bn) // file is already a node in the graph
+        n->addChild(bn,0,0,0);
+        bn->addParent(n);
+        bn->setDistance(distance);
+      }
+      else
+      {
+        QCString name;
+        if (HIDE_SCOPE_NAMES)
         {
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
+          name  = rmd->getOuterScope()==m_scope ?
+            rmd->name() : rmd->qualifiedName();
         }
         else
         {
-          QCString name;
-          if (HIDE_SCOPE_NAMES)
-          {
-            name  = rmd->getOuterScope()==m_scope ? 
-              rmd->name() : rmd->qualifiedName();
-          }
-          else
-          {
-            name = rmd->qualifiedName();
-          }
-          QCString tooltip = rmd->briefDescriptionAsTooltip();
-          bn = new DotNode(
+          name = rmd->qualifiedName();
+        }
+        QCString tooltip = rmd->briefDescriptionAsTooltip();
+        bn = new DotNode(
             getNextNodeNumber(),
             linkToText(rmd->getLanguage(),name,FALSE),
             tooltip,
             uniqueId,
             0 //distance
-          );
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-          m_usedNodes->insert(uniqueId,bn);
+            );
+        n->addChild(bn,0,0,0);
+        bn->addParent(n);
+        bn->setDistance(distance);
+        m_usedNodes->insert(uniqueId,bn);
 
-          buildGraph(bn,rmd,distance+1);
-        }
+        buildGraph(bn,rmd,distance+1);
       }
     }
   }
@@ -121,9 +115,9 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
         const DotNode *dn;
         for (li.toFirst();(dn=li.current());++li)
         {
-          if (!dn->isVisible()) 
+          if (!dn->isVisible())
             truncated = TRUE;
-          else 
+          else
             queue.append(dn);
         }
       }
@@ -198,7 +192,7 @@ QCString DotCallGraph::getMapLabel() const
 }
 
 QCString DotCallGraph::writeGraph(
-        FTextStream &out, 
+        FTextStream &out,
         GraphOutputFormat graphFormat,
         EmbeddedOutputFormat textFormat,
         const char *path,

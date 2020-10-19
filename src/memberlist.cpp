@@ -63,7 +63,7 @@ MemberList::~MemberList()
   delete memberGroupList;
 }
 
-static int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
+int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
 {
   bool sortConstructorsFirst = Config_getBool(SORT_MEMBERS_CTORS_1ST);
   if (sortConstructorsFirst)

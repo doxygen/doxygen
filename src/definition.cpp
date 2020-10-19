@@ -16,6 +16,10 @@
  */
 
 #include <algorithm>
+#include <iterator>
+#include <unordered_map>
+#include <string>
+
 #include <ctype.h>
 #include <qregexp.h>
 #include "md5.h"
@@ -58,8 +62,8 @@ class DefinitionImpl::IMPL
 
     SectionRefs sectionRefs;
 
-    MemberSDict *sourceRefByDict = 0;
-    MemberSDict *sourceRefsDict = 0;
+    std::unordered_map<std::string,const MemberDef *> sourceRefByDict;
+    std::unordered_map<std::string,const MemberDef *> sourceRefsDict;
     RefItemVector xrefListItems;
     GroupList *partOfGroups = 0;
 
@@ -100,8 +104,6 @@ class DefinitionImpl::IMPL
 
 DefinitionImpl::IMPL::~IMPL()
 {
-  delete sourceRefByDict;
-  delete sourceRefsDict;
   delete partOfGroups;
   delete brief;
   delete details;
@@ -138,8 +140,8 @@ void DefinitionImpl::IMPL::init(const char *df, const char *n)
   details         = 0;
   body            = 0;
   inbodyDocs      = 0;
-  sourceRefByDict = 0;
-  sourceRefsDict  = 0;
+  sourceRefByDict.clear();
+  sourceRefsDict.clear();
   outerScope      = Doxygen::globalScope;
   partOfGroups    = 0;
   hidden          = FALSE;
@@ -314,33 +316,11 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
 {
   m_impl = new DefinitionImpl::IMPL;
   *m_impl = *d.m_impl;
-  m_impl->sourceRefByDict = 0;
-  m_impl->sourceRefsDict = 0;
   m_impl->partOfGroups = 0;
   m_impl->brief = 0;
   m_impl->details = 0;
   m_impl->body = 0;
   m_impl->inbodyDocs = 0;
-  if (d.m_impl->sourceRefByDict)
-  {
-    m_impl->sourceRefByDict = new MemberSDict;
-    MemberSDict::IteratorDict it(*d.m_impl->sourceRefByDict);
-    MemberDef *md;
-    for (it.toFirst();(md=it.current());++it)
-    {
-      m_impl->sourceRefByDict->append(it.currentKey(),md);
-    }
-  }
-  if (d.m_impl->sourceRefsDict)
-  {
-    m_impl->sourceRefsDict = new MemberSDict;
-    MemberSDict::IteratorDict it(*d.m_impl->sourceRefsDict);
-    MemberDef *md;
-    for (it.toFirst();(md=it.current());++it)
-    {
-      m_impl->sourceRefsDict->append(it.currentKey(),md);
-    }
-  }
   if (d.m_impl->partOfGroups)
   {
     GroupListIterator it(*d.m_impl->partOfGroups);
@@ -1262,11 +1242,27 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const char *scopeName) const
   ol.popGeneratorState();
 }
 
+static inline std::vector<const MemberDef*> refMapToVector(const std::unordered_map<std::string,const MemberDef *> &map)
+{
+  // convert map to a vector of values
+  std::vector<const MemberDef *> result;
+  std::transform(map.begin(),map.end(),      // iterate over map
+                 std::back_inserter(result), // add results to vector
+                 [](const auto &item)
+                 { return item.second; }     // extract value to add from map Key,Value pair
+                );
+  // and sort it
+  std::sort(result.begin(),result.end(),
+              [](const auto &m1,const auto &m2) { return genericCompareMembers(m1,m2)<0; });
+  return result;
+}
+
 /*! Write a reference to the source code fragments in which this
  *  definition is used.
  */
 void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
-    const QCString &text,MemberSDict *members,bool /*funcOnly*/) const
+    const QCString &text,const std::unordered_map<std::string,const MemberDef *> &membersMap,
+    bool /*funcOnly*/) const
 {
   static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE);
   static bool docbookSourceCode   = Config_getBool(DOCBOOK_PROGRAMLISTING);
@@ -1274,15 +1270,15 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
   static bool sourceBrowser   = Config_getBool(SOURCE_BROWSER);
   static bool refLinkSource   = Config_getBool(REFERENCES_LINK_SOURCE);
   ol.pushGeneratorState();
-  if (members)
+  if (!membersMap.empty())
   {
-    members->sort();
+    auto members = refMapToVector(membersMap);
 
     ol.startParagraph("reference");
     ol.parseText(text);
     ol.docify(" ");
 
-    QCString ldefLine=theTranslator->trWriteList((int)members->count());
+    QCString ldefLine=theTranslator->trWriteList((int)members.size());
 
     QRegExp marker("@[0-9]+");
     uint index=0;
@@ -1294,7 +1290,7 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
       bool ok;
       ol.parseText(ldefLine.mid(index,(uint)newIndex-index));
       uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      MemberDef *md=members->at(entryIndex);
+      const MemberDef *md=members.at(entryIndex);
       if (ok && md)
       {
         QCString scope=md->getScopeString();
@@ -1466,14 +1462,7 @@ void DefinitionImpl::addSourceReferencedBy(const MemberDef *md)
       name.prepend(scope+"::");
     }
 
-    if (m_impl->sourceRefByDict==0)
-    {
-      m_impl->sourceRefByDict = new MemberSDict;
-    }
-    if (m_impl->sourceRefByDict->find(name)==0)
-    {
-      m_impl->sourceRefByDict->append(name,md);
-    }
+    m_impl->sourceRefByDict.insert({name.str(),md});
   }
 }
 
@@ -1489,14 +1478,7 @@ void DefinitionImpl::addSourceReferences(const MemberDef *md)
       name.prepend(scope+"::");
     }
 
-    if (m_impl->sourceRefsDict==0)
-    {
-      m_impl->sourceRefsDict = new MemberSDict;
-    }
-    if (m_impl->sourceRefsDict->find(name)==0)
-    {
-      m_impl->sourceRefsDict->append(name,md);
-    }
+    m_impl->sourceRefsDict.insert({name.str(),md});
   }
 }
 
@@ -1960,29 +1942,20 @@ QCString DefinitionImpl::briefDescription(bool abbr) const
          QCString("");
 }
 
+void DefinitionImpl::computeTooltip()
+{
+  if (m_impl->brief && m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.isEmpty())
+  {
+    const MemberDef *md = definitionType()==TypeMember ? dynamic_cast<const MemberDef*>(this) : 0;
+    const Definition *scope = definitionType()==TypeMember ? getOuterScope() : this;
+    m_impl->brief->tooltip = parseCommentAsText(scope,md,
+                                m_impl->brief->doc, m_impl->brief->file, m_impl->brief->line);
+  }
+}
+
 QCString DefinitionImpl::briefDescriptionAsTooltip() const
 {
-  if (m_impl->brief)
-  {
-    if (m_impl->brief->tooltip.isEmpty() && !m_impl->brief->doc.isEmpty())
-    {
-      static bool reentering=FALSE;
-      if (!reentering)
-      {
-        const MemberDef *md = definitionType()==TypeMember ? dynamic_cast<const MemberDef*>(this) : 0;
-        const Definition *scope = definitionType()==TypeMember ? getOuterScope() : this;
-        reentering=TRUE; // prevent requests for tooltips while parsing a tooltip
-        m_impl->brief->tooltip = parseCommentAsText(
-            scope,md,
-            m_impl->brief->doc,
-            m_impl->brief->file,
-            m_impl->brief->line);
-        reentering=FALSE;
-      }
-    }
-    return m_impl->brief->tooltip;
-  }
-  return QCString("");
+  return m_impl->brief ? m_impl->brief->tooltip : QCString();
 }
 
 int DefinitionImpl::briefLine() const
@@ -2100,15 +2073,48 @@ Definition *DefinitionImpl::getOuterScope() const
   return m_impl->outerScope;
 }
 
-MemberSDict *DefinitionImpl::getReferencesMembers() const
+std::vector<const MemberDef*> DefinitionImpl::getReferencesMembers() const
 {
-  return m_impl->sourceRefsDict;
+  return refMapToVector(m_impl->sourceRefsDict);
 }
 
-MemberSDict *DefinitionImpl::getReferencedByMembers() const
+std::vector<const MemberDef*> DefinitionImpl::getReferencedByMembers() const
 {
-  return m_impl->sourceRefByDict;
+  return refMapToVector(m_impl->sourceRefByDict);
 }
+
+void DefinitionImpl::mergeReferences(const Definition *other)
+{
+  const DefinitionImpl *defImpl = dynamic_cast<const DefinitionImpl*>(other);
+  if (defImpl)
+  {
+    for (const auto &kv : defImpl->m_impl->sourceRefsDict)
+    {
+      auto it = m_impl->sourceRefsDict.find(kv.first);
+      if (it != m_impl->sourceRefsDict.end())
+      {
+        m_impl->sourceRefsDict.insert(kv);
+      }
+    }
+  }
+}
+
+void DefinitionImpl::mergeReferencedBy(const Definition *other)
+{
+  const DefinitionImpl *defImpl = dynamic_cast<const DefinitionImpl*>(other);
+  if (defImpl)
+  {
+    for (const auto &kv : defImpl->m_impl->sourceRefByDict)
+    {
+      auto it = m_impl->sourceRefByDict.find(kv.first);
+      if (it != m_impl->sourceRefByDict.end())
+      {
+        m_impl->sourceRefByDict.insert({kv.first,kv.second});
+      }
+    }
+  }
+}
+
 
 void DefinitionImpl::setReference(const char *r)
 {

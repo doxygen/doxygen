@@ -307,7 +307,6 @@ void endFile(OutputList &ol,bool skipNavIndex,bool skipEndContents,
   ol.writeFooter(navPath); // write the footer
   ol.popGeneratorState();
   ol.endFile();
-  TooltipManager::instance()->clearTooltips(); // Only clear after the last is written
 }
 
 void endFileWithNavPath(const Definition *d,OutputList &ol)

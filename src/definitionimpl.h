@@ -18,6 +18,9 @@
 #ifndef DEFINITIONIMPL_H
 #define DEFINITIONIMPL_H
 
+#include <unordered_map>
+#include <string>
+
 #include "definition.h"
 
 class DefinitionImpl : virtual public Definition
@@ -71,8 +74,8 @@ class DefinitionImpl : virtual public Definition
     virtual const RefItemVector &xrefListItems() const;
     virtual Definition *findInnerCompound(const char *name) const;
     virtual Definition *getOuterScope() const;
-    virtual MemberSDict *getReferencesMembers() const;
-    virtual MemberSDict *getReferencedByMembers() const;
+    virtual std::vector<const MemberDef *> getReferencesMembers() const;
+    virtual std::vector<const MemberDef *> getReferencedByMembers() const;
     virtual bool hasSections() const;
     virtual bool hasSources() const;
     virtual bool hasBriefDescription() const;
@@ -92,6 +95,8 @@ class DefinitionImpl : virtual public Definition
     virtual void addSourceReferences(const MemberDef *d);
     virtual void setRefItems(const RefItemVector &sli);
     virtual void mergeRefItems(Definition *d);
+    virtual void mergeReferences(const Definition *other);
+    virtual void mergeReferencedBy(const Definition *other);
     virtual void addInnerCompound(const Definition *d);
     virtual void setOuterScope(Definition *d);
     virtual void setHidden(bool b);
@@ -113,6 +118,7 @@ class DefinitionImpl : virtual public Definition
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const;
     virtual void setCookie(Cookie *cookie) const;
     virtual Cookie *cookie() const;
+    virtual void computeTooltip();
 
   protected:
 
@@ -123,8 +129,8 @@ class DefinitionImpl : virtual public Definition
     virtual QCString _symbolName() const ;
 
     int  _getXRefListId(const char *listName) const;
-    void _writeSourceRefList(OutputList &ol,const char *scopeName,
-                       const QCString &text,MemberSDict *members,bool) const;
+    void _writeSourceRefList(OutputList &ol,const char *scopeName,const QCString &text,
+                       const std::unordered_map<std::string,const MemberDef *> &members,bool) const;
     void _setBriefDescription(const char *b,const char *briefFile,int briefLine);
     void _setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace,bool atTop);
     void _setInbodyDocumentation(const char *d,const char *docFile,int docLine);
@@ -222,9 +228,9 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->findInnerCompound(name); }
     virtual Definition *getOuterScope() const
     { return const_cast<Definition*>(m_scope); }
-    virtual MemberSDict *getReferencesMembers() const
+    virtual std::vector<const MemberDef *> getReferencesMembers() const
     { return m_def->getReferencesMembers(); }
-    virtual MemberSDict *getReferencedByMembers() const
+    virtual std::vector<const MemberDef *> getReferencedByMembers() const
     { return m_def->getReferencedByMembers(); }
     virtual bool hasSections() const
     { return m_def->hasSections(); }
@@ -254,6 +260,8 @@ class DefinitionAliasImpl : virtual public Definition
     virtual void addSourceReferences(const MemberDef *) {}
     virtual void setRefItems(const RefItemVector &) {}
     virtual void mergeRefItems(Definition *) {}
+    virtual void mergeReferences(const Definition *) {}
+    virtual void mergeReferencedBy(const Definition *) {}
     virtual void addInnerCompound(const Definition *) {}
     virtual void setOuterScope(Definition *) {}
     virtual void setHidden(bool) {}
@@ -273,6 +281,7 @@ class DefinitionAliasImpl : virtual public Definition
     virtual void writeToc(OutputList &, const LocalToc &) const {}
     virtual void setCookie(Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
     virtual Cookie *cookie() const { return m_cookie; }
+    virtual void computeTooltip() {}
   protected:
     const Definition *getAlias() const { return m_def; }
     const Definition *getScope() const { return m_scope; }

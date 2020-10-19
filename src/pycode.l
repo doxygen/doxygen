@@ -106,6 +106,7 @@ struct pycodeYY_state
   bool          endComment = FALSE;
   VariableContext theVarContext;
   CallContext theCallContext;
+  TooltipManager tooltipManager;
 };
 
 
@@ -147,7 +148,6 @@ static void addVariable(yyscan_t yyscanner, QCString type, QCString name);
 //-------------------------------------------------------------------
 
 static std::mutex g_searchIndexMutex;
-static std::mutex g_tooltipMutex;
 
 //-------------------------------------------------------------------
 
@@ -1087,10 +1087,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  {
-    std::lock_guard<std::mutex> lock(g_tooltipMutex);
-    TooltipManager::instance()->addTooltip(d);
-  }
+  yyextra->tooltipManager.addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1629,6 +1626,8 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
+  // write the tooltips
+  yyextra->tooltipManager.writeTooltips(codeOutIntf);
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
 

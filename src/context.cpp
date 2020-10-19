@@ -4943,7 +4943,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.sourceRefs)
       {
-        cache.sourceRefs.reset(MemberListContext::alloc(m_memberDef->getReferencesMembers(),TRUE));
+        cache.sourceRefs.reset(MemberListContext::alloc(m_memberDef->getReferencesMembers()));
       }
       return cache.sourceRefs.get();
     }
@@ -4952,7 +4952,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.sourceRefBys)
       {
-        cache.sourceRefBys.reset(MemberListContext::alloc(m_memberDef->getReferencedByMembers(),TRUE));
+        cache.sourceRefBys.reset(MemberListContext::alloc(m_memberDef->getReferencedByMembers()));
       }
       return cache.sourceRefBys.get();
     }
@@ -8581,7 +8581,7 @@ TemplateListIntf::ConstIterator *InheritanceListContext::createIterator() const
 class MemberListContext::Private : public GenericNodeListContext
 {
   public:
-    void addMember(MemberDef *md)
+    void addMember(const MemberDef *md)
     {
       append(MemberContext::alloc(md));
     }
@@ -8628,6 +8628,16 @@ MemberListContext::MemberListContext(MemberSDict *list,bool doSort) : RefCounted
       p->addMember(md);
     }
   }
+}
+
+MemberListContext::MemberListContext(std::vector<const MemberDef *> &&ml) : RefCountedContext("MemberListContext")
+{
+  p = new Private;
+  for (const auto &md : ml)
+  {
+    p->addMember(md);
+  }
+  ml.clear();
 }
 
 MemberListContext::~MemberListContext()

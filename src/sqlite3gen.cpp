@@ -1619,26 +1619,16 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     // + source references
     // The cross-references in initializers only work when both the src and dst
     // are defined.
-    MemberSDict *mdict = md->getReferencesMembers();
-    if (mdict!=0)
+    auto refList = md->getReferencesMembers();
+    for (const auto &rmd : refList)
     {
-      MemberSDict::IteratorDict mdi(*mdict);
-      const MemberDef *rmd;
-      for (mdi.toFirst();(rmd=mdi.current());++mdi)
-      {
-        insertMemberReference(md,rmd, "inline");
-      }
+      insertMemberReference(md,rmd, "inline");
     }
     // + source referenced by
-    mdict = md->getReferencedByMembers();
-    if (mdict!=0)
+    auto refByList = md->getReferencedByMembers();
+    for (const auto &rmd : refByList)
     {
-      MemberSDict::IteratorDict mdi(*mdict);
-      const MemberDef *rmd;
-      for (mdi.toFirst();(rmd=mdi.current());++mdi)
-      {
-        insertMemberReference(rmd,md, "inline");
-      }
+      insertMemberReference(rmd,md, "inline");
     }
     return;
   }
@@ -1856,24 +1846,16 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   // + source references
   // The cross-references in initializers only work when both the src and dst
   // are defined.
-  MemberSDict *mdict = md->getReferencesMembers();
-  if (mdict!=0)
+  auto refList = md->getReferencesMembers();
+  for (const auto &refmd : refList)
   {
-    MemberSDict::IteratorDict mdi(*mdict);
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
-    {
-      insertMemberReference(md,rmd, "inline");
-    }
+    insertMemberReference(md,refmd, "inline");
   }
   // + source referenced by
-  mdict = md->getReferencedByMembers();
-  if (mdict!=0)
+  auto refByList = md->getReferencedByMembers();
+  for (const auto &refmd : refByList)
   {
-    MemberSDict::IteratorDict mdi(*mdict);
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
-    {
-      insertMemberReference(rmd,md, "inline");
-    }
+    insertMemberReference(refmd,md, "inline");
   }
 }
 

@@ -272,8 +272,8 @@ class Definition : public DefinitionIntf
     virtual Definition *findInnerCompound(const char *name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
-    virtual MemberSDict *getReferencesMembers() const = 0;
-    virtual MemberSDict *getReferencedByMembers() const = 0;
+    virtual std::vector<const MemberDef *> getReferencesMembers() const = 0;
+    virtual std::vector<const MemberDef *> getReferencedByMembers() const = 0;
 
     virtual bool hasSections() const = 0;
     virtual bool hasSources() const = 0;
@@ -347,6 +347,9 @@ class Definition : public DefinitionIntf
     virtual void mergeRefItems(Definition *d) = 0;
     virtual void addInnerCompound(const Definition *d) = 0;
     virtual void addSectionsToIndex() = 0;
+    virtual void mergeReferences(const Definition *other) = 0;
+    virtual void mergeReferencedBy(const Definition *other) = 0;
+    virtual void computeTooltip() = 0;
 
     //-----------------------------------------------------------------------------------
     // --- writing output ----

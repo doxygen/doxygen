@@ -1231,9 +1231,6 @@ void HtmlGenerator::writePageFooter(FTextStream &t,const QCString &lastTitle,
 
 void HtmlGenerator::writeFooter(const char *navPath)
 {
-  // Currently only tooltips in HTML
-  TooltipManager::instance()->writeTooltips(m_codeGen);
-
   writePageFooter(t,m_lastTitle,m_relPath,navPath);
 }
 
