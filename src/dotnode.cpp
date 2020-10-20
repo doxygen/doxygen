@@ -148,23 +148,25 @@ static void writeBoxMemberList(FTextStream &t,
         else
         {
           t << prot << " ";
+          QCString label;
           if(Config_getBool(DOT_UML_DETAILS))
           {
-              t << DotNode::convertLabel(mma->typeString());
-              t << " ";
+            label+=mma->typeString();
+            label+=" ";
           }
-          t << DotNode::convertLabel(mma->name());
+          label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-              if(Config_getBool(DOT_UML_DETAILS))
-              {
-                  t << DotNode::convertLabel(mma->argsString());
-              }
-              else
-              {
-                  t << "()";
-              }
+            if(Config_getBool(DOT_UML_DETAILS))
+            {
+              label+=mma->argsString();
+            }
+            else
+            {
+              label+="()";
+            }
           }
+          t << DotNode::convertLabel(label);
           t << "\\l";
           count++;
         }
@@ -199,7 +201,7 @@ QCString DotNode::convertLabel(const QCString &l)
   int len=p.length();
   int charsLeft=len;
   int sinceLast=0;
-  int foldLen = Config_getInt(DOT_MAX_FOLD); // ideal text length
+  int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   while (idx < p.length())
   {
     c = p[idx++];

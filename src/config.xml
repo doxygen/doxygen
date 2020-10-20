@@ -3419,7 +3419,7 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='int' id='UML_LIMIT_NUM_FIELDS' defval='10' minval='0' maxval='100' depends='HAVE_DOT'>
+    <option type='int' id='UML_LIMIT_NUM_FIELDS' defval='10' minval='0' maxval='100' depends='UML_LOOK'>
       <docs>
 <![CDATA[
  If the \ref cfg_uml_look "UML_LOOK" tag is enabled, the fields and methods are shown inside
@@ -3430,6 +3430,23 @@ to be found in the default search path.
  exceeded by 50% before the limit is enforced. So when you set the threshold
  to 10, up to 15 fields may appear, but if the number exceeds 15, the
  total amount of fields shown is limited to 10.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='DOT_UML_DETAILS' defval='0' depends='UML_LOOK'>
+      <docs>
+<![CDATA[
+If the \c DOT_UML_DETAILS tag is set to \c YES, doxygen will
+add type and arguments for attributes and methods in the UML graphs.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='DOT_WRAP_THRESHOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
+      <docs>
+<![CDATA[
+ The \c DOT_WRAP_THRESHOLD tag can be used to set the maximum number of characters to display on
+ a single line. If the actual line length exceeds this threshold significantly it will wrapped
+ across multiple lines. Some heuristics are apply to avoid ugly line breaks.
 ]]>
       </docs>
     </option>
@@ -3668,21 +3685,6 @@ to be found in the default search path.
 <![CDATA[
 If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate dot files that are used to generate the various graphs.
-]]>
-      </docs>
-    </option>
-    <option type='int' id='DOT_MAX_FOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
-      <docs>
-<![CDATA[
- The \c DOT_MAX_FOLD tag can be used to set the length to fold text of dot graphs.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='DOT_UML_DETAILS' defval='0' depends='HAVE_DOT'>
-      <docs>
-<![CDATA[
-If the \c DOT_UML_DETAILS tag is set to \c YES, doxygen will
-add details in the uml graphs.
 ]]>
       </docs>
     </option>
