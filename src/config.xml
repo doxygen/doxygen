@@ -1740,10 +1740,10 @@ to disable this feature.
       <docs>
 <![CDATA[
  If clang assisted parsing is enabled you can provide the clang parser with the
- path to the directory containing a file called compile_commands.json.
+ path to the directory containing a file called `compile_commands.json`.
  This file is the <a href="http://clang.llvm.org/docs/HowToSetupToolingForLLVM.html">
  compilation database</a> containing the options used when the source files were built.
- This is equivalent to specifying the "-p" option to a clang tool, such as clang-check.
+ This is equivalent to specifying the `-p` option to a clang tool, such as `clang-check`.
  These options will then be passed to the parser. Any options specified with
  \ref cfg_clang_options "CLANG_OPTIONS" will be added as well.
 
