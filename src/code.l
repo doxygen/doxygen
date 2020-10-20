@@ -101,7 +101,7 @@ struct codeYY_state
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  int           yyColNr = 0;         //!< current column number
+  yy_size_t     yyColNr = 0;         //!< current column number
   bool          needsTermination = FALSE;
 
   bool          exampleBlock = FALSE;

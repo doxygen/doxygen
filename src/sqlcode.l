@@ -50,7 +50,7 @@ struct sqlcodeYY_state
 {
      CodeOutputInterface * code;
      const char   *inputString;     //!< the code fragment as text
-     int           inputPosition;   //!< read offset during parsing
+     yy_size_t     inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
      int           yyLineNr;        //!< current line number
      bool          needsTermination;
