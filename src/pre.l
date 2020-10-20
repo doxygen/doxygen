@@ -2416,6 +2416,10 @@ static bool expandExpression(yyscan_t yyscanner,QCString &expr,QCString *rest,in
 	    expanded = expandExpression(yyscanner,resultExpr,&restExpr,0,level+1);
 	    state->expandedDict.erase(toStdString(macroName));
 	  }
+    else if (def && def->nonRecursive)
+    {
+      expanded = true;
+    }
           if (expanded)
           {
 	    expr=expr.left(p)+resultExpr+restExpr;
