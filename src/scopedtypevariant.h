@@ -26,7 +26,7 @@
 class LocalDef
 {
   public:
-    void insertBaseClass(QCString name) { m_baseClasses.push_back(name); }
+    void insertBaseClass(const QCString &name) { m_baseClasses.push_back(name); }
     std::vector<QCString> baseClasses() const { return m_baseClasses; }
   private:
     std::vector<QCString> m_baseClasses;
@@ -72,7 +72,7 @@ class ScopedTypeVariant
       }
     }
     //! constructor for creating a variant of type Local
-    explicit ScopedTypeVariant(QCString name)
+    explicit ScopedTypeVariant(const QCString &name)
     {
       m_name = name;
       m_variant = Local;
@@ -93,7 +93,7 @@ class ScopedTypeVariant
       }
     }
     //! move constructor
-    ScopedTypeVariant(ScopedTypeVariant && stv) noexcept : ScopedTypeVariant()
+    ScopedTypeVariant(ScopedTypeVariant &&stv) noexcept : ScopedTypeVariant()
     {
       swap(*this,stv);
     }
@@ -131,7 +131,7 @@ class ScopedTypeVariant
       m_u.globalDef = def;
     }
     //! Turn the variant into a Local type
-    LocalDef *setLocal(QCString name)
+    LocalDef *setLocal(const QCString &name)
     {
       if (m_variant==Local)
       {
@@ -200,12 +200,12 @@ class VariableContext
     {
       m_scopes.clear();
     }
-    void addVariable(QCString name,ScopedTypeVariant stv)
+    void addVariable(const QCString &name,ScopedTypeVariant stv)
     {
       Scope *scope = m_scopes.empty() ? &m_globalScope : &m_scopes.back();
       scope->emplace(std::make_pair(name.str(),std::move(stv))); // add it to a list
     }
-    const ScopedTypeVariant *findVariable(QCString name)
+    const ScopedTypeVariant *findVariable(const QCString &name)
     {
       const ScopedTypeVariant *result = 0;
       if (name.isEmpty()) return result;
@@ -245,7 +245,7 @@ class CallContext
   public:
     struct Ctx
     {
-      Ctx(QCString name_,QCString type_) : name(name_), type(type_) {}
+      Ctx(const QCString &name_,const QCString &type_) : name(name_), type(type_) {}
       QCString name;
       QCString type;
       ScopedTypeVariant stv;
@@ -255,12 +255,12 @@ class CallContext
     {
       clear();
     }
-    void setScope(ScopedTypeVariant stv)
+    void setScope(const ScopedTypeVariant &stv)
     {
       Ctx &ctx = m_stvList.back();
       ctx.stv=std::move(stv);
     }
-    void pushScope(const QCString &name_,const QCString type_)
+    void pushScope(const QCString &name_,const QCString &type_)
     {
       m_stvList.push_back(Ctx(name_,type_));
     }
