@@ -2068,7 +2068,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
       m_out.addStr("</"+hTag+">\n");
     }
   }
-  else // nothing interesting -> just output the line
+  else if (size>0) // nothing interesting -> just output the line
   {
     int tmpSize = size;
     if (data[size-1] == '\n') tmpSize--;
