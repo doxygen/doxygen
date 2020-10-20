@@ -2033,7 +2033,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
   QCString id;
   if (isHRuler(data,size))
   {
-    m_out.addStr("\n<hr>\n");
+    m_out.addStr("<hr>\n");
   }
   else if ((level=isAtxHeader(data,size,header,id,TRUE)))
   {
