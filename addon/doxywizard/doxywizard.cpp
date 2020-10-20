@@ -120,7 +120,7 @@ MainWindow::MainWindow()
   // select extra run options
   m_runOptions = new QLineEdit;
 
-  runTabLayout->addWidget(new QLabel(tr("Step 3: Specify additional command line options for running doxygen")));
+  runTabLayout->addWidget(new QLabel(tr("Specify additional command line options for running doxygen")));
   runTabLayout->addWidget(m_runOptions);
 
   QVBoxLayout *runVLayout = new QVBoxLayout;
@@ -162,12 +162,6 @@ MainWindow::MainWindow()
   grid->addWidget(m_outputLog,0,0);
   grid->setColumnStretch(0,1);
   grid->setRowStretch(0,1);
-  //QHBoxLayout *launchLayout = new QHBoxLayout;
-  //m_launchHtml = new QPushButton(tr("Show HTML output"));
-  //launchLayout->addWidget(m_launchHtml);
-
-  //launchLayout->addStretch(1);
-  //grid->addLayout(launchLayout,1,0);
   runTabLayout->addLayout(grid);
 
   m_tabs = new QTabWidget;
@@ -175,9 +169,9 @@ MainWindow::MainWindow()
   m_tabs->addTab(m_expert,tr("Expert"));
   m_tabs->addTab(runTab,tr("Run"));
 
-  rowLayout->addWidget(new QLabel(tr("Step 1: Specify the working directory from which doxygen will run")));
+  rowLayout->addWidget(new QLabel(tr("Specify the working directory from which doxygen will run")));
   rowLayout->addLayout(dirLayout);
-  rowLayout->addWidget(new QLabel(tr("Step 2: Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation")));
+  rowLayout->addWidget(new QLabel(tr("Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation")));
   mainLayout->addWidget(m_tabs);
 
   setCentralWidget(mainPart);
