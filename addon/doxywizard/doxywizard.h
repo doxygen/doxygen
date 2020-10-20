@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,6 +20,7 @@
 class Expert;
 class Wizard;
 class QLabel;
+class QCheckBox;
 class QLineEdit;
 class QPushButton;
 class QTextBrowser;
@@ -61,12 +62,11 @@ class MainWindow : public QMainWindow
     void runComplete();
     void showHtmlOutput();
     void saveLog();
-    void showCondensedSettings();
     void showSettings();
     void configChanged();
     void clearRecent();
     void selectRunTab();
-    
+
   private:
     MainWindow();
     void saveConfig(const QString &fileName);
@@ -83,6 +83,7 @@ class MainWindow : public QMainWindow
     QPushButton *m_selWorkingDir;
     QPushButton *m_run;
     QPushButton *m_saveLog;
+    QCheckBox   *m_showCondensedSettings;
     QPushButton *m_launchHtml;
     QPushButton *m_launchPdf;
     QTextBrowser *m_outputLog;
