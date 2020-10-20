@@ -784,7 +784,7 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
     m_out.addStr(title);
     m_out.addStr("\"");
   }
-  m_out.addStr("\n");
+  m_out.addStr("\\ilinebr");
 }
 
 int Markdown::processLink(const char *data,int,int size)
@@ -2033,7 +2033,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
   QCString id;
   if (isHRuler(data,size))
   {
-    m_out.addStr("\n<hr>\n");
+    m_out.addStr("<hr>\n");
   }
   else if ((level=isAtxHeader(data,size,header,id,TRUE)))
   {

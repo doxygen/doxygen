@@ -155,7 +155,10 @@ Examples:
     ______
 
 Note that using asterisks in comment blocks does not work. See 
-\ref mddox_stars for details.
+\ref mddox_stars for details.<br>
+Note that when using hyphens and the previous line is not empty you have to
+use at least one whitespace in the sequence of hyphens otherwise it might be
+seen as a level 2 header (see \ref md_headers).
 
 \subsection md_emphasis Emphasis
 
