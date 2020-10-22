@@ -29,6 +29,7 @@
 #include "memberlist.h"
 #include "define.h"
 #include "cache.h"
+#include "symbolmap.h"
 
 #define THREAD_LOCAL thread_local
 #define AtomicInt    std::atomic_int
@@ -66,8 +67,6 @@ struct MemberGroupInfo;
 
 typedef QList<QCString>    StringList;
 typedef QListIterator<QCString>    StringListIterator;
-//typedef QDict<FileDef>     FileDict;
-//typedef QDict<GroupDef>    GroupDict;
 
 class StringDict : public QDict<QCString>
 {
@@ -123,7 +122,7 @@ class Doxygen
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
     static SearchIndexIntf          *searchIndex;
-    static QDict<DefinitionIntf>    *symbolMap;
+    static SymbolMap<Definition>     symbolMap;
     static QDict<Definition>        *clangUsrMap;
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;

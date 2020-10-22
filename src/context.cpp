@@ -10309,25 +10309,9 @@ void generateOutputViaTemplate()
       }
 
       // clear all cached data in Definition objects.
-      QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
-      const DefinitionIntf *intf;
-      for (;(intf=di.current());++di)
+      for (const auto &kv : Doxygen::symbolMap)
       {
-        if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
-        {
-          DefinitionListIterator dli(*dynamic_cast<const DefinitionList*>(intf));
-          const Definition *d;
-          // for each symbol
-          for (dli.toFirst();(d=dli.current());++dli)
-          {
-            d->setCookie(0);
-          }
-        }
-        else // single symbol
-        {
-          const Definition *d = dynamic_cast<const Definition *>(intf);
-          d->setCookie(0);
-        }
+        kv.second->setCookie(0);
       }
 
       e.destroyContext(ctx);

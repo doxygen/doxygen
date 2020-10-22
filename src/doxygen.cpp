@@ -142,7 +142,7 @@ bool             Doxygen::insideMainPage = FALSE; // are we generating docs for 
 NamespaceDef    *Doxygen::globalScope = 0;
 bool             Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf *Doxygen::searchIndex=0;
-QDict<DefinitionIntf> *Doxygen::symbolMap = 0;
+SymbolMap<Definition> Doxygen::symbolMap;
 QDict<Definition> *Doxygen::clangUsrMap = 0;
 bool             Doxygen::outputToWizard=FALSE;
 QDict<int> *     Doxygen::htmlDirMap = 0;
@@ -2429,7 +2429,8 @@ static bool isVarWithConstructor(const Entry *root)
   static QRegExp initChars("[0-9\"'&*!^]+");
   static QRegExp idChars("[a-z_A-Z][a-z_A-Z0-9]*");
   bool result=FALSE;
-  bool typeIsClass;
+  bool typeIsClass = false;
+  bool typePtrType = false;
   QCString type;
   Definition *ctx = 0;
   FileDef *fd = 0;
@@ -2462,11 +2463,15 @@ static bool isVarWithConstructor(const Entry *root)
   findAndRemoveWord(type,"const");
   findAndRemoveWord(type,"static");
   findAndRemoveWord(type,"volatile");
+  typePtrType = type.find('*')!=-1 || type.find('&')!=-1;
   //if (type.left(6)=="const ") type=type.right(type.length()-6);
-  typeIsClass=getResolvedClass(ctx,fd,type)!=0;
-  if (!typeIsClass && (ti=type.find('<'))!=-1)
+  if (!typePtrType)
   {
-    typeIsClass=getResolvedClass(ctx,fd,type.left(ti))!=0;
+    typeIsClass = getResolvedClass(ctx,fd,type)!=0;
+    if (!typeIsClass && (ti=type.find('<'))!=-1)
+    {
+      typeIsClass=getResolvedClass(ctx,fd,type.left(ti))!=0;
+    }
   }
   if (typeIsClass) // now we still have to check if the arguments are
                    // types or values. Since we do not have complete type info
@@ -2492,6 +2497,14 @@ static bool isVarWithConstructor(const Entry *root)
         }
         goto done;
       }
+      if (!a.type.isEmpty() &&
+          (a.type.at(a.type.length()-1)=='*' ||
+           a.type.at(a.type.length()-1)=='&'))
+           // type ends with * or & => pointer or reference
+      {
+        result=FALSE;
+        goto done;
+      }
       if (a.type.isEmpty() || getResolvedClass(ctx,fd,a.type)!=0)
       {
         result=FALSE; // arg type is a known type
@@ -2502,13 +2515,6 @@ static bool isVarWithConstructor(const Entry *root)
          //printf("%s:%d: false (arg is typedef)\n",__FILE__,__LINE__);
          result=FALSE; // argument is a typedef
          goto done;
-      }
-      if (a.type.at(a.type.length()-1)=='*' ||
-          a.type.at(a.type.length()-1)=='&')
-                     // type ends with * or & => pointer or reference
-      {
-        result=FALSE;
-        goto done;
       }
       if (a.type.find(initChars)==0)
       {
@@ -7812,25 +7818,9 @@ static void sortMemberLists()
 
 void computeTooltipTexts()
 {
-  QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
-  DefinitionIntf *intf;
-  for (;(intf=di.current());++di)
+  for (const auto &kv : Doxygen::symbolMap)
   {
-    if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
-    {
-      DefinitionListIterator dli(*(DefinitionList*)intf);
-      Definition *d;
-      // for each symbol
-      for (dli.toFirst();(d=dli.current());++dli)
-      {
-        d->computeTooltip();
-      }
-    }
-    else // single symbol
-    {
-      Definition *d = (Definition *)intf;
-      if (d!=Doxygen::globalScope) d->computeTooltip();
-    }
+    kv.second->computeTooltip();
   }
 }
 
@@ -9796,25 +9786,9 @@ static void dumpSymbolMap()
   if (f.open(IO_WriteOnly))
   {
     FTextStream t(&f);
-    QDictIterator<DefinitionIntf> di(*Doxygen::symbolMap);
-    DefinitionIntf *intf;
-    for (;(intf=di.current());++di)
+    for (const auto &kv : Doxygen::symbolMap)
     {
-      if (intf->definitionType()==DefinitionIntf::TypeSymbolList) // list of symbols
-      {
-        DefinitionListIterator dli(*(DefinitionList*)intf);
-        Definition *d;
-        // for each symbol
-        for (dli.toFirst();(d=dli.current());++dli)
-        {
-          dumpSymbol(t,d);
-        }
-      }
-      else // single symbol
-      {
-        Definition *d = (Definition *)intf;
-        if (d!=Doxygen::globalScope) dumpSymbol(t,d);
-      }
+      dumpSymbol(t,kv.second);
     }
   }
 }
@@ -9939,7 +9913,6 @@ void initDoxygen()
   initNamespaceMemberIndices();
   initFileMemberIndices();
 
-  Doxygen::symbolMap     = new QDict<DefinitionIntf>(50177);
 #ifdef USE_LIBCLANG
   Doxygen::clangUsrMap   = new QDict<Definition>(50177);
 #endif
@@ -10012,26 +9985,6 @@ void cleanUpDoxygen()
   delete g_outputList;
   Mappers::freeMappers();
 
-  if (Doxygen::symbolMap)
-  {
-    // iterate through Doxygen::symbolMap and delete all
-    // DefinitionList objects, since they have no owner
-    QDictIterator<DefinitionIntf> dli(*Doxygen::symbolMap);
-    DefinitionIntf *di;
-    for (dli.toFirst();(di=dli.current());)
-    {
-      if (di->definitionType()==DefinitionIntf::TypeSymbolList)
-      {
-        DefinitionIntf *tmp = Doxygen::symbolMap->take(dli.currentKey());
-        delete (DefinitionList *)tmp;
-      }
-      else
-      {
-        ++dli;
-      }
-    }
-  }
-
   delete Doxygen::memberNameLinkedMap;
   delete Doxygen::functionNameLinkedMap;
   delete Doxygen::groupSDict;
@@ -10041,11 +9994,6 @@ void cleanUpDoxygen()
   delete Doxygen::directories;
 
   DotManager::deleteInstance();
-
-  //delete Doxygen::symbolMap; <- we cannot do this unless all static lists
-  //                              (such as Doxygen::namespaceSDict)
-  //                              with objects based on Definition are made
-  //                              dynamic first
 }
 
 static int computeIdealCacheParam(uint v)
@@ -11811,7 +11759,6 @@ void generateOutput()
   thisDir.remove(Doxygen::filterDBFileName);
   Config::deinit();
   QTextCodec::deleteAllCodecs();
-  delete Doxygen::symbolMap;
   delete Doxygen::clangUsrMap;
   g_successfulRun=TRUE;
 }
