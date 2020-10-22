@@ -2114,14 +2114,14 @@ int Markdown::writeBlockQuote(const char *data,int size)
     {
       for (l=curLevel;l<level;l++)
       {
-        m_out.addStr("<blockquote>\n");
+        m_out.addStr("<blockquote>");
       }
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
       for (l=level;l<curLevel;l++)
       {
-        m_out.addStr("</blockquote>\n");
+        m_out.addStr("</blockquote>");
       }
     }
     curLevel=level;
@@ -2134,7 +2134,7 @@ int Markdown::writeBlockQuote(const char *data,int size)
   // end of comment within blockquote => add end markers
   for (l=0;l<curLevel;l++)
   {
-    m_out.addStr("</blockquote>\n");
+    m_out.addStr("</blockquote>");
   }
   return i;
 }
