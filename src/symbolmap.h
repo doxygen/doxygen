@@ -31,7 +31,7 @@ class SymbolMap
 {
   public:
     using Ptr = T *;
-    using Map = std::unordered_multimap<std::string,Ptr>;
+    using Map = std::multimap<std::string,Ptr>;
     using iterator = typename Map::iterator;
     using const_iterator = typename Map::const_iterator;
 
