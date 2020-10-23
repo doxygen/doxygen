@@ -2762,7 +2762,7 @@ static void writeNamespaceLinkForMember(OutputList &ol,MemberDef *md,const char 
 
 static void writeMemberList(OutputList &ol,bool useSections,int page,
                             const LetterToIndexMap<MemberIndexList> &memberLists,
-                            DefinitionIntf::DefType type)
+                            Definition::DefType type)
 {
   int index = (int)type;
   ASSERT(index<3);

@@ -55,7 +55,6 @@ class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceSDict;
 class NamespaceDef;
-class DefinitionIntf;
 class DirSDict;
 class DirRelation;
 class IndexList;

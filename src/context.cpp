@@ -1554,16 +1554,14 @@ class DefinitionContext
       QCString result = "unspecified";
       switch (m_def->definitionType())
       {
-        case DefinitionIntf::TypeClass:     result="class";     break;
-        case DefinitionIntf::TypeFile:      result="file";      break;
-        case DefinitionIntf::TypeNamespace: result="namespace"; break;
-        case DefinitionIntf::TypeGroup:     result="module";    break;
-        case DefinitionIntf::TypePackage:   result="package";   break;
-        case DefinitionIntf::TypePage:      result="page";      break;
-        case DefinitionIntf::TypeDir:       result="dir";       break;
-        case DefinitionIntf::TypeMember: // fall through
-        case DefinitionIntf::TypeSymbolList:
-                break;
+        case Definition::TypeClass:     result="class";     break;
+        case Definition::TypeFile:      result="file";      break;
+        case Definition::TypeNamespace: result="namespace"; break;
+        case Definition::TypeGroup:     result="module";    break;
+        case Definition::TypePackage:   result="package";   break;
+        case Definition::TypePage:      result="page";      break;
+        case Definition::TypeDir:       result="dir";       break;
+        case Definition::TypeMember:                        break;
       }
       return result;
     }

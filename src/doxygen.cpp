@@ -1177,7 +1177,7 @@ static void resolveClassNestingRelations()
           cd->setOuterScope(d);
 
           // for inline namespace add an alias of the class to the outer scope
-          while (d->definitionType()==DefinitionIntf::TypeNamespace)
+          while (d->definitionType()==Definition::TypeNamespace)
           {
             NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
             //printf("d->isInline()=%d\n",nd->isInline());
@@ -1565,7 +1565,7 @@ static void buildNamespaceList(const Entry *root)
           d->addInnerCompound(nd);
           nd->setOuterScope(d);
           // in case of d is an inline namespace, alias insert nd in the part scope of d.
-          while (d->definitionType()==DefinitionIntf::TypeNamespace)
+          while (d->definitionType()==Definition::TypeNamespace)
           {
             NamespaceDef *pnd = dynamic_cast<NamespaceDef*>(d);
             if (pnd->isInline())

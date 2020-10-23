@@ -68,12 +68,19 @@ struct BodyInfo
     FileDef *fileDef;     //!< file definition containing the function body
 };
 
-/** Abstract interface for a Definition or DefinitionList */
-class DefinitionIntf
+/** The common base class of all entity definitions found in the sources.
+ *
+ *  This can be a class or a member function, or a file, or a namespace, etc.
+ *  Use definitionType() to find which type of definition this is.
+ */
+class Definition
 {
   public:
-    DefinitionIntf() {}
-    virtual ~DefinitionIntf() {}
+    struct Cookie
+    {
+      virtual ~Cookie() {}
+    };
+
     /*! Types of derived classes */
     enum DefType
     {
@@ -84,29 +91,16 @@ class DefinitionIntf
       TypeGroup      = 4,
       TypePackage    = 5,
       TypePage       = 6,
-      TypeDir        = 7,
-      TypeSymbolList = 8
-    };
-    /*! Use this for dynamic inspection of the type of the derived class */
-    virtual DefType definitionType() const = 0;
-};
-
-/** The common base class of all entity definitions found in the sources.
- *
- *  This can be a class or a member function, or a file, or a namespace, etc.
- *  Use definitionType() to find which type of definition this is.
- */
-class Definition : public DefinitionIntf
-{
-  public:
-    struct Cookie
-    {
-      virtual ~Cookie() {}
+      TypeDir        = 7
     };
 
     //-----------------------------------------------------------------------------------
     // ----  getters -----
     //-----------------------------------------------------------------------------------
+
+    /*! Use this for dynamic inspection of the type of the derived class */
+    virtual DefType definitionType() const = 0;
+
     /*! Returns TRUE if this is an alias of another definition */
     virtual bool isAlias() const = 0;
 
@@ -375,28 +369,9 @@ class Definition : public DefinitionIntf
     //-----------------------------------------------------------------------------------
     virtual void _setSymbolName(const QCString &name) = 0;
     virtual QCString _symbolName() const = 0;
-};
 
-/** A list of Definition objects. */
-class DefinitionList : public QList<Definition>, public DefinitionIntf
-{
-  public:
-    ~DefinitionList() {}
-    DefType definitionType() const { return TypeSymbolList; }
-    int compareValues(const Definition *item1,const Definition *item2) const
-    {
-      return qstricmp(item1->name(),item2->name());
-    }
-
-};
-
-/** An iterator for Definition objects in a DefinitionList. */
-class DefinitionListIterator : public QListIterator<Definition>
-{
-  public:
-    DefinitionListIterator(const DefinitionList &l) :
-      QListIterator<Definition>(l) {}
-    ~DefinitionListIterator() {}
+    // ---------------------------------
+    virtual ~Definition() = default;
 };
 
 /** Reads a fragment from file \a fileName starting with line \a startLine

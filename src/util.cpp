@@ -2771,7 +2771,6 @@ static QCString getCanonicalTypeForIdentifier(
   if (count>10) return word; // oops recursion
 
   QCString symName,result,templSpec,tmpName;
-  //DefinitionList *defList=0;
   if (tSpec && !tSpec->isEmpty())
     templSpec = stripDeclKeywords(getCanonicalTemplateSpec(d,fs,*tSpec));
 
