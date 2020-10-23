@@ -1490,22 +1490,10 @@ static void findMemberLink(yyscan_t yyscanner,
   //    );
   if (yyextra->currentDefinition)
   {
-    DefinitionIntf *di = Doxygen::symbolMap->find(symName);
-    if (di)
+    auto range = Doxygen::symbolMap.find(symName);
+    for (auto it = range.first; it!=range.second; ++it)
     {
-      if (di->definitionType()==DefinitionIntf::TypeSymbolList) // multiple symbols
-      {
-        DefinitionListIterator dli(*(DefinitionList*)di);
-        Definition *sym;
-        for (dli.toFirst();(sym=dli.current());++dli)
-        {
-          if (findMemberLink(yyscanner,ol,sym,symName)) return;
-        }
-      }
-      else // single symbol
-      {
-        if (findMemberLink(yyscanner,ol,(Definition*)di,symName)) return;
-      }
+      findMemberLink(yyscanner,ol,it->second,symName);
     }
   }
   //printf("sym %s not found\n",&yytext[5]);

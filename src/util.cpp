@@ -663,57 +663,37 @@ static QCString substTypedef(const Definition *scope,const FileDef *fileScope,co
   QCString result=name;
   if (name.isEmpty()) return result;
 
-  // lookup scope fragment in the symbol map
-  DefinitionIntf *di = Doxygen::symbolMap->find(name);
-  if (di==0) return result; // no matches
+  auto range = Doxygen::symbolMap.find(name);
+  if (range.first==range.second)
+    return result; // no matches
 
   MemberDef *bestMatch=0;
-  if (di->definitionType()==DefinitionIntf::TypeSymbolList) // multi symbols
+  int minDistance=10000; // init at "infinite"
+
+  for (auto it = range.first; it!=range.second; ++it)
   {
-    // search for the best match
-    DefinitionListIterator dli(*(DefinitionList*)di);
-    Definition *d;
-    int minDistance=10000; // init at "infinite"
-    for (dli.toFirst();(d=dli.current());++dli) // foreach definition
+    Definition *d = it->second;
+    // only look at members
+    if (d->definitionType()==Definition::TypeMember)
     {
-      // only look at members
-      if (d->definitionType()==Definition::TypeMember)
+      // that are also typedefs
+      MemberDef *md = dynamic_cast<MemberDef *>(d);
+      if (md->isTypedef()) // d is a typedef
       {
-        // that are also typedefs
-        MemberDef *md = dynamic_cast<MemberDef *>(d);
-        if (md->isTypedef()) // d is a typedef
+        VisitedNamespaces visitedNamespaces;
+        AccessStack accessStack;
+        // test accessibility of typedef within scope.
+        int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,"");
+        if (distance!=-1 && distance<minDistance)
+          // definition is accessible and a better match
         {
-          VisitedNamespaces visitedNamespaces;
-          AccessStack accessStack;
-          // test accessibility of typedef within scope.
-          int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,"");
-          if (distance!=-1 && distance<minDistance)
-            // definition is accessible and a better match
-          {
-            minDistance=distance;
-            bestMatch = md;
-          }
+          minDistance=distance;
+          bestMatch = md;
         }
       }
     }
   }
-  else if (di->definitionType()==DefinitionIntf::TypeMember) // single symbol
-  {
-    Definition *d = (Definition*)di;
-    // that are also typedefs
-    MemberDef *md = dynamic_cast<MemberDef *>(di);
-    if (md->isTypedef()) // d is a typedef
-    {
-      // test accessibility of typedef within scope.
-      VisitedNamespaces visitedNamespaces;
-      AccessStack accessStack;
-      int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,"");
-      if (distance!=-1) // definition is accessible
-      {
-        bestMatch = md;
-      }
-    }
-  }
+
   if (bestMatch)
   {
     result = bestMatch->typeString();
@@ -1311,8 +1291,9 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     QCString *pResolvedType
     )
 {
-  //printf("[getResolvedClassRec(%s,%s)\n",scope?scope->name().data():"<global>",n);
   if (n==0 || *n=='\0') return 0;
+  //static int level=0;
+  //printf("%d [getResolvedClassRec(%s,%s)\n",level++,scope?scope->name().data():"<global>",n);
   QCString name;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
@@ -1338,20 +1319,20 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
 
   if (name.isEmpty())
   {
-    //printf("] empty name\n");
+    //printf("%d ] empty name\n",--level);
     return 0; // empty name
   }
 
   //printf("Looking for symbol %s\n",name.data());
-  const DefinitionIntf *di = Doxygen::symbolMap->find(name);
+  auto range = Doxygen::symbolMap.find(name);
   // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
-  if (di==0)
+  if (range.first==range.second)
   {
-    di = Doxygen::symbolMap->find(name+"-p");
-    if (di==0)
+    range = Doxygen::symbolMap.find(name+"-p");
+    if (range.first==range.second)
     {
-      //printf("no such symbol!\n");
+      //printf("%d ] no such symbol!\n",--level);
       return 0;
     }
   }
@@ -1413,7 +1394,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
       if (pTemplSpec)    *pTemplSpec=pval->templSpec;
       if (pTypeDef)      *pTypeDef=pval->typeDef;
       if (pResolvedType) *pResolvedType=pval->resolvedType;
-      //printf("] cachedMatch=%s\n",
+      //printf("%d ] cachedMatch=%s\n",--level,
       //    pval->classDef?pval->classDef->name().data():"<none>");
       //if (pTemplSpec)
       //  printf("templSpec=%s\n",pTemplSpec->data());
@@ -1432,23 +1413,9 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
   QCString bestResolvedType;
   int minDistance=10000; // init at "infinite"
 
-  if (di->definitionType()==DefinitionIntf::TypeSymbolList) // not a unique name
+  for (auto it=range.first ; it!=range.second; ++it)
   {
-    //printf("  name is not unique\n");
-    DefinitionListIterator dli(*(DefinitionList*)di);
-    Definition *d;
-    int count=0;
-    for (dli.toFirst();(d=dli.current());++dli,++count) // foreach definition
-    {
-      getResolvedSymbol(scope,fileScope,d,explicitScopePart,actTemplParams,
-                        minDistance,bestMatch,bestTypedef,bestTemplSpec,
-                        bestResolvedType);
-    }
-  }
-  else // unique name
-  {
-    //printf("  name is unique\n");
-    Definition *d = (Definition *)di;
+    Definition *d = it->second;
     getResolvedSymbol(scope,fileScope,d,explicitScopePart,actTemplParams,
                       minDistance,bestMatch,bestTypedef,bestTemplSpec,
                       bestResolvedType);
@@ -1477,7 +1444,7 @@ static const ClassDef *getResolvedClassRec(const Definition *scope,
     pval->templSpec    = bestTemplSpec;
     pval->resolvedType = bestResolvedType;
   }
-  //printf("] bestMatch=%s distance=%d\n",
+  //printf("%d ] bestMatch=%s distance=%d\n",--level,
   //    bestMatch?bestMatch->name().data():"<none>",minDistance);
   //if (pTemplSpec)
   //  printf("templSpec=%s\n",pTemplSpec->data());
@@ -6750,8 +6717,8 @@ MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
   if (name.isEmpty())
     return 0; // no name was given
 
-  DefinitionIntf *di = Doxygen::symbolMap->find(name);
-  if (di==0)
+  auto range = Doxygen::symbolMap.find(name);
+  if (range.first==range.second)
     return 0; // could not find any matching symbols
 
   // mostly copied from getResolvedClassRec()
@@ -6768,40 +6735,20 @@ MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
   int minDistance = 10000;
   MemberDef *bestMatch = 0;
 
-  if (di->definitionType()==DefinitionIntf::TypeSymbolList)
+  for (auto it=range.first; it!=range.second; ++it)
   {
-    //printf("multiple matches!\n");
-    // find the closest closest matching definition
-    DefinitionListIterator dli(*(DefinitionList*)di);
-    Definition *d;
-    for (dli.toFirst();(d=dli.current());++dli)
+    Definition *d = it->second;
+    if (d->definitionType()==Definition::TypeMember)
     {
-      if (d->definitionType()==Definition::TypeMember)
+      VisitedNamespaces visitedNamespaces;
+      AccessStack accessStack;
+      int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,explicitScopePart);
+      if (distance!=-1 && distance<minDistance)
       {
-        VisitedNamespaces visitedNamespaces;
-        AccessStack accessStack;
-        int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,explicitScopePart);
-        if (distance!=-1 && distance<minDistance)
-        {
-          minDistance = distance;
-          bestMatch = dynamic_cast<MemberDef *>(d);
-          //printf("new best match %s distance=%d\n",bestMatch->qualifiedName().data(),distance);
-        }
+        minDistance = distance;
+        bestMatch = dynamic_cast<MemberDef *>(d);
+        //printf("new best match %s distance=%d\n",bestMatch->qualifiedName().data(),distance);
       }
-    }
-  }
-  else if (di->definitionType()==Definition::TypeMember)
-  {
-    //printf("unique match!\n");
-    Definition *d = (Definition *)di;
-    VisitedNamespaces visitedNamespaces;
-    AccessStack accessStack;
-    int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,fileScope,d,explicitScopePart);
-    if (distance!=-1 && distance<minDistance)
-    {
-      minDistance = distance;
-      bestMatch = dynamic_cast<MemberDef *>(d);
-      //printf("new best match %s distance=%d\n",bestMatch->qualifiedName().data(),distance);
     }
   }
   return bestMatch;
