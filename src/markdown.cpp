@@ -2278,7 +2278,7 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
     m_out.addStr("{"+lang+"}");
   }
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
-  m_out.addStr("\n");
+  m_out.addStr(" ");
   m_out.addStr("@endcode");
 }
 
