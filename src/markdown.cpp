@@ -1933,16 +1933,16 @@ int Markdown::writeTableBlock(const char *data,int size)
     {
       if (row % 2)
       {
-        m_out.addStr("<tr class=\"markdownTableRowOdd\">");
+        m_out.addStr("\n<tr class=\"markdownTableRowOdd\">");
       }
       else
       {
-        m_out.addStr("<tr class=\"markdownTableRowEven\">");
+        m_out.addStr("\n<tr class=\"markdownTableRowEven\">");
       }
     }
     else
     {
-      m_out.addStr("  <tr class=\"markdownTableHead\">");
+      m_out.addStr("\n  <tr class=\"markdownTableHead\">");
     }
     for (int c = 0; c < columns; c++)
     {
@@ -2000,7 +2000,7 @@ int Markdown::writeTableBlock(const char *data,int size)
     }
     cellTag = "td";
     cellClass = "class=\"markdownTableBody";
-    m_out.addStr("  </tr>\n");
+    m_out.addStr("  </tr>");
   }
   m_out.addStr("</table>\n");
 
