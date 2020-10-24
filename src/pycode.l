@@ -72,7 +72,7 @@ struct pycodeYY_state
 
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
-  int           inputPosition = 0;   //!< read offset during parsing
+  yy_size_t     inputPosition = 0;   //!< read offset during parsing
   const char *  currentFontClass = 0;
   bool          needsTermination = FALSE;
   const Definition *searchCtx = 0;

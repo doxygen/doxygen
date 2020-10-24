@@ -56,7 +56,7 @@ struct xmlcodeYY_state
   QCString      parmType;
   QCString      parmName;
   const char *  inputString = 0;     //!< the code fragment as text
-  int           inputPosition = 0;   //!< read offset during parsing
+  yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   bool          needsTermination = false;
