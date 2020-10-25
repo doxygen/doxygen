@@ -42,9 +42,9 @@ class MainWindow : public QMainWindow
     QString configFileName() const { return m_fileName; }
     void updateTitle();
     // access routines for outputLog pane
-    void MainWindow::outputLogStart();
-    void MainWindow::outputLogText(QString text);
-    void MainWindow::outputLogFinish();
+    void outputLogStart();
+    void outputLogText(QString text);
+    void outputLogFinish();
 
   public slots:
     void manual();

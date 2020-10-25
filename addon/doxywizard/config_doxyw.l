@@ -80,7 +80,7 @@ static const char *stateToString(int state);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
-static yy_size_t yyread(char *buf,int maxSize)
+static yy_size_t yyread(char *buf,yy_size_t maxSize)
 {
     // no file included
     if (g_includeStack.isEmpty())

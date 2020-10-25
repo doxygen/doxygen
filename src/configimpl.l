@@ -514,7 +514,6 @@ static QCString          g_yyFileName;
 static QCString          g_tmpString;
 static QCString          g_cmd;
 static QCString         *g_string=0;
-static bool             *g_bool=0;
 static StringVector     *g_list=0;
 static int               g_lastState;
 static QCString          g_elemStr;
