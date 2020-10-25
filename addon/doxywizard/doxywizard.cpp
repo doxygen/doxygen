@@ -42,6 +42,9 @@
 
 #define MAX_RECENT_FILES 10
 
+// globally accessible variables
+bool DoxygenWizard::debugFlag = false;
+
 const int messageTimeout = 5000; //!< status bar message timeout in milliseconds.
 
 #define APPQT(x) QString::fromLatin1("<qt><pre>") + x + QString::fromLatin1("</pre></qt>")
@@ -725,11 +728,26 @@ bool MainWindow::discardUnsavedChanges(bool saveOption)
   return true;
 }
 
+void MainWindow::outputLogStart()
+{
+  m_outputLog->clear();
+}
+void MainWindow::outputLogText(QString text)
+{
+  m_outputLog->append(APPQT(text));
+}
+void MainWindow::outputLogFinish()
+{
+  m_outputLog->ensureCursorVisible();
+  m_saveLog->setEnabled(true);
+}
 //-----------------------------------------------------------------------
 int main(int argc,char **argv)
 {
   QApplication a(argc,argv);
-  if (argc == 2)
+  int locArgc = argc;
+
+  if (locArgc == 2)
   {
     if (!qstrcmp(argv[1],"--help"))
     {
@@ -746,7 +764,13 @@ int main(int argc,char **argv)
       exit(0);
     }
   }
-  if (argc > 2)
+  if (!qstrcmp(argv[1],"--debug") && ((locArgc == 2) || (locArgc == 3)))
+  {
+    DoxygenWizard::debugFlag = true;
+    locArgc--;
+  }
+
+  if (locArgc > 2)
   {
     QMessageBox msgBox;
     msgBox.setText(QString::fromLatin1("Too many arguments specified\n\nUsage: %1 [config file]").arg(QString::fromLatin1(argv[0])));
@@ -756,9 +780,9 @@ int main(int argc,char **argv)
   else
   {
     MainWindow &main = MainWindow::instance();
-    if (argc==2 && argv[1][0]!='-') // name of config file as an argument
+    if (locArgc==2 && argv[argc-1][0]!='-') // name of config file as an argument
     {
-      main.loadConfigFromFile(QString::fromLocal8Bit(argv[1]));
+      main.loadConfigFromFile(QString::fromLocal8Bit(argv[argc-1]));
     }
     main.show();
     return a.exec();

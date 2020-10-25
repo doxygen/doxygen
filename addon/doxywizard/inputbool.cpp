@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,7 +18,7 @@
 #include <QTextCodec>
 #include <QGridLayout>
 
-InputBool::InputBool( QGridLayout *layout, int &row, 
+InputBool::InputBool( QGridLayout *layout, int &row,
                       const QString &id, bool checked,
                       const QString &docs )
   : m_default(checked), m_docs(docs), m_id(id)
@@ -42,10 +42,10 @@ void InputBool::help()
 }
 
 void InputBool::setEnabled(bool b)
-{ 
+{
   m_enabled = b;
-  m_cb->setEnabled(b); 
-  m_lab->setEnabled(b); 
+  m_cb->setEnabled(b);
+  m_lab->setEnabled(b);
   updateDefault();
   updateDependencies();
 }
@@ -60,7 +60,7 @@ void InputBool::updateDependencies()
 
 void InputBool::setValue( bool s )
 {
-  if (m_state!=s) 
+  if (m_state!=s)
   {
     m_state=s;
     updateDefault();
@@ -91,9 +91,18 @@ QVariant &InputBool::value()
 void InputBool::update()
 {
   QString v = m_value.toString().toLower();
-  m_state = (v==QString::fromLatin1("yes")  || 
-             v==QString::fromLatin1("true") || 
-             v==QString::fromLatin1("1"));
+  if (v==QString::fromLatin1("yes")  || v==QString::fromLatin1("true")  || v==QString::fromLatin1("1"))
+  {
+    m_state = true;
+  }
+  else if (v==QString::fromLatin1("no")   || v==QString::fromLatin1("false") || v==QString::fromLatin1("0"))
+  {
+    m_state = false;
+  }
+  else
+  {
+    m_state = m_default;
+  }
   m_cb->setChecked( m_state );
   updateDefault();
   updateDependencies();
@@ -106,9 +115,9 @@ void InputBool::reset()
 
 void InputBool::writeValue(QTextStream &t,QTextCodec *codec)
 {
-  if (m_state) 
-    t << codec->fromUnicode(QString::fromLatin1("YES")); 
-  else 
+  if (m_state)
+    t << codec->fromUnicode(QString::fromLatin1("YES"));
+  else
     t << codec->fromUnicode(QString::fromLatin1("NO"));
 }
 
