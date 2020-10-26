@@ -120,56 +120,6 @@ class LetterToIndexMap : public SIntDict<T>
 
 //--------------------------------------------------------------------
 
-const int MAX_STACK_SIZE = 100;
-
-/** Helper class representing the stack of items considered while resolving
- *  the scope.
- */
-class AccessStack
-{
-    /** Element in the stack. */
-    struct AccessElem
-    {
-      AccessElem(const Definition *d,const FileDef *f,const Definition *i,QCString e = QCString()) : scope(d), fileScope(f), item(i), expScope(e) {}
-      const Definition *scope;
-      const FileDef *fileScope;
-      const Definition *item;
-      QCString expScope;
-    };
-  public:
-    void push(const Definition *scope,const FileDef *fileScope,const Definition *item)
-    {
-      m_elements.push_back(AccessElem(scope,fileScope,item));
-    }
-    void push(const Definition *scope,const FileDef *fileScope,const Definition *item,const QCString &expScope)
-    {
-      m_elements.push_back(AccessElem(scope,fileScope,item,expScope));
-    }
-    void pop()
-    {
-      if (!m_elements.empty()) m_elements.pop_back();
-    }
-    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item)
-    {
-      auto it = std::find_if(m_elements.begin(),m_elements.end(),
-                             [&](const AccessElem &e) { return e.scope==scope && e.fileScope==fileScope && e.item==item; });
-      return it!=m_elements.end();
-    }
-    bool find(const Definition *scope,const FileDef *fileScope, const Definition *item,const QCString &expScope)
-    {
-      auto it = std::find_if(m_elements.begin(),m_elements.end(),
-                             [&](const AccessElem &e) { return e.scope==scope && e.fileScope==fileScope && e.item==item && e.expScope==expScope; });
-      return it!=m_elements.end();
-    }
-
-  private:
-    std::vector<AccessElem> m_elements;
-};
-
-using VisitedNamespaces = std::unordered_map<std::string,const Definition *>;
-
-//--------------------------------------------------------------------
-
 QCString langToString(SrcLangExt lang);
 QCString getLanguageSpecificSeparator(SrcLangExt lang,bool classScope=FALSE);
 
@@ -255,15 +205,6 @@ QCString selectBlock(const QCString& s,const QCString &name,bool which);
 QCString resolveDefines(const char *n);
 
 ClassDef *getClass(const char *key);
-
-const ClassDef *getResolvedClass(const Definition *scope,
-                           const FileDef *fileScope,
-                           const char *key,
-                           const MemberDef **pTypeDef=0,
-                           QCString *pTemplSpec=0,
-                           bool mayBeUnlinkable=FALSE,
-                           bool mayBeHidden=FALSE,
-                           QCString *pResolvedType=0);
 
 NamespaceDef *getResolvedNamespace(const char *key);
 
@@ -363,8 +304,6 @@ QCString substituteTemplateArgumentsInString(
        const ArgumentList &formalArgs,
        const std::unique_ptr<ArgumentList> &actualArgs);
 
-//QList<ArgumentList> *copyArgumentLists(const QList<ArgumentList> *srcLists);
-
 QCString stripTemplateSpecifiersFromScope(const QCString &fullName,
                                           bool parentOnly=TRUE,
                                           QCString *lastScopeStripped=0);
@@ -430,18 +369,6 @@ QCString stripExtension(const char *fName);
 
 void replaceNamespaceAliases(QCString &scope,int i);
 
-int isAccessibleFrom(AccessStack &accessStack,
-                     const Definition *scope,
-                     const FileDef *fileScope,
-                     const Definition *item);
-
-int isAccessibleFromWithExpScope(VisitedNamespaces &visitedNamespaces,
-                                 AccessStack &accessStack,
-                                 const Definition *scope,
-                                 const FileDef *fileScope,
-                                 const Definition *item,
-                                 const QCString &explicitScopePart);
-
 int computeQualifiedIndex(const QCString &name);
 
 void addDirPrefix(QCString &fileName);
@@ -464,16 +391,7 @@ QCString getFileNameExtension(QCString fn);
 void initDefaultExtensionMapping();
 void addCodeOnlyMappings();
 
-MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fileScope,
-                                const char *n);
 bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const char *n);
-
-const ClassDef *newResolveTypedef(const FileDef *fileScope,
-                                  const MemberDef *md,
-                                  const MemberDef **pMemType=0,
-                                  QCString *pTemplSpec=0,
-                                  QCString *pResolvedType=0,
-                                  const std::unique_ptr<ArgumentList> &actTemplParams=std::unique_ptr<ArgumentList>());
 
 QCString parseCommentAsText(const Definition *scope,const MemberDef *member,const QCString &doc,const QCString &fileName,int lineNr);
 
@@ -484,8 +402,6 @@ QCString recodeString(const QCString &str,const char *fromEncoding,const char *t
 QCString extractAliasArgs(const QCString &args,int pos);
 
 int countAliasArguments(const QCString argList);
-
-//QCString replaceAliasArguments(const QCString &aliasValue,const QCString &argList);
 
 QCString resolveAliasCmd(const QCString aliasCmd);
 QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
