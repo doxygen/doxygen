@@ -1046,7 +1046,11 @@ int Markdown::processLink(const char *data,int,int size)
         if (!(Portable::isAbsolutePath(link) || isURL(link)))
         {
           QFileInfo forg(link);
-          if (!(forg.exists() && forg.isReadable()))
+          if (forg.exists() && forg.isReadable())
+          {
+            link = forg.absFilePath().data();
+          }
+          else if (!(forg.exists() && forg.isReadable()))
           {
             QFileInfo fi(m_fileName);
             QCString mdFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + link;
@@ -2073,7 +2077,7 @@ void Markdown::writeOneLineHeaderOrRuler(const char *data,int size)
     int tmpSize = size;
     if (data[size-1] == '\n') tmpSize--;
     m_out.addStr(data,tmpSize);
-    
+
     if (hasLineBreak(data,size))
     {
       m_out.addStr("<br>");
