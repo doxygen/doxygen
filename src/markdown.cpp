@@ -784,6 +784,10 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
     m_out.addStr(title);
     m_out.addStr("\"");
   }
+  else
+  {
+    m_out.addStr(" ");// so the line break will not be part of the image name
+  }
   m_out.addStr("\\ilinebr");
 }
 
