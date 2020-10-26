@@ -811,18 +811,26 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n{BLANK}* {
                          lineCount(yytext,yyleng);
-                         g_token->indent=computeIndent(yytext,(int)yyleng);
-                         int i;
-                         // put back the indentation (needed for list items)
-                         for (i=0;i<g_token->indent;i++)
+                         if (g_insidePre)
                          {
-                           unput(' ');
+                           g_token->chars=yytext;
+                           return TK_WHITESPACE;
                          }
-                         // tell flex that after putting the last indent
-                         // back we are at the beginning of the line
-                         YY_CURRENT_BUFFER->yy_at_bol=1;
-                         // start of a new paragraph
-                         return TK_NEWPARA;
+                         else
+                         {
+                           g_token->indent=computeIndent(yytext,(int)yyleng);
+                           int i;
+                           // put back the indentation (needed for list items)
+                           for (i=0;i<g_token->indent;i++)
+                           {
+                             unput(' ');
+                           }
+                           // tell flex that after putting the last indent
+                           // back we are at the beginning of the line
+                           YY_CURRENT_BUFFER->yy_at_bol=1;
+                           // start of a new paragraph
+                           return TK_NEWPARA;
+                         }
                        }
 <St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
                          g_token->name = yytext;
