@@ -521,7 +521,6 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   // Load required packages
   t << "% Packages required by doxygen\n"
        "\\usepackage{fixltx2e}\n" // for \textsubscript
-       "\\usepackage{calc}\n"
        "\\usepackage{doxygen}\n";
   const StringVector &extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (const auto &extraStyle : extraLatexStyles)
@@ -547,13 +546,10 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   t << "\\usepackage{graphicx}\n"
        "\\usepackage[utf8]{inputenc}\n"
        "\\usepackage{makeidx}\n"
-       "\\usepackage{multicol}\n"
-       "\\usepackage{multirow}\n"
        "\\PassOptionsToPackage{warn}{textcomp}\n"
        "\\usepackage{textcomp}\n"
        "\\usepackage[nointegrals]{wasysym}\n"
-       "\\usepackage[table]{xcolor}\n"
-       "\\usepackage{ifpdf,ifxetex}\n"
+       "\\usepackage{ifxetex}\n"
        "\n";
 
   // Language support
@@ -577,8 +573,7 @@ static void writeDefaultHeaderPart1(FTextStream &t)
   {
     t << font;
   }
-  t << "\\usepackage{amssymb}\n"
-       "\\usepackage{sectsty}\n"
+  t << "\\usepackage{sectsty}\n"
        "\\allsectionsfont{%\n"
        "  \\fontseries{bc}\\selectfont%\n"
        "  \\color{darkgray}%\n"
