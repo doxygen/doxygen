@@ -296,6 +296,7 @@ add_library(doxymain STATIC
     searchindex.cpp
     sqlite3gen.cpp
     stlsupport.cpp
+    symbolresolver.cpp
     tagreader.cpp
     template.cpp
     textdocvisitor.cpp

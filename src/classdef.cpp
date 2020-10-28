@@ -50,6 +50,7 @@
 #include "namespacedef.h"
 #include "membergroup.h"
 #include "definitionimpl.h"
+#include "symbolresolver.h"
 
 //-----------------------------------------------------------------------------
 
@@ -3231,7 +3232,8 @@ void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCStri
   //printf("addTypeConstraint(%s,%s)\n",type.data(),typeConstraint.data());
   static bool hideUndocRelation = Config_getBool(HIDE_UNDOC_RELATIONS);
   if (typeConstraint.isEmpty() || type.isEmpty()) return;
-  ClassDef *cd = const_cast<ClassDef*>(getResolvedClass(this,getFileDef(),typeConstraint));
+  SymbolResolver resolver(getFileDef());
+  ClassDef *cd = const_cast<ClassDef*>(resolver.resolveClass(this,typeConstraint));
   if (cd==0 && !hideUndocRelation)
   {
     cd = new ClassDefImpl(getDefFileName(),getDefLine(),getDefColumn(),typeConstraint,ClassDef::Class);

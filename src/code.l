@@ -58,6 +58,7 @@
 #include "namespacedef.h"
 #include "tooltip.h"
 #include "scopedtypevariant.h"
+#include "symbolresolver.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -176,6 +177,7 @@ struct codeYY_state
   VariableContext theVarContext;
   CallContext     theCallContext;
   TooltipManager  tooltipManager;
+  SymbolResolver  symbolResolver;
 };
 
 static bool isCastKeyword(const QCString &s);
@@ -757,7 +759,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             yyextra->scopeStack.push(CLASSBLOCK);
                                             pushScope(yyscanner,yyextra->curClassName);
                                             DBG_CTX((stderr,"***** yyextra->curClassName=%s\n",yyextra->curClassName.data()));
-                                            if (getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,yyextra->curClassName)==0)
+                                            if (yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,yyextra->curClassName)==0)
                                             {
                                               DBG_CTX((stderr,"Adding new class %s\n",yyextra->curClassName.data()));
                                               ScopedTypeVariant var(yyextra->curClassName);
@@ -771,7 +773,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                                 {
                                                   bcd = dynamic_cast<const ClassDef*>(it->second.globalDef());
                                                 }
-                                                if (bcd==0) bcd=getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,s);
+                                                if (bcd==0) bcd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s);
                                                 if (bcd && bcd->name()!=yyextra->curClassName)
                                                 {
                                                   var.localDef()->insertBaseClass(bcd->name());
@@ -1699,7 +1701,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           {
                                             QCString scope = yyextra->name.left((uint)index);
                                             if (!yyextra->classScope.isEmpty()) scope.prepend(yyextra->classScope+"::");
-                                            const ClassDef *cd=getResolvedClass(Doxygen::globalScope,yyextra->sourceFileDef,scope);
+                                            const ClassDef *cd=yyextra->symbolResolver.resolveClass(Doxygen::globalScope,scope);
                                             if (cd)
                                             {
                                               setClassScope(yyscanner,cd->name());
@@ -2222,7 +2224,7 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
   }
   else
   {
-    const ClassDef *varDef = getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,ltype);
+    const ClassDef *varDef = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,ltype);
     int i=0;
     if (varDef)
     {
@@ -2570,11 +2572,11 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const char *s,const Def
     const ClassDef *cd=0;
     if (!yyextra->classScope.isEmpty())
     {
-      cd=getResolvedClass(d,yyextra->sourceFileDef,yyextra->classScope+"::"+clName);
+      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName);
     }
     if (cd==0)
     {
-      cd=getResolvedClass(d,yyextra->sourceFileDef,clName);
+      cd=yyextra->symbolResolver.resolveClass(d,clName);
     }
     //printf("stripClass trying '%s' = %p\n",clName.data(),cd);
     if (cd)
@@ -2632,7 +2634,7 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
     DBG_CTX((stderr,"local variable?\n"));
     if (mcv->type()!=ScopedTypeVariant::Dummy) // locally found variable
     {
-      DBG_CTX((stderr,"local var '%s' mcd=%s\n",name.data(),mcv.name().data()));
+      DBG_CTX((stderr,"local var '%s' mcd=%s\n",name.data(),mcv->name().data()));
       yyextra->theCallContext.setScope(*mcv);
     }
   }
@@ -2843,7 +2845,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   {
     const Definition *d = yyextra->currentDefinition;
     //printf("d=%s yyextra->sourceFileDef=%s\n",d?d->name().data():"<none>",yyextra->sourceFileDef?yyextra->sourceFileDef->name().data():"<none>");
-    cd = getResolvedClass(d,yyextra->sourceFileDef,className,&md);
+    cd = yyextra->symbolResolver.resolveClass(d,className);
+    md = yyextra->symbolResolver.getTypedef();
     DBG_CTX((stderr,"non-local variable name=%s cd=%s md=%s!\n",
     className.data(),cd?cd->name().data():"<none>",
         md?md->name().data():"<none>"));
@@ -2853,7 +2856,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       DBG_CTX((stderr,"bareName=%s\n",bareName.data()));
       if (bareName!=className)
       {
-        cd=getResolvedClass(d,yyextra->sourceFileDef,bareName,&md); // try unspecialized version
+        cd = yyextra->symbolResolver.resolveClass(d,bareName); // try unspecialized version
+        md = yyextra->symbolResolver.getTypedef();
       }
     }
     const NamespaceDef *nd = getResolvedNamespace(className);
@@ -2935,19 +2939,18 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     {
       if (md==0) // not found as a typedef
       {
-        AccessStack accessStack;
         md = setCallContextForVar(yyscanner,clName);
         //printf("setCallContextForVar(%s) md=%p yyextra->currentDefinition=%p\n",clName,md,yyextra->currentDefinition);
         if (md && yyextra->currentDefinition)
         {
           DBG_CTX((stderr,"%s accessible from %s? %d md->getOuterScope=%s\n",
               md->name().data(),yyextra->currentDefinition->name().data(),
-              isAccessibleFrom(accessStack,yyextra->currentDefinition,yyextra->sourceFileDef,md),
+              yyextra->symbolResolver.isAccessibleFrom(yyextra->currentDefinition,md),
               md->getOuterScope()->name().data()));
         }
 
         if (md && yyextra->currentDefinition &&
-            isAccessibleFrom(accessStack,yyextra->currentDefinition,yyextra->sourceFileDef,md)==-1)
+            yyextra->symbolResolver.isAccessibleFrom(yyextra->currentDefinition,md)==-1)
         {
           md=0; // variable not accessible
         }
@@ -3134,7 +3137,7 @@ static void generateMemberLink(yyscan_t yyscanner,
   }
   else // variable not in current context, maybe it is in a parent context
   {
-    const ClassDef *vcd = getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,yyextra->classScope);
+    const ClassDef *vcd = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,yyextra->classScope);
     if (vcd && vcd->isLinkable())
     {
       //printf("Found class %s for variable '%s'\n",yyextra->classScope.data(),varName.data());
@@ -3381,11 +3384,8 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
         }
         else
         {
-          ctx->objectType = getResolvedClass(
-              yyextra->currentDefinition,
-              yyextra->sourceFileDef,
-              ctx->objectTypeOrName,
-              &ctx->method);
+          ctx->objectType = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,ctx->objectTypeOrName);
+          ctx->method = yyextra->symbolResolver.getTypedef();
         }
         //printf("  object is class? %p\n",ctx->objectType);
         if (ctx->objectType) // found class
@@ -3547,8 +3547,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
             }
             else // object still needs to be resolved
             {
-              const ClassDef *cd = getResolvedClass(yyextra->currentDefinition,
-                  yyextra->sourceFileDef, object);
+              const ClassDef *cd = yyextra->symbolResolver.resolveClass(yyextra->currentDefinition, object);
               if (cd && cd->isLinkable())
               {
                 if (ctx->objectType==0) ctx->objectType=cd;
@@ -3836,6 +3835,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
   yyextra->inFunctionTryBlock = FALSE;
+  yyextra->symbolResolver.setFileScope(fd);
 
   if (startLine!=-1)
     yyextra->yyLineNr    = startLine;

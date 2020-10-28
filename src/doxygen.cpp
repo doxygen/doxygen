@@ -106,6 +106,7 @@
 #include "stlsupport.h"
 #include "threadpool.h"
 #include "clangparser.h"
+#include "symbolresolver.h"
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -1813,7 +1814,8 @@ static void findUsingDeclarations(const Entry *root)
                                 // vector -> std::vector
       if (usingCd==0)
       {
-        usingCd = const_cast<ClassDef*>(getResolvedClass(nd,fd,name)); // try via resolving (see also bug757509)
+        SymbolResolver resolver(fd);
+        usingCd = const_cast<ClassDef*>(resolver.resolveClass(nd,name)); // try via resolving (see also bug757509)
       }
       if (usingCd==0)
       {
@@ -1879,7 +1881,8 @@ static void findUsingDeclImports(const Entry *root)
       {
         QCString scope=root->name.left(i);
         QCString memName=root->name.right(root->name.length()-i-2);
-        const ClassDef *bcd = getResolvedClass(cd,0,scope); // todo: file in fileScope parameter
+        SymbolResolver resolver;
+        const ClassDef *bcd = resolver.resolveClass(cd,scope); // todo: file in fileScope parameter
         if (bcd && bcd!=cd)
         {
           //printf("found class %s memName=%s\n",bcd->name().data(),memName.data());
@@ -2433,8 +2436,9 @@ static bool isVarWithConstructor(const Entry *root)
   bool typePtrType = false;
   QCString type;
   Definition *ctx = 0;
-  FileDef *fd = 0;
+  FileDef *fd = root->fileDef();
   int ti;
+  SymbolResolver resolver(fd);
 
   //printf("isVarWithConstructor(%s)\n",rootNav->name().data());
   if (root->parent()->section & Entry::COMPOUND_MASK)
@@ -2442,9 +2446,7 @@ static bool isVarWithConstructor(const Entry *root)
     result=FALSE;
     goto done;
   }
-  else if ((fd = root->fileDef()) &&
-            (fd->name().right(2)==".c" || fd->name().right(2)==".h")
-          )
+  else if (fd->name().right(2)==".c" || fd->name().right(2)==".h")
   { // inside a .c file
     result=FALSE;
     goto done;
@@ -2467,10 +2469,10 @@ static bool isVarWithConstructor(const Entry *root)
   //if (type.left(6)=="const ") type=type.right(type.length()-6);
   if (!typePtrType)
   {
-    typeIsClass = getResolvedClass(ctx,fd,type)!=0;
+    typeIsClass = resolver.resolveClass(ctx,type)!=0;
     if (!typeIsClass && (ti=type.find('<'))!=-1)
     {
-      typeIsClass=getResolvedClass(ctx,fd,type.left(ti))!=0;
+      typeIsClass=resolver.resolveClass(ctx,type.left(ti))!=0;
     }
   }
   if (typeIsClass) // now we still have to check if the arguments are
@@ -2505,7 +2507,7 @@ static bool isVarWithConstructor(const Entry *root)
         result=FALSE;
         goto done;
       }
-      if (a.type.isEmpty() || getResolvedClass(ctx,fd,a.type)!=0)
+      if (a.type.isEmpty() || resolver.resolveClass(ctx,a.type)!=0)
       {
         result=FALSE; // arg type is a known type
         goto done;
@@ -3810,13 +3812,14 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
     return result;
   }
   FileDef *fd=cd->getFileDef();
+  SymbolResolver resolver(fd);
   if (context && cd!=context)
   {
-    result = const_cast<ClassDef*>(getResolvedClass(context,0,name,0,0,TRUE,TRUE));
+    result = const_cast<ClassDef*>(resolver.resolveClass(context,name,true,true));
   }
   if (result==0)
   {
-    result = const_cast<ClassDef*>(getResolvedClass(cd,fd,name,0,0,TRUE,TRUE));
+    result = const_cast<ClassDef*>(resolver.resolveClass(cd,name,true,true));
   }
   if (result==0) // try direct class, needed for namespaced classes imported via tag files (see bug624095)
   {
@@ -3875,12 +3878,8 @@ static void findUsedClassesForClass(const Entry *root,
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
         {
           // find the type (if any) that matches usedClassName
-          const ClassDef *typeCd = getResolvedClass(masterCd,
-              masterCd->getFileDef(),
-              usedClassName,
-              0,0,
-              FALSE,TRUE
-              );
+          SymbolResolver resolver(masterCd->getFileDef());
+          const ClassDef *typeCd = resolver.resolveClass(masterCd,usedClassName,false,true);
           //printf("====>  usedClassName=%s -> typeCd=%s\n",
           //     usedClassName.data(),typeCd?typeCd->name().data():"<none>");
           if (typeCd)
@@ -4259,17 +4258,15 @@ static bool findClassRelation(
       //baseClassName=stripTemplateSpecifiersFromScope
       //                    (removeRedundantWhiteSpace(baseClassName),TRUE,
       //                    &stripped);
-      const MemberDef *baseClassTypeDef=0;
-      QCString templSpec;
+      SymbolResolver resolver(cd->getFileDef());
       ClassDef *baseClass=const_cast<ClassDef*>(
-                                           getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
-                                           cd->getFileDef(),
+                                           resolver.resolveClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                            baseClassName,
-                                           &baseClassTypeDef,
-                                           &templSpec,
                                            mode==Undocumented,
-                                           TRUE
+                                           true
                                           ));
+      const MemberDef *baseClassTypeDef = resolver.getTypedef();
+      QCString templSpec = resolver.getTemplateSpec();
       //printf("baseClassName=%s baseClass=%p cd=%p explicitGlobalScope=%d\n",
       //    baseClassName.data(),baseClass,cd,explicitGlobalScope);
       //printf("    scope='%s' baseClassName='%s' baseClass=%s templSpec=%s\n",
@@ -4321,14 +4318,12 @@ static bool findClassRelation(
             templSpec=removeRedundantWhiteSpace(baseClassName.mid(i,e-i));
             baseClassName=baseClassName.left(i)+baseClassName.right(baseClassName.length()-e);
             baseClass=const_cast<ClassDef*>(
-                getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
-                   cd->getFileDef(),
+                resolver.resolveClass(explicitGlobalScope ? Doxygen::globalScope : context,
                   baseClassName,
-                  &baseClassTypeDef,
-                  0, //&templSpec,
                   mode==Undocumented,
-                  TRUE
+                  true
                   ));
+            baseClassTypeDef = resolver.getTypedef();
             //printf("baseClass=%p -> baseClass=%s templSpec=%s\n",
             //      baseClass,baseClassName.data(),templSpec.data());
           }
@@ -4354,18 +4349,16 @@ static bool findClassRelation(
         //printf("1. found=%d\n",found);
         if (!found && si!=-1)
         {
-          QCString tmpTemplSpec;
           // replace any namespace aliases
           replaceNamespaceAliases(baseClassName,si);
           baseClass=const_cast<ClassDef*>(
-                                     getResolvedClass(explicitGlobalScope ? Doxygen::globalScope : context,
-                                     cd->getFileDef(),
+                                     resolver.resolveClass(explicitGlobalScope ? Doxygen::globalScope : context,
                                      baseClassName,
-                                     &baseClassTypeDef,
-                                     &tmpTemplSpec,
                                      mode==Undocumented,
-                                     TRUE
+                                     true
                                     ));
+          baseClassTypeDef = resolver.getTypedef();
+          QCString tmpTemplSpec = resolver.getTemplateSpec();
           found=baseClass!=0 && baseClass!=cd;
           if (found) templSpec = tmpTemplSpec;
         }
@@ -5025,7 +5018,8 @@ static void addMemberDocs(const Entry *root,
 static const ClassDef *findClassDefinition(FileDef *fd,NamespaceDef *nd,
                          const char *scopeName)
 {
-  const ClassDef *tcd = getResolvedClass(nd,fd,scopeName,0,0,TRUE,TRUE);
+  SymbolResolver resolver(fd);
+  const ClassDef *tcd = resolver.resolveClass(nd,scopeName,true,true);
   return tcd;
 }
 

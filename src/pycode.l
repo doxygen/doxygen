@@ -53,6 +53,7 @@
 #include "namespacedef.h"
 #include "tooltip.h"
 #include "scopedtypevariant.h"
+#include "symbolresolver.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -107,6 +108,7 @@ struct pycodeYY_state
   VariableContext theVarContext;
   CallContext theCallContext;
   TooltipManager tooltipManager;
+  SymbolResolver symbolResolver;
 };
 
 
@@ -407,7 +409,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                         // Try to find class in global scope
                                         if (baseDefToAdd==0)
                                         {
-                                          baseDefToAdd=getResolvedClass(yyextra->currentDefinition,yyextra->sourceFileDef,s);
+                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s);
                                         }
 
                                         if (baseDefToAdd && baseDefToAdd->name()!=yyextra->curClassName)
@@ -966,11 +968,11 @@ static const ClassDef *stripClassName(yyscan_t yyscanner,const char *s,Definitio
     const ClassDef *cd=0;
     if (!yyextra->classScope.isEmpty())
     {
-      cd=getResolvedClass(d,yyextra->sourceFileDef,yyextra->classScope+"::"+clName);
+      cd=yyextra->symbolResolver.resolveClass(d,yyextra->classScope+"::"+clName);
     }
     if (cd==0)
     {
-      cd=getResolvedClass(d,yyextra->sourceFileDef,clName);
+      cd=yyextra->symbolResolver.resolveClass(d,clName);
     }
     if (cd)
     {
@@ -1280,7 +1282,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     Definition *d = yyextra->currentDefinition;
     QCString scope = substitute(className,".","::");
 
-    cd = getResolvedClass(d,yyextra->sourceFileDef,substitute(className,".","::"),&md);
+    cd = yyextra->symbolResolver.resolveClass(d,substitute(className,".","::"));
+    md = yyextra->symbolResolver.getTypedef();
 
     DBG_CTX((stderr,"d=%s yyextra->sourceFileDef=%s\n",
         d?d->displayName().data():"<null>",
@@ -1578,6 +1581,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->exampleBlock  = isExampleBlock;
   yyextra->exampleName   = exampleName;
   yyextra->sourceFileDef = fileDef;
+  yyextra->symbolResolver.setFileScope(fileDef);
 
   bool cleanupSourceDef = FALSE;
   if (yyextra->exampleBlock && fileDef==0)
