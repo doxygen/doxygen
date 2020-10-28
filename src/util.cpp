@@ -6981,7 +6981,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
         //printf("found marker at %d with len %d and number %d\n",
         //    markerStart-1,markerLen+1,atoi(aliasValue.mid(markerStart,markerLen)));
       }
-      markerStart=0; // outside marker
+      markerStart=(aliasValue.at(i)=='\\' ? i+1 : 0);
       markerEnd=0;
     }
   }
