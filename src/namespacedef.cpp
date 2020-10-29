@@ -59,8 +59,8 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     virtual int  numDocMembers() const;
     virtual void addUsingDirective(const NamespaceDef *nd);
     virtual const NamespaceSDict *getUsedNamespaces() const;
-    virtual void addUsingDeclaration(const Definition *def);
-    virtual const SDict<Definition> *getUsedClasses() const { return usingDeclList; }
+    virtual void addUsingDeclaration(const ClassDef *cd);
+    virtual LinkedRefMap<const ClassDef> getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations();
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString localName() const;
@@ -76,7 +76,7 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     virtual void distributeMemberGroupDocumentation();
     virtual void findSectionsInDocumentation();
     virtual void sortMemberLists();
-    virtual Definition *findInnerCompound(const char *name) const;
+    virtual const Definition *findInnerCompound(const char *name) const;
     virtual void addInnerCompound(const Definition *d);
     virtual void addListReferences();
     virtual void setFileName(const QCString &fn);
@@ -125,7 +125,7 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     FileList              files;
 
     NamespaceSDict       *usingDirList = 0;
-    SDict<Definition>    *usingDeclList = 0;
+    LinkedRefMap<const ClassDef> m_usingDeclList;
     SDict<Definition>    *m_innerCompounds = 0;
 
     MemberSDict          *m_allMembersDict = 0;
@@ -172,8 +172,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     virtual void addUsingDirective(const NamespaceDef *nd) {}
     virtual const NamespaceSDict *getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
-    virtual void addUsingDeclaration(const Definition *def) {}
-    virtual const SDict<Definition> *getUsedClasses() const
+    virtual void addUsingDeclaration(const ClassDef *cd) {}
+    virtual LinkedRefMap<const ClassDef> getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
     virtual void combineUsingRelations() {}
     virtual QCString displayName(bool b=TRUE) const
@@ -195,7 +195,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     { return getNSAlias()->isLinkable(); }
     virtual bool hasDetailedDescription() const
     { return getNSAlias()->hasDetailedDescription(); }
-    virtual Definition *findInnerCompound(const char *name) const
+    virtual const Definition *findInnerCompound(const char *name) const
     { return getNSAlias()->findInnerCompound(name); }
     virtual bool subGrouping() const
     { return getNSAlias()->subGrouping(); }
@@ -285,7 +285,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
   namespaceSDict = new NamespaceSDict(17);
   m_innerCompounds = new SDict<Definition>(17);
   usingDirList = 0;
-  usingDeclList = 0;
   m_allMembersDict = 0;
   setReference(lref);
   memberGroupSDict = new MemberGroupSDict;
@@ -320,7 +319,6 @@ NamespaceDefImpl::~NamespaceDefImpl()
   delete namespaceSDict;
   delete m_innerCompounds;
   delete usingDirList;
-  delete usingDeclList;
   delete memberGroupSDict;
   delete m_allMembersDict;
 }
@@ -1226,16 +1224,9 @@ const NamespaceSDict *NamespaceDefImpl::getUsedNamespaces() const
   return usingDirList;
 }
 
-void NamespaceDefImpl::addUsingDeclaration(const Definition *d)
+void NamespaceDefImpl::addUsingDeclaration(const ClassDef *cd)
 {
-  if (usingDeclList==0)
-  {
-    usingDeclList = new SDict<Definition>(17);
-  }
-  if (usingDeclList->find(d->qualifiedName())==0)
-  {
-    usingDeclList->append(d->qualifiedName(),d);
-  }
+  m_usingDeclList.add(cd->qualifiedName(),cd);
 }
 
 QCString NamespaceDefImpl::getOutputFileBase() const
@@ -1243,19 +1234,19 @@ QCString NamespaceDefImpl::getOutputFileBase() const
   return fileName;
 }
 
-Definition *NamespaceDefImpl::findInnerCompound(const char *n) const
+const Definition *NamespaceDefImpl::findInnerCompound(const char *n) const
 {
   if (n==0) return 0;
-  Definition *d = m_innerCompounds->find(n);
+  const Definition *d = m_innerCompounds->find(n);
   if (d==0)
   {
     if (usingDirList)
     {
       d = usingDirList->find(n);
     }
-    if (d==0 && usingDeclList)
+    if (d==0 && !m_usingDeclList.empty())
     {
-      d = usingDeclList->find(n);
+      d = m_usingDeclList.find(n);
     }
   }
   return d;
@@ -1343,15 +1334,9 @@ void NamespaceDefImpl::combineUsingRelations()
         }
       }
       // add used classes of namespace nd to this namespace
-      if (nd->getUsedClasses())
+      for (const auto &ucd : nd->getUsedClasses())
       {
-        SDict<Definition>::Iterator cli(*nd->getUsedClasses());
-        Definition *ucd;
-        for (cli.toFirst();(ucd=cli.current());++cli)
-        {
-          //printf("Adding class %s to the using list of %s\n",cd->qualifiedName().data(),qualifiedName().data());
-          addUsingDeclaration(ucd);
-        }
+        addUsingDeclaration(ucd);
       }
     }
   }

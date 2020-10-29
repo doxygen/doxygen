@@ -26,6 +26,7 @@
 #include "sortdict.h"
 #include "memberlist.h"
 #include "containers.h"
+#include "classlist.h"
 
 class MemberList;
 class FileDef;
@@ -117,7 +118,7 @@ class FileDef : virtual public Definition
     virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
     virtual NamespaceSDict *getUsedNamespaces() const = 0;
-    virtual SDict<Definition> *getUsedClasses() const = 0;
+    virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
     virtual QList<IncludeInfo> *includeFileList() const = 0;
     virtual QList<IncludeInfo> *includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
@@ -165,7 +166,7 @@ class FileDef : virtual public Definition
     virtual void setDirDef(DirDef *dd) = 0;
 
     virtual void addUsingDirective(const NamespaceDef *nd) = 0;
-    virtual void addUsingDeclaration(Definition *def) = 0;
+    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
     virtual void combineUsingRelations() = 0;
 
     virtual bool generateSourceFile() const = 0;

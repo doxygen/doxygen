@@ -79,7 +79,7 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual PackageDef *packageDef() const { return m_package; }
     virtual DirDef *getDirDef() const      { return m_dir; }
     virtual NamespaceSDict *getUsedNamespaces() const;
-    virtual SDict<Definition> *getUsedClasses() const      { return m_usingDeclList; }
+    virtual LinkedRefMap<const ClassDef> getUsedClasses() const  { return m_usingDeclList; }
     virtual QList<IncludeInfo> *includeFileList() const    { return m_includeList; }
     virtual QList<IncludeInfo> *includedByFileList() const { return m_includedByList; }
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
@@ -113,7 +113,7 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     virtual void setPackageDef(PackageDef *pd) { m_package=pd; }
     virtual void setDirDef(DirDef *dd) { m_dir=dd; }
     virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual void addUsingDeclaration(Definition *def);
+    virtual void addUsingDeclaration(const ClassDef *cd);
     virtual void combineUsingRelations();
     virtual bool generateSourceFile() const;
     virtual void sortMemberLists();
@@ -157,7 +157,7 @@ class FileDefImpl : public DefinitionImpl, public FileDef
     QDict<IncludeInfo>   *m_includedByDict;
     QList<IncludeInfo>   *m_includedByList;
     NamespaceSDict       *m_usingDirList;
-    SDict<Definition>    *m_usingDeclList;
+    LinkedRefMap<const ClassDef> m_usingDeclList;
     QCString              m_path;
     QCString              m_filePath;
     QCString              m_inclDepFileName;
@@ -241,7 +241,6 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
   m_srcDefDict        = 0;
   m_srcMemberDict     = 0;
   m_usingDirList      = 0;
-  m_usingDeclList     = 0;
   m_package           = 0;
   m_isSource          = guessSection(nm)==Entry::SOURCE_SEC;
   m_docname           = nm;
@@ -272,7 +271,6 @@ FileDefImpl::~FileDefImpl()
   delete m_srcDefDict;
   delete m_srcMemberDict;
   delete m_usingDirList;
-  delete m_usingDeclList;
   delete m_memberGroupSDict;
 }
 
@@ -1507,16 +1505,9 @@ NamespaceSDict *FileDefImpl::getUsedNamespaces() const
   return m_usingDirList;
 }
 
-void FileDefImpl::addUsingDeclaration(Definition *d)
+void FileDefImpl::addUsingDeclaration(const ClassDef *cd)
 {
-  if (m_usingDeclList==0)
-  {
-    m_usingDeclList = new SDict<Definition>(17);
-  }
-  if (m_usingDeclList->find(d->qualifiedName())==0)
-  {
-    m_usingDeclList->append(d->qualifiedName(),d);
-  }
+  m_usingDeclList.add(cd->qualifiedName(),cd);
 }
 
 void FileDefImpl::addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported)
@@ -1588,23 +1579,11 @@ void FileDefImpl::addIncludedUsingDirectives()
             }
           }
           // add using declarations
-          SDict<Definition> *udl = ii->fileDef->getUsedClasses();
-          if (udl)
+          auto  udl = ii->fileDef->getUsedClasses();
+          for (auto it = udl.rbegin(); it!=udl.rend(); ++it)
           {
-            SDict<Definition>::Iterator udi(*udl);
-            Definition *d;
-            for (udi.toLast();(d=udi.current());--udi)
-            {
-              //printf("Adding using declaration %s\n",d->name().data());
-              if (m_usingDeclList==0)
-              {
-                m_usingDeclList = new SDict<Definition>(17);
-              }
-              if (m_usingDeclList->find(d->qualifiedName())==0)
-              {
-                m_usingDeclList->prepend(d->qualifiedName(),d);
-              }
-            }
+            const auto *cd = *it;
+            m_usingDeclList.prepend(cd->qualifiedName(),cd);
           }
         }
       }
@@ -1955,15 +1934,9 @@ void FileDefImpl::combineUsingRelations()
         }
       }
       // add used classes of namespace nd to this namespace
-      if (nd->getUsedClasses())
+      for (const auto &ucd : nd->getUsedClasses())
       {
-        SDict<Definition>::Iterator cli(*nd->getUsedClasses());
-        Definition *ucd;
-        for (cli.toFirst();(ucd=cli.current());++cli)
-        {
-          //printf("Adding class %s to the using list of %s\n",cd->qualifiedName().data(),qualifiedName().data());
-          addUsingDeclaration(ucd);
-        }
+        addUsingDeclaration(ucd);
       }
     }
   }

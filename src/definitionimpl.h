@@ -72,7 +72,7 @@ class DefinitionImpl : virtual public Definition
     virtual GroupList *partOfGroups() const;
     virtual bool isLinkableViaGroup() const;
     virtual const RefItemVector &xrefListItems() const;
-    virtual Definition *findInnerCompound(const char *name) const;
+    virtual const Definition *findInnerCompound(const char *name) const;
     virtual Definition *getOuterScope() const;
     virtual std::vector<const MemberDef *> getReferencesMembers() const;
     virtual std::vector<const MemberDef *> getReferencedByMembers() const;
@@ -224,7 +224,7 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->isLinkableViaGroup(); }
     virtual const RefItemVector &xrefListItems() const
     { return m_def->xrefListItems(); }
-    virtual Definition *findInnerCompound(const char *name) const
+    virtual const Definition *findInnerCompound(const char *name) const
     { return m_def->findInnerCompound(name); }
     virtual Definition *getOuterScope() const
     { return const_cast<Definition*>(m_scope); }

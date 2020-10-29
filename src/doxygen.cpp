@@ -795,7 +795,7 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
     QCString nestedNameSpecifier = scope.mid(i1,l1);
     Definition *orgScope = resultScope;
     //printf("  nestedNameSpecifier=%s\n",nestedNameSpecifier.data());
-    resultScope = resultScope->findInnerCompound(nestedNameSpecifier);
+    resultScope = const_cast<Definition *>(resultScope->findInnerCompound(nestedNameSpecifier));
     //printf("  resultScope=%p\n",resultScope);
     if (resultScope==0)
     {

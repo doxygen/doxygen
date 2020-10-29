@@ -143,13 +143,13 @@ struct SymbolResolver::Private
 
     const Definition *followPath(const Definition *start,const QCString &path);
 
-    const Definition *endOfPathIsUsedClass(const SDict<Definition> *cl,const QCString &localName);
+    const Definition *endOfPathIsUsedClass(LinkedRefMap<const ClassDef> cl,const QCString &localName);
 
     bool accessibleViaUsingNamespace(StringUnorderedSet &visited,
                                      const NamespaceSDict *nl,
                                      const Definition *item,
                                      const QCString &explicitScopePart="");
-    bool accessibleViaUsingClass(const SDict<Definition> *cl,
+    bool accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
                                  const Definition *item,
                                  const QCString &explicitScopePart=""
                                 );
@@ -219,8 +219,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   bool hasUsingStatements =
     (m_fileScope && ((m_fileScope->getUsedNamespaces() &&
                       m_fileScope->getUsedNamespaces()->count()>0) ||
-                     (m_fileScope->getUsedClasses() &&
-                      m_fileScope->getUsedClasses()->count()>0))
+                     !m_fileScope->getUsedClasses().empty())
     );
   //printf("hasUsingStatements=%d\n",hasUsingStatements);
   // Since it is often the case that the same name is searched in the same
@@ -687,19 +686,12 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         // in A via a using directive.
         //printf("newScope is a namespace: %s!\n",newScope->name().data());
         const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(newScope);
-        const SDict<Definition> *cl = nscope->getUsedClasses();
-        if (cl)
+        for (const auto &cd : nscope->getUsedClasses())
         {
-          SDict<Definition>::Iterator cli(*cl);
-          const Definition *cd;
-          for (cli.toFirst();(cd=cli.current());++cli)
+          //printf("Trying for class %s\n",cd->name().data());
+          if (cd==item)
           {
-            //printf("Trying for class %s\n",cd->name().data());
-            if (cd==item)
-            {
-              //printf("> class is used in this scope\n");
-              goto done;
-            }
+            goto done;
           }
         }
         const NamespaceSDict *nl = nscope->getUsedNamespaces();
@@ -830,18 +822,13 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
   return current; // path could be followed
 }
 
-const Definition *SymbolResolver::Private::endOfPathIsUsedClass(const SDict<Definition> *cl,const QCString &localName)
+const Definition *SymbolResolver::Private::endOfPathIsUsedClass(LinkedRefMap<const ClassDef> cl,const QCString &localName)
 {
-  if (cl)
+  for (const auto &cd : cl)
   {
-    SDict<Definition>::Iterator cli(*cl);
-    Definition *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    if (cd->localName()==localName)
     {
-      if (cd->localName()==localName)
-      {
-        return cd;
-      }
+      return cd;
     }
   }
   return 0;
@@ -890,25 +877,18 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &vi
 }
 
 
-bool SymbolResolver::Private::accessibleViaUsingClass(const SDict<Definition> *cl,
+bool SymbolResolver::Private::accessibleViaUsingClass(const LinkedRefMap<const ClassDef> &cl,
                                                       const Definition *item,
                                                       const QCString &explicitScopePart)
 {
-  //printf("accessibleViaUsingClass(%p)\n",cl);
-  if (cl) // see if the class was imported via a using statement
+  for (const auto &ucd : cl)
   {
-    SDict<Definition>::Iterator cli(*cl);
-    Definition *ucd;
-    bool explicitScopePartEmpty = explicitScopePart.isEmpty();
-    for (cli.toFirst();(ucd=cli.current());++cli)
-    {
-      //printf("Trying via used class %s\n",ucd->name().data());
-      const Definition *sc = explicitScopePartEmpty ? ucd : followPath(ucd,explicitScopePart);
-      if (sc && sc==item) return TRUE;
-      //printf("Try via used class done\n");
-    }
+    //printf("Trying via used class %s\n",ucd->name().data());
+    const Definition *sc = explicitScopePart.isEmpty() ? ucd : followPath(ucd,explicitScopePart);
+    if (sc && sc==item) return true;
+    //printf("Try via used class done\n");
   }
-  return FALSE;
+  return false;
 }
 
 int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
@@ -952,8 +932,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
   {
     if (m_fileScope)
     {
-      SDict<Definition> *cl = m_fileScope->getUsedClasses();
-      if (accessibleViaUsingClass(cl,item))
+      if (accessibleViaUsingClass(m_fileScope->getUsedClasses(),item))
       {
         //printf("> found via used class\n");
         goto done;
@@ -976,8 +955,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
     {
       const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(scope);
       //printf("  %s is namespace with %d used classes\n",nscope->name().data(),nscope->getUsedClasses());
-      const SDict<Definition> *cl = nscope->getUsedClasses();
-      if (accessibleViaUsingClass(cl,item))
+      if (accessibleViaUsingClass(nscope->getUsedClasses(),item))
       {
         //printf("> found via used class\n");
         goto done;

@@ -1424,7 +1424,7 @@ void DefinitionImpl::addSourceReferences(const MemberDef *md)
   }
 }
 
-Definition *DefinitionImpl::findInnerCompound(const char *) const
+const Definition *DefinitionImpl::findInnerCompound(const char *) const
 {
   return 0;
 }

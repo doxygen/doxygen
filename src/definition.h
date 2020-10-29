@@ -263,7 +263,7 @@ class Definition
 
     virtual const RefItemVector &xrefListItems() const = 0;
 
-    virtual Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const char *name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
     virtual std::vector<const MemberDef *> getReferencesMembers() const = 0;

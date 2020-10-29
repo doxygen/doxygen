@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,6 +21,7 @@
 #include "sortdict.h"
 #include "definition.h"
 #include "filedef.h"
+#include "linkedmap.h"
 
 class MemberList;
 class ClassDef;
@@ -57,8 +56,8 @@ class NamespaceDef : virtual public Definition
     virtual int numDocMembers() const = 0;
     virtual void addUsingDirective(const NamespaceDef *nd) = 0;
     virtual const NamespaceSDict *getUsedNamespaces() const = 0;
-    virtual void addUsingDeclaration(const Definition *def) = 0;
-    virtual const SDict<Definition> *getUsedClasses() const = 0;
+    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
+    virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
     virtual void combineUsingRelations() = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString localName() const = 0;
@@ -77,7 +76,7 @@ class NamespaceDef : virtual public Definition
     virtual void findSectionsInDocumentation() = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const char *name) const = 0;
     virtual void addInnerCompound(const Definition *d) = 0;
     virtual void addListReferences() = 0;
     virtual void setFileName(const QCString &fn) = 0;
@@ -138,7 +137,7 @@ class NamespaceList : public QList<NamespaceDef>
 class NamespaceListIterator : public QListIterator<NamespaceDef>
 {
   public:
-    NamespaceListIterator(const NamespaceList &l) : 
+    NamespaceListIterator(const NamespaceList &l) :
       QListIterator<NamespaceDef>(l) {}
 };
 
