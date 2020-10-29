@@ -2446,7 +2446,7 @@ static bool isVarWithConstructor(const Entry *root)
     result=FALSE;
     goto done;
   }
-  else if (fd->name().right(2)==".c" || fd->name().right(2)==".h")
+  else if ((fd != nullptr) && (fd->name().right(2)==".c" || fd->name().right(2)==".h"))
   { // inside a .c file
     result=FALSE;
     goto done;
