@@ -5971,18 +5971,9 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   int markerEnd=0;
   for (i=0;i<l;i++)
   {
-    if (markerStart==0 && aliasValue.at(i)=='\\') // start of a \xx marker
+    if (markerStart>0 && !(aliasValue.at(i)>='0' && aliasValue.at(i)<='9'))
     {
-      markerStart=i+1;
-    }
-    else if (markerStart>0 && aliasValue.at(i)>='0' && aliasValue.at(i)<='9')
-    {
-      // read digit that make up the marker number
-      markerEnd=i+1;
-    }
-    else
-    {
-      if (markerStart>0 && markerEnd>markerStart) // end of marker
+      if (markerEnd>markerStart) // end of marker
       {
         int markerLen = markerEnd-markerStart;
         markerList.append(new Marker(markerStart-1, // include backslash
@@ -5990,8 +5981,26 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
         //printf("found marker at %d with len %d and number %d\n",
         //    markerStart-1,markerLen+1,atoi(aliasValue.mid(markerStart,markerLen)));
       }
-      markerStart=(aliasValue.at(i)=='\\' ? i+1 : 0);
+      markerStart=0;
       markerEnd=0;
+    }
+    // check for escaped command sign
+    if ((aliasValue.at(i) == '@' || aliasValue.at(i) == '\\')  &&
+        (((i+1)<l) && (aliasValue.at(i+1) == '@' || aliasValue.at(i+1) == '\\')))
+    {
+      markerStart=0;
+      markerEnd=0;
+      i++;
+      continue;
+    }
+    if (markerStart==0 && aliasValue.at(i)=='\\') // start of a possible \xx marker
+    {
+      markerStart=i+1;
+    }
+    else if (markerStart>0 && aliasValue.at(i)>='0' && aliasValue.at(i)<='9')
+    {
+      // read digit that make up the marker number
+      markerEnd=i+1;
     }
   }
   if (markerStart>0)
