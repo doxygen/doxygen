@@ -5942,8 +5942,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   //printf("----- replaceAliasArguments(val=[%s],args=[%s])\n",aliasValue.data(),argList.data());
 
   // first make a list of arguments from the comma separated argument list
-  QList<QCString> args;
-  args.setAutoDelete(TRUE);
+  std::vector<QCString> args;
   int i,l=(int)argList.length();
   int s=0;
   for (i=0;i<l;i++)
@@ -5951,7 +5950,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
     char c = argList.at(i);
     if (c==',' && (i==0 || argList.at(i-1)!='\\'))
     {
-      args.append(new QCString(argList.mid(s,i-s)));
+      args.push_back(QCString(argList.mid(s,i-s)));
       s=i+1; // start of next argument
     }
     else if (c=='@' || c=='\\')
@@ -5960,68 +5959,58 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
       i+=findEndOfCommand(argList.data()+i+1);
     }
   }
-  if (l>s) args.append(new QCString(argList.right(l-s)));
+  if (l>s) args.push_back(QCString(argList.right(l-s)));
   //printf("found %d arguments\n",args.count());
 
   // next we look for the positions of the markers and add them to a list
-  QList<Marker> markerList;
-  markerList.setAutoDelete(TRUE);
+  std::vector<Marker> markerList;
   l = aliasValue.length();
+  char pc='\0';
+  bool insideMarkerId=false;
   int markerStart=0;
-  int markerEnd=0;
+  auto isDigit = [](char c) { return c>='0' && c<='9'; };
   for (i=0;i<l;i++)
   {
-    if (markerStart==0 && aliasValue.at(i)=='\\') // start of a \xx marker
+    char c = aliasValue.at(i);
+    if (insideMarkerId && !isDigit(c)) // found end of a markerId
     {
-      markerStart=i+1;
+      insideMarkerId = false;
+      int markerLen = i-markerStart;
+      markerList.push_back(Marker(markerStart-1,
+                                  atoi(aliasValue.mid(markerStart,markerLen)),
+                                  markerLen+1));
     }
-    else if (markerStart>0 && aliasValue.at(i)>='0' && aliasValue.at(i)<='9')
+    if (c=='\\' && (pc=='@' || pc=='\\')) // found escaped backslash
     {
-      // read digit that make up the marker number
-      markerEnd=i+1;
+      // skip
+      pc = '\0';
     }
     else
     {
-      if (markerStart>0 && markerEnd>markerStart) // end of marker
+      if (isDigit(c) && pc=='\\') // found start of a markerId
       {
-        int markerLen = markerEnd-markerStart;
-        markerList.append(new Marker(markerStart-1, // include backslash
-                    atoi(aliasValue.mid(markerStart,markerLen)),markerLen+1));
-        //printf("found marker at %d with len %d and number %d\n",
-        //    markerStart-1,markerLen+1,atoi(aliasValue.mid(markerStart,markerLen)));
+        insideMarkerId=true;
+        markerStart=i;
       }
-      markerStart=(aliasValue.at(i)=='\\' ? i+1 : 0);
-      markerEnd=0;
+      pc = c;
     }
-  }
-  if (markerStart>0)
-  {
-    markerEnd=l;
-  }
-  if (markerStart>0 && markerEnd>markerStart)
-  {
-     int markerLen = markerEnd-markerStart;
-     markerList.append(new Marker(markerStart-1, // include backslash
-                 atoi(aliasValue.mid(markerStart,markerLen)),markerLen+1));
-     //printf("found marker at %d with len %d and number %d\n",
-     //    markerStart-1,markerLen+1,atoi(aliasValue.mid(markerStart,markerLen)));
   }
 
   // then we replace the markers with the corresponding arguments in one pass
   QCString result;
   int p=0;
-  for (i=0;i<(int)markerList.count();i++)
+  for (i=0;i<(int)markerList.size();i++)
   {
-    Marker *m = markerList.at(i);
-    result+=aliasValue.mid(p,m->pos-p);
+    const Marker &m = markerList.at(i);
+    result+=aliasValue.mid(p,m.pos-p);
     //printf("part before marker %d: '%s'\n",i,aliasValue.mid(p,m->pos-p).data());
-    if (m->number>0 && m->number<=(int)args.count()) // valid number
+    if (m.number>0 && m.number<=(int)args.size()) // valid number
     {
-      result+=expandAliasRec(aliasesProcessed,*args.at(m->number-1),TRUE);
+      result+=expandAliasRec(aliasesProcessed,args.at(m.number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    args.at(m->number-1)->data());
     }
-    p=m->pos+m->size; // continue after the marker
+    p=m.pos+m.size; // continue after the marker
   }
   result+=aliasValue.right(l-p); // append remainder
   //printf("string after replacement of markers: '%s'\n",result.data());
