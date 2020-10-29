@@ -5969,9 +5969,9 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   bool insideMarkerId=false;
   int markerStart=0;
   auto isDigit = [](char c) { return c>='0' && c<='9'; };
-  for (i=0;i<l;i++)
+  for (i=0;i<=l;i++)
   {
-    char c = aliasValue.at(i);
+    char c = i<l ? aliasValue.at(i) : '\0';
     if (insideMarkerId && !isDigit(c)) // found end of a markerId
     {
       insideMarkerId = false;
