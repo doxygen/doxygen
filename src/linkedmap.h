@@ -21,12 +21,26 @@
 #include <memory>
 #include <string>
 #include <algorithm>
+#include <cctype>
+
+#include "config.h"
+
+inline std::string LinkedMap_make_key(const char *k,bool case_sensitivity_support)
+{
+  std::string key(k ? k : "");
+  if (case_sensitivity_support && !Config_getBool(CASE_SENSE_NAMES))
+  {
+    // convert key to lower case
+    std::transform(key.begin(),key.end(),key.begin(),[](char c){ return std::tolower(c); });
+  }
+  return key;
+}
 
 //! @brief Container class representing a vector of objects with unique keys.
 //! @details Objects can efficiently be looked up given the key.
 //! Objects are owned by the container.
 //! When adding objects the order of addition is kept, and used while iterating.
-template<class T>
+template<class T, bool case_sensitivity_support=false>
 class LinkedMap
 {
   public:
@@ -40,10 +54,9 @@ class LinkedMap
 
     //! Find an object given the key.
     //! Returns a pointer to the element if found or nullptr if it is not found.
-    const T *find(const char *k) const
+    const T *find(const char *key) const
     {
-      std::string key = k ? std::string(k) : std::string();
-      auto it = m_lookup.find(key);
+      auto it = m_lookup.find(LinkedMap_make_key(key,case_sensitivity_support));
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
@@ -62,8 +75,8 @@ class LinkedMap
       T *result = find(k);
       if (result==nullptr)
       {
-        std::string key = k ? std::string(k) : std::string();
-        Ptr ptr = std::make_unique<T>(k,std::forward<Args>(args)...);
+        std::string key = LinkedMap_make_key(k,case_sensitivity_support);
+        Ptr ptr = std::make_unique<T>(key.c_str(),std::forward<Args>(args)...);
         result = ptr.get();
         m_lookup.insert({key,result});
         m_entries.push_back(std::move(ptr));
@@ -80,8 +93,8 @@ class LinkedMap
       T *result = find(k);
       if (result==nullptr)
       {
-        std::string key = k ? std::string(k) : std::string();
-        Ptr ptr = std::make_unique<T>(k,std::forward<Args>(args)...);
+        std::string key = LinkedMap_make_key(k,case_sensitivity_support);
+        Ptr ptr = std::make_unique<T>(key.c_str(),std::forward<Args>(args)...);
         result = ptr.get();
         m_lookup.insert({key,result});
         m_entries.push_front(std::move(ptr));
@@ -91,10 +104,9 @@ class LinkedMap
 
     //! Removes an object from the container and deletes it.
     //! Returns true if the object was delete or false it is was not found.
-    bool del(const char *k)
+    bool del(const char *key)
     {
-      std::string key = k ? std::string(k) : std::string();
-      auto it = m_lookup.find(key);
+      auto it = m_lookup.find(LinkedMap_make_key(key,case_sensitivity_support));
       if (it!=m_lookup.end())
       {
         auto vecit = std::find_if(m_entries.begin(),m_entries.end(),[obj=it->second](auto &el) { return el.get()==obj; });
@@ -126,6 +138,7 @@ class LinkedMap
     }
 
   private:
+
     Map m_lookup;
     Vec m_entries;
 };
@@ -134,7 +147,7 @@ class LinkedMap
 //! @details Objects can be efficiently be looked up given the key.
 //! Objects are \e not owned by the container, the container will only hold references.
 //! When adding objects the order of addition is kept, and used while iterating.
-template<class T>
+template<class T, bool case_sensitivity_support=false>
 class LinkedRefMap
 {
   public:
@@ -148,10 +161,9 @@ class LinkedRefMap
 
     //! find an object given the key.
     //! Returns a pointer to the object if found or nullptr if it is not found.
-    const T *find(const char *k) const
+    const T *find(const char *key) const
     {
-      std::string key = k ? std::string(k) : std::string();
-      auto it = m_lookup.find(key);
+      auto it = m_lookup.find(LinkedMap_make_key(key,case_sensitivity_support));
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
@@ -168,7 +180,7 @@ class LinkedRefMap
     {
       if (find(k)==nullptr) // new element
       {
-        std::string key = k ? std::string(k) : std::string();
+        std::string key = LinkedMap_make_key(k,case_sensitivity_support);
         m_lookup.insert({key,obj});
         m_entries.push_back(obj);
         return true;
@@ -186,7 +198,7 @@ class LinkedRefMap
     {
       if (find(k)==nullptr) // new element
       {
-        std::string key = k ? std::string(k) : std::string();
+        std::string key = LinkedMap_make_key(k,case_sensitivity_support);
         m_lookup.insert({key,obj});
         m_entries.insert(m_entries.begin(),obj);
         return true;
@@ -199,10 +211,9 @@ class LinkedRefMap
 
     //! Removes an object from the container and deletes it.
     //! Returns true if the object was delete or false it is was not found.
-    bool del(const char *k)
+    bool del(const char *key)
     {
-      std::string key = k ? std::string(k) : std::string();
-      auto it = m_lookup.find(key);
+      auto it = m_lookup.find(LinkedMap_make_key(key,case_sensitivity_support));
       if (it!=m_lookup.end())
       {
         auto vecit = std::find_if(m_entries.begin(),m_entries.end(),[obj=it->second](auto &el) { return el.get()==obj; });

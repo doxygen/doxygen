@@ -39,7 +39,7 @@ class FileName : public std::vector< std::unique_ptr<FileDef> >
 };
 
 /** Ordered dictionary of FileName objects. */
-class FileNameLinkedMap : public LinkedMap<FileName>
+class FileNameLinkedMap : public LinkedMap<FileName,true>
 {
 };
 
