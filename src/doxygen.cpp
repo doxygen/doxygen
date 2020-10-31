@@ -7810,11 +7810,21 @@ static void sortMemberLists()
 
 //----------------------------------------------------------------------------
 
-void computeTooltipTexts()
+static bool isSymbolHidden(const Definition *d)
+{
+  bool hidden = d->isHidden();
+  const Definition *parent = d->getOuterScope();
+  return parent ? hidden || isSymbolHidden(parent) : hidden;
+}
+
+static void computeTooltipTexts()
 {
   for (const auto &kv : Doxygen::symbolMap)
   {
-    kv.second->computeTooltip();
+    if (!isSymbolHidden(kv.second))
+    {
+      kv.second->computeTooltip();
+    }
   }
 }
 
