@@ -922,6 +922,9 @@ static void readIncludeFile(const char *incName)
 					  }
 					  BEGIN(g_lastState);
   					}
+<GetQuotedString>("\\\\"|"@\\"|"\\@"|"@@") {
+  					  g_tmpString+=yytext;
+  					}
 <GetQuotedString>"\\\""			{
   					  g_tmpString+='"';
   					}
