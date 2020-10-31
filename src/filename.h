@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "linkedmap.h"
+#include "config.h"
 
 class FileDef;
 
@@ -38,8 +39,38 @@ class FileName : public std::vector< std::unique_ptr<FileDef> >
     QCString m_pathName;
 };
 
+//! Custom combined key compare and hash functor that uses a lower case string in
+//! case CASE_SENSE_NAMES is set to NO.
+class FileNameFn
+{
+  public:
+    //! used as hash function
+    std::size_t operator()(const std::string& input) const noexcept
+    {
+      return std::hash<std::string>()(searchKey(input));
+    }
+    //! used as equal operator
+    bool operator() (const std::string &t1, const std::string &t2) const
+    {
+      return searchKey(t1) == searchKey(t2);
+    }
+  private:
+    std::string searchKey(std::string input) const
+    {
+      std::string key = input;
+      if (!Config_getBool(CASE_SENSE_NAMES))
+      {
+        // convert key to lower case
+        std::transform(key.begin(),key.end(),key.begin(),
+                       [](char c){ return (char)std::tolower(c); });
+      }
+      return key;
+    }
+};
+
 /** Ordered dictionary of FileName objects. */
-class FileNameLinkedMap : public LinkedMap<FileName,true>
+class FileNameLinkedMap : public LinkedMap<FileName,FileNameFn,FileNameFn,
+                                           std::unordered_multimap<std::string,FileName*,FileNameFn,FileNameFn> >
 {
 };
 
