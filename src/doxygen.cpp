@@ -7821,7 +7821,7 @@ static void computeTooltipTexts()
 {
   for (const auto &kv : Doxygen::symbolMap)
   {
-    if (!isSymbolHidden(kv.second))
+    if (!isSymbolHidden(kv.second) && kv.second->isLinkableInProject())
     {
       kv.second->computeTooltip();
     }
