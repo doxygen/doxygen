@@ -799,17 +799,13 @@ static Definition *findScopeFromQualifiedName(Definition *startScope,const QCStr
     //printf("  resultScope=%p\n",resultScope);
     if (resultScope==0)
     {
-      NamespaceSDict *usedNamespaces;
-      if (orgScope==Doxygen::globalScope && fileScope &&
-          (usedNamespaces = fileScope->getUsedNamespaces()))
+      if (orgScope==Doxygen::globalScope && fileScope && !fileScope->getUsedNamespaces().empty())
         // also search for used namespaces
       {
-        NamespaceSDict::Iterator ni(*usedNamespaces);
-        NamespaceDef *nd;
-        for (ni.toFirst();((nd=ni.current()) && resultScope==0);++ni)
+        for (const auto &nd : fileScope->getUsedNamespaces())
         {
-          // restart search within the used namespace
-          resultScope = findScopeFromQualifiedName(nd,n,fileScope,tagInfo);
+          resultScope = findScopeFromQualifiedName(const_cast<NamespaceDef*>(nd),n,fileScope,tagInfo);
+          if (resultScope!=0) break;
         }
         if (resultScope)
         {
@@ -1593,21 +1589,15 @@ static void buildNamespaceList(const Entry *root)
 
 //----------------------------------------------------------------------
 
-static const NamespaceDef *findUsedNamespace(const NamespaceSDict *unl,
+static const NamespaceDef *findUsedNamespace(const LinkedRefMap<const NamespaceDef> &unl,
                               const QCString &name)
 {
   const NamespaceDef *usingNd =0;
-  if (unl)
+  for (const auto &und : unl)
   {
-    //printf("Found namespace dict %d\n",unl->count());
-    NamespaceSDict::Iterator unli(*unl);
-    const NamespaceDef *und;
-    for (unli.toFirst();(und=unli.current());++unli)
-    {
-      QCString uScope=und->name()+"::";
-      usingNd = getResolvedNamespace(uScope+name);
-      //printf("Also trying with scope='%s' usingNd=%p\n",(uScope+name).data(),usingNd);
-    }
+    QCString uScope=und->name()+"::";
+    usingNd = getResolvedNamespace(uScope+name);
+    if (usingNd!=0) break;
   }
   return usingNd;
 }
@@ -5066,18 +5056,19 @@ static bool findGlobalMember(const Entry *root,
       {
         nd = md->getNamespaceDef();
       }
-      //const Definition *scope=md->getOuterScope();
-      //md = md->resolveAlias();
 
       const FileDef *fd=root->fileDef();
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
-      NamespaceSDict *nl = fd ? fd->getUsedNamespaces() : 0;
-      //SDict<Definition> *cl = fd ? fd->getUsedClasses()    : 0;
+      LinkedRefMap<const NamespaceDef> nl;
+      if (fd)
+      {
+        nl = fd->getUsedNamespaces();
+      }
       //printf("NamespaceList %p\n",nl);
 
       // search in the list of namespaces that are imported via a
       // using declaration
-      bool viaUsingDirective = nl && nd && nl->find(nd->qualifiedName())!=0;
+      bool viaUsingDirective = nd && nl.find(nd->qualifiedName())!=0;
 
       if ((namespaceName.isEmpty() && nd==0) ||  // not in a namespace
           (nd && nd->name()==namespaceName) ||   // or in the same namespace
@@ -5985,20 +5976,13 @@ static void findMember(const Entry *root,
      FileDef *fd=root->fileDef();
      if (fd)
      {
-       NamespaceSDict *fnl = fd->getUsedNamespaces();
-       if (fnl)
+       for (const auto &fnd : fd->getUsedNamespaces())
        {
-         QCString joinedName;
-         NamespaceDef *fnd;
-         NamespaceSDict::Iterator nsdi(*fnl);
-         for (nsdi.toFirst();(fnd=nsdi.current());++nsdi)
+         QCString joinedName = fnd->name()+"::"+scopeName;
+         if (Doxygen::namespaceSDict->find(joinedName))
          {
-           joinedName = fnd->name()+"::"+scopeName;
-           if (Doxygen::namespaceSDict->find(joinedName))
-           {
-             scopeName=joinedName;
-             break;
-           }
+           scopeName=joinedName;
+           break;
          }
        }
      }

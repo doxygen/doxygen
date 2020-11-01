@@ -58,7 +58,7 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     virtual void countMembers();
     virtual int  numDocMembers() const;
     virtual void addUsingDirective(const NamespaceDef *nd);
-    virtual const NamespaceSDict *getUsedNamespaces() const;
+    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const { return m_usingDirList; }
     virtual void addUsingDeclaration(const ClassDef *cd);
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const { return m_usingDeclList; }
     virtual void combineUsingRelations();
@@ -124,7 +124,7 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     QCString              fileName;
     FileList              files;
 
-    NamespaceSDict       *usingDirList = 0;
+    LinkedRefMap<const NamespaceDef> m_usingDirList;
     LinkedRefMap<const ClassDef> m_usingDeclList;
     SDict<Definition>    *m_innerCompounds = 0;
 
@@ -170,7 +170,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     virtual int numDocMembers() const
     { return getNSAlias()->numDocMembers(); }
     virtual void addUsingDirective(const NamespaceDef *nd) {}
-    virtual const NamespaceSDict *getUsedNamespaces() const
+    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
     virtual void addUsingDeclaration(const ClassDef *cd) {}
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const
@@ -284,7 +284,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
   exceptionSDict = new ClassSDict(17);
   namespaceSDict = new NamespaceSDict(17);
   m_innerCompounds = new SDict<Definition>(17);
-  usingDirList = 0;
   m_allMembersDict = 0;
   setReference(lref);
   memberGroupSDict = new MemberGroupSDict;
@@ -318,7 +317,6 @@ NamespaceDefImpl::~NamespaceDefImpl()
   delete exceptionSDict;
   delete namespaceSDict;
   delete m_innerCompounds;
-  delete usingDirList;
   delete memberGroupSDict;
   delete m_allMembersDict;
 }
@@ -1207,21 +1205,8 @@ int NamespaceDefImpl::numDocMembers() const
 
 void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)
 {
-  if (usingDirList==0)
-  {
-    usingDirList = new NamespaceSDict;
-  }
-  if (usingDirList->find(nd->qualifiedName())==0)
-  {
-    usingDirList->append(nd->qualifiedName(),nd);
-  }
-  //printf("%p: NamespaceDefImpl::addUsingDirective: %s:%d\n",this,name().data(),usingDirList->count());
-}
-
-const NamespaceSDict *NamespaceDefImpl::getUsedNamespaces() const
-{
-  //printf("%p: NamespaceDefImpl::getUsedNamespace: %s:%d\n",this,name().data(),usingDirList?usingDirList->count():0);
-  return usingDirList;
+  m_usingDirList.add(nd->qualifiedName(),nd);
+  //printf("%p: NamespaceDefImpl::addUsingDirective: %s:%d\n",this,name().data(),m_usingDirList->count());
 }
 
 void NamespaceDefImpl::addUsingDeclaration(const ClassDef *cd)
@@ -1240,9 +1225,9 @@ const Definition *NamespaceDefImpl::findInnerCompound(const char *n) const
   const Definition *d = m_innerCompounds->find(n);
   if (d==0)
   {
-    if (usingDirList)
+    if (!m_usingDirList.empty())
     {
-      d = usingDirList->find(n);
+      d = m_usingDirList.find(n);
     }
     if (d==0 && !m_usingDeclList.empty())
     {
@@ -1312,32 +1297,18 @@ void NamespaceDefImpl::combineUsingRelations()
 {
   if (m_visited) return; // already done
   m_visited=TRUE;
-  if (usingDirList)
+  for (auto &nd : m_usingDirList)
   {
-    NamespaceSDict::Iterator nli(*usingDirList);
-    NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+    const_cast<NamespaceDef*>(nd)->combineUsingRelations();
+    // add used namespaces of namespace nd to this namespace
+    for (const auto &und : nd->getUsedNamespaces())
     {
-      nd->combineUsingRelations();
+      addUsingDirective(und);
     }
-    for (nli.toFirst();(nd=nli.current());++nli)
+    // add used classes of namespace nd to this namespace
+    for (const auto &ucd : nd->getUsedClasses())
     {
-      // add used namespaces of namespace nd to this namespace
-      if (nd->getUsedNamespaces())
-      {
-        NamespaceSDict::Iterator unli(*nd->getUsedNamespaces());
-        NamespaceDef *und;
-        for (unli.toFirst();(und=unli.current());++unli)
-        {
-          //printf("Adding namespace %s to the using list of %s\n",und->qualifiedName().data(),qualifiedName().data());
-          addUsingDirective(und);
-        }
-      }
-      // add used classes of namespace nd to this namespace
-      for (const auto &ucd : nd->getUsedClasses())
-      {
-        addUsingDeclaration(ucd);
-      }
+      addUsingDeclaration(ucd);
     }
   }
 }

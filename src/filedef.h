@@ -117,7 +117,7 @@ class FileDef : virtual public Definition
 
     virtual PackageDef *packageDef() const = 0;
     virtual DirDef *getDirDef() const = 0;
-    virtual NamespaceSDict *getUsedNamespaces() const = 0;
+    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
     virtual QList<IncludeInfo> *includeFileList() const = 0;
     virtual QList<IncludeInfo> *includedByFileList() const = 0;

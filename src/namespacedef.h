@@ -55,7 +55,7 @@ class NamespaceDef : virtual public Definition
     virtual void countMembers() = 0;
     virtual int numDocMembers() const = 0;
     virtual void addUsingDirective(const NamespaceDef *nd) = 0;
-    virtual const NamespaceSDict *getUsedNamespaces() const = 0;
+    virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
     virtual void addUsingDeclaration(const ClassDef *cd) = 0;
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
     virtual void combineUsingRelations() = 0;
