@@ -3696,7 +3696,7 @@ static void transferFunctionReferences()
 
       if (mdef && mdec) break;
     }
-    if (mdef && mdec)
+    if (mdef && mdec && !mdef->isAlias() && !mdec->isAlias())
     {
       ArgumentList &mdefAl = mdef->argumentList();
       ArgumentList &mdecAl = mdec->argumentList();
