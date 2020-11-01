@@ -1297,9 +1297,14 @@ void NamespaceDefImpl::combineUsingRelations()
 {
   if (m_visited) return; // already done
   m_visited=TRUE;
-  for (auto &nd : m_usingDirList)
+  LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
+  for (auto &nd : usingDirList)
   {
     const_cast<NamespaceDef*>(nd)->combineUsingRelations();
+  }
+
+  for (auto &nd : usingDirList)
+  {
     // add used namespaces of namespace nd to this namespace
     for (const auto &und : nd->getUsedNamespaces())
     {
