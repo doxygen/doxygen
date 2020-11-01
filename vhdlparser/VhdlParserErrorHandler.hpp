@@ -34,7 +34,7 @@ class VhdlErrorHandler: public ErrorHandler
 
     virtual void handleOtherError(const JJString& message, VhdlParser *parser)
     {
-      warn(m_fileName, -1, "unexpected error: '%s'", (char*)message.c_str());
+      warn(m_fileName, -1, "unexpected error: '%ls'", (wchar_t*)message.c_str());
       error_count++;
       throw std::exception();
     }
@@ -55,7 +55,7 @@ class VhdlTokenManagerErrorHandler: public TokenManagerErrorHandler
 
     virtual void lexicalError(const JJString& errorMessage, VhdlParserTokenManager* token_manager)
     {
-      warn(m_fileName,-1,"Unknown error: '%s'", (char*)errorMessage.c_str());
+      warn(m_fileName,-1,"Unknown error: '%ls'", (wchar_t*)errorMessage.c_str());
     }
 
   private:

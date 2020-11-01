@@ -7,26 +7,26 @@
  * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
- *
+ *  
  */
+
 options {
   JAVA_UNICODE_ESCAPE = true;
+  UNICODE_INPUT = true;
   OUTPUT_LANGUAGE = "c++";
   NAMESPACE = "vhdl::parser";
   STATIC=false;
   PARSER_INCLUDES="vhdljjparser.h";
-  TOKEN_MANAGER_INCLUDES="vhdlstring.h";
- // TOKEN_MANAGER_USES_PARSER = true;
+  TOKEN_MANAGER_INCLUDES="TokenParser.h";
   TOKEN_MANAGER_SUPER_CLASS = "TokenParser";
+   
  // DEBUG_PARSER  = true;
- //OUTPUT_DIRECTORY = ".";
- //DEBUG_PARSER=true;
- //DEBUG_LOOKAHEAD=true;
+ // OUTPUT_DIRECTORY = ".";
+ // DEBUG_LOOKAHEAD=true;
 
   }
 
 PARSER_BEGIN(VhdlParser)
-
 
 struct SharedState
 {
@@ -53,9 +53,6 @@ void setOutlineParser(VHDLOutlineParser* p) { m_outlineParser=p; }
 VHDLOutlineParser *outlineParser() const { return m_outlineParser; }
 void setSharedState(SharedState *s) { m_sharedState=s; }
 void clearError() { hasError = false; }
-
-
-
 
 //typedef unsigned long long uint64;
 
@@ -103,8 +100,9 @@ SKIP:
   | <MULT_DOXYGEN_COMMENT: (<DOXYGEN_VHDL_COMMENT>)+ >
   {
     {
-    QCString doc(image.data());
-     int count=doc.contains("--!");
+     VhdlString im(image.data());
+	 QCString doc=im.data();
+     bool count=doc.contains("--!");
      parser->outlineParser()->setMultCommentLine();
     parser->outlineParser()->lineCount(image.data());
     if (count == 1)
@@ -114,10 +112,14 @@ SKIP:
     }
 
   }
-  |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { parser->outlineParser()->handleFlowComment(image.data());}
+  |<VHDL_FLOWCHART_COMMENT: "--#" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>  { 
+   VhdlString im(image.data());
+   parser->outlineParser()->handleFlowComment(im.data());
+   }
   |<VHDL_COMMENT: "--" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?>
   {
-    parser->outlineParser()->lineCount(image.data());}
+    VhdlString im(image.data());
+	parser->outlineParser()->lineCount(im.data());}
   }
 
 // VHDL 2008  comment /* .... */
@@ -127,13 +129,17 @@ SKIP :
   <MULT_DOXYGEN_VHDL_COMMENT_2008 : "/*!" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
   {
    {
-     QCString q = filter2008VhdlComment(image.data());
+     VhdlString im(image.data());
+	 QCString q = filter2008VhdlComment(im.data());
      parser->outlineParser()->handleCommentBlock(q.data(),TRUE);image.clear();
    }
   }
   | <MULT_VHDL_2008_COMMENT : "/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/">
     {
-      parser->outlineParser()->lineCount(image.data());image.clear();}
+      VhdlString im(image.data());
+	  parser->outlineParser()->lineCount(im.data());
+	  image.clear();
+	  }
     }
 
 /* KEYWORDS */
@@ -334,7 +340,7 @@ TOKEN:
 
 }
 
-QCString abstract_literal() :
+VhdlString abstract_literal() :
 {Token *tok;}
 {
    tok=<DECIMAL_LITERAL> { return tok->image.c_str(); }
@@ -342,15 +348,15 @@ QCString abstract_literal() :
  | tok=<BASED_LITERAL>   { return tok->image.c_str(); }
 }
 
-QCString access_type_definition() :
-{Token *tok=0;QCString str,str1;}
+VhdlString access_type_definition() :
+{Token *tok=0;VhdlString str,str1;}
 {
   tok=<ACCESS_T> str1=subtype_indication() { str=tok->image.c_str(); return str+str1; }
 }
 
 
-QCString actual_designator() :
-{QCString str;Token *t=0;}
+VhdlString actual_designator() :
+{VhdlString str;Token *t=0;}
 {
 t=<OPEN_T> { return t->image.c_str(); }
 |
@@ -363,14 +369,14 @@ LOOKAHEAD(expression())
 
 
 
-QCString actual_parameter_part() :
-{QCString s;}
+VhdlString actual_parameter_part() :
+{VhdlString s;}
 {
    s=association_list() { return s;}
 }
 
-QCString actual_part() :
-{QCString s,s1;}
+VhdlString actual_part() :
+{VhdlString s,s1;}
 {
  LOOKAHEAD(actual_designator())
  s=actual_designator() { return s;}
@@ -382,7 +388,7 @@ QCString actual_part() :
 
  }
 
-QCString adding_operator () :
+VhdlString adding_operator () :
 {}
 {
   <PLUS_T> { return "+";}
@@ -390,12 +396,12 @@ QCString adding_operator () :
   |<AMPERSAND_T> { return "&";}
 }
 
-QCString aggregate() :  {QCString s,s1,s2;}
+VhdlString aggregate() :  {VhdlString s,s1,s2;}
 {
   <LPAREN_T> s=element_association() (<COMMA_T> s1=element_association(){s+=","+s1;})* <RPAREN_T> { return "("+s+")";}
 }
 
-QCString alias_declaration() :  {QCString s,s1,s2;}
+VhdlString alias_declaration() :  {VhdlString s,s1,s2;}
 {
  <ALIAS_T> s2=alias_designator()
  [ <COLON_T>{ s+=":"; } s1=subtype_indication() { s+=s1; }]
@@ -408,7 +414,7 @@ QCString alias_declaration() :  {QCString s,s1,s2;}
 }
  }
 
-QCString alias_designator()  : {Token *tok=0;QCString s;}
+VhdlString alias_designator()  : {Token *tok=0;VhdlString s;}
 {
  s=identifier() { return s;}
  | tok=<CHARACTER_LITERAL> { return tok->image.c_str(); }
@@ -422,14 +428,17 @@ void allocator()  :{}
   |  <NEW_T> subtype_indication()
 }
 
-void architecture_body() : {QCString s,s1;}
+void architecture_body() : {VhdlString s,s1;}
 {
 
   <ARCHITECTURE_T> s=identifier() <OF_T> s1=name() <IS_T>
   {
-    QCString t=s1+"::"+s;
+    //VhdlString t=s1+"::"+s;
+	QCString str=s1.data();
+	QCString t=str+"::";
+	t+=s.data();
     m_sharedState->genLabels.resize(0);
-    outlineParser()->pushLabel(m_sharedState->genLabels,s1);
+    outlineParser()->pushLabel(m_sharedState->genLabels,str);
     m_sharedState->lastCompound=m_sharedState->current;
     outlineParser()->addVhdlType(t,outlineParser()->getLine(ARCHITECTURE_T),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
   }
@@ -459,7 +468,7 @@ void architecture_statement_part() :  {}
  // | (<VHDL2008TOOLDIR>)
 }
 
-QCString array_type_definition ():  { QCString s;}
+VhdlString array_type_definition ():  { VhdlString s;}
 {
 
  LOOKAHEAD(<ARRAY_T> index_constraint() <OF_T>)
@@ -469,7 +478,7 @@ QCString array_type_definition ():  { QCString s;}
   
 }
 
-QCString assertion() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
+VhdlString assertion() :  {VhdlString s,s1,s2;Token *t=0;Token *t1=0;}
 {
    <ASSERT_T> s=condition() [ t=<REPORT_T> s1=expression() ] [t1=<SEVERITY_T> s2=expression()]
  {
@@ -480,7 +489,7 @@ QCString assertion() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
  }
 }
 
-QCString assertion_statement() :  {QCString s,s1,s2;Token *t=0;}
+VhdlString assertion_statement() :  {VhdlString s,s1,s2;Token *t=0;}
 {
   [ s=label() t=<COLON_T> ] s1=assertion() <SEMI_T>
   {
@@ -488,18 +497,18 @@ QCString assertion_statement() :  {QCString s,s1,s2;Token *t=0;}
     return s+s1+";";
   }
 }
-QCString association_element() : {QCString s,s1;}
+VhdlString association_element() : {VhdlString s,s1;}
 {
  [LOOKAHEAD(formal_part() <ARROW_T>) s=formal_part() <ARROW_T> ] s1=actual_part()
  { return s+" => "+s1;}
 }
 
-QCString association_list ():  {QCString s,s1;}
+VhdlString association_list ():  {VhdlString s,s1;}
 {
 s=association_element() (<COMMA_T> s1=association_element() { s+=","+s1; })* { return s; }
 }
 
-QCString attribute_declaration() : {QCString s,s1;}
+VhdlString attribute_declaration() : {VhdlString s,s1;}
 {
  <ATTRIBUTE_T> s=identifier() <COLON_T> s1=type_mark() <SEMI_T>
   {
@@ -508,55 +517,55 @@ QCString attribute_declaration() : {QCString s,s1;}
   }
  }
 
-QCString attribute_designator (): {QCString s;Token *tok=0;}
+VhdlString attribute_designator (): {VhdlString s;Token *tok=0;}
 {
   s=identifier() { return s;}
   | tok=<RANGE_T> { return tok->image.c_str(); }
 }
 
 
-QCString attribute_name (): {QCString s,s1;}
+VhdlString attribute_name (): {VhdlString s,s1;}
 {
   s=identifier() <APOSTROPHE_T> (<RANGE_T> | s1=name()) { s+=s1; }[LOOKAHEAD(1)<LPAREN_T>s1=expression() <RPAREN_T> {s+=s1;}] { return s; }
  }
 
-QCString attribute_specification():  {QCString s,s1,s2;}
+VhdlString attribute_specification():  {VhdlString s,s1,s2;}
 {
   <ATTRIBUTE_T> s=attribute_designator() <OF_T> s1=entity_specification() <IS_T> s2=expression() <SEMI_T>
   {
-   QCString t= s1+" is "+s2;
+   VhdlString t= s1+" is "+s2;
    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,t.data(),Public);
    return " attribute "+s+" of "+s1+ " is "+s2+";";
   }
 }
 
-QCString base() :  {Token *tok=0;}
+VhdlString base() :  {Token *tok=0;}
 {
   tok=<INTEGER> { return tok->image.c_str();}
 }
 
-QCString base_specifier ():  {Token *tok=0;}
+VhdlString base_specifier ():  {Token *tok=0;}
 {
    tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
 
-QCString base_unit_declaration() :
-{QCString s;}
+VhdlString base_unit_declaration() :
+{VhdlString s;}
 {
   s=identifier() { return s; }
 }
 
-QCString based_integer() :  {Token *tok=0;}
+VhdlString based_integer() :  {Token *tok=0;}
 {
   tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
 
-QCString based_literal():  {Token *tok=0;}
+VhdlString based_literal():  {Token *tok=0;}
 {
  tok=<BASED_LITERAL> { return tok->image.c_str();}
 }
 
-QCString basic_identifier() :  {Token *tok=0;}
+VhdlString basic_identifier() :  {Token *tok=0;}
 {
   tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
@@ -568,13 +577,13 @@ void binding_indication() :  {}
  [ port_map_aspect() ]
 }
 
-QCString bit_string_literal ():  {Token *tok=0;}
+VhdlString bit_string_literal ():  {Token *tok=0;}
 {
   tok=<BIT_STRING_LITERAL> { return tok->image.c_str();}
 }
 
 
-QCString bit_value() :  {Token *tok=0;}
+VhdlString bit_value() :  {Token *tok=0;}
 {
   tok=<BASIC_IDENTIFIER> { return tok->image.c_str();}
 }
@@ -628,10 +637,12 @@ void block_specification() :  {}
   name() [ <LPAREN_T> index_specification() <RPAREN_T> ]
 }
 
-void block_statement() :  {QCString s;}
+void block_statement() :  {VhdlString s;}
 {
   s=identifier() <COLON_T>
-        <BLOCK_T> { outlineParser()->pushLabel(m_sharedState->genLabels,s); }[ <LPAREN_T> expression() <RPAREN_T> ] [ <IS_T> ]
+        <BLOCK_T> {
+			QCString s1=s.data();
+			outlineParser()->pushLabel(m_sharedState->genLabels,s1); }[ <LPAREN_T> expression() <RPAREN_T> ] [ <IS_T> ]
             block_header()
             block_declarative_part()
             <BEGIN_T>
@@ -647,12 +658,13 @@ void block_statement_part() :  {}
   ( concurrent_statement() )*
 }
 
-void  case_statement() : {QCString s;}
+void  case_statement() : {VhdlString s;}
 {
 [ identifier() [<Q_T>] <COLON_T> ]
   <CASE_T> s=expression()
     {
-     QCString ca="case "+s;
+     QCString ca="case ";
+	 ca+=s.data();
      FlowChart::addFlowChart(FlowChart::CASE_NO,0,ca);
     }
   <IS_T>
@@ -665,23 +677,24 @@ void  case_statement() : {QCString s;}
         }
 }
 
-void case_statement_alternative() :  {QCString s;}
+void case_statement_alternative() :  {VhdlString s;}
 {
   <WHEN_T> s=choices() <ARROW_T>
    {
     QCString t="when ";
-    t+=s+"=> ";
+	t+=s.data();
+    t+="=> ";
     FlowChart::addFlowChart(FlowChart::WHEN_NO,s.data(),t);
     }
   sequence_of_statement(){FlowChart::moveToPrevLevel(); }
 }
 
-QCString character_literal() :  {Token *tok=0;}
+VhdlString character_literal() :  {Token *tok=0;}
 {
   tok=<CHARACTER_LITERAL>{ return tok->image.c_str();}
 }
 
-QCString choice() : {QCString s;}
+VhdlString choice() : {VhdlString s;}
 {
    LOOKAHEAD(simple_expression() direction ())
   s=range() { return s;}
@@ -697,7 +710,7 @@ QCString choice() : {QCString s;}
 }
 
 
-QCString choices() :  {QCString s,s1;}
+VhdlString choices() :  {VhdlString s,s1;}
 {
   s=choice() (<BAR_T> s1=choice(){s+="|";s+=s1;})* { return s; }
 }
@@ -709,7 +722,7 @@ void component_configuration () :{}
         [ block_configuration() ]
     <END_T> <FOR_T> <SEMI_T>
 }
-void component_declaration() :  {QCString s;}
+void component_declaration() :  {VhdlString s;}
 {
  <COMPONENT_T> s=identifier() [ <IS_T> ]
    { m_sharedState->currP=VhdlDocGen::COMPONENT; }
@@ -723,7 +736,7 @@ void component_declaration() :  {QCString s;}
 
 }
 
-void component_instantiation_statement() :  {QCString s,s1;}
+void component_instantiation_statement() :  {VhdlString s,s1;}
 {
 
  s=identifier() <COLON_T>
@@ -746,7 +759,7 @@ void component_specification() :  {}
 instantiation_list() <COLON_T> name()
 }
 
-QCString composite_type_definition() :  { QCString s,s1;}
+VhdlString composite_type_definition() :  { VhdlString s,s1;}
 {
  s=array_type_definition(){ return s; }
 | record_type_definition(){ return s+"#"; }
@@ -803,12 +816,12 @@ concurrent_procedure_call_statement()
  
 }
 
-QCString condition() :  {QCString s;}
+VhdlString condition() :  {VhdlString s;}
 {
   s=expression() { return s; }
 }
 
-QCString condition_clause() :  {QCString s;}
+VhdlString condition_clause() :  {VhdlString s;}
 {
   <UNTIL_T> s=condition()
   {
@@ -832,12 +845,12 @@ waveform()
 
 
 
-void configuration_declaration() :  {QCString s,s1;}
+void configuration_declaration() :  {VhdlString s,s1;}
 {
  <CONFIGURATION_T> s=identifier() <OF_T> s1=name() <IS_T>
   {
-
-  m_sharedState->confName=s+"::"+s1;
+   VhdlString co=s+"::"+s1;
+  m_sharedState->confName=co.data();
   outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONFIGURATION_T),Entry::VARIABLE_SEC,VhdlDocGen::CONFIG,"configuration",s1.data(),Public);
   }
     configuration_declarative_part()
@@ -871,20 +884,20 @@ void configuration_specification() :  {}
 <FOR_T> component_specification() binding_indication() <SEMI_T>
 }
 
-QCString constant_declaration() :  {QCString s,s1,s2;Token *t=0;}
+VhdlString constant_declaration() :  {VhdlString s,s1,s2;Token *t=0;}
 {
    <CONSTANT_T> s=identifier_list() <COLON_T> s1= subtype_indication() [ t=<VARASSIGN_T> s2=expression() ] <SEMI_T>
     {
      if(t)
       s2.prepend(":=");
-     QCString it=s1+s2;
+     VhdlString it=s1+s2;
      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONSTANT_T),Entry::VARIABLE_SEC,VhdlDocGen::CONSTANT,0,it.data(),Public);
      it.prepend("constant ");
      return it;
     }
 }
 
-QCString constraint_array_definition (): {QCString s,s1;}
+VhdlString constraint_array_definition (): {VhdlString s,s1;}
 {
 <ARRAY_T> s=index_constraint() <OF_T> s1=subtype_indication(){ return s+" "+s1;}
 }
@@ -895,7 +908,7 @@ void context_clause (): {}
   (LOOKAHEAD(3) context_item())*
 }
 
-QCString constraint () :{QCString s;}
+VhdlString constraint () :{VhdlString s;}
  {
     LOOKAHEAD(range_constraint())
     s=range_constraint(){ return s;}
@@ -912,13 +925,13 @@ void context_item() :  {}
 | context_ref() 
 }
 
-QCString decimal_literal() :  {Token *tok=0;}
+VhdlString decimal_literal() :  {Token *tok=0;}
 {
  tok=<DECIMAL_LITERAL> { return tok->image.c_str(); }
 }
 
 
-QCString delay_mechanism ():  {QCString s;}
+VhdlString delay_mechanism ():  {VhdlString s;}
 {
 <TRANSPORT_T> { return " transport ";}
 | [ <REJECT_T> s=expression() {s.prepend(" reject ");}] <INERTIAL_T> { return s+" inertial "; }
@@ -936,13 +949,13 @@ void design_unit() :  {}
 
 }
 
-QCString designator() : {QCString s;}
+VhdlString designator() : {VhdlString s;}
 {
  s=identifier()          {return s;}
  | s=operator_symbol(){return s;}
 }
 
-QCString direction ():  {Token *tok=0;}
+VhdlString direction ():  {Token *tok=0;}
 {
 tok=<TO_T>  { return tok->image.c_str();}
 | tok=<DOWNTO_T> { return tok->image.c_str();}
@@ -958,7 +971,7 @@ void guarded_signal_specificatio() : {}
  signal_list() <COLON_T> name()
 }
 
-QCString discrete_range() : {QCString s;}
+VhdlString discrete_range() : {VhdlString s;}
 {
   LOOKAHEAD(range())
   s=range() { return s;}
@@ -967,7 +980,7 @@ QCString discrete_range() : {QCString s;}
    s=subtype_indication() { return s;}
 }
 
-QCString element_association() :  {QCString s,s1;}
+VhdlString element_association() :  {VhdlString s,s1;}
 {
 [LOOKAHEAD(choices() <ARROW_T>) s=choices() <ARROW_T> ]  s1=expression()
  {
@@ -977,32 +990,32 @@ return s1;
  }
 }
 
-QCString element_declaration() :  {QCString rec_name,s1,s2;}
+VhdlString element_declaration() :  {VhdlString rec_name,s1;}
 {
 rec_name=identifier_list() <COLON_T> s1=subtype_indication() <SEMI_T>
 {
    QCString name;
-   QCStringList ql=QCStringList::split(",",rec_name);
+   QCString rec=rec_name.data();
+   QCStringList ql=QCStringList::split(",",rec);
    for (uint j=0;j<ql.count();j++)
    {
     name=ql[j]+"~";
     name+=outlineParser()->getNameID().data();;
     outlineParser()->addVhdlType(name.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s1.data(),Public);
    }
-   s2=rec_name+":"+s1;
-   return s2;
+   return rec_name+":"+s1;;
  }
 }
 
 
-QCString entity_aspect() :  {Token *tok=0;QCString s,s1;}
+VhdlString entity_aspect() :  {Token *tok=0;VhdlString s,s1;}
 {
 tok=<ENTITY_T> s=name() [ LOOKAHEAD(1)<LPAREN_T> s1=identifier() <RPAREN_T> {s+="("+s1+")";} ] { return s;}
 | tok=<CONFIGURATION_T> s=name() { return tok->image.c_str()+s;}
 | tok=<OPEN_T> { return tok->image.c_str(); }
 }
 
-QCString entity_class() :  {}
+VhdlString entity_class() :  {}
 {
 <ENTITY_T> { return "entity";}
 | <ARCHITECTURE_T> {return "architecture";}
@@ -1023,17 +1036,17 @@ QCString entity_class() :  {}
 | <FILE_T>  {return "file";}
 }
 
-QCString entity_class_entry() :  {QCString s;}
+VhdlString entity_class_entry() :  {VhdlString s;}
 {
  s=entity_class() [ <BOX_T> {s+="<>";} ] { return s;}
 }
 
-QCString entity_class_entry_list() :  {QCString s,s1,s2;}
+VhdlString entity_class_entry_list() :  {VhdlString s,s1,s2;}
 {
  ( s1=entity_class_entry() {s+=s1;} )(<COMMA_T> s=entity_class_entry(){s2+=",";s2+=s;}  )* { return s1+s2;}
 }
 
-void entity_declaration() :  {QCString s;}
+void entity_declaration() :  {VhdlString s;}
 {
    // try{
     <ENTITY_T> s=identifier()  <IS_T>
@@ -1084,7 +1097,7 @@ void entity_declarative_part() : {}
   (entity_declarative_item() )*
 }
 
-QCString entity_designator() :  {QCString s,s1;}
+VhdlString entity_designator() :  {VhdlString s,s1;}
 {
 s=entity_tag() [ s1=signature() ] { return s+s1;}
 }
@@ -1095,7 +1108,7 @@ void entity_header() : {}
  [ { m_sharedState->currP=VhdlDocGen::PORT; } port_clause()]
 }
 
-QCString entity_name_list() :  {QCString s,s1,s2;}
+VhdlString entity_name_list() :  {VhdlString s,s1,s2;}
 {
 (s1=entity_designator() ) (<COMMA_T> s=entity_designator() { s2+=s;  } )* { return s2;}
 | <OTHER_T> { return "other";}
@@ -1104,7 +1117,7 @@ QCString entity_name_list() :  {QCString s,s1,s2;}
 
 
 
-QCString entity_specification() :  {QCString s,s1;}
+VhdlString entity_specification() :  {VhdlString s,s1;}
 {
 s=entity_name_list() <COLON_T> s1=entity_class(){ return s+":"+s1;}
 }
@@ -1126,25 +1139,25 @@ void entity_statement_part() :  {}
 }
 
 
-QCString entity_tag ():  {QCString s;}
+VhdlString entity_tag ():  {VhdlString s;}
 {
 s=name() { return s;}
 | s=character_literal() { return s;}
 }
 
-QCString enumeration_literal() :  {QCString s;}
+VhdlString enumeration_literal() :  {VhdlString s;}
 {
  s=identifier() { return s;}
  | s=character_literal() { return s;}
 }
 
-QCString enumeration_type_definition() : {QCString s,s1;}
+VhdlString enumeration_type_definition() : {VhdlString s,s1;}
 {
   <LPAREN_T>s=enumeration_literal() (LOOKAHEAD(1)<COMMA_T> s1=enumeration_literal() {s+=",";s+=s1;} )* <RPAREN_T>
   { return "("+s+")";}
 }
 
-QCString exit_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
+VhdlString exit_statement() :  {VhdlString s,s1,s2;Token *t=0;Token *t1=0;}
 {
 [ s=identifier() t=<COLON_T> ] <EXIT_T> [ s1=identifier() ]
 [ t1=<WHEN_T> s2=condition() ] <SEMI_T>
@@ -1158,13 +1171,13 @@ QCString exit_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 }
 }
 
-QCString expression ():  {QCString s,s1,s2;}
+VhdlString expression ():  {VhdlString s,s1,s2;}
 {
 s=relation() ( s1=logop() s2=relation() {s+=s1;s+=s2;} )*
 { return s; }
 }
 
-QCString logop() : {}
+VhdlString logop() : {}
 {
   <AND_T> { return "and" ;}
   |<NAND_T> { return "nand" ;}
@@ -1174,12 +1187,12 @@ QCString logop() : {}
   |<OR_T> { return "or" ;}
  }
 
-QCString extended_identifier ():  {Token *t;}
+VhdlString extended_identifier ():  {Token *t;}
 {
  t=<EXTENDED_CHARACTER> { return t->image.c_str(); }
 }
 
-QCString factor():  {QCString s,s1;}
+VhdlString factor():  {VhdlString s,s1;}
 {
 s=primary() [LOOKAHEAD(1) <DOUBLEMULT_T> s1=primary(){ s+="**";s+=s1;} ] { return s;}
 | <ABS_T> s=primary(){ s1 = "abs "; return s1+s; }
@@ -1189,54 +1202,54 @@ s=primary() [LOOKAHEAD(1) <DOUBLEMULT_T> s1=primary(){ s+="**";s+=s1;} ] { retur
 
 }
 
-QCString file_declaration() :  {QCString s,s1,s2,s3;}
+VhdlString file_declaration() :  {VhdlString s,s1,s2,s3;}
 {
  <FILE_T> s=identifier_list() <COLON_T> s2=subtype_indication() [ s3=file_open_information() ] <SEMI_T>
    {
-   QCString t1=s2+" "+s3;
+   VhdlString t1=s2+" "+s3;
    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,t1.data(),Public);
    return " file "+s+":"+s2+" "+s3+";";
    }
  }
 
-QCString  file_logical_name():  {QCString s;}
+VhdlString  file_logical_name():  {VhdlString s;}
 {
  s=expression() { return s; }
 }
 
-QCString file_open_information() :  {QCString s,s1,s2;}
+VhdlString file_open_information() :  {VhdlString s,s1,s2;}
 {
  [ <OPEN_T> s=expression() ] <IS_T> [inout_stat()] s1=file_logical_name() {s2="open "+s+" is "+s1;  return s2; }
 }
 
-QCString file_type_definition() :  {QCString s,s1;}
+VhdlString file_type_definition() :  {VhdlString s,s1;}
 {
  <FILE_T> <OF_T> s=type_mark() { s1=" file of "+s; return s1;}
 }
 
-QCString floating_type_definition() :  {QCString s;}
+VhdlString floating_type_definition() :  {VhdlString s;}
 {
   s=range_constraint(){ return s;}
 }
 
-QCString formal_designator() : {QCString s;Token *tok=0;}
+VhdlString formal_designator() : {VhdlString s;Token *tok=0;}
 {
     s=name()  { return s; }
     |tok=<INTEGER> { return tok->image.c_str();}
 }
 
 
-QCString formal_parameter_list() :  {QCString s;}
+VhdlString formal_parameter_list() :  {VhdlString s;}
 {
  s=interface_list(){ return s; }
 }
 
-QCString formal_part() : {QCString s,s1;}
+VhdlString formal_part() : {VhdlString s,s1;}
 {
 s=name() [<LPAREN_T> formal_designator() <RPAREN_T> {s+"("+s1+")";}] {return s;}
 }
 
-QCString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;QCString s,s1,s2; }
+VhdlString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;VhdlString s,s1,s2; }
 {
   <TYPE_T> s=identifier() <IS_T>
   {
@@ -1248,37 +1261,40 @@ QCString full_type_declaration() :  { std::shared_ptr<Entry> tmpEntry;QCString s
   
   <SEMI_T>
   {
-     if (s2.contains("#")) {
-      VhdlDocGen::deleteAllChars(s2,'#');
+     QCString str=s2.data();
+     if (str.contains("#")) {
+      VhdlDocGen::deleteAllChars(str,'#');
       tmpEntry->spec=VhdlDocGen::RECORD;
-      tmpEntry->type=s2.data();
+      tmpEntry->type=str.data();
     }
-    else if (s2.contains("%")) {
-      VhdlDocGen::deleteAllChars(s2,'%');
+    else if (str.contains("%")) {
+      VhdlDocGen::deleteAllChars(str,'%');
       tmpEntry->spec=VhdlDocGen::UNITS;
-      tmpEntry->type=s2.data();
+      tmpEntry->type=str.data();
      }
     else {
       tmpEntry->spec=VhdlDocGen::TYPE;
-      tmpEntry->type=s2.data();
+      tmpEntry->type=str.data();
     }
    
     tmpEntry.reset();
-    return "type "+s+" is "+s2+";";
+    return "type "+s+" is "+str.data()+";";
   }
 }
 
-QCString function_call() :  {QCString s,s1;}
+VhdlString function_call() :  {VhdlString s,s1;}
 {
 s=name()  <LPAREN_T> s1=actual_parameter_part()  <RPAREN_T> { return s+"("+s1+")";}
 }
 
-void generate_statement() :  {QCString s;}
+void generate_statement() :  {VhdlString s;}
 {
 s=identifier() <COLON_T>
           try{
         generate_scheme() <GENERATE_T>
-        { outlineParser()->pushLabel(m_sharedState->genLabels,s); }
+        { 
+		  QCString str=s.data();
+		  outlineParser()->pushLabel(m_sharedState->genLabels,str); }
           generate_statement_body1()
         <END_T>
                  }catch(...){outlineParser()->error_skipto(GENERATE_T);}
@@ -1291,12 +1307,12 @@ void generate_scheme() : {}
 | <IF_T> [LOOKAHEAD(2) identifier() <COLON_T> ] condition()
 }
 
-void generic_clause() : {QCString s;}
+void generic_clause() : {VhdlString s;}
 {
  <GENERIC_T>  <LPAREN_T> { m_sharedState->parse_sec=GEN_SEC; } s=generic_list() <RPAREN_T> <SEMI_T> { m_sharedState->parse_sec=0; }
 }
 
-QCString generic_list() :  {QCString s;}
+VhdlString generic_list() :  {VhdlString s;}
 {
  s=interface_list() { return s; }
 }
@@ -1306,18 +1322,18 @@ void generic_map_aspect() :  {}
      <GENERIC_T> <MAP_T> <LPAREN_T> association_list() <RPAREN_T>
 }
 
-QCString group_constituent() :  {QCString s;}
+VhdlString group_constituent() :  {VhdlString s;}
 {
  s=name() { return s; }
  | s=character_literal() { return s;}
 }
 
-QCString group_constituent_list() : {QCString s,s1,s2;}
+VhdlString group_constituent_list() : {VhdlString s,s1,s2;}
 {
   (s1=group_constituent())(<COMMA_T> s=group_constituent(){s2+=",";s2+=s1;})* { return s+s2;}
 }
 
-QCString group_declaration() :  {QCString s,s1,s2;}
+VhdlString group_declaration() :  {VhdlString s,s1,s2;}
 {
   <GROUP_T> s=identifier() <COLON_T> s1=identifier() <LPAREN_T> s2=group_constituent_list() <RPAREN_T> <SEMI_T>
   {
@@ -1325,7 +1341,7 @@ QCString group_declaration() :  {QCString s,s1,s2;}
   }
 }
 
-QCString group_template_declaration() : {QCString s,s1;}
+VhdlString group_template_declaration() : {VhdlString s,s1;}
 {
  <GROUP_T> s=identifier() <IS_T> <LPAREN_T> s1=entity_class_entry_list() <RPAREN_T> <SEMI_T>
   {
@@ -1338,24 +1354,25 @@ void guarded_signal_specification() : {}
  signal_list() <COLON_T> type_mark()
 }
 
-QCString identifier() : {Token *tok=0;}
+VhdlString identifier() : {Token *tok=0;}
 {
   tok=<EXTENDED_CHARACTER>{ return tok->image.c_str(); }
   |tok=<BASIC_IDENTIFIER> { return tok->image.c_str(); }
 }
 
-QCString identifier_list() : {QCString str,str1;}
+VhdlString identifier_list() : {VhdlString str,str1;}
 {
    str=name() (<COMMA_T> str1=name() {str+=",";str+=str1;})* { return str; }
 }
 
-void if_statement() :  {QCString s,s1;}
+void if_statement() :  {VhdlString s,s1;}
 {
   [LOOKAHEAD(1) identifier() <COLON_T> ]
     <IF_T> s=condition() <THEN_T>
     {
       s.prepend("if ");
-      FlowChart::addFlowChart(FlowChart::IF_NO,0,s);
+      QCString str=s.data();
+      FlowChart::addFlowChart(FlowChart::IF_NO,0,str);
     }
   sequence_of_statement()
     (
@@ -1377,7 +1394,7 @@ void if_statement() :  {QCString s,s1;}
   }
 }
 
-QCString incomplete_type_declaration() :  {QCString s;}
+VhdlString incomplete_type_declaration() :  {VhdlString s;}
 {
   <TYPE_T> s=identifier() <SEMI_T>
   {
@@ -1385,50 +1402,50 @@ QCString incomplete_type_declaration() :  {QCString s;}
   }
 }
 
-QCString index_constraint() :  {QCString s="("; QCString s1,s2;}
+VhdlString index_constraint() :  { VhdlString s,s1,s2;}
 {
   //try{
   <LPAREN_T> s2=discrete_range(){s+=s2;}(LOOKAHEAD(1)<COMMA_T> s1=discrete_range(){s+=",";s+=s1;})*  <RPAREN_T> {return s+")";}
 //}catch(...){  outlineParser()->error_skipto(SEMI_T);hasError=false;return "";}
   }
 
-QCString index_specification() : {QCString s;}
+VhdlString index_specification() : {VhdlString s;}
 {
  LOOKAHEAD( discrete_range())
  s=discrete_range() { return s;}
 | s=expression(){ return s;}
 }
 
-QCString index_subtype_definition() :  {QCString s;}
+VhdlString index_subtype_definition() :  {VhdlString s;}
 {
  s=type_mark() <RANGE_T> <BOX_T> { return s+" range <> ";}
 }
 
-QCString instantiation_unit() :  {QCString s,s1,s2;Token *tok;}
+VhdlString instantiation_unit() :  {VhdlString s,s1,s2;Token *tok;}
 {
 [ <COMPONENT_T> ] s=identifier() {s1="component "; return s; }
 | <ENTITY_T>  [LOOKAHEAD(2)<BASIC_IDENTIFIER> <DOT_T>] s2=name() {s="entity|"+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
 | <CONFIGURATION_T> s=name() {s1="configuration ";return s;}
 }
 
-QCString instantiation_list() : {QCString s;Token *tok=0;}
+VhdlString instantiation_list() : {VhdlString s;Token *tok=0;}
 {
   s=identifier_list() { return s;}
 | tok=<OTHER_T> {return tok->image.c_str();}
 | tok=<ALL_T> {return tok->image.c_str();}
 }
 
-QCString integer() :  {Token *t;}
+VhdlString integer() :  {Token *t;}
 {
   t=<INTEGER> {return t->image.c_str();}
 }
 
-QCString integer_type_definition() :  {QCString s;}
+VhdlString integer_type_definition() :  {VhdlString s;}
 {
   s=range_constraint(){ return s;}
 }
 
-QCString interface_declaration() :  {QCString s,s1;}
+VhdlString interface_declaration() :  {VhdlString s,s1;}
 {
 
 LOOKAHEAD(5)
@@ -1454,12 +1471,12 @@ subprogram_declaration() { return s;}
  }
 }
 
-QCString interface_element() :  {QCString s;}
+VhdlString interface_element() :  {VhdlString s;}
 {
   s=interface_declaration(){ return s;}
 }
 
-QCString interface_file_declaration() : {QCString s,s1;}
+VhdlString interface_file_declaration() : {VhdlString s,s1;}
 {
   <FILE_T> s=identifier_list() <COLON_T> s1=subtype_indication()
   {
@@ -1468,14 +1485,14 @@ QCString interface_file_declaration() : {QCString s,s1;}
   }
 }
 
-QCString interface_list() :  {QCString s,s1,s2;}
+VhdlString interface_list() :  {VhdlString s,s1,s2;}
 {
   s=interface_element() (LOOKAHEAD(1) <SEMI_T> s1=interface_element(){s2+=";";s2+=s1;})* { return s+s2;}
 }
 
 
 
-QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *tok2=0;QCString s,s1,s2,s3,s4,s5;}
+VhdlString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *tok2=0;VhdlString s,s1,s2,s3,s4,s5;}
 {
 [ ( tok=<VARIABLE_T> | tok=<SIGNAL_T> | tok=<CONSTANT_T>|tok=<SHARED_T>) ]
     s=identifier_list() <COLON_T> [ s1=mode() ]
@@ -1490,7 +1507,7 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
       if(tok2)
         s3+=":=";
 
-      QCString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
+      VhdlString it=s+":"+s1+" "+s2+" "+s3+" "+s4;
       if (m_sharedState->currP!=VhdlDocGen::COMPONENT)
       {
         if (m_sharedState->currP==VhdlDocGen::FUNCTION || m_sharedState->currP==VhdlDocGen::PROCEDURE)
@@ -1499,7 +1516,7 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
         }
         else
         {
-          QCString i=s2+s3+s4;
+          VhdlString i=s2+s3+s4;
           if (m_sharedState->currP==VhdlDocGen::GENERIC && m_sharedState->param_sec==0)
             outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,m_sharedState->currP,i.data(),s1.data(),Public);
           else if(m_sharedState->parse_sec != GEN_SEC)
@@ -1511,7 +1528,7 @@ QCString interface_variable_declaration() :  {Token *tok=0;Token *tok1=0;Token *
     }
 }
 
-QCString iteration_scheme() :  {QCString s;}
+VhdlString iteration_scheme() :  {VhdlString s;}
 {
 <WHILE_T> s=condition()
 {
@@ -1522,19 +1539,19 @@ QCString iteration_scheme() :  {QCString s;}
 }
 | <FOR_T> s=parameter_specification()
 {
-    QCString q=m_sharedState->lab+" for "+s;
+    VhdlString q=m_sharedState->lab+" for "+s;
     FlowChart::addFlowChart(FlowChart::FOR_NO,0,q.data(),m_sharedState->lab.data());
     m_sharedState->lab="";
     return q;
 }
 }
 
-QCString label() :  {QCString s;}
+VhdlString label() :  {VhdlString s;}
 {
  s=identifier() { return s;}
 }
 
-QCString library_clause() :  {QCString s;}
+VhdlString library_clause() :  {VhdlString s;}
 {
  (<LIBRARY_T> s=identifier_list() <SEMI_T>
  )
@@ -1543,12 +1560,12 @@ QCString library_clause() :  {QCString s;}
                    {
                            outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::LIBRARY,s.data(),"_library_",Public);
                    }
-                   QCString s1="library "+s;
+                   VhdlString s1="library "+s;
                    return s1;
  }
 }
 
-QCString library_unit() :  {QCString s;}
+VhdlString library_unit() :  {VhdlString s;}
 {
 LOOKAHEAD(2)
 primary_unit() {  return s; }
@@ -1557,7 +1574,7 @@ primary_unit() {  return s; }
 
 }
 
-QCString literal() :  {QCString s;}
+VhdlString literal() :  {VhdlString s;}
 {
 
  LOOKAHEAD(bit_string_literal())
@@ -1573,12 +1590,12 @@ s=enumeration_literal() { return s;}
 | <NULL_T> {return "null";}
 }
 
-QCString logical_operator() :  {QCString s;}
+VhdlString logical_operator() :  {VhdlString s;}
 {
  s=logop() { return s;}
 }
 
-QCString loop_statement() :  {QCString s,s1,s2,s3;}
+VhdlString loop_statement() :  {VhdlString s,s1,s2,s3;}
 {
 [ s=identifier() <COLON_T> {s+=":";} ]
     [ s1=iteration_scheme()  ]
@@ -1590,8 +1607,8 @@ QCString loop_statement() :  {QCString s,s1,s2,s3;}
         s2=sequence_of_statement()
         <END_T> <LOOP_T> [ s3=identifier() ] <SEMI_T>
         {
-         QCString q = s+" loop "+s2+" end loop" +s3;
-         QCString endLoop="end loop" + s3;
+         VhdlString q = s+" loop "+s2+" end loop" +s3;
+         VhdlString endLoop="end loop" + s3;
          FlowChart::moveToPrevLevel();
          FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop.data(),0);
         return q;
@@ -1600,14 +1617,14 @@ QCString loop_statement() :  {QCString s,s1,s2,s3;}
 }
 
 
-QCString miscellaneous_operator():{Token *t=0;}
+VhdlString miscellaneous_operator():{Token *t=0;}
 {
   <DOUBLEMULT_T> {return "**";}
   | <ABS_T>  {return "abs";}
   | <NOT_T> {return "not";}
 }
 
-QCString mode() :  {Token *tok=0;}
+VhdlString mode() :  {Token *tok=0;}
 {
 tok=<IN_T> { return "in"; }
 | tok=<OUT_T> { return "out"; }
@@ -1616,7 +1633,7 @@ tok=<IN_T> { return "in"; }
 | tok=<LINKAGE_T> { return "linkage"; }
 }
 
-QCString multiplying_operation() : {Token *tok=0;}
+VhdlString multiplying_operation() : {Token *tok=0;}
 {
 tok=<MULT_T>      { return tok->image.c_str(); }
 | tok=<SLASH_T>  { return tok->image.c_str(); }
@@ -1625,7 +1642,7 @@ tok=<MULT_T>      { return tok->image.c_str(); }
 }
 
 
-QCString name() :  {QCString s,s1;}
+VhdlString name() :  {VhdlString s,s1;}
 {
  (
    s=operator_symbol() [LOOKAHEAD(name_ext1()) s1=name_ext1(){ s+=s1;}] {  return s; }
@@ -1636,12 +1653,12 @@ QCString name() :  {QCString s,s1;}
 }
 
 
-QCString name_ext1() : {QCString s,s1,s2;}
+VhdlString name_ext1() : {VhdlString s,s1,s2;}
  {
    s=name_ext() (LOOKAHEAD(name_ext()) s1=name_ext(){s+=s1;})* { return s;}
  }
 
- QCString name_ext() : {QCString s,s1,s2;}
+ VhdlString name_ext() : {VhdlString s,s1,s2;}
  {
 
   (
@@ -1664,7 +1681,7 @@ QCString name_ext1() : {QCString s,s1,s2;}
  
  }
 
- QCString test_att_name() : {QCString s,s1;}
+ VhdlString test_att_name() : {VhdlString s,s1;}
  {
   [ LOOKAHEAD(<LBRACKET_T>) s1=signature() {s=s1;}]
   <APOSTROPHE_T> s1=attribute_designator() {s+="'";s+=s1;}
@@ -1672,12 +1689,12 @@ QCString name_ext1() : {QCString s,s1,s2;}
    { return s;}
  }
 
- QCString indexed_name() : {QCString s,s1,s2;}
+ VhdlString indexed_name() : {VhdlString s,s1,s2;}
  {
    s2=identifier() <LPAREN_T> s1=expression(){s=s2+"("+s1;} (<COMMA_T> s1=expression(){s+=",";s+=s1;})* <RPAREN_T> {return s+")";}
  }
 
-QCString next_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
+VhdlString next_statement() :  {VhdlString s,s1,s2;Token *t=0;Token *t1=0;}
 {
 [ s=identifier() t=<COLON_T> ] <NEXT_T> [ s1=identifier() ]
 [ t1=<WHEN_T> s2=condition() ] <SEMI_T>
@@ -1690,12 +1707,12 @@ QCString next_statement() :  {QCString s,s1,s2;Token *t=0;Token *t1=0;}
 }
 }
 
-QCString null_statement() : {QCString s;}
+VhdlString null_statement() : {VhdlString s;}
 {
 [ s=identifier() <COLON_T> {s+=":";}] <NULL_T> <SEMI_T>{return s+="null";}
 }
 
-QCString numeric_literal() :  {QCString s;}
+VhdlString numeric_literal() :  {VhdlString s;}
 {
 
  LOOKAHEAD(physical_literal())
@@ -1703,7 +1720,7 @@ QCString numeric_literal() :  {QCString s;}
  | s=abstract_literal() { return s;}
 }
 
-QCString object_class() :  {}
+VhdlString object_class() :  {}
 {
 <CONSTANT_T>          { return "constant"; }
 |<SIGNAL_T>            { return "signal"; }
@@ -1713,7 +1730,7 @@ QCString object_class() :  {}
 |<TYPE_T>              { return "type"; }
 }
 
-QCString operator_symbol() :  {Token *tok=0;}
+VhdlString operator_symbol() :  {Token *tok=0;}
 {
 tok=<STRINGLITERAL> {return tok->image.c_str();}
 }
@@ -1723,13 +1740,13 @@ void options() :  {}
   [ <GUARDED_T> ] [ delay_mechanism() ]
 }
 
-void package_body() :  {QCString s;}
+void package_body() :  {VhdlString s;}
 {
 <PACKAGE_T> <BODY_T> s=name() <IS_T>
  {
                         m_sharedState->lastCompound=m_sharedState->current;
                         s.prepend("_");
-                        outlineParser()->addVhdlType(s,outlineParser()->getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
+                        outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
                       }
  package_body_declarative_part()
 
@@ -1764,7 +1781,7 @@ void package_header(): {QCString s;}
 }
 
 
-void package_declaration():  {QCString s;}
+void package_declaration():  {VhdlString s;}
 {
 
  <PACKAGE_T> s=identifier() <IS_T>
@@ -1773,12 +1790,12 @@ void package_declaration():  {QCString s;}
                           std::shared_ptr<Entry> clone=std::make_shared<Entry>(*m_sharedState->current);
                           clone->section=Entry::NAMESPACE_SEC;
                           clone->spec=VhdlDocGen::PACKAGE;
-                          clone->name=s;
+                          clone->name=s.data();
                           clone->startLine=outlineParser()->getLine(PACKAGE_T);
                           clone->bodyLine=outlineParser()->getLine(PACKAGE_T);
                           clone->protection=Package;
                           m_sharedState->current_root->moveToSubEntryAndKeep(clone);
-                          outlineParser()->addVhdlType(s,outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
+                          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
                           }
     package_header()  
     package_declarative_part()
@@ -1825,17 +1842,17 @@ void package_declarative_part() : {}
  (package_declarative_item())*
 }
 
-QCString parameter_specification() : {QCString s,s1;}
+VhdlString parameter_specification() : {VhdlString s,s1;}
 {
 s=identifier() <IN_T> s1=discrete_range(){ return s+" in "+s1;}
 }
 
-QCString physical_literal() :  {QCString s,s1;}
+VhdlString physical_literal() :  {VhdlString s,s1;}
 {
  [LOOKAHEAD(abstract_literal()) s=abstract_literal()] s1=name(){s+=" ";s+=s1;s.prepend(" "); return s;}
 }
 
-QCString physical_type_definition() : {QCString s,s1,s2;Token *t=0;}
+VhdlString physical_type_definition() : {VhdlString s,s1,s2;Token *t=0;}
 {
         t=<UNITS_T>
             s=identifier()<SEMI_T> { outlineParser()->addVhdlType(s.data(),t->beginLine,Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,0,Public);}
@@ -1852,7 +1869,7 @@ void port_clause() :  {}
    <PORT_T> <LPAREN_T>  port_list()<RPAREN_T>  <SEMI_T>{ m_sharedState->currP=0; }
 }
 
-QCString port_list() : {QCString s;}
+VhdlString port_list() : {VhdlString s;}
 {
   s=interface_list(){return s;}
 }
@@ -1862,7 +1879,7 @@ void port_map_aspect() : {}
  <PORT_T> <MAP_T> <LPAREN_T> association_list() <RPAREN_T>
 }
 
-QCString primary() : {QCString s,s1;}
+VhdlString primary() : {VhdlString s,s1;}
 {
 LOOKAHEAD(function_call())
 s=function_call() { return s;}
@@ -1904,13 +1921,13 @@ LOOKAHEAD(4)
 
 }
 
-QCString procedure_call() : {QCString s,s1;}
+VhdlString procedure_call() : {VhdlString s,s1;}
 {
  s=name()  [ <LPAREN_T> s1=actual_parameter_part() <RPAREN_T>{ s1.prepend("("); s1.append(")");}]
 { return s+s1;}
  }
 
-QCString procedure_call_statement() :  {QCString s,s1;}
+VhdlString procedure_call_statement() :  {VhdlString s,s1;}
 {
 [LOOKAHEAD(2) s=identifier() <COLON_T> { s+=":"; }] s1=procedure_call() <SEMI_T>
 {
@@ -1918,7 +1935,7 @@ QCString procedure_call_statement() :  {QCString s,s1;}
 }
 }
 
-QCString process_declarative_item() :  {QCString s;}
+VhdlString process_declarative_item() :  {VhdlString s;}
 {
 subprogram_declaration() { return "";}
 //| subprogram_body()
@@ -1939,12 +1956,12 @@ s=group_template_declaration()  { return s;}
 | s=group_declaration() { return s;}
 }
 
-QCString process_declarative_part() :{QCString s,s1;}
+VhdlString process_declarative_part() :{VhdlString s,s1;}
 {
  ( s1=process_declarative_item(){s+=s1;} )* { return s;}
 }
 
-void process_statement() : {QCString s,s1,s2;Token *tok=0;Token *tok1=0;}
+void process_statement() : {VhdlString s,s1,s2;Token *tok=0;Token *tok1=0;}
 {
 [ s=identifier() <COLON_T> ]
 [ <POSTPONED_T> ] tok1=<PROCESS_T>
@@ -1969,7 +1986,8 @@ void process_statement() : {QCString s,s1,s2;Token *tok=0;Token *tok1=0;}
           if(s.isEmpty())
             m_sharedState->currName=VhdlDocGen::getProcessNumber();
           else
-            m_sharedState->currName=s;
+            m_sharedState->currName=s.data();
+
           m_sharedState->current->name=m_sharedState->currName;
           m_sharedState->tempEntry=m_sharedState->current;
 		  m_sharedState->tempEntry->type="";
@@ -1989,7 +2007,7 @@ void process_statement_part() :  {}
   (sequential_statement())*
 }
 
-QCString qualified_expression() :  {QCString s,s1;}
+VhdlString qualified_expression() :  {VhdlString s,s1;}
 {
   s1=identifier() <APOSTROPHE_T> {s=s1+"'";}
   (
@@ -2000,7 +2018,7 @@ QCString qualified_expression() :  {QCString s,s1;}
  {return s;}
 }
 
-QCString range() :  {QCString s,s1,s2;}
+VhdlString range() :  {VhdlString s,s1,s2;}
 {
    LOOKAHEAD( simple_expression() direction() simple_expression())
    s=simple_expression() s1=direction() s2=simple_expression(){return s+" "+s1+" "+s2;}
@@ -2009,7 +2027,7 @@ QCString range() :  {QCString s,s1,s2;}
   s=attribute_name(){ return s;}
 }
 
-QCString range_constraint() :  {QCString s,s1;}
+VhdlString range_constraint() :  {VhdlString s,s1;}
 {
 <RANGE_T> s=range(){return " range "+s;}
 }
@@ -2024,12 +2042,12 @@ void record_type_definition() : {}
        <RECORD_T> [ name()]
 }
 
-QCString relation() :  {QCString s,s1,s2;}
+VhdlString relation() :  {VhdlString s,s1,s2;}
 {
   s=shift_expression() [LOOKAHEAD(1) s1=relation_operator() s2=shift_expression() ] {return s+s1+s2;}
 }
 
-QCString relation_operator() :  {}
+VhdlString relation_operator() :  {}
 {
  <LT_T> {return "<";}
  |<GT_T> {return ">";}
@@ -2047,7 +2065,7 @@ QCString relation_operator() :  {}
 
 }
 
-QCString report_statement() :  {Token *t=0;Token *t1=0;QCString s,s1,s2;}
+VhdlString report_statement() :  {Token *t=0;Token *t1=0;VhdlString s,s1,s2;}
 {
 [ s=identifier() t=<COLON_T> ]
     <REPORT_T> s1=expression()
@@ -2060,13 +2078,13 @@ QCString report_statement() :  {Token *t=0;Token *t1=0;QCString s,s1,s2;}
         }
 }
 
-QCString return_statement() :  {QCString s,s1;}
+VhdlString return_statement() :  {VhdlString s,s1;}
 {
 [ s=identifier() <COLON_T> { s+=":";}] <RETURN_T> [ s1=expression() ] <SEMI_T>
 { return s+" return "+s1+";";}
 }
 
-QCString scalar_type_definition() : {QCString s,s1;}
+VhdlString scalar_type_definition() : {VhdlString s,s1;}
 {
 LOOKAHEAD(enumeration_type_definition())
 s=enumeration_type_definition(){ return s;}
@@ -2079,7 +2097,7 @@ architecture_body()
 | package_body()
 }
 
-QCString secondary_unit_declaration() :  {QCString s,s1;Token *t1=0;}
+VhdlString secondary_unit_declaration() :  {VhdlString s,s1;Token *t1=0;}
 {
 s=identifier() t1=<EQU_T> s1=physical_literal() <SEMI_T>
 {
@@ -2087,7 +2105,7 @@ s=identifier() t1=<EQU_T> s1=physical_literal() <SEMI_T>
    return s+"="+s1; }
 }
 
-QCString selected_name() : {QCString s,s1;}
+VhdlString selected_name() : {VhdlString s,s1;}
 {
  s=identifier() <DOT_T> s1=suffix(){ return s+"."+s1;}
 }
@@ -2104,7 +2122,7 @@ void selected_waveforms() :  {}
  waveform() <WHEN_T> choices()(<COMMA_T> waveform() <WHEN_T> choices())*
 }
 
-QCString sensitivity_clause() :  {QCString s;}
+VhdlString sensitivity_clause() :  {VhdlString s;}
 {
  <ON_T> s=sensitivity_list()
  {
@@ -2113,19 +2131,19 @@ QCString sensitivity_clause() :  {QCString s;}
   }
 }
 
-QCString sensitivity_list() :  {QCString s,s1;Token* tok=0;}
+VhdlString sensitivity_list() :  {VhdlString s,s1;Token *tok=0;}
 {
   tok=<ALL_T> { if(tok) return "all" ;}
   | 
  s=name() (<COMMA_T> s1=name(){s+=",";s+=s1;} )* { return s;}
 }
 
-QCString sequence_of_statement() : {QCString s,s1;}
+VhdlString sequence_of_statement() : {VhdlString s,s1;}
 {
  ( LOOKAHEAD(3) s1=sequential_statement() {s+=s1;} )* { return s;}
 }
 
-QCString sequential_statement() :{QCString s;}
+VhdlString sequential_statement() :{VhdlString s;}
 {
     LOOKAHEAD( [ identifier() ":" ] target() "<=")
     s=signal_assignment_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
@@ -2166,11 +2184,11 @@ QCString sequential_statement() :{QCString s;}
     s=null_statement(){FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;}
 }
 
-QCString shift_expression() :  {QCString s,s1,s2;}
+VhdlString shift_expression() :  {VhdlString s,s1,s2;}
 {
  s=simple_expression() [ s1=shift_operator() s2=simple_expression() ] { return s+s1+s2;}
 }
-QCString shift_operator() :  {}
+VhdlString shift_operator() :  {}
 {
   <SLL_T> { return "sll";}
   | <SRL_T> { return "srl";}
@@ -2180,13 +2198,13 @@ QCString shift_operator() :  {}
   | <ROR_T> { return "ror";}
 }
 
-QCString sign() :  {}
+VhdlString sign() :  {}
 {
  <PLUS_T> { return "+";}
  | <MINUS_T> { return "-";}
 }
 
-QCString signal_assignment_statement() : {QCString s,s1,s2,s3;}
+VhdlString signal_assignment_statement() : {VhdlString s,s1,s2,s3;}
 {
 
   LOOKAHEAD(conditional_signal_assignment_wave())
@@ -2210,7 +2228,7 @@ void semi() :  {}
 <SEMI_T>
 }
 
-void signal_declaration() :  { Token* tok=0;QCString s,s1,s2,s3,s4;}
+void signal_declaration() :  { Token* tok=0;VhdlString s,s1,s2,s3,s4;}
 {
 <SIGNAL_T> s=identifier_list() <COLON_T> s1=subtype_indication() [ s2=signal_kind() ] [ tok=<VARASSIGN_T> s3=expression() ] <SEMI_T>
      {
@@ -2220,20 +2238,20 @@ void signal_declaration() :  { Token* tok=0;QCString s,s1,s2,s3,s4;}
      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SIGNAL,0,s4.data(),Public);
      }
 }
-QCString signal_kind() :  {}
+VhdlString signal_kind() :  {}
 {
   <REGISTER_T> { return "register";}
   | <BUS_T>  { return "bus";}
 }
 
-QCString signal_list() : {QCString s,s1;}
+VhdlString signal_list() : {VhdlString s,s1;}
 {
  s=name() (<COMMA_T>  s1=name() { s+=",";s+=s1;})*
 | <OTHER_T> { return "other";}
 | <ALL_T> { return "all";}
 }
 
-QCString signature() : {QCString s,s1,s2;}
+VhdlString signature() : {VhdlString s,s1,s2;}
 {
 <LBRACKET_T>
  [ s=name()  (<COMMA_T> s1=name() {s+=",";s+=s1; })* ]
@@ -2242,7 +2260,7 @@ QCString signature() : {QCString s,s1,s2;}
   { s1="["+s+"]";return s1;}
  }
 
-QCString simple_expression():  {QCString s,s1,s2;}
+VhdlString simple_expression():  {VhdlString s,s1,s2;}
 {
 [ s=sign() ] s1=term() {s+=s1;} ( LOOKAHEAD(adding_operator() term()) s1=adding_operator() s2=term() {s+=s1;s+=s2;})* { return s;}
 }
@@ -2252,17 +2270,17 @@ void simple_name() :  {}
 name()
 }
 
-QCString slice_name() :  {QCString s,s1;}
+VhdlString slice_name() :  {VhdlString s,s1;}
 {
  s=identifier() <LPAREN_T> s1=discrete_range() <RPAREN_T> {return s+"("+s1+")";}
 }
 
-QCString string_literal() : {Token *tok=0;}
+VhdlString string_literal() : {Token *tok=0;}
 {
 tok=<STRINGLITERAL> {return tok->image.c_str();}
 }
 
- void subprogram_body() : {QCString s;}
+ void subprogram_body() : {VhdlString s;}
 {
 //subprogram_specification()
 <IS_T>
@@ -2271,7 +2289,7 @@ tok=<STRINGLITERAL> {return tok->image.c_str();}
    {
       if (s.data())
       {
-        FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s,0);
+        FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s.data(),0);
       }
       FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
     }
@@ -2301,7 +2319,7 @@ void subprogram_1() :  {}
  | <SEMI_T>
 }
 
-QCString subprogram_declarative_item() : {QCString s;}
+VhdlString subprogram_declarative_item() : {VhdlString s;}
 {
 subprogram_declaration(){ return "";}
 |s=type_declaration(){ return s;}
@@ -2322,7 +2340,7 @@ s=group_template_declaration(){ return s;}
 | s=group_declaration() { return s;}
 }
 
-QCString subprogram_declarative_part() : {QCString s,s1;}
+VhdlString subprogram_declarative_part() : {VhdlString s,s1;}
 {
   (s1=subprogram_declarative_item(){s+=s1;})* { return s;}
 }
@@ -2333,7 +2351,7 @@ void subprogram_kind() :  {}
  |<PROCEDURE_T>
 }
 
-void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
+void subprogram_specification() : {VhdlString s;Token *tok=0;Token *t;}
 {
  <PROCEDURE_T> s=designator()
  {
@@ -2352,8 +2370,9 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
  [ (tok=<PURE_T> | tok=<IMPURE_T>) ] t=<FUNCTION_T> s=designator()
  {
    m_sharedState->currP=VhdlDocGen::FUNCTION;
-   if(tok)
-     outlineParser()->createFunction(tok->image.c_str(),m_sharedState->currP,s.data());
+   if(tok){
+     outlineParser()->createFunction(tok->image.data(),m_sharedState->currP,s.data());
+     }
    else
      outlineParser()->createFunction(0,m_sharedState->currP,s.data());
    m_sharedState->tempEntry=m_sharedState->current;
@@ -2364,7 +2383,7 @@ void subprogram_specification() : {QCString s;Token *tok=0;Token *t;}
     <RETURN_T> s=type_mark()
              {
                 m_sharedState->tempEntry=m_sharedState->current;
-                m_sharedState->current->type=s;
+                m_sharedState->current->type=s.data();
                 outlineParser()->newEntry();
               }
 }
@@ -2374,7 +2393,7 @@ void subprogram_statement_part() : {}
   (sequential_statement())*
 }
 
-QCString subtype_declaration() :  {QCString s,s1;}
+VhdlString subtype_declaration() :  {VhdlString s,s1;}
 {
 <SUBTYPE_T> s=identifier() <IS_T> s1=subtype_indication() <SEMI_T>
 {
@@ -2383,20 +2402,20 @@ QCString subtype_declaration() :  {QCString s,s1;}
 }
 }
 
-QCString reslution_indication(): {QCString s;}
+VhdlString reslution_indication(): {VhdlString s;}
 { 
   <LPAREN_T> s=expression() <RPAREN_T> { return "("+s+")"; }
  // |s=name() { return s;}
 }
 //[LOOKAHEAD (reslution_indication()) s=reslution_indication()] 
 // [ resolution_indication ] type_mark [ constraint ]
-QCString subtype_indication() :  {QCString s,s1,s2;}
+VhdlString subtype_indication() :  {VhdlString s,s1,s2;}
 {
   [LOOKAHEAD(5) s=reslution_indication()]  (s1=name())+ [LOOKAHEAD(constraint() ) s2=constraint()]
  {return s+" "+s1+" "+s2;}
 }
 
-QCString suffix() :  { QCString s; }
+VhdlString suffix() :  { VhdlString s; }
 {
 LOOKAHEAD(name())
 s=name() { return s;}
@@ -2405,18 +2424,18 @@ s=name() { return s;}
 | <ALL_T> {return " all ";}
 }
 
-QCString target() :  { QCString s; }
+VhdlString target() :  { VhdlString s; }
 {
  s=name(){ return s;}
 | s=aggregate() { return s;}
 }
 
-QCString term() : { QCString s,s1,s2; }
+VhdlString term() : { VhdlString s,s1,s2; }
 {
  s=factor() ( LOOKAHEAD(2) s1=multiplying_operation() s2=factor(){s+=s1;s+=s2;} )* { return s;}
 }
 
-QCString timeout_clause() : { QCString s; }
+VhdlString timeout_clause() : { VhdlString s; }
 {
 <FOR_T>  s=expression()
 {
@@ -2424,19 +2443,19 @@ QCString timeout_clause() : { QCString s; }
 }
 }
 
-QCString type_conversion() : {QCString s,s1;}
+VhdlString type_conversion() : {VhdlString s,s1;}
 {
   s=name() <LPAREN_T> s1=expression() <RPAREN_T> { return s+"("+s1+")";}
 }
 
-QCString type_declaration() : {QCString s;}
+VhdlString type_declaration() : {VhdlString s;}
 {
 LOOKAHEAD(3)
 s=full_type_declaration(){ return s;}
 | s=incomplete_type_declaration(){ return s;}
 }
 
-QCString type_definition() :  {QCString s;}
+VhdlString type_definition() :  {VhdlString s;}
 {
 //try{
 s=scalar_type_definition(){ return s;}
@@ -2450,22 +2469,23 @@ s=scalar_type_definition(){ return s;}
 //}catch(...){outlineParser()->error_skipto(SEMI_T); return "";}
 }
 
-QCString type_mark() : {QCString s; }
+VhdlString type_mark() : {VhdlString s; }
 {
   s=name() { return s;}
 }
 
-QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
+VhdlString unconstraint_array_definition() :  {VhdlString s,s1,s2,s3;}
 {
 <ARRAY_T> <LPAREN_T> s=index_subtype_definition() ( <COMMA_T> s1=index_subtype_definition(){s3+=",";s3+=s1;})* <RPAREN_T>
  <OF_T> s2=subtype_indication() {return "array("+s+s3+") of "+s2;}
 }
 
- QCString use_clause() :  {QCString s,s1;}
+ VhdlString use_clause() :  {VhdlString s,s1;}
 {
  <USE_T> s=selected_name()(<COMMA_T> s1=selected_name(){s+=",";s+=s1;})*   <SEMI_T>
   {
-                   QCStringList ql1=QCStringList::split(",",s);
+                   QCString str=s.data();
+				   QCStringList ql1=QCStringList::split(",",str);
                    for (uint j=0;j<ql1.count();j++)
                    {
                      QCStringList ql=QCStringList::split(".",ql1[j]);
@@ -2480,7 +2500,7 @@ QCString unconstraint_array_definition() :  {QCString s,s1,s2,s3;}
    }
 }
 
-QCString variable_assignment_statement() :  {QCString s,s1,s2;}
+VhdlString variable_assignment_statement() :  {VhdlString s,s1,s2;}
 {
 [LOOKAHEAD(2) s=identifier() <COLON_T> {s+=":";}]
  s1=target() <VARASSIGN_T> s2=expression() <SEMI_T>
@@ -2489,7 +2509,7 @@ QCString variable_assignment_statement() :  {QCString s,s1,s2;}
  selected_variable_assignment() { return "";  }
 }
 
-QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
+VhdlString variable_declaration() :  {Token *tok=0;Token *t1=0;VhdlString s,s1,s2;}
 {
 [ tok=<SHARED_T> ] <VARIABLE_T> s=identifier_list() <COLON_T> s1=subtype_indication()
 [ t1=<VARASSIGN_T> s2=expression() ] <SEMI_T>
@@ -2498,8 +2518,8 @@ QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
   int spec;
   if(t1)
     s2.prepend(":=");
-  QCString val=" variable "+s+":"+s1+s2+";";
-  QCString it=s1;
+  VhdlString val=" variable "+s+":"+s1+s2+";";
+  VhdlString it=s1;
   if(tok != 0)
   {
     it.prepend(" shared ");
@@ -2520,7 +2540,7 @@ QCString variable_declaration() :  {Token *tok=0;Token *t1=0;QCString s,s1,s2;}
 
 }
 
-QCString wait_statement() :  {QCString s,s1,s2,s3;Token *t=0;}
+VhdlString wait_statement() :  {VhdlString s,s1,s2,s3;Token *t=0;}
 {
 [ s=identifier() t=<COLON_T> ] <WAIT_T> [ s1=sensitivity_clause() ] [ s2=condition_clause() ] [ s3=timeout_clause() ] <SEMI_T>
 {
@@ -2529,7 +2549,7 @@ QCString wait_statement() :  {QCString s,s1,s2,s3;Token *t=0;}
 }
 }
 
-QCString waveform() :  {QCString s,s1;}
+VhdlString waveform() :  {VhdlString s,s1;}
 {
 s=waveform_element() (LOOKAHEAD(1) <COMMA_T> s1=waveform_element(){s+=","; s+=s1;})* { return s;}
 |
@@ -2537,7 +2557,7 @@ s=waveform_element() (LOOKAHEAD(1) <COMMA_T> s1=waveform_element(){s+=","; s+=s1
 
 }
 
-QCString waveform_element() :  {QCString s,s1;}
+VhdlString waveform_element() :  {VhdlString s,s1;}
 {
  s=expression() [ <AFTER_T> s1=expression(){ s1.prepend(" after ");} ]
  { return s+s1;}
@@ -2548,7 +2568,7 @@ QCString waveform_element() :  {QCString s,s1;}
 // VHDL 2002
 // -----------------------------------------------------------------
 
-QCString protected_type_body() :{ }
+VhdlString protected_type_body() :{ }
 {
   // try{
    <PROTECTED_T> <BODY_T>
@@ -2585,7 +2605,7 @@ void protected_type_body_declarative_part() :{  }
 }
 
 
-QCString protected_type_declaration() : {  }
+VhdlString protected_type_declaration() : {  }
  {
    <PROTECTED_T>
         try{
@@ -2611,15 +2631,15 @@ void protected_type_declarative_part() :    {}
 // VHDL 2008
 // -----------------------------------------------------------------
 
-QCString context_ref() : {QCString s, s1;}
+VhdlString context_ref() : {VhdlString s;}
 {
- <CONTEXT_T>  s=identifier() (<DOT_T> s1=identifier() {s+=".";s+=s1;} )*  <SEMI_T>
+ <CONTEXT_T>  s=name() <SEMI_T>
  {
   return "context "+s ;
  }
 }
 
-void context_declaration(): {QCString s,s1;}
+void context_declaration(): {VhdlString s,s1;}
 {
  <CONTEXT_T> s=identifier() <IS_T> { m_sharedState->parse_sec=CONTEXT_SEC; }  (s1=libustcont_stats())* <END_T> [ <CONTEXT_T> ][identifier()] <SEMI_T>
                         {
@@ -2628,36 +2648,36 @@ void context_declaration(): {QCString s,s1;}
                         }
 }
 
-QCString libustcont_stats(): {QCString s;}
+VhdlString libustcont_stats(): {VhdlString s;}
 {
    s=use_clause()  { return s;}
    | s=library_clause() { return s;}
    | s=context_ref() { return s;}
 }
 
- void package_instantiation_declaration() : {QCString s,s1,s2;}
+ void package_instantiation_declaration() : {VhdlString s,s1,s2;}
  {
  <PACKAGE_T> s=identifier() <IS_T>  <NEW_T> s1=name() s2=signature() [gen_assoc_list()] <SEMI_T>
     {
-      QCString q=" is new "+s1+s2;
+      VhdlString q=" is new "+s1+s2;
       outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"package",q.data(),Public);
     }
 }
 
-QCString interface_package_declaration(): {QCString s,s1;}
+VhdlString interface_package_declaration(): {VhdlString s,s1;}
 {
  <PACKAGE_T> s=identifier() <IS_T> <NEW_T> s1=name() [gen_assoc_list()]
                         {
-                          m_sharedState->current->name=s;
+                          m_sharedState->current->name=s.data();
                             return "package "+s+" is new "+s1;
                          }
 }
 
-QCString subprogram_instantiation_declaration():{QCString s,s1,s2;}
+VhdlString subprogram_instantiation_declaration():{VhdlString s,s1,s2;}
 {
  <FUNCTION_T>  s=identifier() <IS_T> <NEW_T> s1=name()  s2=signature() [gen_assoc_list()] <SEMI_T>
     {
-     QCString q= " is new "+s1+s2;
+     VhdlString q= " is new "+s1+s2;
       outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Public);
     return q;
     }
@@ -2730,17 +2750,17 @@ void generate_scheme_3() : {}
 
 
 
-QCString external_name(): {QCString s,s1,s2;}
+VhdlString external_name(): {VhdlString s,s1,s2;}
 {
  <SLSL_T> s=sig_stat() s1=external_pathname() <COLON_T>  s2=subtype_indication()  <RSRS_T>
                         {
-                         QCString t="<<"+s;
-                         QCString t1=s1+":"+s2+">>";
+                         VhdlString t="<<"+s;
+                         VhdlString t1=s1+":"+s2+">>";
                          return   s+s1;
                         }
 }
 
-QCString sig_stat(): {Token *t;}
+VhdlString sig_stat(): {Token *t;}
 {
   t=<CONSTANT_T>      { return t->image.data(); }
   | t=<SIGNAL_T>      { return t->image.data(); }
@@ -2748,31 +2768,31 @@ QCString sig_stat(): {Token *t;}
 
 }
 
-QCString external_pathname(): {QCString s;}
+VhdlString external_pathname(): {VhdlString s;}
 {
    s=absolute_pathname()  { return s;}
  | s=relative_pathname()   { return s;}
  | s=package_path_name()   { return s;}
  }
 
-QCString absolute_pathname(): {QCString s,s1;}
+VhdlString absolute_pathname(): {VhdlString s,s1;}
 {
  LOOKAHEAD(<DOT_T>  pathname_element_list())
  <DOT_T>  s=pathname_element_list() s1=identifier() { return "."+s+s1;}
 | <DOT_T>  s=identifier (){ return "."+s;}
 }
 
-QCString relative_pathname():{QCString s,s1,s2;}
+VhdlString relative_pathname():{VhdlString s,s1,s2;}
 {
   s=neg_list() [LOOKAHEAD( pathname_element_list()) s1=pathname_element_list() ] s2=identifier() { return s+s1+s2;}
 }
 
-QCString neg_list(): {QCString s;}
+VhdlString neg_list(): {VhdlString s;}
 {
  (<NEG_T> <DOT_T>{s+="^.";})+     {return s; }
 }
 
-QCString pathname_element ():{QCString s,s1;}
+VhdlString pathname_element ():{VhdlString s,s1;}
 {
   s=identifier() [<LPAREN_T> s1=expression()  <RPAREN_T>]
   {
@@ -2783,13 +2803,13 @@ QCString pathname_element ():{QCString s,s1;}
   }
  }
 
-QCString pathname_element_list():{QCString s,s1,s2;}
+VhdlString pathname_element_list():{VhdlString s,s1,s2;}
 {
   ( s=pathname_element() <DOT_T> ) {s+=".";} (LOOKAHEAD(pathname_element() <DOT_T>) s1=pathname_element() <DOT_T> {s2+=s1;s2+="."; })*
   { return s+s2; }
 }
 
-QCString package_path_name():{QCString s;}
+VhdlString package_path_name():{VhdlString s;}
 {
   <AT_T> s=name() { return "@"+s; }
 }
@@ -2881,36 +2901,36 @@ void else_stat(): {}
 
 
 
-QCString interface_subprogram_declaration(): {QCString s;}
+VhdlString interface_subprogram_declaration(): {VhdlString s;}
 {
    s=iproc()  { return s;}
  | s=ifunc()  { return s; }
 }
 
-QCString iproc(): {QCString s,s1;}
+VhdlString iproc(): {VhdlString s,s1;}
 {
   <PROCEDURE_T> s=identifier()  s1=param()
   {
-    m_sharedState->current->name=s;
+    m_sharedState->current->name=s.data();
     return "procedure "+s+s1;
   }
 }
 
-QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
+VhdlString ifunc():{VhdlString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
 {
  [t=<PURE_T> | t=<IMPURE_T> ] <FUNCTION_T>  s=name() s1=param() <RETURN_T> s2=name() [t1=<IS_T> (s3=identifier() | t2=<BOX_T>)]
  {
-   QCString q;
+   VhdlString q;
    if(t) q=t->image.data();
    if(t2) s3="<>";
    if (!s3.isEmpty())
    {
      s3.prepend(" is ");
    }
-   m_sharedState->current->name=s;
+   m_sharedState->current->name=s.data();
    if (m_sharedState->parse_sec==GEN_SEC)
    {
-     QCString ss=q+" function "+s1+" return "+s2+s3;
+     VhdlString ss=q+" function "+s1+" return "+s2+s3;
      int a=outlineParser()->getLine(FUNCTION_T);
      int b=outlineParser()->getLine(PROCEDURE_T);
 
@@ -2922,7 +2942,7 @@ QCString ifunc():{QCString s,s1,s2,s3;Token *t=0;Token *t1=0;Token *t2=0;}
 }
 
 
-QCString param(): {QCString s,s1;Token *tok=0;}
+VhdlString param(): {VhdlString s,s1;Token *tok=0;}
 {
   [ tok=<PARAMETER_T> ] { m_sharedState->param_sec=PARAM_SEC; }
   [ <LPAREN_T>  s1=interface_list() <RPAREN_T>]

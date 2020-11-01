@@ -6,17 +6,21 @@
 #include <string>
 #include <memory>
 #include <cassert>
+#include <cwchar>
+#include "vhdlstring.h"
 #include <functional>
 
+
+
 #ifndef JAVACC_CHAR_TYPE
-#define JAVACC_CHAR_TYPE char
+#define JAVACC_CHAR_TYPE wchar_t
 #endif
 
 #ifndef JAVACC_STRING_TYPE
-#define JAVACC_STRING_TYPE std::basic_string<JAVACC_CHAR_TYPE>
+#define JAVACC_STRING_TYPE VhdlString
 #endif
 
-#define JAVACC_SIMPLE_STRING std::basic_string<char>
+#define JAVACC_SIMPLE_STRING VhdlString
 
 typedef JAVACC_CHAR_TYPE     JJChar;
 typedef JAVACC_STRING_TYPE   JJString;
@@ -35,11 +39,12 @@ public:
 const JAVACC_CHAR_TYPE EMPTY[] = { 0 };
 
 #ifndef MAX
-#define MAX(a,b) ((a)>=(b)?(a):(b))
+#define MAX(a,b) (a>=b?a:b)
 #endif
 #ifndef MIN
-#define MIN(a,b) ((a)<=(b)?(a):(b))
+#define MIN(a,b) (a<=b?a:b)
 #endif
+
 
 template<typename T>
 struct JJEnter
