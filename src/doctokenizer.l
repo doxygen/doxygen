@@ -75,7 +75,7 @@ struct DocLexerContext
   TokenInfo *token;
   int rule;
   int autoListLevel;
-  int inputPos;
+  yy_size_t inputPos;
   const char *inputString;
   YY_BUFFER_STATE state;
 };
@@ -342,6 +342,7 @@ static QCString stripEmptyLines(const QCString &s)
   return s.mid(start,end-start);
 }
 
+#define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 //--------------------------------------------------------------------------
 
 #undef  YY_INPUT
@@ -841,7 +842,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_CodeOpt>"\\ilinebr" |
 <St_CodeOpt>\n         |
 <St_CodeOpt>.          {
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          BEGIN(St_Code);
                        }
 <St_Code>{WS}*{CMD}"endcode" {
@@ -867,7 +868,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          BEGIN(St_HtmlOnly);
                         }
 <St_HtmlOnlyOption>"\\ilinebr" {
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          BEGIN(St_HtmlOnly);
                         }
 <St_HtmlOnly>{CMD}"endhtmlonly" {
@@ -978,7 +979,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_PlantUMLOpt>"\n"   |
 <St_PlantUMLOpt>.      {
                          g_token->sectionId = "";
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return RetVal_OK;
                        }
 <St_PlantUML>{CMD}"enduml"  {
@@ -1006,7 +1007,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return 0;
                        }
 <St_Title>"\\ilinebr"  {
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return 0;
                        }
 <St_TitleN>"&"{ID}";"  { /* symbol */
@@ -1021,7 +1022,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return 0;
                        }
 <St_TitleN>"\\ilinebr" { /* new line => end of title */
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return 0;
                        }
 <St_TitleN>{SPCMD1}    |
@@ -1056,7 +1057,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_SYMBOL;
                        }
 <St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return 0;
                        }
 <St_TitleQ>{SPCMD1}    |
@@ -1094,7 +1095,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return 0;
                        }
 <St_TitleV,St_TitleA>(\n|"\\ilinebr") {
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return 0;
                        }
 
@@ -1124,7 +1125,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return 0;
                        }
 <St_Cite>(\n|"\\ilinebr")  { // new line
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return 0;
                        }
 <St_Cite>.             { // any other character
@@ -1152,7 +1153,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          BEGIN(St_Ref2);
                        }
 <St_Ref>(\n|"\\ilinebr") { // new line
-                         for (int i=yyleng-1;i>=0;i--) unput(yytext[i]);
+                         unput_string(yytext,yyleng);
                          return 0;
                        }
 <St_Ref>.              { // any other character
