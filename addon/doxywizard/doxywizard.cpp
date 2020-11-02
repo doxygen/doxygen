@@ -223,6 +223,10 @@ void MainWindow::quit()
   {
     saveSettings();
   }
+  else
+  {
+    return;
+  }
   QApplication::exit(0);
 }
 
