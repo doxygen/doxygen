@@ -6224,16 +6224,19 @@ static void findMember(const Entry *root,
           MemberDef *rmd_found = 0;
           for (const auto &rmd : *mn)
           {
-            const ArgumentList &rmdAl = rmd->argumentList();
-
-            newMember=
-              className!=rmd->getOuterScope()->name() ||
-              !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
-                               cd,fd,&root->argList,
-                               TRUE);
-            if (!newMember)
+            if (!rmd->isAlias())
             {
-              rmd_found = rmd.get();
+              const ArgumentList &rmdAl = rmd->argumentList();
+
+              newMember=
+                className!=rmd->getOuterScope()->name() ||
+                !matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
+                    cd,fd,&root->argList,
+                    TRUE);
+              if (!newMember)
+              {
+                rmd_found = rmd.get();
+              }
             }
           }
           if (rmd_found) // member already exists as rmd -> add docs
@@ -6320,17 +6323,20 @@ static void findMember(const Entry *root,
               const MemberDef *rmd_found=0;
               for (const auto &rmd : *rmn)
               {
-                const ArgumentList &rmdAl = rmd->argumentList();
-                // check for matching argument lists
-                if (
-                    matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
-                                    cd,fd,&root->argList,
-                                    TRUE)
-                   )
+                if (!rmd->isAlias())
                 {
-                  found=TRUE;
-                  rmd_found = rmd.get();
-                  break;
+                  const ArgumentList &rmdAl = rmd->argumentList();
+                  // check for matching argument lists
+                  if (
+                      matchArguments2(rmd->getOuterScope(),rmd->getFileDef(),&rmdAl,
+                        cd,fd,&root->argList,
+                        TRUE)
+                     )
+                  {
+                    found=TRUE;
+                    rmd_found = rmd.get();
+                    break;
+                  }
                 }
               }
               if (rmd_found) // member found -> copy line number info
