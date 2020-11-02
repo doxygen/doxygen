@@ -994,7 +994,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  having to specify the exact matching casing.
 
  On Windows (including Cygwin) and MacOS, users should typically set this option to \c NO,
- whereas on Linux or other Unix flavors it should typically set to \c YES.
+ whereas on Linux or other Unix flavors it should typically be set to \c YES.
 ]]>
       </docs>
     </option>
