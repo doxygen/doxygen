@@ -981,12 +981,20 @@ Go to the <a href="commands.html">next</a> section or return to the
     <option type='bool' id='CASE_SENSE_NAMES' defval='0' altdefval='Portable::fileSystemIsCaseSensitive()'>
       <docs>
 <![CDATA[
- If the \c CASE_SENSE_NAMES tag is set to \c NO then doxygen
- will only generate file names in lower-case letters. If set to
- \c YES, upper-case letters are also allowed. This is useful if you have
- classes or files whose names only differ in case and if your file system
- supports case sensitive file names. Windows (including Cygwin) and
- Mac users are advised to set this option to \c NO.
+ With the correct setting of option \c CASE_SENSE_NAMES doxygen will better be able to match the
+ capabilities of the underlying filesystem. 
+
+ In case the filesystem is case sensitive (i.e. it supports files in the same directory 
+ whose names only differ in casing), the option must be set to \c YES to properly deal with such files
+ in case they appear in the input. 
+ 
+ For filesystems that are not case sensitive the option should be be set to \c NO to properly 
+ deal with output files written for symbols that only differ in casing, such as for two classes, 
+ one named \c CLASS and the other named \c Class, and to also support references to files without
+ having to specify the exact matching casing.
+
+ On Windows (including Cygwin) and MacOS, users should typically set this option to \c NO,
+ whereas on Linux or other Unix flavors it should typically be set to \c YES.
 ]]>
       </docs>
     </option>
