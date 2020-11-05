@@ -1569,6 +1569,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   //     (templateArguments(), definitionTemplateParameterLists())
 
   QCString memType;
+  QCString name;
   bool isFunc=FALSE;
   switch (md->memberType())
   {
@@ -1590,9 +1591,12 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
+  name = md->name();
+  if (md->isAnonymous()) name = "__unnamed" + name.right(name.length() - 1)+"__";
+
   m_output.openHash()
     .addFieldQuotedString("kind", memType)
-    .addFieldQuotedString("name", md->name())
+    .addFieldQuotedString("name", name)
     .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
     .addFieldQuotedString("protection", getProtectionName(md->protection()))
     .addFieldBoolean("static", md->isStatic());
@@ -1696,14 +1700,12 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
-  /* DGA: fix #7495  Perlmod does not generate bitfield */
   if (md->memberType() == MemberType_Variable && md->bitfieldString())
   {
-	QCString bitfield = md->bitfieldString();
-	if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
-	m_output.addFieldQuotedString("bitfield", bitfield);
+    QCString bitfield = md->bitfieldString();
+    if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
+    m_output.addFieldQuotedString("bitfield", bitfield);
   }
-  /* DGA: end of fix #7495 */
 
   const MemberDef *rmd = md->reimplements();
   if (rmd)
@@ -1830,6 +1832,8 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
+  /* DGA: fix # #7547 Perlmod does not generate "kind" information to discriminate struct/union */
+  m_output.addFieldQuotedString("kind", cd->compoundTypeString());
 
   if (!cd->baseClasses().empty())
   {
