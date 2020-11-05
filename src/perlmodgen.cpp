@@ -1591,9 +1591,8 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
-  /* DGA fix #7556 ANSI-C anonymous (unnamed) struct/unions have duplicated names (__unnamed__) */
   name = md->name();
-  if (md->isAnonymous()) name = "__unnamed__" + name.right(name.length() - 1); /* DGA: ensure unique name */
+  if (md->isAnonymous()) name = "__unnamed" + name.right(name.length() - 1)+"__";
 
   m_output.openHash()
     .addFieldQuotedString("kind", memType)
@@ -1701,14 +1700,12 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
-  /* DGA: fix #7495  Perlmod does not generate bitfield */
   if (md->memberType() == MemberType_Variable && md->bitfieldString())
   {
-	QCString bitfield = md->bitfieldString();
-	if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
-	m_output.addFieldQuotedString("bitfield", bitfield);
+    QCString bitfield = md->bitfieldString();
+    if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
+    m_output.addFieldQuotedString("bitfield", bitfield);
   }
-  /* DGA: end of fix #7495 */
 
   const MemberDef *rmd = md->reimplements();
   if (rmd)

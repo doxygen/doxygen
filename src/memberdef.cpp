@@ -3435,7 +3435,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     {
       //printf("Anonymous compound '%s'\n",cname.data());
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
-      ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
+      ol.startMemberDoc(ciname,name(),memAnchor,"",memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
       int si=ldef.find(' '),pi,ei=i+l;
       if (si==-1) si=0;
