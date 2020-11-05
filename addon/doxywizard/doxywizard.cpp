@@ -69,11 +69,11 @@ MainWindow::MainWindow()
                   this, SLOT(quit()), Qt::CTRL+Qt::Key_Q);
 
   QMenu *settings = menuBar()->addMenu(tr("Settings"));
-  settings->addAction(tr("Reset to factory defaults"),
+  m_resetDefault = settings->addAction(tr("Reset to factory defaults"),
                   this,SLOT(resetToDefaults()));
   settings->addAction(tr("Use current settings at startup"),
                   this,SLOT(makeDefaults()));
-  settings->addAction(tr("Clear recent list"),
+  m_clearRecent = settings->addAction(tr("Clear recent list"),
                   this,SLOT(clearRecent()));
 
   QMenu *help = menuBar()->addMenu(tr("Help"));
@@ -379,6 +379,8 @@ void MainWindow::clearRecent()
     {
       m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),QString::fromLatin1(""));
     }
+    m_clearRecent->setEnabled(false);
+    m_recentMenu->setEnabled(false);
     m_settings.sync();
   }
 
@@ -396,6 +398,8 @@ void MainWindow::resetToDefaults()
     m_expert->resetToDefaults();
     m_settings.setValue(QString::fromLatin1("wizard/loadsettings"), false);
     m_settings.sync();
+    m_modified = false;
+    updateTitle();
     m_wizard->refresh();
   }
 }
@@ -474,6 +478,9 @@ void MainWindow::addRecentFileList(const QString &fileName)
     m_recentFiles.removeLast();
     m_recentFiles.prepend(fileName);
   }
+  m_clearRecent->setEnabled(m_recentFiles.count()>0);
+  m_recentMenu->setEnabled(m_recentFiles.count()>0);
+  m_settings.sync();
 }
 void MainWindow::updateRecentFile(void)
 {
@@ -488,6 +495,9 @@ void MainWindow::updateRecentFile(void)
   {
     m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i),QString::fromLatin1(""));
   }
+  m_clearRecent->setEnabled(m_recentFiles.count()>0);
+  m_recentMenu->setEnabled(m_recentFiles.count()>0);
+  m_settings.sync();
 }
 
 void MainWindow::openRecent(QAction *action)
@@ -685,6 +695,7 @@ void MainWindow::configChanged()
 void MainWindow::updateTitle()
 {
   QString title = tr("Doxygen GUI frontend");
+  m_resetDefault->setEnabled(m_modified);
   if (m_modified)
   {
     title+=QString::fromLatin1(" +");
