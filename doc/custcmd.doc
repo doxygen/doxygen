@@ -34,7 +34,7 @@ The simplest form of an alias is a simple substitution of the form
 \endverbatim
  For example defining the following alias:
 \verbatim
- ALIASES += sideeffect="\par Side Effects:\n"
+ ALIASES += sideeffect="\par Side Effects:^^"
 \endverbatim
  will allow you to
  put the command `\sideeffect` (or `@sideeffect`) in the documentation, which
