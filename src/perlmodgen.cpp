@@ -1569,6 +1569,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   //     (templateArguments(), definitionTemplateParameterLists())
 
   QCString memType;
+  QCString name;
   bool isFunc=FALSE;
   switch (md->memberType())
   {
@@ -1590,9 +1591,13 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     case MemberType_Dictionary:  memType="dictionary"; break;
   }
 
+  /* DGA fix #7556 ANSI-C anonymous (unnamed) struct/unions have duplicated names (__unnamed__) */
+  name = md->name();
+  if (md->isAnonymous()) name = "__unnamed__" + name.right(name.length() - 1); /* DGA: ensure unique name */
+
   m_output.openHash()
     .addFieldQuotedString("kind", memType)
-    .addFieldQuotedString("name", md->name())
+    .addFieldQuotedString("name", name)
     .addFieldQuotedString("virtualness", getVirtualnessName(md->virtualness()))
     .addFieldQuotedString("protection", getProtectionName(md->protection()))
     .addFieldBoolean("static", md->isStatic());
@@ -1830,6 +1835,8 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 
   m_output.openHash()
     .addFieldQuotedString("name", cd->name());
+  /* DGA: fix # #7547 Perlmod does not generate "kind" information to discriminate struct/union */
+  m_output.addFieldQuotedString("kind", cd->compoundTypeString());
 
   if (!cd->baseClasses().empty())
   {
