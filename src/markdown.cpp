@@ -2685,7 +2685,14 @@ QCString markdownFileNameToId(const QCString &fileName)
   QCString baseFn  = stripFromPath(QFileInfo(fileName).absFilePath().utf8());
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
-  QCString baseName = substitute(substitute(substitute(substitute(baseFn," ","_"),"/","_"),":","_"),"@","_");
+  QCString baseName = baseFn;
+  char *p = baseName.rawData();
+  char c;
+  while ((c=*p))
+  {
+    if (!isId(c)) *p='_'; // escape characters that do not yield an identifier by underscores
+    p++;
+  }
   //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(baseName));
   return "md_"+baseName;
 }
