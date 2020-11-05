@@ -94,6 +94,8 @@ class MainWindow : public QMainWindow
     QSettings m_settings;
     QMenu *m_recentMenu;
     QStringList m_recentFiles;
+    QAction *m_resetDefault;
+    QAction *m_clearRecent;
     QProcess *m_runProcess;
     QTimer *m_timer;
     QTabWidget *m_tabs;
