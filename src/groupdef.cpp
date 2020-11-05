@@ -396,13 +396,14 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
         sameScope // both are found in the same scope
        )
     {
-      if (srcMd->getGroupAlias()==0)
+      MemberDefMutable *mdm = MemberDef::make_mutable(md);
+      if (mdm && srcMd->getGroupAlias()==0)
       {
-        md->setGroupAlias(srcMd);
+        mdm->setGroupAlias(srcMd);
       }
-      else if (md!=srcMd->getGroupAlias())
+      else if (mdm && md!=srcMd->getGroupAlias())
       {
-        md->setGroupAlias(srcMd->getGroupAlias());
+        mdm->setGroupAlias(srcMd->getGroupAlias());
       }
       return FALSE; // member is the same as one that is already added
     }
@@ -1437,9 +1438,10 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
     GroupDef *gd=0;
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
-      if (gd->addClass(cd))
+      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      if (cdm && gd->addClass(cdm))
       {
-        cd->makePartOfGroup(gd);
+        cdm->makePartOfGroup(gd);
       }
       //printf("Compound %s: in group %s\n",cd->name().data(),gd->groupTitle());
     }
@@ -1455,7 +1457,14 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
     //printf("group '%s'\n",s->data());
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
-      if (gd->addNamespace(nd)) nd->makePartOfGroup(gd);
+      if (gd->addNamespace(nd))
+      {
+        NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+        if (ndm)
+        {
+          ndm->makePartOfGroup(gd);
+        }
+      }
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
     }
   }
@@ -1595,13 +1604,16 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
       bool success = fgd->insertMember(md);
       if (success)
       {
-        //printf("insertMember successful\n");
-        md->setGroupDef(fgd,pri,root->fileName,root->startLine,
-            !root->doc.isEmpty());
-        ClassDef *cd = md->getClassDefOfAnonymousType();
-        if (cd)
+        MemberDefMutable *mdm = MemberDef::make_mutable(md);
+        if (mdm)
         {
-          cd->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+          //printf("insertMember successful\n");
+          mdm->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
+        }
+        ClassDefMutable *cdm = ClassDef::make_mutable(mdm->getClassDefOfAnonymousType());
+        if (cdm)
+        {
+          cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
         }
       }
     }

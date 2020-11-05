@@ -18,9 +18,9 @@
 
 #include <memory>
 #include "qcstring.h"
+#include "classdef.h"
 
 class Definition;
-class ClassDef;
 class FileDef;
 class MemberDef;
 
@@ -39,14 +39,25 @@ class SymbolResolver
      *  @param scope The scope to search from.
      *  @param name  The name of the symbol.
      *  @param maybeUnlinkable include unlinkable symbols in the search.
-     *  @param myBeHidden include hidden symbols in the search.
+     *  @param mayBeHidden include hidden symbols in the search.
      *  @note As a result of this call the getters getTypedef(),
      *  getTemplateSpec(), and getResolvedType() are set as well.
      */
     const ClassDef *resolveClass(const Definition *scope,
                                  const char *name,
                                  bool maybeUnlinkable=false,
-                                 bool myBeHidden=false);
+                                 bool mayBeHidden=false);
+
+    /** Wrapper around resolveClass that returns a mutable interface to
+     *  the class object or a nullptr if the symbol is immutable.
+     */
+    ClassDefMutable *resolveClassMutable(const Definition *scope,
+                                         const char *name,
+                                         bool mayBeUnlinkable=false,
+                                         bool mayBeHidden=false)
+    {
+      return ClassDef::make_mutable(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden));
+    }
 
     /** Checks if symbol \a item is accessible from within \a scope.
      *  @returns -1 if \a item is not accessible or a number indicating how

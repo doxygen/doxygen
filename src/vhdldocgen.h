@@ -31,6 +31,7 @@ class Entry;
 class ClassDef;
 class MemberList;
 class MemberDef;
+class MemberDefMutable;
 class FTextStream;
 class OutputList;
 class Definition;
@@ -144,7 +145,7 @@ class VhdlDocGen
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
-    static void writeTagFile(MemberDef *mdef,FTextStream &tagFile);
+    static void writeTagFile(MemberDefMutable *mdef,FTextStream &tagFile);
 
     static bool isConstraint(const MemberDef *mdef);
     static bool isConfig(const MemberDef *mdef);
@@ -190,7 +191,7 @@ class VhdlDocGen
 
     static void writeVhdlDeclarations(const MemberList*,OutputList&,const GroupDef*,const ClassDef*,const FileDef*,const NamespaceDef*);
 
-    static void writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
+    static void writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
         bool inGroup);
 
@@ -217,9 +218,9 @@ class VhdlDocGen
     static ClassDef*  findArchitecture(const ClassDef *cd);
     static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
-    static void correctMemberProperties(MemberDef *md);
+    static void correctMemberProperties(MemberDefMutable *md);
 
-    static void writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname);
+    static void writeSource(const MemberDefMutable *mdef,OutputList& ol,const QCString & cname);
 
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
@@ -252,7 +253,7 @@ class VhdlDocGen
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
     static void writeRecUnitDocu( const MemberDef *md, OutputList& ol,QCString largs);
-    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDef *mdef);
+    static void  writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol,const MemberDefMutable *mdef);
 };
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -43,7 +43,7 @@ class MemberDef;
 class FTextStream;
 
 /** A model of a group of symbols. */
-class GroupDef : virtual public Definition
+class GroupDef : virtual public DefinitionMutable
 {
   public:
    ~GroupDef() {}

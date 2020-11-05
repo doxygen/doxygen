@@ -27,8 +27,8 @@
 #include "types.h"
 #include "definition.h"
 #include "arguments.h"
+#include "classdef.h"
 
-class ClassDef;
 class NamespaceDef;
 class GroupDef;
 class FileDef;
@@ -40,6 +40,7 @@ class GroupDef;
 class QTextStream;
 class QStrList;
 struct TagInfo;
+class MemberDefMutable;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : virtual public Definition
@@ -53,6 +54,9 @@ class MemberDef : virtual public Definition
 
     virtual MemberDef *resolveAlias() = 0;
     virtual const MemberDef *resolveAlias() const = 0;
+
+    static MemberDefMutable *make_mutable(const MemberDef *);
+    ClassDefMutable *getClassDefMutable() const;
 
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -77,25 +81,17 @@ class MemberDef : virtual public Definition
     virtual QCString    displayDefinition() const = 0;
 
     // scope query members
-    virtual const ClassDef *getClassDef() const = 0;
-    virtual ClassDef *getClassDef() = 0;
-
     virtual const FileDef *getFileDef() const = 0;
-    virtual FileDef *getFileDef() = 0;
-
+    virtual const ClassDef *getClassDef() const = 0;
     virtual const NamespaceDef* getNamespaceDef() const = 0;
-    virtual NamespaceDef* getNamespaceDef() = 0;
-
-    virtual const GroupDef *getGroupDef() const = 0;
-    virtual GroupDef *getGroupDef() = 0;
-
-    virtual ClassDef *accessorClass() const = 0;
+    virtual const ClassDef *accessorClass() const = 0;
 
     // grabbing the property read/write accessor names
     virtual const char *getReadAccessor() const = 0;
     virtual const char *getWriteAccessor() const = 0;
 
     // querying the grouping definition
+    virtual const GroupDef *getGroupDef() const = 0;
     virtual Grouping::GroupPri_t getGroupPri() const = 0;
     virtual const char *getGroupFileName() const = 0;
     virtual int getGroupStartLine() const = 0;
@@ -216,7 +212,6 @@ class MemberDef : virtual public Definition
     virtual bool isDocsForDefinition() const = 0;
     virtual const MemberDef *getEnumScope() const = 0;
     virtual const MemberList *enumFieldList() const = 0;
-    virtual void setEnumBaseType(const QCString &type) = 0;
     virtual QCString enumBaseType() const = 0;
 
     virtual bool hasExamples() const = 0;
@@ -225,7 +220,6 @@ class MemberDef : virtual public Definition
 
     // argument related members
     virtual const ArgumentList &argumentList() const = 0;
-    virtual ArgumentList &argumentList() = 0;
     virtual const ArgumentList &declArgumentList() const = 0;
     virtual const ArgumentList &templateArguments() const = 0;
     virtual const ArgumentLists &definitionTemplateParameterLists() const = 0;
@@ -280,15 +274,33 @@ class MemberDef : virtual public Definition
     virtual int getDeclLine() const = 0;
     virtual int getDeclColumn() const = 0;
 
+    virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
+               const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
+    virtual void writeDeclaration(OutputList &ol,
+                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
+                 bool inGroup, const ClassDef *inheritFrom=0,const char *inheritId=0) const = 0;
+    virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
+                const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
+    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
+    virtual void warnIfUndocumented() const = 0;
+    virtual void warnIfUndocumentedParams() const = 0;
+
+    // TODO: this is not a getter, should be passed at construction
+    virtual void setMemberGroup(MemberGroup *grp) = 0;
+};
+
+class MemberDefMutable : virtual public DefinitionMutable, virtual public MemberDef
+{
+  public:
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
-
     // set functions
     virtual void setMemberType(MemberType t) = 0;
     virtual void setDefinition(const char *d) = 0;
-    virtual void setFileDef(FileDef *fd) = 0;
+    virtual void setFileDef(const FileDef *fd) = 0;
     virtual void setAnchor() = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setMemberSpecifiers(uint64 s) = 0;
@@ -296,9 +308,9 @@ class MemberDef : virtual public Definition
     virtual void setInitializer(const char *i) = 0;
     virtual void setBitfields(const char *s) = 0;
     virtual void setMaxInitLines(int lines) = 0;
-    virtual void setMemberClass(ClassDef *cd) = 0;
+    virtual void setMemberClass(const ClassDef *cd) = 0;
     virtual void setSectionList(const Definition *container,MemberList *sl) = 0;
-    virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
+    virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0) = 0;
     virtual void setReadAccessor(const char *r) = 0;
@@ -311,6 +323,7 @@ class MemberDef : virtual public Definition
     virtual void setTagInfo(const TagInfo *i) = 0;
     virtual void setArgsString(const char *as) = 0;
     virtual void incrementFlowKeyWordCount() = 0;
+    virtual void setEnumBaseType(const QCString &type) = 0;
 
     // relation to other members
     virtual void setReimplements(MemberDef *md) = 0;
@@ -343,10 +356,9 @@ class MemberDef : virtual public Definition
     virtual void setAccessorType(ClassDef *cd,const char *t) = 0;
 
     // namespace related members
-    virtual void setNamespace(NamespaceDef *nd) = 0;
+    virtual void setNamespace(const NamespaceDef *nd) = 0;
 
     // member group related members
-    virtual void setMemberGroup(MemberGroup *grp) = 0;
     virtual void setMemberGroupId(int id) = 0;
     virtual void makeImplementationDetail() = 0;
 
@@ -388,8 +400,6 @@ class MemberDef : virtual public Definition
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
-               const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual void addToSearchIndex() const = 0;
 
@@ -397,32 +407,32 @@ class MemberDef : virtual public Definition
     // --- write output ----
     //-----------------------------------------------------------------------------------
 
-    virtual void writeDeclaration(OutputList &ol,
-                 const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                 bool inGroup, const ClassDef *inheritFrom=0,const char *inheritId=0) const = 0;
     virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                  const char *scopeName,const Definition *container,
                  bool inGroup,bool showEnumValues=FALSE,bool
                  showInline=FALSE) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
-    virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
-                const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
     virtual void writeTagFile(FTextStream &) const = 0;
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                  bool onlyText=FALSE) const = 0;
 
     // write helpers
-    virtual void warnIfUndocumented() const = 0;
-    virtual void warnIfUndocumentedParams() const = 0;
-    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
     virtual void setAnonymousUsed() const = 0;
     virtual void setFromAnonymousScope(bool b) const = 0;
 
 };
 
+inline MemberDefMutable *MemberDef::make_mutable(const MemberDef *md)
+{ return dynamic_cast<MemberDefMutable*>(const_cast<MemberDef*>(md)); }
+
+inline ClassDefMutable *MemberDef::getClassDefMutable() const
+{
+  return ClassDef::make_mutable(getClassDef());
+}
+
 /** Factory method to create a new instance of a MemberDef */
-MemberDef *createMemberDef(const char *defFileName,int defLine,int defColumn,
+MemberDefMutable *createMemberDef(const char *defFileName,int defLine,int defColumn,
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
@@ -430,6 +440,6 @@ MemberDef *createMemberDef(const char *defFileName,int defLine,int defColumn,
 
 MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 
-void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef);
+void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef);
 
 #endif

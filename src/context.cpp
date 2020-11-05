@@ -1670,7 +1670,6 @@ class DefinitionContext
       SharedPtr<TemplateStruct>  lineLink;
     };
 
-
   private:
     Cachable &getCache() const
     {
@@ -1678,7 +1677,7 @@ class DefinitionContext
       assert(c!=0);
       return *c;
     }
-    const Definition      *m_def;
+    const Definition *m_def;
 };
 //%% }
 

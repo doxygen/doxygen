@@ -47,7 +47,7 @@
 
 //-----------------------------------------------------------------------------
 
-class MemberDefImpl : public DefinitionImpl, public MemberDef
+class MemberDefImpl : public DefinitionImpl, public MemberDefMutable
 {
   public:
     MemberDefImpl(const char *defFileName,int defLine,int defColumn,
@@ -76,15 +76,11 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual int initializerLines() const;
     virtual uint64 getMemberSpecifiers() const;
     virtual const MemberList *getSectionList(const Definition *) const;
-    virtual QCString    displayDefinition() const;
+    virtual QCString displayDefinition() const;
     virtual const ClassDef *getClassDef() const;
-    virtual ClassDef *getClassDef();
     virtual const FileDef  *getFileDef() const;
-    virtual FileDef  *getFileDef();
     virtual const NamespaceDef* getNamespaceDef() const;
-    virtual NamespaceDef* getNamespaceDef();
     virtual const GroupDef *getGroupDef() const;
-    virtual GroupDef *getGroupDef();
     virtual ClassDef *accessorClass() const;
     virtual const char *getReadAccessor() const;
     virtual const char *getWriteAccessor() const;
@@ -242,7 +238,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual int getDeclColumn() const;
     virtual void setMemberType(MemberType t);
     virtual void setDefinition(const char *d);
-    virtual void setFileDef(FileDef *fd);
+    virtual void setFileDef(const FileDef *fd);
     virtual void setAnchor();
     virtual void setProtection(Protection p);
     virtual void setMemberSpecifiers(uint64 s);
@@ -250,9 +246,9 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setInitializer(const char *i);
     virtual void setBitfields(const char *s);
     virtual void setMaxInitLines(int lines);
-    virtual void setMemberClass(ClassDef *cd);
+    virtual void setMemberClass(const ClassDef *cd);
     virtual void setSectionList(const Definition *container,MemberList *sl);
-    virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
+    virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0);
     virtual void setReadAccessor(const char *r);
@@ -281,7 +277,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void setType(const char *t);
     virtual void setAccessorType(ClassDef *cd,const char *t);
-    virtual void setNamespace(NamespaceDef *nd);
+    virtual void setNamespace(const NamespaceDef *nd);
     virtual void setMemberGroup(MemberGroup *grp);
     virtual void setMemberGroupId(int id);
     virtual void makeImplementationDetail();
@@ -323,7 +319,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const;
-    virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
+    virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const;
     virtual void findSectionsInDocumentation();
     virtual void writeLink(OutputList &ol,
@@ -364,7 +360,7 @@ class MemberDefImpl : public DefinitionImpl, public MemberDef
     uchar m_isDestructorCached;  // 0 = not cached, 1=FALSE, 2=TRUE
 };
 
-MemberDef *createMemberDef(const char *defFileName,int defLine,int defColumn,
+MemberDefMutable *createMemberDef(const char *defFileName,int defLine,int defColumn,
               const char *type,const char *name,const char *args,
               const char *excp,Protection prot,Specifier virt,bool stat,
               Relationship related,MemberType t,const ArgumentList &tal,
@@ -429,7 +425,7 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     { return getMdAlias()->getFileDef(); }
     virtual const NamespaceDef* getNamespaceDef() const
     { return getMdAlias()->getNamespaceDef(); }
-    virtual ClassDef *accessorClass() const
+    virtual const ClassDef *accessorClass() const
     { return getMdAlias()->accessorClass(); }
     virtual const char *getReadAccessor() const
     { return getMdAlias()->getReadAccessor(); }
@@ -738,95 +734,13 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     virtual int getDeclColumn() const
     { return getMdAlias()->getDeclColumn(); }
 
-    // non-const getters should not be called
-    virtual ClassDef *getClassDef()
-    { err("non-const getClassDef() called on aliased member. Please report as a bug.\n"); return 0; }
-    virtual FileDef *getFileDef()
-    { err("non-const getFileDef() called on aliased member. Please report as a bug.\n"); return 0; }
-    virtual NamespaceDef* getNamespaceDef()
-    { err("non-const getNamespaceDef() called on aliased member. Please report as a bug.\n"); return 0; }
-    virtual GroupDef *getGroupDef()
-    { err("non-const getGroupDef() called on aliased member. Please report as a bug.\n"); return 0; }
-    virtual ArgumentList &argumentList()
-    { err("non-const argumentList() called on aliased member. Please report as bug.\n");
-      static ArgumentList dummy; return dummy;
-    }
-
-    virtual void setEnumBaseType(const QCString &type) {}
-    virtual void setMemberType(MemberType t) {}
-    virtual void setDefinition(const char *d) {}
-    virtual void setFileDef(FileDef *fd) {}
-    virtual void setAnchor() {}
-    virtual void setProtection(Protection p) {}
-    virtual void setMemberSpecifiers(uint64 s) {}
-    virtual void mergeMemberSpecifiers(uint64 s) {}
-    virtual void setInitializer(const char *i) {}
-    virtual void setBitfields(const char *s) {}
-    virtual void setMaxInitLines(int lines) {}
-    virtual void setMemberClass(ClassDef *cd) {}
-    virtual void setSectionList(const Definition *c,MemberList *sl) {}
-    virtual void setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
-                     const QCString &fileName,int startLine,bool hasDocs,
-                     MemberDef *member=0) {}
-    virtual void setReadAccessor(const char *r) {}
-    virtual void setWriteAccessor(const char *w) {}
-    virtual void setTemplateSpecialization(bool b) {}
-    virtual void makeRelated() {}
-    virtual void makeForeign() {}
-    virtual void setInheritsDocsFrom(MemberDef *md) {}
-    virtual void setTagInfo(const TagInfo *i) {}
-    virtual void setArgsString(const char *as) {}
-    virtual void setReimplements(MemberDef *md) {}
-    virtual void insertReimplementedBy(MemberDef *md) {}
-    virtual void setRelatedAlso(ClassDef *cd) {}
-    virtual void insertEnumField(MemberDef *md) {}
-    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) {}
-    virtual void setEnumClassScope(ClassDef *cd) {}
-    virtual void setDocumentedEnumValues(bool value) {}
-    virtual void setAnonymousEnumType(const MemberDef *md) {}
-    virtual bool addExample(const char *anchor,const char *name,const char *file) { return FALSE; }
-    virtual void setPrototype(bool p,const QCString &df,int line, int column) {}
-    virtual void setExplicitExternal(bool b,const QCString &df,int line,int column) {}
-    virtual void setDeclFile(const QCString &df,int line,int column) {}
-    virtual void moveArgumentList(std::unique_ptr<ArgumentList> al) {}
-    virtual void moveDeclArgumentList(std::unique_ptr<ArgumentList> al) {}
-    virtual void setDefinitionTemplateParameterLists(const ArgumentLists &lists) {}
-    virtual void setTypeConstraints(const ArgumentList &al) {}
-    virtual void setType(const char *t) {}
-    virtual void setAccessorType(ClassDef *cd,const char *t) {}
-    virtual void setNamespace(NamespaceDef *nd) {}
+    virtual void warnIfUndocumented() const {}
+    virtual void warnIfUndocumentedParams() const {}
+    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const {}
     virtual void setMemberGroup(MemberGroup *grp) { m_memberGroup = grp; }
-    virtual void setMemberGroupId(int id) {}
-    virtual void makeImplementationDetail() {}
-    virtual void setFromAnonymousScope(bool b) const {}
-    virtual void setFromAnonymousMember(MemberDef *m) {}
-    virtual void enableCallGraph(bool e) {}
-    virtual void enableCallerGraph(bool e) {}
-    virtual void enableReferencedByRelation(bool e) {}
-    virtual void enableReferencesRelation(bool e) {}
-    virtual void setTemplateMaster(MemberDef *mt) {}
-    virtual void addListReference(Definition *d) {}
-    virtual void setDocsForDefinition(bool b) {}
-    virtual void setGroupAlias(const MemberDef *md) {}
-    virtual void cacheTypedefVal(const ClassDef *val,const QCString &templSpec,const QCString &resolvedType) {}
-    virtual void invalidateTypedefValCache() {}
-    virtual void invalidateCachedArgumentTypes() {}
-    virtual void setMemberDefinition(MemberDef *md) {}
-    virtual void setMemberDeclaration(MemberDef *md) {}
-    virtual void setAnonymousUsed() const {}
-    virtual void copyArgumentNames(MemberDef *bmd) {}
-    virtual void setCategory(ClassDef *) {}
-    virtual void setCategoryRelation(MemberDef *) {}
-    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) {}
-    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) {}
-    virtual void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine) {}
-    virtual void setHidden(bool b) {}
-    virtual void addToSearchIndex() const {}
-    virtual void findSectionsInDocumentation() {}
-    virtual MemberDef *createTemplateInstanceMember(const ArgumentList &formalArgs,
+    virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const
     { return getMdAlias()->createTemplateInstanceMember(formalArgs,actualArgs); }
-    virtual void incrementFlowKeyWordCount() {}
 
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -839,19 +753,6 @@ class MemberDefAliasImpl : public DefinitionAliasImpl, public MemberDef
     {
       getMdAlias()->writeEnumDeclaration(typeDecl,cd,nd,fd,gd);
     }
-    virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
-                            const char *scopeName,const Definition *container,
-                            bool inGroup,bool showEnumValues=FALSE,bool
-                            showInline=FALSE) const {}
-    virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const {}
-    virtual void writeLink(OutputList &ol,
-                   const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                   bool onlyText=FALSE) const {}
-    virtual void writeTagFile(FTextStream &) const {}
-    virtual void warnIfUndocumented() const {}
-    virtual void warnIfUndocumentedParams() const {}
-    virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const {}
-    virtual void resolveUnnamedParameters(const MemberDef *md) {}
   private:
     MemberGroup *m_memberGroup; // group's member definition
 };
@@ -1277,9 +1178,9 @@ class MemberDefImpl::IMPL
               const ArgumentList &al,const char *meta
              );
 
-    ClassDef     *classDef = 0;   // member of or related to
-    FileDef      *fileDef = 0;    // member of file definition
-    NamespaceDef *nspace = 0;     // the namespace this member is in.
+    const ClassDef     *classDef = 0; // member of or related to
+    const FileDef      *fileDef  = 0; // member of file definition
+    const NamespaceDef *nspace   = 0; // the namespace this member is in.
 
     MemberDef  *enumScope = 0;    // the enclosing scope, if this is an enum field
     bool        livesInsideEnum = false;
@@ -1340,7 +1241,7 @@ class MemberDefImpl::IMPL
     const MemberDef *groupAlias = 0;    // Member containing the definition
     int grpId = 0;                // group id
     MemberGroup *memberGroup = 0; // group's member definition
-    GroupDef *group = 0;          // group in which this member is in
+    const GroupDef *group = 0;          // group in which this member is in
     Grouping::GroupPri_t grouppri; // priority of this definition
     QCString groupFileName;   // file where this grouping was defined
     int groupStartLine = 0;       // line  "      "      "     "     "
@@ -1643,7 +1544,11 @@ void MemberDefImpl::insertReimplementedBy(MemberDef *md)
 {
   if (m_impl->templateMaster)
   {
-    m_impl->templateMaster->insertReimplementedBy(md);
+    MemberDefMutable *mdm = MemberDef::make_mutable(m_impl->templateMaster);
+    if (mdm)
+    {
+      mdm->insertReimplementedBy(md);
+    }
   }
   if (m_impl->redefinedBy==0) m_impl->redefinedBy = new MemberList(MemberListType_redefinedBy);
   if (m_impl->redefinedBy->findRef(md)==-1)
@@ -2229,7 +2134,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   QCString cfname = getOutputFileBase();
 
   // search for the last anonymous scope in the member type
-  ClassDef *annoClassDef=getClassDefOfAnonymousType();
+  ClassDefMutable *annoClassDef=ClassDef::make_mutable(getClassDefOfAnonymousType());
 
   ol.startMemberDeclaration();
 
@@ -2407,6 +2312,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
     static bool extractStatic  = Config_getBool(EXTRACT_STATIC);
+    MemberDefMutable *annMemb = MemberDef::make_mutable(m_impl->annMemb);
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",name().data(),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!name().isEmpty() && // name valid
         (hasDocumentation() || isReference()) && // has docs
@@ -2414,16 +2320,15 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
        )
     {
-      if (m_impl->annMemb)
+      if (annMemb)
       {
         //printf("anchor=%s ann_anchor=%s\n",anchor(),annMemb->anchor());
-        m_impl->annMemb->writeLink(ol,
-            m_impl->annMemb->getClassDef(),
-            m_impl->annMemb->getNamespaceDef(),
-            m_impl->annMemb->getFileDef(),
-            m_impl->annMemb->getGroupDef()
-                          );
-        m_impl->annMemb->setAnonymousUsed();
+        annMemb->writeLink(ol,
+            annMemb->getClassDef(),
+            annMemb->getNamespaceDef(),
+            annMemb->getFileDef(),
+            annMemb->getGroupDef());
+        annMemb->setAnonymousUsed();
         setAnonymousUsed();
       }
       else
@@ -2444,9 +2349,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       // there is a brief member description and brief member
       // descriptions are enabled or there is no detailed description.
     {
-      if (m_impl->annMemb)
+      if (annMemb)
       {
-        m_impl->annMemb->setAnonymousUsed();
+        annMemb->setAnonymousUsed();
         setAnonymousUsed();
       }
       const ClassDef *rcd = cd;
@@ -4296,7 +4201,7 @@ void MemberDefImpl::setAnchor()
   m_impl->anc = "a"+sigStr;
 }
 
-void MemberDefImpl::setGroupDef(GroupDef *gd,Grouping::GroupPri_t pri,
+void MemberDefImpl::setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                             const QCString &fileName,int startLine,
                             bool hasDocs,MemberDef *member)
 {
@@ -4316,30 +4221,30 @@ void MemberDefImpl::setEnumScope(MemberDef *md,bool livesInsideEnum)
   m_impl->livesInsideEnum=livesInsideEnum;
   if (md->getGroupDef())
   {
-    m_impl->group=md->getGroupDef();
-    m_impl->grouppri=md->getGroupPri();
-    m_impl->groupFileName=md->getGroupFileName();
-    m_impl->groupStartLine=md->getGroupStartLine();
-    m_impl->groupHasDocs=md->getGroupHasDocs();
+    m_impl->group           = const_cast<GroupDef*>(md->getGroupDef());
+    m_impl->grouppri        = md->getGroupPri();
+    m_impl->groupFileName   = md->getGroupFileName();
+    m_impl->groupStartLine  = md->getGroupStartLine();
+    m_impl->groupHasDocs    = md->getGroupHasDocs();
     m_isLinkableCached = 0;
   }
 }
 
-void MemberDefImpl::setMemberClass(ClassDef *cd)
+void MemberDefImpl::setMemberClass(const ClassDef *cd)
 {
   m_impl->classDef=cd;
   m_isLinkableCached = 0;
   m_isConstructorCached = 0;
-  setOuterScope(cd);
+  setOuterScope(const_cast<ClassDef*>(cd));
 }
 
-void MemberDefImpl::setNamespace(NamespaceDef *nd)
+void MemberDefImpl::setNamespace(const NamespaceDef *nd)
 {
   m_impl->nspace=nd;
-  setOuterScope(nd);
+  setOuterScope(const_cast<NamespaceDef*>(nd));
 }
 
-MemberDef *MemberDefImpl::createTemplateInstanceMember(
+MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
         const ArgumentList &formalArgs,const std::unique_ptr<ArgumentList> &actualArgs) const
 {
   //printf("  Member %s %s %s\n",typeString(),name().data(),argsString());
@@ -4361,7 +4266,7 @@ MemberDef *MemberDefImpl::createTemplateInstanceMember(
     methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
   }
 
-  MemberDef *imd = createMemberDef(
+  MemberDefMutable *imd = createMemberDef(
                        getDefFileName(),getDefLine(),getDefColumn(),
                        substituteTemplateArgumentsInString(m_impl->type,formalArgs,actualArgs),
                        methodName,
@@ -4730,7 +4635,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     if (fmdl)
     {
       MemberListIterator mli(*fmdl);
-      MemberDef *fmd=mli.current();
+      MemberDefMutable *fmd=MemberDef::make_mutable(mli.current());
       bool fmdVisible = fmd ? fmd->isBriefSectionVisible() : TRUE;
       while (fmd)
       {
@@ -4774,7 +4679,7 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
 
         bool prevVisible = fmdVisible;
         ++mli;
-        fmd=mli.current();
+        fmd=MemberDef::make_mutable(mli.current());
         if (fmd && (fmdVisible=fmd->isBriefSectionVisible()))
         {
           typeDecl.writeString(", ");
@@ -5000,27 +4905,12 @@ const ClassDef *MemberDefImpl::getClassDef() const
   return m_impl->classDef;
 }
 
-ClassDef *MemberDefImpl::getClassDef()
-{
-  return m_impl->classDef;
-}
-
 const FileDef  *MemberDefImpl::getFileDef() const
 {
   return m_impl->fileDef;
 }
 
-FileDef  *MemberDefImpl::getFileDef()
-{
-  return m_impl->fileDef;
-}
-
 const NamespaceDef* MemberDefImpl::getNamespaceDef() const
-{
-  return m_impl->nspace;
-}
-
-NamespaceDef* MemberDefImpl::getNamespaceDef()
 {
   return m_impl->nspace;
 }
@@ -5036,11 +4926,6 @@ const char *MemberDefImpl::getWriteAccessor() const
 }
 
 const GroupDef *MemberDefImpl::getGroupDef() const
-{
-  return m_impl->group;
-}
-
-GroupDef *MemberDefImpl::getGroupDef()
 {
   return m_impl->group;
 }
@@ -5660,7 +5545,7 @@ void MemberDefImpl::setDefinition(const char *d)
   m_impl->def=d;
 }
 
-void MemberDefImpl::setFileDef(FileDef *fd)
+void MemberDefImpl::setFileDef(const FileDef *fd)
 {
   m_impl->fileDef=fd;
   m_isLinkableCached = 0;
@@ -6010,7 +5895,7 @@ static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defA
   }
 }
 
-void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
+void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef)
 {
   //printf("mdec=%s isPrototype()=%d\n",mdec->name().data(),mdec->isPrototype());
   if (
@@ -6022,12 +5907,10 @@ void combineDeclarationAndDefinition(MemberDef *mdec,MemberDef *mdef)
     //    mdef, mdef ? mdef->name().data() : "",
     //    mdec, mdec ? mdec->name().data() : "");
 
-    const MemberDef *cmdec = const_cast<const MemberDef*>(mdec);
-    const MemberDef *cmdef = const_cast<const MemberDef*>(mdef);
-    ArgumentList &mdefAl = mdef->argumentList();
-    ArgumentList &mdecAl = mdec->argumentList();
-    if (matchArguments2(cmdef->getOuterScope(),cmdef->getFileDef(),&mdefAl,
-                        cmdec->getOuterScope(),cmdec->getFileDef(),&mdecAl,
+    ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
+    ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
+    if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
+                        mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
                         TRUE
                        )
        ) /* match found */

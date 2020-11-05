@@ -24,7 +24,7 @@ class OutputList;
 class FTextStream;
 
 /** @brief A model of a page symbol. */
-class PageDef : virtual public Definition
+class PageDef : virtual public DefinitionMutable
 {
   public:
     virtual ~PageDef() {}

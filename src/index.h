@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,6 +23,7 @@
 #include <qcstring.h>
 
 class Definition;
+class DefinitionMutable;
 class MemberDef;
 class OutputList;
 class FTextStream;
@@ -36,7 +37,7 @@ class IndexIntf
     virtual void finalize() = 0;
     virtual void incContentsDepth() = 0;
     virtual void decContentsDepth() = 0;
-    virtual void addContentsItem(bool isDir, const char *name, const char *ref, 
+    virtual void addContentsItem(bool isDir, const char *name, const char *ref,
                                  const char *file, const char *anchor, bool separateIndex,
                                  bool addToNavIndex,const Definition *def) = 0;
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
@@ -73,7 +74,7 @@ class IndexList : public IndexIntf
     /** Creates a list of indexes */
     IndexList() { m_intfs.setAutoDelete(TRUE); m_enabled=TRUE; }
     /** Add an index generator to the list */
-    void addIndex(IndexIntf *intf) 
+    void addIndex(IndexIntf *intf)
     { m_intfs.append(intf); }
     void disable()
     { m_enabled = FALSE; }
@@ -83,25 +84,25 @@ class IndexList : public IndexIntf
     { return m_enabled; }
 
     // IndexIntf implementation
-    void initialize() 
+    void initialize()
     { foreach(&IndexIntf::initialize); }
-    void finalize() 
+    void finalize()
     { foreach(&IndexIntf::finalize); }
     void incContentsDepth()
     { if (m_enabled) foreach(&IndexIntf::incContentsDepth); }
     void decContentsDepth()
     { if (m_enabled) foreach(&IndexIntf::decContentsDepth); }
-    void addContentsItem(bool isDir, const char *name, const char *ref, 
+    void addContentsItem(bool isDir, const char *name, const char *ref,
                          const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          const Definition *def=0)
     { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
     void addIndexItem(const Definition *context,const MemberDef *md,const char *sectionAnchor=0,const char *title=0)
     { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
-    void addIndexFile(const char *name) 
+    void addIndexFile(const char *name)
     { if (m_enabled) foreach(&IndexIntf::addIndexFile,name); }
-    void addImageFile(const char *name) 
+    void addImageFile(const char *name)
     { if (m_enabled) foreach(&IndexIntf::addImageFile,name); }
-    void addStyleSheetFile(const char *name) 
+    void addStyleSheetFile(const char *name)
     { if (m_enabled) foreach(&IndexIntf::addStyleSheetFile,name); }
 
   private:
@@ -244,7 +245,7 @@ extern int documentedDirs;
 extern int documentedHtmlFiles;
 extern int documentedPages;
 
-void startTitle(OutputList &ol,const char *fileName,const Definition *def=0);
+void startTitle(OutputList &ol,const char *fileName,const DefinitionMutable *def=0);
 void endTitle(OutputList &ol,const char *fileName,const char *name);
 void startFile(OutputList &ol,const char *name,const char *manName,
                const char *title,HighlightedItem hli=HLI_None,

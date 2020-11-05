@@ -297,7 +297,11 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                           {
-                                            yyextra->currentMemberDef->incrementFlowKeyWordCount();
+                                            MemberDefMutable *mdm = MemberDef::make_mutable(yyextra->currentMemberDef);
+                                            if (mdm)
+                                            {
+                                              mdm->incrementFlowKeyWordCount();
+                                            }
                                           }
                                           /* font class is defined e.g. in doxygen.css */
                                           startFontClass(yyscanner,"keywordflow");
@@ -1233,7 +1237,7 @@ static bool getLink(yyscan_t yyscanner,UseSDict *usedict, // dictionary with use
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
       {
-        addDocCrossReference(yyextra->currentMemberDef,md);
+        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
       }
       writeMultiLineCodeLink(yyscanner,ol,md,text ? text : memberText);
       addToSearchIndex(yyscanner, text ? text : memberText);

@@ -81,7 +81,7 @@ class MemberList : private QList<MemberDef>
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const char *scopeName, const Definition *container) const;
+               const char *scopeName, const DefinitionMutable *container) const;
     void writeTagFile(FTextStream &);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);

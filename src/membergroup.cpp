@@ -71,10 +71,14 @@ void MemberGroup::insertMember(MemberDef *md)
   GroupDef *gd;
   if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
   {
-    md->setGroupDef(gd, firstMd->getGroupPri(),
-                    firstMd->getGroupFileName(),
-                    firstMd->getGroupStartLine(),
-                    firstMd->getGroupHasDocs());
+    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    if (mdm)
+    {
+      mdm->setGroupDef(gd, firstMd->getGroupPri(),
+                       firstMd->getGroupFileName(),
+                       firstMd->getGroupStartLine(),
+                       firstMd->getGroupHasDocs());
+    }
     gd->insertMember(md);
   }
 }
@@ -112,7 +116,7 @@ void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
 }
 
 void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
-               const Definition *container) const
+               const DefinitionMutable *container) const
 {
   memberList->writeDocumentationPage(ol,scopeName,container);
 }
@@ -217,12 +221,13 @@ void MemberGroup::distributeMemberGroupDocumentation()
   if (md) // distribute docs of md to other members of the list
   {
     //printf("Member %s has documentation!\n",md->name().data());
-    MemberDef *omd;
-    for (li.toFirst();(omd=li.current());++li)
+    MemberDef *iomd;
+    for (li.toFirst();(iomd=li.current());++li)
     {
-      if (md!=omd && omd->documentation().isEmpty() &&
-                     omd->briefDescription().isEmpty() &&
-                     omd->inbodyDocumentation().isEmpty()
+      MemberDefMutable *omd = MemberDef::make_mutable(iomd);
+      if (omd && md!=omd && omd->documentation().isEmpty() &&
+                            omd->briefDescription().isEmpty() &&
+                            omd->inbodyDocumentation().isEmpty()
          )
       {
         //printf("Copying documentation to member %s\n",omd->name().data());

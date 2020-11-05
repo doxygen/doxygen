@@ -488,7 +488,11 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
-                                        yyextra->currentMemberDef->incrementFlowKeyWordCount();
+                                        MemberDefMutable *mdm = MemberDef::make_mutable(yyextra->currentMemberDef);
+                                        if (mdm)
+                                        {
+                                          mdm->incrementFlowKeyWordCount();
+                                        }
                                       }
                                       startFontClass(yyscanner,"keywordflow");
                                       codify(yyscanner,yytext);
@@ -529,7 +533,11 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
-                                        yyextra->currentMemberDef->incrementFlowKeyWordCount();
+                                        MemberDefMutable *mdm = MemberDef::make_mutable(yyextra->currentMemberDef);
+                                        if (mdm)
+                                        {
+                                          mdm->incrementFlowKeyWordCount();
+                                        }
                                       }
                                       startFontClass(yyscanner,"keywordflow");
                                       codifyLines(yyscanner,yytext);
@@ -1217,7 +1225,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           md!=yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
+        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
 
@@ -1327,7 +1335,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
+        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
       }
     }
   }
@@ -1354,7 +1362,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           if (d && d->isLinkable() && mmd->isLinkable() &&
               yyextra->currentMemberDef && yyextra->collectXRefs)
           {
-            addDocCrossReference(yyextra->currentMemberDef,mmd);
+            addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(mmd));
           }
           return;
         }
@@ -1377,7 +1385,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
             if (d && d->isLinkable() && mmd->isLinkable() &&
                 yyextra->currentMemberDef && yyextra->collectXRefs)
             {
-              addDocCrossReference(yyextra->currentMemberDef,mmd);
+              addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(mmd));
             }
             return;
           }
@@ -1463,7 +1471,7 @@ static bool findMemberLink(yyscan_t yyscanner,
     {
       if (yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(yyextra->currentMemberDef,dynamic_cast<MemberDef*>(sym));
+        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(dynamic_cast<MemberDef*>(sym)));
       }
     }
     DBG_CTX((stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>"));

@@ -607,10 +607,14 @@ done:
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
     //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
-    const_cast<MemberDef*>(md)->cacheTypedefVal(result,
+    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    if (mdm)
+    {
+      mdm->cacheTypedefVal(result,
         pTemplSpec ? *pTemplSpec : QCString(),
         pResolvedType ? *pResolvedType : QCString()
        );
+    }
   }
 
   m_resolvedTypedefs.erase(typedef_it); // remove from the trace list

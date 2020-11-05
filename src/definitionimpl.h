@@ -23,7 +23,7 @@
 
 #include "definition.h"
 
-class DefinitionImpl : virtual public Definition
+class DefinitionImpl : virtual public DefinitionMutable
 {
   public:
     /*! Create a new definition */
@@ -246,47 +246,14 @@ class DefinitionAliasImpl : virtual public Definition
     { return m_def->navigationPathAsString(); }
     virtual QCString pathFragment() const
     { return m_def->pathFragment(); }
-    virtual void setName(const char *) { }
-    virtual void setId(const char *) { }
-    virtual void setDefFile(const QCString&,int,int) {}
-    virtual void setDocumentation(const char *,const char *,int,bool=TRUE) {}
-    virtual void setBriefDescription(const char *,const char *,int) {}
-    virtual void setInbodyDocumentation(const char *,const char *,int) {}
-    virtual void setReference(const char *) {}
-    virtual void addSectionsToDefinition(const std::vector<const SectionInfo*> &) {}
-    virtual void setBodySegment(int,int,int) {}
-    virtual void setBodyDef(FileDef *) {}
-    virtual void addSourceReferencedBy(const MemberDef *) {}
-    virtual void addSourceReferences(const MemberDef *) {}
-    virtual void setRefItems(const RefItemVector &) {}
-    virtual void mergeRefItems(Definition *) {}
-    virtual void mergeReferences(const Definition *) {}
-    virtual void mergeReferencedBy(const Definition *) {}
-    virtual void addInnerCompound(const Definition *) {}
-    virtual void setOuterScope(Definition *) {}
-    virtual void setHidden(bool) {}
-    virtual void setArtificial(bool) {}
-    virtual void setLanguage(SrcLangExt) {}
-    virtual void writeSourceDef(OutputList &,const char *) const {}
-    virtual void writeInlineCode(OutputList &,const char *) const {}
-    virtual void writeSourceRefs(OutputList &,const char *) const {}
-    virtual void writeSourceReffedBy(OutputList &,const char *) const {}
-    virtual void makePartOfGroup(GroupDef *) {}
-    virtual void writeNavigationPath(OutputList &) const {}
-    virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const {}
-    virtual void writeSummaryLinks(OutputList &) const {}
-    virtual void writeDocAnchorsToTagFile(FTextStream &) const {}
-    virtual void setLocalName(const QCString) {}
-    virtual void addSectionsToIndex() {}
-    virtual void writeToc(OutputList &, const LocalToc &) const {}
-    virtual void setCookie(Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
-    virtual Cookie *cookie() const { return m_cookie; }
-    virtual void computeTooltip() {}
+
   protected:
     const Definition *getAlias() const { return m_def; }
     const Definition *getScope() const { return m_scope; }
 
   private:
+    virtual void setCookie(Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
+    virtual Cookie *cookie() const { return m_cookie; }
     virtual void _setSymbolName(const QCString &name) { m_symbolName = name; }
     virtual QCString _symbolName() const { return m_symbolName; }
     const Definition *m_scope;
@@ -294,6 +261,5 @@ class DefinitionAliasImpl : virtual public Definition
     mutable Cookie *m_cookie;
     QCString m_symbolName;
 };
-
 
 #endif

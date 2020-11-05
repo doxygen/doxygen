@@ -31,6 +31,7 @@ class MemberDef;
 class MemberGroupSDict;
 class NamespaceSDict;
 class FTextStream;
+class NamespaceDefMutable;
 
 /** An abstract interface of a namespace symbol. */
 class NamespaceDef : virtual public Definition
@@ -38,54 +39,29 @@ class NamespaceDef : virtual public Definition
   public:
     virtual ~NamespaceDef() {}
     virtual DefType definitionType() const = 0;
+
+    static NamespaceDefMutable *make_mutable(const NamespaceDef *);
+
+    // ---- getters
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;
-    virtual void insertUsedFile(FileDef *fd) = 0;
-
-    virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeMemberPages(OutputList &ol) = 0;
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
-
-    virtual void insertClass(const ClassDef *cd) = 0;
-    virtual void insertNamespace(const NamespaceDef *nd) = 0;
-    virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it
-
-    virtual void computeAnchors() = 0;
-    virtual void countMembers() = 0;
     virtual int numDocMembers() const = 0;
-    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
     virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
-    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
-    virtual void combineUsingRelations() = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString localName() const = 0;
-    virtual void setInline(bool isInline) = 0;
-
     virtual bool isConstantGroup() const = 0;
     virtual bool isModule()        const = 0;
     virtual bool isLibrary() const = 0;
     virtual bool isInline() const = 0;
-
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual bool hasDetailedDescription() const = 0;
-    virtual void addMembersToMemberGroup() = 0;
-    virtual void distributeMemberGroupDocumentation() = 0;
-    virtual void findSectionsInDocumentation() = 0;
-    virtual void sortMemberLists() = 0;
-
     virtual const Definition *findInnerCompound(const char *name) const = 0;
-    virtual void addInnerCompound(const Definition *d) = 0;
-    virtual void addListReferences() = 0;
-    virtual void setFileName(const QCString &fn) = 0;
-
     virtual bool subGrouping() const = 0;
-
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
     virtual const QList<MemberList> &getMemberLists() const = 0;
-    virtual MemberDef    *getMemberByName(const QCString &) const = 0;
+    virtual MemberDef *getMemberByName(const QCString &) const = 0;
 
     /*! Returns the user defined member groups */
     virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
@@ -108,13 +84,45 @@ class NamespaceDef : virtual public Definition
     virtual QCString title() const = 0;
     virtual QCString compoundTypeString() const = 0;
 
-    virtual void setMetaData(const QCString &m) = 0;
+    // --- visited administation
     virtual void setVisited(bool v) = 0;
     virtual bool isVisited() const = 0;
 };
 
+class NamespaceDefMutable : virtual public DefinitionMutable, virtual public NamespaceDef
+{
+  public:
+
+    // --- setters/actions
+    virtual void setMetaData(const QCString &m) = 0;
+    virtual void insertUsedFile(FileDef *fd) = 0;
+    virtual void writeDocumentation(OutputList &ol) = 0;
+    virtual void writeMemberPages(OutputList &ol) = 0;
+    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
+    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertNamespace(const NamespaceDef *nd) = 0;
+    virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it
+    virtual void computeAnchors() = 0;
+    virtual void countMembers() = 0;
+    virtual void addMembersToMemberGroup() = 0;
+    virtual void distributeMemberGroupDocumentation() = 0;
+    virtual void findSectionsInDocumentation() = 0;
+    virtual void sortMemberLists() = 0;
+    virtual void addInnerCompound(const Definition *d) = 0;
+    virtual void addListReferences() = 0;
+    virtual void setFileName(const QCString &fn) = 0;
+    virtual void combineUsingRelations() = 0;
+    virtual void addUsingDirective(const NamespaceDef *nd) = 0;
+    virtual void addUsingDeclaration(const ClassDef *cd) = 0;
+    virtual void setInline(bool isInline) = 0;
+};
+
+inline NamespaceDefMutable *NamespaceDef::make_mutable(const NamespaceDef *nd)
+{ return dynamic_cast<NamespaceDefMutable*>(const_cast<NamespaceDef*>(nd)); }
+
 /** Factory method to create new NamespaceDef instance */
-NamespaceDef *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
+NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
                  const char *name,const char *ref=0,
                  const char *refFile=0,const char*type=0,
                  bool isPublished=false);

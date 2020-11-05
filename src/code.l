@@ -173,7 +173,6 @@ struct codeYY_state
   std::unordered_map< int, QCString>  commentMap;
   int           braceCount=0;
 
-  QCString        forceTagReference;
   VariableContext theVarContext;
   CallContext     theCallContext;
   TooltipManager  tooltipManager;
@@ -201,6 +200,7 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static void endFontClass(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const char *text);
+static void incrementFlowKeyWordCount(yyscan_t yyscanner);
 static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
                                    const Definition *d,
                                    const char *text);
@@ -953,10 +953,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           BEGIN(FuncCall);
                                         }
 <Body>{FLOWCONDITION}/{BN}*"("          {
-                                          if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                          {
-                                            yyextra->currentMemberDef->incrementFlowKeyWordCount();
-                                          }
+                                          incrementFlowKeyWordCount(yyscanner);
                                           startFontClass(yyscanner,"keywordflow");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -974,10 +971,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           }
                                         }
 <Body>{FLOWCONDITION}/([^a-z_A-Z0-9])   {
-                                          if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                          {
-                                            yyextra->currentMemberDef->incrementFlowKeyWordCount();
-                                          }
+                                          incrementFlowKeyWordCount(yyscanner);
                                           startFontClass(yyscanner,"keywordflow");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -992,10 +986,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           endFontClass(yyscanner);
                                         }
 <Body>{FLOWCONDITION}/{B}*              {
-                                          if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                          {
-                                            yyextra->currentMemberDef->incrementFlowKeyWordCount();
-                                          }
+                                          incrementFlowKeyWordCount(yyscanner);
                                           startFontClass(yyscanner,"keywordflow");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -1540,10 +1531,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           endFontClass(yyscanner);
                                         }
 <MemberCall2,FuncCall>{FLOWCONDITION}/([^a-z_A-Z0-9]) {
-                                          if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                          {
-                                            yyextra->currentMemberDef->incrementFlowKeyWordCount();
-                                          }
+                                          incrementFlowKeyWordCount(yyscanner);
                                           addParmType(yyscanner);
                                           yyextra->parmName=yytext;
                                           startFontClass(yyscanner,"keywordflow");
@@ -2050,12 +2038,6 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             endFontClass(yyscanner);
                                           }
                                         }
-<*>"/*[tag:"[^\]\n]*"]*/"{B}*           { // special pattern /*[tag:filename]*/ to force linking to a tag file
-                                          yyextra->forceTagReference=yytext;
-                                          uint s=(uint)yyextra->forceTagReference.find(':');
-                                          uint e=(uint)yyextra->forceTagReference.findRev(']');
-                                          yyextra->forceTagReference = yyextra->forceTagReference.mid(s+1,e-s-1);
-                                        }
 <*>\n{B}*"/*"[!*]/[^/*]                 {
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -2464,6 +2446,19 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
   }
 }
 
+static void incrementFlowKeyWordCount(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
+  {
+    MemberDefMutable *md = MemberDef::make_mutable(yyextra->currentMemberDef);
+    if (md)
+    {
+      md->incrementFlowKeyWordCount();
+    }
+  }
+}
+
 /*! writes a link to a fragment \a text that may span multiple lines, inserting
  * line numbers for each line. If \a text contains newlines, the link will be
  * split into multiple links with the same destination, one for each line.
@@ -2685,9 +2680,7 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
         // in case there are multiple members we could link to, we
         // only link to members if defined in the same file or
         // defined as external.
-        if ((!md->isStatic() || md->getBodyDef()==yyextra->sourceFileDef) &&
-            (yyextra->forceTagReference.isEmpty() || yyextra->forceTagReference==md->getReference())
-           )
+        if (!md->isStatic() || md->getBodyDef()==yyextra->sourceFileDef)
         {
           yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,md->typeString(),md->getOuterScope())));
           //printf("returning member %s in source file %s\n",md->name().data(),yyextra->sourceFileDef->name().data());
@@ -2733,7 +2726,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
   const NamespaceDef *nd = 0;
   const GroupDef     *gd = 0;
   DBG_CTX((stderr,"getLinkInScope: trying '%s'::'%s' varOnly=%d\n",c.data(),m.data(),varOnly));
-  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef,FALSE,yyextra->forceTagReference) &&
+  if (getDefs(c,m,"()",md,cd,fd,nd,gd,FALSE,yyextra->sourceFileDef,FALSE) &&
       (!varOnly || md->isVariable()))
   {
     if (md->isLinkable())
@@ -2745,7 +2738,8 @@ static bool getLinkInScope(yyscan_t yyscanner,
         anchor.sprintf("a%d",yyextra->anchorCount);
         //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
         //                                  yyextra->exampleFile.data());
-        if (const_cast<MemberDef*>(md)->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
+        MemberDefMutable *mdm = MemberDef::make_mutable(md);
+        if (mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
           yyextra->anchorCount++;
@@ -2765,7 +2759,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
             md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
         {
           std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-          addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
+          addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
         }
         //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
 
@@ -2910,7 +2904,8 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       anchor.sprintf("_a%d",yyextra->anchorCount);
       //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
       //                                   yyextra->exampleFile.data());
-      if (const_cast<ClassDef*>(cd)->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
+      ClassDefMutable *cdm = ClassDef::make_mutable(const_cast<ClassDef*>(cd));
+      if (cdm && cdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
       {
         ol.writeCodeAnchor(anchor);
         yyextra->anchorCount++;
@@ -2928,7 +2923,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
+        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
       }
     }
   }
@@ -2960,29 +2955,13 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         DBG_CTX((stderr,"is a global md=%p yyextra->currentDefinition=%s linkable=%d\n",md,yyextra->currentDefinition?yyextra->currentDefinition->name().data():"<none>",md->isLinkable()));
         if (md->isLinkable())
         {
-          QCString text;
-          if (!yyextra->forceTagReference.isEmpty()) // explicit reference to symbol in tag file
-          {
-            text=yyextra->forceTagReference;
-            if (text.right(4)==".tag") // strip .tag if present
-            {
-              text=text.left(text.length()-4);
-            }
-            text+=getLanguageSpecificSeparator(md->getLanguage());
-            text+=clName;
-            const_cast<MemberDef*>(md)->setName(text);
-            const_cast<MemberDef*>(md)->setLocalName(text);
-          }
-          else // normal reference
-          {
-            text=clName;
-          }
+          QCString text=clName;
           writeMultiLineCodeLink(yyscanner,ol,md,text);
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
             std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-            addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(md));
+            addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
           }
           return;
         }
@@ -3015,7 +2994,8 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
     anchor.sprintf("a%d",yyextra->anchorCount);
     //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
     //                                  yyextra->exampleFile.data());
-    if (xmd->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
+    MemberDefMutable *mdm = MemberDef::make_mutable(xmd);
+    if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
     {
       ol.writeCodeAnchor(anchor);
       yyextra->anchorCount++;
@@ -3043,7 +3023,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
           /*xmd!=yyextra->currentMemberDef &&*/ yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(yyextra->currentMemberDef,xmd);
+        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(xmd));
       }
 
       // write the actual link
@@ -3311,7 +3291,6 @@ static void generateFunctionLink(yyscan_t yyscanner,CodeOutputInterface &ol,cons
     generateClassOrGlobalLink(yyscanner,ol,funcName);
   }
 exit:
-  yyextra->forceTagReference.resize(0);
   return;
 }
 
@@ -3460,7 +3439,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               if (yyextra->currentMemberDef && yyextra->collectXRefs)
               {
                 std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(ctx->method));
+                addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(ctx->method));
               }
             }
             else
@@ -3535,7 +3514,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               if (yyextra->currentMemberDef && yyextra->collectXRefs)
               {
                 std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                addDocCrossReference(yyextra->currentMemberDef,const_cast<MemberDef*>(ctx->objectVar));
+                addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(ctx->objectVar));
               }
             }
             else if (ctx->objectType &&
@@ -3803,7 +3782,6 @@ void CCodeParser::resetCodeParserState()
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   //printf("***CodeParser::reset()\n");
-  yyextra->forceTagReference.resize(0);
   yyextra->theVarContext.clear();
   while (!yyextra->classScopeLengthStack.empty()) yyextra->classScopeLengthStack.pop();
   yyextra->codeClassMap.clear();

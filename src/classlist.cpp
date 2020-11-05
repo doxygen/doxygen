@@ -102,15 +102,17 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     bool found=FALSE;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
+      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
       //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
-      if (!cd->isAnonymous() &&
+      if (cdm &&
+          !cd->isAnonymous() &&
           !cd->isExtension() &&
           (cd->protection()!=Private || extractPrivate) &&
           (filter==0 || *filter==cd->compoundType())
          )
       {
         //printf("writeDeclarationLink()\n");
-        cd->writeDeclarationLink(ol,found,header,localNames);
+        cdm->writeDeclarationLink(ol,found,header,localNames);
       }
     }
     if (found) ol.endMemberList();
@@ -137,7 +139,9 @@ void ClassSDict::writeDocumentation(OutputList &ol,const Definition * container)
       //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
       //  container,cd->partOfGroups() ? cd->partOfGroups()->count() : 0);
 
-      if (!cd->isAnonymous() &&
+      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      if (cdm &&
+          !cd->isAnonymous() &&
           cd->isLinkableInProject() &&
           cd->isEmbeddedInOuterScope() &&
           !cd->isAlias() &&
@@ -154,7 +158,7 @@ void ClassSDict::writeDocumentation(OutputList &ol,const Definition * container)
           ol.endGroupHeader();
           found=TRUE;
         }
-        cd->writeInlineDocumentation(ol);
+        cdm->writeInlineDocumentation(ol);
       }
     }
   }

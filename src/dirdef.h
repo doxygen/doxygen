@@ -39,7 +39,7 @@ typedef std::vector<DirDef*> DirList;
 bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 
 /** A model of a directory symbol. */
-class DirDef : virtual public Definition
+class DirDef : virtual public DefinitionMutable
 {
   public:
     virtual ~DirDef() {}

@@ -30,6 +30,7 @@
 
 struct Argument;
 class MemberDef;
+class MemberDefMutable;
 class MemberList;
 class MemberDict;
 class ClassList;
@@ -52,6 +53,7 @@ struct IncludeInfo;
 class ClassDefImpl;
 class FTextStream;
 class ClassDef;
+class ClassDefMutable;
 
 /** Class that contains information about an inheritance relation.
  */
@@ -106,6 +108,7 @@ class ClassDef : virtual public Definition
 
     virtual ~ClassDef() {}
 
+    static ClassDefMutable *make_mutable(const ClassDef *);
 
     //-----------------------------------------------------------------------------------
     // --- getters
@@ -258,7 +261,7 @@ class ClassDef : virtual public Definition
      *  available, or 0 otherwise.
      *  @param name The name of the nested compound
      */
-    virtual Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const char *name) const = 0;
 
     /** Returns the template parameter lists that form the template
      *  declaration of this class.
@@ -356,6 +359,37 @@ class ClassDef : virtual public Definition
     virtual bool hasNonReferenceSuperClass() const = 0;
 
     //-----------------------------------------------------------------------------------
+    // --- count members ----
+    //-----------------------------------------------------------------------------------
+
+    virtual int countMembersIncludingGrouped(MemberListType lt,
+                const ClassDef *inheritedFrom,bool additional) const = 0;
+    virtual int countInheritanceNodes() const = 0;
+    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- helpers ----
+    //-----------------------------------------------------------------------------------
+
+    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                const QCString &templSpec,bool &freshInstance) const = 0;
+    virtual void writeDeclarationLink(OutputList &ol,bool &found,
+                 const char *header,bool localNames) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- visiting administration ----
+    //-----------------------------------------------------------------------------------
+
+    virtual void setVisited(bool visited) const = 0;
+    virtual bool isVisited() const = 0;
+
+};
+
+class ClassDefMutable : virtual public DefinitionMutable, virtual public ClassDef
+{
+  public:
+    //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
 
@@ -391,8 +425,6 @@ class ClassDef : virtual public Definition
     virtual void addTaggedInnerClass(ClassDef *cd) = 0;
     virtual void addInnerCompound(const Definition *d) = 0;
     virtual bool addExample(const char *anchor,const char *name, const char *file) = 0;
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
-                                const QCString &templSpec,bool &freshInstance) const = 0;
     virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
     virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
     virtual void makeTemplateArgument(bool b=TRUE) = 0;
@@ -405,7 +437,7 @@ class ClassDef : virtual public Definition
     virtual void mergeMembers() = 0;
     virtual void sortMemberLists() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
-    virtual void reclassifyMember(MemberDef *md,MemberType t) = 0;
+    virtual void reclassifyMember(MemberDefMutable *md,MemberType t) = 0;
     virtual void removeMemberFromLists(MemberDef *md) = 0;
     virtual void setAnonymousEnumType() = 0;
     virtual void countMembers() = 0;
@@ -424,8 +456,6 @@ class ClassDef : virtual public Definition
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                 const char *header,bool localNames) const = 0;
     virtual void writeTagFile(FTextStream &) = 0;
     virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
@@ -434,27 +464,14 @@ class ClassDef : virtual public Definition
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- count members ----
-    //-----------------------------------------------------------------------------------
 
-    virtual int countMembersIncludingGrouped(MemberListType lt,
-                const ClassDef *inheritedFrom,bool additional) const = 0;
-    virtual int countInheritanceNodes() const = 0;
-    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const = 0;
-
-
-    //-----------------------------------------------------------------------------------
-    // --- visiting administration ----
-    //-----------------------------------------------------------------------------------
-
-    virtual void setVisited(bool visited) const = 0;
-    virtual bool isVisited() const = 0;
 };
 
+inline ClassDefMutable *ClassDef::make_mutable(const ClassDef *cd)
+{ return dynamic_cast<ClassDefMutable*>(const_cast<ClassDef*>(cd)); }
+
 /** Factory method to create a new ClassDef object */
-ClassDef *createClassDef(
+ClassDefMutable *createClassDef(
              const char *fileName,int startLine,int startColumn,
              const char *name,ClassDef::CompoundType ct,
              const char *ref=0,const char *fName=0,

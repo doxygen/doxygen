@@ -128,15 +128,18 @@ void PageDefImpl::addInnerCompound(const Definition *const_def)
   {
     Definition *def = const_cast<Definition*>(const_def); // uck: fix me
     PageDef *pd = dynamic_cast<PageDef*>(def);
-    m_subPageDict->append(pd->name(),pd);
-    def->setOuterScope(this);
-    if (this==Doxygen::mainPage)
+    if (pd)
     {
-      pd->setNestingLevel(m_nestingLevel);
-    }
-    else
-    {
-      pd->setNestingLevel(m_nestingLevel+1);
+      m_subPageDict->append(pd->name(),pd);
+      pd->setOuterScope(this);
+      if (this==Doxygen::mainPage)
+      {
+        pd->setNestingLevel(m_nestingLevel);
+      }
+      else
+      {
+        pd->setNestingLevel(m_nestingLevel+1);
+      }
     }
   }
 }
@@ -209,7 +212,11 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   {
     if (getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
     {
-      getOuterScope()->writeNavigationPath(ol);
+      DefinitionMutable *outerScope = Definition::make_mutable(getOuterScope());
+      if (outerScope)
+      {
+        outerScope->writeNavigationPath(ol);
+      }
     }
     ol.endQuickIndices();
   }

@@ -34,6 +34,7 @@
 #include "classdef.h"
 #include "arguments.h"
 #include "containers.h"
+#include "namespacedef.h"
 
 //--------------------------------------------------------------------
 
@@ -152,8 +153,7 @@ bool getDefs(const QCString &scopeName,
                     const GroupDef *&gd,
                     bool forceEmptyScope=FALSE,
                     const FileDef *currentFile=0,
-                    bool checkCV=FALSE,
-                    const char *forceTagFile=0
+                    bool checkCV=FALSE
                    );
 
 QCString getFileFilter(const char* name,bool isSourceCode);
@@ -205,8 +205,16 @@ QCString selectBlock(const QCString& s,const QCString &name,bool which);
 QCString resolveDefines(const char *n);
 
 ClassDef *getClass(const char *key);
+inline ClassDefMutable *getClassMutable(const char *key)
+{
+  return ClassDef::make_mutable(getClass(key));
+}
 
 NamespaceDef *getResolvedNamespace(const char *key);
+inline NamespaceDefMutable *getResolvedNamespaceMutable(const char *key)
+{
+  return NamespaceDef::make_mutable(getResolvedNamespace(key));
+}
 
 FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,
                 bool &ambig);
@@ -456,7 +464,7 @@ QCString getDotImageExtension();
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile);
 
-void addDocCrossReference(MemberDef *src,MemberDef *dst);
+void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst);
 
 uint getUtf8Code( const QCString& s, int idx );
 uint getUtf8CodeToLower( const QCString& s, int idx );

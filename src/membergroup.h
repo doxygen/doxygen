@@ -35,6 +35,7 @@ class FileDef;
 class GroupDef;
 class OutputList;
 class Definition;
+class DefinitionMutable;
 class FTextStream;
 class RefItem;
 
@@ -59,7 +60,7 @@ class MemberGroup
     void writeDocumentation(OutputList &ol,const char *scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
     void writeDocumentationPage(OutputList &ol,const char *scopeName,
-               const Definition *container) const;
+               const DefinitionMutable *container) const;
     void writeTagFile(FTextStream &);
     void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,

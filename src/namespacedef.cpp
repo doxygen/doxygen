@@ -35,7 +35,7 @@
 
 //------------------------------------------------------------------
 
-class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
+class NamespaceDefImpl : public DefinitionImpl, public NamespaceDefMutable
 {
   public:
     NamespaceDefImpl(const char *defFileName,int defLine,int defColumn,
@@ -143,7 +143,7 @@ class NamespaceDefImpl : public DefinitionImpl, public NamespaceDef
     bool                  m_inline = false;
 };
 
-NamespaceDef *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
+NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
                  const char *name,const char *ref,
                  const char *refFile,const char*type,
                  bool isPublished)
@@ -169,18 +169,14 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     { return getNSAlias()->anchor(); }
     virtual int numDocMembers() const
     { return getNSAlias()->numDocMembers(); }
-    virtual void addUsingDirective(const NamespaceDef *nd) {}
     virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const
     { return getNSAlias()->getUsedNamespaces(); }
-    virtual void addUsingDeclaration(const ClassDef *cd) {}
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
-    virtual void combineUsingRelations() {}
     virtual QCString displayName(bool b=TRUE) const
     { return getNSAlias()->displayName(b); }
     virtual QCString localName() const
     { return getNSAlias()->localName(); }
-    virtual void setInline(bool isInline) { }
     virtual bool isConstantGroup() const
     { return getNSAlias()->isConstantGroup(); }
     virtual bool isModule()        const
@@ -221,26 +217,6 @@ class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
     { return getNSAlias()->title(); }
     virtual QCString compoundTypeString() const
     { return getNSAlias()->compoundTypeString(); }
-
-    // --- setters/actions
-    virtual void setMetaData(const QCString &m) {}
-    virtual void insertUsedFile(FileDef *fd) { }
-    virtual void writeDocumentation(OutputList &ol) {}
-    virtual void writeMemberPages(OutputList &ol) {}
-    virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const {}
-    virtual void writeTagFile(FTextStream &) {}
-    virtual void insertClass(const ClassDef *cd) {}
-    virtual void insertNamespace(const NamespaceDef *nd) {}
-    virtual void insertMember(MemberDef *md) {}
-    virtual void computeAnchors() {}
-    virtual void countMembers() {}
-    virtual void addMembersToMemberGroup() {}
-    virtual void distributeMemberGroupDocumentation() {}
-    virtual void findSectionsInDocumentation() {}
-    virtual void sortMemberLists() {}
-    virtual void addInnerCompound(const Definition *d) {}
-    virtual void addListReferences() {}
-    virtual void setFileName(const QCString &fn) {}
 
     void setVisited(bool v) { m_visited = v; }
     bool isVisited() const { return m_visited; }
@@ -467,6 +443,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
   //printf("%s::insertMember(%s) isInline=%d hasDocs=%d\n",qPrint(name()),qPrint(md->name()),
   //    isInline(),hasDocumentation());
   if (md->isHidden()) return;
+  MemberDefMutable *mdm = MemberDef::make_mutable(md);
 
   // if this is an inline namespace that is not documented, then insert the
   // member in the parent scope instead
@@ -477,16 +454,25 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     {
       if (outerScope->definitionType()==Definition::TypeNamespace)
       {
-        NamespaceDef *nd = dynamic_cast<NamespaceDef*>(outerScope);
-        nd->insertMember(md);
-        md->setNamespace(nd);
+        NamespaceDefMutable *nd = NamespaceDef::make_mutable(dynamic_cast<NamespaceDef*>(outerScope));
+        if (nd)
+        {
+          nd->insertMember(md);
+          if (mdm)
+          {
+            mdm->setNamespace(nd);
+          }
+        }
       }
       else if (outerScope->definitionType()==Definition::TypeFile)
       {
         FileDef *fd = dynamic_cast<FileDef*>(outerScope);
         fd->insertMember(md);
-        md->setFileDef(fd);
-        md->setOuterScope(fd);
+        if (mdm)
+        {
+          mdm->setFileDef(fd);
+          mdm->setOuterScope(fd);
+        }
       }
     }
   }
@@ -556,7 +542,11 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         if (outerScope->definitionType()==Definition::TypeNamespace)
         {
           aliasMd.reset(createMemberDefAlias(outerScope,md));
-          dynamic_cast<NamespaceDef*>(outerScope)->insertMember(aliasMd.get());
+          NamespaceDefMutable *ndm = NamespaceDef::make_mutable(dynamic_cast<NamespaceDef*>(outerScope));
+          if (ndm)
+          {
+            ndm->insertMember(aliasMd.get());
+          }
         }
         else if (outerScope->definitionType()==Definition::TypeFile)
         {
@@ -1300,7 +1290,11 @@ void NamespaceDefImpl::combineUsingRelations()
   LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
-    const_cast<NamespaceDef*>(nd)->combineUsingRelations();
+    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    if (ndm)
+    {
+      ndm->combineUsingRelations();
+    }
   }
 
   for (auto &nd : usingDirList)
@@ -1445,7 +1439,11 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 
   if (ml->listType()&MemberListType_declarationLists)
   {
-    md->setSectionList(this,ml);
+    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    if (mdm)
+    {
+      mdm->setSectionList(this,ml);
+    }
   }
 }
 

@@ -254,7 +254,7 @@ QCString fixSpaces(const QCString &s)
   return substitute(s," ","&#160;");
 }
 
-void startTitle(OutputList &ol,const char *fileName,const Definition *def)
+void startTitle(OutputList &ol,const char *fileName,const DefinitionMutable *def)
 {
   ol.startHeaderSection();
   if (def) def->writeSummaryLinks(ol);
@@ -1576,7 +1576,8 @@ static void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool 
     ClassDef *cd;
     for (;(cd=cli.current());++cli)
     {
-      if (cd->getLanguage()==SrcLangExt_VHDL)
+      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
       {
         if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
             (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
@@ -1587,7 +1588,7 @@ static void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool 
         if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
         {
           QCString n=cd->name();
-          cd->setClassName(n.data());
+          cdm->setClassName(n.data());
         }
       }
 

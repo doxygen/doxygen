@@ -109,9 +109,9 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideS
   //printf("addHierarchy '%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
   for (const auto &bcd : cd->subClasses())
   {
-    ClassDef *bClass=bcd.classDef;
+    ClassDefMutable *bClass=ClassDef::make_mutable(bcd.classDef);
     //printf("  Trying sub class='%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
-    if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
+    if (bClass && bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
       DotNode *bn;
       //printf("  Node '%s' Found visible class='%s'\n",n->label().data(),

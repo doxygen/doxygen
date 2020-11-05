@@ -71,7 +71,7 @@ static QDict<QCString> g_vhdlKeyDict3(17,FALSE);
 
 static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
-static void addInstance(ClassDef* entity, ClassDef* arch, ClassDef *inst,
+static void addInstance(ClassDefMutable* entity, ClassDefMutable* arch, ClassDefMutable *inst,
                         const std::shared_ptr<Entry> &cur);
 
 //---------- create svg -------------------------------------------------------------
@@ -1712,7 +1712,7 @@ void VhdlDocGen::writeVhdlDeclarations(const MemberList* ml,
 
 }
 
-void VhdlDocGen::correctMemberProperties(MemberDef *md)
+void VhdlDocGen::correctMemberProperties(MemberDefMutable *md)
 {
   if (qstrcmp(md->argsString(),"package")==0)
   {
@@ -1844,7 +1844,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
   return hasParams;
 }
 
-void VhdlDocGen::writeTagFile(MemberDef *mdef,FTextStream &tagFile)
+void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,FTextStream &tagFile)
 {
   tagFile << "    <member kind=\"";
   if (VhdlDocGen::isGeneric(mdef))      tagFile << "generic";
@@ -1888,7 +1888,7 @@ void VhdlDocGen::writeTagFile(MemberDef *mdef,FTextStream &tagFile)
 
 /* writes a vhdl type declaration */
 
-void VhdlDocGen::writeVHDLDeclaration(const MemberDef* mdef,OutputList &ol,
+void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &ol,
     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
     bool /*inGroup*/)
 {
@@ -2198,24 +2198,28 @@ void VhdlDocGen::writePlainVHDLDeclarations(
   pack.setAutoDelete(TRUE);
 
   bool first=TRUE;
-  MemberDef *md;
+  MemberDef *imd;
   MemberListIterator mli(*mlist);
-  for ( ; (md=mli.current()); ++mli )
+  for ( ; (imd=mli.current()); ++mli )
   {
-    int mems=md->getMemberSpecifiers();
-    if (md->isBriefSectionVisible() && (mems==specifier) && (mems!=VhdlDocGen::LIBRARY) )
+    MemberDefMutable *md = MemberDef::make_mutable(imd);
+    if (md)
     {
-      if (first) { ol.startMemberList();first=FALSE; }
-      VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,FALSE);
-    } //if
-    else if (md->isBriefSectionVisible() && (mems==specifier))
-    {
-      if (!pack.find(md->name().data()))
+      int mems=md->getMemberSpecifiers();
+      if (md->isBriefSectionVisible() && (mems==specifier) && (mems!=VhdlDocGen::LIBRARY) )
       {
-        if (first) ol.startMemberList(),first=FALSE;
+        if (first) { ol.startMemberList();first=FALSE; }
         VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,FALSE);
-        pack.append(md->name().data(),new QCString(md->name().data()));
-      }
+      } //if
+      else if (md->isBriefSectionVisible() && (mems==specifier))
+      {
+        if (!pack.find(md->name().data()))
+        {
+          if (first) ol.startMemberList(),first=FALSE;
+          VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,FALSE);
+          pack.append(md->name().data(),new QCString(md->name().data()));
+        }
+      } //if
     } //if
   } //for
   if (!first) ol.endMemberList();
@@ -2349,7 +2353,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
 
 
 
-void VhdlDocGen::writeSource(const MemberDef *mdef,OutputList& ol,const QCString & cname)
+void VhdlDocGen::writeSource(const MemberDefMutable *mdef,OutputList& ol,const QCString & cname)
 {
   auto intf = Doxygen::parserManager->getCodeParser(".vhd");
  // pIntf->resetCodeParserState();
@@ -2679,10 +2683,10 @@ void VhdlDocGen::computeVhdlComponentRelations()
       entity=cur->type;
     }
 
-    ClassDef *classEntity= VhdlDocGen::findVhdlClass(entity.data());//Doxygen::classSDict->find(entity);
+    ClassDefMutable *classEntity= ClassDef::make_mutable(VhdlDocGen::findVhdlClass(entity.data()));
     inst=VhdlDocGen::getIndexWord(cur->args.data(),0);
-    ClassDef *cd=Doxygen::classSDict->find(inst);
-    ClassDef *ar=Doxygen::classSDict->find(cur->args);
+    ClassDefMutable *cd=ClassDef::make_mutable(Doxygen::classSDict->find(inst));
+    ClassDefMutable *ar=ClassDef::make_mutable(Doxygen::classSDict->find(cur->args));
 
     if (cd==0)
     {
@@ -2697,8 +2701,8 @@ void VhdlDocGen::computeVhdlComponentRelations()
 
 }
 
-static void addInstance(ClassDef* classEntity, ClassDef* ar,
-                        ClassDef *cd , const std::shared_ptr<Entry> &cur)
+static void addInstance(ClassDefMutable* classEntity, ClassDefMutable* ar,
+                        ClassDefMutable *cd , const std::shared_ptr<Entry> &cur)
 {
 
   QCString bName,n1;
@@ -2734,7 +2738,7 @@ static void addInstance(ClassDef* classEntity, ClassDef* ar,
 
 ferr:
   QCString uu=cur->name;
-  std::unique_ptr<MemberDef> md { createMemberDef(
+  std::unique_ptr<MemberDefMutable> md { createMemberDef(
       ar->getDefFileName(), cur->startLine,cur->startColumn,
       n1,uu,uu, 0,
       Public, Normal, cur->stat,Member,
@@ -2776,22 +2780,22 @@ ferr:
 }
 
 
-void  VhdlDocGen::writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDef *mdef)
+void  VhdlDocGen::writeRecordUnit(QCString & largs,QCString & ltype,OutputList& ol ,const MemberDefMutable *mdef)
 {
-	  int i=mdef->name().find('~');
-	  if(i>0){
-		 //sets the real record member name
-	    const_cast<MemberDef*>(mdef)->setName(mdef->name().left(i).data());
-       }
+  int i=mdef->name().find('~');
+  if (i>0)
+  {
+    //sets the real record member name
+    const_cast<MemberDefMutable*>(mdef)->setName(mdef->name().left(i).data());
+  }
 
-      writeLink(mdef,ol);
-      ol.startBold();
-      ol.insertMemberAlign();
-      if (!ltype.isEmpty()){
-        VhdlDocGen::formatString(ltype,ol,mdef);
-	}
-      ol.endBold();
-
+  writeLink(mdef,ol);
+  ol.startBold();
+  ol.insertMemberAlign();
+  if (!ltype.isEmpty()){
+    VhdlDocGen::formatString(ltype,ol,mdef);
+  }
+  ol.endBold();
 }
 
 

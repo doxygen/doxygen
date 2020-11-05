@@ -63,7 +63,7 @@ struct IncludeInfo
  *  The member writeDocumentation() can be used to generate the page of
  *  documentation to HTML and LaTeX.
  */
-class FileDef : virtual public Definition
+class FileDef : virtual public DefinitionMutable
 {
   public:
    ~FileDef() {}

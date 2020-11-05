@@ -63,6 +63,7 @@ class FormulaDict;
 class FormulaNameDict;
 class Preprocessor;
 struct MemberGroupInfo;
+class NamespaceDefMutable;
 
 typedef QList<QCString>    StringList;
 typedef QListIterator<QCString>    StringListIterator;
@@ -117,7 +118,7 @@ class Doxygen
     static StringDict                aliasDict;
     static QIntDict<MemberGroupInfo> memGrpInfoDict;
     static StringUnorderedSet        expandAsDefinedSet;
-    static NamespaceDef             *globalScope;
+    static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
     static SearchIndexIntf          *searchIndex;

@@ -1228,6 +1228,7 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
 
 
 // compute the HTML anchors for a list of members
+// TODO: make member of MemberList
 void setAnchors(MemberList *ml)
 {
   //int count=0;
@@ -1236,17 +1237,10 @@ void setAnchors(MemberList *ml)
   MemberDef *md;
   for (;(md=mli.current());++mli)
   {
-    if (!md->isReference())
+    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    if (mdm && !md->isReference())
     {
-      //QCString anchor;
-      //if (groupId==-1)
-      //  anchor.sprintf("%c%d",id,count++);
-      //else
-      //  anchor.sprintf("%c%d_%d",id,groupId,count++);
-      //if (cd) anchor.prepend(escapeCharsInString(cd->name(),FALSE));
-      md->setAnchor();
-      //printf("setAnchors(): Member %s outputFileBase=%s anchor %s result %s\n",
-      //    md->name().data(),md->getOutputFileBase().data(),anchor.data(),md->anchor().data());
+      mdm->setAnchor();
     }
   }
 }
@@ -2298,7 +2292,6 @@ static void findMembersWithSpecificName(const MemberName *mn,
                                         bool checkStatics,
                                         const FileDef *currentFile,
                                         bool checkCV,
-                                        const char *forceTagFile,
                                         QList<MemberDef> &members)
 {
   //printf("  Function with global scope name '%s' args='%s'\n",
@@ -2327,7 +2320,7 @@ static void findMembersWithSpecificName(const MemberName *mn,
             Doxygen::globalScope,fd,argList_p.get(),
             checkCV);
       }
-      if (match && (forceTagFile==0 || md->getReference()==forceTagFile))
+      if (match)
       {
         //printf("Found match!\n");
         members.append(md);
@@ -2368,8 +2361,7 @@ bool getDefs(const QCString &scName,
              const GroupDef *&gd,
              bool forceEmptyScope,
              const FileDef *currentFile,
-             bool checkCV,
-             const char *forceTagFile
+             bool checkCV
             )
 {
   fd=0, md=0, cd=0, nd=0, gd=0;
@@ -2468,7 +2460,7 @@ bool getDefs(const QCString &scName,
             //printf("match=%d\n",match);
             if (match)
             {
-              ClassDef *mcd=mmd->getClassDef();
+              const ClassDef *mcd=mmd->getClassDef();
               if (mcd)
               {
                 int m=minClassDistance(fcd,mcd);
@@ -2491,7 +2483,7 @@ bool getDefs(const QCString &scName,
             MemberDef *mmd = mmd_p.get();
             //if (mmd->isLinkable())
             //{
-            ClassDef *mcd=mmd->getClassDef();
+            const ClassDef *mcd=mmd->getClassDef();
             //printf("  >Class %s found\n",mcd->name().data());
             if (mcd)
             {
@@ -2765,11 +2757,11 @@ bool getDefs(const QCString &scName,
     {
       QList<MemberDef> members;
       // search for matches with strict static checking
-      findMembersWithSpecificName(mn,args,TRUE,currentFile,checkCV,forceTagFile,members);
+      findMembersWithSpecificName(mn,args,TRUE,currentFile,checkCV,members);
       if (members.count()==0) // nothing found
       {
         // search again without strict static checking
-        findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,forceTagFile,members);
+        findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,members);
       }
       //printf("found %d members\n",members.count());
       if (members.count()!=1 && args && !qstrcmp(args,"()"))
@@ -3560,12 +3552,15 @@ static void initBaseClassHierarchy(const BaseClassList &bcl)
 {
   for (const auto &bcd : bcl)
   {
-    ClassDef *cd = bcd.classDef;
-    if (cd->baseClasses().empty()) // no base classes => new root
+    ClassDefMutable *cd = ClassDef::make_mutable(bcd.classDef);
+    if (cd)
     {
-      initBaseClassHierarchy(cd->baseClasses());
+      if (cd->baseClasses().empty()) // no base classes => new root
+      {
+        initBaseClassHierarchy(cd->baseClasses());
+      }
+      cd->setVisited(FALSE);
     }
-    cd->setVisited(FALSE);
   }
 }
 //----------------------------------------------------------------------------
@@ -3604,8 +3599,12 @@ void initClassHierarchy(ClassSDict *cl)
   ClassDef *cd;
   for ( ; (cd=cli.current()); ++cli)
   {
-    cd->setVisited(FALSE);
-    initBaseClassHierarchy(cd->baseClasses());
+    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    if (cdm)
+    {
+      cdm->setVisited(FALSE);
+      initBaseClassHierarchy(cd->baseClasses());
+    }
   }
 }
 
@@ -6869,7 +6868,7 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
          );
 }
 
-void addDocCrossReference(MemberDef *src,MemberDef *dst)
+void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
 {
   //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
@@ -6878,12 +6877,12 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
      )
   {
     dst->addSourceReferencedBy(src);
-    MemberDef *mdDef = dst->memberDefinition();
+    MemberDefMutable *mdDef = MemberDef::make_mutable(dst->memberDefinition());
     if (mdDef)
     {
       mdDef->addSourceReferencedBy(src);
     }
-    MemberDef *mdDecl = dst->memberDeclaration();
+    MemberDefMutable *mdDecl = MemberDef::make_mutable(dst->memberDeclaration());
     if (mdDecl)
     {
       mdDecl->addSourceReferencedBy(src);
@@ -6894,12 +6893,12 @@ void addDocCrossReference(MemberDef *src,MemberDef *dst)
      )
   {
     src->addSourceReferences(dst);
-    MemberDef *mdDef = src->memberDefinition();
+    MemberDefMutable *mdDef = MemberDef::make_mutable(src->memberDefinition());
     if (mdDef)
     {
       mdDef->addSourceReferences(dst);
     }
-    MemberDef *mdDecl = src->memberDeclaration();
+    MemberDefMutable *mdDecl = MemberDef::make_mutable(src->memberDeclaration());
     if (mdDecl)
     {
       mdDecl->addSourceReferences(dst);

@@ -1895,7 +1895,11 @@ void FileDefImpl::combineUsingRelations()
   LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
-    const_cast<NamespaceDef*>(nd)->combineUsingRelations();
+    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    if (ndm)
+    {
+      ndm->combineUsingRelations();
+    }
   }
 
   for (auto &nd : usingDirList)
@@ -2010,7 +2014,14 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   {
     ml->setInFile(TRUE);
   }
-  if (ml->listType()&MemberListType_declarationLists) md->setSectionList(this,ml);
+  if (ml->listType()&MemberListType_declarationLists)
+  {
+    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    if (mdm)
+    {
+      mdm->setSectionList(this,ml);
+    }
+  }
 }
 
 void FileDefImpl::sortMemberLists()

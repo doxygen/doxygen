@@ -40,6 +40,7 @@ class GroupDef;
 class GroupList;
 class SectionInfo;
 class Definition;
+class DefinitionMutable;
 class FTextStream;
 
 /** Data associated with a detailed description. */
@@ -93,6 +94,8 @@ class Definition
       TypePage       = 6,
       TypeDir        = 7
     };
+
+    static DefinitionMutable *make_mutable(const Definition *);
 
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -284,6 +287,25 @@ class Definition
     virtual QCString pathFragment() const = 0;
 
     //-----------------------------------------------------------------------------------
+    // --- cookie storage ----
+    //-----------------------------------------------------------------------------------
+    virtual void setCookie(Cookie *cookie) const = 0;
+    virtual Cookie *cookie() const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- symbol name ----
+    //-----------------------------------------------------------------------------------
+    virtual void _setSymbolName(const QCString &name) = 0;
+    virtual QCString _symbolName() const = 0;
+
+    // ---------------------------------
+    virtual ~Definition() = default;
+};
+
+class DefinitionMutable : virtual public Definition
+{
+  public:
+    //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
 
@@ -358,21 +380,11 @@ class Definition
     virtual void writeDocAnchorsToTagFile(FTextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- cookie storage ----
-    //-----------------------------------------------------------------------------------
-    virtual void setCookie(Cookie *cookie) const = 0;
-    virtual Cookie *cookie() const = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- symbol name ----
-    //-----------------------------------------------------------------------------------
-    virtual void _setSymbolName(const QCString &name) = 0;
-    virtual QCString _symbolName() const = 0;
-
-    // ---------------------------------
-    virtual ~Definition() = default;
 };
+
+inline DefinitionMutable *Definition::make_mutable(const Definition *def)
+{ return dynamic_cast<DefinitionMutable*>(const_cast<Definition*>(def)); }
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string
