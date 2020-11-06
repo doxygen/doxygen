@@ -55,7 +55,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -67,7 +67,7 @@ QCString VhdlParser::access_type_definition() {Token *tok=0;QCString str,str1;
     str1 = subtype_indication();
     }
 str=tok->image.c_str(); return str+str1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -110,7 +110,7 @@ return str;
         }
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -119,7 +119,7 @@ QCString VhdlParser::actual_parameter_part() {QCString s;
     s = association_list();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -166,7 +166,7 @@ s+="(";s+=s1+")";return s;
         }
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -204,7 +204,7 @@ return "&";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -242,7 +242,7 @@ s+=","+s1;
     jj_consume_token(RPAREN_T);
     }
 return "("+s+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -309,7 +309,7 @@ s+=s1;
 outlineParser()->addVhdlType(s2.data(),outlineParser()->getLine(ALIAS_T),Entry::VARIABLE_SEC,VhdlDocGen::ALIAS,0,s.data(),Public);
 
  return s2+" "+s+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -348,7 +348,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -551,7 +551,7 @@ return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -598,7 +598,7 @@ s.prepend("assert ");
    if(t) s1.prepend(" report ");
    if(t1) s2.prepend(" report ");
     return s+s1+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -628,7 +628,7 @@ QCString VhdlParser::assertion_statement() {QCString s,s1,s2;Token *t=0;
     }
 if(t) s+=":";
     return s+s1+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -649,7 +649,7 @@ QCString VhdlParser::association_element() {QCString s,s1;
     s1 = actual_part();
     }
 return s+" => "+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -681,7 +681,7 @@ s+=","+s1;
     end_label_4: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -703,7 +703,7 @@ QCString VhdlParser::attribute_declaration() {QCString s,s1;
     }
 outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,s1.data(),Public);
     return " attribute "+s+":"+s1+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -733,7 +733,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -793,7 +793,7 @@ s+=s1;
     }
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -822,7 +822,7 @@ QCString VhdlParser::attribute_specification() {QCString s,s1,s2;
 QCString t= s1+" is "+s2;
    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(ATTRIBUTE_T),Entry::VARIABLE_SEC,VhdlDocGen::ATTRIBUTE,0,t.data(),Public);
    return " attribute "+s+" of "+s1+ " is "+s2+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -831,7 +831,7 @@ QCString VhdlParser::base() {Token *tok=0;
     tok = jj_consume_token(INTEGER);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -840,7 +840,7 @@ QCString VhdlParser::base_specifier() {Token *tok=0;
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -849,7 +849,7 @@ QCString VhdlParser::base_unit_declaration() {QCString s;
     s = identifier();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -858,7 +858,7 @@ QCString VhdlParser::based_integer() {Token *tok=0;
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -867,7 +867,7 @@ QCString VhdlParser::based_literal() {Token *tok=0;
     tok = jj_consume_token(BASED_LITERAL);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -876,7 +876,7 @@ QCString VhdlParser::basic_identifier() {Token *tok=0;
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -931,7 +931,7 @@ QCString VhdlParser::bit_string_literal() {Token *tok=0;
     tok = jj_consume_token(BIT_STRING_LITERAL);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -940,7 +940,7 @@ QCString VhdlParser::bit_value() {Token *tok=0;
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -1471,7 +1471,7 @@ QCString VhdlParser::character_literal() {Token *tok=0;
     tok = jj_consume_token(CHARACTER_LITERAL);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -1524,7 +1524,7 @@ return " others ";
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -1556,7 +1556,7 @@ s+="|";s+=s1;
     end_label_10: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -1775,7 +1775,7 @@ return s+"#";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -1961,7 +1961,7 @@ QCString VhdlParser::condition() {QCString s;
     s = expression();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -1973,7 +1973,7 @@ QCString VhdlParser::condition_clause() {QCString s;
     s = condition();
     }
 return " until "+s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2233,7 +2233,7 @@ if(t)
      outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(CONSTANT_T),Entry::VARIABLE_SEC,VhdlDocGen::CONSTANT,0,it.data(),Public);
      it.prepend("constant ");
      return it;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2251,7 +2251,7 @@ QCString VhdlParser::constraint_array_definition() {QCString s,s1;
     s1 = subtype_indication();
     }
 return s+" "+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2291,7 +2291,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2338,7 +2338,7 @@ QCString VhdlParser::decimal_literal() {Token *tok=0;
     tok = jj_consume_token(DECIMAL_LITERAL);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2387,7 +2387,7 @@ return s+" inertial ";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2478,7 +2478,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2507,7 +2507,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2562,7 +2562,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2585,7 +2585,7 @@ QCString VhdlParser::element_association() {QCString s,s1;
 if(!s.isEmpty())
  return s+"=>"+s1;
 return s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2612,7 +2612,7 @@ QCString name;
    }
    s2=rec_name+":"+s1;
    return s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2678,7 +2678,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2842,7 +2842,7 @@ return "file";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2867,7 +2867,7 @@ s+="<>";
     }
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -2904,7 +2904,7 @@ s2+=",";s2+=s;
     end_label_15: ;
     }
 return s1+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3168,7 +3168,7 @@ QCString VhdlParser::entity_designator() {QCString s,s1;
     }
     }
 return s+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3271,7 +3271,7 @@ return "all";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3286,7 +3286,7 @@ QCString VhdlParser::entity_specification() {QCString s,s1;
     s1 = entity_class();
     }
 return s+":"+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3375,7 +3375,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3405,7 +3405,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3443,7 +3443,7 @@ s+=",";s+=s1;
     jj_consume_token(RPAREN_T);
     }
 return "("+s+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3507,7 +3507,7 @@ m_sharedState->lab.resize(0);
    FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2.data(),s1.data());
 
   return s+s1+s2+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3544,7 +3544,7 @@ s+=s1;s+=s2;
     end_label_20: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3609,7 +3609,7 @@ return "or" ;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3618,7 +3618,7 @@ QCString VhdlParser::extended_identifier() {Token *t;
     t = jj_consume_token(EXTENDED_CHARACTER);
     }
 return t->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3721,7 +3721,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3758,7 +3758,7 @@ QCString VhdlParser::file_declaration() {QCString s,s1,s2,s3;
 QCString t1=s2+" "+s3;
    outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,t1.data(),Public);
    return " file "+s+":"+s2+" "+s3+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3767,7 +3767,7 @@ QCString VhdlParser::file_logical_name() {QCString s;
     s = expression();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3809,7 +3809,7 @@ QCString VhdlParser::file_open_information() {QCString s,s1,s2;
     s1 = file_logical_name();
     }
 s2="open "+s+" is "+s1;  return s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3824,7 +3824,7 @@ QCString VhdlParser::file_type_definition() {QCString s,s1;
     s = type_mark();
     }
 s1=" file of "+s; return s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3833,7 +3833,7 @@ QCString VhdlParser::floating_type_definition() {QCString s;
     s = range_constraint();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3865,7 +3865,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3874,7 +3874,7 @@ QCString VhdlParser::formal_parameter_list() {QCString s;
     s = interface_list();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3905,7 +3905,7 @@ s+"("+s1+")";
     }
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3946,7 +3946,7 @@ if (s2.contains("#")) {
 
     tmpEntry.reset();
     return "type "+s+" is "+s2+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -3964,7 +3964,7 @@ QCString VhdlParser::function_call() {QCString s,s1;
     jj_consume_token(RPAREN_T);
     }
 return s+"("+s1+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4088,7 +4088,7 @@ QCString VhdlParser::generic_list() {QCString s;
     s = interface_list();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4139,7 +4139,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4173,7 +4173,7 @@ s2+=",";s2+=s1;
     end_label_21: ;
     }
 return s+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4203,7 +4203,7 @@ QCString VhdlParser::group_declaration() {QCString s,s1,s2;
     jj_consume_token(SEMI_T);
     }
 return "group "+s+":"+s1+"("+s2+");";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4230,7 +4230,7 @@ QCString VhdlParser::group_template_declaration() {QCString s,s1;
     jj_consume_token(SEMI_T);
     }
 return "group "+s+ "is ("+s1+");";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4272,7 +4272,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4304,7 +4304,7 @@ str+=",";str+=str1;
     end_label_22: ;
     }
 return str;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4430,7 +4430,7 @@ QCString VhdlParser::incomplete_type_declaration() {QCString s;
     jj_consume_token(SEMI_T);
     }
 return "type "+s+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4471,7 +4471,7 @@ s+=",";s+=s1;
     jj_consume_token(RPAREN_T);
     }
 return s+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4522,7 +4522,7 @@ return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4537,7 +4537,7 @@ QCString VhdlParser::index_subtype_definition() {QCString s;
     jj_consume_token(BOX_T);
     }
 return s+" range <> ";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4633,7 +4633,7 @@ s1="configuration ";return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4674,7 +4674,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4683,7 +4683,7 @@ QCString VhdlParser::integer() {Token *t;
     t = jj_consume_token(INTEGER);
     }
 return t->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4692,7 +4692,7 @@ QCString VhdlParser::integer_type_definition() {QCString s;
     s = range_constraint();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4759,7 +4759,7 @@ if (m_sharedState->parse_sec==GEN_SEC)
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4768,7 +4768,7 @@ QCString VhdlParser::interface_element() {QCString s;
     s = interface_declaration();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4787,7 +4787,7 @@ QCString VhdlParser::interface_file_declaration() {QCString s,s1;
     }
 outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,s1.data(),Public);
     return " file "+s+":"+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4819,7 +4819,7 @@ s2+=";";s2+=s1;
     end_label_25: ;
     }
 return s+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4951,7 +4951,7 @@ if(tok)
         //   fprintf(stderr,"\n\n <<port  %s  >>\n",$$.data());
       } // if component
       return it;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -4992,7 +4992,7 @@ QCString q=m_sharedState->lab+" for "+s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5001,7 +5001,7 @@ QCString VhdlParser::label() {QCString s;
     s = identifier();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5023,7 +5023,7 @@ if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
                    }
                    QCString s1="library "+s;
                    return s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5053,7 +5053,7 @@ return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5105,7 +5105,7 @@ return "null";
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5114,7 +5114,7 @@ QCString VhdlParser::logical_operator() {QCString s;
     s = logop();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5191,7 +5191,7 @@ QCString q = s+" loop "+s2+" end loop" +s3;
          FlowChart::moveToPrevLevel();
          FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop.data(),0);
         return q;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5229,7 +5229,7 @@ return "not";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5285,7 +5285,7 @@ return "linkage";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5332,7 +5332,7 @@ return tok->image.c_str();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5409,7 +5409,7 @@ return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5434,7 +5434,7 @@ s+=s1;
     end_label_26: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5524,7 +5524,7 @@ s+=")";return s;
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5573,7 +5573,7 @@ s+="(";s+=s1;s+=")";
     }
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5617,7 +5617,7 @@ s+=",";s+=s1;
     jj_consume_token(RPAREN_T);
     }
 return s+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5680,7 +5680,7 @@ if(t) s+=":";
     m_sharedState->lab.resize(0);
   if(t1) s2.prepend("when ");
   return s+s1+s2+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5712,7 +5712,7 @@ s+=":";
     jj_consume_token(SEMI_T);
     }
 return s+="null";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5743,7 +5743,7 @@ return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5811,7 +5811,7 @@ return "type";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -5820,7 +5820,7 @@ QCString VhdlParser::operator_symbol() {Token *tok=0;
     tok = jj_consume_token(STRINGLITERAL);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6343,7 +6343,7 @@ QCString VhdlParser::parameter_specification() {QCString s,s1;
     s1 = discrete_range();
     }
 return s+" in "+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6361,7 +6361,7 @@ QCString VhdlParser::physical_literal() {QCString s,s1;
     s1 = name();
     }
 s+=" ";s+=s1;s.prepend(" "); return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6419,7 +6419,7 @@ outlineParser()->addVhdlType(s.data(),t->beginLine,Entry::VARIABLE_SEC,VhdlDocGe
     }
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6448,7 +6448,7 @@ QCString VhdlParser::port_list() {QCString s;
     s = interface_list();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6544,7 +6544,7 @@ return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6623,7 +6623,7 @@ s1.prepend("("); s1.append(")");
     }
     }
 return s+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6650,7 +6650,7 @@ s+=":";
     jj_consume_token(SEMI_T);
     }
 return s+s1+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6781,7 +6781,7 @@ return s;
         }
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -6820,7 +6820,7 @@ s+=s1;
     end_label_32: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7046,7 +7046,7 @@ s+="(";s+=s1;s+=")";
     }
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7075,7 +7075,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7087,7 +7087,7 @@ QCString VhdlParser::range_constraint() {QCString s,s1;
     s = range();
     }
 return " range "+s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7172,7 +7172,7 @@ QCString VhdlParser::relation() {QCString s,s1,s2;
     }
     }
 return s+s1+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7291,7 +7291,7 @@ return  "?/=";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7342,7 +7342,7 @@ if(t) s.append(":");
         s1.prepend(" report ");
         if(t1) s2.prepend(" severity ");
         return s+s1+s2+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7409,7 +7409,7 @@ s+=":";
     jj_consume_token(SEMI_T);
     }
 return s+" return "+s1+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7451,7 +7451,7 @@ return s+" "+s1;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7492,7 +7492,7 @@ QCString VhdlParser::secondary_unit_declaration() {QCString s,s1;Token *t1=0;
     }
 outlineParser()->addVhdlType(s.data(),t1->beginLine,Entry::VARIABLE_SEC,VhdlDocGen::UNITS,0,s1.data(),Public);
    return s+"="+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7507,7 +7507,7 @@ QCString VhdlParser::selected_name() {QCString s,s1;
     s1 = suffix();
     }
 return s+"."+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7587,7 +7587,7 @@ QCString VhdlParser::sensitivity_clause() {QCString s;
     }
 s.prepend(" on ");
   return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7642,7 +7642,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7664,7 +7664,7 @@ s+=s1;
     end_label_37: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7772,7 +7772,7 @@ FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7802,7 +7802,7 @@ QCString VhdlParser::shift_expression() {QCString s,s1,s2;
     }
     }
 return s+s1+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7867,7 +7867,7 @@ return "ror";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7896,7 +7896,7 @@ return "-";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -7975,7 +7975,7 @@ return s+s1+"<="+s2+s3+";";
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8064,7 +8064,7 @@ return "bus";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8125,7 +8125,7 @@ return "all";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8195,7 +8195,7 @@ s+="return ";s+=s1;
     jj_consume_token(RBRACKET_T);
     }
 s1="["+s+"]";return s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8240,7 +8240,7 @@ s+=s1;s+=s2;
     end_label_40: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8265,7 +8265,7 @@ QCString VhdlParser::slice_name() {QCString s,s1;
     jj_consume_token(RPAREN_T);
     }
 return s+"("+s1+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8274,7 +8274,7 @@ QCString VhdlParser::string_literal() {Token *tok=0;
     tok = jj_consume_token(STRINGLITERAL);
     }
 return tok->image.c_str();
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8529,7 +8529,7 @@ return s;
         }
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8569,7 +8569,7 @@ s+=s1;
     end_label_41: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8814,7 +8814,7 @@ QCString VhdlParser::subtype_declaration() {QCString s,s1;
     }
 outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::SUBTYPE,0,s1.data(),Public);
   return " subtype "+s+" is "+s1+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8829,7 +8829,7 @@ QCString VhdlParser::reslution_indication() {QCString s;
     jj_consume_token(RPAREN_T);
     }
 return "("+s+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8873,7 +8873,7 @@ QCString VhdlParser::subtype_indication() {QCString s,s1,s2;
     }
     }
 return s+" "+s1+" "+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8920,7 +8920,7 @@ return " all ";
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8952,7 +8952,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8980,7 +8980,7 @@ s+=s1;s+=s2;
     end_label_44: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -8992,7 +8992,7 @@ QCString VhdlParser::timeout_clause() {QCString s;
     s = expression();
     }
 return " for "+s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9010,7 +9010,7 @@ QCString VhdlParser::type_conversion() {QCString s,s1;
     jj_consume_token(RPAREN_T);
     }
 return s+"("+s1+")";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9039,7 +9039,7 @@ return s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9111,7 +9111,7 @@ return "";
         }
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9120,7 +9120,7 @@ QCString VhdlParser::type_mark() {QCString s;
     s = name();
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9167,7 +9167,7 @@ s3+=",";s3+=s1;
     s2 = subtype_indication();
     }
 return "array("+s+s3+") of "+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9216,7 +9216,7 @@ QCStringList ql1=QCStringList::split(",",s);
                    }
                    s1="use "+s;
                    return s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9273,7 +9273,7 @@ return "";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9343,7 +9343,7 @@ int spec;
   }
   outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,spec,0,it.data(),Public);
   return val;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9412,7 +9412,7 @@ QCString VhdlParser::wait_statement() {QCString s,s1,s2,s3;Token *t=0;
     }
 if(t) s.append(":");
   return s+" wait "+s1+s2+s3+";";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9486,7 +9486,7 @@ return " unaffected ";
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9514,7 +9514,7 @@ s1.prepend(" after ");
     }
     }
 return s+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9552,7 +9552,7 @@ QCString VhdlParser::protected_type_body() {
     }
     }
 return "";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9725,7 +9725,7 @@ outlineParser()->error_skipto(END_T);
     }
     }
 return "";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9823,7 +9823,7 @@ s+=".";s+=s1;
     jj_consume_token(SEMI_T);
     }
 return "context "+s ;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -9931,7 +9931,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10006,7 +10006,7 @@ QCString VhdlParser::interface_package_declaration() {QCString s,s1;
     }
 m_sharedState->current->name=s;
                             return "package "+s+" is new "+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10048,7 +10048,7 @@ QCString VhdlParser::subprogram_instantiation_declaration() {QCString s,s1,s2;
 QCString q= " is new "+s1+s2;
       outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(FUNCTION_T),Entry::VARIABLE_SEC,VhdlDocGen::INSTANTIATION,"function ",q.data(),Public);
     return q;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10392,7 +10392,7 @@ QCString VhdlParser::external_name() {QCString s,s1,s2;
 QCString t="<<"+s;
                          QCString t1=s1+":"+s2+">>";
                          return   s+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10430,7 +10430,7 @@ return t->image.data();
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10468,7 +10468,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10506,7 +10506,7 @@ return "."+s;
         errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
       }
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10527,7 +10527,7 @@ QCString VhdlParser::relative_pathname() {QCString s,s1,s2;
     s2 = identifier();
     }
 return s+s1+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10556,7 +10556,7 @@ s+="^.";
     end_label_56: ;
     }
 return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10587,7 +10587,7 @@ if(!s1.isEmpty())
      return s+"("+s1+")";
 
     return s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10623,7 +10623,7 @@ s2+=s1;s2+=".";
     end_label_57: ;
     }
 return s+s2;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -10635,7 +10635,7 @@ QCString VhdlParser::package_path_name() {QCString s;
     s = name();
     }
 return "@"+s;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -11198,7 +11198,7 @@ return s;
       jj_consume_token(-1);
       errorHandler->handleParseError(token, getToken(1), __FUNCTION__, this), hasError = true;
     }
-assert(false);
+assert(false);return "";
 }
 
 
@@ -11214,7 +11214,7 @@ QCString VhdlParser::iproc() {QCString s,s1;
     }
 m_sharedState->current->name=s;
     return "procedure "+s+s1;
-assert(false);
+assert(false);return "";
 }
 
 
@@ -11315,7 +11315,7 @@ QCString q;
      outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Public);
    }
    m_sharedState->currP=0;return "";
-assert(false);
+assert(false);return "";
 }
 
 
@@ -11361,7 +11361,7 @@ if(tok)
     }
     m_sharedState->param_sec=0;
     return s+"("+s1+")";
-assert(false);
+assert(false);return "";
 }
 
 
