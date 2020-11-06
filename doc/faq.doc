@@ -266,10 +266,15 @@ in a configuration file from the command line (assuming a UNIX like environment)
 ( cat Doxyfile ; echo "PROJECT_NUMBER=1.0" ) | doxygen -
 \endverbatim
 
-For Windows the following would do the same:
+For Windows command line the following would do the same:
 
 \verbatim
 ( type Doxyfile & echo PROJECT_NUMBER=1.0 ) | doxygen.exe -
+\endverbatim
+
+For Windows Powershell (checked with version 5.1) the following would do the same:
+\verbatim
+&{ type Doxyfile ; echo "PROJECT_NUMBER=1.0" } | doxygen -
 \endverbatim
 
 If multiple options with the same name are specified then doxygen will use 
