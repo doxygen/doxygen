@@ -1404,7 +1404,7 @@ QCString index_subtype_definition() :  {QCString s;}
  s=type_mark() <RANGE_T> <BOX_T> { return s+" range <> ";}
 }
 
-QCString instantiation_unit() :  {QCString s,s1,s2;Token *tok;}
+QCString instantiation_unit() :  {QCString s,s1,s2;}
 {
 [ <COMPONENT_T> ] s=identifier() {s1="component "; return s; }
 | <ENTITY_T>  [LOOKAHEAD(2)<BASIC_IDENTIFIER> <DOT_T>] s2=name() {s="entity|"+s2;} [ <LPAREN_T> s1=identifier() <RPAREN_T> {s+="(";s+=s1;s+=")" ;}] { return s;}
