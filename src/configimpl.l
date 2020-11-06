@@ -512,8 +512,8 @@ static int	         g_inputPosition;
 static int               g_yyLineNr;
 static QCString          g_yyFileName;
 static QCString          g_tmpString;
+static QCString          g_cmd;
 static QCString         *g_string=0;
-static bool             *g_bool=0;
 static StringVector     *g_list=0;
 static int               g_lastState;
 static QCString          g_elemStr;
@@ -523,6 +523,7 @@ static int               g_includeDepth;
 static bool              g_configUpdate = FALSE;
 static QCString          g_encoding;
 static ConfigImpl       *g_config;
+static int               g_part;
 
 /* -----------------------------------------------------------------
  */
@@ -686,11 +687,9 @@ static void readIncludeFile(const char *incName)
 %x	SkipComment
 %x      SkipInvalid
 %x      GetString
-%x      GetBool
 %x      GetStrList
 %x      GetStrList1
 %x      GetQuotedString
-%x      GetEnvVar
 %x      Include
 
 %%
@@ -701,15 +700,16 @@ static void readIncludeFile(const char *incName)
               BEGIN(Start);
               unput(*yytext);
             }
-<Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"##".*"\n" { g_config->appendUserComment(yytext);g_yyLineNr++;}
-<Start,GetString,GetStrList,GetStrList1,GetBool,SkipInvalid>"#"	   { BEGIN(SkipComment); }
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { QCString cmd=yytext;
-                                           cmd=cmd.left(cmd.length()-1).stripWhiteSpace();
-					   ConfigOption *option = g_config->get(cmd);
+<Start,GetString,GetStrList,GetStrList1,SkipInvalid>"##".*"\n" { g_config->appendUserComment(yytext);g_yyLineNr++;}
+<Start,GetString,GetStrList,GetStrList1,SkipInvalid>"#"	   { BEGIN(SkipComment); }
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { g_cmd=yytext;
+                                           g_cmd=g_cmd.left(g_cmd.length()-1).stripWhiteSpace();
+                                           g_part=0;
+					   ConfigOption *option = g_config->get(g_cmd);
 					   if (option==0) // oops not known
 					   {
 					     config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-						 cmd.data(),g_yyLineNr,g_yyFileName.data());
+						 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
 					     BEGIN(SkipInvalid);
 					   }
 					   else // known tag
@@ -726,7 +726,7 @@ static void readIncludeFile(const char *incName)
 						 g_list = ((ConfigList *)option)->valueRef();
 					         g_list->clear();
 						 g_elemStr="";
-						 if (cmd == "PREDEFINED")
+						 if (g_cmd == "PREDEFINED")
 						 {
 					           BEGIN(GetStrList1);
 						 }
@@ -759,13 +759,13 @@ static void readIncludeFile(const char *incName)
                                                  if (g_configUpdate)
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
-						              "         This tag has been removed.\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
+						              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
                                                  else
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
 						              "         To avoid this warning please remove this line from your configuration "
-							      "file or upgrade it using \"doxygen -u\"\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
+							      "file or upgrade it using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
 					         BEGIN(SkipInvalid);
 						 break;
@@ -773,26 +773,26 @@ static void readIncludeFile(const char *incName)
                                                  if (g_configUpdate)
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
-						              "         This tag has been removed.\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
+						              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
                                                  else
                                                  {
 					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
 						              "         To avoid this warning please remove this line from your configuration "
-							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
+							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
 					   }
 					}
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ QCString cmd=yytext;
-                                          cmd=cmd.left(cmd.length()-2).stripWhiteSpace();
-					  ConfigOption *option = g_config->get(cmd);
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ g_cmd=yytext;
+                                          g_cmd=g_cmd.left(g_cmd.length()-2).stripWhiteSpace();
+					  ConfigOption *option = g_config->get(g_cmd);
 					  if (option==0) // oops not known
 					  {
 					    config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-						cmd.data(),g_yyLineNr,g_yyFileName.data());
+						g_cmd.data(),g_yyLineNr,g_yyFileName.data());
 					    BEGIN(SkipInvalid);
 					  }
 					  else // known tag
@@ -807,7 +807,7 @@ static void readIncludeFile(const char *incName)
 					      case ConfigOption::O_List:
 					        g_list = ((ConfigList *)option)->valueRef();
 						g_elemStr="";
-						if (cmd == "PREDEFINED")
+						if (g_cmd == "PREDEFINED")
 						{
 					          BEGIN(GetStrList1);
 						}
@@ -827,13 +827,13 @@ static void readIncludeFile(const char *incName)
 					       case ConfigOption::O_Obsolete:
 					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
 						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
+							    "file using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
 					         BEGIN(SkipInvalid);
 						 break;
 					       case ConfigOption::O_Disabled:
 					         config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
 						            "To avoid this warning please remove this line from your configuration "
-							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", cmd.data(),g_yyLineNr,g_yyFileName.data());
+							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
 					         BEGIN(SkipInvalid);
 						 break;
 					     }
@@ -869,7 +869,7 @@ static void readIncludeFile(const char *incName)
   					}
 
 <Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
-<GetString,GetBool,SkipInvalid>\n	{ g_yyLineNr++; BEGIN(Start); }
+<GetString,SkipInvalid>\n	{ g_yyLineNr++; BEGIN(Start); }
 <GetStrList,GetStrList1>\n				{
   					  g_yyLineNr++;
 					  if (!g_elemStr.isEmpty())
@@ -895,8 +895,26 @@ static void readIncludeFile(const char *incName)
 					  }
 					  g_elemStr.resize(0);
   					}
-<GetString>[^ \"\t\r\n]+		{ (*g_string)+=configStringRecode(yytext,g_encoding,"UTF-8");
-                                          checkEncoding();
+<GetString>[^ \"\t\r\n]+		{
+                                          // for each command we only want 1 warning
+					  if (g_part==1)
+					  {
+					    config_warn("Invalid value for '%s' tag in line %d, file %s\n"
+                                                        "Value should not contain unquoted whitespace, "
+						        "using the default.\n",
+						 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                            (*g_string)="";
+					  }
+					  else if (g_part > 1)
+					  {
+                                            (*g_string)="";
+					  }
+					  else
+					  {
+                                            (*g_string)+=configStringRecode(yytext,g_encoding,"UTF-8");
+                                            checkEncoding();
+                                          }
+                                          g_part++;
                                         }
 <GetString,GetStrList,GetStrList1,SkipInvalid>"\""	{ g_lastState=YY_START;
   					  BEGIN(GetQuotedString);
@@ -908,8 +926,25 @@ static void readIncludeFile(const char *incName)
   					  //printf("Quoted String = '%s'\n",g_tmpString.data());
   					  if (g_lastState==GetString)
 					  {
-					    (*g_string)+=configStringRecode(g_tmpString,g_encoding,"UTF-8");
-                                            checkEncoding();
+                                            // for each command we only want 1 warning
+					    if (g_part==1)
+					    {
+					      config_warn("Invalid value for '%s' tag in line %d, file %s\n"
+                                                          "Value should not contain unquoted whitespace, "
+						          "using the default.\n",
+						   g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                              (*g_string)="";
+					    }
+					    else if (g_part > 1)
+					    {
+                                              (*g_string)="";
+					    }
+					    else
+					    {
+                                              (*g_string)+=configStringRecode(g_tmpString,g_encoding,"UTF-8");
+                                              checkEncoding();
+					    }
+					    g_part++;
 					  }
 					  else
 					  {
@@ -929,21 +964,6 @@ static void readIncludeFile(const char *incName)
   					  g_tmpString+='"';
   					}
 <GetQuotedString>.			{ g_tmpString+=*yytext; }
-<GetBool>[a-zA-Z]+			{
-  					  QCString bs=yytext;
-  					  bs=bs.upper();
-  					  if (bs=="YES" || bs=="1")
-					    *g_bool=TRUE;
-					  else if (bs=="NO" || bs=="0")
-					    *g_bool=FALSE;
-					  else
-					  {
-					    *g_bool=FALSE;
-					    config_warn("Invalid value '%s' for "
-						 "boolean tag in line %d, file %s; use YES or NO\n",
-						 bs.data(),g_yyLineNr,g_yyFileName.data());
-					  }
-					}
 <GetStrList1>[^ \#\"\t\r\n]+		{
 					  g_elemStr+=configStringRecode(yytext,g_encoding,"UTF-8");
 					}

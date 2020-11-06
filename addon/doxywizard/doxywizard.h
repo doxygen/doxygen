@@ -41,6 +41,10 @@ class MainWindow : public QMainWindow
     void closeEvent(QCloseEvent *event);
     QString configFileName() const { return m_fileName; }
     void updateTitle();
+    // access routines for outputLog pane
+    void outputLogStart();
+    void outputLogText(QString text);
+    void outputLogFinish();
 
   public slots:
     void manual();
@@ -103,4 +107,13 @@ class MainWindow : public QMainWindow
     bool m_modified;
 };
 
+/*! \brief This class serves as a namespace for global variables used by the doxygen wizard.
+ *
+ *  All fields in this class are public and static, so they can be used directly.
+ */
+class DoxygenWizard
+{
+  public:
+    static bool debugFlag;
+};
 #endif
