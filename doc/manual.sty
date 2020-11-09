@@ -17,6 +17,14 @@
 \renewcommand{\sectionmark}[1]{%
   \markright{\thesection\ #1}%
 }
+% Used by @image
+% (only if inline is specified)
+\newlength{\DoxyInlineHeightChar}
+\settoheight{\DoxyInlineHeightChar}{H}
+\renewenvironment{DoxyInlineImage}{%
+\settoheight{\DoxyInlineHeightChar}{H}
+}{%
+}
 
 % Headers & footers
 \pagestyle{fancyplain}
