@@ -774,6 +774,7 @@ private                                 {
                                              yyterminate();
                                            }
                                            yyextra->subrCurrent.pop_back();
+                                           yyextra->vtype = V_IGNORE;
                                            yy_pop_state(yyscanner) ;
                                         }
 <BlockData>{
