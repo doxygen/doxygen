@@ -366,25 +366,6 @@ bool DotGroupCollaboration::isTrivial() const
 
 void DotGroupCollaboration::writeGraphHeader(FTextStream &t,const QCString &title) const
 {
-  int fontSize      = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
-  t << "digraph ";
-  if (title.isEmpty())
-  {
-    t << "\"Dot Graph\"";
-  }
-  else
-  {
-    t << "\"" << convertToXML(title) << "\"";
-  }
-  t << endl;
-  t << "{" << endl;
-  if (DOT_TRANSPARENT)
-  {
-    t << "  bgcolor=\"transparent\";" << endl;
-  }
-  t << "  edge [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\","
-    "labelfontname=\"" << fontName << "\",labelfontsize=\"" << fontSize << "\"];\n";
-  t << "  node [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\",shape=box];\n";
+  DotGraph::writeGraphHeader(t, title);
   t << "  rankdir=LR;\n";
 }

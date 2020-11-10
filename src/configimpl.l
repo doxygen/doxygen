@@ -1634,34 +1634,6 @@ void Config::checkAndCorrect()
   Config_updateEnum(DOT_IMAGE_FORMAT,dotImageFormat);
 
   //------------------------
-  // correct DOT_FONTNAME if needed
-  QCString dotFontName=Config_getString(DOT_FONTNAME);
-  if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
-  {
-    warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTNAME.\n"
-               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
-  }
-  else if (dotFontName.isEmpty())
-  {
-    dotFontName = "Helvetica";
-  }
-  Config_updateString(DOT_FONTNAME,dotFontName);
-
-  //------------------------
-  // clip dotFontSize against the maximum bounds
-  int dotFontSize = Config_getInt(DOT_FONTSIZE);
-  if (dotFontSize<4)
-  {
-    dotFontSize=4;
-  }
-  else if (dotFontSize>24)
-  {
-    dotFontSize=24;
-  }
-  Config_updateInt(DOT_FONTSIZE,dotFontSize);
-
-  //------------------------
   // clip number of threads
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
   if (dotNumThreads>32)

@@ -3361,23 +3361,47 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='string' id='DOT_FONTNAME' format='string' defval='Helvetica' depends='HAVE_DOT'>
+    <option type='string' id='DOT_GRAPH_ATTR' format='string' defval='' depends='HAVE_DOT'>
       <docs>
-<![CDATA[
- When you want a differently looking font in the dot files that doxygen generates
- you can specify the font name
- using \c DOT_FONTNAME. You need to make sure dot is able to find the font,
- which can be done by putting it in a standard location or by setting the
- \c DOTFONTPATH environment variable or by setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
- directory containing the font.
-]]>
+        <![CDATA[
+        Node, Edge and Graph Attributes specification: https://graphviz.org/doc/info/attrs.html
+        ]]>
       </docs>
     </option>
-    <option type='int' id='DOT_FONTSIZE' minval='4' maxval='24' defval='10' depends='HAVE_DOT'>
+    <option type='string' id='DOT_COMMON_ATTR' format='string' depends='HAVE_DOT'
+      defval='fontname=Helvetica'>
       <docs>
-<![CDATA[
- The \c DOT_FONTSIZE tag can be used to set the size (in points) of the font of dot graphs.
-]]>
+        <![CDATA[
+        DOT_COMMON_ATTR is common attributes for nodes and edges.
+        When you want a differently looking font in the dot files that doxygen generates
+        you can specify fontname attribute.
+        Node, Edge and Graph Attributes specification: https://graphviz.org/doc/info/attrs.html
+        You need to make sure dot is able to find the font,
+        which can be done by putting it in a standard location
+        or by setting the \c DOTFONTPATH environment variable or by
+        setting \ref cfg_dot_fontpath "DOT_FONTPATH" to the
+        directory containing the font.
+        Default graphviz fontsize is 14.
+        ]]>
+      </docs>
+    </option>
+    <option type='string' id='DOT_EDGE_ATTR' format='string' depends='HAVE_DOT'
+      defval='labelfontsize=10 arrowhead=open arrowtail=open arrowsize=0.3'>
+      <docs>
+        <![CDATA[
+        DOT_EDGE_ATTR is concatenated with DOT_COMMON_ATTR.
+        Complete documentation about arrows shapes: https://graphviz.org/doc/info/arrows.html
+        ]]>
+      </docs>
+    </option>
+    <option type='string' id='DOT_NODE_ATTR' format='string' depends='HAVE_DOT'
+      defval='fontsize=10 shape=record'>
+      <docs>
+        <![CDATA[
+        DOT_NODE_ATTR is concatenated with DOT_COMMON_ATTR.
+        For view without boxes around nodes set 'shape=plain' or 'shape=plaintext'
+        Shapes specification: https://www.graphviz.org/doc/info/shapes.html
+        ]]>
       </docs>
     </option>
     <option type='string' id='DOT_FONTPATH' format='dir' defval='' depends='HAVE_DOT'>
@@ -3718,5 +3742,7 @@ remove the intermediate dot files that are used to generate the various graphs.
     <option type='obsolete' id='PERL_PATH'/>
     <option type='obsolete' id='MSCGEN_PATH'/>
     <option type='obsolete' id='TCL_SUBST'/>
+    <option type='obsolete' id='DOT_FONTSIZE'/>
+    <option type='obsolete' id='DOT_FONTNAME'/>
   </group>
 </doxygenconfig>

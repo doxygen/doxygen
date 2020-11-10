@@ -22,16 +22,8 @@
 
 void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 {
-  int fontSize = Config_getInt(DOT_FONTSIZE);
-  QCString fontName = Config_getString(DOT_FONTNAME);
-  t << "digraph \"" << dd->displayName() << "\" {\n";
-  if (Config_getBool(DOT_TRANSPARENT))
-  {
-    t << "  bgcolor=transparent;\n";
-  }
+  DotGraph::writeGraphHeader(t, dd->displayName());
   t << "  compound=true\n";
-  t << "  node [ fontsize=\"" << fontSize << "\", fontname=\"" << fontName << "\"];\n";
-  t << "  edge [ labelfontsize=\"" << fontSize << "\", labelfontname=\"" << fontName << "\"];\n";
 
   QDict<DirDef> dirsInGraph(257);
 
@@ -40,8 +32,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   {
     t << "  subgraph cluster" << dd->parent()->getOutputFileBase() << " {\n";
     t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\"" 
-      << dd->parent()->shortName() 
-      << "\" fontname=\"" << fontName << "\", fontsize=\"" << fontSize << "\", URL=\"";
+      << dd->parent()->shortName() << "\", URL=\"";
     t << dd->parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
     t << "\"]\n";
   }

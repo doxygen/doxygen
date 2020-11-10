@@ -35,6 +35,7 @@ class DotGraph
                  m_zoomable(TRUE), m_urlOnly(FALSE) {}
     virtual ~DotGraph() {}
 
+    static void writeGraphHeader(FTextStream& t, const QCString& title = QCString());
   protected:
     /** returns node numbers. The Counter is reset by the constructor */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
@@ -49,7 +50,6 @@ class DotGraph
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(FTextStream& t, const QCString& title = QCString());
     static void writeGraphFooter(FTextStream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
