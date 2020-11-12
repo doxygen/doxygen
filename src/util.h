@@ -207,13 +207,13 @@ QCString resolveDefines(const char *n);
 ClassDef *getClass(const char *key);
 inline ClassDefMutable *getClassMutable(const char *key)
 {
-  return ClassDef::make_mutable(getClass(key));
+  return toClassDefMutable(getClass(key));
 }
 
 NamespaceDef *getResolvedNamespace(const char *key);
 inline NamespaceDefMutable *getResolvedNamespaceMutable(const char *key)
 {
-  return NamespaceDef::make_mutable(getResolvedNamespace(key));
+  return toNamespaceDefMutable(getResolvedNamespace(key));
 }
 
 FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,

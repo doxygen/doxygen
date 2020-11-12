@@ -48,7 +48,7 @@
 
 //---------------------------------------------------------------------------
 
-class FileDefImpl : public DefinitionImpl, public FileDef
+class FileDefImpl : public DefinitionMixin<FileDef>
 {
   public:
     FileDefImpl(const char *p,const char *n,const char *ref=0,const char *dn=0);
@@ -222,7 +222,7 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 */
 FileDefImpl::FileDefImpl(const char *p,const char *nm,
                  const char *lref,const char *dn)
-   : DefinitionImpl((QCString)p+nm,1,1,nm)
+   : DefinitionMixin((QCString)p+nm,1,1,nm)
 {
   m_path=p;
   m_filePath=m_path+nm;
@@ -1444,7 +1444,7 @@ const QCString &FileDefImpl::name() const
   if (Config_getBool(FULL_PATH_NAMES))
     return m_fileName;
   else
-    return DefinitionImpl::name();
+    return DefinitionMixin::name();
 }
 
 void FileDefImpl::addSourceRef(int line,Definition *d,MemberDef *md)
@@ -1895,7 +1895,7 @@ void FileDefImpl::combineUsingRelations()
   LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->combineUsingRelations();
@@ -2016,7 +2016,7 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   }
   if (ml->listType()&MemberListType_declarationLists)
   {
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
       mdm->setSectionList(this,ml);
@@ -2168,5 +2168,33 @@ int FileDefImpl::numDecMembers() const
 {
   MemberList *ml = getMemberList(MemberListType_allMembersList);
   return ml ? ml->numDecMembers() : 0;
+}
+
+// --- Cast functions
+
+FileDef *toFileDef(Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(FileDefImpl))
+  {
+    return static_cast<FileDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+const FileDef *toFileDef(const Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(FileDefImpl))
+  {
+    return static_cast<const FileDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
 }
 

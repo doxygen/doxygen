@@ -91,7 +91,7 @@ using BaseClassList = std::vector<BaseClassDef>;
  *  A compound can be a class, struct, union, interface, service, singleton,
  *  or exception.
  */
-class ClassDef : virtual public Definition
+class ClassDef : public Definition
 {
   public:
     /** The various compound types */
@@ -107,8 +107,6 @@ class ClassDef : virtual public Definition
                       };
 
     virtual ~ClassDef() {}
-
-    static ClassDefMutable *make_mutable(const ClassDef *);
 
     //-----------------------------------------------------------------------------------
     // --- getters
@@ -386,7 +384,7 @@ class ClassDef : virtual public Definition
 
 };
 
-class ClassDefMutable : virtual public DefinitionMutable, virtual public ClassDef
+class ClassDefMutable : public DefinitionMutable, public ClassDef
 {
   public:
     //-----------------------------------------------------------------------------------
@@ -467,9 +465,6 @@ class ClassDefMutable : virtual public DefinitionMutable, virtual public ClassDe
 
 };
 
-inline ClassDefMutable *ClassDef::make_mutable(const ClassDef *cd)
-{ return dynamic_cast<ClassDefMutable*>(const_cast<ClassDef*>(cd)); }
-
 /** Factory method to create a new ClassDef object */
 ClassDefMutable *createClassDef(
              const char *fileName,int startLine,int startColumn,
@@ -479,6 +474,13 @@ ClassDefMutable *createClassDef(
 
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
 
+// --- Cast functions
+
+ClassDef            *toClassDef(Definition *d);
+ClassDef            *toClassDef(DefinitionMutable *d);
+const ClassDef      *toClassDef(const Definition *d);
+ClassDefMutable     *toClassDefMutable(Definition *d);
+ClassDefMutable     *toClassDefMutable(const Definition *d);
 
 //------------------------------------------------------------------------
 

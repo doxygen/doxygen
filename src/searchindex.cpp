@@ -85,7 +85,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
   if (ctx==0) return;
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
   //printf("SearchIndex::setCurrentDoc(%s,%s,%s)\n",name,baseName,anchor);
-  QCString url=isSourceFile ? (dynamic_cast<const FileDef*>(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
+  QCString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);
   QCString baseUrl = url;
   if (anchor) url+=QCString("#")+anchor;
@@ -93,7 +93,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
   {
-    const MemberDef *md = dynamic_cast<const MemberDef *>(ctx);
+    const MemberDef *md = toMemberDef(ctx);
     name.prepend((md->getLanguage()==SrcLangExt_Fortran  ?
                  theTranslator->trSubprogram(TRUE,TRUE) :
                  theTranslator->trMember(TRUE,TRUE))+" ");
@@ -110,7 +110,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
     {
       case Definition::TypePage:
         {
-          const PageDef *pd = dynamic_cast<const PageDef *>(ctx);
+          const PageDef *pd = toPageDef(ctx);
           if (pd->hasTitle())
           {
             name = theTranslator->trPage(TRUE,TRUE)+" "+pd->title();
@@ -123,7 +123,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
         break;
       case Definition::TypeClass:
         {
-          const ClassDef *cd = dynamic_cast<const ClassDef *>(ctx);
+          const ClassDef *cd = toClassDef(ctx);
           name.prepend(cd->compoundTypeString()+" ");
         }
         break;
@@ -145,7 +145,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
         break;
       case Definition::TypeGroup:
         {
-          const GroupDef *gd = dynamic_cast<const GroupDef *>(ctx);
+          const GroupDef *gd = toGroupDef(ctx);
           if (gd->groupTitle())
           {
             name = theTranslator->trGroup(TRUE,TRUE)+" "+gd->groupTitle();
@@ -409,7 +409,7 @@ static QCString definitionToName(const Definition *ctx)
 {
   if (ctx && ctx->definitionType()==Definition::TypeMember)
   {
-    const MemberDef *md = dynamic_cast<const MemberDef*>(ctx);
+    const MemberDef *md = toMemberDef(ctx);
     if (md->isFunction())
       return "function";
     else if (md->isSlot())
@@ -440,7 +440,7 @@ static QCString definitionToName(const Definition *ctx)
     switch(ctx->definitionType())
     {
       case Definition::TypeClass:
-        return (dynamic_cast<const ClassDef*>(ctx))->compoundTypeString();
+        return (toClassDef(ctx))->compoundTypeString();
       case Definition::TypeFile:
         return "file";
       case Definition::TypeNamespace:
@@ -463,7 +463,7 @@ static QCString definitionToName(const Definition *ctx)
 void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile)
 {
   static QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
-  QCString baseName = isSourceFile ? (dynamic_cast<const FileDef*>(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
+  QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = baseName + Doxygen::htmlFileExtension;
   if (anchor) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
@@ -476,7 +476,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const char *anchor
     e.name = ctx->qualifiedName();
     if (ctx->definitionType()==Definition::TypeMember)
     {
-      e.args = (dynamic_cast<const MemberDef*>(ctx))->argsString();
+      e.args = (toMemberDef(ctx))->argsString();
     }
     e.extId = extId;
     e.url  = url;
@@ -995,7 +995,7 @@ void writeJavaScriptSearchIndex()
 
           if (dl->count()==1) // item with a unique name
           {
-            const MemberDef  *md = dynamic_cast<const MemberDef*>(d);
+            const MemberDef  *md = toMemberDef(d);
             QCString anchor = d->anchor();
 
             ti << "'" << externalRef("../",d->getReference(),TRUE)
@@ -1047,7 +1047,7 @@ void writeJavaScriptSearchIndex()
               const Definition *scope     = d->getOuterScope();
               const Definition *next      = di.current();
               const Definition *nextScope = 0;
-              const MemberDef  *md        = dynamic_cast<const MemberDef*>(d);
+              const MemberDef  *md        = toMemberDef(d);
               if (next) nextScope = next->getOuterScope();
               QCString anchor = d->anchor();
 
@@ -1091,12 +1091,12 @@ void writeJavaScriptSearchIndex()
               QCString name;
               if (d->definitionType()==Definition::TypeClass)
               {
-                name = convertToXML((dynamic_cast<const ClassDef*>(d))->displayName());
+                name = convertToXML((toClassDef(d))->displayName());
                 found = TRUE;
               }
               else if (d->definitionType()==Definition::TypeNamespace)
               {
-                name = convertToXML((dynamic_cast<const NamespaceDef*>(d))->displayName());
+                name = convertToXML((toNamespaceDef(d))->displayName());
                 found = TRUE;
               }
               else if (scope==0 || scope==Doxygen::globalScope) // in global scope
@@ -1271,11 +1271,11 @@ void SearchIndexList::append(const Definition *d)
   {
     if (d->definitionType()==Definition::TypeGroup)
     {
-      dispName = (dynamic_cast<const GroupDef*>(d))->groupTitle();
+      dispName = (toGroupDef(d))->groupTitle();
     }
     else if (d->definitionType()==Definition::TypePage)
     {
-      dispName = (dynamic_cast<const PageDef*>(d))->title();
+      dispName = (toPageDef(d))->title();
     }
     l=new SearchDefinitionList(searchId(dispName),dispName);
     SDict< SearchDefinitionList >::append(dispName,l);

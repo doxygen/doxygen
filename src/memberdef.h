@@ -43,7 +43,7 @@ struct TagInfo;
 class MemberDefMutable;
 
 /** A model of a class/file/namespace member symbol. */
-class MemberDef : virtual public Definition
+class MemberDef : public Definition
 {
   public:
     virtual ~MemberDef() {}
@@ -55,7 +55,6 @@ class MemberDef : virtual public Definition
     virtual MemberDef *resolveAlias() = 0;
     virtual const MemberDef *resolveAlias() const = 0;
 
-    static MemberDefMutable *make_mutable(const MemberDef *);
     ClassDefMutable *getClassDefMutable() const;
 
     //-----------------------------------------------------------------------------------
@@ -289,7 +288,7 @@ class MemberDef : virtual public Definition
     virtual void setMemberGroup(MemberGroup *grp) = 0;
 };
 
-class MemberDefMutable : virtual public DefinitionMutable, virtual public MemberDef
+class MemberDefMutable : public DefinitionMutable, public MemberDef
 {
   public:
 
@@ -423,13 +422,21 @@ class MemberDefMutable : virtual public DefinitionMutable, virtual public Member
 
 };
 
-inline MemberDefMutable *MemberDef::make_mutable(const MemberDef *md)
-{ return dynamic_cast<MemberDefMutable*>(const_cast<MemberDef*>(md)); }
-
 inline ClassDefMutable *MemberDef::getClassDefMutable() const
 {
-  return ClassDef::make_mutable(getClassDef());
+  return toClassDefMutable(getClassDef());
 }
+
+// --- Cast functions
+
+MemberDef            *toMemberDef(Definition *d);
+MemberDef            *toMemberDef(DefinitionMutable *d);
+const MemberDef      *toMemberDef(const Definition *d);
+MemberDefMutable     *toMemberDefMutable(Definition *d);
+MemberDefMutable     *toMemberDefMutable(const Definition *d);
+
+//------------------------------------------------------------------------
+
 
 /** Factory method to create a new instance of a MemberDef */
 MemberDefMutable *createMemberDef(const char *defFileName,int defLine,int defColumn,

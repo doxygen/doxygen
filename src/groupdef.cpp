@@ -45,7 +45,7 @@
 
 //---------------------------------------------------------------------------
 
-class GroupDefImpl : public DefinitionImpl, public GroupDef
+class GroupDefImpl : public DefinitionMixin<GroupDef>
 {
   public:
     GroupDefImpl(const char *fileName,int line,const char *name,const char *title,const char *refFileName=0);
@@ -54,7 +54,7 @@ class GroupDefImpl : public DefinitionImpl, public GroupDef
     virtual DefType definitionType() const { return TypeGroup; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
-    virtual QCString displayName(bool=TRUE) const { return hasGroupTitle() ? m_title : DefinitionImpl::name(); }
+    virtual QCString displayName(bool=TRUE) const { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }
     virtual const char *groupTitle() const { return m_title; }
     virtual void setGroupTitle( const char *newtitle );
     virtual bool hasGroupTitle( ) const { return m_titleSet; }
@@ -161,7 +161,7 @@ GroupDef *createGroupDef(const char *fileName,int line,const char *name,
 //---------------------------------------------------------------------------
 
 GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
-                   const char *refFileName) : DefinitionImpl(df,dl,1,na)
+                   const char *refFileName) : DefinitionMixin(df,dl,1,na)
 {
   m_fileList = new FileList;
   m_classSDict = new ClassSDict(17);
@@ -396,7 +396,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
         sameScope // both are found in the same scope
        )
     {
-      MemberDefMutable *mdm = MemberDef::make_mutable(md);
+      MemberDefMutable *mdm = toMemberDefMutable(md);
       if (mdm && srcMd->getGroupAlias()==0)
       {
         mdm->setGroupAlias(srcMd);
@@ -1438,7 +1438,7 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
     GroupDef *gd=0;
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm && gd->addClass(cdm))
       {
         cdm->makePartOfGroup(gd);
@@ -1459,7 +1459,7 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
     {
       if (gd->addNamespace(nd))
       {
-        NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+        NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
         if (ndm)
         {
           ndm->makePartOfGroup(gd);
@@ -1604,13 +1604,13 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
       bool success = fgd->insertMember(md);
       if (success)
       {
-        MemberDefMutable *mdm = MemberDef::make_mutable(md);
+        MemberDefMutable *mdm = toMemberDefMutable(md);
         if (mdm)
         {
           //printf("insertMember successful\n");
           mdm->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
         }
-        ClassDefMutable *cdm = ClassDef::make_mutable(mdm->getClassDefOfAnonymousType());
+        ClassDefMutable *cdm = toClassDefMutable(mdm->getClassDefOfAnonymousType());
         if (cdm)
         {
           cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
@@ -1786,4 +1786,33 @@ bool GroupDefImpl::hasDetailedDescription() const
   return ((!briefDescription().isEmpty() && repeatBrief) ||
           !documentation().isEmpty());
 }
+
+// --- Cast functions
+
+GroupDef *toGroupDef(Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(GroupDefImpl))
+  {
+    return static_cast<GroupDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+const GroupDef *toGroupDef(const Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(GroupDefImpl))
+  {
+    return static_cast<const GroupDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 

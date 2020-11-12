@@ -696,7 +696,7 @@ void ClangTUParser::linkIdentifier(CodeOutputInterface &ol,FileDef *fd,
         p->currentMemberDef && d->definitionType()==Definition::TypeMember &&
         (p->currentMemberDef!=d || p->currentLine<line)) // avoid self-reference
     {
-      addDocCrossReference(MemberDef::make_mutable(p->currentMemberDef),MemberDef::make_mutable(dynamic_cast<MemberDef *>(d)));
+      addDocCrossReference(toMemberDefMutable(p->currentMemberDef),toMemberDefMutable(d));
     }
     writeMultiLineCodeLink(ol,fd,line,column,d,text);
   }

@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -66,7 +66,7 @@ void DocSets::initialize()
   }
   FTextStream ts(&makefile);
 
-  ts << "DOCSET_NAME=" << bundleId << ".docset\n" 
+  ts << "DOCSET_NAME=" << bundleId << ".docset\n"
         "DOCSET_CONTENTS=$(DOCSET_NAME)/Contents\n"
         "DOCSET_RESOURCES=$(DOCSET_CONTENTS)/Resources\n"
         "DOCSET_DOCUMENTS=$(DOCSET_RESOURCES)/Documents\n"
@@ -116,25 +116,25 @@ void DocSets::initialize()
   }
   FTextStream ts(&plist);
 
-  ts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
-        "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\"\n" 
-        "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n" 
-        "<plist version=\"1.0\">\n" 
-        "<dict>\n" 
-        "     <key>CFBundleName</key>\n" 
-        "     <string>" << projectName << "</string>\n" 
+  ts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\"\n"
+        "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+        "<plist version=\"1.0\">\n"
+        "<dict>\n"
+        "     <key>CFBundleName</key>\n"
+        "     <string>" << projectName << "</string>\n"
         "     <key>CFBundleIdentifier</key>\n"
-        "     <string>" << bundleId << "</string>\n" 
+        "     <string>" << bundleId << "</string>\n"
         "     <key>CFBundleVersion</key>\n"
         "     <string>" << projectNumber << "</string>\n"
-        "     <key>DocSetFeedName</key>\n" 
+        "     <key>DocSetFeedName</key>\n"
         "     <string>" << feedName << "</string>\n"
         "     <key>DocSetPublisherIdentifier</key>\n"
         "     <string>" << publisherId << "</string>\n"
         "     <key>DocSetPublisherName</key>\n"
         "     <string>" << publisherName << "</string>\n"
         // markers for Dash
-        "     <key>DashDocSetFamily</key>\n" 
+        "     <key>DashDocSetFamily</key>\n"
         "     <string>doxy</string>\n"
         "     <key>DocSetPlatformFamily</key>\n"
         "     <string>doxygen</string>\n"
@@ -226,8 +226,8 @@ void DocSets::decContentsDepth()
 }
 
 void DocSets::addContentsItem(bool isDir,
-                              const char *name, 
-                              const char *ref, 
+                              const char *name,
+                              const char *ref,
                               const char *file,
                               const char *anchor,
                               bool /* separateIndex */,
@@ -247,7 +247,7 @@ void DocSets::addContentsItem(bool isDir,
     m_nts << indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
     if (file && file[0]=='^') // URL marker
     {
-      m_nts << indent() << "  <URL>" << convertToXML(&file[1]) 
+      m_nts << indent() << "  <URL>" << convertToXML(&file[1])
             << "</URL>" << endl;
     }
     else // relative file
@@ -294,11 +294,11 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   // determine language
   QCString lang;
   SrcLangExt langExt = SrcLangExt_Cpp;
-  if (md) 
+  if (md)
   {
     langExt = md->getLanguage();
   }
-  else if (context) 
+  else if (context)
   {
     langExt = context->getLanguage();
   }
@@ -309,7 +309,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       {
         if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
-        else if (fd && fd->name().right(2).lower()==".c") 
+        else if (fd && fd->name().right(2).lower()==".c")
           lang="c";    // Plain C
         else if (cd==0 && nd==0)
           lang="c";    // Plain C symbol outside any class or namespace
@@ -386,9 +386,9 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       case MemberType_DCOP:
         type="dcop"; break;
       case MemberType_Property:
-        if (cd && cd->compoundType()==ClassDef::Protocol) 
+        if (cd && cd->compoundType()==ClassDef::Protocol)
           type="intfp";         // interface property
-        else 
+        else
           type="instp";         // instance property
         break;
       case MemberType_Event:
@@ -404,7 +404,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     }
     cd = md->getClassDef();
     nd = md->getNamespaceDef();
-    if (cd) 
+    if (cd)
     {
       scope = cd->qualifiedName();
     }
@@ -427,28 +427,28 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   {
     if (fd==0 && context->definitionType()==Definition::TypeFile)
     {
-      fd = dynamic_cast<const FileDef*>(context);
+      fd = toFileDef(context);
     }
     if (cd==0 && context->definitionType()==Definition::TypeClass)
     {
-      cd = dynamic_cast<const ClassDef*>(context);
+      cd = toClassDef(context);
     }
     if (nd==0 && context->definitionType()==Definition::TypeNamespace)
     {
-      nd = dynamic_cast<const NamespaceDef*>(context);
+      nd = toNamespaceDef(context);
     }
     if (fd)
     {
       type="file";
     }
-    else if (cd) 
+    else if (cd)
     {
       scope = cd->qualifiedName();
       if (cd->isTemplate())
       {
         type="tmplt";
       }
-      else if (cd->compoundType()==ClassDef::Protocol) 
+      else if (cd->compoundType()==ClassDef::Protocol)
       {
         type="intf";
         if (scope.right(2)=="-p") scope=scope.left(scope.length()-2);
@@ -461,7 +461,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       {
         type="cat";
       }
-      else 
+      else
       {
         type = "cl";
       }
@@ -510,7 +510,7 @@ void DocSets::writeToken(FTextStream &t,
     t << "      <Scope>" << convertToXML(scope) << "</Scope>" << endl;
   }
   t << "    </TokenIdentifier>" << endl;
-  t << "    <Path>" << d->getOutputFileBase() 
+  t << "    <Path>" << d->getOutputFileBase()
                     << Doxygen::htmlFileExtension << "</Path>" << endl;
   if (anchor)
   {

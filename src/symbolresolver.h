@@ -56,7 +56,7 @@ class SymbolResolver
                                          bool mayBeUnlinkable=false,
                                          bool mayBeHidden=false)
     {
-      return ClassDef::make_mutable(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden));
+      return toClassDefMutable(resolveClass(scope,name,mayBeUnlinkable,mayBeHidden));
     }
 
     /** Checks if symbol \a item is accessible from within \a scope.

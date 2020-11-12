@@ -1585,9 +1585,9 @@ class DefinitionContext
       {
         fillPath(outerScope,list);
       }
-      else if (type==Definition::TypeFile && (dynamic_cast<const FileDef*>(def))->getDirDef())
+      else if (type==Definition::TypeFile && (toFileDef(def))->getDirDef())
       {
-        fillPath((dynamic_cast<const FileDef*>(def))->getDirDef(),list);
+        fillPath((toFileDef(def))->getDirDef(),list);
       }
       list->append(NavPathElemContext::alloc(def));
     }
@@ -1601,9 +1601,9 @@ class DefinitionContext
         {
           fillPath(m_def->getOuterScope(),list);
         }
-        else if (m_def->definitionType()==Definition::TypeFile && (dynamic_cast<const FileDef *>(m_def))->getDirDef())
+        else if (m_def->definitionType()==Definition::TypeFile && (toFileDef(m_def))->getDirDef())
         {
-          fillPath((dynamic_cast<const FileDef *>(m_def))->getDirDef(),list);
+          fillPath((toFileDef(m_def))->getDirDef(),list);
         }
         cache.navPath.reset(list);
       }
@@ -2372,7 +2372,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           addTemplateDecls(parent,tl);
         }
-        const ClassDef *cd=dynamic_cast<const ClassDef *>(d);
+        const ClassDef *cd=toClassDef(d);
         if (!cd->templateArguments().empty())
         {
           ArgumentListContext *al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
@@ -6262,7 +6262,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.classContext && m_def->definitionType()==Definition::TypeClass)
       {
-        m_cache.classContext.reset(ClassContext::alloc(dynamic_cast<const ClassDef*>(m_def)));
+        m_cache.classContext.reset(ClassContext::alloc(toClassDef(m_def)));
       }
       if (m_cache.classContext)
       {
@@ -6277,7 +6277,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.namespaceContext && m_def->definitionType()==Definition::TypeNamespace)
       {
-        m_cache.namespaceContext.reset(NamespaceContext::alloc(dynamic_cast<const NamespaceDef*>(m_def)));
+        m_cache.namespaceContext.reset(NamespaceContext::alloc(toNamespaceDef(m_def)));
       }
       if (m_cache.namespaceContext)
       {
@@ -6292,7 +6292,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
       {
-        m_cache.dirContext.reset(DirContext::alloc(dynamic_cast<const DirDef*>(m_def)));
+        m_cache.dirContext.reset(DirContext::alloc(toDirDef(m_def)));
       }
       if (m_cache.dirContext)
       {
@@ -6307,7 +6307,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
       {
-        m_cache.fileContext.reset(FileContext::alloc(dynamic_cast<const FileDef*>(m_def)));
+        m_cache.fileContext.reset(FileContext::alloc(toFileDef(m_def)));
       }
       if (m_cache.fileContext)
       {
@@ -6322,7 +6322,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.pageContext && m_def->definitionType()==Definition::TypePage)
       {
-        m_cache.pageContext.reset(PageContext::alloc(dynamic_cast<const PageDef*>(m_def),FALSE,FALSE));
+        m_cache.pageContext.reset(PageContext::alloc(toPageDef(m_def),FALSE,FALSE));
       }
       if (m_cache.pageContext)
       {
@@ -6337,7 +6337,7 @@ class NestingNodeContext::Private
     {
       if (!m_cache.moduleContext && m_def->definitionType()==Definition::TypeGroup)
       {
-        m_cache.moduleContext.reset(ModuleContext::alloc(dynamic_cast<const GroupDef*>(m_def)));
+        m_cache.moduleContext.reset(ModuleContext::alloc(toGroupDef(m_def)));
       }
       if (m_cache.moduleContext)
       {
@@ -6409,7 +6409,7 @@ class NestingNodeContext::Private
 
     void addClasses(bool inherit, bool hideSuper)
     {
-      const ClassDef *cd = dynamic_cast<const ClassDef*>(m_def);
+      const ClassDef *cd = toClassDef(m_def);
       if (cd && inherit)
       {
         bool hasChildren = !cd->isVisited() && !hideSuper && classHasVisibleChildren(cd);
@@ -6437,7 +6437,7 @@ class NestingNodeContext::Private
     }
     void addNamespaces(bool addClasses)
     {
-      const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(m_def);
+      const NamespaceDef *nd = toNamespaceDef(m_def);
       if (nd && nd->getNamespaceSDict())
       {
         m_children->addNamespaces(*nd->getNamespaceSDict(),FALSE,addClasses);
@@ -6449,7 +6449,7 @@ class NestingNodeContext::Private
     }
     void addDirFiles()
     {
-      const DirDef *dd = dynamic_cast<const DirDef*>(m_def);
+      const DirDef *dd = toDirDef(m_def);
       if (dd)
       {
         m_children->addDirs(dd->subDirs());
@@ -6461,7 +6461,7 @@ class NestingNodeContext::Private
     }
     void addPages()
     {
-      const PageDef *pd = dynamic_cast<const PageDef*>(m_def);
+      const PageDef *pd = toPageDef(m_def);
       if (pd && pd->getSubPages())
       {
         m_children->addPages(*pd->getSubPages(),FALSE);
@@ -6469,7 +6469,7 @@ class NestingNodeContext::Private
     }
     void addModules()
     {
-      const GroupDef *gd = dynamic_cast<const GroupDef*>(m_def);
+      const GroupDef *gd = toGroupDef(m_def);
       if (gd && gd->getSubGroups())
       {
         m_children->addModules(*gd->getSubGroups());
@@ -7776,11 +7776,11 @@ class NavPathElemContext::Private
       QCString text = m_def->localName();
       if (type==Definition::TypeGroup)
       {
-        text = (dynamic_cast<const GroupDef*>(m_def))->groupTitle();
+        text = (toGroupDef(m_def))->groupTitle();
       }
-      else if (type==Definition::TypePage && ((dynamic_cast<const PageDef*>(m_def))->hasTitle()))
+      else if (type==Definition::TypePage && ((toPageDef(m_def))->hasTitle()))
       {
-        text = (dynamic_cast<const PageDef*>(m_def))->title();
+        text = (toPageDef(m_def))->title();
       }
       else if (type==Definition::TypeClass)
       {
@@ -9055,7 +9055,7 @@ class MemberListInfoContext::Private
           m_def->definitionType()==Definition::TypeClass)
       {
         InheritedMemberInfoListContext *ctx = InheritedMemberInfoListContext::alloc();
-        ctx->addMemberList(dynamic_cast<const ClassDef*>(m_def),m_memberList->listType(),m_title,FALSE);
+        ctx->addMemberList(toClassDef(m_def),m_memberList->listType(),m_title,FALSE);
         m_cache.inherited.reset(ctx);
       }
       if (m_cache.inherited)
@@ -9557,7 +9557,7 @@ class SymbolContext::Private
       const Definition *prev      = m_prevDef;
       const Definition *nextScope = next ? next->getOuterScope() : 0;
       const Definition *prevScope = prev ? prev->getOuterScope() : 0;
-      const MemberDef  *md        = dynamic_cast<const MemberDef*>(m_def);
+      const MemberDef  *md        = toMemberDef(m_def);
       bool isFunctionLike   = md && (md->isFunction() || md->isSlot() || md->isSignal());
       bool overloadedFunction = isFunctionLike &&
                                 ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope));

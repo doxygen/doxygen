@@ -771,7 +771,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                                 auto it = yyextra->codeClassMap.find(s);
                                                 if (it!=yyextra->codeClassMap.end())
                                                 {
-                                                  bcd = dynamic_cast<const ClassDef*>(it->second.globalDef());
+                                                  bcd = toClassDef(it->second.globalDef());
                                                 }
                                                 if (bcd==0) bcd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s);
                                                 if (bcd && bcd->name()!=yyextra->curClassName)
@@ -2451,7 +2451,7 @@ static void incrementFlowKeyWordCount(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
   {
-    MemberDefMutable *md = MemberDef::make_mutable(yyextra->currentMemberDef);
+    MemberDefMutable *md = toMemberDefMutable(yyextra->currentMemberDef);
     if (md)
     {
       md->incrementFlowKeyWordCount();
@@ -2699,7 +2699,7 @@ static void updateCallContextForSmartPointer(yyscan_t yyscanner)
   const Definition *d = yyextra->theCallContext.getScope().globalDef();
   //printf("updateCallContextForSmartPointer() cd=%s\n",cd ? d->name().data() : "<none>");
   const MemberDef *md;
-  if (d && d->definitionType()==Definition::TypeClass && (md=(dynamic_cast<const ClassDef*>(d))->isSmartPointer()))
+  if (d && d->definitionType()==Definition::TypeClass && (md=(toClassDef(d))->isSmartPointer()))
   {
     const ClassDef *ncd = stripClassName(yyscanner,md->typeString(),md->getOuterScope());
     if (ncd)
@@ -2738,8 +2738,8 @@ static bool getLinkInScope(yyscan_t yyscanner,
         anchor.sprintf("a%d",yyextra->anchorCount);
         //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
         //                                  yyextra->exampleFile.data());
-        MemberDefMutable *mdm = MemberDef::make_mutable(md);
-        if (mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
+        MemberDefMutable *mdm = toMemberDefMutable(md);
+        if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
         {
           ol.writeCodeAnchor(anchor);
           yyextra->anchorCount++;
@@ -2759,7 +2759,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
             md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
         {
           std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-          addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
+          addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
         }
         //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
 
@@ -2904,7 +2904,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       anchor.sprintf("_a%d",yyextra->anchorCount);
       //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
       //                                   yyextra->exampleFile.data());
-      ClassDefMutable *cdm = ClassDef::make_mutable(const_cast<ClassDef*>(cd));
+      ClassDefMutable *cdm = toClassDefMutable(const_cast<ClassDef*>(cd));
       if (cdm && cdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
       {
         ol.writeCodeAnchor(anchor);
@@ -2923,7 +2923,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
+        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
     }
   }
@@ -2961,7 +2961,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
             std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-            addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
+            addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
           }
           return;
         }
@@ -2994,7 +2994,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
     anchor.sprintf("a%d",yyextra->anchorCount);
     //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
     //                                  yyextra->exampleFile.data());
-    MemberDefMutable *mdm = MemberDef::make_mutable(xmd);
+    MemberDefMutable *mdm = toMemberDefMutable(xmd);
     if (mdm && mdm->addExample(anchor,yyextra->exampleName,yyextra->exampleFile))
     {
       ol.writeCodeAnchor(anchor);
@@ -3023,7 +3023,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
           /*xmd!=yyextra->currentMemberDef &&*/ yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(xmd));
+        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));
       }
 
       // write the actual link
@@ -3044,7 +3044,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (def && def->definitionType()==Definition::TypeClass)
   {
-    const ClassDef *cd = dynamic_cast<const ClassDef*>(def);
+    const ClassDef *cd = toClassDef(def);
     MemberDef *xmd = cd->getMemberByName(memName);
     //printf("generateClassMemberLink(class=%s,member=%s)=%p\n",def->name().data(),memName,xmd);
     if (xmd)
@@ -3065,7 +3065,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
   }
   else if (def && def->definitionType()==Definition::TypeNamespace)
   {
-    const NamespaceDef *nd = dynamic_cast<const NamespaceDef*>(def);
+    const NamespaceDef *nd = toNamespaceDef(def);
     //printf("Looking for %s inside namespace %s\n",memName,nd->name().data());
     const Definition *innerDef = nd->findInnerCompound(memName);
     if (innerDef)
@@ -3358,7 +3358,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
           if (yyextra->currentDefinition &&
               yyextra->currentDefinition->definitionType()==Definition::TypeClass)
           {
-            ctx->objectType = dynamic_cast<const ClassDef *>(yyextra->currentDefinition);
+            ctx->objectType = toClassDef(yyextra->currentDefinition);
           }
         }
         else
@@ -3379,7 +3379,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
           if (yyextra->currentDefinition &&
               yyextra->currentDefinition->definitionType()==Definition::TypeClass)
           {
-            ctx->objectVar = (dynamic_cast<const ClassDef *>(yyextra->currentDefinition))->getMemberByName(ctx->objectTypeOrName);
+            ctx->objectVar = (toClassDef(yyextra->currentDefinition))->getMemberByName(ctx->objectTypeOrName);
             //printf("      ctx->objectVar=%p\n",ctx->objectVar);
             if (ctx->objectVar)
             {
@@ -3399,7 +3399,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
         //printf("  object is local variable\n");
         if (stv->globalDef() && !ctx->methodName.isEmpty())
         {
-          const ClassDef *cd = dynamic_cast<const ClassDef *>(stv->globalDef());
+          const ClassDef *cd = toClassDef(stv->globalDef());
           if (cd)
           {
             ctx->method = cd->getMemberByName(ctx->methodName);
@@ -3439,7 +3439,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               if (yyextra->currentMemberDef && yyextra->collectXRefs)
               {
                 std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(ctx->method));
+                addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->method));
               }
             }
             else
@@ -3468,7 +3468,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               if (yyextra->currentDefinition &&
                   yyextra->currentDefinition->definitionType()==Definition::TypeClass)
               {
-                ctx->objectType = dynamic_cast<const ClassDef *>(yyextra->currentDefinition);
+                ctx->objectType = toClassDef(yyextra->currentDefinition);
                 if (ctx->objectType->categoryOf())
                 {
                   ctx->objectType = ctx->objectType->categoryOf();
@@ -3487,7 +3487,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               if (yyextra->currentDefinition &&
                   yyextra->currentDefinition->definitionType()==Definition::TypeClass)
               {
-                const ClassDef *cd = dynamic_cast<const ClassDef *>(yyextra->currentDefinition);
+                const ClassDef *cd = toClassDef(yyextra->currentDefinition);
                 if (cd->categoryOf())
                 {
                   cd = cd->categoryOf();
@@ -3514,7 +3514,7 @@ static void writeObjCMethodCall(yyscan_t yyscanner,ObjCCallCtx *ctx)
               if (yyextra->currentMemberDef && yyextra->collectXRefs)
               {
                 std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
-                addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(ctx->objectVar));
+                addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(ctx->objectVar));
               }
             }
             else if (ctx->objectType &&

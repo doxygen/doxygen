@@ -297,7 +297,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                           {
-                                            MemberDefMutable *mdm = MemberDef::make_mutable(yyextra->currentMemberDef);
+                                            MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                             if (mdm)
                                             {
                                               mdm->incrementFlowKeyWordCount();
@@ -1237,7 +1237,7 @@ static bool getLink(yyscan_t yyscanner,UseSDict *usedict, // dictionary with use
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
       {
-        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
+        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
       writeMultiLineCodeLink(yyscanner,ol,md,text ? text : memberText);
       addToSearchIndex(yyscanner, text ? text : memberText);

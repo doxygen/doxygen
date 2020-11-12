@@ -1762,7 +1762,7 @@ void VhdlDocGen::correctMemberProperties(MemberDefMutable *md)
 /* writes a vhdl type documentation */
 bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definition *d, OutputList &ol)
 {
-  const ClassDef *cd=dynamic_cast<const ClassDef*>(d);
+  const ClassDef *cd=toClassDef(d);
   bool hasParams = FALSE;
 
   if (cd==0) return hasParams;
@@ -2202,7 +2202,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
   MemberListIterator mli(*mlist);
   for ( ; (imd=mli.current()); ++mli )
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd);
+    MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
       int mems=md->getMemberSpecifiers();
@@ -2683,10 +2683,10 @@ void VhdlDocGen::computeVhdlComponentRelations()
       entity=cur->type;
     }
 
-    ClassDefMutable *classEntity= ClassDef::make_mutable(VhdlDocGen::findVhdlClass(entity.data()));
+    ClassDefMutable *classEntity= toClassDefMutable(VhdlDocGen::findVhdlClass(entity.data()));
     inst=VhdlDocGen::getIndexWord(cur->args.data(),0);
-    ClassDefMutable *cd=ClassDef::make_mutable(Doxygen::classSDict->find(inst));
-    ClassDefMutable *ar=ClassDef::make_mutable(Doxygen::classSDict->find(cur->args));
+    ClassDefMutable *cd=toClassDefMutable(Doxygen::classSDict->find(inst));
+    ClassDefMutable *ar=toClassDefMutable(Doxygen::classSDict->find(cur->args));
 
     if (cd==0)
     {

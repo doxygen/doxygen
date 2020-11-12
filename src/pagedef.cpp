@@ -29,7 +29,7 @@
 
 //------------------------------------------------------------------------------------------
 
-class PageDefImpl : public DefinitionImpl, public PageDef
+class PageDefImpl : public DefinitionMixin<PageDef>
 {
   public:
     PageDefImpl(const char *f,int l,const char *n,const char *d,const char *t);
@@ -56,7 +56,7 @@ class PageDefImpl : public DefinitionImpl, public PageDef
     virtual LocalToc localToc() const { return m_localToc; }
     virtual void setPageScope(Definition *d){ m_pageScope = d; }
     virtual Definition *getPageScope() const { return m_pageScope; }
-    virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionImpl::name(); }
+    virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
     virtual bool showLineNo() const;
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeTagFile(FTextStream &);
@@ -82,7 +82,7 @@ PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const cha
 
 PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
                  const char *d,const char *t)
- : DefinitionImpl(f,l,1,n), m_title(t)
+ : DefinitionMixin(f,l,1,n), m_title(t)
 {
   setDocumentation(d,f,l);
   m_subPageDict = new PageSDict(7);
@@ -122,12 +122,11 @@ void PageDefImpl::setFileName(const char *name)
   m_fileName = name;
 }
 
-void PageDefImpl::addInnerCompound(const Definition *const_def)
+void PageDefImpl::addInnerCompound(const Definition *def)
 {
-  if (const_def->definitionType()==Definition::TypePage)
+  if (def->definitionType()==Definition::TypePage)
   {
-    Definition *def = const_cast<Definition*>(const_def); // uck: fix me
-    PageDef *pd = dynamic_cast<PageDef*>(def);
+    PageDef *pd = const_cast<PageDef*>(toPageDef(def));
     if (pd)
     {
       m_subPageDict->append(pd->name(),pd);
@@ -212,7 +211,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   {
     if (getOuterScope()!=Doxygen::globalScope && !Config_getBool(DISABLE_INDEX))
     {
-      DefinitionMutable *outerScope = Definition::make_mutable(getOuterScope());
+      DefinitionMutable *outerScope = toDefinitionMutable(getOuterScope());
       if (outerScope)
       {
         outerScope->writeNavigationPath(ol);
@@ -404,5 +403,33 @@ bool PageDefImpl::showLineNo() const
 bool PageDefImpl::hasTitle() const
 {
   return !m_title.isEmpty() && m_title.lower()!="notitle";
+}
+
+// --- Cast functions
+
+PageDef *toPageDef(Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(PageDefImpl))
+  {
+    return static_cast<PageDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+const PageDef *toPageDef(const Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(PageDefImpl))
+  {
+    return static_cast<const PageDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
 }
 

@@ -324,7 +324,7 @@ static void addPageToContext(PageDef *pd,Entry *root)
     DefinitionMutable *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
     if (d)
     {
-      pd->setPageScope(d);
+      pd->setPageScope(toDefinition(d));
     }
   }
 }
@@ -453,7 +453,7 @@ static void findGroupScope(const Entry *root)
       }
       scope = stripAnonymousNamespaceScope(scope);
       scope+="::"+gd->name();
-      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
+      Definition *d = toDefinition(findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo()));
       if (d)
       {
         gd->setGroupScope(d);
@@ -732,7 +732,7 @@ static DefinitionMutable *buildScopeFromQualifiedName(const QCString name,
     if (nsName.isEmpty()) return prevScope;
     if (!fullScope.isEmpty()) fullScope+="::";
     fullScope+=nsName;
-    NamespaceDefMutable *nd=NamespaceDef::make_mutable(Doxygen::namespaceSDict->find(fullScope));
+    NamespaceDefMutable *nd=toNamespaceDefMutable(Doxygen::namespaceSDict->find(fullScope));
     DefinitionMutable *innerScope = nd;
     ClassDefMutable *cd=0;
     if (nd==0) cd = getClassMutable(fullScope);
@@ -760,8 +760,8 @@ static DefinitionMutable *buildScopeFromQualifiedName(const QCString name,
     if (innerScope)
     {
       // make the parent/child scope relation
-      prevScope->addInnerCompound(innerScope);
-      innerScope->setOuterScope(prevScope);
+      prevScope->addInnerCompound(toDefinition(innerScope));
+      innerScope->setOuterScope(toDefinition(prevScope));
     }
     else // current scope is a class, so return only the namespace part...
     {
@@ -793,9 +793,9 @@ static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startS
   while ((i2=getScopeFragment(scope,p,&l2))!=-1)
   {
     QCString nestedNameSpecifier = scope.mid(i1,l1);
-    Definition *orgScope = resultScope;
+    Definition *orgScope = toDefinition(resultScope);
     //printf("  nestedNameSpecifier=%s\n",nestedNameSpecifier.data());
-    resultScope = Definition::make_mutable(resultScope->findInnerCompound(nestedNameSpecifier));
+    resultScope = toDefinitionMutable(toDefinition(resultScope)->findInnerCompound(nestedNameSpecifier));
     //printf("  resultScope=%p\n",resultScope);
     if (resultScope==0)
     {
@@ -804,7 +804,7 @@ static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startS
       {
         for (const auto &nd : fileScope->getUsedNamespaces())
         {
-          resultScope = findScopeFromQualifiedName(NamespaceDef::make_mutable(nd),n,fileScope,tagInfo);
+          resultScope = findScopeFromQualifiedName(toNamespaceDefMutable(nd),n,fileScope,tagInfo);
           if (resultScope!=0) break;
         }
         if (resultScope)
@@ -813,7 +813,7 @@ static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startS
           // N::A::I while looking for A, so we should compare
           // resultScope->name() against scope.left(i2+l2)
           //printf("  -> result=%s scope=%s\n",resultScope->name().data(),scope.data());
-          if (rightScopeMatch(resultScope->name(),scope.left(i2+l2)))
+          if (rightScopeMatch(toDefinition(resultScope)->name(),scope.left(i2+l2)))
           {
             break;
           }
@@ -1151,7 +1151,7 @@ static void resolveClassNestingRelations()
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cli.current());
+    ClassDefMutable *cdm = toClassDefMutable(cli.current());
     if (cdm)
     {
       cdm->setVisited(FALSE);
@@ -1167,7 +1167,7 @@ static void resolveClassNestingRelations()
     ClassDef *icd=0;
     for (cli.toFirst();(icd=cli.current());++cli)
     {
-      ClassDefMutable *cd = ClassDef::make_mutable(icd);
+      ClassDefMutable *cd = toClassDefMutable(icd);
       if (cd && !cd->isVisited())
       {
         QCString name = stripAnonymousNamespaceScope(cd->name());
@@ -1179,21 +1179,21 @@ static void resolveClassNestingRelations()
         {
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
           d->addInnerCompound(cd);
-          cd->setOuterScope(d);
+          cd->setOuterScope(toDefinition(d));
 
           // for inline namespace add an alias of the class to the outer scope
-          while (d->definitionType()==Definition::TypeNamespace)
+          while (toDefinition(d)->definitionType()==Definition::TypeNamespace)
           {
-            NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
+            NamespaceDef *nd = toNamespaceDef(d);
             //printf("d->isInline()=%d\n",nd->isInline());
             if (nd && nd->isInline())
             {
-              d = Definition::make_mutable(d->getOuterScope());
+              d = toDefinitionMutable(toDefinition(d)->getOuterScope());
               if (d)
               {
-                ClassDef *aliasCd = createClassDefAlias(d,cd);
+                ClassDef *aliasCd = createClassDefAlias(toDefinition(d),cd);
                 d->addInnerCompound(aliasCd);
-                QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
+                QCString aliasFullName = toDefinition(d)->qualifiedName()+"::"+aliasCd->localName();
                 Doxygen::classSDict->append(aliasFullName,aliasCd);
                 //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
                 //aliasCd->setVisited(TRUE); // not needed anymore, as aliasCd is not mutable
@@ -1220,7 +1220,7 @@ static void resolveClassNestingRelations()
   ClassDef *icd=0;
   for (cli.toFirst();(icd=cli.current());++cli)
   {
-    ClassDefMutable *cd = ClassDef::make_mutable(icd);
+    ClassDefMutable *cd = toClassDefMutable(icd);
     if (cd && !cd->isVisited())
     {
       QCString name = stripAnonymousNamespaceScope(cd->name());
@@ -1228,13 +1228,13 @@ static void resolveClassNestingRelations()
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
       DefinitionMutable *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
-      if (d!=cd && !cd->getDefFileName().isEmpty())
+      if (d && d!=cd && !cd->getDefFileName().isEmpty())
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                  // for this case doxygen assumes the existence of a namespace N::N in which C is to be found!
                  // also avoid warning for stuff imported via a tagfile.
       {
         d->addInnerCompound(cd);
-        cd->setOuterScope(d);
+        cd->setOuterScope(toDefinition(d));
         warn(cd->getDefFileName(),cd->getDefLine(),
             "Internal inconsistency: scope for class %s not "
             "found!",name.data()
@@ -1253,7 +1253,7 @@ void distributeClassGroupRelations()
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cli.current());
+    ClassDefMutable *cdm = toClassDefMutable(cli.current());
     if (cdm)
     {
       cdm->setVisited(FALSE);
@@ -1263,7 +1263,7 @@ void distributeClassGroupRelations()
   ClassDef *icd;
   for (cli.toFirst();(icd=cli.current());++cli)
   {
-    ClassDefMutable *cd = ClassDef::make_mutable(icd);
+    ClassDefMutable *cd = toClassDefMutable(icd);
     //printf("Checking %s\n",cd->name().data());
     // distribute the group to nested classes as well
     if (cd && !cd->isVisited() && cd->partOfGroups()!=0 && cd->getClassSDict())
@@ -1274,7 +1274,7 @@ void distributeClassGroupRelations()
       GroupDef *gd = cd->partOfGroups()->at(0);
       for (ncli.toFirst();(ncd=ncli.current());++ncli)
       {
-        ClassDefMutable *ncdm = ClassDef::make_mutable(ncd);
+        ClassDefMutable *ncdm = toClassDefMutable(ncd);
         if (ncdm && ncdm->partOfGroups()==0)
         {
           //printf("  Adding %s to group '%s'\n",ncd->name().data(),
@@ -1309,7 +1309,7 @@ static ClassDefMutable *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,c
   cd->setOuterScope(rootCd->getOuterScope());
   if (rootCd->getOuterScope()!=Doxygen::globalScope)
   {
-    DefinitionMutable *outerScope = Definition::make_mutable(rootCd->getOuterScope());
+    DefinitionMutable *outerScope = toDefinitionMutable(rootCd->getOuterScope());
     if (outerScope)
     {
       outerScope->addInnerCompound(cd);
@@ -1425,7 +1425,7 @@ static void processTagLessClasses(ClassDef *rootCd,
                 MemberDef *pmd;
                 for (pli.toFirst();(pmd=pli.current());++pli)
                 {
-                  MemberDefMutable *pmdm = MemberDef::make_mutable(pmd);
+                  MemberDefMutable *pmdm = toMemberDefMutable(pmd);
                   if (pmdm && pmd->name()==md->name())
                   {
                     pmdm->setAccessorType(ncd,substitute(pmd->typeString(),icd->name(),ncd->name()));
@@ -1456,7 +1456,7 @@ static void findTagLessClasses(ClassDef *cd)
     }
   }
 
-  processTagLessClasses(cd,cd,ClassDef::make_mutable(cd),"",0); // process tag less inner struct/classes (if any)
+  processTagLessClasses(cd,cd,toClassDefMutable(cd),"",0); // process tag less inner struct/classes (if any)
 }
 
 static void findTagLessClasses()
@@ -1501,7 +1501,7 @@ static void buildNamespaceList(const Entry *root)
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDefMutable *nd;
-      if ((nd=NamespaceDef::make_mutable(Doxygen::namespaceSDict->find(fullName)))) // existing namespace
+      if ((nd=toNamespaceDefMutable(Doxygen::namespaceSDict->find(fullName)))) // existing namespace
       {
         nd->setDocumentation(root->doc,root->docFile,root->docLine);
         nd->setName(fullName); // change name to match docs
@@ -1576,24 +1576,24 @@ static void buildNamespaceList(const Entry *root)
         {
           d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage(),tagInfo);
           d->addInnerCompound(nd);
-          nd->setOuterScope(d);
+          nd->setOuterScope(toDefinition(d));
           // TODO: Due to the order in which the tag file is written
           // a nested class can be found before its parent!
         }
         else
         {
           d->addInnerCompound(nd);
-          nd->setOuterScope(d);
+          nd->setOuterScope(toDefinition(d));
           // in case of d is an inline namespace, alias insert nd in the part scope of d.
-          while (d->definitionType()==Definition::TypeNamespace)
+          while (toDefinition(d)->definitionType()==Definition::TypeNamespace)
           {
-            NamespaceDef *pnd = dynamic_cast<NamespaceDef*>(d);
+            NamespaceDef *pnd = toNamespaceDef(d);
             if (pnd && pnd->isInline())
             {
-              d = Definition::make_mutable(d->getOuterScope());
+              d = toDefinitionMutable(toDefinition(d)->getOuterScope());
               if (d)
               {
-                NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
+                NamespaceDef *aliasNd = createNamespaceDefAlias(toDefinition(d),nd);
                 //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
                 d->addInnerCompound(aliasNd);
               }
@@ -1684,13 +1684,13 @@ static void findUsingDirectives(const Entry *root)
         while (pnd && usingNd==0)
         {
           // also try with one of the used namespaces found earlier
-          usingNd = NamespaceDef::make_mutable(findUsedNamespace(pnd->getUsedNamespaces(),name));
+          usingNd = toNamespaceDefMutable(findUsedNamespace(pnd->getUsedNamespaces(),name));
 
           // goto the parent
           const Definition *s = pnd->getOuterScope();
           if (s && s->definitionType()==Definition::TypeNamespace)
           {
-            pnd = NamespaceDef::make_mutable(dynamic_cast<const NamespaceDef*>(s));
+            pnd = toNamespaceDefMutable(toNamespaceDef(s));
           }
           else
           {
@@ -1832,7 +1832,7 @@ static void findUsingDeclarations(const Entry *root)
       }
       if (usingCd==0)
       {
-        usingCd = ClassDef::make_mutable(Doxygen::hiddenClasses->find(name)); // check if it is already hidden
+        usingCd = toClassDefMutable(Doxygen::hiddenClasses->find(name)); // check if it is already hidden
       }
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
@@ -2075,7 +2075,7 @@ static MemberDef *addVariableToClass(
     {
       //printf("md->getClassDef()=%p cd=%p type=[%s] md->typeString()=[%s]\n",
       //    md->getClassDef(),cd,type.data(),md->typeString());
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md &&
           md->getClassDef()==cd &&
           removeRedundantWhiteSpace(type)==md->typeString())
@@ -2286,7 +2286,7 @@ static MemberDef *addVariableToFile(
     }
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md &&
           ((nd==0 && md->getNamespaceDef()==0 && md->getFileDef() &&
             root->fileName==md->getFileDef()->absFilePath()
@@ -3387,7 +3387,7 @@ static void buildFunctionList(const Entry *root)
           Debug::print(Debug::Functions,0,"  --> function %s already found!\n",qPrint(rname));
           for (const auto &imd : *mn)
           {
-            MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+            MemberDefMutable *md = toMemberDefMutable(imd.get());
             if (md)
             {
               const NamespaceDef *mnd = md->getNamespaceDef();
@@ -3587,15 +3587,16 @@ static void findFriends()
       // for each function with that name
       for (const auto &ifmd : *fn)
       {
-        MemberDefMutable *fmd = MemberDef::make_mutable(ifmd.get());
+        MemberDefMutable *fmd = toMemberDefMutable(ifmd.get());
         // for each member with that name
         for (const auto &immd : *mn)
         {
-           MemberDefMutable *mmd = MemberDef::make_mutable(immd.get());
+           MemberDefMutable *mmd = toMemberDefMutable(immd.get());
           //printf("Checking for matching arguments
           //        mmd->isRelated()=%d mmd->isFriend()=%d mmd->isFunction()=%d\n",
           //    mmd->isRelated(),mmd->isFriend(),mmd->isFunction());
-          if ((mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
+          if (fmd && mmd &&
+              (mmd->isFriend() || (mmd->isRelated() && mmd->isFunction())) &&
               matchArguments2(mmd->getOuterScope(), mmd->getFileDef(), &mmd->argumentList(),
                               fmd->getOuterScope(), fmd->getFileDef(), &fmd->argumentList(),
                               TRUE
@@ -3675,7 +3676,7 @@ static void transferFunctionDocumentation()
     /* find a matching function declaration and definition for this function */
     for (const auto &imdec : *mn)
     {
-      MemberDefMutable *mdec = MemberDef::make_mutable(imdec.get());
+      MemberDefMutable *mdec = toMemberDefMutable(imdec.get());
       if (mdec &&
           (mdec->isPrototype() ||
            (mdec->isVariable() && mdec->isExternal())
@@ -3683,7 +3684,7 @@ static void transferFunctionDocumentation()
       {
         for (const auto &imdef : *mn)
         {
-          MemberDefMutable *mdef = MemberDef::make_mutable(imdef.get());
+          MemberDefMutable *mdef = toMemberDefMutable(imdef.get());
           if (mdef && mdec!=mdef &&
               mdec->getNamespaceDef()==mdef->getNamespaceDef())
           {
@@ -3705,7 +3706,7 @@ static void transferFunctionReferences()
     /* find a matching function declaration and definition for this function */
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         if (md->isPrototype())
@@ -3753,7 +3754,7 @@ static void transferRelatedFunctionDocumentation()
     // for each global function
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         //printf("  Function '%s'\n",md->name().data());
@@ -3764,7 +3765,7 @@ static void transferRelatedFunctionDocumentation()
           // for each member with the same name
           for (const auto &irmd : *rmn)
           {
-            MemberDefMutable *rmd = MemberDef::make_mutable(irmd.get());
+            MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
             //printf("  Member found: related='%d'\n",rmd->isRelated());
             if (rmd &&
                 (rmd->isRelated() || rmd->isForeign()) && // related function
@@ -3935,7 +3936,7 @@ static void findUsedClassesForClass(const Entry *root,
               found=TRUE;
               Debug::print(Debug::Classes,0,"    New used class '%s'\n", qPrint(usedName));
 
-              ClassDefMutable *usedCd = ClassDef::make_mutable(Doxygen::hiddenClasses->find(usedName));
+              ClassDefMutable *usedCd = toClassDefMutable(Doxygen::hiddenClasses->find(usedName));
               if (usedCd==0)
               {
                 usedCd = createClassDef(
@@ -3958,7 +3959,7 @@ static void findUsedClassesForClass(const Entry *root,
 
           if (!found)
           {
-            ClassDefMutable *usedCd=ClassDef::make_mutable(findClassWithinClassContext(context,masterCd,usedName));
+            ClassDefMutable *usedCd=toClassDefMutable(findClassWithinClassContext(context,masterCd,usedName));
             //printf("Looking for used class %s: result=%s master=%s\n",
             //    usedName.data(),usedCd?usedCd->name().data():"<none>",masterCd?masterCd->name().data():"<none>");
 
@@ -3978,7 +3979,7 @@ static void findUsedClassesForClass(const Entry *root,
         }
         if (!found && !type.isEmpty()) // used class is not documented in any scope
         {
-          ClassDefMutable *usedCd = ClassDef::make_mutable(Doxygen::hiddenClasses->find(type));
+          ClassDefMutable *usedCd = toClassDefMutable(Doxygen::hiddenClasses->find(type));
           if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
           {
             if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
@@ -4092,7 +4093,7 @@ static bool findTemplateInstanceRelation(const Entry *root,
   if (existingClass) return TRUE;
 
   bool freshInstance=FALSE;
-  ClassDefMutable *instanceClass = ClassDef::make_mutable(
+  ClassDefMutable *instanceClass = toClassDefMutable(
                      templateClass->insertTemplateInstance(
                      root->fileName,root->startLine,root->startColumn,templSpec,freshInstance));
   if (isArtificial) instanceClass->setArtificial(TRUE);
@@ -4323,7 +4324,7 @@ static bool findClassRelation(
         if (baseClass==0 && (root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java))
         {
           // for Java/C# strip the template part before looking for matching
-          baseClass = ClassDef::make_mutable(Doxygen::genericsDict->find(baseClassName.left(i)));
+          baseClass = toClassDefMutable(Doxygen::genericsDict->find(baseClassName.left(i)));
           //printf("looking for '%s' result=%p\n",baseClassName.data(),baseClass);
         }
         if (baseClass==0 && i!=-1)
@@ -4391,7 +4392,7 @@ static bool findClassRelation(
 
         if (!found)
         {
-          baseClass=ClassDef::make_mutable(findClassWithinClassContext(context,cd,baseClassName));
+          baseClass=toClassDefMutable(findClassWithinClassContext(context,cd,baseClassName));
           //printf("findClassWithinClassContext(%s,%s)=%p\n",
           //    cd->name().data(),baseClassName.data(),baseClass);
           found = baseClass!=0 && baseClass!=cd;
@@ -4477,7 +4478,7 @@ static bool findClassRelation(
           baseClass=0;
           if (isATemplateArgument)
           {
-            baseClass=ClassDef::make_mutable(Doxygen::hiddenClasses->find(baseClassName));
+            baseClass=toClassDefMutable(Doxygen::hiddenClasses->find(baseClassName));
             if (baseClass==0)
             {
               baseClass=createClassDef(root->fileName,root->startLine,root->startColumn,
@@ -4490,7 +4491,7 @@ static bool findClassRelation(
           }
           else
           {
-            baseClass=ClassDef::make_mutable(Doxygen::classSDict->find(baseClassName));
+            baseClass=toClassDefMutable(Doxygen::classSDict->find(baseClassName));
             //printf("*** classDDict->find(%s)=%p biName=%s templSpec=%s\n",
             //    baseClassName.data(),baseClass,biName.data(),templSpec.data());
             if (baseClass==0)
@@ -4504,7 +4505,7 @@ static bool findClassRelation(
               si = baseClassName.findRev("::");
               if (si!=-1) // class is nested
               {
-                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo());
+                Definition *sd = toDefinition(findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo()));
                 if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
                 {
                   baseClass->setArtificial(TRUE); // see bug678139
@@ -4632,7 +4633,7 @@ static void findInheritedTemplateInstances()
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cli.current());
+    ClassDefMutable *cdm = toClassDefMutable(cli.current());
     if (cdm)
     {
       cdm->setVisited(FALSE);
@@ -4646,7 +4647,7 @@ static void findInheritedTemplateInstances()
     Debug::print(Debug::Classes,0,"  Inheritance: Class %s : \n",qPrint(bName));
     if ((cd=getClass(bName)))
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm)
       {
         //printf("Class %s %d\n",cd->name().data(),root->extends->count());
@@ -4661,7 +4662,7 @@ static void findUsedTemplateInstances()
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cli.current());
+    ClassDefMutable *cdm = toClassDefMutable(cli.current());
     if (cdm)
     {
       cdm->setVisited(FALSE);
@@ -4675,7 +4676,7 @@ static void findUsedTemplateInstances()
     Debug::print(Debug::Classes,0,"  Usage: Class %s : \n",qPrint(bName));
     if ((cd=getClass(bName)))
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm)
       {
         findUsedClassesForClass(root,cd,cdm,cdm,TRUE);
@@ -4690,7 +4691,7 @@ static void computeClassRelations()
   ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (cli.toFirst();cli.current();++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cli.current());
+    ClassDefMutable *cdm = toClassDefMutable(cli.current());
     if (cdm)
     {
       cdm->setVisited(FALSE);
@@ -4743,7 +4744,7 @@ static void computeTemplateClassRelations()
       ClassDef *itcd;
       for (tdi.toFirst();(itcd=tdi.current());++tdi) // for each template instance
       {
-        ClassDefMutable *tcd=ClassDef::make_mutable(itcd);
+        ClassDefMutable *tcd=toClassDefMutable(itcd);
         if (tcd)
         {
           Debug::print(Debug::Classes,0,"    Template instance %s : \n",qPrint(tcd->name()));
@@ -4809,7 +4810,7 @@ static void computeMemberReferences()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->computeAnchors();
@@ -4826,7 +4827,7 @@ static void computeMemberReferences()
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->computeAnchors();
@@ -4848,7 +4849,7 @@ static void addListReferences()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->addListReferences();
@@ -4867,7 +4868,7 @@ static void addListReferences()
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->addListReferences();
@@ -5121,7 +5122,7 @@ static bool findGlobalMember(const Entry *root,
       if (md->isAlias() && md->getOuterScope() &&
           md->getOuterScope()->definitionType()==Definition::TypeNamespace)
       {
-        nd = dynamic_cast<const NamespaceDef *>(md->getOuterScope());
+        nd = toNamespaceDef(md->getOuterScope());
       }
       else
       {
@@ -5203,7 +5204,7 @@ static bool findGlobalMember(const Entry *root,
         if (matching) // add docs to the member
         {
           Debug::print(Debug::FindMembers,0,"5. Match found\n");
-          addMemberDocs(root,MemberDef::make_mutable(md->resolveAlias()),decl,&root->argList,FALSE,root->spec);
+          addMemberDocs(root,toMemberDefMutable(md->resolveAlias()),decl,&root->argList,FALSE,root->spec);
           found=TRUE;
           break;
         }
@@ -5268,7 +5269,7 @@ static bool scopeIsTemplate(const Definition *d)
   bool result=FALSE;
   if (d && d->definitionType()==Definition::TypeClass)
   {
-    result = !(dynamic_cast<const ClassDef*>(d))->templateArguments().empty() ||
+    result = !(toClassDef(d))->templateArguments().empty() ||
              scopeIsTemplate(d->getOuterScope());
   }
   return result;
@@ -5473,7 +5474,7 @@ static void addMemberFunction(const Entry *root,
   bool memFound=FALSE;
   for (const auto &imd : *mn)
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+    MemberDefMutable *md = toMemberDefMutable(imd.get());
     if (md==0) continue;
     ClassDefMutable *cd=md->getClassDefMutable();
     Debug::print(Debug::FindMembers,0,
@@ -5691,7 +5692,7 @@ static void addMemberFunction(const Entry *root,
       {
         // we didn't find an actual match on argument lists, but there is only 1 member with this
         // name in the same scope, so that has to be the one.
-        addMemberDocs(root,MemberDef::make_mutable(umd),funcDecl,0,overloaded,spec);
+        addMemberDocs(root,toMemberDefMutable(umd),funcDecl,0,overloaded,spec);
         return;
       }
       else if (candidates>1 && ecd && emd)
@@ -5699,7 +5700,7 @@ static void addMemberFunction(const Entry *root,
         // we didn't find a unique match using type resolution,
         // but one of the matches has the exact same signature so
         // we take that one.
-        addMemberDocs(root,MemberDef::make_mutable(emd),funcDecl,0,overloaded,spec);
+        addMemberDocs(root,toMemberDefMutable(emd),funcDecl,0,overloaded,spec);
         return;
       }
     }
@@ -6276,7 +6277,7 @@ static void findMember(const Entry *root,
           {
             for (const auto &imd : *mn)
             {
-              MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+              MemberDefMutable *md = toMemberDefMutable(imd.get());
               if (md && md->isDefine())
               {
                 mdDefine = md;
@@ -6298,7 +6299,7 @@ static void findMember(const Entry *root,
           MemberDefMutable *rmd_found = 0;
           for (const auto &irmd : *mn)
           {
-            MemberDefMutable *rmd = MemberDef::make_mutable(irmd.get());
+            MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
             if (rmd)
             {
               const ArgumentList &rmdAl = rmd->argumentList();
@@ -6398,7 +6399,7 @@ static void findMember(const Entry *root,
               const MemberDefMutable *rmd_found=0;
               for (const auto &irmd : *rmn)
               {
-                MemberDefMutable *rmd = MemberDef::make_mutable(irmd.get());
+                MemberDefMutable *rmd = toMemberDefMutable(irmd.get());
                 if (rmd)
                 {
                   const ArgumentList &rmdAl = rmd->argumentList();
@@ -6977,7 +6978,7 @@ static void addEnumValuesToEnums(const Entry *root)
         // for each enum in this list
         for (const auto &imd : *mn)
         {
-          MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
           // use raw pointer in this loop, since we modify mn and can then invalidate mdp.
           if (md && md->isEnumerate() && !root->children().empty())
           {
@@ -7047,7 +7048,7 @@ static void addEnumValuesToEnums(const Entry *root)
                 {
                   for (const auto &ifmd : *fmn)
                   {
-                    MemberDefMutable *fmd = MemberDef::make_mutable(ifmd.get());
+                    MemberDefMutable *fmd = toMemberDefMutable(ifmd.get());
                     if (fmd && fmd->isEnumValue() && fmd->getOuterScope()==md->getOuterScope()) // in same scope
                     {
                       //printf("found enum value with same name %s in scope %s\n",
@@ -7160,7 +7161,7 @@ static void findEnumDocumentation(const Entry *root)
         {
           for (const auto &imd : *mn)
           {
-            MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+            MemberDefMutable *md = toMemberDefMutable(imd.get());
             if (md && (cd=md->getClassDef()) && cd->name()==className && md->isEnumerate())
             {
               // documentation outside a compound overrides the documentation inside it
@@ -7218,7 +7219,7 @@ static void findEnumDocumentation(const Entry *root)
         {
           for (const auto &imd : *mn)
           {
-            MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+            MemberDefMutable *md = toMemberDefMutable(imd.get());
             if (md && md->isEnumerate())
             {
               md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -7262,7 +7263,7 @@ static void findDEV(const MemberNameLinkedMap &mnsd)
     // for each member definition
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md && md->isEnumerate()) // member is an enum
       {
         const MemberList *fmdl = md->enumFieldList();
@@ -7311,7 +7312,7 @@ static void addMembersToIndex()
     // for each member definition
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         if (md->getNamespaceDef())
@@ -7337,7 +7338,7 @@ static void vhdlCorrectMemberProperties()
     // for each member definition
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         VhdlDocGen::correctMemberProperties(md);
@@ -7350,7 +7351,7 @@ static void vhdlCorrectMemberProperties()
     // for each member definition
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         VhdlDocGen::correctMemberProperties(md);
@@ -7372,13 +7373,13 @@ static void computeMemberRelations()
     // for each member with a specific name
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         // for each other member with the same name
         for ( const auto &ibmd : *mn)
         {
-          MemberDefMutable *bmd = MemberDef::make_mutable(ibmd.get());
+          MemberDefMutable *bmd = toMemberDefMutable(ibmd.get());
           if (bmd && md!=bmd)
           {
             const ClassDef *mcd  = md->getClassDef();
@@ -7468,7 +7469,7 @@ static void createTemplateInstanceMembers()
       // for each instance of the template
       for (qdi.toFirst();(tcd=qdi.current());++qdi)
       {
-        ClassDefMutable *tcdm = ClassDef::make_mutable(tcd);
+        ClassDefMutable *tcdm = toClassDefMutable(tcd);
         if (tcdm)
         {
           tcdm->addMembersToTemplateInstance(cd,qdi.currentKey());
@@ -7491,7 +7492,7 @@ static void mergeCategories()
     if (i!=-1) // it is an Objective-C category
     {
       QCString baseName=cd->name().left(i);
-      ClassDefMutable *baseClass=ClassDef::make_mutable(Doxygen::classSDict->find(baseName));
+      ClassDefMutable *baseClass=toClassDefMutable(Doxygen::classSDict->find(baseName));
       if (baseClass)
       {
         //printf("*** merging members of category %s into %s\n",
@@ -7515,7 +7516,7 @@ static void buildCompleteMemberLists()
          cd->subClasses().empty() && // is a root of the hierarchy
          !cd->baseClasses().empty()) // and has at least one base class
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm)
       {
         //printf("*** merging members for %s\n",cd->name().data());
@@ -7526,7 +7527,7 @@ static void buildCompleteMemberLists()
   // now sort the member list of all members for all classes.
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->sortAllMembersList();
@@ -7875,7 +7876,7 @@ static void sortMemberLists()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->sortMemberLists();
@@ -7887,7 +7888,7 @@ static void sortMemberLists()
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->sortMemberLists();
@@ -7925,8 +7926,8 @@ static void computeTooltipTexts()
 {
   for (const auto &kv : Doxygen::symbolMap)
   {
-    DefinitionMutable *dm = Definition::make_mutable(kv.second);
-    if (!isSymbolHidden(dm) && dm->isLinkableInProject())
+    DefinitionMutable *dm = toDefinitionMutable(kv.second);
+    if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
     {
       dm->computeTooltip();
     }
@@ -7941,7 +7942,7 @@ static void setAnonymousEnumType()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->setAnonymousEnumType();
@@ -7957,7 +7958,7 @@ static void countMembers()
   ClassDef *cd=0;
   for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->countMembers();
@@ -7968,7 +7969,7 @@ static void countMembers()
   NamespaceDef *nd=0;
   for (nli.toFirst();(nd=nli.current());++nli)
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->countMembers();
@@ -8000,7 +8001,7 @@ static void generateClassList(ClassSDict &classSDict)
   ClassSDict::Iterator cli(classSDict);
   for ( ; cli.current() ; ++cli )
   {
-    ClassDefMutable *cd=ClassDef::make_mutable(cli.current());
+    ClassDefMutable *cd=toClassDefMutable(cli.current());
 
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
     if (cd &&
@@ -8038,7 +8039,7 @@ static void inheritDocumentation()
   {
     for (const auto &imd : *mn)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       //static int count=0;
       //printf("%04d Member '%s'\n",count++,md->qualifiedName().data());
       if (md && md->documentation().isEmpty() && md->briefDescription().isEmpty())
@@ -8094,7 +8095,7 @@ static void combineUsingRelations()
   }
   for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->combineUsingRelations();
@@ -8111,7 +8112,7 @@ static void addMembersToMemberGroup()
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->addMembersToMemberGroup();
@@ -8130,7 +8131,7 @@ static void addMembersToMemberGroup()
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->addMembersToMemberGroup();
@@ -8154,7 +8155,7 @@ static void distributeMemberGroupDocumentation()
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->distributeMemberGroupDocumentation();
@@ -8173,7 +8174,7 @@ static void distributeMemberGroupDocumentation()
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->distributeMemberGroupDocumentation();
@@ -8197,7 +8198,7 @@ static void findSectionsInDocumentation()
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->findSectionsInDocumentation();
@@ -8216,7 +8217,7 @@ static void findSectionsInDocumentation()
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->findSectionsInDocumentation();
@@ -8267,7 +8268,7 @@ static void flushCachedTemplateRelations()
     // for each function with that name
     for (const auto &ifmd : *fn)
     {
-      MemberDefMutable *fmd = MemberDef::make_mutable(ifmd.get());
+      MemberDefMutable *fmd = toMemberDefMutable(ifmd.get());
       if (fmd && fmd->isTypedefValCached())
       {
         const ClassDef *cd = fmd->getCachedTypedefVal();
@@ -8281,7 +8282,7 @@ static void flushCachedTemplateRelations()
     // for each function with that name
     for (const auto &imd : *nm)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md && md->isTypedefValCached())
       {
         const ClassDef *cd = md->getCachedTypedefVal();
@@ -8325,7 +8326,7 @@ static void flushUnresolvedRelations()
     // for each function with that name
     for (const auto &ifmd : *fn)
     {
-      MemberDefMutable *fmd = MemberDef::make_mutable(ifmd.get());
+      MemberDefMutable *fmd = toMemberDefMutable(ifmd.get());
       if (fmd)
       {
         fmd->invalidateCachedArgumentTypes();
@@ -8338,7 +8339,7 @@ static void flushUnresolvedRelations()
     // for each function with that name
     for (const auto &imd : *nm)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+      MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md)
       {
         md->invalidateCachedArgumentTypes();
@@ -8385,7 +8386,7 @@ static void findDefineDocumentation(Entry *root)
       {
         for (const auto &imd : *mn)
         {
-          MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
             md->setDocumentation(root->doc,root->docFile,root->docLine);
@@ -8416,7 +8417,7 @@ static void findDefineDocumentation(Entry *root)
       {
         for (const auto &imd : *mn)
         {
-          MemberDefMutable *md = MemberDef::make_mutable(imd.get());
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
           if (md && md->memberType()==MemberType_Define)
           {
             const FileDef *fd=md->getFileDef();
@@ -8731,7 +8732,7 @@ static void resolveUserReferences()
         const GroupDef *gd=0;
         if (si->definition()->definitionType()==Definition::TypeMember)
         {
-          gd = (dynamic_cast<MemberDef *>(si->definition()))->getGroupDef();
+          gd = (toMemberDef(si->definition()))->getGroupDef();
         }
 
         if (gd)
@@ -8908,7 +8909,7 @@ static void generateNamespaceClassDocs(ClassSDict *d)
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       if ( ( cd->isLinkableInProject() &&
@@ -8942,7 +8943,7 @@ static void generateNamespaceDocs()
 
     if (nd->isLinkableInProject())
     {
-      NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+      NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
       if (ndm)
       {
         msg("Generating docs for namespace %s\n",nd->name().data());
@@ -9923,7 +9924,7 @@ static void dumpSymbol(FTextStream &t,Definition *d)
   QCString anchor;
   if (d->definitionType()==Definition::TypeMember)
   {
-    MemberDef *md = dynamic_cast<MemberDef *>(d);
+    MemberDef *md = toMemberDef(d);
     anchor=":"+md->anchor();
   }
   QCString scope;
@@ -10697,7 +10698,7 @@ static void writeTagFile()
   ClassDef *cd;
   for ( ; (cd=cli.current()) ; ++cli )
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm && cdm->isLinkableInProject())
     {
       cdm->writeTagFile(tagFile);
@@ -10708,7 +10709,7 @@ static void writeTagFile()
   NamespaceDef *nd;
   for ( ; (nd=nli.current()) ; ++nli )
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm && nd->isLinkableInProject())
     {
       ndm->writeTagFile(tagFile);

@@ -334,7 +334,7 @@ void MemberList::setAnonymousEnumType()
           MemberDef *vmd;
           for ( ; (vmd=vmli.current()) ; ++vmli)
           {
-            MemberDefMutable *vmdm = MemberDef::make_mutable(vmd);
+            MemberDefMutable *vmdm = toMemberDefMutable(vmd);
             if (vmdm)
             {
               QCString vtype=vmd->typeString();
@@ -580,7 +580,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
     {
       if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {
-        MemberDefMutable *mdm = MemberDef::make_mutable(md);
+        MemberDefMutable *mdm = toMemberDefMutable(md);
         if (mdm) mdm->setFromAnonymousScope(FALSE);
         //printf("anonymous compound members\n");
         if (md->isBriefSectionVisible())
@@ -752,7 +752,7 @@ void MemberList::writeDeclarations(OutputList &ol,
   }
   if (inheritedFrom && cd)
   {
-    const ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    const ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       // also add members that of this list type, that are grouped together
@@ -821,7 +821,7 @@ void MemberList::writeDocumentation(OutputList &ol,
     {
       uint overloadCount = *overloadTotalDict.find(md->name());
       uint *pCount = overloadCountDict.find(md->name());
-      MemberDefMutable *mdm = MemberDef::make_mutable(md);
+      MemberDefMutable *mdm = toMemberDefMutable(md);
       if (mdm)
       {
         mdm->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,
@@ -853,14 +853,14 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
   const ClassDef *cd = 0;
   if (container && container->definitionType()==Definition::TypeClass)
   {
-    cd = dynamic_cast<const ClassDef*>(container);
+    cd = toClassDef(container);
   }
   ol.startMemberDocSimple(cd && cd->isJavaEnum());
   MemberListIterator mli(*this);
   const MemberDef *md;
   for ( ; (md=mli.current()) ; ++mli)
   {
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
       mdm->writeMemberDocSimple(ol,container);
@@ -884,7 +884,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
   const MemberDef *imd;
   for (mli.toFirst() ; (imd=mli.current()) ; ++mli)
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd);
+    MemberDefMutable *md = toMemberDefMutable(imd);
 
     if (md->isDetailedSectionLinkable())
     {
@@ -903,7 +903,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
   for ( mli.toFirst() ; (imd=mli.current()) ; ++mli)
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd);
+    Definition *container_d = toDefinition(const_cast<DefinitionMutable*>(container));
+    MemberDefMutable *md = toMemberDefMutable(imd);
     if (md->isDetailedSectionLinkable())
     {
       uint overloadCount = *overloadTotalDict.find(md->name());
@@ -920,11 +921,11 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
       if (generateTreeView)
       {
-        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,m_inGroup);
+        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container_d,m_inGroup);
         (*pCount)++;
 
         ol.endContents();
-        endFileWithNavPath(container,ol);
+        endFileWithNavPath(container_d,ol);
       }
       else
       {
@@ -937,7 +938,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         ol.writeString("   </td>\n");
         ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
 
-        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,m_inGroup);
+        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container_d,m_inGroup);
         (*pCount)++;
 
         ol.writeString("    </td>\n");
@@ -976,8 +977,8 @@ void MemberList::addListReferences(Definition *def)
   MemberDef *imd;
   for ( ; (imd=mli.current()) ; ++mli)
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd);
-    if (!md->isAlias() && (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup))
+    MemberDefMutable *md = toMemberDefMutable(imd);
+    if (md && !md->isAlias() && (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup))
     {
       md->addListReference(def);
       const MemberList *enumFields = md->enumFieldList();
@@ -988,7 +989,7 @@ void MemberList::addListReferences(Definition *def)
         MemberDef *vmd;
         for ( ; (vmd=vmli.current()) ; ++vmli)
         {
-          MemberDefMutable *vmdm = MemberDef::make_mutable(vmd);
+          MemberDefMutable *vmdm = toMemberDefMutable(vmd);
           if (vmdm)
           {
             //printf("   adding %s\n",vmd->name().data());
@@ -1015,7 +1016,7 @@ void MemberList::findSectionsInDocumentation(const Definition *d)
   MemberDef *imd;
   for ( ; (imd=mli.current()) ; ++mli)
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd);
+    MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
       md->findSectionsInDocumentation();
@@ -1101,7 +1102,7 @@ void MemberList::writeTagFile(FTextStream &tagFile)
   MemberDef *imd;
   for ( ; (imd=mli.current()) ; ++mli)
   {
-    MemberDefMutable *md = MemberDef::make_mutable(imd);
+    MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
       if (md->getLanguage()!=SrcLangExt_VHDL)
@@ -1113,7 +1114,7 @@ void MemberList::writeTagFile(FTextStream &tagFile)
           MemberDef *ivmd;
           for ( ; (ivmd=vmli.current()) ; ++vmli)
           {
-            MemberDefMutable *vmd = MemberDef::make_mutable(ivmd);
+            MemberDefMutable *vmd = toMemberDefMutable(ivmd);
             if (vmd)
             {
               vmd->writeTagFile(tagFile);

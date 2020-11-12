@@ -102,7 +102,7 @@ void ClassSDict::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *f
     bool found=FALSE;
     for (sdi.toFirst();(cd=sdi.current());++sdi)
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       //printf("  ClassSDict::writeDeclaration for %s\n",cd->name().data());
       if (cdm &&
           !cd->isAnonymous() &&
@@ -139,7 +139,7 @@ void ClassSDict::writeDocumentation(OutputList &ol,const Definition * container)
       //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
       //  container,cd->partOfGroups() ? cd->partOfGroups()->count() : 0);
 
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm &&
           !cd->isAnonymous() &&
           cd->isLinkableInProject() &&

@@ -41,6 +41,7 @@ class GroupList;
 class SectionInfo;
 class Definition;
 class DefinitionMutable;
+class DefinitionImpl;
 class FTextStream;
 
 /** Data associated with a detailed description. */
@@ -95,7 +96,6 @@ class Definition
       TypeDir        = 7
     };
 
-    static DefinitionMutable *make_mutable(const Definition *);
 
     //-----------------------------------------------------------------------------------
     // ----  getters -----
@@ -300,11 +300,20 @@ class Definition
 
     // ---------------------------------
     virtual ~Definition() = default;
+
+  private:
+    friend class DefinitionImpl;
+    friend DefinitionMutable* toDefinitionMutable(Definition *);
+    friend DefinitionMutable* toDefinitionMutable(const Definition *);
+    virtual DefinitionMutable *toDefinitionMutable_() = 0;
+    virtual const DefinitionImpl *toDefinitionImpl_() const = 0;
 };
 
-class DefinitionMutable : virtual public Definition
+class DefinitionMutable
 {
   public:
+
+
     //-----------------------------------------------------------------------------------
     // ----  setters -----
     //-----------------------------------------------------------------------------------
@@ -380,11 +389,17 @@ class DefinitionMutable : virtual public Definition
     virtual void writeDocAnchorsToTagFile(FTextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 
+    // ---------------------------------
+    virtual ~DefinitionMutable() = default;
 
+  private:
+    friend Definition* toDefinition(DefinitionMutable *);
+    virtual Definition *toDefinition_() = 0;
 };
 
-inline DefinitionMutable *Definition::make_mutable(const Definition *def)
-{ return dynamic_cast<DefinitionMutable*>(const_cast<Definition*>(def)); }
+Definition          *toDefinition(DefinitionMutable *dm);
+DefinitionMutable   *toDefinitionMutable(Definition *d);
+DefinitionMutable   *toDefinitionMutable(const Definition *d);
 
 /** Reads a fragment from file \a fileName starting with line \a startLine
  *  and ending with line \a endLine. The result is returned as a string

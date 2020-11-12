@@ -404,7 +404,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                         auto it = yyextra->codeClassMap.find(s);
                                         if (it != yyextra->codeClassMap.end())
                                         {
-                                          baseDefToAdd = dynamic_cast<const ClassDef*>(it->second.globalDef());
+                                          baseDefToAdd = toClassDef(it->second.globalDef());
                                         }
                                         // Try to find class in global scope
                                         if (baseDefToAdd==0)
@@ -488,7 +488,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
-                                        MemberDefMutable *mdm = MemberDef::make_mutable(yyextra->currentMemberDef);
+                                        MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                         if (mdm)
                                         {
                                           mdm->incrementFlowKeyWordCount();
@@ -533,7 +533,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
-                                        MemberDefMutable *mdm = MemberDef::make_mutable(yyextra->currentMemberDef);
+                                        MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                         if (mdm)
                                         {
                                           mdm->incrementFlowKeyWordCount();
@@ -1225,7 +1225,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           md!=yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
+        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
 
@@ -1335,7 +1335,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(md));
+        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
     }
   }
@@ -1362,7 +1362,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           if (d && d->isLinkable() && mmd->isLinkable() &&
               yyextra->currentMemberDef && yyextra->collectXRefs)
           {
-            addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(mmd));
+            addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
           }
           return;
         }
@@ -1385,7 +1385,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
             if (d && d->isLinkable() && mmd->isLinkable() &&
                 yyextra->currentMemberDef && yyextra->collectXRefs)
             {
-              addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(mmd));
+              addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
             }
             return;
           }
@@ -1465,13 +1465,13 @@ static bool findMemberLink(yyscan_t yyscanner,
       sym->getOuterScope()->definitionType()==Definition::TypeClass &&
       yyextra->currentDefinition->definitionType()==Definition::TypeClass)
   {
-    ClassDef *cd = dynamic_cast<ClassDef*>(sym->getOuterScope());
-    ClassDef *thisCd = dynamic_cast<ClassDef *>(yyextra->currentDefinition);
+    ClassDef *cd = toClassDef(sym->getOuterScope());
+    ClassDef *thisCd = toClassDef(yyextra->currentDefinition);
     if (sym->definitionType()==Definition::TypeMember)
     {
       if (yyextra->currentMemberDef && yyextra->collectXRefs)
       {
-        addDocCrossReference(MemberDef::make_mutable(yyextra->currentMemberDef),MemberDef::make_mutable(dynamic_cast<MemberDef*>(sym)));
+        addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(toMemberDef(sym)));
       }
     }
     DBG_CTX((stderr,"cd=%s thisCd=%s\n",cd?cd->name().data():"<none>",thisCd?thisCd->name().data():"<none>"));

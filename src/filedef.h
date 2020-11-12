@@ -63,7 +63,7 @@ struct IncludeInfo
  *  The member writeDocumentation() can be used to generate the page of
  *  documentation to HTML and LaTeX.
  */
-class FileDef : virtual public DefinitionMutable
+class FileDef : public DefinitionMutable, public Definition
 {
   public:
    ~FileDef() {}
@@ -187,6 +187,15 @@ class FileDef : virtual public DefinitionMutable
 };
 
 FileDef *createFileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
+
+
+
+// --- Cast functions
+
+FileDef            *toFileDef(Definition *d);
+const FileDef      *toFileDef(const Definition *d);
+
+// ------------------
 
 /** Class representing a list of FileDef objects. */
 class FileList : public QList<FileDef>

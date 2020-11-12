@@ -1576,7 +1576,7 @@ static void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool 
     ClassDef *cd;
     for (;(cd=cli.current());++cli)
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
       {
         if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||

@@ -1352,7 +1352,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol
     Definition *d = cd->getOuterScope();
     if (d && d->definitionType()==Definition::TypeClass)
     {
-      cd = dynamic_cast<ClassDef*>(d);
+      cd = toClassDef(d);
     }
     else
     {

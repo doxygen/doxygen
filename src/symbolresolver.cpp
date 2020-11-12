@@ -343,8 +343,8 @@ void SymbolResolver::Private::getResolvedSymbol(
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember &&
-       ((dynamic_cast<const MemberDef*>(d))->isTypedef() ||
-        (dynamic_cast<const MemberDef*>(d))->isEnumerate())
+       ((toMemberDef(d))->isTypedef() ||
+        (toMemberDef(d))->isEnumerate())
       )
      )
   {
@@ -358,7 +358,7 @@ void SymbolResolver::Private::getResolvedSymbol(
       // see if we are dealing with a class or a typedef
       if (d->definitionType()==Definition::TypeClass) // d is a class
       {
-        const ClassDef *cd = dynamic_cast<const ClassDef *>(d);
+        const ClassDef *cd = toClassDef(d);
         //printf("cd=%s\n",cd->name().data());
         if (!cd->isTemplateArgument()) // skip classes that
           // are only there to
@@ -403,7 +403,7 @@ void SymbolResolver::Private::getResolvedSymbol(
       }
       else if (d->definitionType()==Definition::TypeMember)
       {
-        const MemberDef *md = dynamic_cast<const MemberDef *>(d);
+        const MemberDef *md = toMemberDef(d);
         //fprintf(stderr,"  member isTypedef()=%d\n",md->isTypedef());
         if (md->isTypedef()) // d is a typedef
         {
@@ -607,7 +607,7 @@ done:
     //printf("setting cached typedef %p in result %p\n",md,result);
     //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
     //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
       mdm->cacheTypedefVal(result,
@@ -663,7 +663,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
     else if (itemScope && newScope &&
              itemScope->definitionType()==Definition::TypeClass &&
              newScope->definitionType()==Definition::TypeClass &&
-             (dynamic_cast<const ClassDef*>(newScope))->isBaseClass(dynamic_cast<const ClassDef*>(itemScope),TRUE,0)
+             (toClassDef(newScope))->isBaseClass(toClassDef(itemScope),TRUE,0)
             )
     {
       // inheritance is also ok. Example: looking for B::I, where
@@ -688,7 +688,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         // A::B::C but is explicit referenced as A::C, where B is imported
         // in A via a using directive.
         //printf("newScope is a namespace: %s!\n",newScope->name().data());
-        const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(newScope);
+        const NamespaceDef *nscope = toNamespaceDef(newScope);
         for (const auto &cd : nscope->getUsedClasses())
         {
           //printf("Trying for class %s\n",cd->name().data());
@@ -725,7 +725,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
     //printf("    failed to resolve: scope=%s\n",scope->name().data());
     if (scope->definitionType()==Definition::TypeNamespace)
     {
-      const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(scope);
+      const NamespaceDef *nscope = toNamespaceDef(scope);
       StringUnorderedSet visited;
       if (accessibleViaUsingNamespace(visited,nscope->getUsedNamespaces(),item,explicitScopePart))
       {
@@ -795,12 +795,12 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
       if (current->definitionType()==Definition::TypeNamespace)
       {
         next = endOfPathIsUsedClass(
-            (dynamic_cast<const NamespaceDef *>(current))->getUsedClasses(),qualScopePart);
+            (toNamespaceDef(current))->getUsedClasses(),qualScopePart);
       }
       else if (current->definitionType()==Definition::TypeFile)
       {
         next = endOfPathIsUsedClass(
-            (dynamic_cast<const FileDef *>(current))->getUsedClasses(),qualScopePart);
+            (toFileDef(current))->getUsedClasses(),qualScopePart);
       }
       current = next;
       if (current==0) break;
@@ -901,13 +901,13 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
       (item->definitionType()==Definition::TypeMember &&                   // a member
        itemScope && itemScope->definitionType()==Definition::TypeClass  && // of a class
        scope->definitionType()==Definition::TypeClass &&                   // accessible
-       (dynamic_cast<const ClassDef*>(scope))->isAccessibleMember(dynamic_cast<const MemberDef *>(item)) // from scope
+       (toClassDef(scope))->isAccessibleMember(toMemberDef(item)) // from scope
       );
   bool nestedClassInsideBaseClass =
       (item->definitionType()==Definition::TypeClass &&                    // a nested class
        itemScope && itemScope->definitionType()==Definition::TypeClass &&  // inside a base
        scope->definitionType()==Definition::TypeClass &&                   // class of scope
-       (dynamic_cast<const ClassDef*>(scope))->isBaseClass(dynamic_cast<ClassDef*>(itemScope),TRUE)
+       (toClassDef(scope))->isBaseClass(toClassDef(itemScope),TRUE)
       );
 
   if (itemScope==scope || memberAccessibleFromScope || nestedClassInsideBaseClass)
@@ -941,7 +941,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
     // check if scope is a namespace, which is using other classes and namespaces
     if (scope->definitionType()==Definition::TypeNamespace)
     {
-      const NamespaceDef *nscope = dynamic_cast<const NamespaceDef*>(scope);
+      const NamespaceDef *nscope = toNamespaceDef(scope);
       //printf("  %s is namespace with %d used classes\n",nscope->name().data(),nscope->getUsedClasses());
       if (accessibleViaUsingClass(nscope->getUsedClasses(),item))
       {
@@ -986,7 +986,7 @@ QCString SymbolResolver::Private::substTypedef(
     if (d->definitionType()==Definition::TypeMember)
     {
       // that are also typedefs
-      MemberDef *md = dynamic_cast<MemberDef *>(d);
+      MemberDef *md = toMemberDef(d);
       if (md->isTypedef()) // d is a typedef
       {
         VisitedNamespaces visitedNamespaces;

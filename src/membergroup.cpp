@@ -71,7 +71,7 @@ void MemberGroup::insertMember(MemberDef *md)
   GroupDef *gd;
   if (firstMd && !firstMd->isAlias() && (gd=const_cast<GroupDef*>(firstMd->getGroupDef())))
   {
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
       mdm->setGroupDef(gd, firstMd->getGroupPri(),
@@ -224,7 +224,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
     MemberDef *iomd;
     for (li.toFirst();(iomd=li.current());++li)
     {
-      MemberDefMutable *omd = MemberDef::make_mutable(iomd);
+      MemberDefMutable *omd = toMemberDefMutable(iomd);
       if (omd && md!=omd && omd->documentation().isEmpty() &&
                             omd->briefDescription().isEmpty() &&
                             omd->inbodyDocumentation().isEmpty()

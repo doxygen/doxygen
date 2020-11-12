@@ -92,7 +92,7 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
     QCString decl;
     if (d->definitionType()==Definition::TypeMember)
     {
-      const MemberDef *md = dynamic_cast<const MemberDef*>(d);
+      const MemberDef *md = toMemberDef(d);
       if (!md->isAnonymous())
       {
         decl = md->declaration();

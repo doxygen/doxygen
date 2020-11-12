@@ -56,7 +56,7 @@
 
 
 /** Implementation of the ClassDef interface */
-class ClassDefImpl : public DefinitionImpl, public ClassDefMutable
+class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 {
   public:
     ClassDefImpl(const char *fileName,int startLine,int startColumn,
@@ -283,14 +283,15 @@ ClassDefMutable *createClassDef(
 }
 //-----------------------------------------------------------------------------
 
-class ClassDefAliasImpl : public DefinitionAliasImpl, public ClassDef
+class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
 {
   public:
-    ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd) : DefinitionAliasImpl(newScope,cd) {}
+    ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd)
+      : DefinitionAliasMixin(newScope,cd) {}
     virtual ~ClassDefAliasImpl() {}
     virtual DefType definitionType() const { return TypeClass; }
 
-    const ClassDef *getCdAlias() const { return dynamic_cast<const ClassDef*>(getAlias()); }
+    const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }
     virtual ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
 
     virtual QCString getOutputFileBase() const
@@ -726,7 +727,7 @@ ClassDefImpl::ClassDefImpl(
     const char *nm,CompoundType ct,
     const char *lref,const char *fName,
     bool isSymbol,bool isJavaEnum)
- : DefinitionImpl(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol)
+ : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol)
 {
   m_visited=FALSE;
   setReference(lref);
@@ -1217,7 +1218,7 @@ void ClassDefImpl::insertUsedFile(FileDef *fd)
     ClassDef *cd;
     for (qdi.toFirst();(cd=qdi.current());++qdi)
     {
-      ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm)
       {
         cdm->insertUsedFile(fd);
@@ -1298,7 +1299,7 @@ static void searchTemplateSpecs(/*in*/  const Definition *d,
     {
       searchTemplateSpecs(d->getOuterScope(),result,name,lang);
     }
-    const ClassDef *cd=dynamic_cast<const ClassDef *>(d);
+    const ClassDef *cd=toClassDef(d);
     if (!name.isEmpty()) name+="::";
     QCString clName = d->localName();
     if (/*clName.right(2)=="-g" ||*/ clName.right(2)=="-p")
@@ -2851,7 +2852,7 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
     ClassDef *innerCd;
     for (cli.toFirst();(innerCd=cli.current());++cli)
     {
-      ClassDefMutable *innerCdm = ClassDef::make_mutable(innerCd);
+      ClassDefMutable *innerCdm = toClassDefMutable(innerCd);
       if (innerCdm)
       {
         if (
@@ -3398,7 +3399,7 @@ bool ClassDefImpl::isVisibleInHierarchy() const
 
 bool ClassDefImpl::hasDocumentation() const
 {
-  return DefinitionImpl::hasDocumentation();
+  return DefinitionMixin::hasDocumentation();
 }
 
 //----------------------------------------------------------------------
@@ -3474,7 +3475,7 @@ void ClassDefImpl::mergeMembers()
   static bool extractPrivate         = Config_getBool(EXTRACT_PRIVATE);
   for (const auto &bcd : baseClasses())
   {
-    ClassDefMutable *bClass=ClassDef::make_mutable(bcd.classDef);
+    ClassDefMutable *bClass=toClassDefMutable(bcd.classDef);
     if (bClass)
     {
       // merge the members in the base class of this inheritance branch first
@@ -3689,7 +3690,7 @@ void ClassDefImpl::mergeMembers()
  */
 void ClassDefImpl::mergeCategory(ClassDef *cat)
 {
-  ClassDefMutable *category = ClassDef::make_mutable(cat);
+  ClassDefMutable *category = toClassDefMutable(cat);
   if (category)
   {
     static bool extractLocalMethods = Config_getBool(EXTRACT_LOCAL_METHODS);
@@ -3737,8 +3738,8 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
         auto &srcMi = srcMni->front();
         if (srcMi && dstMi)
         {
-          MemberDefMutable *smdm = MemberDef::make_mutable(srcMi->memberDef());
-          MemberDefMutable *dmdm = MemberDef::make_mutable(dstMi->memberDef());
+          MemberDefMutable *smdm = toMemberDefMutable(srcMi->memberDef());
+          MemberDefMutable *dmdm = toMemberDefMutable(dstMi->memberDef());
           if (smdm && dmdm)
           {
             combineDeclarationAndDefinition(smdm,dmdm);
@@ -3760,7 +3761,7 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
           //printf("Adding '%s'\n",mi->memberDef->name().data());
           Protection prot = mi->prot();
           //if (makePrivate) prot = Private;
-          std::unique_ptr<MemberDefMutable> newMd { MemberDef::make_mutable(mi->memberDef()->deepCopy()) };
+          std::unique_ptr<MemberDefMutable> newMd { toMemberDefMutable(mi->memberDef()->deepCopy()) };
           if (newMd)
           {
             //printf("Copying member %s\n",mi->memberDef->name().data());
@@ -3782,7 +3783,7 @@ void ClassDefImpl::mergeCategory(ClassDef *cat)
               newMd->setCategory(category);
               newMd->setCategoryRelation(mi->memberDef());
             }
-            MemberDefMutable *mdm = MemberDef::make_mutable(mi->memberDef());
+            MemberDefMutable *mdm = toMemberDefMutable(mi->memberDef());
             if (mdm)
             {
               mdm->setCategoryRelation(newMd.get());
@@ -3955,7 +3956,7 @@ QCString ClassDefImpl::getSourceFileBase() const
   }
   else
   {
-    return DefinitionImpl::getSourceFileBase();
+    return DefinitionMixin::getSourceFileBase();
   }
 }
 
@@ -3967,12 +3968,12 @@ void ClassDefImpl::setGroupDefForAllMembers(GroupDef *gd,Grouping::GroupPri_t pr
   {
     for (auto &mi : *mni)
     {
-      MemberDefMutable *md = MemberDef::make_mutable(mi->memberDef());
+      MemberDefMutable *md = toMemberDefMutable(mi->memberDef());
       if (md)
       {
         md->setGroupDef(gd,pri,fileName,startLine,hasDocs);
         gd->insertMember(md,TRUE);
-        ClassDefMutable *innerClass = ClassDef::make_mutable(md->getClassDefOfAnonymousType());
+        ClassDefMutable *innerClass = toClassDefMutable(md->getClassDefOfAnonymousType());
         if (innerClass) innerClass->setGroupDefForAllMembers(gd,pri,fileName,startLine,hasDocs);
       }
     }
@@ -3989,7 +3990,7 @@ void ClassDefImpl::addInnerCompound(const Definition *d)
     {
       m_impl->innerClasses = new ClassSDict(17);
     }
-    m_impl->innerClasses->inSort(d->localName(),dynamic_cast<const ClassDef *>(d));
+    m_impl->innerClasses->inSort(d->localName(),toClassDef(d));
   }
 }
 
@@ -4012,7 +4013,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   {
     m_impl->templateInstances = new QDict<ClassDef>(17);
   }
-  ClassDefMutable *templateClass=ClassDef::make_mutable(m_impl->templateInstances->find(templSpec));
+  ClassDefMutable *templateClass=toClassDefMutable(m_impl->templateInstances->find(templSpec));
   if (templateClass==0)
   {
     Debug::print(Debug::Classes,0,"      New template instance class '%s''%s'\n",qPrint(name()),qPrint(templSpec));
@@ -4035,7 +4036,7 @@ ClassDef *ClassDefImpl::getVariableInstance(const char *templSpec) const
     m_impl->variableInstances = new QDict<ClassDef>(17);
     m_impl->variableInstances->setAutoDelete(TRUE);
   }
-  ClassDefMutable *templateClass=ClassDef::make_mutable(m_impl->variableInstances->find(templSpec));
+  ClassDefMutable *templateClass=toClassDefMutable(m_impl->variableInstances->find(templSpec));
   if (templateClass==0)
   {
     Debug::print(Debug::Classes,0,"      New template variable instance class '%s' '%s'\n",qPrint(name()),qPrint(templSpec));
@@ -4112,7 +4113,7 @@ QCString ClassDefImpl::getReference() const
   }
   else
   {
-    return DefinitionImpl::getReference();
+    return DefinitionMixin::getReference();
   }
 }
 
@@ -4124,7 +4125,7 @@ bool ClassDefImpl::isReference() const
   }
   else
   {
-    return DefinitionImpl::isReference();
+    return DefinitionMixin::isReference();
   }
 }
 
@@ -4134,7 +4135,7 @@ ArgumentLists ClassDefImpl::getTemplateParameterLists() const
   Definition *d=getOuterScope();
   while (d && d->definitionType()==Definition::TypeClass)
   {
-    result.insert(result.begin(),dynamic_cast<ClassDef*>(d)->templateArguments());
+    result.insert(result.begin(),toClassDef(d)->templateArguments());
     d = d->getOuterScope();
   }
   if (!templateArguments().empty())
@@ -4156,7 +4157,7 @@ QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
   {
     if (d->definitionType()==Definition::TypeClass)
     {
-      ClassDef *cd=dynamic_cast<ClassDef *>(d);
+      ClassDef *cd=toClassDef(d);
       scName = cd->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex);
     }
     else if (!hideScopeNames)
@@ -4329,7 +4330,7 @@ void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
   // for members in the declaration lists we set the section, needed for member grouping
   if ((ml->listType()&MemberListType_detailedLists)==0)
   {
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
       mdm->setSectionList(this,ml);
@@ -4456,7 +4457,7 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
   {
     for (const auto &ibcd : m_impl->inherits)
     {
-      ClassDefMutable *icd=ClassDef::make_mutable(ibcd.classDef);
+      ClassDefMutable *icd=toClassDefMutable(ibcd.classDef);
       int lt1,lt2;
       if (icd && icd->isLinkable())
       {
@@ -4592,7 +4593,7 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
   {
     for (const auto &ibcd : m_impl->inherits)
     {
-      ClassDefMutable *icd=ClassDef::make_mutable(ibcd.classDef);
+      ClassDefMutable *icd=toClassDefMutable(ibcd.classDef);
       if (icd && icd->isLinkable())
       {
         int lt1,lt3;
@@ -5104,7 +5105,7 @@ bool ClassDefImpl::isSliceLocal() const
 
 void ClassDefImpl::setName(const char *name)
 {
-  DefinitionImpl::setName(name);
+  DefinitionMixin::setName(name);
 }
 
 void ClassDefImpl::setMetaData(const char *md)
@@ -5121,4 +5122,68 @@ QCString ClassDefImpl::inheritanceGraphFileName() const
 {
   return m_impl->inheritFileName;
 }
+
+// --- Cast functions
+//
+ClassDef *toClassDef(Definition *d)
+{
+  if (d && (typeid(*d)==typeid(ClassDefImpl) || typeid(*d)==typeid(ClassDefAliasImpl)))
+  {
+    return static_cast<ClassDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+ClassDef *toClassDef(DefinitionMutable *md)
+{
+  Definition *d = toDefinition(md);
+  if (d && typeid(*d)==typeid(ClassDefImpl))
+  {
+    return static_cast<ClassDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+const ClassDef *toClassDef(const Definition *d)
+{
+  if (d && (typeid(*d)==typeid(ClassDefImpl) || typeid(*d)==typeid(ClassDefAliasImpl)))
+  {
+    return static_cast<const ClassDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+ClassDefMutable *toClassDefMutable(Definition *d)
+{
+  if (d && typeid(*d)==typeid(ClassDefImpl))
+  {
+    return static_cast<ClassDefMutable*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+ClassDefMutable *toClassDefMutable(const Definition *d)
+{
+  if (d && typeid(*d)==typeid(ClassDefImpl))
+  {
+    return const_cast<ClassDefMutable*>(static_cast<const ClassDefMutable*>(d));
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 

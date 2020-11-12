@@ -1237,7 +1237,7 @@ void setAnchors(MemberList *ml)
   MemberDef *md;
   for (;(md=mli.current());++mli)
   {
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm && !md->isReference())
     {
       mdm->setAnchor();
@@ -3309,7 +3309,7 @@ bool generateLink(OutputDocInterface &od,const char *clName,
           compound->definitionType()==Definition::TypeGroup /* is group */
          )
       {
-        linkText=(dynamic_cast<const GroupDef *>(compound))->groupTitle(); // use group's title as link
+        linkText=(toGroupDef(compound))->groupTitle(); // use group's title as link
       }
       else if (compound->definitionType()==Definition::TypeFile)
       {
@@ -3552,7 +3552,7 @@ static void initBaseClassHierarchy(const BaseClassList &bcl)
 {
   for (const auto &bcd : bcl)
   {
-    ClassDefMutable *cd = ClassDef::make_mutable(bcd.classDef);
+    ClassDefMutable *cd = toClassDefMutable(bcd.classDef);
     if (cd)
     {
       if (cd->baseClasses().empty()) // no base classes => new root
@@ -3599,7 +3599,7 @@ void initClassHierarchy(ClassSDict *cl)
   ClassDef *cd;
   for ( ; (cd=cli.current()); ++cli)
   {
-    ClassDefMutable *cdm = ClassDef::make_mutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
     {
       cdm->setVisited(FALSE);
@@ -5753,7 +5753,7 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
       if (distance!=-1 && distance<minDistance)
       {
         minDistance = distance;
-        bestMatch = dynamic_cast<MemberDef *>(d);
+        bestMatch = toMemberDef(d);
         //printf("new best match %s distance=%d\n",bestMatch->qualifiedName().data(),distance);
       }
     }
@@ -6870,6 +6870,7 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
 
 void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
 {
+  if (src==0 || dst==0) return;
   //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
   if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
   if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) &&
@@ -6877,12 +6878,12 @@ void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
      )
   {
     dst->addSourceReferencedBy(src);
-    MemberDefMutable *mdDef = MemberDef::make_mutable(dst->memberDefinition());
+    MemberDefMutable *mdDef = toMemberDefMutable(dst->memberDefinition());
     if (mdDef)
     {
       mdDef->addSourceReferencedBy(src);
     }
-    MemberDefMutable *mdDecl = MemberDef::make_mutable(dst->memberDeclaration());
+    MemberDefMutable *mdDecl = toMemberDefMutable(dst->memberDeclaration());
     if (mdDecl)
     {
       mdDecl->addSourceReferencedBy(src);
@@ -6893,12 +6894,12 @@ void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
      )
   {
     src->addSourceReferences(dst);
-    MemberDefMutable *mdDef = MemberDef::make_mutable(src->memberDefinition());
+    MemberDefMutable *mdDef = toMemberDefMutable(src->memberDefinition());
     if (mdDef)
     {
       mdDef->addSourceReferences(dst);
     }
-    MemberDefMutable *mdDecl = MemberDef::make_mutable(src->memberDeclaration());
+    MemberDefMutable *mdDecl = toMemberDefMutable(src->memberDeclaration());
     if (mdDecl)
     {
       mdDecl->addSourceReferences(dst);

@@ -24,7 +24,7 @@ class OutputList;
 class FTextStream;
 
 /** @brief A model of a page symbol. */
-class PageDef : virtual public DefinitionMutable
+class PageDef : public DefinitionMutable, public Definition
 {
   public:
     virtual ~PageDef() {}
@@ -64,6 +64,13 @@ class PageDef : virtual public DefinitionMutable
 };
 
 PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t);
+
+// --- Cast functions
+
+PageDef            *toPageDef(Definition *d);
+const PageDef      *toPageDef(const Definition *d);
+
+// ------------------
 
 class PageSDict : public SDict<PageDef>
 {

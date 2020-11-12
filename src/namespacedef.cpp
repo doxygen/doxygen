@@ -35,7 +35,7 @@
 
 //------------------------------------------------------------------
 
-class NamespaceDefImpl : public DefinitionImpl, public NamespaceDefMutable
+class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
 {
   public:
     NamespaceDefImpl(const char *defFileName,int defLine,int defColumn,
@@ -153,14 +153,15 @@ NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int 
 
 //------------------------------------------------------------------
 
-class NamespaceDefAliasImpl : public DefinitionAliasImpl, public NamespaceDef
+class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
 {
   public:
-    NamespaceDefAliasImpl(const Definition *newScope,const NamespaceDef *nd) : DefinitionAliasImpl(newScope,nd) {}
+    NamespaceDefAliasImpl(const Definition *newScope,const NamespaceDef *nd)
+      : DefinitionAliasMixin(newScope,nd) {}
     virtual ~NamespaceDefAliasImpl() {}
     virtual DefType definitionType() const { return TypeNamespace; }
 
-    const NamespaceDef *getNSAlias() const { return dynamic_cast<const NamespaceDef*>(getAlias()); }
+    const NamespaceDef *getNSAlias() const { return toNamespaceDef(getAlias()); }
 
     // ---- getters
     virtual QCString getOutputFileBase() const
@@ -236,7 +237,7 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
                            const char *name,const char *lref,
                            const char *fName, const char*type,
                            bool isPublished) :
-   DefinitionImpl(df,dl,dc,name)
+   DefinitionMixin(df,dl,dc,name)
   ,m_isPublished(isPublished)
 {
   if (fName)
@@ -357,11 +358,11 @@ void NamespaceDefImpl::addInnerCompound(const Definition *d)
   m_innerCompounds->append(d->localName(),d);
   if (d->definitionType()==Definition::TypeNamespace)
   {
-    insertNamespace(dynamic_cast<const NamespaceDef *>(d));
+    insertNamespace(toNamespaceDef(d));
   }
   else if (d->definitionType()==Definition::TypeClass)
   {
-    insertClass(dynamic_cast<const ClassDef *>(d));
+    insertClass(toClassDef(d));
   }
 }
 
@@ -443,7 +444,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
   //printf("%s::insertMember(%s) isInline=%d hasDocs=%d\n",qPrint(name()),qPrint(md->name()),
   //    isInline(),hasDocumentation());
   if (md->isHidden()) return;
-  MemberDefMutable *mdm = MemberDef::make_mutable(md);
+  MemberDefMutable *mdm = toMemberDefMutable(md);
 
   // if this is an inline namespace that is not documented, then insert the
   // member in the parent scope instead
@@ -454,7 +455,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     {
       if (outerScope->definitionType()==Definition::TypeNamespace)
       {
-        NamespaceDefMutable *nd = NamespaceDef::make_mutable(dynamic_cast<NamespaceDef*>(outerScope));
+        NamespaceDefMutable *nd = toNamespaceDefMutable(outerScope);
         if (nd)
         {
           nd->insertMember(md);
@@ -466,7 +467,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
       }
       else if (outerScope->definitionType()==Definition::TypeFile)
       {
-        FileDef *fd = dynamic_cast<FileDef*>(outerScope);
+        FileDef *fd = toFileDef(outerScope);
         fd->insertMember(md);
         if (mdm)
         {
@@ -542,7 +543,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         if (outerScope->definitionType()==Definition::TypeNamespace)
         {
           aliasMd.reset(createMemberDefAlias(outerScope,md));
-          NamespaceDefMutable *ndm = NamespaceDef::make_mutable(dynamic_cast<NamespaceDef*>(outerScope));
+          NamespaceDefMutable *ndm = toNamespaceDefMutable(outerScope);
           if (ndm)
           {
             ndm->insertMember(aliasMd.get());
@@ -551,7 +552,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
         else if (outerScope->definitionType()==Definition::TypeFile)
         {
           aliasMd.reset(createMemberDefAlias(outerScope,md));
-          dynamic_cast<FileDef*>(outerScope)->insertMember(aliasMd.get());
+          toFileDef(outerScope)->insertMember(aliasMd.get());
         }
         if (aliasMd)
         {
@@ -1290,7 +1291,7 @@ void NamespaceDefImpl::combineUsingRelations()
   LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
-    NamespaceDefMutable *ndm = NamespaceDef::make_mutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
       ndm->combineUsingRelations();
@@ -1439,7 +1440,7 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 
   if (ml->listType()&MemberListType_declarationLists)
   {
-    MemberDefMutable *mdm = MemberDef::make_mutable(md);
+    MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
       mdm->setSectionList(this,ml);
@@ -1604,3 +1605,68 @@ void NamespaceDefImpl::setMetaData(const QCString &m)
 {
   metaData = m;
 }
+
+// --- Cast functions
+//
+NamespaceDef *toNamespaceDef(Definition *d)
+{
+  if (d && (typeid(*d)==typeid(NamespaceDefImpl) || typeid(*d)==typeid(NamespaceDefAliasImpl)))
+  {
+    return static_cast<NamespaceDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+NamespaceDef *toNamespaceDef(DefinitionMutable *md)
+{
+  Definition *d = toDefinition(md);
+  if (d && typeid(*d)==typeid(NamespaceDefImpl))
+  {
+    return static_cast<NamespaceDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+
+const NamespaceDef *toNamespaceDef(const Definition *d)
+{
+  if (d && (typeid(*d)==typeid(NamespaceDefImpl) || typeid(*d)==typeid(NamespaceDefAliasImpl)))
+  {
+    return static_cast<const NamespaceDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+NamespaceDefMutable *toNamespaceDefMutable(Definition *d)
+{
+  if (d && typeid(*d)==typeid(NamespaceDefImpl))
+  {
+    return static_cast<NamespaceDefMutable*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+NamespaceDefMutable *toNamespaceDefMutable(const Definition *d)
+{
+  if (d && typeid(*d)==typeid(NamespaceDefImpl))
+  {
+    return const_cast<NamespaceDefMutable*>(static_cast<const NamespaceDefMutable*>(d));
+  }
+  else
+  {
+    return 0;
+  }
+}
+

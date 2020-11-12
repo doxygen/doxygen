@@ -19,7 +19,7 @@
 
 //----------------------------------------------------------------------
 
-class DirDefImpl : public DefinitionImpl, public DirDef
+class DirDefImpl : public DefinitionMixin<DirDef>
 {
   public:
     DirDefImpl(const char *path);
@@ -93,7 +93,7 @@ DirDef *createDirDef(const char *path)
 
 static int g_dirCount=0;
 
-DirDefImpl::DirDefImpl(const char *path) : DefinitionImpl(path,1,1,path)
+DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
 {
   bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
   // get display name (stripping the paths mentioned in STRIP_FROM_PATH)
@@ -1099,5 +1099,33 @@ void generateDirDocs(OutputList &ol)
 bool compareDirDefs(const DirDef *item1, const DirDef *item2)
 {
   return qstricmp(item1->shortName(),item2->shortName()) < 0;
+}
+
+// --- Cast functions
+
+DirDef *toDirDef(Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(DirDefImpl))
+  {
+    return static_cast<DirDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+const DirDef *toDirDef(const Definition *d)
+{
+  if (d==0) return 0;
+  if (d && typeid(*d)==typeid(DirDefImpl))
+  {
+    return static_cast<const DirDef*>(d);
+  }
+  else
+  {
+    return 0;
+  }
 }
 

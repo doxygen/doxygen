@@ -34,13 +34,11 @@ class FTextStream;
 class NamespaceDefMutable;
 
 /** An abstract interface of a namespace symbol. */
-class NamespaceDef : virtual public Definition
+class NamespaceDef : public Definition
 {
   public:
     virtual ~NamespaceDef() {}
     virtual DefType definitionType() const = 0;
-
-    static NamespaceDefMutable *make_mutable(const NamespaceDef *);
 
     // ---- getters
     virtual QCString getOutputFileBase() const = 0;
@@ -89,7 +87,7 @@ class NamespaceDef : virtual public Definition
     virtual bool isVisited() const = 0;
 };
 
-class NamespaceDefMutable : virtual public DefinitionMutable, virtual public NamespaceDef
+class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 {
   public:
 
@@ -118,9 +116,6 @@ class NamespaceDefMutable : virtual public DefinitionMutable, virtual public Nam
     virtual void setInline(bool isInline) = 0;
 };
 
-inline NamespaceDefMutable *NamespaceDef::make_mutable(const NamespaceDef *nd)
-{ return dynamic_cast<NamespaceDefMutable*>(const_cast<NamespaceDef*>(nd)); }
-
 /** Factory method to create new NamespaceDef instance */
 NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
                  const char *name,const char *ref=0,
@@ -129,6 +124,19 @@ NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int 
 
 /** Factory method to create an alias of an existing namespace. Used for inline namespaces. */
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope, const NamespaceDef *nd);
+
+
+// --- Cast functions
+
+NamespaceDef            *toNamespaceDef(Definition *d);
+NamespaceDef            *toNamespaceDef(DefinitionMutable *d);
+const NamespaceDef      *toNamespaceDef(const Definition *d);
+NamespaceDefMutable     *toNamespaceDefMutable(Definition *d);
+NamespaceDefMutable     *toNamespaceDefMutable(const Definition *d);
+
+//------------------------------------------------------------------------
+
+
 
 /** A list of NamespaceDef objects. */
 class NamespaceList : public QList<NamespaceDef>

@@ -249,7 +249,7 @@ static QCString node2URL(const FTVNode *n,bool overruleFile=FALSE,bool srcLink=F
   {
     if (overruleFile && n->def && n->def->definitionType()==Definition::TypeFile)
     {
-      const FileDef *fd = dynamic_cast<const FileDef*>(n->def);
+      const FileDef *fd = toFileDef(n->def);
       if (srcLink)
       {
         url = fd->getSourceFileBase();
@@ -419,7 +419,7 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        char icon=compoundIcon(dynamic_cast<const ClassDef*>(n->def));
+        char icon=compoundIcon(toClassDef(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else
@@ -444,9 +444,9 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
     {
       const FileDef *srcRef=0;
       if (n->def && n->def->definitionType()==Definition::TypeFile &&
-          (dynamic_cast<const FileDef*>(n->def))->generateSourceFile())
+          (toFileDef(n->def))->generateSourceFile())
       {
-        srcRef = dynamic_cast<const FileDef*>(n->def);
+        srcRef = toFileDef(n->def);
       }
       if (srcRef)
       {
@@ -475,7 +475,7 @@ void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,in
       }
       else if (n->def && n->def->definitionType()==Definition::TypeClass)
       {
-        char icon=compoundIcon(dynamic_cast<const ClassDef*>(n->def));
+        char icon=compoundIcon(toClassDef(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
       else if (n->def && n->def->definitionType()==Definition::TypeDir)
@@ -591,7 +591,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
     {
       if (n->def && n->def->definitionType()==Definition::TypeFile)
       {
-        const FileDef *fd = dynamic_cast<const FileDef*>(n->def);
+        const FileDef *fd = toFileDef(n->def);
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
         if (doc)
