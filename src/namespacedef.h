@@ -82,7 +82,7 @@ class NamespaceDef : public Definition
     virtual QCString title() const = 0;
     virtual QCString compoundTypeString() const = 0;
 
-    // --- visited administation
+    // --- visited administration
     virtual void setVisited(bool v) = 0;
     virtual bool isVisited() const = 0;
 };
