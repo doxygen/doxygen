@@ -266,7 +266,15 @@ void MainWindow::about()
   QTextStream t(&msg,QIODevice::WriteOnly);
   t << QString::fromLatin1("<qt><center>A tool to configure and run doxygen version ")+
        QString::fromLatin1(getDoxygenVersion())+
-       QString::fromLatin1(" on your source files.</center><p><br>"
+       QString::fromLatin1(" on your source files.</center>")+
+       QString::fromLatin1("<center>(Created with Qt version  ")+
+       QString::fromLatin1(QT_VERSION_STR);
+       if (qstrcmp(qVersion(),QT_VERSION_STR))
+       {
+         t << QString::fromLatin1(", running with ")+
+              QString::fromLatin1(qVersion());
+       }
+  t << QString::fromLatin1(")</center><p><br>"
        "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2019</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
@@ -774,7 +782,14 @@ int main(int argc,char **argv)
     else if (!qstrcmp(argv[1],"--version"))
     {
       QMessageBox msgBox;
-      msgBox.setText(QString::fromLatin1("Doxywizard version: %1").arg(QString::fromLatin1(getFullVersion())));
+      if (!qstrcmp(qVersion(),QT_VERSION_STR))
+      {
+        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: %2").arg(QString::fromLatin1(getFullVersion()),QString::fromLatin1(QT_VERSION_STR)));
+      }
+      else
+      {
+        msgBox.setText(QString::fromLatin1("Doxywizard version: %1, Qt version: created with %2, running with %3").arg(QString::fromLatin1(getFullVersion()),QString::fromLatin1(QT_VERSION_STR),QString::fromLatin1(qVersion())));
+      }
       msgBox.exec();
       exit(0);
     }
