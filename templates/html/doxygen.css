@@ -1426,6 +1426,12 @@ div.toc li.level4 {
         margin-left: 45px;
 }
 
+div.emoji {
+        /* font family used at the site: https://unicode.org/emoji/charts/full-emoji-list.html
+         * font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", Times, Symbola, Aegyptus, Code2000, Code2001, Code2002, Musica, serif, LastResort;
+         */
+}
+
 .PageDocRTL-title div.toc li.level1 {
   margin-left: 0 !important;
   margin-right: 0;

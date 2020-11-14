@@ -338,7 +338,7 @@ void HtmlDocVisitor::visit(DocEmoji *s)
   const char *res = EmojiEntityMapper::instance()->unicode(s->index());
   if (res)
   {
-    m_t << res;
+    m_t << "<div class=\"emoji\">"<<res<<"</div>";
   }
   else
   {
