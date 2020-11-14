@@ -44,14 +44,27 @@ set(DOC_FILES
         doxygen_manual.css
         doxygen_usage.doc
         doxywizard_expert.png
-        doxywizard.gif
         doxywizard_main.png
-        doxywizard_menu.png
+        doxywizard_menu_file.png
+        doxywizard_menu_settings.png
+        doxywizard_menu_help.png
         doxywizard_page1.png
         doxywizard_page2.png
         doxywizard_page3.png
         doxywizard_page4.png
+        doxywizard_run.png
         doxywizard_usage.doc
+        expert_bool.png
+        expert_enum.png
+        expert_int.png
+        expert_list_dir.png
+        expert_list_file.png
+        expert_list_filedir.png
+        expert_list_string.png
+        expert_string_dir.png
+        expert_string_file.png
+        expert_string_image.png
+        expert_string_string.png
         external.doc
         extsearch.doc
         extsearch_flow.dot
@@ -88,6 +101,14 @@ set(DOC_FILES
         doxygen_logo.svg
 )
 
+set(DOC_FILES_IMAGES
+        add.png
+        del.png
+        file.png
+        folder.png
+        refresh.png
+)
+
 if (build_doc_chm)
     set(DOC_FILES_CHM
         Doxyfile_chm
@@ -103,7 +124,8 @@ endif()
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
                     ${PROJECT_BINARY_DIR}/src
-                    ${PROJECT_BINARY_DIR}/doc)
+                    ${PROJECT_BINARY_DIR}/doc
+                    ${PROJECT_BINARY_DIR}/doc/images)
 
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
@@ -112,6 +134,15 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
+endforeach()
+
+foreach (f  ${DOC_FILES_IMAGES})
+add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/images/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/addon/doxywizard/images/${f} ${PROJECT_BINARY_DIR}/doc/images/
+    DEPENDS ${PROJECT_SOURCE_DIR}/addon/doxywizard/images/${f}
+    )
+set_source_files_properties(${PROJECT_BINARY_DIR}/doc/images/${f} PROPERTIES GENERATED 1)
+list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/images/${f}")
 endforeach()
 
 foreach (f  ${DOC_FILES_CHM})

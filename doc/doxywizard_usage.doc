@@ -16,134 +16,269 @@
  */
 /*! \page doxywizard_usage Doxywizard usage
 
-Doxywizard is a GUI front-end for configuring and running doxygen. 
+The doxywizard is a GUI front-end for configuring and running doxygen. 
 
-Note it is possible to start the doxywizard with as argument the configuration file to be used.
+It is possible to start the doxywizard with as argument the configuration file to be used or
+without a configuration file meaning to start with the default settings.
 
-When you start doxywizard it will display the main window 
+When you start the doxywizard it will display the main window 
 (the actual look depends on the OS used).
 
 \image html doxywizard_main.png "Main window"
 \image latex doxywizard_main.png "Main window" width=15cm
 
-The windows shows the steps to take to configure and run doxygen.
-The first step is to choose one of the ways to configure doxygen.
+The Gui consists of the following parts:
 <dl>
-<dt>Wizard<dd>Click this button to quickly configure the most important 
-    settings and leave the rest of the options to their defaults.
-<dt>Expert<dd>Click this button to gain access to the 
-    \ref config "full range of configuration options".
-<dt>Load<dd>Click this button to load an existing configuration file 
-    from disk.
+<dt>Specify the working directory from which doxygen will run<dd>In case the doxywizard is started
+with a configuration file or a doxygen configuration file is loaded by means of an open command
+(see: \ref dw_menu_file) the directory of this settings file is used as default for this setting.
+<!--
+<dt>Configure doxygen using the Wizard and/or Expert tab, then switch to the Run tab to generate the documentation<dd>&nbsp;
+-->
+<dt>Available dialogs<dd>
+Note that you can select multiple tabs in a row, for instance to first 
+configure doxygen using the \ref dw_wizard and then fine tune the settings via 
+the \ref dw_expert.
+<dl>
+<dt>\ref dw_wizard <dd>in this tab it is possible to quickly configure the most
+                       important settings and leave the rest of the options to
+                       their defaults.
+<dt>\ref dw_expert <dd>in this tab one gains access to the \ref config
+                       "full range of configuration options".
+<dt>\ref dw_run <dd>in this tab it is possible to run doxygen and view the used settings for doxygen.
 </dl>
-Note that you can select multiple buttons in a row, for instance to first 
-configure doxygen using the Wizard and then fine tune the settings via 
-the Expert.
+<dt>\ref dw_menu <dd> In the menu bar the following parts are available: 
+\ref dw_menu_file, \ref dw_menu_settings and \ref dw_menu_help.
+</dl>
 
-After doxygen is configured you need to save the configuration as a file
-to disk. This second step allows doxygen to use the configuration 
+After doxygen is configured you need to save (see: \ref dw_menu_file) the configuration as a file
+to disk. This step allows doxygen to use the configuration 
 and has the additional advantage that the configuration can be reused 
 to run doxygen with the same settings at a later point in time.
 
-Since some configuration options may use relative paths, the next step is
-to select a directory from which to run doxygen. This is typically the root
+Since some configuration options may use relative paths, be sure to
+select a directory from which to run doxygen. This is typically the root
 of the source tree and will most of the time already be filled in correctly.
 
 Once the configuration file is saved and the working directory is set, you
 can run doxygen based on the selected settings. Do this by pressing the
-"Start" button. Once doxygen runs you can cancel it by clicking the same
-button again. The output produced by doxygen is captured and shown in a log
-window. Once doxygen finishes, the log can be saved as a text file.
+"Run doxygen" button (in the \ref dw_run tab). Once doxygen runs you can cancel it by clicking the same
+button again. The output produced by doxygen is captured and shown in the "Output produced by doxygen"
+pane. Once doxygen finishes, the log can be saved as a text file.
 
-<h3>The Wizard Dialog</h3>
+\section dw_wizard Wizard dialog
 
-If you select the Wizard button in step 1, then a dialog with
-a number of tabs will appear.
+The Wizard dialog has a number of sub-panes:
+<dl>
+<dt>Left sub-pane<dd>The main topics for easy setting up doxygen.
+By clicking on a topic the corresponding settings will appear in the Right
+sub-pane.
+<dt>Right sub-pane<dd>The wizard settings sub-pane, in this pane you will find the
+settings that are available for the selected topic.
+</dl>
 
-\image html doxywizard_page1.png "Wizard dialog: Project settings"
-\image latex doxywizard_page1.png "Wizard dialog: Project settings" width=13cm
+The wizard only gives the possibility to quickly setup doxygen, for full control
+one should use the \ref dw_expert.
 
-The fields in the project tab speak for themselves. Once doxygen has finished
+\forceNewPage
+\subsection dw_wizard_project Project settings
+
+The fields in the Project sub-pane speak for themselves. Once doxygen has finished
 the Destination directory is where to look for the results. Doxygen will
 put each output format in a separate sub-directory.
 
+\image html doxywizard_page1.png "Wizard dialog: Project settings"
+\image latex doxywizard_page1.png "Wizard dialog: Project settings" width=15cm
+
+\forceNewPage
+\subsection dw_wizard_mode Mode of operating
+
+The Mode sub-pane allows you to select how doxygen will look at your sources.
+The default is to only look for things that have been documented. Furthermore the
+terminology of the output can be selected by means of the terminology of the
+main computer language used (this doesn't affect the way doxygen parses your source code).
+
 \image html doxywizard_page2.png "Wizard dialog: Mode of operating"
-\image latex doxywizard_page2.png "Wizard dialog: Mode of operating" width=13cm
+\image latex doxywizard_page2.png "Wizard dialog: Mode of operating" width=15cm
 
-The mode tab allows you to select how doxygen will look at your sources.
-The default is to only look for things that have been documented. 
+\forceNewPage
+\subsection dw_wizard_output Output to produce
 
-You can also select how doxygen should present the results. 
-The latter does not affect the way doxygen parses your source code.
+The Output sub-pane allows you to select what kinds of output doxygen will produce.
+For HTML and \LaTeX there are additional options available.
 
 \image html doxywizard_page3.png "Wizard dialog: Output to produce"
-\image latex doxywizard_page3.png "Wizard dialog: Output to produce" width=13cm
+\image latex doxywizard_page3.png "Wizard dialog: Output to produce" width=15cm
 
-You can select one or more of the output formats that doxygen should
-produce. For HTML and \LaTeX there are additional options. 
+\forceNewPage
+\subsection dw_wizard_diagrams Diagrams to generate
+
+Doxygen can produce a number of diagrams. Using the Diagrams sub-pane you
+can select which ones to generate. For most diagrams the 
+`dot` tool of the <a href="http://www.graphviz.org">GraphViz</a> package
+is needed.
 
 \image html doxywizard_page4.png "Wizard dialog: Diagrams to generate"
-\image latex doxywizard_page4.png "Wizard dialog: Diagrams to generate" width=13cm
+\image latex doxywizard_page4.png "Wizard dialog: Diagrams to generate" width=15cm
 
-Doxygen can produce a number of diagrams. Using the diagrams tab you
-can select which ones to generate. For most diagrams the 
-dot tool of the <a href="http://www.graphviz.org">GraphViz</a> package
-is needed (if you use the binary packages for MacOSX this
-tool is already included).
+\section dw_expert Expert dialog
 
-<h3>Expert dialog</h3>
-
-The Expert dialog has a number of tab fields, one
-for each section in the configuration file. Each tab-field
-contains a number of lines, one for each configuration option in
-that section. 
-
-The kind of input widget depends on the type of the configuration option. 
-<ul>
-<li>For each boolean option (those options that are answered with YES or 
-    NO in the configuration file) there is a check-box. 
-<li>For items taking one of a fixed set of values (like 
-    \ref cfg_output_language "OUTPUT_LANGUAGE") a combo box is used.
-<li>For items taking an integer value from a range, a spinbox is used.
-<li>For free form string-type options there is a one line edit field
-<li>For options taking a lists of strings, a one line edit field is 
-    available, with a `+' button to add this string to the list and 
-    a `-' button to remove the selected string from the list. There 
-    is also a `*' button that, when pressed, 
-    replaces the selected item in the list with the string entered in the 
-    edit field. 
-<li>For file and folder entries, there are special buttons 
-    that start a file selection dialog.
-</ul>
+The Expert dialog has a number of sub-panes:
+<dl>
+<dt>Top left sub-pane<dd>The topics sub-pane (i.e. sections in the
+configuration file) that are available. By clicking on a topic the
+corresponding settings will appear in the Right sub-pane.
+<dt>Bottom left sub-pane<dd>The help sub-pane, this will be updated when one
+hovers over the name of a setting in the Right sub-pane.
+<dt>Right sub-pane<dd>The settings sub-pane, in this pane you will find the
+settings that are available for the selected topic. In case a setting appears
+with its name in red it means that the setting doesn't contain the default
+setting. In case a setting is grayed out it means that the setting is depending
+on another setting as indicated in the Bottom left sub-pane.
+</dl>
 
 \image html doxywizard_expert.png "Some options from the Expert dialog"
 \image latex doxywizard_expert.png "Some options from the Expert dialog" width=15cm
 
-The get additional information about the meaning of an option, click
-on the "Help" button at the bottom right of the dialog and then on the
-item. A tooltip with additional information will appear.
+The kind of input field depends on the type of the configuration option. 
+<ul>
+<li>For each boolean option (those options that are answered with `YES` or 
+    `NO` in the configuration file) there is a check-box. A typical field
+    would look like:<br>
+    \image{inline} html expert_bool.png
+    \image{inline} latex expert_bool.png width=4.6cm
+<li>For items taking one of a fixed set of values (like 
+    \ref cfg_output_language "OUTPUT_LANGUAGE") a combo box is used.
+    A typical field would look like:<br>
+    \image{inline} html expert_enum.png
+    \image{inline} latex expert_enum.png width=7.3cm
+<li>For items taking an integer value from a range, a spinbox is used.
+    A typical field would look like:<br>
+    \image{inline} html expert_int.png
+    \image{inline} latex expert_int.png width=10.1cm
+<li>For free form string-type options there is a one line edit field.
+    A typical field would look like:<br>
+    \image{inline} html expert_string_string.png
+    \image{inline} latex expert_string_string.png width=12.3cm
+    <br>Additionally when the string field should contain a file or a folder name, there are the special buttons 
+    \image{inline} html images/file.png height=14px \ilinebr \image{inline} latex images/file.png height=\DoxyInlineHeightChar
+    and
+    \image{inline} html images/folder.png height=14px \ilinebr \image{inline} latex images/folder.png height=\DoxyInlineHeightChar
+    that start a file / folder selection dialog.
+    A typical field would look like:<br>
+    \image{inline} html expert_string_file.png
+    \image{inline} latex expert_string_file.png width=11.0cm
+    <br>and<br>
+    \image{inline} html expert_string_dir.png
+    \image{inline} latex expert_string_dir.png width=11.0cm
+    <br>In case of the file possibility we have a special case when the file
+    should be an image. In that case the same field as for a file is shown, but
+    doxygen also tries to display the selected image.
+    A typical field would look like:<br>
+    \image{inline} html expert_string_image.png
+    \image{inline} latex expert_string_image.png width=11.8cm
+<li>For options taking a list of strings, a one line edit field is 
+    available, with a
+    \image{inline} html images/add.png height=14px \ilinebr \image{inline} latex images/add.png height=\DoxyInlineHeightChar
+    button to add this string to the list and a
+    \image{inline} html images/del.png height=14px \ilinebr \image{inline} latex images/del.png height=\DoxyInlineHeightChar
+    button to remove the selected string from the list. There 
+    is also a 
+    \image{inline} html images/refresh.png height=14px \ilinebr \image{inline} latex images/refresh.png height=\DoxyInlineHeightChar
+    button that, when pressed, replaces the selected item in the list with the string entered in the edit field. 
+    A typical field would look like:<br>
+    \image{inline} html expert_list_string.png
+    \image{inline} latex expert_list_string.png width=11.2cm
+    <br>additionally when the list contains file and / or folder entries, there are special buttons 
+    \image{inline} html images/file.png height=14px \ilinebr \image{inline} latex images/file.png height=\DoxyInlineHeightChar
+    and
+    \image{inline} html images/folder.png height=14px \ilinebr \image{inline} latex images/folder.png height=\DoxyInlineHeightChar
+    that start a file / folder selection dialog.
+    A typical field would look like:<br>
+    \image{inline} html expert_list_file.png
+    \image{inline} latex expert_list_file.png width=11.2cm
+    <br>and<br>
+    \image{inline} html expert_list_dir.png
+    \image{inline} latex expert_list_dir.png width=11.2cm
+    <br>and in case of files and folders:<br>
+    \image{inline} html expert_list_filedir.png
+    \image{inline} latex expert_list_filedir.png width=11.9cm
+</ul>
 
-<h3>Menu options</h3>
+\section dw_run Run dialog
 
-The GUI front-end has a menu with a couple of useful items
+The run dialog gives the possibility to run doxygen with the given settings, see the HTML results, see the settings used and save the ouput as displayed in the output pane.
 
-\image html doxywizard_menu.png "File menu"
-\image latex doxywizard_menu.png "File menu" width=15cm
+\image html doxywizard_run.png "Run dialog"
+\image latex doxywizard_run.png "Run dialog" width=15cm
 
 <dl>
-<dt>Open...<dd>This is the same as the "Load" button in the main window
-    and allows to open a configuration file from disk.
-<dt>Save as..<dd>This is the same as the "Save" button in the main window
-    and can be used to save the current configuration settings to disk.
-<dt>Recent configurations<dd>Allow to quickly load a recently saved
-    configuration.
-<dt>Set as default...<dd>Stores the current configuration settings as the
-    default to use next time the GUI is started. You will be asked to
-    confirm the action.
-<dt>Reset...<dd>Restores the factory defaults as the default settings to use.
-    You will be asked to confirm the action.
+<dt>Specify additional command line options for running doxygen<dd>Field to
+specify extra options to run doxygen with e.g. for debugging purposes.
+<dt>Run doxygen<dd> Run doxygen, the results  of the run process will become
+available in the "Output produced by doxygen" pane. To see the HTML results one
+can use the "Show HTML output" button. Before being able to run doxygen the settings
+have to be saved.
+<dt>Show HTML output<dd>This will start the system defined default HTML browser to show HTML
+output.
+<dt>Condensed<dd>When set the "Show configuration" will only show the configuration
+settings that differ from the default settings (analogous to `doxygen -x`).
+<dt>Show configuration<dd>Show the configuration settings as will be used when running
+doxygen. The results will be shown in the "Output produced by doxygen" pane.
+<dt>Save Log ...<dd>Will save the information from the "Output produced by doxygen"
+pane in a file as specified by the user.
 </dl>
 
+\section dw_menu Menu options
+
+\subsection dw_menu_file File menu
+
+The GUI front-end has a menu with a couple of useful items for loading and saving settings.
+
+\image html doxywizard_menu_file.png "File menu"
+\image latex doxywizard_menu_file.png "File menu" width=12.0cm
+
+<dl>
+<dt>Open...<dd>This allows to load a configuration file from disk, based on a file
+    selection window.  In case unsaved settings exist you will be asked to
+    confirm the action.
+<dt>Open recent<dd>Allow to quickly load a recently saved configuration.
+    In case unsaved settings exist you will be asked to confirm the action This menu
+    item is only accessible when there are recent files in the list.
+<dt>Save<dd>Allow to save a configuration file to disk. In case the configuration
+    file has already been defined this file name is used otherwise a selection window
+    will appear. In case the file already exists a confirmation is required.
+<dt>Save as..<dd>This allows to save the current configuration settings to disk with
+    a name different from the defined name. Note: This name will be the new defined name.
+<dt>Quit<dd>Leave the doxywizard, in case unsaved settings exist you will be asked to
+    confirm the action.
+</dl>
+
+\subsection dw_menu_settings Settings menu
+
+\image html doxywizard_menu_settings.png "Settings menu"
+\image latex doxywizard_menu_settings.png "Settings menu" width=6.7cm
+
+<dl>
+<dt>Reset to factory defaults<dd>Restores the factory defaults as the default settings to use.
+    You will be asked to confirm the action. This menu item is only accessible when the current
+    settings differ from the default settings.
+<dt>Use current settings at startup<dd>Stores the current configuration settings as the
+    default to use next time the GUI is started. You will be asked to
+    confirm the action.
+<dt>Clear recent list<dd>Clears the "Open recent" list in the \ref dw_menu_file. This menu
+    item is only accessible when there are recent files in the "Open recent" list.
+</dl>
+
+\subsection dw_menu_help Help menu
+
+\image html doxywizard_menu_help.png "Help menu"
+\image latex doxywizard_menu_help.png "Help menu" width=7.0cm
+
+<dl>
+<dt>Online Manual<dd>Opens the doxygen manual from the doxygen home page in the system defined default HTML browser.
+<dt>About<dd>Shows an about box.
+</dl>
 
 \htmlonly
 Go to the <a href="config.html">next</a> section or return to the
