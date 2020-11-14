@@ -2297,7 +2297,9 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='string' id='QHG_LOCATION' format='file' defval='' depends='GENERATE_QHP'>
       <docs>
 <![CDATA[
- The \c QHG_LOCATION tag can be used to specify the location of Qt's qhelpgenerator.
+ The \c QHG_LOCATION tag can
+ be used to specify the location (absolute path including file name) of
+ Qt's qhelpgenerator.
  If non-empty doxygen will try to run qhelpgenerator on the generated `.qhp` file.
 ]]>
       </docs>
