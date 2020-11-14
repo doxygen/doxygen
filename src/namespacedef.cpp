@@ -157,8 +157,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
 {
   public:
     NamespaceDefAliasImpl(const Definition *newScope,const NamespaceDef *nd)
-      : DefinitionAliasMixin(newScope,nd) {}
-    virtual ~NamespaceDefAliasImpl() {}
+      : DefinitionAliasMixin(newScope,nd) { init(); }
+    virtual ~NamespaceDefAliasImpl() { deinit(); }
     virtual DefType definitionType() const { return TypeNamespace; }
 
     const NamespaceDef *getNSAlias() const { return toNamespaceDef(getAlias()); }

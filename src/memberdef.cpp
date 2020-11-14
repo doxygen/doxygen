@@ -376,8 +376,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 {
   public:
     MemberDefAliasImpl(const Definition *newScope,const MemberDef *md)
-    : DefinitionAliasMixin(newScope,md), m_memberGroup(0) {}
-    virtual ~MemberDefAliasImpl() {}
+    : DefinitionAliasMixin(newScope,md), m_memberGroup(0) { init(); }
+    virtual ~MemberDefAliasImpl() { deinit(); }
     virtual DefType definitionType() const { return TypeMember; }
 
     const MemberDef *getMdAlias() const           { return toMemberDef(getAlias()); }

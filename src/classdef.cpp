@@ -287,8 +287,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
 {
   public:
     ClassDefAliasImpl(const Definition *newScope,const ClassDef *cd)
-      : DefinitionAliasMixin(newScope,cd) {}
-    virtual ~ClassDefAliasImpl() {}
+      : DefinitionAliasMixin(newScope,cd) { init(); }
+    virtual ~ClassDefAliasImpl() { deinit(); }
     virtual DefType definitionType() const { return TypeClass; }
 
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }

@@ -2179,15 +2179,22 @@ void DefinitionImpl::writeSummaryLinks(OutputList &) const
 //---------------------------------------------------------------------------------
 
 DefinitionAliasImpl::DefinitionAliasImpl(Definition *def,const Definition *alias)
-      : m_def(def)
+      : m_def(def), m_alias(alias)
 {
-  //printf("%s::addToMap(%s)\n",qPrint(name()),qPrint(alias->name()));
-  addToMap(alias->name(),m_def);
 }
 
 DefinitionAliasImpl::~DefinitionAliasImpl()
 {
-  //printf("~DefinitionAliasImpl()\n");
+}
+
+void DefinitionAliasImpl::init()
+{
+  //printf("%s::addToMap(%s)\n",qPrint(name()),qPrint(alias->name()));
+  addToMap(m_alias->name(),m_def);
+}
+
+void DefinitionAliasImpl::deinit()
+{
   removeFromMap(m_def);
 }
 

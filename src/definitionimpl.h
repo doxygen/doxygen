@@ -294,8 +294,11 @@ class DefinitionAliasImpl
   public:
     DefinitionAliasImpl(Definition *def,const Definition *alias);
     virtual ~DefinitionAliasImpl();
+    void init();
+    void deinit();
   private:
     Definition *m_def;
+    const Definition *m_alias;
 };
 
 template<class Base>
@@ -304,6 +307,10 @@ class DefinitionAliasMixin : public Base
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
       : m_impl(this,alias), m_scope(scope), m_alias(alias), m_cookie(0) {}
+
+    void init() { m_impl.init(); }
+    void deinit() { m_impl.deinit(); }
+
     virtual ~DefinitionAliasMixin() = default;
 
     virtual bool isAlias() const { return TRUE; }
