@@ -20,10 +20,6 @@
 #include "config.h"
 #include "util.h"
 
-#define HIDE_SCOPE_NAMES      Config_getBool(HIDE_SCOPE_NAMES)
-#define DOT_GRAPH_MAX_NODES   Config_getInt(DOT_GRAPH_MAX_NODES)
-#define MAX_DOT_GRAPH_DEPTH   Config_getInt(MAX_DOT_GRAPH_DEPTH)
-
 static QCString getUniqueId(const MemberDef *md)
 {
   QCString result = md->getReference()+"$"+
@@ -50,7 +46,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
       else
       {
         QCString name;
-        if (HIDE_SCOPE_NAMES)
+        if (Config_getBool(HIDE_SCOPE_NAMES))
         {
           name  = rmd->getOuterScope()==m_scope ?
             rmd->name() : rmd->qualifiedName();
@@ -83,7 +79,7 @@ void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
   while (queue.count()>0 && maxNodes>0)
   {
     DotNode *n = queue.take(0);
-    if (!n->isVisible() && n->distance()<=MAX_DOT_GRAPH_DEPTH) // not yet processed
+    if (!n->isVisible() && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
@@ -133,7 +129,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_scope    = md->getOuterScope();
   QCString uniqueId = getUniqueId(md);
   QCString name;
-  if (HIDE_SCOPE_NAMES)
+  if (Config_getBool(HIDE_SCOPE_NAMES))
   {
     name = md->name();
   }
@@ -153,7 +149,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_usedNodes->insert(uniqueId,m_startNode);
   buildGraph(m_startNode,md,1);
 
-  int maxNodes = DOT_GRAPH_MAX_NODES;
+  int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
   QList<DotNode> openNodeQueue;
   openNodeQueue.append(m_startNode);
   determineVisibleNodes(openNodeQueue,maxNodes);
@@ -210,7 +206,7 @@ bool DotCallGraph::isTrivial() const
 
 bool DotCallGraph::isTooBig() const
 {
-  return numNodes()>=DOT_GRAPH_MAX_NODES;
+  return numNodes()>=Config_getInt(DOT_GRAPH_MAX_NODES);
 }
 
 int DotCallGraph::numNodes() const

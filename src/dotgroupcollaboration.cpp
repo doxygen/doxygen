@@ -23,8 +23,6 @@
 #include "util.h"
 #include "config.h"
 
-#define DOT_TRANSPARENT       Config_getBool(DOT_TRANSPARENT)
-
 DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
   QCString tmp_url = gd->getReference()+"$"+gd->getOutputFileBase();
@@ -379,7 +377,7 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,const QCString &titl
   }
   t << endl;
   t << "{" << endl;
-  if (DOT_TRANSPARENT)
+  if (Config_getBool(DOT_TRANSPARENT))
   {
     t << "  bgcolor=\"transparent\";" << endl;
   }
