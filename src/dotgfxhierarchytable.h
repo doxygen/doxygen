@@ -20,7 +20,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <set>
 
 #include "classdef.h"
 #include "ftextstream.h"
@@ -44,7 +43,6 @@ class DotGfxHierarchyTable : public DotGraph
     virtual void computeTheGraph();
 
   private:
-    using ClassDefSet = std::set<const ClassDef*>;
     void addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visited);
     void addClassList(const ClassSDict *cl,ClassDefSet &visited);
 

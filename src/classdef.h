@@ -19,6 +19,7 @@
 #define CLASSDEF_H
 
 #include <vector>
+#include <set>
 
 #include <qlist.h>
 #include <qdict.h>
@@ -473,6 +474,10 @@ ClassDefMutable *createClassDef(
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
+
+// --- Set of classes
+
+using ClassDefSet = std::set<const ClassDef*>;
 
 // --- Cast functions
 

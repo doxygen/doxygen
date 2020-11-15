@@ -503,8 +503,6 @@ class ClassHierarchyContext : public RefCountedContext, public TemplateStructInt
 
 //----------------------------------------------------
 
-using ClassDefSet = std::set<const ClassDef*>;
-
 class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
