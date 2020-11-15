@@ -159,7 +159,7 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
         //   bn->parents()  ? bn->parents()->count()  : 0
         //  );
         //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
-        m_usedNodes.insert({bClass->name().str(),std::move(bn)}); // add node to the used list
+        m_usedNodes.insert(std::make_pair(bClass->name().str(),std::move(bn))); // add node to the used list
       }
       if (visitedClasses.find(bClass)==visitedClasses.end() && !bClass->subClasses().empty())
       {
@@ -209,7 +209,7 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl,ClassDefSet &visite
         tmp_url.data());
       DotNode *root = n.get();
 
-      m_usedNodes.insert({cd->name().str(),std::move(n)});
+      m_usedNodes.insert(std::make_pair(cd->name().str(),std::move(n)));
       m_rootNodes.push_back(root);
       if (visitedClasses.find(cd)==visitedClasses.end() && !cd->subClasses().empty())
       {
