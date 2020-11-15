@@ -6055,10 +6055,9 @@ class ClassHierarchyContext::Private
     Private()
     {
       m_classTree.reset(NestingContext::alloc(0,0));
-      initClassHierarchy(Doxygen::classSDict);
-      initClassHierarchy(Doxygen::hiddenClasses);
-      m_classTree->addClassHierarchy(*Doxygen::classSDict,TRUE);
-      m_classTree->addClassHierarchy(*Doxygen::hiddenClasses,TRUE);
+      ClassDefSet visitedClasses;
+      m_classTree->addClassHierarchy(*Doxygen::classSDict,visitedClasses);
+      m_classTree->addClassHierarchy(*Doxygen::hiddenClasses,visitedClasses);
       //%% ClassInheritance tree
       static bool init=FALSE;
       if (!init)
@@ -6195,7 +6194,8 @@ class NestingNodeContext::Private
 {
   public:
     Private(const NestingNodeContext *parent,const NestingNodeContext *thisNode,
-        const Definition *d,int index,int level,bool addCls,bool inherit, bool hideSuper)
+        const Definition *d,int index,int level,bool addCls,bool inherit, bool hideSuper,
+        ClassDefSet &visitedClasses)
       : m_parent(parent), m_def(d), m_level(level), m_index(index)
     {
       m_children.reset(NestingContext::alloc(thisNode,level+1));
@@ -6235,11 +6235,11 @@ class NestingNodeContext::Private
         init=TRUE;
       }
 
-      addNamespaces(addCls);
-      addClasses(inherit,hideSuper);
-      addDirFiles();
-      addPages();
-      addModules();
+      addNamespaces(addCls,visitedClasses);
+      addClasses(inherit,hideSuper,visitedClasses);
+      addDirFiles(visitedClasses);
+      addPages(visitedClasses);
+      addModules(visitedClasses);
     }
     TemplateVariant get(const char *n) const
     {
@@ -6402,23 +6402,23 @@ class NestingNodeContext::Private
 
     //------------------------------------------------------------------
 
-    void addClasses(bool inherit, bool hideSuper)
+    void addClasses(bool inherit, bool hideSuper,ClassDefSet &visitedClasses)
     {
       const ClassDef *cd = toClassDef(m_def);
       if (cd && inherit)
       {
-        bool hasChildren = !cd->isVisited() && !hideSuper && classHasVisibleChildren(cd);
+        bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
+                           !hideSuper && classHasVisibleChildren(cd);
         if (hasChildren)
         {
-          bool wasVisited=cd->isVisited();
-          cd->setVisited(TRUE);
+          visitedClasses.insert(cd);
           if (cd->getLanguage()==SrcLangExt_VHDL)
           {
-            m_children->addDerivedClasses(cd->baseClasses(),wasVisited);
+            m_children->addDerivedClasses(cd->baseClasses(),false,visitedClasses);
           }
           else
           {
-            m_children->addDerivedClasses(cd->subClasses(),wasVisited);
+            m_children->addDerivedClasses(cd->subClasses(),false,visitedClasses);
           }
         }
       }
@@ -6426,48 +6426,48 @@ class NestingNodeContext::Private
       {
         if (cd && cd->getClassSDict())
         {
-          m_children->addClasses(*cd->getClassSDict(),FALSE);
+          m_children->addClasses(*cd->getClassSDict(),FALSE,visitedClasses);
         }
       }
     }
-    void addNamespaces(bool addClasses)
+    void addNamespaces(bool addClasses,ClassDefSet &visitedClasses)
     {
       const NamespaceDef *nd = toNamespaceDef(m_def);
       if (nd && nd->getNamespaceSDict())
       {
-        m_children->addNamespaces(*nd->getNamespaceSDict(),FALSE,addClasses);
+        m_children->addNamespaces(*nd->getNamespaceSDict(),FALSE,addClasses,visitedClasses);
       }
       if (addClasses && nd && nd->getClassSDict())
       {
-        m_children->addClasses(*nd->getClassSDict(),FALSE);
+        m_children->addClasses(*nd->getClassSDict(),FALSE,visitedClasses);
       }
     }
-    void addDirFiles()
+    void addDirFiles(ClassDefSet &visitedClasses)
     {
       const DirDef *dd = toDirDef(m_def);
       if (dd)
       {
-        m_children->addDirs(dd->subDirs());
+        m_children->addDirs(dd->subDirs(),visitedClasses);
         if (dd && dd->getFiles())
         {
-          m_children->addFiles(*dd->getFiles());
+          m_children->addFiles(*dd->getFiles(),visitedClasses);
         }
       }
     }
-    void addPages()
+    void addPages(ClassDefSet &visitedClasses)
     {
       const PageDef *pd = toPageDef(m_def);
       if (pd && pd->getSubPages())
       {
-        m_children->addPages(*pd->getSubPages(),FALSE);
+        m_children->addPages(*pd->getSubPages(),FALSE,visitedClasses);
       }
     }
-    void addModules()
+    void addModules(ClassDefSet &visitedClasses)
     {
       const GroupDef *gd = toGroupDef(m_def);
       if (gd && gd->getSubGroups())
       {
-        m_children->addModules(*gd->getSubGroups());
+        m_children->addModules(*gd->getSubGroups(),visitedClasses);
       }
     }
   private:
@@ -6494,10 +6494,11 @@ class NestingNodeContext::Private
 PropertyMapper<NestingNodeContext::Private> NestingNodeContext::Private::s_inst;
 
 NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
-                                       const Definition *d,int index,int level,bool addClass,bool inherit,bool hideSuper)
+                                       const Definition *d,int index,int level,bool addClass,bool inherit,bool hideSuper,
+                                       ClassDefSet &visitedClasses)
    : RefCountedContext("NestingNodeContext")
 {
-  p = new Private(parent,this,d,index,level,addClass,inherit,hideSuper);
+  p = new Private(parent,this,d,index,level,addClass,inherit,hideSuper,visitedClasses);
 }
 
 NestingNodeContext::~NestingNodeContext()
@@ -6524,7 +6525,7 @@ class NestingContext::Private : public GenericNodeListContext
     Private(const NestingNodeContext *parent,int level)
       : m_parent(parent), m_level(level), m_index(0) {}
 
-    void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses)
+    void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
     {
       NamespaceSDict::Iterator nli(nsDict);
       const NamespaceDef *nd;
@@ -6537,14 +6538,14 @@ class NestingContext::Private : public GenericNodeListContext
           bool isLinkable  = nd->isLinkableInProject();
           if (isLinkable || hasChildren)
           {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE);
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE,visitedClasses);
             append(nnc);
             m_index++;
           }
         }
       }
     }
-    void addClasses(const ClassSDict &clDict,bool rootOnly)
+    void addClasses(const ClassSDict &clDict,bool rootOnly,ClassDefSet &visitedClasses)
     {
       ClassSDict::Iterator cli(clDict);
       const ClassDef *cd;
@@ -6566,14 +6567,14 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (classVisibleInIndex(cd) && cd->templateMaster()==0)
           {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,FALSE,FALSE);
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,FALSE,FALSE,visitedClasses);
             append(nnc);
             m_index++;
           }
         }
       }
     }
-    void addDirs(const DirSDict &dirDict)
+    void addDirs(const DirSDict &dirDict,ClassDefSet &visitedClasses)
     {
       SDict<DirDef>::Iterator dli(dirDict);
       const DirDef *dd;
@@ -6581,20 +6582,20 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (dd->getOuterScope()==Doxygen::globalScope)
         {
-          append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
+          append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
     }
-    void addDirs(const DirList &dirList)
+    void addDirs(const DirList &dirList,ClassDefSet &visitedClasses)
     {
       for(const auto dd : dirList)
       {
-        append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE));
+        append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
       }
     }
-    void addFiles(const FileNameLinkedMap &fnList)
+    void addFiles(const FileNameLinkedMap &fnList,ClassDefSet &visitedClasses)
     {
       for (const FileNameLinkedMap::Ptr &fn : fnList)
       {
@@ -6602,23 +6603,23 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE));
+            append(NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
             m_index++;
           }
         }
       }
     }
-    void addFiles(const FileList &fList)
+    void addFiles(const FileList &fList,ClassDefSet &visitedClasses)
     {
       QListIterator<FileDef> li(fList);
       const FileDef *fd;
       for (li.toFirst();(fd=li.current());++li)
       {
-        append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE));
+        append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
       }
     }
-    void addPages(const PageSDict &pages,bool rootOnly)
+    void addPages(const PageSDict &pages,bool rootOnly,ClassDefSet &visitedClasses)
     {
       SDict<PageDef>::Iterator pli(pages);
       const PageDef *pd;
@@ -6628,12 +6629,12 @@ class NestingContext::Private : public GenericNodeListContext
             pd->getOuterScope()==0 ||
             pd->getOuterScope()->definitionType()!=Definition::TypePage)
         {
-          append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE,FALSE,FALSE));
+          append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
     }
-    void addModules(const GroupSDict &groups)
+    void addModules(const GroupSDict &groups,ClassDefSet &visitedClasses)
     {
       GroupSDict::Iterator gli(groups);
       const GroupDef *gd;
@@ -6644,12 +6645,12 @@ class NestingContext::Private : public GenericNodeListContext
              (!gd->isReference() || externalGroups)
            )
         {
-          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE));
+          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
     }
-    void addModules(const GroupList &list)
+    void addModules(const GroupList &list,ClassDefSet &visitedClasses)
     {
       GroupListIterator gli(list);
       const GroupDef *gd;
@@ -6657,12 +6658,12 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (gd->isVisible())
         {
-          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE));
+          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
     }
-    void addDerivedClasses(const BaseClassList &bcl,bool hideSuper)
+    void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses)
     {
       for (const auto &bcd : bcl)
       {
@@ -6684,13 +6685,13 @@ class NestingContext::Private : public GenericNodeListContext
 
         if (cd->isVisibleInHierarchy() && b)
         {
-          NestingNodeContext *tnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,hideSuper);
+          NestingNodeContext *tnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,hideSuper,visitedClasses);
           append(tnc);
           m_index++;
         }
       }
     }
-    void addClassHierarchy(const ClassSDict &classSDict,bool)
+    void addClassHierarchy(const ClassSDict &classSDict,ClassDefSet &visitedClasses)
     {
       ClassSDict::Iterator cli(classSDict);
       const ClassDef *cd;
@@ -6714,7 +6715,7 @@ class NestingContext::Private : public GenericNodeListContext
           if (cd->isVisibleInHierarchy()) // should it be visible
           {
             // new root level class
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,cd->isVisited());
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,TRUE,TRUE,FALSE,visitedClasses);
             append(nnc);
             m_index++;
           }
@@ -6754,59 +6755,59 @@ TemplateListIntf::ConstIterator *NestingContext::createIterator() const
   return p->createIterator();
 }
 
-void NestingContext::addClasses(const ClassSDict &clDict,bool rootOnly)
+void NestingContext::addClasses(const ClassSDict &clDict,bool rootOnly,ClassDefSet &visitedClasses)
 {
-  p->addClasses(clDict,rootOnly);
+  p->addClasses(clDict,rootOnly,visitedClasses);
 }
 
-void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses)
+void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
 {
-  p->addNamespaces(nsDict,rootOnly,addClasses);
+  p->addNamespaces(nsDict,rootOnly,addClasses,visitedClasses);
 }
 
-void NestingContext::addDirs(const DirSDict &dirs)
+void NestingContext::addDirs(const DirSDict &dirs,ClassDefSet &visitedClasses)
 {
-  p->addDirs(dirs);
+  p->addDirs(dirs,visitedClasses);
 }
 
-void NestingContext::addDirs(const DirList &dirs)
+void NestingContext::addDirs(const DirList &dirs,ClassDefSet &visitedClasses)
 {
-  p->addDirs(dirs);
+  p->addDirs(dirs,visitedClasses);
 }
 
-void NestingContext::addFiles(const FileNameLinkedMap &files)
+void NestingContext::addFiles(const FileNameLinkedMap &files,ClassDefSet &visitedClasses)
 {
-  p->addFiles(files);
+  p->addFiles(files,visitedClasses);
 }
 
-void NestingContext::addFiles(const FileList &files)
+void NestingContext::addFiles(const FileList &files,ClassDefSet &visitedClasses)
 {
-  p->addFiles(files);
+  p->addFiles(files,visitedClasses);
 }
 
-void NestingContext::addPages(const PageSDict &pages,bool rootOnly)
+void NestingContext::addPages(const PageSDict &pages,bool rootOnly,ClassDefSet &visitedClasses)
 {
-  p->addPages(pages,rootOnly);
+  p->addPages(pages,rootOnly,visitedClasses);
 }
 
-void NestingContext::addModules(const GroupSDict &modules)
+void NestingContext::addModules(const GroupSDict &modules,ClassDefSet &visitedClasses)
 {
-  p->addModules(modules);
+  p->addModules(modules,visitedClasses);
 }
 
-void NestingContext::addModules(const GroupList &modules)
+void NestingContext::addModules(const GroupList &modules,ClassDefSet &visitedClasses)
 {
-  p->addModules(modules);
+  p->addModules(modules,visitedClasses);
 }
 
-void NestingContext::addClassHierarchy(const ClassSDict &classSDict,bool rootOnly)
+void NestingContext::addClassHierarchy(const ClassSDict &classSDict,ClassDefSet &visitedClasses)
 {
-  p->addClassHierarchy(classSDict,rootOnly);
+  p->addClassHierarchy(classSDict,visitedClasses);
 }
 
-void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper)
+void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses)
 {
-  p->addDerivedClasses(bcl,hideSuper);
+  p->addDerivedClasses(bcl,hideSuper,visitedClasses);
 }
 
 //------------------------------------------------------------------------
@@ -6819,13 +6820,14 @@ class ClassTreeContext::Private
     Private()
     {
       m_classTree.reset(NestingContext::alloc(0,0));
+      ClassDefSet visitedClasses;
       if (Doxygen::namespaceSDict)
       {
-        m_classTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,TRUE);
+        m_classTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,TRUE,visitedClasses);
       }
       if (Doxygen::classSDict)
       {
-        m_classTree->addClasses(*Doxygen::classSDict,TRUE);
+        m_classTree->addClasses(*Doxygen::classSDict,TRUE,visitedClasses);
       }
       //%% Nesting tree
       static bool init=FALSE;
@@ -6991,9 +6993,10 @@ class NamespaceTreeContext::Private
     Private()
     {
       m_namespaceTree.reset(NestingContext::alloc(0,0));
+      ClassDefSet visitedClasses;
       if (Doxygen::namespaceSDict)
       {
-        m_namespaceTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,FALSE);
+        m_namespaceTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,FALSE,visitedClasses);
       }
       //%% Nesting tree
       static bool init=FALSE;
@@ -7263,13 +7266,14 @@ class FileTreeContext::Private
     {
       // Add dirs tree
       m_dirFileTree.reset(NestingContext::alloc(0,0));
+      ClassDefSet visitedClasses;
       if (Doxygen::directories)
       {
-        m_dirFileTree->addDirs(*Doxygen::directories);
+        m_dirFileTree->addDirs(*Doxygen::directories,visitedClasses);
       }
       if (Doxygen::inputNameLinkedMap)
       {
-        m_dirFileTree->addFiles(*Doxygen::inputNameLinkedMap);
+        m_dirFileTree->addFiles(*Doxygen::inputNameLinkedMap,visitedClasses);
       }
       //%% DirFile tree:
       static bool init=FALSE;
@@ -7375,10 +7379,11 @@ class PageTreeContext::Private
     Private(const PageSDict *pages)
     {
       m_pageTree.reset(NestingContext::alloc(0,0));
+      ClassDefSet visitedClasses;
       // Add pages
       if (pages)
       {
-        m_pageTree->addPages(*pages,TRUE);
+        m_pageTree->addPages(*pages,TRUE,visitedClasses);
       }
 
       //%% PageNodeList tree:
@@ -7628,10 +7633,11 @@ class ModuleTreeContext::Private
     Private()
     {
       m_moduleTree.reset(NestingContext::alloc(0,0));
+      ClassDefSet visitedClasses;
       // Add modules
       if (Doxygen::groupSDict)
       {
-        m_moduleTree->addModules(*Doxygen::groupSDict);
+        m_moduleTree->addModules(*Doxygen::groupSDict,visitedClasses);
       }
 
       //%% ModuleList tree:
@@ -7833,10 +7839,11 @@ class ExampleTreeContext::Private
     Private()
     {
       m_exampleTree.reset(NestingContext::alloc(0,0));
+      ClassDefSet visitedClasses;
       // Add pages
       if (Doxygen::exampleSDict)
       {
-        m_exampleTree->addPages(*Doxygen::exampleSDict,TRUE);
+        m_exampleTree->addPages(*Doxygen::exampleSDict,TRUE,visitedClasses);
       }
 
       static bool init=FALSE;
