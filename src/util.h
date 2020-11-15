@@ -257,8 +257,6 @@ QCString removeAnonymousScopes(const QCString &s);
 
 QCString replaceAnonymousScopes(const QCString &s,const char *replacement=0);
 
-void initClassHierarchy(ClassSDict *cl);
-
 bool hasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool namespaceHasNestedNamespace(const NamespaceDef *nd);

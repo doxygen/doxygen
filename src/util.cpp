@@ -3548,23 +3548,6 @@ int getPrefixIndex(const QCString &name)
 
 //----------------------------------------------------------------------------
 
-static void initBaseClassHierarchy(const BaseClassList &bcl)
-{
-  for (const auto &bcd : bcl)
-  {
-    ClassDefMutable *cd = toClassDefMutable(bcd.classDef);
-    if (cd)
-    {
-      if (cd->baseClasses().empty()) // no base classes => new root
-      {
-        initBaseClassHierarchy(cd->baseClasses());
-      }
-      cd->setVisited(FALSE);
-    }
-  }
-}
-//----------------------------------------------------------------------------
-
 bool classHasVisibleChildren(const ClassDef *cd)
 {
   BaseClassList bcl;
@@ -3588,24 +3571,6 @@ bool classHasVisibleChildren(const ClassDef *cd)
     }
   }
   return FALSE;
-}
-
-
-//----------------------------------------------------------------------------
-
-void initClassHierarchy(ClassSDict *cl)
-{
-  ClassSDict::Iterator cli(*cl);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()); ++cli)
-  {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
-    {
-      cdm->setVisited(FALSE);
-      initBaseClassHierarchy(cd->baseClasses());
-    }
-  }
 }
 
 //----------------------------------------------------------------------------

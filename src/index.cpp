@@ -464,7 +464,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
 //----------------------------------------------------------------------------
 /*! Generates HTML Help tree of classes */
 
-static void writeClassTree(OutputList &ol,const BaseClassList &bcl,bool hideSuper,int level,FTVHelp* ftv,bool addToIndex)
+static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int level,FTVHelp* ftv,bool addToIndex,ClassDefSet &visitedClasses)
 {
   if (bcl.empty()) return;
   bool started=FALSE;
@@ -503,7 +503,8 @@ static void writeClassTree(OutputList &ol,const BaseClassList &bcl,bool hideSupe
       }
       ol.startIndexListItem();
       //printf("Passed...\n");
-      bool hasChildren = !cd->isVisited() && !hideSuper && classHasVisibleChildren(cd);
+      bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
+                         classHasVisibleChildren(cd);
       //printf("tree4: Has children %s: %d\n",cd->name().data(),hasChildren);
       if (cd->isLinkable())
       {
@@ -550,15 +551,14 @@ static void writeClassTree(OutputList &ol,const BaseClassList &bcl,bool hideSupe
       if (hasChildren)
       {
         //printf("Class %s at %p visited=%d\n",cd->name().data(),cd,cd->visited);
-        bool wasVisited=cd->isVisited();
-        cd->setVisited(TRUE);
+        visitedClasses.insert(cd);
         if (cd->getLanguage()==SrcLangExt_VHDL)
         {
-          writeClassTree(ol,cd->baseClasses(),wasVisited,level+1,ftv,addToIndex);
+          writeClassTreeToOutput(ol,cd->baseClasses(),level+1,ftv,addToIndex,visitedClasses);
         }
         else
         {
-          writeClassTree(ol,cd->subClasses(),wasVisited,level+1,ftv,addToIndex);
+          writeClassTreeToOutput(ol,cd->subClasses(),level+1,ftv,addToIndex,visitedClasses);
         }
       }
       ol.endIndexListItem();
@@ -832,7 +832,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
 //----------------------------------------------------------------------------
 
 static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FTVHelp* ftv,bool addToIndex,
-                                  ClassDef::CompoundType ct)
+                                  ClassDef::CompoundType ct,ClassDefSet &visitedClasses)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   ClassSDict::Iterator cli(*cl);
@@ -876,7 +876,8 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           started=TRUE;
         }
         ol.startIndexListItem();
-        bool hasChildren = !cd->isVisited() && classHasVisibleChildren(cd);
+        bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
+                           classHasVisibleChildren(cd);
         //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
         if (cd->isLinkable())
         {
@@ -917,13 +918,13 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
         }
         if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
         {
-          writeClassTree(ol,cd->baseClasses(),cd->isVisited(),1,ftv,addToIndex);
-          cd->setVisited(TRUE);
+          writeClassTreeToOutput(ol,cd->baseClasses(),1,ftv,addToIndex,visitedClasses);
+          visitedClasses.insert(cd);
         }
         else if (hasChildren)
         {
-          writeClassTree(ol,cd->subClasses(),cd->isVisited(),1,ftv,addToIndex);
-          cd->setVisited(TRUE);
+          writeClassTreeToOutput(ol,cd->subClasses(),1,ftv,addToIndex,visitedClasses);
+          visitedClasses.insert(cd);
         }
         ol.endIndexListItem();
       }
@@ -933,16 +934,15 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
 
 static void writeClassHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex,ClassDef::CompoundType ct)
 {
-  initClassHierarchy(Doxygen::classSDict);
-  initClassHierarchy(Doxygen::hiddenClasses);
+  ClassDefSet visitedClasses;
   if (ftv)
   {
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Html);
   }
   bool started=FALSE;
-  writeClassTreeForList(ol,Doxygen::classSDict,started,ftv,addToIndex,ct);
-  writeClassTreeForList(ol,Doxygen::hiddenClasses,started,ftv,addToIndex,ct);
+  writeClassTreeForList(ol,Doxygen::classSDict,started,ftv,addToIndex,ct,visitedClasses);
+  writeClassTreeForList(ol,Doxygen::hiddenClasses,started,ftv,addToIndex,ct,visitedClasses);
   if (started)
   {
     endIndexHierarchy(ol,0);
@@ -988,8 +988,6 @@ static int countClassesInTreeList(const ClassSDict &cl, ClassDef::CompoundType c
 static int countClassHierarchy(ClassDef::CompoundType ct)
 {
   int count=0;
-  initClassHierarchy(Doxygen::classSDict);
-  initClassHierarchy(Doxygen::hiddenClasses);
   count+=countClassesInTreeList(*Doxygen::classSDict, ct);
   count+=countClassesInTreeList(*Doxygen::hiddenClasses, ct);
   return count;
