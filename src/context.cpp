@@ -6113,15 +6113,10 @@ class ClassHierarchyContext::Private
       {
         TemplateList *diagrams = TemplateList::alloc();
         DotGfxHierarchyTable *hierarchy = getHierarchy();
-        if (hierarchy->subGraphs())
+        int id=0;
+        for (auto n : hierarchy->subGraphs())
         {
-          int id=0;
-          QListIterator<DotNode> li(*hierarchy->subGraphs());
-          DotNode *n;
-          for (li.toFirst();(n=li.current());++li)
-          {
-            diagrams->append(InheritanceGraphContext::alloc(hierarchy,n,id++));
-          }
+          diagrams->append(InheritanceGraphContext::alloc(hierarchy,n,id++));
         }
         m_cache.diagrams.reset(diagrams);
       }
