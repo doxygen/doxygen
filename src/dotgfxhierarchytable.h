@@ -46,7 +46,7 @@ class DotGfxHierarchyTable : public DotGraph
     void addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visited);
     void addClassList(const ClassSDict *cl,ClassDefSet &visited);
 
-    using DotNodeMap = std::unordered_map< std::string, std::unique_ptr<DotNode> >;
+    using DotNodeMap = std::unordered_multimap< std::string, std::unique_ptr<DotNode> >;
     int                    m_graphId;
     QCString               m_prefix;
     ClassDef::CompoundType m_classType;
