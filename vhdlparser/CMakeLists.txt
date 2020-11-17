@@ -31,7 +31,7 @@ endif()
 
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
-    DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/VhdlParser/vhdl_adj.py
+    DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
     OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc 
 )
 set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERATED 1)
