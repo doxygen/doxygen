@@ -26,22 +26,23 @@ if (JAVACC_FOUND)
         OUTPUT ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.cc ${PROJECT_SOURCE_DIR}/vhdlparser/CharStream.h ${PROJECT_SOURCE_DIR}/vhdlparser/ErrorHandler.h ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.cc ${PROJECT_SOURCE_DIR}/vhdlparser/ParseException.h ${PROJECT_SOURCE_DIR}/vhdlparser/Token.cc ${PROJECT_SOURCE_DIR}/vhdlparser/Token.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenManager.h ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.cc ${PROJECT_SOURCE_DIR}/vhdlparser/TokenMgrError.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserConstants.h ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParserTokenManager.h
     )
 
-    add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser_adj.cc
-        DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/VhdlParser/vhdl_adj.py
-        OUTPUT  ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser_adj.cc 
-    )
-
     endif()
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/qtools ${GENERATED_SRC})
+add_custom_command(
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
+    DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/VhdlParser/vhdl_adj.py
+    OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc 
+)
+set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERATED 1)
+
+include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/qtools ${PROJECT_SOURCE_DIR}/vhdlparser ${GENERATED_SRC})
 add_library(vhdlparser STATIC
 CharStream.cc
 ParseException.cc
 Token.cc
 TokenMgrError.cc
-VhdlParser_adj.cc
+${GENERATED_SRC}/VhdlParser_adj.cc
 VhdlParserTokenManager.cc
 )
 add_dependencies(vhdlparser
