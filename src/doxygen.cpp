@@ -166,7 +166,7 @@ DefinesPerFileList Doxygen::macroDefinitions;
 bool             Doxygen::clangAssistedParsing = FALSE;
 
 // locally accessible globals
-static std::map< std::string, const Entry* > g_classEntries;
+static std::multimap< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
 static QDict<void>      g_compoundKeywordDict(7);  // keywords recognised as compounds
 static OutputList      *g_outputList = 0;          // list of output generating objects
@@ -972,8 +972,8 @@ static void addClassToContext(const Entry *root)
   // see if we already found the class before
   ClassDefMutable *cd = getClassMutable(qualifiedName);
 
-  Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
-      cd ? qPrint(cd->name()) : qPrint(root->name), qPrint(qualifiedName),cd);
+  //Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
+  //    cd ? qPrint(cd->name()) : qPrint(root->name), qPrint(qualifiedName),cd);
 
   if (cd)
   {
@@ -4025,8 +4025,8 @@ static void findBaseClassesForClass(
   const ArgumentList &formalArgs = masterCd->templateArguments();
   for (const BaseInfo &bi : root->extends)
   {
-    //printf("masterCd=%s bi->name='%s' #actualArgs=%d\n",
-    //    masterCd->localName().data(),bi->name.data(),actualArgs?(int)actualArgs->count():-1);
+    //printf("masterCd=%s bi.name='%s' #actualArgs=%d\n",
+    //    masterCd->localName().data(),bi.name.data(),actualArgs ? (int)actualArgs->size() : -1);
     bool delTempNames=FALSE;
     if (templateNames==0)
     {
@@ -4107,8 +4107,8 @@ static bool findTemplateInstanceRelation(const Entry *root,
 
     // search for new template instances caused by base classes of
     // instanceClass
-    auto it = g_classEntries.find(templateClass->name().data());
-    if (it!=g_classEntries.end())
+    auto it_pair = g_classEntries.equal_range(templateClass->name().data());
+    for (auto it=it_pair.first ; it!=it_pair.second ; ++it)
     {
       const Entry *templateRoot = it->second;
       Debug::print(Debug::Classes,0,"        template root found %s templSpec=%s!\n",
@@ -4119,11 +4119,6 @@ static bool findTemplateInstanceRelation(const Entry *root,
 
       findUsedClassesForClass(templateRoot,context,templateClass,instanceClass,
           isArtificial,templArgs,templateNames);
-    }
-    else
-    {
-      Debug::print(Debug::Classes,0,"        no template root entry found!\n");
-      // TODO: what happened if we get here?
     }
 
     //Debug::print(Debug::Classes,0,"    Template instance %s : \n",instanceClass->name().data());
@@ -4602,7 +4597,7 @@ static void findClassEntries(const Entry *root)
 {
   if (isClassSection(root))
   {
-    g_classEntries.insert({root->name.data(),root});
+    g_classEntries.insert({root->name.str(),root});
   }
   for (const auto &e : root->children()) findClassEntries(e.get());
 }
@@ -4650,7 +4645,7 @@ static void findInheritedTemplateInstances()
       ClassDefMutable *cdm = toClassDefMutable(cd);
       if (cdm)
       {
-        //printf("Class %s %d\n",cd->name().data(),root->extends->count());
+        //printf("Class %s %zu\n",cd->name().data(),root->extends.size());
         findBaseClassesForClass(root,cd,cdm,cdm,TemplateInstances,FALSE);
       }
     }
