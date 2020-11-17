@@ -144,6 +144,7 @@ documentation:
 \refitem cmdn \\n
 \refitem cmdname \\name
 \refitem cmdnamespace \\namespace
+\refitem cmdnoop \\noop
 \refitem cmdnosubgrouping \\nosubgrouping
 \refitem cmdnote \\note
 \refitem cmdoverload \\overload
@@ -193,6 +194,7 @@ documentation:
 \refitem cmdsnippet \\snippet
 \refitem cmdsnippetdoc \\snippetdoc
 \refitem cmdsnippetlineno \\snippetlineno
+\refitem cmdstatic \\static
 \refitem cmdstartuml \\startuml
 \refitem cmdstruct \\struct
 \refitem cmdsubpage \\subpage
