@@ -972,8 +972,10 @@ static void readIncludeFile(const char *incName)
   					}
 <SkipComment>\n				{ g_yyLineNr++; BEGIN(Start); }
 <SkipComment>\\[ \r\t]*\n		{ g_yyLineNr++; BEGIN(Start); }
+<SkipComment,SkipInvalid>.
 <*>\\[ \r\t]*\n				{ g_yyLineNr++; }
-<*>.
+<*>[ \t\r]
+<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,g_yyFileName.data()); }
 <*>\n					{ g_yyLineNr++ ; }
 
 %%
