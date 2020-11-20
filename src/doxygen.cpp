@@ -1149,14 +1149,7 @@ static void buildClassDocList(const Entry *root)
 static void resolveClassNestingRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli)
-  {
-    ClassDefMutable *cdm = toClassDefMutable(cli.current());
-    if (cdm)
-    {
-      cdm->setVisited(FALSE);
-    }
-  }
+  ClassDefSet visitedClasses;
 
   bool done=FALSE;
   int iteration=0;
@@ -1167,16 +1160,16 @@ static void resolveClassNestingRelations()
     ClassDef *icd=0;
     for (cli.toFirst();(icd=cli.current());++cli)
     {
-      ClassDefMutable *cd = toClassDefMutable(icd);
-      if (cd && !cd->isVisited())
+      if (visitedClasses.find(icd)==visitedClasses.end())
       {
-        QCString name = stripAnonymousNamespaceScope(cd->name());
+        QCString name = stripAnonymousNamespaceScope(icd->name());
         //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
         // also add class to the correct structural context
         DefinitionMutable *d = findScopeFromQualifiedName(Doxygen::globalScope,
-                                                 name,cd->getFileDef(),0);
+                                                 name,icd->getFileDef(),0);
         if (d)
         {
+          ClassDefMutable *cd = toClassDefMutable(icd);
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
           d->addInnerCompound(cd);
           cd->setOuterScope(toDefinition(d));
@@ -1196,7 +1189,6 @@ static void resolveClassNestingRelations()
                 QCString aliasFullName = toDefinition(d)->qualifiedName()+"::"+aliasCd->localName();
                 Doxygen::classSDict->append(aliasFullName,aliasCd);
                 //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
-                //aliasCd->setVisited(TRUE); // not needed anymore, as aliasCd is not mutable
               }
             }
             else
@@ -1205,7 +1197,7 @@ static void resolveClassNestingRelations()
             }
           }
 
-          cd->setVisited(TRUE);
+          visitedClasses.insert(icd);
           done=FALSE;
         }
         //else
@@ -1221,7 +1213,7 @@ static void resolveClassNestingRelations()
   for (cli.toFirst();(icd=cli.current());++cli)
   {
     ClassDefMutable *cd = toClassDefMutable(icd);
-    if (cd && !cd->isVisited())
+    if (cd && visitedClasses.find(icd)!=visitedClasses.end())
     {
       QCString name = stripAnonymousNamespaceScope(cd->name());
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
@@ -1250,23 +1242,15 @@ void distributeClassGroupRelations()
   //if (!inlineGroupedClasses) return;
   //printf("** distributeClassGroupRelations()\n");
 
+  ClassDefSet visitedClasses;
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli)
+  ClassDef *cd;
+  for (cli.toFirst();(cd=cli.current());++cli)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cli.current());
-    if (cdm)
-    {
-      cdm->setVisited(FALSE);
-    }
-  }
-
-  ClassDef *icd;
-  for (cli.toFirst();(icd=cli.current());++cli)
-  {
-    ClassDefMutable *cd = toClassDefMutable(icd);
     //printf("Checking %s\n",cd->name().data());
     // distribute the group to nested classes as well
-    if (cd && !cd->isVisited() && cd->partOfGroups()!=0 && cd->getClassSDict())
+    if (cd && visitedClasses.find(cd)==visitedClasses.end() &&
+        cd->partOfGroups()!=0 && cd->getClassSDict())
     {
       //printf("  Candidate for merging\n");
       ClassSDict::Iterator ncli(*cd->getClassSDict());
@@ -1283,7 +1267,7 @@ void distributeClassGroupRelations()
           gd->addClass(ncdm);
         }
       }
-      cd->setVisited(TRUE); // only visit every class once
+      visitedClasses.insert(cd); // only visit every class once
     }
   }
 }
@@ -1969,25 +1953,15 @@ static void findUsingDeclImports(const Entry *root)
 
 static void findIncludedUsingDirectives()
 {
-  // first mark all files as not visited
-  for (const auto &fn : *Doxygen::inputNameLinkedMap)
-  {
-    for (const auto &fd : *fn)
-    {
-      fd->setVisited(FALSE);
-    }
-  }
+  FileDefSet visitedFiles;
   // then recursively add using directives found in #include files
   // to files that have not been visited.
   for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
     for (const auto &fd : *fn)
     {
-      if (!fd->isVisited())
-      {
-        //printf("----- adding using directives for file %s\n",fd->name().data());
-        fd->addIncludedUsingDirectives();
-      }
+      //printf("----- adding using directives for file %s\n",fd->name().data());
+      fd->addIncludedUsingDirectives(visitedFiles);
     }
   }
 }
@@ -3872,7 +3846,6 @@ static void findUsedClassesForClass(const Entry *root,
                            QDict<int> *templateNames=0
                            )
 {
-  masterCd->setVisited(TRUE);
   const ArgumentList &formalArgs = masterCd->templateArguments();
   for (auto &mni : masterCd->memberNameInfoLinkedMap())
   {
@@ -4019,8 +3992,6 @@ static void findBaseClassesForClass(
       QDict<int> *templateNames=0
     )
 {
-  //if (masterCd->visited) return;
-  masterCd->setVisited(TRUE);
   // The base class could ofcouse also be a non-nested class
   const ArgumentList &formalArgs = masterCd->templateArguments();
   for (const BaseInfo &bi : root->extends)
@@ -4626,14 +4597,7 @@ static QCString extractClassName(const Entry *root)
 static void findInheritedTemplateInstances()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli)
-  {
-    ClassDefMutable *cdm = toClassDefMutable(cli.current());
-    if (cdm)
-    {
-      cdm->setVisited(FALSE);
-    }
-  }
+  ClassDefSet visitedClasses;
   for (const auto &kv : g_classEntries)
   {
     const Entry *root = kv.second;
@@ -4655,14 +4619,6 @@ static void findInheritedTemplateInstances()
 static void findUsedTemplateInstances()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli)
-  {
-    ClassDefMutable *cdm = toClassDefMutable(cli.current());
-    if (cdm)
-    {
-      cdm->setVisited(FALSE);
-    }
-  }
   for (const auto &kv : g_classEntries)
   {
     const Entry *root = kv.second;
@@ -4684,14 +4640,6 @@ static void findUsedTemplateInstances()
 static void computeClassRelations()
 {
   ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for (cli.toFirst();cli.current();++cli)
-  {
-    ClassDefMutable *cdm = toClassDefMutable(cli.current());
-    if (cdm)
-    {
-      cdm->setVisited(FALSE);
-    }
-  }
   for (const auto &kv : g_classEntries)
   {
     const Entry *root = kv.second;
@@ -8070,30 +8018,20 @@ static void combineUsingRelations()
   {
     for (const auto &fd : *fn)
     {
-      fd->setVisited(FALSE);
-    }
-  }
-  for (const auto &fn : *Doxygen::inputNameLinkedMap)
-  {
-    for (const auto &fd : *fn)
-    {
       fd->combineUsingRelations();
     }
   }
 
   // for each namespace
+  NamespaceDefSet visitedNamespaces;
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   NamespaceDef *nd;
-  for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
-  {
-    nd->setVisited(FALSE);
-  }
   for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
   {
     NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
-      ndm->combineUsingRelations();
+      ndm->combineUsingRelations(visitedNamespaces);
     }
   }
 }

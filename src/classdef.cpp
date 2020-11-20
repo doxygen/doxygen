@@ -212,8 +212,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                               const ClassDef *inheritedFrom,const QCString &inheritId) const;
     virtual void writeTagFile(FTextStream &);
 
-    virtual void setVisited(bool visited) const { m_visited = visited; }
-    virtual bool isVisited() const { return m_visited; }
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const;
     virtual int countInheritanceNodes() const;
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
@@ -224,7 +222,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  QPtrDict<void> *visitedClasses=0) const;
 
   private:
-    mutable bool m_visited;
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
     void showUsedFiles(OutputList &ol) const;
 
@@ -469,12 +466,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
 
     virtual void updateBaseClasses(const BaseClassList &) {}
     virtual void updateSubClasses(const BaseClassList &) {}
-
-    virtual void setVisited(bool visited) const { m_visited = visited; }
-    virtual bool isVisited() const { return m_visited; }
-
-  private:
-    mutable bool m_visited = false;
 };
 
 
@@ -729,7 +720,6 @@ ClassDefImpl::ClassDefImpl(
     bool isSymbol,bool isJavaEnum)
  : DefinitionMixin(defFileName,defLine,defColumn,removeRedundantWhiteSpace(nm),0,0,isSymbol)
 {
-  m_visited=FALSE;
   setReference(lref);
   m_impl = new ClassDefImpl::IMPL;
   m_impl->compType = ct;

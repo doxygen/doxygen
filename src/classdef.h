@@ -376,13 +376,6 @@ class ClassDef : public Definition
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                  const char *header,bool localNames) const = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- visiting administration ----
-    //-----------------------------------------------------------------------------------
-
-    virtual void setVisited(bool visited) const = 0;
-    virtual bool isVisited() const = 0;
-
 };
 
 class ClassDefMutable : public DefinitionMutable, public ClassDef

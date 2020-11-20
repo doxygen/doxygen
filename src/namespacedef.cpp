@@ -61,7 +61,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const { return m_usingDirList; }
     virtual void addUsingDeclaration(const ClassDef *cd);
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const { return m_usingDeclList; }
-    virtual void combineUsingRelations();
+    virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace);
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString localName() const;
     virtual void setInline(bool isInline) { m_inline = isInline; }
@@ -95,11 +95,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual QCString compoundTypeString() const;
 
     virtual void setMetaData(const QCString &m);
-    void setVisited(bool v) { m_visited = v; }
-    bool isVisited() const { return m_visited; }
 
   private:
-    bool m_visited;
     MemberList *createMemberList(MemberListType lt);
     void addMemberToList(MemberListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
@@ -218,12 +215,6 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->title(); }
     virtual QCString compoundTypeString() const
     { return getNSAlias()->compoundTypeString(); }
-
-    void setVisited(bool v) { m_visited = v; }
-    bool isVisited() const { return m_visited; }
-
-  private:
-    bool m_visited = false;
 };
 
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
@@ -265,7 +256,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
   setReference(lref);
   memberGroupSDict = new MemberGroupSDict;
   memberGroupSDict->setAutoDelete(TRUE);
-  m_visited=FALSE;
   m_inline=FALSE;
   m_subGrouping=Config_getBool(SUBGROUPING);
   if (type && !strcmp("module", type))
@@ -1284,17 +1274,18 @@ QCString NamespaceDefImpl::localName() const
   return result;
 }
 
-void NamespaceDefImpl::combineUsingRelations()
+void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
 {
-  if (m_visited) return; // already done
-  m_visited=TRUE;
+  if (visitedNamespaces.find(this)!=visitedNamespaces.end()) return; // already processed
+  visitedNamespaces.insert(this);
+
   LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
   for (auto &nd : usingDirList)
   {
     NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
-      ndm->combineUsingRelations();
+      ndm->combineUsingRelations(visitedNamespaces);
     }
   }
 

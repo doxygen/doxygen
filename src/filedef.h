@@ -18,6 +18,8 @@
 #ifndef FILEDEF_H
 #define FILEDEF_H
 
+#include <set>
+
 #include "index.h"
 #include <qlist.h>
 #include <qintdict.h>
@@ -43,6 +45,10 @@ class PackageDef;
 class DirDef;
 class FTextStream;
 class ClangTUParser;
+
+// --- Set of files
+
+using FileDefSet = std::set<const FileDef*>;
 
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
@@ -178,16 +184,12 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
     virtual void findSectionsInDocumentation() = 0;
-    virtual void addIncludedUsingDirectives() = 0;
+    virtual void addIncludedUsingDirectives(FileDefSet &visitedFiles) = 0;
 
     virtual void addListReferences() = 0;
-
-    virtual void setVisited(bool v) = 0;
-    virtual bool isVisited() const = 0;
 };
 
 FileDef *createFileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
-
 
 
 // --- Cast functions

@@ -16,6 +16,8 @@
 #ifndef NAMESPACEDEF_H
 #define NAMESPACEDEF_H
 
+#include <set>
+
 #include <qstrlist.h>
 #include <qdict.h>
 #include "sortdict.h"
@@ -31,7 +33,13 @@ class MemberDef;
 class MemberGroupSDict;
 class NamespaceSDict;
 class FTextStream;
+class NamespaceDef;
 class NamespaceDefMutable;
+
+// --- Set of namespaces
+
+using NamespaceDefSet = std::set<const NamespaceDef*>;
+
 
 /** An abstract interface of a namespace symbol. */
 class NamespaceDef : public Definition
@@ -81,10 +89,6 @@ class NamespaceDef : public Definition
 
     virtual QCString title() const = 0;
     virtual QCString compoundTypeString() const = 0;
-
-    // --- visited administration
-    virtual void setVisited(bool v) = 0;
-    virtual bool isVisited() const = 0;
 };
 
 class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
@@ -110,7 +114,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void addInnerCompound(const Definition *d) = 0;
     virtual void addListReferences() = 0;
     virtual void setFileName(const QCString &fn) = 0;
-    virtual void combineUsingRelations() = 0;
+    virtual void combineUsingRelations(NamespaceDefSet &visitedNamespace) = 0;
     virtual void addUsingDirective(const NamespaceDef *nd) = 0;
     virtual void addUsingDeclaration(const ClassDef *cd) = 0;
     virtual void setInline(bool isInline) = 0;

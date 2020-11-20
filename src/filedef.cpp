@@ -122,13 +122,10 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void addMembersToMemberGroup();
     virtual void distributeMemberGroupDocumentation();
     virtual void findSectionsInDocumentation();
-    virtual void addIncludedUsingDirectives();
+    virtual void addIncludedUsingDirectives(FileDefSet &visitedFiles);
     virtual void addListReferences();
-    virtual void setVisited(bool v) { m_visited = v; }
-    virtual bool isVisited() const { return m_visited; }
 
   private:
-    bool m_visited;
     void acquireFileVersion();
     MemberList *createMemberList(MemberListType lt);
     void addMemberToList(MemberListType lt,MemberDef *md);
@@ -244,7 +241,6 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
   m_isSource          = guessSection(nm)==Entry::SOURCE_SEC;
   m_docname           = nm;
   m_dir               = 0;
-  m_visited           = FALSE;
   if (Config_getBool(FULL_PATH_NAMES))
   {
     m_docname.prepend(stripFromPath(m_path.copy()));
@@ -1523,10 +1519,10 @@ void FileDefImpl::addIncludeDependency(FileDef *fd,const char *incName,bool loca
   }
 }
 
-void FileDefImpl::addIncludedUsingDirectives()
+void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
 {
-  if (m_visited) return;
-  m_visited=TRUE;
+  if (visitedFiles.find(this)!=visitedFiles.end()) return; // file already processed
+  visitedFiles.insert(this);
   //printf("( FileDefImpl::addIncludedUsingDirectives for file %s\n",name().data());
 
   if (m_includeList) // file contains #includes
@@ -1536,10 +1532,10 @@ void FileDefImpl::addIncludedUsingDirectives()
       IncludeInfo *ii;
       for (iii.toFirst();(ii=iii.current());++iii) // foreach #include...
       {
-        if (ii->fileDef && !ii->fileDef->isVisited()) // ...that is a known file
+        if (ii->fileDef) // ...that is a known file
         {
           // recurse into this file
-          ii->fileDef->addIncludedUsingDirectives();
+          ii->fileDef->addIncludedUsingDirectives(visitedFiles);
         }
       }
     }
@@ -1890,15 +1886,14 @@ void generateFileTree()
 
 void FileDefImpl::combineUsingRelations()
 {
-  if (m_visited) return; // already done
-  m_visited=TRUE;
   LinkedRefMap<const NamespaceDef> usingDirList = m_usingDirList;
+  NamespaceDefSet visitedNamespaces;
   for (auto &nd : usingDirList)
   {
     NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
     if (ndm)
     {
-      ndm->combineUsingRelations();
+      ndm->combineUsingRelations(visitedNamespaces);
     }
   }
 
