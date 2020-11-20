@@ -234,5 +234,12 @@ Boolean lex_getutf8(void)
     return lex_utf8;
 }
 
+void lex_resetparser()
+{
+  lex_linenum = 1;
+  lex_line = NULL;
+  lex_utf8 = FALSE;
+}
+
 #include "mscgen_lexer.l.h"
 /* END OF FILE */
