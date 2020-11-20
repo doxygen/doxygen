@@ -209,6 +209,7 @@ Msc MscParse(FILE *in)
 
     yyin = in;
 
+    lex_resetparser();
     /* Parse, and check that no errors are found */
     if(yyparse((void *)&m) != 0)
     {
