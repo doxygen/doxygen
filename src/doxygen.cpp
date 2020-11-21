@@ -1160,7 +1160,8 @@ static void resolveClassNestingRelations()
     ClassDef *icd=0;
     for (cli.toFirst();(icd=cli.current());++cli)
     {
-      if (visitedClasses.find(icd)==visitedClasses.end())
+      ClassDefMutable *cd = toClassDefMutable(icd);
+      if (cd && visitedClasses.find(icd)==visitedClasses.end())
       {
         QCString name = stripAnonymousNamespaceScope(icd->name());
         //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
@@ -1169,7 +1170,6 @@ static void resolveClassNestingRelations()
                                                  name,icd->getFileDef(),0);
         if (d)
         {
-          ClassDefMutable *cd = toClassDefMutable(icd);
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
           d->addInnerCompound(cd);
           cd->setOuterScope(toDefinition(d));
