@@ -29,11 +29,13 @@ class DotRunner
 {
     struct DotJob
     {
-      DotJob(std::string f, std::string o, std::string a)
-        : format(f), output(o), args(a) {}
+      DotJob(std::string f, std::string o, std::string a, std::string s, int l)
+        : format(f), output(o), args(a), srcFile(s), srcLine(l) {}
       std::string format;
       std::string output;
       std::string args;
+      std::string srcFile;
+      int srcLine = -1;
     };
 
   public:
@@ -43,7 +45,7 @@ class DotRunner
     /** Adds an additional job to the run.
      *  Performing multiple jobs one file can be faster.
      */
-    void addJob(const char *format,const char *output);
+    void addJob(const char *format,const char *output, const char *s = "", const int l = -1);
 
     /** Prevent cleanup of the dot file (for user provided dot files) */
     void preventCleanUp() { m_cleanUp = false; }

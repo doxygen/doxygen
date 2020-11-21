@@ -51,10 +51,10 @@ class DotManager
 };
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,GraphOutputFormat format);
+                           const char *outFile,GraphOutputFormat format,const char *s, const int l);
 void writeDotImageMapFromFile(FTextStream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
-                              const QCString& context,int graphId=-1);
+                              const QCString& context,const char *s, const int l,int graphId=-1);
 
 #endif

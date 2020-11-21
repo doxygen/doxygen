@@ -24,7 +24,8 @@ class FTextStream;
 enum DiaOutputFormat { DIA_BITMAP , DIA_EPS };
 
 void writeDiaGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,DiaOutputFormat format);
+                           const char *outFile,DiaOutputFormat format,
+                           const char *srcFile, const int srcLine);
 
 #endif
 

@@ -2736,8 +2736,8 @@ endlink:
 
 //---------------------------------------------------------------------------
 
-DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &context) :
-      m_name(name), m_relPath(g_relPath), m_context(context)
+DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &context,const QCString s, const int l) :
+      m_name(name), m_relPath(g_relPath), m_context(context), m_srcFile(s), m_srcLine(l)
 {
   m_parent = parent;
 }
@@ -2773,10 +2773,10 @@ bool DocDotFile::parse()
   return ok;
 }
 
-DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &context) :
-      m_name(name), m_relPath(g_relPath), m_context(context)
+DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &context,const QCString s, const int l) :
+      m_name(name), m_relPath(g_relPath), m_context(context), m_srcFile(s), m_srcLine(l)
 {
-  m_parent = parent;
+   m_parent = parent;
 }
 
 bool DocMscFile::parse()
@@ -2812,8 +2812,8 @@ bool DocMscFile::parse()
 
 //---------------------------------------------------------------------------
 
-DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &context) :
-      m_name(name), m_relPath(g_relPath), m_context(context)
+DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &context,const QCString s, const int l) :
+      m_name(name), m_relPath(g_relPath), m_context(context), m_srcFile(s), m_srcLine(l)
 {
   m_parent = parent;
 }
@@ -5095,7 +5095,7 @@ void DocPara::handleFile(const QCString &cmdName)
     return;
   }
   QCString name = g_token->name;
-  T *df = new T(this,name,g_context);
+  T *df = new T(this,name,g_context,g_fileName,getDoctokinizerLineNr());
   if (df->parse())
   {
     m_children.append(df);
@@ -5612,6 +5612,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_DOT:
       {
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Dot,g_isExample,g_exampleName);
+        dv -> setSrcReference(g_fileName,getDoctokinizerLineNr());
         doctokenizerYYsetStatePara();
         QCString width,height;
         defaultHandleTitleAndSize(CMD_DOT,dv,dv->children(),width,height);
@@ -5628,6 +5629,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_MSC:
       {
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Msc,g_isExample,g_exampleName);
+        dv -> setSrcReference(g_fileName,getDoctokinizerLineNr());
         doctokenizerYYsetStatePara();
         QCString width,height;
         defaultHandleTitleAndSize(CMD_MSC,dv,dv->children(),width,height);

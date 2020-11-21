@@ -157,7 +157,7 @@ DotRunner::DotRunner(const std::string& absDotName, const std::string& md5Hash)
 }
 
 
-void DotRunner::addJob(const char *format, const char *output)
+void DotRunner::addJob(const char *format, const char *output, const char *srcFile, const int srcLine)
 {
 
   for (auto& s: m_jobs)
@@ -168,7 +168,7 @@ void DotRunner::addJob(const char *format, const char *output)
     return;
   }
   auto args = std::string ("-T") + format + " -o \"" + output + "\"";
-  m_jobs.emplace_back(format, output, args);
+  m_jobs.emplace_back(format, output, args, srcFile, srcLine);
 }
 
 QCString getBaseNameOfOutput(const QCString &output)
@@ -183,6 +183,8 @@ bool DotRunner::run()
   int exitCode=0;
 
   QCString dotArgs;
+  QCString srcFile;
+  int srcLine = -1;
 
   // create output
   if (Config_getBool(DOT_MULTI_TARGETS))
@@ -200,6 +202,8 @@ bool DotRunner::run()
     for (auto& s : m_jobs)
     {
       dotArgs=QCString("\"")+m_file.data()+"\" "+s.args.data();
+      srcFile = s.srcFile.data();
+      srcLine = s.srcLine;
       if ((exitCode=Portable::system(m_dotExe.data(),dotArgs,FALSE))!=0) goto error;
     }
   }
@@ -246,8 +250,17 @@ bool DotRunner::run()
   }
   return TRUE;
 error:
-  err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
-    exitCode,m_dotExe.data(),dotArgs.data());
+  if (srcLine == -1)
+  {
+    err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
+        exitCode,m_dotExe.data(),dotArgs.data());
+  }
+  else
+  {
+    err_full(srcFile,srcLine,"Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
+        exitCode,m_dotExe.data(),dotArgs.data());
+  }
+
   return FALSE;
 }
 

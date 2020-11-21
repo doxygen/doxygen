@@ -392,7 +392,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
           file.writeBlock( s->text(), s->text().length() );
           file.close();
 
-          startDotFile(fileName,s->width(),s->height(),s->hasCaption());
+          startDotFile(fileName,s->width(),s->height(),s->hasCaption(),s->getSrcReferenceFile().data(),s->getSrcReferenceLine());
           visitCaption(this, s->children());
           endDotFile(s->hasCaption());
 
@@ -1373,7 +1373,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  startDotFile(df->file(),df->width(),df->height(),df->hasCaption());
+  startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->getSrcReferenceFile().data(),df->getSrcReferenceLine());
 }
 
 void LatexDocVisitor::visitPost(DocDotFile *df)
@@ -1384,7 +1384,7 @@ void LatexDocVisitor::visitPost(DocDotFile *df)
 void LatexDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  startMscFile(df->file(),df->width(),df->height(),df->hasCaption());
+  startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->getSrcReferenceFile().data(),df->getSrcReferenceLine());
 }
 
 void LatexDocVisitor::visitPost(DocMscFile *df)
@@ -1396,7 +1396,7 @@ void LatexDocVisitor::visitPost(DocMscFile *df)
 void LatexDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption());
+  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->getSrcReferenceFile().data(),df->getSrcReferenceLine());
 }
 
 void LatexDocVisitor::visitPost(DocDiaFile *df)
@@ -1816,7 +1816,9 @@ void LatexDocVisitor::popEnabled()
 void LatexDocVisitor::startDotFile(const QCString &fileName,
                                    const QCString &width,
                                    const QCString &height,
-                                   bool hasCaption
+                                   bool hasCaption,
+                                   const char *s,
+                                   const int l
                                   )
 {
   QCString baseName=fileName;
@@ -1832,7 +1834,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS);
+  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS,s,l);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1845,7 +1847,9 @@ void LatexDocVisitor::endDotFile(bool hasCaption)
 void LatexDocVisitor::startMscFile(const QCString &fileName,
                                    const QCString &width,
                                    const QCString &height,
-                                   bool hasCaption
+                                   bool hasCaption,
+                                   const char *s,
+                                   const int l
                                   )
 {
   QCString baseName=fileName;
@@ -1861,7 +1865,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS);
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS,s,l);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1881,7 +1885,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS);
+  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS,s->getSrcReferenceFile().data(),s->getSrcReferenceLine());
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
@@ -1891,7 +1895,9 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
 void LatexDocVisitor::startDiaFile(const QCString &fileName,
                                    const QCString &width,
                                    const QCString &height,
-                                   bool hasCaption
+                                   bool hasCaption,
+                                   const char *s,
+                                   const int l
                                   )
 {
   QCString baseName=fileName;
@@ -1907,7 +1913,7 @@ void LatexDocVisitor::startDiaFile(const QCString &fileName,
   baseName.prepend("dia_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_EPS);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_EPS,s,l);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -1927,7 +1933,7 @@ void LatexDocVisitor::writeDiaFile(const QCString &baseName, DocVerbatim *s)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS);
+  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_EPS,s->getSrcReferenceFile().data(),s->getSrcReferenceLine());
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());

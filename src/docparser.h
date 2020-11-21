@@ -563,6 +563,10 @@ class DocVerbatim : public DocNode
     void setText(const QCString &t)   { m_text=t;   }
     void setWidth(const QCString &w)  { m_width=w;  }
     void setHeight(const QCString &h) { m_height=h; }
+    /* functions to original start of command */
+    void setSrcReference(QCString s, int l) { m_srcFile=s; m_srcLine=l; }
+    QCString getSrcReferenceFile()  { return m_srcFile; }
+    int getSrcReferenceLine()       { return m_srcLine; }
 
   private:
     QCString  m_context;
@@ -576,6 +580,8 @@ class DocVerbatim : public DocNode
     QCString  m_width;
     QCString  m_height;
     QList<DocNode> m_children;
+    QCString  m_srcFile;
+    int       m_srcLine = -1;
 };
 
 
@@ -818,7 +824,7 @@ class DocImage : public CompAccept<DocImage>
 class DocDotFile : public CompAccept<DocDotFile>
 {
   public:
-    DocDotFile(DocNode *parent,const QCString &name,const QCString &context);
+    DocDotFile(DocNode *parent,const QCString &name,const QCString &context,const QCString s, const int l);
     bool parse();
     Kind kind() const          { return Kind_DotFile; }
     QCString name() const       { return m_name; }
@@ -828,6 +834,9 @@ class DocDotFile : public CompAccept<DocDotFile>
     QCString width() const      { return m_width; }
     QCString height() const     { return m_height; }
     QCString context() const    { return m_context; }
+    /* functions to original start of command */
+    QCString getSrcReferenceFile()  { return m_srcFile; }
+    int getSrcReferenceLine()       { return m_srcLine; }
   private:
     QCString  m_name;
     QCString  m_file;
@@ -835,13 +844,15 @@ class DocDotFile : public CompAccept<DocDotFile>
     QCString  m_width;
     QCString  m_height;
     QCString  m_context;
+    QCString  m_srcFile;
+    int       m_srcLine = -1;
 };
 
 /** Node representing a msc file */
 class DocMscFile : public CompAccept<DocMscFile>
 {
   public:
-    DocMscFile(DocNode *parent,const QCString &name,const QCString &context);
+    DocMscFile(DocNode *parent,const QCString &name,const QCString &context,const QCString s, const int l);
     bool parse();
     Kind kind() const          { return Kind_MscFile; }
     QCString name() const      { return m_name; }
@@ -851,6 +862,9 @@ class DocMscFile : public CompAccept<DocMscFile>
     QCString width() const     { return m_width; }
     QCString height() const    { return m_height; }
     QCString context() const   { return m_context; }
+    /* functions to original start of command */
+    QCString getSrcReferenceFile()  { return m_srcFile; }
+    int getSrcReferenceLine()       { return m_srcLine; }
   private:
     QCString  m_name;
     QCString  m_file;
@@ -858,13 +872,15 @@ class DocMscFile : public CompAccept<DocMscFile>
     QCString  m_width;
     QCString  m_height;
     QCString  m_context;
+    QCString  m_srcFile;
+    int       m_srcLine = -1;
 };
 
 /** Node representing a dia file */
 class DocDiaFile : public CompAccept<DocDiaFile>
 {
   public:
-    DocDiaFile(DocNode *parent,const QCString &name,const QCString &context);
+    DocDiaFile(DocNode *parent,const QCString &name,const QCString &context,const QCString s, const int l);
     bool parse();
     Kind kind() const          { return Kind_DiaFile; }
     QCString name() const      { return m_name; }
@@ -874,6 +890,9 @@ class DocDiaFile : public CompAccept<DocDiaFile>
     QCString width() const     { return m_width; }
     QCString height() const    { return m_height; }
     QCString context() const   { return m_context; }
+    /* functions to original start of command */
+    QCString getSrcReferenceFile()  { return m_srcFile; }
+    int getSrcReferenceLine()       { return m_srcLine; }
   private:
     QCString  m_name;
     QCString  m_file;
@@ -881,6 +900,8 @@ class DocDiaFile : public CompAccept<DocDiaFile>
     QCString  m_width;
     QCString  m_height;
     QCString  m_context;
+    QCString  m_srcFile;
+    int       m_srcLine = -1;
 };
 
 /** Node representing a VHDL flow chart */

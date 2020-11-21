@@ -146,15 +146,18 @@ class DocbookDocVisitor : public DocVisitor
     void pushEnabled();
     void popEnabled();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const QList<DocNode> &children,
+                      const char *s, const int l);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const QList<DocNode> &children,
+                      const char *s, const int l);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const QList<DocNode> &children,
+                      const char *s, const int l);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);

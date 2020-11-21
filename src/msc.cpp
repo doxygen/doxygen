@@ -92,7 +92,8 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
 }
 
 void writeMscGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,MscOutputFormat format)
+                           const char *outFile,MscOutputFormat format,
+                           const char *srcFile, int srcLine)
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -120,8 +121,16 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   int code;
   if ((code=mscgen_generate(inFile,imgName,msc_format))!=0)
   {
-    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+    if (srcLine == -1)
+    {
+      err("Problems generating msc output (error=%s). Look for typos in your msc file %s\n",
         mscgen_error2str(code),inFile);
+    }
+    else
+    {
+      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in your msc file %s\n",
+        mscgen_error2str(code),inFile);
+    }
     return;
   }
 
@@ -144,7 +153,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
 
 static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
                                 const QCString& relPath,const QCString& context,
-                                bool writeSVGMap)
+                                bool writeSVGMap,const char *srcFile,const int srcLine)
 {
   QCString outFile = inFile + ".map";
 
@@ -152,8 +161,16 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
   if ((code=mscgen_generate(inFile,outFile,
                             writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
   {
-    err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
+    if (srcLine == -1)
+    {
+      err("Problems generating msc output (error=%s). Look for typos in your msc file %s\n",
         mscgen_error2str(code),inFile.data());
+    }
+    else
+    {
+      err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in your msc file %s\n",
+        mscgen_error2str(code),inFile);
+    }
     return "";
   }
 
@@ -170,7 +187,8 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
                               const QCString &relPath,
                               const QCString &baseName,
                               const QCString &context,
-			      MscOutputFormat format
+			      MscOutputFormat format,
+                              const char *srcFile, const int srcLine
  			    )
 {
   QCString mapName = baseName+".map";
@@ -189,7 +207,7 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
     default:
       t << "unknown";
   }
-  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG);
+  QCString imap = getMscImageMapFromFile(inFile,outDir,relPath,context,format==MSC_SVG,srcFile,srcLine);
   if (!imap.isEmpty())
   {
     t << "\" alt=\""
