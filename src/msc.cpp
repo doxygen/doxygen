@@ -169,7 +169,7 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
     else
     {
       err_full(srcFile,srcLine,"Problems generating msc output (error=%s). Look for typos in your msc file %s\n",
-        mscgen_error2str(code),inFile);
+        mscgen_error2str(code),inFile.data());
     }
     return "";
   }
