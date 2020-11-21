@@ -307,7 +307,7 @@ static bool findClassRelation(
 
 //----------------------------------------------------------------------------
 
-static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startScope,const QCString &n,
+static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,const QCString &n,
                                               FileDef *fileScope,const TagInfo *tagInfo);
 
 static void addPageToContext(PageDef *pd,Entry *root)
@@ -321,10 +321,10 @@ static void addPageToContext(PageDef *pd,Entry *root)
     }
     scope = stripAnonymousNamespaceScope(scope);
     scope+="::"+pd->name();
-    DefinitionMutable *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
+    Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
     if (d)
     {
-      pd->setPageScope(toDefinition(d));
+      pd->setPageScope(d);
     }
   }
 }
@@ -453,7 +453,7 @@ static void findGroupScope(const Entry *root)
       }
       scope = stripAnonymousNamespaceScope(scope);
       scope+="::"+gd->name();
-      Definition *d = toDefinition(findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo()));
+      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,scope,0,root->tagInfo());
       if (d)
       {
         gd->setGroupScope(d);
@@ -716,13 +716,13 @@ static Definition *findScope(Entry *root,int level=0)
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
-static DefinitionMutable *buildScopeFromQualifiedName(const QCString name,
+static Definition *buildScopeFromQualifiedName(const QCString name,
                                                int level,SrcLangExt lang,const TagInfo *tagInfo)
 {
   //printf("buildScopeFromQualifiedName(%s) level=%d\n",name.data(),level);
   int i=0;
   int p=0,l;
-  DefinitionMutable *prevScope=Doxygen::globalScope;
+  Definition *prevScope=Doxygen::globalScope;
   QCString fullScope;
   while (i<level)
   {
@@ -732,27 +732,27 @@ static DefinitionMutable *buildScopeFromQualifiedName(const QCString name,
     if (nsName.isEmpty()) return prevScope;
     if (!fullScope.isEmpty()) fullScope+="::";
     fullScope+=nsName;
-    NamespaceDefMutable *nd=toNamespaceDefMutable(Doxygen::namespaceSDict->find(fullScope));
-    DefinitionMutable *innerScope = nd;
-    ClassDefMutable *cd=0;
-    if (nd==0) cd = getClassMutable(fullScope);
+    NamespaceDef *nd=Doxygen::namespaceSDict->find(fullScope);
+    DefinitionMutable *innerScope = toDefinitionMutable(nd);
+    ClassDef *cd=0;
+    if (nd==0) cd = getClass(fullScope);
     if (nd==0 && cd) // scope is a class
     {
-      innerScope = cd;
+      innerScope = toDefinitionMutable(cd);
     }
     else if (nd==0 && cd==0 && fullScope.find('<')==-1) // scope is not known and could be a namespace!
     {
       // introduce bogus namespace
       //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",nsName.data(),prevScope->name().data(),tagInfo);
-      nd=createNamespaceDef(
+      NamespaceDefMutable *newNd=createNamespaceDef(
         "[generated]",1,1,fullScope,
         tagInfo?tagInfo->tagName:QCString(),
         tagInfo?tagInfo->fileName:QCString());
-      nd->setLanguage(lang);
+      newNd->setLanguage(lang);
 
       // add namespace to the list
-      Doxygen::namespaceSDict->inSort(fullScope,nd);
-      innerScope = nd;
+      Doxygen::namespaceSDict->inSort(fullScope,newNd);
+      innerScope = newNd;
     }
     else // scope is a namespace
     {
@@ -760,8 +760,12 @@ static DefinitionMutable *buildScopeFromQualifiedName(const QCString name,
     if (innerScope)
     {
       // make the parent/child scope relation
-      prevScope->addInnerCompound(toDefinition(innerScope));
-      innerScope->setOuterScope(toDefinition(prevScope));
+      DefinitionMutable *prevScopeMutable = toDefinitionMutable(prevScope);
+      if (prevScopeMutable)
+      {
+        prevScopeMutable->addInnerCompound(toDefinition(innerScope));
+      }
+      innerScope->setOuterScope(prevScope);
     }
     else // current scope is a class, so return only the namespace part...
     {
@@ -769,17 +773,17 @@ static DefinitionMutable *buildScopeFromQualifiedName(const QCString name,
     }
     // proceed to the next scope fragment
     p=idx+l+2;
-    prevScope=innerScope;
+    prevScope=toDefinition(innerScope);
     i++;
   }
   return prevScope;
 }
 
-static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startScope,const QCString &n,
+static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,const QCString &n,
                                               FileDef *fileScope,const TagInfo *tagInfo)
 {
   //printf("<findScopeFromQualifiedName(%s,%s)\n",startScope ? startScope->name().data() : 0, n.data());
-  DefinitionMutable *resultScope=startScope;
+  Definition *resultScope=toDefinition(startScope);
   if (resultScope==0) resultScope=Doxygen::globalScope;
   QCString scope=stripTemplateSpecifiersFromScope(n,FALSE);
   int l1=0,i1;
@@ -793,9 +797,9 @@ static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startS
   while ((i2=getScopeFragment(scope,p,&l2))!=-1)
   {
     QCString nestedNameSpecifier = scope.mid(i1,l1);
-    Definition *orgScope = toDefinition(resultScope);
+    Definition *orgScope = resultScope;
     //printf("  nestedNameSpecifier=%s\n",nestedNameSpecifier.data());
-    resultScope = toDefinitionMutable(toDefinition(resultScope)->findInnerCompound(nestedNameSpecifier));
+    resultScope = const_cast<Definition*>(resultScope->findInnerCompound(nestedNameSpecifier));
     //printf("  resultScope=%p\n",resultScope);
     if (resultScope==0)
     {
@@ -813,7 +817,7 @@ static DefinitionMutable *findScopeFromQualifiedName(NamespaceDefMutable *startS
           // N::A::I while looking for A, so we should compare
           // resultScope->name() against scope.left(i2+l2)
           //printf("  -> result=%s scope=%s\n",resultScope->name().data(),scope.data());
-          if (rightScopeMatch(toDefinition(resultScope)->name(),scope.left(i2+l2)))
+          if (rightScopeMatch(resultScope->name(),scope.left(i2+l2)))
           {
             break;
           }
@@ -1166,29 +1170,37 @@ static void resolveClassNestingRelations()
         QCString name = stripAnonymousNamespaceScope(icd->name());
         //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
         // also add class to the correct structural context
-        DefinitionMutable *d = findScopeFromQualifiedName(Doxygen::globalScope,
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,
                                                  name,icd->getFileDef(),0);
         if (d)
         {
           //printf("****** adding %s to scope %s in iteration %d\n",cd->name().data(),d->name().data(),iteration);
-          d->addInnerCompound(cd);
-          cd->setOuterScope(toDefinition(d));
+          DefinitionMutable *dm = toDefinitionMutable(d);
+          if (dm)
+          {
+            dm->addInnerCompound(cd);
+          }
+          cd->setOuterScope(d);
 
           // for inline namespace add an alias of the class to the outer scope
-          while (toDefinition(d)->definitionType()==Definition::TypeNamespace)
+          while (d->definitionType()==Definition::TypeNamespace)
           {
             NamespaceDef *nd = toNamespaceDef(d);
-            //printf("d->isInline()=%d\n",nd->isInline());
+            //printf("nd->isInline()=%d\n",nd->isInline());
             if (nd && nd->isInline())
             {
-              d = toDefinitionMutable(toDefinition(d)->getOuterScope());
+              d = d->getOuterScope();
               if (d)
               {
-                ClassDef *aliasCd = createClassDefAlias(toDefinition(d),cd);
-                d->addInnerCompound(aliasCd);
-                QCString aliasFullName = toDefinition(d)->qualifiedName()+"::"+aliasCd->localName();
-                Doxygen::classSDict->append(aliasFullName,aliasCd);
-                //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
+                dm = toDefinitionMutable(d);
+                if (dm)
+                {
+                  ClassDef *aliasCd = createClassDefAlias(d,cd);
+                  dm->addInnerCompound(aliasCd);
+                  QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
+                  Doxygen::classSDict->append(aliasFullName,aliasCd);
+                  //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
+                }
               }
             }
             else
@@ -1213,20 +1225,24 @@ static void resolveClassNestingRelations()
   for (cli.toFirst();(icd=cli.current());++cli)
   {
     ClassDefMutable *cd = toClassDefMutable(icd);
-    if (cd && visitedClasses.find(icd)!=visitedClasses.end())
+    if (cd && visitedClasses.find(icd)==visitedClasses.end())
     {
       QCString name = stripAnonymousNamespaceScope(cd->name());
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
-      DefinitionMutable *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
+      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
       if (d && d!=cd && !cd->getDefFileName().isEmpty())
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                  // for this case doxygen assumes the existence of a namespace N::N in which C is to be found!
                  // also avoid warning for stuff imported via a tagfile.
       {
-        d->addInnerCompound(cd);
-        cd->setOuterScope(toDefinition(d));
+        DefinitionMutable *dm = toDefinitionMutable(d);
+        if (dm)
+        {
+          dm->addInnerCompound(cd);
+        }
+        cd->setOuterScope(d);
         warn(cd->getDefFileName(),cd->getDefLine(),
             "Internal inconsistency: scope for class %s not "
             "found!",name.data()
@@ -1553,33 +1569,45 @@ static void buildNamespaceList(const Entry *root)
         Doxygen::namespaceSDict->inSort(fullName,nd);
 
         // also add namespace to the correct structural context
-        DefinitionMutable *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName,0,tagInfo);
+        Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName,0,tagInfo);
         //printf("adding namespace %s to context %s\n",nd->name().data(),d?d->name().data():"<none>");
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
           d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage(),tagInfo);
-          d->addInnerCompound(nd);
-          nd->setOuterScope(toDefinition(d));
+          DefinitionMutable *dm = toDefinitionMutable(d);
+          if (dm)
+          {
+            dm->addInnerCompound(nd);
+          }
+          nd->setOuterScope(d);
           // TODO: Due to the order in which the tag file is written
           // a nested class can be found before its parent!
         }
         else
         {
-          d->addInnerCompound(nd);
-          nd->setOuterScope(toDefinition(d));
+          DefinitionMutable *dm = toDefinitionMutable(d);
+          if (dm)
+          {
+            dm->addInnerCompound(nd);
+          }
+          nd->setOuterScope(d);
           // in case of d is an inline namespace, alias insert nd in the part scope of d.
-          while (toDefinition(d)->definitionType()==Definition::TypeNamespace)
+          while (d->definitionType()==Definition::TypeNamespace)
           {
             NamespaceDef *pnd = toNamespaceDef(d);
             if (pnd && pnd->isInline())
             {
-              d = toDefinitionMutable(toDefinition(d)->getOuterScope());
+              d = d->getOuterScope();
               if (d)
               {
-                NamespaceDef *aliasNd = createNamespaceDefAlias(toDefinition(d),nd);
-                //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
-                d->addInnerCompound(aliasNd);
+                dm = toDefinitionMutable(d);
+                if (dm)
+                {
+                  NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
+                  //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
+                  dm->addInnerCompound(aliasNd);
+                }
               }
             }
             else
@@ -4471,7 +4499,7 @@ static bool findClassRelation(
               si = baseClassName.findRev("::");
               if (si!=-1) // class is nested
               {
-                Definition *sd = toDefinition(findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo()));
+                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo());
                 if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
                 {
                   baseClass->setArtificial(TRUE); // see bug678139
