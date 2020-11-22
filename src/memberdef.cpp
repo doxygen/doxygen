@@ -1884,10 +1884,10 @@ void MemberDefImpl::writeLink(OutputList &ol,
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
   {
-    if (m_impl->enumScope && m_impl->livesInsideEnum)
-    {
-      n.prepend(m_impl->enumScope->displayName()+sep);
-    }
+    //if (m_impl->enumScope && m_impl->livesInsideEnum)
+    //{
+    //  n.prepend(m_impl->enumScope->displayName()+sep);
+    //}
     if (classDef && gd && !isRelated())
     {
       n.prepend(classDef->displayName()+sep);
@@ -4637,10 +4637,15 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
       MemberListIterator mli(*fmdl);
       MemberDefMutable *fmd=toMemberDefMutable(mli.current());
       bool fmdVisible = fmd ? fmd->isBriefSectionVisible() : TRUE;
+      bool first=true;
       while (fmd)
       {
         if (fmdVisible)
         {
+          if (!first)
+          {
+            typeDecl.writeString(", ");
+          }
           /* in html we start a new line after a number of items */
           if (numVisibleEnumValues>enumValuesPerLine
               && (enumMemCount%enumValuesPerLine)==0
@@ -4675,15 +4680,12 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
             typeDecl.writeString(" ");
             typeDecl.parseText(fmd->initializer());
           }
+          first=false;
         }
 
         bool prevVisible = fmdVisible;
         ++mli;
         fmd=toMemberDefMutable(mli.current());
-        if (fmd && (fmdVisible=fmd->isBriefSectionVisible()))
-        {
-          typeDecl.writeString(", ");
-        }
         if (prevVisible)
         {
           typeDecl.disable(OutputGenerator::Man);

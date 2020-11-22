@@ -5454,13 +5454,38 @@ static void addMemberFunction(const Entry *root,
         qPrint(scopeName),cd ? qPrint(cd->name()) : "<none>",
         qPrint(md->argsString()),
         qPrint(root->fileName));
-    //printf("Member %s (member scopeName=%s) (this scopeName=%s) classTempList=%s\n",md->name().data(),cd->name().data(),scopeName.data(),classTempList.data());
+    //printf("Member %s (member scopeName=%s) (this scopeName=%s) isEnumValue()=%d\n",
+    //    md->name().data(),cd->name().data(),scopeName.data(),md->isEnumValue());
     FileDef *fd=root->fileDef();
     NamespaceDef *nd=0;
     if (!namespaceName.isEmpty()) nd=getResolvedNamespace(namespaceName);
 
     //printf("scopeName %s->%s\n",scopeName.data(),
     //       stripTemplateSpecifiersFromScope(scopeName,FALSE).data());
+
+    // if the member we are searching for is an enum value that is part of
+    // a "strong" enum, we need to look into the fields of the enum for a match
+    int enumNamePos=0;
+    if (md->isEnumValue() && (enumNamePos=className.findRev("::"))!=-1)
+    {
+      QCString enumName = className.mid(enumNamePos+2);
+      if (className.left(enumNamePos)==cd->name())
+      {
+        MemberName *enumMn=Doxygen::memberNameLinkedMap->find(enumName);
+        //printf("enumMn(%s)=%p\n",className.data(),enumMn);
+        if (enumMn)
+        {
+          for (const auto &emd : *enumMn)
+          {
+            memFound = emd->isStrong() && md->getEnumScope()==emd.get();
+            addMemberDocs(root,md,funcDecl,0,overloaded,spec);
+            count++;
+            if (memFound) break;
+          }
+        }
+      }
+    }
+    if (memFound) break;
 
     const ClassDef *tcd=findClassDefinition(fd,nd,scopeName);
     if (tcd==0 && cd && stripAnonymousNamespaceScope(cd->name())==scopeName)

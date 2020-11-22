@@ -508,6 +508,10 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                 ol.writeString("local ");
               }
               ol.writeString("enum ");
+              if (md->isStrong())
+              {
+                ol.writeString("class ");
+              }
               ol.insertMemberAlign();
               md->writeEnumDeclaration(ol,cd,nd,fd,gd);
               if (!detailsLinkable)
