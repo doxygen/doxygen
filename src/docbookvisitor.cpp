@@ -356,12 +356,13 @@ DB_VIS_C
         QFile file(baseName+".dot");
         if (!file.open(IO_WriteOnly))
         {
-          err("Could not open file %s.msc for writing\n",baseName.data());
+          err("Could not open file %s.dot for writing\n",baseName.data());
         }
         file.writeBlock( stext, stext.length() );
         file.close();
         writeDotFile(baseName, s);
         m_t << "</para>" << endl;
+        if (Config_getBool(DOT_CLEANUP)) file.remove();
       }
       break;
     case DocVerbatim::Msc:
@@ -388,6 +389,7 @@ DB_VIS_C
         file.close();
         writeMscFile(baseName,s);
         m_t << "</para>" << endl;
+        if (Config_getBool(DOT_CLEANUP)) file.remove();
       }
       break;
     case DocVerbatim::PlantUML:

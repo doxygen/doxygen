@@ -3690,11 +3690,14 @@ add type and arguments for attributes and methods in the UML graphs.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='DOT_CLEANUP' defval='1' depends='HAVE_DOT'>
+    <option type='bool' id='DOT_CLEANUP' defval='1'>
       <docs>
 <![CDATA[
 If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
-remove the intermediate dot files that are used to generate the various graphs.
+remove the intermediate files that are used to generate the various graphs.
+ <br>Note:
+This setting is not only used for dot files but also for msc and plantuml
+temporary files.
 ]]>
       </docs>
     </option>
