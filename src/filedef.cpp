@@ -1918,7 +1918,8 @@ bool FileDefImpl::isDocumentationFile() const
          name().right(4)==".txt" ||
          name().right(4)==".dox" ||
          name().right(3)==".md"  ||
-         name().right(9)==".markdown";
+         name().right(9)==".markdown" ||
+         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt_Markdown;
 }
 
 void FileDefImpl::acquireFileVersion()
