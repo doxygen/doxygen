@@ -11912,6 +11912,7 @@ void generateOutput()
   QDir thisDir;
   thisDir.remove(Doxygen::objDBFileName);
   thisDir.remove(Doxygen::filterDBFileName);
+  finishWarnExit();
   Config::deinit();
   QTextCodec::deleteAllCodecs();
   delete Doxygen::clangUsrMap;

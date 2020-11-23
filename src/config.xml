@@ -1335,13 +1335,19 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
-    <option type='bool' id='WARN_AS_ERROR' defval='0'>
+    <option type='enum' id='WARN_AS_ERROR' defval='NO'>
       <docs>
 <![CDATA[
  If the \c WARN_AS_ERROR tag is set to \c YES then doxygen will immediately stop
  when a warning is encountered.
+ If the \c WARN_AS_ERROR tag is set to \c FAIL_ON_WARNINGS then doxygen will continue
+ running as if \c WARN_AS_ERROR tag is set to \c NO, but at the end of the doxygen
+ process doxygen will return with a non-zero status.
 ]]>
       </docs>
+      <value name="NO"/>
+      <value name="YES" />
+      <value name="FAIL_ON_WARNINGS" />
     </option>
     <option type='string' id='WARN_FORMAT' format='string' defval='$file:$line: $text'>
       <docs>
