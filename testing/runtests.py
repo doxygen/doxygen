@@ -118,6 +118,7 @@ class Tester:
 			print('INPUT=%s/%s' % (self.args.inputdir,self.test), file=f)
 			print('STRIP_FROM_PATH=%s' % self.args.inputdir, file=f)
 			print('EXAMPLE_PATH=%s' % self.args.inputdir, file=f)
+			print('WARN_LOGFILE=%s/warnings.log' % self.test_out, file=f)
 			if 'config' in self.config:
 				for option in self.config['config']:
 					print(option, file=f)
@@ -162,7 +163,7 @@ class Tester:
 
 		# run doxygen
 		if (sys.platform == 'win32'):
-			redir=' > nul:'
+			redir=' > nul: 2>&1'
 		else:
 			redir=' 2> /dev/null > /dev/null'
 
@@ -400,7 +401,12 @@ class Tester:
 			elif not self.args.keep:
 				shutil.rmtree(latex_output,ignore_errors=True)
 
-		if failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
+		warnings = xopen(self.test_out + "/warnings.log",'r',encoding='ISO-8859-1').read()
+		failed_warn =  len(warnings)!=0
+		if failed_warn:
+			msg += (warnings,)
+
+		if failed_warn or failed_xml or failed_html or failed_latex or failed_docbook or failed_rtf or failed_xmlxsd:
 			testmgr.ok(False,self.test_name,msg)
 			return False
 
