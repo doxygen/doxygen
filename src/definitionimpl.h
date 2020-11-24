@@ -298,7 +298,7 @@ class DefinitionAliasImpl
     void deinit();
   private:
     Definition *m_def;
-    const Definition *m_alias;
+    QCString m_symbolName;
 };
 
 template<class Base>

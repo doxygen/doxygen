@@ -233,9 +233,9 @@ static void addToMap(const char *name,Definition *d)
   }
 }
 
-static void removeFromMap(Definition *d)
+static void removeFromMap(const char *name,Definition *d)
 {
-  Doxygen::symbolMap.remove(d->_symbolName(),d);
+  Doxygen::symbolMap.remove(name,d);
 }
 
 DefinitionImpl::DefinitionImpl(Definition *def,
@@ -301,7 +301,7 @@ DefinitionImpl::~DefinitionImpl()
 {
   if (m_impl->isSymbol)
   {
-    removeFromMap(m_impl->def);
+    removeFromMap(m_impl->symbolName,m_impl->def);
   }
   if (m_impl)
   {
@@ -2179,7 +2179,7 @@ void DefinitionImpl::writeSummaryLinks(OutputList &) const
 //---------------------------------------------------------------------------------
 
 DefinitionAliasImpl::DefinitionAliasImpl(Definition *def,const Definition *alias)
-      : m_def(def), m_alias(alias)
+      : m_def(def), m_symbolName(alias->_symbolName())
 {
 }
 
@@ -2190,12 +2190,12 @@ DefinitionAliasImpl::~DefinitionAliasImpl()
 void DefinitionAliasImpl::init()
 {
   //printf("%s::addToMap(%s)\n",qPrint(name()),qPrint(alias->name()));
-  addToMap(m_alias->name(),m_def);
+  addToMap(m_symbolName,m_def);
 }
 
 void DefinitionAliasImpl::deinit()
 {
-  removeFromMap(m_def);
+  removeFromMap(m_symbolName,m_def);
 }
 
 //---------------------------------------------------------------------------------
