@@ -2800,6 +2800,10 @@ only copy the detailed documentation, not the brief description.
   The nodes of a graph can be made clickable by using the URL attribute.
   By using the command \ref cmdref "\\ref" inside the URL value you can conveniently
   link to an item inside doxygen. Here is an example:
+
+  \note doxygen creates a temporary file that is automatically removed unless
+  the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
+
 \code
 /*! class B */
 class B {};
@@ -2863,6 +2867,8 @@ See also the \ref emojisup "emoji support page" for details.
   within the <code>msc {...}</code> block (this is different from
   \ref cmdmscfile "\\mscfile").
   \note mscgen is now built in into doxygen
+  \note doxygen creates a temporary file that is automatically removed unless
+  the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
 Here is an example of the use of the \c \\msc command.
 \code
@@ -2932,6 +2938,9 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
+
+  \note doxygen creates a temporary file that is automatically removed unless
+  the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
 Here is an example of the use of the \c \\startuml command.
 \code
