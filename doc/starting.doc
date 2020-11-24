@@ -103,6 +103,7 @@ To omit all \c test directories from a source tree for instance, one could use:
 \verbatim EXCLUDE_PATTERNS = */test/* 
 \endverbatim
 
+\anchor default_file_extension_mapping
 Doxygen looks at the file's extension to determine how to parse a file,
 using the following table:
 
@@ -130,8 +131,11 @@ Extension | Language | Extension | Language     | Extension | Language
 .mm       |C / C++   | | | | |
 .txt      |C / C++   | | | | |
 
-Any other extension is not parsed unless it is added to
-\ref cfg_file_patterns "FILE_PATTERNS" and the appropriate
+Please note that the above list might contain more items than that by default set
+in the \ref cfg_file_patterns "FILE_PATTERNS".
+
+Any extension that is not parsed can be set by adding it to
+\ref cfg_file_patterns "FILE_PATTERNS" and when the appropriate
 \ref cfg_extension_mapping "EXTENSION_MAPPING" is set.
 
 \anchor extract_all
