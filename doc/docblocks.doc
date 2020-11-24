@@ -431,7 +431,9 @@ using structural commands:
  a case where the \\fn command is redundant and will only lead to problems.
 
  When you place a comment block in a file with one of the following extensions
- `.dox`, `.txt`, or `.doc` then doxygen will hide this file from the file list.
+ `.dox`, `.txt`, `.doc`, `.md` or `.markdown` or when the extension maps to
+ `md` by means of the \ref cfg_extension_mapping "EXTENSION_MAPPING" 
+ then doxygen will hide this file from the file list.
 
  If you have a file that doxygen cannot parse but still would like to document it,
  you can show it as-is using \ref cmdverbinclude "\\verbinclude", e.g.
