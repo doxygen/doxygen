@@ -427,7 +427,7 @@ static QString getDocsForNode(const QDomElement &child)
   regexp.setPattern(SA("`([^`]+)`"));
   docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
-  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^ ]+)\""));
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
   //\ref specials
   // \ref <key> -> description

@@ -662,6 +662,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  <br>Note that for custom extensions you also need to set \ref cfg_file_patterns "FILE_PATTERNS" otherwise the
  files are not read by doxygen. When specifying `no_extension` you should add `*`
  to the \ref cfg_file_patterns "FILE_PATTERNS".
+ <br>Note see also the list of \ref default_file_extension_mapping "default file extension mappings".
 ]]>
       </docs>
     </option>
@@ -1404,6 +1405,8 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  Note that for custom extensions or not directly supported extensions you also
  need to set \ref cfg_extension_mapping "EXTENSION_MAPPING" for the extension
  otherwise the files are not read by doxygen.<br>
+ Note the list of default checked file patterns might differ from the list of
+ \ref default_file_extension_mapping "default file extension mappings".<br>
  If left blank the following patterns are tested:
 ]]>
       </docs>
@@ -1438,8 +1441,6 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.md'/>
       <value name='*.mm'/>
       <value name='*.dox' desc='(to be provided as doxygen C comment)'/>
-      <value name='*.doc' desc='(to be provided as doxygen C comment)'/>
-      <value name='*.txt' desc='(to be provided as doxygen C comment)'/>
       <value name='*.py'/>
       <value name='*.pyw'/>
       <value name='*.f90'/>
