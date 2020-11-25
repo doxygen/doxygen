@@ -11,14 +11,14 @@
 <div id="SRIndex">
 <div class="SRStatus" id="Loading">{{ tr.loading }}</div>
 <div id="SRResults"></div>
-<script type="text/javascript"><!--
+<script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 createResults();
 /* @license-end */
---></script>
+</script>
 <div class="SRStatus" id="Searching">{{ tr.searching }}</div>
 <div class="SRStatus" id="NoMatches">{{ tr.noMatches }}</div>
-<script type="text/javascript"><!--
+<script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
 document.getElementById("Loading").style.display="none";
 document.getElementById("NoMatches").style.display="none";
@@ -31,7 +31,7 @@ window.addEventListener("message", function(event) {
   }
 });
 /* @license-end */
---></script>
+</script>
 </div>
 </body>
 </html>

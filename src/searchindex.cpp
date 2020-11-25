@@ -923,7 +923,8 @@ void writeJavaScriptSearchIndex()
 
           t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
             " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
-          t << "<html><head><title></title>" << endl;
+          t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">" << endl;
+          t << "<head><title></title>" << endl;
           t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
           t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>" << endl;
           t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
@@ -934,18 +935,18 @@ void writeJavaScriptSearchIndex()
           t << "<div id=\"SRIndex\">" << endl;
           t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
           t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
-          t << "<script type=\"text/javascript\"><!--" << endl;
-					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+          t << "<script type=\"text/javascript\">" << endl;
+          t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
           t << "createResults();" << endl; // this function will insert the results
-					t << "/* @license-end */\n";
-          t << "--></script>" << endl;
+          t << "/* @license-end */\n";
+          t << "</script>" << endl;
           t << "<div class=\"SRStatus\" id=\"Searching\">"
             << theTranslator->trSearching() << "</div>" << endl;
           t << "<div class=\"SRStatus\" id=\"NoMatches\">"
             << theTranslator->trNoMatches() << "</div>" << endl;
 
-          t << "<script type=\"text/javascript\"><!--" << endl;
-					t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+          t << "<script type=\"text/javascript\">" << endl;
+          t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
           t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
           t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
           t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
@@ -956,8 +957,8 @@ void writeJavaScriptSearchIndex()
           t << "    if (elem) elem.focus();" << endl;
           t << "  }" << endl;
           t << "});" << endl;
-					t << "/* @license-end */\n";
-          t << "--></script>" << endl;
+          t << "/* @license-end */\n";
+          t << "</script>" << endl;
           t << "</div>" << endl; // SRIndex
           t << "</body>" << endl;
           t << "</html>" << endl;
@@ -1229,7 +1230,8 @@ void writeJavaScriptSearchIndex()
       FTextStream t(&f);
       t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
            "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
-      t << "<html><head><title></title>" << endl;
+      t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">" << endl;
+      t << "<head><title></title>" << endl;
       t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
       t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
       t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
