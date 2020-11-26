@@ -172,7 +172,6 @@ struct fortrancodeYY_state
   int           inTypeDecl = 0;
 
   bool          endComment = false;
-  TooltipManager tooltipManager;
 };
 
 #if USE_STATE2STRING
@@ -1017,7 +1016,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(d);
+  TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1519,9 +1518,6 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   }
   if (yyextra->hasContLine) free(yyextra->hasContLine);
   yyextra->hasContLine = NULL;
-
-  // write the tooltips
-  yyextra->tooltipManager.writeTooltips(codeOutIntf);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }

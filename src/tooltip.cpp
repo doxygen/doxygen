@@ -30,12 +30,23 @@ class TooltipManager::Private
     std::map<std::string,const Definition*> tooltipInfo;
 };
 
+TooltipManager *TooltipManager::s_theInstance = 0;
+
 TooltipManager::TooltipManager() : p(std::make_unique<Private>())
 {
 }
 
 TooltipManager::~TooltipManager()
 {
+}
+
+TooltipManager *TooltipManager::instance()
+{
+  if (!s_theInstance)
+  {
+    s_theInstance = new TooltipManager;
+  }
+  return s_theInstance;
 }
 
 static QCString escapeId(const char *s)
@@ -50,24 +61,29 @@ static QCString escapeId(const char *s)
   return res;
 }
 
+static std::mutex tooltipMutex;
+
 void TooltipManager::addTooltip(const Definition *d)
 {
-  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  if (!sourceTooltips) return;
-  QCString id = d->getOutputFileBase();
-  int i=id.findRev('/');
-  if (i!=-1)
   {
-    id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
+    std::lock_guard<std::mutex> lock(tooltipMutex);
+    bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+    if (!sourceTooltips) return;
+    QCString id = d->getOutputFileBase();
+    int i=id.findRev('/');
+    if (i!=-1)
+    {
+      id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
+    }
+    id+=escapeId(Doxygen::htmlFileExtension);
+    QCString anc = d->anchor();
+    if (!anc.isEmpty())
+    {
+      id+="_"+anc;
+    }
+    id = "a" + id;
+    p->tooltipInfo.insert({id.str(),d});
   }
-  id+=escapeId(Doxygen::htmlFileExtension);
-  QCString anc = d->anchor();
-  if (!anc.isEmpty())
-  {
-    id+="_"+anc;
-  }
-  id = "a" + id;
-  p->tooltipInfo.insert({id.str(),d});
 }
 
 void TooltipManager::writeTooltips(CodeOutputInterface &ol)
@@ -106,5 +122,6 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
                     declInfo
                    );
   }
+  p.reset(new Private());
 }
 

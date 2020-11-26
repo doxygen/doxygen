@@ -133,7 +133,6 @@ class ClangTUParser::Private
     CXToken *tokens = 0;
     uint numTokens = 0;
     StringVector filesInSameTU;
-    TooltipManager tooltipManager;
 
     // state while parsing sources
     MemberDef  *currentMemberDef=0;
@@ -573,7 +572,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const char *text)
 {
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  p->tooltipManager.addTooltip(d);
+  TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();

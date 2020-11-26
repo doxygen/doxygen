@@ -107,7 +107,6 @@ struct pycodeYY_state
   bool          endComment = FALSE;
   VariableContext theVarContext;
   CallContext theCallContext;
-  TooltipManager tooltipManager;
   SymbolResolver symbolResolver;
 };
 
@@ -1097,7 +1096,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(d);
+  TooltipManager::instance()->addTooltip(d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1626,8 +1625,6 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-  // write the tooltips
-  yyextra->tooltipManager.writeTooltips(codeOutIntf);
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
 }
 
