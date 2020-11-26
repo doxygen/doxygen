@@ -3452,6 +3452,15 @@ add type and arguments for attributes and methods in the UML graphs.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='DOT_UML_SHOW_MEMBER' defval='1' depends='UML_LOOK'>
+      <docs>
+<![CDATA[
+ If the \c DOT_UML_SHOW_MEMBER tag is set to \c NO, doxygen will not generate fields with
+ class member information inside the class nodes. The class diagrams will look similar to
+ the default class diagrams but using UML notation for the relationships. 
+]]>
+      </docs>
+    </option>
     <option type='int' id='DOT_WRAP_THRESHOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
