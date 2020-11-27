@@ -97,6 +97,30 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
+// Extracted from config setting "DOT_UML_DETAILS"
+enum class UmlDetailLevel
+{
+  Default, // == NO, the default setting
+  Full,    // == YES, include type and arguments
+  None     // == NONE, don't include compartments for attributes and methods
+};
+
+// Local helper function for extracting the configured detail level
+static UmlDetailLevel getUmlDetailLevelFromConfig()
+{
+  UmlDetailLevel result = UmlDetailLevel::Default;
+  QCString umlDetailsStr = Config_getEnum(DOT_UML_DETAILS).upper();
+  if (umlDetailsStr == "YES")
+  {
+    result=UmlDetailLevel::Full;
+  }
+  else if (umlDetailsStr == "NONE")
+  {
+    result=UmlDetailLevel::None;
+  }
+  return result;
+} 
+
 static QCString escapeTooltip(const QCString &tooltip)
 {
   QCString result;
@@ -149,7 +173,7 @@ static void writeBoxMemberList(FTextStream &t,
         {
           t << prot << " ";
           QCString label;
-          if(Config_getBool(DOT_UML_DETAILS))
+          if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
           {
             label+=mma->typeString();
             label+=" ";
@@ -157,7 +181,7 @@ static void writeBoxMemberList(FTextStream &t,
           label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-            if(Config_getBool(DOT_UML_DETAILS))
+            if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
             {
               label+=mma->argsString();
             }
@@ -429,7 +453,7 @@ void DotNode::writeBox(FTextStream &t,
 
     //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
     t << "{" << convertLabel(m_label) << "\\n";
-    if (Config_getBool(DOT_UML_SHOW_MEMBER))
+    if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
     {
       t << "|";
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
