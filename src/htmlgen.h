@@ -26,6 +26,8 @@ class HtmlCodeGenerator : public CodeOutputInterface
   public:
     HtmlCodeGenerator(FTextStream &t,const QCString &relPath);
     HtmlCodeGenerator();
+    int id() const { return m_id; }
+    void setId(int id) { m_id = id; }
     void setTextStream(FTextStream &t);
     void setRelativePath(const QCString &path);
     void codify(const char *text);
@@ -61,6 +63,7 @@ class HtmlCodeGenerator : public CodeOutputInterface
     int m_col = 0;
     QCString m_relPath;
     bool m_lineOpen = false;
+    int m_id = 0;
 };
 
 /** Generator for HTML output */
@@ -117,9 +120,9 @@ class HtmlGenerator : public OutputGenerator
 
     void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile);
     void addWord(const char *word,bool hiPriority);
-    void writeDoc(DocNode *,const Definition *,const MemberDef *);
+    void writeDoc(DocNode *,const Definition *,const MemberDef *,int id);
 
-    void startFile(const char *name,const char *manName,const char *title);
+    void startFile(const char *name,const char *manName,const char *title,int id);
     void writeFooter(const char *navPath);
     void endFile();
     void clearBuffer();

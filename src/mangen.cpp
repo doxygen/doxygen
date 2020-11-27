@@ -155,7 +155,7 @@ static QCString buildFileName(const char *name)
   return fileName;
 }
 
-void ManGenerator::startFile(const char *,const char *manName,const char *)
+void ManGenerator::startFile(const char *,const char *manName,const char *,int)
 {
   startPlainFile( buildFileName( manName ) );
   m_firstCol=TRUE;
@@ -696,7 +696,7 @@ void ManGenerator::endParamList()
 {
 }
 
-void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
+void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
 {
   ManDocVisitor *visitor = new ManDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);

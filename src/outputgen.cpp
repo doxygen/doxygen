@@ -21,6 +21,7 @@
 
 #include <qfile.h>
 
+#include "doxygen.h"
 #include "outputgen.h"
 #include "message.h"
 #include "portable.h"

@@ -123,9 +123,9 @@ class LatexGenerator : public OutputGenerator
     // ---------------------------
 
 
-    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *);
+    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *,int id);
 
-    void startFile(const char *name,const char *manName,const char *title);
+    void startFile(const char *name,const char *manName,const char *title,int id);
     void writeSearchInfo() {}
     void writeFooter(const char *) {}
     void endFile();

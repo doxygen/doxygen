@@ -41,9 +41,9 @@ class RTFGenerator : public OutputGenerator
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *);
+    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
 
-    void startFile(const char *name,const char *manName,const char *title);
+    void startFile(const char *name,const char *manName,const char *title,int id);
     void writeSearchInfo() {}
     void writeFooter(const char *) {}
     void endFile();

@@ -136,13 +136,13 @@ class DocbookGenerator : public OutputGenerator
     { m_codeGen.endCodeFragment(style); }
     // ---------------------------
 
-    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md);
+    void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id);
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
     ///////////////////////////////////////////////////////////////
     void startFile(const char *name,const char *manName,
-                           const char *title);
+                           const char *title,int id);
     void writeSearchInfo(){DB_GEN_EMPTY};
     void writeFooter(const char *){DB_GEN_NEW};
     void endFile();

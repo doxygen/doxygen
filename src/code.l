@@ -175,7 +175,6 @@ struct codeYY_state
 
   VariableContext theVarContext;
   CallContext     theCallContext;
-  TooltipManager  tooltipManager;
   SymbolResolver  symbolResolver;
 };
 
@@ -2469,7 +2468,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  yyextra->tooltipManager.addTooltip(d);
+  TooltipManager::instance().addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -3886,7 +3885,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
     yyextra->sourceFileDef=0;
   }
   // write the tooltips
-  yyextra->tooltipManager.writeTooltips(od);
+  TooltipManager::instance().writeTooltips(od);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? fd->fileName().data(): NULL);
   return;

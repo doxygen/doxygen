@@ -49,6 +49,7 @@ class OutputList : public OutputDocInterface
     }
 
     size_t size() const { return m_outputs.size(); }
+    int id() const { return m_id; }
 
     void disableAllBut(OutputGenerator::OutputType o);
     void enableAll();
@@ -69,7 +70,7 @@ class OutputList : public OutputDocInterface
                      bool indexWords,bool isExample,const char *exampleName /*=0*/,
                      bool singleLine /*=FALSE*/,bool linkFromIndex /*=FALSE*/,
                      bool markdownSupport /*=FALSE*/);
-    void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md);
+    void writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int id=0);
     void parseText(const QCString &textStr);
 
     void startIndexSection(IndexSections is)
@@ -85,7 +86,10 @@ class OutputList : public OutputDocInterface
     void writeStyleInfo(int part)
     { forall(&OutputGenerator::writeStyleInfo,part); }
     void startFile(const char *name,const char *manName,const char *title)
-    { forall(&OutputGenerator::startFile,name,manName,title); }
+    {
+      newId();
+      forall(&OutputGenerator::startFile,name,manName,title,m_id);
+    }
     void writeSearchInfo()
     { forall(&OutputGenerator::writeSearchInfo); }
     void writeFooter(const char *navPath)
@@ -486,6 +490,7 @@ class OutputList : public OutputDocInterface
   private:
     void debug();
     void clear();
+    void newId();
 
     // For each output format that is enabled (OutputGenerator::isEnabled()) we forward
     // the method call.
@@ -501,6 +506,7 @@ class OutputList : public OutputDocInterface
     }
 
     std::vector< std::unique_ptr<OutputGenerator> > m_outputs;
+    int m_id;
 
 };
 

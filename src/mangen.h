@@ -34,10 +34,10 @@ class ManGenerator : public OutputGenerator
 
     OutputType type() const { return Man; }
 
-    void writeDoc(DocNode *,const Definition *,const MemberDef *);
+    void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
 
     static void init();
-    void startFile(const char *name,const char *manName,const char *title);
+    void startFile(const char *name,const char *manName,const char *title,int);
     void writeSearchInfo() {}
     void writeFooter(const char *) {}
     void endFile();

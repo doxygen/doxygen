@@ -1130,7 +1130,7 @@ void HtmlGenerator::writeFooterFile(QFile &file)
 static std::mutex g_indexLock;
 
 void HtmlGenerator::startFile(const char *name,const char *,
-                              const char *title)
+                              const char *title,int id)
 {
   //printf("HtmlGenerator::startFile(%s)\n",name);
   m_relPath = relativePathToRoot(name);
@@ -1138,6 +1138,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   m_lastTitle=title;
 
   startPlainFile(fileName);
+  m_codeGen.setId(id);
   m_codeGen.setTextStream(t);
   m_codeGen.setRelativePath(m_relPath);
   {
@@ -2238,8 +2239,9 @@ void HtmlGenerator::endParamList()
   t << "</dl>";
 }
 
-void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
+void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int id)
 {
+  m_codeGen.setId(id);
   HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx);
   n->accept(visitor);
   delete visitor;

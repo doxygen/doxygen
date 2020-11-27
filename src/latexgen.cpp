@@ -902,7 +902,7 @@ void LatexGenerator::writeStyleSheetFile(QFile &f)
   writeDefaultStyleSheet(t);
 }
 
-void LatexGenerator::startFile(const char *name,const char *,const char *)
+void LatexGenerator::startFile(const char *name,const char *,const char *,int)
 {
 #if 0
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
@@ -2230,7 +2230,7 @@ void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
   t << " ";
 }
 
-void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
+void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
 {
   LatexDocVisitor *visitor =
     new LatexDocVisitor(t,m_codeGen,ctx?ctx->getDefFileExtension():QCString(""),m_insideTabbing);

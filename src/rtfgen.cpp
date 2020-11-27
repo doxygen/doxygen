@@ -372,7 +372,7 @@ void RTFGenerator::beginRTFSection()
   t << rtf_Style["Heading2"]->reference() << "\n";
 }
 
-void RTFGenerator::startFile(const char *name,const char *,const char *)
+void RTFGenerator::startFile(const char *name,const char *,const char *,int)
 {
   //setEncoding(QCString().sprintf("CP%s",theTranslator->trRTFansicp()));
   QCString fileName=name;
@@ -628,7 +628,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           DocText *root = validatingParseText(projectName);
           t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-          writeDoc(root,0,0);
+          writeDoc(root,0,0,0);
           t << "}}\\par" << endl;
 
         }
@@ -2796,7 +2796,7 @@ void RTFGenerator::exceptionEntry(const char* prefix,bool closeBracket)
   t << " ";
 }
 
-void RTFGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *)
+void RTFGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
 {
   RTFDocVisitor *visitor = new RTFDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);

@@ -573,7 +573,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const char *text)
 {
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  p->tooltipManager.addTooltip(d);
+  p->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();

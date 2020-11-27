@@ -62,6 +62,9 @@ class CodeOutputInterface
   public:
     virtual ~CodeOutputInterface() {}
 
+    /** Identifier for the output file */
+    virtual int id() const { return 0; }
+
     /*! Writes an code fragment to the output. This function should keep
      *  spaces visible, should break lines at a newline and should convert
      *  tabs to the right number of spaces.
@@ -351,13 +354,13 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md) = 0;
+    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
     ///////////////////////////////////////////////////////////////
     virtual void startFile(const char *name,const char *manName,
-                           const char *title) = 0;
+                           const char *title,int id=0) = 0;
     virtual void writeSearchInfo() = 0;
     virtual void writeFooter(const char *navPath) = 0;
     virtual void endFile() = 0;

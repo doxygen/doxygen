@@ -296,7 +296,7 @@ void DocbookGenerator::init()
   createSubDirs(d);
 }
 
-void DocbookGenerator::startFile(const char *name,const char *,const char *)
+void DocbookGenerator::startFile(const char *name,const char *,const char *,int)
 {
 DB_GEN_C
   QCString fileName=name;
@@ -654,7 +654,7 @@ DB_GEN_C
   }
 }
 
-void DocbookGenerator::writeDoc(DocNode *n,const Definition *,const MemberDef *)
+void DocbookGenerator::writeDoc(DocNode *n,const Definition *,const MemberDef *,int)
 {
 DB_GEN_C
   DocbookDocVisitor *visitor =
