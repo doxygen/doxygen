@@ -244,6 +244,8 @@ static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
 
 static std::mutex g_searchIndexMutex;
 static std::mutex g_docCrossReferenceMutex;
+static std::mutex g_addExampleMutex;
+static std::mutex g_countFlowKeywordsMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -2447,6 +2449,7 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
 
 static void incrementFlowKeyWordCount(yyscan_t yyscanner)
 {
+  std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
   {
@@ -2733,6 +2736,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       //printf("found it %s!\n",md->qualifiedName().data());
       if (yyextra->exampleBlock)
       {
+        std::lock_guard<std::mutex> lock(g_addExampleMutex);
         QCString anchor;
         anchor.sprintf("a%d",yyextra->anchorCount);
         //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
@@ -2899,6 +2903,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
     DBG_CTX((stderr,"is linkable class %s\n",clName));
     if (yyextra->exampleBlock)
     {
+      std::lock_guard<std::mutex> lock(g_addExampleMutex);
       QCString anchor;
       anchor.sprintf("_a%d",yyextra->anchorCount);
       //printf("addExampleClass(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),
@@ -2989,6 +2994,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
 
   if (yyextra->exampleBlock)
   {
+    std::lock_guard<std::mutex> lock(g_addExampleMutex);
     QCString anchor;
     anchor.sprintf("a%d",yyextra->anchorCount);
     //printf("addExampleFile(%s,%s,%s)\n",anchor.data(),yyextra->exampleName.data(),

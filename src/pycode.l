@@ -149,6 +149,8 @@ static void addVariable(yyscan_t yyscanner, QCString type, QCString name);
 //-------------------------------------------------------------------
 
 static std::mutex g_searchIndexMutex;
+static std::mutex g_docCrossReferenceMutex;
+static std::mutex g_countFlowKeywordsMutex;
 
 //-------------------------------------------------------------------
 
@@ -487,6 +489,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
+                                        std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
                                         MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                         if (mdm)
                                         {
@@ -532,6 +535,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
     {FLOWKW}                        {
                                       if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
                                       {
+                                        std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
                                         MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
                                         if (mdm)
                                         {
@@ -1224,6 +1228,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
           md!=yyextra->currentMemberDef && yyextra->collectXRefs)
       {
+        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
       //printf("d->getReference()='%s' d->getOutputBase()='%s' name='%s' member name='%s'\n",d->getReference().data(),d->getOutputFileBase().data(),d->name().data(),md->name().data());
@@ -1334,6 +1339,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       if (d && d->isLinkable() && md->isLinkable() &&
           yyextra->currentMemberDef && yyextra->collectXRefs)
       {
+        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
       }
     }
@@ -1361,6 +1367,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
           if (d && d->isLinkable() && mmd->isLinkable() &&
               yyextra->currentMemberDef && yyextra->collectXRefs)
           {
+            std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
             addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
           }
           return;
@@ -1384,6 +1391,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
             if (d && d->isLinkable() && mmd->isLinkable() &&
                 yyextra->currentMemberDef && yyextra->collectXRefs)
             {
+              std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
               addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
             }
             return;
@@ -1470,6 +1478,7 @@ static bool findMemberLink(yyscan_t yyscanner,
     {
       if (yyextra->currentMemberDef && yyextra->collectXRefs)
       {
+        std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(toMemberDef(sym)));
       }
     }
