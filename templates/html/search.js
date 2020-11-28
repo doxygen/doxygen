@@ -355,7 +355,7 @@ function SearchBox(name, resultsPath, inFrame, label, extension)
     }
     else // nothing available for this search term
     {
-       resultsPage = this.resultsPath + '/nomatches.html';
+       resultsPage = this.resultsPath + '/nomatches' + this.extension;
        resultsPageWithSearch = resultsPage;
        hasResultsPage = false;
     }
