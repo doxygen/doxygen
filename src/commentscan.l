@@ -887,7 +887,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 
 <HtmlComment>"--"[!]?">"{B}*            { BEGIN( Comment ); }
 <HtmlComment>{DOCNL}                    {
-                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          if (*yytext=='\n')
+                                          {
+                                            addOutput(yyscanner,*yytext);
+                                            yyextra->lineNr++;
+                                          }
                                         }
 <HtmlComment>[^\\\n\-]+                 { // ignore unimportant characters
                                         }
