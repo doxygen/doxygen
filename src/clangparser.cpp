@@ -25,7 +25,8 @@
 
 //--------------------------------------------------------------------------
 
-std::mutex g_clangMutex;
+static std::mutex g_clangMutex;
+static std::mutex g_docCrossReferenceMutex;
 
 ClangParser *ClangParser::instance()
 {
@@ -696,6 +697,7 @@ void ClangTUParser::linkIdentifier(CodeOutputInterface &ol,FileDef *fd,
         p->currentMemberDef && d->definitionType()==Definition::TypeMember &&
         (p->currentMemberDef!=d || p->currentLine<line)) // avoid self-reference
     {
+      std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
       addDocCrossReference(toMemberDefMutable(p->currentMemberDef),toMemberDefMutable(d));
     }
     writeMultiLineCodeLink(ol,fd,line,column,d,text);

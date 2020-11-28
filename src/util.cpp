@@ -6844,45 +6844,6 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
          );
 }
 
-void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst)
-{
-  if (src==0 || dst==0) return;
-  //printf("--> addDocCrossReference src=%s,dst=%s\n",src->name().data(),dst->name().data());
-  if (dst->isTypedef() || dst->isEnumerate()) return; // don't add types
-  if ((dst->hasReferencedByRelation() || dst->hasCallerGraph()) &&
-      src->showInCallGraph()
-     )
-  {
-    dst->addSourceReferencedBy(src);
-    MemberDefMutable *mdDef = toMemberDefMutable(dst->memberDefinition());
-    if (mdDef)
-    {
-      mdDef->addSourceReferencedBy(src);
-    }
-    MemberDefMutable *mdDecl = toMemberDefMutable(dst->memberDeclaration());
-    if (mdDecl)
-    {
-      mdDecl->addSourceReferencedBy(src);
-    }
-  }
-  if ((src->hasReferencesRelation() || src->hasCallGraph()) &&
-      src->showInCallGraph()
-     )
-  {
-    src->addSourceReferences(dst);
-    MemberDefMutable *mdDef = toMemberDefMutable(src->memberDefinition());
-    if (mdDef)
-    {
-      mdDef->addSourceReferences(dst);
-    }
-    MemberDefMutable *mdDecl = toMemberDefMutable(src->memberDeclaration());
-    if (mdDecl)
-    {
-      mdDecl->addSourceReferences(dst);
-    }
-  }
-}
-
 //--------------------------------------------------------------------------------------
 
 /*! @brief Get one unicode character as an unsigned integer from utf-8 string

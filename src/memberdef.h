@@ -448,5 +448,6 @@ MemberDefMutable *createMemberDef(const char *defFileName,int defLine,int defCol
 MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd);
 
 void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *mdef);
+void addDocCrossReference(MemberDefMutable *src,MemberDefMutable *dst);
 
 #endif
