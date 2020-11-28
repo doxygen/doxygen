@@ -559,7 +559,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
 void NamespaceDefImpl::computeAnchors()
 {
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
-  if (allMemberList) setAnchors(allMemberList);
+  if (allMemberList) allMemberList->setAnchors();
 }
 
 bool NamespaceDefImpl::hasDetailedDescription() const

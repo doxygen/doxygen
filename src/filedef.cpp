@@ -288,7 +288,7 @@ void FileDefImpl::setDiskName(const QCString &name)
 void FileDefImpl::computeAnchors()
 {
   MemberList *ml = getMemberList(MemberListType_allMembersList);
-  if (ml) setAnchors(ml);
+  if (ml) ml->setAnchors();
 }
 
 void FileDefImpl::distributeMemberGroupDocumentation()

@@ -137,8 +137,6 @@ void linkifyText(const TextGeneratorIntf &ol,
                  int indentLevel=0
                 );
 
-void setAnchors(MemberList *ml);
-
 QCString fileToString(const char *name,bool filter=FALSE,bool isSourceCode=FALSE);
 
 QCString dateToString(bool);

@@ -1143,6 +1143,24 @@ void MemberList::writeTagFile(FTextStream &tagFile)
   }
 }
 
+// compute the HTML anchors for a list of members
+void MemberList::setAnchors()
+{
+  //int count=0;
+  MemberListIterator mli(*this);
+  MemberDef *md;
+  for (;(md=mli.current());++mli)
+  {
+    MemberDefMutable *mdm = toMemberDefMutable(md);
+    if (mdm && !md->isReference())
+    {
+      mdm->setAnchor();
+    }
+  }
+}
+
+
+
 //--------------------------------------------------------------------------
 
 int MemberSDict::compareValues(const MemberDef *c1, const MemberDef *c2) const

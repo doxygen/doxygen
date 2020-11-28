@@ -665,7 +665,7 @@ int GroupDefImpl::numDocMembers() const
 void GroupDefImpl::computeAnchors()
 {
   //printf("GroupDefImpl::computeAnchors()\n");
-  setAnchors(m_allMemberList);
+  m_allMemberList->setAnchors();
 }
 
 void GroupDefImpl::writeTagFile(FTextStream &tagFile)

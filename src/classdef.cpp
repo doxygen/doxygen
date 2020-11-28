@@ -1144,7 +1144,7 @@ void ClassDefImpl::computeAnchors()
   {
     if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      setAnchors(ml);
+      ml->setAnchors();
     }
   }
 

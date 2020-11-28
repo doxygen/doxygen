@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -92,6 +90,7 @@ class MemberList : private QList<MemberDef>
     void setNeedsSorting(bool b);
     MemberGroupList *getMemberGroupList() const { return memberGroupList; }
     void setAnonymousEnumType();
+    void setAnchors();
 
   private:
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;

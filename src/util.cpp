@@ -1229,24 +1229,6 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
 }
 
 
-// compute the HTML anchors for a list of members
-// TODO: make member of MemberList
-void setAnchors(MemberList *ml)
-{
-  //int count=0;
-  if (ml==0) return;
-  MemberListIterator mli(*ml);
-  MemberDef *md;
-  for (;(md=mli.current());++mli)
-  {
-    MemberDefMutable *mdm = toMemberDefMutable(md);
-    if (mdm && !md->isReference())
-    {
-      mdm->setAnchor();
-    }
-  }
-}
-
 //----------------------------------------------------------------------------
 
 /*! takes the \a buf of the given length \a len and converts CR LF (DOS)
