@@ -62,10 +62,10 @@ static const char *contexts[10] =
   "interdd",   // 8
   "intertd"    // 9
 };
+static const char *hex="0123456789ABCDEF";
 
 static QCString convertIndexWordToAnchor(const QCString &word)
 {
-  static char hex[] = "0123456789abcdef";
   static int cnt = 0;
   QCString result="a";
   QCString cntStr;
@@ -2218,11 +2218,23 @@ void HtmlDocVisitor::filter(const char *str)
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;
       case '\\': if ((*p == '(') || (*p == ')'))
-                   m_t << "\\&zwj;" << *p++;
-                 else
-                   m_t << c;
-                 break;
-      default:   m_t << c;
+          m_t << "\\&zwj;" << *p++;
+        else
+          m_t << c;
+        break;
+      default:
+        {
+          uchar uc = static_cast<uchar>(c);
+          if (uc<32 && !isspace(c)) // non-printable control characters
+          {
+            m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+          }
+          else
+          {
+            m_t << c;
+          }
+        }
+        break;
     }
   }
 }
@@ -2244,11 +2256,23 @@ void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '\\': if ((*p == '(') || (*p == ')'))
-                   m_t << "\\&zwj;" << *p++;
-                 else
-                   m_t << c;
-                 break;
-      default:   m_t << c;
+          m_t << "\\&zwj;" << *p++;
+        else
+          m_t << c;
+        break;
+      default:
+        {
+          uchar uc = static_cast<uchar>(c);
+          if (uc<32 && !isspace(c)) // non-printable control characters
+          {
+            m_t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+          }
+          else
+          {
+            m_t << c;
+          }
+        }
+        break;
     }
   }
 }

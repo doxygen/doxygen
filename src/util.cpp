@@ -96,6 +96,8 @@
 
 #define REL_PATH_TO_ROOT "../../"
 
+static const char *hex = "0123456789ABCDEF";
+
 //------------------------------------------------------------------------
 // TextGeneratorOLImpl implementation
 //------------------------------------------------------------------------
@@ -4087,7 +4089,6 @@ QCString stripScope(const char *name)
 /*! Converts a string to a HTML id string */
 QCString convertToId(const char *s)
 {
-  static const char hex[] = "0123456789ABCDEF";
   if (s==0) return "";
   GrowBuf growBuf;
   const char *p=s;
@@ -4222,13 +4223,18 @@ QCString convertToDocBook(const char *s)
         break;
       case '\'': growBuf.addStr("&apos;"); break;
       case '"':  growBuf.addStr("&quot;"); break;
-      case '\007':  growBuf.addStr("&#x2407;"); break;
-      case  1: case  2: case  3: case  4: case  5: case  6:          case  8:
-      case 11: case 12: case 13: case 14: case 15: case 16: case 17: case 18:
+      case  1: case  2: case  3: case  4: case  5: case  6: case 7:  case  8:
+      case 11: case 12: case 14: case 15: case 16: case 17: case 18:
       case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26:
       case 27: case 28: case 29: case 30: case 31:
-        break; // skip invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
-      default:   growBuf.addChar(c);       break;
+        growBuf.addStr("&#x24");
+        growBuf.addChar(hex[static_cast<uchar>(c)>>4]);
+        growBuf.addChar(hex[static_cast<uchar>(c)&0xF]);
+        growBuf.addChar(';');
+        break;
+      default:
+        growBuf.addChar(c);
+        break;
     }
   }
   growBuf.addChar(0);
@@ -4275,7 +4281,22 @@ QCString convertToHtml(const char *s,bool keepEntities)
                  break;
       case '\'': growBuf.addStr("&#39;");  break;
       case '"':  growBuf.addStr("&quot;"); break;
-      default:   growBuf.addChar(c);       break;
+      default:
+        {
+          uchar uc = static_cast<uchar>(c);
+          if (uc<32 && !isspace(c))
+          {
+            growBuf.addStr("&#x24");
+            growBuf.addChar(hex[uc>>4]);
+            growBuf.addChar(hex[uc&0xF]);
+            growBuf.addChar(';');
+          }
+          else
+          {
+            growBuf.addChar(c);
+          }
+        }
+        break;
     }
   }
   growBuf.addChar(0);
@@ -5068,7 +5089,8 @@ void filterLatexString(FTextStream &t,const char *str,
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
         default:
-                   t << (char)c;
+                   if (c<32) t << ' '; // non printable control character
+                   else t << (char)c;
                    break;
       }
     }
@@ -5162,7 +5184,14 @@ void filterLatexString(FTextStream &t,const char *str,
                    {
                      t << "\\+";
                    }
-                   t << (char)c;
+                   if (c<32)
+                   {
+                     t << ' '; // non-printable control character
+                   }
+                   else
+                   {
+                     t << (char)c;
+                   }
       }
     }
     pc = c;

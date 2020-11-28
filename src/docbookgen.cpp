@@ -101,9 +101,21 @@ inline void writeDocbookCodeString(FTextStream &t,const char *s, int &col)
       case '&':  t << "&amp;"; col++;  break;
       case '\'': t << "&apos;"; col++; break;
       case '"':  t << "&quot;"; col++; break;
-      case '\007':  t << "^G"; col++; break; // bell
-      case '\014':  t << "^L"; col++; break; // form feed
-      default:   t << c; col++;        break;
+      default:
+        {
+          uchar uc = static_cast<uchar>(c);
+          static const char *hex="0123456789ABCDEF";
+          if (uc<32)
+          {
+            t << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+          }
+          else
+          {
+            t << c;
+          }
+          col++;
+        }
+        break;
     }
   }
 }

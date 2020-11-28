@@ -3802,6 +3802,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
        : m_ts(ts), m_relPath(relPath) {}
     void writeString(const char *s,bool keepSpaces) const
     {
+      static const char *hex="0123456789ABCDEF";
       if (s==0) return;
       if (keepSpaces)
       {
@@ -3817,6 +3818,19 @@ class TextGeneratorHtml : public TextGeneratorIntf
             case '"':  m_ts << "&quot;"; break;
             case '&':  m_ts << "&amp;"; break;
             case ' ':  m_ts << "&#160;"; break;
+            default:
+              {
+                uchar uc = static_cast<uchar>(c);
+                if (uc<32 && !isspace(c)) // non-printable control characters
+                {
+                  m_ts << "&#x24" << hex[uc>>4] << hex[uc&0xF] << ";";
+                }
+                else
+                {
+                  m_ts << c;
+                }
+              }
+              break;
           }
         }
       }
