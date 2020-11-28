@@ -9837,6 +9837,7 @@ static void escapeAliases()
       newValue+=value.mid(p,in-p);
       // expand \n's except if \n is part of a built-in command.
       if (value.mid(in,5)!="\\note" &&
+          value.mid(in,5)!="\\noop" &&
           value.mid(in,5)!="\\name" &&
           value.mid(in,10)!="\\namespace" &&
           value.mid(in,14)!="\\nosubgrouping"
