@@ -637,21 +637,12 @@ const char* VhdlDocGen::findKeyWord(const QCString& kw)
 ClassDef *VhdlDocGen::getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-
-  ClassDef *cd=0;
-  QCString temp(name);
-  //temp=temp.lower();
-  temp=temp.stripWhiteSpace();
-  cd= Doxygen::classSDict->find(temp.data());
-  return cd;
+  return Doxygen::classSDict->find(QCString(name).stripWhiteSpace());
 }
 
 ClassDef* VhdlDocGen::getPackageName(const QCString & name)
 {
-  ClassDef* cd=0;
-  cd=getClass(name);
-
-  return cd;
+  return getClass(name);
 }
 
 static QMap<QCString,MemberDef*> varMap;
