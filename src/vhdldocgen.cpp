@@ -64,11 +64,6 @@
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
 
-static QDict<QCString> g_vhdlKeyDict0(17,FALSE);
-static QDict<QCString> g_vhdlKeyDict1(17,FALSE);
-static QDict<QCString> g_vhdlKeyDict2(17,FALSE);
-static QDict<QCString> g_vhdlKeyDict3(17,FALSE);
-
 static void initUCF(Entry* root,const char* type,QCString &  qcs,int line,QCString & fileName,QCString & brief);
 static void writeUCFLink(const MemberDef* mdef,OutputList &ol);
 static void addInstance(ClassDefMutable* entity, ClassDefMutable* arch, ClassDefMutable *inst,
@@ -562,11 +557,8 @@ VhdlDocGen::~VhdlDocGen()
 {
 }
 
-void VhdlDocGen::init()
-{
-
  // vhdl keywords included VHDL 2008
-const char* g_vhdlKeyWordMap0[] =
+static const std::set< std::string > g_vhdlKeyWordSet0 =
 {
   "abs","access","after","alias","all","and","architecture","array","assert","assume","assume_guarantee","attribute",
   "begin","block","body","buffer","bus",
@@ -587,100 +579,57 @@ const char* g_vhdlKeyWordMap0[] =
   "unaffected","units","until","use",
   "variable","vmode","vprop","vunit",
   "wait","when","while","with",
-  "xor","xnor",
-  0
+  "xor","xnor"
 };
 
 
 // type
-const char* g_vhdlKeyWordMap1[] =
+static const std::set< std::string> g_vhdlKeyWordSet1 =
 {
   "natural","unsigned","signed","string","boolean", "bit","bit_vector","character",
   "std_ulogic","std_ulogic_vector","std_logic","std_logic_vector","integer",
-  "real","float","ufixed","sfixed","time","positive",0
+  "real","float","ufixed","sfixed","time","positive"
 };
 
 // logic
-const char* g_vhdlKeyWordMap2[] =
+static const std::set< std::string > g_vhdlKeyWordSet2 =
 {
-  "abs","and","or","not","mod", "xor","rem","xnor","ror","rol","sla",
-  "sll",0
+  "abs","and","or","not","mod","xor","rem","xnor","ror","rol","sla","sll"
 };
 
 // predefined attributes
-const char* g_vhdlKeyWordMap3[] =
+static const std::set< std::string > g_vhdlKeyWordSet3 =
 {
-"base","left","right","high","low","ascending",
-"image","value","pos","val","succ","pred","leftof","rightof","left","right","high","low",
-"range","reverse_range","length","ascending","delayed","stable","quiet","transaction","event",
-"active","last_event","last_active","last_value","driving","driving_value","simple_name","instance_name","path_name",0
+  "base","left","right","high","low","ascending",
+  "image","value","pos","val","succ","pred","leftof","rightof","left","right","high","low",
+  "range","reverse_range","length","ascending","delayed","stable","quiet","transaction","event",
+  "active","last_event","last_active","last_value","driving","driving_value","simple_name","instance_name","path_name"
 };
 
-  int j=0;
-  g_vhdlKeyDict0.setAutoDelete(TRUE);
-  g_vhdlKeyDict1.setAutoDelete(TRUE);
-  g_vhdlKeyDict2.setAutoDelete(TRUE);
-  g_vhdlKeyDict3.setAutoDelete(TRUE);
-
-  while (g_vhdlKeyWordMap0[j])
-  {
-    g_vhdlKeyDict0.insert(g_vhdlKeyWordMap0[j],
-	               new QCString(g_vhdlKeyWordMap0[j]));
-    j++;
-  }
-
-  j=0;
-  while (g_vhdlKeyWordMap1[j])
-  {
-    g_vhdlKeyDict1.insert(g_vhdlKeyWordMap1[j],
-	               new QCString(g_vhdlKeyWordMap1[j]));
-    j++;
-  }
-
-  j=0;
-  while (g_vhdlKeyWordMap2[j])
-  {
-    g_vhdlKeyDict2.insert(g_vhdlKeyWordMap2[j],
-	               new QCString(g_vhdlKeyWordMap2[j]));
-    j++;
-  }
-
-  j=0;
-  while (g_vhdlKeyWordMap3[j])
-  {
-    g_vhdlKeyDict3.insert(g_vhdlKeyWordMap3[j],
-	               new QCString(g_vhdlKeyWordMap3[j]));
-    j++;
-  }
-
-}// buildKeyMap
+void VhdlDocGen::init()
+{
+}
 
 /*!
  * returns the color of a keyword
  */
-
-QCString* VhdlDocGen::findKeyWord(const QCString& tmp)
+const char* VhdlDocGen::findKeyWord(const QCString& kw)
 {
-  static  QCString vhdlkeyword("vhdlkeyword");
-  static  QCString vhdltype("keywordtype");
-  static  QCString vhdllogic("vhdllogic");
-  static  QCString preprocessor("keywordflow");
+  std::string word=kw.lower().str();
 
-  QCString word=tmp.lower();
+  if (word.empty()) return 0;
 
-  if (word.isEmpty() || word.at(0)=='\0') return 0;
+  if (g_vhdlKeyWordSet0.find(word)!=g_vhdlKeyWordSet0.end())
+    return "keywordflow";
 
-  if (g_vhdlKeyDict0.find(word))
-    return &preprocessor;
+  if (g_vhdlKeyWordSet1.find(word)!=g_vhdlKeyWordSet1.end())
+    return "keywordtype";
 
-  if (g_vhdlKeyDict1.find(word))
-    return &vhdltype;
+  if (g_vhdlKeyWordSet2.find(word)!=g_vhdlKeyWordSet2.end())
+    return "vhdllogic";
 
-  if (g_vhdlKeyDict2.find(word))
-    return &vhdllogic;
-
-   if (g_vhdlKeyDict3.find(word))
-    return &vhdlkeyword;
+  if (g_vhdlKeyWordSet3.find(word)!=g_vhdlKeyWordSet3.end())
+    return "vhdlkeyword";
 
   return 0;
 }
@@ -1267,7 +1216,6 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
   QRegExp reg("[\\[\\]\\.\\/\\:\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]");
   QCString qcs = s;
   qcs+=QCString(" ");// parsing the last sign
-  QCString *ss;
   QCString find=qcs;
   QCString temp=qcs;
   char buf[2];
@@ -1284,7 +1232,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
     {
       find=find.left(j);
       buf[0]=temp[j];
-      ss=VhdlDocGen::findKeyWord(find);
+      const char *ss=VhdlDocGen::findKeyWord(find);
       bool k=isNumber(find); // is this a number
       if (k)
       {
@@ -1294,7 +1242,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
       }
       else if (j != 0 && ss)
       {
-        startFonts(find,ss->data(),ol);
+        startFonts(find,ss,ol);
       }
       else
       {
@@ -1430,11 +1378,11 @@ void VhdlDocGen::writeProcedureProto(OutputList& ol,const ArgumentList &al,const
     nn+=": ";
 
     QCString defval = arg.defval;
-    QCString *str=VhdlDocGen::findKeyWord(defval);
+    const char *str=VhdlDocGen::findKeyWord(defval);
     defval+=" ";
     if (str)
     {
-      startFonts(defval,str->data(),ol);
+      startFonts(defval,str,ol);
     }
     else
     {
@@ -1495,7 +1443,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
     }
     if (!att.isEmpty())
     {
-      QCString *str=VhdlDocGen::findKeyWord(att);
+      const char *str=VhdlDocGen::findKeyWord(att);
       att+=" ";
       if (str)
         VhdlDocGen::formatString(att,ol,mdef);
@@ -1509,7 +1457,7 @@ void VhdlDocGen::writeFunctionProto(OutputList& ol,const ArgumentList &al,const 
     QCString w=ss.stripWhiteSpace();//.upper();
     startFonts(nn,"vhdlchar",ol);
     startFonts("in ","stringliteral",ol);
-    QCString *str=VhdlDocGen::findKeyWord(ss);
+    const char *str=VhdlDocGen::findKeyWord(ss);
     if (str)
       VhdlDocGen::formatString(w,ol,mdef);
     else

@@ -130,7 +130,7 @@ class VhdlDocGen
 
     static void computeVhdlComponentRelations();
 
-    static QCString* findKeyWord(const QCString& word);
+    static const char* findKeyWord(const QCString& word);
 
     static ClassDef* getPackageName(const QCString& name);
     static MemberDef* findMember(const QCString& className,

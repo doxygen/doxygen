@@ -1532,10 +1532,10 @@ static void writeProcessProto(yyscan_t yyscanner)
 static bool writeColoredWord(yyscan_t yyscanner,QCString& word )
 {
   QCString qcs=word.lower();
-  QCString *ss=VhdlDocGen::findKeyWord(qcs);
+  const char *ss=VhdlDocGen::findKeyWord(qcs);
   if (ss)
   {
-    writeFont(yyscanner,ss->data(),word.data());
+    writeFont(yyscanner,ss,word.data());
     return true;
   }
   return false;
