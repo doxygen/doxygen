@@ -257,7 +257,7 @@ void MainWindow::updateWorkingDir()
 
 void MainWindow::manual()
 {
-  QDesktopServices::openUrl(QUrl(QString::fromLatin1("http://www.doxygen.org/manual/index.html")));
+  QDesktopServices::openUrl(QUrl(QString::fromLatin1("https://www.doxygen.org/manual/index.html")));
 }
 
 void MainWindow::about()

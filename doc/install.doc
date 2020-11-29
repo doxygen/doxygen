@@ -20,7 +20,7 @@
 \tableofcontents{html,latex}
 
 First go to the
-<a href="http://www.doxygen.org/download.html">download</a> page
+<a href="https://www.doxygen.org/download.html">download</a> page
 to get the latest distribution, if you have not downloaded doxygen already.
 
 \section install_src_unix Compiling from source on UNIX

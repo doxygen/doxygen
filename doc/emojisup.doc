@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2018 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -105,8 +105,8 @@ When invoking it with the `-d image_dir` option the images will by downloaded in
 By means of the doxygen configuration parameter
 \ref cfg_latex_emoji_directory "LATEX_EMOJI_DIRECTORY" the requested directory can be selected.
 
-For convenience a zip with the result of running the script can also be downloaded from 
-http://www.doxygen.nl/dl/github_emojis.zip
+For convenience a zip with the result of running the script can also be downloaded from
+https://www.doxygen.nl/dl/github_emojis.zip
 
 For an overview of the supported emoji one can issue the command:<br>
 `doxygen -f emoji <outputFileName>`
@@ -117,4 +117,4 @@ Go to the <a href="langhowto.html">next</a> section or return to the
 \endhtmlonly
 
 */
- 
+

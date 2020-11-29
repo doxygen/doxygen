@@ -44,10 +44,10 @@ This image is inline <image type="html" name="http://img.shields.io/badge/licens
 </para>
       <para>Some markdown image tests<linebreak/>
 <image type="html" name="https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
- <ulink url="http://www.doxygen.nl?foo&amp;bar">Some normal link</ulink></para>
+ <ulink url="https://www.doxygen.nl?foo&amp;bar">Some normal link</ulink></para>
       <para>
         <image type="html" name="https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar" inline="yes"/>
-        <ulink url="http://www.doxygen.nl?foo&amp;bar">Some normal link</ulink>
+        <ulink url="https://www.doxygen.nl?foo&amp;bar">Some normal link</ulink>
       </para>
     </detaileddescription>
   </compounddef>

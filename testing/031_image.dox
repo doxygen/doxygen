@@ -52,8 +52,8 @@ HTML style unlinked PNG image:\n
 
 Some markdown image tests\n
 ![Some SVG image](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&bar)
-[Some normal link](http://www.doxygen.nl?foo&bar)
+[Some normal link](https://www.doxygen.nl?foo&bar)
 
 ![Some SVG image](https://img.shields.io/badge/docs-Doxygen-blue.svg?foo&amp;bar)
-[Some normal link](http://www.doxygen.nl?foo&amp;bar)
+[Some normal link](https://www.doxygen.nl?foo&amp;bar)
 */
