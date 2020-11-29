@@ -48,6 +48,8 @@
 
 %{
 
+#include <map>
+
 #include <stdio.h> 
 #include <stdlib.h>
 #include <assert.h>
@@ -202,7 +204,7 @@ struct fortranscannerYY_state
 //! Accumulated modifiers of current statement, eg variable declaration.
   SymbolModifiers          currentModifiers;
 //! Holds program scope->symbol name->symbol modifiers.
-  QMap<Entry*,QMap<QCString,SymbolModifiers> > modifiers;
+  std::map<Entry*,std::map<std::string,SymbolModifiers> > modifiers;
   int                      anonCount    = 0 ;
 };
 
@@ -712,7 +714,7 @@ private                                 {
                                         }
 {ID}                                    {
                                           QCString name = yytext;
-                                          yyextra->modifiers[yyextra->current_root][name.lower()] |= yyextra->currentModifiers;
+                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
                                           yyextra->current->section  = Entry::FUNCTION_SEC;
                                           yyextra->current->name     = name;
                                           yyextra->current->fileName = yyextra->fileName;
@@ -872,7 +874,7 @@ private                                 {
                                           QCString name=yytext;
                                           name = name.lower();
                                           /* remember attributes for the symbol */
-                                          yyextra->modifiers[yyextra->current_root][name.lower()] |= yyextra->currentModifiers;
+                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
                                           yyextra->argName= name;
 
                                           yyextra->vtype= V_IGNORE;
@@ -913,12 +915,12 @@ private                                 {
                                             // save, it may be function return type
                                             if (parameter)
                                             {
-                                              yyextra->modifiers[yyextra->current_root][name.lower()].type = yyextra->argType;
+                                              yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->argType;
                                             }
                                             else
                                             {
                                               if ((yyextra->current_root->name.lower() == yyextra->argName.lower()) ||
-                                                  (yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower()].returnName.lower() == yyextra->argName.lower()))
+                                                  (yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName.lower() == yyextra->argName.lower()))
                                               {
                                                 int strt = yyextra->current_root->type.find("function");
                                                 QCString lft;
@@ -956,11 +958,11 @@ private                                 {
                                                   yyextra->current_root->type += " " + yyextra->argType.stripWhiteSpace();
                                                 }
                                                 yyextra->current_root->type = yyextra->current_root->type.stripWhiteSpace();
-                                                yyextra->modifiers[yyextra->current_root][name.lower()].type = yyextra->current_root->type;
+                                                yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->current_root->type;
                                               }
                                               else
                                               {
-                                                yyextra->modifiers[yyextra->current_root][name.lower()].type = yyextra->argType;
+                                                yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->argType;
                                               }
                                             }
                                             // any accumulated doc for argument should be emptied,
@@ -974,7 +976,7 @@ private                                 {
                                           QCString name(yyextra->argName);
                                           QCString attr("dimension");
                                           attr += yytext;
-                                          yyextra->modifiers[yyextra->current_root][name.lower()] |= attr;
+                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= attr;
                                         }
 <Variable>{COMMA}                       { //printf("COMMA: %d<=..<=%d\n", yyextra->colNr-(int)yyleng, yyextra->colNr);
                                           // locate !< comment
@@ -1148,7 +1150,7 @@ private                                 {
 <Subprog>{BS}                           {   /* ignore white space */   }
 <Subprog>{ID}                           { yyextra->current->name = yytext;
                                           //cout << "1a==========> got " << yyextra->current->type << " " << yytext << " " << yyextra->lineNr << endl;
-                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower()].returnName = yyextra->current->name.lower();
+                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = yyextra->current->name.lower();
 
                                           if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
@@ -1197,7 +1199,7 @@ private                                 {
                                             QCString result= yytext;
                                             result= result.right(result.length()-result.find("(")-1);
                                             result= result.stripWhiteSpace();
-                                            yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower()].returnName = result;
+                                            yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName = result;
                                           }
                                           //cout << "=====> got result " <<  result << endl;
                                          }
@@ -2019,7 +2021,7 @@ static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = F
 
 
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a typeName string. */
-static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs) 
+static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs) 
 {
   if (!mdfs.dimension.isNull()) 
   {
@@ -2136,14 +2138,14 @@ static QCString applyModifiers(QCString typeName, SymbolModifiers& mdfs)
 }
 
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a arg argument. */
-static void applyModifiers(Argument *arg, SymbolModifiers& mdfs)
+static void applyModifiers(Argument *arg, const SymbolModifiers& mdfs)
 {
   QCString tmp = arg->type;
   arg->type = applyModifiers(tmp, mdfs);
 }
 
 /*! Apply yyextra->modifiers stored in \a mdfs to the \a ent entry. */
-static void applyModifiers(Entry *ent, SymbolModifiers& mdfs)
+static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
 {
   QCString tmp = ent->type;
   ent->type = applyModifiers(tmp, mdfs);
@@ -2164,8 +2166,7 @@ static void startScope(yyscan_t yyscanner,Entry *scope)
   //cout<<"start scope: "<<scope->name<<endl;
   yyextra->current_root= scope; /* start substructure */
 
-  QMap<QCString,SymbolModifiers> mdfMap;
-  yyextra->modifiers.insert(scope, mdfMap);
+  yyextra->modifiers.insert(std::make_pair(scope, std::map<std::string,SymbolModifiers>()));
 }
 
 /*! Ends scope in fortran program: may update subprogram arguments or module variable attributes.
@@ -2196,32 +2197,32 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
   }
 
   // update variables or subprogram arguments with yyextra->modifiers
-  QMap<QCString,SymbolModifiers>& mdfsMap = yyextra->modifiers[scope];
+  std::map<std::string,SymbolModifiers>& mdfsMap = yyextra->modifiers[scope];
 
   if (scope->section == Entry::FUNCTION_SEC) 
   {
     // iterate all symbol yyextra->modifiers of the scope
-    for (QMap<QCString,SymbolModifiers>::Iterator it=mdfsMap.begin(); it!=mdfsMap.end(); it++) 
+    for (const auto &kv : mdfsMap)
     {
       //cout<<it.key()<<": "<<it.data()<<endl;
-      Argument *arg = findArgument(scope, it.key());
+      Argument *arg = findArgument(scope, kv.first);
 
       if (arg)
       {
-        applyModifiers(arg, it.data());
+        applyModifiers(arg, kv.second);
       }
     }
 
     // find return type for function
     //cout<<"RETURN NAME "<<yyextra->modifiers[yyextra->current_root][scope->name.lower()].returnName<<endl;
-    QCString returnName = yyextra->modifiers[yyextra->current_root][scope->name.lower()].returnName.lower();
-    if (yyextra->modifiers[scope].contains(returnName)) 
+    QCString returnName = yyextra->modifiers[yyextra->current_root][scope->name.lower().str()].returnName.lower();
+    if (yyextra->modifiers[scope].find(returnName.str())!=yyextra->modifiers[scope].end())
     {
-      scope->type = yyextra->modifiers[scope][returnName].type; // returning type works
-      applyModifiers(scope, yyextra->modifiers[scope][returnName]); // returning array works
+      scope->type = yyextra->modifiers[scope][returnName.str()].type; // returning type works
+      applyModifiers(scope, yyextra->modifiers[scope][returnName.str()]); // returning array works
     }
 
-  } 
+  }
   if (scope->section == Entry::CLASS_SEC) 
   { // was INTERFACE_SEC
     if (scope->parent()->section == Entry::FUNCTION_SEC) 
@@ -2249,7 +2250,7 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
       if ((count == 1) && found)
       {
         // clear all yyextra->modifiers of the scope
-        yyextra->modifiers.remove(scope);
+        yyextra->modifiers.erase(scope);
         scope->parent()->removeSubEntry(scope);
         scope = 0;
         return TRUE;
@@ -2265,13 +2266,13 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
-      if (mdfsMap.contains(ce->name.lower()))
-        applyModifiers(ce.get(), mdfsMap[ce->name.lower()]);
+      if (mdfsMap.find(ce->name.lower().str())!=mdfsMap.end())
+        applyModifiers(ce.get(), mdfsMap[ce->name.lower().str()]);
     }
   }
 
   // clear all yyextra->modifiers of the scope
-  yyextra->modifiers.remove(scope);
+  yyextra->modifiers.erase(scope);
 
   return TRUE;
 }
@@ -2522,7 +2523,7 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
   loc_doc.stripWhiteSpace();
 
   // direction as defined with the declaration of the parameter
-  int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.lower()].direction;
+  int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.lower().str()].direction;
   // in description [in] is specified
   if (loc_doc.lower().find(directionParam[SymbolModifiers::IN]) == 0)
   {
