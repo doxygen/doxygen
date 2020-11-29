@@ -228,7 +228,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-    <a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }} </li>
+    <a href="https://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }} </li>
   </ul>
 </div>
 {% else %}
@@ -238,7 +238,7 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% else %}
 {{ tr.generatedBy }}
 {% endif %}
-&#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a>
+&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a>
   {{ doxygen.version }}
   </small></address>
 {% endif %}

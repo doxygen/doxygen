@@ -62,7 +62,7 @@ This manual is divided into three parts, each of which is divided into several s
 The first part forms a user manual:
 <ul>
 <li>Section \ref install discusses how to
-      <a href="http://www.doxygen.org/download.html">download</a>, compile and install
+      <a href="https://www.doxygen.org/download.html">download</a>, compile and install
                      doxygen for your platform.
 <li>Section \ref starting tells you how to generate your first piece of
                      documentation quickly.
@@ -140,11 +140,11 @@ input used in their production; they are not affected by this license.
 
 Doxygen supports a number of \ref output "output formats" where HTML is the
 most popular one. I've gathered
-<a href="http://www.doxygen.org/results.html">some nice examples</a>
+<a href="https://www.doxygen.org/results.html">some nice examples</a>
 of real-life projects using doxygen.
 
 These are part of a larger
-<a href="http://www.doxygen.org/projects.html">list of projects</a>
+<a href="https://www.doxygen.org/projects.html">list of projects</a>
 that use doxygen.
 If you know other projects, let <a href="mailto:doxygen@gmail.com?subject=New%20project%20using%20Doxygen">me</a>
 know and I'll add them.

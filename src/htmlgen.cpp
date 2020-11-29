@@ -1235,7 +1235,7 @@ QCString HtmlGenerator::writeLogoAsString(const char *path)
   {
     result += theTranslator->trGeneratedBy();
   }
-  result += "&#160;\n<a href=\"http://www.doxygen.org/index.html\">\n"
+  result += "&#160;\n<a href=\"https://www.doxygen.org/index.html\">\n"
             "<img class=\"footer\" src=\"";
   result += path;
   result += "doxygen.svg\" width=\"104\" height=\"31\" alt=\"doxygen\"/></a> ";

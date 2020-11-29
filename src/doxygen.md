@@ -7,7 +7,7 @@ Introduction
 This page provides a high-level overview of the internals of doxygen, with
 links to the relevant parts of the code. This document is intended for
 developers who want to work on doxygen. Users of doxygen are referred to the
-[User Manual](http://www.doxygen.nl/manual/index.html).
+[User Manual](https://www.doxygen.nl/manual/index.html).
 
 The generic starting point of the application is of course the main() function.
 
@@ -15,13 +15,13 @@ Configuration options
 =====================
 
 Configuration file data is stored in singleton class Config and can be
-accessed using wrapper macros 
+accessed using wrapper macros
 Config_getString(), Config_getInt(), Config_getList(),
 Config_getEnum(), and Config_getBool() depending on the type of the
-option. 
+option.
 
 The format of the configuration file (options and types) is defined
-by the file `config.xml`. As part of the build process, 
+by the file `config.xml`. As part of the build process,
 the python script `configgen.py` will create a file `configoptions.cpp`
 from this, which serves as the input for the configuration file parser
 that is invoked using Config::parse(). The script `configgen.py` will also
@@ -43,18 +43,18 @@ for each file. Each parser implements the abstract interface ParserInterface.
 
 If the parser indicates it needs preprocessing
 via ParserInterface::needsPreprocessing(), doxygen will call preprocessFile()
-on the file. 
+on the file.
 
 A second step is to convert multiline C++-style comments into C style comments
-for easier processing later on. As side effect of this step also 
-aliases (ALIASES option) are resolved. The function that performs these 
+for easier processing later on. As side effect of this step also
+aliases (ALIASES option) are resolved. The function that performs these
 2 tasks is called convertCppComments().
 
 *Note:* Alias resolution should better be done in a separate step as it is
 now coupled to C/C++ code and does not work automatically for other languages!
 
-The third step is the actual language parsing and is done by calling 
-ParserInterface::parseInput() on the parser interface returned by 
+The third step is the actual language parsing and is done by calling
+ParserInterface::parseInput() on the parser interface returned by
 the ParserManager.
 
 The result of parsing is a tree of Entry objects.
@@ -67,19 +67,19 @@ converted into a Definition object.
 When a parser finds a special comment block in the input, it will do a first
 pass parsing via parseCommentBlock(). During this pass the comment block
 is split into multiple parts if needed. Some data that is later needed is
-extracted like section labels, xref items, and formulas. 
+extracted like section labels, xref items, and formulas.
 Also Markdown markup is processed using processMarkdown() during this pass.
 
 Resolving relations
 ===================
 
-The Entry objects created and filled during parsing are stored on disk 
-(to keep memory needs low). The name, parent/child relation, and 
-location on disk of each Entry is stored as a tree of EntryNav nodes, which is 
+The Entry objects created and filled during parsing are stored on disk
+(to keep memory needs low). The name, parent/child relation, and
+location on disk of each Entry is stored as a tree of EntryNav nodes, which is
 kept in memory.
 
 Doxygen does a number of tree walks over the EntryNav nodes in the tree to
-build up the data structures needed to produce the output. 
+build up the data structures needed to produce the output.
 
 The resulting data structures are all children of the generic base class
 called Definition which holds all non-specific data for a symbol definition.
@@ -141,9 +141,9 @@ easy ways to get debug information.
   - classes<br>
     Gives of classes en modules its scope and other relevant information.
   - preprocessor<br>
-    Shows the results of the preprocessing phase, i.e. results from include files, 
+    Shows the results of the preprocessing phase, i.e. results from include files,
     <tt>\#define</tt> statements etc., definitions in the doxygen configuration file like:
-    `EXPAND_ONLY_PREDEF`, `PREDEFINED` and `MACRO_EXPANSION`. 
+    `EXPAND_ONLY_PREDEF`, `PREDEFINED` and `MACRO_EXPANSION`.
   - commentcnv<br>
     Shows the results of the comment conversion, the comment conversion does the
     following:
@@ -216,8 +216,8 @@ Topics TODO
   - perlmod
 - i18n via Translator and language.cpp
 - Customizing the layout via LayoutDocManager
-- Parsers 
-  - C Preprocessing 
+- Parsers
+  - C Preprocessing
     - const expression evaluation
   - C link languages
   - Python
