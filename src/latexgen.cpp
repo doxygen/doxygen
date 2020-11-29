@@ -1053,7 +1053,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-              !cd->isEmbeddedInOuterScope()
+              !cd->isEmbeddedInOuterScope() &&
+              !cd->isAlias()
              )
           {
             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
@@ -1231,7 +1232,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
@@ -1242,7 +1244,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             //if (compactLatex) t << "\\input"; else t << "\\include";

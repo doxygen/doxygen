@@ -564,7 +564,8 @@ DB_GEN_C2("IndexSections " << is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
@@ -575,7 +576,8 @@ DB_GEN_C2("IndexSections " << is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;

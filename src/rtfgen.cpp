@@ -526,7 +526,8 @@ void RTFGenerator::startIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             beginRTFChapter();
@@ -823,7 +824,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             t << "\\par " << rtf_Style_Reset << endl;
@@ -837,7 +839,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope()
+             !cd->isEmbeddedInOuterScope() &&
+             !cd->isAlias()
              )
           {
             t << "\\par " << rtf_Style_Reset << endl;
