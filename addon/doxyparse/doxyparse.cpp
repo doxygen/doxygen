@@ -144,7 +144,7 @@ static void printInherits() {
   printf("    inherits:\n");
 }
 static void printInheritance(std::string base_class) {
-  printf("      - %s\n", base_class.c_str());
+  printf("      - \"%s\"\n", base_class.c_str());
 }
 static void printDefines() {
   printf("    defines:\n");
@@ -361,7 +361,7 @@ static void classInformation(const ClassDef* cd) {
     if (!cd->baseClasses().empty()) {
       printInherits();
       for (const auto &bcd : cd->baseClasses()) {
-        printInheritance(bcd.classDef->name().data());
+        printInheritance(sanitizeString(bcd.classDef->name().data()));
       }
     }
     if(cd->isAbstract()) {
