@@ -148,7 +148,8 @@ enum class CommandSpacing
 {
   Invisible, // command sets some property but does not appear in the output.
   Inline,    // command appears inline in the output which can be a brief description.
-  Block      // command starts a new paragraphs / ends a brief description.
+  Block,     // command starts a new paragraphs / ends a brief description.
+  XRef       // command is a cross reference (todo, bug, test, xrefitem).
 };
 
 struct DocCmdMap
@@ -170,7 +171,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "author",          { 0,                       CommandSpacing::Block     }},
   { "authors",         { 0,                       CommandSpacing::Block     }},
   { "brief",           { &handleBrief,            CommandSpacing::Invisible }},
-  { "bug",             { &handleBug,              CommandSpacing::Block     }},
+  { "bug",             { &handleBug,              CommandSpacing::XRef      }},
   { "callergraph",     { &handleCallergraph,      CommandSpacing::Invisible }},
   { "callgraph",       { &handleCallgraph,        CommandSpacing::Invisible }},
   { "category",        { &handleCategory,         CommandSpacing::Invisible }},
@@ -283,10 +284,10 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "subsection",      { &handleSection,          CommandSpacing::Block     }},
   { "subsubsection",   { &handleSection,          CommandSpacing::Block     }},
   { "tableofcontents", { &handleToc,              CommandSpacing::Invisible }},
-  { "test",            { &handleTest,             CommandSpacing::Block     }},
+  { "test",            { &handleTest,             CommandSpacing::XRef      }},
   { "throw",           { 0,                       CommandSpacing::Block     }},
   { "throws",          { 0,                       CommandSpacing::Block     }},
-  { "todo",            { &handleTodo,             CommandSpacing::Block     }},
+  { "todo",            { &handleTodo,             CommandSpacing::XRef      }},
   { "tparam",          { 0,                       CommandSpacing::Block     }},
   { "typedef",         { &handleFn,               CommandSpacing::Invisible }},
   { "union",           { &handleUnion,            CommandSpacing::Invisible }},
@@ -299,7 +300,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "weakgroup",       { &handleWeakGroup,        CommandSpacing::Invisible }},
   { "xmlinclude",      { 0,                       CommandSpacing::Inline    }},
   { "xmlonly",         { &handleFormatBlock,      CommandSpacing::Invisible }},
-  { "xrefitem",        { &handleXRefItem,         CommandSpacing::Block     }}
+  { "xrefitem",        { &handleXRefItem,         CommandSpacing::XRef      }}
 };
 
 #define YY_NO_INPUT 1
@@ -2831,28 +2832,29 @@ static void addXRefItem(yyscan_t yyscanner,
 
   RefList *refList = RefListManager::instance().add(listName,listTitle,itemTitle);
   RefItem *item = 0;
-  for (RefItem *i : yyextra->current->sli)
+  for (auto it = yyextra->current->sli.rbegin(); it != yyextra->current->sli.rend(); ++it)
   {
+    RefItem *i = *it;
     if (i && qstrcmp(i->list()->listName(),listName)==0)
     {
-      //printf("found %s lii->type=%s\n",listName,lii->type);
+      //printf("found %s lii->type=%s\n",listName,i->list()->listName().data());
       item = i;
       break;
     }
   }
   if (item && append) // already found item of same type just before this one
   {
-    //printf("listName=%s item id = %d existing\n",listName,lii->itemId);
+    //printf("listName=%s item id = %d existing\n",listName,item->id());
     item->setText(item->text() + " <p>" + yyextra->outputXRef);
     //printf("%s: text +=%s\n",listName,item->text.data());
   }
   else // new item
   {
-    //printf("listName=%s item id = %d new yyextra->current=%p\n",listName,itemId,yyextra->current);
 
     // if we have already an item from the same list type (e.g. a second @todo)
     // in the same Entry (i.e. lii!=0) then we reuse its link anchor.
     item = refList->add();
+    //printf("listName=%s item id = %d new yyextra->current=%p\n",listName,item->id(),yyextra->current);
     QCString anchorLabel;
     anchorLabel.sprintf("_%s%06d",listName,item->id());
     item->setText(yyextra->outputXRef);
