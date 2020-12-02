@@ -347,7 +347,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 %x      QtPropRead
 %x      QtPropWrite
 %x      ReadInitializer
-%x	ReadInitializerPtr
+%x      ReadInitializerPtr
 %x      UNOIDLAttributeBlock
 %x      GetCallType
 %x      CppQuote
@@ -2581,22 +2581,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             }
                                           }
                                         }
-<FindMembers,FindFields,ReadInitializer,ReadInitializerPtr>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"	{
+<FindMembers,FindFields,ReadInitializer,ReadInitializerPtr>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"     {
                                           bool insideEnum = YY_START==FindFields || ((YY_START==ReadInitializer || YY_START==ReadInitializerPtr) && yyextra->lastInitializerContext==FindFields); // see bug746226
                                           yyextra->commentScanner.close(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr,insideEnum);
                                           lineCount(yyscanner);
                                         }
-<FindMembers>"=>"			{
-					  if (!yyextra->insideCS) REJECT;
-					  yyextra->current->bodyLine = yyextra->yyLineNr;
-					  yyextra->current->bodyColumn = yyextra->yyColNr;
+<FindMembers>"=>"                       {
+                                          if (!yyextra->insideCS) REJECT;
+                                          yyextra->current->bodyLine = yyextra->yyLineNr;
+                                          yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->initializer = yytext;
-					  yyextra->lastInitializerContext = YY_START;
-					  yyextra->initBracketCount=0;
-					  yyextra->current->mtype = yyextra->mtype = Property;
-					  yyextra->current->spec |= Entry::Gettable;
-					  BEGIN(ReadInitializerPtr);
-					}
+                                          yyextra->lastInitializerContext = YY_START;
+                                          yyextra->initBracketCount=0;
+                                          yyextra->current->mtype = yyextra->mtype = Property;
+                                          yyextra->current->spec |= Entry::Gettable;
+                                          BEGIN(ReadInitializerPtr);
+                                        }
 <FindMembers>"="                        { // in PHP code this could also be due to "<?="
                                           yyextra->current->bodyLine = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -2615,14 +2615,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           BEGIN(FindMembers);
                                         }
   /* Read initializer rules */
-<ReadInitializer,ReadInitializerPtr>"("			{
+<ReadInitializer,ReadInitializerPtr>"(" {
                                           yyextra->lastRoundContext=YY_START;
                                           yyextra->pCopyRoundGString=&yyextra->current->initializer;
                                           yyextra->roundCount=0;
                                           yyextra->current->initializer+=*yytext;
                                           BEGIN(GCopyRound);
                                         }
-<ReadInitializer,ReadInitializerPtr>"["                    {
+<ReadInitializer,ReadInitializerPtr>"[" {
                                           if (!yyextra->insidePHP) REJECT;
                                           yyextra->lastSquareContext=YY_START;
                                           yyextra->pCopySquareGString=&yyextra->current->initializer;
@@ -2630,14 +2630,14 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->initializer+=*yytext;
                                           BEGIN(GCopySquare);
                                         }
-<ReadInitializer,ReadInitializerPtr>"{"			{
+<ReadInitializer,ReadInitializerPtr>"{" {
                                           yyextra->lastCurlyContext=YY_START;
                                           yyextra->pCopyCurlyGString=&yyextra->current->initializer;
                                           yyextra->curlyCount=0;
                                           yyextra->current->initializer+=*yytext;
                                           BEGIN(GCopyCurly);
                                         }
-<ReadInitializer,ReadInitializerPtr>[;,]			{
+<ReadInitializer,ReadInitializerPtr>[;,] {
                                           //printf(">> initializer '%s' <<\n",yyextra->current->initializer.data());
                                           if (*yytext==';' && (yyextra->current_root->spec&Entry::Enum))
                                           {
@@ -2654,13 +2654,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           else if (*yytext==';' || (yyextra->lastInitializerContext==FindFields && yyextra->initBracketCount==0)) // yyextra->initBracketCount==0 was added for bug 665778
                                           {
                                             unput(*yytext);
-					    if (YY_START == ReadInitializerPtr) yyextra->current->initializer.resize(0);
+                                            if (YY_START == ReadInitializerPtr) yyextra->current->initializer.resize(0);
                                             BEGIN(yyextra->lastInitializerContext);
                                           }
                                           else if (*yytext==',' && yyextra->initBracketCount==0) // for "int a=0,b=0"
                                           {
                                             unput(*yytext);
-					    if (YY_START == ReadInitializerPtr) yyextra->current->initializer.resize(0);
+                                            if (YY_START == ReadInitializerPtr) yyextra->current->initializer.resize(0);
                                             BEGIN(yyextra->lastInitializerContext);
                                           }
                                           else
@@ -2668,7 +2668,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             yyextra->current->initializer+=*yytext;
                                           }
                                         }
-<ReadInitializer,ReadInitializerPtr>{RAWBEGIN}             { // C++11 raw string
+<ReadInitializer,ReadInitializerPtr>{RAWBEGIN} { // C++11 raw string
                                           if (!yyextra->insideCpp)
                                           {
                                             REJECT;
@@ -2728,7 +2728,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->fullArgString+=yytext;
                                           lineCount(yyscanner);
                                         }
-<ReadInitializer,ReadInitializerPtr>\"			{
+<ReadInitializer,ReadInitializerPtr>\"                  {
                                           if (yyextra->insideIDL && yyextra->insideCppQuote)
                                           {
                                             BEGIN(EndCppQuote);
@@ -2741,24 +2741,24 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN(CopyGString);
                                           }
                                         }
-<ReadInitializer,ReadInitializerPtr>"->"			{
+<ReadInitializer,ReadInitializerPtr>"->"                        {
                                           yyextra->current->initializer+=yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>"<<"			{
+<ReadInitializer,ReadInitializerPtr>"<<"                        {
                                           yyextra->current->initializer+=yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>">>"			{
+<ReadInitializer,ReadInitializerPtr>">>"                        {
                                           yyextra->current->initializer+=yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>[<\[{(]		{
+<ReadInitializer,ReadInitializerPtr>[<\[{(]             {
                                           yyextra->initBracketCount++;
                                           yyextra->current->initializer+=*yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>[>\]})]		{
+<ReadInitializer,ReadInitializerPtr>[>\]})]             {
                                           yyextra->initBracketCount--;
                                           yyextra->current->initializer+=*yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>\'			{
+<ReadInitializer,ReadInitializerPtr>\'                  {
                                           if (yyextra->insidePHP)
                                           {
                                             yyextra->current->initializer+=yytext;
@@ -2781,11 +2781,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             yyextra->current->initializer+=yytext;
                                           }
                                         }
-<ReadInitializer,ReadInitializerPtr>\n			{
+<ReadInitializer,ReadInitializerPtr>\n                  {
                                           yyextra->current->initializer+=*yytext;
                                           lineCount(yyscanner);
                                         }
-<ReadInitializer,ReadInitializerPtr>"@\""			{
+<ReadInitializer,ReadInitializerPtr>"@\""                       {
                                           //printf("yyextra->insideCS=%d\n",yyextra->insideCS);
                                           yyextra->current->initializer+=yytext;
                                           if (!yyextra->insideCS && !yyextra->insideObjC)
@@ -2817,13 +2817,13 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <SkipVerbString>.                       {
                                           *yyextra->pSkipVerbString+=*yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>"?>"			{
+<ReadInitializer,ReadInitializerPtr>"?>"                        {
                                           if (yyextra->insidePHP)
                                             BEGIN( FindMembersPHP );
                                           else
                                             yyextra->current->initializer+=yytext;
                                         }
-<ReadInitializer,ReadInitializerPtr>.			{
+<ReadInitializer,ReadInitializerPtr>.                   {
                                           yyextra->current->initializer+=*yytext;
                                         }
 
@@ -5076,7 +5076,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           lineCount(yyscanner);
                                           //addToBody(yytext);
                                         }
-<SkipCurly,SkipCurlyCpp,ReadInitializer,ReadInitializerPtr>"<<<"	        {
+<SkipCurly,SkipCurlyCpp,ReadInitializer,ReadInitializerPtr>"<<<"  {
                                           if (!yyextra->insidePHP)
                                           {
                                             REJECT;
