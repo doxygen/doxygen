@@ -34,6 +34,19 @@
 #include "membername.h"
 
 //------------------------------------------------------------------
+static QCString makeDisplayName(const NamespaceDef *nd,bool includeScope)
+{
+  QCString result=includeScope ? nd->name() : nd->localName();
+  SrcLangExt lang = nd->getLanguage();
+  QCString sep = getLanguageSpecificSeparator(lang);
+  if (sep!="::")
+  {
+    result = substitute(result,"::",sep);
+  }
+  //printf("makeDisplayName() %s->%s lang=%d\n",name().data(),result.data(),lang);
+  return result;
+}
+//------------------------------------------------------------------
 
 class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
 {
@@ -172,7 +185,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const
     { return getNSAlias()->getUsedClasses(); }
     virtual QCString displayName(bool b=TRUE) const
-    { return getNSAlias()->displayName(b); }
+    { return makeDisplayName(this,b); }
     virtual QCString localName() const
     { return getNSAlias()->localName(); }
     virtual bool isConstantGroup() const
@@ -219,7 +232,11 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
 
 NamespaceDef *createNamespaceDefAlias(const Definition *newScope,const NamespaceDef *nd)
 {
-  return new NamespaceDefAliasImpl(newScope,nd);
+  NamespaceDef *alnd = new NamespaceDefAliasImpl(newScope,nd);
+  //printf("alnd name=%s localName=%s qualifiedName=%s displayName()=%s\n",
+  //    alnd->name().data(),alnd->localName().data(),alnd->qualifiedName().data(),
+  //    alnd->displayName().data());
+  return alnd;
 }
 
 //------------------------------------------------------------------
@@ -1252,15 +1269,7 @@ void NamespaceDefImpl::addListReferences()
 
 QCString NamespaceDefImpl::displayName(bool includeScope) const
 {
-  QCString result=includeScope ? name() : localName();
-  SrcLangExt lang = getLanguage();
-  QCString sep = getLanguageSpecificSeparator(lang);
-  if (sep!="::")
-  {
-    result = substitute(result,"::",sep);
-  }
-  //printf("NamespaceDefImpl::displayName() %s->%s lang=%d\n",name().data(),result.data(),lang);
-  return result;
+  return makeDisplayName(this,includeScope);
 }
 
 QCString NamespaceDefImpl::localName() const

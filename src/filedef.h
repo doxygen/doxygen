@@ -79,7 +79,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual DefType definitionType() const = 0;
 
     /*! Returns the unique file name (this may include part of the path). */
-    virtual const QCString &name() const = 0;
+    virtual QCString name() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString fileName() const = 0;
 

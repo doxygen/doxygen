@@ -54,6 +54,109 @@
 
 //-----------------------------------------------------------------------------
 
+static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
+    const ArgumentLists *actualParams,uint *actualParamIndex)
+{
+  //static bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+  bool hideScopeNames = Config_getBool(HIDE_SCOPE_NAMES);
+  //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
+  QCString scName;
+  const Definition *d=cd->getOuterScope();
+  if (d)
+  {
+    if (d->definitionType()==Definition::TypeClass)
+    {
+      const ClassDef *ocd=toClassDef(d);
+      scName = ocd->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex);
+    }
+    else if (!hideScopeNames)
+    {
+      scName = d->qualifiedName();
+    }
+  }
+
+  SrcLangExt lang = cd->getLanguage();
+  QCString scopeSeparator = getLanguageSpecificSeparator(lang);
+  if (!scName.isEmpty()) scName+=scopeSeparator;
+
+  bool isSpecialization = cd->localName().find('<')!=-1;
+
+  QCString clName = cd->className();
+  //bool isGeneric = getLanguage()==SrcLangExt_CSharp;
+  //if (isGeneric && clName.right(2)=="-g")
+  //{
+  //  clName = clName.left(clName.length()-2);
+  //}
+  //printf("m_impl->lang=%d clName=%s isSpecialization=%d\n",getLanguage(),clName.data(),isSpecialization);
+  scName+=clName;
+  if (!cd->templateArguments().empty())
+  {
+    if (actualParams && *actualParamIndex<actualParams->size())
+    {
+      const ArgumentList &al = actualParams->at(*actualParamIndex);
+      if (!isSpecialization)
+      {
+        scName+=tempArgListToString(al,lang);
+      }
+      (*actualParamIndex)++;
+    }
+    else
+    {
+      if (!isSpecialization)
+      {
+        scName+=tempArgListToString(cd->templateArguments(),lang);
+      }
+    }
+  }
+  //printf("qualifiedNameWithTemplateParameters: scope=%s qualifiedName=%s\n",name().data(),scName.data());
+  return scName;
+}
+
+static QCString makeDisplayName(const ClassDef *cd,bool includeScope)
+{
+  //static bool optimizeOutputForJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+  SrcLangExt lang = cd->getLanguage();
+  //static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+  QCString n;
+  if (lang==SrcLangExt_VHDL)
+  {
+    n = VhdlDocGen::getClassName(cd);
+  }
+  else
+  {
+    if (includeScope)
+    {
+      n=cd->qualifiedNameWithTemplateParameters();
+    }
+    else
+    {
+      n=cd->className();
+    }
+  }
+  if (cd->isAnonymous())
+  {
+    n = removeAnonymousScopes(n);
+  }
+  QCString sep=getLanguageSpecificSeparator(lang);
+  if (sep!="::")
+  {
+    n=substitute(n,"::",sep);
+  }
+  if (cd->compoundType()==ClassDef::Protocol && n.right(2)=="-p")
+  {
+    n="<"+n.left(n.length()-2)+">";
+  }
+  //else if (n.right(2)=="-g")
+  //{
+  //  n = n.left(n.length()-2);
+  //}
+  //printf("ClassDefImpl::displayName()=%s\n",n.data());
+  return n;
+}
+
+
+//-----------------------------------------------------------------------------
+
 
 /** Implementation of the ClassDef interface */
 class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
@@ -314,7 +417,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual QCString inheritanceGraphFileName() const
     { return getCdAlias()->inheritanceGraphFileName(); }
     virtual QCString displayName(bool includeScope=TRUE) const
-    { return getCdAlias()->displayName(includeScope); }
+    { return makeDisplayName(this,includeScope); }
     virtual CompoundType compoundType() const
     { return getCdAlias()->compoundType(); }
     virtual QCString compoundTypeString() const
@@ -373,7 +476,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getTemplateParameterLists(); }
     virtual QCString qualifiedNameWithTemplateParameters(
         const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const
-    { return getCdAlias()->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex); }
+    { return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex); }
     virtual bool isAbstract() const
     { return getCdAlias()->isAbstract(); }
     virtual bool isObjectiveC() const
@@ -472,7 +575,11 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
 
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd)
 {
-  return new ClassDefAliasImpl(newScope,cd);
+  ClassDef *acd = new ClassDefAliasImpl(newScope,cd);
+  //printf("cd name=%s localName=%s qualifiedName=%s qualifiedNameWith=%s displayName()=%s\n",
+  //    acd->name().data(),acd->localName().data(),acd->qualifiedName().data(),
+  //    acd->qualifiedNameWithTemplateParameters().data(),acd->displayName().data());
+  return acd;
 }
 
 //-----------------------------------------------------------------------------
@@ -747,44 +854,7 @@ QCString ClassDefImpl::getMemberListFileName() const
 
 QCString ClassDefImpl::displayName(bool includeScope) const
 {
-  //static bool optimizeOutputForJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  SrcLangExt lang = getLanguage();
-  //static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-  QCString n;
-  if (lang==SrcLangExt_VHDL)
-  {
-    n = VhdlDocGen::getClassName(this);
-  }
-  else
-  {
-    if (includeScope)
-    {
-      n=qualifiedNameWithTemplateParameters();
-    }
-    else
-    {
-      n=className();
-    }
-  }
-  if (isAnonymous())
-  {
-    n = removeAnonymousScopes(n);
-  }
-  QCString sep=getLanguageSpecificSeparator(lang);
-  if (sep!="::")
-  {
-    n=substitute(n,"::",sep);
-  }
-  if (m_impl->compType==ClassDef::Protocol && n.right(2)=="-p")
-  {
-    n="<"+n.left(n.length()-2)+">";
-  }
-  //else if (n.right(2)=="-g")
-  //{
-  //  n = n.left(n.length()-2);
-  //}
-  //printf("ClassDefImpl::displayName()=%s\n",n.data());
-  return n;
+  return makeDisplayName(this,includeScope);
 }
 
 // inserts a base/super class in the inheritance list
@@ -4138,59 +4208,7 @@ ArgumentLists ClassDefImpl::getTemplateParameterLists() const
 QCString ClassDefImpl::qualifiedNameWithTemplateParameters(
     const ArgumentLists *actualParams,uint *actualParamIndex) const
 {
-  //static bool optimizeOutputJava = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-  static bool hideScopeNames = Config_getBool(HIDE_SCOPE_NAMES);
-  //printf("qualifiedNameWithTemplateParameters() localName=%s\n",localName().data());
-  QCString scName;
-  Definition *d=getOuterScope();
-  if (d)
-  {
-    if (d->definitionType()==Definition::TypeClass)
-    {
-      ClassDef *cd=toClassDef(d);
-      scName = cd->qualifiedNameWithTemplateParameters(actualParams,actualParamIndex);
-    }
-    else if (!hideScopeNames)
-    {
-      scName = d->qualifiedName();
-    }
-  }
-
-  SrcLangExt lang = getLanguage();
-  QCString scopeSeparator = getLanguageSpecificSeparator(lang);
-  if (!scName.isEmpty()) scName+=scopeSeparator;
-
-  bool isSpecialization = localName().find('<')!=-1;
-
-  QCString clName = className();
-  //bool isGeneric = getLanguage()==SrcLangExt_CSharp;
-  //if (isGeneric && clName.right(2)=="-g")
-  //{
-  //  clName = clName.left(clName.length()-2);
-  //}
-  //printf("m_impl->lang=%d clName=%s isSpecialization=%d\n",getLanguage(),clName.data(),isSpecialization);
-  scName+=clName;
-  if (!templateArguments().empty())
-  {
-    if (actualParams && *actualParamIndex<actualParams->size())
-    {
-      const ArgumentList &al = actualParams->at(*actualParamIndex);
-      if (!isSpecialization)
-      {
-        scName+=tempArgListToString(al,lang);
-      }
-      (*actualParamIndex)++;
-    }
-    else
-    {
-      if (!isSpecialization)
-      {
-        scName+=tempArgListToString(templateArguments(),lang);
-      }
-    }
-  }
-  //printf("qualifiedNameWithTemplateParameters: scope=%s qualifiedName=%s\n",name().data(),scName.data());
-  return scName;
+  return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex);
 }
 
 QCString ClassDefImpl::className() const

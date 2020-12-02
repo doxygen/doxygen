@@ -537,7 +537,7 @@ DB_GEN_C2("IndexSections " << is)
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
             found=TRUE;
@@ -545,7 +545,7 @@ DB_GEN_C2("IndexSections " << is)
         }
         while ((nd=nli.current()))
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
           }

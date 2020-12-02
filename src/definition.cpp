@@ -2137,7 +2137,7 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
   return relPath;
 }
 
-const QCString &DefinitionImpl::name() const
+QCString DefinitionImpl::name() const
 {
   return m_impl->name;
 }
@@ -2178,8 +2178,8 @@ void DefinitionImpl::writeSummaryLinks(OutputList &) const
 
 //---------------------------------------------------------------------------------
 
-DefinitionAliasImpl::DefinitionAliasImpl(Definition *def,const Definition *alias)
-      : m_def(def), m_symbolName(alias->_symbolName())
+DefinitionAliasImpl::DefinitionAliasImpl(Definition *def,const Definition *scope, const Definition *alias)
+      : m_def(def), m_scope(scope), m_symbolName(alias->_symbolName())
 {
 }
 
@@ -2196,6 +2196,26 @@ void DefinitionAliasImpl::init()
 void DefinitionAliasImpl::deinit()
 {
   removeFromMap(m_symbolName,m_def);
+}
+
+QCString DefinitionAliasImpl::qualifiedName() const
+{
+  //printf("start %s::qualifiedName() localName=%s\n",name().data(),m_impl->localName.data());
+  if (m_scope==0)
+  {
+    return m_def->localName();
+  }
+  else
+  {
+    return m_scope->qualifiedName()+
+           getLanguageSpecificSeparator(m_scope->getLanguage())+
+           m_def->localName();
+  }
+}
+
+QCString DefinitionAliasImpl::name() const
+{
+  return qualifiedName();
 }
 
 //---------------------------------------------------------------------------------

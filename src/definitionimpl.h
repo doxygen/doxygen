@@ -33,7 +33,7 @@ class DefinitionImpl
         bool isSymbol=TRUE);
     virtual ~DefinitionImpl();
 
-    const QCString &name() const;
+    QCString name() const;
     bool isAnonymous() const;
     QCString localName() const;
     QCString qualifiedName() const;
@@ -150,7 +150,9 @@ class DefinitionMixin : public Base
     virtual ~DefinitionMixin() {}
 
     virtual bool isAlias() const { return FALSE; }
-    virtual const QCString &name() const { return m_impl.name(); }
+
+    //======== Definition
+    virtual QCString name() const { return m_impl.name(); }
     virtual bool isAnonymous() const { return m_impl.isAnonymous(); }
     virtual QCString localName() const { return m_impl.localName(); }
     virtual QCString qualifiedName() const { return m_impl.qualifiedName(); }
@@ -198,6 +200,7 @@ class DefinitionMixin : public Base
     virtual QCString id() const { return m_impl.id(); }
     virtual const SectionRefs &getSectionRefs() const { return m_impl.getSectionRefs(); }
 
+    //======== DefinitionMutable
     virtual void setName(const char *name) { m_impl.setName(name); }
     virtual void setId(const char *name) { m_impl.setId(name); }
     virtual void setDefFile(const QCString& df,int defLine,int defColumn)
@@ -292,13 +295,17 @@ class DefinitionMixin : public Base
 class DefinitionAliasImpl
 {
   public:
-    DefinitionAliasImpl(Definition *def,const Definition *alias);
+    DefinitionAliasImpl(Definition *def,const Definition *scope,const Definition *alias);
     virtual ~DefinitionAliasImpl();
     void init();
     void deinit();
+    QCString name() const;
+    QCString qualifiedName() const;
   private:
     Definition *m_def;
+    const Definition *m_scope;
     QCString m_symbolName;
+    QCString m_qualifiedName;
 };
 
 template<class Base>
@@ -306,7 +313,7 @@ class DefinitionAliasMixin : public Base
 {
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
-      : m_impl(this,alias), m_scope(scope), m_alias(alias), m_cookie(0) {}
+      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias), m_cookie(0) {}
 
     void init() { m_impl.init(); }
     void deinit() { m_impl.deinit(); }
@@ -314,14 +321,16 @@ class DefinitionAliasMixin : public Base
     virtual ~DefinitionAliasMixin() = default;
 
     virtual bool isAlias() const { return TRUE; }
-    virtual const QCString &name() const
-    { return m_alias->name(); }
+
+    //======== Definition
+    virtual QCString name() const
+    { return m_impl.name(); }
     virtual bool isAnonymous() const
     { return m_alias->isAnonymous(); }
     virtual QCString localName() const
     { return m_alias->localName(); }
     virtual QCString qualifiedName() const
-    { return m_alias->qualifiedName(); }
+    { return m_impl.qualifiedName(); }
     virtual QCString symbolName() const
     { return m_alias->symbolName(); }
     virtual QCString getSourceFileBase() const

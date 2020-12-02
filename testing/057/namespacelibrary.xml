@@ -2,10 +2,10 @@
 <doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="namespacelibrary" kind="namespace" language="C++">
     <compoundname>library</compoundname>
-    <innerclass refid="classlibrary_1_1v2_1_1foo" prot="public">library::v2::foo</innerclass>
+    <innerclass refid="classlibrary_1_1v2_1_1foo" prot="public">library::foo</innerclass>
+    <innernamespace refid="namespacelibrary_1_1v2_1_1_n_s">library::NS</innernamespace>
     <innernamespace refid="namespacelibrary_1_1v1">library::v1</innernamespace>
     <innernamespace refid="namespacelibrary_1_1v2" inline="yes">library::v2</innernamespace>
-    <innernamespace refid="namespacelibrary_1_1v2_1_1_n_s">library::v2::NS</innernamespace>
     <sectiondef kind="func">
       <memberdef kind="function" id="namespacelibrary_1_1v2_1aba9375172f5b36e1f4fda9b1dec39d90" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
         <type>void</type>

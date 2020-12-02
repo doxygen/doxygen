@@ -1035,7 +1035,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":
@@ -1205,7 +1205,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
             found=TRUE;

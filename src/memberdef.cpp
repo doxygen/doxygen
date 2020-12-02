@@ -357,7 +357,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     IMPL *m_impl;
     uchar m_isLinkableCached;    // 0 = not cached, 1=FALSE, 2=TRUE
     uchar m_isConstructorCached; // 0 = not cached, 1=FALSE, 2=TRUE
-    uchar m_isDestructorCached;  // 0 = not cached, 1=FALSE, 2=TRUE
+    uchar m_isDestructorCached;  // 1 = not cached, 1=FALSE, 2=TRUE
 };
 
 MemberDefMutable *createMemberDef(const char *defFileName,int defLine,int defColumn,
@@ -389,6 +389,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     }
     virtual void moveTo(Definition *) {}
 
+    virtual QCString name() const
+    { return getMdAlias()->name(); }
     virtual QCString getOutputFileBase() const
     { return getMdAlias()->getOutputFileBase(); }
     virtual QCString getReference() const
@@ -760,7 +762,9 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
 MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *aliasMd)
 {
-  return new MemberDefAliasImpl(newScope,aliasMd);
+  MemberDef *amd = new MemberDefAliasImpl(newScope,aliasMd);
+  //printf("amd: name=%s displayName=%s\n",amd->name().data(),amd->displayName().data());
+  return amd;
 }
 
 //-----------------------------------------------------------------------------

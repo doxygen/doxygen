@@ -1607,6 +1607,7 @@ static void buildNamespaceList(const Entry *root)
                   NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
                   //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
                   dm->addInnerCompound(aliasNd);
+                  Doxygen::namespaceSDict->inSort(aliasNd->name(),aliasNd);
                 }
               }
             }

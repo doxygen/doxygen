@@ -784,7 +784,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         bool found=FALSE;
         for (nli.toFirst();(nd=nli.current()) && !found;++nli)
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "\\par " << rtf_Style_Reset << endl;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
@@ -795,7 +795,7 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         while ((nd=nli.current()))
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "\\par " << rtf_Style_Reset << endl;
             beginRTFSection();
