@@ -1336,13 +1336,19 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 ]]>
       </docs>
     </option>
-    <option type='bool' id='WARN_AS_ERROR' defval='0'>
+    <option type='enum' id='WARN_AS_ERROR' defval='NO'>
       <docs>
 <![CDATA[
  If the \c WARN_AS_ERROR tag is set to \c YES then doxygen will immediately stop
  when a warning is encountered.
+ If the \c WARN_AS_ERROR tag is set to \c FAIL_ON_WARNINGS then doxygen will continue
+ running as if \c WARN_AS_ERROR tag is set to \c NO, but at the end of the doxygen
+ process doxygen will return with a non-zero status.
 ]]>
       </docs>
+      <value name="NO"/>
+      <value name="YES" />
+      <value name="FAIL_ON_WARNINGS" />
     </option>
     <option type='string' id='WARN_FORMAT' format='string' defval='$file:$line: $text'>
       <docs>
@@ -3444,13 +3450,22 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='DOT_UML_DETAILS' defval='0' depends='UML_LOOK'>
+    <option type='enum' id='DOT_UML_DETAILS' defval='NO' depends='UML_LOOK'>
       <docs>
 <![CDATA[
+If the \c DOT_UML_DETAILS tag is set to \c NO, doxygen will
+show attributes and methods without types and arguments in the UML graphs.
 If the \c DOT_UML_DETAILS tag is set to \c YES, doxygen will
 add type and arguments for attributes and methods in the UML graphs.
+If the \c DOT_UML_DETAILS tag is set to \c NONE, doxygen will not generate
+fields with class member information in the UML graphs.
+The class diagrams will look similar to the default class diagrams but using
+UML notation for the relationships.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="NONE" />
     </option>
     <option type='int' id='DOT_WRAP_THRESHOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
       <docs>
