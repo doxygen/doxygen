@@ -372,8 +372,10 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
          ( includeExternal && root->tagInfo()!=0))
      )
   {
-    if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
-        (root->groupDocType!=Entry::GROUPDOC_NORMAL &&  additional))
+    if ((root->groupDocType==GroupType::GROUPDOC_NORMAL && !additional) ||
+        (root->groupDocType==GroupType::GROUPDOC_NAME   && !additional) ||
+        (root->groupDocType!=GroupType::GROUPDOC_NORMAL &&  additional) ||
+        (root->groupDocType!=GroupType::GROUPDOC_NAME   &&  additional))
     {
       GroupDef *gd = Doxygen::groupSDict->find(root->name);
       //printf("Processing group '%s':'%s' add=%d ext=%d gd=%p\n",
@@ -467,8 +469,10 @@ static void organizeSubGroupsFiltered(const Entry *root,bool additional)
 {
   if (root->section==Entry::GROUPDOC_SEC && !root->name.isEmpty())
   {
-    if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
-        (root->groupDocType!=Entry::GROUPDOC_NORMAL && additional))
+    if ((root->groupDocType==GroupType::GROUPDOC_NORMAL && !additional) ||
+        (root->groupDocType==GroupType::GROUPDOC_NAME   && !additional) ||
+        (root->groupDocType!=GroupType::GROUPDOC_NORMAL && additional)  ||
+        (root->groupDocType!=GroupType::GROUPDOC_NAME   && additional))
     {
       GroupDef *gd;
       if ((gd=Doxygen::groupSDict->find(root->name)))

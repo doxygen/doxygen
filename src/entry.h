@@ -183,13 +183,6 @@ class Entry
     static const uint64 MaybeAmbiguous  = (1ULL<<62); // on UNO IDL property
     static const uint64 Published       = (1ULL<<63); // UNO IDL keyword
 
-    enum GroupDocType
-    {
-      GROUPDOC_NORMAL,        //!< defgroup
-      GROUPDOC_ADD,           //!< addtogroup
-      GROUPDOC_WEAK           //!< weakgroup
-    };                        //!< kind of group
-
     Entry();
     Entry(const Entry &);
    ~Entry();
@@ -292,7 +285,7 @@ class Entry
     SrcLangExt  lang;         //!< programming language in which this entry was found
     bool        hidden;       //!< does this represent an entity that is hidden from the output
     bool        artificial;   //!< Artificially introduced item
-    GroupDocType groupDocType;
+    GroupType::GroupDocType groupDocType;
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
@@ -302,9 +295,10 @@ class Entry
     {
       switch( groupDocType )
       {
-        case GROUPDOC_NORMAL: return "\\defgroup";
-        case GROUPDOC_ADD: return "\\addtogroup";
-        case GROUPDOC_WEAK: return "\\weakgroup";
+        case GroupType::GROUPDOC_NORMAL: return "\\defgroup";
+        case GroupType::GROUPDOC_ADD: return "\\addtogroup";
+        case GroupType::GROUPDOC_WEAK: return "\\weakgroup";
+        case GroupType::GROUPDOC_NAME: return "\\name";
         default: return "unknown group command";
       }
     }
@@ -316,9 +310,10 @@ class Entry
       }
       switch( groupDocType )
       {
-        case GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF;
-        case GROUPDOC_ADD:    return Grouping::GROUPING_AUTO_ADD;
-        case GROUPDOC_WEAK:   return Grouping::GROUPING_AUTO_WEAK;
+        case GroupType::GROUPDOC_NORMAL: return Grouping::GROUPING_AUTO_DEF;
+        case GroupType::GROUPDOC_ADD:    return Grouping::GROUPING_AUTO_ADD;
+        case GroupType::GROUPDOC_WEAK:   return Grouping::GROUPING_AUTO_WEAK;
+        case GroupType::GROUPDOC_NAME:   return Grouping::GROUPING_AUTO_DEF;
         default: return Grouping::GROUPING_LOWEST;
       }
     }

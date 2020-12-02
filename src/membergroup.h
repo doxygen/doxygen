@@ -45,7 +45,7 @@ class MemberGroup
   public:
     //MemberGroup();
     MemberGroup(const Definition *container,int id,const char *header,
-                const char *docs,const char *docFile,int docLine);
+                const char *docs,const char *docFile,int docLine,GroupType::GroupDocType groupDocType);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
@@ -101,8 +101,9 @@ class MemberGroup
     QCString doc;
     bool inSameSection = true;
     QCString m_docFile;
-    int m_docLine;
+    int m_docLine = -1;
     RefItemVector m_xrefListItems;
+    GroupType::GroupDocType m_groupDocType = GroupType::GROUPDOC_UNKNOWN;
 };
 
 /** A list of MemberGroup objects. */
@@ -140,6 +141,7 @@ struct MemberGroupInfo
   QCString docFile;
   int docLine = -1;
   QCString compoundName;
+  GroupType::GroupDocType groupDocType;
   RefItemVector m_sli;
 };
 

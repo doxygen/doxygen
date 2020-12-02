@@ -1122,7 +1122,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           yyextra->current->type = yyextra->current->type.stripWhiteSpace();
                                         }
 <GroupDocArg2>{DOCNL}                   {
-                                          if ( yyextra->current->groupDocType==Entry::GROUPDOC_NORMAL &&
+                                          if ( yyextra->current->groupDocType==GroupType::GROUPDOC_NORMAL &&
                                                yyextra->current->type.isEmpty()
                                              ) // defgroup requires second argument
                                           {
@@ -1936,7 +1936,7 @@ static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const QCStringLi
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
-  yyextra->current->groupDocType = Entry::GROUPDOC_NORMAL;
+  yyextra->current->groupDocType = GroupType::GROUPDOC_NORMAL;
   BEGIN( GroupDocArg1 );
   return stop;
 }
@@ -1945,7 +1945,7 @@ static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const QCString
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
-  yyextra->current->groupDocType = Entry::GROUPDOC_ADD;
+  yyextra->current->groupDocType = GroupType::GROUPDOC_ADD;
   BEGIN( GroupDocArg1 );
   return stop;
 }
@@ -1954,7 +1954,7 @@ static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const QCStringL
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
-  yyextra->current->groupDocType = Entry::GROUPDOC_WEAK;
+  yyextra->current->groupDocType = GroupType::GROUPDOC_WEAK;
   BEGIN( GroupDocArg1 );
   return stop;
 }
@@ -2152,6 +2152,7 @@ static bool handleName(yyscan_t yyscanner,const QCString &, const QCStringList &
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::MEMBERGRP_SEC);
+  yyextra->current->groupDocType = GroupType::GROUPDOC_NAME;
   if (!stop)
   {
     yyextra->docGroup.clearHeader();

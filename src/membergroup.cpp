@@ -29,8 +29,8 @@
 #include "entry.h"
 #include "md5.h"
 
-MemberGroup::MemberGroup(const Definition *container,int id,const char *hdr,const char *d,const char *docFile,int docLine)
-  : m_container(container), grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
+MemberGroup::MemberGroup(const Definition *container,int id,const char *hdr,const char *d,const char *docFile,int docLine,GroupType::GroupDocType groupDocType)
+  : m_container(container), grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine), m_groupDocType(groupDocType)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
 
@@ -93,9 +93,8 @@ void MemberGroup::writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool showInline) const
 {
-  //printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
   QCString ldoc = doc;
-  if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
+  if (m_groupDocType!=GroupType::GROUPDOC_NAME && !ldoc.isEmpty() && !grpHeader.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 

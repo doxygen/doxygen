@@ -40,7 +40,7 @@ Entry::Entry()
   hasTagInfo = FALSE;
   relatesType = Simple;
   hidden = FALSE;
-  groupDocType = GROUPDOC_NORMAL;
+  groupDocType = GroupType::GROUPDOC_UNKNOWN;
   reset();
 }
 
@@ -230,7 +230,7 @@ void Entry::reset()
   artificial = FALSE;
   subGrouping = TRUE;
   protection = Public;
-  groupDocType = GROUPDOC_NORMAL;
+  groupDocType = GroupType::GROUPDOC_UNKNOWN;
   id.resize(0);
   metaData.resize(0);
   m_sublist.clear();

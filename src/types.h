@@ -96,6 +96,19 @@ struct Grouping
   GroupPri_t pri;       //!< priority of this definition
 
 };
+/** Grouping type */
+struct GroupType
+{
+  
+  enum GroupDocType
+  {
+    GROUPDOC_UNKNOWN = -1,  //!< unknown group
+    GROUPDOC_NORMAL,        //!< defgroup
+    GROUPDOC_ADD,           //!< addtogroup
+    GROUPDOC_WEAK,          //!< weakgroup
+    GROUPDOC_NAME           //!< name
+  };                        //!< kind of group
+};
 
 enum MemberListType
 {

@@ -122,6 +122,7 @@ void DocGroup::open(Entry *e,const char *,int, bool implicit)
       MemberGroupInfo *info = new MemberGroupInfo;
       info->header = m_memberGroupHeader.stripWhiteSpace();
       info->compoundName = m_compoundName;
+      info->groupDocType = e->groupDocType;
       m_memberGroupId = findExistingGroup(info);
       //printf("    use membergroup %d\n",m_memberGroupId);
       Doxygen::memGrpInfoDict.insert(m_memberGroupId,info);
