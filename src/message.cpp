@@ -34,6 +34,14 @@ static const char *error_str = "error: ";
 
 static FILE *warnFile = stderr;
 
+enum warn_as_error
+{
+   WARN_NO,
+   WARN_YES,
+   FAIL_ON_WARNINGS,
+};
+static warn_as_error warnBehavior = WARN_NO;
+static bool warnStat = false;
 
 static std::mutex g_mutex;
 
@@ -99,7 +107,11 @@ void initWarningFormat()
     warnFile = stderr;
   }
 
-  if (Config_getBool(WARN_AS_ERROR))
+  QCString warnStr = Config_getEnum(WARN_AS_ERROR).upper();
+  if (warnStr =="NO") warnBehavior=WARN_NO;
+  else if (warnStr =="YES") warnBehavior=WARN_YES;
+  else if (warnStr =="FAIL_ON_WARNINGS") warnBehavior=FAIL_ON_WARNINGS;
+  if (warnBehavior == WARN_YES)
   {
     warning_str = error_str;
   }
@@ -129,7 +141,6 @@ static void format_warn(const char *file,int line,const char *text)
   QCString textSubst = text;
   QCString versionSubst;
   // substitute markers by actual values
-  bool warnAsError = Config_getBool(WARN_AS_ERROR);
   QCString msgText =
       substitute(
         substitute(
@@ -144,7 +155,7 @@ static void format_warn(const char *file,int line,const char *text)
         ),
         "$text",textSubst
       );
-  if (warnAsError)
+  if (warnBehavior == WARN_YES)
   {
     msgText += " (warning treated as error, aborting now)";
   }
@@ -155,22 +166,23 @@ static void format_warn(const char *file,int line,const char *text)
     // print resulting message
     fwrite(msgText.data(),1,msgText.length(),warnFile);
   }
-  if (warnAsError)
+  if (warnBehavior == WARN_YES)
   {
     exit(1);
   }
+  warnStat = true;
 }
 
 static void handle_warn_as_error()
 {
-  static bool warnAsError = Config_getBool(WARN_AS_ERROR);
-  if (warnAsError)
+  if (warnBehavior == WARN_YES)
   {
     std::unique_lock<std::mutex> lock(g_mutex);
     QCString msgText = " (warning treated as error, aborting now)\n";
     fwrite(msgText.data(),1,msgText.length(),warnFile);
     exit(1);
   }
+  warnStat = true;
 }
 
 static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
@@ -310,5 +322,13 @@ void printlex(int dbg, bool enter, const char *lexName, const char *fileName)
       Debug::print(Debug::Lex,0,"%s lexical analyzer: %s (for: %s)\n",enter_txt_uc, qPrint(lexName), qPrint(fileName));
     else
       Debug::print(Debug::Lex,0,"%s lexical analyzer: %s\n",enter_txt_uc, qPrint(lexName));
+  }
+}
+
+extern void finishWarnExit()
+{
+  if (warnStat && warnBehavior == FAIL_ON_WARNINGS)
+  {
+    exit(1);
   }
 }
