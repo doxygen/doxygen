@@ -97,6 +97,30 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
+// Extracted from config setting "DOT_UML_DETAILS"
+enum class UmlDetailLevel
+{
+  Default, // == NO, the default setting
+  Full,    // == YES, include type and arguments
+  None     // == NONE, don't include compartments for attributes and methods
+};
+
+// Local helper function for extracting the configured detail level
+static UmlDetailLevel getUmlDetailLevelFromConfig()
+{
+  UmlDetailLevel result = UmlDetailLevel::Default;
+  QCString umlDetailsStr = Config_getEnum(DOT_UML_DETAILS).upper();
+  if (umlDetailsStr == "YES")
+  {
+    result=UmlDetailLevel::Full;
+  }
+  else if (umlDetailsStr == "NONE")
+  {
+    result=UmlDetailLevel::None;
+  }
+  return result;
+} 
+
 static QCString escapeTooltip(const QCString &tooltip)
 {
   QCString result;
@@ -149,7 +173,7 @@ static void writeBoxMemberList(FTextStream &t,
         {
           t << prot << " ";
           QCString label;
-          if(Config_getBool(DOT_UML_DETAILS))
+          if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
           {
             label+=mma->typeString();
             label+=" ";
@@ -157,7 +181,7 @@ static void writeBoxMemberList(FTextStream &t,
           label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-            if(Config_getBool(DOT_UML_DETAILS))
+            if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
             {
               label+=mma->argsString();
             }
@@ -428,45 +452,48 @@ void DotNode::writeBox(FTextStream &t,
     }
 
     //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
-    t << "{" << convertLabel(m_label);
-    t << "\\n|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,TRUE,&arrowNames);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,TRUE,&arrowNames);
-    if (Config_getBool(EXTRACT_PRIVATE))
+    t << "{" << convertLabel(m_label) << "\\n";
+    if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
     {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
-    }
-    t << "|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef);
-    if (Config_getBool(EXTRACT_PRIVATE))
-    {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
-    }
-    if (m_classDef->getLanguage()!=SrcLangExt_Fortran &&
-      m_classDef->getMemberGroupSDict())
-    {
-      MemberGroupSDict::Iterator mgdi(*m_classDef->getMemberGroupSDict());
-      MemberGroup *mg;
-      for (mgdi.toFirst();(mg=mgdi.current());++mgdi)
+      t << "|";
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,TRUE,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,TRUE,&arrowNames);
+      if (Config_getBool(EXTRACT_PRIVATE))
       {
-        if (mg->members())
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
+      }
+      t << "|";
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef);
+      if (Config_getBool(EXTRACT_PRIVATE))
+      {
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
+      }
+      if (m_classDef->getLanguage()!=SrcLangExt_Fortran &&
+        m_classDef->getMemberGroupSDict())
+      {
+        MemberGroupSDict::Iterator mgdi(*m_classDef->getMemberGroupSDict());
+        MemberGroup *mg;
+        for (mgdi.toFirst();(mg=mgdi.current());++mgdi)
         {
-          writeBoxMemberList(t,'*',mg->members(),m_classDef,FALSE,&arrowNames);
+          if (mg->members())
+          {
+            writeBoxMemberList(t,'*',mg->members(),m_classDef,FALSE,&arrowNames);
+          }
         }
       }
     }
