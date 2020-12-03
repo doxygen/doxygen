@@ -2463,7 +2463,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 <![CDATA[
  When MathJax is enabled you can set the default output format to be used for
  the MathJax output.
- See <a href="http://docs.mathjax.org/en/latest/output.html">the MathJax site</a>
+ See <a href="http://docs.mathjax.org/en/v2.7-latest/output.html">the MathJax site</a>
  for more details.
 ]]>
       </docs>
@@ -2502,7 +2502,7 @@ MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
  The \c MATHJAX_CODEFILE tag can be used to specify a file with javascript
  pieces of code that will be used on startup of the MathJax code.
  See
-<a href="http://docs.mathjax.org/en/latest/output.html">the MathJax site</a>
+<a href="http://docs.mathjax.org/en/v2.7-latest/output.html">the MathJax site</a>
  for more details.
 ]]>
       </docs>

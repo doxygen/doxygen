@@ -2911,7 +2911,7 @@ class Receiver
 
   \addindex \\startuml
   Starts a text fragment which should contain a valid description of a
-  PlantUML diagram. See http://plantuml.com/ for examples.
+  PlantUML diagram. See https://plantuml.com/ for examples.
   The text fragment ends with \ref cmdenduml "\\enduml".
   \note You need to install Java and the PlantUML's jar file,
   if you want to use this command. The location of the jar file should be specified
