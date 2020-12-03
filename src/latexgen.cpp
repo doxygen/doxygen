@@ -1213,7 +1213,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
         }
         while ((nd=nli.current()))
         {
-          if (nd->isLinkableInProject())
+          if (nd->isLinkableInProject() && !nd->isAlias())
           {
             //if (compactLatex) t << "\\input"; else t << "\\include";
             t << "\\input";
