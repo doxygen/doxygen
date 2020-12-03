@@ -46,7 +46,7 @@ tools should be installed.
 
 <ul>
 <li>Qt Software's GUI toolkit
-    <a href="https://www.qt.io/developers/">Qt</A>
+    <a href="https://www.qt.io/developers">Qt</A>
     \addindex Qt
     version 4.3 or higher (including Qt 5).
     This is needed to build the GUI front-end doxywizard.
@@ -211,7 +211,7 @@ nmake
 \endverbatim
 
 Note that compiling Doxywizard requires Qt 4.3 or newer
-(see https://www.qt.io/developers/).
+(see https://www.qt.io/developers).
 
 Also read the next section for additional tools you may need to install to run
 doxygen with certain features enabled.
