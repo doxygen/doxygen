@@ -185,7 +185,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "date",            { 0,                       CommandSpacing::Block     }},
   { "def",             { &handleDef,              CommandSpacing::Invisible }},
   { "defgroup",        { &handleDefGroup,         CommandSpacing::Invisible }},
-  { "deprecated",      { &handleDeprecated,       CommandSpacing::Block     }},
+  { "deprecated",      { &handleDeprecated,       CommandSpacing::XRef      }},
   { "details",         { &handleDetails,          CommandSpacing::Block     }},
   { "dir",             { &handleDir,              CommandSpacing::Invisible }},
   { "docbookinclude",  { 0,                       CommandSpacing::Inline    }},
