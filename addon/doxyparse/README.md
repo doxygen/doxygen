@@ -4,10 +4,10 @@ This directory contains an "source parsing engine" based on doxyapp code.
 
 Doxyparse modifies the default output of Doxygen and dumps the dependencies
 among code elements in a YAML format, instead of output it in a human-readable
-format, as Doxygen does Doxyparse's output is intented to produce a
+format, as Doxygen does Doxyparse's output is intended to produce a
 machine-readable output.
 
-Doxyparse has been used in many software engeneering research (as a source-code
+Doxyparse has been used in many software engineering research (as a source-code
 static analysis tool) regards on software metrics, quality metrics and so on,
 Doxyparse was first used by the [Analizo](http://analizo.org) toolkit, a suite
 of source code analysis tools, aimed at being language-independent and
