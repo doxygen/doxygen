@@ -23,6 +23,7 @@
 #include "sortdict.h"
 #include "definition.h"
 #include "dirdef.h"
+#include "layout.h"
 
 class MemberList;
 class FileList;

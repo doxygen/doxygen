@@ -890,9 +890,7 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
       ol.writeString(" \n");
       ol.enable(OutputGenerator::RTF);
 
-      if (Config_getBool(REPEAT_BRIEF) ||
-          !documentation().isEmpty()
-         )
+      if (hasDetailedDescription())
       {
         ol.disableAllBut(OutputGenerator::Html);
         ol.startTextLink(0,"details");
@@ -1783,8 +1781,8 @@ void GroupDefImpl::updateLanguage(const Definition *d)
 bool GroupDefImpl::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return ((!briefDescription().isEmpty() && repeatBrief) ||
-          !documentation().isEmpty());
+  return ((!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()) &&
+         (m_pageDict->count()!=(uint)numDocMembers());
 }
 
 // --- Cast functions
