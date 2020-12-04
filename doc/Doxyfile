@@ -57,4 +57,4 @@ ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
 LATEX_EMOJI_DIRECTORY  = ../doc
-WARN_AS_ERROR = YES
+WARN_AS_ERROR = FAIL_ON_WARNINGS
