@@ -492,7 +492,7 @@ def main():
 	# argument handling
 	parser = argparse.ArgumentParser(description='run doxygen tests')
 	parser.add_argument('--updateref',help=
-		'update the reference files. Should be used in combination with -id to '
+		'update the reference files. Should be used in combination with --id to '
 		'update the reference file(s) for the given test',action="store_true")
 	parser.add_argument('--doxygen',nargs='?',default='doxygen',help=
 		'path/name of the doxygen executable')
