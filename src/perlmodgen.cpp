@@ -1224,10 +1224,12 @@ void PerlModDocVisitor::visitPost(DocRef *)
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocSecRefItem *)
+void PerlModDocVisitor::visitPre(DocSecRefItem *ref)
 {
 #if 0
-  m_output.add("<tocitem id=\""); m_output.add(ref->file()); m_output.add("_1"); m_output.add(ref->anchor()); m_output.add("\">");
+  m_output.add("<tocitem id=\""); m_output.add(ref->file());
+  if (!ref->anchor().isEmpty()) m_output.add("_1"); m_output.add(ref->anchor());
+  m_output.add("\">");
 #endif
 }
 

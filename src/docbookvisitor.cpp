@@ -1331,19 +1331,22 @@ DB_VIS_C
   if (!ref->file().isEmpty()) endLink();
 }
 
-void DocbookDocVisitor::visitPre(DocSecRefItem *)
+void DocbookDocVisitor::visitPre(DocSecRefItem *ref)
 {
 DB_VIS_C
   if (m_hide) return;
-  //m_t << "<tocentry xml:idref=\"_" <<  stripPath(ref->file()) << "_1" << ref->anchor() << "\">";
-  m_t << "<tocentry>";
+  m_t << "<tocdiv>";
+  m_t << "<link linkend=\"_" << stripPath(ref->file());
+  if (!ref->anchor().isEmpty()) m_t << "_1" << ref->anchor();
+  m_t << "\">";
 }
 
 void DocbookDocVisitor::visitPost(DocSecRefItem *)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "</tocentry>" << endl;
+  m_t << "</link>";
+  m_t << "</tocdiv>" << endl;
 }
 
 void DocbookDocVisitor::visitPre(DocSecRefList *)

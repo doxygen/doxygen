@@ -1452,7 +1452,9 @@ void LatexDocVisitor::visitPre(DocSecRefItem *ref)
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (pdfHyperlinks)
   {
-    m_t << "\\mbox{\\hyperlink{" << ref->file() << "_" << ref->anchor() << "}{" ;
+    m_t << "\\mbox{\\hyperlink{" << ref->file();
+    if (!ref->anchor().isEmpty()) m_t << "_" << ref->anchor();
+    m_t << "}{" ;
   }
 }
 
@@ -1464,7 +1466,9 @@ void LatexDocVisitor::visitPost(DocSecRefItem *ref)
   {
     m_t << "}}";
   }
-  m_t << "}{\\ref{" << ref->file() << "_" << ref->anchor() << "}}{}" << endl;
+  m_t << "}{\\ref{" << ref->file();
+  if (!ref->anchor().isEmpty()) m_t << "_" << ref->anchor();
+  m_t << "}}{}" << endl;
 }
 
 void LatexDocVisitor::visitPre(DocSecRefList *)
