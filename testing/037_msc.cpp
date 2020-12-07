@@ -10,13 +10,13 @@
  * Sender,Receiver,Sender1,
  * Sender_2,Receiver_2,Sender1_2;
  * 
- * Sender_1->Receiver_1 [label="Command()", URL="nref Receiver::Command()"],
- * Sender1_1<-Receiver_1 [label="Ack()", URL="nref Ack()", ID="1"];
+ * Sender_1->Receiver_1 [label="Command()", URL="\ref Receiver::Command()"],
+ * Sender1_1<-Receiver_1 [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
  * 
- * Sender->Receiver [label="Command()", URL="nref Receiver::Command()"];
- * Sender1<-Receiver [label="Ack()", URL="nref Ack()", ID="1"];
- * Sender_2->Receiver_2 [label="Command()", URL="nref Receiver::Command()"],
- * Sender1_2<-Receiver_2 [label="Ack()", URL="nref Ack()", ID="1"];
+ * Sender->Receiver [label="Command()", URL="\ref Receiver::Command()"];
+ * Sender1<-Receiver [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
+ * Sender_2->Receiver_2 [label="Command()", URL="\ref Receiver::Command()"],
+ * Sender1_2<-Receiver_2 [label="Ack()", URL="\ref Sender::Ack()", ID="1"];
  * \endmsc
  */
 

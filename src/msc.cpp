@@ -54,14 +54,20 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
     //printf("ReadLine '%s'\n",buf);
     if (qstrncmp(buf,"rect",4)==0)
     {
-      // obtain the url and the coordinates in the order used by graphviz-1.5
-      sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
-
-      if (qstrcmp(url,"\\ref")==0 || qstrcmp(url,"@ref")==0)
+      sscanf(buf,"rect %s",ref); // lets get the first word after 'rect'
+      if (qstrcmp(ref,"\\ref")==0 || qstrcmp(ref,"@ref")==0)
       {
         isRef = TRUE;
-        sscanf(buf,"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
+        int j = sscanf(buf,"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
+        if (j!=6) continue;
       }
+      else
+      {
+        // obtain the url and the coordinates in the order used by graphviz-1.5
+        int i = sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
+        if (i!=5) continue;
+      }
+
 
       // sanity checks
       if (y2<y1) { int temp=y2; y2=y1; y1=temp; }
