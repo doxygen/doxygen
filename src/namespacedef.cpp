@@ -893,10 +893,19 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
     }
     else if (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaceSDict && namespaceSDict->declVisible())
     {
-      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-      QCString label = "namespaces";
-      ol.writeSummaryLink(0,label,ls->title(lang),first);
-      first=FALSE;
+      SDict<NamespaceDef>::Iterator ni(*namespaceSDict);
+      NamespaceDef *nd;
+      for (ni.toFirst();(nd=ni.current());++ni)
+      {
+        if (nd->isLinkable() && nd->hasDocumentation())
+        {
+          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          QCString label = "namespaces";
+          ol.writeSummaryLink(0,label,ls->title(lang),first);
+          first=FALSE;
+          break;
+        }
+      }
     }
     else if (lde->kind()== LayoutDocEntry::MemberDecl)
     {
