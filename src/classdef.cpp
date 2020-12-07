@@ -2120,6 +2120,7 @@ void ClassDefImpl::writeAuthorSection(OutputList &ol) const
 
 void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 {
+  static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
   QListIterator<LayoutDocEntry> eli(
@@ -2137,9 +2138,22 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
           m_impl->innerClasses->declVisible()
          )
       {
-        LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
-        ol.writeSummaryLink(0,"nested-classes",ls->title(lang),first);
-        first=FALSE;
+        ClassSDict::Iterator sdi(*(m_impl->innerClasses));
+        ClassDef *cd=0;
+        for (sdi.toFirst();(cd=sdi.current());++sdi)
+        {
+          if (!cd->isAnonymous() &&
+              !cd->isExtension() &&
+              (cd->protection()!=Private || extractPrivate) &&
+              cd->visibleInParentsDeclList()
+             )
+          {
+            LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+            ol.writeSummaryLink(0,"nested-classes",ls->title(lang),first);
+            first=FALSE;
+            break;
+          }
+        }
       }
       else if (lde->kind()==LayoutDocEntry::ClassAllMembersLink &&
                !m_impl->allMemberNameInfoLinkedMap.empty() &&
