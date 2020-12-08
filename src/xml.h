@@ -25,6 +25,16 @@ class XMLHandlers
     std::function<EndElementType>    endElement;    /**< handler invoked when a closing tag has been found */
     std::function<CharsType>         characters;    /**< handler invoked when content between tags has been found */
     std::function<ErrorType>         error;         /**< handler invoked when the parser encounters an error */
+
+    static std::string value(const Attributes &attrib,const std::string &key)
+    {
+      auto it = attrib.find(key);
+      if (it!=attrib.end())
+      {
+        return it->second;
+      }
+      return "";
+    }
 };
 
 class XMLLocator
