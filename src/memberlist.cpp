@@ -1094,7 +1094,7 @@ QCString MemberList::listTypeAsString(MemberListType type)
     case MemberListType_decFriendMembers: return "friend-members";
     case MemberListType_decPropMembers: return "prop-members";
     case MemberListType_enumFields: return "enum-fields";
-    case MemberListType_memberGroup: return "member-group";
+    case MemberListType_memberGroup: break;
     default: break;
   }
   return "";
