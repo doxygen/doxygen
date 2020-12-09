@@ -325,7 +325,7 @@ QCString MemberGroup::anchor() const
   if (locHeader.isEmpty()) locHeader="[NOHEADER]";
   MD5Buffer((const unsigned char *)locHeader.data(),locHeader.length(),md5_sig);
   MD5SigToString(md5_sig,sigStr.rawData(),33);
-  return "amgrp"+sigStr;
+  return "amgrp"+QCString().setNum(grpId)+sigStr;
 }
 
 void MemberGroup::addListReferences(Definition *def)
