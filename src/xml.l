@@ -131,6 +131,7 @@ ENDCDATA        "]]>"
                      BEGIN(Element);
                    }
   {COMMENT}        { yyextra->commentContext = YY_START;
+                     countLines(yyscanner,yytext,yyleng);
                      BEGIN(Comment);
                    }
 }
@@ -199,7 +200,9 @@ ENDCDATA        "]]>"
   .                { }
 }
 <Comment>{
-  {COMMENTEND}     { BEGIN(yyextra->commentContext); }
+  {COMMENTEND}     { countLines(yyscanner,yytext,yyleng);
+                     BEGIN(yyextra->commentContext);
+                   }
   [^\n-]+          { }
   \n               { yyextra->lineNr++; }
   .                { }
@@ -283,7 +286,7 @@ static void addElement(yyscan_t yyscanner)
     }
     if (yy_flex_debug)
     {
-      fprintf(stderr,"startElement(%s,attr=[",yyextra->name.data());
+      fprintf(stderr,"%d: startElement(%s,attr=[",yyextra->lineNr,yyextra->name.data());
       for (auto attr : yyextra->attrs)
       {
         fprintf(stderr,"%s='%s' ",attr.first.c_str(),attr.second.c_str());
@@ -295,7 +298,7 @@ static void addElement(yyscan_t yyscanner)
   {
     if (yy_flex_debug)
     {
-      fprintf(stderr,"endElement(%s)\n",yyextra->name.data());
+      fprintf(stderr,"%d: endElement(%s)\n",yyextra->lineNr,yyextra->name.data());
     }
     checkAndUpdatePath(yyscanner);
     if (yyextra->handlers.endElement)
