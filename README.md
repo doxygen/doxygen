@@ -31,7 +31,7 @@ The latest binaries and source of Doxygen can be downloaded from:
 
 Developers
 ---------
-* Linux & macOS Build Status: ![CMake Build for Doxygen](https://github.com/doxygen/doxygen/workflows/CMake%20Build%20for%20Doxygen/badge.svg)
+* Linux & macOS Build Status: <a href="https://github.com/doxygen/doxygen/actions"><img alt="Github Actions Build Status" src="https://github.com/doxygen/doxygen/workflows/CMake%20Build%20for%20Doxygen/badge.svg"></a>
 * Windows Build Status: <a href="https://ci.appveyor.com/project/doxygen/doxygen"><img src="https://ci.appveyor.com/api/projects/status/github/doxygen/doxygen"/></a>
 
 * Coverity Scan Build Status: <a href="https://scan.coverity.com/projects/2860"> <img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/2860/badge.svg"/> </a>
