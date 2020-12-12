@@ -18,7 +18,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     
-    - name: Install ghostscript
+    - name: Install LaTeX
+      run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
+    
+    - name: Install Ghostscript
       run: sudo apt-get install ghostscript
 
     - name: Install xmllint
