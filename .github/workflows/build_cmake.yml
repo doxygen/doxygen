@@ -24,15 +24,15 @@ jobs:
         set(ENV{CC} ${{ matrix.config.cc }})
         set(ENV{CXX} ${{ matrix.config.cxx }})
 
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
-
         execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake
-          -S .
-          -B build
-          -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
-          -G Ninja
-          -D CMAKE_MAKE_PROGRAM=${ninja_program}
+          COMMAND cmake
+            -S .
+            -B build
+            -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
+            -G Ninja
+            -D CMAKE_MAKE_PROGRAM=ninja
+            -D CMAKE_C_COMPILER_LAUNCHER=ccache
+            -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -45,11 +45,17 @@ jobs:
         set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
 
         execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/cmake --build build
+          COMMAND cmake --build build
           RESULT_VARIABLE result
+          OUTPUT_VARIABLE output
+          ERROR_VARIABLE output
+          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
         )
         if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
+          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
+          string(REPLACE "\n" "%0A" error_message "${error_message}")
+          message("::error::${error_message}")
+          message(FATAL_ERROR "Build failed")
         endif()
 
     - name: Run tests
@@ -58,10 +64,15 @@ jobs:
         include(ProcessorCount)
         ProcessorCount(N)
 
+        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
         execute_process(
-          COMMAND ${{ steps.cmake_and_ninja.outputs.cmake_dir }}/ctest -j ${N}
+          COMMAND ctest -j ${N}
           WORKING_DIRECTORY build
           RESULT_VARIABLE result
+          OUTPUT_VARIABLE output
+          ERROR_VARIABLE output
+          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
