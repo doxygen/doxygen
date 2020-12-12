@@ -1,0 +1,68 @@
+name: CMake Build for Doxygen
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${ { matrix.config.name } }
+    runs-on: ${ { matrix.config.os } }
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz",
+            os: ubuntu-latest,
+            build_type: "Release", cc: "gcc", cxx: "g++"
+          }
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure
+        shell: cmake -P {0}
+        run: |
+          set(ENV{CC} ${ { matrix.config.cc } })
+          set(ENV{CXX} ${ { matrix.config.cxx } })
+
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/ninja" ninja_program)
+
+        execute_process(
+          COMMAND ${ { steps.cmake_and_ninja.outputs.cmake_dir } }/cmake
+          -S .
+          -B build
+          -D CMAKE_BUILD_TYPE=${ { matrix.config.build_type } }
+          -G Ninja
+          -D CMAKE_MAKE_PROGRAM=${ninja_program}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+    - name: Build
+      shell: cmake -P {0}
+      run: |
+        set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
+
+        execute_process(
+          COMMAND ${ { steps.cmake_and_ninja.outputs.cmake_dir } }/cmake --build build
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+    - name: Run tests
+      shell: cmake -P {0}
+      run: |
+        include(ProcessorCount)
+        ProcessorCount(N)
+
+        execute_process(
+          COMMAND ${ { steps.cmake_and_ninja.outputs.cmake_dir } }/ctest -j ${N}
+          WORKING_DIRECTORY build
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+
