@@ -45,6 +45,10 @@ jobs:
             -B build
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
+            -Dbuild_doc=YES
+            -Dbuild_app=YES
+            -Dbuild_parse=YES
+            -Dbuild_xmlparser=YES            
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -88,5 +92,16 @@ jobs:
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
+        endif()
+
+    - name: Generate documentation
+      shell: cmake -P {0}
+      run: |
+        execute_process(
+          COMMAND cmake --build build --target docs
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
         endif()
 
