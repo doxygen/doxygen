@@ -65,7 +65,7 @@ jobs:
 
     - name: Install bison (MacOS)
       run: 
-        brew install bison
+        brew install bison;
         echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
 
