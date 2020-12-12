@@ -18,6 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@master
+    
+    - name: Setup VS Environment
+      uses: seanmiddleditch/gha-setup-vsdevenv@master
+
     - name: Configure
       shell: cmake -P {0}
       run: |
@@ -30,9 +36,6 @@ jobs:
             -B build
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
             -G Ninja
-            -D CMAKE_MAKE_PROGRAM=ninja
-            -D CMAKE_C_COMPILER_LAUNCHER=ccache
-            -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
