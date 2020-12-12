@@ -48,7 +48,9 @@ jobs:
       if: matrix.config.os == 'ubuntu-latest'
 
     - name: Install LaTeX (MacOS)
-      run: brew install --cask mactex
+      run: 
+        brew install --cask mactex;
+        echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
 
     - name: Install Ghostscript (Linux)
