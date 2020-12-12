@@ -18,6 +18,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Install xmllint
+      run: sudo apt-get install libxml2-utils
+
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
     
