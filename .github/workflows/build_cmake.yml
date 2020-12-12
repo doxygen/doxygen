@@ -45,27 +45,31 @@ jobs:
     
     - name: Install LaTeX (Linux)
       run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-latest'
 
     - name: Install LaTeX (MacOS)
       run: brew install --cask mactex
-      if: matrix.os == 'macos-latest'
+      if: matrix.config.os == 'macos-latest'
 
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-latest'
 
     - name: Install LaTeX (MacOS)
       run: brew install ghostscript
-      if: matrix.os == 'macos-latest'
+      if: matrix.config.os == 'macos-latest'
 
-    - name: Install xmllint
+    - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-latest'
 
-    - name: Install xmllint
+    - name: Install xmllint (MacOS)
       run: brew install libxml2
-      if: matrix.os == 'macos-latest'
+      if: matrix.config.os == 'macos-latest'
+
+    - name: Install bison (MacOS)
+      run: brew install bison
+      if: matrix.config.os == 'macos-latest'
 
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
