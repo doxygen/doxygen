@@ -17,6 +17,9 @@ jobs:
           }
     steps:
     - uses: actions/checkout@v1
+    
+    - name: Install ghostscript
+      run: sudo apt-get install ghostscript
 
     - name: Install xmllint
       run: sudo apt-get install libxml2-utils
