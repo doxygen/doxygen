@@ -720,12 +720,21 @@ static ElementCallbacks::StartCallback startCb(void (LayoutParser::*fn)(LayoutDo
 
 static ElementCallbacks::StartCallback startCb(void (LayoutParser::*fn)(const XMLHandlers::Attributes &,MemberListType,const QCString &,const QCString &),
                                         MemberListType type,
+                                        std::function<QCString()> title
+                                       )
+{
+  return [fn,type,title](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),QCString()); };
+}
+
+static ElementCallbacks::StartCallback startCb(void (LayoutParser::*fn)(const XMLHandlers::Attributes &,MemberListType,const QCString &,const QCString &),
+                                        MemberListType type,
                                         std::function<QCString()> title,
-                                        std::function<QCString()> subtitle=[](){ return QCString(); }
+                                        std::function<QCString()> subtitle
                                        )
 {
   return [fn,type,title,subtitle](LayoutParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr,type,title(),subtitle()); };
 }
+
 
 static ElementCallbacks::EndCallback endCb(void (LayoutParser::*fn)())
 {
@@ -1541,7 +1550,7 @@ void LayoutDocManager::parse(const char *fileName)
   XMLHandlers handlers;
   handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
-  handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
+  handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   parser.parse(fileName,fileToString(fileName));
