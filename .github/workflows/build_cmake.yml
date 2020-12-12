@@ -11,36 +11,61 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Latest GCC Release", artifact: "Linux.tar.xz",
+            name: "Ubuntu Latest GCC Release", artifact: "Linux-gcc.tar.xz",
             os: ubuntu-latest,
             build_type: "Release", cc: "gcc", cxx: "g++"
           }
         - {
-            name: "Ubuntu Latest GCC Debug", artifact: "Linux.tar.xz",
+            name: "Ubuntu Latest GCC Debug", artifact: "Linux-gcc-debug.tar.xz",
             os: ubuntu-latest,
             build_type: "Debug", cc: "gcc", cxx: "g++"
           }
         - {
-            name: "Ubuntu Latest Clang Release", artifact: "Linux.tar.xz",
+            name: "Ubuntu Latest Clang Release", artifact: "Linux-clang.tar.xz",
             os: ubuntu-latest,
             build_type: "Release", cc: "clang", cxx: "clang++"
           }
         - {
-            name: "Ubuntu Latest Clang Debug", artifact: "Linux.tar.xz",
+            name: "Ubuntu Latest Clang Debug", artifact: "Linux-clang-debug.tar.xz",
             os: ubuntu-latest,
+            build_type: "Debug", cc: "clang", cxx: "clang++"
+          }
+        - {
+            name: "macOS Latest Release", artifact: "MacOS.xz",
+            os: macos-latest,
+            build_type: "Release", cc: "clang", cxx: "clang++"
+          }
+        - {
+            name: "macOS Latest Debug", artifact: "MacOS.xz",
+            os: macos-latest,
             build_type: "Debug", cc: "clang", cxx: "clang++"
           }
     steps:
     - uses: actions/checkout@v1
     
-    - name: Install LaTeX
+    - name: Install LaTeX (Linux)
       run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
-    
-    - name: Install Ghostscript
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Install LaTeX (MacOS)
+      run: brew install --cask mactex
+      if: matrix.os == 'macos-latest'
+
+    - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Install LaTeX (MacOS)
+      run: brew install ghostscript
+      if: matrix.os == 'macos-latest'
 
     - name: Install xmllint
       run: sudo apt-get install libxml2-utils
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Install xmllint
+      run: brew install libxml2
+      if: matrix.os == 'macos-latest'
 
     - name: Install Ninja
       uses: seanmiddleditch/gha-setup-ninja@master
