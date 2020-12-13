@@ -142,7 +142,7 @@ jobs:
       run:
         7z e -oiconv libiconv-for-Windows_1.16.7z
                 
-        set(ENV{EXTRA_CMAKE_OPTS} "-DICONV_INCLUDE_DIR=iconv/include -DICONV_LIBRARY=iconv/lib/libiconv.lib"
+        set(ENV{EXTRA_CMAKE_OPTS} "-DICONV_INCLUDE_DIR=iconv/include -DICONV_LIBRARY=iconv/lib/libiconv.lib")
       if: matrix.config.os == 'windows-latest'    
     
     - name: Setup VS Environment (Windows)
