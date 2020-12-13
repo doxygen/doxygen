@@ -75,7 +75,6 @@ jobs:
         $attemptCount=0
         Do {
           $attemptCount++
-          echo "downloading: attempt $attemptCount"
           $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
         } while (((Test-Path "miktexsetup-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       if: matrix.config.os == 'windows-latest'
