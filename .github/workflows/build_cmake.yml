@@ -150,6 +150,17 @@ jobs:
       run:
         refreshenv
       if: matrix.config.os == 'windows-latest'
+    
+    - name: Check tools
+      shell: cmake -P {0}
+      run: |
+        execute_process(COMMAND perl --version)
+        execute_process(COMMAND python --version)
+        execute_process(COMMAND bison --version)
+        execute_process(COMMAND flex --version)
+        execute_process(COMMAND cmake --version)
+        execute_process(COMMAND latex --version)
+        execute_process(COMMAND bibtex --version)
 
     - name: Configure
       shell: cmake -P {0}
