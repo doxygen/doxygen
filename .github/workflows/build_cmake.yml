@@ -84,12 +84,12 @@ jobs:
 
     - name: Download MikTex packages (Windows)
       run:
-        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
+        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
       if: matrix.config.os == 'windows-latest'
 
     - name: Download MikTex packages (Windows)
       run:
-        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
       if: matrix.config.os == 'windows-latest'
 
     - name: Refresh Env (Windows)
@@ -146,8 +146,10 @@ jobs:
     - name: Build
       shell: cmake -P {0}
       run: |
+        include(ProcessorCount)
+        ProcessorCount(N)
         execute_process(
-          COMMAND cmake --build build
+          COMMAND cmake --build build --parallel ${N} 
           RESULT_VARIABLE result
           OUTPUT_VARIABLE output
           ERROR_VARIABLE output
