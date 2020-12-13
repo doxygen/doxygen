@@ -11,24 +11,28 @@ jobs:
       matrix:
         config:
         - {
-            name: "Ubuntu Latest GCC Release", artifact: "Linux-gcc.tar.xz",
+            name: "Ubuntu Latest GCC Release",
             os: ubuntu-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++"
+            build_type: "Release", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles"
           }
         - {
-            name: "Ubuntu Latest GCC Debug", artifact: "Linux-gcc-debug.tar.xz",
+            name: "Ubuntu Latest GCC Debug",
             os: ubuntu-latest,
-            build_type: "Debug", cc: "gcc", cxx: "g++"
+            build_type: "Debug", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles"
           }
         - {
-            name: "Ubuntu Latest Clang Release", artifact: "Linux-clang.tar.xz",
+            name: "Ubuntu Latest Clang Release",
             os: ubuntu-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++"
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
           }
         - {
-            name: "Ubuntu Latest Clang Debug", artifact: "Linux-clang-debug.tar.xz",
+            name: "Ubuntu Latest Clang Debug",
             os: ubuntu-latest,
             build_type: "Debug", cc: "clang", cxx: "clang++"
+            build_gen: "Unix Makefiles"
           }
         - {
             name: "macOS Latest Release",
@@ -44,7 +48,7 @@ jobs:
           }
         - {
             name: "Windows Latest Debug", artifact: "MacOS.xz",
-            os: macos-latest,
+            os: windows-latest,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
