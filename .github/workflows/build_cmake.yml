@@ -69,11 +69,11 @@ jobs:
   
     - name: Download MikTex (Windows)
       run:
-        $wc = New-Object System.Net.WebClient
-        $maxAttempts=5
-        $attemptCount=0
+        $wc = New-Object System.Net.WebClient;
+        $maxAttempts=5;
+        $attemptCount=0;
         Do {
-          $attemptCount++
+          $attemptCount++;
           $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
         } while (((Test-Path "miktexsetup-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       shell: pwsh
