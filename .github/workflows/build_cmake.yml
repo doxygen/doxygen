@@ -61,9 +61,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       
-    - uses: actions/download-artifact@v2
+    - uses: suisei-cn/actions-download-file@v1
       with: 
-        name: https://miktex.org/download/win/miktexsetup-x64.zip
+        url: "https://miktex.org/download/win/miktexsetup-x64.zip"
+        target: .  
       if: matrix.config.os == 'windows-latest'
     
     - name: Install LaTeX (Linux)
@@ -119,7 +120,7 @@ jobs:
             -S .
             -B build
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
-            -G ${{ matrix.config.build_gen }}
+            -G "${{ matrix.config.build_gen }}"
             -Dbuild_doc=YES
             -Dbuild_app=YES
             -Dbuild_parse=YES
