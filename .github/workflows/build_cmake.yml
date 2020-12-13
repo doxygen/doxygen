@@ -61,12 +61,25 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       
-    - uses: suisei-cn/actions-download-file@v1
-      with: 
-        url: "https://miktex.org/download/win/miktexsetup-x64.zip"
-        target: .  
+#    - uses: suisei-cn/actions-download-file@v1
+#      with: 
+#        url: "https://miktex.org/download/win/miktexsetup-x64.zip"
+#        target: .  
+#      if: matrix.config.os == 'windows-latest'
+  
+    - name: Download MikTex (Windows)
+      shell: ps1
+      run:
+        $wc = New-Object System.Net.WebClient
+        $maxAttempts=5
+        $attemptCount=0
+        Do {
+          $attemptCount++
+          echo "downloading: attempt $attemptCount"
+          $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
+        } while (((Test-Path "miktexsetup-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       if: matrix.config.os == 'windows-latest'
-
+      
     - uses: suisei-cn/actions-download-file@v1
       with: 
         url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
