@@ -31,17 +31,35 @@ jobs:
             build_type: "Debug", cc: "clang", cxx: "clang++"
           }
         - {
-            name: "macOS Latest Release", artifact: "MacOS.xz",
+            name: "macOS Latest Release",
             os: macos-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++"
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
           }
         - {
-            name: "macOS Latest Debug", artifact: "MacOS.xz",
+            name: "macOS Latest Debug",
             os: macos-latest,
-            build_type: "Debug", cc: "clang", cxx: "clang++"
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "Windows Latest Debug", artifact: "MacOS.xz",
+            os: macos-latest,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "Windows Latest MSVC Release", 
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
           }
     steps:
     - uses: actions/checkout@v1
+      
+    - uses: actions/download-artifact@v2
+      with: https://miktex.org/download/win/miktexsetup-x64.zip
+      if: matrix.config.os == 'windows-latest'
     
     - name: Install LaTeX (Linux)
       run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
@@ -52,6 +70,14 @@ jobs:
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
+    
+    - name: Install LaTeX (Windows)
+      run:
+        7z e miktexsetup-x64.zip;
+        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download;
+        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install;
+        refreshenv
+      if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
@@ -71,8 +97,8 @@ jobs:
         echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
 
-    - name: Install Ninja
-      uses: seanmiddleditch/gha-setup-ninja@master
+#    - name: Install Ninja
+#      uses: seanmiddleditch/gha-setup-ninja@master
     
     - name: Setup VS Environment
       uses: seanmiddleditch/gha-setup-vsdevenv@master
@@ -88,7 +114,7 @@ jobs:
             -S .
             -B build
             -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
-            -G Ninja
+            -G ${{ matrix.config.build_gen }}
             -Dbuild_doc=YES
             -Dbuild_app=YES
             -Dbuild_parse=YES
@@ -102,8 +128,6 @@ jobs:
     - name: Build
       shell: cmake -P {0}
       run: |
-        set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
-
         execute_process(
           COMMAND cmake --build build
           RESULT_VARIABLE result
@@ -125,14 +149,11 @@ jobs:
         ProcessorCount(N)
 
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+        set(ENV{TEST_FLAGS} "--xml --xmlxsd --xhtml --docbook --rtf"
 
         execute_process(
-          COMMAND ctest -j ${N}
-          WORKING_DIRECTORY build
+          COMMAND cmake --build build --target tests
           RESULT_VARIABLE result
-          OUTPUT_VARIABLE output
-          ERROR_VARIABLE output
-          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
