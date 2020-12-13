@@ -79,9 +79,9 @@ jobs:
     
     - name: Install LaTeX (Windows)
       run:
-        7z e miktexsetup-x64.zip;
-        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download;
-        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install;
+        7z e miktexsetup-x64.zip
+        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
+        miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
         refreshenv
       if: matrix.config.os == 'windows-latest'
 
@@ -155,7 +155,7 @@ jobs:
         ProcessorCount(N)
 
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-        set(ENV{TEST_FLAGS} "--xml --xmlxsd --xhtml --docbook --rtf"
+        set(ENV{TEST_FLAGS} "--xml --xmlxsd --xhtml --docbook --rtf")
 
         execute_process(
           COMMAND cmake --build build --target tests
