@@ -87,7 +87,7 @@ jobs:
         .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
       if: matrix.config.os == 'windows-latest'
 
-    - name: Download MikTex packages (Windows)
+    - name: Install MikTex packages (Windows)
       run:
         .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
       if: matrix.config.os == 'windows-latest'
@@ -114,7 +114,12 @@ jobs:
         brew install bison;
         echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
-
+    
+    - name: Install bison/flex (Windows)
+      run:
+        choco install winflexbison
+      if: matrix.config.os == 'windows-latest'
+        
 #    - name: Install Ninja
 #      uses: seanmiddleditch/gha-setup-ninja@master
     
