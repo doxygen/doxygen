@@ -152,15 +152,23 @@ jobs:
       if: matrix.config.os == 'windows-latest'
     
     - name: Check tools
-      shell: cmake -P {0}
+      shell: pwsh
       run: |
-        execute_process(COMMAND perl --version)
-        execute_process(COMMAND python --version)
-        execute_process(COMMAND bison --version)
-        execute_process(COMMAND flex --version)
-        execute_process(COMMAND cmake --version)
-        execute_process(COMMAND latex --version)
-        execute_process(COMMAND bibtex --version)
+        echo "=== perl ===";
+        perl --version;
+        echo "=== python ===";
+        python --version;
+        echo "=== bison ===";
+        bison --version;
+        echo "=== flex ===";
+        flex --version;
+        echo "=== cmake ===";
+        cmake --version;
+        echo "=== latex ===";
+        latex --version;
+        echo "=== bibtex ===";
+        bibtex --version
+      if: matrix.config.os == 'windows-latest'
 
     - name: Configure
       shell: cmake -P {0}
