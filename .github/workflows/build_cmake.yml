@@ -31,7 +31,7 @@ jobs:
         - {
             name: "Ubuntu Latest Clang Debug",
             os: ubuntu-latest,
-            build_type: "Debug", cc: "clang", cxx: "clang++"
+            build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles"
           }
         - {
