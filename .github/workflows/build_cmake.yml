@@ -68,8 +68,8 @@ jobs:
 #      if: matrix.config.os == 'windows-latest'
   
     - name: Download MikTex (Windows)
-      shell: ps1
       run:
+        shell: powershell
         $wc = New-Object System.Net.WebClient
         $maxAttempts=5
         $attemptCount=0
