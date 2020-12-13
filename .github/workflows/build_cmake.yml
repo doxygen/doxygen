@@ -58,7 +58,8 @@ jobs:
     - uses: actions/checkout@v1
       
     - uses: actions/download-artifact@v2
-      with: https://miktex.org/download/win/miktexsetup-x64.zip
+      with: 
+        name: https://miktex.org/download/win/miktexsetup-x64.zip
       if: matrix.config.os == 'windows-latest'
     
     - name: Install LaTeX (Linux)
