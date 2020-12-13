@@ -69,7 +69,6 @@ jobs:
   
     - name: Download MikTex (Windows)
       run:
-        shell: powershell
         $wc = New-Object System.Net.WebClient
         $maxAttempts=5
         $attemptCount=0
@@ -77,6 +76,7 @@ jobs:
           $attemptCount++
           $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
         } while (((Test-Path "miktexsetup-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
+      shell: pwsh
       if: matrix.config.os == 'windows-latest'
       
     - uses: suisei-cn/actions-download-file@v1
