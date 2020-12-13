@@ -77,11 +77,23 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
     
-    - name: Install LaTeX (Windows)
+    - name: Extract MikTex zip (Windows)
       run:
         7z e miktexsetup-x64.zip
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Download MikTex packages (Windows)
+      run:
         miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Download MikTex packages (Windows)
+      run:
         miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Refresh Env (Windows)
+      run:
         refreshenv
       if: matrix.config.os == 'windows-latest'
 
@@ -155,7 +167,7 @@ jobs:
         ProcessorCount(N)
 
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-        set(ENV{TEST_FLAGS} "--xml --xmlxsd --xhtml --docbook --rtf")
+#        set(ENV{TEST_FLAGS} "--xml --xmlxsd --xhtml --docbook --rtf")
 
         execute_process(
           COMMAND cmake --build build --target tests
