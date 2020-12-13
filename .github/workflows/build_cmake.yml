@@ -66,7 +66,13 @@ jobs:
         url: "https://miktex.org/download/win/miktexsetup-x64.zip"
         target: .  
       if: matrix.config.os == 'windows-latest'
-    
+
+    - uses: suisei-cn/actions-download-file@v1
+      with: 
+        url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
+        target: .  
+      if: matrix.config.os == 'windows-latest'
+
     - name: Install LaTeX (Linux)
       run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
       if: matrix.config.os == 'ubuntu-latest'
@@ -120,11 +126,16 @@ jobs:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
         
-#    - name: Install Ninja
-#      uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Install libiconv (Windows)
+      run:
+        7z e -oiconv libiconv-for-Windows_1.16.7z
+                
+        set(ENV{EXTRA_CMAKE_OPTS} "-DICONV_INCLUDE_DIR=iconv/include -DICONV_LIBRARY=iconv/lib/libiconv.lib"
+      if: matrix.config.os == 'windows-latest'    
     
-    - name: Setup VS Environment
+    - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
+      if: matrix.config.os == 'windows-latest'
 
     - name: Configure
       shell: cmake -P {0}
@@ -142,6 +153,7 @@ jobs:
             -Dbuild_app=YES
             -Dbuild_parse=YES
             -Dbuild_xmlparser=YES            
+            ${EXTRA_CMAKE_OPTS}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
