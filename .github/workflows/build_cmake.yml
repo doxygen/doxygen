@@ -158,16 +158,16 @@ jobs:
         perl --version;
         echo "=== python ===";
         python --version;
-        echo "=== bison ===";
-        bison --version;
-        echo "=== flex ===";
-        flex --version;
         echo "=== cmake ===";
         cmake --version;
         echo "=== latex ===";
         latex --version;
         echo "=== bibtex ===";
         bibtex --version
+        echo "=== bison ===";
+        win_bison --version;
+        echo "=== flex ===";
+        win_flex --version;
       if: matrix.config.os == 'windows-latest'
 
     - name: Configure
