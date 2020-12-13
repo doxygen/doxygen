@@ -167,7 +167,6 @@ jobs:
         ProcessorCount(N)
 
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-#        set(ENV{TEST_FLAGS} "--xml --xmlxsd --xhtml --docbook --rtf")
 
         execute_process(
           COMMAND cmake --build build --target tests
