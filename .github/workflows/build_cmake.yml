@@ -74,7 +74,11 @@ jobs:
         $attemptCount=0;
         Do {
           $attemptCount++;
-          $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
+          Try {
+            $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
+          } Catch [Exception] {
+            Write-Host $_.Exception | format-list -force
+          }
         } while (((Test-Path "miktexsetup-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       shell: pwsh
       if: matrix.config.os == 'windows-latest'
@@ -137,14 +141,7 @@ jobs:
       run:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
-        
-    - name: Install libiconv (Windows)
-      run:
-        7z e -oiconv libiconv-for-Windows_1.16.7z
-                
-        set(ENV{EXTRA_CMAKE_OPTS} "-DICONV_INCLUDE_DIR=iconv/include -DICONV_LIBRARY=iconv/lib/libiconv.lib")
-      if: matrix.config.os == 'windows-latest'    
-    
+          
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
       if: matrix.config.os == 'windows-latest'
@@ -159,13 +156,12 @@ jobs:
           COMMAND cmake
             -S .
             -B build
-            -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
+            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G "${{ matrix.config.build_gen }}"
             -Dbuild_doc=YES
             -Dbuild_app=YES
             -Dbuild_parse=YES
             -Dbuild_xmlparser=YES            
-            ${EXTRA_CMAKE_OPTS}
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
