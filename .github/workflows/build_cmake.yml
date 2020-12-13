@@ -47,10 +47,10 @@ jobs:
             build_gen: "Unix Makefiles"
           }
         - {
-            name: "Windows Latest Debug", artifact: "MacOS.xz",
+            name: "Windows Latest MSVC Debug", 
             os: windows-latest,
-            build_type: "Debug", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
+            build_type: "Debug", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
           }
         - {
             name: "Windows Latest MSVC Release", 
@@ -114,11 +114,6 @@ jobs:
         .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
       if: matrix.config.os == 'windows-latest'
 
-    - name: Refresh Env (Windows)
-      run:
-        refreshenv
-      if: matrix.config.os == 'windows-latest'
-
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
       if: matrix.config.os == 'ubuntu-latest'
@@ -141,9 +136,19 @@ jobs:
       run:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
-          
+
+    - name: Install Perl (Windows)
+      run:
+        choco install activeperl
+      if: matrix.config.os == 'windows-latest'
+
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
+      if: matrix.config.os == 'windows-latest'
+
+    - name: Refresh Env (Windows)
+      run:
+        refreshenv
       if: matrix.config.os == 'windows-latest'
 
     - name: Configure
