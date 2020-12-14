@@ -249,4 +249,4 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-
+      if: matrix.config.os != 'windows-latest'
