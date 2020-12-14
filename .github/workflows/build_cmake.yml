@@ -102,19 +102,20 @@ jobs:
     - name: Download MikTex packages (Windows)
       shell: bash
       run: |
-        ./miktexsetup.exe --local-package-repository=C:\miktex-repository \
-                          --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
-                          --package-set=essential \
-                          download
+        ./miktexsetup --verbose \
+                      --local-package-repository=C:\miktex-repository \
+                      --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
+                      --package-set=essential \
+                      download
       if: matrix.config.os == 'windows-latest'
 
     - name: Install MikTex packages (Windows)
       shell: bash
       run: |
-        ./miktexsetup.exe --local-package-repository=C:\miktex-repository \
-                          --package-set=essential \
-                          --shared \
-                          install
+        ./miktexsetup --local-package-repository=C:\miktex-repository \
+                      --package-set=essential \
+                      --shared \
+                      install
       if: matrix.config.os == 'windows-latest'
 
     - name: Setting MikTex paths (Windows)
