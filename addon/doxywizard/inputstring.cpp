@@ -130,7 +130,7 @@ void InputString::updateDefault()
   {
     if (m_str==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
+      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
     }
     else
     {
