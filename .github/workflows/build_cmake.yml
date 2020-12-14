@@ -68,7 +68,7 @@ jobs:
 #      if: matrix.config.os == 'windows-latest'
   
     - name: Download MikTex (Windows)
-      run:
+      run: |
         $wc = New-Object System.Net.WebClient;
         $maxAttempts=5;
         $attemptCount=0;
@@ -94,25 +94,17 @@ jobs:
       if: matrix.config.os == 'ubuntu-latest'
 
     - name: Install LaTeX (MacOS)
-      run: 
+      run: |
         brew install --cask mactex;
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
     
     - name: Extract MikTex zip (Windows)
-      run:
+      run: |
         7z e miktexsetup-x64.zip
-      if: matrix.config.os == 'windows-latest'
-
-    - name: Download MikTex packages (Windows)
-      run:
         .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
-      if: matrix.config.os == 'windows-latest'
-
-    - name: Install MikTex packages (Windows)
-      run:
-        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install;
-        echo "C:\miktex-repository\miktex\bin" >> $GITHUB_PATH
+        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+        echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
@@ -128,7 +120,7 @@ jobs:
       if: matrix.config.os == 'macos-latest'
 
     - name: Install bison (MacOS)
-      run: 
+      run: |
         brew install bison;
         echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
@@ -153,8 +145,9 @@ jobs:
       if: matrix.config.os == 'windows-latest'
     
     - name: Check tools
-      shell: pwsh
+      shell: bash
       run: |
+        ls "C:/Program Files/MiKTeX/";
         echo "=== perl ===";
         perl --version;
         echo "=== python ===";
