@@ -100,11 +100,19 @@ jobs:
       if: matrix.config.os == 'macos-latest'
     
     - name: Extract MikTex zip (Windows)
+      shell: bash
       run: |
         7z e miktexsetup-x64.zip
-        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download
-        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+        n=0
+        until [ "$n" -ge 5 ]
+        do
+           ./miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download && break
+           n=$((n+1)) 
+           sleep 5
+        done
+        ./miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
         echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
+        export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
@@ -147,7 +155,7 @@ jobs:
     - name: Check tools
       shell: bash
       run: |
-        ls "C:/Program Files/MiKTeX/";
+        ls "C:/Program Files/MiKTeX/miktex/bin/x64";
         echo "=== perl ===";
         perl --version;
         echo "=== python ===";
