@@ -131,7 +131,11 @@ jobs:
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
       if: matrix.config.os == 'ubuntu-latest'
-
+    
+    - name: Install Ghostscript (Windows)
+      run: choco install ghostscript
+      if: matrix.config.os == 'windows-latest'
+      
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
       if: matrix.config.os == 'ubuntu-latest'
