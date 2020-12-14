@@ -132,9 +132,9 @@ jobs:
       run: sudo apt-get install ghostscript
       if: matrix.config.os == 'ubuntu-latest'
     
-    - name: Install Ghostscript (Windows)
-      run: choco install ghostscript
-      if: matrix.config.os == 'windows-latest'
+#    - name: Install Ghostscript (Windows)
+#      run: choco install ghostscript
+#      if: matrix.config.os == 'windows-latest'
       
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
@@ -255,4 +255,4 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-#      if: matrix.config.os != 'windows-latest'
+      if: matrix.config.os != 'windows-latest'
