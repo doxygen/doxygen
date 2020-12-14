@@ -75,7 +75,7 @@ void InputInt::updateDefault()
   {
     if (m_val==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
+      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
     }
     else
     {
