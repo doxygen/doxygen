@@ -148,10 +148,10 @@ jobs:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
-    - name: Install Perl (Windows)
-      run:
-        choco install activeperl
-      if: matrix.config.os == 'windows-latest'
+#    - name: Install Perl (Windows)
+#      run:
+#        choco install activeperl
+#      if: matrix.config.os == 'windows-latest'
 
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
@@ -162,10 +162,9 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
     
-    - name: Check tools
+    - name: Check tool versions
       shell: bash
       run: |
-        ls "C:/Program Files/MiKTeX/miktex/bin/x64";
         echo "=== perl ===";
         perl --version;
         echo "=== python ===";
