@@ -111,7 +111,8 @@ jobs:
 
     - name: Install MikTex packages (Windows)
       run:
-        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+        .\miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install;
+        echo "C:\miktex-repository\miktex\bin" >> $GITHUB_PATH
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
