@@ -123,6 +123,9 @@ jobs:
       run: |
         echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
         export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
+        
+        echo "Configuring MiKTeX to install missing packages on the fly"
+        initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
       if: matrix.config.os == 'windows-latest'
 
     - name: Install Ghostscript (Linux)
@@ -248,4 +251,4 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Bad exit status")
         endif()
-      if: matrix.config.os != 'windows-latest'
+#      if: matrix.config.os != 'windows-latest'
