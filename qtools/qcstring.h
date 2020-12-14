@@ -58,7 +58,7 @@ inline char *cstrcpy( char *dst, const char *src )
 inline char *qstrcpy( char *dst, const char *src )
 { return src ? strcpy(dst, src) : 0; }
 
-char * qstrncpy(char *src,const char *dst, uint len);
+char * qstrncpy(char *dst,const char *src, uint len);
 
 inline int cstrcmp( const char *str1, const char *str2 )
 { return strcmp(str1,str2); }
