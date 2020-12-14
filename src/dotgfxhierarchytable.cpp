@@ -115,11 +115,11 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
       if (it!=m_usedNodes.end()) // node already present
       {
         const auto &bn = it->second;
+        root = bn.get();
         if (n->children()==0 || n->children()->findRef(bn.get())==-1) // no arrow yet
         {
           n->addChild(bn.get(),bcd.prot);
           bn->addParent(n);
-          root = bn.get();
           //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
           //       n->label().data(),
           //       bn->label().data(),
