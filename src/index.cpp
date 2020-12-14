@@ -743,7 +743,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
         else if (src)
         {
           Doxygen::indexList->addContentsItem(
-               FALSE, convertToHtml(fd->name(),TRUE), 0,
+               FALSE, fd->name(), 0,
                fd->getSourceFileBase(), 0, FALSE, TRUE, fd);
         }
       }
@@ -813,7 +813,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
             else if (src)
             {
               Doxygen::indexList->addContentsItem(
-                  FALSE, convertToHtml(fd->name(),TRUE), 0,
+                  FALSE, fd->name(), 0,
                   fd->getSourceFileBase(), 0, FALSE, TRUE, fd.get());
             }
           }
@@ -4131,7 +4131,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           bool hasSections = pd->hasSections();
           Doxygen::indexList->addContentsItem(
               hasSubPages || hasSections,
-              convertToHtml(pd->title(),TRUE),
+              pd->title(),
               gd->getReference(),
               gd->getOutputFileBase(),
               si ? si->label().data() : 0,
