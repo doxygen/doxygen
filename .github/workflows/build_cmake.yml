@@ -61,12 +61,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
       
-#    - uses: suisei-cn/actions-download-file@v1
-#      with: 
-#        url: "https://miktex.org/download/win/miktexsetup-x64.zip"
-#        target: .  
-#      if: matrix.config.os == 'windows-latest'
-  
     - name: Download MikTex (Windows)
       run: |
         $wc = New-Object System.Net.WebClient;
@@ -75,7 +69,7 @@ jobs:
         Do {
           $attemptCount++;
           Try {
-            $wc.DownloadFile("https://miktex.org/download/win/miktexsetup-x64.zip","miktexsetup-x64.zip")
+            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-4.0-x64.zip","miktexsetup-4.0-x64.zip")
           } Catch [Exception] {
             Write-Host $_.Exception | format-list -force
           }
@@ -102,15 +96,15 @@ jobs:
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
-        7z e miktexsetup-x64.zip
-        n=0
-        until [ "$n" -ge 5 ]
-        do
-           ./miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential download && break
-           n=$((n+1)) 
-           sleep 5
-        done
-        ./miktexsetup.exe --local-package-repository=C:\miktex-repository --package-set=essential --shared install
+        unzip miktexsetup-4.0-x64.zip
+        ./miktexsetup.exe --local-package-repository=C:\miktex-repository \
+                          --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
+                          --package-set=essential \
+                          download
+        ./miktexsetup.exe --local-package-repository=C:\miktex-repository \
+                          --package-set=essential \
+                          --shared \
+                          install
         echo "C:/Program Files/MiKTeX/miktex/bin/x64/" >> $GITHUB_PATH
         export PATH="/c/Program Files/MiKTeX/miktex/bin/x64/:$PATH"
       if: matrix.config.os == 'windows-latest'
