@@ -6686,7 +6686,10 @@ bool isURL(const QCString &url)
 {
   QCString loc_url = url.stripWhiteSpace();
   return loc_url.left(5)=="http:" || loc_url.left(6)=="https:" ||
-         loc_url.left(4)=="ftp:"  || loc_url.left(5)=="file:";
+         loc_url.left(4)=="ftp:"  || loc_url.left(5)=="ftps:"  ||
+         loc_url.left(5)=="sftp:" || loc_url.left(5)=="file:"  ||
+         loc_url.left(5)=="news:" || loc_url.left(4)=="irc:"   ||
+         loc_url.left(5)=="ircs:";
 }
 /** Corrects URL \a url according to the relative path \a relPath.
  *  Returns the corrected URL. For absolute URLs no correction will be done.
