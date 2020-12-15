@@ -388,7 +388,7 @@ void MainWindow::clearRecent()
     m_recentFiles.clear();
     for (int i=0;i<MAX_RECENT_FILES;i++)
     {
-      m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),QString::fromLatin1(""));
+      m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i),QString::fromLatin1(""));
     }
     m_clearRecent->setEnabled(false);
     m_recentMenu->setEnabled(false);
