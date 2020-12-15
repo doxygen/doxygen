@@ -386,7 +386,7 @@ ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
-URLPROTOCOL ("http:"|"https:"|"ftp:"|"file:"|"news:"|"irc")
+URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
 FILEECHAR [a-z_A-Z0-9\-\+&#@]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
