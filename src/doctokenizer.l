@@ -384,7 +384,7 @@ OLISTITEM {BLANK}*[1-9][0-9]*"."{BLANK}
 ENDLIST   {BLANK}*"."{BLANK}*\n
 ATTRNAME  [a-z_A-Z\x80-\xFF][:a-z_A-Z0-9\x80-\xFF\-]*
 ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><]+))?
-URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=]
+URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
 FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
