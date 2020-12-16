@@ -753,14 +753,21 @@ bool MainWindow::discardUnsavedChanges(bool saveOption)
 
 void MainWindow::outputLogStart()
 {
+  m_outputLogTextCount = 0;
   m_outputLog->clear();
 }
 void MainWindow::outputLogText(QString text)
 {
+  m_outputLogTextCount++;
   m_outputLog->append(APPQT(text));
 }
 void MainWindow::outputLogFinish()
 {
+  if (m_outputLogTextCount > 0)
+  {
+    selectRunTab();
+  }
+
   m_outputLog->ensureCursorVisible();
   m_saveLog->setEnabled(true);
 }

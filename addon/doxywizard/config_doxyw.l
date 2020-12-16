@@ -24,7 +24,7 @@
 #include "config.h"
 #include "input.h"
 #include "inputstring.h"
-#include "doxywizard.h"
+#include "config_msg.h"
 
 #include <QString>
 #include <QVariant>
@@ -93,48 +93,6 @@ static yy_size_t yyread(char *buf,yy_size_t maxSize)
     }
 }
 
-static QString warning_str = QString::fromLatin1("warning: ");
-static QString error_str = QString::fromLatin1("error: ");
-
-void config_err(const char *fmt, ...)
-{
-  QString msg = error_str;
-
-  msg.append(QString::fromLatin1(fmt));
-  va_list args;
-  va_start(args, fmt);
-  if (DoxygenWizard::debugFlag)
-  {
-    char debugOut[1000]; // this size should be sufficient
-    vsnprintf(debugOut, 1000,qPrintable(msg), args);
-    MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
-  }
-  else
-  {
-    vfprintf(stderr, qPrintable(msg), args);
-  }
-  va_end(args);
-}
-void config_warn(const char *fmt, ...)
-{
-  QString msg = warning_str;
-
-  msg.append(QString::fromLatin1(fmt));
-  va_list args;
-  va_start(args, fmt);
-  if (DoxygenWizard::debugFlag)
-  {
-    char debugOut[1000];
-    vsnprintf(debugOut, 1000,qPrintable(msg), args);
-    MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
-  }
-  else
-  {
-    vfprintf(stderr, qPrintable(msg), args);
-  }
-  va_end(args);
-}
-
 static void substEnvVarsInStrList(QStringList &sl);
 static void substEnvVarsInString(QString &s);
 
@@ -190,9 +148,8 @@ static void readIncludeFile(const QString &incName)
 {
   if (g_includeDepth==MAX_INCLUDE_DEPTH)
   {
-    config_err("maximum include depth (%d) reached, %s is not included. Aborting...\n",
+    config_err("maximum include depth (%d) reached, %s is not included.",
 	MAX_INCLUDE_DEPTH,qPrintable(incName));
-    exit(1);
   }
 
   QString inc = incName;
@@ -230,7 +187,6 @@ static void readIncludeFile(const QString &incName)
   else
   {
     config_err("@INCLUDE = %s: not found!\n",qPrintable(inc));
-    exit(1);
   }
 }
 
@@ -495,9 +451,11 @@ static void readIncludeFile(const QString &incName)
   					}
 <SkipComment>\n				{ BEGIN(Start); }
 <SkipComment>\\[ \r\t]*\n		{ BEGIN(Start); }
+<SkipComment,SkipInvalid>.		{ }
 <*>\\[ \r\t]*\n				{ }
+<*>[ \r\t]				{ }
 <*>\n
-<*>.					
+<*>.					{ config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],yylineno,qPrintable(g_yyFileName)); }
 
 %%
 
@@ -607,10 +565,7 @@ bool parseConfig(
     )
 {
   yylineno = 1;
-  if (DoxygenWizard::debugFlag)
-  {
-    MainWindow::instance().outputLogStart();
-  }
+  config_open();
   QHashIterator<QString, Input*> i(options);
   g_file = fopen(fileName.toLocal8Bit(),"r");
   if (g_file==NULL) return false;
@@ -651,10 +606,7 @@ bool parseConfig(
     }
   }
   fclose(g_file);
-  if (DoxygenWizard::debugFlag)
-  {
-    MainWindow::instance().outputLogFinish();
-  }
+  config_finish();
   return true;
 }
 

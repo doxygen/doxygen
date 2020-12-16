@@ -13,6 +13,7 @@
 #include "inputstring.h"
 #include "helplabel.h"
 #include "doxywizard.h"
+#include "config_msg.h"
 #include "config.h"
 
 #include <QComboBox>
@@ -268,5 +269,7 @@ QString InputString::checkEnumVal(const QString &value)
     if (enumVal.toLower() == val) return enumVal;
   }
 
+  config_warn("argument '%s' for option %s is not a valid enum value."
+              " Using the default: %s!",qPrintable(value),qPrintable(m_id),qPrintable(m_default));
   return m_default;
 }
