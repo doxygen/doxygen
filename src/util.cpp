@@ -3572,6 +3572,61 @@ bool hasVisibleRoot(const BaseClassList &bcl)
 
 //----------------------------------------------------------------------
 
+// copies the next UTF8 character from input stream into buffer ids
+// returns the size of the character in bytes (or 0 if it is invalid)
+// the character itself will be copied as a UTF-8 encoded string to ids.
+int getUtf8Char(const signed char *input,char ids[5])
+{
+  int inputLen=1;
+  const unsigned char uc = (unsigned char)*input;
+  bool validUTF8Char = false;
+  if (uc <= 0xf7)
+  {
+    ids[ 0 ] = *input;
+    const signed char* pt = input+1;
+    int l = 0;
+    if ((uc&0x80)==0x00)
+    {
+      l=1; // 0xxx.xxxx => normal single byte ascii character
+    }
+    else
+    {
+      if ((uc&0xE0)==0xC0)
+      {
+        l=2; // 110x.xxxx: >=2 byte character
+      }
+      if ((uc&0xF0)==0xE0)
+      {
+        l=3; // 1110.xxxx: >=3 byte character
+      }
+      if ((uc&0xF8)==0xF0)
+      {
+        l=4; // 1111.0xxx: >=4 byte character
+      }
+    }
+    validUTF8Char = l>0;
+    for (int m=1; m<l && validUTF8Char; ++m)
+    {
+      unsigned char ct = (unsigned char)*pt;
+      if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+      {
+        validUTF8Char=false;
+      }
+      else
+      {
+        ids[ m ] = *pt++;
+      }
+    }
+    if (validUTF8Char) // got a valid unicode character
+    {
+      ids[ l ] = 0;
+      inputLen=l;
+    }
+  }
+  return inputLen;
+}
+
+
 // note that this function is not reentrant due to the use of static growBuf!
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
 {
@@ -3617,53 +3672,24 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
                 if (c<0)
                 {
                   char ids[5];
-                  const unsigned char uc = (unsigned char)c;
-                  bool doEscape = TRUE;
-                  if (allowUnicodeNames && uc <= 0xf7)
+                  bool doEscape = true;
+                  if (allowUnicodeNames)
                   {
-                    const signed char* pt = p;
-                    ids[ 0 ] = c;
-                    int l = 0;
-                    if ((uc&0xE0)==0xC0)
+                    int charLen = getUtf8Char(p-1,ids);
+                    if (charLen>0)
                     {
-                      l=2; // 11xx.xxxx: >=2 byte character
-                    }
-                    if ((uc&0xF0)==0xE0)
-                    {
-                      l=3; // 111x.xxxx: >=3 byte character
-                    }
-                    if ((uc&0xF8)==0xF0)
-                    {
-                      l=4; // 1111.xxxx: >=4 byte character
-                    }
-                    doEscape = l==0;
-                    for (int m=1; m<l && !doEscape; ++m)
-                    {
-                      unsigned char ct = (unsigned char)*pt;
-                      if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
-                      {
-                        doEscape=TRUE;
-                      }
-                      else
-                      {
-                        ids[ m ] = *pt++;
-                      }
-                    }
-                    if ( !doEscape ) // got a valid unicode character
-                    {
-                      ids[ l ] = 0;
-                      growBuf.addStr( ids );
-                      p += l - 1;
+                      growBuf.addStr(ids);
+                      p+=charLen-1;
+                      doEscape = false;
                     }
                   }
                   if (doEscape) // not a valid unicode char or escaping needed
                   {
-                    static char map[] = "0123456789ABCDEF";
                     unsigned char id = (unsigned char)c;
                     ids[0]='_';
                     ids[1]='x';
-                    ids[2]=map[id>>4];
-                    ids[3]=map[id&0xF];
+                    ids[2]=hex[id>>4];
+                    ids[3]=hex[id&0xF];
                     ids[4]=0;
                     growBuf.addStr(ids);
                   }
@@ -5299,7 +5325,7 @@ QCString latexFilterURL(const char *s)
   if (s==0) return "";
   QGString result;
   FTextStream t(&result);
-  const char *p=s;
+  const signed char *p=(const signed char*)s;
   char c;
   while ((c=*p++))
   {
@@ -5312,54 +5338,15 @@ QCString latexFilterURL(const char *s)
         if (c<0)
         {
           char ids[5];
-          const unsigned char uc = (unsigned char)c;
-          bool doEscape = TRUE;
-          if (uc <= 0xf7)
+          int charLen = getUtf8Char(p-1,ids);
+          if (charLen>0)
           {
-            const signed char* pt = (signed char *)p;
-            ids[ 0 ] = c;
-            int l = 0;
-            if ((uc&0xE0)==0xC0)
-            {
-              l=2; // 11xx.xxxx: >=2 byte character
-            }
-            if ((uc&0xF0)==0xE0)
-            {
-              l=3; // 111x.xxxx: >=3 byte character
-            }
-            if ((uc&0xF8)==0xF0)
-            {
-              l=4; // 1111.xxxx: >=4 byte character
-            }
-            doEscape = l==0;
-            for (int m=1; m<l && !doEscape; ++m)
-            {
-              unsigned char ct = (unsigned char)*pt;
-              if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
-              {
-                doEscape=TRUE;
-              }
-              else
-              {
-                ids[ m ] = *pt++;
-              }
-            }
-            if ( !doEscape ) // got a valid unicode character
-            {
-              static char map[] = "0123456789ABCDEF";
-              for (int m = 0; m < l; ++m)
-              {
-                unsigned char id = (unsigned char)ids[m];
-                t << "\\%" << map[id>>4] << map[id&0xF];
-              }
-              p += l - 1;
-            }
+             t << ids;
+             p+=charLen-1;
           }
-          if (doEscape) // not a valid unicode char or escaping needed
+          else
           {
-            static char map[] = "0123456789ABCDEF";
-            unsigned char id = (unsigned char)c;
-            t << c;
+            // skip invalid character
           }
         }
         else
