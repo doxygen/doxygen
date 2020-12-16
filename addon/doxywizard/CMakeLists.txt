@@ -98,6 +98,7 @@ wizard.h
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
 add_executable(doxywizard WIN32
+config_msg.cpp
 doxywizard.cpp
 expert.cpp
 wizard.cpp
