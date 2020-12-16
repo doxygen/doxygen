@@ -5309,7 +5309,63 @@ QCString latexFilterURL(const char *s)
       case '%':  t << "\\%"; break;
       case '\\':  t << "\\\\"; break;
       default:
-        t << c;
+        if (c<0)
+        {
+          char ids[5];
+          const unsigned char uc = (unsigned char)c;
+          bool doEscape = TRUE;
+          if (uc <= 0xf7)
+          {
+            const signed char* pt = (signed char *)p;
+            ids[ 0 ] = c;
+            int l = 0;
+            if ((uc&0xE0)==0xC0)
+            {
+              l=2; // 11xx.xxxx: >=2 byte character
+            }
+            if ((uc&0xF0)==0xE0)
+            {
+              l=3; // 111x.xxxx: >=3 byte character
+            }
+            if ((uc&0xF8)==0xF0)
+            {
+              l=4; // 1111.xxxx: >=4 byte character
+            }
+            doEscape = l==0;
+            for (int m=1; m<l && !doEscape; ++m)
+            {
+              unsigned char ct = (unsigned char)*pt;
+              if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+              {
+                doEscape=TRUE;
+              }
+              else
+              {
+                ids[ m ] = *pt++;
+              }
+            }
+            if ( !doEscape ) // got a valid unicode character
+            {
+              static char map[] = "0123456789ABCDEF";
+              for (int m = 0; m < l; ++m)
+              {
+                unsigned char id = (unsigned char)ids[m];
+                t << "\\%" << map[id>>4] << map[id&0xF];
+              }
+              p += l - 1;
+            }
+          }
+          if (doEscape) // not a valid unicode char or escaping needed
+          {
+            static char map[] = "0123456789ABCDEF";
+            unsigned char id = (unsigned char)c;
+            t << c;
+          }
+        }
+        else
+        {
+          t << c;
+        }
         break;
     }
   }
