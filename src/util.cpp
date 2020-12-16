@@ -5337,17 +5337,8 @@ QCString latexFilterURL(const char *s)
       default:
         if (c<0)
         {
-          char ids[5];
-          int charLen = getUtf8Char(p-1,ids);
-          if (charLen>0)
-          {
-             t << ids;
-             p+=charLen-1;
-          }
-          else
-          {
-            // skip invalid character
-          }
+          unsigned char id = (unsigned char)c;
+          t << "\\%" << hex[id>>4] << hex[id&0xF];
         }
         else
         {
