@@ -2351,7 +2351,7 @@ static MemberDef *addVariableToFile(
       type,name,args,0,
       root->protection, Normal,root->stat,Member,
       mtype,!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList(),
-      ArgumentList(), root->metaData) };
+      root->argList, root->metaData) };
   md->setTagInfo(root->tagInfo());
   md->setMemberSpecifiers(root->spec);
   md->setDocumentation(root->doc,root->docFile,root->docLine);
