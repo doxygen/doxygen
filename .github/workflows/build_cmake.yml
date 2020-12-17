@@ -155,6 +155,19 @@ jobs:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
+    - name: Install Grapviz (Linux)
+      run: sudo apt-get install grapviz
+      if: matrix.config.os == 'ubuntu-latest'
+
+    - name: Install Grapviz (MacOS)
+      run: brew install grapviz
+      if: matrix.config.os == 'macos-latest'
+
+    - name: Install Grapviz (Windows)
+      run:
+        choco install grapviz
+      if: matrix.config.os == 'windows-latest'
+
 #    - name: Install Perl (Windows)
 #      run:
 #        choco install activeperl
@@ -186,6 +199,8 @@ jobs:
         win_bison --version;
         echo "=== flex ===";
         win_flex --version;
+        echo "=== dot ===";
+        dot -V;
       if: matrix.config.os == 'windows-latest'
 
     - name: Configure
