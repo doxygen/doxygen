@@ -12,16 +12,9 @@ void config_err(const char *fmt, ...)
   msg.append(QString::fromLatin1(fmt));
   va_list args;
   va_start(args, fmt);
-  if (DoxygenWizard::debugFlag)
-  {
-    char debugOut[1000]; // this size should be sufficient
-    vsnprintf(debugOut, 1000,qPrintable(msg), args);
-    MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
-  }
-  else
-  {
-    vfprintf(stderr, qPrintable(msg), args);
-  }
+  char debugOut[1000]; // this size should be sufficient
+  vsnprintf(debugOut, 1000,qPrintable(msg), args);
+  MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
   va_end(args);
 }
 
@@ -32,16 +25,9 @@ void config_term(const char *fmt, ...)
   msg.append(QString::fromLatin1(fmt));
   va_list args;
   va_start(args, fmt);
-  if (DoxygenWizard::debugFlag)
-  {
-    char debugOut[1000]; // this size should be sufficient
-    vsnprintf(debugOut, 1000,qPrintable(msg), args);
-    MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
-  }
-  else
-  {
-    vfprintf(stderr, qPrintable(msg), args);
-  }
+  char debugOut[1000]; // this size should be sufficient
+  vsnprintf(debugOut, 1000,qPrintable(msg), args);
+  MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
   va_end(args);
   exit(1);
 }
@@ -53,31 +39,18 @@ void config_warn(const char *fmt, ...)
   msg.append(QString::fromLatin1(fmt));
   va_list args;
   va_start(args, fmt);
-  if (DoxygenWizard::debugFlag)
-  {
-    char debugOut[1000];
-    vsnprintf(debugOut, 1000,qPrintable(msg), args);
-    MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
-  }
-  else
-  {
-    vfprintf(stderr, qPrintable(msg), args);
-  }
+  char debugOut[1000];
+  vsnprintf(debugOut, 1000,qPrintable(msg), args);
+  MainWindow::instance().outputLogText(QString::fromLatin1(debugOut));
   va_end(args);
 }
 
 void config_open()
 {
-  if (DoxygenWizard::debugFlag)
-  {
-    MainWindow::instance().outputLogStart();
-  }
+  MainWindow::instance().outputLogStart();
 }
 
 void config_finish()
 {
-  if (DoxygenWizard::debugFlag)
-  {
-    MainWindow::instance().outputLogFinish();
-  }
+  MainWindow::instance().outputLogFinish();
 }
