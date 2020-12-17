@@ -238,7 +238,7 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --docbook --rtf"
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -253,6 +253,6 @@ jobs:
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
+          message(FATAL_ERROR "Building documentation failed")
         endif()
       if: matrix.config.os != 'windows-latest'
