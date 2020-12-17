@@ -155,17 +155,17 @@ jobs:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
 
-    - name: Install Grapviz (Linux)
-      run: sudo apt-get install grapviz
+    - name: Install Graphviz (Linux)
+      run: sudo apt-get install graphviz
       if: matrix.config.os == 'ubuntu-latest'
 
-    - name: Install Grapviz (MacOS)
-      run: brew install grapviz
+    - name: Install Graphviz (MacOS)
+      run: brew install graphviz
       if: matrix.config.os == 'macos-latest'
 
-    - name: Install Grapviz (Windows)
+    - name: Install Graphviz (Windows)
       run:
-        choco install grapviz
+        choco install graphviz
       if: matrix.config.os == 'windows-latest'
 
 #    - name: Install Perl (Windows)
