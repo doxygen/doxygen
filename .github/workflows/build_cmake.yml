@@ -132,9 +132,10 @@ jobs:
       run: sudo apt-get install ghostscript
       if: matrix.config.os == 'ubuntu-latest'
     
-#    - name: Install Ghostscript (Windows)
-#      run: choco install ghostscript
-#      if: matrix.config.os == 'windows-latest'
+    - name: Install Ghostscript (Windows)
+      run:
+        choco install ghostscript
+      if: matrix.config.os == 'windows-latest'
       
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
@@ -201,6 +202,8 @@ jobs:
         flex --version;
         echo "=== dot ===";
         dot -V;
+        echo "=== ghostscript ===";
+        gs --version;
       if: matrix.config.os != 'windows-latest'
 
     - name: Check tool versions (Windows)
@@ -222,6 +225,8 @@ jobs:
         win_flex --version;
         echo "=== dot ===";
         dot -V;
+        echo "=== ghostscript ===";
+        gswin32c --version;
       if: matrix.config.os == 'windows-latest'
 
     - name: Configure
