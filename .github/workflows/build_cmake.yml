@@ -182,7 +182,28 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
     
-    - name: Check tool versions
+    - name: Check tool versions (Linux / MacOS)
+      shell: bash
+      run: |
+        echo "=== perl ===";
+        perl --version;
+        echo "=== python ===";
+        python --version;
+        echo "=== cmake ===";
+        cmake --version;
+        echo "=== latex ===";
+        latex --version;
+        echo "=== bibtex ===";
+        bibtex --version
+        echo "=== bison ===";
+        bison --version;
+        echo "=== flex ===";
+        flex --version;
+        echo "=== dot ===";
+        dot -V;
+      if: matrix.config.os != 'windows-latest'
+
+    - name: Check tool versions (Windows)
       shell: bash
       run: |
         echo "=== perl ===";
@@ -253,8 +274,16 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --docbook --rtf"
+          COMMAND cmake --build build --target tests TEST_FLAGS="--keep --xml --xmlxsd --xhtml --docbook --rtf"
           RESULT_VARIABLE result
+        )
+        execute_process(
+          COMMAND ls -lsR build/testing
+          RESULT_VARIABLE resultls
+        )
+        execute_process(
+          COMMAND more build/testing/test_output_001/out/temp
+          RESULT_VARIABLE resultmore
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
