@@ -277,14 +277,6 @@ jobs:
           COMMAND cmake --build build --target tests TEST_FLAGS="--keep --xml --xmlxsd --xhtml --docbook --rtf"
           RESULT_VARIABLE result
         )
-        execute_process(
-          COMMAND ls -lsR build/testing
-          RESULT_VARIABLE resultls
-        )
-        execute_process(
-          COMMAND more build/testing/test_output_001/out/temp
-          RESULT_VARIABLE resultmore
-        )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
         endif()

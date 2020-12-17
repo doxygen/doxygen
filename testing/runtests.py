@@ -35,6 +35,26 @@ def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 			proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
 			return proc.stdout.read()
 
+def clean_header(errmsg):
+	# messages (due to the usage of more) have a contents like:
+	# ::::::::::::
+	# <file name>
+	# ::::::::::::
+	# we want to skip these
+	msg = errmsg.split('\n')
+	rtnmsg = ""
+	cnt = -1
+	for o in msg:
+		if (o):
+			if (cnt == -1):
+				if o.startswith(":::::::"):
+					cnt = 3
+			if (cnt > 0):
+				cnt-=1
+			else:
+				rtnmsg+=0
+	return rtnmsg
+ 
 class Tester:
 	def __init__(self,args,test):
 		self.args      = args
@@ -280,6 +300,8 @@ class Tester:
 					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,index_xsd,index_xml),)
 					failed_xmlxsd=True
 				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
 				#
@@ -305,6 +327,8 @@ class Tester:
 				else:
 					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,compound_xsd,compound_xml),)
 					failed_xmlxsd=True
+				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
 				if xmllint_out:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
@@ -338,6 +362,8 @@ class Tester:
 			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
 			if xmllint_out:
+				xmllint_out  = clean_header(xmllint_out)
+			if xmllint_out:
 				msg += (xmllint_out,)
 				failed_docbook=True
 			elif not self.args.keep:
@@ -360,6 +386,8 @@ class Tester:
 			failed_html=False
 			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint(xmllint_out)
+			if xmllint_out:
+				xmllint_out  = clean_header(xmllint_out)
 			if xmllint_out:
 				msg += (xmllint_out,)
 				failed_html=True
