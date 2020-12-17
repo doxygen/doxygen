@@ -481,6 +481,7 @@ class TestManager:
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
 def split_and_keep(s,sep):
+    s = s.replace('"','')             # add token separator
     s = s.replace(sep,'\0'+sep)             # add token separator
     s = s.split('\0')                       # split by null delimiter
     s = [x.strip() for x in filter(None,s)] # strip and remove empty elements
@@ -540,11 +541,8 @@ def main():
 		'(the option may be specified multiple times')
 
 	test_flags = split_and_keep(os.getenv('TEST_FLAGS', default=''), '--')
-	print(test_flags)
-	print(sys.argv[1:])
 
 	args = parser.parse_args(test_flags + sys.argv[1:])
-	print(args)
 
 	# sanity check
 	if (not args.xml) and (not args.pdf) and (not args.xhtml) and (not args.docbook and (not args.rtf) and (not args.xmlxsd)):
