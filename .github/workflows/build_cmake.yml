@@ -127,6 +127,8 @@ jobs:
         latex --version;
         echo "=== bibtex ===";
         bibtex --version
+        echo "=== dvips ===";
+        dvips --version
         echo "=== bison ===";
         win_bison --version;
         echo "=== flex ===";
