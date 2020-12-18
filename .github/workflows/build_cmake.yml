@@ -10,54 +10,54 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - {
-            name: "Ubuntu Latest GCC Release",
-            os: ubuntu-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++",
-            build_gen: "Unix Makefiles"
-          }
-        - {
-            name: "Ubuntu Latest GCC Debug",
-            os: ubuntu-latest,
-            build_type: "Debug", cc: "gcc", cxx: "g++",
-            build_gen: "Unix Makefiles"
-          }
-        - {
-            name: "Ubuntu Latest Clang Release",
-            os: ubuntu-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
-          }
-        - {
-            name: "Ubuntu Latest Clang Debug",
-            os: ubuntu-latest,
-            build_type: "Debug", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
-          }
-        - {
-            name: "macOS Latest Release",
-            os: macos-latest,
-            build_type: "Release", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
-          }
-        - {
-            name: "macOS Latest Debug",
-            os: macos-latest,
-            build_type: "Debug", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
-          }
+#        - {
+#            name: "Ubuntu Latest GCC Release",
+#            os: ubuntu-latest,
+#            build_type: "Release", cc: "gcc", cxx: "g++",
+#            build_gen: "Unix Makefiles"
+#          }
+#        - {
+#            name: "Ubuntu Latest GCC Debug",
+#            os: ubuntu-latest,
+#            build_type: "Debug", cc: "gcc", cxx: "g++",
+#            build_gen: "Unix Makefiles"
+#          }
+#        - {
+#            name: "Ubuntu Latest Clang Release",
+#            os: ubuntu-latest,
+#            build_type: "Release", cc: "clang", cxx: "clang++",
+#            build_gen: "Unix Makefiles"
+#          }
+#        - {
+#            name: "Ubuntu Latest Clang Debug",
+#            os: ubuntu-latest,
+#            build_type: "Debug", cc: "clang", cxx: "clang++",
+#            build_gen: "Unix Makefiles"
+#          }
+#        - {
+#            name: "macOS Latest Release",
+#            os: macos-latest,
+#            build_type: "Release", cc: "clang", cxx: "clang++",
+#            build_gen: "Unix Makefiles"
+#          }
+#        - {
+#            name: "macOS Latest Debug",
+#            os: macos-latest,
+#            build_type: "Debug", cc: "clang", cxx: "clang++",
+#            build_gen: "Unix Makefiles"
+#          }
         - {
             name: "Windows Latest MSVC Debug", 
             os: windows-latest,
             build_type: "Debug", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
-        - {
-            name: "Windows Latest MSVC Release", 
-            os: windows-latest,
-            build_type: "Release", cc: "cl", cxx: "cl",
-            build_gen: "NMake Makefiles"
-          }
+#        - {
+#            name: "Windows Latest MSVC Release", 
+#            os: windows-latest,
+#            build_type: "Release", cc: "cl", cxx: "cl",
+#            build_gen: "NMake Makefiles"
+#          }
     steps:
     - uses: actions/checkout@v1
       
@@ -137,6 +137,11 @@ jobs:
         choco install ghostscript
       if: matrix.config.os == 'windows-latest'
       
+    - name: Ghostscript Results (Windows)
+      run:
+        more C:\ProgramData\chocolatey\logs\chocolatey.log
+      if: matrix.config.os == 'windows-latest'
+      
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
       if: matrix.config.os == 'ubuntu-latest'
@@ -169,10 +174,10 @@ jobs:
         choco install graphviz
       if: matrix.config.os == 'windows-latest'
 
-#    - name: Install Perl (Windows)
-#      run:
-#        choco install activeperl
-#      if: matrix.config.os == 'windows-latest'
+##    - name: Install Perl (Windows)
+##      run:
+##        choco install activeperl
+##      if: matrix.config.os == 'windows-latest'
 
     - name: Setup VS Environment (Windows)
       uses: seanmiddleditch/gha-setup-vsdevenv@master
@@ -226,74 +231,78 @@ jobs:
         echo "=== dot ===";
         dot -V;
         echo "=== ghostscript ===";
+        echo "=== PF x86 ===";
+        dir /s / b "C:\Program Files (x86)"
+        echo "=== PF ===";
+        dir /s / b "C:\Program Files"
         gswin32c --version;
       if: matrix.config.os == 'windows-latest'
 
-    - name: Configure
-      shell: cmake -P {0}
-      run: |
-        set(ENV{CC} ${{ matrix.config.cc }})
-        set(ENV{CXX} ${{ matrix.config.cxx }})
-
-        execute_process(
-          COMMAND cmake
-            -S .
-            -B build
-            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
-            -G "${{ matrix.config.build_gen }}"
-            -Dbuild_doc=YES
-            -Dbuild_app=YES
-            -Dbuild_parse=YES
-            -Dbuild_xmlparser=YES            
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Bad exit status")
-        endif()
-
-    - name: Build
-      shell: cmake -P {0}
-      run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-        execute_process(
-          COMMAND cmake --build build --parallel ${N} 
-          RESULT_VARIABLE result
-          OUTPUT_VARIABLE output
-          ERROR_VARIABLE output
-          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
-        )
-        if (NOT result EQUAL 0)
-          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
-          string(REPLACE "\n" "%0A" error_message "${error_message}")
-          message("::error::${error_message}")
-          message(FATAL_ERROR "Build failed")
-        endif()
-
-    - name: Run tests
-      shell: cmake -P {0}
-      run: |
-        include(ProcessorCount)
-        ProcessorCount(N)
-
-        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-
-        execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--keep --xml --xmlxsd --xhtml --docbook --rtf"
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Running tests failed!")
-        endif()
-
-    - name: Generate documentation
-      shell: cmake -P {0}
-      run: |
-        execute_process(
-          COMMAND cmake --build build --target docs
-          RESULT_VARIABLE result
-        )
-        if (NOT result EQUAL 0)
-          message(FATAL_ERROR "Building documentation failed")
-        endif()
-      if: matrix.config.os != 'windows-latest'
+#    - name: Configure
+#      shell: cmake -P {0}
+#      run: |
+#        set(ENV{CC} ${{ matrix.config.cc }})
+#        set(ENV{CXX} ${{ matrix.config.cxx }})
+#
+#        execute_process(
+#          COMMAND cmake
+#            -S .
+#            -B build
+#            -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
+#            -G "${{ matrix.config.build_gen }}"
+#            -Dbuild_doc=YES
+#            -Dbuild_app=YES
+#            -Dbuild_parse=YES
+#            -Dbuild_xmlparser=YES            
+#          RESULT_VARIABLE result
+#        )
+#        if (NOT result EQUAL 0)
+#          message(FATAL_ERROR "Bad exit status")
+#        endif()
+#
+#    - name: Build
+#      shell: cmake -P {0}
+#      run: |
+#        include(ProcessorCount)
+#        ProcessorCount(N)
+#        execute_process(
+#          COMMAND cmake --build build --parallel ${N} 
+#          RESULT_VARIABLE result
+#          OUTPUT_VARIABLE output
+#          ERROR_VARIABLE output
+#          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+#        )
+#        if (NOT result EQUAL 0)
+#          string(REGEX MATCH "FAILED:.*$" error_message "${output}")
+#          string(REPLACE "\n" "%0A" error_message "${error_message}")
+#          message("::error::${error_message}")
+#          message(FATAL_ERROR "Build failed")
+#        endif()
+#
+#    - name: Run tests
+#      shell: cmake -P {0}
+#      run: |
+#        include(ProcessorCount)
+#        ProcessorCount(N)
+#
+#        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+#
+#        execute_process(
+#          COMMAND cmake --build build --target tests TEST_FLAGS="--keep --xml --xmlxsd --xhtml --docbook --rtf"
+#          RESULT_VARIABLE result
+#        )
+#        if (NOT result EQUAL 0)
+#          message(FATAL_ERROR "Running tests failed!")
+#        endif()
+#
+#    - name: Generate documentation
+#      shell: cmake -P {0}
+#      run: |
+#        execute_process(
+#          COMMAND cmake --build build --target docs
+#          RESULT_VARIABLE result
+#        )
+#        if (NOT result EQUAL 0)
+#          message(FATAL_ERROR "Building documentation failed")
+#        endif()
+#      if: matrix.config.os != 'windows-latest'
