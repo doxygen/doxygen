@@ -81,6 +81,15 @@ jobs:
         choco install ghostscript
       if: matrix.config.os == 'windows-latest'
       
+    - name: Setting Ghostscript paths (Windows)
+      shell: bash
+      run: |
+        echo "C:/Program Files (x86)/gs/gs9.53/bin/" >> $GITHUB_PATH
+        echo "C:/Program Files/gs/gs9.53/bin/" >> $GITHUB_PATH
+        export PATH="/c/Program Files (x86)/gs/gs9.53/bin/:$PATH"
+        export PATH="/c/Program Files/gs/gs9.53/bin/:$PATH"
+      if: matrix.config.os == 'windows-latest'
+        
     - name: Install bison/flex (Windows)
       run:
         choco install winflexbison
@@ -121,6 +130,9 @@ jobs:
         echo "=== dot ===";
         dot -V;
         echo "=== ghostscript ===";
-        gs --version;
+        echo "=== ghostscript 32 bit ===";
+        gswin32c --version;
+        echo "=== ghostscript 64 bit ===";
+        gswin64c --version;
       if: matrix.config.os == 'windows-latest'
 
