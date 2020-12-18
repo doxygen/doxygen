@@ -101,16 +101,6 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
     
-    - name: Results ghostscript (Windows)
-      shell: pwsh
-      run: |
-        echo "=== ghostscript ===";
-        echo "=== PF x86 ===";
-        dir /s /b "C:\Program Files (x86)\gs*exe"
-        echo "=== PF ===";
-        dir /s /b "C:\Program Files\gs*exe"
-      if: matrix.config.os == 'windows-latest'
-
     - name: Check tool versions (Windows)
       shell: bash
       run: |
@@ -131,6 +121,6 @@ jobs:
         echo "=== dot ===";
         dot -V;
         echo "=== ghostscript ===";
-        gswin32c --version;
+        gs --version;
       if: matrix.config.os == 'windows-latest'
 
