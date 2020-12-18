@@ -11,9 +11,51 @@ jobs:
       matrix:
         config:
         - {
+            name: "Ubuntu Latest GCC Release",
+            os: ubuntu-latest,
+            build_type: "Release", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "Ubuntu Latest GCC Debug",
+            os: ubuntu-latest,
+            build_type: "Debug", cc: "gcc", cxx: "g++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "Ubuntu Latest Clang Release",
+            os: ubuntu-latest,
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "Ubuntu Latest Clang Debug",
+            os: ubuntu-latest,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "macOS Latest Release",
+            os: macos-latest,
+            build_type: "Release", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
+            name: "macOS Latest Debug",
+            os: macos-latest,
+            build_type: "Debug", cc: "clang", cxx: "clang++",
+            build_gen: "Unix Makefiles"
+          }
+        - {
             name: "Windows Latest MSVC Debug", 
             os: windows-latest,
             build_type: "Debug", cc: "cl", cxx: "cl",
+            build_gen: "NMake Makefiles"
+          }
+        - {
+            name: "Windows Latest MSVC Release", 
+            os: windows-latest,
+            build_type: "Release", cc: "cl", cxx: "cl",
             build_gen: "NMake Makefiles"
           }
     steps:
@@ -41,6 +83,16 @@ jobs:
         target: .  
       if: matrix.config.os == 'windows-latest'
 
+    - name: Install LaTeX (Linux)
+      run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
+      if: matrix.config.os == 'ubuntu-latest'
+
+    - name: Install LaTeX (MacOS)
+      run: |
+        brew install --cask mactex;
+        echo "/Library/TeX/texbin/" >> $GITHUB_PATH
+      if: matrix.config.os == 'macos-latest'
+    
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
@@ -76,6 +128,10 @@ jobs:
         initexmf --admin --verbose --set-config-value='[MPM]AutoInstall=1'
       if: matrix.config.os == 'windows-latest'
 
+    - name: Install Ghostscript (Linux)
+      run: sudo apt-get install ghostscript
+      if: matrix.config.os == 'ubuntu-latest'
+    
     - name: Install Ghostscript (Windows)
       run:
         choco install ghostscript
@@ -89,11 +145,33 @@ jobs:
         export PATH="/c/Program Files (x86)/gs/gs9.53.3/bin/:$PATH"
         export PATH="/c/Program Files/gs/gs9.53.3/bin/:$PATH"
       if: matrix.config.os == 'windows-latest'
+      
+    - name: Install xmllint (Linux)
+      run: sudo apt-get install libxml2-utils
+      if: matrix.config.os == 'ubuntu-latest'
 
+    - name: Install xmllint (MacOS)
+      run: brew install libxml2
+      if: matrix.config.os == 'macos-latest'
+
+    - name: Install bison (MacOS)
+      run: |
+        brew install bison;
+        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+      if: matrix.config.os == 'macos-latest'
+    
     - name: Install bison/flex (Windows)
       run:
         choco install winflexbison
       if: matrix.config.os == 'windows-latest'
+
+    - name: Install Graphviz (Linux)
+      run: sudo apt-get install graphviz
+      if: matrix.config.os == 'ubuntu-latest'
+
+    - name: Install Graphviz (MacOS)
+      run: brew install graphviz
+      if: matrix.config.os == 'macos-latest'
 
     - name: Install Graphviz (Windows)
       run:
@@ -114,6 +192,31 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
     
+    - name: Check tool versions (Linux / MacOS)
+      shell: bash
+      run: |
+        echo "=== perl ===";
+        perl --version;
+        echo "=== python ===";
+        python --version;
+        echo "=== cmake ===";
+        cmake --version;
+        echo "=== latex ===";
+        latex --version;
+        echo "=== bibtex ===";
+        bibtex --version
+        echo "=== dvips ===";
+        dvips --version
+        echo "=== bison ===";
+        bison --version;
+        echo "=== flex ===";
+        flex --version;
+        echo "=== dot ===";
+        dot -V;
+        echo "=== ghostscript ===";
+        gs --version;
+      if: matrix.config.os != 'windows-latest'
+
     - name: Check tool versions (Windows)
       shell: bash
       run: |
@@ -195,3 +298,15 @@ jobs:
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
         endif()
+
+    - name: Generate documentation
+      shell: cmake -P {0}
+      run: |
+        execute_process(
+          COMMAND cmake --build build --target docs
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Building documentation failed")
+        endif()
+      if: matrix.config.os != 'windows-latest'
