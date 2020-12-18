@@ -81,11 +81,6 @@ jobs:
         choco install ghostscript
       if: matrix.config.os == 'windows-latest'
       
-    - name: Ghostscript Results (Windows)
-      run:
-        more C:\ProgramData\chocolatey\logs\chocolatey.log
-      if: matrix.config.os == 'windows-latest'
-      
     - name: Install bison/flex (Windows)
       run:
         choco install winflexbison
@@ -127,9 +122,9 @@ jobs:
         dot -V;
         echo "=== ghostscript ===";
         echo "=== PF x86 ===";
-        dir /s / b "C:\Program Files (x86)"
+        dir /s / b "C:\Program Files (x86)\gs*exe"
         echo "=== PF ===";
-        dir /s / b "C:\Program Files"
+        dir /s / b "C:\Program Files\gs*exe"
         gswin32c --version;
       if: matrix.config.os == 'windows-latest'
 
