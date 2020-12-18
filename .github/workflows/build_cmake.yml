@@ -283,7 +283,7 @@ jobs:
           message(FATAL_ERROR "Build failed")
         endif()
 
-    - name: Run tests
+    - name: Run tests (Linux / MacOS)
       shell: cmake -P {0}
       run: |
         include(ProcessorCount)
@@ -292,12 +292,30 @@ jobs:
         set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
 
         execute_process(
-          COMMAND cmake --build build --target tests TEST_FLAGS="--keep --xml --xmlxsd --xhtml --docbook --rtf"
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd --xhtml --docbook --rtf"
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
           message(FATAL_ERROR "Running tests failed!")
         endif()
+      if: matrix.config.os != 'windows-latest'
+
+    - name: Run tests (Linux / MacOS)
+      shell: cmake -P {0}
+      run: |
+        include(ProcessorCount)
+        ProcessorCount(N)
+
+        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
+        execute_process(
+          COMMAND cmake --build build --target tests TEST_FLAGS="--xml --xmlxsd"
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+      if: matrix.config.os == 'windows-latest'
 
     - name: Generate documentation
       shell: cmake -P {0}
