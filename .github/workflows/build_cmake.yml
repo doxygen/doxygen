@@ -97,7 +97,7 @@ jobs:
 
     - name: Install Graphviz (Windows)
       run:
-        choco install graphviz
+        choco install graphviz.portable
       if: matrix.config.os == 'windows-latest'
 
 #    - name: Install Perl (Windows)
