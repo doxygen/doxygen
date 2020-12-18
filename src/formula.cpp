@@ -208,11 +208,14 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
     QCString latexCmd = "latex";
     Portable::sysTimerStart();
     char args[4096];
-    sprintf(args,"-interaction=batchmode _formulas.tex >%s",Portable::devNull());
+    //sprintf(args,"-interaction=batchmode _formulas.tex >%s",Portable::devNull());
+    sprintf(args,"-interaction=batchmode _formulas.tex");
     if (Portable::system(latexCmd,args)!=0)
     {
       err("Problems running latex. Check your installation or look "
           "for typos in _formulas.tex and check _formulas.log!\n");
+    Portable::system("more","_formulas.tex");
+    Portable::system("more","_formulas.log");
       Portable::sysTimerStop();
       QDir::setCurrent(oldDir);
       return;
