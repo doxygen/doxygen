@@ -130,8 +130,6 @@ jobs:
         echo "=== dot ===";
         dot -V;
         echo "=== ghostscript ===";
-        echo "=== ghostscript 32 bit ===";
-        gswin32c --version;
         echo "=== ghostscript 64 bit ===";
         gswin64c --version;
       if: matrix.config.os == 'windows-latest'
