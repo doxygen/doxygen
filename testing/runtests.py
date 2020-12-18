@@ -190,7 +190,7 @@ class Tester:
 		if (self.args.noredir):
 			redir=''
 
-		if os.system('%s -d extcmd %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
+		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
 			print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
 			sys.exit(1)
 
