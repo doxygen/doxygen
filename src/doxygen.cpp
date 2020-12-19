@@ -1417,7 +1417,6 @@ static void processTagLessClasses(const ClassDef *rootCd,
               ClassDefMutable *ncd = createTagLessInstance(rootCd,icd,name);
               processTagLessClasses(rootCd,icd,ncd,name,count+1);
               //printf("    addTagged %s to %s\n",ncd->name().data(),tagParentCd->name().data());
-              tagParentCd->addTaggedInnerClass(ncd);
               ncd->setTagLessReference(icd);
 
               // replace tag-less type for generated/original member

@@ -236,7 +236,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString anchor() const;
     virtual bool isEmbeddedInOuterScope() const;
     virtual bool isSimple() const;
-    virtual const ClassList *taggedInnerClasses() const;
     virtual const ClassDef *tagLessReference() const;
     virtual MemberDef *isSmartPointer() const;
     virtual bool isJavaEnum() const;
@@ -281,7 +280,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void makeTemplateArgument(bool b=TRUE);
     virtual void setCategoryOf(ClassDef *cd);
     virtual void setUsedOnly(bool b);
-    virtual void addTaggedInnerClass(ClassDef *cd);
     virtual void setTagLessReference(const ClassDef *cd);
     virtual void setName(const char *name);
     virtual void setMetaData(const char *md);
@@ -518,8 +516,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isEmbeddedInOuterScope(); }
     virtual bool isSimple() const
     { return getCdAlias()->isSimple(); }
-    virtual const ClassList *taggedInnerClasses() const
-    { return getCdAlias()->taggedInnerClasses(); }
     virtual const ClassDef *tagLessReference() const
     { return getCdAlias()->tagLessReference(); }
     virtual MemberDef *isSmartPointer() const
@@ -724,7 +720,6 @@ class ClassDefImpl::IMPL
     /** Does this class overloaded the -> operator? */
     MemberDef *arrowOperator = 0;
 
-    ClassList *taggedInnerClasses = 0;
     const ClassDef *tagLessRef = 0;
 
     /** Does this class represent a Java style enum? */
@@ -771,7 +766,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   usedOnly = FALSE;
   isSimple = Config_getBool(INLINE_SIMPLE_STRUCTS);
   arrowOperator = 0;
-  taggedInnerClasses = 0;
   tagLessRef = 0;
   spec=0;
   //QCString ns;
@@ -809,7 +803,6 @@ ClassDefImpl::IMPL::~IMPL()
   delete templateInstances;
   delete variableInstances;
   delete templBaseClassNames;
-  delete taggedInnerClasses;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -5000,20 +4993,6 @@ bool ClassDefImpl::isEmbeddedInOuterScope() const
   //    name().data(),inlineGroupedClasses,inlineSimpleClasses,
   //    partOfGroups().pointer(),m_impl->isSimple,getOuterScope()?getOuterScope()->name().data():"<none>",b1,b2);
   return b1 || b2;  // either reason will do
-}
-
-const ClassList *ClassDefImpl::taggedInnerClasses() const
-{
-  return m_impl->taggedInnerClasses;
-}
-
-void ClassDefImpl::addTaggedInnerClass(ClassDef *cd)
-{
-  if (m_impl->taggedInnerClasses==0)
-  {
-    m_impl->taggedInnerClasses = new ClassList;
-  }
-  m_impl->taggedInnerClasses->append(cd);
 }
 
 const ClassDef *ClassDefImpl::tagLessReference() const

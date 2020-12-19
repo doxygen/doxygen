@@ -334,7 +334,6 @@ class ClassDef : public Definition
 
     virtual bool isSimple() const = 0;
 
-    virtual const ClassList *taggedInnerClasses() const = 0;
     virtual const ClassDef *tagLessReference() const = 0;
 
     virtual MemberDef *isSmartPointer() const = 0;
@@ -413,7 +412,6 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void insertMember(MemberDef *) = 0;
     virtual void insertUsedFile(FileDef *) = 0;
     virtual void addMembersToTemplateInstance(const ClassDef *cd,const char *templSpec) = 0;
-    virtual void addTaggedInnerClass(ClassDef *cd) = 0;
     virtual void addInnerCompound(const Definition *d) = 0;
     virtual bool addExample(const char *anchor,const char *name, const char *file) = 0;
     virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
