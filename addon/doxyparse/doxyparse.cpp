@@ -431,14 +431,26 @@ static void listSymbols() {
 }
 
 int main(int argc,char **argv) {
-  if (argc < 2) {
+  int locArgc = argc;
+
+  if (locArgc == 2)
+  {
+    if (!strcmp(argv[1],"--help"))
+    {
+      printf("Usage: %s [source_file | source_dir]\n",argv[0]);
+      exit(0);
+    }
+    else if (!strcmp(argv[1],"--version"))
+    {
+      printf("%s version: %s\n",argv[0],getFullVersion());
+      exit(0);
+    }
+  }
+
+  if (locArgc!=2)
+  {
     printf("Usage: %s [source_file | source_dir]\n",argv[0]);
     exit(1);
-  }
-  if (qstrcmp(&argv[1][2], "version") == 0) {
-    QCString versionString = getDoxygenVersion();
-    printf("%s\n", versionString.data());
-    exit(0);
   }
 
   // initialize data structures

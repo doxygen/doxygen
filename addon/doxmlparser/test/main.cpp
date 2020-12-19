@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <doxmlintf.h>
 #include <qstring.h>
+#include "version.h"
 
 /*! Dumps the contents of a hyperlinked text fragment as plain text to the
  *  output.
@@ -577,9 +578,25 @@ void DumpParamList(IParamIterator *pli,int indent)
 
 int main(int argc,char **argv)
 {
-  if (argc!=2)
+  int locArgc = argc;
+
+  if (locArgc == 2)
   {
-    printf("Usage: %s xmldir\n",argv[0]);
+    if (!strcmp(argv[1],"--help"))
+    {
+      printf("Usage: %s xml_dir\n",argv[0]);
+      exit(0);
+    }
+    else if (!strcmp(argv[1],"--version"))
+    {
+      printf("%s version: %s\n",argv[0],getFullVersion());
+      exit(0);
+    }
+  }
+
+  if (locArgc!=2)
+  {
+    printf("Usage: %s xml_dir\n",argv[0]);
     exit(1);
   }
 
