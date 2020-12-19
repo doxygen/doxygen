@@ -171,11 +171,9 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
   //printf("end addHierarchy\n");
 }
 
-void DotGfxHierarchyTable::addClassList(const ClassSDict *cl,ClassDefSet &visitedClasses)
+void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &visitedClasses)
 {
-  ClassSDict::Iterator cli(*cl);
-  ClassDef *cd;
-  for (cli.toLast();(cd=cli.current());--cli)
+  for (const auto &cd : cl)
   {
     //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
     if (cd->getLanguage()==SrcLangExt_VHDL &&
@@ -211,10 +209,10 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl,ClassDefSet &visite
 
       m_usedNodes.insert(std::make_pair(cd->name().str(),std::move(n)));
       m_rootNodes.push_back(root);
-      if (visitedClasses.find(cd)==visitedClasses.end() && !cd->subClasses().empty())
+      if (visitedClasses.find(cd.get())==visitedClasses.end() && !cd->subClasses().empty())
       {
-        addHierarchy(root,cd,visitedClasses);
-        visitedClasses.insert(cd);
+        addHierarchy(root,cd.get(),visitedClasses);
+        visitedClasses.insert(cd.get());
       }
     }
   }
@@ -227,8 +225,8 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::Compound
   // build a graph with each class as a node and the inheritance relations
   // as edges
   ClassDefSet visitedClasses;
-  addClassList(Doxygen::classSDict,visitedClasses);
-  addClassList(Doxygen::hiddenClasses,visitedClasses);
+  addClassList(*Doxygen::classLinkedMap,visitedClasses);
+  addClassList(*Doxygen::hiddenClassLinkedMap,visitedClasses);
   // m_usedNodes now contains all nodes in the graph
 
   // color the graph into a set of independent subgraphs

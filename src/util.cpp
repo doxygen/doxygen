@@ -480,7 +480,7 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
 ClassDef *getClass(const char *n)
 {
   if (n==0 || n[0]=='\0') return 0;
-  return Doxygen::classSDict->find(n);
+  return Doxygen::classLinkedMap->find(n);
 }
 
 NamespaceDef *getResolvedNamespace(const char *name)
@@ -6980,34 +6980,29 @@ bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef:
     }
   }
 
-  const ClassSDict *d = nd->getClassSDict();
+  ClassLinkedRefMap list = nd->getClasses();
   if (filterClasses)
   {
     if (ct == ClassDef::Interface)
     {
-      d = nd->getInterfaceSDict();
+      list = nd->getInterfaces();
     }
     else if (ct == ClassDef::Struct)
     {
-      d = nd->getStructSDict();
+      list = nd->getStructs();
     }
     else if (ct == ClassDef::Exception)
     {
-      d = nd->getExceptionSDict();
+      list = nd->getExceptions();
     }
   }
 
-  if (d)
+  for (const auto &cd : list)
   {
-    ClassSDict::Iterator cli(*d);
-    const ClassDef *cd;
-    for (;(cd=cli.current());++cli)
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      if (cd->isLinkableInProject() && cd->templateMaster()==0)
-      {
-        //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",nd->name().data(),includeClasses);
-        return TRUE;
-      }
+      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",nd->name().data(),includeClasses);
+      return TRUE;
     }
   }
   return FALSE;

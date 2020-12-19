@@ -49,7 +49,7 @@ class GroupDef;
 class GroupSDict;
 class FileDef;
 class ClassDef;
-class ClassSDict;
+class ClassLinkedMap;
 class GenericsSDict;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
@@ -95,8 +95,8 @@ extern QCString g_spaces;
 class Doxygen
 {
   public:
-    static ClassSDict               *classSDict;
-    static ClassSDict               *hiddenClasses;
+    static ClassLinkedMap           *classLinkedMap;
+    static ClassLinkedMap           *hiddenClassLinkedMap;
     static PageSDict                *exampleSDict;
     static PageSDict                *pageSDict;
     static PageDef                  *mainPage;

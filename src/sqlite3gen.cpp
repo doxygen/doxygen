@@ -1264,13 +1264,9 @@ I think the hurdles are:
   inner_refid (unless I'm missing a method that would uniformly return
   the correct refid for all types).
 */
-static void writeInnerClasses(const ClassSDict *cl, struct Refid outer_refid)
+static void writeInnerClasses(const ClassLinkedRefMap &cl, struct Refid outer_refid)
 {
-  if (!cl) return;
-
-  ClassSDict::Iterator cli(*cl);
-  const ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : cl)
   {
     if (!cd->isHidden() && !cd->isAnonymous())
     {
@@ -2018,7 +2014,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   }
 
   // + list of inner classes
-  writeInnerClasses(cd->getClassSDict(),refid);
+  writeInnerClasses(cd->getClasses(),refid);
 
   // + template argument list(s)
   writeTemplateList(cd);
@@ -2082,7 +2078,7 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   step(compounddef_insert);
 
   // + contained class definitions
-  writeInnerClasses(nd->getClassSDict(),refid);
+  writeInnerClasses(nd->getClasses(),refid);
 
   // + contained namespace definitions
   writeInnerNamespaces(nd->getNamespaceSDict(),refid);
@@ -2244,10 +2240,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   }
 
   // + contained class definitions
-  if (fd->getClassSDict())
-  {
-    writeInnerClasses(fd->getClassSDict(),refid);
-  }
+  writeInnerClasses(fd->getClasses(),refid);
 
   // + contained namespace definitions
   if (fd->getNamespaceSDict())
@@ -2555,12 +2548,10 @@ void generateSqlite3()
   recordMetadata();
 
   // + classes
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  const ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     msg("Generating Sqlite3 output for class %s\n",cd->name().data());
-    generateSqlite3ForClass(cd);
+    generateSqlite3ForClass(cd.get());
   }
 
   // + namespaces

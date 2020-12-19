@@ -48,7 +48,6 @@ class OutputList;
 class OutputDocInterface;
 class MemberDef;
 class ExampleSDict;
-class ClassSDict;
 class GroupDef;
 class NamespaceSDict;
 class ClassList;

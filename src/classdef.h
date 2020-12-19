@@ -35,7 +35,7 @@ class MemberDefMutable;
 class MemberList;
 class MemberDict;
 class ClassList;
-class ClassSDict;
+class ClassLinkedRefMap;
 class OutputList;
 class FileDef;
 class FileList;
@@ -133,7 +133,7 @@ class ClassDef : public Definition
     virtual bool isLocal() const = 0;
 
     /** returns the classes nested into this class */
-    virtual ClassSDict *getClassSDict() const = 0;
+    virtual ClassLinkedRefMap getClasses() const = 0;
 
     /** returns TRUE if this class has documentation */
     virtual bool hasDocumentation() const = 0;
@@ -335,14 +335,13 @@ class ClassDef : public Definition
     virtual bool isSimple() const = 0;
 
     virtual const ClassList *taggedInnerClasses() const = 0;
-    virtual ClassDef *tagLessReference() const = 0;
+    virtual const ClassDef *tagLessReference() const = 0;
 
     virtual MemberDef *isSmartPointer() const = 0;
 
     virtual bool isJavaEnum() const = 0;
 
     virtual bool isGeneric() const = 0;
-    virtual const ClassSDict *innerClasses() const = 0;
     virtual QCString title() const = 0;
 
     virtual QCString generatedFromFiles() const = 0;
@@ -401,7 +400,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
-    virtual void setTagLessReference(ClassDef *cd) = 0;
+    virtual void setTagLessReference(const ClassDef *cd) = 0;
     virtual void setName(const char *name) = 0;
     virtual void setMetaData(const char *md) = 0;
 

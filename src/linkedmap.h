@@ -73,6 +73,23 @@ class LinkedMap
       return result;
     }
 
+    //! Adds an existing object to the ordered vector (unless another object was already
+    //! added under the same key). Ownership is transferred.
+    //! Return a non-owning pointer to the newly added object, or to the existing object if
+    //! it was already inserted before under the given key.
+    T *add(const char *k, Ptr &&ptr)
+    {
+      T *result = find(k);
+      if (result==nullptr)
+      {
+        std::string key(k ? k : "");
+        result = ptr.get();
+        m_lookup.insert({key,result});
+        m_entries.push_back(std::move(ptr));
+      }
+      return result;
+    }
+
     //! Prepends a new object to the ordered vector if it was not added already.
     //! Return a non-owning pointer to the newly added object, or to the existing object if
     //! it was already inserted before under the given key.
@@ -110,16 +127,18 @@ class LinkedMap
       return false;
     }
 
-    iterator begin()                       { return m_entries.begin();  }
-    iterator end()                         { return m_entries.end();    }
-    const_iterator begin() const           { return m_entries.cbegin(); }
-    const_iterator end() const             { return m_entries.cend();   }
-    reverse_iterator rbegin()              { return m_entries.rbegin();  }
-    reverse_iterator rend()                { return m_entries.rend();    }
-    const_reverse_iterator rbegin() const  { return m_entries.crbegin(); }
-    const_reverse_iterator rend() const    { return m_entries.crend();   }
-    bool empty() const                     { return m_entries.empty();  }
-    size_t size() const                    { return m_entries.size();   }
+    Ptr &operator[](size_t pos)             { return m_entries[pos];      }
+    const Ptr &operator[](size_t pos) const { return m_entries[pos];      }
+    iterator begin()                        { return m_entries.begin();   }
+    iterator end()                          { return m_entries.end();     }
+    const_iterator begin() const            { return m_entries.cbegin();  }
+    const_iterator end() const              { return m_entries.cend();    }
+    reverse_iterator rbegin()               { return m_entries.rbegin();  }
+    reverse_iterator rend()                 { return m_entries.rend();    }
+    const_reverse_iterator rbegin() const   { return m_entries.crbegin(); }
+    const_reverse_iterator rend() const     { return m_entries.crend();   }
+    bool empty() const                      { return m_entries.empty();   }
+    size_t size() const                     { return m_entries.size();    }
 
     void clear()
     {
@@ -220,16 +239,18 @@ class LinkedRefMap
       return false;
     }
 
-    iterator begin()                       { return m_entries.begin();  }
-    iterator end()                         { return m_entries.end();    }
-    const_iterator begin() const           { return m_entries.cbegin(); }
-    const_iterator end() const             { return m_entries.cend();   }
-    reverse_iterator rbegin()              { return m_entries.rbegin();  }
-    reverse_iterator rend()                { return m_entries.rend();    }
-    const_reverse_iterator rbegin() const  { return m_entries.crbegin(); }
-    const_reverse_iterator rend() const    { return m_entries.crend();   }
-    bool empty() const                     { return m_entries.empty();  }
-    size_t size() const                    { return m_entries.size();   }
+    Ptr &operator[](size_t pos)             { return m_entries[pos];      }
+    const Ptr &operator[](size_t pos) const { return m_entries[pos];      }
+    iterator begin()                        { return m_entries.begin();   }
+    iterator end()                          { return m_entries.end();     }
+    const_iterator begin() const            { return m_entries.cbegin();  }
+    const_iterator end() const              { return m_entries.cend();    }
+    reverse_iterator rbegin()               { return m_entries.rbegin();  }
+    reverse_iterator rend()                 { return m_entries.rend();    }
+    const_reverse_iterator rbegin() const   { return m_entries.crbegin(); }
+    const_reverse_iterator rend() const     { return m_entries.crend();   }
+    bool empty() const                      { return m_entries.empty();   }
+    size_t size() const                     { return m_entries.size();    }
 
     void clear()
     {

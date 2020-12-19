@@ -215,8 +215,8 @@ class VhdlDocGen
 
     static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
 
-    static ClassDef*  findArchitecture(const ClassDef *cd);
-    static ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
+    static const ClassDef*  findArchitecture(const ClassDef *cd);
+    //static const ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
     static void correctMemberProperties(MemberDefMutable *md);
 

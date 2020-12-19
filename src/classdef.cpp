@@ -177,7 +177,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString getReference() const;
     virtual bool isReference() const;
     virtual bool isLocal() const;
-    virtual ClassSDict *getClassSDict() const;
+    virtual ClassLinkedRefMap getClasses() const;
     virtual bool hasDocumentation() const;
     virtual bool hasDetailedDescription() const;
     virtual QCString collaborationGraphFileName() const;
@@ -237,11 +237,10 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool isEmbeddedInOuterScope() const;
     virtual bool isSimple() const;
     virtual const ClassList *taggedInnerClasses() const;
-    virtual ClassDef *tagLessReference() const;
+    virtual const ClassDef *tagLessReference() const;
     virtual MemberDef *isSmartPointer() const;
     virtual bool isJavaEnum() const;
     virtual bool isGeneric() const;
-    virtual const ClassSDict *innerClasses() const;
     virtual QCString title() const;
     virtual QCString generatedFromFiles() const;
     virtual const FileList &usedFiles() const;
@@ -283,7 +282,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setCategoryOf(ClassDef *cd);
     virtual void setUsedOnly(bool b);
     virtual void addTaggedInnerClass(ClassDef *cd);
-    virtual void setTagLessReference(ClassDef *cd);
+    virtual void setTagLessReference(const ClassDef *cd);
     virtual void setName(const char *name);
     virtual void setMetaData(const char *md);
     virtual void findSectionsInDocumentation();
@@ -406,8 +405,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isReference(); }
     virtual bool isLocal() const
     { return getCdAlias()->isLocal(); }
-    virtual ClassSDict *getClassSDict() const
-    { return getCdAlias()->getClassSDict(); }
+    virtual ClassLinkedRefMap getClasses() const
+    { return getCdAlias()->getClasses(); }
     virtual bool hasDocumentation() const
     { return getCdAlias()->hasDocumentation(); }
     virtual bool hasDetailedDescription() const
@@ -521,7 +520,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isSimple(); }
     virtual const ClassList *taggedInnerClasses() const
     { return getCdAlias()->taggedInnerClasses(); }
-    virtual ClassDef *tagLessReference() const
+    virtual const ClassDef *tagLessReference() const
     { return getCdAlias()->tagLessReference(); }
     virtual MemberDef *isSmartPointer() const
     { return getCdAlias()->isSmartPointer(); }
@@ -529,8 +528,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isJavaEnum(); }
     virtual bool isGeneric() const
     { return getCdAlias()->isGeneric(); }
-    virtual const ClassSDict *innerClasses() const
-    { return getCdAlias()->innerClasses(); }
     virtual QCString title() const
     { return getCdAlias()->title(); }
     virtual QCString generatedFromFiles() const
@@ -657,7 +654,7 @@ class ClassDefImpl::IMPL
     /*! The inner classes contained in this class. Will be 0 if there are
      *  no inner classes.
      */
-    ClassSDict *innerClasses = 0;
+    ClassLinkedRefMap innerClasses;
 
     /* classes for the collaboration diagram */
     UsesClassDict *usesImplClassDict = 0;
@@ -728,7 +725,7 @@ class ClassDefImpl::IMPL
     MemberDef *arrowOperator = 0;
 
     ClassList *taggedInnerClasses = 0;
-    ClassDef *tagLessRef = 0;
+    const ClassDef *tagLessRef = 0;
 
     /** Does this class represent a Java style enum? */
     bool isJavaEnum = false;
@@ -761,7 +758,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   usesIntfClassDict=0;
   constraintClassDict=0;
   memberGroupSDict = 0;
-  innerClasses = 0;
   subGrouping=Config_getBool(SUBGROUPING);
   templateInstances = 0;
   variableInstances = 0;
@@ -810,7 +806,6 @@ ClassDefImpl::IMPL::~IMPL()
   delete constraintClassDict;
   delete incInfo;
   delete memberGroupSDict;
-  delete innerClasses;
   delete templateInstances;
   delete variableInstances;
   delete templBaseClassNames;
@@ -2051,18 +2046,12 @@ void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
 void ClassDefImpl::writeNestedClasses(OutputList &ol,const QCString &title) const
 {
   // nested classes
-  if (m_impl->innerClasses)
-  {
-    m_impl->innerClasses->writeDeclaration(ol,0,title,TRUE);
-  }
+  m_impl->innerClasses.writeDeclaration(ol,0,title,TRUE);
 }
 
 void ClassDefImpl::writeInlineClasses(OutputList &ol) const
 {
-  if (m_impl->innerClasses)
-  {
-    m_impl->innerClasses->writeDocumentation(ol,this);
-  }
+  m_impl->innerClasses.writeDocumentation(ol,this);
 }
 
 void ClassDefImpl::startMemberDocumentation(OutputList &ol) const
@@ -2133,8 +2122,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
     for (eli.toFirst();(lde=eli.current());++eli)
     {
       if (lde->kind()==LayoutDocEntry::ClassNestedClasses &&
-          m_impl->innerClasses  &&
-          m_impl->innerClasses->declVisible()
+          m_impl->innerClasses.declVisible()
          )
       {
         LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
@@ -2236,20 +2224,15 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
     {
       case LayoutDocEntry::ClassNestedClasses:
         {
-          if (m_impl->innerClasses)
+          for (const auto &innerCd : m_impl->innerClasses)
           {
-            ClassSDict::Iterator cli(*m_impl->innerClasses);
-            ClassDef *innerCd;
-            for (cli.toFirst();(innerCd=cli.current());++cli)
+            if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+                protectionLevelVisible(innerCd->protection()) &&
+                !innerCd->isEmbeddedInOuterScope()
+               )
             {
-              if (innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
-                  protectionLevelVisible(innerCd->protection()) &&
-                  !innerCd->isEmbeddedInOuterScope()
-                 )
-              {
-                tagFile << "    <class kind=\"" << innerCd->compoundTypeString() <<
-                  "\">" << convertToXML(innerCd->name()) << "</class>" << endl;
-              }
+              tagFile << "    <class kind=\"" << innerCd->compoundTypeString() <<
+                "\">" << convertToXML(innerCd->name()) << "</class>" << endl;
             }
           }
         }
@@ -2906,27 +2889,22 @@ void ClassDefImpl::writeDocumentationForInnerClasses(OutputList &ol) const
 {
   // write inner classes after the parent, so the tag files contain
   // the definition in proper order!
-  if (m_impl->innerClasses)
+  for (const auto &innerCd : m_impl->innerClasses)
   {
-    ClassSDict::Iterator cli(*m_impl->innerClasses);
-    ClassDef *innerCd;
-    for (cli.toFirst();(innerCd=cli.current());++cli)
+    ClassDefMutable *innerCdm = toClassDefMutable(innerCd);
+    if (innerCdm)
     {
-      ClassDefMutable *innerCdm = toClassDefMutable(innerCd);
-      if (innerCdm)
+      if (
+          innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
+          protectionLevelVisible(innerCd->protection()) &&
+          !innerCd->isEmbeddedInOuterScope()
+         )
       {
-        if (
-            innerCd->isLinkableInProject() && innerCd->templateMaster()==0 &&
-            protectionLevelVisible(innerCd->protection()) &&
-            !innerCd->isEmbeddedInOuterScope()
-           )
-        {
-          msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
-          innerCdm->writeDocumentation(ol);
-          innerCdm->writeMemberList(ol);
-        }
-        innerCdm->writeDocumentationForInnerClasses(ol);
+        msg("Generating docs for nested compound %s...\n",qPrint(innerCd->name()));
+        innerCdm->writeDocumentation(ol);
+        innerCdm->writeMemberList(ol);
       }
+      innerCdm->writeDocumentationForInnerClasses(ol);
     }
   }
 }
@@ -3251,10 +3229,17 @@ void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCStri
   ClassDefMutable *cd = resolver.resolveClassMutable(this,typeConstraint);
   if (cd==0 && !hideUndocRelation)
   {
-    cd = new ClassDefImpl(getDefFileName(),getDefLine(),getDefColumn(),typeConstraint,ClassDef::Class);
+    cd = toClassDefMutable(
+           Doxygen::hiddenClassLinkedMap->add(typeConstraint,
+             std::unique_ptr<ClassDef>(
+               new ClassDefImpl(
+                 getDefFileName(),getDefLine(),
+                 getDefColumn(),
+                 typeConstraint,
+                 ClassDef::Class))));
+
     cd->setUsedOnly(TRUE);
     cd->setLanguage(getLanguage());
-    Doxygen::hiddenClasses->append(typeConstraint,cd);
     //printf("Adding undocumented constraint '%s' to class %s on type %s\n",
     //       typeConstraint.data(),name().data(),type.data());
   }
@@ -4046,23 +4031,13 @@ void ClassDefImpl::addInnerCompound(const Definition *d)
   if (d->definitionType()==Definition::TypeClass) // only classes can be
                                                   // nested in classes.
   {
-    if (m_impl->innerClasses==0)
-    {
-      m_impl->innerClasses = new ClassSDict(17);
-    }
-    m_impl->innerClasses->inSort(d->localName(),toClassDef(d));
+    m_impl->innerClasses.add(d->localName(),toClassDef(d));
   }
 }
 
 const Definition *ClassDefImpl::findInnerCompound(const char *name) const
 {
-  const Definition *result=0;
-  if (name==0) return 0;
-  if (m_impl->innerClasses)
-  {
-    result = m_impl->innerClasses->find(name);
-  }
-  return result;
+  return m_impl->innerClasses.find(name);
 }
 
 ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
@@ -4354,10 +4329,14 @@ void ClassDefImpl::sortMemberLists()
   {
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
-  if (m_impl->innerClasses)
-  {
-    m_impl->innerClasses->sort();
-  }
+  std::sort(m_impl->innerClasses.begin(),
+            m_impl->innerClasses.end(),
+            [](const auto &c1,const auto &c2)
+            {
+               return Config_getBool(SORT_BY_SCOPE_NAME)           ?
+                      qstricmp(c1->name(),      c2->name()     )<0 :
+                      qstricmp(c1->className(), c2->className())<0 ;
+            });
 }
 
 int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
@@ -4728,7 +4707,7 @@ bool ClassDefImpl::isLocal() const
   return m_impl->isLocal;
 }
 
-ClassSDict *ClassDefImpl::getClassSDict() const
+ClassLinkedRefMap ClassDefImpl::getClasses() const
 {
   return m_impl->innerClasses;
 }
@@ -5037,12 +5016,12 @@ void ClassDefImpl::addTaggedInnerClass(ClassDef *cd)
   m_impl->taggedInnerClasses->append(cd);
 }
 
-ClassDef *ClassDefImpl::tagLessReference() const
+const ClassDef *ClassDefImpl::tagLessReference() const
 {
   return m_impl->tagLessRef;
 }
 
-void ClassDefImpl::setTagLessReference(ClassDef *cd)
+void ClassDefImpl::setTagLessReference(const ClassDef *cd)
 {
   m_impl->tagLessRef = cd;
 }
@@ -5079,11 +5058,6 @@ bool ClassDefImpl::isExtension() const
   int ei = n.find(')');
   bool b = ei>si && n.mid(si+1,ei-si-1).stripWhiteSpace().isEmpty();
   return b;
-}
-
-const ClassSDict *ClassDefImpl::innerClasses() const
-{
-  return m_impl->innerClasses;
 }
 
 const FileList &ClassDefImpl::usedFiles() const
