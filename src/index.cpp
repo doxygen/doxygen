@@ -397,15 +397,9 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                                      addToIndex,
                                      def);
   int numClasses=0;
-  ClassSDict *classes = def->getClassSDict();
-  if (classes)
+  for (const auto &cd : def->getClasses())
   {
-     ClassDef *cd;
-     ClassSDict::Iterator it(*classes);
-     for (;(cd=it.current());++it)
-     {
-       if (cd->isLinkable()) numClasses++;
-     }
+    if (cd->isLinkable()) numClasses++;
   }
   //printf("addMembersToIndex(def=%s hasMembers=%d numClasses=%d)\n",def->name().data(),hasMembers,numClasses);
   if (hasMembers || numClasses>0)
@@ -437,20 +431,15 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                lde->kind()==LayoutDocEntry::ClassNestedClasses
               )
       {
-        if (classes)
+        for (const auto &cd : def->getClasses())
         {
-          ClassDef *cd;
-          ClassSDict::Iterator it(*classes);
-          for (;(cd=it.current());++it)
+          if (cd->isLinkable() && (cd->partOfGroups()==0 || def->definitionType()==Definition::TypeGroup))
           {
-            if (cd->isLinkable() && (cd->partOfGroups()==0 || def->definitionType()==Definition::TypeGroup))
-            {
-              static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
-              bool isNestedClass = def->definitionType()==Definition::TypeClass;
-              addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),
-                                addToIndex && (isNestedClass || (cd->isSimple() && inlineSimpleStructs)),
-                                preventSeparateIndex || cd->isEmbeddedInOuterScope());
-            }
+            static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
+            bool isNestedClass = def->definitionType()==Definition::TypeClass;
+            addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),
+                              addToIndex && (isNestedClass || (cd->isSimple() && inlineSimpleStructs)),
+                              preventSeparateIndex || cd->isEmbeddedInOuterScope());
           }
         }
       }
@@ -831,13 +820,11 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
 
 //----------------------------------------------------------------------------
 
-static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FTVHelp* ftv,bool addToIndex,
+static void writeClassTreeForList(OutputList &ol,const ClassLinkedMap &cl,bool &started,FTVHelp* ftv,bool addToIndex,
                                   ClassDef::CompoundType ct,ClassDefSet &visitedClasses)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-  ClassSDict::Iterator cli(*cl);
-  ClassDef *cd;
-  for (;(cd=cli.current());++cli)
+  for (const auto &cd : cl)
   {
     //printf("class %s hasVisibleRoot=%d isVisibleInHierarchy=%d\n",
     //             cd->name().data(),
@@ -876,8 +863,8 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           started=TRUE;
         }
         ol.startIndexListItem();
-        bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
-                           classHasVisibleChildren(cd);
+        bool hasChildren = visitedClasses.find(cd.get())==visitedClasses.end() &&
+                           classHasVisibleChildren(cd.get());
         //printf("list: Has children %s: %d\n",cd->name().data(),hasChildren);
         if (cd->isLinkable())
         {
@@ -899,7 +886,7 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           }
           if (ftv)
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd);
+            ftv->addContentsItem(hasChildren,cd->displayName(),cd->getReference(),cd->getOutputFileBase(),cd->anchor(),FALSE,FALSE,cd.get());
           }
         }
         else
@@ -913,18 +900,18 @@ static void writeClassTreeForList(OutputList &ol,ClassSDict *cl,bool &started,FT
           }
           if (ftv)
           {
-            ftv->addContentsItem(hasChildren,cd->displayName(),0,0,0,FALSE,FALSE,cd);
+            ftv->addContentsItem(hasChildren,cd->displayName(),0,0,0,FALSE,FALSE,cd.get());
           }
         }
         if (cd->getLanguage()==SrcLangExt_VHDL && hasChildren)
         {
           writeClassTreeToOutput(ol,cd->baseClasses(),1,ftv,addToIndex,visitedClasses);
-          visitedClasses.insert(cd);
+          visitedClasses.insert(cd.get());
         }
         else if (hasChildren)
         {
           writeClassTreeToOutput(ol,cd->subClasses(),1,ftv,addToIndex,visitedClasses);
-          visitedClasses.insert(cd);
+          visitedClasses.insert(cd.get());
         }
         ol.endIndexListItem();
       }
@@ -941,8 +928,8 @@ static void writeClassHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex,Cla
     ol.disable(OutputGenerator::Html);
   }
   bool started=FALSE;
-  writeClassTreeForList(ol,Doxygen::classSDict,started,ftv,addToIndex,ct,visitedClasses);
-  writeClassTreeForList(ol,Doxygen::hiddenClasses,started,ftv,addToIndex,ct,visitedClasses);
+  writeClassTreeForList(ol,*Doxygen::classLinkedMap,started,ftv,addToIndex,ct,visitedClasses);
+  writeClassTreeForList(ol,*Doxygen::hiddenClassLinkedMap,started,ftv,addToIndex,ct,visitedClasses);
   if (started)
   {
     endIndexHierarchy(ol,0);
@@ -959,13 +946,11 @@ static void writeClassHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex,Cla
 
 //----------------------------------------------------------------------------
 
-static int countClassesInTreeList(const ClassSDict &cl, ClassDef::CompoundType ct)
+static int countClassesInTreeList(const ClassLinkedMap &cl, ClassDef::CompoundType ct)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   int count=0;
-  ClassSDict::Iterator cli(cl);
-  ClassDef *cd;
-  for (;(cd=cli.current());++cli)
+  for (const auto &cd : cl)
   {
     if (sliceOpt && cd->compoundType() != ct)
     {
@@ -988,8 +973,8 @@ static int countClassesInTreeList(const ClassSDict &cl, ClassDef::CompoundType c
 static int countClassHierarchy(ClassDef::CompoundType ct)
 {
   int count=0;
-  count+=countClassesInTreeList(*Doxygen::classSDict, ct);
-  count+=countClassesInTreeList(*Doxygen::hiddenClasses, ct);
+  count+=countClassesInTreeList(*Doxygen::classLinkedMap, ct);
+  count+=countClassesInTreeList(*Doxygen::hiddenClassLinkedMap, ct);
   return count;
 }
 
@@ -1564,75 +1549,70 @@ static int countNamespaces()
 }
 
 //----------------------------------------------------------------------------
+template<typename Ptr> const ClassDef *get_pointer(const Ptr &p);
+template<>             const ClassDef *get_pointer(const ClassLinkedMap::Ptr &p) { return p.get(); }
+template<>             const ClassDef *get_pointer(const ClassLinkedRefMap::Ptr &p) { return p; }
 
-static void writeClassTree(ClassSDict *clDict,FTVHelp *ftv,bool addToIndex,bool globalOnly,ClassDef::CompoundType ct)
+template<class ListType>
+static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool globalOnly,ClassDef::CompoundType ct)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-  if (clDict)
+  for (const auto &cdi : cl)
   {
-    ClassSDict::Iterator cli(*clDict);
-    ClassDef *cd;
-    for (;(cd=cli.current());++cli)
+    const ClassDef *cd = get_pointer(cdi);
+    ClassDefMutable *cdm = toClassDefMutable(cd);
+    if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
     {
-      ClassDefMutable *cdm = toClassDefMutable(cd);
-      if (cdm && cd->getLanguage()==SrcLangExt_VHDL)
-      {
-        if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
-            (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
-           )// no architecture
-        {
-          continue;
-        }
-        if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
-        {
-          QCString n=cd->name();
-          cdm->setClassName(n.data());
-        }
-      }
-
-      if (sliceOpt && cd->compoundType() != ct)
+      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
+          (VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKBODYCLASS
+         )// no architecture
       {
         continue;
       }
-
-      if (!globalOnly ||
-           cd->getOuterScope()==0 ||
-           cd->getOuterScope()==Doxygen::globalScope
-         )
+      if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ARCHITECTURECLASS)
       {
-        int count=0;
-        if (cd->getClassSDict())
+        QCString n=cd->name();
+        cdm->setClassName(n.data());
+      }
+    }
+
+    if (sliceOpt && cd->compoundType() != ct)
+    {
+      continue;
+    }
+
+    if (!globalOnly ||
+         cd->getOuterScope()==0 ||
+         cd->getOuterScope()==Doxygen::globalScope
+       )
+    {
+      int count=0;
+      for (const auto &ccd : cd->getClasses())
+      {
+        if (ccd->isLinkableInProject() && ccd->templateMaster()==0)
         {
-          ClassSDict::Iterator ccit(*cd->getClassSDict());
-          ClassDef *ccd;
-          for (;(ccd=ccit.current());++ccit)
-          {
-            if (ccd->isLinkableInProject() && ccd->templateMaster()==0)
-            {
-              count++;
-            }
-          }
+          count++;
         }
-        if (classVisibleInIndex(cd) && cd->templateMaster()==0)
+      }
+      if (classVisibleInIndex(cd) && cd->templateMaster()==0)
+      {
+        ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
+            cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd);
+        if ((cd->getOuterScope()==0 ||
+             cd->getOuterScope()->definitionType()!=Definition::TypeClass
+            )
+           )
         {
-          ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
-              cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd);
-          if ((cd->getOuterScope()==0 ||
-               cd->getOuterScope()->definitionType()!=Definition::TypeClass
-              )
-             )
-          {
-            addMembersToIndex(cd,LayoutDocManager::Class,
-                              cd->displayName(FALSE),
-                              cd->anchor(),
-                              addToIndex && cd->partOfGroups()==0 && !cd->isSimple());
-          }
-          if (count>0)
-          {
-            ftv->incContentsDepth();
-            writeClassTree(cd->getClassSDict(),ftv,addToIndex,FALSE,ct);
-            ftv->decContentsDepth();
-          }
+          addMembersToIndex(cd,LayoutDocManager::Class,
+                            cd->displayName(FALSE),
+                            cd->anchor(),
+                            addToIndex && cd->partOfGroups()==0 && !cd->isSimple());
+        }
+        if (count>0)
+        {
+          ftv->incContentsDepth();
+          writeClassTree(cd->getClasses(),ftv,addToIndex,FALSE,ct);
+          ftv->decContentsDepth();
         }
       }
     }
@@ -1747,7 +1727,7 @@ static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
           {
             ftv->incContentsDepth();
             writeNamespaceTree(nd->getNamespaceSDict(),ftv,FALSE,addToIndex);
-            writeClassTree(nd->getClassSDict(),ftv,FALSE,FALSE,ClassDef::Class);
+            writeClassTree(nd->getClasses(),ftv,FALSE,FALSE,ClassDef::Class);
             writeNamespaceMembers(nd,addToIndex);
             ftv->decContentsDepth();
           }
@@ -1812,20 +1792,20 @@ static void writeClassTreeInsideNamespace(const NamespaceSDict *nsDict,FTVHelp *
 
           ftv->incContentsDepth();
           writeClassTreeInsideNamespace(nd->getNamespaceSDict(),ftv,FALSE,addToIndex,ct);
-          ClassSDict *d = nd->getClassSDict();
+          ClassLinkedRefMap d = nd->getClasses();
           if (sliceOpt)
           {
             if (ct == ClassDef::Interface)
             {
-              d = nd->getInterfaceSDict();
+              d = nd->getInterfaces();
             }
             else if (ct == ClassDef::Struct)
             {
-              d = nd->getStructSDict();
+              d = nd->getStructs();
             }
             else if (ct == ClassDef::Exception)
             {
-              d = nd->getExceptionSDict();
+              d = nd->getExceptions();
             }
           }
           writeClassTree(d,ftv,addToIndex,FALSE,ct);
@@ -1957,9 +1937,7 @@ static int countAnnotatedClasses(int *cp, ClassDef::CompoundType ct)
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   int count=0;
   int countPrinted=0;
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for (;(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (sliceOpt && cd->compoundType() != ct)
     {
@@ -1987,10 +1965,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
 
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
 
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (cd->getLanguage()==SrcLangExt_VHDL &&
         ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::PACKAGECLASS ||
@@ -2034,7 +2009,7 @@ static void writeAnnotatedClassList(OutputList &ol,ClassDef::CompoundType ct)
       {
         ol.generateDoc(
                  cd->briefFile(),cd->briefLine(),
-                 cd,0,
+                 cd.get(),0,
                  cd->briefDescription(TRUE),
                  FALSE,  // indexWords
                  FALSE,  // isExample
@@ -2194,11 +2169,9 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   UsedIndexLetters indexLettersUsed;
 
   // first count the number of headers
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  const ClassDef *cd;
   uint startLetter=0;
   int headerItems=0;
-  for (;(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
@@ -2252,7 +2225,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
   // item less.
   //int icount=0;
   startLetter=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (sliceOpt && cd->compoundType() != ct)
       continue;
@@ -2269,12 +2242,12 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
       {
         if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS )// no architecture
         {
-          classesByLetter.append(startLetter,cd);
+          classesByLetter.append(startLetter,cd.get());
         }
       }
       else
       {
-        classesByLetter.append(startLetter,cd);
+        classesByLetter.append(startLetter,cd.get());
       }
     }
   }
@@ -2308,7 +2281,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
     row++;
     ClassListIterator cit(*cl);
     cit.toFirst();
-    cd = cit.current();
+    ClassDef *cd = cit.current();
     ++cit;
     tableRows->append(new AlphaIndexTableCell(row,col,0,cd));
     row++;
@@ -2376,7 +2349,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
             else if (cell->classDef()!=(ClassDef*)0x8)
             {
               cellCont = true;
-              cd = cell->classDef();
+              const ClassDef *cd = cell->classDef();
               ol.writeString("<td valign=\"top\">");
               QCString namesp,cname;
               //if (cd->getNamespaceDef()) namesp=cd->getNamespaceDef()->displayName();
@@ -2642,7 +2615,7 @@ static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContex
     }
     FTVHelp ftv(false);
     writeClassTreeInsideNamespace(Doxygen::namespaceSDict,&ftv,TRUE,addToIndex,ctx.compoundType);
-    writeClassTree(Doxygen::classSDict,&ftv,addToIndex,TRUE,ctx.compoundType);
+    writeClassTree(*Doxygen::classLinkedMap,&ftv,addToIndex,TRUE,ctx.compoundType);
     QGString outStr;
     FTextStream t(&outStr);
     ftv.generateTreeViewInline(t);
@@ -3974,7 +3947,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         }
       }
       numSubItems += gd->getNamespaces()->count();
-      numSubItems += gd->getClasses()->count();
+      numSubItems += gd->getClasses().size();
       numSubItems += gd->getFiles()->count();
       numSubItems += static_cast<int>(gd->getDirs().size());
       numSubItems += gd->getPages()->count();
@@ -4054,9 +4027,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupClasses && addToIndex)
       {
-        ClassSDict::Iterator it(*gd->getClasses());
-        ClassDef *cd;
-        for (;(cd=it.current());++it)
+        for (const auto &cd : gd->getClasses())
         {
           //bool nestedClassInSameGroup =
           //    cd->getOuterScope() && cd->getOuterScope()->definitionType()==Definition::TypeClass &&

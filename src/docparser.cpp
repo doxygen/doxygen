@@ -770,7 +770,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     //printf("Trying fullName='%s'\n",fullName.data());
 
     // try class, namespace, group, page, file reference
-    cd = Doxygen::classSDict->find(fullName);
+    cd = Doxygen::classLinkedMap->find(fullName);
     if (cd) // class
     {
       *pDoc=cd->documentation();

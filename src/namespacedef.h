@@ -28,7 +28,7 @@
 class MemberList;
 class ClassDef;
 class OutputList;
-class ClassSDict;
+class ClassLinkedRefMap;
 class MemberDef;
 class MemberGroupSDict;
 class NamespaceSDict;
@@ -73,16 +73,16 @@ class NamespaceDef : public Definition
     virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
 
     /*! Returns the classes contained in this namespace */
-    virtual ClassSDict *getClassSDict() const = 0;
+    virtual ClassLinkedRefMap getClasses() const = 0;
 
     /*! Returns the Slice interfaces contained in this namespace */
-    virtual ClassSDict *getInterfaceSDict() const = 0;
+    virtual ClassLinkedRefMap getInterfaces() const = 0;
 
     /*! Returns the Slice structs contained in this namespace */
-    virtual ClassSDict *getStructSDict() const = 0;
+    virtual ClassLinkedRefMap getStructs() const = 0;
 
     /*! Returns the Slice exceptions contained in this namespace */
-    virtual ClassSDict *getExceptionSDict() const = 0;
+    virtual ClassLinkedRefMap getExceptions() const = 0;
 
     /*! Returns the namespaces contained in this namespace */
     virtual const NamespaceSDict *getNamespaceSDict() const = 0;

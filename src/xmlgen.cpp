@@ -1124,27 +1124,22 @@ static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
   t << "    </listofallmembers>" << endl;
 }
 
-static void writeInnerClasses(const ClassSDict *cl,FTextStream &t)
+static void writeInnerClasses(const ClassLinkedRefMap &cl,FTextStream &t)
 {
-  if (cl)
+  for (const auto &cd : cl)
   {
-    ClassSDict::Iterator cli(*cl);
-    const ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    if (!cd->isHidden() && !cd->isAnonymous())
     {
-      if (!cd->isHidden() && !cd->isAnonymous())
+      t << "    <innerclass refid=\"" << classOutputFileBase(cd)
+        << "\" prot=\"";
+      switch(cd->protection())
       {
-        t << "    <innerclass refid=\"" << classOutputFileBase(cd)
-          << "\" prot=\"";
-        switch(cd->protection())
-        {
-           case Public:    t << "public";     break;
-           case Protected: t << "protected";  break;
-           case Private:   t << "private";    break;
-           case Package:   t << "package";    break;
-        }
-        t << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+         case Public:    t << "public";     break;
+         case Protected: t << "protected";  break;
+         case Private:   t << "private";    break;
+         case Package:   t << "package";    break;
       }
+      t << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
     }
   }
 }
@@ -1363,7 +1358,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
     }
   }
 
-  writeInnerClasses(cd->getClassSDict(),t);
+  writeInnerClasses(cd->getClasses(),t);
 
   writeTemplateList(cd,t);
   if (cd->getMemberGroupSDict())
@@ -1467,7 +1462,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
   writeXMLString(t,nd->name());
   t << "</compoundname>" << endl;
 
-  writeInnerClasses(nd->getClassSDict(),t);
+  writeInnerClasses(nd->getClasses(),t);
   writeInnerNamespaces(nd->getNamespaceSDict(),t);
 
   if (nd->getMemberGroupSDict())
@@ -1598,10 +1593,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
     t << "    </invincdepgraph>" << endl;
   }
 
-  if (fd->getClassSDict())
-  {
-    writeInnerClasses(fd->getClassSDict(),t);
-  }
+  writeInnerClasses(fd->getClasses(),t);
   if (fd->getNamespaceSDict())
   {
     writeInnerNamespaces(fd->getNamespaceSDict(),t);
@@ -1965,23 +1957,10 @@ void generateXML()
   t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
   t << ">" << endl;
 
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassSDict::Iterator cli(*Doxygen::classSDict);
-    const ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
-    {
-      generateXMLForClass(cd,t);
-    }
+    generateXMLForClass(cd.get(),t);
   }
-  //{
-  //  ClassSDict::Iterator cli(Doxygen::hiddenClasses);
-  //  ClassDef *cd;
-  //  for (cli.toFirst();(cd=cli.current());++cli)
-  //  {
-  //    msg("Generating XML output for class %s\n",cd->name().data());
-  //    generateXMLForClass(cd,t);
-  //  }
-  //}
   NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
   const NamespaceDef *nd;
   for (nli.toFirst();(nd=nli.current());++nli)

@@ -27,6 +27,8 @@
 #include "dotgraph.h"
 #include "dotnode.h"
 
+class ClassLinkedMap;
+
 /** Represents a graphical class hierarchy */
 class DotGfxHierarchyTable : public DotGraph
 {
@@ -44,7 +46,7 @@ class DotGfxHierarchyTable : public DotGraph
 
   private:
     void addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visited);
-    void addClassList(const ClassSDict *cl,ClassDefSet &visited);
+    void addClassList(const ClassLinkedMap &cl,ClassDefSet &visited);
 
     using DotNodeMap = std::unordered_multimap< std::string, std::unique_ptr<DotNode> >;
     int                    m_graphId;

@@ -413,16 +413,11 @@ static void listSymbols() {
         listMembers(ml);
       }
 
-      ClassSDict *classes = fd->getClassSDict();
-      if (classes) {
-        ClassDefSet visitedClasses;
-        ClassSDict::Iterator cli(*classes);
-        const ClassDef *cd;
-        for (cli.toFirst(); (cd = cli.current()); ++cli) {
-          if (visitedClasses.find(cd)==visitedClasses.end()) {
-            classInformation(cd);
-            visitedClasses.insert(cd);
-          }
+      ClassDefSet visitedClasses;
+      for (const auto &cd : fd->getClasses()) {
+        if (visitedClasses.find(cd)==visitedClasses.end()) {
+          classInformation(cd);
+          visitedClasses.insert(cd);
         }
       }
     }

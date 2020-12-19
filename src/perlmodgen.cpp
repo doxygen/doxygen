@@ -1863,13 +1863,9 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
     m_output.closeList();
   }
 
-  ClassSDict *cl = cd->getClassSDict();
-  if (cl)
   {
     m_output.openList("inner");
-    ClassSDict::Iterator cli(*cl);
-    const ClassDef *icd;
-    for (cli.toFirst();(icd=cli.current());++cli)
+    for (const auto &icd : cd->getClasses())
       m_output.openHash()
 	.addFieldQuotedString("name", icd->name())
 	.closeHash();
@@ -1970,13 +1966,9 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
   m_output.openHash()
     .addFieldQuotedString("name", nd->name());
 
-  ClassSDict *cl = nd->getClassSDict();
-  if (cl)
   {
     m_output.openList("classes");
-    ClassSDict::Iterator cli(*cl);
-    const ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    for (const auto &cd : nd->getClasses())
       m_output.openHash()
 	.addFieldQuotedString("name", cd->name())
 	.closeHash();
@@ -2116,13 +2108,9 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
-  ClassSDict *cl = gd->getClasses();
-  if (cl)
   {
     m_output.openList("classes");
-    ClassSDict::Iterator cli(*cl);
-    const ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    for (const auto &cd : gd->getClasses())
       m_output.openHash()
 	.addFieldQuotedString("name", cd->name())
 	.closeHash();
@@ -2214,10 +2202,8 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.add("$doxydocs=").openHash();
 
   m_output.openList("classes");
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  const ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli)
-    generatePerlModForClass(cd);
+  for (const auto &cd : *Doxygen::classLinkedMap)
+    generatePerlModForClass(cd.get());
   m_output.closeList();
 
   m_output.openList("namespaces");

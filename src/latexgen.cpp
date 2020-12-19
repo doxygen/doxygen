@@ -1046,10 +1046,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassSDict::Iterator cli(*Doxygen::classSDict);
-        ClassDef *cd=0;
-        bool found=FALSE;
-        for (cli.toFirst();(cd=cli.current()) && !found;++cli)
+        for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
@@ -1059,7 +1056,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
           {
             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
             t << "{"; //Compound Documentation}\n";
-            found=TRUE;
+            break;
           }
         }
       }
@@ -1225,10 +1222,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isClassDocumentation:
       {
-        ClassSDict::Iterator cli(*Doxygen::classSDict);
-        ClassDef *cd=0;
         bool found=FALSE;
-        for (cli.toFirst();(cd=cli.current()) && !found;++cli)
+        for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
               cd->templateMaster()==0 &&
@@ -1236,21 +1231,12 @@ void LatexGenerator::endIndexSection(IndexSections is)
              !cd->isAlias()
              )
           {
-            t << "}\n\\input{" << cd->getOutputFileBase() << "}\n";
-            found=TRUE;
-          }
-        }
-        for (;(cd=cli.current());++cli)
-        {
-          if (cd->isLinkableInProject() &&
-              cd->templateMaster()==0 &&
-             !cd->isEmbeddedInOuterScope() &&
-             !cd->isAlias()
-             )
-          {
-            //if (compactLatex) t << "\\input"; else t << "\\include";
-            t << "\\input";
-            t << "{" << cd->getOutputFileBase() << "}\n";
+            if (!found)
+            {
+              t << "}\n"; // end doxysection or chapter title
+              found=TRUE;
+            }
+            t << "\\input{" << cd->getOutputFileBase() << "}\n";
           }
         }
       }
@@ -1266,24 +1252,14 @@ void LatexGenerator::endIndexSection(IndexSections is)
             {
               if (isFirst)
               {
-                t << "}\n\\input{" << fd->getOutputFileBase() << "}\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  //t << "\\include{" << fd->getSourceFileBase() << "}\n";
-                  t << "\\input{" << fd->getSourceFileBase() << "}\n";
-                }
-                isFirst=FALSE;
+                t << "}\n"; // end doxysection or chapter title
               }
-              else
+              isFirst=FALSE;
+              t << "\\input{" << fd->getOutputFileBase() << "}\n";
+              if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
               {
-                //if (compactLatex) t << "\\input" ; else t << "\\include";
-                t << "\\input" ;
-                t << "{" << fd->getOutputFileBase() << "}\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  //t << "\\include{" << fd->getSourceFileBase() << "}\n";
-                  t << "\\input{" << fd->getSourceFileBase() << "}\n";
-                }
+                //t << "\\include{" << fd->getSourceFileBase() << "}\n";
+                t << "\\input{" << fd->getSourceFileBase() << "}\n";
               }
             }
           }

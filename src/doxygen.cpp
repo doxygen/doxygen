@@ -117,17 +117,17 @@ extern void initResources();
 #endif
 
 // globally accessible variables
-ClassSDict      *Doxygen::classSDict = 0;
-ClassSDict      *Doxygen::hiddenClasses = 0;
-NamespaceSDict  *Doxygen::namespaceSDict = 0;
-MemberNameLinkedMap *Doxygen::memberNameLinkedMap = 0;
-MemberNameLinkedMap *Doxygen::functionNameLinkedMap = 0;
-FileNameLinkedMap *Doxygen::inputNameLinkedMap = 0;
-GroupSDict      *Doxygen::groupSDict = 0;
-PageSDict       *Doxygen::pageSDict = 0;
-PageSDict       *Doxygen::exampleSDict = 0;
-StringDict       Doxygen::aliasDict(257);          // aliases
-StringSet        Doxygen::inputPaths;
+ClassLinkedMap       *Doxygen::classLinkedMap = 0;
+ClassLinkedMap       *Doxygen::hiddenClassLinkedMap = 0;
+NamespaceSDict       *Doxygen::namespaceSDict = 0;
+MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = 0;
+MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = 0;
+FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
+GroupSDict           *Doxygen::groupSDict = 0;
+PageSDict            *Doxygen::pageSDict = 0;
+PageSDict            *Doxygen::exampleSDict = 0;
+StringDict            Doxygen::aliasDict(257);          // aliases
+StringSet             Doxygen::inputPaths;
 FileNameLinkedMap    *Doxygen::includeNameLinkedMap = 0;     // include names
 FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = 0;     // examples
 FileNameLinkedMap    *Doxygen::imageNameLinkedMap = 0;       // images
@@ -135,35 +135,35 @@ FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = 0;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
 StringUnorderedMap    Doxygen::namespaceAliasMap;      // all namespace aliases
-StringDict       Doxygen::tagDestinationDict(257); // all tag locations
-StringUnorderedSet Doxygen::expandAsDefinedSet; // all macros that should be expanded
+StringDict            Doxygen::tagDestinationDict(257); // all tag locations
+StringUnorderedSet    Doxygen::expandAsDefinedSet; // all macros that should be expanded
 QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
-PageDef         *Doxygen::mainPage = 0;
-bool             Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
-NamespaceDefMutable *Doxygen::globalScope = 0;
-bool             Doxygen::parseSourcesNeeded = FALSE;
-SearchIndexIntf *Doxygen::searchIndex=0;
+PageDef              *Doxygen::mainPage = 0;
+bool                  Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
+NamespaceDefMutable  *Doxygen::globalScope = 0;
+bool                  Doxygen::parseSourcesNeeded = FALSE;
+SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition> Doxygen::symbolMap;
-QDict<Definition> *Doxygen::clangUsrMap = 0;
-bool             Doxygen::outputToWizard=FALSE;
-QDict<int> *     Doxygen::htmlDirMap = 0;
+QDict<Definition>    *Doxygen::clangUsrMap = 0;
+bool                  Doxygen::outputToWizard=FALSE;
+QDict<int> *          Doxygen::htmlDirMap = 0;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
-DirSDict        *Doxygen::directories;
-SDict<DirRelation> Doxygen::dirRelations(257);
-ParserManager   *Doxygen::parserManager = 0;
-QCString Doxygen::htmlFileExtension;
-bool             Doxygen::suppressDocWarnings = FALSE;
-QCString         Doxygen::objDBFileName;
-QCString         Doxygen::entryDBFileName;
-QCString         Doxygen::filterDBFileName;
-IndexList       *Doxygen::indexList;
-int              Doxygen::subpageNestingLevel = 0;
-bool             Doxygen::userComments = FALSE;
-QCString         Doxygen::spaces;
-bool             Doxygen::generatingXmlOutput = FALSE;
-GenericsSDict   *Doxygen::genericsDict;
-DefinesPerFileList Doxygen::macroDefinitions;
-bool             Doxygen::clangAssistedParsing = FALSE;
+DirSDict             *Doxygen::directories;
+SDict<DirRelation>    Doxygen::dirRelations(257);
+ParserManager        *Doxygen::parserManager = 0;
+QCString              Doxygen::htmlFileExtension;
+bool                  Doxygen::suppressDocWarnings = FALSE;
+QCString              Doxygen::objDBFileName;
+QCString              Doxygen::entryDBFileName;
+QCString              Doxygen::filterDBFileName;
+IndexList            *Doxygen::indexList;
+int                   Doxygen::subpageNestingLevel = 0;
+bool                  Doxygen::userComments = FALSE;
+QCString              Doxygen::spaces;
+bool                  Doxygen::generatingXmlOutput = FALSE;
+GenericsSDict        *Doxygen::genericsDict;
+DefinesPerFileList    Doxygen::macroDefinitions;
+bool                  Doxygen::clangAssistedParsing = FALSE;
 
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
@@ -181,7 +181,8 @@ void clearAll()
   //g_excludeNameDict.clear();
   //delete g_outputList; g_outputList=0;
 
-  Doxygen::classSDict->clear();
+  Doxygen::classLinkedMap->clear();
+  Doxygen::hiddenClassLinkedMap->clear();
   Doxygen::namespaceSDict->clear();
   Doxygen::pageSDict->clear();
   Doxygen::exampleSDict->clear();
@@ -1056,8 +1057,13 @@ static void addClassToContext(const Entry *root)
     {
       tArgList = getTemplateArgumentsFromName(fullName,root->tArgLists);
     }
-    cd=createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
-        fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum);
+    // add class to the list
+    //printf("ClassDict.insert(%s)\n",fullName.data());
+    cd = toClassDefMutable(
+        Doxygen::classLinkedMap->add(fullName,
+          std::unique_ptr<ClassDef>(
+            createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
+               fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
     Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p\n",
         qPrint(fullName),sec,root->tArgLists.size(), tagInfo);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
@@ -1090,9 +1096,6 @@ static void addClassToContext(const Entry *root)
 
     cd->insertUsedFile(fd);
 
-    // add class to the list
-    //printf("ClassDict.insert(%s)\n",fullName.data());
-    Doxygen::classSDict->append(fullName,cd);
 
     if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instances
     {
@@ -1152,7 +1155,6 @@ static void buildClassDocList(const Entry *root)
 
 static void resolveClassNestingRelations()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDefSet visitedClasses;
 
   bool done=FALSE;
@@ -1161,11 +1163,18 @@ static void resolveClassNestingRelations()
   {
     done=TRUE;
     ++iteration;
-    ClassDef *icd=0;
-    for (cli.toFirst();(icd=cli.current());++cli)
+    struct ClassAlias
     {
-      ClassDefMutable *cd = toClassDefMutable(icd);
-      if (cd && visitedClasses.find(icd)==visitedClasses.end())
+      ClassAlias(const QCString &name,std::unique_ptr<ClassDef> cd) :
+        aliasFullName(name),aliasCd(std::move(cd)) {}
+      const QCString aliasFullName;
+      std::unique_ptr<ClassDef> aliasCd;
+    };
+    std::vector<ClassAlias> aliases;
+    for (const auto &icd : *Doxygen::classLinkedMap)
+    {
+      ClassDefMutable *cd = toClassDefMutable(icd.get());
+      if (cd && visitedClasses.find(icd.get())==visitedClasses.end())
       {
         QCString name = stripAnonymousNamespaceScope(icd->name());
         //printf("processing=%s, iteration=%d\n",cd->name().data(),iteration);
@@ -1195,10 +1204,10 @@ static void resolveClassNestingRelations()
                 dm = toDefinitionMutable(d);
                 if (dm)
                 {
-                  ClassDef *aliasCd = createClassDefAlias(d,cd);
-                  dm->addInnerCompound(aliasCd);
+                  std::unique_ptr<ClassDef> aliasCd { createClassDefAlias(d,cd) };
+                  dm->addInnerCompound(aliasCd.get());
                   QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
-                  Doxygen::classSDict->append(aliasFullName,aliasCd);
+                  aliases.push_back(ClassAlias(aliasFullName,std::move(aliasCd)));
                   //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
                 }
               }
@@ -1209,7 +1218,7 @@ static void resolveClassNestingRelations()
             }
           }
 
-          visitedClasses.insert(icd);
+          visitedClasses.insert(icd.get());
           done=FALSE;
         }
         //else
@@ -1218,14 +1227,18 @@ static void resolveClassNestingRelations()
         //}
       }
     }
+    // add aliases
+    for (auto &alias : aliases)
+    {
+       Doxygen::classLinkedMap->add(alias.aliasFullName,std::move(alias.aliasCd));
+    }
   }
 
   //give warnings for unresolved compounds
-  ClassDef *icd=0;
-  for (cli.toFirst();(icd=cli.current());++cli)
+  for (const auto &icd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cd = toClassDefMutable(icd);
-    if (cd && visitedClasses.find(icd)==visitedClasses.end())
+    ClassDefMutable *cd = toClassDefMutable(icd.get());
+    if (cd && visitedClasses.find(icd.get())==visitedClasses.end())
     {
       QCString name = stripAnonymousNamespaceScope(cd->name());
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
@@ -1259,20 +1272,15 @@ void distributeClassGroupRelations()
   //printf("** distributeClassGroupRelations()\n");
 
   ClassDefSet visitedClasses;
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     //printf("Checking %s\n",cd->name().data());
     // distribute the group to nested classes as well
-    if (cd && visitedClasses.find(cd)==visitedClasses.end() &&
-        cd->partOfGroups()!=0 && cd->getClassSDict())
+    if (visitedClasses.find(cd.get())==visitedClasses.end() && cd->partOfGroups()!=0)
     {
       //printf("  Candidate for merging\n");
-      ClassSDict::Iterator ncli(*cd->getClassSDict());
-      ClassDef *ncd;
       GroupDef *gd = cd->partOfGroups()->at(0);
-      for (ncli.toFirst();(ncd=ncli.current());++ncli)
+      for (const auto &ncd : cd->getClasses())
       {
         ClassDefMutable *ncdm = toClassDefMutable(ncd);
         if (ncdm && ncdm->partOfGroups()==0)
@@ -1283,23 +1291,28 @@ void distributeClassGroupRelations()
           gd->addClass(ncdm);
         }
       }
-      visitedClasses.insert(cd); // only visit every class once
+      visitedClasses.insert(cd.get()); // only visit every class once
     }
   }
 }
 
 //----------------------------
 
-static ClassDefMutable *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,const QCString &fieldName)
+static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const ClassDef *templ,const QCString &fieldName)
 {
   QCString fullName = removeAnonymousScopes(templ->name());
   if (fullName.right(2)=="::") fullName=fullName.left(fullName.length()-2);
   fullName+="."+fieldName;
-  ClassDefMutable *cd = createClassDef(templ->getDefFileName(),
+
+  //printf("** adding class %s based on %s\n",fullName.data(),templ->name().data());
+  ClassDefMutable *cd = toClassDefMutable(
+      Doxygen::classLinkedMap->add(fullName,
+         std::unique_ptr<ClassDef>(
+           createClassDef(templ->getDefFileName(),
                               templ->getDefLine(),
                               templ->getDefColumn(),
                               fullName,
-                              templ->compoundType());
+                              templ->compoundType()))));
   cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
   cd->setBriefDescription(templ->briefDescription(),templ->briefFile(),templ->briefLine());
   cd->setLanguage(templ->getLanguage());
@@ -1333,8 +1346,6 @@ static ClassDefMutable *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,c
       gd->addClass(cd);
     }
   }
-  //printf("** adding class %s based on %s\n",fullName.data(),templ->name().data());
-  Doxygen::classSDict->append(fullName,cd);
 
   MemberList *ml = templ->getMemberList(MemberListType_pubAttribs);
   if (ml)
@@ -1374,14 +1385,14 @@ static ClassDefMutable *createTagLessInstance(ClassDef *rootCd,ClassDef *templ,c
  *  recursively. Later on we need to patch the member types so we keep
  *  track of the hierarchy of classes we create.
  */
-static void processTagLessClasses(ClassDef *rootCd,
-                                  ClassDef *cd,
+static void processTagLessClasses(const ClassDef *rootCd,
+                                  const ClassDef *cd,
                                   ClassDefMutable *tagParentCd,
                                   const QCString &prefix,int count)
 {
   //printf("%d: processTagLessClasses %s\n",count,cd->name().data());
   //printf("checking members for %s\n",cd->name().data());
-  if (tagParentCd && cd->getClassSDict())
+  if (tagParentCd && !cd->getClasses().empty())
   {
     MemberList *ml = cd->getMemberList(MemberListType_pubAttribs);
     if (ml)
@@ -1393,9 +1404,7 @@ static void processTagLessClasses(ClassDef *rootCd,
         QCString type = md->typeString();
         if (type.find("::@")!=-1) // member of tag less struct/union
         {
-          ClassSDict::Iterator it(*cd->getClassSDict());
-          ClassDef *icd;
-          for (it.toFirst();(icd=it.current());++it)
+          for (const auto &icd : cd->getClasses())
           {
             //printf("  member %s: type='%s'\n",md->name().data(),type.data());
             //printf("  comparing '%s'<->'%s'\n",type.data(),icd->name().data());
@@ -1441,18 +1450,13 @@ static void processTagLessClasses(ClassDef *rootCd,
   }
 }
 
-static void findTagLessClasses(ClassDef *cd)
+static void findTagLessClasses(const ClassDef *cd)
 {
-  if (cd->getClassSDict())
+  for (const auto &icd : cd->getClasses())
   {
-    ClassSDict::Iterator it(*cd->getClassSDict());
-    ClassDef *icd;
-    for (it.toFirst();(icd=it.current());++it)
+    if (icd->name().find("@")==-1) // process all non-anonymous inner classes
     {
-      if (icd->name().find("@")==-1) // process all non-anonymous inner classes
-      {
-        findTagLessClasses(icd);
-      }
+      findTagLessClasses(icd);
     }
   }
 
@@ -1461,14 +1465,12 @@ static void findTagLessClasses(ClassDef *cd)
 
 static void findTagLessClasses()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for (cli.toFirst();(cd=cli.current());++cli) // for each class
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     Definition *scope = cd->getOuterScope();
     if (scope && scope->definitionType()!=Definition::TypeClass) // that is not nested
     {
-      findTagLessClasses(cd);
+      findTagLessClasses(cd.get());
     }
   }
 }
@@ -1845,7 +1847,7 @@ static void findUsingDeclarations(const Entry *root)
       }
       if (usingCd==0)
       {
-        usingCd = toClassDefMutable(Doxygen::hiddenClasses->find(name)); // check if it is already hidden
+        usingCd = toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(name)); // check if it is already hidden
       }
 
       //printf("%s -> %p\n",root->name.data(),usingCd);
@@ -1853,11 +1855,10 @@ static void findUsingDeclarations(const Entry *root)
       {
         Debug::print(Debug::Classes,0,"  New using class '%s' (sec=0x%08x)! #tArgLists=%d\n",
              qPrint(name),root->section,root->tArgLists.size());
-        usingCd = createClassDef(
-                     "<using>",1,1,
-                     name,
-                     ClassDef::Class);
-        Doxygen::hiddenClasses->append(root->name,usingCd);
+        usingCd = toClassDefMutable(
+             Doxygen::hiddenClassLinkedMap->add(root->name,
+               std::unique_ptr<ClassDef>(
+                 createClassDef( "<using>",1,1, name, ClassDef::Class))));
         usingCd->setArtificial(TRUE);
         usingCd->setLanguage(root->lang);
       }
@@ -3938,19 +3939,21 @@ static void findUsedClassesForClass(const Entry *root,
               found=TRUE;
               Debug::print(Debug::Classes,0,"    New used class '%s'\n", qPrint(usedName));
 
-              ClassDefMutable *usedCd = toClassDefMutable(Doxygen::hiddenClasses->find(usedName));
+              ClassDefMutable *usedCd = toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(usedName));
               if (usedCd==0)
               {
-                usedCd = createClassDef(
-                    masterCd->getDefFileName(),masterCd->getDefLine(),
-                    masterCd->getDefColumn(),
-                    usedName,
-                    ClassDef::Class);
+                usedCd = toClassDefMutable(
+                    Doxygen::hiddenClassLinkedMap->add(usedName,
+                      std::unique_ptr<ClassDef>(
+                        createClassDef(
+                          masterCd->getDefFileName(),masterCd->getDefLine(),
+                          masterCd->getDefColumn(),
+                          usedName,
+                          ClassDef::Class))));
                 //printf("making %s a template argument!!!\n",usedCd->name().data());
                 usedCd->makeTemplateArgument();
                 usedCd->setUsedOnly(TRUE);
                 usedCd->setLanguage(masterCd->getLanguage());
-                Doxygen::hiddenClasses->append(usedName,usedCd);
               }
               if (isArtificial) usedCd->setArtificial(TRUE);
               Debug::print(Debug::Classes,0,"      Adding used class '%s' (1)\n", qPrint(usedCd->name()));
@@ -3981,7 +3984,7 @@ static void findUsedClassesForClass(const Entry *root,
         }
         if (!found && !type.isEmpty()) // used class is not documented in any scope
         {
-          ClassDefMutable *usedCd = toClassDefMutable(Doxygen::hiddenClasses->find(type));
+          ClassDefMutable *usedCd = toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(type));
           if (usedCd==0 && !Config_getBool(HIDE_UNDOC_RELATIONS))
           {
             if (type.right(2)=="(*" || type.right(2)=="(^") // type is a function pointer
@@ -3989,13 +3992,15 @@ static void findUsedClassesForClass(const Entry *root,
               type+=md->argsString();
             }
             Debug::print(Debug::Classes,0,"  New undocumented used class '%s'\n", qPrint(type));
-            usedCd = createClassDef(
-                masterCd->getDefFileName(),masterCd->getDefLine(),
-                masterCd->getDefColumn(),
-                type,ClassDef::Class);
+            usedCd = toClassDefMutable(
+                       Doxygen::hiddenClassLinkedMap->add(type,
+                         std::unique_ptr<ClassDef>(
+                           createClassDef(
+                             masterCd->getDefFileName(),masterCd->getDefLine(),
+                             masterCd->getDefColumn(),
+                             type,ClassDef::Class))));
             usedCd->setUsedOnly(TRUE);
             usedCd->setLanguage(masterCd->getLanguage());
-            Doxygen::hiddenClasses->append(type,usedCd);
           }
           if (usedCd)
           {
@@ -4102,7 +4107,7 @@ static bool findTemplateInstanceRelation(const Entry *root,
   if (freshInstance)
   {
     Debug::print(Debug::Classes,0,"      found fresh instance '%s'!\n",qPrint(instanceClass->name()));
-    Doxygen::classSDict->append(instanceClass->name(),instanceClass);
+    Doxygen::classLinkedMap->add(instanceClass->name(),std::unique_ptr<ClassDef>(instanceClass));
     instanceClass->setTemplateBaseClassNames(templateNames);
 
     // search for new template instances caused by base classes of
@@ -4473,28 +4478,32 @@ static bool findClassRelation(
           baseClass=0;
           if (isATemplateArgument)
           {
-            baseClass=toClassDefMutable(Doxygen::hiddenClasses->find(baseClassName));
+            baseClass=toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(baseClassName));
             if (baseClass==0)
             {
-              baseClass=createClassDef(root->fileName,root->startLine,root->startColumn,
+              baseClass= toClassDefMutable(
+                Doxygen::hiddenClassLinkedMap->add(baseClassName,
+                  std::unique_ptr<ClassDef>(
+                    createClassDef(root->fileName,root->startLine,root->startColumn,
                                  baseClassName,
-                                 ClassDef::Class);
-              Doxygen::hiddenClasses->append(baseClassName,baseClass);
+                                 ClassDef::Class))));
               if (isArtificial) baseClass->setArtificial(TRUE);
               baseClass->setLanguage(root->lang);
             }
           }
           else
           {
-            baseClass=toClassDefMutable(Doxygen::classSDict->find(baseClassName));
+            baseClass=toClassDefMutable(Doxygen::classLinkedMap->find(baseClassName));
             //printf("*** classDDict->find(%s)=%p biName=%s templSpec=%s\n",
             //    baseClassName.data(),baseClass,biName.data(),templSpec.data());
             if (baseClass==0)
             {
-              baseClass=createClassDef(root->fileName,root->startLine,root->startColumn,
-                  baseClassName,
-                  ClassDef::Class);
-              Doxygen::classSDict->append(baseClassName,baseClass);
+              baseClass = toClassDefMutable(
+                  Doxygen::classLinkedMap->add(baseClassName,
+                    std::unique_ptr<ClassDef>(
+                      createClassDef(root->fileName,root->startLine,root->startColumn,
+                        baseClassName,
+                        ClassDef::Class))));
               if (isArtificial) baseClass->setArtificial(TRUE);
               baseClass->setLanguage(root->lang);
               si = baseClassName.findRev("::");
@@ -4625,7 +4634,6 @@ static QCString extractClassName(const Entry *root)
  */
 static void findInheritedTemplateInstances()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
   ClassDefSet visitedClasses;
   for (const auto &kv : g_classEntries)
   {
@@ -4647,7 +4655,6 @@ static void findInheritedTemplateInstances()
 
 static void findUsedTemplateInstances()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (const auto &kv : g_classEntries)
   {
     const Entry *root = kv.second;
@@ -4668,7 +4675,6 @@ static void findUsedTemplateInstances()
 
 static void computeClassRelations()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
   for (const auto &kv : g_classEntries)
   {
     const Entry *root = kv.second;
@@ -4778,11 +4784,9 @@ static void computeTemplateClassRelations()
 
 static void computeMemberReferences()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->computeAnchors();
@@ -4817,11 +4821,9 @@ static void computeMemberReferences()
 
 static void addListReferences()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->addListReferences();
@@ -7436,26 +7438,12 @@ static void computeMemberRelations()
   }
 }
 
-
-//----------------------------------------------------------------------------
-//static void computeClassImplUsageRelations()
-//{
-//  ClassDef *cd;
-//  ClassSDict::Iterator cli(*Doxygen::classSDict);
-//  for (;(cd=cli.current());++cli)
-//  {
-//    cd->determineImplUsageRelation();
-//  }
-//}
-
 //----------------------------------------------------------------------------
 
 static void createTemplateInstanceMembers()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
   // for each class
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     // that is a template
     QDict<ClassDef> *templInstances = cd->getTemplateInstances();
@@ -7469,7 +7457,7 @@ static void createTemplateInstanceMembers()
         ClassDefMutable *tcdm = toClassDefMutable(tcd);
         if (tcdm)
         {
-          tcdm->addMembersToTemplateInstance(cd,qdi.currentKey());
+          tcdm->addMembersToTemplateInstance(cd.get(),qdi.currentKey());
         }
       }
     }
@@ -7480,21 +7468,19 @@ static void createTemplateInstanceMembers()
 
 static void mergeCategories()
 {
-  ClassDef *cd;
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
   // merge members of categories into the class they extend
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     int i=cd->name().find('(');
     if (i!=-1) // it is an Objective-C category
     {
       QCString baseName=cd->name().left(i);
-      ClassDefMutable *baseClass=toClassDefMutable(Doxygen::classSDict->find(baseName));
+      ClassDefMutable *baseClass=toClassDefMutable(Doxygen::classLinkedMap->find(baseName));
       if (baseClass)
       {
         //printf("*** merging members of category %s into %s\n",
         //    cd->name().data(),baseClass->name().data());
-        baseClass->mergeCategory(cd);
+        baseClass->mergeCategory(cd.get());
       }
     }
   }
@@ -7504,16 +7490,14 @@ static void mergeCategories()
 
 static void buildCompleteMemberLists()
 {
-  ClassDef *cd;
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
   // merge the member list of base classes into the inherited classes.
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if (// !cd->isReference() && // not an external class
          cd->subClasses().empty() && // is a root of the hierarchy
          !cd->baseClasses().empty()) // and has at least one base class
     {
-      ClassDefMutable *cdm = toClassDefMutable(cd);
+      ClassDefMutable *cdm = toClassDefMutable(cd.get());
       if (cdm)
       {
         //printf("*** merging members for %s\n",cd->name().data());
@@ -7522,9 +7506,9 @@ static void buildCompleteMemberLists()
     }
   }
   // now sort the member list of all members for all classes.
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->sortAllMembersList();
@@ -7759,14 +7743,12 @@ static void generateFileDocs()
 static void addSourceReferences()
 {
   // add source references for class definitions
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     FileDef *fd=cd->getBodyDef();
     if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getStartDefLine(),cd,0);
+      fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
     }
   }
   // add source references for namespace definitions
@@ -7869,11 +7851,9 @@ static void buildDefineList()
 static void sortMemberLists()
 {
   // sort class member lists
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->sortMemberLists();
@@ -7935,11 +7915,9 @@ static void computeTooltipTexts()
 
 static void setAnonymousEnumType()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->setAnonymousEnumType();
@@ -7951,11 +7929,9 @@ static void setAnonymousEnumType()
 
 static void countMembers()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd=0;
-  for (cli.toFirst();(cd=cli.current());++cli)
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->countMembers();
@@ -7993,12 +7969,11 @@ static void countMembers()
 //----------------------------------------------------------------------------
 // generate the documentation of all classes
 
-static void generateClassList(ClassSDict &classSDict)
+static void generateClassList(const ClassLinkedMap &classList)
 {
-  ClassSDict::Iterator cli(classSDict);
-  for ( ; cli.current() ; ++cli )
+  for (const auto &cdi : classList)
   {
-    ClassDefMutable *cd=toClassDefMutable(cli.current());
+    ClassDefMutable *cd=toClassDefMutable(cdi.get());
 
     //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
     if (cd &&
@@ -8024,8 +7999,8 @@ static void generateClassList(ClassSDict &classSDict)
 
 static void generateClassDocs()
 {
-  generateClassList(*Doxygen::classSDict);
-  generateClassList(*Doxygen::hiddenClasses);
+  generateClassList(*Doxygen::classLinkedMap);
+  generateClassList(*Doxygen::hiddenClassLinkedMap);
 }
 
 //----------------------------------------------------------------------------
@@ -8095,11 +8070,9 @@ static void combineUsingRelations()
 static void addMembersToMemberGroup()
 {
   // for each class
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->addMembersToMemberGroup();
@@ -8138,11 +8111,9 @@ static void addMembersToMemberGroup()
 static void distributeMemberGroupDocumentation()
 {
   // for each class
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->distributeMemberGroupDocumentation();
@@ -8181,11 +8152,9 @@ static void distributeMemberGroupDocumentation()
 static void findSectionsInDocumentation()
 {
   // for each class
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm)
     {
       cdm->findSectionsInDocumentation();
@@ -8889,12 +8858,10 @@ static void generateGroupDocs()
 //----------------------------------------------------------------------------
 // generate module pages
 
-static void generateNamespaceClassDocs(ClassSDict *d)
+static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
 {
   // for each class in the namespace...
-  ClassSDict::Iterator cli(*d);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : classList)
   {
     ClassDefMutable *cdm = toClassDefMutable(cd);
     if (cdm)
@@ -8938,12 +8905,12 @@ static void generateNamespaceDocs()
       }
     }
 
-    generateNamespaceClassDocs(nd->getClassSDict());
+    generateNamespaceClassDocs(nd->getClasses());
     if (sliceOpt)
     {
-      generateNamespaceClassDocs(nd->getInterfaceSDict());
-      generateNamespaceClassDocs(nd->getStructSDict());
-      generateNamespaceClassDocs(nd->getExceptionSDict());
+      generateNamespaceClassDocs(nd->getInterfaces());
+      generateNamespaceClassDocs(nd->getStructs());
+      generateNamespaceClassDocs(nd->getExceptions());
     }
   }
 }
@@ -10071,10 +10038,8 @@ void initDoxygen()
   Doxygen::groupSDict->setAutoDelete(TRUE);
   Doxygen::namespaceSDict = new NamespaceSDict(20);
   Doxygen::namespaceSDict->setAutoDelete(TRUE);
-  Doxygen::classSDict = new ClassSDict(1009);
-  Doxygen::classSDict->setAutoDelete(TRUE);
-  Doxygen::hiddenClasses = new ClassSDict(257);
-  Doxygen::hiddenClasses->setAutoDelete(TRUE);
+  Doxygen::classLinkedMap = new ClassLinkedMap;
+  Doxygen::hiddenClassLinkedMap = new ClassLinkedMap;
   Doxygen::directories = new DirSDict(17);
   Doxygen::directories->setAutoDelete(TRUE);
   Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
@@ -10137,8 +10102,6 @@ void cleanUpDoxygen()
   delete Doxygen::memberNameLinkedMap;
   delete Doxygen::functionNameLinkedMap;
   delete Doxygen::groupSDict;
-  delete Doxygen::classSDict;
-  delete Doxygen::hiddenClasses;
   delete Doxygen::namespaceSDict;
   delete Doxygen::directories;
 
@@ -10682,11 +10645,9 @@ static void writeTagFile()
     }
   }
   // for each class
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for ( ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
+    ClassDefMutable *cdm = toClassDefMutable(cd.get());
     if (cdm && cdm->isLinkableInProject())
     {
       cdm->writeTagFile(tagFile);
@@ -11409,6 +11370,13 @@ void parseInput()
                    )<0;
   };
 
+  auto classComp = [](const ClassLinkedMap::Ptr &c1,const ClassLinkedMap::Ptr &c2)
+  {
+    return Config_getBool(SORT_BY_SCOPE_NAME)          ?
+           qstricmp(c1->name(), c2->name())<0          :
+           qstricmp(c1->className(), c2->className())<0;
+  };
+
   g_s.begin("Sorting lists...\n");
   std::sort(Doxygen::memberNameLinkedMap->begin(),
             Doxygen::memberNameLinkedMap->end(),
@@ -11416,8 +11384,12 @@ void parseInput()
   std::sort(Doxygen::functionNameLinkedMap->begin(),
             Doxygen::functionNameLinkedMap->end(),
             memberNameComp);
-  Doxygen::hiddenClasses->sort();
-  Doxygen::classSDict->sort();
+  std::sort(Doxygen::hiddenClassLinkedMap->begin(),
+            Doxygen::hiddenClassLinkedMap->end(),
+            classComp);
+  std::sort(Doxygen::classLinkedMap->begin(),
+            Doxygen::classLinkedMap->end(),
+            classComp);
   g_s.end();
 
   QDir thisDir;

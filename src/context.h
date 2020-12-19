@@ -31,6 +31,7 @@ class NamespaceSDict;
 class FileDef;
 class FileList;
 class FileNameLinkedMap;
+class ClassLinkedMap;
 class DirSDict;
 class DirDef;
 class PageSDict;
@@ -544,7 +545,8 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
     void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
-    void addClasses(const ClassSDict &clDict,bool rootOnly,ClassDefSet &visitedClasses);
+    void addClasses(const ClassLinkedRefMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
+    void addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
     void addDirs(const DirSDict &,ClassDefSet &visitedClasses);
     void addDirs(const DirList &,ClassDefSet &visitedClasses);
     void addFiles(const FileNameLinkedMap &,ClassDefSet &visitedClasses);
@@ -552,7 +554,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addPages(const PageSDict &pages,bool rootOnly,ClassDefSet &visitedClasses);
     void addModules(const GroupSDict &modules,ClassDefSet &visitedClasses);
     void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
-    void addClassHierarchy(const ClassSDict &clDict,ClassDefSet &visitedClasses);
+    void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
     void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses);
 
   private:

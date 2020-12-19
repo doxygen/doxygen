@@ -588,13 +588,11 @@ void generateDEF()
   FTextStream t(&f);
   t << "AutoGen Definitions dummy;" << endl;
 
-  if (Doxygen::classSDict->count()+Doxygen::inputNameLinkedMap->size()>0)
+  if (Doxygen::classLinkedMap->size()+Doxygen::inputNameLinkedMap->size()>0)
   {
-    ClassSDict::Iterator cli(*Doxygen::classSDict);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    for (const auto &cd : *Doxygen::classLinkedMap)
     {
-      generateDEFForClass(cd,t);
+      generateDEFForClass(cd.get(),t);
     }
     for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {

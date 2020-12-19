@@ -174,10 +174,8 @@ static void createSVG()
 // Brief descriptions for entities are shown too.
 void VhdlDocGen::writeOverview()
 {
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
   bool found=FALSE;
-  for ( ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if ((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS )
     {
@@ -201,14 +199,14 @@ void VhdlDocGen::writeOverview()
 
   startDot(t);
 
-  for (cli.toFirst() ; (cd=cli.current()) ; ++cli )
+  for (const auto &cd : *Doxygen::classLinkedMap)
   {
     if ((VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS )
     {
       continue;
     }
 
-    QList<MemberDef>* port= getPorts(cd);
+    QList<MemberDef>* port= getPorts(cd.get());
     if (port==0)
     {
       continue;
@@ -221,12 +219,11 @@ void VhdlDocGen::writeOverview()
     }
 
     startTable(t,cd->name());
-    writeClassToDot(t,cd);
+    writeClassToDot(t,cd.get());
     writeTable(port,t);
     endTable(t);
 
-   // writeVhdlPortToolTip(t,port,cd);
-    writeVhdlEntityToolTip(t,cd);
+    writeVhdlEntityToolTip(t,cd.get());
     delete port;
 
     for (const auto &bcd : cd->baseClasses())
@@ -637,7 +634,7 @@ const char* VhdlDocGen::findKeyWord(const QCString& kw)
 ClassDef *VhdlDocGen::getClass(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  return Doxygen::classSDict->find(QCString(name).stripWhiteSpace());
+  return Doxygen::classLinkedMap->find(QCString(name).stripWhiteSpace());
 }
 
 ClassDef* VhdlDocGen::getPackageName(const QCString & name)
@@ -974,12 +971,10 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
  */
 void VhdlDocGen::findAllArchitectures(QList<QCString>& qll,const ClassDef *cd)
 {
-  ClassDef *citer;
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  for ( ; (citer=cli.current()) ; ++cli )
+  for (const auto &citer : *Doxygen::classLinkedMap)
   {
     QCString jj=citer->className();
-    if (cd != citer && jj.contains('-')!=-1)
+    if (cd != citer.get() && jj.contains('-')!=-1)
     {
       QCStringList ql=QCStringList::split("-",jj);
       QCString temp=ql[1];
@@ -992,13 +987,10 @@ void VhdlDocGen::findAllArchitectures(QList<QCString>& qll,const ClassDef *cd)
   }// for
 }//findAllArchitectures
 
-ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
+const ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
 {
-  ClassDef *citer;
   QCString nn=cd->name();
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-
-  for ( ; (citer=cli.current()) ; ++cli )
+  for (const auto &citer : *Doxygen::classLinkedMap)
   {
     QCString jj=citer->name();
     QCStringList ql=QCStringList::split(":",jj);
@@ -1006,7 +998,7 @@ ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
     {
       if (ql[0]==nn )
       {
-        return citer;
+        return citer.get();
       }
     }
   }
@@ -2570,21 +2562,18 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 
 
 
- // find class with upper/lower letters
- ClassDef* VhdlDocGen::findVhdlClass(const char *className )
+// find class with upper/lower letters
+ClassDef* VhdlDocGen::findVhdlClass(const char *className )
+{
+ for (const auto &cd : *Doxygen::classLinkedMap)
  {
-
-  ClassSDict::Iterator cli(*Doxygen::classSDict);
-  ClassDef *cd;
-  for (;(cd=cli.current());++cli)
-  {
-    if (qstricmp(className,cd->name().data())==0)
-    {
-      return cd;
-    }
-  }
-  return 0;
+   if (qstricmp(className,cd->name().data())==0)
+   {
+     return cd.get();
+   }
  }
+ return 0;
+}
 
 
 /*
@@ -2624,8 +2613,8 @@ void VhdlDocGen::computeVhdlComponentRelations()
 
     ClassDefMutable *classEntity= toClassDefMutable(VhdlDocGen::findVhdlClass(entity.data()));
     inst=VhdlDocGen::getIndexWord(cur->args.data(),0);
-    ClassDefMutable *cd=toClassDefMutable(Doxygen::classSDict->find(inst));
-    ClassDefMutable *ar=toClassDefMutable(Doxygen::classSDict->find(cur->args));
+    ClassDefMutable *cd=toClassDefMutable(Doxygen::classLinkedMap->find(inst));
+    ClassDefMutable *ar=toClassDefMutable(Doxygen::classLinkedMap->find(cur->args));
 
     if (cd==0)
     {
