@@ -13,11 +13,14 @@
 
 
 int main(int argc, char **argv) {
-	std::cout << "doxy2plantuml: started" << std::endl;
-
 	std::string cwd;
+	std::string default_output_filename = "output.xml";
+
 	if (argc > 1) {
 		cwd = std::filesystem::path(argv[1]);
+		if (argc > 2) {
+			default_output_filename = argv[2];
+		}
 	} else {
 		cwd = std::filesystem::path(argv[0]).parent_path();
 	}
@@ -33,7 +36,7 @@ int main(int argc, char **argv) {
 	std::stack<IGraph*> collaboration_graph_stack;
 	std::stack<IGraph*> inheritance_graph_stack;
 
-	std::ofstream outfile("./output.plantuml");
+	std::ofstream outfile(default_output_filename);
 	outfile << "@startuml" << std::endl;
 
 
@@ -213,10 +216,6 @@ int main(int argc, char **argv) {
 	outfile << "@enduml" << std::endl;
 
 	doxygen->release();
-
-
-
-	std::cout << "doxy2plantuml: done" << std::endl;
 
 	return 0;
 }
