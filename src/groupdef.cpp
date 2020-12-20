@@ -76,7 +76,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeTagFile(FTextStream &);
-    virtual int  numDocMembers() const;
+    virtual size_t numDocMembers() const;
     virtual bool isLinkableInProject() const;
     virtual bool isLinkable() const;
     virtual bool isASubGroup() const;
@@ -617,7 +617,7 @@ void GroupDefImpl::countMembers()
   }
 }
 
-int GroupDefImpl::numDocMembers() const
+size_t GroupDefImpl::numDocMembers() const
 {
   return m_fileList->count()+
          m_classes.size()+
@@ -775,7 +775,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
      )
   {
     ol.pushGeneratorState();
-    if (m_pageDict->count()!=(uint)numDocMembers()) // not only pages -> classical layout
+    if (m_pageDict->count()!=numDocMembers()) // not only pages -> classical layout
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Html);
@@ -1817,7 +1817,7 @@ bool GroupDefImpl::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
   return ((!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()) &&
-         (m_pageDict->count()!=(uint)numDocMembers());
+         (m_pageDict->count()!=numDocMembers());
 }
 
 // --- Cast functions

@@ -3934,7 +3934,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
     // write group info
     bool hasSubGroups = gd->getSubGroups()->count()>0;
     bool hasSubPages = gd->getPages()->count()>0;
-    int numSubItems = 0;
+    size_t numSubItems = 0;
     if (1 /*Config_getBool(TOC_EXPAND)*/)
     {
       QListIterator<MemberList> mli(gd->getMemberLists());
@@ -3949,7 +3949,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getNamespaces()->count();
       numSubItems += gd->getClasses().size();
       numSubItems += gd->getFiles()->count();
-      numSubItems += static_cast<int>(gd->getDirs().size());
+      numSubItems += gd->getDirs().size();
       numSubItems += gd->getPages()->count();
     }
 
