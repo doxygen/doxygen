@@ -11,18 +11,17 @@
 #include <stack>
 
 
-
 int main(int argc, char **argv) {
 	std::string cwd;
 	std::string default_output_filename = "output.xml";
 
 	if (argc > 1) {
-		cwd = std::filesystem::path(argv[1]);
+		cwd = std::filesystem::path(argv[1]).string();
 		if (argc > 2) {
-			default_output_filename = argv[2];
+			default_output_filename = std::string(argv[2]);
 		}
 	} else {
-		cwd = std::filesystem::path(argv[0]).parent_path();
+		cwd = std::filesystem::path(argv[0]).parent_path().string();
 	}
 
 	std::string xml_dir = (cwd + "/xml/");
@@ -33,8 +32,8 @@ int main(int argc, char **argv) {
 	}
 
 
-	std::stack<IGraph*> collaboration_graph_stack;
-	std::stack<IGraph*> inheritance_graph_stack;
+	std::stack<IGraph *> collaboration_graph_stack;
+	std::stack<IGraph *> inheritance_graph_stack;
 
 	std::ofstream outfile(default_output_filename);
 	outfile << "@startuml" << std::endl;
@@ -67,11 +66,11 @@ int main(int argc, char **argv) {
 			outfile << "namespace " << namespace_compound->name()->utf8() << " {" << std::endl;
 
 			// For each class within the namespace.
-			ICompoundIterator* ns_class_iter = namespace_compound->nestedCompounds();
+			ICompoundIterator *ns_class_iter = namespace_compound->nestedCompounds();
 			while (ns_class_iter->current() != nullptr) {
-				ICompound* ns_class_compound = ns_class_iter->current();
+				ICompound *ns_class_compound = ns_class_iter->current();
 				if (ns_class_iter->current()->kind() == ICompound::CompoundKind::Class) {
-					IClass* ns_class = dynamic_cast<IClass*>(ns_class_compound);
+					IClass *ns_class = dynamic_cast<IClass *>(ns_class_compound);
 
 					// save the graphs for later processing
 					if (ns_class->collaborationGraph() != nullptr) {
@@ -84,17 +83,17 @@ int main(int argc, char **argv) {
 					outfile << "class " << ns_class->name()->utf8() << "{" << std::endl;
 
 					// for all sections
-					ISectionIterator* section_iter = ns_class->sections();
+					ISectionIterator *section_iter = ns_class->sections();
 					while (section_iter->current() != nullptr) {
-						IMemberIterator* member_iter = section_iter->current()->members();
+						IMemberIterator *member_iter = section_iter->current()->members();
 
 						// for all members
 						while (member_iter->current() != nullptr) {
 							IMember::MemberKind member_kind = member_iter->current()->kind();
 
-							IMember* member_ptr = member_iter->current();
-							const char * member_name = member_ptr->name()->utf8();
-							const char * member_protection = member_ptr->protection()->utf8();
+							IMember *member_ptr = member_iter->current();
+							const char *member_name = member_ptr->name()->utf8();
+							const char *member_protection = member_ptr->protection()->utf8();
 
 							if (strcmp(member_protection, "public") == 0) {
 								outfile << "+";
@@ -105,7 +104,7 @@ int main(int argc, char **argv) {
 							}
 
 							if (member_kind == IMember::MemberKind::Function) {
-								const char * args_string = member_ptr->argsstring()->utf8();
+								const char *args_string = member_ptr->argsstring()->utf8();
 
 								outfile << member_name << args_string << std::endl;
 							} else if (member_kind == IMember::MemberKind::Variable) {
@@ -140,13 +139,13 @@ int main(int argc, char **argv) {
 	// Write all the inhertiances out
 	//
 	while (!inheritance_graph_stack.empty()) {
-		IGraph* graph_starting_node = inheritance_graph_stack.top();
+		IGraph *graph_starting_node = inheritance_graph_stack.top();
 
-		INodeIterator* iter = graph_starting_node->nodes();
+		INodeIterator *iter = graph_starting_node->nodes();
 		while (iter->current() != nullptr) {
-			INode* curr_node = iter->current();
+			INode *curr_node = iter->current();
 
-			const char * curr_node_name = curr_node->label()->utf8();
+			const char *curr_node_name = curr_node->label()->utf8();
 
 			// skip already processed classes
 			if (processed_class_name_map.contains(curr_node_name)) {
@@ -155,9 +154,9 @@ int main(int argc, char **argv) {
 			}
 			processed_class_name_map[curr_node_name] = true;
 
-			IChildNodeIterator* child_node_iterator = curr_node->children();
+			IChildNodeIterator *child_node_iterator = curr_node->children();
 			while (child_node_iterator->current() != nullptr) {
-				IChildNode* child_node = child_node_iterator->current();
+				IChildNode *child_node = child_node_iterator->current();
 				outfile << curr_node_name << " --|> " << child_node->node()->label()->utf8() << std::endl;
 				child_node_iterator->toNext();
 			}
@@ -176,13 +175,13 @@ int main(int argc, char **argv) {
 	// Write all the collaborations out
 	//
 	while (!collaboration_graph_stack.empty()) {
-		IGraph* graph_starting_point = collaboration_graph_stack.top();
+		IGraph *graph_starting_point = collaboration_graph_stack.top();
 
-		INodeIterator* iter = graph_starting_point->nodes();
+		INodeIterator *iter = graph_starting_point->nodes();
 		while (iter->current() != nullptr) {
-			INode* curr_node = iter->current();
+			INode *curr_node = iter->current();
 
-			const char * curr_node_name = curr_node->label()->utf8();
+			const char *curr_node_name = curr_node->label()->utf8();
 
 			// skip already processed classes
 			if (processed_class_name_map.contains(curr_node_name)) {
@@ -191,9 +190,9 @@ int main(int argc, char **argv) {
 			}
 			processed_class_name_map[curr_node_name] = true;
 
-			IChildNodeIterator* child_node_iterator = curr_node->children();
+			IChildNodeIterator *child_node_iterator = curr_node->children();
 			while (child_node_iterator->current() != nullptr) {
-				IChildNode* child_node = child_node_iterator->current();
+				IChildNode *child_node = child_node_iterator->current();
 
 				// for some reason inherited relationships are in the collaborations
 				if (child_node->relation() != IChildNode::Usage) {
