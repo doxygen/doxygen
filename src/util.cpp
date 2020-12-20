@@ -3575,22 +3575,28 @@ bool hasVisibleRoot(const BaseClassList &bcl)
 // copies the next UTF8 character from input stream into buffer ids
 // returns the size of the character in bytes (or 0 if it is invalid)
 // the character itself will be copied as a UTF-8 encoded string to ids.
-int getUtf8Char(const signed char *input,char ids[5])
+int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modifier)
 {
   int inputLen=1;
   const unsigned char uc = (unsigned char)*input;
   bool validUTF8Char = false;
   if (uc <= 0xf7)
   {
-    ids[ 0 ] = *input;
-    const signed char* pt = input+1;
+    const char* pt = input+1;
     int l = 0;
     if ((uc&0x80)==0x00)
     {
+      switch (modifier)
+      {
+        case CaseModifier::None:    ids[0]=*input;          break;
+        case CaseModifier::ToUpper: ids[0]=toupper(*input); break;
+        case CaseModifier::ToLower: ids[0]=tolower(*input); break;
+      }
       l=1; // 0xxx.xxxx => normal single byte ascii character
     }
     else
     {
+      ids[ 0 ] = *input;
       if ((uc&0xE0)==0xC0)
       {
         l=2; // 110x.xxxx: >=2 byte character
@@ -3635,7 +3641,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
   if (name==0) return "";
   GrowBuf growBuf;
   signed char c;
-  const signed char *p=(const signed char*)name;
+  const char *p=name;
   while ((c=*p++)!=0)
   {
     switch(c)
@@ -3671,7 +3677,7 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       default:
                 if (c<0)
                 {
-                  char ids[5];
+                  char ids[MAX_UTF8_CHAR_SIZE];
                   bool doEscape = true;
                   if (allowUnicodeNames)
                   {

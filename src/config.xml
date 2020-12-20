@@ -174,7 +174,6 @@ FILE_PATTERNS         = *.cpp *.h q*.doc
 RECURSIVE             = YES
 EXCLUDE_PATTERNS      = *codec.cpp moc_* */compat/* */3rdparty/*
 ALPHABETICAL_INDEX    = YES
-COLS_IN_ALPHA_INDEX   = 3
 IGNORE_PREFIX         = Q
 ENABLE_PREPROCESSING  = YES
 MACRO_EXPANSION       = YES
@@ -1775,14 +1774,6 @@ to disable this feature.
  If the \c ALPHABETICAL_INDEX tag is set to \c YES, an alphabetical index
  of all compounds will be generated. Enable this if the project contains
  a lot of classes, structs, unions or interfaces.
-]]>
-      </docs>
-    </option>
-    <option type='int' id='COLS_IN_ALPHA_INDEX' minval='1' maxval='20' defval='5' depends='ALPHABETICAL_INDEX'>
-      <docs>
-<![CDATA[
- The \c COLS_IN_ALPHA_INDEX tag can be
- used to specify the number of columns in which the alphabetical index list will be split.
 ]]>
       </docs>
     </option>
@@ -3739,5 +3730,6 @@ temporary files.
     <option type='obsolete' id='PERL_PATH'/>
     <option type='obsolete' id='MSCGEN_PATH'/>
     <option type='obsolete' id='TCL_SUBST'/>
+    <option type='obsolete' id='COLS_IN_ALPHA_INDEX'/>
   </group>
 </doxygenconfig>

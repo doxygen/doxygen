@@ -1361,25 +1361,25 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
   {
     if (md->getGroupDef()==this && md->isLinkable() && !md->isEnumValue())
     {
-      ol.writeString("          <tr><td class=\"navtab\">");
       if (md->isLinkableInProject())
       {
         if (md==currentMd) // selected item => highlight
         {
-          ol.writeString("<a class=\"qindexHL\" ");
+          ol.writeString("          <tr><td class=\"navtabHL\">");
         }
         else
         {
-          ol.writeString("<a class=\"qindex\" ");
+          ol.writeString("          <tr><td class=\"navtab\">");
         }
+        ol.writeString("<a class=\"navtab\" ");
         ol.writeString("href=\"");
         if (createSubDirs) ol.writeString("../../");
         ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(convertToHtml(md->localName()));
         ol.writeString("</a>");
+        ol.writeString("</td></tr>\n");
       }
-      ol.writeString("</td></tr>\n");
     }
   }
 

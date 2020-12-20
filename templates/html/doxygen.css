@@ -112,20 +112,71 @@ h3.version {
         text-align: center;
 }
 
-div.qindex, div.navtab{
-	background-color: ##ee;
-	border: 1px solid ##b0;
-	text-align: center;
-}
-
-div.qindex, div.navpath {
-	width: 100%;
-	line-height: 140%;
-}
-
-div.navtab {
+div.navtab{
+	border-right: 1px solid ##b0;
+	padding-right: 6px;
+	text-align: right;
+	line-height: 110%;
 	margin-right: 15px;
 }
+
+td.navtabHL {
+	background-color: ##e0;
+}
+
+a.navtab {
+	font-weight: bold;
+}
+
+div.qindex{
+	text-align: center;
+	width: 100%;
+	line-height: 140%;
+	font-size: 130%;
+	color: #A0A0A0;
+}
+
+dt.alphachar{
+	font-size: 180%;
+	font-weight: bold;
+}
+
+.alphachar a{
+	color: black;
+}
+
+.alphachar a:hover, .alphachar a:visited{
+	text-decoration: none;
+}
+
+.classindex dl {
+	padding: 25px;
+	column-count:1
+}
+
+.classindex dd {
+	display:inline-block;
+	margin-left: 50px;
+	width: 90%;
+	line-height: 1.15em;
+}
+
+.classindex dl.odd {
+	background-color: ##F9;
+}
+
+@media(min-width: 1120px) {
+	.classindex dl {
+		column-count:2
+	}
+}
+
+@media(min-width: 1320px) {
+	.classindex dl {
+		column-count:3
+	}
+}
+
 
 /* @group Link Styling */
 
@@ -141,17 +192,6 @@ a {
 
 a:hover {
 	text-decoration: underline;
-}
-
-a.qindex {
-	font-weight: bold;
-}
-
-a.qindexHL {
-	font-weight: bold;
-	background-color: ##AA;
-	color: ##ff;
-	border: 1px double ##98;
 }
 
 .contents a.qindexHL:visited {
