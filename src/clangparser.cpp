@@ -26,7 +26,6 @@
 //--------------------------------------------------------------------------
 
 static std::mutex g_clangMutex;
-static std::mutex g_docCrossReferenceMutex;
 
 ClangParser *ClangParser::instance()
 {
@@ -39,6 +38,8 @@ ClangParser *ClangParser::s_instance = 0;
 
 //--------------------------------------------------------------------------
 #if USE_LIBCLANG
+
+static std::mutex g_docCrossReferenceMutex;
 
 enum class DetectedLang { Cpp, ObjC, ObjCpp };
 
