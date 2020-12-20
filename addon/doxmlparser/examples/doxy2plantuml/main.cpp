@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     std::string xml_output_dir = "";
     std::string plantuml_filename = "output.xml";
 
-	if (argc != 2)
+	if (argc != 3)
 	{
 		printf("Usage: %s xml_output_dir plantuml_filename\n", argv[0]);
 		exit(1);
