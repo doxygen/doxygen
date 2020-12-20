@@ -7,26 +7,28 @@
 #include <sstream>
 #include <fstream>
 #include <map>
-#include <filesystem>
 #include <stack>
 
 #include <cstring>
 
 
 int main(int argc, char **argv) {
-    std::string cwd;
-    std::string default_output_filename = "output.xml";
+    std::string xml_output_dir = "";
+    std::string plantuml_filename = "output.xml";
 
-    if (argc > 1) {
-        cwd = std::filesystem::path(argv[1]).string();
-        if (argc > 2) {
-            default_output_filename = std::string(argv[2]);
-        }
-    } else {
-        cwd = std::filesystem::path(argv[0]).parent_path().string();
-    }
+	if (argc != 2)
+	{
+		printf("Usage: %s xml_output_dir plantuml_filename\n", argv[0]);
+		exit(1);
+	}
+	else
+	{
+		xml_output_dir = std::string(argv[1]);
+		plantuml_filename = std::string(argv[2]);
+	}
 
-    std::string xml_dir = (cwd + "/xml/");
+
+    std::string xml_dir = (xml_output_dir + "/xml/");
 
     IDoxygen *doxygen = createObjectModel();
     if (!doxygen->readXMLDir(xml_dir.c_str())) {
@@ -37,7 +39,7 @@ int main(int argc, char **argv) {
     std::stack<IGraph*> collaboration_graph_stack;
     std::stack<IGraph*> inheritance_graph_stack;
 
-    std::ofstream outfile(default_output_filename);
+    std::ofstream outfile(plantuml_filename);
     outfile << "@startuml" << std::endl;
 
 
