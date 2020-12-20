@@ -4046,8 +4046,11 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   {
     Debug::print(Debug::Classes,0,"      New template instance class '%s''%s'\n",qPrint(name()),qPrint(templSpec));
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
-    templateClass = new ClassDefImpl(
-        fileName,startLine,startColumn,tcname,ClassDef::Class);
+    templateClass =
+      toClassDefMutable(
+          Doxygen::classLinkedMap->add(tcname,
+            std::unique_ptr<ClassDef>(
+              new ClassDefImpl(fileName,startLine,startColumn,tcname,ClassDef::Class))));
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
     templateClass->setHidden(isHidden());

@@ -4106,7 +4106,6 @@ static bool findTemplateInstanceRelation(const Entry *root,
   if (freshInstance)
   {
     Debug::print(Debug::Classes,0,"      found fresh instance '%s'!\n",qPrint(instanceClass->name()));
-    Doxygen::classLinkedMap->add(instanceClass->name(),std::unique_ptr<ClassDef>(instanceClass));
     instanceClass->setTemplateBaseClassNames(templateNames);
 
     // search for new template instances caused by base classes of
