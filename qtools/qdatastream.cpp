@@ -799,7 +799,7 @@ QDataStream &QDataStream::operator<<( Q_INT64 i )
     } else {					// swap bytes
 	uchar *p = (uchar *)(&i);
 	char b[sizeof(Q_INT64)];
-	if ( sizeof(Q_INT64) == 8 ) {
+	if ( sizeof(b) == 8 ) {
 	    b[7] = *p++;
 	    b[6] = *p++;
 	    b[5] = *p++;
