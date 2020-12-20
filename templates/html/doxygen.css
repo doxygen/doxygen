@@ -955,7 +955,7 @@ table.fieldtable {
         padding: 3px 7px 2px;
 }
 
-.fieldtable td.fieldtype, .fieldtable td.fieldname {
+.fieldtable td.fieldtype, .fieldtable td.fieldname, .fieldtable td.fieldinit {
         white-space: nowrap;
         border-right: 1px solid ##B4;
         border-bottom: 1px solid ##B4;
@@ -965,6 +965,12 @@ table.fieldtable {
 .fieldtable td.fieldname {
         padding-top: 3px;
 }
+
+.fieldtable td.fieldinit {
+        padding-top: 3px;
+        text-align: right;
+}
+
 
 .fieldtable td.fielddoc {
         border-bottom: 1px solid ##B4;

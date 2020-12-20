@@ -1028,17 +1028,17 @@ DB_GEN_C
   addIndexTerm(t, prim, sec);
 }
 
-void DocbookGenerator::startDescTable(const char *title)
+void DocbookGenerator::startDescTable(const char *title,const bool hasInits)
 {
 DB_GEN_C
-  int ncols = 2;
+  int ncols = (hasInits?3:2);
   t << "<informaltable frame=\"all\">" << endl;
   if (title)t << "<title>" << convertToDocBook(title) << "</title>" << endl;
   t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
-  for (int i = 0; i < ncols; i++)
-  {
-    t << "      <colspec colname='c" << i+1 << "'/>\n";
-  }
+  int i = 1;
+  t << "      <colspec colname='c" << i++ << "'/>\n";
+  if (hasInits) t << "      <colspec colname='c" << i++ << "' align='right'/>\n";
+  t << "      <colspec colname='c" << i++ << "'/>\n";
   t << "<tbody>\n";
   m_descTable = TRUE;
 }
@@ -1071,6 +1071,17 @@ DB_GEN_C
 }
 
 void DocbookGenerator::endDescTableTitle()
+{
+DB_GEN_C
+}
+
+void DocbookGenerator::startDescTableInit()
+{
+DB_GEN_C
+  t << "</entry><entry>";
+}
+
+void DocbookGenerator::endDescTableInit()
 {
 DB_GEN_C
 }

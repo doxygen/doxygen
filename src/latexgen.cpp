@@ -1956,10 +1956,10 @@ void LatexGenerator::writeNonBreakableSpace(int)
 // - endDescTableRow()
 // endDescTable()
 
-void LatexGenerator::startDescTable(const char *title)
+void LatexGenerator::startDescTable(const char *title,const bool hasInits)
 {
   m_codeGen.incUsedTableLevel();
-  t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
+  t << "\\begin{DoxyEnumFields}[" << (hasInits?3:2) << "]{" << title << "}" << endl;
 }
 
 void LatexGenerator::endDescTable()
@@ -1985,6 +1985,15 @@ void LatexGenerator::startDescTableTitle()
 }
 
 void LatexGenerator::endDescTableTitle()
+{
+}
+
+void LatexGenerator::startDescTableInit()
+{
+  t << "&";
+}
+
+void LatexGenerator::endDescTableInit()
 {
 }
 

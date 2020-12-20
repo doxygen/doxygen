@@ -3024,14 +3024,25 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
     {
       MemberListIterator it(*fmdl);
       MemberDef *fmd;
-      for (;(fmd=it.current());++it)
+      bool hasInits = false;
+      if (Config_getInt(MAX_INITIALIZER_LINES) > 0)
+      {
+        for (;(fmd=it.current());++it)
+        {
+          if (fmd->isLinkable())
+          {
+            if (hasInits = !fmd->initializer().isEmpty()) break;
+          }
+        }
+      }
+      for (it.toFirst();(fmd=it.current());++it)
       {
         //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
         if (fmd->isLinkable())
         {
           if (first)
           {
-            ol.startDescTable(theTranslator->trEnumerationValues());
+            ol.startDescTable(theTranslator->trEnumerationValues(),hasInits);
           }
 
           ol.startDescTableRow();
@@ -3049,6 +3060,23 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
           ol.enableAll();
           ol.endDoxyAnchor(cfname,fmd->anchor());
           ol.endDescTableTitle();
+          if (hasInits)
+          {
+            ol.startDescTableInit();
+            if (!fmd->initializer().isEmpty())
+            {
+              QCString initStr = fmd->initializer().stripWhiteSpace();
+              if (initStr.startsWith("=")) initStr = initStr.mid(1).stripWhiteSpace();
+              ol.disableAllBut(OutputGenerator::Man);
+              ol.writeString("(");
+              ol.enableAll();
+              ol.docify(initStr);
+              ol.disableAllBut(OutputGenerator::Man);
+              ol.writeString(")");
+              ol.enableAll();
+            }
+            ol.endDescTableInit();
+          }
           ol.startDescTableData();
 
           bool hasBrief = !fmd->briefDescription().isEmpty();

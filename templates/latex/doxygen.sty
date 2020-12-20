@@ -355,14 +355,16 @@
 }
 
 % Used for fields simple class style enums
-\newenvironment{DoxyEnumFields}[1]{%
+\newenvironment{DoxyEnumFields}[2][]{%
     \tabulinesep=1mm%
     \par%
-    \begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \ifthenelse{\equal{#1}{2}}%
+      {\begin{longtabu*}spread 0pt [l]{|X[-1,r]|X[-1,l]|}}%
+      {\begin{longtabu*}spread 0pt [l]{|X[-1,l]|X[-1,r]|X[-1,l]|}}% with init value
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
     \hline%
     \endfirsthead%
-    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #1}\\[1ex]%
+    \multicolumn{2}{l}{\hspace{-6pt}\bfseries\fontseries{bc}\selectfont\color{darkgray} #2}\\[1ex]%
     \hline%
     \endhead%
 }{%

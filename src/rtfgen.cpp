@@ -1991,7 +1991,7 @@ void RTFGenerator::endMemberList()
 //  // not yet implemented
 //}
 //
-void RTFGenerator::startDescTable(const char *title)
+void RTFGenerator::startDescTable(const char *title,const bool hasInits)
 {
   DBG_RTF(t << "{\\comment (startDescTable) }"    << endl)
   t << "{\\par" << endl;
@@ -2006,15 +2006,16 @@ void RTFGenerator::startDescTable(const char *title)
        "\\trbrdrr\\brdrs\\brdrw10\\brdrcf15 "
        "\\trbrdrh\\brdrs\\brdrw10\\brdrcf15 "
        "\\trbrdrv\\brdrs\\brdrw10\\brdrcf15 "<< endl;
-  int i,columnPos[2] = { 25, 100 };
-  for (i=0;i<2;i++)
+  int columnPos2[2] = { 25, 100 };
+  int columnPos3[3] = { 25, 45, 100 };
+  for (int i=0;i<(hasInits?3:2);i++)
   {
     t << "\\clvertalt\\clbrdrt\\brdrs\\brdrw10\\brdrcf15 "
          "\\clbrdrl\\brdrs\\brdrw10\\brdrcf15 "
          "\\clbrdrb\\brdrs\\brdrw10\\brdrcf15 "
          "\\clbrdrr \\brdrs\\brdrw10\\brdrcf15 "
          "\\cltxlrtb "
-         "\\cellx" << (rtf_pageWidth*columnPos[i]/100) << endl;
+         "\\cellx" << (rtf_pageWidth*(hasInits?columnPos3[i]:columnPos2[i])/100) << endl;
   }
   t << "\\pard \\widctlpar\\intbl\\adjustright" << endl;
 }
@@ -2036,12 +2037,27 @@ void RTFGenerator::endDescTableRow()
 void RTFGenerator::startDescTableTitle()
 {
   DBG_RTF(t << "{\\comment (startDescTableTitle) }"    << endl)
-  t << "{\\qr ";
+  t << "{";
+  t << rtf_Style["BodyText"]->reference();
 }
 
 void RTFGenerator::endDescTableTitle()
 {
   DBG_RTF(t << "{\\comment (endDescTableTitle) }"    << endl)
+  t << "\\cell }";
+}
+
+void RTFGenerator::startDescTableInit()
+{
+  DBG_RTF(t << "{\\comment (startDescTableInit) }"    << endl)
+  t << "{";
+  t << rtf_Style["BodyText"]->reference();
+  t << "\\qr ";
+}
+
+void RTFGenerator::endDescTableInit()
+{
+  DBG_RTF(t << "{\\comment (endDescTableInit) }"    << endl)
   t << "\\cell }";
 }
 

@@ -270,11 +270,13 @@ class HtmlGenerator : public OutputGenerator
     void endPageDoc();
     void writeNonBreakableSpace(int);
 
-    void startDescTable(const char *title);
+    void startDescTable(const char *title,const bool hasInits);
     void endDescTable();
     void startDescTableRow();
     void endDescTableRow();
     void startDescTableTitle();
+    void endDescTableInit();
+    void startDescTableInit();
     void endDescTableTitle();
     void startDescTableData();
     void endDescTableData();

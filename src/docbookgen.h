@@ -206,12 +206,14 @@ class DocbookGenerator : public OutputGenerator
     void lineBreak(const char *);
     void addIndexItem(const char *,const char *);
     void writeNonBreakableSpace(int);
-    void startDescTable(const char *);
+    void startDescTable(const char *,const bool hasInits);
     void endDescTable();
     void startDescTableRow();
     void endDescTableRow();
     void startDescTableTitle();
     void endDescTableTitle();
+    void startDescTableInit();
+    void endDescTableInit();
     void startDescTableData();
     void endDescTableData();
     void startTextLink(const char *,const char *){DB_GEN_NEW};
