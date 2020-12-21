@@ -30,6 +30,8 @@
 // Xapian include
 #include <xapian.h>
 
+#include "version.h"
+
 #define MAX_TERM_LENGTH 245
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -303,10 +305,10 @@ class XMLErrorHandler : public QXmlErrorHandler
     QString errorMsg;
 };
 
-static void usage(const char *name)
+static void usage(const char *name, int exitVal = 1)
 {
   std::cerr << "Usage: " << name << " [-o output_dir] searchdata.xml [searchdata2.xml ...]" << std::endl;
-  exit(1);
+  exit(exitVal);
 }
 
 /** main function to index data */
@@ -340,7 +342,12 @@ int main(int argc,const char **argv)
     }
     else if (std::string(argv[i])=="-h" || std::string(argv[i])=="--help")
     {
-      usage(argv[0]);
+      usage(argv[0],0);
+    }
+    else if (std::string(argv[i])=="-v" || std::string(argv[i])=="--version")
+    {
+      std::cerr << argv[0] << " version: " << getFullVersion() << std::endl;
+      exit(0);
     }
   }
 
