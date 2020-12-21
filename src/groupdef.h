@@ -70,7 +70,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(FTextStream &) = 0;
-    virtual int  numDocMembers() const = 0;
+    virtual size_t numDocMembers() const = 0;
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual bool isASubGroup() const = 0;
