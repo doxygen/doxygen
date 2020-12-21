@@ -69,7 +69,8 @@ endif()
 
 if (WIN32)
     if ((NOT CMAKE_GENERATOR MATCHES "MinGW Makefiles") AND 
-        (NOT CMAKE_GENERATOR MATCHES "MSYS Makefiles"))
+        (NOT CMAKE_GENERATOR MATCHES "MSYS Makefiles") AND
+        (NOT CMAKE_GENERATOR MATCHES "Unix Makefiles"))
         if (NOT ICONV_DIR)
           set(ICONV_DIR "${PROJECT_SOURCE_DIR}/winbuild")
         endif()
