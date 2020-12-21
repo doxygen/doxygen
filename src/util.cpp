@@ -3588,9 +3588,9 @@ int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modi
     {
       switch (modifier)
       {
-        case CaseModifier::None:    ids[0]=*input;          break;
-        case CaseModifier::ToUpper: ids[0]=toupper(*input); break;
-        case CaseModifier::ToLower: ids[0]=tolower(*input); break;
+        case CaseModifier::None:    ids[0]=*input;                break;
+        case CaseModifier::ToUpper: ids[0]=(char)toupper(*input); break;
+        case CaseModifier::ToLower: ids[0]=(char)tolower(*input); break;
       }
       l=1; // 0xxx.xxxx => normal single byte ascii character
     }
