@@ -103,25 +103,40 @@ caption {
 }
 
 span.legend {
-        font-size: 70%;
-        text-align: center;
+	font-size: 70%;
+	text-align: center;
 }
 
 h3.version {
-        font-size: 90%;
-        text-align: center;
+	font-size: 90%;
+	text-align: center;
 }
 
-div.navtab{
+div.navtab {
 	border-right: 1px solid ##b0;
-	padding-right: 6px;
+	padding-right: 15px;
 	text-align: right;
 	line-height: 110%;
-	margin-right: 15px;
 }
 
+div.navtab table {
+	border-spacing: 0;
+}
+
+td.navtab {
+	padding-right: 6px;
+	padding-left: 6px;
+}
 td.navtabHL {
-	background-color: ##e0;
+	background-image: url('tab_a.png');
+	background-repeat:repeat-x;
+	padding-right: 6px;
+	padding-left: 6px;
+}
+
+td.navtabHL a, td.navtabHL a:visited {
+	color: #fff;
+	text-shadow: 0px 1px 1px rgba(0, 0, 0, 1.0);
 }
 
 a.navtab {
