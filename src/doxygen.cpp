@@ -4216,6 +4216,32 @@ static int findEndOfTemplate(const QCString &s,int startPos)
   return brCount==0 ? e : -1;
 }
 
+static int findTemplateSpecializationPosition(const char *name)
+{
+  if (name==0 || name[0]=='\0') return 0;
+  int l = strlen(name);
+  if (name[l-1]=='>') // search backward to find the matching <, allowing nested <...> and strings.
+  {
+    int count=1;
+    int i=l-2;
+    char insideQuote=0;
+    while (count>0 && i>=0)
+    {
+      char c = name[i--];
+      switch (c)
+      {
+        case '>':  if (!insideQuote) count++; break;
+        case '<':  if (!insideQuote) count--; break;
+        case '\'': if (!insideQuote) insideQuote=c; else if (i<0 || name[i]!='\\') insideQuote=0; break;
+        case '"':  if (!insideQuote) insideQuote=c; else if (i<0 || name[i]!='\\') insideQuote=0; break;
+        default: break;
+      }
+    }
+    if (i>=0) l=i+1;
+  }
+  return l;
+}
+
 static bool findClassRelation(
                            const Entry *root,
                            Definition *context,
@@ -4307,8 +4333,8 @@ static bool findClassRelation(
             qPrint(templSpec)
            );
 
-        int i=baseClassName.findRev('<');
-        int si=baseClassName.findRev("::",i==-1 ? baseClassName.length() : i);
+        int i=findTemplateSpecializationPosition(baseClassName);
+        int si=baseClassName.findRev("::",i);
         if (si==-1) si=0;
         if (baseClass==0 && i!=-1)
           // base class has template specifiers
