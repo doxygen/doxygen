@@ -161,7 +161,6 @@ int                   Doxygen::subpageNestingLevel = 0;
 bool                  Doxygen::userComments = FALSE;
 QCString              Doxygen::spaces;
 bool                  Doxygen::generatingXmlOutput = FALSE;
-GenericsSDict        *Doxygen::genericsDict;
 DefinesPerFileList    Doxygen::macroDefinitions;
 bool                  Doxygen::clangAssistedParsing = FALSE;
 
@@ -1064,8 +1063,8 @@ static void addClassToContext(const Entry *root)
           std::unique_ptr<ClassDef>(
             createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
                fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
-    Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d isGeneric=%d\n",
-        qPrint(fullName),sec,root->tArgLists.size(), tagInfo,root->hidden,root->artificial,cd->isGeneric());
+    Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d\n",
+        qPrint(fullName),sec,root->tArgLists.size(), tagInfo,root->hidden,root->artificial);
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setLanguage(root->lang);
@@ -1097,11 +1096,6 @@ static void addClassToContext(const Entry *root)
     cd->insertUsedFile(fd);
 
 
-    if (cd->isGeneric()) // generics are also stored in a separate dictionary for fast lookup of instances
-    {
-      //printf("inserting generic '%s' cd=%p\n",fullName.data(),cd);
-      Doxygen::genericsDict->insert(fullName,cd);
-    }
   }
 
   cd->addSectionsToDefinition(root->anchors);
@@ -3852,13 +3846,6 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
     result = getClass(name);
   }
   //printf("3. result=%p\n",result);
-  if (result==0 &&
-      (cd->getLanguage()==SrcLangExt_CSharp || cd->getLanguage()==SrcLangExt_Java) &&
-      name.find('<')!=-1)
-  {
-    result = Doxygen::genericsDict->find(name);
-  }
-  //printf("4. result=%p\n",result);
   //printf("** Trying to find %s within context %s class %s result=%s lookup=%p\n",
   //       name.data(),
   //       context ? context->name().data() : "<none>",
@@ -4323,12 +4310,6 @@ static bool findClassRelation(
         int i=baseClassName.findRev('<');
         int si=baseClassName.findRev("::",i==-1 ? baseClassName.length() : i);
         if (si==-1) si=0;
-        if (baseClass==0 && (root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java))
-        {
-          // for Java/C# strip the template part before looking for matching
-          baseClass = toClassDefMutable(Doxygen::genericsDict->find(baseClassName.left(i)));
-          //printf("looking for '%s' result=%p\n",baseClassName.data(),baseClass);
-        }
         if (baseClass==0 && i!=-1)
           // base class has template specifiers
         {
@@ -10052,7 +10033,6 @@ void initDoxygen()
   Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
-  Doxygen::genericsDict = new GenericsSDict;
   Doxygen::indexList = new IndexList;
 
   // initialisation of these globals depends on
@@ -10085,7 +10065,6 @@ void cleanUpDoxygen()
   SectionManager::instance().clear();
 
   delete Doxygen::indexList;
-  delete Doxygen::genericsDict;
   delete Doxygen::inputNameLinkedMap;
   delete Doxygen::includeNameLinkedMap;
   delete Doxygen::exampleNameLinkedMap;

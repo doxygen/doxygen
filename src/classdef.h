@@ -340,7 +340,6 @@ class ClassDef : public Definition
 
     virtual bool isJavaEnum() const = 0;
 
-    virtual bool isGeneric() const = 0;
     virtual QCString title() const = 0;
 
     virtual QCString generatedFromFiles() const = 0;

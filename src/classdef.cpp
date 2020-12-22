@@ -82,12 +82,6 @@ static QCString makeQualifiedNameWithTemplateParameters(const ClassDef *cd,
   bool isSpecialization = cd->localName().find('<')!=-1;
 
   QCString clName = cd->className();
-  //bool isGeneric = getLanguage()==SrcLangExt_CSharp;
-  //if (isGeneric && clName.right(2)=="-g")
-  //{
-  //  clName = clName.left(clName.length()-2);
-  //}
-  //printf("m_impl->lang=%d clName=%s isSpecialization=%d\n",getLanguage(),clName.data(),isSpecialization);
   scName+=clName;
   if (!cd->templateArguments().empty())
   {
@@ -239,7 +233,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const ClassDef *tagLessReference() const;
     virtual MemberDef *isSmartPointer() const;
     virtual bool isJavaEnum() const;
-    virtual bool isGeneric() const;
     virtual QCString title() const;
     virtual QCString generatedFromFiles() const;
     virtual const FileList &usedFiles() const;
@@ -522,8 +515,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isSmartPointer(); }
     virtual bool isJavaEnum() const
     { return getCdAlias()->isJavaEnum(); }
-    virtual bool isGeneric() const
-    { return getCdAlias()->isGeneric(); }
     virtual QCString title() const
     { return getCdAlias()->title(); }
     virtual QCString generatedFromFiles() const
@@ -725,8 +716,6 @@ class ClassDefImpl::IMPL
     /** Does this class represent a Java style enum? */
     bool isJavaEnum = false;
 
-    bool isGeneric = false;
-
     uint64 spec = 0;
 
     QCString metaData;
@@ -783,7 +772,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   {
     isLocal=FALSE;
   }
-  isGeneric = (lang==SrcLangExt_CSharp || lang==SrcLangExt_Java) && QCString(name).find('<')!=-1;
 }
 
 ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
@@ -5021,11 +5009,6 @@ void ClassDefImpl::removeMemberFromLists(MemberDef *md)
 bool ClassDefImpl::isJavaEnum() const
 {
   return m_impl->isJavaEnum;
-}
-
-bool ClassDefImpl::isGeneric() const
-{
-  return m_impl->isGeneric;
 }
 
 void ClassDefImpl::setClassSpecifier(uint64 spec)
