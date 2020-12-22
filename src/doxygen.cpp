@@ -4232,8 +4232,12 @@ static int findTemplateSpecializationPosition(const char *name)
       {
         case '>':  if (!insideQuote) count++; break;
         case '<':  if (!insideQuote) count--; break;
-        case '\'': if (!insideQuote) insideQuote=c; else if (i<0 || name[i]!='\\') insideQuote=0; break;
-        case '"':  if (!insideQuote) insideQuote=c; else if (i<0 || name[i]!='\\') insideQuote=0; break;
+        case '\'': if (!insideQuote) insideQuote=c;
+                   else if (insideQuote==c && (i<0 || name[i]!='\\')) insideQuote=0;
+                   break;
+        case '"':  if (!insideQuote) insideQuote=c;
+                   else if (insideQuote==c && (i<0 || name[i]!='\\')) insideQuote=0;
+                   break;
         default: break;
       }
     }
