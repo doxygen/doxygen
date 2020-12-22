@@ -977,8 +977,8 @@ static void addClassToContext(const Entry *root)
   // see if we already found the class before
   ClassDefMutable *cd = getClassMutable(qualifiedName);
 
-  //Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
-  //    cd ? qPrint(cd->name()) : qPrint(root->name), qPrint(qualifiedName),cd);
+  Debug::print(Debug::Classes,0, "  Found class with name %s (qualifiedName=%s -> cd=%p)\n",
+      cd ? qPrint(cd->name()) : qPrint(root->name), qPrint(qualifiedName),cd);
 
   if (cd)
   {
@@ -1046,7 +1046,7 @@ static void addClassToContext(const Entry *root)
       }
     }
     std::unique_ptr<ArgumentList> tArgList;
-    if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.find('<'))!=-1)
+    if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.findRev('<'))!=-1)
     {
       // a Java/C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
@@ -1064,8 +1064,8 @@ static void addClassToContext(const Entry *root)
           std::unique_ptr<ClassDef>(
             createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
                fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
-    Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p\n",
-        qPrint(fullName),sec,root->tArgLists.size(), tagInfo);
+    Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d isGeneric=%d\n",
+        qPrint(fullName),sec,root->tArgLists.size(), tagInfo,root->hidden,root->artificial,cd->isGeneric());
     cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
     cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
     cd->setLanguage(root->lang);
@@ -1855,7 +1855,7 @@ static void findUsingDeclarations(const Entry *root)
         Debug::print(Debug::Classes,0,"  New using class '%s' (sec=0x%08x)! #tArgLists=%d\n",
              qPrint(name),root->section,root->tArgLists.size());
         usingCd = toClassDefMutable(
-             Doxygen::hiddenClassLinkedMap->add(root->name,
+             Doxygen::hiddenClassLinkedMap->add(name,
                std::unique_ptr<ClassDef>(
                  createClassDef( "<using>",1,1, name, ClassDef::Class))));
         usingCd->setArtificial(TRUE);
@@ -3841,20 +3841,24 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   {
     result = const_cast<ClassDef*>(resolver.resolveClass(context,name,true,true));
   }
+  //printf("1. result=%p\n",result);
   if (result==0)
   {
     result = const_cast<ClassDef*>(resolver.resolveClass(cd,name,true,true));
   }
+  //printf("2. result=%p\n",result);
   if (result==0) // try direct class, needed for namespaced classes imported via tag files (see bug624095)
   {
     result = getClass(name);
   }
+  //printf("3. result=%p\n",result);
   if (result==0 &&
       (cd->getLanguage()==SrcLangExt_CSharp || cd->getLanguage()==SrcLangExt_Java) &&
       name.find('<')!=-1)
   {
     result = Doxygen::genericsDict->find(name);
   }
+  //printf("4. result=%p\n",result);
   //printf("** Trying to find %s within context %s class %s result=%s lookup=%p\n",
   //       name.data(),
   //       context ? context->name().data() : "<none>",
@@ -4316,7 +4320,7 @@ static bool findClassRelation(
             qPrint(templSpec)
            );
 
-        int i=baseClassName.find('<');
+        int i=baseClassName.findRev('<');
         int si=baseClassName.findRev("::",i==-1 ? baseClassName.length() : i);
         if (si==-1) si=0;
         if (baseClass==0 && (root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java))
@@ -4396,6 +4400,7 @@ static bool findClassRelation(
           found = baseClass!=0 && baseClass!=cd;
 
         }
+        //printf("3. found=%d\n",found);
         if (!found)
         {
           // for PHP the "use A\B as C" construct map class C to A::B, so we lookup
@@ -4412,7 +4417,7 @@ static bool findClassRelation(
         // warning: the following line doesn't work for Mixin classes (see bug 560623)
         // templSpec = getCanonicalTemplateSpec(cd, cd->getFileDef(), templSpec);
 
-        //printf("3. found=%d\n",found);
+        //printf("4. found=%d\n",found);
         if (found)
         {
           Debug::print(Debug::Classes,0,"    Documented base class '%s' templSpec=%s\n",qPrint(biName),qPrint(templSpec));

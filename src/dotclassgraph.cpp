@@ -38,7 +38,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
   }
   else if (templSpec) // name has a template part
   {
-    className=insertTemplateSpecifierInScope(cd->name(),templSpec);
+    className=insertTemplateSpecifierInScope(cd->displayName(),templSpec);
   }
   else // just a normal name
   {

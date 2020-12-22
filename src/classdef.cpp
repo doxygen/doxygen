@@ -4044,11 +4044,11 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
   ClassDefMutable *templateClass=toClassDefMutable(m_impl->templateInstances->find(templSpec));
   if (templateClass==0)
   {
-    Debug::print(Debug::Classes,0,"      New template instance class '%s''%s'\n",qPrint(name()),qPrint(templSpec));
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
+    Debug::print(Debug::Classes,0,"      New template instance class '%s''%s' inside '%s' hidden=%d\n",qPrint(name()),qPrint(templSpec),qPrint(name()),isHidden());
     templateClass =
       toClassDefMutable(
-          Doxygen::classLinkedMap->add(tcname,
+          Doxygen::hiddenClassLinkedMap->add(tcname,
             std::unique_ptr<ClassDef>(
               new ClassDefImpl(fileName,startLine,startColumn,tcname,ClassDef::Class))));
     templateClass->setTemplateMaster(this);
