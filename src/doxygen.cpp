@@ -5117,6 +5117,49 @@ static bool findGlobalMember(const Entry *root,
         nd = md->getNamespaceDef();
       }
 
+      // special case for strong enums
+      int enumNamePos=0;
+      if (nd && md->isEnumValue() && (enumNamePos=namespaceName.findRev("::"))!=-1)
+      { // md part of a strong enum in a namespace?
+        QCString enumName = namespaceName.mid(enumNamePos+2);
+        if (namespaceName.left(enumNamePos)==nd->name())
+        {
+          MemberName *enumMn=Doxygen::functionNameLinkedMap->find(enumName);
+          if (enumMn)
+          {
+            for (const auto &emd : *enumMn)
+            {
+              found = emd->isStrong() && md->getEnumScope()==emd.get();
+              if (found)
+              {
+                addMemberDocs(root,toMemberDefMutable(md->resolveAlias()),decl,0,FALSE,root->spec);
+                break;
+              }
+            }
+          }
+        }
+        if (found)
+        {
+          break;
+        }
+      }
+      else if (nd==0 && md->isEnumValue()) // md part of global strong enum?
+      {
+        MemberName *enumMn=Doxygen::functionNameLinkedMap->find(namespaceName);
+        if (enumMn)
+        {
+          for (const auto &emd : *enumMn)
+          {
+            found = emd->isStrong() && md->getEnumScope()==emd.get();
+            if (found)
+            {
+              addMemberDocs(root,toMemberDefMutable(md->resolveAlias()),decl,0,FALSE,root->spec);
+              break;
+            }
+          }
+        }
+      }
+
       const FileDef *fd=root->fileDef();
       //printf("File %s\n",fd ? fd->name().data() : "<none>");
       LinkedRefMap<const NamespaceDef> nl;
@@ -5495,8 +5538,11 @@ static void addMemberFunction(const Entry *root,
           for (const auto &emd : *enumMn)
           {
             memFound = emd->isStrong() && md->getEnumScope()==emd.get();
-            addMemberDocs(root,md,funcDecl,0,overloaded,spec);
-            count++;
+            if (memFound)
+            {
+              addMemberDocs(root,md,funcDecl,0,overloaded,spec);
+              count++;
+            }
             if (memFound) break;
           }
         }
@@ -6223,6 +6269,33 @@ static void findMember(const Entry *root,
   {
     Debug::print(Debug::FindMembers,0,
                  "1. funcName='%s'\n",funcName.data());
+
+    // check if 'className' is actually a scoped enum, in which case we need to
+    // process it as a global, see issue #6471
+    bool strongEnum = false;
+    if (!className.isEmpty() && (mn=Doxygen::functionNameLinkedMap->find(className)))
+    {
+      for (const auto &imd : *mn)
+      {
+        MemberDefMutable *md = toMemberDefMutable(imd.get());
+        if (md && md->isEnumerate() && md->isStrong())
+        {
+          Debug::print(Debug::FindMembers,0,"%s is a strong enum!\n",qPrint(md->name()));
+          strongEnum = true;
+          // pass the scope name name as a 'namespace' to the findGlobalMember function
+          if (!namespaceName.isEmpty())
+          {
+            namespaceName+="::"+className;
+          }
+          else
+          {
+            namespaceName=className;
+          }
+          mn = 0;
+        }
+      }
+    }
+
     if (funcName.left(9)=="operator ") // strip class scope from cast operator
     {
       funcName = substitute(funcName,className+"::","");
@@ -6235,7 +6308,7 @@ static void findMember(const Entry *root,
     {
       mn=Doxygen::memberNameLinkedMap->find(funcName);
     }
-    if (!isRelated && mn) // function name already found
+    if (!isRelated && !strongEnum && mn) // function name already found
     {
       Debug::print(Debug::FindMembers,0,
                    "2. member name exists (%d members with this name)\n",mn->size());
