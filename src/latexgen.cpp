@@ -1000,14 +1000,13 @@ void LatexGenerator::startIndexSection(IndexSections is)
       {
         GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
-        bool found=FALSE;
-        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
+        for (gli.toFirst();(gd=gli.current());++gli)
         {
           if (!gd->isReference())
           {
             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
             t << "{"; //Module Documentation}\n";
-            found=TRUE;
+            break;
           }
         }
       }
@@ -1016,30 +1015,26 @@ void LatexGenerator::startIndexSection(IndexSections is)
       {
         SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
-        bool found=FALSE;
-        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        for (dli.toFirst();(dd=dli.current());++dli)
         {
           if (dd->isLinkableInProject())
           {
             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
             t << "{"; //Module Documentation}\n";
-            found=TRUE;
+            break;
           }
         }
       }
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-        NamespaceDef *nd;
-        bool found=FALSE;
-        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
+        for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
             if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
             t << "{"; // Namespace Documentation}\n":
-            found=TRUE;
+            break;
           }
         }
       }
@@ -1197,26 +1192,18 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-        NamespaceDef *nd;
         bool found=FALSE;
-        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
+        for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
-            t << "}\n\\input{" << nd->getOutputFileBase() << "}\n";
-            found=TRUE;
+            if (!found)
+            {
+              t << "}\n";
+              found=true;
+            }
+            t << "\\input{" << nd->getOutputFileBase() << "}\n";
           }
-        }
-        while ((nd=nli.current()))
-        {
-          if (nd->isLinkableInProject() && !nd->isAlias())
-          {
-            //if (compactLatex) t << "\\input"; else t << "\\include";
-            t << "\\input";
-            t << "{" << nd->getOutputFileBase() << "}\n";
-          }
-          ++nli;
         }
       }
       break;

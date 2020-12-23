@@ -2530,7 +2530,7 @@ static void addUsingDirective(yyscan_t yyscanner,const char *name)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->sourceFileDef && name)
   {
-    const NamespaceDef *nd = Doxygen::namespaceSDict->find(name);
+    const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
       yyextra->sourceFileDef->addUsingDirective(nd);

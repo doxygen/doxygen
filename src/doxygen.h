@@ -53,7 +53,7 @@ class ClassLinkedMap;
 class GenericsSDict;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
-class NamespaceSDict;
+class NamespaceLinkedMap;
 class NamespaceDef;
 class DirSDict;
 class DirRelation;
@@ -113,7 +113,7 @@ class Doxygen
     static MemberNameLinkedMap      *functionNameLinkedMap;
     static StringUnorderedMap        namespaceAliasMap;
     static GroupSDict               *groupSDict;
-    static NamespaceSDict           *namespaceSDict;
+    static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;
     static QIntDict<MemberGroupInfo> memGrpInfoDict;

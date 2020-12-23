@@ -473,13 +473,12 @@ void RTFGenerator::startIndexSection(IndexSections is)
         //Module Documentation
         GroupSDict::Iterator gli(*Doxygen::groupSDict);
         GroupDef *gd;
-        bool found=FALSE;
-        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
+        for (gli.toFirst();(gd=gli.current());++gli)
         {
           if (!gd->isReference())
           {
             beginRTFChapter();
-            found=TRUE;
+            break;
           }
         }
       }
@@ -489,13 +488,12 @@ void RTFGenerator::startIndexSection(IndexSections is)
         //Directory Documentation
         SDict<DirDef>::Iterator dli(*Doxygen::directories);
         DirDef *dd;
-        bool found=FALSE;
-        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        for (dli.toFirst();(dd=dli.current());++dli)
         {
           if (dd->isLinkableInProject())
           {
             beginRTFChapter();
-            found=TRUE;
+            break;
           }
         }
       }
@@ -503,15 +501,12 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isNamespaceDocumentation:
       {
         // Namespace Documentation
-        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-        NamespaceDef *nd;
-        bool found=FALSE;
-        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
+        for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject())
           {
             beginRTFChapter();
-            found=TRUE;
+            break;
           }
         }
       }
@@ -550,6 +545,10 @@ void RTFGenerator::startIndexSection(IndexSections is)
                 break;
               }
             }
+          }
+          if (!isFirst)
+          {
+            break;
           }
         }
       }
@@ -776,31 +775,21 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isNamespaceDocumentation:
       {
-        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-        NamespaceDef *nd;
-        bool found=FALSE;
-        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
+        bool first=true;
+        for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "\\par " << rtf_Style_Reset << endl;
-            t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-            t << nd->getOutputFileBase();
-            t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-            found=TRUE;
-          }
-        }
-        while ((nd=nli.current()))
-        {
-          if (nd->isLinkableInProject() && !nd->isAlias())
-          {
-            t << "\\par " << rtf_Style_Reset << endl;
-            beginRTFSection();
+            if (!first)
+            {
+              beginRTFSection();
+            }
+            first=false;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << nd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
-          ++nli;
         }
       }
       break;

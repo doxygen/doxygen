@@ -1067,7 +1067,7 @@ static bool getFortranNamespaceDefs(const QCString &mname,
   if (mname.isEmpty()) return FALSE; /* empty name => nothing to link */
 
   // search for module
-  if ((cd=Doxygen::namespaceSDict->find(mname))) return TRUE;
+  if ((cd=Doxygen::namespaceLinkedMap->find(mname))) return TRUE;
 
   return FALSE;
 }

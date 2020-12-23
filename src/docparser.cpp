@@ -778,7 +778,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       *pDef=cd;
       return TRUE;
     }
-    nd = Doxygen::namespaceSDict->find(fullName);
+    nd = Doxygen::namespaceLinkedMap->find(fullName);
     if (nd) // namespace
     {
       *pDoc=nd->documentation();

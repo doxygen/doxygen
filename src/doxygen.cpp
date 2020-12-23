@@ -119,7 +119,7 @@ extern void initResources();
 // globally accessible variables
 ClassLinkedMap       *Doxygen::classLinkedMap = 0;
 ClassLinkedMap       *Doxygen::hiddenClassLinkedMap = 0;
-NamespaceSDict       *Doxygen::namespaceSDict = 0;
+NamespaceLinkedMap   *Doxygen::namespaceLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = 0;
 FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
@@ -182,7 +182,7 @@ void clearAll()
 
   Doxygen::classLinkedMap->clear();
   Doxygen::hiddenClassLinkedMap->clear();
-  Doxygen::namespaceSDict->clear();
+  Doxygen::namespaceLinkedMap->clear();
   Doxygen::pageSDict->clear();
   Doxygen::exampleSDict->clear();
   Doxygen::inputNameLinkedMap->clear();
@@ -732,7 +732,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
     if (nsName.isEmpty()) return prevScope;
     if (!fullScope.isEmpty()) fullScope+="::";
     fullScope+=nsName;
-    NamespaceDef *nd=Doxygen::namespaceSDict->find(fullScope);
+    NamespaceDef *nd=Doxygen::namespaceLinkedMap->find(fullScope);
     DefinitionMutable *innerScope = toDefinitionMutable(nd);
     ClassDef *cd=0;
     if (nd==0) cd = getClass(fullScope);
@@ -744,14 +744,17 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
     {
       // introduce bogus namespace
       //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",nsName.data(),prevScope->name().data(),tagInfo);
-      NamespaceDefMutable *newNd=createNamespaceDef(
-        "[generated]",1,1,fullScope,
-        tagInfo?tagInfo->tagName:QCString(),
-        tagInfo?tagInfo->fileName:QCString());
+      NamespaceDefMutable *newNd=
+        toNamespaceDefMutable(
+          Doxygen::namespaceLinkedMap->add(fullScope,
+            std::unique_ptr<NamespaceDef>(
+              createNamespaceDef(
+                "[generated]",1,1,fullScope,
+                tagInfo?tagInfo->tagName:QCString(),
+                tagInfo?tagInfo->fileName:QCString()))));
       newNd->setLanguage(lang);
 
       // add namespace to the list
-      Doxygen::namespaceSDict->inSort(fullScope,newNd);
       innerScope = newNd;
     }
     else // scope is a namespace
@@ -874,7 +877,7 @@ std::unique_ptr<ArgumentList> getTemplateArgumentsFromName(
   auto alIt = tArgLists.begin();
   while ((i=name.find("::",p))!=-1 && alIt!=tArgLists.end())
   {
-    NamespaceDef *nd = Doxygen::namespaceSDict->find(name.left(i));
+    NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name.left(i));
     if (nd==0)
     {
       ClassDef *cd = getClass(name.left(i));
@@ -1496,7 +1499,7 @@ static void buildNamespaceList(const Entry *root)
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
       NamespaceDefMutable *nd;
-      if ((nd=toNamespaceDefMutable(Doxygen::namespaceSDict->find(fullName)))) // existing namespace
+      if ((nd=toNamespaceDefMutable(Doxygen::namespaceLinkedMap->find(fullName)))) // existing namespace
       {
         nd->setDocumentation(root->doc,root->docFile,root->docLine);
         nd->setName(fullName); // change name to match docs
@@ -1533,9 +1536,13 @@ static void buildNamespaceList(const Entry *root)
           tagFileName = tagInfo->fileName;
         }
         //printf("++ new namespace %s lang=%s tagName=%s\n",fullName.data(),langToString(root->lang).data(),tagName.data());
-        nd=createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
+        // add namespace to the list
+        nd = toNamespaceDefMutable(
+            Doxygen::namespaceLinkedMap->add(fullName,
+              std::unique_ptr<NamespaceDef>(
+                createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
                              root->startColumn,fullName,tagName,tagFileName,
-                             root->type,root->spec&Entry::Published);
+                             root->type,root->spec&Entry::Published))));
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1560,8 +1567,6 @@ static void buildNamespaceList(const Entry *root)
         nd->insertUsedFile(fd);
         nd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
         nd->setBodyDef(fd);
-        // add class to the list
-        Doxygen::namespaceSDict->inSort(fullName,nd);
 
         // also add namespace to the correct structural context
         Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,fullName,0,tagInfo);
@@ -1602,7 +1607,9 @@ static void buildNamespaceList(const Entry *root)
                   NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
                   //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
                   dm->addInnerCompound(aliasNd);
-                  Doxygen::namespaceSDict->inSort(aliasNd->name(),aliasNd);
+                  QCString aliasName = aliasNd->name();
+                  Doxygen::namespaceLinkedMap->add(
+                      aliasName,std::unique_ptr<NamespaceDef>(aliasNd));
                 }
               }
             }
@@ -1732,7 +1739,11 @@ static void findUsingDirectives(const Entry *root)
       else // unknown namespace, but add it anyway.
       {
         //printf("++ new unknown namespace %s lang=%s\n",name.data(),langToString(root->lang).data());
-        nd=createNamespaceDef(root->fileName,root->startLine,root->startColumn,name);
+        // add namespace to the list
+        nd = toNamespaceDefMutable(
+            Doxygen::namespaceLinkedMap->add(name,
+              std::unique_ptr<NamespaceDef>(
+                 createNamespaceDef(root->fileName,root->startLine,root->startColumn,name))));
         nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->addSectionsToDefinition(root->anchors);
@@ -1764,8 +1775,6 @@ static void findUsingDirectives(const Entry *root)
         // the empty string test is needed for extract all case
         nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         nd->insertUsedFile(fd);
-        // add class to the list
-        Doxygen::namespaceSDict->inSort(name,nd);
         nd->setRefItems(root->sli);
       }
     }
@@ -2466,7 +2475,7 @@ static bool isVarWithConstructor(const Entry *root)
   }
   if (!root->parent()->name.isEmpty())
   {
-    ctx=Doxygen::namespaceSDict->find(root->parent()->name);
+    ctx=Doxygen::namespaceLinkedMap->find(root->parent()->name);
   }
   type = root->type;
   // remove qualifiers
@@ -3325,7 +3334,7 @@ static void buildFunctionList(const Entry *root)
           // note: the following code was replaced by inMember=TRUE to deal with a
           // function rname='X::foo' of class X inside a namespace also called X...
           // bug id 548175
-          //nd = Doxygen::namespaceSDict->find(rname.left(memIndex));
+          //nd = Doxygen::namespaceLinkedMap->find(rname.left(memIndex));
           //isMember = nd==0;
           //if (nd)
           //{
@@ -4813,11 +4822,9 @@ static void computeMemberReferences()
       fd->computeAnchors();
     }
   }
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd=0;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->computeAnchors();
@@ -4852,11 +4859,9 @@ static void addListReferences()
     }
   }
 
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd=0;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->addListReferences();
@@ -5182,7 +5187,7 @@ static bool findGlobalMember(const Entry *root,
             qPrint(md->name()),qPrint(namespaceName));
 
         NamespaceDef *rnd = 0;
-        if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceSDict->find(namespaceName);
+        if (!namespaceName.isEmpty()) rnd = Doxygen::namespaceLinkedMap->find(namespaceName);
 
         const ArgumentList &mdAl = const_cast<const MemberDef *>(md.get())->argumentList();
         bool matching=
@@ -6095,7 +6100,7 @@ static void findMember(const Entry *root,
   {
     QCString joinedName = root->parent()->name+"::"+scopeName;
     if (!scopeName.isEmpty() &&
-        (getClass(joinedName) || Doxygen::namespaceSDict->find(joinedName)))
+        (getClass(joinedName) || Doxygen::namespaceLinkedMap->find(joinedName)))
     {
       scopeName = joinedName;
     }
@@ -6112,7 +6117,7 @@ static void findMember(const Entry *root,
        for (const auto &fnd : fd->getUsedNamespaces())
        {
          QCString joinedName = fnd->name()+"::"+scopeName;
-         if (Doxygen::namespaceSDict->find(joinedName))
+         if (Doxygen::namespaceLinkedMap->find(joinedName))
          {
            scopeName=joinedName;
            break;
@@ -7839,14 +7844,12 @@ static void addSourceReferences()
     }
   }
   // add source references for namespace definitions
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd=0;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
     FileDef *fd=nd->getBodyDef();
     if (fd && nd->isLinkableInProject() && nd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(nd->getStartDefLine(),nd,0);
+      fd->addSourceRef(nd->getStartDefLine(),nd.get(),0);
     }
   }
 
@@ -7948,11 +7951,9 @@ static void sortMemberLists()
   }
 
   // sort namespace member lists
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd=0;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->sortMemberLists();
@@ -8025,11 +8026,9 @@ static void countMembers()
     }
   }
 
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd=0;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->countMembers();
@@ -8140,11 +8139,9 @@ static void combineUsingRelations()
 
   // for each namespace
   NamespaceDefSet visitedNamespaces;
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for (nli.toFirst() ; (nd=nli.current()) ; ++nli )
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->combineUsingRelations(visitedNamespaces);
@@ -8174,11 +8171,9 @@ static void addMembersToMemberGroup()
     }
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for ( ; (nd=nli.current()) ; ++nli )
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->addMembersToMemberGroup();
@@ -8215,11 +8210,9 @@ static void distributeMemberGroupDocumentation()
     }
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for ( ; (nd=nli.current()) ; ++nli )
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->distributeMemberGroupDocumentation();
@@ -8256,11 +8249,9 @@ static void findSectionsInDocumentation()
     }
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for ( ; (nd=nli.current()) ; ++nli )
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm)
     {
       ndm->findSectionsInDocumentation();
@@ -8976,15 +8967,12 @@ static void generateNamespaceDocs()
 
   //writeNamespaceIndex(*g_outputList);
 
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
   // for each namespace...
-  for (;(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-
     if (nd->isLinkableInProject())
     {
-      NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+      NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
       if (ndm)
       {
         msg("Generating docs for namespace %s\n",nd->name().data());
@@ -10123,8 +10111,7 @@ void initDoxygen()
   Doxygen::functionNameLinkedMap = new MemberNameLinkedMap;
   Doxygen::groupSDict = new GroupSDict(17);
   Doxygen::groupSDict->setAutoDelete(TRUE);
-  Doxygen::namespaceSDict = new NamespaceSDict(20);
-  Doxygen::namespaceSDict->setAutoDelete(TRUE);
+  Doxygen::namespaceLinkedMap = new NamespaceLinkedMap;
   Doxygen::classLinkedMap = new ClassLinkedMap;
   Doxygen::hiddenClassLinkedMap = new ClassLinkedMap;
   Doxygen::directories = new DirSDict(17);
@@ -10187,7 +10174,7 @@ void cleanUpDoxygen()
   delete Doxygen::memberNameLinkedMap;
   delete Doxygen::functionNameLinkedMap;
   delete Doxygen::groupSDict;
-  delete Doxygen::namespaceSDict;
+  delete Doxygen::namespaceLinkedMap;
   delete Doxygen::directories;
 
   DotManager::deleteInstance();
@@ -10739,11 +10726,9 @@ static void writeTagFile()
     }
   }
   // for each namespace
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for ( ; (nd=nli.current()) ; ++nli )
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+    NamespaceDefMutable *ndm = toNamespaceDefMutable(nd.get());
     if (ndm && nd->isLinkableInProject())
     {
       ndm->writeTagFile(tagFile);

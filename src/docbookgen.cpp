@@ -532,24 +532,12 @@ DB_GEN_C2("IndexSections " << is)
     case isNamespaceDocumentation:
       {
         t << "</title>" << endl;
-        NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-        NamespaceDef *nd;
-        bool found=FALSE;
-        for (nli.toFirst();(nd=nli.current()) && !found;++nli)
-        {
-          if (nd->isLinkableInProject() && !nd->isAlias())
-          {
-            t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-            found=TRUE;
-          }
-        }
-        while ((nd=nli.current()))
+        for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
             t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
           }
-          ++nli;
         }
       }
       t << "</chapter>\n";

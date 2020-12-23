@@ -231,7 +231,7 @@ QCString stripAnonymousNamespaceScope(const QCString &s)
   while ((i=getScopeFragment(s,p,&l))!=-1)
   {
     //printf("Scope fragment %s\n",s.mid(i,l).data());
-    if (Doxygen::namespaceSDict->find(s.left(i+l))!=0)
+    if (Doxygen::namespaceLinkedMap->find(s.left(i+l))!=0)
     {
       if (s.at(i)!='@')
       {
@@ -501,11 +501,11 @@ NamespaceDef *getResolvedNamespace(const char *name)
     {
       warn_uncond("possible recursive namespace alias detected for %s!\n",name);
     }
-    return Doxygen::namespaceSDict->find(it->second.data());
+    return Doxygen::namespaceLinkedMap->find(it->second.data());
   }
   else
   {
-    return Doxygen::namespaceSDict->find(name);
+    return Doxygen::namespaceLinkedMap->find(name);
   }
 }
 
@@ -2614,7 +2614,7 @@ bool getDefs(const QCString &scName,
       }
       //printf("Trying namespace %s\n",namespaceName.data());
       if (!namespaceName.isEmpty() &&
-          (fnd=Doxygen::namespaceSDict->find(namespaceName)) &&
+          (fnd=Doxygen::namespaceLinkedMap->find(namespaceName)) &&
           fnd->isLinkable()
          )
       {
@@ -2861,7 +2861,7 @@ static bool getScopeDefs(const char *docScope,const char *scope,
     {
       return TRUE; // class link written => quit
     }
-    else if ((nd=Doxygen::namespaceSDict->find(fullName)) && nd->isLinkable())
+    else if ((nd=Doxygen::namespaceLinkedMap->find(fullName)) && nd->isLinkable())
     {
       return TRUE; // namespace link written => quit
     }
@@ -3249,7 +3249,7 @@ bool resolveLink(/* in */ const char *scName,
 //    resAnchor=cd->anchor();
 //    return TRUE;
 //  }
-  else if ((nd=Doxygen::namespaceSDict->find(linkRef)))
+  else if ((nd=Doxygen::namespaceLinkedMap->find(linkRef)))
   {
     *resContext=nd;
     return TRUE;

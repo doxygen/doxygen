@@ -27,7 +27,7 @@ class Definition;
 class PageDef;
 class GroupDef;
 class NamespaceDef;
-class NamespaceSDict;
+class NamespaceLinkedMap;
 class NamespaceLinkedRefMap;
 class FileDef;
 class FileList;
@@ -545,7 +545,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
-    void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
+    void addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
     void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
     void addClasses(const ClassLinkedRefMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
     void addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);

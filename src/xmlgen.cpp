@@ -1953,12 +1953,10 @@ void generateXML()
   {
     generateXMLForClass(cd.get(),t);
   }
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  const NamespaceDef *nd;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
     msg("Generating XML output for namespace %s\n",nd->name().data());
-    generateXMLForNamespace(nd,t);
+    generateXMLForNamespace(nd.get(),t);
   }
   for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {

@@ -19,8 +19,6 @@
 #include <set>
 
 #include <qstrlist.h>
-#include <qdict.h>
-#include "sortdict.h"
 #include "definition.h"
 #include "filedef.h"
 #include "linkedmap.h"
@@ -40,6 +38,10 @@ class NamespaceDefMutable;
 
 using NamespaceDefSet = std::set<const NamespaceDef*>;
 
+class NamespaceLinkedMap : public LinkedMap<NamespaceDef>
+{
+};
+
 class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
 {
   public:
@@ -47,7 +49,6 @@ class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
             bool isConstantGroup=false, bool localName=FALSE);
     bool declVisible() const;
 };
-
 
 /** An abstract interface of a namespace symbol. */
 class NamespaceDef : public Definition
@@ -147,51 +148,5 @@ NamespaceDefMutable     *toNamespaceDefMutable(Definition *d);
 NamespaceDefMutable     *toNamespaceDefMutable(const Definition *d);
 
 //------------------------------------------------------------------------
-
-#if 0
-
-/** A list of NamespaceDef objects. */
-class NamespaceList : public QList<NamespaceDef>
-{
-  public:
-   ~NamespaceList() {}
-    int compareValues(const NamespaceDef *nd1,const NamespaceDef *nd2) const
-    {
-      return qstricmp(nd1->name(), nd2->name());
-    }
-};
-
-/** An iterator for NamespaceDef objects in a NamespaceList. */
-class NamespaceListIterator : public QListIterator<NamespaceDef>
-{
-  public:
-    NamespaceListIterator(const NamespaceList &l) :
-      QListIterator<NamespaceDef>(l) {}
-};
-
-
-/** An unsorted dictionary of NamespaceDef objects. */
-class NamespaceDict : public QDict<NamespaceDef>
-{
-  public:
-    NamespaceDict(uint size) : QDict<NamespaceDef>(size) {}
-   ~NamespaceDict() {}
-};
-#endif
-
-/** A sorted dictionary of NamespaceDef objects. */
-class NamespaceSDict : public SDict<NamespaceDef>
-{
-  public:
-    NamespaceSDict(uint size=17) : SDict<NamespaceDef>(size) {}
-   ~NamespaceSDict() {}
-  private:
-    int compareValues(const NamespaceDef *item1,const NamespaceDef *item2) const
-    {
-      return qstricmp(item1->name(),item2->name());
-    }
-};
-
-
 
 #endif

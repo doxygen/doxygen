@@ -6465,42 +6465,33 @@ class NestingContext::Private : public GenericNodeListContext
     Private(const NestingNodeContext *parent,int level)
       : m_parent(parent), m_level(level), m_index(0) {}
 
-    void addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
+    void addNamespace(const NamespaceDef *nd,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
     {
-      NamespaceSDict::Iterator nli(nsDict);
-      const NamespaceDef *nd;
-      for (nli.toFirst();(nd=nli.current());++nli)
+      if (!nd->isAnonymous() &&
+          (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
-        if (!nd->isAnonymous() &&
-            (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
+        bool hasChildren = namespaceHasNestedNamespace(nd);
+        bool isLinkable  = nd->isLinkableInProject();
+        if (isLinkable || hasChildren)
         {
-          bool hasChildren = namespaceHasNestedNamespace(nd);
-          bool isLinkable  = nd->isLinkableInProject();
-          if (isLinkable || hasChildren)
-          {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE,visitedClasses);
-            append(nnc);
-            m_index++;
-          }
+          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE,visitedClasses);
+          append(nnc);
+          m_index++;
         }
+      }
+    }
+    void addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
+    {
+      for (const auto &nd : nsLinkedMap)
+      {
+        addNamespace(nd.get(),rootOnly,addClasses,visitedClasses);
       }
     }
     void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
     {
       for (const auto &nd : nsLinkedMap)
       {
-        if (!nd->isAnonymous() &&
-            (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
-        {
-          bool hasChildren = namespaceHasNestedNamespace(nd);
-          bool isLinkable  = nd->isLinkableInProject();
-          if (isLinkable || hasChildren)
-          {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE,visitedClasses);
-            append(nnc);
-            m_index++;
-          }
-        }
+        addNamespace(nd,rootOnly,addClasses,visitedClasses);
       }
     }
     void addClass(const ClassDef *cd,bool rootOnly,ClassDefSet &visitedClasses)
@@ -6730,9 +6721,9 @@ void NestingContext::addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,
   p->addClasses(clLinkedMap,rootOnly,visitedClasses);
 }
 
-void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
+void NestingContext::addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
 {
-  p->addNamespaces(nsDict,rootOnly,addClasses,visitedClasses);
+  p->addNamespaces(nsLinkedMap,rootOnly,addClasses,visitedClasses);
 }
 
 void NestingContext::addNamespaces(const NamespaceLinkedRefMap &nsLinkedRefMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
@@ -6796,14 +6787,8 @@ class ClassTreeContext::Private
     {
       m_classTree.reset(NestingContext::alloc(0,0));
       ClassDefSet visitedClasses;
-      if (Doxygen::namespaceSDict)
-      {
-        m_classTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,TRUE,visitedClasses);
-      }
-      if (Doxygen::classLinkedMap)
-      {
-        m_classTree->addClasses(*Doxygen::classLinkedMap,TRUE,visitedClasses);
-      }
+      m_classTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,TRUE,visitedClasses);
+      m_classTree->addClasses(*Doxygen::classLinkedMap,TRUE,visitedClasses);
       //%% Nesting tree
       static bool init=FALSE;
       if (!init)
@@ -6917,15 +6902,13 @@ TemplateVariant ClassTreeContext::get(const char *name) const
 class NamespaceListContext::Private : public GenericNodeListContext
 {
   public:
-    void addNamespaces(const NamespaceSDict &nsDict)
+    void addNamespaces(const NamespaceLinkedMap &nsLinkedMap)
     {
-      NamespaceSDict::Iterator nli(nsDict);
-      const NamespaceDef *nd;
-      for (nli.toFirst();(nd=nli.current());++nli)
+      for (const auto &nd : nsLinkedMap)
       {
         if (nd->isLinkableInProject())
         {
-          append(NamespaceContext::alloc(nd));
+          append(NamespaceContext::alloc(nd.get()));
         }
       }
     }
@@ -6934,7 +6917,7 @@ class NamespaceListContext::Private : public GenericNodeListContext
 NamespaceListContext::NamespaceListContext() : RefCountedContext("NamespaceListContext")
 {
   p = new Private;
-  p->addNamespaces(*Doxygen::namespaceSDict);
+  p->addNamespaces(*Doxygen::namespaceLinkedMap);
 }
 
 NamespaceListContext::~NamespaceListContext()
@@ -6969,10 +6952,7 @@ class NamespaceTreeContext::Private
     {
       m_namespaceTree.reset(NestingContext::alloc(0,0));
       ClassDefSet visitedClasses;
-      if (Doxygen::namespaceSDict)
-      {
-        m_namespaceTree->addNamespaces(*Doxygen::namespaceSDict,TRUE,FALSE,visitedClasses);
-      }
+      m_namespaceTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,visitedClasses);
       //%% Nesting tree
       static bool init=FALSE;
       if (!init)

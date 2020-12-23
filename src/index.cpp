@@ -1506,9 +1506,7 @@ static void writeFileIndex(OutputList &ol)
 static int countNamespaces()
 {
   int count=0;
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for (;(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
     if (nd->isLinkableInProject()) count++;
   }
@@ -1712,14 +1710,12 @@ static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp 
   }
 }
 
-static void writeNamespaceTree(const NamespaceSDict &nsDict,FTVHelp *ftv,
+static void writeNamespaceTree(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ftv,
                                bool rootOnly,bool addToIndex)
 {
-  NamespaceSDict::Iterator nli(nsDict);
-  const NamespaceDef *nd;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : nsLinkedMap)
   {
-    writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+    writeNamespaceTreeElement(nd.get(),ftv,rootOnly,addToIndex);
   }
 }
 
@@ -1807,14 +1803,12 @@ static void writeClassTreeInsideNamespace(const NamespaceLinkedRefMap &nsLinkedM
   }
 }
 
-static void writeClassTreeInsideNamespace(const NamespaceSDict &nsDict,FTVHelp *ftv,
+static void writeClassTreeInsideNamespace(const NamespaceLinkedMap &nsLinkedMap,FTVHelp *ftv,
                                bool rootOnly,bool addToIndex,ClassDef::CompoundType ct)
 {
-  NamespaceSDict::Iterator nli(nsDict);
-  const NamespaceDef *nd;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : nsLinkedMap)
   {
-    writeClassTreeInsideNamespaceElement(nd,ftv,rootOnly,addToIndex,ct);
+    writeClassTreeInsideNamespaceElement(nd.get(),ftv,rootOnly,addToIndex,ct);
   }
 }
 
@@ -1845,9 +1839,7 @@ static void writeNamespaceIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
 
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
     if (nd->isLinkableInProject())
     {
@@ -1875,7 +1867,7 @@ static void writeNamespaceIndex(OutputList &ol)
         //ol.docify(" (");
         ol.generateDoc(
                  nd->briefFile(),nd->briefLine(),
-                 nd,0,
+                 nd.get(),0,
                  nd->briefDescription(TRUE),
                  FALSE, // index words
                  FALSE, // isExample
@@ -1907,7 +1899,7 @@ static void writeNamespaceIndex(OutputList &ol)
       Doxygen::indexList->incContentsDepth();
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
-    writeNamespaceTree(*Doxygen::namespaceSDict,ftv,TRUE,addToIndex);
+    writeNamespaceTree(*Doxygen::namespaceLinkedMap,ftv,TRUE,addToIndex);
     QGString outStr;
     FTextStream t(&outStr);
     ftv->generateTreeViewInline(t);
@@ -2476,7 +2468,7 @@ static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContex
       Doxygen::indexList->incContentsDepth();
     }
     FTVHelp ftv(false);
-    writeClassTreeInsideNamespace(*Doxygen::namespaceSDict,&ftv,TRUE,addToIndex,ctx.compoundType);
+    writeClassTreeInsideNamespace(*Doxygen::namespaceLinkedMap,&ftv,TRUE,addToIndex,ctx.compoundType);
     writeClassTree(*Doxygen::classLinkedMap,&ftv,addToIndex,TRUE,ctx.compoundType);
     QGString outStr;
     FTextStream t(&outStr);

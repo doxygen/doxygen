@@ -2547,12 +2547,10 @@ void generateSqlite3()
   }
 
   // + namespaces
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  const NamespaceDef *nd;
-  for (nli.toFirst();(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
     msg("Generating Sqlite3 output for namespace %s\n",nd->name().data());
-    generateSqlite3ForNamespace(nd);
+    generateSqlite3ForNamespace(nd.get());
   }
 
   // + files

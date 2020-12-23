@@ -2203,10 +2203,8 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.closeList();
 
   m_output.openList("namespaces");
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  const NamespaceDef *nd;
-  for (nli.toFirst();(nd=nli.current());++nli)
-    generatePerlModForNamespace(nd);
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
+    generatePerlModForNamespace(nd.get());
   m_output.closeList();
 
   m_output.openList("files");

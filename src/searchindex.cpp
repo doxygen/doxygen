@@ -771,15 +771,13 @@ void createJavaScriptSearchIndex()
   }
 
   // index namespaces
-  NamespaceSDict::Iterator nli(*Doxygen::namespaceSDict);
-  NamespaceDef *nd;
-  for (;(nd=nli.current());++nli)
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
     uint letter = getUtf8CodeToLower(nd->name(),0);
     if (nd->isLinkable() && isId(letter))
     {
-      g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,nd);
-      g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].symbolList.append(letter,nd);
+      g_searchIndexInfo[SEARCH_INDEX_ALL].symbolList.append(letter,nd.get());
+      g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].symbolList.append(letter,nd.get());
     }
   }
 
