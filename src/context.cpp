@@ -2765,16 +2765,11 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       if (!cache.namespaces)
       {
         TemplateList *namespaceList = TemplateList::alloc();
-        if (m_namespaceDef->getNamespaceSDict())
+        for (const auto &nd : m_namespaceDef->getNamespaces())
         {
-          NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
-          const NamespaceDef *nd;
-          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          if (nd->isLinkable() && !nd->isConstantGroup())
           {
-            if (nd->isLinkable() && !nd->isConstantGroup())
-            {
-              namespaceList->append(NamespaceContext::alloc(nd));
-            }
+            namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
         cache.namespaces.reset(namespaceList);
@@ -2787,16 +2782,11 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       if (!cache.constantgroups)
       {
         TemplateList *namespaceList = TemplateList::alloc();
-        if (m_namespaceDef->getNamespaceSDict())
+        for (const auto &nd : m_namespaceDef->getNamespaces())
         {
-          NamespaceSDict::Iterator sdi(*m_namespaceDef->getNamespaceSDict());
-          const NamespaceDef *nd;
-          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          if (nd->isLinkable() && nd->isConstantGroup())
           {
-            if (nd->isLinkable() && nd->isConstantGroup())
-            {
-              namespaceList->append(NamespaceContext::alloc(nd));
-            }
+            namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
         cache.constantgroups.reset(namespaceList);
@@ -3214,16 +3204,11 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (!cache.namespaces)
       {
         TemplateList *namespaceList = TemplateList::alloc();
-        if (m_fileDef->getNamespaceSDict())
+        for (const auto &nd : m_fileDef->getNamespaces())
         {
-          NamespaceSDict::Iterator sdi(*m_fileDef->getNamespaceSDict());
-          const NamespaceDef *nd;
-          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          if (nd->isLinkable() && !nd->isConstantGroup())
           {
-            if (nd->isLinkable() && !nd->isConstantGroup())
-            {
-              namespaceList->append(NamespaceContext::alloc(nd));
-            }
+            namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
         cache.namespaces.reset(namespaceList);
@@ -3236,16 +3221,11 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (!cache.constantgroups)
       {
         TemplateList *namespaceList = TemplateList::alloc();
-        if (m_fileDef->getNamespaceSDict())
+        for (const auto &nd : m_fileDef->getNamespaces())
         {
-          NamespaceSDict::Iterator sdi(*m_fileDef->getNamespaceSDict());
-          NamespaceDef *nd;
-          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          if (nd->isLinkable() && nd->isConstantGroup())
           {
-            if (nd->isLinkable() && nd->isConstantGroup())
-            {
-              namespaceList->append(NamespaceContext::alloc(nd));
-            }
+            namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
         cache.constantgroups.reset(namespaceList);
@@ -5496,16 +5476,11 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.namespaces)
       {
         TemplateList *namespaceList = TemplateList::alloc();
-        if (m_groupDef->getNamespaces())
+        for (const auto &nd : m_groupDef->getNamespaces())
         {
-          NamespaceSDict::Iterator sdi(*m_groupDef->getNamespaces());
-          const NamespaceDef *nd;
-          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          if (nd->isLinkable() && !nd->isConstantGroup())
           {
-            if (nd->isLinkable() && !nd->isConstantGroup())
-            {
-              namespaceList->append(NamespaceContext::alloc(nd));
-            }
+            namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
         cache.namespaces.reset(namespaceList);
@@ -5518,16 +5493,11 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.constantgroups)
       {
         TemplateList *namespaceList = TemplateList::alloc();
-        if (m_groupDef->getNamespaces())
+        for (const auto &nd : m_groupDef->getNamespaces())
         {
-          NamespaceSDict::Iterator sdi(*m_groupDef->getNamespaces());
-          NamespaceDef *nd;
-          for (sdi.toFirst();(nd=sdi.current());++sdi)
+          if (nd->isLinkable() && nd->isConstantGroup())
           {
-            if (nd->isLinkable() && nd->isConstantGroup())
-            {
-              namespaceList->append(NamespaceContext::alloc(nd));
-            }
+            namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
         cache.constantgroups.reset(namespaceList);
@@ -6403,9 +6373,9 @@ class NestingNodeContext::Private
     void addNamespaces(bool addClasses,ClassDefSet &visitedClasses)
     {
       const NamespaceDef *nd = toNamespaceDef(m_def);
-      if (nd && nd->getNamespaceSDict())
+      if (nd && !nd->getNamespaces().empty())
       {
-        m_children->addNamespaces(*nd->getNamespaceSDict(),FALSE,addClasses,visitedClasses);
+        m_children->addNamespaces(nd->getNamespaces(),FALSE,addClasses,visitedClasses);
       }
       if (addClasses && nd)
       {
@@ -6500,6 +6470,24 @@ class NestingContext::Private : public GenericNodeListContext
       NamespaceSDict::Iterator nli(nsDict);
       const NamespaceDef *nd;
       for (nli.toFirst();(nd=nli.current());++nli)
+      {
+        if (!nd->isAnonymous() &&
+            (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
+        {
+          bool hasChildren = namespaceHasNestedNamespace(nd);
+          bool isLinkable  = nd->isLinkableInProject();
+          if (isLinkable || hasChildren)
+          {
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,addClasses,FALSE,FALSE,visitedClasses);
+            append(nnc);
+            m_index++;
+          }
+        }
+      }
+    }
+    void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
+    {
+      for (const auto &nd : nsLinkedMap)
       {
         if (!nd->isAnonymous() &&
             (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
@@ -6745,6 +6733,11 @@ void NestingContext::addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,
 void NestingContext::addNamespaces(const NamespaceSDict &nsDict,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
 {
   p->addNamespaces(nsDict,rootOnly,addClasses,visitedClasses);
+}
+
+void NestingContext::addNamespaces(const NamespaceLinkedRefMap &nsLinkedRefMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses)
+{
+  p->addNamespaces(nsLinkedRefMap,rootOnly,addClasses,visitedClasses);
 }
 
 void NestingContext::addDirs(const DirSDict &dirs,ClassDefSet &visitedClasses)

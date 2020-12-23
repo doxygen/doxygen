@@ -186,9 +186,9 @@ static void lookupSymbol(Definition *d)
       case Definition::TypeNamespace:
         {
           NamespaceDef *nd = dynamic_cast<NamespaceDef*>(d);
-          printf("Kind: Namespace: contains %zu classes and %d namespaces\n",
+          printf("Kind: Namespace: contains %zu classes and %zu namespaces\n",
               nd->getClasses().size(),
-              nd->getNamespaceSDict() ? nd->getNamespaceSDict()->count() : 0);
+              nd->getNamespaces().size());
         }
         break;
       case Definition::TypeMember:

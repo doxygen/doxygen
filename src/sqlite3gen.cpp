@@ -1344,22 +1344,17 @@ static void writeInnerDirs(const DirList &dl, struct Refid outer_refid)
   }
 }
 
-static void writeInnerNamespaces(const NamespaceSDict *nl, struct Refid outer_refid)
+static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl, struct Refid outer_refid)
 {
-  if (nl)
+  for (const auto &nd : nl)
   {
-    NamespaceSDict::Iterator nli(*nl);
-    const NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+    if (!nd->isHidden() && !nd->isAnonymous())
     {
-      if (!nd->isHidden() && !nd->isAnonymous())
-      {
-        struct Refid inner_refid = insertRefid(nd->getOutputFileBase());
+      struct Refid inner_refid = insertRefid(nd->getOutputFileBase());
 
-        bindIntParameter(contains_insert,":inner_rowid",inner_refid.rowid);
-        bindIntParameter(contains_insert,":outer_rowid",outer_refid.rowid);
-        step(contains_insert);
-      }
+      bindIntParameter(contains_insert,":inner_rowid",inner_refid.rowid);
+      bindIntParameter(contains_insert,":outer_rowid",outer_refid.rowid);
+      step(contains_insert);
     }
   }
 }
@@ -2081,7 +2076,7 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   writeInnerClasses(nd->getClasses(),refid);
 
   // + contained namespace definitions
-  writeInnerNamespaces(nd->getNamespaceSDict(),refid);
+  writeInnerNamespaces(nd->getNamespaces(),refid);
 
   // + member groups
   if (nd->getMemberGroupSDict())
@@ -2243,10 +2238,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   writeInnerClasses(fd->getClasses(),refid);
 
   // + contained namespace definitions
-  if (fd->getNamespaceSDict())
-  {
-    writeInnerNamespaces(fd->getNamespaceSDict(),refid);
-  }
+  writeInnerNamespaces(fd->getNamespaces(),refid);
 
   // + member groups
   if (fd->getMemberGroupSDict())

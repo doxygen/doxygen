@@ -102,7 +102,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
     virtual FileList *      getFiles() const        { return m_fileList; }
     virtual ClassLinkedRefMap getClasses() const    { return m_classes; }
-    virtual NamespaceSDict * getNamespaces() const  { return m_namespaceSDict; }
+    virtual NamespaceLinkedRefMap getNamespaces() const  { return m_namespaces; }
     virtual GroupList *     getSubGroups() const    { return m_groupList; }
     virtual PageSDict *     getPages() const        { return m_pageDict; }
     virtual const DirList & getDirs() const         { return m_dirList; }
@@ -141,7 +141,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     QCString             m_fileName;            // base name of the generated file
     FileList *           m_fileList;            // list of files in the group
     ClassLinkedRefMap    m_classes;             // list of classes in the group
-    NamespaceSDict *     m_namespaceSDict;      // list of namespaces in the group
+    NamespaceLinkedRefMap m_namespaces;         // list of namespaces in the group
     GroupList *          m_groupList;           // list of sub groups.
     PageSDict *          m_pageDict;            // list of pages in the group
     PageSDict *          m_exampleDict;         // list of examples in the group
@@ -169,7 +169,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
 {
   m_fileList = new FileList;
   m_groupList = new GroupList;
-  m_namespaceSDict = new NamespaceSDict(17);
   m_pageDict = new PageSDict(17);
   m_exampleDict = new PageSDict(17);
   if (refFileName)
@@ -195,7 +194,6 @@ GroupDefImpl::~GroupDefImpl()
 {
   delete m_fileList;
   delete m_groupList;
-  delete m_namespaceSDict;
   delete m_pageDict;
   delete m_exampleDict;
   delete m_allMemberList;
@@ -276,18 +274,14 @@ bool GroupDefImpl::addClass(const ClassDef *cd)
 
 bool GroupDefImpl::addNamespace(const NamespaceDef *def)
 {
-  static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
-  if (def->isHidden()) return FALSE;
-  updateLanguage(def);
-  if (m_namespaceSDict->find(def->name())==0)
+  if (def->isHidden()) return false;
+  if (m_namespaces.find(def->name())!=0)
   {
-    if (sortBriefDocs)
-      m_namespaceSDict->inSort(def->name(),def);
-    else
-      m_namespaceSDict->append(def->name(),def);
-    return TRUE;
+    updateLanguage(def);
+    m_namespaces.add(def->name(),def);
+    return true;
   }
-  return FALSE;
+  return false;
 }
 
 void GroupDefImpl::addDir(DirDef *def)
@@ -621,7 +615,7 @@ size_t GroupDefImpl::numDocMembers() const
 {
   return m_fileList->count()+
          m_classes.size()+
-         m_namespaceSDict->count()+
+         m_namespaces.size()+
          m_groupList->count()+
          m_allMemberList->count()+
          m_pageDict->count()+
@@ -662,17 +656,12 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::GroupNamespaces:
         {
-          if (m_namespaceSDict)
+          for (const auto &nd : m_namespaces)
           {
-            SDict<NamespaceDef>::Iterator ni(*m_namespaceSDict);
-            NamespaceDef *nd;
-            for (ni.toFirst();(nd=ni.current());++ni)
+            if (nd->isLinkableInProject())
             {
-              if (nd->isLinkableInProject())
-              {
-                tagFile << "    <namespace>" << convertToXML(nd->name())
-                        << "</namespace>" << endl;
-              }
+              tagFile << "    <namespace>" << convertToXML(nd->name())
+                      << "</namespace>" << endl;
             }
           }
         }
@@ -923,7 +912,7 @@ void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
 void GroupDefImpl::writeNamespaces(OutputList &ol,const QCString &title)
 {
   // write list of namespaces
-  m_namespaceSDict->writeDeclaration(ol,title);
+  m_namespaces.writeDeclaration(ol,title);
 }
 
 void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
@@ -1115,7 +1104,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
   for (eli.toFirst();(lde=eli.current());++eli)
   {
     if ((lde->kind()==LayoutDocEntry::GroupClasses && m_classes.declVisible()) ||
-        (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaceSDict->declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaces.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupFiles && m_fileList->count()>0) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && m_groupList->count()>0) ||
         (lde->kind()==LayoutDocEntry::GroupDirs && !m_dirList.empty())
@@ -1739,10 +1728,18 @@ void GroupDefImpl::sortMemberLists()
         qstricmp(c1->className(), c2->className())<0;
     };
     std::sort(m_classes.begin(), m_classes.end(), classComp);
+
+    auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
+    {
+      return qstricmp(n1->name(),n2->name())<0;
+    };
+
+    std::sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
   }
   else
   {
     groupClassesWithSameScope(m_classes);
+    groupClassesWithSameScope(m_namespaces);
   }
 }
 

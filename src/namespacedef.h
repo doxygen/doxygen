@@ -31,7 +31,7 @@ class OutputList;
 class ClassLinkedRefMap;
 class MemberDef;
 class MemberGroupSDict;
-class NamespaceSDict;
+class NamespaceDef;
 class FTextStream;
 class NamespaceDef;
 class NamespaceDefMutable;
@@ -39,6 +39,14 @@ class NamespaceDefMutable;
 // --- Set of namespaces
 
 using NamespaceDefSet = std::set<const NamespaceDef*>;
+
+class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
+{
+  public:
+    void writeDeclaration(OutputList &ol,const char *title,
+            bool isConstantGroup=false, bool localName=FALSE);
+    bool declVisible() const;
+};
 
 
 /** An abstract interface of a namespace symbol. */
@@ -85,7 +93,7 @@ class NamespaceDef : public Definition
     virtual ClassLinkedRefMap getExceptions() const = 0;
 
     /*! Returns the namespaces contained in this namespace */
-    virtual const NamespaceSDict *getNamespaceSDict() const = 0;
+    virtual NamespaceLinkedRefMap getNamespaces() const = 0;
 
     virtual QCString title() const = 0;
     virtual QCString compoundTypeString() const = 0;
@@ -140,7 +148,7 @@ NamespaceDefMutable     *toNamespaceDefMutable(const Definition *d);
 
 //------------------------------------------------------------------------
 
-
+#if 0
 
 /** A list of NamespaceDef objects. */
 class NamespaceList : public QList<NamespaceDef>
@@ -161,6 +169,7 @@ class NamespaceListIterator : public QListIterator<NamespaceDef>
       QListIterator<NamespaceDef>(l) {}
 };
 
+
 /** An unsorted dictionary of NamespaceDef objects. */
 class NamespaceDict : public QDict<NamespaceDef>
 {
@@ -168,6 +177,7 @@ class NamespaceDict : public QDict<NamespaceDef>
     NamespaceDict(uint size) : QDict<NamespaceDef>(size) {}
    ~NamespaceDict() {}
 };
+#endif
 
 /** A sorted dictionary of NamespaceDef objects. */
 class NamespaceSDict : public SDict<NamespaceDef>
@@ -175,9 +185,6 @@ class NamespaceSDict : public SDict<NamespaceDef>
   public:
     NamespaceSDict(uint size=17) : SDict<NamespaceDef>(size) {}
    ~NamespaceSDict() {}
-    void writeDeclaration(OutputList &ol,const char *title,
-            bool isConstantGroup=false, bool localName=FALSE);
-    bool declVisible() const;
   private:
     int compareValues(const NamespaceDef *item1,const NamespaceDef *item2) const
     {

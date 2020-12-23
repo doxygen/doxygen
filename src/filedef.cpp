@@ -86,7 +86,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
     virtual MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
-    virtual NamespaceSDict *getNamespaceSDict() const     { return m_namespaceSDict; }
+    virtual NamespaceLinkedRefMap getNamespaces() const     { return m_namespaces; }
     virtual ClassLinkedRefMap getClasses() const   { return m_classes; }
     virtual QCString title() const;
     virtual bool hasDetailedDescription() const;
@@ -108,7 +108,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void setDiskName(const QCString &name);
     virtual void insertMember(MemberDef *md);
     virtual void insertClass(const ClassDef *cd);
-    virtual void insertNamespace(NamespaceDef *nd);
+    virtual void insertNamespace(const NamespaceDef *nd);
     virtual void computeAnchors();
     virtual void setPackageDef(PackageDef *pd) { m_package=pd; }
     virtual void setDirDef(DirDef *dd) { m_dir=dd; }
@@ -170,7 +170,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     DirDef               *m_dir;
     QList<MemberList>     m_memberLists;
     MemberGroupSDict     *m_memberGroupSDict;
-    NamespaceSDict       *m_namespaceSDict;
+    NamespaceLinkedRefMap m_namespaces;
     ClassLinkedRefMap     m_classes;
     ClassLinkedRefMap     m_interfaces;
     ClassLinkedRefMap     m_structs;
@@ -230,7 +230,6 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
   m_includeDict       = 0;
   m_includedByList    = 0;
   m_includedByDict    = 0;
-  m_namespaceSDict    = 0;
   m_srcDefDict        = 0;
   m_srcMemberDict     = 0;
   m_package           = 0;
@@ -254,7 +253,6 @@ FileDefImpl::~FileDefImpl()
   delete m_includeList;
   delete m_includedByDict;
   delete m_includedByList;
-  delete m_namespaceSDict;
   delete m_srcDefDict;
   delete m_srcMemberDict;
   delete m_memberGroupSDict;
@@ -392,16 +390,11 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::FileNamespaces:
         {
-          if (m_namespaceSDict)
+          for (const auto *nd : m_namespaces)
           {
-            SDict<NamespaceDef>::Iterator ni(*m_namespaceSDict);
-            NamespaceDef *nd;
-            for (ni.toFirst();(nd=ni.current());++ni)
+            if (nd->isLinkableInProject())
             {
-              if (nd->isLinkableInProject())
-              {
-                tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
-              }
+              tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
             }
           }
         }
@@ -705,7 +698,7 @@ void FileDefImpl::writeNamespaceDeclarations(OutputList &ol,const QCString &titl
             bool const isConstantGroup)
 {
   // write list of namespaces
-  if (m_namespaceSDict) m_namespaceSDict->writeDeclaration(ol,title,isConstantGroup);
+  m_namespaces.writeDeclaration(ol,title,isConstantGroup);
 }
 
 void FileDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title,const ClassLinkedRefMap &list)
@@ -825,7 +818,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
       ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaceSDict && m_namespaceSDict->declVisible())
+    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible())
     {
       LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
       QCString label = "namespaces";
@@ -1389,25 +1382,10 @@ void FileDefImpl::insertClass(const ClassDef *cd)
 }
 
 /*! Adds namespace definition \a nd to the list of all compounds of this file */
-void FileDefImpl::insertNamespace(NamespaceDef *nd)
+void FileDefImpl::insertNamespace(const NamespaceDef *nd)
 {
   if (nd->isHidden()) return;
-  if (!nd->name().isEmpty() &&
-      (m_namespaceSDict==0 || m_namespaceSDict->find(nd->name())==0))
-  {
-    if (m_namespaceSDict==0)
-    {
-      m_namespaceSDict = new NamespaceSDict;
-    }
-    if (Config_getBool(SORT_BRIEF_DOCS))
-    {
-      m_namespaceSDict->inSort(nd->name(),nd);
-    }
-    else
-    {
-      m_namespaceSDict->append(nd->name(),nd);
-    }
-  }
+  m_namespaces.add(nd->name(),nd);
 }
 
 QCString FileDefImpl::name() const
@@ -2028,6 +2006,13 @@ void FileDefImpl::sortMemberLists()
     std::sort(m_interfaces.begin(),m_interfaces.end(),classComp);
     std::sort(m_structs.begin(),   m_structs.end(),   classComp);
     std::sort(m_exceptions.begin(),m_exceptions.end(),classComp);
+
+    auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
+    {
+      return qstricmp(n1->name(),n2->name())<0;
+    };
+
+    std::sort(m_namespaces.begin(),m_namespaces.end(),namespaceComp);
   }
 }
 

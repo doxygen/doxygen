@@ -1641,153 +1641,182 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
   }
 }
 
-static void writeNamespaceTree(const NamespaceSDict *nsDict,FTVHelp *ftv,
-                               bool rootOnly,bool addToIndex)
+static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp *ftv,
+                               bool rootOnly,bool addToIndex);
+
+static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
+                                      bool rootOnly,bool addToIndex)
 {
-  if (nsDict)
+  if (!nd->isAnonymous() &&
+      (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
   {
-    NamespaceSDict::Iterator nli(*nsDict);
-    const NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+
+    bool hasChildren = namespaceHasNestedNamespace(nd) ||
+      namespaceHasNestedClass(nd,false,ClassDef::Class);
+    bool isLinkable  = nd->isLinkableInProject();
+    int visibleMembers = countVisibleMembers(nd);
+
+    //printf("namespace %s hasChildren=%d visibleMembers=%d\n",nd->name().data(),hasChildren,visibleMembers);
+
+    QCString ref;
+    QCString file;
+    if (isLinkable)
     {
-      if (!nd->isAnonymous() &&
-          (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
+      ref  = nd->getReference();
+      file = nd->getOutputFileBase();
+      if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
       {
+        file=file.replace(0,qstrlen("namespace"),"class");
+      }
+    }
 
-        bool hasChildren = namespaceHasNestedNamespace(nd) ||
-                           namespaceHasNestedClass(nd,false,ClassDef::Class);
-        bool isLinkable  = nd->isLinkableInProject();
-        int visibleMembers = countVisibleMembers(nd);
+    bool isDir = hasChildren || visibleMembers>0;
+    if ((isLinkable) || isDir)
+    {
+      ftv->addContentsItem(hasChildren,nd->localName(),ref,file,0,FALSE,TRUE,nd);
 
-        //printf("namespace %s hasChildren=%d visibleMembers=%d\n",nd->name().data(),hasChildren,visibleMembers);
+      if (addToIndex)
+      {
+        Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
+            hasChildren && !file.isEmpty(),addToIndex);
+      }
+      if (addToIndex && isDir)
+      {
+        Doxygen::indexList->incContentsDepth();
+      }
 
-        QCString ref;
-        QCString file;
-        if (isLinkable)
-        {
-          ref  = nd->getReference();
-          file = nd->getOutputFileBase();
-          if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
-          {
-            file=file.replace(0,qstrlen("namespace"),"class");
-          }
-        }
-
-        bool isDir = hasChildren || visibleMembers>0;
-        if ((isLinkable) || isDir)
-        {
-          ftv->addContentsItem(hasChildren,nd->localName(),ref,file,0,FALSE,TRUE,nd);
-
-          if (addToIndex)
-          {
-            Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
-                hasChildren && !file.isEmpty(),addToIndex);
-          }
-          if (addToIndex && isDir)
-          {
-            Doxygen::indexList->incContentsDepth();
-          }
-
-          //printf("*** writeNamespaceTree count=%d addToIndex=%d false=%d classCount=%d\n",
-          //    count,addToIndex,false,classCount);
-          if (isDir)
-          {
-            ftv->incContentsDepth();
-            writeNamespaceTree(nd->getNamespaceSDict(),ftv,FALSE,addToIndex);
-            writeClassTree(nd->getClasses(),ftv,FALSE,FALSE,ClassDef::Class);
-            writeNamespaceMembers(nd,addToIndex);
-            ftv->decContentsDepth();
-          }
-          if (addToIndex && isDir)
-          {
-            Doxygen::indexList->decContentsDepth();
-          }
-        }
+      //printf("*** writeNamespaceTree count=%d addToIndex=%d false=%d classCount=%d\n",
+      //    count,addToIndex,false,classCount);
+      if (isDir)
+      {
+        ftv->incContentsDepth();
+        writeNamespaceTree(nd->getNamespaces(),ftv,FALSE,addToIndex);
+        writeClassTree(nd->getClasses(),ftv,FALSE,FALSE,ClassDef::Class);
+        writeNamespaceMembers(nd,addToIndex);
+        ftv->decContentsDepth();
+      }
+      if (addToIndex && isDir)
+      {
+        Doxygen::indexList->decContentsDepth();
       }
     }
   }
 }
 
-static void writeClassTreeInsideNamespace(const NamespaceSDict *nsDict,FTVHelp *ftv,
+static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp *ftv,
+                               bool rootOnly,bool addToIndex)
+{
+  for (const auto &nd : nsLinkedMap)
+  {
+    writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+  }
+}
+
+static void writeNamespaceTree(const NamespaceSDict &nsDict,FTVHelp *ftv,
+                               bool rootOnly,bool addToIndex)
+{
+  NamespaceSDict::Iterator nli(nsDict);
+  const NamespaceDef *nd;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    writeNamespaceTreeElement(nd,ftv,rootOnly,addToIndex);
+  }
+}
+
+static void writeClassTreeInsideNamespace(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp *ftv,
+                               bool rootOnly,bool addToIndex,ClassDef::CompoundType ct);
+
+static void writeClassTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp *ftv,
                                bool rootOnly,bool addToIndex,ClassDef::CompoundType ct)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-  if (nsDict)
+  if (!nd->isAnonymous() &&
+      (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
   {
-    NamespaceSDict::Iterator nli(*nsDict);
-    const NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+    bool isDir = namespaceHasNestedClass(nd,sliceOpt,ct);
+    bool isLinkable  = nd->isLinkableInProject();
+
+    //printf("namespace %s isDir=%d\n",nd->name().data(),isDir);
+
+    QCString ref;
+    QCString file;
+    if (isLinkable)
     {
-      if (!nd->isAnonymous() &&
-          (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
+      ref  = nd->getReference();
+      file = nd->getOutputFileBase();
+      if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
       {
-        bool isDir = namespaceHasNestedClass(nd,sliceOpt,ct);
-        bool isLinkable  = nd->isLinkableInProject();
+        file=file.replace(0,qstrlen("namespace"),"class");
+      }
+    }
 
-        //printf("namespace %s isDir=%d\n",nd->name().data(),isDir);
+    if (isDir)
+    {
+      ftv->addContentsItem(isDir,nd->localName(),ref,file,0,FALSE,TRUE,nd);
 
-        QCString ref;
-        QCString file;
-        if (isLinkable)
-        {
-          ref  = nd->getReference();
-          file = nd->getOutputFileBase();
-          if (nd->getLanguage()==SrcLangExt_VHDL) // UGLY HACK
-          {
-            file=file.replace(0,qstrlen("namespace"),"class");
-          }
-        }
-
-        if (isDir)
-        {
-          ftv->addContentsItem(isDir,nd->localName(),ref,file,0,FALSE,TRUE,nd);
-
-          if (addToIndex)
-          {
-            // the namespace entry is already shown under the namespace list so don't
-            // add it to the nav index and don't create a separate index file for it otherwise
-            // it will overwrite the one written for the namespace list.
-            Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
-                false, // separateIndex
-                false  // addToNavIndex
+      if (addToIndex)
+      {
+        // the namespace entry is already shown under the namespace list so don't
+        // add it to the nav index and don't create a separate index file for it otherwise
+        // it will overwrite the one written for the namespace list.
+        Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
+            false, // separateIndex
+            false  // addToNavIndex
             );
-          }
-          if (addToIndex)
-          {
-            Doxygen::indexList->incContentsDepth();
-          }
+      }
+      if (addToIndex)
+      {
+        Doxygen::indexList->incContentsDepth();
+      }
 
-          ftv->incContentsDepth();
-          writeClassTreeInsideNamespace(nd->getNamespaceSDict(),ftv,FALSE,addToIndex,ct);
-          ClassLinkedRefMap d = nd->getClasses();
-          if (sliceOpt)
-          {
-            if (ct == ClassDef::Interface)
-            {
-              d = nd->getInterfaces();
-            }
-            else if (ct == ClassDef::Struct)
-            {
-              d = nd->getStructs();
-            }
-            else if (ct == ClassDef::Exception)
-            {
-              d = nd->getExceptions();
-            }
-          }
-          writeClassTree(d,ftv,addToIndex,FALSE,ct);
-          ftv->decContentsDepth();
-
-          if (addToIndex)
-          {
-            Doxygen::indexList->decContentsDepth();
-          }
+      ftv->incContentsDepth();
+      writeClassTreeInsideNamespace(nd->getNamespaces(),ftv,FALSE,addToIndex,ct);
+      ClassLinkedRefMap d = nd->getClasses();
+      if (sliceOpt)
+      {
+        if (ct == ClassDef::Interface)
+        {
+          d = nd->getInterfaces();
         }
+        else if (ct == ClassDef::Struct)
+        {
+          d = nd->getStructs();
+        }
+        else if (ct == ClassDef::Exception)
+        {
+          d = nd->getExceptions();
+        }
+      }
+      writeClassTree(d,ftv,addToIndex,FALSE,ct);
+      ftv->decContentsDepth();
+
+      if (addToIndex)
+      {
+        Doxygen::indexList->decContentsDepth();
       }
     }
   }
 }
 
+static void writeClassTreeInsideNamespace(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp *ftv,
+                               bool rootOnly,bool addToIndex,ClassDef::CompoundType ct)
+{
+  for (const auto &nd : nsLinkedMap)
+  {
+    writeClassTreeInsideNamespaceElement(nd,ftv,rootOnly,addToIndex,ct);
+  }
+}
+
+static void writeClassTreeInsideNamespace(const NamespaceSDict &nsDict,FTVHelp *ftv,
+                               bool rootOnly,bool addToIndex,ClassDef::CompoundType ct)
+{
+  NamespaceSDict::Iterator nli(nsDict);
+  const NamespaceDef *nd;
+  for (nli.toFirst();(nd=nli.current());++nli)
+  {
+    writeClassTreeInsideNamespaceElement(nd,ftv,rootOnly,addToIndex,ct);
+  }
+}
 
 static void writeNamespaceIndex(OutputList &ol)
 {
@@ -1878,7 +1907,7 @@ static void writeNamespaceIndex(OutputList &ol)
       Doxygen::indexList->incContentsDepth();
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
-    writeNamespaceTree(Doxygen::namespaceSDict,ftv,TRUE,addToIndex);
+    writeNamespaceTree(*Doxygen::namespaceSDict,ftv,TRUE,addToIndex);
     QGString outStr;
     FTextStream t(&outStr);
     ftv->generateTreeViewInline(t);
@@ -2447,7 +2476,7 @@ static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContex
       Doxygen::indexList->incContentsDepth();
     }
     FTVHelp ftv(false);
-    writeClassTreeInsideNamespace(Doxygen::namespaceSDict,&ftv,TRUE,addToIndex,ctx.compoundType);
+    writeClassTreeInsideNamespace(*Doxygen::namespaceSDict,&ftv,TRUE,addToIndex,ctx.compoundType);
     writeClassTree(*Doxygen::classLinkedMap,&ftv,addToIndex,TRUE,ctx.compoundType);
     QGString outStr;
     FTextStream t(&outStr);
@@ -3779,7 +3808,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           numSubItems += ml->count();
         }
       }
-      numSubItems += gd->getNamespaces()->count();
+      numSubItems += gd->getNamespaces().size();
       numSubItems += gd->getClasses().size();
       numSubItems += gd->getFiles()->count();
       numSubItems += gd->getDirs().size();
@@ -3885,9 +3914,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupNamespaces && addToIndex)
       {
-        NamespaceSDict::Iterator it(*gd->getNamespaces());
-        NamespaceDef *nd;
-        for (;(nd=it.current());++it)
+        for (const auto &nd : gd->getNamespaces())
         {
           if (nd->isVisible())
           {
@@ -3913,7 +3940,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupDirs && addToIndex)
       {
-        for (const auto dd : gd->getDirs())
+        for (const auto &dd : gd->getDirs())
         {
           if (dd->isVisible())
           {

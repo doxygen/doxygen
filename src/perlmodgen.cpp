@@ -1966,6 +1966,7 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
   m_output.openHash()
     .addFieldQuotedString("name", nd->name());
 
+  if (!nd->getClasses().empty())
   {
     m_output.openList("classes");
     for (const auto &cd : nd->getClasses())
@@ -1975,13 +1976,10 @@ void PerlModGenerator::generatePerlModForNamespace(const NamespaceDef *nd)
     m_output.closeList();
   }
 
-  const NamespaceSDict *nl = nd->getNamespaceSDict();
-  if (nl)
+  if (!nd->getNamespaces().empty())
   {
     m_output.openList("namespaces");
-    NamespaceSDict::Iterator nli(*nl);
-    const NamespaceDef *ind;
-    for (nli.toFirst();(ind=nli.current());++nli)
+    for (const auto &ind : nd->getNamespaces())
       m_output.openHash()
 	.addFieldQuotedString("name", ind->name())
 	.closeHash();
@@ -2108,6 +2106,7 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
+  if (!gd->getClasses().empty())
   {
     m_output.openList("classes");
     for (const auto &cd : gd->getClasses())
@@ -2117,13 +2116,10 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
-  NamespaceSDict *nl = gd->getNamespaces();
-  if (nl)
+  if (!gd->getNamespaces().empty())
   {
     m_output.openList("namespaces");
-    NamespaceSDict::Iterator nli(*nl);
-    const NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+    for (const auto &nd : gd->getNamespaces())
       m_output.openHash()
 	.addFieldQuotedString("name", nd->name())
 	.closeHash();

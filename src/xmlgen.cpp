@@ -1144,20 +1144,15 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,FTextStream &t)
   }
 }
 
-static void writeInnerNamespaces(const NamespaceSDict *nl,FTextStream &t)
+static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,FTextStream &t)
 {
-  if (nl)
+  for (const auto &nd : nl)
   {
-    NamespaceSDict::Iterator nli(*nl);
-    const NamespaceDef *nd;
-    for (nli.toFirst();(nd=nli.current());++nli)
+    if (!nd->isHidden() && !nd->isAnonymous())
     {
-      if (!nd->isHidden() && !nd->isAnonymous())
-      {
-        t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
-          << "\"" << (nd->isInline() ? " inline=\"yes\"" : "")
-          << ">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
-      }
+      t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
+        << "\"" << (nd->isInline() ? " inline=\"yes\"" : "")
+        << ">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
     }
   }
 }
@@ -1463,7 +1458,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
   t << "</compoundname>" << endl;
 
   writeInnerClasses(nd->getClasses(),t);
-  writeInnerNamespaces(nd->getNamespaceSDict(),t);
+  writeInnerNamespaces(nd->getNamespaces(),t);
 
   if (nd->getMemberGroupSDict())
   {
@@ -1594,10 +1589,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   }
 
   writeInnerClasses(fd->getClasses(),t);
-  if (fd->getNamespaceSDict())
-  {
-    writeInnerNamespaces(fd->getNamespaceSDict(),t);
-  }
+  writeInnerNamespaces(fd->getNamespaces(),t);
 
   if (fd->getMemberGroupSDict())
   {

@@ -6957,9 +6957,7 @@ uint getUtf8CodeToUpper( const QCString& s, int idx )
 //
 bool namespaceHasNestedNamespace(const NamespaceDef *nd)
 {
-  NamespaceSDict::Iterator cnli(*nd->getNamespaceSDict());
-  const NamespaceDef *cnd;
-  for (cnli.toFirst();(cnd=cnli.current());++cnli)
+  for (const auto &cnd : nd->getNamespaces())
   {
     if (cnd->isLinkableInProject() && !cnd->isAnonymous())
     {
@@ -6972,17 +6970,12 @@ bool namespaceHasNestedNamespace(const NamespaceDef *nd)
 bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct)
 {
   //printf(">namespaceHasVisibleChild(%s,includeClasses=%d)\n",nd->name().data(),includeClasses);
-  if (nd->getNamespaceSDict())
+  for (const auto &cnd : nd->getNamespaces())
   {
-    NamespaceSDict::Iterator cnli(*nd->getNamespaceSDict());
-    const NamespaceDef *cnd;
-    for (cnli.toFirst();(cnd=cnli.current());++cnli)
+    if (namespaceHasNestedClass(cnd,filterClasses,ct))
     {
-      if (namespaceHasNestedClass(cnd,filterClasses,ct))
-      {
-        //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",nd->name().data(),includeClasses);
-        return TRUE;
-      }
+      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",nd->name().data(),includeClasses);
+      return TRUE;
     }
   }
 
