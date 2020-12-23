@@ -4036,7 +4036,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
     Debug::print(Debug::Classes,0,"      New template instance class '%s''%s' inside '%s' hidden=%d\n",qPrint(name()),qPrint(templSpec),qPrint(name()),isHidden());
     templateClass =
       toClassDefMutable(
-          Doxygen::hiddenClassLinkedMap->add(tcname,
+          Doxygen::classLinkedMap->add(tcname,
             std::unique_ptr<ClassDef>(
               new ClassDefImpl(fileName,startLine,startColumn,tcname,ClassDef::Class))));
     templateClass->setTemplateMaster(this);
