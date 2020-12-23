@@ -5,4 +5,4 @@
 # place an escaped \n and " at the end of each line
 import sys
 for line in sys.stdin:
-    sys.stdout.write('"' + line.replace('\\','\\\\').replace('"','\\"').replace('\n','') + '\\n"\n')
+    sys.stdout.write('"' + line.replace('\\','\\\\').replace('"','\\"').replace('\n','').replace('\r','') + '\\n"\n')
