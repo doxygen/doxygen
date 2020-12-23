@@ -6269,7 +6269,6 @@ static void findMember(const Entry *root,
            isFunc
           );
 
-  MemberName *mn=0;
   if (!funcName.isEmpty()) // function name is valid
   {
     Debug::print(Debug::FindMembers,0,
@@ -6278,6 +6277,7 @@ static void findMember(const Entry *root,
     // check if 'className' is actually a scoped enum, in which case we need to
     // process it as a global, see issue #6471
     bool strongEnum = false;
+    MemberName *mn=0;
     if (!className.isEmpty() && (mn=Doxygen::functionNameLinkedMap->find(className)))
     {
       for (const auto &imd : *mn)
@@ -6296,7 +6296,6 @@ static void findMember(const Entry *root,
           {
             namespaceName=className;
           }
-          mn = 0;
         }
       }
     }
@@ -6305,6 +6304,7 @@ static void findMember(const Entry *root,
     {
       funcName = substitute(funcName,className+"::","");
     }
+    mn = 0;
     if (!funcTempList.isEmpty()) // try with member specialization
     {
       mn=Doxygen::memberNameLinkedMap->find(funcName+funcTempList);
