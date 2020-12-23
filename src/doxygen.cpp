@@ -6910,7 +6910,7 @@ static void findEnums(const Entry *root)
       md->enableCallerGraph(root->callerGraph);
       md->enableReferencedByRelation(root->referencedByRelation);
       md->enableReferencesRelation(root->referencesRelation);
-      //printf("%s::setRefItems(%d)\n",md->name().data(),root->sli?root->sli->count():-1);
+      //printf("%s::setRefItems(%zu)\n",md->name().data(),root->sli.size());
       md->setRefItems(root->sli);
       //printf("found enum %s nd=%p\n",md->name().data(),nd);
       bool defSet=FALSE;
@@ -7205,6 +7205,42 @@ static void addEnumValuesToEnums(const Entry *root)
   }
 }
 
+//----------------------------------------------------------------------
+
+static void addEnumDocs(const Entry *root,MemberDefMutable *md)
+{
+  // documentation outside a compound overrides the documentation inside it
+  {
+    md->setDocumentation(root->doc,root->docFile,root->docLine);
+    md->setDocsForDefinition(!root->proto);
+  }
+
+  // brief descriptions inside a compound override the documentation
+  // outside it
+  {
+    md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+  }
+
+  if (!md->inbodyDocumentation() || !root->parent()->name.isEmpty())
+  {
+    md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
+  }
+
+  if (root->mGrpId!=-1 && md->getMemberGroupId()==-1)
+  {
+    md->setMemberGroupId(root->mGrpId);
+  }
+
+  md->addSectionsToDefinition(root->anchors);
+  md->setRefItems(root->sli);
+
+  const GroupDef *gd=md->getGroupDef();
+  if (gd==0 && !root->groups.empty()) // member not grouped but out-of-line documentation is
+  {
+    addMemberToGroups(root,md);
+  }
+}
+
 
 //----------------------------------------------------------------------
 // find the documentation blocks for the enumerations
@@ -7238,94 +7274,47 @@ static void findEnumDocumentation(const Entry *root)
       if (!scope.isEmpty()) scope.prepend("::");
       scope.prepend(root->parent()->name);
     }
-    const ClassDef *cd=getClass(scope);
+    const ClassDef *cd = getClass(scope);
+    const NamespaceDef *nd=Doxygen::namespaceLinkedMap->find(scope);
+    const FileDef *fd = root->fileDef();
 
     if (!name.isEmpty())
     {
       bool found=FALSE;
+      MemberName *mn;
       if (cd)
       {
-        //printf("Enum: scope='%s' name='%s'\n",cd->name(),name.data());
-        QCString className=cd->name().copy();
-        MemberName *mn=Doxygen::memberNameLinkedMap->find(name);
-        if (mn)
+        mn = Doxygen::memberNameLinkedMap->find(name);
+      }
+      else
+      {
+        mn = Doxygen::functionNameLinkedMap->find(name);
+      }
+      if (mn)
+      {
+        for (const auto &imd : *mn)
         {
-          for (const auto &imd : *mn)
+          MemberDefMutable *md = toMemberDefMutable(imd.get());
+          if (md && md->isEnumerate())
           {
-            MemberDefMutable *md = toMemberDefMutable(imd.get());
-            if (md && (cd=md->getClassDef()) && cd->name()==className && md->isEnumerate())
+            const ClassDef *mcd = md->getClassDef();
+            const NamespaceDef *mnd = md->getNamespaceDef();
+            const FileDef *mfd = md->getFileDef();
+            if (mcd==cd)
             {
-              // documentation outside a compound overrides the documentation inside it
-#if 0
-              if (!md->documentation() || root->parent()->name.isEmpty())
-#endif
-              {
-                md->setDocumentation(root->doc,root->docFile,root->docLine);
-                md->setDocsForDefinition(!root->proto);
-              }
-
-              // brief descriptions inside a compound override the documentation
-              // outside it
-#if 0
-              if (!md->briefDescription() || !root->parent()->name.isEmpty())
-#endif
-              {
-                md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-              }
-
-              if (!md->inbodyDocumentation() || !root->parent()->name.isEmpty())
-              {
-                md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-              }
-
-              if (root->mGrpId!=-1 && md->getMemberGroupId()==-1)
-              {
-                md->setMemberGroupId(root->mGrpId);
-              }
-
-              md->addSectionsToDefinition(root->anchors);
-              md->setRefItems(root->sli);
-
-              const GroupDef *gd=md->getGroupDef();
-              if (gd==0 && !root->groups.empty()) // member not grouped but out-of-line documentation is
-              {
-                addMemberToGroups(root,md);
-              }
-
+              addEnumDocs(root,md);
               found=TRUE;
               break;
             }
-          }
-        }
-        else
-        {
-          //printf("MemberName %s not found!\n",name.data());
-        }
-      }
-      else // enum outside class
-      {
-        //printf("Enum outside class: %s grpId=%d\n",name.data(),root->mGrpId);
-        MemberName *mn=Doxygen::functionNameLinkedMap->find(name);
-        if (mn)
-        {
-          for (const auto &imd : *mn)
-          {
-            MemberDefMutable *md = toMemberDefMutable(imd.get());
-            if (md && md->isEnumerate())
+            else if (mnd==nd)
             {
-              md->setDocumentation(root->doc,root->docFile,root->docLine);
-              md->setDocsForDefinition(!root->proto);
-              md->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-              md->setInbodyDocumentation(root->inbodyDocs,root->inbodyFile,root->inbodyLine);
-              md->addSectionsToDefinition(root->anchors);
-              md->setMemberGroupId(root->mGrpId);
-
-              const GroupDef *gd=md->getGroupDef();
-              if (gd==0 && !root->groups.empty()) // member not grouped but out-of-line documentation is
-              {
-                addMemberToGroups(root,md);
-              }
-
+              addEnumDocs(root,md);
+              found=TRUE;
+              break;
+            }
+            else if (cd==0 && nd==0 && mcd==0 && mnd==0 && fd==mfd)
+            {
+              addEnumDocs(root,md);
               found=TRUE;
               break;
             }
