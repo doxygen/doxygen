@@ -129,6 +129,7 @@ QCString extractPartAfterNewLine(const QCString &text)
   int nl2 = text.findRev("\\ilinebr");
   if (nl2!=-1)
   {
+    if (text.at(nl2+8)==' ') nl2++; // skip space after \\ilinebr
     return text.mid(nl2+8);
   }
   return text;
