@@ -4919,10 +4919,14 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
 {
   PageDef *pd=0;
   //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
+  QCString title=ptitle.stripWhiteSpace();
   if ((pd=Doxygen::pageSDict->find(name)) && !tagInfo)
   {
-    if (!xref) warn(fileName,startLine,"multiple use of page label '%s', (other occurrence: %s, line: %d)",
+    if (!xref && !title.isEmpty() && pd->title()!=title)
+    {
+      warn(fileName,startLine,"multiple use of page label '%s', (other occurrence: %s, line: %d)",
          name,pd->docFile().data(),pd->getStartBodyLine());
+    }
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,docLine);
     //printf("Adding page docs '%s' pi=%p name=%s\n",doc.data(),pd,name);
@@ -4937,7 +4941,6 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
 
-    QCString title=ptitle.stripWhiteSpace();
     pd=createPageDef(fileName,docLine,baseName,doc,title);
     pd->setBodySegment(startLine,startLine,-1);
 
