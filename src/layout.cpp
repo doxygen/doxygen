@@ -29,10 +29,7 @@
 #include "version.h"
 #include "config.h"
 #include "xml.h"
-
-static const char layout_default[] =
-#include "layout_default.xml.h"
-;
+#include "resourcemgr.h"
 
 inline QCString compileOptions(const QCString &def)
 {
@@ -1510,6 +1507,7 @@ void LayoutDocManager::init()
   handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
+  QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
   parser.parse("layout_default.xml",layout_default);
 }
 
@@ -1568,6 +1566,7 @@ void writeDefaultLayoutFile(const char *fileName)
     return;
   }
   FTextStream t(&f);
+  QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
   t << substitute(layout_default,"$doxygenversion",getDoxygenVersion());
 }
 
