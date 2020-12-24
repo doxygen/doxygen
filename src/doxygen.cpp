@@ -753,6 +753,7 @@ static Definition *buildScopeFromQualifiedName(const QCString name,
                 tagInfo?tagInfo->tagName:QCString(),
                 tagInfo?tagInfo->fileName:QCString()))));
       newNd->setLanguage(lang);
+      newNd->setArtificial(TRUE);
 
       // add namespace to the list
       innerScope = newNd;
@@ -4512,6 +4513,7 @@ static bool findClassRelation(
                                  ClassDef::Class))));
               if (isArtificial) baseClass->setArtificial(TRUE);
               baseClass->setLanguage(root->lang);
+
             }
           }
           else
@@ -4550,7 +4552,10 @@ static bool findClassRelation(
           baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileDef());
-          baseClass->setOuterScope(Doxygen::globalScope);
+
+          Definition *scope = buildScopeFromQualifiedName(baseClass->name(),baseClass->name().contains("::"),root->lang,0);
+          baseClass->setOuterScope(scope);
+
           if (baseClassName.right(2)=="-p")
           {
             baseClass->setCompoundType(ClassDef::Protocol);
