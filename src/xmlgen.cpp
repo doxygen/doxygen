@@ -482,6 +482,7 @@ static void writeMemberReference(FTextStream &t,const Definition *def,const Memb
 static void stripQualifiers(QCString &typeStr)
 {
   bool done=FALSE;
+  typeStr.stripPrefix("friend ");
   while (!done)
   {
     if (typeStr.stripPrefix("static "));
@@ -849,7 +850,15 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     }
   }
 
-  if (isFunc) //function
+  if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
+  {
+    t << "        <param>" << endl;
+    t << "          <type>";
+    linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->name());
+    t << "</type>" << endl;
+    t << "        </param>" << endl;
+  }
+  else if (isFunc) //function
   {
     const ArgumentList &declAl = md->declArgumentList();
     const ArgumentList &defAl = md->argumentList();

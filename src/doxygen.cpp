@@ -7252,8 +7252,6 @@ static void findEnumDocumentation(const Entry *root)
       && root->name.at(0)!='@'        // skip anonymous enums
      )
   {
-    //printf("Found docs for enum with name '%s' in context %s\n",
-    //    root->name.data(),root->parent->name.data());
     int i;
     QCString name;
     QCString scope;
@@ -7277,6 +7275,11 @@ static void findEnumDocumentation(const Entry *root)
     const ClassDef *cd = getClass(scope);
     const NamespaceDef *nd=Doxygen::namespaceLinkedMap->find(scope);
     const FileDef *fd = root->fileDef();
+    Debug::print(Debug::FindMembers,0,"1. Found docs for enum with name '%s' and scope '%s' in context %s cd=%s, nd=%s fd=%s\n",
+                 name.data(),scope.data(),root->parent()->name.data(),
+                 cd?cd->name().data():"<none>",
+                 nd?nd->name().data():"<none>",
+                 fd?fd->name().data():"<none>");
 
     if (!name.isEmpty())
     {
@@ -7302,18 +7305,21 @@ static void findEnumDocumentation(const Entry *root)
             const FileDef *mfd = md->getFileDef();
             if (mcd==cd)
             {
+              Debug::print(Debug::FindMembers,0,"2. Match found for class scope\n");
               addEnumDocs(root,md);
               found=TRUE;
               break;
             }
-            else if (mnd==nd)
+            else if (cd==0 && mcd==0 && nd!=0 && mnd==nd)
             {
+              Debug::print(Debug::FindMembers,0,"2. Match found for namespace scope\n");
               addEnumDocs(root,md);
               found=TRUE;
               break;
             }
             else if (cd==0 && nd==0 && mcd==0 && mnd==0 && fd==mfd)
             {
+              Debug::print(Debug::FindMembers,0,"2. Match found for global scope\n");
               addEnumDocs(root,md);
               found=TRUE;
               break;
