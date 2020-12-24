@@ -129,6 +129,7 @@ QCString extractPartAfterNewLine(const QCString &text)
   int nl2 = text.findRev("\\ilinebr");
   if (nl2!=-1)
   {
+    if (text.at(nl2+8)==' ') nl2++; // skip space after \\ilinebr
     return text.mid(nl2+8);
   }
   return text;
@@ -810,7 +811,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                          lineCount(yytext,yyleng);
                        }
-<St_Para>({BLANK}*\n)+{BLANK}*\n{BLANK}* {
+<St_Para>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}* {
                          lineCount(yytext,yyleng);
                          if (g_insidePre)
                          {
