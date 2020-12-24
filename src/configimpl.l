@@ -18,7 +18,7 @@
 %{
 
 /*
- *	includes
+ *      includes
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -160,9 +160,9 @@ void ConfigOption::writeStringValue(FTextStream &t,const QCString &s)
       p=se.data();
       while (*p)
       {
-	if (*p==' ' && *(p+1)=='\0') break; // skip inserted space at the end
-	if (*p=='"') t << "\\"; // escape quotes
-	t << *p++;
+        if (*p==' ' && *(p+1)=='\0') break; // skip inserted space at the end
+        if (*p=='"') t << "\\"; // escape quotes
+        t << *p++;
       }
       t << "\"";
     }
@@ -495,7 +495,7 @@ void ConfigDisabled::writeTemplate(FTextStream &,bool,bool) {}
 
 /* -----------------------------------------------------------------
  *
- *	static variables
+ *      static variables
  */
 
 struct ConfigFileState
@@ -508,15 +508,14 @@ struct ConfigFileState
 };
 
 static const char       *g_inputString;
-static int	         g_inputPosition;
+static int               g_inputPosition;
 static int               g_yyLineNr;
 static QCString          g_yyFileName;
 static QCString          g_tmpString;
 static QCString          g_cmd;
 static QCString         *g_string=0;
 static StringVector     *g_list=0;
-static int               g_lastState;
-static QCString          g_elemStr;
+static QCString          g_listStr;
 static StringVector      g_includePathList;
 static QStack<ConfigFileState> g_includeStack;
 static int               g_includeDepth;
@@ -527,8 +526,8 @@ static int               g_part;
 
 /* -----------------------------------------------------------------
  */
-#undef	YY_INPUT
-#define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
+#undef  YY_INPUT
+#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
 static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
@@ -595,6 +594,175 @@ static void checkEncoding()
   g_encoding = *option->valueRef();
 }
 
+static void processString()
+{
+  // strip leading and trailing whitespace
+  QCString s = g_string->stripWhiteSpace();
+  int l = s.length();
+
+  // remove surrounding quotes if present (and not escaped)
+  bool quotedString=false;
+  if (l>=2 && s.at(0)=='"' && s.at(l-1)=='"' && // remove quotes
+      (s.at(l-2)!='\\' || (s.at(l-2)=='\\' && s.at(l-3)=='\\')))
+  {
+    s=s.mid(1,s.length()-2);
+    l=s.length();
+    quotedString=true;
+  }
+
+  // check for invalid and/or escaped quotes
+  bool warned=false;
+  QCString result;
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (c=='\\') // escaped character
+    {
+      if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
+      {
+        result+='"';
+      }
+      else // keep other escaped characters in escaped form
+      {
+        result+=c;
+        if (i<l-1)
+        {
+          result+=s.at(i+1);
+        }
+      }
+      i++; // skip over the escaped character
+    }
+    else if (c=='"') // unescaped quote
+    {
+      if (!warned)
+      {
+        config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
+                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_string->data());
+      }
+      warned=true;
+    }
+    else if (c=='#' && !quotedString) // found comment
+    {
+      if (i<l-1 && s.at(i+1)=='#') // user comment
+      {
+        g_config->appendUserComment(s.mid(i)+"\n");
+      }
+      result=result.stripWhiteSpace();
+      break;
+    }
+    else // normal character
+    {
+      result+=c;
+    }
+  }
+
+  // recode the string
+  *g_string=configStringRecode(result,g_encoding,"UTF-8");
+
+  // update encoding
+  checkEncoding();
+
+  //printf("Processed string '%s'\n",g_string->data());
+}
+
+static void processList()
+{
+  bool allowCommaAsSeparator = g_cmd!="PREDEFINED";
+
+  const QCString s = g_listStr.stripWhiteSpace();
+  int l = s.length();
+
+  QCString elemStr;
+
+  // helper to push elemStr to the list and clear it
+  auto addElem = [&elemStr]()
+  {
+    if (!elemStr.isEmpty())
+    {
+      QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
+      //printf("Processed list element '%s'\n",e.data());
+      g_list->push_back(e.str());
+      elemStr="";
+    }
+  };
+
+  bool needsSeparator=false;
+  int insideQuote=false;
+  bool warned=false;
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (!needsSeparator && c=='\\') // escaped character
+    {
+      if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
+      {
+        elemStr+='"';
+      }
+      else // keep other escaped characters in escaped form
+      {
+        elemStr+=c;
+        if (i<l-1)
+        {
+          elemStr+=s.at(i+1);
+        }
+      }
+      i++; // skip over the escaped character
+    }
+    else if (!needsSeparator && c=='"') // quote character
+    {
+      if (!insideQuote)
+      {
+        insideQuote=true;
+      }
+      else // this quote ends an element
+      {
+        insideQuote=false;
+        needsSeparator=true;
+      }
+    }
+    else if (!insideQuote && ((c==',' && allowCommaAsSeparator) || isspace(c))) // separator
+    {
+      needsSeparator=false;
+      addElem();
+    }
+    else if (!insideQuote && c=='#') // found comment
+    {
+      if (i<l-1 && s.at(i+1)=='#') // user comment
+      {
+        g_config->appendUserComment(s.mid(i)+"\n");
+      }
+      addElem();
+      break;
+    }
+    else // normal content character
+    {
+      if (needsSeparator)
+      {
+        if (!warned)
+        {
+          config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
+                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.data(),allowCommaAsSeparator?"or comma ":"");
+          warned=true;
+        }
+        needsSeparator=false;
+        i--; // try the character again as part of a new element
+        addElem();
+      }
+      else
+      {
+        elemStr+=c;
+      }
+    }
+  }
+  // add last part
+  addElem();
+  if (insideQuote)
+  {
+    config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
+                g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.data());
+  }
+}
+
 static FILE *tryPath(const char *path,const char *fileName)
 {
   QCString absName=(path ? (QCString)path+"/"+fileName : (QCString)fileName);
@@ -635,7 +803,7 @@ static void readIncludeFile(const char *incName)
 {
   if (g_includeDepth==MAX_INCLUDE_DEPTH) {
     config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
-	MAX_INCLUDE_DEPTH,incName);
+        MAX_INCLUDE_DEPTH,incName);
   }
 
   QCString inc = incName;
@@ -684,299 +852,240 @@ static void readIncludeFile(const char *incName)
 
 %x      PreStart
 %x      Start
-%x	SkipComment
+%x      SkipComment
 %x      SkipInvalid
 %x      GetString
 %x      GetStrList
-%x      GetStrList1
-%x      GetQuotedString
 %x      Include
 
 %%
 
 <*>\0x0d
-<PreStart>"##".*"\n" { g_config->appendStartComment(yytext);g_yyLineNr++;}
-<PreStart>. {
-              BEGIN(Start);
-              unput(*yytext);
-            }
-<Start,GetString,GetStrList,GetStrList1,SkipInvalid>"##".*"\n" { g_config->appendUserComment(yytext);g_yyLineNr++;}
-<Start,GetString,GetStrList,GetStrList1,SkipInvalid>"#"	   { BEGIN(SkipComment); }
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { g_cmd=yytext;
+
+   /*-------------- Comments ---------------*/
+
+<PreStart>"##".*"\n"                     { g_config->appendStartComment(yytext);g_yyLineNr++;}
+<PreStart>.                              {
+                                           BEGIN(Start);
+                                           unput(*yytext);
+                                         }
+<Start>"##".*"\n"                        { g_config->appendUserComment(yytext);g_yyLineNr++;}
+<Start>"#"[^#].*"\n"                     { /* normal comment */ }
+
+   /*-------------- TAG start ---------------*/
+
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="   { g_cmd=yytext;
                                            g_cmd=g_cmd.left(g_cmd.length()-1).stripWhiteSpace();
                                            g_part=0;
-					   ConfigOption *option = g_config->get(g_cmd);
-					   if (option==0) // oops not known
-					   {
-					     config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-						 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
-					     BEGIN(SkipInvalid);
-					   }
-					   else // known tag
-					   {
+                                           ConfigOption *option = g_config->get(g_cmd);
+                                           if (option==0) // oops not known
+                                           {
+                                             config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
+                                                 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                             BEGIN(SkipInvalid);
+                                           }
+                                           else // known tag
+                                           {
                                              option->setUserComment(g_config->takeUserComment());
-					     option->setEncoding(g_encoding);
-					     switch(option->kind())
-					     {
-					       case ConfigOption::O_Info:
-						 // shouldn't get here!
-					         BEGIN(SkipInvalid);
-						 break;
-					       case ConfigOption::O_List:
-						 g_list = ((ConfigList *)option)->valueRef();
-					         g_list->clear();
-						 g_elemStr="";
-						 if (g_cmd == "PREDEFINED")
-						 {
-					           BEGIN(GetStrList1);
-						 }
-						 else
-						 {
-					           BEGIN(GetStrList);
-						 }
-					         break;
-					       case ConfigOption::O_Enum:
-						 g_string = ((ConfigEnum *)option)->valueRef();
-					         g_string->resize(0);
-					         BEGIN(GetString);
-					         break;
-					       case ConfigOption::O_String:
-						 g_string = ((ConfigString *)option)->valueRef();
-					         g_string->resize(0);
-					         BEGIN(GetString);
-					         break;
-					       case ConfigOption::O_Int:
-						 g_string = ((ConfigInt *)option)->valueStringRef();
-					         g_string->resize(0);
-					         BEGIN(GetString);
-					         break;
-					       case ConfigOption::O_Bool:
-						 g_string = ((ConfigBool *)option)->valueStringRef();
-					         g_string->resize(0);
-					         BEGIN(GetString);
-						 break;
-					       case ConfigOption::O_Obsolete:
+                                             option->setEncoding(g_encoding);
+                                             switch(option->kind())
+                                             {
+                                               case ConfigOption::O_Info:
+                                                 // shouldn't get here!
+                                                 BEGIN(SkipInvalid);
+                                                 break;
+                                               case ConfigOption::O_List:
+                                                 g_list = ((ConfigList *)option)->valueRef();
+                                                 g_list->clear();
+                                                 g_listStr="";
+                                                 BEGIN(GetStrList);
+                                                 break;
+                                               case ConfigOption::O_Enum:
+                                                 g_string = ((ConfigEnum *)option)->valueRef();
+                                                 g_string->resize(0);
+                                                 BEGIN(GetString);
+                                                 break;
+                                               case ConfigOption::O_String:
+                                                 g_string = ((ConfigString *)option)->valueRef();
+                                                 g_string->resize(0);
+                                                 BEGIN(GetString);
+                                                 break;
+                                               case ConfigOption::O_Int:
+                                                 g_string = ((ConfigInt *)option)->valueStringRef();
+                                                 g_string->resize(0);
+                                                 BEGIN(GetString);
+                                                 break;
+                                               case ConfigOption::O_Bool:
+                                                 g_string = ((ConfigBool *)option)->valueStringRef();
+                                                 g_string->resize(0);
+                                                 BEGIN(GetString);
+                                                 break;
+                                               case ConfigOption::O_Obsolete:
                                                  if (g_configUpdate)
                                                  {
-					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
-						              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                   config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
+                                                              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
                                                  else
                                                  {
-					           config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
-						              "         To avoid this warning please remove this line from your configuration "
-							      "file or upgrade it using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                   config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
+                                                              "         To avoid this warning please remove this line from your configuration "
+                                                              "file or upgrade it using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
-					         BEGIN(SkipInvalid);
-						 break;
-					       case ConfigOption::O_Disabled:
+                                                 BEGIN(SkipInvalid);
+                                                 break;
+                                               case ConfigOption::O_Disabled:
                                                  if (g_configUpdate)
                                                  {
-					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
-						              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                   config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
+                                                              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
                                                  else
                                                  {
-					           config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
-						              "         To avoid this warning please remove this line from your configuration "
-							    "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                   config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
+                                                              "         To avoid this warning please remove this line from your configuration "
+                                                            "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
                                                  }
-					         BEGIN(SkipInvalid);
-						 break;
-					     }
-					   }
-					}
-<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+="	{ g_cmd=yytext;
-                                          g_cmd=g_cmd.left(g_cmd.length()-2).stripWhiteSpace();
-					  ConfigOption *option = g_config->get(g_cmd);
-					  if (option==0) // oops not known
-					  {
-					    config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-						g_cmd.data(),g_yyLineNr,g_yyFileName.data());
-					    BEGIN(SkipInvalid);
-					  }
-					  else // known tag
-					  {
-                                            option->setUserComment(g_config->takeUserComment());
-					    switch(option->kind())
-					    {
-					      case ConfigOption::O_Info:
-					        // shouldn't get here!
-					        BEGIN(SkipInvalid);
-						break;
-					      case ConfigOption::O_List:
-					        g_list = ((ConfigList *)option)->valueRef();
-						g_elemStr="";
-						if (g_cmd == "PREDEFINED")
-						{
-					          BEGIN(GetStrList1);
-						}
-						else
-						{
-					          BEGIN(GetStrList);
-						}
-					        break;
-					      case ConfigOption::O_Enum:
-					      case ConfigOption::O_String:
-					      case ConfigOption::O_Int:
-					      case ConfigOption::O_Bool:
-					        config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
-						    yytext,g_yyLineNr,g_yyFileName.data());
-					        BEGIN(SkipInvalid);
-						break;
-					       case ConfigOption::O_Obsolete:
-					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
-					         BEGIN(SkipInvalid);
-						 break;
-					       case ConfigOption::O_Disabled:
-					         config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
-						            "To avoid this warning please remove this line from your configuration "
-							    "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
-					         BEGIN(SkipInvalid);
-						 break;
-					     }
-					   }
-					}
-<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); g_list=&g_includePathList; g_list->clear(); g_elemStr=""; }
-  /* include a g_config file */
-<Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
-<Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
-  					  readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"));
-  					  BEGIN(Start);
-					}
-<<EOF>>					{
-                                          //printf("End of include file\n");
-					  //printf("Include stack depth=%d\n",g_includeStack.count());
-                                          if (g_includeStack.isEmpty())
-					  {
-					    //printf("Terminating scanner!\n");
-					    yyterminate();
-					  }
-					  else
-					  {
-					    ConfigFileState *fs=g_includeStack.pop();
-					    fclose(fs->filePtr);
-					    YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
-					    yy_switch_to_buffer( fs->oldState );
-					    yy_delete_buffer( oldBuf );
-					    g_yyLineNr=fs->lineNr;
-					    g_yyFileName=fs->fileName;
-					    delete fs; fs=0;
-                                            g_includeDepth--;
-					  }
-  					}
-
-<Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
-<GetString,SkipInvalid>\n	{ g_yyLineNr++; BEGIN(Start); }
-<GetStrList,GetStrList1>\n				{
-  					  g_yyLineNr++;
-					  if (!g_elemStr.isEmpty())
-					  {
-					    //printf("elemStr1='%s'\n",g_elemStr.data());
-					    g_list->push_back(g_elemStr.data());
-					  }
-					  BEGIN(Start);
-					}
-<GetStrList1>[ \t]+			{
-					  if (!g_elemStr.isEmpty())
-					  {
-					    //printf("elemStr2='%s'\n",g_elemStr.data());
-					    g_list->push_back(g_elemStr.data());
-					  }
-					  g_elemStr.resize(0);
-					}
-<GetStrList>[ \t,]+			{
-  				          if (!g_elemStr.isEmpty())
-					  {
-					    //printf("elemStr2='%s'\n",g_elemStr.data());
-  					    g_list->push_back(g_elemStr.data());
-					  }
-					  g_elemStr.resize(0);
-  					}
-<GetString>[^ \"\t\r\n]+		{
-                                          // for each command we only want 1 warning
-					  if (g_part==1)
-					  {
-					    config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                        "Value should not contain unquoted whitespace, "
-						        "using the default.\n",
-						 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
-                                            (*g_string)="";
-					  }
-					  else if (g_part > 1)
-					  {
-                                            (*g_string)="";
-					  }
-					  else
-					  {
-                                            (*g_string)+=configStringRecode(yytext,g_encoding,"UTF-8");
-                                            checkEncoding();
-                                          }
-                                          g_part++;
+                                                 BEGIN(SkipInvalid);
+                                                 break;
+                                             }
+                                           }
                                         }
-<GetString,GetStrList,GetStrList1,SkipInvalid>"\""	{ g_lastState=YY_START;
-  					  BEGIN(GetQuotedString);
-                                          g_tmpString.resize(0);
-					}
-<GetQuotedString>"\""|"\n" 		{
-                                          // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
-                                          g_tmpString+=" ";
-  					  //printf("Quoted String = '%s'\n",g_tmpString.data());
-  					  if (g_lastState==GetString)
-					  {
-                                            // for each command we only want 1 warning
-					    if (g_part==1)
-					    {
-					      config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                          "Value should not contain unquoted whitespace, "
-						          "using the default.\n",
-						   g_cmd.data(),g_yyLineNr,g_yyFileName.data());
-                                              (*g_string)="";
-					    }
-					    else if (g_part > 1)
-					    {
-                                              (*g_string)="";
-					    }
-					    else
-					    {
-                                              (*g_string)+=configStringRecode(g_tmpString,g_encoding,"UTF-8");
-                                              checkEncoding();
-					    }
-					    g_part++;
-					  }
-					  else
-					  {
-					    g_elemStr+=configStringRecode(g_tmpString,g_encoding,"UTF-8");
-					  }
-					  if (*yytext=='\n')
-					  {
-					    config_warn("Missing end quote (\") on line %d, file %s\n",g_yyLineNr,g_yyFileName.data());
-					    g_yyLineNr++;
-					  }
-					  BEGIN(g_lastState);
-  					}
-<GetQuotedString>("\\\\"|"@\\"|"\\@"|"@@") {
-  					  g_tmpString+=yytext;
-  					}
-<GetQuotedString>"\\\""			{
-  					  g_tmpString+='"';
-  					}
-<GetQuotedString>.			{ g_tmpString+=*yytext; }
-<GetStrList1>[^ \#\"\t\r\n]+		{
-					  g_elemStr+=configStringRecode(yytext,g_encoding,"UTF-8");
-					}
-<GetStrList>[^ \#\"\t\r\n,]+		{
-  					  g_elemStr+=configStringRecode(yytext,g_encoding,"UTF-8");
-  					}
-<SkipComment>\n				{ g_yyLineNr++; BEGIN(Start); }
-<SkipComment>\\[ \r\t]*\n		{ g_yyLineNr++; BEGIN(Start); }
+<Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"+=" { g_cmd=yytext;
+                                          g_cmd=g_cmd.left(g_cmd.length()-2).stripWhiteSpace();
+                                          ConfigOption *option = g_config->get(g_cmd);
+                                          if (option==0) // oops not known
+                                          {
+                                            config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
+                                                g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                            BEGIN(SkipInvalid);
+                                          }
+                                          else // known tag
+                                          {
+                                            option->setUserComment(g_config->takeUserComment());
+                                            switch(option->kind())
+                                            {
+                                              case ConfigOption::O_Info:
+                                                // shouldn't get here!
+                                                BEGIN(SkipInvalid);
+                                                break;
+                                              case ConfigOption::O_List:
+                                                g_list = ((ConfigList *)option)->valueRef();
+                                                g_listStr="";
+                                                BEGIN(GetStrList);
+                                                break;
+                                              case ConfigOption::O_Enum:
+                                              case ConfigOption::O_String:
+                                              case ConfigOption::O_Int:
+                                              case ConfigOption::O_Bool:
+                                                config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
+                                                    yytext,g_yyLineNr,g_yyFileName.data());
+                                                BEGIN(SkipInvalid);
+                                                break;
+                                               case ConfigOption::O_Obsolete:
+                                                 config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
+                                                            "To avoid this warning please update your configuration "
+                                                            "file using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                 BEGIN(SkipInvalid);
+                                                 break;
+                                               case ConfigOption::O_Disabled:
+                                                 config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
+                                                            "To avoid this warning please remove this line from your configuration "
+                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                 BEGIN(SkipInvalid);
+                                                 break;
+                                             }
+                                           }
+                                        }
+
+   /*-------------- INCLUDE* ---------------*/
+
+<Start>"@INCLUDE_PATH"[ \t]*"="         { BEGIN(GetStrList); g_list=&g_includePathList; g_list->clear(); g_listStr=""; }
+  /* include a g_config file */
+<Start>"@INCLUDE"[ \t]*"="              { BEGIN(Include);}
+<Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
+                                          readIncludeFile(configStringRecode(yytext,g_encoding,"UTF-8"));
+                                          BEGIN(Start);
+                                        }
+<<EOF>>                                 {
+                                          //printf("End of include file\n");
+                                          //printf("Include stack depth=%d\n",g_includeStack.count());
+                                          if (g_includeStack.isEmpty())
+                                          {
+                                            //printf("Terminating scanner!\n");
+                                            yyterminate();
+                                          }
+                                          else
+                                          {
+                                            ConfigFileState *fs=g_includeStack.pop();
+                                            fclose(fs->filePtr);
+                                            YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
+                                            yy_switch_to_buffer( fs->oldState );
+                                            yy_delete_buffer( oldBuf );
+                                            g_yyLineNr=fs->lineNr;
+                                            g_yyFileName=fs->fileName;
+                                            delete fs; fs=0;
+                                            g_includeDepth--;
+                                          }
+                                        }
+
+<Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
+   /*-------------- GetString ---------------*/
+
+<GetString>\n                           { g_yyLineNr++; // end of string
+                                          processString();
+                                          BEGIN(Start);
+                                        }
+<GetString>\\[ \r\t]*\n                 { g_yyLineNr++; // line continuation
+                                          *g_string+=' ';
+                                        }
+<GetString>"\\"                         { // escape character
+                                          *g_string+=yytext;
+                                        }
+<GetString>[^\n\\]+                     { // string part without escape characters
+                                          *g_string+=yytext;
+                                        }
+
+   /*-------------- GetStrList --------------*/
+
+<GetStrList>\n                          { g_yyLineNr++; // end of list
+                                          processList();
+                                          BEGIN(Start);
+                                        }
+<GetStrList>\\[ \r\t]*\n                { g_yyLineNr++; // line continuation
+                                          g_listStr+=' ';
+                                        }
+<GetStrList>"\\"                        { // escape character
+                                          g_listStr+=yytext;
+                                        }
+<GetStrList>[^\n\\]+                    { // string part without escape characters
+                                          g_listStr+=yytext;
+                                        }
+
+   /*-------------- SkipInvalid --------------*/
+
+<SkipInvalid>\n                         { g_yyLineNr++; // end of list
+                                          BEGIN(Start);
+                                        }
+<SkipInvalid>\\[ \r\t]*\n               { g_yyLineNr++; // line continuation
+                                        }
+<SkipInvalid>"\\"                       { // escape character
+                                        }
+<SkipInvalid>[^\n\\]+                   { // string part without escape characters
+                                        }
+
+   /*-------------- SkipComment --------------*/
+
+<SkipComment>\n                         { g_yyLineNr++; BEGIN(Start); }
+<SkipComment>\\[ \r\t]*\n               { g_yyLineNr++; BEGIN(Start); }
 <SkipComment,SkipInvalid>.
-<*>\\[ \r\t]*\n				{ g_yyLineNr++; }
+
+   /*-------------- fall through -------------*/
+
+<*>\\[ \r\t]*\n                         { g_yyLineNr++; }
 <*>[ \t\r]
 <*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,g_yyFileName.data()); }
-<*>\n					{ g_yyLineNr++ ; }
+<*>\n                                   { g_yyLineNr++ ; }
 
 %%
 
@@ -1076,10 +1185,10 @@ static void substEnvVarsInStrList(StringVector &sl)
     //printf("Result %s was quoted=%d\n",result.data(),wasQuoted);
 
     if (!wasQuoted) /* as a result of the expansion, a single string
-		       may have expanded into a list, which we'll
-		       add to sl. If the original string already
-		       contained multiple elements no further
-		       splitting is done to allow quoted items with spaces! */
+                       may have expanded into a list, which we'll
+                       add to sl. If the original string already
+                       contained multiple elements no further
+                       splitting is done to allow quoted items with spaces! */
     {
       int l=result.length();
       int i,p=0;
@@ -1087,38 +1196,38 @@ static void substEnvVarsInStrList(StringVector &sl)
       // search for a "word"
       for (i=0;i<l;i++)
       {
-	char c=0;
-	// skip until start of new word
-	while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++;
-	p=i; // p marks the start index of the word
-	// skip until end of a word
-	while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"')) i++;
-	if (i<l) // not at the end of the string
-	{
-	  if (c=='"') // word within quotes
-	  {
-	    p=i+1;
-	    for (i++;i<l;i++)
-	    {
-	      c=result.at(i);
-	      if (c=='"') // end quote
-	      {
+        char c=0;
+        // skip until start of new word
+        while (i<l && ((c=result.at(i))==' ' || c=='\t')) i++;
+        p=i; // p marks the start index of the word
+        // skip until end of a word
+        while (i<l && ((c=result.at(i))!=' ' && c!='\t' && c!='"')) i++;
+        if (i<l) // not at the end of the string
+        {
+          if (c=='"') // word within quotes
+          {
+            p=i+1;
+            for (i++;i<l;i++)
+            {
+              c=result.at(i);
+              if (c=='"') // end quote
+              {
                 results.push_back(result.mid(p,i-p).data());
-		p=i+1;
-		break;
-	      }
-	      else if (c=='\\') // skip escaped stuff
-	      {
-		i++;
-	      }
-	    }
-	  }
-	  else if (c==' ' || c=='\t') // separator
-	  {
+                p=i+1;
+                break;
+              }
+              else if (c=='\\') // skip escaped stuff
+              {
+                i++;
+              }
+            }
+          }
+          else if (c==' ' || c=='\t') // separator
+          {
             if (i>p) results.push_back(result.mid(p,i-p).data());
-	    p=i+1;
-	  }
-	}
+            p=i+1;
+          }
+        }
       }
       if (p!=l) // add the leftover as a string
       {
@@ -1246,9 +1355,9 @@ static QCString configFileToString(const char *name)
       f.readBlock(contents.rawData(),fsize);
       f.close();
       if (fsize==0 || contents[fsize-1]=='\n')
-	contents[fsize]='\0';
+        contents[fsize]='\0';
       else
-	contents[fsize]='\n'; // to help the scanner
+        contents[fsize]='\n'; // to help the scanner
       contents[fsize+1]='\0';
       return contents;
     }
@@ -1461,7 +1570,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag HTML_HEADER: header file '%s' "
-	  "does not exist\n",headerFile.data());
+          "does not exist\n",headerFile.data());
     }
   }
 
@@ -1474,7 +1583,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag HTML_FOOTER: footer file '%s' "
-	  "does not exist\n",footerFile.data());
+          "does not exist\n",footerFile.data());
     }
   }
 
@@ -1489,7 +1598,7 @@ void Config::checkAndCorrect()
       if (!fi.exists())
       {
         config_term("tag MATHJAX_CODEFILE file '%s' "
-	    "does not exist\n",mathJaxCodefile.data());
+            "does not exist\n",mathJaxCodefile.data());
       }
     }
     QCString path = Config_getString(MATHJAX_RELPATH);
@@ -1509,7 +1618,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag LATEX_HEADER: header file '%s' "
-	  "does not exist\n",latexHeaderFile.data());
+          "does not exist\n",latexHeaderFile.data());
     }
   }
 
@@ -1522,7 +1631,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag LATEX_FOOTER: footer file '%s' "
-	  "does not exist\n",latexFooterFile.data());
+          "does not exist\n",latexFooterFile.data());
     }
   }
 
@@ -1533,7 +1642,7 @@ void Config::checkAndCorrect()
   {
     QFileInfo fi(s.c_str());
     if (!fi.exists()) warn_uncond("tag INCLUDE_PATH: include path '%s' "
-	                  "does not exist\n",s.c_str());
+                          "does not exist\n",s.c_str());
   }
 
   //------------------------
@@ -1566,7 +1675,7 @@ void Config::checkAndCorrect()
     if (alias.find(re1)!=0 && alias.find(re2)!=0)
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
-	  alias.data());
+          alias.data());
     }
   }
 
@@ -1691,12 +1800,12 @@ void Config::checkAndCorrect()
       QFileInfo dp(dotPath+"/dot"+Portable::commandExtension());
       if (!dp.exists() || !dp.isFile())
       {
-	warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
-	dotPath="";
+        warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
+        dotPath="";
       }
       else
       {
-	dotPath=dp.dirPath(TRUE).utf8()+"/";
+        dotPath=dp.dirPath(TRUE).utf8()+"/";
       }
     }
 #if defined(_WIN32) // convert slashes
@@ -1784,7 +1893,7 @@ void Config::checkAndCorrect()
       QFileInfo fi(s.c_str());
       if (!fi.exists())
       {
-	warn_uncond("tag INPUT: input source '%s' does not exist\n",s.c_str());
+        warn_uncond("tag INPUT: input source '%s' does not exist\n",s.c_str());
       }
     }
   }
@@ -1954,8 +2063,8 @@ void Config::checkAndCorrect()
 
 
     warn_uncond("enabling OPTIMIZE_OUTPUT_VHDL assumes the following settings:\n"
-	       "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
-	      );
+               "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
+              );
 
     Config_updateBool(INLINE_INHERITED_MEMB, FALSE);
     Config_updateBool(INHERIT_DOCS,          FALSE);
