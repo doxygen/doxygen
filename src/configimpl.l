@@ -627,13 +627,11 @@ static void processString()
   int l = s.length();
 
   // remove surrounding quotes if present (and not escaped)
-  bool quotedString=false;
   if (l>=2 && s.at(0)=='"' && s.at(l-1)=='"' && // remove quotes
       (s.at(l-2)!='\\' || (s.at(l-2)=='\\' && s.at(l-3)=='\\')))
   {
     s=s.mid(1,s.length()-2);
     l=s.length();
-    quotedString=true;
   }
 
   // check for invalid and/or escaped quotes

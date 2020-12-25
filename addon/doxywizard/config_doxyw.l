@@ -68,9 +68,7 @@ static Input                         *g_curOption=0;
 static QByteArray                     g_str;
 static QTextCodec                    *g_codec     = QTextCodec::codecForName("UTF-8");
 static QString                        g_codecName = QString::fromLatin1("UTF-8");
-static int                            g_lastState;
 static QString                        g_cmd;
-static int                            g_part;
 static bool                           g_isEnum;
 
 static const char *stateToString(int state);
@@ -142,13 +140,11 @@ static void processString()
   int l = s.length();
 
   // remove surrounding quotes if present (and not escaped)
-  bool quotedString=false;
   if (l>=2 && s.at(0)=='"' && s.at(l-1)=='"' && // remove quotes
       (s.at(l-2)!='\\' || (s.at(l-2)=='\\' && s.at(l-3)=='\\')))
   {
     s=s.mid(1,s.length()-2);
     l=s.length();
-    quotedString=true;
   }
 
   // check for invalid and/or escaped quotes
@@ -403,7 +399,6 @@ static void readIncludeFile(const QString &incName)
    /*-------------- TAG start ---------------*/
 
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { g_cmd = g_codec->toUnicode(yytext);
-                                           g_part = 0;
                                            g_cmd=g_cmd.left(g_cmd.length()-1).trimmed();
 					   g_curOption = g_options->value(g_cmd);
 					   if (g_curOption==0) // oops not known
@@ -556,141 +551,6 @@ static void readIncludeFile(const QString &incName)
 <SkipInvalid>[^\n\\]+                   { // string part without escape characters
                                           g_str+=yytext;
                                         }
-
-    /*
-
-<GetString,GetEnum,SkipInvalid>\n       { BEGIN(Start); }
-<GetStrList>\n				{
-					  if (!g_str.isEmpty())
-					  {
-					    //printf("elemStr1='%s'\n",qPrintable(elemStr));
-					    *g_arg = QVariant(g_arg->toStringList() << g_str);
-					  }
-					  BEGIN(Start);
-					}
-<GetStrList>[ \t]+			{
-  				          if (!g_str.isEmpty())
-					  {
-					    //printf("elemStr2='%s'\n",qPrintable(elemStr));
-  					    *g_arg = QVariant(g_arg->toStringList() << g_str);
-					  }
-					  g_str = QString();
-  					}
-<GetString>[^ \"\t\r\n]+		{
-                                          if (g_part == 1) // multiple unquoted parts, reset to default
-                                          {
-                                            config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                        "Value should not contain unquoted whitespace, "
-                                                        "using the default\n",
-                                                        qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else if (g_part > 1) // multiple unquoted parts, reset to default
-                                          {
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else
-                                          {
-                                            *g_arg = QVariant(g_codec->toUnicode(yytext));
-                                            checkEncoding();
-                                          }
-                                          g_part++;
-                                        }
-<GetEnum>[^ \"\t\r\n]+			{
-                                          InputString *cur = dynamic_cast<InputString *>(g_curOption);
-                                          if (g_part == 1) // multiple unquoted parts, reset to default
-                                          {
-                                            config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                        "Value should not contain unquoted whitespace, "
-                                                        "using the default\n",
-                                                        qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else if (g_part > 1) // multiple unquoted parts, reset to default
-                                          {
-                                            *g_arg=QVariant(g_codec->toUnicode(""));
-                                          }
-                                          else
-                                          {
-                                            *g_arg = cur->checkEnumVal(g_codec->toUnicode(yytext));
-                                          }
-                                          g_part++;
-                                        }
-<GetString,GetEnum,GetStrList,SkipInvalid>"\""	{ g_lastState=YY_START;
-  					  BEGIN(GetQuotedString);
-                                          g_tmpString="";
-					}
-<GetQuotedString>"\""|"\n" 		{
-                                          // we add a bogus space to signal that the string was quoted. This space will be stripped later on.
-                                          g_tmpString+=" ";
-  					  //printf("Quoted String = '%s'\n",qPrintable(tmpString));
-					  if (g_lastState==GetString)
-					  {
-                                            if (g_part == 1) // multiple unquoted parts, reset to default
-                                            {
-                                              config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                          "Value should not contain unquoted whitespace, "
-                                                          "using the default\n",
-                                                          qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else if (g_part > 1) // multiple unquoted parts, reset to default
-                                            {
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else
-                                            {
-					      *g_arg = g_codec->toUnicode(g_tmpString);
-                                              checkEncoding();
-					    }
-                                            g_part++;
-					  }
-					  else if (g_lastState==GetEnum)
-					  {
-                                            if (g_part == 1) // multiple unquoted parts, reset to default
-                                            {
-                                              config_warn("Invalid value for '%s' tag in line %d, file %s\n"
-                                                          "Value should not contain unquoted whitespace, "
-                                                          "using the default\n",
-                                                          qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else if (g_part > 1) // multiple unquoted parts, reset to default
-                                            {
-                                              *g_arg=g_codec->toUnicode("");
-                                            }
-                                            else
-                                            {
-                                              InputString *cur = dynamic_cast<InputString *>(g_curOption);
-                                              *g_arg = cur->checkEnumVal(g_codec->toUnicode(g_tmpString));
-					    }
-                                            g_part++;
-					  }
-					  else
-					  {
-					    g_str+=g_codec->toUnicode(g_tmpString);
-					  }
-					  if (*yytext=='\n')
-					  {
-					    config_warn("Missing end quote (\") on line %d, file %s\n",yylineno,
-                                                qPrintable(g_yyFileName));
-					  }
-					  BEGIN(g_lastState);
-  					}
-<GetQuotedString>("\\\\"|"@\\"|"\\@"|"@@") {
-  					  g_tmpString+=yytext;
-  					}
-<GetQuotedString>"\\\""			{
-  					  g_tmpString+='"';
-  					}
-<GetQuotedString>.			{ g_tmpString+=*yytext; }
-<GetStrList>[^ \#\"\t\r\n]+		{
-  					  g_str+=g_codec->toUnicode(yytext);
-  					}
-<SkipComment>\n				{ BEGIN(Start); }
-<SkipComment>\\[ \r\t]*\n		{ BEGIN(Start); }
-<SkipComment,SkipInvalid>.		{ }
-   */
 
    /*-------------- fall through -------------*/
 
