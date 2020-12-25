@@ -712,13 +712,36 @@ static Definition *findScope(Entry *root,int level=0)
 }
 #endif
 
+QCString stripTemplateSpecifiers(const QCString &s)
+{
+  int l = s.length();
+  int count=0;
+  int round=0;
+  QCString result;
+  for (int i=0;i<l;i++)
+  {
+    char c=s.at(i);
+    if      (c=='(') round++;
+    else if (c==')' && round>0) round--;
+    else if (c=='<' && round==0) count++;
+    if (count==0)
+    {
+      result+=c;
+    }
+    if (c=='>' && round==0 && count>0) count--;
+  }
+  //printf("stripTemplateSpecifiers(%s)=%s\n",s.data(),result.data());
+  return result;
+}
+
 /*! returns the Definition object belonging to the first \a level levels of
  *  full qualified name \a name. Creates an artificial scope if the scope is
  *  not found and set the parent/child scope relation if the scope is found.
  */
-static Definition *buildScopeFromQualifiedName(const QCString name,
-                                               int level,SrcLangExt lang,const TagInfo *tagInfo)
+static Definition *buildScopeFromQualifiedName(const QCString name_,SrcLangExt lang,const TagInfo *tagInfo)
 {
+  QCString name = stripTemplateSpecifiers(name_);
+  int level = name.contains("::");
   //printf("buildScopeFromQualifiedName(%s) level=%d\n",name.data(),level);
   int i=0;
   int p=0,l;
@@ -845,8 +868,7 @@ static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,co
           // so use this instead.
           QCString fqn = QCString(ui.currentKey())+
                          scope.right(scope.length()-p);
-          resultScope = buildScopeFromQualifiedName(fqn,fqn.contains("::"),
-                                                    startScope->getLanguage(),0);
+          resultScope = buildScopeFromQualifiedName(fqn,startScope->getLanguage(),0);
           //printf("Creating scope from fqn=%s result %p\n",fqn.data(),resultScope);
           if (resultScope)
           {
@@ -1045,7 +1067,7 @@ static void addClassToContext(const Entry *root)
         // symbols imported via tag files may come without the parent scope,
         // so we artificially create it here
       {
-        buildScopeFromQualifiedName(fullName,fullName.contains("::"),root->lang,tagInfo);
+        buildScopeFromQualifiedName(fullName,root->lang,tagInfo);
       }
     }
     std::unique_ptr<ArgumentList> tArgList;
@@ -1242,7 +1264,7 @@ static void resolveClassNestingRelations()
       //printf("processing unresolved=%s, iteration=%d\n",cd->name().data(),iteration);
       /// create the scope artificially
       // anyway, so we can at least relate scopes properly.
-      Definition *d = buildScopeFromQualifiedName(name,name.contains("::"),cd->getLanguage(),0);
+      Definition *d = buildScopeFromQualifiedName(name,cd->getLanguage(),0);
       if (d && d!=cd && !cd->getDefFileName().isEmpty())
                  // avoid recursion in case of redundant scopes, i.e: namespace N { class N::C {}; }
                  // for this case doxygen assumes the existence of a namespace N::N in which C is to be found!
@@ -1575,7 +1597,7 @@ static void buildNamespaceList(const Entry *root)
         if (d==0) // we didn't find anything, create the scope artificially
                   // anyway, so we can at least relate scopes properly.
         {
-          d = buildScopeFromQualifiedName(fullName,fullName.contains("::"),nd->getLanguage(),tagInfo);
+          d = buildScopeFromQualifiedName(fullName,nd->getLanguage(),tagInfo);
           DefinitionMutable *dm = toDefinitionMutable(d);
           if (dm)
           {
@@ -4553,8 +4575,11 @@ static bool findClassRelation(
           // the undocumented base was found in this file
           baseClass->insertUsedFile(root->fileDef());
 
-          Definition *scope = buildScopeFromQualifiedName(baseClass->name(),baseClass->name().contains("::"),root->lang,0);
-          baseClass->setOuterScope(scope);
+          Definition *scope = buildScopeFromQualifiedName(baseClass->name(),root->lang,0);
+          if (scope!=baseClass)
+          {
+            baseClass->setOuterScope(scope);
+          }
 
           if (baseClassName.right(2)=="-p")
           {
