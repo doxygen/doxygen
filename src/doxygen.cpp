@@ -11447,6 +11447,11 @@ void parseInput()
            qstricmp(c1->className(), c2->className())<0;
   };
 
+  auto namespaceComp = [](const NamespaceLinkedMap::Ptr &n1,const NamespaceLinkedMap::Ptr &n2)
+  {
+    return qstricmp(n1->name(),n2->name())<0;
+  };
+
   g_s.begin("Sorting lists...\n");
   std::sort(Doxygen::memberNameLinkedMap->begin(),
             Doxygen::memberNameLinkedMap->end(),
@@ -11460,6 +11465,9 @@ void parseInput()
   std::sort(Doxygen::classLinkedMap->begin(),
             Doxygen::classLinkedMap->end(),
             classComp);
+  std::sort(Doxygen::namespaceLinkedMap->begin(),
+            Doxygen::namespaceLinkedMap->end(),
+            namespaceComp);
   g_s.end();
 
   QDir thisDir;
