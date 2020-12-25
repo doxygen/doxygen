@@ -175,7 +175,7 @@ static void processString()
       {
         std::string str = g_str.trimmed().toStdString();
         config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
-                    qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName),str.c_str());
+                    qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str());
       }
       warned=true;
     }
@@ -269,7 +269,7 @@ static void processList()
         {
           std::string str = g_str.trimmed().toStdString();
           config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
-                    qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName),str.c_str(),allowCommaAsSeparator?"or comma ":"");
+                    qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str(),allowCommaAsSeparator?"or comma ":"");
           warned=true;
         }
         needsSeparator=false;
@@ -288,7 +288,7 @@ static void processList()
   {
     std::string str = g_str.trimmed().toStdString();
     config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
-                g_cmd.data(),yylineno,g_yyFileName.data(),str.c_str());
+                qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str());
   }
 }
 
