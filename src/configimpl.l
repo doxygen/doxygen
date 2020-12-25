@@ -511,7 +511,6 @@ static const char       *g_inputString;
 static int               g_inputPosition;
 static int               g_yyLineNr;
 static QCString          g_yyFileName;
-static QCString          g_tmpString;
 static QCString          g_cmd;
 static QCString         *g_string=0;
 static StringVector     *g_list=0;
@@ -522,7 +521,6 @@ static int               g_includeDepth;
 static bool              g_configUpdate = FALSE;
 static QCString          g_encoding;
 static ConfigImpl       *g_config;
-static int               g_part;
 
 /* -----------------------------------------------------------------
  */
@@ -594,10 +592,38 @@ static void checkEncoding()
   g_encoding = *option->valueRef();
 }
 
+static QCString stripComment(const QCString &s)
+{
+  // check if there is a comment at the end of the string
+  bool insideQuote=false;
+  int l = s.length();
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (c=='\\') // skip over escaped characters
+    {
+      i++;
+    }
+    else if (c=='"') // toggle inside/outside quotation
+    {
+      insideQuote=!insideQuote;
+    }
+    else if (!insideQuote && c=='#') // found start of a comment
+    {
+      if (i<l-1 && s.at(i+1)=='#') // ## -> user comment
+      {
+        g_config->appendUserComment(s.mid(i)+"\n");
+      }
+      return s.left(i).stripWhiteSpace();
+    }
+  }
+  return s;
+}
+
 static void processString()
 {
   // strip leading and trailing whitespace
-  QCString s = g_string->stripWhiteSpace();
+  QCString s = stripComment(g_string->stripWhiteSpace());
   int l = s.length();
 
   // remove surrounding quotes if present (and not escaped)
@@ -637,18 +663,9 @@ static void processString()
       if (!warned)
       {
         config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
-                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_string->data());
+                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_string->stripWhiteSpace().data());
       }
       warned=true;
-    }
-    else if (c=='#' && !quotedString) // found comment
-    {
-      if (i<l-1 && s.at(i+1)=='#') // user comment
-      {
-        g_config->appendUserComment(s.mid(i)+"\n");
-      }
-      result=result.stripWhiteSpace();
-      break;
     }
     else // normal character
     {
@@ -669,7 +686,7 @@ static void processList()
 {
   bool allowCommaAsSeparator = g_cmd!="PREDEFINED";
 
-  const QCString s = g_listStr.stripWhiteSpace();
+  const QCString s = stripComment(g_listStr.stripWhiteSpace());
   int l = s.length();
 
   QCString elemStr;
@@ -725,15 +742,6 @@ static void processList()
       needsSeparator=false;
       addElem();
     }
-    else if (!insideQuote && c=='#') // found comment
-    {
-      if (i<l-1 && s.at(i+1)=='#') // user comment
-      {
-        g_config->appendUserComment(s.mid(i)+"\n");
-      }
-      addElem();
-      break;
-    }
     else // normal content character
     {
       if (needsSeparator)
@@ -741,7 +749,7 @@ static void processList()
         if (!warned)
         {
           config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
-                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.data(),allowCommaAsSeparator?"or comma ":"");
+                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.stripWhiteSpace().data(),allowCommaAsSeparator?"or comma ":"");
           warned=true;
         }
         needsSeparator=false;
@@ -759,7 +767,7 @@ static void processList()
   if (insideQuote)
   {
     config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
-                g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.data());
+                g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.stripWhiteSpace().data());
   }
 }
 
@@ -849,10 +857,9 @@ static void readIncludeFile(const char *incName)
 %}
 
 %option noyywrap
+%option nounput
 
-%x      PreStart
 %x      Start
-%x      SkipComment
 %x      SkipInvalid
 %x      GetString
 %x      GetStrList
@@ -864,19 +871,18 @@ static void readIncludeFile(const char *incName)
 
    /*-------------- Comments ---------------*/
 
-<PreStart>"##".*"\n"                     { g_config->appendStartComment(yytext);g_yyLineNr++;}
-<PreStart>.                              {
-                                           BEGIN(Start);
-                                           unput(*yytext);
+<Start>"##".*"\n"                        {
+                                           g_config->appendUserComment(yytext);
+                                           g_yyLineNr++;
                                          }
-<Start>"##".*"\n"                        { g_config->appendUserComment(yytext);g_yyLineNr++;}
-<Start>"#"[^#].*"\n"                     { /* normal comment */ }
+<Start>"#"[^#].*"\n"                     { /* normal comment */
+                                           g_yyLineNr++;
+                                         }
 
    /*-------------- TAG start ---------------*/
 
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="   { g_cmd=yytext;
                                            g_cmd=g_cmd.left(g_cmd.length()-1).stripWhiteSpace();
-                                           g_part=0;
                                            ConfigOption *option = g_config->get(g_cmd);
                                            if (option==0) // oops not known
                                            {
@@ -1032,8 +1038,8 @@ static void readIncludeFile(const char *incName)
 <Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
    /*-------------- GetString ---------------*/
 
-<GetString>\n                           { g_yyLineNr++; // end of string
-                                          processString();
+<GetString>\n                           { processString();
+                                          g_yyLineNr++; // end of string
                                           BEGIN(Start);
                                         }
 <GetString>\\[ \r\t]*\n                 { g_yyLineNr++; // line continuation
@@ -1048,8 +1054,8 @@ static void readIncludeFile(const char *incName)
 
    /*-------------- GetStrList --------------*/
 
-<GetStrList>\n                          { g_yyLineNr++; // end of list
-                                          processList();
+<GetStrList>\n                          { processList();
+                                          g_yyLineNr++; // end of list
                                           BEGIN(Start);
                                         }
 <GetStrList>\\[ \r\t]*\n                { g_yyLineNr++; // line continuation
@@ -1074,18 +1080,12 @@ static void readIncludeFile(const char *incName)
 <SkipInvalid>[^\n\\]+                   { // string part without escape characters
                                         }
 
-   /*-------------- SkipComment --------------*/
-
-<SkipComment>\n                         { g_yyLineNr++; BEGIN(Start); }
-<SkipComment>\\[ \r\t]*\n               { g_yyLineNr++; BEGIN(Start); }
-<SkipComment,SkipInvalid>.
-
    /*-------------- fall through -------------*/
 
 <*>\\[ \r\t]*\n                         { g_yyLineNr++; }
 <*>[ \t\r]
-<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,g_yyFileName.data()); }
 <*>\n                                   { g_yyLineNr++ ; }
+<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,g_yyFileName.data()); }
 
 %%
 
@@ -1380,7 +1380,7 @@ bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
   g_includeStack.clear();
   g_includeDepth  = 0;
   configimplYYrestart( configimplYYin );
-  BEGIN( PreStart );
+  BEGIN( Start );
   g_configUpdate = update;
   configimplYYlex();
   g_configUpdate = FALSE;

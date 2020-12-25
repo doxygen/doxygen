@@ -65,13 +65,13 @@ static QStack<ConfigFileState*>       g_includeStack;
 static int                            g_includeDepth;
 static QVariant                      *g_arg;
 static Input                         *g_curOption=0;
-static QString                        g_elemStr;
+static QByteArray                     g_str;
 static QTextCodec                    *g_codec     = QTextCodec::codecForName("UTF-8");
 static QString                        g_codecName = QString::fromLatin1("UTF-8");
 static int                            g_lastState;
-static QByteArray                     g_tmpString;
 static QString                        g_cmd;
 static int                            g_part;
+static bool                           g_isEnum;
 
 static const char *stateToString(int state);
 
@@ -109,6 +109,193 @@ static void checkEncoding()
     }
   }
 }
+
+static QByteArray stripComment(const QByteArray &s)
+{
+  // check if there is a comment at the end of the string
+  bool insideQuote=false;
+  int l = s.length();
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (c=='\\') // skip over escaped characters
+    {
+      i++;
+    }
+    else if (c=='"') // toggle inside/outside quotation
+    {
+      insideQuote=!insideQuote;
+    }
+    else if (!insideQuote && c=='#') // found start of a comment
+    {
+      return s.left(i).trimmed();
+    }
+  }
+  return s;
+}
+
+
+static void processString()
+{
+  // strip leading and trailing whitespace
+  QByteArray s = stripComment(g_str.trimmed());
+  int l = s.length();
+
+  // remove surrounding quotes if present (and not escaped)
+  bool quotedString=false;
+  if (l>=2 && s.at(0)=='"' && s.at(l-1)=='"' && // remove quotes
+      (s.at(l-2)!='\\' || (s.at(l-2)=='\\' && s.at(l-3)=='\\')))
+  {
+    s=s.mid(1,s.length()-2);
+    l=s.length();
+    quotedString=true;
+  }
+
+  // check for invalid and/or escaped quotes
+  bool warned=false;
+  QByteArray result;
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (c=='\\') // escaped character
+    {
+      if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
+      {
+        result+='"';
+      }
+      else // keep other escaped characters in escaped form
+      {
+        result+=c;
+        if (i<l-1)
+        {
+          result+=s.at(i+1);
+        }
+      }
+      i++; // skip over the escaped character
+    }
+    else if (c=='"') // unescaped quote
+    {
+      if (!warned)
+      {
+        std::string str = g_str.trimmed().toStdString();
+        config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
+                    qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName),str.c_str());
+      }
+      warned=true;
+    }
+    else // normal character
+    {
+      result+=c;
+    }
+  }
+
+  // recode the string
+  if (g_isEnum)
+  {
+    InputString *cur = dynamic_cast<InputString *>(g_curOption);
+    *g_arg = cur->checkEnumVal(g_codec->toUnicode(result));
+  }
+  else
+  {
+    *g_arg = QVariant(g_codec->toUnicode(result));
+  }
+
+  // update encoding
+  checkEncoding();
+
+  //printf("Processed string '%s'\n",g_string->data());
+}
+
+static void processList()
+{
+  bool allowCommaAsSeparator = g_cmd!=QString::fromLatin1("PREDEFINED");
+
+  const QByteArray s = stripComment(g_str.trimmed());
+  int l = s.length();
+
+  QByteArray elemStr;
+
+  // helper to push elemStr to the list and clear it
+  auto addElem = [&elemStr]()
+  {
+    if (!elemStr.isEmpty())
+    {
+      //printf("Processed list element '%s'\n",e.data());
+      *g_arg = QVariant(g_arg->toStringList() << g_codec->toUnicode(elemStr));
+      elemStr="";
+    }
+  };
+
+  bool needsSeparator=false;
+  int insideQuote=false;
+  bool warned=false;
+  for (int i=0;i<l;i++)
+  {
+    char c = s.at(i);
+    if (!needsSeparator && c=='\\') // escaped character
+    {
+      if (i<l-1 && s.at(i+1)=='"') // unescape the quote character
+      {
+        elemStr+='"';
+      }
+      else // keep other escaped characters in escaped form
+      {
+        elemStr+=c;
+        if (i<l-1)
+        {
+          elemStr+=s.at(i+1);
+        }
+      }
+      i++; // skip over the escaped character
+    }
+    else if (!needsSeparator && c=='"') // quote character
+    {
+      if (!insideQuote)
+      {
+        insideQuote=true;
+      }
+      else // this quote ends an element
+      {
+        insideQuote=false;
+        needsSeparator=true;
+      }
+    }
+    else if (!insideQuote && ((c==',' && allowCommaAsSeparator) || isspace(c))) // separator
+    {
+      needsSeparator=false;
+      addElem();
+    }
+    else // normal content character
+    {
+      if (needsSeparator)
+      {
+        if (!warned)
+        {
+          std::string str = g_str.trimmed().toStdString();
+          config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
+                    qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName),str.c_str(),allowCommaAsSeparator?"or comma ":"");
+          warned=true;
+        }
+        needsSeparator=false;
+        i--; // try the character again as part of a new element
+        addElem();
+      }
+      else
+      {
+        elemStr+=c;
+      }
+    }
+  }
+  // add last part
+  addElem();
+  if (insideQuote)
+  {
+    std::string str = g_str.trimmed().toStdString();
+    config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
+                g_cmd.data(),yylineno,g_yyFileName.data(),str.c_str());
+  }
+}
+
 
 static FILE *tryPath(const QString &path,const QString &fileName)
 {
@@ -198,7 +385,6 @@ static void readIncludeFile(const QString &incName)
 %option yylineno
 
 %x      Start
-%x	SkipComment
 %x      SkipInvalid
 %x      GetString
 %x      GetEnum
@@ -209,7 +395,13 @@ static void readIncludeFile(const QString &incName)
 %%
 
 <*>\0x0d
-<Start,GetString,GetEnum,GetStrList,SkipInvalid>"#"	 { BEGIN(SkipComment); }
+
+   /*-------------- Comments ---------------*/
+
+<Start>"#".*\n	                         { /* Skip comment */ }
+
+   /*-------------- TAG start ---------------*/
+
 <Start>[a-z_A-Z][a-z_A-Z0-9]*[ \t]*"="	 { g_cmd = g_codec->toUnicode(yytext);
                                            g_part = 0;
                                            g_cmd=g_cmd.left(g_cmd.length()-1).trimmed();
@@ -222,24 +414,17 @@ static void readIncludeFile(const QString &incName)
 					   }
 					   else // known tag
 					   {
-					     //option->setEncoding(encoding);
 					     g_arg = &g_curOption->value();
+                                             g_str = QByteArray();
 					     switch(g_curOption->kind())
 					     {
 					       case Input::StrList:
-						 g_elemStr = QString();
 						 *g_arg = QStringList();
 					         BEGIN(GetStrList);
 					         break;
 					       case Input::String:
-                                                 if (dynamic_cast<InputString *>(g_curOption)->stringMode() == InputString::StringFixed)
-                                                 {
-                                                   BEGIN(GetEnum);
-                                                 }
-                                                 else
-                                                 {
-                                                   BEGIN(GetString);
-                                                 }
+                                                 g_isEnum = dynamic_cast<InputString *>(g_curOption)->stringMode() == InputString::StringFixed;
+                                                 BEGIN(GetString);
 					         break;
 					       case Input::Int:
 					         BEGIN(GetString);
@@ -272,7 +457,7 @@ static void readIncludeFile(const QString &incName)
 					    {
 					      case Input::StrList:
 						g_arg = &g_curOption->value();
-						g_elemStr=QString();
+						g_str=QByteArray();
 					        BEGIN(GetStrList);
 					        break;
 					      case Input::String:
@@ -292,7 +477,10 @@ static void readIncludeFile(const QString &incName)
 					     }
 					   }
 					}
-<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); g_arg=&g_includePathList; *g_arg = QStringList(); g_elemStr=QString(); }
+
+   /*-------------- INCLUDE* ---------------*/
+
+<Start>"@INCLUDE_PATH"[ \t]*"=" 	{ BEGIN(GetStrList); g_arg=&g_includePathList; *g_arg = QStringList(); g_str=QByteArray(); }
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
@@ -321,22 +509,72 @@ static void readIncludeFile(const QString &incName)
   					}
 
 <Start>[a-z_A-Z0-9]+			{ config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,yylineno,qPrintable(g_yyFileName)); }
-<GetString,GetEnum,SkipInvalid>\n	        { BEGIN(Start); }
+
+   /*-------------- GetString ---------------*/
+
+<GetString>\n                           { // end of string
+                                          processString();
+                                          BEGIN(Start);
+                                        }
+<GetString>\\[ \r\t]*\n                 { // line continuation
+                                          g_str+=' ';
+                                        }
+<GetString>"\\"                         { // escape character
+                                          g_str+=yytext;
+                                        }
+<GetString>[^\n\\]+                     { // string part without escape characters
+                                          g_str+=yytext;
+                                        }
+
+   /*-------------- GetStrList ---------------*/
+
+<GetStrList>\n                          { // end of list
+                                          processList();
+                                          BEGIN(Start);
+                                        }
+<GetStrList>\\[ \r\t]*\n                { // line continuation
+                                          g_str+=' ';
+                                        }
+<GetStrList>"\\"                        { // escape character
+                                          g_str+=yytext;
+                                        }
+<GetStrList>[^\n\\]+                    { // string part without escape characters
+                                          g_str+=yytext;
+                                        }
+
+   /*-------------- SkipInvalid ---------------*/
+
+<SkipInvalid>\n                         { // end of skipped part
+                                          BEGIN(Start);
+                                        }
+<SkipInvalid>\\[ \r\t]*\n               { // line continuation
+                                          g_str+=' ';
+                                        }
+<SkipInvalid>"\\"                       { // escape character
+                                          g_str+=yytext;
+                                        }
+<SkipInvalid>[^\n\\]+                   { // string part without escape characters
+                                          g_str+=yytext;
+                                        }
+
+    /*
+
+<GetString,GetEnum,SkipInvalid>\n       { BEGIN(Start); }
 <GetStrList>\n				{
-					  if (!g_elemStr.isEmpty())
+					  if (!g_str.isEmpty())
 					  {
 					    //printf("elemStr1='%s'\n",qPrintable(elemStr));
-					    *g_arg = QVariant(g_arg->toStringList() << g_elemStr);
+					    *g_arg = QVariant(g_arg->toStringList() << g_str);
 					  }
 					  BEGIN(Start);
 					}
 <GetStrList>[ \t]+			{
-  				          if (!g_elemStr.isEmpty())
+  				          if (!g_str.isEmpty())
 					  {
 					    //printf("elemStr2='%s'\n",qPrintable(elemStr));
-  					    *g_arg = QVariant(g_arg->toStringList() << g_elemStr);
+  					    *g_arg = QVariant(g_arg->toStringList() << g_str);
 					  }
-					  g_elemStr = QString();
+					  g_str = QString();
   					}
 <GetString>[^ \"\t\r\n]+		{
                                           if (g_part == 1) // multiple unquoted parts, reset to default
@@ -430,7 +668,7 @@ static void readIncludeFile(const QString &incName)
 					  }
 					  else
 					  {
-					    g_elemStr+=g_codec->toUnicode(g_tmpString);
+					    g_str+=g_codec->toUnicode(g_tmpString);
 					  }
 					  if (*yytext=='\n')
 					  {
@@ -447,11 +685,15 @@ static void readIncludeFile(const QString &incName)
   					}
 <GetQuotedString>.			{ g_tmpString+=*yytext; }
 <GetStrList>[^ \#\"\t\r\n]+		{
-  					  g_elemStr+=g_codec->toUnicode(yytext);
+  					  g_str+=g_codec->toUnicode(yytext);
   					}
 <SkipComment>\n				{ BEGIN(Start); }
 <SkipComment>\\[ \r\t]*\n		{ BEGIN(Start); }
 <SkipComment,SkipInvalid>.		{ }
+   */
+
+   /*-------------- fall through -------------*/
+
 <*>\\[ \r\t]*\n				{ }
 <*>[ \r\t]				{ }
 <*>\n

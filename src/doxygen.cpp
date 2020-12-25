@@ -4229,7 +4229,7 @@ static int findEndOfTemplate(const QCString &s,int startPos)
 static int findTemplateSpecializationPosition(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
-  int l = strlen(name);
+  int l = static_cast<int>(strlen(name));
   if (name[l-1]=='>') // search backward to find the matching <, allowing nested <...> and strings.
   {
     int count=1;
