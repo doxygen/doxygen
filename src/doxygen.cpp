@@ -11467,9 +11467,15 @@ void parseInput()
 
   auto classComp = [](const ClassLinkedMap::Ptr &c1,const ClassLinkedMap::Ptr &c2)
   {
-    return Config_getBool(SORT_BY_SCOPE_NAME)          ?
-           qstricmp(c1->name(), c2->name())<0          :
-           qstricmp(c1->className(), c2->className())<0;
+    if (Config_getBool(SORT_BY_SCOPE_NAME))
+    {
+      return qstricmp(c1->name(), c2->name())<0;
+    }
+    else
+    {
+      int i = qstricmp(c1->className(), c2->className());
+      return i==0 ? qstricmp(c1->name(), c2->name())<0 : i<0;
+    }
   };
 
   auto namespaceComp = [](const NamespaceLinkedMap::Ptr &n1,const NamespaceLinkedMap::Ptr &n2)
