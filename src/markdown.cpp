@@ -1649,7 +1649,7 @@ static bool isFencedCodeBlock(const char *data,int size,int refIndent,
   {
     if (data[i]==tildaChar)
     {
-      end=i-1;
+      end=i;
       int endTildes=0;
       while (i<size && data[i]==tildaChar) endTildes++,i++;
       while (i<size && data[i]==' ') i++;
@@ -2291,7 +2291,6 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
     m_out.addStr("{"+lang+"}");
   }
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
-  m_out.addStr(" ");
   m_out.addStr("@endcode");
 }
 
