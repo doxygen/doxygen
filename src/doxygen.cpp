@@ -7131,9 +7131,13 @@ static void addEnumValuesToEnums(const Entry *root)
                       e->type,e->name,e->args,0,
                       e->protection, Normal,e->stat,Member,
                       MemberType_EnumValue,ArgumentList(),ArgumentList(),e->metaData) };
-                  if      (md->getClassDef())     fmd->setMemberClass(md->getClassDef());
-                  else if (md->getNamespaceDef()) fmd->setNamespace(md->getNamespaceDef());
-                  else if (md->getFileDef())      fmd->setFileDef(md->getFileDef());
+                  const NamespaceDef *mnd = md->getNamespaceDef();
+                  if      (md->getClassDef())
+                    fmd->setMemberClass(md->getClassDef());
+                  else if (mnd && (mnd->isLinkable() || mnd->isAnonymous()))
+                    fmd->setNamespace(mnd);
+                  else if (md->getFileDef())
+                    fmd->setFileDef(md->getFileDef());
                   fmd->setOuterScope(md->getOuterScope());
                   fmd->setTagInfo(e->tagInfo());
                   fmd->setLanguage(e->lang);
