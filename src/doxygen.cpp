@@ -4372,7 +4372,7 @@ static bool findClassRelation(
         int i=findTemplateSpecializationPosition(baseClassName);
         int si=baseClassName.findRev("::",i);
         if (si==-1) si=0;
-        if (baseClass==0 && i!=-1)
+        if (baseClass==0 && static_cast<uint>(i)!=baseClassName.length())
           // base class has template specifiers
         {
           // TODO: here we should try to find the correct template specialization
@@ -4427,13 +4427,6 @@ static bool findClassRelation(
           if (found) templSpec = tmpTemplSpec;
         }
         //printf("2. found=%d\n",found);
-
-        //printf("root->name=%s biName=%s baseClassName=%s\n",
-        //        root->name.data(),biName.data(),baseClassName.data());
-        //if (cd->isCSharp() && i!=-1) // C# generic -> add internal -g postfix
-        //{
-        //  baseClassName+="-g";
-        //}
 
         if (!found)
         {
@@ -7574,7 +7567,7 @@ static void createTemplateInstanceMembers()
         ClassDefMutable *tcdm = toClassDefMutable(tcd);
         if (tcdm)
         {
-          tcdm->addMembersToTemplateInstance(cd.get(),qdi.currentKey());
+          tcdm->addMembersToTemplateInstance(cd.get(),cd->templateArguments(),qdi.currentKey());
         }
       }
     }
