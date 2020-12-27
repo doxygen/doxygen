@@ -173,7 +173,7 @@ static void processString()
     {
       if (!warned)
       {
-        std::string str = g_str.trimmed().toStdString();
+        std::string str = g_str.trimmed().data();
         config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
                     qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str());
       }
@@ -267,7 +267,7 @@ static void processList()
       {
         if (!warned)
         {
-          std::string str = g_str.trimmed().toStdString();
+          std::string str = g_str.trimmed().data();
           config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
                     qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str(),allowCommaAsSeparator?"or comma ":"");
           warned=true;
@@ -286,7 +286,7 @@ static void processList()
   addElem();
   if (insideQuote)
   {
-    std::string str = g_str.trimmed().toStdString();
+    std::string str = g_str.trimmed().data();
     config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
                 qPrintable(g_cmd),yylineno-1,qPrintable(g_yyFileName),str.c_str());
   }
@@ -411,6 +411,7 @@ static void readIncludeFile(const QString &incName)
 					   {
 					     g_arg = &g_curOption->value();
                                              g_str = QByteArray();
+                                             g_isEnum = false;
 					     switch(g_curOption->kind())
 					     {
 					       case Input::StrList:
