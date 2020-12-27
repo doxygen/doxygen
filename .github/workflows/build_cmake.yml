@@ -60,6 +60,11 @@ jobs:
           }
     steps:
     - uses: actions/checkout@v1
+    
+    - name: print env
+      run: |
+        pwd
+        find
       
     - name: Download MikTex (Windows)
       run: |
