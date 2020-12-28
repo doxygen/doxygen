@@ -283,6 +283,12 @@ jobs:
           message(FATAL_ERROR "Build failed")
         endif()
 
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: "${{ matrix.config.name }} build artifacts"
+        path: build/bin/
+
     - name: Run tests (Linux / MacOS)
       shell: cmake -P {0}
       run: |
