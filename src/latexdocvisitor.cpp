@@ -951,6 +951,26 @@ void LatexDocVisitor::visitPost(DocHtmlListItem *)
 //  m_t << "\\end{alltt}\\normalsize " << endl;
 //}
 
+static bool listIsNested(const DocNode *n)
+{
+  bool isNested=false;
+  if (n)
+  {
+    if (n->kind()==DocNode::Kind_HtmlDescList && ((DocHtmlDescList *)n)->attribs().find("class") == "reflist") return false;
+    n  = n->parent();
+  }
+  while (n && !isNested)
+  {
+    if (n->kind()==DocNode::Kind_HtmlDescList)
+    {
+      QCString val = ((DocHtmlDescList *)n)->attribs().find("class");
+      isNested = (val!="reflist");
+    }
+    n  = n->parent();
+  }
+  return isNested;
+}
+
 void LatexDocVisitor::visitPre(DocHtmlDescList *dl)
 {
   if (m_hide) return;
@@ -961,6 +981,7 @@ void LatexDocVisitor::visitPre(DocHtmlDescList *dl)
   }
   else
   {
+    if (listIsNested(dl)) m_t << "\n\\hfill";
     m_t << "\n\\begin{DoxyDescription}";
   }
 }
