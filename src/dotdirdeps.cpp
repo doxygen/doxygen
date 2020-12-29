@@ -60,7 +60,15 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   QDict<DirDef> dirsInGraph(257);
 
   dirsInGraph.insert(dd->getOutputFileBase(),dd);
-  if (dd->parent())
+
+  std::vector<const DirDef *> usedDirsToBeDrawn;
+  for(const auto& usedDir : dd->usedDirs())
+  {
+    usedDirsToBeDrawn.push_back(usedDir->dir());
+  }
+
+  const auto parent = dd->parent();
+  if (parent)
   {
     t << "  subgraph cluster" << dd->parent()->getOutputFileBase() << " {\n";
     t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\""
@@ -68,6 +76,21 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       << "\" fontname=\"" << fontName << "\", fontsize=\"" << fontSize << "\", URL=\"";
     t << dd->parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
     t << "\"]\n";
+
+    {
+      // draw all directories which have `dd->parent()` as parent and `dd` as dependent
+      const auto newEnd = std::remove_if(usedDirsToBeDrawn.begin(), usedDirsToBeDrawn.end(), [&](const DirDef *const usedDir)
+      {
+        if (usedDir->parent() == parent)
+        {
+          drawDirectory(t, usedDir, usedDir->isCluster() && !Config_getBool(DOT_TRANSPARENT), dirsInGraph);
+          return true;
+        }
+        return false;
+      }
+      );
+      usedDirsToBeDrawn.erase(newEnd, usedDirsToBeDrawn.end());
+    }
   }
   if (dd->isCluster())
   {
@@ -100,10 +123,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   // add nodes for other used directories
   {
     //printf("*** For dir %s\n",shortName().data());
-    for (const auto &udir : dd->usedDirs())
+    for (const auto &usedDir : usedDirsToBeDrawn)
       // for each used dir (=directly used or a parent of a directly used dir)
     {
-      const DirDef *usedDir = udir->dir();
       const DirDef *dir=dd;
       while (dir)
       {
