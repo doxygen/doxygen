@@ -204,12 +204,14 @@ a.SRScope:focus, a.SRScope:active {
 
 span.SRScope {
     padding-left: 4px;
+    font-family: Arial, Verdana, sans-serif;
 }
 
 .SRPage .SRStatus {
     padding: 2px 5px;
     font-size: 8pt;
     font-style: italic;
+    font-family: Arial, Verdana, sans-serif;
 }
 
 .SRResult {

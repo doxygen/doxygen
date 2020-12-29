@@ -9610,25 +9610,26 @@ TemplateVariant SymbolContext::get(const char *name) const
 class SymbolListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const SearchDefinitionList *sdl)
+    Private(const SearchIndexList::const_iterator &start,
+            const SearchIndexList::const_iterator &end)
     {
-      QListIterator<Definition> li(*sdl);
-      const Definition *def;
       const Definition *prev = 0;
-      for (li.toFirst();(def=li.current());)
+      for (auto it = start; it!=end;)
       {
-        ++li;
-        const Definition *next = li.current();
+        const Definition *def = *it;
+        ++it;
+        const Definition *next = it!=end ? *it : 0;
         append(SymbolContext::alloc(def,prev,next));
         prev = def;
       }
     }
 };
 
-SymbolListContext::SymbolListContext(const SearchDefinitionList *sdl)
+SymbolListContext::SymbolListContext(const SearchIndexList::const_iterator &start,
+                                     const SearchIndexList::const_iterator &end)
     : RefCountedContext("SymbolListContext")
 {
-  p = new Private(sdl);
+  p = new Private(start,end);
 }
 
 SymbolListContext::~SymbolListContext()
@@ -9659,7 +9660,8 @@ TemplateListIntf::ConstIterator *SymbolListContext::createIterator() const
 class SymbolGroupContext::Private
 {
   public:
-    Private(const SearchDefinitionList *sdl) : m_sdl(sdl)
+    Private(const SearchIndexList::const_iterator &start,
+            const SearchIndexList::const_iterator &end) : m_start(start), m_end(end)
     {
       static bool init=FALSE;
       if (!init)
@@ -9676,22 +9678,23 @@ class SymbolGroupContext::Private
     }
     TemplateVariant id() const
     {
-      return m_sdl->id();
+      return searchId(*m_start);
     }
     TemplateVariant name() const
     {
-      return m_sdl->name();
+      return searchName(*m_start);
     }
     TemplateVariant symbolList() const
     {
       if (!m_cache.symbolList)
       {
-        m_cache.symbolList.reset(SymbolListContext::alloc(m_sdl));
+        m_cache.symbolList.reset(SymbolListContext::alloc(m_start,m_end));
       }
       return m_cache.symbolList.get();
     }
   private:
-    const SearchDefinitionList *m_sdl;
+    SearchIndexList::const_iterator m_start;
+    SearchIndexList::const_iterator m_end;
     struct Cachable
     {
       SharedPtr<SymbolListContext> symbolList;
@@ -9703,10 +9706,11 @@ class SymbolGroupContext::Private
 
 PropertyMapper<SymbolGroupContext::Private> SymbolGroupContext::Private::s_inst;
 
-SymbolGroupContext::SymbolGroupContext(const SearchDefinitionList *sdl)
+SymbolGroupContext::SymbolGroupContext(const SearchIndexList::const_iterator &start,
+                                       const SearchIndexList::const_iterator &end)
     : RefCountedContext("SymbolGroupContext")
 {
-  p = new Private(sdl);
+  p = new Private(start,end);
 }
 
 SymbolGroupContext::~SymbolGroupContext()
@@ -9725,18 +9729,30 @@ TemplateVariant SymbolGroupContext::get(const char *name) const
 class SymbolGroupListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const SearchIndexList *sil)
+    Private(const SearchIndexList &sil)
     {
-      SDict<SearchDefinitionList>::Iterator li(*sil);
-      SearchDefinitionList *dl;
-      for (li.toFirst();(dl=li.current());++li)
+      QCString lastName;
+      auto it = sil.begin();
+      auto it_begin = it;
+      while (it!=sil.end())
       {
-        append(SymbolGroupContext::alloc(dl));
+        QCString name = searchName(*it);
+        if (name!=lastName)
+        {
+          append(SymbolGroupContext::alloc(it_begin,it));
+          it_begin = it;
+          lastName = name;
+        }
+        ++it;
+      }
+      if (it_begin!=sil.end())
+      {
+        append(SymbolGroupContext::alloc(it_begin,sil.end()));
       }
     }
 };
 
-SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList *sil)
+SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList &sil)
     : RefCountedContext("SymbolGroupListContext")
 {
   p = new Private(sil);
@@ -9770,7 +9786,9 @@ TemplateListIntf::ConstIterator *SymbolGroupListContext::createIterator() const
 class SymbolIndexContext::Private
 {
   public:
-    Private(const SearchIndexList *sl,const QCString &name) : m_searchList(sl), m_name(name)
+    Private(const std::string &letter,
+            const SearchIndexList &sl,
+            const QCString &name) : m_letter(letter), m_searchList(sl), m_name(name)
     {
       static bool init=FALSE;
       if (!init)
@@ -9791,7 +9809,7 @@ class SymbolIndexContext::Private
     }
     TemplateVariant letter() const
     {
-      return QString(QChar(m_searchList->letter())).utf8();
+      return m_letter;
     }
     TemplateVariant symbolGroups() const
     {
@@ -9802,7 +9820,8 @@ class SymbolIndexContext::Private
       return m_cache.symbolGroups.get();
     }
   private:
-    const SearchIndexList *m_searchList;
+    QCString m_letter;
+    const SearchIndexList &m_searchList;
     QCString m_name;
     struct Cachable
     {
@@ -9815,10 +9834,10 @@ class SymbolIndexContext::Private
 
 PropertyMapper<SymbolIndexContext::Private> SymbolIndexContext::Private::s_inst;
 
-SymbolIndexContext::SymbolIndexContext(const SearchIndexList *sl,const QCString &name)
+SymbolIndexContext::SymbolIndexContext(const std::string &letter,const SearchIndexList &sl,const QCString &name)
     : RefCountedContext("SymbolIndexContext")
 {
-  p = new Private(sl,name);
+  p = new Private(letter,sl,name);
 }
 
 SymbolIndexContext::~SymbolIndexContext()
@@ -9837,19 +9856,17 @@ TemplateVariant SymbolIndexContext::get(const char *name) const
 class SymbolIndicesContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const SearchIndexInfo *info)
+    Private(const SearchIndexInfo &info)
     {
       // use info->symbolList to populate the list
-      SIntDict<SearchIndexList>::Iterator it(info->symbolList);
-      const SearchIndexList *sl;
-      for (it.toFirst();(sl=it.current());++it) // for each letter
+      for (const auto &kv : info.symbolMap)
       {
-        append(SymbolIndexContext::alloc(sl,info->name));
+        append(SymbolIndexContext::alloc(kv.first,kv.second,info.name));
       }
     }
 };
 
-SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo *info) : RefCountedContext("SymbolIndicesContext")
+SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo &info) : RefCountedContext("SymbolIndicesContext")
 {
   p = new Private(info);
 }
@@ -9882,7 +9899,7 @@ TemplateListIntf::ConstIterator *SymbolIndicesContext::createIterator() const
 class SearchIndexContext::Private
 {
   public:
-    Private(const SearchIndexInfo *info) : m_info(info)
+    Private(const SearchIndexInfo &info) : m_info(info)
     {
       static bool init=FALSE;
       if (!init)
@@ -9899,11 +9916,11 @@ class SearchIndexContext::Private
     }
     TemplateVariant name() const
     {
-      return m_info->name;
+      return m_info.name;
     }
     TemplateVariant text() const
     {
-      return m_info->text;
+      return m_info.getText();
     }
     TemplateVariant symbolIndices() const
     {
@@ -9914,7 +9931,7 @@ class SearchIndexContext::Private
       return m_cache.symbolIndices.get();
     }
   private:
-    const SearchIndexInfo *m_info;
+    const SearchIndexInfo &m_info;
     struct Cachable
     {
       SharedPtr<SymbolIndicesContext> symbolIndices;
@@ -9926,7 +9943,7 @@ class SearchIndexContext::Private
 
 PropertyMapper<SearchIndexContext::Private> SearchIndexContext::Private::s_inst;
 
-SearchIndexContext::SearchIndexContext(const SearchIndexInfo *info)
+SearchIndexContext::SearchIndexContext(const SearchIndexInfo &info)
     : RefCountedContext("SearchIndexContext")
 {
   p = new Private(info);
@@ -9950,10 +9967,9 @@ class SearchIndicesContext::Private : public GenericNodeListContext
   public:
     Private()
     {
-      const SearchIndexInfo *indices = getSearchIndices();
-      for (int i=0;i<NUM_SEARCH_INDICES;i++)
+      for (const auto &si : getSearchIndices())
       {
-        append(SearchIndexContext::alloc(&indices[i]));
+        append(SearchIndexContext::alloc(si));
       }
     }
 };
