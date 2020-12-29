@@ -729,6 +729,7 @@ void writeStringValue(QTextStream &t,QTextCodec *codec,const QString &s)
       while (!(c=*p++).isNull() && !needsEscaping)
       {
         needsEscaping = (c==QChar::fromLatin1(' ')  ||
+	                 c==QChar::fromLatin1(',') ||
 	                 c==QChar::fromLatin1('\n') ||
 		         c==QChar::fromLatin1('\t') ||
 		         c==QChar::fromLatin1('"'));
