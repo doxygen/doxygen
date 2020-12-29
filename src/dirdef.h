@@ -20,6 +20,7 @@
 #include "definition.h"
 
 #include <vector>
+#include <map>
 #include <qglobal.h>
 #include <qcstring.h>
 
@@ -43,6 +44,8 @@ class DirDef : public DefinitionMutable, public Definition
   public:
     virtual ~DirDef() {}
 
+    using UsedDirsContainer = std::map<QCString, UsedDir * >;
+
     // accessors
     virtual DefType definitionType() const = 0;
     virtual QCString getOutputFileBase() const = 0;
@@ -59,7 +62,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
     virtual int dirCount() const = 0;
-    virtual const QDict<UsedDir> *usedDirs() const = 0;
+    virtual const UsedDirsContainer* usedDirs() const = 0;
     virtual bool isParentOf(const DirDef *dir) const = 0;
     virtual bool depGraphIsTrivial() const = 0;
     virtual QCString shortTitle() const = 0;
