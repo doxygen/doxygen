@@ -348,6 +348,16 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                        yyextra->commentStack.push(new CommentCtx(yyextra->lineNr));
 				     }
   				   }
+<Scan>"--"[^!][^\n]*		   {
+                                     if (yyextra->lang!=SrcLangExt_VHDL)
+				     {
+				       REJECT;
+				     }
+				     else
+				     {
+                                       copyToOutput(yyscanner,yytext,(int)yyleng); 
+				     }
+  				   }
 <Scan>"--!"		           {
                                      if (yyextra->lang!=SrcLangExt_VHDL)
 				     {
