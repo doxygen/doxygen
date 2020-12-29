@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include "dirdef.h"
 #include "classdef.h"
+#include "searchindex.h"
 
 class Definition;
 class PageDef;
@@ -52,9 +53,6 @@ class MemberGroupSDict;
 class MemberGroupList;
 class DotNode;
 class DotGfxHierarchyTable;
-struct SearchIndexInfo;
-class SearchIndexList;
-class SearchDefinitionList;
 
 //----------------------------------------------------
 
@@ -1206,8 +1204,9 @@ class SymbolContext : public RefCountedContext, public TemplateStructIntf
 class SymbolListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static SymbolListContext *alloc(const SearchDefinitionList *sdl)
-    { return new SymbolListContext(sdl); }
+    static SymbolListContext *alloc(const SearchIndexList::const_iterator &start,
+                                    const SearchIndexList::const_iterator &end)
+    { return new SymbolListContext(start,end); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -1217,7 +1216,8 @@ class SymbolListContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    SymbolListContext(const SearchDefinitionList *sdl);
+    SymbolListContext(const SearchIndexList::const_iterator &start,
+                      const SearchIndexList::const_iterator &end);
    ~SymbolListContext();
     class Private;
     Private *p;
@@ -1228,8 +1228,9 @@ class SymbolListContext : public RefCountedContext, public TemplateListIntf
 class SymbolGroupContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static SymbolGroupContext *alloc(const SearchDefinitionList *sdl)
-    { return new SymbolGroupContext(sdl); }
+    static SymbolGroupContext *alloc(const SearchIndexList::const_iterator &start,
+                                     const SearchIndexList::const_iterator &end)
+    { return new SymbolGroupContext(start,end); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -1237,7 +1238,8 @@ class SymbolGroupContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    SymbolGroupContext(const SearchDefinitionList *sdl);
+    SymbolGroupContext(const SearchIndexList::const_iterator &start,
+                       const SearchIndexList::const_iterator &end);
    ~SymbolGroupContext();
     class Private;
     Private *p;
@@ -1248,7 +1250,7 @@ class SymbolGroupContext : public RefCountedContext, public TemplateStructIntf
 class SymbolGroupListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static SymbolGroupListContext *alloc(const SearchIndexList *sil)
+    static SymbolGroupListContext *alloc(const SearchIndexList &sil)
     { return new SymbolGroupListContext(sil); }
 
     // TemplateListIntf
@@ -1259,7 +1261,7 @@ class SymbolGroupListContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    SymbolGroupListContext(const SearchIndexList *sil);
+    SymbolGroupListContext(const SearchIndexList &sil);
    ~SymbolGroupListContext();
     class Private;
     Private *p;
@@ -1270,8 +1272,9 @@ class SymbolGroupListContext : public RefCountedContext, public TemplateListIntf
 class SymbolIndexContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static SymbolIndexContext *alloc(const SearchIndexList *sl,const QCString &name)
-    { return new SymbolIndexContext(sl,name); }
+    static SymbolIndexContext *alloc(const std::string &letter,
+                                     const SearchIndexList &sl,const QCString &name)
+    { return new SymbolIndexContext(letter,sl,name); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -1279,7 +1282,7 @@ class SymbolIndexContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    SymbolIndexContext(const SearchIndexList *sl,const QCString &name);
+    SymbolIndexContext(const std::string &letter,const SearchIndexList &sl,const QCString &name);
    ~SymbolIndexContext();
     class Private;
     Private *p;
@@ -1290,7 +1293,7 @@ class SymbolIndexContext : public RefCountedContext, public TemplateStructIntf
 class SymbolIndicesContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static SymbolIndicesContext *alloc(const SearchIndexInfo *info)
+    static SymbolIndicesContext *alloc(const SearchIndexInfo &info)
     { return new SymbolIndicesContext(info); }
 
     // TemplateListIntf
@@ -1301,7 +1304,7 @@ class SymbolIndicesContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    SymbolIndicesContext(const SearchIndexInfo *info);
+    SymbolIndicesContext(const SearchIndexInfo &info);
    ~SymbolIndicesContext();
     class Private;
     Private *p;
@@ -1312,7 +1315,7 @@ class SymbolIndicesContext : public RefCountedContext, public TemplateListIntf
 class SearchIndexContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static SearchIndexContext *alloc(const SearchIndexInfo *info)
+    static SearchIndexContext *alloc(const SearchIndexInfo &info)
     { return new SearchIndexContext(info); }
 
     // TemplateStructIntf methods
@@ -1321,7 +1324,7 @@ class SearchIndexContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    SearchIndexContext(const SearchIndexInfo *info);
+    SearchIndexContext(const SearchIndexInfo &info);
    ~SearchIndexContext();
     class Private;
     Private *p;
