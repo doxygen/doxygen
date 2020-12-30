@@ -39,8 +39,8 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   if (dd->parent())
   {
     t << "  subgraph cluster" << dd->parent()->getOutputFileBase() << " {\n";
-    t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\"" 
-      << dd->parent()->shortName() 
+    t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\""
+      << dd->parent()->shortName()
       << "\" fontname=\"" << fontName << "\", fontsize=\"" << fontSize << "\", URL=\"";
     t << dd->parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
     t << "\"]\n";
@@ -49,9 +49,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   {
     t << "  subgraph cluster" << dd->getOutputFileBase() << " {\n";
     t << "    graph [ bgcolor=\"#eeeeff\", pencolor=\"black\", label=\"\""
-      << " URL=\"" << dd->getOutputFileBase() << Doxygen::htmlFileExtension 
+      << " URL=\"" << dd->getOutputFileBase() << Doxygen::htmlFileExtension
       << "\"];\n";
-    t << "    " << dd->getOutputFileBase() << " [shape=plaintext label=\"" 
+    t << "    " << dd->getOutputFileBase() << " [shape=plaintext label=\""
       << dd->shortName() << "\"];\n";
 
     // add nodes for sub directories
@@ -77,9 +77,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   }
   else
   {
-    t << "  " << dd->getOutputFileBase() << " [shape=box, label=\"" 
+    t << "  " << dd->getOutputFileBase() << " [shape=box, label=\""
       << dd->shortName() << "\", style=\"filled\", fillcolor=\"#eeeeff\","
-      << " pencolor=\"black\", URL=\"" << dd->getOutputFileBase() 
+      << " pencolor=\"black\", URL=\"" << dd->getOutputFileBase()
       << Doxygen::htmlFileExtension << "\"];\n";
   }
   if (dd->parent())
@@ -90,10 +90,10 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   // add nodes for other used directories
   {
     //printf("*** For dir %s\n",shortName().data());
-    for (const auto &usedDirectoryEntry : *dd->usedDirs())
+    for (const auto &udir : dd->usedDirs())
       // for each used dir (=directly used or a parent of a directly used dir)
     {
-      const DirDef *usedDir = usedDirectoryEntry.second->dir();
+      const DirDef *usedDir = udir->dir();
       const DirDef *dir=dd;
       while (dir)
       {
@@ -104,11 +104,11 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         //    shortName().data(),
         //    !usedDir->isParentOf(this)
         //    );
-        if (dir!=usedDir && dir->parent()==usedDir->parent() && 
+        if (dir!=usedDir && dir->parent()==usedDir->parent() &&
             !usedDir->isParentOf(dd))
           // include if both have the same parent (or no parent)
         {
-          t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\"" 
+          t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\""
             << usedDir->shortName() << "\"";
           if (usedDir->isCluster())
           {
@@ -118,7 +118,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
             }
             t << " color=\"red\"";
           }
-          t << " URL=\"" << usedDir->getOutputFileBase() 
+          t << " URL=\"" << usedDir->getOutputFileBase()
             << Doxygen::htmlFileExtension << "\"];\n";
           dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
           break;
@@ -133,9 +133,8 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   QDictIterator<DirDef> di(dirsInGraph);
   for (;(dir=di.current());++di) // foreach dir in the graph
   {
-    for (const auto &usedDirectoryEntry : *dir->usedDirs())
+    for (const auto &udir : dir->usedDirs())
     {
-      UsedDir *const udir = usedDirectoryEntry.second;
       const DirDef *usedDir=udir->dir();
       if ((dir!=dd || !udir->inherited()) &&     // only show direct dependencies for this dir
         (usedDir!=dd || !udir->inherited()) && // only show direct dependencies for this dir
@@ -148,7 +147,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         {
           // new relation
           Doxygen::dirRelations.append(relationName,
-            new DirRelation(relationName,dir,udir));
+            new DirRelation(relationName,dir,udir.get()));
         }
         int nrefs = udir->filePairs().count();
         t << "  " << dir->getOutputFileBase() << "->"

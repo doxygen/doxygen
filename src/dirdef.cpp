@@ -1,6 +1,22 @@
-#include "md5.h"
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
+#include <algorithm>
 
 #include "dirdef.h"
+#include "md5.h"
 #include "filename.h"
 #include "doxygen.h"
 #include "util.h"
@@ -15,7 +31,7 @@
 #include "docparser.h"
 #include "definitionimpl.h"
 #include "filedef.h"
-#include <algorithm>
+
 
 //----------------------------------------------------------------------
 
@@ -40,7 +56,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual int level() const { return m_level; }
     virtual DirDef *parent() const { return m_parent; }
     virtual int dirCount() const { return m_dirCount; }
-    virtual const UsedDirsContainer *usedDirs() const { return m_usedDirs; }
+    virtual const UsedDirLinkedMap &usedDirs() const { return m_usedDirs; }
     virtual bool isParentOf(const DirDef *dir) const;
     virtual bool depGraphIsTrivial() const;
     virtual QCString shortTitle() const;
@@ -79,7 +95,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     int m_dirCount;
     int m_level;
     DirDef *m_parent;
-    UsedDirsContainer *m_usedDirs;
+    UsedDirLinkedMap m_usedDirs;
 };
 
 DirDef *createDirDef(const char *path)
@@ -117,7 +133,6 @@ DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
   }
 
   m_fileList   = new FileList;
-  m_usedDirs   = new UsedDirsContainer();
   m_dirCount   = g_dirCount++;
   m_level=-1;
   m_parent=0;
@@ -126,11 +141,6 @@ DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
 DirDefImpl::~DirDefImpl()
 {
   delete m_fileList;
-  for (const auto &usedDirectory : *m_usedDirs)
-  {
-    delete usedDirectory.second;
-  }
-  delete m_usedDirs;
 }
 
 bool DirDefImpl::isLinkableInProject() const
@@ -644,12 +654,10 @@ void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
 
   // levels match => add direct dependency
   bool added=FALSE;
-  UsedDir *usedDir = nullptr;
-  const auto usedDirectoryEntry = m_usedDirs->find(dir->getOutputFileBase());
-  if (usedDirectoryEntry != m_usedDirs->end()) // dir dependency already present
+  UsedDir *usedDir = m_usedDirs.find(dir->getOutputFileBase());
+  if (usedDir) // dir dependency already present
   {
-     usedDir = usedDirectoryEntry->second;
-     FilePair *usedPair = usedDir->findFilePair(
+     const FilePair *usedPair = usedDir->findFilePair(
          srcFd->getOutputFileBase()+dstFd->getOutputFileBase());
      if (usedPair==0) // new file dependency
      {
@@ -665,9 +673,9 @@ void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
   else // new directory dependency
   {
     //printf("  => new file\n");
-    usedDir = new UsedDir(dir,inherited);
-    usedDir->addFileDep(srcFd,dstFd);
-    m_usedDirs->insert({dir->getOutputFileBase(),usedDir});
+    auto newUsedDir = std::make_unique<UsedDir>(dir,inherited);
+    newUsedDir->addFileDep(srcFd,dstFd);
+    usedDir = m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
     added=TRUE;
   }
   if (added)
@@ -722,12 +730,14 @@ void DirDefImpl::computeDependencies()
       }
     }
   }
-  if (m_usedDirs)
+
+  std::sort(m_usedDirs.begin(),m_usedDirs.end(),
+            [](const auto &u1,const auto &u2)
+            { return qstricmp(u1->dir()->getOutputFileBase(),u2->dir()->getOutputFileBase())<0; });
+
+  for (const auto& usedDirectory : m_usedDirs)
   {
-    for(const auto& usedDirectory : *m_usedDirs)
-    {
-      usedDirectory.second->sort();
-    }
+    usedDirectory->sort();
   }
 }
 
@@ -743,7 +753,7 @@ bool DirDefImpl::isParentOf(const DirDef *dir) const
 
 bool DirDefImpl::depGraphIsTrivial() const
 {
-  return m_usedDirs->empty();
+  return m_usedDirs.empty();
 }
 
 //----------------------------------------------------------------------
