@@ -1533,32 +1533,36 @@ static void buildNamespaceList(const Entry *root)
     {
       //printf("Found namespace %s in %s at line %d\n",root->name.data(),
       //        root->fileName.data(), root->startLine);
-      NamespaceDefMutable *nd;
-      if ((nd=toNamespaceDefMutable(Doxygen::namespaceLinkedMap->find(fullName)))) // existing namespace
+      NamespaceDef *ndi = Doxygen::namespaceLinkedMap->find(fullName);
+      if (ndi) // existing namespace
       {
-        nd->setDocumentation(root->doc,root->docFile,root->docLine);
-        nd->setName(fullName); // change name to match docs
-        nd->addSectionsToDefinition(root->anchors);
-        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        if (nd->getLanguage()==SrcLangExt_Unknown)
+        NamespaceDefMutable *nd = toNamespaceDefMutable(ndi);
+        if (nd) // non-inline namespace
         {
-          nd->setLanguage(root->lang);
-        }
-        if (root->tagInfo()==0) // if we found the namespace in a tag file
-                                   // and also in a project file, then remove
-                                   // the tag file reference
-        {
-          nd->setReference("");
-          nd->setFileName(fullName);
-        }
-        nd->setMetaData(root->metaData);
+          nd->setDocumentation(root->doc,root->docFile,root->docLine);
+          nd->setName(fullName); // change name to match docs
+          nd->addSectionsToDefinition(root->anchors);
+          nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          if (nd->getLanguage()==SrcLangExt_Unknown)
+          {
+            nd->setLanguage(root->lang);
+          }
+          if (root->tagInfo()==0) // if we found the namespace in a tag file
+            // and also in a project file, then remove
+            // the tag file reference
+          {
+            nd->setReference("");
+            nd->setFileName(fullName);
+          }
+          nd->setMetaData(root->metaData);
 
-        // file definition containing the namespace nd
-        FileDef *fd=root->fileDef();
-        // insert the namespace in the file definition
-        if (fd) fd->insertNamespace(nd);
-        addNamespaceToGroups(root,nd);
-        nd->setRefItems(root->sli);
+          // file definition containing the namespace nd
+          FileDef *fd=root->fileDef();
+          // insert the namespace in the file definition
+          if (fd) fd->insertNamespace(nd);
+          addNamespaceToGroups(root,nd);
+          nd->setRefItems(root->sli);
+        }
       }
       else // fresh namespace
       {
@@ -1572,7 +1576,7 @@ static void buildNamespaceList(const Entry *root)
         }
         //printf("++ new namespace %s lang=%s tagName=%s\n",fullName.data(),langToString(root->lang).data(),tagName.data());
         // add namespace to the list
-        nd = toNamespaceDefMutable(
+        NamespaceDefMutable *nd = toNamespaceDefMutable(
             Doxygen::namespaceLinkedMap->add(fullName,
               std::unique_ptr<NamespaceDef>(
                 createNamespaceDef(tagInfo?tagName:root->fileName,root->startLine,
@@ -1640,9 +1644,9 @@ static void buildNamespaceList(const Entry *root)
                 if (dm)
                 {
                   NamespaceDef *aliasNd = createNamespaceDefAlias(d,nd);
-                  //printf("adding %s to %s\n",qPrint(aliasNd->name()),qPrint(d->name()));
                   dm->addInnerCompound(aliasNd);
                   QCString aliasName = aliasNd->name();
+                  //printf("adding alias %s (%p) to %s\n",qPrint(aliasName),aliasNd,qPrint(d->name()));
                   Doxygen::namespaceLinkedMap->add(
                       aliasName,std::unique_ptr<NamespaceDef>(aliasNd));
                 }
