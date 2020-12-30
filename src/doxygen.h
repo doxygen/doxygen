@@ -88,6 +88,8 @@ struct LookupInfo
 
 extern QCString g_spaces;
 
+using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;
+
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
  *  All fields in this class are public and static, so they can be used directly.
@@ -116,7 +118,7 @@ class Doxygen
     static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;
-    static QIntDict<MemberGroupInfo> memGrpInfoDict;
+    static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static NamespaceDefMutable      *globalScope;
     static QCString                  htmlFileExtension;

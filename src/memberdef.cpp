@@ -2000,12 +2000,17 @@ bool MemberDefImpl::isBriefSectionVisible() const
   //    "", //getFileDef()->name().data(),
   //    argsString());
 
-  MemberGroupInfo *info = Doxygen::memGrpInfoDict[m_impl->grpId];
-  //printf("name=%s m_impl->grpId=%d info=%p\n",name().data(),m_impl->grpId,info);
-  //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
-  bool hasDocs = hasDocumentation() ||
+  auto it = Doxygen::memberGroupInfoMap.find(m_impl->grpId);
+  bool hasDocs = hasDocumentation();
+  if (it!=Doxygen::memberGroupInfoMap.end())
+  {
+    auto &info = it->second;
+    //printf("name=%s m_impl->grpId=%d info=%p\n",name().data(),m_impl->grpId,info);
+    //QCString *pMemGrp = Doxygen::memberDocDict[grpId];
+    hasDocs = hasDocs ||
                   // part of a documented member group
-                 (m_impl->grpId!=-1 && info && !(info->doc.isEmpty() && info->header.isEmpty()));
+                 (m_impl->grpId!=-1 && !(info->doc.isEmpty() && info->header.isEmpty()));
+  }
 
   // only include static members with file/namespace scope if
   // explicitly enabled in the config file

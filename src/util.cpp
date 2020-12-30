@@ -4435,11 +4435,10 @@ void addMembersToMemberGroup(MemberList *ml,
           int groupId=fmd->getMemberGroupId();
           if (groupId!=-1)
           {
-            MemberGroupInfo *info = Doxygen::memGrpInfoDict[groupId];
-            //QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-            //QCString *pDocs      = Doxygen::memberDocDict[groupId];
-            if (info)
+            auto it = Doxygen::memberGroupInfoMap.find(groupId);
+            if (it!=Doxygen::memberGroupInfoMap.end())
             {
+              auto &info = it->second;
               if (*ppMemberGroupSDict==0)
               {
                 *ppMemberGroupSDict = new MemberGroupSDict;
@@ -4468,11 +4467,10 @@ void addMembersToMemberGroup(MemberList *ml,
     int groupId=md->getMemberGroupId();
     if (groupId!=-1)
     {
-      MemberGroupInfo *info = Doxygen::memGrpInfoDict[groupId];
-      //QCString *pGrpHeader = Doxygen::memberHeaderDict[groupId];
-      //QCString *pDocs      = Doxygen::memberDocDict[groupId];
-      if (info)
+      auto it = Doxygen::memberGroupInfoMap.find(groupId);
+      if (it!=Doxygen::memberGroupInfoMap.end())
       {
+        auto &info = it->second;
         if (*ppMemberGroupSDict==0)
         {
           *ppMemberGroupSDict = new MemberGroupSDict;

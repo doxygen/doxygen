@@ -134,10 +134,10 @@ FileNameLinkedMap    *Doxygen::imageNameLinkedMap = 0;       // images
 FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = 0;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
-StringUnorderedMap    Doxygen::namespaceAliasMap;      // all namespace aliases
-StringDict            Doxygen::tagDestinationDict(257); // all tag locations
-StringUnorderedSet    Doxygen::expandAsDefinedSet; // all macros that should be expanded
-QIntDict<MemberGroupInfo> Doxygen::memGrpInfoDict(1009); // dictionary of the member groups heading
+StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
+StringDict            Doxygen::tagDestinationDict(257);      // all tag locations
+StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
+MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 PageDef              *Doxygen::mainPage = 0;
 bool                  Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 NamespaceDefMutable  *Doxygen::globalScope = 0;
@@ -261,6 +261,8 @@ void statistics()
   Doxygen::mscFileNameDict->statistics();
   fprintf(stderr,"--- diaFileNameDict stats ----\n");
   Doxygen::diaFileNameDict->statistics();
+  fprintf(stderr,"--- memGrpInfoDict stats ----\n");
+  Doxygen::memGrpInfoDict.statistics();
 #endif
   //fprintf(stderr,"--- g_excludeNameDict stats ----\n");
   //g_excludeNameDict.statistics();
@@ -270,8 +272,6 @@ void statistics()
   Doxygen::tagDestinationDict.statistics();
   fprintf(stderr,"--- g_compoundKeywordDict stats ----\n");
   g_compoundKeywordDict.statistics();
-  fprintf(stderr,"--- memGrpInfoDict stats ----\n");
-  Doxygen::memGrpInfoDict.statistics();
 }
 
 
@@ -10151,7 +10151,6 @@ void initDoxygen()
   Doxygen::pageSDict->setAutoDelete(TRUE);
   Doxygen::exampleSDict = new PageSDict(1009);       // all examples
   Doxygen::exampleSDict->setAutoDelete(TRUE);
-  Doxygen::memGrpInfoDict.setAutoDelete(TRUE);
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::indexList = new IndexList;

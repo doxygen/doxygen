@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -62,7 +62,7 @@ void DocGroup::enterCompound(const char *fileName,int line,const char *name)
   m_memberGroupDocs.resize(0);
   m_compoundName = name;
   int i = m_compoundName.find('(');
-  if (i!=-1) 
+  if (i!=-1)
   {
     m_compoundName=m_compoundName.left(i); // strip category (Obj-C)
   }
@@ -89,17 +89,15 @@ void DocGroup::leaveCompound(const char *,int,const char * /*name*/)
 int DocGroup::findExistingGroup(const MemberGroupInfo *info)
 {
   //printf("findExistingGroup %s:%s\n",info->header.data(),info->compoundName.data());
-  QIntDictIterator<MemberGroupInfo> di(Doxygen::memGrpInfoDict);
-  MemberGroupInfo *mi;
-  for (di.toFirst();(mi=di.current());++di)
+  for (const auto &kv : Doxygen::memberGroupInfoMap)
   {
-    if (m_compoundName==mi->compoundName &&  // same file or scope
-	!mi->header.isEmpty() &&             // not a nameless group
-	qstricmp(mi->header,info->header)==0  // same header name
+    if (m_compoundName==kv.second->compoundName &&  // same file or scope
+	!kv.second->header.isEmpty() &&             // not a nameless group
+	qstricmp(kv.second->header,info->header)==0  // same header name
        )
     {
       //printf("Found it!\n");
-      return (int)di.currentKey(); // put the item in this group
+      return kv.first; // put the item in this group
     }
   }
   return ++g_groupId; // start new group
@@ -119,13 +117,16 @@ void DocGroup::open(Entry *e,const char *,int, bool implicit)
     //printf("    membergroup id=%d %s\n",m_memberGroupId,m_memberGroupHeader.data());
     if (m_memberGroupId==DOX_NOGROUP) // no group started yet
     {
-      MemberGroupInfo *info = new MemberGroupInfo;
+      auto info = std::make_unique<MemberGroupInfo>();
       info->header = m_memberGroupHeader.stripWhiteSpace();
       info->compoundName = m_compoundName;
-      m_memberGroupId = findExistingGroup(info);
-      //printf("    use membergroup %d\n",m_memberGroupId);
-      Doxygen::memGrpInfoDict.insert(m_memberGroupId,info);
-
+      m_memberGroupId = findExistingGroup(info.get());
+      auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
+      if (it==Doxygen::memberGroupInfoMap.end())
+      {
+         //printf("    use membergroup %d\n",m_memberGroupId);
+         Doxygen::memberGroupInfoMap.insert(std::make_pair(m_memberGroupId,std::move(info)));
+      }
       m_memberGroupRelates = e->relates;
       e->mGrpId = m_memberGroupId;
     }
@@ -149,9 +150,10 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,boo
   //    e->name.data(),e->section,fileName,line,m_autoGroupStack.size());
   if (m_memberGroupId!=DOX_NOGROUP) // end of member group
   {
-    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(m_memberGroupId);
-    if (info) // known group
+    auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
+    if (it!=Doxygen::memberGroupInfoMap.end()) // known group
     {
+      auto &info = it->second;
       info->doc = m_memberGroupDocs;
       info->docFile = fileName;
       info->docLine = line;
@@ -199,9 +201,10 @@ void DocGroup::addDocs(Entry *e)
       m_memberGroupDocs+="\n\n";
     }
     m_memberGroupDocs+=e->doc;
-    MemberGroupInfo *info=Doxygen::memGrpInfoDict.find(m_memberGroupId);
-    if (info) 
+    auto it =Doxygen::memberGroupInfoMap.find(m_memberGroupId);
+    if (it!=Doxygen::memberGroupInfoMap.end())
     {
+      auto &info = it->second;
       info->doc = m_memberGroupDocs;
       info->docFile = e->docFile;
       info->docLine = e->docLine;
