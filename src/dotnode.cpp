@@ -119,7 +119,7 @@ static UmlDetailLevel getUmlDetailLevelFromConfig()
     result=UmlDetailLevel::None;
   }
   return result;
-} 
+}
 
 static QCString escapeTooltip(const QCString &tooltip)
 {
@@ -197,17 +197,11 @@ static void writeBoxMemberList(FTextStream &t,
       }
     }
     // write member groups within the memberlist
-    MemberGroupList *mgl = ml->getMemberGroupList();
-    if (mgl)
+    for (const auto &mg : ml->getMemberGroupList())
     {
-      MemberGroupListIterator mgli(*mgl);
-      MemberGroup *mg;
-      for (mgli.toFirst();(mg=mgli.current());++mgli)
+      if (mg->members())
       {
-        if (mg->members())
-        {
-          writeBoxMemberList(t,prot,mg->members(),scope,isStatic,skipNames);
-        }
+        writeBoxMemberList(t,prot,mg->members(),scope,isStatic,skipNames);
       }
     }
   }

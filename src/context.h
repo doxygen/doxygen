@@ -23,6 +23,7 @@
 #include "dirdef.h"
 #include "classdef.h"
 #include "searchindex.h"
+#include "membergroup.h"
 
 class Definition;
 class PageDef;
@@ -50,7 +51,6 @@ class MemberNameInfoLinkedMap;
 class MemberInfo;
 class MemberGroup;
 class MemberGroupSDict;
-class MemberGroupList;
 class DotNode;
 class DotGfxHierarchyTable;
 
@@ -1006,7 +1006,7 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
   public:
     static MemberGroupListContext *alloc()
     { return new MemberGroupListContext; }
-    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupList *list)
+    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupList &list)
     { return new MemberGroupListContext(def,relPath,list); }
     static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
     { return new MemberGroupListContext(def,relPath,dict,subGrouping); }
@@ -1020,7 +1020,7 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
 
   private:
     MemberGroupListContext();
-    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList *list);
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list);
     MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
    ~MemberGroupListContext();
     class Private;

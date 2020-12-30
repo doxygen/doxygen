@@ -16,14 +16,15 @@
 #ifndef MEMBERLIST_H
 #define MEMBERLIST_H
 
+#include <vector>
+
 #include <qlist.h>
 #include "memberdef.h"
 #include "sortdict.h"
 #include "types.h"
+#include "membergroup.h"
 
 class GroupDef;
-class MemberGroup;
-class MemberGroupList;
 
 /** A list of MemberDef objects. */
 class MemberList : private QList<MemberDef>
@@ -88,7 +89,7 @@ class MemberList : private QList<MemberDef>
     void addListReferences(Definition *def);
     void findSectionsInDocumentation(const Definition *d);
     void setNeedsSorting(bool b);
-    MemberGroupList *getMemberGroupList() const { return memberGroupList; }
+    const MemberGroupList &getMemberGroupList() const { return m_memberGroupList; }
     void setAnonymousEnumType();
     void setAnchors();
 
@@ -110,7 +111,7 @@ class MemberList : private QList<MemberDef>
     int m_numDecEnumValues;
     int m_numDocMembers; // number of members in the detailed part of the memberlist
     int m_numDocEnumValues;
-    MemberGroupList *memberGroupList;
+    MemberGroupList m_memberGroupList;
     bool m_inGroup; // is this list part of a group definition
     bool m_inFile;  // is this list part of a file definition
     MemberListType m_listType;

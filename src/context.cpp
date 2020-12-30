@@ -8818,7 +8818,7 @@ class MemberGroupInfoContext::Private
     {
       if (!m_cache.memberGroups)
       {
-        m_cache.memberGroups.reset(MemberGroupListContext::alloc(m_def,m_relPath,0));
+        m_cache.memberGroups.reset(MemberGroupListContext::alloc());
       }
       return m_cache.memberGroups.get();
     }
@@ -8895,17 +8895,12 @@ MemberGroupListContext::MemberGroupListContext() : RefCountedContext("MemberGrou
   p = new Private;
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList *list) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list) : RefCountedContext("MemberGroupListContext")
 {
   p = new Private;
-  if (list)
+  for (const auto &mg : list)
   {
-    MemberGroupListIterator mgli(*list);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      p->addMemberGroup(def,relPath,mg);
-    }
+    p->addMemberGroup(def,relPath,mg);
   }
 }
 
@@ -9180,14 +9175,9 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       if (ml)
       {
         addMemberList(inheritedFrom,ml,combinedList);
-        if (ml->getMemberGroupList())
+        for (const auto *mg : ml->getMemberGroupList())
         {
-          MemberGroupListIterator mgli(*ml->getMemberGroupList());
-          MemberGroup *mg;
-          for (mgli.toFirst();(mg=mgli.current());++mgli)
-          {
-            addMemberList(inheritedFrom,mg->members(),combinedList);
-          }
+          addMemberList(inheritedFrom,mg->members(),combinedList);
         }
       }
     }

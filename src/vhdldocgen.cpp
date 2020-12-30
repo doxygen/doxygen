@@ -2169,17 +2169,11 @@ static bool membersHaveSpecificType(const MemberList *ml,uint64 type)
       return TRUE;
     }
   }
-  if (ml->getMemberGroupList())
+  for (const auto &mg : ml->getMemberGroupList())
   {
-    MemberGroupListIterator mgli(*ml->getMemberGroupList());
-    MemberGroup *mg;
-    while ((mg=mgli.current()))
+    if (mg->members())
     {
-      if (mg->members())
-      {
-        if (membersHaveSpecificType(mg->members(),type)) return TRUE;
-      }
-      ++mgli;
+      if (membersHaveSpecificType(mg->members(),type)) return TRUE;
     }
   }
   return FALSE;
@@ -2208,36 +2202,30 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
 
   VhdlDocGen::writePlainVHDLDeclarations(ml,ol,cd,nd,fd,gd,type);
 
-  if (ml->getMemberGroupList())
+  for (const auto &mg : ml->getMemberGroupList())
   {
-    MemberGroupListIterator mgli(*ml->getMemberGroupList());
-    MemberGroup *mg;
-    while ((mg=mgli.current()))
+    if (membersHaveSpecificType(mg->members(),type))
     {
-      if (membersHaveSpecificType(mg->members(),type))
+      //printf("mg->header=%s\n",mg->header().data());
+      bool hasHeader=mg->header()!="[NOHEADER]";
+      ol.startMemberGroupHeader(hasHeader);
+      if (hasHeader)
       {
-        //printf("mg->header=%s\n",mg->header().data());
-        bool hasHeader=mg->header()!="[NOHEADER]";
-        ol.startMemberGroupHeader(hasHeader);
-        if (hasHeader)
-        {
-          ol.parseText(mg->header());
-        }
-        ol.endMemberGroupHeader();
-        if (!mg->documentation().isEmpty())
-        {
-          //printf("Member group has docs!\n");
-          ol.startMemberGroupDocs();
-          ol.generateDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE,
-                         0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-          ol.endMemberGroupDocs();
-        }
-        ol.startMemberGroup();
-        //printf("--- mg->writePlainDeclarations ---\n");
-        VhdlDocGen::writePlainVHDLDeclarations(mg->members(),ol,cd,nd,fd,gd,type);
-        ol.endMemberGroup(hasHeader);
+        ol.parseText(mg->header());
       }
-      ++mgli;
+      ol.endMemberGroupHeader();
+      if (!mg->documentation().isEmpty())
+      {
+        //printf("Member group has docs!\n");
+        ol.startMemberGroupDocs();
+        ol.generateDoc("[generated]",-1,0,0,mg->documentation()+"\n",FALSE,FALSE,
+            0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+        ol.endMemberGroupDocs();
+      }
+      ol.startMemberGroup();
+      //printf("--- mg->writePlainDeclarations ---\n");
+      VhdlDocGen::writePlainVHDLDeclarations(mg->members(),ol,cd,nd,fd,gd,type);
+      ol.endMemberGroup(hasHeader);
     }
   }
 }// writeVHDLDeclarations

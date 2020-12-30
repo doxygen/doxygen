@@ -35,7 +35,6 @@
 MemberList::MemberList() : m_listType(MemberListType_pubMethods)
 {
   //printf("%p: MemberList::MemberList()\n",this);
-  memberGroupList=0;
   m_numDecMembers=-1; // special value indicating that value needs to be computed
   m_numDecEnumValues=0;
   m_numDocMembers=-1; // special value indicating that value needs to be computed
@@ -48,7 +47,6 @@ MemberList::MemberList() : m_listType(MemberListType_pubMethods)
 MemberList::MemberList(MemberListType lt) : m_listType(lt)
 {
   //printf("%p: MemberList::MemberList(%d)\n",this,lt);
-  memberGroupList=0;
   m_numDecMembers=-1; // special value indicating that value needs to be computed
   m_numDecEnumValues=0;
   m_numDocMembers=-1; // special value indicating that value needs to be computed
@@ -60,7 +58,6 @@ MemberList::MemberList(MemberListType lt) : m_listType(lt)
 
 MemberList::~MemberList()
 {
-  delete memberGroupList;
 }
 
 int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
@@ -126,14 +123,9 @@ int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
       }
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      count+=mg->countInheritableMembers(inheritedFrom);
-    }
+    count+=mg->countInheritableMembers(inheritedFrom);
   }
   //printf("%s::countInheritableMembers(%s)=%d\n",
   //    listTypeAsString().data(),
@@ -208,28 +200,23 @@ void MemberList::countDecMembers()
       }
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->countDecMembers();
-      /*
-      m_varCnt+=mg->varCount();
-      m_funcCnt+=mg->funcCount();
-      m_enumCnt+=mg->enumCount();
-      m_enumValCnt+=mg->enumValueCount();
-      m_typeCnt+=mg->typedefCount();
-      m_seqCnt+=mg->sequenceCount();
-      m_dictCnt+=mg->dictionaryCount();
-      m_protoCnt+=mg->protoCount();
-      m_defCnt+=mg->defineCount();
-      m_friendCnt+=mg->friendCount();
-      */
-      m_numDecMembers+=mg->numDecMembers();
-      m_numDecEnumValues+=mg->numDecEnumValues();
-    }
+    mg->countDecMembers();
+    /*
+    m_varCnt+=mg->varCount();
+    m_funcCnt+=mg->funcCount();
+    m_enumCnt+=mg->enumCount();
+    m_enumValCnt+=mg->enumValueCount();
+    m_typeCnt+=mg->typedefCount();
+    m_seqCnt+=mg->sequenceCount();
+    m_dictCnt+=mg->dictionaryCount();
+    m_protoCnt+=mg->protoCount();
+    m_defCnt+=mg->defineCount();
+    m_friendCnt+=mg->friendCount();
+    */
+    m_numDecMembers+=mg->numDecMembers();
+    m_numDecEnumValues+=mg->numDecEnumValues();
   }
   //printf("----- end countDecMembers ----\n");
 
@@ -254,16 +241,11 @@ void MemberList::countDocMembers()
       m_numDocMembers++;
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->countDocMembers();
-      m_numDocMembers+=mg->numDocMembers();
-      m_numDocEnumValues+=mg->numDocEnumValues();
-    }
+    mg->countDocMembers();
+    m_numDocMembers+=mg->numDocMembers();
+    m_numDocEnumValues+=mg->numDocEnumValues();
   }
   //printf("MemberList::countDocMembers()=%d memberGroupList=%p\n",m_numDocMembers,memberGroupList);
 }
@@ -348,14 +330,9 @@ void MemberList::setAnonymousEnumType()
       }
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->setAnonymousEnumType();
-    }
+    mg->setAnonymousEnumType();
   }
 }
 
@@ -718,39 +695,33 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
-    if (memberGroupList)
+    for (const auto &mg : m_memberGroupList)
     {
-      MemberGroupListIterator mgli(*memberGroupList);
-      MemberGroup *mg;
-      while ((mg=mgli.current()))
+      bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
+      if (inheritId.isEmpty())
       {
-        bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
-        if (inheritId.isEmpty())
+        //printf("mg->header=%s hasHeader=%d\n",mg->header().data(),hasHeader);
+        ol.startMemberGroupHeader(hasHeader);
+        if (hasHeader)
         {
-          //printf("mg->header=%s hasHeader=%d\n",mg->header().data(),hasHeader);
-          ol.startMemberGroupHeader(hasHeader);
-          if (hasHeader)
-          {
-            ol.parseText(mg->header());
-          }
-          ol.endMemberGroupHeader();
-          if (!mg->documentation().isEmpty())
-          {
-            //printf("Member group has docs!\n");
-            ol.startMemberGroupDocs();
-            ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE,
-                           0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-            ol.endMemberGroupDocs();
-          }
-          ol.startMemberGroup();
+          ol.parseText(mg->header());
         }
-        //printf("--- mg->writePlainDeclarations ---\n");
-        mg->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
-        if (inheritId.isEmpty())
+        ol.endMemberGroupHeader();
+        if (!mg->documentation().isEmpty())
         {
-          ol.endMemberGroup(hasHeader);
+          //printf("Member group has docs!\n");
+          ol.startMemberGroupDocs();
+          ol.generateDoc(mg->docFile(),mg->docLine(),ctx,0,mg->documentation()+"\n",FALSE,FALSE,
+              0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+          ol.endMemberGroupDocs();
         }
-        ++mgli;
+        ol.startMemberGroup();
+      }
+      //printf("--- mg->writePlainDeclarations ---\n");
+      mg->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
+      if (inheritId.isEmpty())
+      {
+        ol.endMemberGroup(hasHeader);
       }
     }
   }
@@ -834,15 +805,10 @@ void MemberList::writeDocumentation(OutputList &ol,
       }
     }
   }
-  if (memberGroupList)
+  //printf("MemberList::writeDocumentation()  --  member groups %d\n",memberGroupList->count());
+  for (const auto &mg : m_memberGroupList)
   {
-    //printf("MemberList::writeDocumentation()  --  member groups %d\n",memberGroupList->count());
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->writeDocumentation(ol,scopeName,container,showEnumValues,showInline);
-    }
+    mg->writeDocumentation(ol,scopeName,container,showEnumValues,showInline);
   }
   ol.endMemberDocList();
 }
@@ -953,26 +919,15 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       }
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    //printf("MemberList::writeDocumentation()  --  member groups\n");
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->writeDocumentationPage(ol,scopeName,container);
-    }
+    mg->writeDocumentationPage(ol,scopeName,container);
   }
 }
 
 void MemberList::addMemberGroup(MemberGroup *mg)
 {
-  if (memberGroupList==0)
-  {
-    memberGroupList=new MemberGroupList;
-  }
-  //printf("addMemberGroup: this=%p mg=%p\n",this,mg);
-  memberGroupList->append(mg);
+  m_memberGroupList.push_back(mg);
 }
 
 void MemberList::addListReferences(Definition *def)
@@ -1003,14 +958,9 @@ void MemberList::addListReferences(Definition *def)
       }
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->addListReferences(def);
-    }
+    mg->addListReferences(def);
   }
 }
 
@@ -1026,14 +976,9 @@ void MemberList::findSectionsInDocumentation(const Definition *d)
       md->findSectionsInDocumentation();
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->findSectionsInDocumentation(d);
-    }
+    mg->findSectionsInDocumentation(d);
   }
 }
 
@@ -1132,14 +1077,9 @@ void MemberList::writeTagFile(FTextStream &tagFile)
       }
     }
   }
-  if (memberGroupList)
+  for (const auto &mg : m_memberGroupList)
   {
-    MemberGroupListIterator mgli(*memberGroupList);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->writeTagFile(tagFile);
-    }
+    mg->writeTagFile(tagFile);
   }
 }
 
