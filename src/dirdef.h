@@ -16,10 +16,12 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
+#include "linkedmap.h"
 #include "sortdict.h"
 #include "definition.h"
 
 #include <vector>
+#include <map>
 #include <qglobal.h>
 #include <qcstring.h>
 
@@ -29,7 +31,8 @@ class FileDef;
 class OutputList;
 class UsedDir;
 class FTextStream;
-
+class FilePair;
+class FilePairDict;
 class DirDef;
 
 /** A list of directories. */
@@ -37,11 +40,61 @@ typedef std::vector<DirDef*> DirList;
 
 bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 
+// ------------------
+
+/** Class representing a pair of FileDef objects */
+class FilePair
+{
+  public:
+    FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
+    const FileDef *source() const { return m_src; }
+    const FileDef *destination() const { return m_dst; }
+  private:
+    FileDef *m_src;
+    FileDef *m_dst;
+};
+
+// ------------------
+
+/** A sorted dictionary of FilePair objects. */
+class FilePairDict : public SDict<FilePair>
+{
+  public:
+    FilePairDict(uint size) : SDict<FilePair>(size) {}
+  private:
+    int compareValues(const FilePair *item1,const FilePair *item2) const;
+};
+
+// ------------------
+
+/** Usage information of a directory. */
+class UsedDir
+{
+  public:
+    UsedDir(const DirDef *dir,bool inherited);
+    virtual ~UsedDir();
+    void addFileDep(FileDef *srcFd,FileDef *dstFd);
+    FilePair *findFilePair(const char *name);
+    const FilePairDict &filePairs() const { return m_filePairs; }
+    const DirDef *dir() const { return m_dir; }
+    bool inherited() const { return m_inherited; }
+    void sort();
+
+  private:
+    const DirDef *m_dir;
+    FilePairDict m_filePairs;
+    bool m_inherited;
+};
+
+// ------------------
+
 /** A model of a directory symbol. */
 class DirDef : public DefinitionMutable, public Definition
 {
   public:
     virtual ~DirDef() {}
+
+    class UsedDirLinkedMap : public LinkedMap<UsedDir> {};
 
     // accessors
     virtual DefType definitionType() const = 0;
@@ -59,7 +112,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
     virtual int dirCount() const = 0;
-    virtual const QDict<UsedDir> *usedDirs() const = 0;
+    virtual const UsedDirLinkedMap &usedDirs() const = 0;
     virtual bool isParentOf(const DirDef *dir) const = 0;
     virtual bool depGraphIsTrivial() const = 0;
     virtual QCString shortTitle() const = 0;
@@ -82,49 +135,6 @@ class DirDef : public DefinitionMutable, public Definition
 
 DirDef            *toDirDef(Definition *d);
 const DirDef      *toDirDef(const Definition *d);
-
-// ------------------
-
-
-/** Class representing a pair of FileDef objects */
-class FilePair
-{
-  public:
-    FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
-    const FileDef *source() const { return m_src; }
-    const FileDef *destination() const { return m_dst; }
-  private:
-    FileDef *m_src;
-    FileDef *m_dst;
-};
-
-/** A sorted dictionary of FilePair objects. */
-class FilePairDict : public SDict<FilePair>
-{
-  public:
-    FilePairDict(uint size) : SDict<FilePair>(size) {}
-  private:
-    int compareValues(const FilePair *item1,const FilePair *item2) const;
-};
-
-/** Usage information of a directory. */
-class UsedDir
-{
-  public:
-    UsedDir(const DirDef *dir,bool inherited);
-    virtual ~UsedDir();
-    void addFileDep(FileDef *srcFd,FileDef *dstFd);
-    FilePair *findFilePair(const char *name);
-    const FilePairDict &filePairs() const { return m_filePairs; }
-    const DirDef *dir() const { return m_dir; }
-    bool inherited() const { return m_inherited; }
-    void sort();
-
-  private:
-    const DirDef *m_dir;
-    FilePairDict m_filePairs;
-    bool m_inherited;
-};
 
 /** A usage relation between two directories. */
 class DirRelation
@@ -153,6 +163,8 @@ class DirSDict : public SDict<DirDef>
       return qstricmp(item1->shortName(),item2->shortName());
     }
 };
+
+// ------------------
 
 
 void buildDirectories();
