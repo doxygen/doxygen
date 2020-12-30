@@ -24,6 +24,7 @@
 #include "definition.h"
 #include "dirdef.h"
 #include "layout.h"
+#include "membergroup.h"
 
 class MemberList;
 class FileList;
@@ -35,7 +36,6 @@ class NamespaceDef;
 class GroupList;
 class OutputList;
 class NamespaceSDict;
-class MemberGroupSDict;
 class PageSDict;
 class PageDef;
 class DirDef;
@@ -93,7 +93,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual const QList<MemberList> &getMemberLists() const = 0;
 
     /* user defined member groups */
-    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+    virtual const MemberGroupList &getMemberGroups() const = 0;
 
     virtual FileList *      getFiles() const = 0;
     virtual ClassLinkedRefMap getClasses() const = 0;

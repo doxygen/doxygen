@@ -223,7 +223,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString className() const;
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const QList<MemberList> &getMemberLists() const;
-    virtual MemberGroupSDict *getMemberGroupSDict() const;
+    virtual const MemberGroupList &getMemberGroups() const;
     virtual QDict<int> *getTemplateBaseClassNames() const;
     virtual ClassDef *getVariableInstance(const char *templSpec) const;
     virtual bool isUsedOnly() const;
@@ -495,8 +495,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getMemberList(lt); }
     virtual const QList<MemberList> &getMemberLists() const
     { return getCdAlias()->getMemberLists(); }
-    virtual MemberGroupSDict *getMemberGroupSDict() const
-    { return getCdAlias()->getMemberGroupSDict(); }
+    virtual const MemberGroupList &getMemberGroups() const
+    { return getCdAlias()->getMemberGroups(); }
     virtual QDict<int> *getTemplateBaseClassNames() const
     { return getCdAlias()->getTemplateBaseClassNames(); }
     virtual ClassDef *getVariableInstance(const char *templSpec) const
@@ -677,7 +677,7 @@ class ClassDefImpl::IMPL
     QList<MemberList> memberLists;
 
     /* user defined member groups */
-    MemberGroupSDict *memberGroupSDict = 0;
+    MemberGroupList memberGroups;
 
     /*! Is this an abstract class? */
     bool isAbstract = false;
@@ -741,7 +741,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   usedByImplClassDict=0;
   usesIntfClassDict=0;
   constraintClassDict=0;
-  memberGroupSDict = 0;
   subGrouping=Config_getBool(SUBGROUPING);
   templateInstances = 0;
   variableInstances = 0;
@@ -787,7 +786,6 @@ ClassDefImpl::IMPL::~IMPL()
   delete usesIntfClassDict;
   delete constraintClassDict;
   delete incInfo;
-  delete memberGroupSDict;
   delete templateInstances;
   delete variableInstances;
   delete templBaseClassNames;
@@ -861,22 +859,17 @@ void ClassDefImpl::addMembersToMemberGroup()
   {
     if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      ::addMembersToMemberGroup(ml,&m_impl->memberGroupSDict,this);
+      ::addMembersToMemberGroup(ml,&m_impl->memberGroups,this);
     }
   }
 
   // add members inside sections to their groups
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if (mg->allMembersInSameSection() && m_impl->subGrouping)
     {
-      if (mg->allMembersInSameSection() && m_impl->subGrouping)
-      {
-        //printf("addToDeclarationSection(%s)\n",mg->header().data());
-        mg->addToDeclarationSection();
-      }
+      //printf("addToDeclarationSection(%s)\n",mg->header().data());
+      mg->addToDeclarationSection();
     }
   }
 }
@@ -1194,27 +1187,17 @@ void ClassDefImpl::computeAnchors()
     }
   }
 
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->setAnchors();
-    }
+    mg->setAnchors();
   }
 }
 
 void ClassDefImpl::distributeMemberGroupDocumentation()
 {
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->distributeMemberGroupDocumentation();
-    }
+    mg->distributeMemberGroupDocumentation();
   }
 }
 
@@ -1222,14 +1205,9 @@ void ClassDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->findSectionsInDocumentation(this);
-    }
+    mg->findSectionsInDocumentation(this);
   }
   QListIterator<MemberList> mli(m_impl->memberLists);
   MemberList *ml;
@@ -2004,22 +1982,16 @@ void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
 void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
 {
   // write user defined member groups
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    m_impl->memberGroupSDict->sort();
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
     {
-      if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
-      {
-        mg->writeDeclarations(ol,this,0,0,0,showInline);
-      }
-      else // add this group to the corresponding member section
-      {
-        //printf("addToDeclarationSection(%s)\n",mg->header().data());
-        //mg->addToDeclarationSection();
-      }
+      mg->writeDeclarations(ol,this,0,0,0,showInline);
+    }
+    else // add this group to the corresponding member section
+    {
+      //printf("addToDeclarationSection(%s)\n",mg->header().data());
+      //mg->addToDeclarationSection();
     }
   }
 }
@@ -2230,14 +2202,9 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          if (m_impl->memberGroupSDict)
+          for (const auto &mg : m_impl->memberGroups)
           {
-            MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-            MemberGroup *mg;
-            for (;(mg=mgli.current());++mgli)
-            {
-              mg->writeTagFile(tagFile);
-            }
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -3340,15 +3307,10 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   ol.endMemberItem();
 
   // write user defined member groups
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->setInGroup(inGroup);
-      mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
-    }
+    mg->setInGroup(inGroup);
+    mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
   }
 
   QListIterator<LayoutDocEntry> eli(
@@ -4232,14 +4194,9 @@ void ClassDefImpl::addListReferences()
              this
             );
   }
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->addListReferences(this);
-    }
+    mg->addListReferences(this);
   }
   QListIterator<MemberList> mli(m_impl->memberLists);
   MemberList *ml;
@@ -4371,11 +4328,9 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
       //printf("-> ml2=%d\n",ml2->numDecMembers());
     }
     // also include grouped members that have their own section in the class (see bug 722759)
-    if (inheritedFrom && m_impl->memberGroupSDict)
+    if (inheritedFrom)
     {
-      MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-      MemberGroup *mg;
-      for (;(mg=mgli.current());++mgli)
+      for (const auto &mg : m_impl->memberGroups)
       {
         count+=mg->countGroupedInheritedMembers(lt);
         if (lt2!=1) count+=mg->countGroupedInheritedMembers((MemberListType)lt2);
@@ -4409,14 +4364,9 @@ void ClassDefImpl::setAnonymousEnumType()
     }
     else if (lde->kind()==LayoutDocEntry::MemberGroups)
     {
-      if (m_impl->memberGroupSDict)
+      for (const auto &mg : m_impl->memberGroups)
       {
-        MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-        MemberGroup *mg;
-        for (;(mg=mgli.current());++mgli)
-        {
-          mg->setAnonymousEnumType();
-        }
+        mg->setAnonymousEnumType();
       }
     }
   }
@@ -4431,15 +4381,10 @@ void ClassDefImpl::countMembers()
     ml->countDecMembers();
     ml->countDocMembers();
   }
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->countDecMembers();
-      mg->countDocMembers();
-    }
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 
@@ -4557,18 +4502,13 @@ int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
     count=ml->countInheritableMembers(inheritedFrom);
   }
   //printf("%s:countMembersIncludingGrouped: count=%d\n",name().data(),count);
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    bool hasOwnSection = !mg->allMembersInSameSection() ||
+                         !m_impl->subGrouping; // group is in its own section
+    if ((additional && hasOwnSection) || (!additional && !hasOwnSection))
     {
-      bool hasOwnSection = !mg->allMembersInSameSection() ||
-                           !m_impl->subGrouping; // group is in its own section
-      if ((additional && hasOwnSection) || (!additional && !hasOwnSection))
-      {
-        count+=mg->countGroupedInheritedMembers(lt);
-      }
+      count+=mg->countGroupedInheritedMembers(lt);
     }
   }
   //printf("%s:countMembersIncludingGrouped(lt=%d,%s)=%d\n",
@@ -4673,16 +4613,11 @@ void ClassDefImpl::addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                         const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("** %s::addGroupedInheritedMembers(%p) inheritId=%s\n",name().data(),m_impl->memberGroupSDict,inheritId.data());
-  if (m_impl->memberGroupSDict)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_impl->memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
     {
-      if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
-      {
-        mg->addGroupedInheritedMembers(ol,this,lt,inheritedFrom,inheritId);
-      }
+      mg->addGroupedInheritedMembers(ol,this,lt,inheritedFrom,inheritId);
     }
   }
 }
@@ -4884,9 +4819,9 @@ const QList<MemberList> &ClassDefImpl::getMemberLists() const
   return m_impl->memberLists;
 }
 
-MemberGroupSDict *ClassDefImpl::getMemberGroupSDict() const
+const MemberGroupList &ClassDefImpl::getMemberGroups() const
 {
-  return m_impl->memberGroupSDict;
+  return m_impl->memberGroups;
 }
 
 void ClassDefImpl::setNamespace(NamespaceDef *nd)

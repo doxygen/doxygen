@@ -2015,15 +2015,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   writeTemplateList(cd);
 
   // + member groups
-  if (cd->getMemberGroupSDict())
+  for (const auto &mg : cd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateSqlite3Section(cd,mg->members(),refid,"user-defined",mg->header(),
-          mg->documentation());
-    }
+    generateSqlite3Section(cd,mg->members(),refid,"user-defined",mg->header(),
+        mg->documentation());
   }
 
   // this is just a list of *local* members
@@ -2079,15 +2074,10 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   writeInnerNamespaces(nd->getNamespaces(),refid);
 
   // + member groups
-  if (nd->getMemberGroupSDict())
+  for (const auto &mg : nd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateSqlite3Section(nd,mg->members(),refid,"user-defined",mg->header(),
-          mg->documentation());
-    }
+    generateSqlite3Section(nd,mg->members(),refid,"user-defined",mg->header(),
+        mg->documentation());
   }
 
   // + normal members
@@ -2241,15 +2231,10 @@ static void generateSqlite3ForFile(const FileDef *fd)
   writeInnerNamespaces(fd->getNamespaces(),refid);
 
   // + member groups
-  if (fd->getMemberGroupSDict())
+  for (const auto &mg : fd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*fd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateSqlite3Section(fd,mg->members(),refid,"user-defined",mg->header(),
+    generateSqlite3Section(fd,mg->members(),refid,"user-defined",mg->header(),
           mg->documentation());
-    }
   }
 
   // + normal members
@@ -2315,15 +2300,10 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
   writeInnerGroups(gd->getSubGroups(),refid);
 
   // + member groups
-  if (gd->getMemberGroupSDict())
+  for (const auto &mg : gd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*gd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateSqlite3Section(gd,mg->members(),refid,"user-defined",mg->header(),
-          mg->documentation());
-    }
+    generateSqlite3Section(gd,mg->members(),refid,"user-defined",mg->header(),
+        mg->documentation());
   }
 
   // + members

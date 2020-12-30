@@ -85,7 +85,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
-    virtual MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
+    virtual const MemberGroupList &getMemberGroups() const  { return m_memberGroups; }
     virtual NamespaceLinkedRefMap getNamespaces() const     { return m_namespaces; }
     virtual ClassLinkedRefMap getClasses() const   { return m_classes; }
     virtual QCString title() const;
@@ -169,7 +169,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     PackageDef           *m_package;
     DirDef               *m_dir;
     QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *m_memberGroupSDict;
+    MemberGroupList       m_memberGroups;
     NamespaceLinkedRefMap m_namespaces;
     ClassLinkedRefMap     m_classes;
     ClassLinkedRefMap     m_interfaces;
@@ -241,7 +241,6 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
     m_docname.prepend(stripFromPath(m_path.copy()));
   }
   setLanguage(getLanguageFromFileName(name()));
-  m_memberGroupSDict = 0;
   acquireFileVersion();
   m_subGrouping=Config_getBool(SUBGROUPING);
 }
@@ -255,7 +254,6 @@ FileDefImpl::~FileDefImpl()
   delete m_includedByList;
   delete m_srcDefDict;
   delete m_srcMemberDict;
-  delete m_memberGroupSDict;
 }
 
 void FileDefImpl::setDiskName(const QCString &name)
@@ -284,14 +282,9 @@ void FileDefImpl::computeAnchors()
 void FileDefImpl::distributeMemberGroupDocumentation()
 {
   //printf("FileDefImpl::distributeMemberGroupDocumentation()\n");
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->distributeMemberGroupDocumentation();
-    }
+    mg->distributeMemberGroupDocumentation();
   }
 }
 
@@ -299,14 +292,9 @@ void FileDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->findSectionsInDocumentation(this);
-    }
+    mg->findSectionsInDocumentation(this);
   }
 
   QListIterator<MemberList> mli(m_memberLists);
@@ -411,14 +399,9 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          if (m_memberGroupSDict)
+          for (const auto &mg : m_memberGroups)
           {
-            MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-            MemberGroup *mg;
-            for (;(mg=mgli.current());++mgli)
-            {
-              mg->writeTagFile(tagFile);
-            }
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -751,18 +734,12 @@ void FileDefImpl::endMemberDocumentation(OutputList &ol)
 void FileDefImpl::writeMemberGroups(OutputList &ol)
 {
   /* write user defined member groups */
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    m_memberGroupSDict->sort();
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if ((!mg->allMembersInSameSection() || !m_subGrouping)
+        && mg->header()!="[NOHEADER]")
     {
-      if ((!mg->allMembersInSameSection() || !m_subGrouping)
-          && mg->header()!="[NOHEADER]")
-      {
-        mg->writeDeclarations(ol,0,0,this,0);
-      }
+      mg->writeDeclarations(ol,0,0,this,0);
     }
   }
 }
@@ -1273,22 +1250,17 @@ void FileDefImpl::addMembersToMemberGroup()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(ml,&m_memberGroupSDict,this);
+      ::addMembersToMemberGroup(ml,&m_memberGroups,this);
     }
   }
 
   // add members inside sections to their groups
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if (mg->allMembersInSameSection() && m_subGrouping)
     {
-      if (mg->allMembersInSameSection() && m_subGrouping)
-      {
-        //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
-        mg->addToDeclarationSection();
-      }
+      //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
+      mg->addToDeclarationSection();
     }
   }
 }
@@ -1575,14 +1547,9 @@ void FileDefImpl::addListReferences()
                0
               );
   }
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->addListReferences(this);
-    }
+    mg->addListReferences(this);
   }
   QListIterator<MemberList> mli(m_memberLists);
   MemberList *ml;
@@ -1982,15 +1949,10 @@ void FileDefImpl::sortMemberLists()
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
 
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      MemberList *mlg = mg->members();
-      if (mlg->needsSorting()) { mlg->sort(); mlg->setNeedsSorting(FALSE); }
-    }
+    MemberList *mlg = mg->members();
+    if (mlg->needsSorting()) { mlg->sort(); mlg->setNeedsSorting(FALSE); }
   }
 
   if (Config_getBool(SORT_BRIEF_DOCS))
@@ -2116,15 +2078,10 @@ void FileDefImpl::countMembers()
     ml->countDecMembers();
     ml->countDocMembers();
   }
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->countDecMembers();
-      mg->countDocMembers();
-    }
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 

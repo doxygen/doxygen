@@ -477,12 +477,9 @@ void DotNode::writeBox(FTextStream &t,
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
         writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
       }
-      if (m_classDef->getLanguage()!=SrcLangExt_Fortran &&
-        m_classDef->getMemberGroupSDict())
+      if (m_classDef->getLanguage()!=SrcLangExt_Fortran)
       {
-        MemberGroupSDict::Iterator mgdi(*m_classDef->getMemberGroupSDict());
-        MemberGroup *mg;
-        for (mgdi.toFirst();(mg=mgdi.current());++mgdi)
+        for (const auto &mg : m_classDef->getMemberGroups())
         {
           if (mg->members())
           {

@@ -28,6 +28,7 @@
 #include "containers.h"
 #include "definition.h"
 #include "arguments.h"
+#include "membergroup.h"
 
 struct Argument;
 class MemberDef;
@@ -45,7 +46,6 @@ class ExampleSDict;
 class MemberNameInfoLinkedMap;
 class UsesClassDict;
 class ConstraintClassDict;
-class MemberGroupSDict;
 class QTextStream;
 class PackageDef;
 class GroupDef;
@@ -321,7 +321,7 @@ class ClassDef : public Definition
     virtual const QList<MemberList> &getMemberLists() const = 0;
 
     /** Returns the member groups defined for this class */
-    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+    virtual const MemberGroupList &getMemberGroups() const = 0;
 
     virtual QDict<int> *getTemplateBaseClassNames() const = 0;
 

@@ -98,7 +98,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
 
     /* user defined member groups */
-    virtual MemberGroupSDict *getMemberGroupSDict() const { return m_memberGroupSDict; }
+    virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
 
     virtual FileList *      getFiles() const        { return m_fileList; }
     virtual ClassLinkedRefMap getClasses() const    { return m_classes; }
@@ -150,7 +150,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
     Definition *         m_groupScope;
     QList<MemberList>    m_memberLists;
-    MemberGroupSDict *   m_memberGroupSDict;
+    MemberGroupList      m_memberGroups;
     bool                 m_subGrouping;
 
 };
@@ -180,8 +180,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
     m_fileName = convertNameToFile(QCString("group_")+na);
   }
   setGroupTitle( t );
-  m_memberGroupSDict = new MemberGroupSDict;
-  m_memberGroupSDict->setAutoDelete(TRUE);
 
   m_allMemberList = new MemberList(MemberListType_allMembersList);
 
@@ -197,7 +195,6 @@ GroupDefImpl::~GroupDefImpl()
   delete m_pageDict;
   delete m_exampleDict;
   delete m_allMemberList;
-  delete m_memberGroupSDict;
 }
 
 void GroupDefImpl::setGroupTitle( const char *t )
@@ -218,9 +215,7 @@ void GroupDefImpl::setGroupTitle( const char *t )
 
 void GroupDefImpl::distributeMemberGroupDocumentation()
 {
-  MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  for (const auto &mg : m_memberGroups)
   {
     mg->distributeMemberGroupDocumentation();
   }
@@ -230,9 +225,8 @@ void GroupDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+
+  for (const auto &mg : m_memberGroups)
   {
     mg->findSectionsInDocumentation(this);
   }
@@ -313,14 +307,12 @@ void GroupDefImpl::addMembersToMemberGroup()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(ml,&m_memberGroupSDict,this);
+      ::addMembersToMemberGroup(ml,&m_memberGroups,this);
     }
   }
 
   //printf("GroupDefImpl::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
-  MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  for (const auto &mg : m_memberGroups)
   {
     mg->setInGroup(TRUE);
   }
@@ -599,15 +591,10 @@ void GroupDefImpl::countMembers()
     ml->countDecMembers();
     ml->countDocMembers();
   }
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->countDecMembers();
-      mg->countDocMembers();
-    }
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 
@@ -738,14 +725,9 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          if (m_memberGroupSDict)
+          for (const auto &mg : m_memberGroups)
           {
-            MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-            MemberGroup *mg;
-            for (;(mg=mgli.current());++mgli)
-            {
-              mg->writeTagFile(tagFile);
-            }
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -1036,16 +1018,9 @@ void GroupDefImpl::writePageDocumentation(OutputList &ol)
 void GroupDefImpl::writeMemberGroups(OutputList &ol)
 {
   /* write user defined member groups */
-  if (m_memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    m_memberGroupSDict->sort();
-    /* write user defined member groups */
-    MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->writeDeclarations(ol,0,0,0,this);
-    }
+    mg->writeDeclarations(ol,0,0,0,this);
   }
 }
 
@@ -1601,9 +1576,7 @@ void GroupDefImpl::addListReferences()
              0
             );
   }
-  MemberGroupSDict::Iterator mgli(*m_memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
   }

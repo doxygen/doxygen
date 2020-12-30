@@ -123,7 +123,7 @@ int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
       }
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     count+=mg->countInheritableMembers(inheritedFrom);
   }
@@ -200,7 +200,7 @@ void MemberList::countDecMembers()
       }
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->countDecMembers();
     /*
@@ -241,7 +241,7 @@ void MemberList::countDocMembers()
       m_numDocMembers++;
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->countDocMembers();
     m_numDocMembers+=mg->numDocMembers();
@@ -330,7 +330,7 @@ void MemberList::setAnonymousEnumType()
       }
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->setAnonymousEnumType();
   }
@@ -695,7 +695,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
-    for (const auto &mg : m_memberGroupList)
+    for (const auto &mg : m_memberGroupRefList)
     {
       bool hasHeader=!mg->header().isEmpty() && mg->header()!="[NOHEADER]";
       if (inheritId.isEmpty())
@@ -806,7 +806,7 @@ void MemberList::writeDocumentation(OutputList &ol,
     }
   }
   //printf("MemberList::writeDocumentation()  --  member groups %d\n",memberGroupList->count());
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->writeDocumentation(ol,scopeName,container,showEnumValues,showInline);
   }
@@ -919,7 +919,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
       }
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->writeDocumentationPage(ol,scopeName,container);
   }
@@ -927,7 +927,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
 void MemberList::addMemberGroup(MemberGroup *mg)
 {
-  m_memberGroupList.push_back(mg);
+  m_memberGroupRefList.push_back(mg);
 }
 
 void MemberList::addListReferences(Definition *def)
@@ -958,7 +958,7 @@ void MemberList::addListReferences(Definition *def)
       }
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->addListReferences(def);
   }
@@ -976,7 +976,7 @@ void MemberList::findSectionsInDocumentation(const Definition *d)
       md->findSectionsInDocumentation();
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->findSectionsInDocumentation(d);
   }
@@ -1077,7 +1077,7 @@ void MemberList::writeTagFile(FTextStream &tagFile)
       }
     }
   }
-  for (const auto &mg : m_memberGroupList)
+  for (const auto &mg : m_memberGroupRefList)
   {
     mg->writeTagFile(tagFile);
   }

@@ -49,8 +49,6 @@ struct Argument;
 class ArgumentList;
 class MemberNameInfoLinkedMap;
 class MemberInfo;
-class MemberGroup;
-class MemberGroupSDict;
 class DotNode;
 class DotGfxHierarchyTable;
 
@@ -1006,10 +1004,10 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
   public:
     static MemberGroupListContext *alloc()
     { return new MemberGroupListContext; }
-    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupList &list)
+    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupRefList &list)
     { return new MemberGroupListContext(def,relPath,list); }
-    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping)
-    { return new MemberGroupListContext(def,relPath,dict,subGrouping); }
+    static MemberGroupListContext *alloc(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping)
+    { return new MemberGroupListContext(def,relPath,list,subGrouping); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -1020,8 +1018,8 @@ class MemberGroupListContext : public RefCountedContext, public TemplateListIntf
 
   private:
     MemberGroupListContext();
-    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list);
-    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupSDict *mgDict,bool subGrouping);
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list);
+    MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping);
    ~MemberGroupListContext();
     class Private;
     Private *p;

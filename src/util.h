@@ -51,7 +51,6 @@ class ExampleSDict;
 class GroupDef;
 class NamespaceSDict;
 class ClassList;
-class MemberGroupSDict;
 struct TagInfo;
 class PageDef;
 class SectionInfo;
@@ -265,7 +264,7 @@ QCString convertToPSString(const char *s);
 QCString getOverloadDocs();
 
 void addMembersToMemberGroup(/* in,out */ MemberList *ml,
-                             /* in,out */ MemberGroupSDict **ppMemberGroupSDict,
+                             /* in,out */ MemberGroupList *pMemberGroups,
                              /* in */     const Definition *context);
 
 int extractClassNameFromType(const QCString &type,int &pos,

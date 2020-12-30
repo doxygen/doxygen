@@ -39,7 +39,6 @@ class MemberDef;
 class OutputList;
 class NamespaceDef;
 class NamespaceLinkedRefMap;
-class MemberGroupSDict;
 class PackageDef;
 class DirDef;
 class FTextStream;
@@ -132,7 +131,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual const QList<MemberList> &getMemberLists() const = 0;
 
     /* user defined member groups */
-    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+    virtual const MemberGroupList &getMemberGroups() const = 0;
     virtual NamespaceLinkedRefMap getNamespaces() const = 0;
     virtual ClassLinkedRefMap getClasses() const = 0;
 

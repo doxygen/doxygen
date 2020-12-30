@@ -355,7 +355,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                        const QCString &name,const QCString &anchor,
                        bool addToIndex=TRUE,bool preventSeparateIndex=FALSE)
 {
-  bool hasMembers = def->getMemberLists().count()>0 || def->getMemberGroupSDict()!=0;
+  bool hasMembers = def->getMemberLists().count()>0 || !def->getMemberGroups().empty();
   Doxygen::indexList->addContentsItem(hasMembers,name,
                                      def->getReference(),def->getOutputFileBase(),anchor,
                                      hasMembers && !preventSeparateIndex,

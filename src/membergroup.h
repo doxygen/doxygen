@@ -19,6 +19,8 @@
 #define MEMBERGROUP_H
 
 #include <vector>
+#include <map>
+#include <memory>
 
 #include <qlist.h>
 #include "sortdict.h"
@@ -105,20 +107,9 @@ class MemberGroup
     RefItemVector m_xrefListItems;
 };
 
-using MemberGroupList = std::vector<MemberGroup *>;
-
-/** A sorted dictionary of MemberGroup objects. */
-class MemberGroupSDict : public SIntDict<MemberGroup>
-{
-  public:
-    MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
-   ~MemberGroupSDict() {}
- private:
-    int compareValues(const MemberGroup *item1,const MemberGroup *item2) const
-    {
-      return item1->groupId() - item2->groupId();
-    }
-};
+using MemberGroupRefList = std::vector<MemberGroup *>;
+//using MemberGroupMap = std::map< int, std::unique_ptr<MemberGroup> >;
+using MemberGroupList = std::vector< std::unique_ptr<MemberGroup> >;
 
 /** Data collected for a member group */
 struct MemberGroupInfo

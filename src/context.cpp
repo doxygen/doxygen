@@ -2500,9 +2500,9 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.memberGroups)
       {
-        if (m_classDef->getMemberGroupSDict())
+        if (!m_classDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_classDef,relPathAsString(),m_classDef->getMemberGroupSDict(),m_classDef->subGrouping()));
+          cache.memberGroups.reset(MemberGroupListContext::alloc(m_classDef,relPathAsString(),m_classDef->getMemberGroups(),m_classDef->subGrouping()));
         }
         else
         {
@@ -2848,9 +2848,9 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       Cachable &cache = getCache();
       if (!cache.memberGroups)
       {
-        if (m_namespaceDef->getMemberGroupSDict())
+        if (!m_namespaceDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_namespaceDef,relPathAsString(),m_namespaceDef->getMemberGroupSDict(),m_namespaceDef->subGrouping()));
+          cache.memberGroups.reset(MemberGroupListContext::alloc(m_namespaceDef,relPathAsString(),m_namespaceDef->getMemberGroups(),m_namespaceDef->subGrouping()));
         }
         else
         {
@@ -3291,9 +3291,9 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       Cachable &cache = getCache();
       if (!cache.memberGroups)
       {
-        if (m_fileDef->getMemberGroupSDict())
+        if (!m_fileDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_fileDef,relPathAsString(),m_fileDef->getMemberGroupSDict(),m_fileDef->subGrouping()));
+          cache.memberGroups.reset(MemberGroupListContext::alloc(m_fileDef,relPathAsString(),m_fileDef->getMemberGroups(),m_fileDef->subGrouping()));
         }
         else
         {
@@ -5588,9 +5588,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       Cachable &cache = getCache();
       if (!cache.memberGroups)
       {
-        if (m_groupDef->getMemberGroupSDict())
+        if (!m_groupDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_groupDef,relPathAsString(),m_groupDef->getMemberGroupSDict(),m_groupDef->subGrouping()));
+          cache.memberGroups.reset(MemberGroupListContext::alloc(m_groupDef,relPathAsString(),m_groupDef->getMemberGroups(),m_groupDef->subGrouping()));
         }
         else
         {
@@ -8895,7 +8895,7 @@ MemberGroupListContext::MemberGroupListContext() : RefCountedContext("MemberGrou
   p = new Private;
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list) : RefCountedContext("MemberGroupListContext")
 {
   p = new Private;
   for (const auto &mg : list)
@@ -8904,19 +8904,14 @@ MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCStr
   }
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupSDict *dict,bool subGrouping) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping) : RefCountedContext("MemberGroupListContext")
 {
   p = new Private;
-  if (dict)
+  for (const auto &mg : list)
   {
-    MemberGroupSDict::Iterator di(*dict);
-    const MemberGroup *mg;
-    for (di.toFirst();(mg=di.current());++di)
+    if (!mg->allMembersInSameSection() || !subGrouping)
     {
-      if (!mg->allMembersInSameSection() || !subGrouping)
-      {
-        p->addMemberGroup(def,relPath,mg);
-      }
+      p->addMemberGroup(def,relPath,mg.get());
     }
   }
 }
@@ -9184,24 +9179,21 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
     void addMemberGroupsOfClass(const ClassDef *inheritedFrom,
                                 const ClassDef *cd,MemberListType lt,MemberList *combinedList)
     {
-      if (cd->getMemberGroupSDict())
+      // TODO: why this there no addMemberGroupsOfNamespace, addMembersGroupsOfFile,
+      // addMemberGroupsOfGroup?
+      for (const auto &mg: cd->getMemberGroups())
       {
-        MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
-        MemberGroup *mg;
-        for (;(mg=mgli.current());++mgli)
+        if (mg->members() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
         {
-          if (mg->members() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
+          MemberListIterator li(*mg->members());
+          MemberDef *md;
+          for (li.toFirst();(md=li.current());++li)
           {
-            MemberListIterator li(*mg->members());
-            MemberDef *md;
-            for (li.toFirst();(md=li.current());++li)
+            if (lt==md->getSectionList(mg->container())->listType() &&
+                !md->isReimplementedBy(inheritedFrom) &&
+                md->isBriefSectionVisible())
             {
-              if (lt==md->getSectionList(mg->container())->listType() &&
-                  !md->isReimplementedBy(inheritedFrom) &&
-                  md->isBriefSectionVisible())
-              {
-                combinedList->append(md);
-              }
+              combinedList->append(md);
             }
           }
         }

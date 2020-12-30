@@ -97,7 +97,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
     virtual MemberDef    *getMemberByName(const QCString &) const;
-    virtual MemberGroupSDict *getMemberGroupSDict() const { return memberGroupSDict; }
+    virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
     virtual ClassLinkedRefMap getClasses() const { return classes; }
     virtual ClassLinkedRefMap getInterfaces() const { return interfaces; }
     virtual ClassLinkedRefMap getStructs() const { return structs; }
@@ -140,7 +140,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
 
     MemberSDict          *m_allMembersDict = 0;
     QList<MemberList>     m_memberLists;
-    MemberGroupSDict     *memberGroupSDict = 0;
+    MemberGroupList       m_memberGroups;
     ClassLinkedRefMap     classes;
     ClassLinkedRefMap     interfaces;
     ClassLinkedRefMap     structs;
@@ -212,8 +212,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->getMemberLists(); }
     virtual MemberDef    *getMemberByName(const QCString &name) const
     { return getNSAlias()->getMemberByName(name); }
-    virtual MemberGroupSDict *getMemberGroupSDict() const
-    { return getNSAlias()->getMemberGroupSDict(); }
+    virtual const MemberGroupList &getMemberGroups() const
+    { return getNSAlias()->getMemberGroups(); }
     virtual ClassLinkedRefMap getClasses() const
     { return getNSAlias()->getClasses(); }
     virtual ClassLinkedRefMap getInterfaces() const
@@ -266,8 +266,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
   m_innerCompounds = new SDict<Definition>(17);
   m_allMembersDict = 0;
   setReference(lref);
-  memberGroupSDict = new MemberGroupSDict;
-  memberGroupSDict->setAutoDelete(TRUE);
   m_inline=FALSE;
   m_subGrouping=Config_getBool(SUBGROUPING);
   if (type && !strcmp("module", type))
@@ -291,7 +289,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
 NamespaceDefImpl::~NamespaceDefImpl()
 {
   delete m_innerCompounds;
-  delete memberGroupSDict;
   delete m_allMembersDict;
 }
 
@@ -309,9 +306,7 @@ void NamespaceDefImpl::setFileName(const QCString &fn)
 
 void NamespaceDefImpl::distributeMemberGroupDocumentation()
 {
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  for (const auto &mg : m_memberGroups)
   {
     mg->distributeMemberGroupDocumentation();
   }
@@ -321,9 +316,7 @@ void NamespaceDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  for (const auto &mg : m_memberGroups)
   {
     mg->findSectionsInDocumentation(this);
   }
@@ -400,22 +393,17 @@ void NamespaceDefImpl::addMembersToMemberGroup()
   {
     if (ml->listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(ml,&memberGroupSDict,this);
+      ::addMembersToMemberGroup(ml,&m_memberGroups,this);
     }
   }
 
   // add members inside sections to their groups
-  if (memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if (mg->allMembersInSameSection() && m_subGrouping)
     {
-      if (mg->allMembersInSameSection() && m_subGrouping)
-      {
-        //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
-        mg->addToDeclarationSection();
-      }
+      //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
+      mg->addToDeclarationSection();
     }
   }
 }
@@ -620,14 +608,9 @@ void NamespaceDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          if (memberGroupSDict)
+          for (const auto &mg : m_memberGroups)
           {
-            MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-            MemberGroup *mg;
-            for (;(mg=mgli.current());++mgli)
-            {
-              mg->writeTagFile(tagFile);
-            }
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -789,18 +772,12 @@ void NamespaceDefImpl::writeNamespaceDeclarations(OutputList &ol,const QCString 
 void NamespaceDefImpl::writeMemberGroups(OutputList &ol)
 {
   /* write user defined member groups */
-  if (memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    memberGroupSDict->sort();
-    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
+    if ((!mg->allMembersInSameSection() || !m_subGrouping)
+        && mg->header()!="[NOHEADER]")
     {
-      if ((!mg->allMembersInSameSection() || !m_subGrouping)
-          && mg->header()!="[NOHEADER]")
-      {
-        mg->writeDeclarations(ol,0,this,0,0);
-      }
+      mg->writeDeclarations(ol,0,this,0,0);
     }
   }
 }
@@ -1146,15 +1123,10 @@ void NamespaceDefImpl::countMembers()
     ml->countDecMembers();
     ml->countDocMembers();
   }
-  if (memberGroupSDict)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      mg->countDecMembers();
-      mg->countDocMembers();
-    }
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 
@@ -1213,9 +1185,7 @@ void NamespaceDefImpl::addListReferences()
         this
         );
   }
-  MemberGroupSDict::Iterator mgli(*memberGroupSDict);
-  MemberGroup *mg;
-  for (;(mg=mgli.current());++mgli)
+  for (const auto &mg : m_memberGroups)
   {
     mg->addListReferences(this);
   }

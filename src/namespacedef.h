@@ -22,13 +22,13 @@
 #include "definition.h"
 #include "filedef.h"
 #include "linkedmap.h"
+#include "membergroup.h"
 
 class MemberList;
 class ClassDef;
 class OutputList;
 class ClassLinkedRefMap;
 class MemberDef;
-class MemberGroupSDict;
 class NamespaceDef;
 class FTextStream;
 class NamespaceDef;
@@ -79,7 +79,7 @@ class NamespaceDef : public Definition
     virtual MemberDef *getMemberByName(const QCString &) const = 0;
 
     /*! Returns the user defined member groups */
-    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+    virtual const MemberGroupList &getMemberGroups() const = 0;
 
     /*! Returns the classes contained in this namespace */
     virtual ClassLinkedRefMap getClasses() const = 0;

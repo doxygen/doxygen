@@ -4412,7 +4412,7 @@ QCString getOverloadDocs()
 }
 
 void addMembersToMemberGroup(MemberList *ml,
-    MemberGroupSDict **ppMemberGroupSDict,
+    MemberGroupList *pMemberGroups,
     const Definition *context)
 {
   ASSERT(context!=0);
@@ -4439,26 +4439,30 @@ void addMembersToMemberGroup(MemberList *ml,
             if (it!=Doxygen::memberGroupInfoMap.end())
             {
               auto &info = it->second;
-              if (*ppMemberGroupSDict==0)
+              auto mg_it = std::find_if(pMemberGroups->begin(),
+                                        pMemberGroups->end(),
+                                        [&groupId](const auto &g)
+                                        { return g->groupId()==groupId; }
+                                       );
+              MemberGroup *mg_ptr = 0;
+              if (mg_it==pMemberGroups->end())
               {
-                *ppMemberGroupSDict = new MemberGroupSDict;
-                (*ppMemberGroupSDict)->setAutoDelete(TRUE);
+                auto mg = std::make_unique<MemberGroup>(
+                          context,
+                          groupId,
+                          info->header,
+                          info->doc,
+                          info->docFile,
+                          info->docLine);
+                mg_ptr = mg.get();
+                pMemberGroups->push_back(std::move(mg));
               }
-              MemberGroup *mg = (*ppMemberGroupSDict)->find(groupId);
-              if (mg==0)
+              else
               {
-                mg = new MemberGroup(
-                    context,
-                    groupId,
-                    info->header,
-                    info->doc,
-                    info->docFile,
-                    info->docLine
-                    );
-                (*ppMemberGroupSDict)->append(groupId,mg);
+                mg_ptr = (*mg_it).get();
               }
-              mg->insertMember(fmd); // insert in member group
-              fmd->setMemberGroup(mg);
+              mg_ptr->insertMember(fmd); // insert in member group
+              fmd->setMemberGroup(mg_ptr);
             }
           }
         }
@@ -4471,28 +4475,32 @@ void addMembersToMemberGroup(MemberList *ml,
       if (it!=Doxygen::memberGroupInfoMap.end())
       {
         auto &info = it->second;
-        if (*ppMemberGroupSDict==0)
+        auto mg_it = std::find_if(pMemberGroups->begin(),
+                                  pMemberGroups->end(),
+                                  [&groupId](const auto &g)
+                                  { return g->groupId()==groupId; }
+                                 );
+        MemberGroup *mg_ptr = 0;
+        if (mg_it==pMemberGroups->end())
         {
-          *ppMemberGroupSDict = new MemberGroupSDict;
-          (*ppMemberGroupSDict)->setAutoDelete(TRUE);
+          auto mg = std::make_unique<MemberGroup>(
+                    context,
+                    groupId,
+                    info->header,
+                    info->doc,
+                    info->docFile,
+                    info->docLine);
+          mg_ptr = mg.get();
+          pMemberGroups->push_back(std::move(mg));
         }
-        MemberGroup *mg = (*ppMemberGroupSDict)->find(groupId);
-        if (mg==0)
+        else
         {
-          mg = new MemberGroup(
-              context,
-              groupId,
-              info->header,
-              info->doc,
-              info->docFile,
-              info->docLine
-              );
-          (*ppMemberGroupSDict)->append(groupId,mg);
+          mg_ptr = (*mg_it).get();
         }
         md = ml->take(index); // remove from member list
-        mg->insertMember(md->resolveAlias()); // insert in member group
-        mg->setRefItems(info->m_sli);
-        md->setMemberGroup(mg);
+        mg_ptr->insertMember(md->resolveAlias()); // insert in member group
+        mg_ptr->setRefItems(info->m_sli);
+        md->setMemberGroup(mg_ptr);
         continue;
       }
     }

@@ -1365,15 +1365,10 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
   writeInnerClasses(cd->getClasses(),t);
 
   writeTemplateList(cd,t);
-  if (cd->getMemberGroupSDict())
+  for (const auto &mg : cd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*cd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header(),
-          mg->documentation());
-    }
+    generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header(),
+        mg->documentation());
   }
 
   QListIterator<MemberList> mli(cd->getMemberLists());
@@ -1469,15 +1464,10 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
   writeInnerClasses(nd->getClasses(),t);
   writeInnerNamespaces(nd->getNamespaces(),t);
 
-  if (nd->getMemberGroupSDict())
+  for (const auto &mg : nd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*nd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header(),
+    generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header(),
           mg->documentation());
-    }
   }
 
   QListIterator<MemberList> mli(nd->getMemberLists());
@@ -1600,15 +1590,10 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   writeInnerClasses(fd->getClasses(),t);
   writeInnerNamespaces(fd->getNamespaces(),t);
 
-  if (fd->getMemberGroupSDict())
+  for (const auto &mg : fd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*fd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header(),
-          mg->documentation());
-    }
+    generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header(),
+        mg->documentation());
   }
 
   QListIterator<MemberList> mli(fd->getMemberLists());
@@ -1680,15 +1665,10 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
   writeInnerPages(gd->getPages(),t);
   writeInnerGroups(gd->getSubGroups(),t);
 
-  if (gd->getMemberGroupSDict())
+  for (const auto &mg : gd->getMemberGroups())
   {
-    MemberGroupSDict::Iterator mgli(*gd->getMemberGroupSDict());
-    MemberGroup *mg;
-    for (;(mg=mgli.current());++mgli)
-    {
-      generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header(),
-          mg->documentation());
-    }
+    generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header(),
+        mg->documentation());
   }
 
   QListIterator<MemberList> mli(gd->getMemberLists());
