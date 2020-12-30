@@ -61,10 +61,10 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 
   dirsInGraph.insert(dd->getOutputFileBase(),dd);
 
-  std::vector<const DirDef *> usedDirsToBeDrawn;
+  std::vector<const DirDef *> usedDirsNotDrawn;
   for(const auto& usedDir : dd->usedDirs())
   {
-    usedDirsToBeDrawn.push_back(usedDir->dir());
+    usedDirsNotDrawn.push_back(usedDir->dir());
   }
 
   const auto parent = dd->parent();
@@ -79,9 +79,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 
     {
       // draw all directories which have `dd->parent()` as parent and `dd` as dependent
-      const auto newEnd = std::remove_if(usedDirsToBeDrawn.begin(), usedDirsToBeDrawn.end(), [&](const DirDef *const usedDir)
+      const auto newEnd = std::remove_if(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(), [&](const DirDef *const usedDir)
       {
-        if (usedDir->parent() == parent)
+        if (dd!=usedDir && dd->parent()==usedDir->parent() && !usedDir->isParentOf(dd))
         {
           drawDirectory(t, usedDir, usedDir->isCluster() && !Config_getBool(DOT_TRANSPARENT), dirsInGraph);
           return true;
@@ -89,7 +89,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         return false;
       }
       );
-      usedDirsToBeDrawn.erase(newEnd, usedDirsToBeDrawn.end());
+      usedDirsNotDrawn.erase(newEnd, usedDirsNotDrawn.end());
     }
   }
   if (dd->isCluster())
@@ -123,7 +123,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   // add nodes for other used directories
   {
     //printf("*** For dir %s\n",shortName().data());
-    for (const auto &usedDir : usedDirsToBeDrawn)
+    for (const auto &usedDir : usedDirsNotDrawn)
       // for each used dir (=directly used or a parent of a directly used dir)
     {
       const DirDef *dir=dd;
