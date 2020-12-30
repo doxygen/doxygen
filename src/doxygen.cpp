@@ -1469,28 +1469,40 @@ static void processTagLessClasses(const ClassDef *rootCd,
   }
 }
 
-static void findTagLessClasses(const ClassDef *cd)
+static void findTagLessClasses(std::vector<ClassDefMutable*> &candidates,const ClassDef *cd)
 {
   for (const auto &icd : cd->getClasses())
   {
     if (icd->name().find("@")==-1) // process all non-anonymous inner classes
     {
-      findTagLessClasses(icd);
+      findTagLessClasses(candidates,icd);
     }
   }
 
-  processTagLessClasses(cd,cd,toClassDefMutable(cd),"",0); // process tag less inner struct/classes (if any)
+  ClassDefMutable *cdm = toClassDefMutable(cd);
+  if (cdm)
+  {
+    candidates.push_back(cdm);
+  }
 }
 
 static void findTagLessClasses()
 {
+  std::vector<ClassDefMutable *> candidates;
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     Definition *scope = cd->getOuterScope();
     if (scope && scope->definitionType()!=Definition::TypeClass) // that is not nested
     {
-      findTagLessClasses(cd.get());
+      findTagLessClasses(candidates,cd.get());
     }
+  }
+
+  // since processTagLessClasses is potentially adding classes to Doxygen::classLinkedMap
+  // we need to call it outside of the loop above, otherwise the iterator gets invalidated!
+  for (auto &cd : candidates)
+  {
+    processTagLessClasses(cd,cd,cd,"",0); // process tag less inner struct/classes
   }
 }
 
