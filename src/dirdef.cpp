@@ -40,7 +40,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual int level() const { return m_level; }
     virtual DirDef *parent() const { return m_parent; }
     virtual int dirCount() const { return m_dirCount; }
-    virtual const QDict<UsedDir> *usedDirs() const { return m_usedDirs; }
+    virtual const UsedDirsContainer *usedDirs() const { return m_usedDirs; }
     virtual bool isParentOf(const DirDef *dir) const;
     virtual bool depGraphIsTrivial() const;
     virtual QCString shortTitle() const;
@@ -79,7 +79,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     int m_dirCount;
     int m_level;
     DirDef *m_parent;
-    QDict<UsedDir> *m_usedDirs;
+    UsedDirsContainer *m_usedDirs;
 };
 
 DirDef *createDirDef(const char *path)
@@ -117,8 +117,7 @@ DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
   }
 
   m_fileList   = new FileList;
-  m_usedDirs   = new QDict<UsedDir>(257);
-  m_usedDirs->setAutoDelete(TRUE);
+  m_usedDirs   = new UsedDirsContainer();
   m_dirCount   = g_dirCount++;
   m_level=-1;
   m_parent=0;
@@ -127,6 +126,10 @@ DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
 DirDefImpl::~DirDefImpl()
 {
   delete m_fileList;
+  for (const auto &usedDirectory : *m_usedDirs)
+  {
+    delete usedDirectory.second;
+  }
   delete m_usedDirs;
 }
 
@@ -641,9 +644,11 @@ void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
 
   // levels match => add direct dependency
   bool added=FALSE;
-  UsedDir *usedDir = m_usedDirs->find(dir->getOutputFileBase());
-  if (usedDir) // dir dependency already present
+  UsedDir *usedDir = nullptr;
+  const auto usedDirectoryEntry = m_usedDirs->find(dir->getOutputFileBase());
+  if (usedDirectoryEntry != m_usedDirs->end()) // dir dependency already present
   {
+     usedDir = usedDirectoryEntry->second;
      FilePair *usedPair = usedDir->findFilePair(
          srcFd->getOutputFileBase()+dstFd->getOutputFileBase());
      if (usedPair==0) // new file dependency
@@ -662,7 +667,7 @@ void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
     //printf("  => new file\n");
     usedDir = new UsedDir(dir,inherited);
     usedDir->addFileDep(srcFd,dstFd);
-    m_usedDirs->insert(dir->getOutputFileBase(),usedDir);
+    m_usedDirs->insert({dir->getOutputFileBase(),usedDir});
     added=TRUE;
   }
   if (added)
@@ -719,11 +724,9 @@ void DirDefImpl::computeDependencies()
   }
   if (m_usedDirs)
   {
-    QDictIterator<UsedDir> udi(*m_usedDirs);
-    UsedDir *udir;
-    for (udi.toFirst();(udir=udi.current());++udi)
+    for(const auto& usedDirectory : *m_usedDirs)
     {
-      udir->sort();
+      usedDirectory.second->sort();
     }
   }
 }
@@ -740,7 +743,7 @@ bool DirDefImpl::isParentOf(const DirDef *dir) const
 
 bool DirDefImpl::depGraphIsTrivial() const
 {
-  return m_usedDirs->count()==0;
+  return m_usedDirs->empty();
 }
 
 //----------------------------------------------------------------------

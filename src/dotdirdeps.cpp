@@ -89,13 +89,11 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 
   // add nodes for other used directories
   {
-    QDictIterator<UsedDir> udi(*dd->usedDirs());
-    UsedDir *udir;
     //printf("*** For dir %s\n",shortName().data());
-    for (udi.toFirst();(udir=udi.current());++udi) 
+    for (const auto &usedDirectoryEntry : *dd->usedDirs())
       // for each used dir (=directly used or a parent of a directly used dir)
     {
-      const DirDef *usedDir=udir->dir();
+      const DirDef *usedDir = usedDirectoryEntry.second->dir();
       const DirDef *dir=dd;
       while (dir)
       {
@@ -135,10 +133,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   QDictIterator<DirDef> di(dirsInGraph);
   for (;(dir=di.current());++di) // foreach dir in the graph
   {
-    QDictIterator<UsedDir> udi(*dir->usedDirs());
-    UsedDir *udir;
-    for (udi.toFirst();(udir=udi.current());++udi) // foreach used dir
+    for (const auto &usedDirectoryEntry : *dir->usedDirs())
     {
+      UsedDir *const udir = usedDirectoryEntry.second;
       const DirDef *usedDir=udir->dir();
       if ((dir!=dd || !udir->inherited()) &&     // only show direct dependencies for this dir
         (usedDir!=dd || !udir->inherited()) && // only show direct dependencies for this dir
