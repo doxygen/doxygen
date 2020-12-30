@@ -2937,7 +2937,7 @@ struct CmhlInfo
   QCString title;
 };
 
-static const CmhlInfo *getCmhlInfo(int hl)
+static const CmhlInfo *getCmhlInfo(size_t hl)
 {
   static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -3114,7 +3114,7 @@ struct FmhlInfo
   QCString title;
 };
 
-static const FmhlInfo *getFmhlInfo(int hl)
+static const FmhlInfo *getFmhlInfo(size_t hl)
 {
   static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -3285,7 +3285,7 @@ struct NmhlInfo
   QCString title;
 };
 
-static const NmhlInfo *getNmhlInfo(int hl)
+static const NmhlInfo *getNmhlInfo(size_t hl)
 {
   static bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   static bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -4855,7 +4855,7 @@ template<class T,std::size_t total>
 void renderMemberIndicesAsJs(FTextStream &t,
     const int *numDocumented,
     const std::array<MemberIndexMap,total> &memberLists,
-    const T *(*getInfo)(int hl))
+    const T *(*getInfo)(size_t hl))
 {
   // index items per category member lists
   bool firstMember=TRUE;
