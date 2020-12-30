@@ -153,7 +153,7 @@ void ConfigOption::writeStringValue(FTextStream &t,const QCString &s)
   {
     t << " ";
     while ((c=*p++)!=0 && !needsEscaping)
-      needsEscaping = (c==' ' || c=='\n' || c=='\t' || c=='"' || c=='#');
+      needsEscaping = (c==' ' || c== ',' || c=='\n' || c=='\t' || c=='"' || c=='#');
     if (needsEscaping)
     {
       t << "\"";

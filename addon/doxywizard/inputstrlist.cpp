@@ -258,48 +258,57 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
   }
 }
 
-#include <QMessageBox>
 bool InputStrList::isDefault()
 {
-  bool isEq = m_strList==m_default;
+  if (m_strList==m_default) return true;
 
-  if (!isEq)
+  auto it1 = m_strList.begin();
+  auto it2 = m_default.begin();
+  while (it1!=m_strList.end() && (*it1).isEmpty())
   {
-    isEq = true;
+    ++it1;
+  }
+  while (it2!=m_default.end() && (*it2).isEmpty())
+  {
+    ++it2;
+  }
+  // both lists are empty
+  if (it1==m_strList.end() && it2==m_default.end()) return true;
 
-    auto it1 = m_strList.begin();
-    auto it2 = m_default.begin();
-    while (it1!=m_strList.end() && it2!=m_default.end())
+  // one list is empty but the other is not
+  if (it1==m_default.end()) return false;
+  if (it2==m_strList.end()) return false;
+
+  it1 = m_strList.begin();
+  it2 = m_default.begin();
+  while (it1!=m_strList.end() && it2!=m_default.end())
+  {
+    // skip over empty values
+    while (it1!=m_strList.end() && (*it1).isEmpty())
     {
-      // skip over empty values
-      while (it1!=m_strList.end() && (*it1).isEmpty())
-      {
       ++it1;
-      }
-      while (it2!=m_default.end() && (*it2).isEmpty())
+    }
+    while (it2!=m_default.end() && (*it2).isEmpty())
+    {
+      ++it2;
+    }
+    if ((it1!=m_strList.end()) && (it2!=m_default.end()))
+    {
+      if ((*it1).trimmed()!= (*it2).trimmed()) // difference so not the default
       {
-        ++it2;
+        return false;
       }
-      if ((it1!=m_strList.end()) && (it2!=m_default.end()))
-      {
-        if ((*it1).trimmed()!= (*it2).trimmed()) // difference so not the default
-        {
-          isEq=false;
-          break;
-        }
-        ++it1;
-        ++it2;
-      }
-      else if ((it1!=m_strList.end()) || (it2!=m_default.end()))
-      {
-        // one list empty so cannot be the default
-        isEq=false;
-        break;
-      }
+      ++it1;
+      ++it2;
+    }
+    else if ((it1!=m_strList.end()) || (it2!=m_default.end()))
+    {
+      // one list empty so cannot be the default
+      return false;
     }
   }
 
-  return isEq;
+  return true;
 }
 
 bool InputStrList::isEmpty()
