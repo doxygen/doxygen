@@ -257,9 +257,10 @@ void endFileWithNavPath(const Definition *d,OutputList &ol);
 void initClassMemberIndices();
 void initFileMemberIndices();
 void initNamespaceMemberIndices();
-void addClassMemberNameToIndex(MemberDef *md);
-void addFileMemberNameToIndex(MemberDef *md);
-void addNamespaceMemberNameToIndex(MemberDef *md);
+void addClassMemberNameToIndex(const MemberDef *md);
+void addFileMemberNameToIndex(const MemberDef *md);
+void addNamespaceMemberNameToIndex(const MemberDef *md);
+void sortMemberIndexLists();
 QCString fixSpaces(const QCString &s);
 
 #endif

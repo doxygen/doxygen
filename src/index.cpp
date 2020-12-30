@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 
+#include <array>
+
 #include <assert.h>
 #include <qtextstream.h>
 #include <qdatetime.h>
@@ -145,29 +147,25 @@ static void endIndexHierarchy(OutputList &ol,int level)
 
 //----------------------------------------------------------------------------
 
-class MemberIndexList : public QList<MemberDef>
-{
-  public:
-    typedef const MemberDef ElementType;
-    MemberIndexList(uint letter) : QList<MemberDef>(), m_letter(letter) {}
-    ~MemberIndexList() {}
-    int compareValues(const MemberDef *md1, const MemberDef *md2) const
-    {
-      int result = qstricmp(md1->name(),md2->name());
-      if (result==0)
-      {
-        result = qstricmp(md1->qualifiedName(),md2->qualifiedName());
-      }
-      return result;
-    }
-    uint letter() const { return m_letter; }
-  private:
-    uint m_letter;
-};
+using MemberIndexList = std::vector<const MemberDef *>;
+using MemberIndexMap = std::map<std::string,MemberIndexList>;
 
-static LetterToIndexMap<MemberIndexList> g_memberIndexLetterUsed[CMHL_Total];
-static LetterToIndexMap<MemberIndexList> g_fileIndexLetterUsed[FMHL_Total];
-static LetterToIndexMap<MemberIndexList> g_namespaceIndexLetterUsed[NMHL_Total];
+static std::array<MemberIndexMap,CMHL_Total> g_classIndexLetterUsed;
+static std::array<MemberIndexMap,FMHL_Total> g_fileIndexLetterUsed;
+static std::array<MemberIndexMap,NMHL_Total> g_namespaceIndexLetterUsed;
+
+void MemberIndexMap_add(MemberIndexMap &map,const std::string &letter,const MemberDef *md)
+{
+  auto it = map.find(letter);
+  if (it!=map.end())
+  {
+    it->second.push_back(md);
+  }
+  else
+  {
+    map.insert(std::make_pair(letter,std::vector<const MemberDef*>({md})));
+  }
+}
 
 const int maxItemsBeforeQuickIndex = MAX_ITEMS_BEFORE_QUICK_INDEX;
 
@@ -2024,11 +2022,6 @@ inline bool isId1(int c)
   return (c<127 && c>31); // printable ASCII character
 }
 
-static QCString letterToString(uint letter)
-{
-  return QString(QChar(letter)).utf8();
-}
-
 static QCString letterToLabel(const char *startLetter)
 {
   const char *p = startLetter;
@@ -2051,44 +2044,6 @@ static QCString letterToLabel(const char *startLetter)
   }
   return result;
 }
-
-static QCString letterToLabel(uint startLetter)
-{
-  char s[11]; // max 0x12345678 + '\0'
-  if (isId1(startLetter)) // printable ASCII character
-  {
-    s[0]=(char)startLetter;
-    s[1]=0;
-  }
-  else
-  {
-    const char hex[]="0123456789abcdef";
-    int i=0;
-    s[i++]='0';
-    s[i++]='x';
-    if (startLetter>(1<<24)) // 4 byte character
-    {
-      s[i++]=hex[(startLetter>>28)&0xf];
-      s[i++]=hex[(startLetter>>24)&0xf];
-    }
-    if (startLetter>(1<<16)) // 3 byte character
-    {
-      s[i++]=hex[(startLetter>>20)&0xf];
-      s[i++]=hex[(startLetter>>16)&0xf];
-    }
-    if (startLetter>(1<<8)) // 2 byte character
-    {
-      s[i++]=hex[(startLetter>>12)&0xf];
-      s[i++]=hex[(startLetter>>8)&0xf];
-    }
-    // one byte character
-    s[i++]=hex[(startLetter>>4)&0xf];
-    s[i++]=hex[(startLetter>>0)&0xf];
-    s[i++]=0;
-  }
-  return s;
-}
-
 
 //----------------------------------------------------------------------------
 
@@ -2544,7 +2499,7 @@ static void writeAnnotatedExceptionIndex(OutputList &ol)
 }
 
 //----------------------------------------------------------------------------
-static void writeClassLinkForMember(OutputList &ol,MemberDef *md,const char *separator,
+static void writeClassLinkForMember(OutputList &ol,const MemberDef *md,const char *separator,
                              QCString &prevClassName)
 {
   const ClassDef *cd=md->getClassDef();
@@ -2558,7 +2513,7 @@ static void writeClassLinkForMember(OutputList &ol,MemberDef *md,const char *sep
   }
 }
 
-static void writeFileLinkForMember(OutputList &ol,MemberDef *md,const char *separator,
+static void writeFileLinkForMember(OutputList &ol,const MemberDef *md,const char *separator,
                              QCString &prevFileName)
 {
   const FileDef *fd=md->getFileDef();
@@ -2572,7 +2527,7 @@ static void writeFileLinkForMember(OutputList &ol,MemberDef *md,const char *sepa
   }
 }
 
-static void writeNamespaceLinkForMember(OutputList &ol,MemberDef *md,const char *separator,
+static void writeNamespaceLinkForMember(OutputList &ol,const MemberDef *md,const char *separator,
                              QCString &prevNamespaceName)
 {
   const NamespaceDef *nd=md->getNamespaceDef();
@@ -2586,14 +2541,14 @@ static void writeNamespaceLinkForMember(OutputList &ol,MemberDef *md,const char 
   }
 }
 
-static void writeMemberList(OutputList &ol,bool useSections,int page,
-                            const LetterToIndexMap<MemberIndexList> &memberLists,
+static void writeMemberList(OutputList &ol,bool useSections,const std::string &page,
+                            const MemberIndexMap &memberIndexMap,
                             Definition::DefType type)
 {
   int index = (int)type;
   ASSERT(index<3);
 
-  typedef void (*writeLinkForMember_t)(OutputList &ol,MemberDef *md,const char *separator,
+  typedef void (*writeLinkForMember_t)(OutputList &ol,const MemberDef *md,const char *separator,
                                    QCString &prevNamespaceName);
 
   // each index tab has its own write function
@@ -2608,20 +2563,26 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
   bool first=TRUE;
   bool firstSection=TRUE;
   bool firstItem=TRUE;
-  MemberIndexList *ml;
-  SIntDict<MemberIndexList>::Iterator it(memberLists);
-  for (it.toFirst();(ml=it.current());++it)
+  const MemberIndexList *mil = 0;
+  std::string letter;
+  for (const auto &kv : memberIndexMap)
   {
-    if (page!=-1)
+    if (!page.empty()) // specific page mode
     {
-      ml = memberLists[page];
-      it.toLast();
+      auto it = memberIndexMap.find(page);
+      if (it != memberIndexMap.end())
+      {
+        mil = &it->second;
+        letter = page;
+      }
     }
-    if (ml==0 || ml->count()==0) continue;
-    ml->sort();
-    QListIterator<MemberDef> mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    else // do all pages
+    {
+      mil = &kv.second;
+      letter = kv.first;
+    }
+    if (mil==0 || mil->empty()) continue;
+    for (const auto &md : *mil)
     {
       const char *sep;
       bool isFunc=!md->isObjCMethod() &&
@@ -2636,10 +2597,9 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
         {
           if (!firstItem)    ol.endItemListItem();
           if (!firstSection) ol.endItemList();
-          QCString cs = letterToLabel(ml->letter());
-          QCString cl = letterToString(ml->letter());
+          QCString cs = letterToLabel(letter.c_str());
           QCString anchor=(QCString)"index_"+convertToId(cs);
-          QCString title=(QCString)"- "+cl+" -";
+          QCString title=(QCString)"- "+letter.c_str()+" -";
           ol.startSection(anchor,title,SectionType::Subsection);
           ol.docify(title);
           ol.endSection(anchor,SectionType::Subsection);
@@ -2677,6 +2637,10 @@ static void writeMemberList(OutputList &ol,bool useSections,int page,
         writeLinkForMemberMap[index](ol,md,sep,prevDefName);
       }
     }
+    if (!page.empty())
+    {
+      break;
+    }
   }
   if (!firstItem) ol.endItemListItem();
   ol.endItemList();
@@ -2690,11 +2654,11 @@ void initClassMemberIndices()
   for (j=0;j<CMHL_Total;j++)
   {
     documentedClassMembers[j]=0;
-    g_memberIndexLetterUsed[j].clear();
+    g_classIndexLetterUsed[j].clear();
   }
 }
 
-void addClassMemberNameToIndex(MemberDef *md)
+void addClassMemberNameToIndex(const MemberDef *md)
 {
   static bool hideFriendCompounds = Config_getBool(HIDE_FRIEND_COMPOUNDS);
   const ClassDef *cd=0;
@@ -2706,8 +2670,8 @@ void addClassMemberNameToIndex(MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    uint letter = getUtf8CodeToLower(n,index);
-    if (!n.isEmpty())
+    char letter[MAX_UTF8_CHAR_SIZE];
+    if (getUtf8Char(n.data()+index,letter,CaseModifier::ToLower)>0)
     {
       bool isFriendToHide = hideFriendCompounds &&
         (QCString(md->typeString())=="friend class" ||
@@ -2717,48 +2681,48 @@ void addClassMemberNameToIndex(MemberDef *md)
           (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
          )
       {
-        g_memberIndexLetterUsed[CMHL_All].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_All],letter,md);
         documentedClassMembers[CMHL_All]++;
       }
       if (md->isFunction()  || md->isSlot() || md->isSignal())
       {
-        g_memberIndexLetterUsed[CMHL_Functions].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Functions],letter,md);
         documentedClassMembers[CMHL_Functions]++;
       }
       else if (md->isVariable())
       {
-        g_memberIndexLetterUsed[CMHL_Variables].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Variables],letter,md);
         documentedClassMembers[CMHL_Variables]++;
       }
       else if (md->isTypedef())
       {
-        g_memberIndexLetterUsed[CMHL_Typedefs].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Typedefs],letter,md);
         documentedClassMembers[CMHL_Typedefs]++;
       }
       else if (md->isEnumerate())
       {
-        g_memberIndexLetterUsed[CMHL_Enums].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Enums],letter,md);
         documentedClassMembers[CMHL_Enums]++;
       }
       else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
-        g_memberIndexLetterUsed[CMHL_EnumValues].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_EnumValues],letter,md);
         documentedClassMembers[CMHL_EnumValues]++;
       }
       else if (md->isProperty())
       {
-        g_memberIndexLetterUsed[CMHL_Properties].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Properties],letter,md);
         documentedClassMembers[CMHL_Properties]++;
       }
       else if (md->isEvent())
       {
-        g_memberIndexLetterUsed[CMHL_Events].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Events],letter,md);
         documentedClassMembers[CMHL_Events]++;
       }
       else if (md->isRelated() || md->isForeign() ||
                (md->isFriend() && !isFriendToHide))
       {
-        g_memberIndexLetterUsed[CMHL_Related].append(letter,md);
+        MemberIndexMap_add(g_classIndexLetterUsed[CMHL_Related],letter,md);
         documentedClassMembers[CMHL_Related]++;
       }
     }
@@ -2777,55 +2741,55 @@ void initNamespaceMemberIndices()
   }
 }
 
-void addNamespaceMemberNameToIndex(MemberDef *md)
+void addNamespaceMemberNameToIndex(const MemberDef *md)
 {
   const NamespaceDef *nd=md->getNamespaceDef();
   if (nd && nd->isLinkableInProject() && md->isLinkableInProject())
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    uint letter = getUtf8CodeToLower(n,index);
-    if (!n.isEmpty())
+    char letter[MAX_UTF8_CHAR_SIZE];
+    if (getUtf8Char(n.data()+index,letter,CaseModifier::ToLower)>0)
     {
       if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
       {
-        g_namespaceIndexLetterUsed[NMHL_All].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_All],letter,md);
         documentedNamespaceMembers[NMHL_All]++;
       }
 
       if (md->isFunction())
       {
-        g_namespaceIndexLetterUsed[NMHL_Functions].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_Functions],letter,md);
         documentedNamespaceMembers[NMHL_Functions]++;
       }
       else if (md->isVariable())
       {
-        g_namespaceIndexLetterUsed[NMHL_Variables].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_Variables],letter,md);
         documentedNamespaceMembers[NMHL_Variables]++;
       }
       else if (md->isTypedef())
       {
-        g_namespaceIndexLetterUsed[NMHL_Typedefs].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_Typedefs],letter,md);
         documentedNamespaceMembers[NMHL_Typedefs]++;
       }
       else if (md->isSequence())
       {
-        g_namespaceIndexLetterUsed[NMHL_Sequences].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_Sequences],letter,md);
         documentedNamespaceMembers[NMHL_Sequences]++;
       }
       else if (md->isDictionary())
       {
-        g_namespaceIndexLetterUsed[NMHL_Dictionaries].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_Dictionaries],letter,md);
         documentedNamespaceMembers[NMHL_Dictionaries]++;
       }
       else if (md->isEnumerate())
       {
-        g_namespaceIndexLetterUsed[NMHL_Enums].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_Enums],letter,md);
         documentedNamespaceMembers[NMHL_Enums]++;
       }
       else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
-        g_namespaceIndexLetterUsed[NMHL_EnumValues].append(letter,md);
+        MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_EnumValues],letter,md);
         documentedNamespaceMembers[NMHL_EnumValues]++;
       }
     }
@@ -2844,60 +2808,60 @@ void initFileMemberIndices()
   }
 }
 
-void addFileMemberNameToIndex(MemberDef *md)
+void addFileMemberNameToIndex(const MemberDef *md)
 {
   const FileDef *fd=md->getFileDef();
   if (fd && fd->isLinkableInProject() && md->isLinkableInProject())
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    uint letter = getUtf8CodeToLower(n,index);
-    if (!n.isEmpty())
+    char letter[MAX_UTF8_CHAR_SIZE];
+    if (getUtf8Char(n.data()+index,letter,CaseModifier::ToLower)>0)
     {
       if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
       {
-        g_fileIndexLetterUsed[FMHL_All].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_All],letter,md);
         documentedFileMembers[FMHL_All]++;
       }
 
       if (md->isFunction())
       {
-        g_fileIndexLetterUsed[FMHL_Functions].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Functions],letter,md);
         documentedFileMembers[FMHL_Functions]++;
       }
       else if (md->isVariable())
       {
-        g_fileIndexLetterUsed[FMHL_Variables].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Variables],letter,md);
         documentedFileMembers[FMHL_Variables]++;
       }
       else if (md->isTypedef())
       {
-        g_fileIndexLetterUsed[FMHL_Typedefs].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Typedefs],letter,md);
         documentedFileMembers[FMHL_Typedefs]++;
       }
       else if (md->isSequence())
       {
-        g_fileIndexLetterUsed[FMHL_Sequences].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Sequences],letter,md);
         documentedFileMembers[FMHL_Sequences]++;
       }
       else if (md->isDictionary())
       {
-        g_fileIndexLetterUsed[FMHL_Dictionaries].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Dictionaries],letter,md);
         documentedFileMembers[FMHL_Dictionaries]++;
       }
       else if (md->isEnumerate())
       {
-        g_fileIndexLetterUsed[FMHL_Enums].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Enums],letter,md);
         documentedFileMembers[FMHL_Enums]++;
       }
       else if (md->isEnumValue() && md->getEnumScope() && !md->getEnumScope()->isStrong())
       {
-        g_fileIndexLetterUsed[FMHL_EnumValues].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_EnumValues],letter,md);
         documentedFileMembers[FMHL_EnumValues]++;
       }
       else if (md->isDefine())
       {
-        g_fileIndexLetterUsed[FMHL_Defines].append(letter,md);
+        MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_Defines],letter,md);
         documentedFileMembers[FMHL_Defines]++;
       }
     }
@@ -2906,19 +2870,47 @@ void addFileMemberNameToIndex(MemberDef *md)
 
 //----------------------------------------------------------------------------
 
+static void sortMemberIndexList(MemberIndexMap &map)
+{
+  for (auto &kv : map)
+  {
+    std::sort(kv.second.begin(),kv.second.end(),
+              [](const MemberDef *md1,const MemberDef *md2)
+              {
+                int result = qstricmp(md1->name(),md2->name());
+                return result==0 ? qstricmp(md1->qualifiedName(),md2->qualifiedName())<0 : result<0;
+              });
+  }
+}
+
+void sortMemberIndexLists()
+{
+  for (auto &idx : g_classIndexLetterUsed)
+  {
+    sortMemberIndexList(idx);
+  }
+  for (auto &idx : g_fileIndexLetterUsed)
+  {
+    sortMemberIndexList(idx);
+  }
+  for (auto &idx : g_namespaceIndexLetterUsed)
+  {
+    sortMemberIndexList(idx);
+  }
+}
+
+//----------------------------------------------------------------------------
+
 static void writeQuickMemberIndex(OutputList &ol,
-    const LetterToIndexMap<MemberIndexList> &charUsed,uint page,
+    const MemberIndexMap &map,const std::string &page,
     QCString fullName,bool multiPage)
 {
   bool first=TRUE;
   startQuickIndexList(ol,TRUE);
-  SIntDict<MemberIndexList>::Iterator it(charUsed);
-  MemberIndexList *ml;
-  for (it.toFirst();(ml=it.current());++it)
+  for (const auto &kv : map)
   {
-    uint i = ml->letter();
-    QCString is = letterToLabel(i);
-    QCString ci = letterToString(i);
+    QCString ci = kv.first.c_str();
+    QCString is = letterToLabel(ci);
     QCString anchor;
     QCString extension=Doxygen::htmlFileExtension;
     if (!multiPage)
@@ -2926,8 +2918,8 @@ static void writeQuickMemberIndex(OutputList &ol,
     else if (first)
       anchor=fullName+extension+"#index_";
     else
-      anchor=fullName+"_"+letterToLabel(i)+extension+"#index_";
-    startQuickIndexItem(ol,anchor+convertToId(is),i==page,TRUE,first);
+      anchor=fullName+"_"+is+extension+"#index_";
+    startQuickIndexItem(ol,anchor+convertToId(is),kv.first==page,TRUE,first);
     ol.writeString(ci);
     endQuickIndexItem(ol);
     first=FALSE;
@@ -2996,19 +2988,17 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
   }
 
   bool first=TRUE;
-  SIntDict<MemberIndexList>::Iterator it(g_memberIndexLetterUsed[hl]);
-  MemberIndexList *ml;
-  for (it.toFirst();(ml=it.current());++it)
+  for (const auto &kv : g_classIndexLetterUsed[hl])
   {
-    uint page = ml->letter();
+    std::string page = kv.first;
     QCString fileName = getCmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
+      QCString cs = page;
       if (!first)
       {
-        fileName+="_"+letterToLabel(page);
+        fileName+="_"+letterToLabel(cs);
       }
-      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3051,7 +3041,7 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
         // quick alphabetical index
         if (quickIndex)
         {
-          writeQuickMemberIndex(ol,g_memberIndexLetterUsed[hl],page,
+          writeQuickMemberIndex(ol,g_classIndexLetterUsed[hl],page,
               getCmhlInfo(hl)->fname,multiPageIndex);
         }
       }
@@ -3076,8 +3066,8 @@ static void writeClassMemberIndexFiltered(OutputList &ol, ClassMemberHighlight h
     }
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex?page:-1,
-        g_memberIndexLetterUsed[hl],
+        multiPageIndex ? page : std::string(),
+        g_classIndexLetterUsed[hl],
         Definition::TypeClass);
     endFile(ol);
     first=FALSE;
@@ -3175,19 +3165,17 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
   }
 
   bool first=TRUE;
-  SIntDict<MemberIndexList>::Iterator it(g_fileIndexLetterUsed[hl]);
-  MemberIndexList *ml;
-  for (it.toFirst();(ml=it.current());++it)
+  for (const auto &kv : g_fileIndexLetterUsed[hl])
   {
-    uint page = ml->letter();
+    std::string page = kv.first;
     QCString fileName = getFmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
+      QCString cs = page;
       if (!first)
       {
-        fileName+="_"+letterToLabel(page);
+        fileName+="_"+letterToLabel(cs);
       }
-      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3252,7 +3240,7 @@ static void writeFileMemberIndexFiltered(OutputList &ol, FileMemberHighlight hl)
     }
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex?page:-1,
+        multiPageIndex ? page : std::string(),
         g_fileIndexLetterUsed[hl],
         Definition::TypeFile);
     endFile(ol);
@@ -3351,19 +3339,17 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
   }
 
   bool first=TRUE;
-  SIntDict<MemberIndexList>::Iterator it(g_namespaceIndexLetterUsed[hl]);
-  MemberIndexList *ml;
-  for (it.toFirst();(ml=it.current());++it)
+  for (const auto &kv : g_namespaceIndexLetterUsed[hl])
   {
-    uint page = ml->letter();
+    std::string page = kv.first;
     QCString fileName = getNmhlInfo(hl)->fname;
     if (multiPageIndex)
     {
+      QCString cs = page;
       if (!first)
       {
-        fileName+="_"+letterToLabel(page);
+        fileName+="_"+letterToLabel(cs);
       }
-      QCString cs = letterToString(page);
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(FALSE,cs,0,fileName,0,FALSE,TRUE);
@@ -3428,7 +3414,7 @@ static void writeNamespaceMemberIndexFiltered(OutputList &ol,
     }
 
     writeMemberList(ol,quickIndex,
-        multiPageIndex?page:-1,
+        multiPageIndex ? page : std::string(),
         g_namespaceIndexLetterUsed[hl],
         Definition::TypeNamespace);
     endFile(ol);
@@ -4026,41 +4012,6 @@ static void writeGroupHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
   }
 }
 
-#if 0
-static void writeGroupTree(GroupDef *gd,FTVHelp *ftv,int level,bool addToIndex)
-{
-  static bool externalGroups = Config_getBool(EXTERNAL_GROUPS);
-  /* Some groups should appear twice under different parent-groups.
-   * That is why we should not check if it was visited
-   */
-  if ((!gd->isASubGroup() || level>0) &&
-      gd->isVisible() &&
-      (!gd->isReference() || externalGroups) // hide external groups by default
-     )
-  {
-    if (ftv)
-    {
-      ftv->addContentsItem(hasSubGroups,gd->groupTitle(),gd->getReference(),gd->getOutputFileBase(),0);
-      ftv->incContentsDepth();
-    }
-    if (ftv)
-    {
-      ftv->decContentsDepth();
-    }
-  }
-}
-
-static void writeGroupTree(FTVHelp *ftv,bool addToIndex)
-{
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
-  {
-    writeGroupTree(gd,ftv,0,addToIndex);
-  }
-}
-#endif
-
 //----------------------------------------------------------------------------
 
 static void writeGroupIndex(OutputList &ol)
@@ -4130,62 +4081,6 @@ static void writeGroupIndex(OutputList &ol)
   ol.popGeneratorState();
   // 1.}
 }
-
-//----------------------------------------------------------------------------
-
-#if 0
-static void writeDirIndex(OutputList &ol)
-{
-  if (documentedDirs==0) return;
-  ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Man);
-  LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Dirs);
-  QCString title = lne ? lne->title() : theTranslator->trDirectories();
-  bool addToIndex=FALSE; //lne==0 || lne->visible();
-
-  startFile(ol,"dirs",0,title,HLI_Directories);
-  startTitle(ol,0);
-  ol.parseText(title);
-  endTitle(ol,0,0);
-  ol.startContents();
-  ol.startTextBlock();
-
-  if (addToIndex)
-  {
-    Doxygen::indexList->addContentsItem(TRUE,title,0,"dirs",0,TRUE,TRUE);
-    Doxygen::indexList->incContentsDepth();
-  }
-  ol.parseText(lne ? lne->intro() : theTranslator->trDirDescription());
-  ol.endTextBlock();
-
-  FTVHelp* ftv = 0;
-  bool treeView=Config_getBool(USE_INLINE_TREES);
-  if (treeView)
-  {
-    ftv = new FTVHelp(FALSE);
-  }
-
-  writeDirHierarchy(ol,ftv,addToIndex);
-
-  if (ftv)
-  {
-    QGString outStr;
-    FTextStream t(&outStr);
-    ftv->generateTreeViewInline(t);
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(outStr);
-    ol.popGeneratorState();
-    delete ftv;
-  }
-  if (addToIndex)
-  {
-    Doxygen::indexList->decContentsDepth();
-  }
-  endFile(ol);
-  ol.popGeneratorState();
-}
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -4956,14 +4851,15 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   return FALSE;
 }
 
-template<class T>
+template<class T,std::size_t total>
 void renderMemberIndicesAsJs(FTextStream &t,
-    int total,const int *numDocumented,const LetterToIndexMap<MemberIndexList> *memberLists,
+    const int *numDocumented,
+    const std::array<MemberIndexMap,total> &memberLists,
     const T *(*getInfo)(int hl))
 {
   // index items per category member lists
   bool firstMember=TRUE;
-  for (int i=0;i<total;i++)
+  for (std::size_t i=0;i<total;i++)
   {
     if (numDocumented[i]>0)
     {
@@ -4988,14 +4884,12 @@ void renderMemberIndicesAsJs(FTextStream &t,
         }
         t << ",children:[" << endl;
         bool firstLetter=TRUE;
-        SIntDict<MemberIndexList>::Iterator it(memberLists[i]);
-        MemberIndexList *ml;
-        for (it.toFirst();(ml=it.current());++it)
+        for (const auto &kv : memberLists[i])
         {
           if (!firstLetter) t << "," << endl;
-          uint letter = ml->letter();
-          QCString is = letterToLabel(letter);
-          QCString ci = letterToString(letter);
+          std::string letter = kv.first;
+          QCString ci = letter;
+          QCString is = letterToLabel(ci);
           QCString anchor;
           QCString extension=Doxygen::htmlFileExtension;
           QCString fullName = getInfo(i)->fname;
@@ -5044,17 +4938,17 @@ static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
         bool hasChildren=FALSE;
         if (entry->kind()==LayoutNavEntry::NamespaceMembers)
         {
-          renderMemberIndicesAsJs(t,NMHL_Total,documentedNamespaceMembers,
+          renderMemberIndicesAsJs(t,documentedNamespaceMembers,
                                   g_namespaceIndexLetterUsed,getNmhlInfo);
         }
         else if (entry->kind()==LayoutNavEntry::ClassMembers)
         {
-          renderMemberIndicesAsJs(t,CMHL_Total,documentedClassMembers,
-                                  g_memberIndexLetterUsed,getCmhlInfo);
+          renderMemberIndicesAsJs(t,documentedClassMembers,
+                                  g_classIndexLetterUsed,getCmhlInfo);
         }
         else if (entry->kind()==LayoutNavEntry::FileGlobals)
         {
-          renderMemberIndicesAsJs(t,FMHL_Total,documentedFileMembers,
+          renderMemberIndicesAsJs(t,documentedFileMembers,
                                   g_fileIndexLetterUsed,getFmhlInfo);
         }
         else // recursive into child list

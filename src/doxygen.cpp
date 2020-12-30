@@ -7423,22 +7423,19 @@ static void addMembersToIndex()
   for (const auto &mn : *Doxygen::functionNameLinkedMap)
   {
     // for each member definition
-    for (const auto &imd : *mn)
+    for (const auto &md : *mn)
     {
-      MemberDefMutable *md = toMemberDefMutable(imd.get());
-      if (md)
+      if (md->getNamespaceDef())
       {
-        if (md->getNamespaceDef())
-        {
-          addNamespaceMemberNameToIndex(md);
-        }
-        else
-        {
-          addFileMemberNameToIndex(md);
-        }
+        addNamespaceMemberNameToIndex(md.get());
+      }
+      else
+      {
+        addFileMemberNameToIndex(md.get());
       }
     }
   }
+  sortMemberIndexLists();
 }
 
 //----------------------------------------------------------------------
