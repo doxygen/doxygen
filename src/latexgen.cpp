@@ -1256,17 +1256,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isExampleDocumentation:
       {
         t << "}\n";
-        PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        PageDef *pd=pdi.toFirst();
-        if (pd)
+        for (const auto &pd : *Doxygen::exampleLinkedMap)
         {
           t << "\\input{" << pd->getOutputFileBase() << "}\n";
-        }
-        for (++pdi;(pd=pdi.current());++pdi)
-        {
-          //if (compactLatex) t << "\\input" ; else t << "\\include";
-          t << "\\input";
-          t << "{" << pd->getOutputFileBase() << "}\n";
         }
       }
       break;
@@ -1274,10 +1266,8 @@ void LatexGenerator::endIndexSection(IndexSections is)
       {
         t << "}\n";
 #if 0
-        PageSDict::Iterator pdi(*Doxygen::pageSDict);
-        PageDef *pd=pdi.toFirst();
         bool first=TRUE;
-        for (pdi.toFirst();(pd=pdi.current());++pdi)
+        for (const auto *pd : Doxygen::pageLinkedMap)
         {
           if (!pd->getGroupDef() && !pd->isReference())
           {

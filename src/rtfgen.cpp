@@ -858,20 +858,16 @@ void RTFGenerator::endIndexSection(IndexSections is)
     case isExampleDocumentation:
       {
         //t << "}\n";
+        bool isFirst=true;
         t << "{\\tc \\v " << theTranslator->trExampleDocumentation() << "}"<< endl;
-        PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        PageDef *pd=pdi.toFirst();
-        if (pd)
+        for (const auto &pd : *Doxygen::exampleLinkedMap)
         {
           t << "\\par " << rtf_Style_Reset << endl;
-          t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-          t << pd->getOutputFileBase();
-          t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
-        }
-        for (++pdi;(pd=pdi.current());++pdi)
-        {
-          t << "\\par " << rtf_Style_Reset << endl;
-          beginRTFSection();
+          if (!isFirst)
+          {
+            beginRTFSection();
+          }
+          isFirst=false;
           t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
           t << pd->getOutputFileBase();
           t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -883,10 +879,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
 //#error "fix me in the same way as the latex index..."
         //t << "{\\tc \\v " << theTranslator->trPageDocumentation() << "}"<< endl;
         //t << "}"<< endl;
-        //PageSDict::Iterator pdi(*Doxygen::pageSDict);
-        //PageDef *pd=pdi.toFirst();
         //bool first=TRUE;
-        //for (pdi.toFirst();(pd=pdi.current());++pdi)
+        //for (const auto *pd : Doxygen::pageLinkedMap)
         //{
         //  if (!pd->getGroupDef() && !pd->isReference())
         //  {

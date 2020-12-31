@@ -3188,7 +3188,7 @@ bool resolveLink(/* in */ const char *scName,
   {
     return FALSE;
   }
-  else if ((pd=Doxygen::pageSDict->find(linkRef))) // link to a page
+  else if ((pd=Doxygen::pageLinkedMap->find(linkRef))) // link to a page
   {
     gd = pd->getGroupDef();
     if (gd)
@@ -3209,7 +3209,7 @@ bool resolveLink(/* in */ const char *scName,
     resAnchor = si->label();
     return TRUE;
   }
-  else if ((pd=Doxygen::exampleSDict->find(linkRef))) // link to an example
+  else if ((pd=Doxygen::exampleLinkedMap->find(linkRef))) // link to an example
   {
     *resContext=pd;
     return TRUE;
@@ -4926,7 +4926,7 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
   PageDef *pd=0;
   //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
   QCString title=ptitle.stripWhiteSpace();
-  if ((pd=Doxygen::pageSDict->find(name)) && !tagInfo)
+  if ((pd=Doxygen::pageLinkedMap->find(name)) && !tagInfo)
   {
     if (!xref && !title.isEmpty() && pd->title()!=title)
     {
@@ -4947,7 +4947,10 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
     else if (baseName.right(Doxygen::htmlFileExtension.length())==Doxygen::htmlFileExtension)
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
 
-    pd=createPageDef(fileName,docLine,baseName,doc,title);
+    //printf("Appending page '%s'\n",baseName.data());
+    pd = Doxygen::pageLinkedMap->add(baseName,
+        std::unique_ptr<PageDef>(
+           createPageDef(fileName,docLine,baseName,doc,title)));
     pd->setBodySegment(startLine,startLine,-1);
 
     pd->setRefItems(sli);
@@ -4959,8 +4962,6 @@ PageDef *addRelatedPage(const char *name,const QCString &ptitle,
       pd->setFileName(tagInfo->fileName);
     }
 
-    //printf("Appending page '%s'\n",baseName.data());
-    Doxygen::pageSDict->append(baseName,pd);
 
     if (gd) gd->addPage(pd);
 

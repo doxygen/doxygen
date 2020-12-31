@@ -27,6 +27,8 @@
 
 class Definition;
 class PageDef;
+class PageLinkedMap;
+class PageLinkedRefMap;
 class GroupDef;
 class NamespaceDef;
 class NamespaceLinkedMap;
@@ -37,7 +39,6 @@ class FileNameLinkedMap;
 class ClassLinkedMap;
 class DirSDict;
 class DirDef;
-class PageSDict;
 class GroupSDict;
 class GroupDef;
 class GroupList;
@@ -543,13 +544,14 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
 
     void addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
     void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
-    void addClasses(const ClassLinkedRefMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
     void addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
+    void addClasses(const ClassLinkedRefMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
     void addDirs(const DirSDict &,ClassDefSet &visitedClasses);
     void addDirs(const DirList &,ClassDefSet &visitedClasses);
     void addFiles(const FileNameLinkedMap &,ClassDefSet &visitedClasses);
     void addFiles(const FileList &,ClassDefSet &visitedClasses);
-    void addPages(const PageSDict &pages,bool rootOnly,ClassDefSet &visitedClasses);
+    void addPages(const PageLinkedMap &pages,bool rootOnly,ClassDefSet &visitedClasses);
+    void addPages(const PageLinkedRefMap &pages,bool rootOnly,ClassDefSet &visitedClasses);
     void addModules(const GroupSDict &modules,ClassDefSet &visitedClasses);
     void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
     void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
@@ -687,7 +689,7 @@ class FileTreeContext : public RefCountedContext, public TemplateStructIntf
 class PageListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static PageListContext *alloc(const PageSDict *pages) { return new PageListContext(pages); }
+    static PageListContext *alloc(const PageLinkedMap &pages) { return new PageListContext(pages); }
 
     // TemplateListIntf methods
     virtual uint count() const;
@@ -696,10 +698,10 @@ class PageListContext : public RefCountedContext, public TemplateListIntf
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
-    void addPages(const PageSDict &pages);
+    void addPages(const PageLinkedMap &pages);
 
   private:
-    PageListContext(const PageSDict *pages);
+    PageListContext(const PageLinkedMap &pages);
    ~PageListContext();
     class Private;
     Private *p;
@@ -710,7 +712,7 @@ class PageListContext : public RefCountedContext, public TemplateListIntf
 class PageTreeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static PageTreeContext *alloc(const PageSDict *pages) { return new PageTreeContext(pages); }
+    static PageTreeContext *alloc(const PageLinkedMap &pages) { return new PageTreeContext(pages); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const char *name) const;
@@ -718,7 +720,7 @@ class PageTreeContext : public RefCountedContext, public TemplateStructIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    PageTreeContext(const PageSDict *pages);
+    PageTreeContext(const PageLinkedMap &pages);
    ~PageTreeContext();
     class Private;
     Private *p;

@@ -66,7 +66,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual bool addClass(const ClassDef *def);
     virtual bool addNamespace(const NamespaceDef *def);
     virtual void addGroup(const GroupDef *def);
-    virtual void addPage(PageDef *def);
+    virtual void addPage(const PageDef *def);
     virtual void addExample(const PageDef *def);
     virtual void addDir(DirDef *dd);
     virtual bool insertMember(MemberDef *def,bool docOnly=FALSE);
@@ -101,12 +101,12 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
 
     virtual FileList *      getFiles() const        { return m_fileList; }
-    virtual ClassLinkedRefMap getClasses() const    { return m_classes; }
-    virtual NamespaceLinkedRefMap getNamespaces() const  { return m_namespaces; }
-    virtual GroupList *     getSubGroups() const    { return m_groupList; }
-    virtual PageSDict *     getPages() const        { return m_pageDict; }
-    virtual const DirList & getDirs() const         { return m_dirList; }
-    virtual PageSDict *     getExamples() const     { return m_exampleDict; }
+    virtual const ClassLinkedRefMap &getClasses() const         { return m_classes; }
+    virtual const NamespaceLinkedRefMap &getNamespaces() const  { return m_namespaces; }
+    virtual GroupList *     getSubGroups() const       { return m_groupList; }
+    virtual const PageLinkedRefMap &getPages() const            { return m_pages; }
+    virtual const DirList & getDirs() const                     { return m_dirList; }
+    virtual const PageLinkedRefMap &getExamples() const         { return m_examples; }
     virtual bool hasDetailedDescription() const;
     virtual void sortSubGroups();
 
@@ -143,8 +143,8 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     ClassLinkedRefMap    m_classes;             // list of classes in the group
     NamespaceLinkedRefMap m_namespaces;         // list of namespaces in the group
     GroupList *          m_groupList;           // list of sub groups.
-    PageSDict *          m_pageDict;            // list of pages in the group
-    PageSDict *          m_exampleDict;         // list of examples in the group
+    PageLinkedRefMap     m_pages;               // list of pages in the group
+    PageLinkedRefMap     m_examples;            // list of examples in the group
     DirList              m_dirList;             // list of directories in the group
     MemberList *         m_allMemberList;
     MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
@@ -169,8 +169,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
 {
   m_fileList = new FileList;
   m_groupList = new GroupList;
-  m_pageDict = new PageSDict(17);
-  m_exampleDict = new PageSDict(17);
   if (refFileName)
   {
     m_fileName=stripExtension(refFileName);
@@ -192,8 +190,6 @@ GroupDefImpl::~GroupDefImpl()
 {
   delete m_fileList;
   delete m_groupList;
-  delete m_pageDict;
-  delete m_exampleDict;
   delete m_allMemberList;
 }
 
@@ -284,18 +280,18 @@ void GroupDefImpl::addDir(DirDef *def)
   m_dirList.push_back(def);
 }
 
-void GroupDefImpl::addPage(PageDef *def)
+void GroupDefImpl::addPage(const PageDef *def)
 {
   if (def->isHidden()) return;
   //printf("Making page %s part of a group\n",def->name.data());
-  m_pageDict->append(def->name(),def);
-  def->makePartOfGroup(this);
+  m_pages.add(def->name(),def);
+  const_cast<PageDef*>(def)->makePartOfGroup(this);
 }
 
 void GroupDefImpl::addExample(const PageDef *def)
 {
   if (def->isHidden()) return;
-  m_exampleDict->append(def->name(),def);
+  m_examples.add(def->name(),def);
 }
 
 
@@ -605,8 +601,8 @@ size_t GroupDefImpl::numDocMembers() const
          m_namespaces.size()+
          m_groupList->count()+
          m_allMemberList->count()+
-         m_pageDict->count()+
-         m_exampleDict->count();
+         m_pages.size()+
+         m_examples.size();
 }
 
 /*! Compute the HTML anchor names for all members in the group */
@@ -671,24 +667,19 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::GroupPageDocs:
         {
-          if (m_pageDict)
+          for (const auto &pd : m_pages)
           {
-            PageSDict::Iterator pdi(*m_pageDict);
-            PageDef *pd=0;
-            for (pdi.toFirst();(pd=pdi.current());++pdi)
+            QCString pageName = pd->getOutputFileBase();
+            if (pd->isLinkableInProject())
             {
-              QCString pageName = pd->getOutputFileBase();
-              if (pd->isLinkableInProject())
-              {
-                tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
-              }
+              tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
             }
           }
         }
         break;
       case LayoutDocEntry::GroupDirs:
         {
-          for(const auto dd : m_dirList)
+          for(const auto &dd : m_dirList)
           {
             if (dd->isLinkableInProject())
             {
@@ -746,7 +737,7 @@ void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title
      )
   {
     ol.pushGeneratorState();
-    if (m_pageDict->count()!=numDocMembers()) // not only pages -> classical layout
+    if (m_pages.size()!=numDocMembers()) // not only pages -> classical layout
     {
       ol.pushGeneratorState();
         ol.disable(OutputGenerator::Html);
@@ -993,9 +984,7 @@ void GroupDefImpl::writeInlineClasses(OutputList &ol)
 
 void GroupDefImpl::writePageDocumentation(OutputList &ol)
 {
-  PageDef *pd=0;
-  PageSDict::Iterator pdi(*m_pageDict);
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto *pd : m_pages)
   {
     if (!pd->isReference())
     {
@@ -1786,8 +1775,10 @@ void GroupDefImpl::updateLanguage(const Definition *d)
 bool GroupDefImpl::hasDetailedDescription() const
 {
   static bool repeatBrief = Config_getBool(REPEAT_BRIEF);
-  return ((!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty() || !inbodyDocumentation().isEmpty()) &&
-         (m_pageDict->count()!=numDocMembers());
+  return ((!briefDescription().isEmpty() && repeatBrief) ||
+         !documentation().isEmpty() ||
+         !inbodyDocumentation().isEmpty()) &&
+         (m_pages.size()!=numDocMembers());
 }
 
 // --- Cast functions

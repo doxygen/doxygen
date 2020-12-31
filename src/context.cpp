@@ -5388,14 +5388,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.examples)
       {
         TemplateList *exampleList = TemplateList::alloc();
-        if (m_groupDef->getExamples())
+        for (const auto &ex : m_groupDef->getExamples())
         {
-          PageSDict::Iterator eli(*m_groupDef->getExamples());
-          const PageDef *ex;
-          for (eli.toFirst();(ex=eli.current());++eli)
-          {
-            exampleList->append(PageContext::alloc(ex,FALSE,TRUE));
-          }
+          exampleList->append(PageContext::alloc(ex,FALSE,TRUE));
         }
         cache.examples.reset(exampleList);
       }
@@ -5407,14 +5402,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.pages)
       {
         TemplateList *pageList = TemplateList::alloc();
-        if (m_groupDef->getExamples())
+        for (const auto &ex : m_groupDef->getPages())
         {
-          PageSDict::Iterator eli(*m_groupDef->getPages());
-          const PageDef *ex;
-          for (eli.toFirst();(ex=eli.current());++eli)
-          {
-            pageList->append(PageContext::alloc(ex,FALSE,TRUE));
-          }
+          pageList->append(PageContext::alloc(ex,FALSE,TRUE));
         }
         cache.pages.reset(pageList);
       }
@@ -6397,9 +6387,9 @@ class NestingNodeContext::Private
     void addPages(ClassDefSet &visitedClasses)
     {
       const PageDef *pd = toPageDef(m_def);
-      if (pd && pd->getSubPages())
+      if (pd && !pd->getSubPages().empty())
       {
-        m_children->addPages(*pd->getSubPages(),FALSE,visitedClasses);
+        m_children->addPages(pd->getSubPages(),FALSE,visitedClasses);
       }
     }
     void addModules(ClassDefSet &visitedClasses)
@@ -6577,19 +6567,28 @@ class NestingContext::Private : public GenericNodeListContext
         m_index++;
       }
     }
-    void addPages(const PageSDict &pages,bool rootOnly,ClassDefSet &visitedClasses)
+    void addPage(const PageDef *pd,bool rootOnly,ClassDefSet &visitedClasses)
     {
-      SDict<PageDef>::Iterator pli(pages);
-      const PageDef *pd;
-      for (pli.toFirst();(pd=pli.current());++pli)
+      if (!rootOnly ||
+          pd->getOuterScope()==0 ||
+          pd->getOuterScope()->definitionType()!=Definition::TypePage)
       {
-        if (!rootOnly ||
-            pd->getOuterScope()==0 ||
-            pd->getOuterScope()->definitionType()!=Definition::TypePage)
-        {
-          append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
-          m_index++;
-        }
+        append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+        m_index++;
+      }
+    }
+    void addPages(const PageLinkedMap &pages,bool rootOnly,ClassDefSet &visitedClasses)
+    {
+      for (const auto &pd : pages)
+      {
+        addPage(pd.get(),rootOnly,visitedClasses);
+      }
+    }
+    void addPages(const PageLinkedRefMap &pages,bool rootOnly,ClassDefSet &visitedClasses)
+    {
+      for (const auto &pd : pages)
+      {
+        addPage(pd,rootOnly,visitedClasses);
       }
     }
     void addModules(const GroupSDict &groups,ClassDefSet &visitedClasses)
@@ -6751,7 +6750,12 @@ void NestingContext::addFiles(const FileList &files,ClassDefSet &visitedClasses)
   p->addFiles(files,visitedClasses);
 }
 
-void NestingContext::addPages(const PageSDict &pages,bool rootOnly,ClassDefSet &visitedClasses)
+void NestingContext::addPages(const PageLinkedMap &pages,bool rootOnly,ClassDefSet &visitedClasses)
+{
+  p->addPages(pages,rootOnly,visitedClasses);
+}
+
+void NestingContext::addPages(const PageLinkedRefMap &pages,bool rootOnly,ClassDefSet &visitedClasses)
 {
   p->addPages(pages,rootOnly,visitedClasses);
 }
@@ -7331,15 +7335,12 @@ TemplateVariant FileTreeContext::get(const char *name) const
 class PageTreeContext::Private
 {
   public:
-    Private(const PageSDict *pages)
+    Private(const PageLinkedMap &pages)
     {
       m_pageTree.reset(NestingContext::alloc(0,0));
       ClassDefSet visitedClasses;
       // Add pages
-      if (pages)
-      {
-        m_pageTree->addPages(*pages,TRUE,visitedClasses);
-      }
+      m_pageTree->addPages(pages,TRUE,visitedClasses);
 
       //%% PageNodeList tree:
       static bool init=FALSE;
@@ -7420,7 +7421,7 @@ class PageTreeContext::Private
 
 PropertyMapper<PageTreeContext::Private> PageTreeContext::Private::s_inst;
 
-PageTreeContext::PageTreeContext(const PageSDict *pages) : RefCountedContext("PageTreeContext")
+PageTreeContext::PageTreeContext(const PageLinkedMap &pages) : RefCountedContext("PageTreeContext")
 {
   p = new Private(pages);
 }
@@ -7441,24 +7442,22 @@ TemplateVariant PageTreeContext::get(const char *name) const
 class PageListContext::Private : public GenericNodeListContext
 {
   public:
-    void addPages(const PageSDict &pages)
+    void addPages(const PageLinkedMap &pages)
     {
-      PageSDict::Iterator pdi(pages);
-      const PageDef *pd=0;
-      for (pdi.toFirst();(pd=pdi.current());++pdi)
+      for (const auto &pd : pages)
       {
         if (!pd->getGroupDef() && !pd->isReference())
         {
-          append(PageContext::alloc(pd,FALSE,FALSE));
+          append(PageContext::alloc(pd.get(),FALSE,FALSE));
         }
       }
     }
 };
 
-PageListContext::PageListContext(const PageSDict *pages) : RefCountedContext("PageListContext")
+PageListContext::PageListContext(const PageLinkedMap &pages) : RefCountedContext("PageListContext")
 {
   p = new Private;
-  if (pages) p->addPages(*pages);
+  p->addPages(pages);
 }
 
 PageListContext::~PageListContext()
@@ -7490,16 +7489,11 @@ class ExampleListContext::Private : public GenericNodeListContext
   public:
     Private()
     {
-      if (Doxygen::exampleSDict)
+      for (const auto &pd : *Doxygen::exampleLinkedMap)
       {
-        PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        const PageDef *pd=0;
-        for (pdi.toFirst();(pd=pdi.current());++pdi)
+        if (!pd->getGroupDef() && !pd->isReference())
         {
-          if (!pd->getGroupDef() && !pd->isReference())
-          {
-            append(PageContext::alloc(pd,FALSE,TRUE));
-          }
+          append(PageContext::alloc(pd.get(),FALSE,TRUE));
         }
       }
     }
@@ -7796,10 +7790,7 @@ class ExampleTreeContext::Private
       m_exampleTree.reset(NestingContext::alloc(0,0));
       ClassDefSet visitedClasses;
       // Add pages
-      if (Doxygen::exampleSDict)
-      {
-        m_exampleTree->addPages(*Doxygen::exampleSDict,TRUE,visitedClasses);
-      }
+      m_exampleTree->addPages(*Doxygen::exampleLinkedMap,TRUE,visitedClasses);
 
       static bool init=FALSE;
       if (!init)
@@ -10141,8 +10132,8 @@ void generateOutputViaTemplate()
       SharedPtr<DirListContext>               dirList              (DirListContext::alloc());
       SharedPtr<FileListContext>              fileList             (FileListContext::alloc());
       SharedPtr<FileTreeContext>              fileTree             (FileTreeContext::alloc());
-      SharedPtr<PageTreeContext>              pageTree             (PageTreeContext::alloc(Doxygen::pageSDict));
-      SharedPtr<PageListContext>              pageList             (PageListContext::alloc(Doxygen::pageSDict));
+      SharedPtr<PageTreeContext>              pageTree             (PageTreeContext::alloc(*Doxygen::pageLinkedMap));
+      SharedPtr<PageListContext>              pageList             (PageListContext::alloc(*Doxygen::pageLinkedMap));
       SharedPtr<ExampleTreeContext>           exampleTree          (ExampleTreeContext::alloc());
       SharedPtr<ExampleListContext>           exampleList          (ExampleListContext::alloc());
       SharedPtr<ModuleTreeContext>            moduleTree           (ModuleTreeContext::alloc());
@@ -10191,15 +10182,15 @@ void generateOutputViaTemplate()
       //%% Page mainPage
       if (Doxygen::mainPage)
       {
-        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage,TRUE,FALSE));
+        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE));
         ctx->set("mainPage",mainPage.get());
       }
       else
       {
         // TODO: for LaTeX output index should be main... => solve in template
-        Doxygen::mainPage = createPageDef("[generated]",1,"index","",theTranslator->trMainPage());
+        Doxygen::mainPage.reset(createPageDef("[generated]",1,"index","",theTranslator->trMainPage()));
         Doxygen::mainPage->setFileName("index");
-        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage,TRUE,FALSE));
+        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE));
         ctx->set("mainPage",mainPage.get());
       }
       //%% GlobalsIndex globalsIndex:

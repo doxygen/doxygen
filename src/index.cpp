@@ -3455,7 +3455,7 @@ static void writeNamespaceMemberIndex(OutputList &ol)
 
 static void writeExampleIndex(OutputList &ol)
 {
-  if (Doxygen::exampleSDict->count()==0) return;
+  if (Doxygen::exampleLinkedMap->empty()) return;
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Docbook);
@@ -3482,9 +3482,7 @@ static void writeExampleIndex(OutputList &ol)
   ol.endTextBlock();
 
   ol.startItemList();
-  PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     ol.startItemListItem();
     QCString n=pd->getOutputFileBase();
@@ -3523,15 +3521,13 @@ static void writeExampleIndex(OutputList &ol)
 static void countRelatedPages(int &docPages,int &indexPages)
 {
   docPages=indexPages=0;
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    if ( pd->visibleInIndex())
+    if (pd->visibleInIndex())
     {
       indexPages++;
     }
-    if ( pd->documentedPage())
+    if (pd->documentedPage())
     {
       docPages++;
     }
@@ -3551,7 +3547,7 @@ static bool mainPageHasOwnTitle()
   return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
 }
 
-static void writePages(PageDef *pd,FTVHelp *ftv)
+static void writePages(const PageDef *pd,FTVHelp *ftv)
 {
   //printf("writePages()=%s pd=%p mainpage=%p\n",pd->name().data(),pd,Doxygen::mainPage);
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Pages);
@@ -3578,7 +3574,7 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
           pd->getReference(),pd->getOutputFileBase(),
           0,hasSubPages,TRUE,pd);
     }
-    if (addToIndex && pd!=Doxygen::mainPage)
+    if (addToIndex && pd!=Doxygen::mainPage.get())
     {
       Doxygen::indexList->addContentsItem(
           hasSubPages || hasSections,pageTitle,
@@ -3588,24 +3584,18 @@ static void writePages(PageDef *pd,FTVHelp *ftv)
   }
   if (hasSubPages && ftv) ftv->incContentsDepth();
   bool doIndent = (hasSections || hasSubPages) &&
-                  (pd!=Doxygen::mainPage || mainPageHasOwnTitle());
+                  (pd!=Doxygen::mainPage.get() || mainPageHasOwnTitle());
   if (doIndent)
   {
     Doxygen::indexList->incContentsDepth();
   }
   if (hasSections)
   {
-    pd->addSectionsToIndex();
+    const_cast<PageDef*>(pd)->addSectionsToIndex();
   }
-  PageSDict *subPages = pd->getSubPages();
-  if (subPages)
+  for (const auto &subPage : pd->getSubPages())
   {
-    PageSDict::Iterator pi(*subPages);
-    PageDef *subPage;
-    for (pi.toFirst();(subPage=pi.current());++pi)
-    {
-      writePages(subPage,ftv);
-    }
+    writePages(subPage,ftv);
   }
   if (hasSubPages && ftv) ftv->decContentsDepth();
   if (doIndent)
@@ -3635,16 +3625,14 @@ static void writePageIndex(OutputList &ol)
 
   {
     FTVHelp* ftv = new FTVHelp(FALSE);
-    PageSDict::Iterator pdi(*Doxygen::pageSDict);
-    PageDef *pd=0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       if ((pd->getOuterScope()==0 ||
           pd->getOuterScope()->definitionType()!=Definition::TypePage) && // not a sub page
           !pd->isReference() // not an external page
          )
       {
-        writePages(pd,ftv);
+        writePages(pd.get(),ftv);
       }
     }
     QGString outStr;
@@ -3773,7 +3761,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     // write group info
     bool hasSubGroups = gd->getSubGroups()->count()>0;
-    bool hasSubPages = gd->getPages()->count()>0;
+    bool hasSubPages = !gd->getPages().empty();
     size_t numSubItems = 0;
     if (1 /*Config_getBool(TOC_EXPAND)*/)
     {
@@ -3790,7 +3778,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       numSubItems += gd->getClasses().size();
       numSubItems += gd->getFiles()->count();
       numSubItems += gd->getDirs().size();
-      numSubItems += gd->getPages()->count();
+      numSubItems += gd->getPages().size();
     }
 
     bool isDir = hasSubGroups || hasSubPages || numSubItems>0;
@@ -3930,9 +3918,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupPageDocs && addToIndex)
       {
-        SDict<PageDef>::Iterator it(*gd->getPages());
-        PageDef *pd;
-        for (;(pd=it.current());++it)
+        for (const auto &pd : gd->getPages())
         {
           const SectionInfo *si=0;
           if (!pd->name().isEmpty()) si=SectionManager::instance().find(pd->name());
@@ -3952,7 +3938,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
           }
           if (hasSections)
           {
-            pd->addSectionsToIndex();
+            const_cast<PageDef*>(pd)->addSectionsToIndex();
           }
           writePages(pd,0);
           if (hasSections || hasSubPages)
@@ -4170,7 +4156,7 @@ static void writeIndex(OutputList &ol)
     }
     if (Doxygen::mainPage->hasSubPages() || Doxygen::mainPage->hasSections())
     {
-      writePages(Doxygen::mainPage,0);
+      writePages(Doxygen::mainPage.get(),0);
     }
   }
 
@@ -4202,7 +4188,7 @@ static void writeIndex(OutputList &ol)
       ol.startHeaderSection();
       ol.startTitleHead(0);
       ol.generateDoc(Doxygen::mainPage->docFile(),Doxygen::mainPage->getStartBodyLine(),
-                  Doxygen::mainPage,0,Doxygen::mainPage->title(),TRUE,FALSE,
+                  Doxygen::mainPage.get(),0,Doxygen::mainPage->title(),TRUE,FALSE,
                   0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       headerWritten = TRUE;
     }
@@ -4238,7 +4224,7 @@ static void writeIndex(OutputList &ol)
     }
 
     ol.startTextBlock();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),0,
                 Doxygen::mainPage->documentation(),TRUE,FALSE,
                 0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endTextBlock();
@@ -4277,7 +4263,7 @@ static void writeIndex(OutputList &ol)
   if (!Config_getString(PROJECT_NUMBER).isEmpty())
   {
     ol.startProjectNumber();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,Config_getString(PROJECT_NUMBER),FALSE,FALSE,
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),0,Config_getString(PROJECT_NUMBER),FALSE,FALSE,
                    0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     ol.endProjectNumber();
   }
@@ -4306,14 +4292,12 @@ static void writeIndex(OutputList &ol)
   {
     //ol.parseText(projPrefix+theTranslator->trPageDocumentation());
     //ol.endIndexSection(isPageDocumentation);
-    PageSDict::Iterator pdi(*Doxygen::pageSDict);
-    PageDef *pd=pdi.toFirst();
     bool first=Doxygen::mainPage==0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       if (!pd->getGroupDef() && !pd->isReference() &&
           (!pd->hasParentPage() ||                    // not inside other page
-           (Doxygen::mainPage==pd->getOuterScope()))  // or inside main page
+           (Doxygen::mainPage.get()==pd->getOuterScope()))  // or inside main page
          )
       {
         bool isCitationPage = pd->name()=="citelist";
@@ -4474,7 +4458,7 @@ static void writeIndex(OutputList &ol)
     ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
     ol.endIndexSection(isFileDocumentation);
   }
-  if (Doxygen::exampleSDict->count()>0)
+  if (!Doxygen::exampleLinkedMap->empty())
   {
     ol.startIndexSection(isExampleDocumentation);
     ol.parseText(/*projPrefix+*/theTranslator->trExampleDocumentation());
@@ -4490,7 +4474,7 @@ static void writeIndex(OutputList &ol)
     startFile(ol,Doxygen::mainPage->name(),0,Doxygen::mainPage->title());
     ol.startContents();
     ol.startTextBlock();
-    ol.generateDoc(defFileName,defLine,Doxygen::mainPage,0,
+    ol.generateDoc(defFileName,defLine,Doxygen::mainPage.get(),0,
                 Doxygen::mainPage->documentation(),FALSE,FALSE,
                 0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
                );
@@ -4843,7 +4827,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::Files:              return documentedHtmlFiles>0 && showFiles;
     case LayoutNavEntry::FileList:           return documentedHtmlFiles>0 && showFiles;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
-    case LayoutNavEntry::Examples:           return Doxygen::exampleSDict->count()>0;
+    case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized
       assert(kind != LayoutNavEntry::None);
       return FALSE;

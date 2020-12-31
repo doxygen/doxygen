@@ -693,7 +693,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     *pDef=gd;
     return TRUE;
   }
-  pd = Doxygen::pageSDict->find(cmdArg);
+  pd = Doxygen::pageLinkedMap->find(cmdArg);
   if (pd) // page
   {
     *pDoc=pd->documentation();
@@ -2427,7 +2427,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     PageDef *pd = 0;
     if (sec->type()==SectionType::Page)
     {
-      pd = Doxygen::pageSDict->find(target);
+      pd = Doxygen::pageLinkedMap->find(target);
     }
     m_text         = sec->title();
     if (m_text.isEmpty()) m_text = sec->label();

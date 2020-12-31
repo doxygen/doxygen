@@ -139,15 +139,10 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   }
 
   // Add pages
-  if ( gd->getPages() && gd->getPages()->count() )
+  for (const auto &def : gd->getPages())
   {
-    PageSDict::Iterator defli(*gd->getPages());
-    PageDef *def;
-    for (;(def=defli.current());++defli)
-    {
-      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );
-    }
+    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );
   }
 
   // Add directories

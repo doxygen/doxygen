@@ -1279,13 +1279,9 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl, struct Refid outer_re
   }
 }
 
-static void writeInnerPages(const PageSDict *pl, struct Refid outer_refid)
+static void writeInnerPages(const PageLinkedRefMap &pl, struct Refid outer_refid)
 {
-  if (!pl) return;
-
-  PageSDict::Iterator pli(*pl);
-  const PageDef *pd;
-  for (pli.toFirst();(pd=pli.current());++pli)
+  for (const auto &pd : pl)
   {
     struct Refid inner_refid = insertRefid(
       pd->getGroupDef() ? pd->getOutputFileBase()+"_"+pd->name() : pd->getOutputFileBase()
@@ -1294,7 +1290,6 @@ static void writeInnerPages(const PageSDict *pl, struct Refid outer_refid)
     bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
     bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
     step(contains_insert);
-
   }
 }
 
@@ -2393,7 +2388,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   bindTextParameter(compounddef_insert,":name",pd->name());
 
   QCString title;
-  if (pd==Doxygen::mainPage) // main page is special
+  if (pd==Doxygen::mainPage.get()) // main page is special
   {
     if (mainPageHasTitle())
     {
@@ -2554,12 +2549,10 @@ void generateSqlite3()
 
   // + page
   {
-    PageSDict::Iterator pdi(*Doxygen::pageSDict);
-    const PageDef *pd=0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       msg("Generating Sqlite3 output for page %s\n",pd->name().data());
-      generateSqlite3ForPage(pd,FALSE);
+      generateSqlite3ForPage(pd.get(),FALSE);
     }
   }
 
@@ -2576,12 +2569,10 @@ void generateSqlite3()
 
   // + examples
   {
-    PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-    const PageDef *pd=0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    for (const auto &pd : *Doxygen::exampleLinkedMap)
     {
       msg("Generating Sqlite3 output for example %s\n",pd->name().data());
-      generateSqlite3ForPage(pd,TRUE);
+      generateSqlite3ForPage(pd.get(),TRUE);
     }
   }
 
@@ -2589,7 +2580,7 @@ void generateSqlite3()
   if (Doxygen::mainPage)
   {
     msg("Generating Sqlite3 output for the main page\n");
-    generateSqlite3ForPage(Doxygen::mainPage,FALSE);
+    generateSqlite3ForPage(Doxygen::mainPage.get(),FALSE);
   }
 
   // TODO: copied from initializeSchema; not certain if we should say/do more

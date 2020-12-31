@@ -19,7 +19,7 @@
 #include "definition.h"
 #include "sortdict.h"
 
-class PageSDict;
+class PageLinkedRefMap;
 class OutputList;
 class FTextStream;
 
@@ -43,7 +43,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual void findSectionsInDocumentation() = 0;
     virtual QCString title() const = 0;
     virtual GroupDef *  getGroupDef() const = 0;
-    virtual PageSDict * getSubPages() const = 0;
+    virtual const PageLinkedRefMap &getSubPages() const = 0;
     virtual void addInnerCompound(const Definition *) = 0;
     virtual bool visibleInIndex() const = 0;
     virtual bool documentedPage() const = 0;
@@ -59,7 +59,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual void writeDocumentation(OutputList &) = 0;
     virtual void writeTagFile(FTextStream &) = 0;
     virtual void setNestingLevel(int) = 0;
-    virtual void writePageDocumentation(OutputList &) = 0;
+    virtual void writePageDocumentation(OutputList &) const = 0;
 
 };
 
@@ -72,16 +72,12 @@ const PageDef      *toPageDef(const Definition *d);
 
 // ------------------
 
-class PageSDict : public SDict<PageDef>
+class PageLinkedMap : public LinkedMap<PageDef>
 {
-  public:
-    PageSDict(uint size) : SDict<PageDef>(size) {}
-    virtual ~PageSDict() {}
-  private:
-    int compareValues(const PageDef *i1,const PageDef *i2) const
-    {
-      return qstricmp(i1->name(),i2->name());
-    }
+};
+
+class PageLinkedRefMap : public LinkedRefMap<const PageDef>
+{
 };
 
 #endif

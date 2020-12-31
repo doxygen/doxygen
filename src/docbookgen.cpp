@@ -595,13 +595,7 @@ DB_GEN_C2("IndexSections " << is)
     case isExampleDocumentation:
       {
         t << "</title>" << endl;
-        PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-        PageDef *pd=pdi.toFirst();
-        if (pd)
-        {
-          t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-        }
-        for (++pdi;(pd=pdi.current());++pdi)
+        for (const auto &pd : *Doxygen::exampleLinkedMap)
         {
           t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
         }
@@ -620,9 +614,7 @@ DB_GEN_C2("IndexSections " << is)
 void DocbookGenerator::writePageLink(const char *name, bool /*first*/)
 {
 DB_GEN_C
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd = pdi.toFirst();
-  for (pd = pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (!pd->getGroupDef() && !pd->isReference() && pd->name() == stripPath(name))
     {

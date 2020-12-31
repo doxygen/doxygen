@@ -2121,13 +2121,10 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
-  PageSDict *pl = gd->getPages();
-  if (pl)
+  if (!gd->getPages().empty())
   {
     m_output.openList("pages");
-    PageSDict::Iterator pli(*pl);
-    PageDef *pd;
-    for (pli.toFirst();(pd=pli.current());++pli)
+    for (const auto &pd : gd->getPages())
       m_output.openHash()
 	.addFieldQuotedString("title", pd->title())
 	.closeHash();
@@ -2222,15 +2219,13 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.closeList();
 
   m_output.openList("pages");
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    generatePerlModForPage(pd);
+    generatePerlModForPage(pd.get());
   }
   if (Doxygen::mainPage)
   {
-    generatePerlModForPage(Doxygen::mainPage);
+    generatePerlModForPage(Doxygen::mainPage.get());
   }
   m_output.closeList();
 

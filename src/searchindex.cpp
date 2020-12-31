@@ -855,9 +855,7 @@ void createJavaScriptSearchIndex()
   }
 
   // index pages
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (pd->isLinkable())
     {
@@ -866,8 +864,8 @@ void createJavaScriptSearchIndex()
       {
         char letter[MAX_UTF8_CHAR_SIZE];
         getUtf8Char(title,letter,CaseModifier::ToLower);
-        g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,pd);
-        g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,pd);
+        g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,pd.get());
+        g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,pd.get());
       }
     }
   }
@@ -878,8 +876,8 @@ void createJavaScriptSearchIndex()
     {
       char letter[MAX_UTF8_CHAR_SIZE];
       getUtf8Char(title,letter,CaseModifier::ToLower);
-      g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,Doxygen::mainPage);
-      g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,Doxygen::mainPage);
+      g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,Doxygen::mainPage.get());
+      g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,Doxygen::mainPage.get());
     }
   }
 

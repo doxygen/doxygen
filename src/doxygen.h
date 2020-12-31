@@ -36,8 +36,7 @@
 #define AtomicBool   std::atomic_bool
 
 class RefList;
-class PageSList;
-class PageSDict;
+class PageLinkedMap;
 class PageDef;
 class SearchIndexIntf;
 class ParserManager;
@@ -99,9 +98,9 @@ class Doxygen
   public:
     static ClassLinkedMap           *classLinkedMap;
     static ClassLinkedMap           *hiddenClassLinkedMap;
-    static PageSDict                *exampleSDict;
-    static PageSDict                *pageSDict;
-    static PageDef                  *mainPage;
+    static PageLinkedMap            *exampleLinkedMap;
+    static PageLinkedMap            *pageLinkedMap;
+    static std::unique_ptr<PageDef>  mainPage;
     static bool                      insideMainPage;
     static FileNameLinkedMap        *includeNameLinkedMap;
     static FileNameLinkedMap        *exampleNameLinkedMap;

@@ -124,8 +124,8 @@ MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = 0;
 FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
 GroupSDict           *Doxygen::groupSDict = 0;
-PageSDict            *Doxygen::pageSDict = 0;
-PageSDict            *Doxygen::exampleSDict = 0;
+PageLinkedMap        *Doxygen::pageLinkedMap = 0;
+PageLinkedMap        *Doxygen::exampleLinkedMap = 0;
 StringDict            Doxygen::aliasDict(257);          // aliases
 StringSet             Doxygen::inputPaths;
 FileNameLinkedMap    *Doxygen::includeNameLinkedMap = 0;     // include names
@@ -138,7 +138,7 @@ StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace al
 StringDict            Doxygen::tagDestinationDict(257);      // all tag locations
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
-PageDef              *Doxygen::mainPage = 0;
+std::unique_ptr<PageDef> Doxygen::mainPage;
 bool                  Doxygen::insideMainPage = FALSE; // are we generating docs for the main page?
 NamespaceDefMutable  *Doxygen::globalScope = 0;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
@@ -183,8 +183,8 @@ void clearAll()
   Doxygen::classLinkedMap->clear();
   Doxygen::hiddenClassLinkedMap->clear();
   Doxygen::namespaceLinkedMap->clear();
-  Doxygen::pageSDict->clear();
-  Doxygen::exampleSDict->clear();
+  Doxygen::pageLinkedMap->clear();
+  Doxygen::exampleLinkedMap->clear();
   Doxygen::inputNameLinkedMap->clear();
   Doxygen::includeNameLinkedMap->clear();
   Doxygen::exampleNameLinkedMap->clear();
@@ -195,7 +195,7 @@ void clearAll()
   Doxygen::tagDestinationDict.clear();
   SectionManager::instance().clear();
   CitationManager::instance().clear();
-  delete Doxygen::mainPage; Doxygen::mainPage=0;
+  Doxygen::mainPage.reset();
   FormulaManager::instance().clear();
 }
 
@@ -4949,9 +4949,7 @@ static void addListReferences()
     gd->addListReferences();
   }
 
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     QCString name = pd->getOutputFileBase();
     if (pd->getGroupDef())
@@ -8335,9 +8333,7 @@ static void findSectionsInDocumentation()
     gd->findSectionsInDocumentation();
   }
   // for each page
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     pd->findSectionsInDocumentation();
   }
@@ -8677,14 +8673,14 @@ static void findMainPage(Entry *root)
       QCString title=root->args.stripWhiteSpace();
       //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
       QCString indexName="index";
-      Doxygen::mainPage = createPageDef(root->docFile,root->docLine,
-                              indexName, root->brief+root->doc+root->inbodyDocs,title);
+      Doxygen::mainPage.reset(createPageDef(root->docFile,root->docLine,
+                              indexName, root->brief+root->doc+root->inbodyDocs,title));
       //setFileNameForSections(root->anchors,"index",Doxygen::mainPage);
       Doxygen::mainPage->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       Doxygen::mainPage->setBodySegment(root->startLine,root->startLine,-1);
       Doxygen::mainPage->setFileName(indexName);
       Doxygen::mainPage->setLocalToc(root->localToc);
-      addPageToContext(Doxygen::mainPage,root);
+      addPageToContext(Doxygen::mainPage.get(),root);
 
       const SectionInfo *si = SectionManager::instance().find(Doxygen::mainPage->name());
       if (si)
@@ -8745,13 +8741,13 @@ static void computePageRelations(Entry *root)
      )
   {
     PageDef *pd = root->section==Entry::PAGEDOC_SEC ?
-                    Doxygen::pageSDict->find(root->name) :
-                    Doxygen::mainPage;
+                    Doxygen::pageLinkedMap->find(root->name) :
+                    Doxygen::mainPage.get();
     if (pd)
     {
       for (const BaseInfo &bi : root->extends)
       {
-        PageDef *subPd = Doxygen::pageSDict->find(bi.name);
+        PageDef *subPd = Doxygen::pageLinkedMap->find(bi.name);
         if (pd==subPd)
         {
          term("page defined at line %d of file %s with label %s is a direct "
@@ -8772,14 +8768,12 @@ static void computePageRelations(Entry *root)
 
 static void checkPageRelations()
 {
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     Definition *ppd = pd->getOuterScope();
     while (ppd)
     {
-      if (ppd==pd)
+      if (ppd==pd.get())
       {
         term("page defined at line %d of file %s with label %s is a subpage "
             "of itself! Please remove this cyclic dependency.\n",
@@ -8823,7 +8817,7 @@ static void resolveUserReferences()
       // if this section is in a page and the page is in a group, then we
       // have to adjust the link file name to point to the group.
       if (!si->fileName().isEmpty() &&
-          (pd=Doxygen::pageSDict->find(si->fileName())) &&
+          (pd=Doxygen::pageLinkedMap->find(si->fileName())) &&
           pd->getGroupDef())
       {
         si->setFileName(pd->getGroupDef()->getOutputFileBase());
@@ -8862,11 +8856,9 @@ static void resolveUserReferences()
 
 static void generatePageDocs()
 {
-  //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageSDict->count());
+  //printf("documentedPages=%d real=%d\n",documentedPages,Doxygen::pageLinkedMap->count());
   if (documentedPages==0) return;
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (!pd->getGroupDef() && !pd->isReference())
     {
@@ -8885,7 +8877,7 @@ static void buildExampleList(Entry *root)
 {
   if ((root->section==Entry::EXAMPLE_SEC || root->section==Entry::EXAMPLE_LINENO_SEC) && !root->name.isEmpty())
   {
-    if (Doxygen::exampleSDict->find(root->name))
+    if (Doxygen::exampleLinkedMap->find(root->name))
     {
       warn(root->fileName,root->startLine,
           "Example %s was already documented. Ignoring "
@@ -8895,15 +8887,16 @@ static void buildExampleList(Entry *root)
     }
     else
     {
-      PageDef *pd=createPageDef(root->fileName,root->startLine,
-          root->name,root->brief+root->doc+root->inbodyDocs,root->args);
+      PageDef *pd = Doxygen::exampleLinkedMap->add(root->name,
+             std::unique_ptr<PageDef>(
+               createPageDef(root->fileName,root->startLine,
+                 root->name,root->brief+root->doc+root->inbodyDocs,root->args)));
       pd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
       pd->setFileName(convertNameToFile(pd->name()+"-example",FALSE,TRUE));
       pd->addSectionsToDefinition(root->anchors);
       pd->setLanguage(root->lang);
       pd->setShowLineNo(root->section==Entry::EXAMPLE_LINENO_SEC);
 
-      Doxygen::exampleSDict->inSort(root->name,pd);
       //we don't add example to groups
       //addExampleToGroups(root,pd);
     }
@@ -8935,9 +8928,7 @@ void printNavTree(Entry *root,int indent)
 static void generateExampleDocs()
 {
   g_outputList->disable(OutputGenerator::Man);
-  PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
     msg("Generating docs for example %s...\n",pd->name().data());
     auto intf = Doxygen::parserManager->getCodeParser(".c"); // TODO: do this on code type
@@ -8953,9 +8944,9 @@ static void generateExampleDocs()
     {
       lineNoOptStr="{lineno}";
     }
-    g_outputList->generateDoc(pd->docFile(),                            // file
+    g_outputList->generateDoc(pd->docFile(),                       // file
                          pd->docLine(),                            // startLine
-                         pd,                                       // context
+                         pd.get(),                                 // context
                          0,                                        // memberDef
                          pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
                          TRUE,                                     // index words
@@ -10186,10 +10177,8 @@ void initDoxygen()
   Doxygen::hiddenClassLinkedMap = new ClassLinkedMap;
   Doxygen::directories = new DirSDict(17);
   Doxygen::directories->setAutoDelete(TRUE);
-  Doxygen::pageSDict = new PageSDict(1009);          // all doc pages
-  Doxygen::pageSDict->setAutoDelete(TRUE);
-  Doxygen::exampleSDict = new PageSDict(1009);       // all examples
-  Doxygen::exampleSDict->setAutoDelete(TRUE);
+  Doxygen::pageLinkedMap = new PageLinkedMap;          // all doc pages
+  Doxygen::exampleLinkedMap = new PageLinkedMap;       // all examples
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::indexList = new IndexList;
@@ -10231,9 +10220,9 @@ void cleanUpDoxygen()
   delete Doxygen::dotFileNameLinkedMap;
   delete Doxygen::mscFileNameLinkedMap;
   delete Doxygen::diaFileNameLinkedMap;
-  delete Doxygen::mainPage;
-  delete Doxygen::pageSDict;
-  delete Doxygen::exampleSDict;
+  Doxygen::mainPage.reset();
+  delete Doxygen::pageLinkedMap;
+  delete Doxygen::exampleLinkedMap;
   delete Doxygen::globalScope;
   delete Doxygen::parserManager;
   delete theTranslator;
@@ -10811,9 +10800,7 @@ static void writeTagFile()
     if (gd->isLinkableInProject()) gd->writeTagFile(tagFile);
   }
   // for each page
-  PageSDict::Iterator pdi(*Doxygen::pageSDict);
-  PageDef *pd=0;
-  for (pdi.toFirst();(pd=pdi.current());++pdi)
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
     if (pd->isLinkableInProject()) pd->writeTagFile(tagFile);
   }

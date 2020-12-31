@@ -1180,21 +1180,16 @@ static void writeInnerFiles(const FileList *fl,FTextStream &t)
   }
 }
 
-static void writeInnerPages(const PageSDict *pl,FTextStream &t)
+static void writeInnerPages(const PageLinkedRefMap &pl,FTextStream &t)
 {
-  if (pl)
+  for (const auto &pd : pl)
   {
-    PageSDict::Iterator pli(*pl);
-    PageDef *pd;
-    for (pli.toFirst();(pd=pli.current());++pli)
+    t << "    <innerpage refid=\"" << pd->getOutputFileBase();
+    if (pd->getGroupDef())
     {
-      t << "    <innerpage refid=\"" << pd->getOutputFileBase();
-      if (pd->getGroupDef())
-      {
-        t << "_" << pd->name();
-      }
-      t << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
+      t << "_" << pd->name();
     }
+    t << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
   }
 }
 
@@ -1770,7 +1765,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   t << "    <compoundname>" << convertToXML(pd->name())
     << "</compoundname>" << endl;
 
-  if (pd==Doxygen::mainPage) // main page is special
+  if (pd==Doxygen::mainPage.get()) // main page is special
   {
     QCString title;
     if (mainPageHasTitle())
@@ -1963,12 +1958,10 @@ void generateXML()
     generateXMLForGroup(gd,t);
   }
   {
-    PageSDict::Iterator pdi(*Doxygen::pageSDict);
-    PageDef *pd=0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    for (const auto &pd : *Doxygen::pageLinkedMap)
     {
       msg("Generating XML output for page %s\n",pd->name().data());
-      generateXMLForPage(pd,t,FALSE);
+      generateXMLForPage(pd.get(),t,FALSE);
     }
   }
   {
@@ -1981,18 +1974,16 @@ void generateXML()
     }
   }
   {
-    PageSDict::Iterator pdi(*Doxygen::exampleSDict);
-    PageDef *pd=0;
-    for (pdi.toFirst();(pd=pdi.current());++pdi)
+    for (const auto &pd : *Doxygen::exampleLinkedMap)
     {
       msg("Generating XML output for example %s\n",pd->name().data());
-      generateXMLForPage(pd,t,TRUE);
+      generateXMLForPage(pd.get(),t,TRUE);
     }
   }
   if (Doxygen::mainPage)
   {
     msg("Generating XML output for the main page\n");
-    generateXMLForPage(Doxygen::mainPage,t,FALSE);
+    generateXMLForPage(Doxygen::mainPage.get(),t,FALSE);
   }
 
   //t << "  </compoundlist>" << endl;

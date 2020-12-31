@@ -36,7 +36,7 @@ class NamespaceDef;
 class GroupList;
 class OutputList;
 class NamespaceSDict;
-class PageSDict;
+class PageLinkedRefMap;
 class PageDef;
 class DirDef;
 class FTVHelp;
@@ -61,7 +61,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual bool addClass(const ClassDef *def) = 0;
     virtual bool addNamespace(const NamespaceDef *def) = 0;
     virtual void addGroup(const GroupDef *def) = 0;
-    virtual void addPage(PageDef *def) = 0;
+    virtual void addPage(const PageDef *def) = 0;
     virtual void addExample(const PageDef *def) = 0;
     virtual void addDir(DirDef *dd) = 0;
     virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
@@ -96,12 +96,12 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual const MemberGroupList &getMemberGroups() const = 0;
 
     virtual FileList *      getFiles() const = 0;
-    virtual ClassLinkedRefMap getClasses() const = 0;
-    virtual NamespaceLinkedRefMap getNamespaces() const = 0;
+    virtual const ClassLinkedRefMap &getClasses() const = 0;
+    virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
     virtual GroupList *     getSubGroups() const = 0;
-    virtual PageSDict *     getPages() const = 0;
+    virtual const PageLinkedRefMap &getPages() const = 0;
     virtual const DirList & getDirs() const = 0;
-    virtual PageSDict *     getExamples() const = 0;
+    virtual const PageLinkedRefMap &getExamples() const = 0;
     virtual bool hasDetailedDescription() const = 0;
     virtual void sortSubGroups() = 0;
 
