@@ -163,6 +163,7 @@ void ClangTUParser::parse()
   //printf("ClangTUParser::ClangTUParser(fileName=%s,#filesInSameTU=%d)\n",
   //    qPrint(fileName),(int)p->filesInSameTU.size());
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
+  bool clangIncludeInputPaths = Config_getBool(CLANG_INCLUDE_INPUT_PATHS);
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   const StringVector &includePath = Config_getList(INCLUDE_PATH);
   const StringVector &clangOptions = Config_getList(CLANG_OPTIONS);
@@ -211,11 +212,14 @@ void ClangTUParser::parse()
   else
   {
     // add include paths for input files
-    for (const std::string &path : Doxygen::inputPaths)
+    if (clangIncludeInputPaths)
     {
-      QCString inc = QCString("-I")+path.data();
-      argv[argc++]=qstrdup(inc.data());
-      //printf("argv[%d]=%s\n",argc,argv[argc]);
+      for (const std::string &path : Doxygen::inputPaths)
+      {
+        QCString inc = QCString("-I")+path.data();
+        argv[argc++]=qstrdup(inc.data());
+        //printf("argv[%d]=%s\n",argc,argv[argc]);
+      }
     }
     // add external include paths
     for (size_t i=0;i<includePath.size();i++)
