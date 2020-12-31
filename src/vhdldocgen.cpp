@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <map>
 #include <qcstring.h>
 #include <qfileinfo.h>
 #include <qcstringlist.h>
-#include <qmap.h>
 
 /* --------------------------------------------------------------- */
 
@@ -642,9 +642,9 @@ ClassDef* VhdlDocGen::getPackageName(const QCString & name)
   return getClass(name);
 }
 
-static QMap<QCString,MemberDef*> varMap;
-static QList<ClassDef> qli;
-static QMap<ClassDef*,QList<ClassDef> > packages;
+static std::map<std::string,MemberDef*>            g_varMap;
+static std::vector<ClassDef*>                      g_classList;
+static std::map<ClassDef*,std::vector<ClassDef*> > g_packages;
 
 MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
@@ -712,7 +712,7 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
     }
     if (acd) //d && d->definitionType()==Definition::TypeClass)
     {
-      if(!packages.contains(acd))
+      if(g_packages.find(acd)==g_packages.end())
       {
         VhdlDocGen::findAllPackages(acd);
       }
@@ -721,20 +721,19 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
   else
   {
     ecd=cd;
-    if (!packages.contains(ecd)) VhdlDocGen::findAllPackages(ecd);
+    if (g_packages.find(ecd)==g_packages.end()) VhdlDocGen::findAllPackages(ecd);
   }
 
   if (ecd)
   {
-    QMap<ClassDef*,QList<ClassDef> >::Iterator cList=packages.find(ecd);
-    if (cList!=packages.end())
+    auto cList_it = g_packages.find(ecd);
+    if (cList_it!=g_packages.end())
     {
-      QList<ClassDef> mlist=cList.data();
-      for (uint j=0;j<mlist.count();j++)
+      for (const auto &cdp : cList_it->second)
       {
-        mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_variableMembers);
+        mdef=VhdlDocGen::findMemberDef(cdp,memName,MemberListType_variableMembers);
         if (mdef) return mdef;
-        mdef=VhdlDocGen::findMemberDef(mlist.at(j),memName,MemberListType_pubMethods);
+        mdef=VhdlDocGen::findMemberDef(cdp,memName,MemberListType_pubMethods);
         if (mdef) return mdef;
       }
     }
@@ -754,21 +753,21 @@ MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberList
   QCString keyType=cd->symbolName()+"@"+key;
   //printf("\n %s | %s | %s",cd->symbolName().data(),key.data(,),keyType.data());
 
-  QMap<QCString, MemberDef*>::Iterator it =varMap.find(keyType);
-  if (it.key())
+  auto it = g_varMap.find(keyType.str());
+  if (it!=g_varMap.end())
   {
-    md=it.data();
+    md=it->second;
     if (md)
     {
       return md;
     }
   }
-  if (qli.contains(cd))
+  if (std::find(g_classList.begin(),g_classList.end(),cd)!=g_classList.end())
   {
     return 0;
   }
   ml=cd->getMemberList(type);
-  qli.append(cd);
+  g_classList.push_back(cd);
   if (!ml)
   {
     return 0;
@@ -780,16 +779,15 @@ MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberList
   for (fmni.toFirst();(md=fmni.current());++fmni)
   {
     QCString tkey=cd->symbolName()+"@"+md->name();
-    if (varMap.contains(tkey))
+    if (g_varMap.find(tkey.str())==g_varMap.end())
     {
-      continue;
+      g_varMap.insert({tkey.str(),md});
     }
-    varMap.insert(tkey.data(),md);
   }
-  it=varMap.find(keyType.data());
-  if (it.key())
+  it=g_varMap.find(keyType.str());
+  if (it!=g_varMap.end())
   {
-    md=it.data();
+    md=it->second;
     if (md)
     {
       return md;
@@ -804,8 +802,8 @@ MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberList
 
 void VhdlDocGen::findAllPackages( ClassDef *cdef)
 {
-  QList<ClassDef> cList;
-  if (packages.contains(cdef)) return;
+  if (g_packages.find(cdef)!=g_packages.end()) return;
+  std::vector<ClassDef*> cList;
   MemberList *mem=cdef->getMemberList(MemberListType_variableMembers);
   MemberDef *md;
 
@@ -819,9 +817,9 @@ void VhdlDocGen::findAllPackages( ClassDef *cdef)
       ClassDef* cd=VhdlDocGen::getPackageName(md->name());
       if (cd)
       {
-        cList.append(cd);
+        cList.push_back(cd);
         VhdlDocGen::findAllPackages(cd);
-        packages.insert(cdef,cList);
+        g_packages.insert({cdef,cList});
       }
     }
   }//for
@@ -2859,9 +2857,9 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
 
 void VhdlDocGen::resetCodeVhdlParserState()
 {
-  varMap.clear();
-  qli.clear();
-  packages.clear();
+  g_varMap.clear();
+  g_classList.clear();
+  g_packages.clear();
 }
 
 bool VhdlDocGen::isConstraint(const MemberDef *mdef)
@@ -2972,7 +2970,7 @@ static struct
 QList<FlowChart>  FlowChart::flowList;
 
 #ifdef DEBUGFLOW
-static QMap<QCString,int> keyMap;
+static std::map<std::string,int> g_keyMap;
 #endif
 
 void alignText(QCString & q)
@@ -3594,7 +3592,7 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
 
 #ifdef DEBUGFLOW
   QCString qq(getNodeName(fl->id).data());
-  keyMap.insert(qq,fl->id);
+  g_keyMap.insert({qq.str(),fl->id});
 #endif
 
   bool dec=(fl->type & DECLN);
@@ -3683,11 +3681,11 @@ void FlowChart::writeEdge(FTextStream &t,const FlowChart* fl_from,const FlowChar
 #ifdef DEBUGFLOW
   QCString s1(getNodeName(fl_from->id).data());
   QCString s2(getNodeName(fl_to->id).data());
-  QMap<QCString, int>::Iterator it = keyMap.find(s1);
-  QMap<QCString, int>::Iterator it1 = keyMap.find(s2);
+  auto it = g_keyMap.find(s1.str());
+  auto it1 = g_keyMap.find(s2.str());
   // checks if the link is connected to a valid node
-  assert(it.key());
-  assert(it1.key());
+  assert(it!=g_keyMap.end());
+  assert(it1!=g_keyMap.end());
 #endif
 
   writeEdge(t,fl_from->id,fl_to->id,i,b,c);
