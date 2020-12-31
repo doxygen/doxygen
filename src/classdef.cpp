@@ -3185,11 +3185,13 @@ void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCStri
                  getDefColumn(),
                  typeConstraint,
                  ClassDef::Class))));
-
-    cd->setUsedOnly(TRUE);
-    cd->setLanguage(getLanguage());
-    //printf("Adding undocumented constraint '%s' to class %s on type %s\n",
-    //       typeConstraint.data(),name().data(),type.data());
+    if (cd)
+    {
+      cd->setUsedOnly(TRUE);
+      cd->setLanguage(getLanguage());
+      //printf("Adding undocumented constraint '%s' to class %s on type %s\n",
+      //       typeConstraint.data(),name().data(),type.data());
+    }
   }
   if (cd)
   {
@@ -3997,34 +3999,38 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
     Debug::print(Debug::Classes,0,"      New template instance class '%s''%s' inside '%s' hidden=%d\n",qPrint(name()),qPrint(templSpec),qPrint(name()),isHidden());
 
-    templateClass = toClassDefMutable(Doxygen::classLinkedMap->find(tcname));
-    if (templateClass==0)
+    ClassDef *foundCd = Doxygen::classLinkedMap->find(tcname);
+    if (foundCd)
     {
-      templateClass =
-        toClassDefMutable(
-            Doxygen::classLinkedMap->add(tcname,
-              std::unique_ptr<ClassDef>(
-                new ClassDefImpl(fileName,startLine,startColumn,tcname,ClassDef::Class))));
-      templateClass->setTemplateMaster(this);
-      templateClass->setOuterScope(getOuterScope());
-      templateClass->setHidden(isHidden());
-      m_impl->templateInstances->insert(templSpec,templateClass);
+      return foundCd;
+    }
+    templateClass =
+      toClassDefMutable(
+          Doxygen::classLinkedMap->add(tcname,
+            std::unique_ptr<ClassDef>(
+              new ClassDefImpl(fileName,startLine,startColumn,tcname,ClassDef::Class))));
+    templateClass->setTemplateMaster(this);
+    templateClass->setOuterScope(getOuterScope());
+    templateClass->setHidden(isHidden());
+    m_impl->templateInstances->insert(templSpec,templateClass);
 
-      // also add nested classes
-      for (const auto &innerCd : m_impl->innerClasses)
+    // also add nested classes
+    for (const auto &innerCd : m_impl->innerClasses)
+    {
+      QCString innerName = tcname+"::"+innerCd->localName();
+      ClassDefMutable *innerClass =
+        toClassDefMutable(
+            Doxygen::classLinkedMap->add(innerName,
+              std::unique_ptr<ClassDef>(
+                new ClassDefImpl(fileName,startLine,startColumn,innerName,ClassDef::Class))));
+      if (innerClass)
       {
-        QCString innerName = tcname+"::"+innerCd->localName();
-        ClassDefMutable *innerClass =
-          toClassDefMutable(
-              Doxygen::classLinkedMap->add(innerName,
-                std::unique_ptr<ClassDef>(
-                  new ClassDefImpl(fileName,startLine,startColumn,innerName,ClassDef::Class))));
         templateClass->addInnerCompound(innerClass);
         innerClass->setOuterScope(templateClass);
         innerClass->setHidden(isHidden());
       }
-      freshInstance=TRUE;
     }
+    freshInstance=TRUE;
   }
   return templateClass;
 }

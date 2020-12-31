@@ -1089,39 +1089,44 @@ static void addClassToContext(const Entry *root)
           std::unique_ptr<ClassDef>(
             createClassDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
                fullName,sec,tagName,refFileName,TRUE,root->spec&Entry::Enum) )));
-    Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d\n",
-        qPrint(fullName),sec,root->tArgLists.size(), tagInfo,root->hidden,root->artificial);
-    cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
-    cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-    cd->setLanguage(root->lang);
-    cd->setId(root->id);
-    cd->setHidden(root->hidden);
-    cd->setArtificial(root->artificial);
-    cd->setClassSpecifier(root->spec);
-    cd->setTypeConstraints(root->typeConstr);
-    //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
-
-    //printf("class %s template args=%s\n",fullName.data(),
-    //    tArgList ? tempArgListToString(tArgList,root->lang).data() : "<none>");
-    if (tArgList)
+    if (cd)
     {
-      cd->setTemplateArguments(*tArgList);
+      Debug::print(Debug::Classes,0,"  New class '%s' (sec=0x%08x)! #tArgLists=%d tagInfo=%p hidden=%d artificial=%d\n",
+          qPrint(fullName),sec,root->tArgLists.size(), tagInfo,root->hidden,root->artificial);
+      cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+      cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      cd->setLanguage(root->lang);
+      cd->setId(root->id);
+      cd->setHidden(root->hidden);
+      cd->setArtificial(root->artificial);
+      cd->setClassSpecifier(root->spec);
+      cd->setTypeConstraints(root->typeConstr);
+      //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
+
+      //printf("class %s template args=%s\n",fullName.data(),
+      //    tArgList ? tempArgListToString(tArgList,root->lang).data() : "<none>");
+      if (tArgList)
+      {
+        cd->setTemplateArguments(*tArgList);
+      }
+      cd->setProtection(root->protection);
+      cd->setIsStatic(root->stat);
+
+      // file definition containing the class cd
+      cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+      cd->setBodyDef(fd);
+
+      cd->setMetaData(root->metaData);
+
+      // see if the class is found inside a namespace
+      //bool found=addNamespace(root,cd);
+
+      cd->insertUsedFile(fd);
     }
-    cd->setProtection(root->protection);
-    cd->setIsStatic(root->stat);
-
-    // file definition containing the class cd
-    cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-    cd->setBodyDef(fd);
-
-    cd->setMetaData(root->metaData);
-
-    // see if the class is found inside a namespace
-    //bool found=addNamespace(root,cd);
-
-    cd->insertUsedFile(fd);
-
-
+    else
+    {
+      Debug::print(Debug::Classes,0,"  Not added class '%s', already exists as alias\n", qPrint(fullName));
+    }
   }
 
   cd->addSectionsToDefinition(root->anchors);
@@ -1333,64 +1338,67 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
                               templ->getDefColumn(),
                               fullName,
                               templ->compoundType()))));
-  cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
-  cd->setBriefDescription(templ->briefDescription(),templ->briefFile(),templ->briefLine());
-  cd->setLanguage(templ->getLanguage());
-  cd->setBodySegment(templ->getDefLine(),templ->getStartBodyLine(),templ->getEndBodyLine());
-  cd->setBodyDef(templ->getBodyDef());
-
-  cd->setOuterScope(rootCd->getOuterScope());
-  if (rootCd->getOuterScope()!=Doxygen::globalScope)
+  if (cd)
   {
-    DefinitionMutable *outerScope = toDefinitionMutable(rootCd->getOuterScope());
-    if (outerScope)
+    cd->setDocumentation(templ->documentation(),templ->docFile(),templ->docLine()); // copy docs to definition
+    cd->setBriefDescription(templ->briefDescription(),templ->briefFile(),templ->briefLine());
+    cd->setLanguage(templ->getLanguage());
+    cd->setBodySegment(templ->getDefLine(),templ->getStartBodyLine(),templ->getEndBodyLine());
+    cd->setBodyDef(templ->getBodyDef());
+
+    cd->setOuterScope(rootCd->getOuterScope());
+    if (rootCd->getOuterScope()!=Doxygen::globalScope)
     {
-      outerScope->addInnerCompound(cd);
+      DefinitionMutable *outerScope = toDefinitionMutable(rootCd->getOuterScope());
+      if (outerScope)
+      {
+        outerScope->addInnerCompound(cd);
+      }
     }
-  }
 
-  FileDef *fd = templ->getFileDef();
-  if (fd)
-  {
-    cd->setFileDef(fd);
-    fd->insertClass(cd);
-  }
-  GroupList *groups = rootCd->partOfGroups();
-  if ( groups!=0 )
-  {
-    GroupListIterator gli(*groups);
-    GroupDef *gd;
-    for (gli.toFirst();(gd=gli.current());++gli)
+    FileDef *fd = templ->getFileDef();
+    if (fd)
     {
-      cd->makePartOfGroup(gd);
-      gd->addClass(cd);
+      cd->setFileDef(fd);
+      fd->insertClass(cd);
     }
-  }
-
-  MemberList *ml = templ->getMemberList(MemberListType_pubAttribs);
-  if (ml)
-  {
-    MemberListIterator li(*ml);
-    MemberDef *md;
-    for (li.toFirst();(md=li.current());++li)
+    GroupList *groups = rootCd->partOfGroups();
+    if ( groups!=0 )
     {
-      //printf("    Member %s type=%s\n",md->name().data(),md->typeString());
-      MemberDefMutable *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
-                                     md->typeString(),md->name(),md->argsString(),md->excpString(),
-                                     md->protection(),md->virtualness(),md->isStatic(),Member,
-                                     md->memberType(),
-                                     ArgumentList(),ArgumentList(),"");
-      imd->setMemberClass(cd);
-      imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
-      imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
-      imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
-      imd->setMemberSpecifiers(md->getMemberSpecifiers());
-      imd->setMemberGroupId(md->getMemberGroupId());
-      imd->setInitializer(md->initializer());
-      imd->setMaxInitLines(md->initializerLines());
-      imd->setBitfields(md->bitfieldString());
-      imd->setLanguage(md->getLanguage());
-      cd->insertMember(imd);
+      GroupListIterator gli(*groups);
+      GroupDef *gd;
+      for (gli.toFirst();(gd=gli.current());++gli)
+      {
+        cd->makePartOfGroup(gd);
+        gd->addClass(cd);
+      }
+    }
+
+    MemberList *ml = templ->getMemberList(MemberListType_pubAttribs);
+    if (ml)
+    {
+      MemberListIterator li(*ml);
+      MemberDef *md;
+      for (li.toFirst();(md=li.current());++li)
+      {
+        //printf("    Member %s type=%s\n",md->name().data(),md->typeString());
+        MemberDefMutable *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
+            md->typeString(),md->name(),md->argsString(),md->excpString(),
+            md->protection(),md->virtualness(),md->isStatic(),Member,
+            md->memberType(),
+            ArgumentList(),ArgumentList(),"");
+        imd->setMemberClass(cd);
+        imd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
+        imd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
+        imd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
+        imd->setMemberSpecifiers(md->getMemberSpecifiers());
+        imd->setMemberGroupId(md->getMemberGroupId());
+        imd->setInitializer(md->initializer());
+        imd->setMaxInitLines(md->initializerLines());
+        imd->setBitfields(md->bitfieldString());
+        imd->setLanguage(md->getLanguage());
+        cd->insertMember(imd);
+      }
     }
   }
   return cd;
@@ -1435,29 +1443,32 @@ static void processTagLessClasses(const ClassDef *rootCd,
               if (!prefix.isEmpty()) name.prepend(prefix+".");
               //printf("    found %s for class %s\n",name.data(),cd->name().data());
               ClassDefMutable *ncd = createTagLessInstance(rootCd,icd,name);
-              processTagLessClasses(rootCd,icd,ncd,name,count+1);
-              //printf("    addTagged %s to %s\n",ncd->name().data(),tagParentCd->name().data());
-              ncd->setTagLessReference(icd);
-
-              // replace tag-less type for generated/original member
-              // by newly created class name.
-              // note the difference between changing cd and tagParentCd.
-              // for the initial call this is the same pointer, but for
-              // recursive calls cd is the original tag-less struct (of which
-              // there is only one instance) and tagParentCd is the newly
-              // generated tagged struct of which there can be multiple instances!
-              MemberList *pml = tagParentCd->getMemberList(MemberListType_pubAttribs);
-              if (pml)
+              if (ncd)
               {
-                MemberListIterator pli(*pml);
-                MemberDef *pmd;
-                for (pli.toFirst();(pmd=pli.current());++pli)
+                processTagLessClasses(rootCd,icd,ncd,name,count+1);
+                //printf("    addTagged %s to %s\n",ncd->name().data(),tagParentCd->name().data());
+                ncd->setTagLessReference(icd);
+
+                // replace tag-less type for generated/original member
+                // by newly created class name.
+                // note the difference between changing cd and tagParentCd.
+                // for the initial call this is the same pointer, but for
+                // recursive calls cd is the original tag-less struct (of which
+                // there is only one instance) and tagParentCd is the newly
+                // generated tagged struct of which there can be multiple instances!
+                MemberList *pml = tagParentCd->getMemberList(MemberListType_pubAttribs);
+                if (pml)
                 {
-                  MemberDefMutable *pmdm = toMemberDefMutable(pmd);
-                  if (pmdm && pmd->name()==md->name())
+                  MemberListIterator pli(*pml);
+                  MemberDef *pmd;
+                  for (pli.toFirst();(pmd=pli.current());++pli)
                   {
-                    pmdm->setAccessorType(ncd,substitute(pmd->typeString(),icd->name(),ncd->name()));
-                    //pmd->setType(substitute(pmd->typeString(),icd->name(),ncd->name()));
+                    MemberDefMutable *pmdm = toMemberDefMutable(pmd);
+                    if (pmdm && pmd->name()==md->name())
+                    {
+                      pmdm->setAccessorType(ncd,substitute(pmd->typeString(),icd->name(),ncd->name()));
+                      //pmd->setType(substitute(pmd->typeString(),icd->name(),ncd->name()));
+                    }
                   }
                 }
               }
@@ -1783,38 +1794,41 @@ static void findUsingDirectives(const Entry *root)
             Doxygen::namespaceLinkedMap->add(name,
               std::unique_ptr<NamespaceDef>(
                  createNamespaceDef(root->fileName,root->startLine,root->startColumn,name))));
-        nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
-        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        nd->addSectionsToDefinition(root->anchors);
-        //printf("** Adding namespace %s hidden=%d\n",name.data(),root->hidden);
-        nd->setHidden(root->hidden);
-        nd->setArtificial(TRUE);
-        nd->setLanguage(root->lang);
-        nd->setId(root->id);
-        nd->setMetaData(root->metaData);
-        nd->setInline((root->spec&Entry::Inline)!=0);
-
-        //QListIterator<Grouping> gli(*root->groups);
-        //Grouping *g;
-        //for (;(g=gli.current());++gli)
-        for (const Grouping &g : root->groups)
+        if (nd)
         {
-          GroupDef *gd=0;
-          if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
-            gd->addNamespace(nd);
-        }
+          nd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+          nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->addSectionsToDefinition(root->anchors);
+          //printf("** Adding namespace %s hidden=%d\n",name.data(),root->hidden);
+          nd->setHidden(root->hidden);
+          nd->setArtificial(TRUE);
+          nd->setLanguage(root->lang);
+          nd->setId(root->id);
+          nd->setMetaData(root->metaData);
+          nd->setInline((root->spec&Entry::Inline)!=0);
 
-        // insert the namespace in the file definition
-        if (fd)
-        {
-          fd->insertNamespace(nd);
-          fd->addUsingDirective(nd);
-        }
+          //QListIterator<Grouping> gli(*root->groups);
+          //Grouping *g;
+          //for (;(g=gli.current());++gli)
+          for (const Grouping &g : root->groups)
+          {
+            GroupDef *gd=0;
+            if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+              gd->addNamespace(nd);
+          }
 
-        // the empty string test is needed for extract all case
-        nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-        nd->insertUsedFile(fd);
-        nd->setRefItems(root->sli);
+          // insert the namespace in the file definition
+          if (fd)
+          {
+            fd->insertNamespace(nd);
+            fd->addUsingDirective(nd);
+          }
+
+          // the empty string test is needed for extract all case
+          nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->insertUsedFile(fd);
+          nd->setRefItems(root->sli);
+        }
       }
     }
   }
@@ -1900,8 +1914,11 @@ static void findUsingDeclarations(const Entry *root)
              Doxygen::hiddenClassLinkedMap->add(name,
                std::unique_ptr<ClassDef>(
                  createClassDef( "<using>",1,1, name, ClassDef::Class))));
-        usingCd->setArtificial(TRUE);
-        usingCd->setLanguage(root->lang);
+        if (usingCd)
+        {
+          usingCd->setArtificial(TRUE);
+          usingCd->setLanguage(root->lang);
+        }
       }
       else
       {
@@ -3988,10 +4005,13 @@ static void findUsedClassesForClass(const Entry *root,
                           masterCd->getDefColumn(),
                           usedName,
                           ClassDef::Class))));
-                //printf("making %s a template argument!!!\n",usedCd->name().data());
-                usedCd->makeTemplateArgument();
-                usedCd->setUsedOnly(TRUE);
-                usedCd->setLanguage(masterCd->getLanguage());
+                if (usedCd)
+                {
+                  //printf("making %s a template argument!!!\n",usedCd->name().data());
+                  usedCd->makeTemplateArgument();
+                  usedCd->setUsedOnly(TRUE);
+                  usedCd->setLanguage(masterCd->getLanguage());
+                }
               }
               if (isArtificial) usedCd->setArtificial(TRUE);
               Debug::print(Debug::Classes,0,"      Adding used class '%s' (1)\n", qPrint(usedCd->name()));
@@ -4037,8 +4057,11 @@ static void findUsedClassesForClass(const Entry *root,
                              masterCd->getDefFileName(),masterCd->getDefLine(),
                              masterCd->getDefColumn(),
                              type,ClassDef::Class))));
-            usedCd->setUsedOnly(TRUE);
-            usedCd->setLanguage(masterCd->getLanguage());
+            if (usedCd)
+            {
+              usedCd->setUsedOnly(TRUE);
+              usedCd->setLanguage(masterCd->getLanguage());
+            }
           }
           if (usedCd)
           {
@@ -4533,8 +4556,8 @@ static bool findClassRelation(
           baseClass=0;
           if (isATemplateArgument)
           {
-            baseClass=toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(baseClassName));
-            if (baseClass==0)
+            baseClass = toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(baseClassName));
+            if (baseClass==0) // not found (or alias)
             {
               baseClass= toClassDefMutable(
                 Doxygen::hiddenClassLinkedMap->add(baseClassName,
@@ -4542,14 +4565,16 @@ static bool findClassRelation(
                     createClassDef(root->fileName,root->startLine,root->startColumn,
                                  baseClassName,
                                  ClassDef::Class))));
-              if (isArtificial) baseClass->setArtificial(TRUE);
-              baseClass->setLanguage(root->lang);
-
+              if (baseClass) // really added (not alias)
+              {
+                if (isArtificial) baseClass->setArtificial(TRUE);
+                baseClass->setLanguage(root->lang);
+              }
             }
           }
           else
           {
-            baseClass=toClassDefMutable(Doxygen::classLinkedMap->find(baseClassName));
+            baseClass = toClassDefMutable(Doxygen::classLinkedMap->find(baseClassName));
             //printf("*** classDDict->find(%s)=%p biName=%s templSpec=%s\n",
             //    baseClassName.data(),baseClass,biName.data(),templSpec.data());
             if (baseClass==0)
@@ -4560,41 +4585,51 @@ static bool findClassRelation(
                       createClassDef(root->fileName,root->startLine,root->startColumn,
                         baseClassName,
                         ClassDef::Class))));
-              if (isArtificial) baseClass->setArtificial(TRUE);
-              baseClass->setLanguage(root->lang);
-              si = baseClassName.findRev("::");
-              if (si!=-1) // class is nested
+              if (baseClass)
               {
-                Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo());
-                if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
+                if (isArtificial) baseClass->setArtificial(TRUE);
+                baseClass->setLanguage(root->lang);
+                si = baseClassName.findRev("::");
+                if (si!=-1) // class is nested
                 {
-                  baseClass->setArtificial(TRUE); // see bug678139
+                  Definition *sd = findScopeFromQualifiedName(Doxygen::globalScope,baseClassName.left(si),0,root->tagInfo());
+                  if (sd==0 || sd==Doxygen::globalScope) // outer scope not found
+                  {
+                    baseClass->setArtificial(TRUE); // see bug678139
+                  }
                 }
               }
             }
           }
-          if (biName.right(2)=="-p")
+          if (baseClass)
           {
-            biName="<"+biName.left(biName.length()-2)+">";
-          }
-          // add base class to this class
-          cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
-          // add this class as super class to the base class
-          baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
-          // the undocumented base was found in this file
-          baseClass->insertUsedFile(root->fileDef());
+            if (biName.right(2)=="-p")
+            {
+              biName="<"+biName.left(biName.length()-2)+">";
+            }
+            // add base class to this class
+            cd->insertBaseClass(baseClass,biName,bi->prot,bi->virt,templSpec);
+            // add this class as super class to the base class
+            baseClass->insertSubClass(cd,bi->prot,bi->virt,templSpec);
+            // the undocumented base was found in this file
+            baseClass->insertUsedFile(root->fileDef());
 
-          Definition *scope = buildScopeFromQualifiedName(baseClass->name(),root->lang,0);
-          if (scope!=baseClass)
-          {
-            baseClass->setOuterScope(scope);
-          }
+            Definition *scope = buildScopeFromQualifiedName(baseClass->name(),root->lang,0);
+            if (scope!=baseClass)
+            {
+              baseClass->setOuterScope(scope);
+            }
 
-          if (baseClassName.right(2)=="-p")
-          {
-            baseClass->setCompoundType(ClassDef::Protocol);
+            if (baseClassName.right(2)=="-p")
+            {
+              baseClass->setCompoundType(ClassDef::Protocol);
+            }
+            return TRUE;
           }
-          return TRUE;
+          else
+          {
+            Debug::print(Debug::Classes,0,"    Base class '%s' not created (alias?)\n",qPrint(biName));
+          }
         }
         else
         {
