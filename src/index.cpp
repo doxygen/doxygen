@@ -398,7 +398,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
       {
         for (const auto &cd : def->getClasses())
         {
-          if (cd->isLinkable() && (cd->partOfGroups()==0 || def->definitionType()==Definition::TypeGroup))
+          if (cd->isLinkable() && (cd->partOfGroups().empty() || def->definitionType()==Definition::TypeGroup))
           {
             static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
             bool isNestedClass = def->definitionType()==Definition::TypeClass;
@@ -1569,7 +1569,7 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
           addMembersToIndex(cd,LayoutDocManager::Class,
                             cd->displayName(FALSE),
                             cd->anchor(),
-                            addToIndex && cd->partOfGroups()==0 && !cd->isSimple());
+                            addToIndex && cd->partOfGroups().empty() && !cd->isSimple());
         }
         if (count>0)
         {
@@ -3654,9 +3654,7 @@ static void writePageIndex(OutputList &ol)
 static int countGroups()
 {
   int count=0;
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     if (!gd->isReference())
     {
@@ -3738,7 +3736,7 @@ void writeGraphInfo(OutputList &ol)
 /*!
  * write groups as hierarchical trees
  */
-static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp* ftv, bool addToIndex)
+static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FTVHelp* ftv, bool addToIndex)
 {
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   //bool vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
@@ -3760,8 +3758,8 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
   {
     //printf("gd->name()=%s #members=%d\n",gd->name().data(),gd->countMembers());
     // write group info
-    bool hasSubGroups = gd->getSubGroups()->count()>0;
-    bool hasSubPages = !gd->getPages().empty();
+    bool hasSubGroups = !gd->getSubGroups().empty();
+    bool hasSubPages  = !gd->getPages().empty();
     size_t numSubItems = 0;
     if (1 /*Config_getBool(TOC_EXPAND)*/)
     {
@@ -3859,7 +3857,7 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
         {
           //bool nestedClassInSameGroup =
           //    cd->getOuterScope() && cd->getOuterScope()->definitionType()==Definition::TypeClass &&
-          //    cd->getOuterScope()->partOfGroups()!=0 && cd->getOuterScope()->partOfGroups()->contains(gd);
+          //    cd->getOuterScope()->partOfGroups().empty() && cd->getOuterScope()->partOfGroups()->contains(gd);
           //printf("===== GroupClasses: %s visible=%d nestedClassInSameGroup=%d\n",cd->name().data(),cd->isVisible(),nestedClassInSameGroup);
           if (cd->isVisible() /*&& !nestedClassInSameGroup*/)
           {
@@ -3949,12 +3947,10 @@ static void writeGroupTreeNode(OutputList &ol, GroupDef *gd, int level, FTVHelp*
       }
       else if (lde->kind()==LayoutDocEntry::GroupNestedGroups)
       {
-        if (gd->getSubGroups()->count()>0)
+        if (!gd->getSubGroups().empty())
         {
           startIndexHierarchy(ol,level+1);
-          QListIterator<GroupDef> gli(*gd->getSubGroups());
-          GroupDef *subgd = 0;
-          for (gli.toFirst();(subgd=gli.current());++gli)
+          for (const auto &subgd : gd->getSubGroups())
           {
             writeGroupTreeNode(ol,subgd,level+1,ftv,addToIndex);
           }
@@ -3985,11 +3981,9 @@ static void writeGroupHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     ol.disable(OutputGenerator::Html);
   }
   startIndexHierarchy(ol,0);
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    writeGroupTreeNode(ol,gd,0,ftv,addToIndex);
+    writeGroupTreeNode(ol,gd.get(),0,ftv,addToIndex);
   }
   endIndexHierarchy(ol,0);
   if (ftv)

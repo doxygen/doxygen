@@ -1758,19 +1758,17 @@ static void addDirsAsGroups(Directory *root,GroupDef *parent,int level)
   GroupDef *gd=0;
   if (root->kind()==DirEntry::Dir)
   {
-    gd = createGroupDef("[generated]",
+    gd = Doxygen::groupLinkedMap->add(root->path(),
+           std::unique_ptr<GroupDef>(
+              createGroupDef("[generated]",
                       1,
                       root->path(), // name
                       root->name()  // title
-                     );
+                     )));
     if (parent)
     {
       parent->addGroup(gd);
       gd->makePartOfGroup(parent);
-    }
-    else
-    {
-      Doxygen::groupSDict->append(root->path(),gd);
     }
   }
   QListIterator<DirEntry> dli(root->children());

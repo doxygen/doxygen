@@ -261,7 +261,7 @@ class Definition
     /** Returns the programming language this definition was written in. */
     virtual SrcLangExt getLanguage() const = 0;
 
-    virtual GroupList *partOfGroups() const = 0;
+    virtual const GroupList &partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
     virtual const RefItemVector &xrefListItems() const = 0;
@@ -361,7 +361,7 @@ class DefinitionMutable
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void makePartOfGroup(GroupDef *gd) = 0;
+    virtual void makePartOfGroup(const GroupDef *gd) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the
      * documentation.

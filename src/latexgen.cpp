@@ -998,9 +998,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupSDict::Iterator gli(*Doxygen::groupSDict);
-        GroupDef *gd;
-        for (gli.toFirst();(gd=gli.current());++gli)
+        for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {
@@ -1144,24 +1142,17 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupSDict::Iterator gli(*Doxygen::groupSDict);
-        GroupDef *gd;
         bool found=FALSE;
-        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
+        for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {
-            t << "}\n\\input{" << gd->getOutputFileBase() << "}\n";
-            found=TRUE;
-          }
-        }
-        for (;(gd=gli.current());++gli)
-        {
-          if (!gd->isReference())
-          {
-            //if (compactLatex) t << "\\input"; else t << "\\include";
-            t << "\\include";
-            t << "{" << gd->getOutputFileBase() << "}\n";
+            if (!found)
+            {
+              t << "}\n";
+              found=TRUE;
+            }
+            t << "\\input{" << gd->getOutputFileBase() << "}\n";
           }
         }
       }

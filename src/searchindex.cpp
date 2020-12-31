@@ -837,9 +837,7 @@ void createJavaScriptSearchIndex()
   }
 
   // index groups
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     if (gd->isLinkable())
     {
@@ -848,8 +846,8 @@ void createJavaScriptSearchIndex()
       {
         char letter[MAX_UTF8_CHAR_SIZE];
         getUtf8Char(title,letter,CaseModifier::ToLower);
-        g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,gd);
-        g_searchIndexInfo[SEARCH_INDEX_GROUPS].add(letter,gd);
+        g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,gd.get());
+        g_searchIndexInfo[SEARCH_INDEX_GROUPS].add(letter,gd.get());
       }
     }
   }

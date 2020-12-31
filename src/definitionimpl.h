@@ -68,7 +68,7 @@ class DefinitionImpl
     int getEndBodyLine() const;
     FileDef *getBodyDef() const;
     SrcLangExt getLanguage() const;
-    GroupList *partOfGroups() const;
+    const GroupList &partOfGroups() const;
     bool isLinkableViaGroup() const;
     const RefItemVector &xrefListItems() const;
     const Definition *findInnerCompound(const char *name) const;
@@ -105,7 +105,7 @@ class DefinitionImpl
     void writeInlineCode(OutputList &ol,const char *scopeName) const;
     void writeSourceRefs(OutputList &ol,const char *scopeName) const;
     void writeSourceReffedBy(OutputList &ol,const char *scopeName) const;
-    void makePartOfGroup(GroupDef *gd);
+    void makePartOfGroup(const GroupDef *gd);
     void writeNavigationPath(OutputList &ol) const;
     QCString navigationPathAsString() const;
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
@@ -187,7 +187,7 @@ class DefinitionMixin : public Base
     virtual int getEndBodyLine() const { return m_impl.getEndBodyLine(); }
     virtual FileDef *getBodyDef() const { return m_impl.getBodyDef(); }
     virtual SrcLangExt getLanguage() const { return m_impl.getLanguage(); }
-    virtual GroupList *partOfGroups() const { return m_impl.partOfGroups(); }
+    virtual const GroupList &partOfGroups() const { return m_impl.partOfGroups(); }
     virtual bool isLinkableViaGroup() const { return m_impl.isLinkableViaGroup(); }
     virtual const RefItemVector &xrefListItems() const { return m_impl.xrefListItems(); }
     virtual const Definition *findInnerCompound(const char *name) const { return m_impl.findInnerCompound(name); }
@@ -249,7 +249,7 @@ class DefinitionMixin : public Base
     { m_impl.writeSourceRefs(ol,scopeName); }
     virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) const
     { m_impl.writeSourceReffedBy(ol,scopeName); }
-    virtual void makePartOfGroup(GroupDef *gd)
+    virtual void makePartOfGroup(const GroupDef *gd)
     { m_impl.makePartOfGroup(gd); }
     virtual void writeNavigationPath(OutputList &ol) const
     { m_impl.writeNavigationPath(ol); }
@@ -393,7 +393,7 @@ class DefinitionAliasMixin : public Base
     { return m_alias->getBodyDef(); }
     virtual SrcLangExt getLanguage() const
     { return m_alias->getLanguage(); }
-    virtual GroupList *partOfGroups() const
+    virtual const GroupList &partOfGroups() const
     { return m_alias->partOfGroups(); }
     virtual bool isLinkableViaGroup() const
     { return m_alias->isLinkableViaGroup(); }

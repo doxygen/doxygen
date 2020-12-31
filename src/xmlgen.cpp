@@ -1193,18 +1193,13 @@ static void writeInnerPages(const PageLinkedRefMap &pl,FTextStream &t)
   }
 }
 
-static void writeInnerGroups(const GroupList *gl,FTextStream &t)
+static void writeInnerGroups(const GroupList &gl,FTextStream &t)
 {
-  if (gl)
+  for (const auto &sgd : gl)
   {
-    GroupListIterator gli(*gl);
-    const GroupDef *sgd;
-    for (gli.toFirst();(sgd=gli.current());++gli)
-    {
-      t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
-        << "\">" << convertToXML(sgd->groupTitle())
-        << "</innergroup>" << endl;
-    }
+    t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
+      << "\">" << convertToXML(sgd->groupTitle())
+      << "</innergroup>" << endl;
   }
 }
 
@@ -1950,19 +1945,15 @@ void generateXML()
       generateXMLForFile(fd.get(),t);
     }
   }
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  const GroupDef *gd;
-  for (;(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     msg("Generating XML output for group %s\n",gd->name().data());
-    generateXMLForGroup(gd,t);
+    generateXMLForGroup(gd.get(),t);
   }
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    for (const auto &pd : *Doxygen::pageLinkedMap)
-    {
-      msg("Generating XML output for page %s\n",pd->name().data());
-      generateXMLForPage(pd.get(),t,FALSE);
-    }
+    msg("Generating XML output for page %s\n",pd->name().data());
+    generateXMLForPage(pd.get(),t,FALSE);
   }
   {
     DirDef *dir;
@@ -1973,12 +1964,10 @@ void generateXML()
       generateXMLForDir(dir,t);
     }
   }
+  for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
-    for (const auto &pd : *Doxygen::exampleLinkedMap)
-    {
-      msg("Generating XML output for example %s\n",pd->name().data());
-      generateXMLForPage(pd.get(),t,TRUE);
-    }
+    msg("Generating XML output for example %s\n",pd->name().data());
+    generateXMLForPage(pd.get(),t,TRUE);
   }
   if (Doxygen::mainPage)
   {

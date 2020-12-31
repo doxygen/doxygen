@@ -123,7 +123,7 @@ NamespaceLinkedMap   *Doxygen::namespaceLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = 0;
 FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
-GroupSDict           *Doxygen::groupSDict = 0;
+GroupLinkedMap       *Doxygen::groupLinkedMap = 0;
 PageLinkedMap        *Doxygen::pageLinkedMap = 0;
 PageLinkedMap        *Doxygen::exampleLinkedMap = 0;
 StringDict            Doxygen::aliasDict(257);          // aliases
@@ -334,7 +334,7 @@ static void addRelatedPage(Entry *root)
   GroupDef *gd=0;
   for (const Grouping &g : root->groups)
   {
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname))) break;
+    if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname))) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",root->name.data(),gd);
   QCString doc;
@@ -375,7 +375,7 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
     if ((root->groupDocType==Entry::GROUPDOC_NORMAL && !additional) ||
         (root->groupDocType!=Entry::GROUPDOC_NORMAL &&  additional))
     {
-      GroupDef *gd = Doxygen::groupSDict->find(root->name);
+      GroupDef *gd = Doxygen::groupLinkedMap->find(root->name);
       //printf("Processing group '%s':'%s' add=%d ext=%d gd=%p\n",
       //    root->type.data(),root->name.data(),additional,includeExternal,gd);
 
@@ -402,19 +402,22 @@ static void buildGroupListFiltered(const Entry *root,bool additional, bool inclu
       {
         if (root->tagInfo())
         {
-          gd = createGroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo()->fileName);
+          gd = Doxygen::groupLinkedMap->add(root->name,
+               std::unique_ptr<GroupDef>(
+                  createGroupDef(root->fileName,root->startLine,root->name,root->type,root->tagInfo()->fileName)));
           gd->setReference(root->tagInfo()->tagName);
         }
         else
         {
-          gd = createGroupDef(root->fileName,root->startLine,root->name,root->type);
+          gd = Doxygen::groupLinkedMap->add(root->name,
+               std::unique_ptr<GroupDef>(
+                  createGroupDef(root->fileName,root->startLine,root->name,root->type)));
         }
         gd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
         // allow empty docs for group
         gd->setDocumentation(!root->doc.isEmpty() ? root->doc : QCString(" "),root->docFile,root->docLine,FALSE);
         gd->setInbodyDocumentation( root->inbodyDocs, root->inbodyFile, root->inbodyLine );
         gd->addSectionsToDefinition(root->anchors);
-        Doxygen::groupSDict->append(root->name,gd);
         gd->setRefItems(root->sli);
         gd->setLanguage(root->lang);
       }
@@ -444,7 +447,7 @@ static void findGroupScope(const Entry *root)
       root->parent() && !root->parent()->name.isEmpty())
   {
     GroupDef *gd;
-    if ((gd=Doxygen::groupSDict->find(root->name)))
+    if ((gd=Doxygen::groupLinkedMap->find(root->name)))
     {
       QCString scope = root->parent()->name;
       if (root->parent()->section==Entry::PACKAGEDOC_SEC)
@@ -471,7 +474,7 @@ static void organizeSubGroupsFiltered(const Entry *root,bool additional)
         (root->groupDocType!=Entry::GROUPDOC_NORMAL && additional))
     {
       GroupDef *gd;
-      if ((gd=Doxygen::groupSDict->find(root->name)))
+      if ((gd=Doxygen::groupLinkedMap->find(root->name)))
       {
         //printf("adding %s to group %s\n",root->name.data(),gd->name().data());
         addGroupToGroups(root,gd);
@@ -526,7 +529,7 @@ static void buildFileList(const Entry *root)
       for (const Grouping &g : root->groups)
       {
         GroupDef *gd=0;
-        if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+        if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
         {
           gd->addFile(fd);
           fd->makePartOfGroup(gd);
@@ -1301,19 +1304,19 @@ void distributeClassGroupRelations()
   {
     //printf("Checking %s\n",cd->name().data());
     // distribute the group to nested classes as well
-    if (visitedClasses.find(cd.get())==visitedClasses.end() && cd->partOfGroups()!=0)
+    if (visitedClasses.find(cd.get())==visitedClasses.end() && !cd->partOfGroups().empty())
     {
       //printf("  Candidate for merging\n");
-      GroupDef *gd = cd->partOfGroups()->at(0);
+      const GroupDef *gd = cd->partOfGroups().front();
       for (const auto &ncd : cd->getClasses())
       {
         ClassDefMutable *ncdm = toClassDefMutable(ncd);
-        if (ncdm && ncdm->partOfGroups()==0)
+        if (ncdm && ncdm->partOfGroups().empty())
         {
           //printf("  Adding %s to group '%s'\n",ncd->name().data(),
           //    gd->groupTitle());
           ncdm->makePartOfGroup(gd);
-          gd->addClass(ncdm);
+          const_cast<GroupDef*>(gd)->addClass(ncdm);
         }
       }
       visitedClasses.insert(cd.get()); // only visit every class once
@@ -1362,16 +1365,10 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
       cd->setFileDef(fd);
       fd->insertClass(cd);
     }
-    GroupList *groups = rootCd->partOfGroups();
-    if ( groups!=0 )
+    for (const auto &gd : rootCd->partOfGroups())
     {
-      GroupListIterator gli(*groups);
-      GroupDef *gd;
-      for (gli.toFirst();(gd=gli.current());++gli)
-      {
-        cd->makePartOfGroup(gd);
-        gd->addClass(cd);
-      }
+      cd->makePartOfGroup(gd);
+      const_cast<GroupDef*>(gd)->addClass(cd);
     }
 
     MemberList *ml = templ->getMemberList(MemberListType_pubAttribs);
@@ -1813,7 +1810,7 @@ static void findUsingDirectives(const Entry *root)
           for (const Grouping &g : root->groups)
           {
             GroupDef *gd=0;
-            if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+            if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname)))
               gd->addNamespace(nd);
           }
 
@@ -3504,7 +3501,7 @@ static void buildFunctionList(const Entry *root)
                 GroupDef *gd=0;
                 if (!root->groups.empty() && !root->groups.front().groupname.isEmpty())
                 {
-                  gd = Doxygen::groupSDict->find(root->groups.front().groupname);
+                  gd = Doxygen::groupLinkedMap->find(root->groups.front().groupname);
                 }
                 //printf("match!\n");
                 //printf("mnd=%p rnd=%p nsName=%s rnsName=%s\n",mnd,rnd,nsName.data(),rnsName.data());
@@ -4904,9 +4901,7 @@ static void computeMemberReferences()
       ndm->computeAnchors();
     }
   }
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->computeAnchors();
   }
@@ -4942,9 +4937,7 @@ static void addListReferences()
     }
   }
 
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->addListReferences();
   }
@@ -8038,9 +8031,7 @@ static void sortMemberLists()
   }
 
   // sort group member lists
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->sortMemberLists();
   }
@@ -8111,9 +8102,7 @@ static void countMembers()
     }
   }
 
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->countMembers();
   }
@@ -8248,9 +8237,7 @@ static void addMembersToMemberGroup()
     }
   }
   // for each group
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->addMembersToMemberGroup();
   }
@@ -8287,9 +8274,7 @@ static void distributeMemberGroupDocumentation()
     }
   }
   // for each group
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->distributeMemberGroupDocumentation();
   }
@@ -8326,9 +8311,7 @@ static void findSectionsInDocumentation()
     }
   }
   // for each group
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     gd->findSectionsInDocumentation();
   }
@@ -8966,9 +8949,7 @@ static void generateExampleDocs()
 
 static void generateGroupDocs()
 {
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     if (!gd->isReference())
     {
@@ -10170,8 +10151,7 @@ void initDoxygen()
 #endif
   Doxygen::memberNameLinkedMap = new MemberNameLinkedMap;
   Doxygen::functionNameLinkedMap = new MemberNameLinkedMap;
-  Doxygen::groupSDict = new GroupSDict(17);
-  Doxygen::groupSDict->setAutoDelete(TRUE);
+  Doxygen::groupLinkedMap = new GroupLinkedMap;
   Doxygen::namespaceLinkedMap = new NamespaceLinkedMap;
   Doxygen::classLinkedMap = new ClassLinkedMap;
   Doxygen::hiddenClassLinkedMap = new ClassLinkedMap;
@@ -10231,7 +10211,7 @@ void cleanUpDoxygen()
 
   delete Doxygen::memberNameLinkedMap;
   delete Doxygen::functionNameLinkedMap;
-  delete Doxygen::groupSDict;
+  delete Doxygen::groupLinkedMap;
   delete Doxygen::namespaceLinkedMap;
   delete Doxygen::directories;
 
@@ -10793,9 +10773,7 @@ static void writeTagFile()
     }
   }
   // for each group
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  GroupDef *gd;
-  for (gli.toFirst();(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     if (gd->isLinkableInProject()) gd->writeTagFile(tagFile);
   }
@@ -11642,10 +11620,12 @@ void parseInput()
 
   if (Config_getBool(SORT_GROUP_NAMES))
   {
-    Doxygen::groupSDict->sort();
-    GroupSDict::Iterator gli(*Doxygen::groupSDict);
-    GroupDef *gd;
-    for (gli.toFirst();(gd=gli.current());++gli)
+    std::sort(Doxygen::groupLinkedMap->begin(),
+              Doxygen::groupLinkedMap->end(),
+              [](const auto &g1,const auto &g2)
+              { return qstrcmp(g1->groupTitle(),g2->groupTitle())<0; });
+
+    for (const auto &gd : *Doxygen::groupLinkedMap)
     {
       gd->sortSubGroups();
     }

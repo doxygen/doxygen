@@ -116,15 +116,15 @@ void ClassLinkedRefMap::writeDocumentation(OutputList &ol,const Definition * con
 
   for (const auto &cd : *this)
   {
-    //printf("%s:writeDocumentation() %p linkable=%d embedded=%d container=%p partOfGroups=%d\n",
+    //printf("%s:writeDocumentation() %p linkable=%d embedded=%d container=%p partOfGroups=%zu\n",
     //  cd->name().data(),cd->getOuterScope(),cd->isLinkableInProject(),cd->isEmbeddedInOuterScope(),
-    //  container,cd->partOfGroups() ? cd->partOfGroups()->count() : 0);
+    //  container,cd->partOfGroups()->size());
 
     if (!cd->isAnonymous() &&
         cd->isLinkableInProject() &&
         cd->isEmbeddedInOuterScope() &&
         !cd->isAlias() &&
-        (container==0 || cd->partOfGroups()==0) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group
+        (container==0 || cd->partOfGroups().empty()) // if container==0 -> show as part of the group docs, otherwise only show if not part of a group
        )
     {
       //printf("  showing class %s\n",cd->name().data());

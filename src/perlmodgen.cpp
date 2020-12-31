@@ -2131,13 +2131,10 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     m_output.closeList();
   }
 
-  GroupList *gl = gd->getSubGroups();
-  if (gl)
+  if (!gd->getSubGroups().empty())
   {
     m_output.openList("groups");
-    GroupListIterator gli(*gl);
-    const GroupDef *sgd;
-    for (gli.toFirst();(sgd=gli.current());++gli)
+    for (const auto &sgd : gd->getSubGroups())
       m_output.openHash()
 	.addFieldQuotedString("title", sgd->groupTitle())
 	.closeHash();
@@ -2210,11 +2207,9 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.closeList();
 
   m_output.openList("groups");
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  const GroupDef *gd;
-  for (;(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    generatePerlModForGroup(gd);
+    generatePerlModForGroup(gd.get());
   }
   m_output.closeList();
 

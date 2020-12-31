@@ -3037,7 +3037,7 @@ bool resolveRef(/* in */  const char *scName,
     //    md->name().data(),md,md->anchor().data(),md->isLinkable(),(*resContext)->name().data());
     return TRUE;
   }
-  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupSDict->find(nameStr)))
+  else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupLinkedMap->find(nameStr)))
   { // group link
     *resContext=gd;
     return TRUE;
@@ -3214,7 +3214,7 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=pd;
     return TRUE;
   }
-  else if ((gd=Doxygen::groupSDict->find(linkRef))) // link to a group
+  else if ((gd=Doxygen::groupLinkedMap->find(linkRef))) // link to a group
   {
     *resContext=gd;
     return TRUE;
@@ -5034,8 +5034,7 @@ void addRefItem(const RefItemVector &sli,
 
 bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root)
 {
-  GroupList *groups = d->partOfGroups();
-  if (groups) // write list of group to which this definition belongs
+  if (!d->partOfGroups().empty()) // write list of group to which this definition belongs
   {
     if (root)
     {
@@ -5043,10 +5042,8 @@ bool recursivelyAddGroupListToTitle(OutputList &ol,const Definition *d,bool root
       ol.disableAllBut(OutputGenerator::Html);
       ol.writeString("<div class=\"ingroups\">");
     }
-    GroupListIterator gli(*groups);
-    GroupDef *gd;
     bool first=true;
-    for (gli.toFirst();(gd=gli.current());++gli)
+    for (const auto &gd : d->partOfGroups())
     {
       if (!first) { ol.writeString(" &#124; "); } else first=false;
       if (recursivelyAddGroupListToTitle(ol, gd, FALSE))

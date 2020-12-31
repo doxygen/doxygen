@@ -3903,15 +3903,15 @@ QCString ClassDefImpl::getOutputFileBase() const
   if (!Doxygen::generatingXmlOutput)
   {
     Definition *scope=0;
-    if (inlineGroupedClasses && partOfGroups()!=0)
+    if (inlineGroupedClasses && !partOfGroups().empty())
     {
       // point to the group that embeds this class
-      return partOfGroups()->at(0)->getOutputFileBase();
+      return partOfGroups().front()->getOutputFileBase();
     }
-    else if (inlineSimpleClasses && m_impl->isSimple && partOfGroups()!=0)
+    else if (inlineSimpleClasses && m_impl->isSimple && !partOfGroups().empty())
     {
       // point to simple struct inside a group
-      return partOfGroups()->at(0)->getOutputFileBase();
+      return partOfGroups().front()->getOutputFileBase();
     }
     else if (inlineSimpleClasses && m_impl->isSimple && (scope=getOuterScope()))
     {
@@ -4940,11 +4940,11 @@ bool ClassDefImpl::isEmbeddedInOuterScope() const
        );
 
   // inline because of INLINE_GROUPED_CLASSES=YES ?
-  bool b1 = (inlineGroupedClasses && partOfGroups()!=0); // a grouped class
+  bool b1 = (inlineGroupedClasses && !partOfGroups().empty()); // a grouped class
   // inline because of INLINE_SIMPLE_STRUCTS=YES ?
   bool b2 = (inlineSimpleClasses && m_impl->isSimple && // a simple class
              (containerLinkable || // in a documented container
-              partOfGroups()!=0    // or part of a group
+              !partOfGroups().empty()    // or part of a group
              )
            );
   //printf("%s::isEmbeddedInOuterScope(): inlineGroupedClasses=%d "

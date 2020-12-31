@@ -1293,20 +1293,15 @@ static void writeInnerPages(const PageLinkedRefMap &pl, struct Refid outer_refid
   }
 }
 
-static void writeInnerGroups(const GroupList *gl, struct Refid outer_refid)
+static void writeInnerGroups(const GroupList &gl, struct Refid outer_refid)
 {
-  if (gl)
+  for (const auto &sgd : gl)
   {
-    GroupListIterator gli(*gl);
-    const GroupDef *sgd;
-    for (gli.toFirst();(sgd=gli.current());++gli)
-    {
-      struct Refid inner_refid = insertRefid(sgd->getOutputFileBase());
+    struct Refid inner_refid = insertRefid(sgd->getOutputFileBase());
 
-      bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
-      bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
-      step(contains_insert);
-    }
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
   }
 }
 
@@ -2539,21 +2534,17 @@ void generateSqlite3()
   }
 
   // + groups
-  GroupSDict::Iterator gli(*Doxygen::groupSDict);
-  const GroupDef *gd;
-  for (;(gd=gli.current());++gli)
+  for (const auto &gd : *Doxygen::groupLinkedMap)
   {
     msg("Generating Sqlite3 output for group %s\n",gd->name().data());
-    generateSqlite3ForGroup(gd);
+    generateSqlite3ForGroup(gd.get());
   }
 
   // + page
+  for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    for (const auto &pd : *Doxygen::pageLinkedMap)
-    {
-      msg("Generating Sqlite3 output for page %s\n",pd->name().data());
-      generateSqlite3ForPage(pd.get(),FALSE);
-    }
+    msg("Generating Sqlite3 output for page %s\n",pd->name().data());
+    generateSqlite3ForPage(pd.get(),FALSE);
   }
 
   // + dirs
@@ -2568,12 +2559,10 @@ void generateSqlite3()
   }
 
   // + examples
+  for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
-    for (const auto &pd : *Doxygen::exampleLinkedMap)
-    {
-      msg("Generating Sqlite3 output for example %s\n",pd->name().data());
-      generateSqlite3ForPage(pd.get(),TRUE);
-    }
+    msg("Generating Sqlite3 output for example %s\n",pd->name().data());
+    generateSqlite3ForPage(pd.get(),TRUE);
   }
 
   // + main page

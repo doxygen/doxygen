@@ -484,18 +484,7 @@ DB_GEN_C2("IndexSections " << is)
     case isModuleDocumentation:
       {
         t << "</title>" << endl;
-        GroupSDict::Iterator gli(*Doxygen::groupSDict);
-        GroupDef *gd;
-        bool found=FALSE;
-        for (gli.toFirst();(gd=gli.current()) && !found;++gli)
-        {
-          if (!gd->isReference())
-          {
-            t << "    <xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-            found=TRUE;
-          }
-        }
-        for (;(gd=gli.current());++gli)
+        for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {

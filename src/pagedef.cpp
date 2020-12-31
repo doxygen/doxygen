@@ -45,7 +45,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual QCString anchor() const { return QCString(); }
     virtual void findSectionsInDocumentation();
     virtual QCString title() const { return m_title; }
-    virtual GroupDef *  getGroupDef() const;
+    virtual const GroupDef * getGroupDef() const;
     virtual const PageLinkedRefMap &getSubPages() const { return m_subPages; }
     virtual void addInnerCompound(const Definition *d);
     virtual bool visibleInIndex() const;
@@ -101,10 +101,9 @@ void PageDefImpl::findSectionsInDocumentation()
   docFindSections(documentation(),this,docFile());
 }
 
-GroupDef *PageDefImpl::getGroupDef() const
+const GroupDef *PageDefImpl::getGroupDef() const
 {
-  GroupList *groups = partOfGroups();
-  return groups!=0 ? groups->getFirst() : 0;
+  return !partOfGroups().empty() ? partOfGroups().front() : 0;
 }
 
 QCString PageDefImpl::getOutputFileBase() const

@@ -60,46 +60,35 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // hierarchy.
 
   // Write parents
-  const GroupList *groups = gd->partOfGroups();
-  if ( groups )
+  for (const auto &d : gd->partOfGroups())
   {
-    GroupListIterator gli(*groups);
-    const GroupDef *d;
-    for (gli.toFirst();(d=gli.current());++gli)
-    {
-      DotNode* nnode = m_usedNodes->find(d->name());
-      if ( !nnode )
-      { // add node
-        tmp_url = d->getReference()+"$"+d->getOutputFileBase();
-        QCString tooltip = d->briefDescriptionAsTooltip();
-        nnode = new DotNode(getNextNodeNumber(), d->groupTitle(), tooltip, tmp_url );
-        nnode->markAsVisible();
-        m_usedNodes->insert(d->name(), nnode );
-      }
-      tmp_url = "";
-      addEdge( nnode, m_rootNode, DotGroupCollaboration::thierarchy, tmp_url, tmp_url );
+    DotNode* nnode = m_usedNodes->find(d->name());
+    if ( !nnode )
+    { // add node
+      tmp_url = d->getReference()+"$"+d->getOutputFileBase();
+      QCString tooltip = d->briefDescriptionAsTooltip();
+      nnode = new DotNode(getNextNodeNumber(), d->groupTitle(), tooltip, tmp_url );
+      nnode->markAsVisible();
+      m_usedNodes->insert(d->name(), nnode );
     }
+    tmp_url = "";
+    addEdge( nnode, m_rootNode, DotGroupCollaboration::thierarchy, tmp_url, tmp_url );
   }
 
   // Add subgroups
-  if ( gd->getSubGroups() && gd->getSubGroups()->count() )
+  for (const auto &def : gd->getSubGroups())
   {
-    QListIterator<GroupDef> defli(*gd->getSubGroups());
-    const GroupDef *def;
-    for (;(def=defli.current());++defli)
-    {
-      DotNode* nnode = m_usedNodes->find(def->name());
-      if ( !nnode )
-      { // add node
-        tmp_url = def->getReference()+"$"+def->getOutputFileBase();
-        QCString tooltip = def->briefDescriptionAsTooltip();
-        nnode = new DotNode(getNextNodeNumber(), def->groupTitle(), tooltip, tmp_url );
-        nnode->markAsVisible();
-        m_usedNodes->insert(def->name(), nnode );
-      }
-      tmp_url = "";
-      addEdge( m_rootNode, nnode, DotGroupCollaboration::thierarchy, tmp_url, tmp_url );
+    DotNode* nnode = m_usedNodes->find(def->name());
+    if ( !nnode )
+    { // add node
+      tmp_url = def->getReference()+"$"+def->getOutputFileBase();
+      QCString tooltip = def->briefDescriptionAsTooltip();
+      nnode = new DotNode(getNextNodeNumber(), def->groupTitle(), tooltip, tmp_url );
+      nnode->markAsVisible();
+      m_usedNodes->insert(def->name(), nnode );
     }
+    tmp_url = "";
+    addEdge( m_rootNode, nnode, DotGroupCollaboration::thierarchy, tmp_url, tmp_url );
   }
 
   //=======================
@@ -204,12 +193,8 @@ void DotGroupCollaboration::addCollaborationMember(
   const Definition* def, QCString& url, EdgeType eType )
 {
   // Create group nodes
-  if ( !def->partOfGroups() )
-    return;
-  GroupListIterator gli(*def->partOfGroups());
-  GroupDef *d;
   QCString tmp_str;
-  for (;(d=gli.current());++gli)
+  for (const auto &d : def->partOfGroups())
   {
     DotNode* nnode = m_usedNodes->find(d->name());
     if ( nnode != m_rootNode )

@@ -68,7 +68,7 @@ class DefinitionImpl::IMPL
     std::unordered_map<std::string,const MemberDef *> sourceRefByDict;
     std::unordered_map<std::string,const MemberDef *> sourceRefsDict;
     RefItemVector xrefListItems;
-    GroupList *partOfGroups = 0;
+    GroupList partOfGroups;
 
     DocInfo   *details = 0;    // not exported
     DocInfo   *inbodyDocs = 0; // not exported
@@ -107,7 +107,6 @@ class DefinitionImpl::IMPL
 
 DefinitionImpl::IMPL::~IMPL()
 {
-  delete partOfGroups;
   delete brief;
   delete details;
   delete body;
@@ -146,7 +145,6 @@ void DefinitionImpl::IMPL::init(const char *df, const char *n)
   sourceRefByDict.clear();
   sourceRefsDict.clear();
   outerScope      = Doxygen::globalScope;
-  partOfGroups    = 0;
   hidden          = FALSE;
   isArtificial    = FALSE;
   lang            = SrcLangExt_Unknown;
@@ -263,20 +261,10 @@ DefinitionImpl::DefinitionImpl(const DefinitionImpl &d)
 {
   m_impl = new DefinitionImpl::IMPL;
   *m_impl = *d.m_impl;
-  m_impl->partOfGroups = 0;
   m_impl->brief = 0;
   m_impl->details = 0;
   m_impl->body = 0;
   m_impl->inbodyDocs = 0;
-  if (d.m_impl->partOfGroups)
-  {
-    GroupListIterator it(*d.m_impl->partOfGroups);
-    GroupDef *gd;
-    for (it.toFirst();(gd=it.current());++it)
-    {
-      makePartOfGroup(gd);
-    }
-  }
   if (d.m_impl->brief)
   {
     m_impl->brief = new BriefInfo(*d.m_impl->brief);
@@ -1506,10 +1494,9 @@ QCString DefinitionImpl::localName() const
   return m_impl->localName;
 }
 
-void DefinitionImpl::makePartOfGroup(GroupDef *gd)
+void DefinitionImpl::makePartOfGroup(const GroupDef *gd)
 {
-  if (m_impl->partOfGroups==0) m_impl->partOfGroups = new GroupList;
-  m_impl->partOfGroups->append(gd);
+  m_impl->partOfGroups.push_back(gd);
 }
 
 void DefinitionImpl::setRefItems(const RefItemVector &sli)
@@ -2000,24 +1987,18 @@ FileDef *DefinitionImpl::getBodyDef() const
   return m_impl->body ? m_impl->body->fileDef : 0;
 }
 
-GroupList *DefinitionImpl::partOfGroups() const
+const GroupList &DefinitionImpl::partOfGroups() const
 {
   return m_impl->partOfGroups;
 }
 
 bool DefinitionImpl::isLinkableViaGroup() const
 {
-  GroupList *gl = partOfGroups();
-  if (gl)
+  for (const auto &gd : partOfGroups())
   {
-    GroupListIterator gli(*gl);
-    GroupDef *gd;
-    for (gli.toFirst();(gd=gli.current());++gli)
-    {
-      if (gd->isLinkable()) return TRUE;
-    }
+    if (gd->isLinkable()) return true;
   }
-  return FALSE;
+  return false;
 }
 
 Definition *DefinitionImpl::getOuterScope() const

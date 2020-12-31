@@ -103,7 +103,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual FileList *      getFiles() const        { return m_fileList; }
     virtual const ClassLinkedRefMap &getClasses() const         { return m_classes; }
     virtual const NamespaceLinkedRefMap &getNamespaces() const  { return m_namespaces; }
-    virtual GroupList *     getSubGroups() const       { return m_groupList; }
+    virtual const GroupList &getSubGroups() const               { return m_groups; }
     virtual const PageLinkedRefMap &getPages() const            { return m_pages; }
     virtual const DirList & getDirs() const                     { return m_dirList; }
     virtual const PageLinkedRefMap &getExamples() const         { return m_examples; }
@@ -142,7 +142,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     FileList *           m_fileList;            // list of files in the group
     ClassLinkedRefMap    m_classes;             // list of classes in the group
     NamespaceLinkedRefMap m_namespaces;         // list of namespaces in the group
-    GroupList *          m_groupList;           // list of sub groups.
+    GroupList            m_groups;              // list of sub groups.
     PageLinkedRefMap     m_pages;               // list of pages in the group
     PageLinkedRefMap     m_examples;            // list of examples in the group
     DirList              m_dirList;             // list of directories in the group
@@ -168,7 +168,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
                    const char *refFileName) : DefinitionMixin(df,dl,1,na)
 {
   m_fileList = new FileList;
-  m_groupList = new GroupList;
   if (refFileName)
   {
     m_fileName=stripExtension(refFileName);
@@ -189,7 +188,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
 GroupDefImpl::~GroupDefImpl()
 {
   delete m_fileList;
-  delete m_groupList;
   delete m_allMemberList;
 }
 
@@ -548,16 +546,11 @@ bool GroupDefImpl::findGroup(const GroupDef *def) const
   {
     return TRUE;
   }
-  else if (m_groupList)
+  for (const auto &gd : m_groups)
   {
-    GroupListIterator it(*m_groupList);
-    GroupDef *gd;
-    for (;(gd=it.current());++it)
+    if (gd->findGroup(def))
     {
-      if (gd->findGroup(def))
-      {
-        return TRUE;
-      }
+      return TRUE;
     }
   }
   return FALSE;
@@ -569,13 +562,12 @@ void GroupDefImpl::addGroup(const GroupDef *def)
   //if (Config_getBool(SORT_MEMBER_DOCS))
   //  groupList->inSort(def);
   //else
-  m_groupList->append(def);
+  m_groups.push_back(def);
 }
 
 bool GroupDefImpl::isASubGroup() const
 {
-  GroupList *groups = partOfGroups();
-  return groups!=0 && groups->count()!=0;
+  return !partOfGroups().empty();
 }
 
 void GroupDefImpl::countMembers()
@@ -599,7 +591,7 @@ size_t GroupDefImpl::numDocMembers() const
   return m_fileList->count()+
          m_classes.size()+
          m_namespaces.size()+
-         m_groupList->count()+
+         m_groups.size()+
          m_allMemberList->count()+
          m_pages.size()+
          m_examples.size();
@@ -679,7 +671,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::GroupDirs:
         {
-          for(const auto &dd : m_dirList)
+          for (const auto &dd : m_dirList)
           {
             if (dd->isLinkableInProject())
             {
@@ -690,16 +682,11 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::GroupNestedGroups:
         {
-          if (m_groupList)
+          for (const auto &gd : m_groups)
           {
-            QListIterator<GroupDef> it(*m_groupList);
-            GroupDef *gd;
-            for (;(gd=it.current());++it)
+            if (gd->isVisible())
             {
-              if (gd->isVisible())
-              {
-                tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
-              }
+              tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
             }
           }
         }
@@ -892,14 +879,9 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
 {
   // write list of groups
   int count=0;
-  if (m_groupList->count()>0)
+  for (const auto &gd : m_groups)
   {
-    QListIterator<GroupDef> it(*m_groupList);
-    GroupDef *gd;
-    for (;(gd=it.current());++it)
-    {
-      if (gd->isVisible()) count++;
-    }
+    if (gd->isVisible()) count++;
   }
   if (count>0)
   {
@@ -907,13 +889,7 @@ void GroupDefImpl::writeNestedGroups(OutputList &ol,const QCString &title)
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    if (Config_getBool(SORT_GROUP_NAMES))
-    {
-      m_groupList->sort();
-    }
-    QListIterator<GroupDef> it(*m_groupList);
-    GroupDef *gd;
-    for (;(gd=it.current());++it)
+    for (const auto &gd : m_groups)
     {
       if (gd->isVisible())
       {
@@ -1070,7 +1046,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
     if ((lde->kind()==LayoutDocEntry::GroupClasses && m_classes.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaces.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupFiles && m_fileList->count()>0) ||
-        (lde->kind()==LayoutDocEntry::GroupNestedGroups && m_groupList->count()>0) ||
+        (lde->kind()==LayoutDocEntry::GroupNestedGroups && !m_groups.empty()>0) ||
         (lde->kind()==LayoutDocEntry::GroupDirs && !m_dirList.empty())
        )
     {
@@ -1335,7 +1311,6 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
       }
     }
   }
-
   ol.writeString("        </table>\n");
   ol.writeString("      </div>\n");
 }
@@ -1348,11 +1323,11 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
 {
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd && gd->addClass(cd))
     {
       ClassDefMutable *cdm = toClassDefMutable(cd);
-      if (cdm && gd->addClass(cdm))
+      if (cdm)
       {
         cdm->makePartOfGroup(gd);
       }
@@ -1366,17 +1341,14 @@ void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
   //printf("root->groups.size()=%d\n",root->groups.size());
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
     //printf("group '%s'\n",s->data());
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+    if (gd && gd->addNamespace(nd))
     {
-      if (gd->addNamespace(nd))
+      NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
+      if (ndm)
       {
-        NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
-        if (ndm)
-        {
-          ndm->makePartOfGroup(gd);
-        }
+        ndm->makePartOfGroup(gd);
       }
       //printf("Namespace %s: in group %s\n",nd->name().data(),s->data());
     }
@@ -1388,9 +1360,9 @@ void addDirToGroups(const Entry *root,DirDef *dd)
   //printf("*** root->groups.size()=%d\n",root->groups.size());
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
     //printf("group '%s'\n",g->groupname.data());
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+    if (gd)
     {
       gd->addDir(dd);
       dd->makePartOfGroup(gd);
@@ -1404,8 +1376,8 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
   //printf("addGroupToGroups for %s groups=%d\n",root->name.data(),root->groups.size());
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd)
     {
       if (gd==subGroup)
       {
@@ -1439,7 +1411,7 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
   {
     GroupDef *gd=0;
     if (!g.groupname.isEmpty() &&
-        (gd=Doxygen::groupSDict->find(g.groupname)) &&
+        (gd=Doxygen::groupLinkedMap->find(g.groupname)) &&
         g.pri >= pri)
     {
       if (fgd && gd!=fgd && g.pri==pri)
@@ -1538,8 +1510,8 @@ void addExampleToGroups(const Entry *root,PageDef *eg)
 {
   for (const Grouping &g : root->groups)
   {
-    GroupDef *gd=0;
-    if (!g.groupname.isEmpty() && (gd=Doxygen::groupSDict->find(g.groupname)))
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd)
     {
       gd->addExample(eg);
       eg->makePartOfGroup(gd);
@@ -1749,7 +1721,10 @@ void GroupDefImpl::removeMemberFromList(MemberListType lt,MemberDef *md)
 
 void GroupDefImpl::sortSubGroups()
 {
-  m_groupList->sort();
+  std::sort(m_groups.begin(),
+            m_groups.end(),
+            [](const auto &g1,const auto &g2)
+            { return qstrcmp(g1->groupTitle(),g2->groupTitle())<0; });
 }
 
 bool GroupDefImpl::isLinkableInProject() const

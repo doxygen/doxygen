@@ -26,29 +26,33 @@
 #include "membergroup.h"
 
 class Definition;
+
 class PageDef;
 class PageLinkedMap;
 class PageLinkedRefMap;
+
 class GroupDef;
+class GroupLinkedMap;
+class GroupList;
+
 class NamespaceDef;
 class NamespaceLinkedMap;
 class NamespaceLinkedRefMap;
-class FileDef;
-class FileList;
+
 class FileNameLinkedMap;
 class ClassLinkedMap;
+class MemberNameInfoLinkedMap;
+
+class FileDef;
+class FileList;
 class DirSDict;
 class DirDef;
-class GroupSDict;
-class GroupDef;
-class GroupList;
 struct IncludeInfo;
 class MemberList;
 class MemberSDict;
 class MemberDef;
 struct Argument;
 class ArgumentList;
-class MemberNameInfoLinkedMap;
 class MemberInfo;
 class DotNode;
 class DotGfxHierarchyTable;
@@ -552,7 +556,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addFiles(const FileList &,ClassDefSet &visitedClasses);
     void addPages(const PageLinkedMap &pages,bool rootOnly,ClassDefSet &visitedClasses);
     void addPages(const PageLinkedRefMap &pages,bool rootOnly,ClassDefSet &visitedClasses);
-    void addModules(const GroupSDict &modules,ClassDefSet &visitedClasses);
+    void addModules(const GroupLinkedMap &modules,ClassDefSet &visitedClasses);
     void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
     void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
     void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses);
@@ -759,7 +763,7 @@ class ModuleListContext : public RefCountedContext, public TemplateListIntf
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
-    void addModules(const GroupSDict &);
+    void addModules(const GroupLinkedMap &);
     void addModules(const GroupList &);
 
   private:

@@ -471,9 +471,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isModuleDocumentation:
       {
         //Module Documentation
-        GroupSDict::Iterator gli(*Doxygen::groupSDict);
-        GroupDef *gd;
-        for (gli.toFirst();(gd=gli.current());++gli)
+        for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {
@@ -741,10 +739,8 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
-        GroupSDict::Iterator gli(*Doxygen::groupSDict);
-        GroupDef *gd;
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
-        for (gli.toFirst();(gd=gli.current());++gli)
+        for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {

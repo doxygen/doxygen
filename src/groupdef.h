@@ -25,6 +25,7 @@
 #include "dirdef.h"
 #include "layout.h"
 #include "membergroup.h"
+#include "linkedmap.h"
 
 class MemberList;
 class FileList;
@@ -98,7 +99,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual FileList *      getFiles() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
     virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
-    virtual GroupList *     getSubGroups() const = 0;
+    virtual const GroupList &getSubGroups() const = 0;
     virtual const PageLinkedRefMap &getPages() const = 0;
     virtual const DirList & getDirs() const = 0;
     virtual const PageLinkedRefMap &getExamples() const = 0;
@@ -117,36 +118,12 @@ const GroupDef      *toGroupDef(const Definition *d);
 
 // ------------------
 
-
-/** A sorted dictionary of GroupDef objects. */
-class GroupSDict : public SDict<GroupDef>
+class GroupLinkedMap : public LinkedMap<GroupDef>
 {
-  public:
-    GroupSDict(uint size) : SDict<GroupDef>(size) {}
-    virtual ~GroupSDict() {}
-  private:
-    int compareValues(const GroupDef *item1,const GroupDef *item2) const
-    {
-      return qstrcmp(item1->groupTitle(),item2->groupTitle());
-    }
 };
 
-/** A list of GroupDef objects. */
-class GroupList : public QList<GroupDef>
+class GroupList : public std::vector<const GroupDef *>
 {
-  public:
-    int compareValues(const GroupDef *item1,const GroupDef *item2) const
-    {
-      return qstrcmp(item1->groupTitle(),item2->groupTitle());
-    }
-};
-
-/** An iterator for GroupDef objects in a GroupList. */
-class GroupListIterator : public QListIterator<GroupDef>
-{
-  public:
-    GroupListIterator(const GroupList &l) : QListIterator<GroupDef>(l) {}
-    virtual ~GroupListIterator() {}
 };
 
 void addClassToGroups    (const Entry *root,ClassDef *cd);

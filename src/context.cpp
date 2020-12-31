@@ -2339,7 +2339,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
           if (!cd->isAnonymous() &&
               cd->isLinkableInProject() &&
               cd->isEmbeddedInOuterScope() &&
-              cd->partOfGroups()==0
+              cd->partOfGroups().empty()
              )
           {
             classList->append(ClassContext::alloc(cd));
@@ -2900,7 +2900,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
           if (!cd->isAnonymous() &&
               cd->isLinkableInProject() &&
               cd->isEmbeddedInOuterScope() &&
-              cd->partOfGroups()==0)
+              cd->partOfGroups().empty())
           {
             classList->append(ClassContext::alloc(cd));
           }
@@ -3344,7 +3344,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
           if (!cd->isAnonymous() &&
               cd->isLinkableInProject() &&
               cd->isEmbeddedInOuterScope() &&
-              cd->partOfGroups()==0)
+              cd->partOfGroups().empty())
           {
             classList->append(ClassContext::alloc(cd));
           }
@@ -5366,16 +5366,11 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.modules)
       {
         TemplateList *moduleList = TemplateList::alloc();
-        if (m_groupDef->getSubGroups())
+        for (const auto &gd : m_groupDef->getSubGroups())
         {
-          GroupListIterator gli(*m_groupDef->getSubGroups());
-          const GroupDef *gd;
-          for (gli.toFirst();(gd=gli.current());++gli)
+          if (gd->isVisible())
           {
-            if (gd->isVisible())
-            {
-              moduleList->append(ModuleContext::alloc(gd));
-            }
+            moduleList->append(ModuleContext::alloc(gd));
           }
         }
         cache.modules.reset(moduleList);
@@ -5655,7 +5650,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
           if (!cd->isAnonymous() &&
               cd->isLinkableInProject() &&
               cd->isEmbeddedInOuterScope() &&
-              cd->partOfGroups()==0)
+              cd->partOfGroups().empty())
           {
             classList->append(ClassContext::alloc(cd));
           }
@@ -6395,9 +6390,9 @@ class NestingNodeContext::Private
     void addModules(ClassDefSet &visitedClasses)
     {
       const GroupDef *gd = toGroupDef(m_def);
-      if (gd && gd->getSubGroups())
+      if (gd && !gd->getSubGroups().empty())
       {
-        m_children->addModules(*gd->getSubGroups(),visitedClasses);
+        m_children->addModules(gd->getSubGroups(),visitedClasses);
       }
     }
   private:
@@ -6591,27 +6586,23 @@ class NestingContext::Private : public GenericNodeListContext
         addPage(pd,rootOnly,visitedClasses);
       }
     }
-    void addModules(const GroupSDict &groups,ClassDefSet &visitedClasses)
+    void addModules(const GroupLinkedMap &groups,ClassDefSet &visitedClasses)
     {
-      GroupSDict::Iterator gli(groups);
-      const GroupDef *gd;
-      for (gli.toFirst();(gd=gli.current());++gli)
+      for (const auto &gd : groups)
       {
-        static bool externalGroups = Config_getBool(EXTERNAL_GROUPS);
+        bool externalGroups = Config_getBool(EXTERNAL_GROUPS);
         if (!gd->isASubGroup() && gd->isVisible() &&
-             (!gd->isReference() || externalGroups)
+            (!gd->isReference() || externalGroups)
            )
         {
-          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+          append(NestingNodeContext::alloc(m_parent,gd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
     }
-    void addModules(const GroupList &list,ClassDefSet &visitedClasses)
+    void addModules(const GroupList &groups,ClassDefSet &visitedClasses)
     {
-      GroupListIterator gli(list);
-      const GroupDef *gd;
-      for (gli.toFirst();(gd=gli.current());++gli)
+      for (const auto &gd : groups)
       {
         if (gd->isVisible())
         {
@@ -6760,7 +6751,7 @@ void NestingContext::addPages(const PageLinkedRefMap &pages,bool rootOnly,ClassD
   p->addPages(pages,rootOnly,visitedClasses);
 }
 
-void NestingContext::addModules(const GroupSDict &modules,ClassDefSet &visitedClasses)
+void NestingContext::addModules(const GroupLinkedMap &modules,ClassDefSet &visitedClasses)
 {
   p->addModules(modules,visitedClasses);
 }
@@ -7533,13 +7524,11 @@ class ModuleListContext::Private : public GenericNodeListContext
   public:
     void addModules()
     {
-      GroupSDict::Iterator gli(*Doxygen::groupSDict);
-      const GroupDef *gd;
-      for (gli.toFirst();(gd=gli.current());++gli)
+      for (const auto &gd : *Doxygen::groupLinkedMap)
       {
         if (!gd->isReference())
         {
-          append(ModuleContext::alloc(gd));
+          append(ModuleContext::alloc(gd.get()));
         }
       }
     }
@@ -7584,10 +7573,7 @@ class ModuleTreeContext::Private
       m_moduleTree.reset(NestingContext::alloc(0,0));
       ClassDefSet visitedClasses;
       // Add modules
-      if (Doxygen::groupSDict)
-      {
-        m_moduleTree->addModules(*Doxygen::groupSDict,visitedClasses);
-      }
+      m_moduleTree->addModules(*Doxygen::groupLinkedMap,visitedClasses);
 
       //%% ModuleList tree:
       static bool init=FALSE;

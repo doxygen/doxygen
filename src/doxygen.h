@@ -45,7 +45,7 @@ class BufStr;
 class CiteDict;
 class MemberDef;
 class GroupDef;
-class GroupSDict;
+class GroupLinkedMap;
 class FileDef;
 class ClassDef;
 class ClassLinkedMap;
@@ -113,7 +113,7 @@ class Doxygen
     static MemberNameLinkedMap      *memberNameLinkedMap;
     static MemberNameLinkedMap      *functionNameLinkedMap;
     static StringUnorderedMap        namespaceAliasMap;
-    static GroupSDict               *groupSDict;
+    static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
     static StringDict                tagDestinationDict;
     static StringDict                aliasDict;

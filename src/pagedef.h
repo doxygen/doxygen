@@ -42,7 +42,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual QCString anchor() const = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual QCString title() const = 0;
-    virtual GroupDef *  getGroupDef() const = 0;
+    virtual const GroupDef *getGroupDef() const = 0;
     virtual const PageLinkedRefMap &getSubPages() const = 0;
     virtual void addInnerCompound(const Definition *) = 0;
     virtual bool visibleInIndex() const = 0;
