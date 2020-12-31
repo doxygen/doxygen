@@ -982,14 +982,14 @@ Go to the <a href="commands.html">next</a> section or return to the
       <docs>
 <![CDATA[
  With the correct setting of option \c CASE_SENSE_NAMES doxygen will better be able to match the
- capabilities of the underlying filesystem. 
+ capabilities of the underlying filesystem.
 
- In case the filesystem is case sensitive (i.e. it supports files in the same directory 
+ In case the filesystem is case sensitive (i.e. it supports files in the same directory
  whose names only differ in casing), the option must be set to \c YES to properly deal with such files
- in case they appear in the input. 
- 
- For filesystems that are not case sensitive the option should be be set to \c NO to properly 
- deal with output files written for symbols that only differ in casing, such as for two classes, 
+ in case they appear in the input.
+
+ For filesystems that are not case sensitive the option should be be set to \c NO to properly
+ deal with output files written for symbols that only differ in casing, such as for two classes,
  one named \c CLASS and the other named \c Class, and to also support references to files without
  having to specify the exact matching casing.
 
@@ -1740,6 +1740,15 @@ to disable this feature.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='CLANG_INCLUDE_INPUT_PATHS' setting='USE_LIBCLANG' defval='1'>
+      <docs>
+<![CDATA[
+  If clang assisted parsing is enabled and the \c CLANG_INCLUDE_INPUT_PATHS tag
+  is set to \c YES then doxygen will add the directory of each input to the
+  include path.
+]]>
+      </docs>
+    </option>
     <option type='list' id='CLANG_OPTIONS' format='string' setting='USE_LIBCLANG' depends='CLANG_ASSISTED_PARSING'>
       <docs>
 <![CDATA[
@@ -2429,7 +2438,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='string' id='FORMULA_MACROFILE' format='file' defval=''>
       <docs>
 <![CDATA[
- The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and 
+ The \c FORMULA_MACROFILE can contain \f$\mbox{\LaTeX}\f$ `\newcommand` and
  `\renewcommand` commands to create new \f$\mbox{\LaTeX}\f$ commands to be used
  in formulas as building blocks.
  See the section \ref formulas for details.
@@ -2863,7 +2872,7 @@ or
     <option type='string' id='LATEX_EMOJI_DIRECTORY' format='dir' defval='' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
- The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute) 
+ The \c LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute)
  path from which the emoji images will be read.
  If a relative path is entered, it will be relative to the \ref cfg_latex_output "LATEX_OUTPUT"
  directory. If left blank the \ref cfg_latex_output "LATEX_OUTPUT" directory will be used.
