@@ -163,7 +163,7 @@ void ClangTUParser::parse()
   //printf("ClangTUParser::ClangTUParser(fileName=%s,#filesInSameTU=%d)\n",
   //    qPrint(fileName),(int)p->filesInSameTU.size());
   bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
-  bool clangIncludeInputPaths = Config_getBool(CLANG_INCLUDE_INPUT_PATHS);
+  bool clangIncludeInputPaths = Config_getBool(CLANG_ADD_INC_PATHS);
   bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   const StringVector &includePath = Config_getList(INCLUDE_PATH);
   const StringVector &clangOptions = Config_getList(CLANG_OPTIONS);
