@@ -85,9 +85,7 @@ struct LookupInfo
   QCString   resolvedType;
 };
 
-extern QCString g_spaces;
-
-using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;
+using ClangUsrMap = std::unordered_map<std::string,const Definition *>;
 
 /*! \brief This class serves as a namespace for global variables used by doxygen.
  *
@@ -124,7 +122,7 @@ class Doxygen
     static bool                      parseSourcesNeeded;
     static SearchIndexIntf          *searchIndex;
     static SymbolMap<Definition>     symbolMap;
-    static QDict<Definition>        *clangUsrMap;
+    static ClangUsrMap              *clangUsrMap;
     static bool                      outputToWizard;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;

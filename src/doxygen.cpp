@@ -144,7 +144,7 @@ NamespaceDefMutable  *Doxygen::globalScope = 0;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition> Doxygen::symbolMap;
-QDict<Definition>    *Doxygen::clangUsrMap = 0;
+ClangUsrMap          *Doxygen::clangUsrMap = 0;
 bool                  Doxygen::outputToWizard=FALSE;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
@@ -10141,7 +10141,7 @@ void initDoxygen()
   initFileMemberIndices();
 
 #ifdef USE_LIBCLANG
-  Doxygen::clangUsrMap   = new QDict<Definition>(50177);
+  Doxygen::clangUsrMap   = new ClangUsrMap;
 #endif
   Doxygen::memberNameLinkedMap = new MemberNameLinkedMap;
   Doxygen::functionNameLinkedMap = new MemberNameLinkedMap;

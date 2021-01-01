@@ -108,7 +108,6 @@ class MemberGroup
 };
 
 using MemberGroupRefList = std::vector<MemberGroup *>;
-//using MemberGroupMap = std::map< int, std::unique_ptr<MemberGroup> >;
 using MemberGroupList = std::vector< std::unique_ptr<MemberGroup> >;
 
 /** Data collected for a member group */
@@ -122,5 +121,7 @@ struct MemberGroupInfo
   QCString compoundName;
   RefItemVector m_sli;
 };
+
+using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;
 
 #endif

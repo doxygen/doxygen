@@ -314,7 +314,7 @@ void DefinitionImpl::setId(const char *id)
   if (Doxygen::clangUsrMap)
   {
     //printf("DefinitionImpl::setId '%s'->'%s'\n",id,m_impl->name.data());
-    Doxygen::clangUsrMap->insert(id,m_impl->def);
+    Doxygen::clangUsrMap->insert(std::make_pair(id,m_impl->def));
   }
 }
 
