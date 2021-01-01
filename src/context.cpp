@@ -2376,15 +2376,13 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     {
       if (m_classDef->hasExamples())
       {
-        ExampleSDict::Iterator it(*m_classDef->exampleList());
-        Example *ex;
-        for (it.toFirst();(ex=it.current());++it)
+        for (const auto &ex : m_classDef->getExamples())
         {
           TemplateStruct *s = TemplateStruct::alloc();
-          s->set("text",ex->name);
+          s->set("text",ex.name);
           s->set("isLinkable",TRUE);
-          s->set("anchor",ex->anchor);
-          s->set("fileName",ex->file);
+          s->set("anchor",ex.anchor);
+          s->set("fileName",ex.file);
           s->set("isReference",FALSE);
           s->set("externalReference","");
           list->append(s);
@@ -4845,15 +4843,13 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (m_memberDef->hasExamples())
       {
-        ExampleSDict::Iterator it(*m_memberDef->getExamples());
-        Example *ex;
-        for (it.toFirst();(ex=it.current());++it)
+        for (const auto &ex : m_memberDef->getExamples())
         {
           TemplateStruct *s = TemplateStruct::alloc();
-          s->set("text",ex->name);
+          s->set("text",ex.name);
           s->set("isLinkable",TRUE);
-          s->set("anchor",ex->anchor);
-          s->set("fileName",ex->file);
+          s->set("anchor",ex.anchor);
+          s->set("fileName",ex.file);
           s->set("isReference",FALSE);
           s->set("externalReference","");
           list->append(s);

@@ -42,7 +42,7 @@ class FileDef;
 class FileList;
 class NamespaceDef;
 class MemberDef;
-class ExampleSDict;
+class ExampleList;
 class MemberNameInfoLinkedMap;
 class UsesClassDict;
 class ConstraintClassDict;
@@ -346,7 +346,7 @@ class ClassDef : public Definition
     virtual const FileList &usedFiles() const = 0;
 
     virtual const ArgumentList &typeConstraints() const = 0;
-    virtual const ExampleSDict *exampleList() const = 0;
+    virtual const ExampleList &getExamples() const = 0;
     virtual bool hasExamples() const = 0;
     virtual QCString getMemberListFileName() const = 0;
     virtual bool subGrouping() const = 0;

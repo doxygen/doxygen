@@ -1070,9 +1070,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 }
 
 
-void writeExample(OutputList &ol,ExampleSDict *ed)
+void writeExamples(OutputList &ol,const ExampleList &list)
 {
-  QCString exampleLine=theTranslator->trWriteList(ed->count());
+  QCString exampleLine=theTranslator->trWriteList(list.size());
 
   //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
   //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
@@ -1085,9 +1085,9 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
     bool ok;
     ol.parseText(exampleLine.mid(index,newIndex-index));
     uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-    Example *e=ed->at(entryIndex);
-    if (ok && e)
+    if (ok && entryIndex<list.size())
     {
+      const auto &e = list[entryIndex];
       ol.pushGeneratorState();
       //if (latexEnabled) ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Latex);
@@ -1095,7 +1095,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
       ol.disable(OutputGenerator::Docbook);
       // link for Html / man
       //printf("writeObjectLink(file=%s)\n",e->file.data());
-      ol.writeObjectLink(0,e->file,e->anchor,e->name);
+      ol.writeObjectLink(0,e.file,e.anchor,e.name);
       ol.popGeneratorState();
 
       ol.pushGeneratorState();
@@ -1104,7 +1104,7 @@ void writeExample(OutputList &ol,ExampleSDict *ed)
       ol.disable(OutputGenerator::Html);
       // link for Latex / pdf with anchor because the sources
       // are not hyperlinked (not possible with a verbatim environment).
-      ol.writeObjectLink(0,e->file,0,e->name);
+      ol.writeObjectLink(0,e.file,0,e.name);
       //if (manEnabled) ol.enable(OutputGenerator::Man);
       //if (htmlEnabled) ol.enable(OutputGenerator::Html);
       ol.popGeneratorState();

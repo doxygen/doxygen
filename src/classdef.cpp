@@ -237,7 +237,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString generatedFromFiles() const;
     virtual const FileList &usedFiles() const;
     virtual const ArgumentList &typeConstraints() const;
-    virtual const ExampleSDict *exampleList() const;
+    virtual const ExampleList &getExamples() const;
     virtual bool hasExamples() const;
     virtual QCString getMemberListFileName() const;
     virtual bool subGrouping() const;
@@ -523,8 +523,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->usedFiles(); }
     virtual const ArgumentList &typeConstraints() const
     { return getCdAlias()->typeConstraints(); }
-    virtual const ExampleSDict *exampleList() const
-    { return getCdAlias()->exampleList(); }
+    virtual const ExampleList &getExamples() const
+    { return getCdAlias()->getExamples(); }
     virtual bool hasExamples() const
     { return getCdAlias()->hasExamples(); }
     virtual QCString getMemberListFileName() const
@@ -627,7 +627,7 @@ class ClassDefImpl::IMPL
     FileList files;
 
     /*! Examples that use this class */
-    ExampleSDict *exampleSDict = 0;
+    ExampleList examples;
 
     /*! Holds the kind of "class" this is. */
     ClassDef::CompoundType compType;
@@ -732,7 +732,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   {
     fileName=ctStr+name;
   }
-  exampleSDict = 0;
   incInfo=0;
   prot=Public;
   nspace=0;
@@ -780,7 +779,6 @@ ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
 
 ClassDefImpl::IMPL::~IMPL()
 {
-  delete exampleSDict;
   delete usesImplClassDict;
   delete usedByImplClassDict;
   delete usesIntfClassDict;
@@ -1439,12 +1437,12 @@ void ClassDefImpl::writeDetailedDocumentationBody(OutputList &ol) const
   writeTypeConstraints(ol,this,m_impl->typeConstraints);
 
   // write examples
-  if (hasExamples() && m_impl->exampleSDict)
+  if (hasExamples())
   {
     ol.startExamples();
     ol.startDescForItem();
     //ol.startParagraph();
-    writeExample(ol,m_impl->exampleSDict);
+    writeExamples(ol,m_impl->examples);
     //ol.endParagraph();
     ol.endDescForItem();
     ol.endExamples();
@@ -3137,35 +3135,15 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
 }
 
 // add a reference to an example
-bool ClassDefImpl::addExample(const char *anchor,const char *nameStr,
-    const char *file)
+bool ClassDefImpl::addExample(const char *anchor,const char *nameStr, const char *file)
 {
-  if (m_impl->exampleSDict==0)
-  {
-    m_impl->exampleSDict = new ExampleSDict;
-    m_impl->exampleSDict->setAutoDelete(TRUE);
-  }
-  if (!m_impl->exampleSDict->find(nameStr))
-  {
-    Example *e=new Example;
-    e->anchor=anchor;
-    e->name=nameStr;
-    e->file=file;
-    m_impl->exampleSDict->inSort(nameStr,e);
-    return TRUE;
-  }
-  return FALSE;
+  return m_impl->examples.inSort(Example(anchor,nameStr,file));
 }
 
 // returns TRUE if this class is used in an example
 bool ClassDefImpl::hasExamples() const
 {
-  bool result=FALSE;
-  if (m_impl->exampleSDict)
-  {
-     result = m_impl->exampleSDict->count()>0;
-  }
-  return result;
+  return !m_impl->examples.empty();
 }
 
 void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCString &type)
@@ -5004,9 +4982,9 @@ const ArgumentList &ClassDefImpl::typeConstraints() const
   return m_impl->typeConstraints;
 }
 
-const ExampleSDict *ClassDefImpl::exampleList() const
+const ExampleList &ClassDefImpl::getExamples() const
 {
-  return m_impl->exampleSDict;
+  return m_impl->examples;
 }
 
 bool ClassDefImpl::subGrouping() const

@@ -195,7 +195,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setEnumBaseType(const QCString &type);
     virtual QCString enumBaseType() const;
     virtual bool hasExamples() const;
-    virtual ExampleSDict *getExamples() const;
+    virtual const ExampleList &getExamples() const;
     virtual bool isPrototype() const;
     virtual const ArgumentList &argumentList() const;
     virtual ArgumentList &argumentList();
@@ -655,7 +655,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->enumBaseType(); }
     virtual bool hasExamples() const
     { return getMdAlias()->hasExamples(); }
-    virtual ExampleSDict *getExamples() const
+    virtual const ExampleList &getExamples() const
     { return getMdAlias()->getExamples(); }
     virtual bool isPrototype() const
     { return getMdAlias()->isPrototype(); }
@@ -1198,7 +1198,7 @@ class MemberDefImpl::IMPL
     MemberDef  *memDec = 0;       // member declaration for this definition
     ClassDef   *relatedAlso = 0;  // points to class marked by relatedAlso
 
-    ExampleSDict *exampleSDict = 0; // a dictionary of all examples for quick access
+    ExampleList examples;     // a dictionary of all examples for quick access
 
     QCString type;            // return actual type
     QCString accessorType;    // return type that tell how to get to this member
@@ -1302,7 +1302,6 @@ class MemberDefImpl::IMPL
 MemberDefImpl::IMPL::IMPL() :
     enumFields(0),
     redefinedBy(0),
-    exampleSDict(0),
     classSectionSDict(0),
     category(0),
     categoryRelation(0),
@@ -1315,7 +1314,6 @@ MemberDefImpl::IMPL::IMPL() :
 MemberDefImpl::IMPL::~IMPL()
 {
   delete redefinedBy;
-  delete exampleSDict;
   delete enumFields;
   delete classSectionSDict;
 }
@@ -1338,7 +1336,6 @@ void MemberDefImpl::IMPL::init(Definition *d,
   memDec=0;
   group=0;
   grpId=-1;
-  exampleSDict=0;
   enumFields=0;
   enumScope=0;
   livesInsideEnum=FALSE;
@@ -1462,7 +1459,6 @@ MemberDef *MemberDefImpl::deepCopy() const
   *result->m_impl = *m_impl;
   // clear pointers owned by object
   result->m_impl->redefinedBy= 0;
-  result->m_impl->exampleSDict=0;
   result->m_impl->enumFields=0;
   result->m_impl->classSectionSDict=0;
   // replace pointers owned by the object by deep copies
@@ -1473,15 +1469,6 @@ MemberDef *MemberDefImpl::deepCopy() const
     for (mli.toFirst();(md=mli.current());++mli)
     {
       result->insertReimplementedBy(md);
-    }
-  }
-  if (m_impl->exampleSDict)
-  {
-    ExampleSDict::Iterator it(*m_impl->exampleSDict);
-    Example *e;
-    for (it.toFirst();(e=it.current());++it)
-    {
-      result->addExample(e->anchor,e->name,e->file);
     }
   }
   if (m_impl->enumFields)
@@ -1598,30 +1585,15 @@ void MemberDefImpl::insertEnumField(MemberDef *md)
   m_impl->enumFields->append(md);
 }
 
-bool MemberDefImpl::addExample(const char *anchor,const char *nameStr,
-                           const char *file)
+bool MemberDefImpl::addExample(const char *anchor,const char *nameStr, const char *file)
 {
   //printf("%s::addExample(%s,%s,%s)\n",name().data(),anchor,nameStr,file);
-  if (m_impl->exampleSDict==0) m_impl->exampleSDict = new ExampleSDict;
-  if (m_impl->exampleSDict->find(nameStr)==0)
-  {
-    //printf("Add reference to example %s to member %s\n",nameStr,name.data());
-    Example *e=new Example;
-    e->anchor=anchor;
-    e->name=nameStr;
-    e->file=file;
-    m_impl->exampleSDict->inSort(nameStr,e);
-    return TRUE;
-  }
-  return FALSE;
+  return m_impl->examples.inSort(Example(anchor,nameStr,file));
 }
 
 bool MemberDefImpl::hasExamples() const
 {
-  if (m_impl->exampleSDict==0)
-    return FALSE;
-  else
-    return m_impl->exampleSDict->count()>0;
+  return !m_impl->examples.empty();
 }
 
 QCString MemberDefImpl::getOutputFileBase() const
@@ -3001,7 +2973,7 @@ void MemberDefImpl::_writeExamples(OutputList &ol) const
   {
     ol.startExamples();
     ol.startDescForItem();
-    writeExample(ol,m_impl->exampleSDict);
+    writeExamples(ol,m_impl->examples);
     ol.endDescForItem();
     ol.endExamples();
   }
@@ -5353,9 +5325,9 @@ const MemberList *MemberDefImpl::enumFieldList() const
   return m_impl->enumFields;
 }
 
-ExampleSDict *MemberDefImpl::getExamples() const
+const ExampleList &MemberDefImpl::getExamples() const
 {
-  return m_impl->exampleSDict;
+  return m_impl->examples;
 }
 
 bool MemberDefImpl::isPrototype() const

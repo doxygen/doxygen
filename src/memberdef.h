@@ -34,7 +34,7 @@ class GroupDef;
 class FileDef;
 class MemberList;
 class MemberGroup;
-class ExampleSDict;
+class ExampleList;
 class OutputList;
 class GroupDef;
 class QTextStream;
@@ -214,7 +214,7 @@ class MemberDef : public Definition
     virtual QCString enumBaseType() const = 0;
 
     virtual bool hasExamples() const = 0;
-    virtual ExampleSDict *getExamples() const = 0;
+    virtual const ExampleList &getExamples() const = 0;
     virtual bool isPrototype() const = 0;
 
     // argument related members
