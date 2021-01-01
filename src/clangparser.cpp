@@ -904,7 +904,7 @@ std::unique_ptr<ClangTUParser> ClangParser::createTUParser(const FileDef *fd) co
 //--------------------------------------------------------------------------
 #else // use stubbed functionality in case libclang support is disabled.
 
-void ClangTUParser::switchToFile(FileDef *fd)
+void ClangTUParser::switchToFile(const FileDef *fd)
 {
 }
 
