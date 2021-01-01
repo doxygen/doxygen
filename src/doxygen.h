@@ -126,7 +126,6 @@ class Doxygen
     static SymbolMap<Definition>     symbolMap;
     static QDict<Definition>        *clangUsrMap;
     static bool                      outputToWizard;
-    static QDict<int>               *htmlDirMap;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;
     static SDict<DirRelation>        dirRelations;

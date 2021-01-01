@@ -83,17 +83,6 @@
 
 //------------------------------------------------------------------------
 
-// selects one of the name to sub-dir mapping algorithms that is used
-// to select a sub directory when CREATE_SUBDIRS is set to YES.
-
-#define ALGO_COUNT 1
-#define ALGO_CRC16 2
-#define ALGO_MD5   3
-
-//#define MAP_ALGO ALGO_COUNT
-//#define MAP_ALGO ALGO_CRC16
-#define MAP_ALGO ALGO_MD5
-
 #define REL_PATH_TO_ROOT "../../"
 
 static const char *hex = "0123456789ABCDEF";
@@ -3834,40 +3823,12 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
   {
     int l1Dir=0,l2Dir=0;
 
-#if MAP_ALGO==ALGO_COUNT
-    // old algorithm, has the problem that after regeneration the
-    // output can be located in a different dir.
-    if (Doxygen::htmlDirMap==0)
-    {
-      Doxygen::htmlDirMap=new QDict<int>(100003);
-      Doxygen::htmlDirMap->setAutoDelete(TRUE);
-    }
-    static int curDirNum=0;
-    int *dirNum = Doxygen::htmlDirMap->find(result);
-    if (dirNum==0) // new name
-    {
-      Doxygen::htmlDirMap->insert(result,new int(curDirNum));
-      l1Dir = (curDirNum)&0xf;    // bits 0-3
-      l2Dir = (curDirNum>>4)&0xff; // bits 4-11
-      curDirNum++;
-    }
-    else // existing name
-    {
-      l1Dir = (*dirNum)&0xf;       // bits 0-3
-      l2Dir = ((*dirNum)>>4)&0xff; // bits 4-11
-    }
-#elif MAP_ALGO==ALGO_CRC16
-    // second algorithm based on CRC-16 checksum
-    int dirNum = qChecksum(result,result.length());
-    l1Dir = dirNum&0xf;
-    l2Dir = (dirNum>>4)&0xff;
-#elif MAP_ALGO==ALGO_MD5
-    // third algorithm based on MD5 hash
+    // compute md5 hash to determine sub directory to use
     uchar md5_sig[16];
     MD5Buffer((const unsigned char *)result.data(),result.length(),md5_sig);
     l1Dir = md5_sig[14]&0xf;
     l2Dir = md5_sig[15];
-#endif
+
     result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
   }
   //printf("*** convertNameToFile(%s)->%s\n",name,result.data());

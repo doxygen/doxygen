@@ -146,7 +146,6 @@ SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition> Doxygen::symbolMap;
 QDict<Definition>    *Doxygen::clangUsrMap = 0;
 bool                  Doxygen::outputToWizard=FALSE;
-QDict<int> *          Doxygen::htmlDirMap = 0;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 SDict<DirRelation>    Doxygen::dirRelations(257);
