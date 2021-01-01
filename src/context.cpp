@@ -6517,15 +6517,13 @@ class NestingContext::Private : public GenericNodeListContext
         addClass(cd.get(),rootOnly,visitedClasses);
       }
     }
-    void addDirs(const DirSDict &dirDict,ClassDefSet &visitedClasses)
+    void addDirs(const DirLinkedMap &dirLinkedMap,ClassDefSet &visitedClasses)
     {
-      SDict<DirDef>::Iterator dli(dirDict);
-      const DirDef *dd;
-      for (dli.toFirst();(dd=dli.current());++dli)
+      for (const auto &dd : dirLinkedMap)
       {
         if (dd->getOuterScope()==Doxygen::globalScope)
         {
-          append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+          append(NestingNodeContext::alloc(m_parent,dd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
@@ -6721,7 +6719,7 @@ void NestingContext::addNamespaces(const NamespaceLinkedRefMap &nsLinkedRefMap,b
   p->addNamespaces(nsLinkedRefMap,rootOnly,addClasses,visitedClasses);
 }
 
-void NestingContext::addDirs(const DirSDict &dirs,ClassDefSet &visitedClasses)
+void NestingContext::addDirs(const DirLinkedMap &dirs,ClassDefSet &visitedClasses)
 {
   p->addDirs(dirs,visitedClasses);
 }
@@ -7117,11 +7115,9 @@ class DirListContext::Private : public GenericNodeListContext
   public:
     Private()
     {
-      const DirDef *dir;
-      DirSDict::Iterator sdi(*Doxygen::directories);
-      for (sdi.toFirst();(dir=sdi.current());++sdi)
+      for (const auto &dir : *Doxygen::dirLinkedMap)
       {
-        append(DirContext::alloc(dir));
+        append(DirContext::alloc(dir.get()));
       }
     }
 };
@@ -7217,10 +7213,7 @@ class FileTreeContext::Private
       // Add dirs tree
       m_dirFileTree.reset(NestingContext::alloc(0,0));
       ClassDefSet visitedClasses;
-      if (Doxygen::directories)
-      {
-        m_dirFileTree->addDirs(*Doxygen::directories,visitedClasses);
-      }
+      m_dirFileTree->addDirs(*Doxygen::dirLinkedMap,visitedClasses);
       if (Doxygen::inputNameLinkedMap)
       {
         m_dirFileTree->addFiles(*Doxygen::inputNameLinkedMap,visitedClasses);

@@ -20,7 +20,6 @@
 #include "template.h"
 #include <qlist.h>
 #include <stdio.h>
-#include "dirdef.h"
 #include "classdef.h"
 #include "searchindex.h"
 #include "membergroup.h"
@@ -43,10 +42,12 @@ class FileNameLinkedMap;
 class ClassLinkedMap;
 class MemberNameInfoLinkedMap;
 
+class DirDef;
+class DirLinkedMap;
+class DirList;
+
 class FileDef;
 class FileList;
-class DirSDict;
-class DirDef;
 struct IncludeInfo;
 class MemberList;
 class MemberSDict;
@@ -550,7 +551,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,ClassDefSet &visitedClasses);
     void addClasses(const ClassLinkedMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
     void addClasses(const ClassLinkedRefMap &clLinkedMap,bool rootOnly,ClassDefSet &visitedClasses);
-    void addDirs(const DirSDict &,ClassDefSet &visitedClasses);
+    void addDirs(const DirLinkedMap &,ClassDefSet &visitedClasses);
     void addDirs(const DirList &,ClassDefSet &visitedClasses);
     void addFiles(const FileNameLinkedMap &,ClassDefSet &visitedClasses);
     void addFiles(const FileList &,ClassDefSet &visitedClasses);

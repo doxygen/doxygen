@@ -799,13 +799,14 @@ FilePair *UsedDir::findFilePair(const char *name)
 DirDef *DirDefImpl::createNewDir(const char *path)
 {
   ASSERT(path!=0);
-  DirDef *dir = Doxygen::directories->find(path);
+  DirDef *dir = Doxygen::dirLinkedMap->find(path);
   if (dir==0) // new dir
   {
+    dir = Doxygen::dirLinkedMap->add(path,
+            std::unique_ptr<DirDef>(
+              createDirDef(path)));
     //printf("Adding new dir %s\n",path);
-    dir = createDirDef(path);
     //printf("createNewDir %s short=%s\n",path,dir->shortName().data());
-    Doxygen::directories->append(path,dir);
   }
   return dir;
 }
@@ -939,14 +940,11 @@ void DirRelation::writeDocumentation(OutputList &ol)
 static void computeCommonDirPrefix()
 {
   QCString path;
-  DirDef *dir;
-  DirSDict::Iterator sdi(*Doxygen::directories);
-  if (Doxygen::directories->count()>0) // we have at least one dir
+  auto it = Doxygen::dirLinkedMap->begin();
+  if (!Doxygen::dirLinkedMap->empty()) // we have at least one dir
   {
     // start will full path of first dir
-    sdi.toFirst();
-    dir=sdi.current();
-    path=dir->name();
+    path=(*it)->name();
     int i=path.findRev('/',(int)path.length()-2);
     path=path.left(i+1);
     bool done=FALSE;
@@ -959,8 +957,8 @@ static void computeCommonDirPrefix()
       while (!done)
       {
         uint l = path.length();
-        uint count=0;
-        for (sdi.toFirst();(dir=sdi.current());++sdi)
+        size_t count=0;
+        for (const auto &dir : *Doxygen::dirLinkedMap)
         {
           QCString dirName = dir->name();
           if (dirName.length()>path.length())
@@ -998,7 +996,7 @@ static void computeCommonDirPrefix()
           }
           count++;
         }
-        if (count==Doxygen::directories->count())
+        if (count==Doxygen::dirLinkedMap->size())
           // path matches for all directories -> found the common prefix
         {
           done=TRUE;
@@ -1006,7 +1004,7 @@ static void computeCommonDirPrefix()
       }
     }
   }
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     QCString diskName = dir->name().right(dir->name().length()-path.length());
     dir->setDiskName(diskName);
@@ -1025,7 +1023,7 @@ void buildDirectories()
       if (fd->getReference().isEmpty())
       {
         DirDef *dir;
-        if ((dir=Doxygen::directories->find(fd->getPath()))==0) // new directory
+        if ((dir=Doxygen::dirLinkedMap->find(fd->getPath()))==0) // new directory
         {
           dir = DirDefImpl::mergeDirectoryInTree(fd->getPath());
         }
@@ -1038,45 +1036,48 @@ void buildDirectories()
     }
   }
 
-  //DirDef *root = new DirDef("root:");
   // compute relations between directories => introduce container dirs.
-  DirDef *dir;
-  DirSDict::Iterator sdi(*Doxygen::directories);
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     QCString name = dir->name();
     int i=name.findRev('/',(int)name.length()-2);
     if (i>0)
     {
-      DirDef *parent = Doxygen::directories->find(name.left(i+1));
+      DirDef *parent = Doxygen::dirLinkedMap->find(name.left(i+1));
       //if (parent==0) parent=root;
       if (parent)
       {
-        parent->addSubDir(dir);
+        parent->addSubDir(dir.get());
         //printf("DirDefImpl::addSubdir(): Adding subdir\n%s to\n%s\n",
         //  dir->displayName().data(), parent->displayName().data());
       }
     }
   }
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
+
+  // sort the directory contents
+  for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     dir->sort();
   }
-  Doxygen::directories->sort();
+
+  // short the directories themselves
+  std::sort(Doxygen::dirLinkedMap->begin(),
+            Doxygen::dirLinkedMap->end(),
+            [](const auto &d1,const auto &d2)
+            { return qstricmp(d1->shortName(),d2->shortName()) < 0; });
+
   computeCommonDirPrefix();
 }
 
 void computeDirDependencies()
 {
-  DirDef *dir;
-  DirSDict::Iterator sdi(*Doxygen::directories);
   // compute nesting level for each directory
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     dir->setLevel();
   }
   // compute uses dependencies between directories
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     //printf("computeDependencies for %s: #dirs=%d\n",dir->name().data(),Doxygen::directories.count());
     dir->computeDependencies();
@@ -1086,9 +1087,7 @@ void computeDirDependencies()
 
 void generateDirDocs(OutputList &ol)
 {
-  DirDef *dir;
-  DirSDict::Iterator sdi(*Doxygen::directories);
-  for (sdi.toFirst();(dir=sdi.current());++sdi)
+  for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     ol.pushGeneratorState();
     if (!dir->hasDocumentation())

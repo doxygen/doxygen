@@ -2548,14 +2548,10 @@ void generateSqlite3()
   }
 
   // + dirs
+  for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    const DirDef *dir;
-    DirSDict::Iterator sdi(*Doxygen::directories);
-    for (sdi.toFirst();(dir=sdi.current());++sdi)
-    {
-      msg("Generating Sqlite3 output for dir %s\n",dir->name().data());
-      generateSqlite3ForDir(dir);
-    }
+    msg("Generating Sqlite3 output for dir %s\n",dd->name().data());
+    generateSqlite3ForDir(dd.get());
   }
 
   // + examples

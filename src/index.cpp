@@ -534,7 +534,7 @@ static void writeClassTreeToOutput(OutputList &ol,const BaseClassList &bcl,int l
 
 //----------------------------------------------------------------------------
 
-static bool dirHasVisibleChildren(DirDef *dd)
+static bool dirHasVisibleChildren(const DirDef *dd)
 {
   if (dd->hasDocumentation()) return TRUE;
 
@@ -553,7 +553,7 @@ static bool dirHasVisibleChildren(DirDef *dd)
     }
   }
 
-  for(const auto subdd : dd->subDirs())
+  for(const auto &subdd : dd->subDirs())
   {
     if (dirHasVisibleChildren(subdd))
     {
@@ -564,7 +564,7 @@ static bool dirHasVisibleChildren(DirDef *dd)
 }
 
 //----------------------------------------------------------------------------
-static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv,bool addToIndex)
+static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHelp* ftv,bool addToIndex)
 {
   if (level>20)
   {
@@ -613,7 +613,7 @@ static void writeDirTreeNode(OutputList &ol, DirDef *dd, int level, FTVHelp* ftv
   if (dd->subDirs().size()>0)
   {
     startIndexHierarchy(ol,level+1);
-    for(const auto subdd : dd->subDirs())
+    for(const auto &subdd : dd->subDirs())
     {
       writeDirTreeNode(ol,subdd,level+1,ftv,addToIndex);
     }
@@ -726,13 +726,11 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
   startIndexHierarchy(ol,0);
   if (fullPathNames)
   {
-    SDict<DirDef>::Iterator dli(*Doxygen::directories);
-    DirDef *dd;
-    for (dli.toFirst();(dd=dli.current());++dli)
+    for (const auto &dd : *Doxygen::dirLinkedMap)
     {
       if (dd->getOuterScope()==Doxygen::globalScope)
       {
-        writeDirTreeNode(ol,dd,0,ftv,addToIndex);
+        writeDirTreeNode(ol,dd.get(),0,ftv,addToIndex);
       }
     }
   }
@@ -3670,9 +3668,7 @@ static int countGroups()
 static int countDirs()
 {
   int count=0;
-  SDict<DirDef>::Iterator dli(*Doxygen::directories);
-  DirDef *dd;
-  for (dli.toFirst();(dd=dli.current());++dli)
+  for (const auto &dd : *Doxygen::dirLinkedMap)
   {
     if (dd->isLinkableInProject())
     {

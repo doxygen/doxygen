@@ -497,22 +497,11 @@ DB_GEN_C2("IndexSections " << is)
     case isDirDocumentation:
       {
         t << "</title>" << endl;
-        SDict<DirDef>::Iterator dli(*Doxygen::directories);
-        DirDef *dd;
-        bool found=FALSE;
-        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
           {
             t << "<    xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
-            found=TRUE;
-          }
-        }
-        for (;(dd=dli.current());++dli)
-        {
-          if (dd->isLinkableInProject())
-          {
-            t << "    <xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>" << endl;
           }
         }
       }

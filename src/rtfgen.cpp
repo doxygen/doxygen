@@ -484,9 +484,7 @@ void RTFGenerator::startIndexSection(IndexSections is)
     case isDirDocumentation:
       {
         //Directory Documentation
-        SDict<DirDef>::Iterator dli(*Doxygen::directories);
-        DirDef *dd;
-        for (dli.toFirst();(dd=dli.current());++dli)
+        for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
           {
@@ -739,12 +737,18 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isModuleDocumentation:
       {
+        bool first=true;
         t << "{\\tc \\v " << theTranslator->trModuleDocumentation() << "}"<< endl;
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {
             t << "\\par " << rtf_Style_Reset << endl;
+            if (!first)
+            {
+              beginRTFSection();
+            }
+            first=false;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << gd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
@@ -754,14 +758,18 @@ void RTFGenerator::endIndexSection(IndexSections is)
       break;
     case isDirDocumentation:
       {
-        SDict<DirDef>::Iterator dli(*Doxygen::directories);
-        DirDef *dd;
+        bool first=true;
         t << "{\\tc \\v " << theTranslator->trDirDocumentation() << "}"<< endl;
-        for (dli.toFirst();(dd=dli.current());++dli)
+        for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
           {
             t << "\\par " << rtf_Style_Reset << endl;
+            if (!first)
+            {
+              beginRTFSection();
+            }
+            first=false;
             t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             t << dd->getOutputFileBase();
             t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";

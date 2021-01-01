@@ -148,7 +148,7 @@ QDict<Definition>    *Doxygen::clangUsrMap = 0;
 bool                  Doxygen::outputToWizard=FALSE;
 QDict<int> *          Doxygen::htmlDirMap = 0;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
-DirSDict             *Doxygen::directories;
+DirLinkedMap         *Doxygen::dirLinkedMap;
 SDict<DirRelation>    Doxygen::dirRelations(257);
 ParserManager        *Doxygen::parserManager = 0;
 QCString              Doxygen::htmlFileExtension;
@@ -4956,9 +4956,7 @@ static void addListReferences()
     }
   }
 
-  DirSDict::Iterator ddi(*Doxygen::directories);
-  DirDef *dd = 0;
-  for (ddi.toFirst();(dd=ddi.current());++ddi)
+  for (const auto &dd : *Doxygen::dirLinkedMap)
   {
     QCString name = dd->getOutputFileBase();
     //if (dd->getGroupDef())
@@ -8573,9 +8571,8 @@ static void findDirDocumentation(const Entry *root)
     {
       normalizedName+='/';
     }
-    DirDef *dir,*matchingDir=0;
-    SDict<DirDef>::Iterator sdi(*Doxygen::directories);
-    for (sdi.toFirst();(dir=sdi.current());++sdi)
+    DirDef *matchingDir=0;
+    for (const auto &dir : *Doxygen::dirLinkedMap)
     {
       //printf("Dir: %s<->%s\n",dir->name().data(),normalizedName.data());
       if (dir->name().right(normalizedName.length())==normalizedName)
@@ -8591,7 +8588,7 @@ static void findDirDocumentation(const Entry *root)
         }
         else
         {
-          matchingDir=dir;
+          matchingDir=dir.get();
         }
       }
     }
@@ -10153,8 +10150,7 @@ void initDoxygen()
   Doxygen::namespaceLinkedMap = new NamespaceLinkedMap;
   Doxygen::classLinkedMap = new ClassLinkedMap;
   Doxygen::hiddenClassLinkedMap = new ClassLinkedMap;
-  Doxygen::directories = new DirSDict(17);
-  Doxygen::directories->setAutoDelete(TRUE);
+  Doxygen::dirLinkedMap = new DirLinkedMap;
   Doxygen::pageLinkedMap = new PageLinkedMap;          // all doc pages
   Doxygen::exampleLinkedMap = new PageLinkedMap;       // all examples
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
@@ -10211,7 +10207,7 @@ void cleanUpDoxygen()
   delete Doxygen::functionNameLinkedMap;
   delete Doxygen::groupLinkedMap;
   delete Doxygen::namespaceLinkedMap;
-  delete Doxygen::directories;
+  delete Doxygen::dirLinkedMap;
 
   DotManager::deleteInstance();
 }

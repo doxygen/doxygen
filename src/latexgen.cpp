@@ -1011,9 +1011,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isDirDocumentation:
       {
-        SDict<DirDef>::Iterator dli(*Doxygen::directories);
-        DirDef *dd;
-        for (dli.toFirst();(dd=dli.current());++dli)
+        for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
           {
@@ -1159,24 +1157,17 @@ void LatexGenerator::endIndexSection(IndexSections is)
       break;
     case isDirDocumentation:
       {
-        SDict<DirDef>::Iterator dli(*Doxygen::directories);
-        DirDef *dd;
         bool found=FALSE;
-        for (dli.toFirst();(dd=dli.current()) && !found;++dli)
+        for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
           {
-            t << "}\n\\input{" << dd->getOutputFileBase() << "}\n";
-            found=TRUE;
-          }
-        }
-        for (;(dd=dli.current());++dli)
-        {
-          if (dd->isLinkableInProject())
-          {
-            //if (compactLatex) t << "\\input"; else t << "\\include";
-            t << "\\input";
-            t << "{" << dd->getOutputFileBase() << "}\n";
+            if (!found)
+            {
+              t << "}\n";
+              found = TRUE;
+            }
+            t << "\\input{" << dd->getOutputFileBase() << "}\n";
           }
         }
       }

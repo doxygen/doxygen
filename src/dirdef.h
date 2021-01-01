@@ -25,6 +25,7 @@
 #include <qglobal.h>
 #include <qcstring.h>
 
+
 class FileList;
 class QStrList;
 class FileDef;
@@ -34,9 +35,7 @@ class FTextStream;
 class FilePair;
 class FilePairDict;
 class DirDef;
-
-/** A list of directories. */
-typedef std::vector<DirDef*> DirList;
+class DirList;
 
 bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 
@@ -153,6 +152,7 @@ class DirRelation
     UsedDir *m_dst;
 };
 
+#if 0
 /** A sorted dictionary of DirDef objects. */
 class DirSDict : public SDict<DirDef>
 {
@@ -163,6 +163,18 @@ class DirSDict : public SDict<DirDef>
       return qstricmp(item1->shortName(),item2->shortName());
     }
 };
+#endif
+
+/** A linked map of directories */
+class DirLinkedMap : public LinkedMap<DirDef>
+{
+};
+
+/** A list of directories. */
+class DirList : public std::vector<const DirDef*>
+{
+};
+
 
 // ------------------
 

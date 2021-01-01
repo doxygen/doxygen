@@ -1955,14 +1955,10 @@ void generateXML()
     msg("Generating XML output for page %s\n",pd->name().data());
     generateXMLForPage(pd.get(),t,FALSE);
   }
+  for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    DirDef *dir;
-    DirSDict::Iterator sdi(*Doxygen::directories);
-    for (sdi.toFirst();(dir=sdi.current());++sdi)
-    {
-      msg("Generate XML output for dir %s\n",dir->name().data());
-      generateXMLForDir(dir,t);
-    }
+    msg("Generate XML output for dir %s\n",dd->name().data());
+    generateXMLForDir(dd.get(),t);
   }
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {

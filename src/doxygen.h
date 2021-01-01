@@ -128,7 +128,7 @@ class Doxygen
     static bool                      outputToWizard;
     static QDict<int>               *htmlDirMap;
     static Cache<std::string,LookupInfo> *lookupCache;
-    static DirSDict                 *directories;
+    static DirLinkedMap             *dirLinkedMap;
     static SDict<DirRelation>        dirRelations;
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
