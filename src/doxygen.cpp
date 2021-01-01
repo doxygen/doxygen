@@ -153,8 +153,6 @@ SDict<DirRelation>    Doxygen::dirRelations(257);
 ParserManager        *Doxygen::parserManager = 0;
 QCString              Doxygen::htmlFileExtension;
 bool                  Doxygen::suppressDocWarnings = FALSE;
-QCString              Doxygen::objDBFileName;
-QCString              Doxygen::entryDBFileName;
 QCString              Doxygen::filterDBFileName;
 IndexList            *Doxygen::indexList;
 int                   Doxygen::subpageNestingLevel = 0;
@@ -10707,14 +10705,6 @@ static void stopDoxygen(int)
 {
   QDir thisDir;
   msg("Cleaning up...\n");
-  if (!Doxygen::entryDBFileName.isEmpty())
-  {
-    thisDir.remove(Doxygen::entryDBFileName);
-  }
-  if (!Doxygen::objDBFileName.isEmpty())
-  {
-    thisDir.remove(Doxygen::objDBFileName);
-  }
   if (!Doxygen::filterDBFileName.isEmpty())
   {
     thisDir.remove(Doxygen::filterDBFileName);
@@ -10813,14 +10803,6 @@ static void exitDoxygen()
   {
     QDir thisDir;
     msg("Exiting...\n");
-    if (!Doxygen::entryDBFileName.isEmpty())
-    {
-      thisDir.remove(Doxygen::entryDBFileName);
-    }
-    if (!Doxygen::objDBFileName.isEmpty())
-    {
-      thisDir.remove(Doxygen::objDBFileName);
-    }
     if (!Doxygen::filterDBFileName.isEmpty())
     {
       thisDir.remove(Doxygen::filterDBFileName);
@@ -11107,10 +11089,6 @@ void parseInput()
 #endif
 
   uint pid = Portable::pid();
-  Doxygen::objDBFileName.sprintf("doxygen_objdb_%d.tmp",pid);
-  Doxygen::objDBFileName.prepend(outputDirectory+"/");
-  Doxygen::entryDBFileName.sprintf("doxygen_entrydb_%d.tmp",pid);
-  Doxygen::entryDBFileName.prepend(outputDirectory+"/");
   Doxygen::filterDBFileName.sprintf("doxygen_filterdb_%d.tmp",pid);
   Doxygen::filterDBFileName.prepend(outputDirectory+"/");
 
@@ -11511,7 +11489,6 @@ void parseInput()
   g_s.end();
 
   QDir thisDir;
-  thisDir.remove(Doxygen::entryDBFileName);
 
   g_s.begin("Determining which enums are documented\n");
   findDocumentedEnumValues();
@@ -12004,7 +11981,6 @@ void generateOutput()
 
   finalizeSearchIndexer();
   QDir thisDir;
-  thisDir.remove(Doxygen::objDBFileName);
   thisDir.remove(Doxygen::filterDBFileName);
   finishWarnExit();
   Config::deinit();

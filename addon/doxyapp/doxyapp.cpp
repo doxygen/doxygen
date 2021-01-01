@@ -296,9 +296,6 @@ int main(int argc,char **argv)
     }
   }
 
-  // remove temporary files
-  if (!Doxygen::objDBFileName.isEmpty()) QFile::remove(Doxygen::objDBFileName);
-  if (!Doxygen::entryDBFileName.isEmpty()) QFile::remove(Doxygen::entryDBFileName);
   // clean up after us
   QDir().rmdir("/tmp/doxygen");
 

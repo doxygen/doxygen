@@ -528,8 +528,6 @@ int main(int argc,char **argv) {
 
   QDir thisDir;
   // remove temporary files
-  if (!Doxygen::objDBFileName.isEmpty())    thisDir.remove(Doxygen::objDBFileName);
-  if (!Doxygen::entryDBFileName.isEmpty())  thisDir.remove(Doxygen::entryDBFileName);
   if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName);
 
   // clean up after us
