@@ -53,7 +53,6 @@ class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceLinkedMap;
 class NamespaceDef;
-class DirSDict;
 class DirRelation;
 class IndexList;
 class FormulaList;

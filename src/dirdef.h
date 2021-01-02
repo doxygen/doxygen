@@ -152,19 +152,6 @@ class DirRelation
     UsedDir *m_dst;
 };
 
-#if 0
-/** A sorted dictionary of DirDef objects. */
-class DirSDict : public SDict<DirDef>
-{
-  public:
-    DirSDict(uint size) : SDict<DirDef>(size) {}
-    int compareValues(const DirDef *item1,const DirDef *item2) const
-    {
-      return qstricmp(item1->shortName(),item2->shortName());
-    }
-};
-#endif
-
 /** A linked map of directories */
 class DirLinkedMap : public LinkedMap<DirDef>
 {
@@ -175,9 +162,7 @@ class DirList : public std::vector<const DirDef*>
 {
 };
 
-
 // ------------------
-
 
 void buildDirectories();
 void generateDirDocs(OutputList &ol);
