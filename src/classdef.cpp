@@ -4006,9 +4006,9 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
         templateClass->addInnerCompound(innerClass);
         innerClass->setOuterScope(templateClass);
         innerClass->setHidden(isHidden());
+        freshInstance=TRUE;
       }
     }
-    freshInstance=TRUE;
   }
   return templateClass;
 }

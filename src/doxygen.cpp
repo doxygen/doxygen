@@ -1190,10 +1190,11 @@ static void resolveClassNestingRelations()
     ++iteration;
     struct ClassAlias
     {
-      ClassAlias(const QCString &name,std::unique_ptr<ClassDef> cd) :
-        aliasFullName(name),aliasCd(std::move(cd)) {}
+      ClassAlias(const QCString &name,std::unique_ptr<ClassDef> cd,DefinitionMutable *ctx) :
+        aliasFullName(name),aliasCd(std::move(cd)), aliasContext(ctx) {}
       const QCString aliasFullName;
       std::unique_ptr<ClassDef> aliasCd;
+      DefinitionMutable *aliasContext;
     };
     std::vector<ClassAlias> aliases;
     for (const auto &icd : *Doxygen::classLinkedMap)
@@ -1230,9 +1231,8 @@ static void resolveClassNestingRelations()
                 if (dm)
                 {
                   std::unique_ptr<ClassDef> aliasCd { createClassDefAlias(d,cd) };
-                  dm->addInnerCompound(aliasCd.get());
                   QCString aliasFullName = d->qualifiedName()+"::"+aliasCd->localName();
-                  aliases.push_back(ClassAlias(aliasFullName,std::move(aliasCd)));
+                  aliases.push_back(ClassAlias(aliasFullName,std::move(aliasCd),dm));
                   //printf("adding %s to %s as %s\n",qPrint(aliasCd->name()),qPrint(d->name()),qPrint(aliasFullName));
                 }
               }
@@ -1255,7 +1255,11 @@ static void resolveClassNestingRelations()
     // add aliases
     for (auto &alias : aliases)
     {
-       Doxygen::classLinkedMap->add(alias.aliasFullName,std::move(alias.aliasCd));
+       ClassDef *aliasCd = Doxygen::classLinkedMap->add(alias.aliasFullName,std::move(alias.aliasCd));
+       if (aliasCd)
+       {
+         alias.aliasContext->addInnerCompound(aliasCd);
+       }
     }
   }
 
