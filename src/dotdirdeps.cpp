@@ -20,6 +20,30 @@
 #include "doxygen.h"
 #include "config.h"
 
+/**
+ * Puts DOT code for drawing directory to stream and adds it to the list.
+ * @param outStream[in,out] stream to which the DOT code is written to
+ * @param directory[in] will be mapped to a node in DOT code
+ * @param fillBackground[in] if the node shall be explicitly filled
+ * @param directoriesInGraph[in,out] lists the directories which have been written to the output stream
+ */
+static void drawDirectory(FTextStream &outStream, const DirDef *const directory, const bool fillBackground,
+    QDict<DirDef> &directoriesInGraph)
+{
+  outStream << "  " << directory->getOutputFileBase() << " [shape=box "
+      "label=\"" << directory->shortName() << "\" ";
+  if (fillBackground)
+  {
+    outStream << "fillcolor=\"white\" style=\"filled\" ";
+  }
+  if (directory->isCluster())
+  {
+    outStream << "color=\"red\" ";
+  }
+  outStream << "URL=\"" << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\"];\n";
+  directoriesInGraph.insert(directory->getOutputFileBase(), directory);
+}
+
 void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 {
   int fontSize = Config_getInt(DOT_FONTSIZE);
@@ -36,7 +60,15 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   QDict<DirDef> dirsInGraph(257);
 
   dirsInGraph.insert(dd->getOutputFileBase(),dd);
-  if (dd->parent())
+
+  std::vector<const DirDef *> usedDirsNotDrawn;
+  for(const auto& usedDir : dd->usedDirs())
+  {
+    usedDirsNotDrawn.push_back(usedDir->dir());
+  }
+
+  const auto parent = dd->parent();
+  if (parent)
   {
     t << "  subgraph cluster" << dd->parent()->getOutputFileBase() << " {\n";
     t << "    graph [ bgcolor=\"#ddddee\", pencolor=\"black\", label=\""
@@ -44,6 +76,21 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       << "\" fontname=\"" << fontName << "\", fontsize=\"" << fontSize << "\", URL=\"";
     t << dd->parent()->getOutputFileBase() << Doxygen::htmlFileExtension;
     t << "\"]\n";
+
+    {
+      // draw all directories which have `dd->parent()` as parent and `dd` as dependent
+      const auto newEnd = std::remove_if(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(), [&](const DirDef *const usedDir)
+      {
+        if (dd!=usedDir && dd->parent()==usedDir->parent() && !usedDir->isParentOf(dd))
+        {
+          drawDirectory(t, usedDir, usedDir->isCluster() && !Config_getBool(DOT_TRANSPARENT), dirsInGraph);
+          return true;
+        }
+        return false;
+      }
+      );
+      usedDirsNotDrawn.erase(newEnd, usedDirsNotDrawn.end());
+    }
   }
   if (dd->isCluster())
   {
@@ -57,21 +104,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
     // add nodes for sub directories
     for(const auto sdir : dd->subDirs())
     {
-      t << "    " << sdir->getOutputFileBase() << " [shape=box label=\""
-        << sdir->shortName() << "\"";
-      if (sdir->isCluster())
-      {
-        t << " color=\"red\"";
-      }
-      else
-      {
-        t << " color=\"black\"";
-      }
-      t << " fillcolor=\"white\" style=\"filled\"";
-      t << " URL=\"" << sdir->getOutputFileBase()
-        << Doxygen::htmlFileExtension << "\"";
-      t << "];\n";
-      dirsInGraph.insert(sdir->getOutputFileBase(),sdir);
+      drawDirectory(t, sdir, true, dirsInGraph);
     }
     t << "  }\n";
   }
@@ -90,10 +123,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   // add nodes for other used directories
   {
     //printf("*** For dir %s\n",shortName().data());
-    for (const auto &udir : dd->usedDirs())
+    for (const auto &usedDir : usedDirsNotDrawn)
       // for each used dir (=directly used or a parent of a directly used dir)
     {
-      const DirDef *usedDir = udir->dir();
       const DirDef *dir=dd;
       while (dir)
       {
@@ -108,19 +140,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
             !usedDir->isParentOf(dd))
           // include if both have the same parent (or no parent)
         {
-          t << "  " << usedDir->getOutputFileBase() << " [shape=box label=\""
-            << usedDir->shortName() << "\"";
-          if (usedDir->isCluster())
-          {
-            if (!Config_getBool(DOT_TRANSPARENT))
-            {
-              t << " fillcolor=\"white\" style=\"filled\"";
-            }
-            t << " color=\"red\"";
-          }
-          t << " URL=\"" << usedDir->getOutputFileBase()
-            << Doxygen::htmlFileExtension << "\"];\n";
-          dirsInGraph.insert(usedDir->getOutputFileBase(),usedDir);
+          drawDirectory(t, usedDir, usedDir->isCluster() && !Config_getBool(DOT_TRANSPARENT), dirsInGraph);
           break;
         }
         dir=dir->parent();
