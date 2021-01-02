@@ -619,7 +619,7 @@ struct FilterCacheItem
 class FilterCache
 {
   public:
-    FilterCache() : m_endPos(0) { m_cache.setAutoDelete(TRUE); }
+    FilterCache() : m_endPos(0) { }
     bool getFileContents(const QCString &fileName,BufStr &str)
     {
       static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
@@ -628,30 +628,31 @@ class FilterCache
       FILE *f=0;
       const int blockSize = 4096;
       char buf[blockSize];
-      FilterCacheItem *item=0;
-      if (usePipe && (item = m_cache.find(fileName))) // cache hit: reuse stored result
+      auto it = m_cache.find(fileName.str());
+      if (usePipe && it!=m_cache.end()) // cache hit: reuse stored result
       {
+        auto item = it->second;
         //printf("getFileContents(%s): cache hit\n",qPrint(fileName));
         // file already processed, get the results after filtering from the tmp file
         Debug::print(Debug::FilterOutput,0,"Reusing filter result for %s from %s at offset=%d size=%d\n",
-               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
+               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item.filePos,(int)item.fileSize);
         f = Portable::fopen(Doxygen::filterDBFileName,"rb");
         if (f)
         {
           bool success=TRUE;
-          str.resize(static_cast<uint>(item->fileSize+1));
-          if (Portable::fseek(f,item->filePos,SEEK_SET)==-1)
+          str.resize(static_cast<uint>(item.fileSize+1));
+          if (Portable::fseek(f,item.filePos,SEEK_SET)==-1)
           {
-            err("Failed to seek to position %d in filter database file %s\n",(int)item->filePos,qPrint(Doxygen::filterDBFileName));
+            err("Failed to seek to position %d in filter database file %s\n",(int)item.filePos,qPrint(Doxygen::filterDBFileName));
             success=FALSE;
           }
           if (success)
           {
-            size_t numBytes = fread(str.data(),1,item->fileSize,f);
-            if (numBytes!=item->fileSize)
+            size_t numBytes = fread(str.data(),1,item.fileSize,f);
+            if (numBytes!=item.fileSize)
             {
               err("Failed to read %d bytes from position %d in filter database file %s: got %d bytes\n",
-                 (int)item->fileSize,(int)item->filePos,qPrint(Doxygen::filterDBFileName),(int)numBytes);
+                 (int)item.fileSize,(int)item.filePos,qPrint(Doxygen::filterDBFileName),(int)numBytes);
               success=FALSE;
             }
           }
@@ -673,14 +674,13 @@ class FilterCache
         Debug::print(Debug::ExtCmd,0,"Executing popen(`%s`)\n",qPrint(cmd));
         f = Portable::popen(cmd,"r");
         FILE *bf = Portable::fopen(Doxygen::filterDBFileName,"a+b");
-        item = new FilterCacheItem;
-        item->filePos = m_endPos;
+        FilterCacheItem item;
+        item.filePos = m_endPos;
         if (bf==0)
         {
           // handle error
           err("Error opening filter database file %s\n",qPrint(Doxygen::filterDBFileName));
           str.addChar('\0');
-          delete item;
           Portable::pclose(f);
           return FALSE;
         }
@@ -696,7 +696,6 @@ class FilterCache
             err("Failed to write to filter database %s. Wrote %d out of %d bytes\n",
                 qPrint(Doxygen::filterDBFileName),(int)bytesWritten,(int)bytesRead);
             str.addChar('\0');
-            delete item;
             Portable::pclose(f);
             fclose(bf);
             return FALSE;
@@ -705,11 +704,11 @@ class FilterCache
           str.addArray(buf,static_cast<uint>(bytesWritten));
         }
         str.addChar('\0');
-        item->fileSize = size;
+        item.fileSize = size;
         // add location entry to the dictionary
-        m_cache.append(fileName,item);
+        m_cache.insert(std::make_pair(fileName.str(),item));
         Debug::print(Debug::FilterOutput,0,"Storing new filter result for %s in %s at offset=%d size=%d\n",
-               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item->filePos,(int)item->fileSize);
+               qPrint(fileName),qPrint(Doxygen::filterDBFileName),(int)item.filePos,(int)item.fileSize);
         // update end of file position
         m_endPos += size;
         Portable::pclose(f);
@@ -731,7 +730,7 @@ class FilterCache
       return TRUE;
     }
   private:
-    SDict<FilterCacheItem> m_cache;
+    std::unordered_map<std::string,FilterCacheItem> m_cache;
     portable_off_t m_endPos;
 };
 
