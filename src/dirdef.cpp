@@ -1099,9 +1099,7 @@ void generateDirDocs(OutputList &ol)
   }
   if (Config_getBool(DIRECTORY_GRAPH))
   {
-    SDict<DirRelation>::Iterator rdi(Doxygen::dirRelations);
-    DirRelation *dr;
-    for (rdi.toFirst();(dr=rdi.current());++rdi)
+    for (const auto &dr : Doxygen::dirRelations)
     {
       dr->writeDocumentation(ol);
     }

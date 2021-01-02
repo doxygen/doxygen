@@ -163,12 +163,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       {
         QCString relationName;
         relationName.sprintf("dir_%06d_%06d",dir->dirCount(),usedDir->dirCount());
-        if (Doxygen::dirRelations.find(relationName)==0)
-        {
-          // new relation
-          Doxygen::dirRelations.append(relationName,
-            new DirRelation(relationName,dir,udir.get()));
-        }
+        Doxygen::dirRelations.add(relationName,
+            std::make_unique<DirRelation>(
+               relationName,dir,udir.get()));
         int nrefs = udir->filePairs().count();
         t << "  " << dir->getOutputFileBase() << "->"
           << usedDir->getOutputFileBase();

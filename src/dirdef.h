@@ -162,6 +162,10 @@ class DirList : public std::vector<const DirDef*>
 {
 };
 
+class DirRelationLinkedMap : public LinkedMap<DirRelation>
+{
+};
+
 // ------------------
 
 void buildDirectories();

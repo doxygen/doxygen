@@ -148,7 +148,7 @@ ClangUsrMap          *Doxygen::clangUsrMap = 0;
 bool                  Doxygen::outputToWizard=FALSE;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
-SDict<DirRelation>    Doxygen::dirRelations(257);
+DirRelationLinkedMap  Doxygen::dirRelations;
 ParserManager        *Doxygen::parserManager = 0;
 QCString              Doxygen::htmlFileExtension;
 bool                  Doxygen::suppressDocWarnings = FALSE;
@@ -10168,7 +10168,6 @@ void initDoxygen()
   Doxygen::pageLinkedMap = new PageLinkedMap;          // all doc pages
   Doxygen::exampleLinkedMap = new PageLinkedMap;       // all examples
   Doxygen::tagDestinationDict.setAutoDelete(TRUE);
-  Doxygen::dirRelations.setAutoDelete(TRUE);
   Doxygen::indexList = new IndexList;
 
   // initialisation of these globals depends on

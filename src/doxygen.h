@@ -53,7 +53,7 @@ class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceLinkedMap;
 class NamespaceDef;
-class DirRelation;
+class DirRelationLinkedMap;
 class IndexList;
 class FormulaList;
 class FormulaDict;
@@ -124,7 +124,7 @@ class Doxygen
     static bool                      outputToWizard;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;
-    static SDict<DirRelation>        dirRelations;
+    static DirRelationLinkedMap      dirRelations;
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
     static QCString                  filterDBFileName;
