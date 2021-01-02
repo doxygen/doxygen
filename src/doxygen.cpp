@@ -4160,7 +4160,18 @@ static bool findTemplateInstanceRelation(const Entry *root,
   ClassDefMutable *instanceClass = toClassDefMutable(
                      templateClass->insertTemplateInstance(
                      root->fileName,root->startLine,root->startColumn,templSpec,freshInstance));
-  if (isArtificial) instanceClass->setArtificial(TRUE);
+  if (isArtificial)
+  {
+    instanceClass->setArtificial(TRUE);
+    for (const auto innerClass : instanceClass->getClasses())
+    {
+      ClassDefMutable *innerClassMutable = toClassDefMutable(innerClass);
+      if (innerClassMutable)
+      {
+        innerClassMutable->setArtificial(TRUE);
+      }
+    }
+  }
   instanceClass->setLanguage(root->lang);
 
   if (freshInstance)

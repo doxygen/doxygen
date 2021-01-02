@@ -3990,6 +3990,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
     templateClass->setTemplateMaster(this);
     templateClass->setOuterScope(getOuterScope());
     templateClass->setHidden(isHidden());
+    templateClass->setArtificial(isArtificial());
     m_impl->templateInstances->insert(templSpec,templateClass);
 
     // also add nested classes
@@ -4006,6 +4007,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
         templateClass->addInnerCompound(innerClass);
         innerClass->setOuterScope(templateClass);
         innerClass->setHidden(isHidden());
+        templateClass->setArtificial(isArtificial());
         freshInstance=TRUE;
       }
     }
