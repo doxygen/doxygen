@@ -109,19 +109,6 @@ struct IndexField
   bool     reversed;
 };
 
-/** Sorted dictionary of IndexField objects. */
-class IndexFieldSDict : public SDict<IndexField>
-{
-  public:
-    IndexFieldSDict() : SDict<IndexField>(17) {}
-   ~IndexFieldSDict() {}
- private:
-    int compareValues(const IndexField *item1, const IndexField *item2) const
-    {
-      return qstricmp(item1->name,item2->name);
-    }
-};
-
 /** A helper class for HtmlHelp that manages a two level index in
  *  alphabetical order.
  */
