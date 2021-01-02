@@ -26,39 +26,6 @@
 #include "arguments.h"
 #include "groupdef.h"
 
-ClassList::ClassList() : QList<ClassDef>()
-{
-}
-
-ClassList::~ClassList()
-{
-}
-
-static int compItems(const ClassDef *c1,const ClassDef *c2)
-{
-  static bool b = Config_getBool(SORT_BY_SCOPE_NAME);
-  if (b)
-  {
-     return qstricmp(c1->name(), c2->name());
-  }
-  else
-  {
-     return qstricmp(c1->className(), c2->className());
-  }
-}
-
-int ClassList::compareValues(const ClassDef *item1, const ClassDef *item2) const
-{
-  return compItems(item1,item2);
-}
-
-ClassListIterator::ClassListIterator(const ClassList &cllist) :
-  QListIterator<ClassDef>(cllist)
-{
-}
-
-//-------------------------------------------
-
 bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
 {
   bool hideUndocClasses = Config_getBool(HIDE_UNDOC_CLASSES);

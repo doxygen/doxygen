@@ -50,7 +50,6 @@ class MemberDef;
 class ExampleSDict;
 class GroupDef;
 class NamespaceSDict;
-class ClassList;
 struct TagInfo;
 class PageDef;
 class SectionInfo;

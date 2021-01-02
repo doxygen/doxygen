@@ -35,7 +35,6 @@ class MemberDef;
 class MemberDefMutable;
 class MemberList;
 class MemberDict;
-class ClassList;
 class ClassLinkedRefMap;
 class OutputList;
 class FileDef;

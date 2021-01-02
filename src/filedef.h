@@ -34,7 +34,6 @@ class MemberList;
 class FileDef;
 class FileList;
 class ClassDef;
-class ClassList;
 class MemberDef;
 class OutputList;
 class NamespaceDef;
