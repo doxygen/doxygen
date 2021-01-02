@@ -873,7 +873,7 @@ static void readIncludeFile(const char *incName)
                                            g_config->appendUserComment(yytext);
                                            g_yyLineNr++;
                                          }
-<Start>"#"[^#].*"\n"                     { /* normal comment */
+<Start>"#".*"\n"                         { /* normal comment */
                                            g_yyLineNr++;
                                          }
 
