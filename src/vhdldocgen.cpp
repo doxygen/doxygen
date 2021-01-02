@@ -2123,8 +2123,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
     const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,int specifier)
 {
 
-  SDict<QCString> pack(1009);
-  pack.setAutoDelete(TRUE);
+  StringSet pack;
 
   bool first=TRUE;
   MemberDef *imd;
@@ -2142,17 +2141,16 @@ void VhdlDocGen::writePlainVHDLDeclarations(
       } //if
       else if (md->isBriefSectionVisible() && (mems==specifier))
       {
-        if (!pack.find(md->name().data()))
+        if (pack.find(md->name().str())==pack.end())
         {
           if (first) ol.startMemberList(),first=FALSE;
           VhdlDocGen::writeVHDLDeclaration(md,ol,cd,nd,fd,gd,FALSE);
-          pack.append(md->name().data(),new QCString(md->name().data()));
+          pack.insert(md->name().str());
         }
       } //if
     } //if
   } //for
   if (!first) ol.endMemberList();
-  pack.clear();
 }//plainDeclaration
 
 static bool membersHaveSpecificType(const MemberList *ml,uint64 type)
