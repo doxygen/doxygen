@@ -49,7 +49,6 @@ class GroupLinkedMap;
 class FileDef;
 class ClassDef;
 class ClassLinkedMap;
-class GenericsSDict;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceLinkedMap;
