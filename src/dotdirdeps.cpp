@@ -22,10 +22,10 @@
 
 /**
  * Puts DOT code for drawing directory to stream and adds it to the list.
- * @param outStream[in,out] stream to which the DOT code is written to
- * @param directory[in] will be mapped to a node in DOT code
- * @param fillBackground[in] if the node shall be explicitly filled
- * @param directoriesInGraph[in,out] lists the directories which have been written to the output stream
+ * @param[in,out] outStream stream to which the DOT code is written to
+ * @param[in] directory will be mapped to a node in DOT code
+ * @param[in] fillBackground if the node shall be explicitly filled
+ * @param[in,out] directoriesInGraph lists the directories which have been written to the output stream
  */
 static void drawDirectory(FTextStream &outStream, const DirDef *const directory, const bool fillBackground,
     QDict<DirDef> &directoriesInGraph)
