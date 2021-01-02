@@ -703,7 +703,7 @@ class ClassDefImpl::IMPL
     bool usedOnly = false;
 
     /** List of titles to use for the summary */
-    SDict<QCString> vhdlSummaryTitles;
+    StringSet vhdlSummaryTitles;
 
     /** Is this a simple (non-nested) C structure? */
     bool isSimple = false;
@@ -772,9 +772,8 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   }
 }
 
-ClassDefImpl::IMPL::IMPL() : vhdlSummaryTitles(17)
+ClassDefImpl::IMPL::IMPL()
 {
-  vhdlSummaryTitles.setAutoDelete(TRUE);
 }
 
 ClassDefImpl::IMPL::~IMPL()
@@ -884,10 +883,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
   if (getLanguage()==SrcLangExt_VHDL)
   {
     QCString title=theTranslator->trVhdlType(md->getMemberSpecifiers(),FALSE);
-    if (!m_impl->vhdlSummaryTitles.find(title))
-    {
-      m_impl->vhdlSummaryTitles.append(title,new QCString(title));
-    }
+    m_impl->vhdlSummaryTitles.insert(title.str());
   }
 
   if (1 /*!isReference()*/) // changed to 1 for showing members of external
@@ -2102,10 +2098,9 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   }
   else // VDHL only
   {
-    SDict<QCString>::Iterator li(m_impl->vhdlSummaryTitles);
-    for (li.toFirst();li.current();++li)
+    for (const auto &s : m_impl->vhdlSummaryTitles)
     {
-      ol.writeSummaryLink(0,convertToId(li.current()->data()),li.current()->data(),first);
+      ol.writeSummaryLink(0,convertToId(s.c_str()),s.c_str(),first);
       first=FALSE;
     }
   }
