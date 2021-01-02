@@ -390,6 +390,7 @@ comments can be used:
 \verbatim
 /*! <!-- This is a comment with a comment block --> Visible text */
 \endverbatim
+The part `<!-- ... -->` will not be shown in the main documentation.
 
 
 \htmlonly
