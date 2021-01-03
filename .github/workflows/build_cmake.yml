@@ -27,14 +27,14 @@ jobs:
         - {
             name: "Ubuntu Latest Clang Release",
             os: ubuntu-20.04,
-            build_type: "Release", cc: "clang-10", cxx: "clang++",
+            build_type: "Release", cc: "clang-10", cxx: "clang++-10",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
             os: ubuntu-20.04,
-            build_type: "Debug", cc: "clang-10", cxx: "clang++",
+            build_type: "Debug", cc: "clang-10", cxx: "clang++-10",
             build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES"
           }
