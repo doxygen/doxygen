@@ -95,6 +95,10 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
     
+    - name: Install libclang (Ubuntu 20.04)
+      run: sudo apt install llvm-10 clang-10 libclang-10-dev
+      if: matrix.config.os == 'ubuntu-20.04'
+    
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
