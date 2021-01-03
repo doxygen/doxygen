@@ -15,26 +15,28 @@ jobs:
             os: ubuntu-18.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles"
+            cmake_extra_opts: "-Dbuild_search=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-18.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles"
+            cmake_extra_opts: "-Dbuild_search=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
             os: ubuntu-20.04,
-            build_type: "Release", cc: "clang-10", cxx: "clang++-10 -stdlib=libc++",
+            build_type: "Release", cc: "clang-10", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dbuild_search=YES"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
             os: ubuntu-20.04,
-            build_type: "Debug", cc: "clang-10", cxx: "clang++-10 -stdlib=libc++",
+            build_type: "Debug", cc: "clang-10", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dbuild_search=YES"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES"
           }
         - {
             name: "macOS Latest Release",
@@ -101,14 +103,15 @@ jobs:
         #sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-cpp10 libclang1-10 libllvm10  
         sudo apt-get autoremove
         sudo apt-get clean
+        sudo apt install libclang-9-dev libclang-common-9-dev
         sudo apt install libclang-10-dev libclang-common-10-dev
         apt list --installed | egrep '(clang|llvm)'
       if: matrix.config.os == 'ubuntu-20.04'
     
-    - name: Install libxapian (Ubuntu 20.04)
+    - name: Install libxapian (Ubuntu 18.04)
       run: |
         sudo apt install libxapian-dev
-      if: matrix.config.os == 'ubuntu-20.04'
+      if: matrix.config.os == 'ubuntu-18.04'
           
     - name: Extract MikTex zip (Windows)
       shell: bash
