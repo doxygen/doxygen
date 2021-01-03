@@ -101,6 +101,11 @@ jobs:
         sudo apt list --installed | grep clang
       if: matrix.config.os == 'ubuntu-20.04'
     
+    - name: Install libxapian (Ubuntu 20.04)
+      run: |
+        sudo apt install libxapian-dev
+      if: matrix.config.os == 'ubuntu-20.04'
+          
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
