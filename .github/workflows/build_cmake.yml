@@ -97,7 +97,7 @@ jobs:
     
     - name: Install libclang (Ubuntu 20.04)
       run: |
-        sudo apt install libclang-9-dev;
+        sudo apt install libclang-8-dev;
         sudo apt list --installed | grep clang
       if: matrix.config.os == 'ubuntu-20.04'
     
