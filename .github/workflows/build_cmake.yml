@@ -97,11 +97,11 @@ jobs:
     
     - name: Install libclang (Ubuntu 20.04)
       run: |
-        sudo apt remove llvm-toolchain-8 llvm-toolchain-9
+        sudo apt remove llvm-8 clang-8 libclang-common-8-dev
         sudo apt-get autoremove
         sudo apt-get clean
-        sudo apt install llvm-toolchain-10
-        sudo apt list --installed | grep clang
+        sudo apt install liblang-9-dev
+        apt list --installed | egrep '(clang|llvm)'
       if: matrix.config.os == 'ubuntu-20.04'
     
     - name: Install libxapian (Ubuntu 20.04)
