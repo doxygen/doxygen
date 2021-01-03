@@ -97,7 +97,8 @@ jobs:
     
     - name: Install libclang (Ubuntu 20.04)
       run: |
-        sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8 
+        sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
+        sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 clang-common-10-dev libclang-cpp10 libclang1-10 libllvm10  
         sudo apt-get autoremove
         sudo apt-get clean
         sudo apt install libclang-9-dev libclang-common-9-dev
