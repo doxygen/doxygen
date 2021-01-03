@@ -96,7 +96,9 @@ jobs:
       if: matrix.config.os == 'macos-latest'
     
     - name: Install libclang (Ubuntu 20.04)
-      run: sudo apt install libclang-9-dev
+      run: |
+        sudo apt install libclang-9-dev;
+        sudo apt list --installed | grep clang
       if: matrix.config.os == 'ubuntu-20.04'
     
     - name: Extract MikTex zip (Windows)
