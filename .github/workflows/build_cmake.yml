@@ -87,7 +87,7 @@ jobs:
 
     - name: Install LaTeX (Linux)
       run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
-      if: matrix.config.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-*'
 
     - name: Install LaTeX (MacOS)
       run: |
@@ -132,7 +132,7 @@ jobs:
 
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
-      if: matrix.config.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-*'
     
     - name: Install Ghostscript (Windows)
       run:
@@ -150,7 +150,7 @@ jobs:
       
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
-      if: matrix.config.os == 'ubuntu-latest'
+      if: matrix.config.os == 'ubuntu-*'
 
     - name: Install xmllint (MacOS)
       run: brew install libxml2
