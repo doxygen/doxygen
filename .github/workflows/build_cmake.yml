@@ -14,14 +14,14 @@ jobs:
             name: "Ubuntu Latest GCC Release",
             os: ubuntu-18.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
-            build_gen: "Unix Makefiles"
+            build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-18.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
-            build_gen: "Unix Makefiles"
+            build_gen: "Unix Makefiles",
             cmake_extra_opts: "-Dbuild_search=YES"
           }
         - {
