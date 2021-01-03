@@ -1072,7 +1072,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 
 void writeExamples(OutputList &ol,const ExampleList &list)
 {
-  QCString exampleLine=theTranslator->trWriteList(list.size());
+  QCString exampleLine=theTranslator->trWriteList((int)list.size());
 
   //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
   //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
