@@ -214,6 +214,9 @@ jobs:
         refreshenv
       if: matrix.config.os == 'windows-latest'
     
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+    
     - name: Check tool versions (Linux / MacOS)
       shell: bash
       run: |
@@ -277,6 +280,7 @@ jobs:
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G "${{ matrix.config.build_gen }}"
             -Dbuild_doc=YES
+            -Dbuild_wizard=YES
             ${{ matrix.config.cmake_extra_opts }}            
           RESULT_VARIABLE result
         )
