@@ -9325,10 +9325,21 @@ static void generateDiskNames()
       int first_path_size = static_cast<int>(first.path.size())-1; // -1 to skip trailing slash
       int last_path_size  = static_cast<int>(last.path.size())-1;  // -1 to skip trailing slash
       int j=0;
-      for (int i=0;i<first_path_size && i<last_path_size;i++)
+      int i=0;
+      for (i=0;i<first_path_size && i<last_path_size;i++)
       {
         if (first.path[i]=='/') j=i;
         if (first.path[i]!=last.path[i]) break;
+      }
+      if (i==first_path_size && i<last_path_size && last.path[i]=='/')
+      {
+        // case first='some/path' and last='some/path/more' => match is 'some/path'
+        j=first_path_size;
+      }
+      else if (i==last_path_size && i<first_path_size && first.path[i]=='/')
+      {
+        // case first='some/path/more' and last='some/path' => match is 'some/path'
+        j=last_path_size;
       }
 
       // add non-common part of the path to the name
