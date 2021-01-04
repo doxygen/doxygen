@@ -42,18 +42,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qregexp.h>
-#include <qdir.h>
-#include <qcstringlist.h>
-#include "entry.h"
+
 #include "doxygen.h"
 #include "message.h"
 #include "outputlist.h"
 #include "util.h"
 #include "membername.h"
-#include "searchindex.h"
 #include "defargs.h"
-#include "memberlist.h"
 #include "config.h"
 #include "groupdef.h"
 #include "classlist.h"
@@ -99,17 +94,15 @@ class UseEntry
 {
  public:
    QCString module; // just for debug
-   QCStringList onlyNames;   /* entries of the ONLY-part */
+   std::vector<QCString> onlyNames;   /* entries of the ONLY-part */
 };
 
 /**
   module name -> list of ONLY/remote entries
   (module name = name of the module, which can be accessed via use-directive)
 */
-class UseSDict : public SDict<UseEntry>
+class UseMap : public std::map<std::string,UseEntry>
 {
-  public:
-    UseSDict() : SDict<UseEntry>(17) {}
 };
 
 /**
@@ -118,7 +111,7 @@ class UseSDict : public SDict<UseEntry>
 class Scope
 {
   public:
-    QCStringList useNames; //!< contains names of used modules
+    std::vector<QCString> useNames; //!< contains names of used modules
     StringUnorderedSet localVars; //!< contains names of local variables
     StringUnorderedSet externalVars; //!< contains names of external entities
 };
@@ -132,9 +125,9 @@ struct fortrancodeYY_state
 {
   QCString      docBlock;                   //!< contents of all lines of a documentation block
   QCString      currentModule=0;            //!< name of the current enclosing module
-  UseSDict  *   useMembers= 0;              //!< info about used modules
-  UseEntry  *   useEntry = 0;               //!< current use statement info
-  QList<Scope>  scopeStack;
+  UseMap      useMembers;                 //!< info about used modules
+  UseEntry      useEntry;                   //!< current use statement info
+  std::vector<Scope>  scopeStack;
   bool          isExternal = false;
   QCString      str="";         //!> contents of fortran string
 
@@ -181,7 +174,7 @@ static const char *stateToString(int state);
 static bool getFortranNamespaceDefs(const QCString &mname,
                                NamespaceDef *&cd);
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName,
-                               ClassDef *&cd, UseSDict *usedict=0);
+                               ClassDef *&cd, const UseMap &useMap);
 
 //----------------------------------------------------------------------------
 
@@ -198,7 +191,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 static bool getGenericProcedureLink(yyscan_t yyscanner,const ClassDef *cd,
                                     const char *memberText,
                                     CodeOutputInterface &ol);
-static bool getLink(yyscan_t yyscanner,UseSDict *usedict, // dictionary with used modules
+static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // map with used modules
                     const char *memberText,  // exact member text
                     CodeOutputInterface &ol,
                     const char *text);
@@ -209,7 +202,7 @@ static void endScope(yyscan_t yyscanner);
 static void addUse(yyscan_t yyscanner,const QCString &moduleName);
 static void addLocalVar(yyscan_t yyscanner,const QCString &varName);
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
-                                 UseSDict *usedict=0);
+                                 const UseMap &useMap);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 
@@ -356,12 +349,9 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->insideBody=FALSE;
 
                                           /* append module name to use dict */
-                                          yyextra->useEntry = new UseEntry();
-                                          //yyextra->useEntry->module = yytext;
-                                          //yyextra->useMembers->append(yytext, yyextra->useEntry);
-                                          //addUse(yytext);
-                                          yyextra->useEntry->module = tmp;
-                                          yyextra->useMembers->append(tmp, yyextra->useEntry);
+                                          yyextra->useEntry = UseEntry();
+                                          yyextra->useEntry.module = tmp;
+                                          yyextra->useMembers.insert(std::make_pair(tmp.str(), yyextra->useEntry));
                                           addUse(yyscanner,tmp);
                                         }
 <Use,UseOnly,Import>{BS},{BS}           { codifyLines(yyscanner,yytext); }
@@ -371,7 +361,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <UseOnly>{ID}                           {
                                           QCString tmp = yytext;
                                           tmp = tmp.lower();
-                                          yyextra->useEntry->onlyNames.append(tmp);
+                                          yyextra->useEntry.onlyNames.push_back(tmp);
                                           yyextra->insideBody=TRUE;
                                           generateLink(yyscanner,*yyextra->code, yytext);
                                           yyextra->insideBody=FALSE;
@@ -1081,7 +1071,7 @@ static bool getFortranNamespaceDefs(const QCString &mname,
   @returns true, if type is found
 */
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName,
-                               ClassDef *&cd, UseSDict *usedict)
+                               ClassDef *&cd, const UseMap &useMap)
 {
   if (tname.isEmpty()) return FALSE; /* empty name => nothing to link */
 
@@ -1100,10 +1090,9 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
   }
   else
   {
-    UseEntry *use;
-    for (UseSDict::Iterator di(*usedict); (use=di.current()); ++di)
+    for (const auto &kv : useMap)
     {
-      if ((cd= Doxygen::classLinkedMap->find(use->module+"::"+tname)))
+      if ((cd= Doxygen::classLinkedMap->find(kv.second.module+"::"+tname)))
       {
         //cout << "===  type found in used module" << endl;
         return TRUE;
@@ -1122,19 +1111,18 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
   @returns MemberDef pointer, if found, or nullptr otherwise
 */
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
-                                 UseSDict *usedict)
+                                 const UseMap &useMap)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (memberName.isEmpty()) return nullptr; /* empty name => nothing to link */
 
   // look in local variables
-  QListIterator<Scope> it(yyextra->scopeStack);
-  Scope *scope;
-  for (it.toLast();(scope=it.current());--it)
+  for (auto it = yyextra->scopeStack.rbegin(); it!=yyextra->scopeStack.rend(); ++it)
   {
+    const Scope &scope = *it;
     std::string lowMemName = memberName.lower().str();
-    if (scope->localVars.find(lowMemName)!=std::end(scope->localVars) &&     // local var
-        scope->externalVars.find(lowMemName)==std::end(scope->externalVars)) // and not external
+    if (scope.localVars   .find(lowMemName)!=std::end(scope.localVars)     &&  // local var
+        scope.externalVars.find(lowMemName)==std::end(scope.externalVars))     // and not external
     {
       return nullptr;
     }
@@ -1177,22 +1165,22 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
         else
         { // else search in used modules
           QCString usedModuleName= nspace->name();
-          UseEntry *ue= usedict->find(usedModuleName);
-          if (ue)
+          auto use_it = useMap.find(usedModuleName.str());
+          if (use_it!=useMap.end())
           {
+            const UseEntry &ue = use_it->second;
             // check if only-list exists and if current entry exists is this list
-            QCStringList &only= ue->onlyNames;
-            if (only.isEmpty())
+            if (ue.onlyNames.empty())
             {
               //cout << " found in module " << usedModuleName << " entry " << memberName <<  endl;
               return md.get(); // whole module used
             }
             else
             {
-              for ( QCStringList::Iterator lit = only.begin(); lit != only.end(); ++lit)
+              for ( const auto &name : ue.onlyNames)
               {
                 //cout << " search in only: " << usedModuleName << ":: " << memberName << "==" << (*it)<<  endl;
-                if (memberName == *lit)
+                if (memberName == name)
                 {
                   return md.get(); // found in ONLY-part of use list
                 }
@@ -1220,7 +1208,7 @@ static bool getGenericProcedureLink(yyscan_t yyscanner,const ClassDef *cd,
   return FALSE;
 }
 
-static bool getLink(yyscan_t yyscanner,UseSDict *usedict, // dictionary with used modules
+static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with used modules
                     const char *memberText,  // exact member text
                     CodeOutputInterface &ol,
                     const char *text)
@@ -1229,7 +1217,7 @@ static bool getLink(yyscan_t yyscanner,UseSDict *usedict, // dictionary with use
   MemberDef *md=0;
   QCString memberName= removeRedundantWhiteSpace(memberText);
 
-  if ((md=getFortranDefs(yyscanner,memberName, yyextra->currentModule, usedict)) && md->isLinkable())
+  if ((md=getFortranDefs(yyscanner,memberName, yyextra->currentModule, useMap)) && md->isLinkable())
   {
     if (md->isVariable() && (md->getLanguage()!=SrcLangExt_Fortran)) return FALSE; // Non Fortran variables aren't handled yet,
                                                                                    // see also linkifyText in util.cpp
@@ -1324,8 +1312,7 @@ static void startScope(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   DBG_CTX((stderr, "===> startScope %s",yytext));
-  Scope *scope = new Scope;
-  yyextra->scopeStack.append(scope);
+  yyextra->scopeStack.push_back(Scope());
 }
 
 /** end scope */
@@ -1333,36 +1320,35 @@ static void endScope(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   DBG_CTX((stderr,"===> endScope %s",yytext));
-  if (yyextra->scopeStack.isEmpty())
+  if (yyextra->scopeStack.empty())
   {
     DBG_CTX((stderr,"WARNING: fortrancode.l: stack empty!\n"));
     return;
   }
 
-  Scope *scope = yyextra->scopeStack.getLast();
-  yyextra->scopeStack.removeLast();
-  for ( QCStringList::Iterator it = scope->useNames.begin(); it != scope->useNames.end(); ++it)
+  Scope &scope = yyextra->scopeStack.back();
+  for ( const auto &name : scope.useNames)
   {
-    yyextra->useMembers->remove(*it);
+    yyextra->useMembers.erase(name.str());
   }
-  delete scope;
+  yyextra->scopeStack.pop_back();
 }
 
 static void addUse(yyscan_t yyscanner,const QCString &moduleName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->scopeStack.isEmpty())
-    yyextra->scopeStack.getLast()->useNames.append(moduleName);
+  if (!yyextra->scopeStack.empty())
+    yyextra->scopeStack.back().useNames.push_back(moduleName);
 }
 
 static void addLocalVar(yyscan_t yyscanner,const QCString &varName)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (!yyextra->scopeStack.isEmpty())
+  if (!yyextra->scopeStack.empty())
   {
     std::string lowVarName = varName.lower().str();
-    yyextra->scopeStack.getLast()->localVars.insert(lowVarName);
-    if (yyextra->isExternal) yyextra->scopeStack.getLast()->externalVars.insert(lowVarName);
+    yyextra->scopeStack.back().localVars.insert(lowVarName);
+    if (yyextra->isExternal) yyextra->scopeStack.back().externalVars.insert(lowVarName);
   }
 }
 
@@ -1418,12 +1404,10 @@ FortranCodeParser::FortranCodeParser(FortranFormat format) : p(std::make_unique<
   fortrancodeYYset_debug(1,p->yyscanner);
 #endif
   resetCodeParserState();
-  p->state.useMembers = new UseSDict;
 }
 
 FortranCodeParser::~FortranCodeParser()
 {
-  delete p->state.useMembers;
   fortrancodeYYlex_destroy(p->yyscanner);
 }
 
