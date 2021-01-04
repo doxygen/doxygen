@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -13,6 +13,9 @@
  *
  */
 
+#include <set>
+#include <stack>
+
 #include <qfile.h>
 #include "docsets.h"
 #include "config.h"
@@ -24,20 +27,26 @@
 #include "memberdef.h"
 #include "namespacedef.h"
 #include "util.h"
+#include "ftextstream.h"
 
-DocSets::DocSets() : m_nodes(17), m_scopes(17)
+struct DocSets::Private
 {
-  m_nf = 0;
-  m_tf = 0;
-  m_dc = 0;
-  m_id = 0;
-  m_nodes.setAutoDelete(TRUE);
+  QCString indent();
+  QFile nf;
+  QFile tf;
+  FTextStream nts;
+  FTextStream tts;
+  std::stack<bool> indentStack;
+  std::set<std::string> scopes;
+};
+
+
+DocSets::DocSets() : p(std::make_unique<Private>())
+{
 }
 
 DocSets::~DocSets()
 {
-  delete m_nf;
-  delete m_tf;
 }
 
 void DocSets::initialize()
@@ -144,85 +153,74 @@ void DocSets::initialize()
 
   // -- start Nodes.xml
   QCString notes = Config_getString(HTML_OUTPUT) + "/Nodes.xml";
-  m_nf = new QFile(notes);
-  if (!m_nf->open(IO_WriteOnly))
+  p->nf.setName(notes);
+  if (!p->nf.open(IO_WriteOnly))
   {
     term("Could not open file %s for writing\n",notes.data());
   }
   //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
   QCString indexName="index";
-  m_nts.setDevice(m_nf);
-  m_nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  m_nts << "<DocSetNodes version=\"1.0\">" << endl;
-  m_nts << "  <TOC>" << endl;
-  m_nts << "    <Node>" << endl;
-  m_nts << "      <Name>Root</Name>" << endl;
-  m_nts << "      <Path>" << indexName << Doxygen::htmlFileExtension << "</Path>" << endl;
-  m_nts << "      <Subnodes>" << endl;
-  m_dc = 1;
-  m_firstNode.resize(m_dc);
-  m_firstNode.at(0)=TRUE;
+  p->nts.setDevice(&p->nf);
+  p->nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+  p->nts << "<DocSetNodes version=\"1.0\">" << endl;
+  p->nts << "  <TOC>" << endl;
+  p->nts << "    <Node>" << endl;
+  p->nts << "      <Name>Root</Name>" << endl;
+  p->nts << "      <Path>" << indexName << Doxygen::htmlFileExtension << "</Path>" << endl;
+  p->nts << "      <Subnodes>" << endl;
+  p->indentStack.push(true);
 
   QCString tokens = Config_getString(HTML_OUTPUT) + "/Tokens.xml";
-  m_tf = new QFile(tokens);
-  if (!m_tf->open(IO_WriteOnly))
+  p->tf.setName(tokens);
+  if (!p->tf.open(IO_WriteOnly))
   {
     term("Could not open file %s for writing\n",tokens.data());
   }
-  m_tts.setDevice(m_tf);
-  m_tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  m_tts << "<Tokens version=\"1.0\">" << endl;
+  p->tts.setDevice(&p->tf);
+  p->tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
+  p->tts << "<Tokens version=\"1.0\">" << endl;
 }
 
 void DocSets::finalize()
 {
-  if (!m_firstNode.at(m_dc-1))
+  if (!p->indentStack.top())
   {
-    m_nts << indent() << " </Node>" << endl;
+    p->nts << p->indent() << " </Node>" << endl;
   }
-  m_dc--;
-  m_nts << "      </Subnodes>" << endl;
-  m_nts << "    </Node>" << endl;
-  m_nts << "  </TOC>" << endl;
-  m_nts << "</DocSetNodes>" << endl;
-  m_nf->close();
-  delete m_nf;
-  m_nf=0;
+  p->indentStack.pop();
+  p->nts << "      </Subnodes>" << endl;
+  p->nts << "    </Node>" << endl;
+  p->nts << "  </TOC>" << endl;
+  p->nts << "</DocSetNodes>" << endl;
+  p->nf.close();
 
-  m_tts << "</Tokens>" << endl;
-  m_tf->close();
-  delete m_tf;
-  m_tf=0;
+  p->tts << "</Tokens>" << endl;
+  p->tf.close();
 }
 
-QCString DocSets::indent()
+QCString DocSets::Private::indent()
 {
   QCString result;
-  result.fill(' ',(m_dc+2)*2);
+  result.fill(' ',(indentStack.size()+2)*2);
   return result;
 }
 
 void DocSets::incContentsDepth()
 {
-  //printf("DocSets::incContentsDepth() m_dc=%d\n",m_dc);
-  ++m_dc;
-  m_nts << indent() << "<Subnodes>" << endl;
-  m_firstNode.resize(m_dc);
-  if (m_dc>0)
-  {
-    m_firstNode.at(m_dc-1)=TRUE;
-  }
+  //printf("DocSets::incContentsDepth() depth=%zu\n",p->indentStack.size());
+  p->nts << p->indent() << "<Subnodes>" << endl;
+  p->indentStack.push(true);
 }
 
 void DocSets::decContentsDepth()
 {
-  if (!m_firstNode.at(m_dc-1))
+  if (!p->indentStack.top())
   {
-    m_nts << indent() << " </Node>" << endl;
+    p->nts << p->indent() << " </Node>" << endl;
   }
-  m_nts << indent() << "</Subnodes>" << endl;
-  --m_dc;
-  //printf("DocSets::decContentsDepth() m_dc=%d\n",m_dc);
+  p->nts << p->indent() << "</Subnodes>" << endl;
+  p->indentStack.pop();
+  //printf("DocSets::decContentsDepth() depth=%zu\n",p->indentStack.size());
 }
 
 void DocSets::addContentsItem(bool isDir,
@@ -235,36 +233,36 @@ void DocSets::addContentsItem(bool isDir,
                               const Definition * /*def*/)
 {
   (void)isDir;
-  //printf("DocSets::addContentsItem(%s) m_dc=%d\n",name,m_dc);
+  //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());
   if (ref==0)
   {
-    if (!m_firstNode.at(m_dc-1))
+    if (!p->indentStack.top())
     {
-      m_nts << indent() << " </Node>" << endl;
+      p->nts << p->indent() << " </Node>" << endl;
     }
-    m_firstNode.at(m_dc-1)=FALSE;
-    m_nts << indent() << " <Node>" << endl;
-    m_nts << indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
+    p->indentStack.top()=false;
+    p->nts << p->indent() << " <Node>" << endl;
+    p->nts << p->indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
     if (file && file[0]=='^') // URL marker
     {
-      m_nts << indent() << "  <URL>" << convertToXML(&file[1])
+      p->nts << p->indent() << "  <URL>" << convertToXML(&file[1])
             << "</URL>" << endl;
     }
     else // relative file
     {
-      m_nts << indent() << "  <Path>";
+      p->nts << p->indent() << "  <Path>";
       if (file && file[0]=='!') // user specified file
       {
-        m_nts << convertToXML(&file[1]);
+        p->nts << convertToXML(&file[1]);
       }
       else if (file) // doxygen generated file
       {
-        m_nts << file << Doxygen::htmlFileExtension;
+        p->nts << file << Doxygen::htmlFileExtension;
       }
-      m_nts << "</Path>" << endl;
+      p->nts << "</Path>" << endl;
       if (file && anchor)
       {
-        m_nts << indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;
+        p->nts << p->indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;
       }
     }
   }
@@ -421,7 +419,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
         decl = fd->name();
       }
     }
-    writeToken(m_tts,md,type,lang,scope,md->anchor(),decl);
+    writeToken(p->tts,md,type,lang,scope,md->anchor(),decl);
   }
   else if (context && context->isLinkable())
   {
@@ -476,10 +474,10 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       scope = nd->name();
       type = "ns";
     }
-    if (m_scopes.find(context->getOutputFileBase())==0)
+    if (p->scopes.find(context->getOutputFileBase().str())==p->scopes.end())
     {
-      writeToken(m_tts,context,type,lang,scope,0,decl);
-      m_scopes.append(context->getOutputFileBase(),(void*)0x8);
+      writeToken(p->tts,context,type,lang,scope,0,decl);
+      p->scopes.insert(context->getOutputFileBase().str());
     }
   }
 }
