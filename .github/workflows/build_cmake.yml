@@ -12,27 +12,31 @@ jobs:
         config:
         - {
             name: "Ubuntu Latest GCC Release",
-            os: ubuntu-latest,
+            os: ubuntu-18.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
-            build_gen: "Unix Makefiles"
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
-            os: ubuntu-latest,
+            os: ubuntu-18.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
-            build_gen: "Unix Makefiles"
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
-            os: ubuntu-latest,
+            os: ubuntu-20.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
-            os: ubuntu-latest,
+            os: ubuntu-20.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
-            build_gen: "Unix Makefiles"
+            build_gen: "Unix Makefiles",
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
           }
         - {
             name: "macOS Latest Release",
@@ -84,8 +88,8 @@ jobs:
       if: matrix.config.os == 'windows-latest'
 
     - name: Install LaTeX (Linux)
-      run: sudo apt-get install texlive texlive-generic-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
-      if: matrix.config.os == 'ubuntu-latest'
+      run: sudo apt-get install texlive texlive-latex-recommended texlive-extra-utils texlive-latex-extra texlive-font-utils
+      if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install LaTeX (MacOS)
       run: |
@@ -93,6 +97,24 @@ jobs:
         echo "/Library/TeX/texbin/" >> $GITHUB_PATH
       if: matrix.config.os == 'macos-latest'
     
+    - name: Install libclang (Ubuntu 20.04)
+      run: |
+        sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
+        #sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-cpp10 libclang1-10 libllvm10  
+        sudo apt-get autoremove
+        sudo apt-get clean
+        #sudo apt install libclang-9-dev libclang-common-9-dev
+        sudo apt install libclang-10-dev libclang-common-10-dev
+        apt list --installed | egrep '(clang|llvm)'
+        ls -d /usr/lib/llvm-*/include/
+        clang++ -v
+      if: matrix.config.os == 'ubuntu-20.04'
+    
+    - name: Install libxapian (Ubuntu 18.04)
+      run: |
+        sudo apt install libxapian-dev
+      if: matrix.config.os == 'ubuntu-18.04'
+          
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
@@ -130,7 +152,7 @@ jobs:
 
     - name: Install Ghostscript (Linux)
       run: sudo apt-get install ghostscript
-      if: matrix.config.os == 'ubuntu-latest'
+      if: startsWith(matrix.config.os,'ubuntu-')
     
     - name: Install Ghostscript (Windows)
       run:
@@ -148,7 +170,7 @@ jobs:
       
     - name: Install xmllint (Linux)
       run: sudo apt-get install libxml2-utils
-      if: matrix.config.os == 'ubuntu-latest'
+      if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install xmllint (MacOS)
       run: brew install libxml2
@@ -167,7 +189,7 @@ jobs:
 
     - name: Install Graphviz (Linux)
       run: sudo apt-get install graphviz
-      if: matrix.config.os == 'ubuntu-latest'
+      if: startsWith(matrix.config.os,'ubuntu-')
 
     - name: Install Graphviz (MacOS)
       run: brew install graphviz
@@ -191,6 +213,9 @@ jobs:
       run:
         refreshenv
       if: matrix.config.os == 'windows-latest'
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
     
     - name: Check tool versions (Linux / MacOS)
       shell: bash
@@ -255,9 +280,8 @@ jobs:
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G "${{ matrix.config.build_gen }}"
             -Dbuild_doc=YES
-            -Dbuild_app=YES
-            -Dbuild_parse=YES
-            -Dbuild_xmlparser=YES            
+            -Dbuild_wizard=YES
+            ${{ matrix.config.cmake_extra_opts }}            
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
