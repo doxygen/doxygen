@@ -481,9 +481,9 @@ void DotNode::writeBox(FTextStream &t,
       {
         for (const auto &mg : m_classDef->getMemberGroups())
         {
-          if (mg.members())
+          if (mg->members())
           {
-            writeBoxMemberList(t,'*',mg.members(),m_classDef,FALSE,&arrowNames);
+            writeBoxMemberList(t,'*',mg->members(),m_classDef,FALSE,&arrowNames);
           }
         }
       }

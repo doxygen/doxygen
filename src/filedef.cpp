@@ -280,9 +280,9 @@ void FileDefImpl::computeAnchors()
 void FileDefImpl::distributeMemberGroupDocumentation()
 {
   //printf("FileDefImpl::distributeMemberGroupDocumentation()\n");
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.distributeMemberGroupDocumentation();
+    mg->distributeMemberGroupDocumentation();
   }
 }
 
@@ -290,9 +290,9 @@ void FileDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.findSectionsInDocumentation(this);
+    mg->findSectionsInDocumentation(this);
   }
 
   for (auto &ml : m_memberLists)
@@ -395,9 +395,9 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          for (auto &mg : m_memberGroups)
+          for (const auto &mg : m_memberGroups)
           {
-            mg.writeTagFile(tagFile);
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -732,10 +732,10 @@ void FileDefImpl::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   for (const auto &mg : m_memberGroups)
   {
-    if ((!mg.allMembersInSameSection() || !m_subGrouping)
-        && mg.header()!="[NOHEADER]")
+    if ((!mg->allMembersInSameSection() || !m_subGrouping)
+        && mg->header()!="[NOHEADER]")
     {
-      mg.writeDeclarations(ol,0,0,this,0);
+      mg->writeDeclarations(ol,0,0,this,0);
     }
   }
 }
@@ -1247,12 +1247,12 @@ void FileDefImpl::addMembersToMemberGroup()
   }
 
   // add members inside sections to their groups
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    if (mg.allMembersInSameSection() && m_subGrouping)
+    if (mg->allMembersInSameSection() && m_subGrouping)
     {
       //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
-      mg.addToDeclarationSection();
+      mg->addToDeclarationSection();
     }
   }
 }
@@ -1529,9 +1529,9 @@ void FileDefImpl::addListReferences()
                0
               );
   }
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.addListReferences(this);
+    mg->addListReferences(this);
   }
   for (auto &ml : m_memberLists)
   {
@@ -1907,9 +1907,9 @@ void FileDefImpl::sortMemberLists()
     if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
   }
 
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    MemberList *mlg = mg.members();
+    MemberList *mlg = mg->members();
     if (mlg->needsSorting()) { mlg->sort(); mlg->setNeedsSorting(FALSE); }
   }
 
@@ -2032,10 +2032,10 @@ void FileDefImpl::countMembers()
     ml.countDecMembers();
     ml.countDocMembers();
   }
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.countDecMembers();
-    mg.countDocMembers();
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 

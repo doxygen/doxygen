@@ -8857,9 +8857,9 @@ MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCStr
   p = new Private;
   for (const auto &mg : list)
   {
-    if (!mg.allMembersInSameSection() || !subGrouping)
+    if (!mg->allMembersInSameSection() || !subGrouping)
     {
-      p->addMemberGroup(def,relPath,&mg);
+      p->addMemberGroup(def,relPath,mg.get());
     }
   }
 }
@@ -9131,13 +9131,13 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       // addMemberGroupsOfGroup?
       for (const auto &mg: cd->getMemberGroups())
       {
-        if (mg.members() && (!mg.allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
+        if (mg->members() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
         {
-          MemberListIterator li(*mg.members());
+          MemberListIterator li(*mg->members());
           MemberDef *md;
           for (li.toFirst();(md=li.current());++li)
           {
-            if (lt==md->getSectionList(mg.container())->listType() &&
+            if (lt==md->getSectionList(mg->container())->listType() &&
                 !md->isReimplementedBy(inheritedFrom) &&
                 md->isBriefSectionVisible())
             {

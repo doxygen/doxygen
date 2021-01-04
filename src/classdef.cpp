@@ -858,12 +858,12 @@ void ClassDefImpl::addMembersToMemberGroup()
   }
 
   // add members inside sections to their groups
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    if (mg.allMembersInSameSection() && m_impl->subGrouping)
+    if (mg->allMembersInSameSection() && m_impl->subGrouping)
     {
       //printf("addToDeclarationSection(%s)\n",mg->header().data());
-      mg.addToDeclarationSection();
+      mg->addToDeclarationSection();
     }
   }
 }
@@ -1173,17 +1173,17 @@ void ClassDefImpl::computeAnchors()
     }
   }
 
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    mg.setAnchors();
+    mg->setAnchors();
   }
 }
 
 void ClassDefImpl::distributeMemberGroupDocumentation()
 {
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    mg.distributeMemberGroupDocumentation();
+    mg->distributeMemberGroupDocumentation();
   }
 }
 
@@ -1191,9 +1191,9 @@ void ClassDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    mg.findSectionsInDocumentation(this);
+    mg->findSectionsInDocumentation(this);
   }
   for (auto &ml : m_impl->memberLists)
   {
@@ -1968,9 +1968,9 @@ void ClassDefImpl::writeMemberGroups(OutputList &ol,bool showInline) const
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)
   {
-    if (!mg.allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
+    if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
     {
-      mg.writeDeclarations(ol,this,0,0,0,showInline);
+      mg->writeDeclarations(ol,this,0,0,0,showInline);
     }
     else // add this group to the corresponding member section
     {
@@ -2185,9 +2185,9 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          for (auto &mg : m_impl->memberGroups)
+          for (const auto &mg : m_impl->memberGroups)
           {
-            mg.writeTagFile(tagFile);
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -3270,10 +3270,10 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   ol.endMemberItem();
 
   // write user defined member groups
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    mg.setInGroup(inGroup);
-    mg.writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
+    mg->setInGroup(inGroup);
+    mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
   }
 
   QListIterator<LayoutDocEntry> eli(
@@ -4163,9 +4163,9 @@ void ClassDefImpl::addListReferences()
              this
             );
   }
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    mg.addListReferences(this);
+    mg->addListReferences(this);
   }
   for (auto &ml : m_impl->memberLists)
   {
@@ -4275,10 +4275,10 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
     // also include grouped members that have their own section in the class (see bug 722759)
     if (inheritedFrom)
     {
-      for (auto &mg : m_impl->memberGroups)
+      for (const auto &mg : m_impl->memberGroups)
       {
-        count+=mg.countGroupedInheritedMembers(lt);
-        if (lt2!=1) count+=mg.countGroupedInheritedMembers((MemberListType)lt2);
+        count+=mg->countGroupedInheritedMembers(lt);
+        if (lt2!=1) count+=mg->countGroupedInheritedMembers((MemberListType)lt2);
       }
     }
     static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
@@ -4309,9 +4309,9 @@ void ClassDefImpl::setAnonymousEnumType()
     }
     else if (lde->kind()==LayoutDocEntry::MemberGroups)
     {
-      for (auto &mg : m_impl->memberGroups)
+      for (const auto &mg : m_impl->memberGroups)
       {
-        mg.setAnonymousEnumType();
+        mg->setAnonymousEnumType();
       }
     }
   }
@@ -4324,10 +4324,10 @@ void ClassDefImpl::countMembers()
     ml.countDecMembers();
     ml.countDocMembers();
   }
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    mg.countDecMembers();
-    mg.countDocMembers();
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 
@@ -4445,13 +4445,13 @@ int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
     count=ml->countInheritableMembers(inheritedFrom);
   }
   //printf("%s:countMembersIncludingGrouped: count=%d\n",name().data(),count);
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    bool hasOwnSection = !mg.allMembersInSameSection() ||
+    bool hasOwnSection = !mg->allMembersInSameSection() ||
                          !m_impl->subGrouping; // group is in its own section
     if ((additional && hasOwnSection) || (!additional && !hasOwnSection))
     {
-      count+=mg.countGroupedInheritedMembers(lt);
+      count+=mg->countGroupedInheritedMembers(lt);
     }
   }
   //printf("%s:countMembersIncludingGrouped(lt=%d,%s)=%d\n",
@@ -4556,11 +4556,11 @@ void ClassDefImpl::addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                         const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("** %s::addGroupedInheritedMembers(%p) inheritId=%s\n",name().data(),m_impl->memberGroupSDict,inheritId.data());
-  for (auto &mg : m_impl->memberGroups)
+  for (const auto &mg : m_impl->memberGroups)
   {
-    if (!mg.allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
+    if (!mg->allMembersInSameSection() || !m_impl->subGrouping) // group is in its own section
     {
-      mg.addGroupedInheritedMembers(ol,this,lt,inheritedFrom,inheritId);
+      mg->addGroupedInheritedMembers(ol,this,lt,inheritedFrom,inheritId);
     }
   }
 }

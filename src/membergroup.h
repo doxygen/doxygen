@@ -108,15 +108,7 @@ class MemberGroup
 };
 
 using MemberGroupRefList = std::vector<MemberGroup *>;
-
-class MemberGroupList : public std::vector<MemberGroup>
-{
-  public:
-    MemberGroupList() = default;
-  private:
-    MemberGroupList(const MemberGroupList &) = delete;
-    MemberGroupList &operator=(const MemberGroupList &) = delete;
-};
+using MemberGroupList = std::vector< std::unique_ptr<MemberGroup> >;
 
 /** Data collected for a member group */
 struct MemberGroupInfo

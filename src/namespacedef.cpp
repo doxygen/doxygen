@@ -303,9 +303,9 @@ void NamespaceDefImpl::setFileName(const QCString &fn)
 
 void NamespaceDefImpl::distributeMemberGroupDocumentation()
 {
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.distributeMemberGroupDocumentation();
+    mg->distributeMemberGroupDocumentation();
   }
 }
 
@@ -313,9 +313,9 @@ void NamespaceDefImpl::findSectionsInDocumentation()
 {
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.findSectionsInDocumentation(this);
+    mg->findSectionsInDocumentation(this);
   }
   for (auto &ml : m_memberLists)
   {
@@ -391,12 +391,12 @@ void NamespaceDefImpl::addMembersToMemberGroup()
   }
 
   // add members inside sections to their groups
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    if (mg.allMembersInSameSection() && m_subGrouping)
+    if (mg->allMembersInSameSection() && m_subGrouping)
     {
       //printf("----> addToDeclarationSection(%s)\n",mg->header().data());
-      mg.addToDeclarationSection();
+      mg->addToDeclarationSection();
     }
   }
 }
@@ -597,9 +597,9 @@ void NamespaceDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          for (auto &mg : m_memberGroups)
+          for (const auto &mg : m_memberGroups)
           {
-            mg.writeTagFile(tagFile);
+            mg->writeTagFile(tagFile);
           }
         }
         break;
@@ -763,10 +763,10 @@ void NamespaceDefImpl::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   for (const auto &mg : m_memberGroups)
   {
-    if ((!mg.allMembersInSameSection() || !m_subGrouping)
-        && mg.header()!="[NOHEADER]")
+    if ((!mg->allMembersInSameSection() || !m_subGrouping)
+        && mg->header()!="[NOHEADER]")
     {
-      mg.writeDeclarations(ol,0,this,0,0);
+      mg->writeDeclarations(ol,0,this,0,0);
     }
   }
 }
@@ -1108,10 +1108,10 @@ void NamespaceDefImpl::countMembers()
     ml.countDecMembers();
     ml.countDocMembers();
   }
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.countDecMembers();
-    mg.countDocMembers();
+    mg->countDecMembers();
+    mg->countDocMembers();
   }
 }
 
@@ -1170,9 +1170,9 @@ void NamespaceDefImpl::addListReferences()
         this
         );
   }
-  for (auto &mg : m_memberGroups)
+  for (const auto &mg : m_memberGroups)
   {
-    mg.addListReferences(this);
+    mg->addListReferences(this);
   }
   for (auto &ml : m_memberLists)
   {
