@@ -135,7 +135,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
 
     LinkedRefMap<const NamespaceDef> m_usingDirList;
     LinkedRefMap<const ClassDef> m_usingDeclList;
-    SDict<Definition>    *m_innerCompounds = 0;
+    LinkedRefMap<const Definition> m_innerCompounds;
 
     MemberLinkedRefMap    m_allMembers;
     MemberLists           m_memberLists;
@@ -262,7 +262,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
   {
     setFileName(name);
   }
-  m_innerCompounds = new SDict<Definition>(17);
   setReference(lref);
   m_inline=FALSE;
   m_subGrouping=Config_getBool(SUBGROUPING);
@@ -286,7 +285,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
 
 NamespaceDefImpl::~NamespaceDefImpl()
 {
-  delete m_innerCompounds;
 }
 
 void NamespaceDefImpl::setFileName(const QCString &fn)
@@ -340,7 +338,7 @@ void NamespaceDefImpl::insertUsedFile(FileDef *fd)
 
 void NamespaceDefImpl::addInnerCompound(const Definition *d)
 {
-  m_innerCompounds->append(d->localName(),d);
+  m_innerCompounds.add(d->localName(),d);
   if (d->definitionType()==Definition::TypeNamespace)
   {
     insertNamespace(toNamespaceDef(d));
@@ -1118,7 +1116,7 @@ void NamespaceDefImpl::countMembers()
 int NamespaceDefImpl::numDocMembers() const
 {
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
-  return (allMemberList ? allMemberList->numDocMembers() : 0) + m_innerCompounds->count();
+  return (allMemberList ? allMemberList->numDocMembers() : 0) + (int)m_innerCompounds.size();
 }
 
 void NamespaceDefImpl::addUsingDirective(const NamespaceDef *nd)
@@ -1140,7 +1138,7 @@ QCString NamespaceDefImpl::getOutputFileBase() const
 const Definition *NamespaceDefImpl::findInnerCompound(const char *n) const
 {
   if (n==0) return 0;
-  const Definition *d = m_innerCompounds->find(n);
+  const Definition *d = m_innerCompounds.find(n);
   if (d==0)
   {
     if (!m_usingDirList.empty())
