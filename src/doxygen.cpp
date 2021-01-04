@@ -3926,7 +3926,7 @@ static ClassDef *findClassWithinClassContext(Definition *context,ClassDef *cd,co
   //       context ? context->name().data() : "<none>",
   //       cd      ? cd->name().data()      : "<none>",
   //       result  ? result->name().data()  : "<none>",
-  //       Doxygen::classSDict->find(name)
+  //       Doxygen::classLinkedMap->find(name)
   //      );
   return result;
 }
@@ -8988,23 +8988,6 @@ static void generateGroupDocs()
     }
   }
 }
-
-//----------------------------------------------------------------------------
-
-//static void generatePackageDocs()
-//{
-//  writePackageIndex(*g_outputList);
-//
-//  if (Doxygen::packageDict.count()>0)
-//  {
-//    PackageSDict::Iterator pdi(Doxygen::packageDict);
-//    PackageDef *pd;
-//    for (pdi.toFirst();(pd=pdi.current());++pdi)
-//    {
-//      pd->writeDocumentation(*g_outputList);
-//    }
-//  }
-//}
 
 //----------------------------------------------------------------------------
 // generate module pages

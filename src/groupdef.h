@@ -37,7 +37,6 @@ class ClassDef;
 class NamespaceDef;
 class GroupList;
 class OutputList;
-class NamespaceSDict;
 class PageLinkedRefMap;
 class PageDef;
 class DirDef;
