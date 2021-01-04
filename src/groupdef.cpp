@@ -208,9 +208,9 @@ void GroupDefImpl::setGroupTitle( const char *t )
 
 void GroupDefImpl::distributeMemberGroupDocumentation()
 {
-  for (const auto &mg : m_memberGroups)
+  for (auto &mg : m_memberGroups)
   {
-    mg->distributeMemberGroupDocumentation();
+    mg.distributeMemberGroupDocumentation();
   }
 }
 
@@ -219,9 +219,9 @@ void GroupDefImpl::findSectionsInDocumentation()
   docFindSections(briefDescription(),this,docFile());
   docFindSections(documentation(),this,docFile());
 
-  for (const auto &mg : m_memberGroups)
+  for (auto &mg : m_memberGroups)
   {
-    mg->findSectionsInDocumentation(this);
+    mg.findSectionsInDocumentation(this);
   }
 
   for (auto &ml : m_memberLists)
@@ -301,9 +301,9 @@ void GroupDefImpl::addMembersToMemberGroup()
   }
 
   //printf("GroupDefImpl::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
-  for (const auto &mg : m_memberGroups)
+  for (auto &mg : m_memberGroups)
   {
-    mg->setInGroup(TRUE);
+    mg.setInGroup(TRUE);
   }
 }
 
@@ -572,10 +572,10 @@ void GroupDefImpl::countMembers()
     ml.countDecMembers();
     ml.countDocMembers();
   }
-  for (const auto &mg : m_memberGroups)
+  for (auto &mg : m_memberGroups)
   {
-    mg->countDecMembers();
-    mg->countDocMembers();
+    mg.countDecMembers();
+    mg.countDocMembers();
   }
 }
 
@@ -696,9 +696,9 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberGroups:
         {
-          for (const auto &mg : m_memberGroups)
+          for (auto &mg : m_memberGroups)
           {
-            mg->writeTagFile(tagFile);
+            mg.writeTagFile(tagFile);
           }
         }
         break;
@@ -978,7 +978,7 @@ void GroupDefImpl::writeMemberGroups(OutputList &ol)
   /* write user defined member groups */
   for (const auto &mg : m_memberGroups)
   {
-    mg->writeDeclarations(ol,0,0,0,this);
+    mg.writeDeclarations(ol,0,0,0,this);
   }
 }
 
@@ -1528,9 +1528,9 @@ void GroupDefImpl::addListReferences()
              0
             );
   }
-  for (const auto &mg : m_memberGroups)
+  for (auto &mg : m_memberGroups)
   {
-    mg->addListReferences(this);
+    mg.addListReferences(this);
   }
   for (auto &ml : m_memberLists)
   {

@@ -4403,24 +4403,23 @@ void addMembersToMemberGroup(MemberList *ml,
               auto mg_it = std::find_if(pMemberGroups->begin(),
                                         pMemberGroups->end(),
                                         [&groupId](const auto &g)
-                                        { return g->groupId()==groupId; }
+                                        { return g.groupId()==groupId; }
                                        );
               MemberGroup *mg_ptr = 0;
               if (mg_it==pMemberGroups->end())
               {
-                auto mg = std::make_unique<MemberGroup>(
+                pMemberGroups->emplace_back(
                           context,
                           groupId,
                           info->header,
                           info->doc,
                           info->docFile,
                           info->docLine);
-                mg_ptr = mg.get();
-                pMemberGroups->push_back(std::move(mg));
+                mg_ptr = &pMemberGroups->back();
               }
               else
               {
-                mg_ptr = (*mg_it).get();
+                mg_ptr = &(*mg_it);
               }
               mg_ptr->insertMember(fmd); // insert in member group
               fmd->setMemberGroup(mg_ptr);
@@ -4439,24 +4438,23 @@ void addMembersToMemberGroup(MemberList *ml,
         auto mg_it = std::find_if(pMemberGroups->begin(),
                                   pMemberGroups->end(),
                                   [&groupId](const auto &g)
-                                  { return g->groupId()==groupId; }
+                                  { return g.groupId()==groupId; }
                                  );
         MemberGroup *mg_ptr = 0;
         if (mg_it==pMemberGroups->end())
         {
-          auto mg = std::make_unique<MemberGroup>(
+          pMemberGroups->emplace_back(
                     context,
                     groupId,
                     info->header,
                     info->doc,
                     info->docFile,
                     info->docLine);
-          mg_ptr = mg.get();
-          pMemberGroups->push_back(std::move(mg));
+          mg_ptr = &pMemberGroups->back();
         }
         else
         {
-          mg_ptr = (*mg_it).get();
+          mg_ptr = &(*mg_it);
         }
         md = ml->take(index); // remove from member list
         mg_ptr->insertMember(md->resolveAlias()); // insert in member group

@@ -1784,13 +1784,13 @@ void PerlModGenerator::generatePerlUserDefinedSection(const Definition *d, const
     for (const auto &mg : mgl)
     {
       m_output.openHash();
-      if (mg->header())
-        m_output.addFieldQuotedString("header", mg->header());
+      if (mg.header())
+        m_output.addFieldQuotedString("header", mg.header());
 
-      if (mg->members())
+      if (mg.members())
       {
         m_output.openList("members");
-        MemberListIterator mli(*mg->members());
+        MemberListIterator mli(*mg.members());
         const MemberDef *md;
         for (mli.toFirst(); (md = mli.current()); ++mli)
         {

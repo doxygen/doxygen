@@ -1357,8 +1357,8 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
   writeTemplateList(cd,t);
   for (const auto &mg : cd->getMemberGroups())
   {
-    generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header(),
-        mg->documentation());
+    generateXMLSection(cd,ti,t,mg.members(),"user-defined",mg.header(),
+        mg.documentation());
   }
 
   for (const auto &ml : cd->getMemberLists())
@@ -1454,8 +1454,8 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   for (const auto &mg : nd->getMemberGroups())
   {
-    generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header(),
-          mg->documentation());
+    generateXMLSection(nd,ti,t,mg.members(),"user-defined",mg.header(),
+          mg.documentation());
   }
 
   for (const auto &ml : nd->getMemberLists())
@@ -1578,8 +1578,8 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
 
   for (const auto &mg : fd->getMemberGroups())
   {
-    generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header(),
-        mg->documentation());
+    generateXMLSection(fd,ti,t,mg.members(),"user-defined",mg.header(),
+        mg.documentation());
   }
 
   for (const auto &ml : fd->getMemberLists())
@@ -1651,8 +1651,8 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
 
   for (const auto &mg : gd->getMemberGroups())
   {
-    generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header(),
-        mg->documentation());
+    generateXMLSection(gd,ti,t,mg.members(),"user-defined",mg.header(),
+        mg.documentation());
   }
 
   for (const auto &ml : gd->getMemberLists())
