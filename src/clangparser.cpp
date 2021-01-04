@@ -137,7 +137,7 @@ class ClangTUParser::Private
     StringVector filesInSameTU;
 
     // state while parsing sources
-    MemberDef  *currentMemberDef=0;
+    const MemberDef  *currentMemberDef=0;
     uint        currentLine=0;
     bool        searchForBody=FALSE;
     bool        insideBody=FALSE;
@@ -492,11 +492,11 @@ QCString ClangTUParser::lookup(uint line,const char *symbol)
 
 void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line)
 {
-  Definition *d = fd ? fd->getSourceDefinition(line) : 0;
+  const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
   if (d && d->isLinkable())
   {
     p->currentLine=line;
-    MemberDef *md = fd->getSourceMember(line);
+    const MemberDef *md = fd->getSourceMember(line);
     if (md && md->isLinkable())  // link to member
     {
       if (p->currentMemberDef!=md) // new member, start search for body
