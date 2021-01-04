@@ -15,14 +15,14 @@ jobs:
             os: ubuntu-18.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-18.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
           }
         - {
             name: "Ubuntu Latest Clang Release",
@@ -277,9 +277,6 @@ jobs:
             -D CMAKE_BUILD_TYPE=${{ matrix.config.build_type }}
             -G "${{ matrix.config.build_gen }}"
             -Dbuild_doc=YES
-            -Dbuild_app=YES
-            -Dbuild_parse=YES
-            -Dbuild_xmlparser=YES
             ${{ matrix.config.cmake_extra_opts }}            
           RESULT_VARIABLE result
         )
