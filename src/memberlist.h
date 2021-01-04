@@ -17,6 +17,7 @@
 #define MEMBERLIST_H
 
 #include <vector>
+#include <algorithm>
 
 #include <qlist.h>
 #include "memberdef.h"
@@ -129,6 +130,25 @@ class MemberListIterator : public QListIterator<MemberDef>
 
 class MemberLinkedRefMap : public LinkedRefMap<const MemberDef>
 {
+};
+
+class MemberLists : public std::vector<MemberList>
+{
+  public:
+    MemberLists() = default;
+    MemberList &get(MemberListType lt)
+    {
+      // find the list with the given type
+      auto it = std::find_if(begin(),end(),[&lt](const auto &ml) { return ml.listType()==lt; });
+      if (it!=end()) return *it;
+      // or create a new list if it is not found
+      emplace_back(lt);
+      return back();
+    }
+
+  private:
+    MemberLists(const MemberLists &) = delete;
+    MemberLists &operator=(const MemberLists &) = delete;
 };
 
 int genericCompareMembers(const MemberDef *c1,const MemberDef *c2);

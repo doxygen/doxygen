@@ -247,7 +247,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setBitfields(const char *s);
     virtual void setMaxInitLines(int lines);
     virtual void setMemberClass(const ClassDef *cd);
-    virtual void setSectionList(const Definition *container,MemberList *sl);
+    virtual void setSectionList(const Definition *container,const MemberList *sl);
     virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0);
@@ -1240,7 +1240,7 @@ class MemberDefImpl::IMPL
                                    // as its type then this is computed by
                                    // getClassDefOfAnonymousType() and
                                    // cached here.
-    SDict<MemberList> *classSectionSDict = 0; // not accessible
+    std::map<const Definition *,const MemberList *> sectionMap;
 
     const MemberDef *groupAlias = 0;    // Member containing the definition
     int grpId = 0;                // group id
@@ -1302,7 +1302,6 @@ class MemberDefImpl::IMPL
 MemberDefImpl::IMPL::IMPL() :
     enumFields(0),
     redefinedBy(0),
-    classSectionSDict(0),
     category(0),
     categoryRelation(0),
     declLine(-1),
@@ -1315,7 +1314,6 @@ MemberDefImpl::IMPL::~IMPL()
 {
   delete redefinedBy;
   delete enumFields;
-  delete classSectionSDict;
 }
 
 void MemberDefImpl::IMPL::init(Definition *d,
@@ -1388,7 +1386,6 @@ void MemberDefImpl::IMPL::init(Definition *d,
   }
   metaData = meta;
   templateMaster = 0;
-  classSectionSDict = 0;
   docsForDefinition = TRUE;
   isTypedefValCached = FALSE;
   cachedTypedefValue = 0;
@@ -1460,7 +1457,6 @@ MemberDef *MemberDefImpl::deepCopy() const
   // clear pointers owned by object
   result->m_impl->redefinedBy= 0;
   result->m_impl->enumFields=0;
-  result->m_impl->classSectionSDict=0;
   // replace pointers owned by the object by deep copies
   if (m_impl->redefinedBy)
   {
@@ -1484,16 +1480,6 @@ MemberDef *MemberDefImpl::deepCopy() const
   result->m_impl->tArgList = m_impl->tArgList;
   result->m_impl->typeConstraints = m_impl->typeConstraints;
   result->setDefinitionTemplateParameterLists(m_impl->defTmpArgLists);
-  if (m_impl->classSectionSDict)
-  {
-    result->m_impl->classSectionSDict = new SDict<MemberList>(7);
-    SDict<MemberList>::IteratorDict it(*m_impl->classSectionSDict);
-    MemberList *ml;
-    for (it.toFirst();(ml=it.current());++it)
-    {
-      result->m_impl->classSectionSDict->append(it.currentKey(),ml);
-    }
-  }
   result->m_impl->declArgList = m_impl->declArgList;
   return result;
 }
@@ -4355,23 +4341,14 @@ void MemberDefImpl::addListReference(Definition *)
 
 const MemberList *MemberDefImpl::getSectionList(const Definition *container) const
 {
-  const Definition *d = container;
-  char key[20];
-  sprintf(key,"%p",(void*)d);
-  return (d!=0 && m_impl->classSectionSDict) ? m_impl->classSectionSDict->find(key) : 0;
+  auto it = m_impl->sectionMap.find(container);
+  return it!=m_impl->sectionMap.end() ? it->second : 0;
 }
 
-void MemberDefImpl::setSectionList(const Definition *container,MemberList *sl)
+void MemberDefImpl::setSectionList(const Definition *container,const MemberList *sl)
 {
   //printf("MemberDefImpl::setSectionList(%s,%p) name=%s\n",d->name().data(),sl,name().data());
-  const Definition *d= container;
-  char key[20];
-  sprintf(key,"%p",(void*)d);
-  if (m_impl->classSectionSDict==0)
-  {
-    m_impl->classSectionSDict = new SDict<MemberList>(7);
-  }
-  m_impl->classSectionSDict->append(key,sl);
+  m_impl->sectionMap.insert(std::make_pair(container,sl));
 }
 
 Specifier MemberDefImpl::virtualness(int count) const

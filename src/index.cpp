@@ -355,7 +355,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                        const QCString &name,const QCString &anchor,
                        bool addToIndex=TRUE,bool preventSeparateIndex=FALSE)
 {
-  bool hasMembers = def->getMemberLists().count()>0 || !def->getMemberGroups().empty();
+  bool hasMembers = !def->getMemberLists().empty() || !def->getMemberGroups().empty();
   Doxygen::indexList->addContentsItem(hasMembers,name,
                                      def->getReference(),def->getOutputFileBase(),anchor,
                                      hasMembers && !preventSeparateIndex,
@@ -3759,13 +3759,11 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
     size_t numSubItems = 0;
     if (1 /*Config_getBool(TOC_EXPAND)*/)
     {
-      QListIterator<MemberList> mli(gd->getMemberLists());
-      MemberList *ml;
-      for (mli.toFirst();(ml=mli.current());++mli)
+      for (const auto &ml : gd->getMemberLists())
       {
-        if (ml->listType()&MemberListType_documentationLists)
+        if (ml.listType()&MemberListType_documentationLists)
         {
-          numSubItems += ml->count();
+          numSubItems += ml.count();
         }
       }
       numSubItems += gd->getNamespaces().size();

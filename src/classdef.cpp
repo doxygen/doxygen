@@ -222,7 +222,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual ClassDef *categoryOf() const;
     virtual QCString className() const;
     virtual MemberList *getMemberList(MemberListType lt) const;
-    virtual const QList<MemberList> &getMemberLists() const;
+    virtual const MemberLists &getMemberLists() const;
     virtual const MemberGroupList &getMemberGroups() const;
     virtual QDict<int> *getTemplateBaseClassNames() const;
     virtual ClassDef *getVariableInstance(const char *templSpec) const;
@@ -321,7 +321,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle) const;
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
-    MemberList *createMemberList(MemberListType lt);
     void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,
                                           const ClassDef *inheritedFrom,bool invert,
                                           bool showAlways,QPtrDict<void> *visitedClasses) const;
@@ -493,7 +492,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->className(); }
     virtual MemberList *getMemberList(MemberListType lt) const
     { return getCdAlias()->getMemberList(lt); }
-    virtual const QList<MemberList> &getMemberLists() const
+    virtual const MemberLists &getMemberLists() const
     { return getCdAlias()->getMemberLists(); }
     virtual const MemberGroupList &getMemberGroups() const
     { return getCdAlias()->getMemberGroups(); }
@@ -674,7 +673,7 @@ class ClassDefImpl::IMPL
      */
     ClassDef *categoryOf = 0;
 
-    QList<MemberList> memberLists;
+    MemberLists memberLists;
 
     /* user defined member groups */
     MemberGroupList memberGroups;
@@ -850,13 +849,11 @@ void ClassDefImpl::insertSubClass(ClassDef *cd,Protection p,
 
 void ClassDefImpl::addMembersToMemberGroup()
 {
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if ((ml.listType()&MemberListType_detailedLists)==0)
     {
-      ::addMembersToMemberGroup(ml,&m_impl->memberGroups,this);
+      ::addMembersToMemberGroup(&ml,&m_impl->memberGroups,this);
     }
   }
 
@@ -1103,8 +1100,8 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
               case MemberType_Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
-                  MemberList *ml = createMemberList(MemberListType_constructors);
-                  ml->append(md);
+                  MemberList &ml = m_impl->memberLists.get(MemberListType_constructors);
+                  ml.append(md);
                 }
                 else
                 {
@@ -1168,16 +1165,11 @@ void ClassDefImpl::insertMember(MemberDef *md)
 // compute the anchors for all members
 void ClassDefImpl::computeAnchors()
 {
-  //ClassDef *context = Config_getBool(INLINE_INHERITED_MEMB) ? this : 0;
-  //const char *letters = "abcdefghijklmnopqrstuvwxyz0123456789";
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  //int index = 0;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if ((ml.listType()&MemberListType_detailedLists)==0)
     {
-      ml->setAnchors();
+      ml.setAnchors();
     }
   }
 
@@ -1203,13 +1195,11 @@ void ClassDefImpl::findSectionsInDocumentation()
   {
     mg->findSectionsInDocumentation(this);
   }
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if ((ml.listType()&MemberListType_detailedLists)==0)
     {
-      ml->findSectionsInDocumentation(this);
+      ml.findSectionsInDocumentation(this);
     }
   }
 }
@@ -2770,13 +2760,11 @@ void ClassDefImpl::writeMemberPages(OutputList &ol) const
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : m_impl->memberLists)
   {
-    if (ml->numDocMembers()>ml->numDocEnumValues() && (ml->listType()&MemberListType_detailedLists))
+    if (ml.numDocMembers()>ml.numDocEnumValues() && (ml.listType()&MemberListType_detailedLists))
     {
-      ml->writeDocumentationPage(ol,displayName(),this);
+      ml.writeDocumentationPage(ol,displayName(),this);
     }
   }
 
@@ -4179,13 +4167,11 @@ void ClassDefImpl::addListReferences()
   {
     mg->addListReferences(this);
   }
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    if (ml->listType()&MemberListType_detailedLists)
+    if (ml.listType()&MemberListType_detailedLists)
     {
-      ml->addListReferences(this);
+      ml.addListReferences(this);
     }
   }
 }
@@ -4220,33 +4206,13 @@ bool ClassDefImpl::isAccessibleMember(const MemberDef *md) const
   return md->getClassDef() && isBaseClass(md->getClassDef(),TRUE);
 }
 
-MemberList *ClassDefImpl::createMemberList(MemberListType lt)
-{
-  m_impl->memberLists.setAutoDelete(TRUE);
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
-  {
-    if (ml->listType()==lt)
-    {
-      return ml;
-    }
-  }
-  // not found, create a new member list
-  ml = new MemberList(lt);
-  m_impl->memberLists.append(ml);
-  return ml;
-}
-
 MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
 {
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    if (ml->listType()==lt)
+    if (ml.listType()==lt)
     {
-      return ml;
+      return &ml;
     }
   }
   return 0;
@@ -4256,28 +4222,26 @@ void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList *ml = createMemberList(lt);
-  ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
-  ml->append(md);
+  MemberList &ml = m_impl->memberLists.get(lt);
+  ml.setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
+  ml.append(md);
 
   // for members in the declaration lists we set the section, needed for member grouping
-  if ((ml->listType()&MemberListType_detailedLists)==0)
+  if ((ml.listType()&MemberListType_detailedLists)==0)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
-      mdm->setSectionList(this,ml);
+      mdm->setSectionList(this,&ml);
     }
   }
 }
 
 void ClassDefImpl::sortMemberLists()
 {
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
   }
   std::sort(m_impl->innerClasses.begin(),
             m_impl->innerClasses.end(),
@@ -4355,12 +4319,10 @@ void ClassDefImpl::setAnonymousEnumType()
 
 void ClassDefImpl::countMembers()
 {
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    ml->countDecMembers();
-    ml->countDocMembers();
+    ml.countDecMembers();
+    ml.countDocMembers();
   }
   for (const auto &mg : m_impl->memberGroups)
   {
@@ -4795,7 +4757,7 @@ ClassDef *ClassDefImpl::categoryOf() const
   return m_impl->categoryOf;
 }
 
-const QList<MemberList> &ClassDefImpl::getMemberLists() const
+const MemberLists &ClassDefImpl::getMemberLists() const
 {
   return m_impl->memberLists;
 }
@@ -4873,11 +4835,9 @@ MemberDef *ClassDefImpl::isSmartPointer() const
 void ClassDefImpl::reclassifyMember(MemberDefMutable *md,MemberType t)
 {
   md->setMemberType(t);
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    ml->remove(md);
+    ml.remove(md);
   }
   insertMember(md);
 }
@@ -4942,11 +4902,9 @@ void ClassDefImpl::setTagLessReference(const ClassDef *cd)
 
 void ClassDefImpl::removeMemberFromLists(MemberDef *md)
 {
-  QListIterator<MemberList> mli(m_impl->memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_impl->memberLists)
   {
-    ml->remove(md);
+    ml.remove(md);
   }
 }
 

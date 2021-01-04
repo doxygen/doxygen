@@ -308,7 +308,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setBitfields(const char *s) = 0;
     virtual void setMaxInitLines(int lines) = 0;
     virtual void setMemberClass(const ClassDef *cd) = 0;
-    virtual void setSectionList(const Definition *container,MemberList *sl) = 0;
+    virtual void setSectionList(const Definition *container,const MemberList *sl) = 0;
     virtual void setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
                      const QCString &fileName,int startLine,bool hasDocs,
                      MemberDef *member=0) = 0;

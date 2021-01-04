@@ -87,7 +87,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual QList<IncludeInfo> *includedByFileList() const { return m_includedByList; }
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
     virtual MemberList *getMemberList(MemberListType lt) const;
-    virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+    virtual const MemberLists &getMemberLists() const { return m_memberLists; }
     virtual const MemberGroupList &getMemberGroups() const  { return m_memberGroups; }
     virtual NamespaceLinkedRefMap getNamespaces() const     { return m_namespaces; }
     virtual ClassLinkedRefMap getClasses() const   { return m_classes; }
@@ -130,7 +130,6 @@ class FileDefImpl : public DefinitionMixin<FileDef>
 
   private:
     void acquireFileVersion();
-    MemberList *createMemberList(MemberListType lt);
     void addMemberToList(MemberListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
@@ -171,7 +170,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     QCString              m_fileVersion;
     PackageDef           *m_package;
     DirDef               *m_dir;
-    QList<MemberList>     m_memberLists;
+    MemberLists           m_memberLists;
     MemberGroupList       m_memberGroups;
     NamespaceLinkedRefMap m_namespaces;
     ClassLinkedRefMap     m_classes;
@@ -296,13 +295,11 @@ void FileDefImpl::findSectionsInDocumentation()
     mg->findSectionsInDocumentation(this);
   }
 
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml.listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation(this);
+      ml.findSectionsInDocumentation(this);
     }
   }
 }
@@ -1044,13 +1041,11 @@ void FileDefImpl::writeMemberPages(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml.listType()&MemberListType_documentationLists)
     {
-      ml->writeDocumentationPage(ol,name(),this);
+      ml.writeDocumentationPage(ol,name(),this);
     }
   }
 
@@ -1243,13 +1238,11 @@ void FileDefImpl::parseSource(ClangTUParser *clangParser)
 
 void FileDefImpl::addMembersToMemberGroup()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml.listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(ml,&m_memberGroups,this);
+      ::addMembersToMemberGroup(&ml,&m_memberGroups,this);
     }
   }
 
@@ -1278,8 +1271,8 @@ void FileDefImpl::insertMember(MemberDef *md)
 
   if (allMemberList==0)
   {
-    allMemberList = new MemberList(MemberListType_allMembersList);
-    m_memberLists.append(allMemberList);
+    m_memberLists.emplace_back(MemberListType_allMembersList);
+    allMemberList = &m_memberLists.back();
   }
   allMemberList->append(md);
   //::addFileMemberNameToIndex(md);
@@ -1540,13 +1533,11 @@ void FileDefImpl::addListReferences()
   {
     mg->addListReferences(this);
   }
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml.listType()&MemberListType_documentationLists)
     {
-      ml->addListReferences(this);
+      ml.addListReferences(this);
     }
   }
 }
@@ -1886,54 +1877,34 @@ QCString FileDefImpl::includeName() const
   return getSourceFileBase();
 }
 
-MemberList *FileDefImpl::createMemberList(MemberListType lt)
-{
-  m_memberLists.setAutoDelete(TRUE);
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
-  {
-    if (ml->listType()==lt)
-    {
-      return ml;
-    }
-  }
-  // not found, create a new member list
-  ml = new MemberList(lt);
-  m_memberLists.append(ml);
-  return ml;
-}
-
 void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList *ml = createMemberList(lt);
-  ml->setNeedsSorting(
-       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml->append(md);
+  MemberList &ml = m_memberLists.get(lt);
+  ml.setNeedsSorting(
+       ((ml.listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+       ((ml.listType()&MemberListType_documentationLists) && sortMemberDocs));
+  ml.append(md);
   if (lt&MemberListType_documentationLists)
   {
-    ml->setInFile(TRUE);
+    ml.setInFile(TRUE);
   }
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml.listType()&MemberListType_declarationLists)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
-      mdm->setSectionList(this,ml);
+      mdm->setSectionList(this,&ml);
     }
   }
 }
 
 void FileDefImpl::sortMemberLists()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
   }
 
   for (const auto &mg : m_memberGroups)
@@ -1967,13 +1938,11 @@ void FileDefImpl::sortMemberLists()
 
 MemberList *FileDefImpl::getMemberList(MemberListType lt) const
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()==lt)
+    if (ml.listType()==lt)
     {
-      return ml;
+      return const_cast<MemberList*>(&ml);
     }
   }
   return 0;
@@ -2058,12 +2027,10 @@ QCString FileDefImpl::includedByDependencyGraphFileName() const
 
 void FileDefImpl::countMembers()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    ml->countDecMembers();
-    ml->countDocMembers();
+    ml.countDecMembers();
+    ml.countDocMembers();
   }
   for (const auto &mg : m_memberGroups)
   {

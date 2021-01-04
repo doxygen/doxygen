@@ -75,7 +75,7 @@ class NamespaceDef : public Definition
     virtual const Definition *findInnerCompound(const char *name) const = 0;
     virtual bool subGrouping() const = 0;
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
-    virtual const QList<MemberList> &getMemberLists() const = 0;
+    virtual const MemberLists &getMemberLists() const = 0;
     virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
     /*! Returns the user defined member groups */

@@ -1054,7 +1054,7 @@ static bool memberVisible(const Definition *d,const MemberDef *md)
 }
 
 static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &t,
-                      MemberList *ml,const char *kind,const char *header=0,
+                      const MemberList *ml,const char *kind,const char *header=0,
                       const char *documentation=0)
 {
   if (ml==0) return;
@@ -1361,13 +1361,11 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
         mg->documentation());
   }
 
-  QListIterator<MemberList> mli(cd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if ((ml.listType()&MemberListType_detailedLists)==0)
     {
-      generateXMLSection(cd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+      generateXMLSection(cd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
     }
   }
 
@@ -1460,13 +1458,11 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
           mg->documentation());
   }
 
-  QListIterator<MemberList> mli(nd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : nd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if ((ml.listType()&MemberListType_declarationLists)!=0)
     {
-      generateXMLSection(nd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+      generateXMLSection(nd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
     }
   }
 
@@ -1586,13 +1582,11 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
         mg->documentation());
   }
 
-  QListIterator<MemberList> mli(fd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : fd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if ((ml.listType()&MemberListType_declarationLists)!=0)
     {
-      generateXMLSection(fd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+      generateXMLSection(fd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
     }
   }
 
@@ -1661,13 +1655,11 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
         mg->documentation());
   }
 
-  QListIterator<MemberList> mli(gd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : gd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if ((ml.listType()&MemberListType_declarationLists)!=0)
     {
-      generateXMLSection(gd,ti,t,ml,g_xmlSectionMapper.find(ml->listType()));
+      generateXMLSection(gd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
     }
   }
 

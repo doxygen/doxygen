@@ -95,7 +95,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void setFileName(const QCString &fn);
     virtual bool subGrouping() const { return m_subGrouping; }
     virtual MemberList *getMemberList(MemberListType lt) const;
-    virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+    virtual const MemberLists &getMemberLists() const { return m_memberLists; }
     virtual const MemberDef *getMemberByName(const QCString &) const;
     virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
     virtual ClassLinkedRefMap getClasses() const { return classes; }
@@ -110,7 +110,6 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void setMetaData(const QCString &m);
 
   private:
-    MemberList *createMemberList(MemberListType lt);
     void addMemberToList(MemberListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
@@ -139,7 +138,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     SDict<Definition>    *m_innerCompounds = 0;
 
     MemberLinkedRefMap    m_allMembers;
-    QList<MemberList>     m_memberLists;
+    MemberLists           m_memberLists;
     MemberGroupList       m_memberGroups;
     ClassLinkedRefMap     classes;
     ClassLinkedRefMap     interfaces;
@@ -208,7 +207,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->subGrouping(); }
     virtual MemberList *getMemberList(MemberListType lt) const
     { return getNSAlias()->getMemberList(lt); }
-    virtual const QList<MemberList> &getMemberLists() const
+    virtual const MemberLists &getMemberLists() const
     { return getNSAlias()->getMemberLists(); }
     virtual const MemberDef *getMemberByName(const QCString &name) const
     { return getNSAlias()->getMemberByName(name); }
@@ -318,13 +317,11 @@ void NamespaceDefImpl::findSectionsInDocumentation()
   {
     mg->findSectionsInDocumentation(this);
   }
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml.listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation(this);
+      ml.findSectionsInDocumentation(this);
     }
   }
 }
@@ -385,13 +382,11 @@ void NamespaceDefImpl::insertNamespace(const NamespaceDef *nd)
 
 void NamespaceDefImpl::addMembersToMemberGroup()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml.listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(ml,&m_memberGroups,this);
+      ::addMembersToMemberGroup(&ml,&m_memberGroups,this);
     }
   }
 
@@ -449,8 +444,8 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
     if (allMemberList==0)
     {
-      allMemberList = new MemberList(MemberListType_allMembersList);
-      m_memberLists.append(allMemberList);
+      m_memberLists.emplace_back(MemberListType_allMembersList);
+      allMemberList = &m_memberLists.back();
     }
     allMemberList->append(md);
     //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
@@ -1053,13 +1048,11 @@ void NamespaceDefImpl::writeMemberPages(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml.listType()&MemberListType_documentationLists)
     {
-      ml->writeDocumentationPage(ol,displayName(),this);
+      ml.writeDocumentationPage(ol,displayName(),this);
     }
   }
   ol.popGeneratorState();
@@ -1110,12 +1103,10 @@ void NamespaceDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *cur
 
 void NamespaceDefImpl::countMembers()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    ml->countDecMembers();
-    ml->countDocMembers();
+    ml.countDecMembers();
+    ml.countDocMembers();
   }
   for (const auto &mg : m_memberGroups)
   {
@@ -1183,13 +1174,11 @@ void NamespaceDefImpl::addListReferences()
   {
     mg->addListReferences(this);
   }
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml.listType()&MemberListType_documentationLists)
     {
-      ml->addListReferences(this);
+      ml.addListReferences(this);
     }
   }
 }
@@ -1336,53 +1325,32 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const char *title,
 
 //-------------------------------------------------------------------------------
 
-MemberList *NamespaceDefImpl::createMemberList(MemberListType lt)
-{
-  m_memberLists.setAutoDelete(TRUE);
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
-  {
-    if (ml->listType()==lt)
-    {
-      return ml;
-    }
-  }
-  // not found, create a new member list
-  ml = new MemberList(lt);
-  m_memberLists.append(ml);
-  return ml;
-}
-
 void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList *ml = createMemberList(lt);
-  ml->setNeedsSorting(
-      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml->append(md);
+  MemberList &ml = m_memberLists.get(lt);
+  ml.setNeedsSorting(
+      ((ml.listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+      ((ml.listType()&MemberListType_documentationLists) && sortMemberDocs));
+  ml.append(md);
 
-  if (ml->listType()&MemberListType_declarationLists)
+  if (ml.listType()&MemberListType_declarationLists)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
-      mdm->setSectionList(this,ml);
+      mdm->setSectionList(this,&ml);
     }
   }
 }
 
 void NamespaceDefImpl::sortMemberLists()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
   }
-
 
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
@@ -1411,13 +1379,11 @@ void NamespaceDefImpl::sortMemberLists()
 
 MemberList *NamespaceDefImpl::getMemberList(MemberListType lt) const
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()==lt)
+    if (ml.listType()==lt)
     {
-      return ml;
+      return const_cast<MemberList*>(&ml);
     }
   }
   return 0;

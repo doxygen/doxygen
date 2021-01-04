@@ -2012,13 +2012,11 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   }
 
   // this is just a list of *local* members
-  QListIterator<MemberList> mli(cd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_detailedLists)==0)
+    if ((ml.listType()&MemberListType_detailedLists)==0)
     {
-      generateSqlite3Section(cd,ml,refid,"user-defined");
+      generateSqlite3Section(cd,&ml,refid,"user-defined");
     }
   }
 
@@ -2071,13 +2069,11 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   }
 
   // + normal members
-  QListIterator<MemberList> mli(nd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : nd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if ((ml.listType()&MemberListType_declarationLists)!=0)
     {
-      generateSqlite3Section(nd,ml,refid,"user-defined");
+      generateSqlite3Section(nd,&ml,refid,"user-defined");
     }
   }
 }
@@ -2228,13 +2224,11 @@ static void generateSqlite3ForFile(const FileDef *fd)
   }
 
   // + normal members
-  QListIterator<MemberList> mli(fd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : fd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if ((ml.listType()&MemberListType_declarationLists)!=0)
     {
-      generateSqlite3Section(fd,ml,refid,"user-defined");
+      generateSqlite3Section(fd,&ml,refid,"user-defined");
     }
   }
 }
@@ -2297,13 +2291,11 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
   }
 
   // + members
-  QListIterator<MemberList> mli(gd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : gd->getMemberLists())
   {
-    if ((ml->listType()&MemberListType_declarationLists)!=0)
+    if ((ml.listType()&MemberListType_declarationLists)!=0)
     {
-      generateSqlite3Section(gd,ml,refid,"user-defined");
+      generateSqlite3Section(gd,&ml,refid,"user-defined");
     }
   }
 }

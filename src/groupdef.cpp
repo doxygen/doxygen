@@ -95,7 +95,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual Definition *getGroupScope() const { return m_groupScope; }
 
     virtual MemberList *getMemberList(MemberListType lt) const;
-    virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
+    virtual const MemberLists &getMemberLists() const { return m_memberLists; }
 
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
@@ -112,7 +112,6 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
   private:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
-    MemberList *createMemberList(MemberListType lt);
     void addMemberToList(MemberListType lt,MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
@@ -149,7 +148,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     MemberList *         m_allMemberList;
     MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
     Definition *         m_groupScope;
-    QList<MemberList>    m_memberLists;
+    MemberLists          m_memberLists;
     MemberGroupList      m_memberGroups;
     bool                 m_subGrouping;
 
@@ -225,13 +224,11 @@ void GroupDefImpl::findSectionsInDocumentation()
     mg->findSectionsInDocumentation(this);
   }
 
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml.listType()&MemberListType_declarationLists)
     {
-      ml->findSectionsInDocumentation(this);
+      ml.findSectionsInDocumentation(this);
     }
   }
 }
@@ -295,13 +292,11 @@ void GroupDefImpl::addExample(const PageDef *def)
 
 void GroupDefImpl::addMembersToMemberGroup()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_declarationLists)
+    if (ml.listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(ml,&m_memberGroups,this);
+      ::addMembersToMemberGroup(&ml,&m_memberGroups,this);
     }
   }
 
@@ -572,12 +567,10 @@ bool GroupDefImpl::isASubGroup() const
 
 void GroupDefImpl::countMembers()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    ml->countDecMembers();
-    ml->countDocMembers();
+    ml.countDecMembers();
+    ml.countDocMembers();
   }
   for (const auto &mg : m_memberGroups)
   {
@@ -1264,13 +1257,11 @@ void GroupDefImpl::writeMemberPages(OutputList &ol)
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
 
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (const auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml.listType()&MemberListType_documentationLists)
     {
-       ml->writeDocumentationPage(ol,name(),this);
+       ml.writeDocumentationPage(ol,name(),this);
     }
   }
 
@@ -1541,45 +1532,25 @@ void GroupDefImpl::addListReferences()
   {
     mg->addListReferences(this);
   }
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()&MemberListType_documentationLists)
+    if (ml.listType()&MemberListType_documentationLists)
     {
-      ml->addListReferences(this);
+      ml.addListReferences(this);
     }
   }
-}
-
-MemberList *GroupDefImpl::createMemberList(MemberListType lt)
-{
-  m_memberLists.setAutoDelete(TRUE);
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
-  {
-    if (ml->listType()==lt)
-    {
-      return ml;
-    }
-  }
-  // not found, create a new member list
-  ml = new MemberList(lt);
-  m_memberLists.append(ml);
-  ml->setInGroup(TRUE);
-  return ml;
 }
 
 void GroupDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList *ml = createMemberList(lt);
-  ml->setNeedsSorting(
-      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml->append(md);
+  MemberList &ml = m_memberLists.get(lt);
+  ml.setInGroup(true);
+  ml.setNeedsSorting(
+      ((ml.listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+      ((ml.listType()&MemberListType_documentationLists) && sortMemberDocs));
+  ml.append(md);
 }
 
 // performs a partial reordering to group elements together with the same scope
@@ -1645,11 +1616,9 @@ static void groupClassesWithSameScope(Vec &vec)
 
 void GroupDefImpl::sortMemberLists()
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
+    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
   }
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
@@ -1679,13 +1648,11 @@ void GroupDefImpl::sortMemberLists()
 
 MemberList *GroupDefImpl::getMemberList(MemberListType lt) const
 {
-  QListIterator<MemberList> mli(m_memberLists);
-  MemberList *ml;
-  for (;(ml=mli.current());++mli)
+  for (auto &ml : m_memberLists)
   {
-    if (ml->listType()==lt)
+    if (ml.listType()==lt)
     {
-      return ml;
+      return const_cast<MemberList*>(&ml);
     }
   }
   return 0;

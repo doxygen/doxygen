@@ -127,7 +127,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
 
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
-    virtual const QList<MemberList> &getMemberLists() const = 0;
+    virtual const MemberLists &getMemberLists() const = 0;
 
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;

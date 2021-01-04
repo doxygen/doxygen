@@ -28,6 +28,7 @@
 #include "linkedmap.h"
 
 class MemberList;
+class MemberLists;
 class FileList;
 class ClassLinkedRefMap;
 class NamespaceLinkedRefMap;
@@ -91,7 +92,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual Definition *getGroupScope() const = 0;
 
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
-    virtual const QList<MemberList> &getMemberLists() const = 0;
+    virtual const MemberLists &getMemberLists() const = 0;
 
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;
