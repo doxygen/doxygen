@@ -20,7 +20,7 @@
 
 #include <qlist.h>
 #include "memberdef.h"
-#include "sortdict.h"
+#include "linkedmap.h"
 #include "types.h"
 #include "membergroup.h"
 
@@ -127,22 +127,8 @@ class MemberListIterator : public QListIterator<MemberDef>
     virtual ~MemberListIterator() {}
 };
 
-/** An unsorted dictionary of MemberDef objects. */
-class MemberDict : public QDict<MemberDef>
+class MemberLinkedRefMap : public LinkedRefMap<const MemberDef>
 {
-  public:
-    MemberDict(uint size) : QDict<MemberDef>(size) {}
-    virtual ~MemberDict() {}
-};
-
-/** A sorted dictionary of MemberDef objects. */
-class MemberSDict : public SDict<MemberDef>
-{
-  public:
-    MemberSDict(uint size=17) : SDict<MemberDef>(size) {}
-    virtual ~MemberSDict() {}
-  private:
-    int compareValues(const MemberDef *item1,const MemberDef *item2) const;
 };
 
 int genericCompareMembers(const MemberDef *c1,const MemberDef *c2);

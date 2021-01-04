@@ -50,7 +50,6 @@ class FileDef;
 class FileList;
 struct IncludeInfo;
 class MemberList;
-class MemberSDict;
 class MemberDef;
 struct Argument;
 class ArgumentList;
@@ -962,8 +961,6 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
     { return new MemberListContext; }
     static MemberListContext *alloc(const MemberList *ml)
     { return new MemberListContext(ml); }
-    static MemberListContext *alloc(MemberSDict *ml,bool doSort)
-    { return new MemberListContext(ml,doSort); }
     static MemberListContext *alloc(std::vector<const MemberDef *> &&ml)
     { return new MemberListContext(std::move(ml)); }
 
@@ -977,7 +974,6 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
   private:
     MemberListContext();
     MemberListContext(const MemberList *ml);
-    MemberListContext(MemberSDict *ml,bool doSort);
     MemberListContext(std::vector<const MemberDef *> &&ml);
    ~MemberListContext();
     class Private;

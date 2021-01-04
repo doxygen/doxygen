@@ -1014,7 +1014,7 @@ static void startCodeLine(yyscan_t yyscanner)
     //lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
     //  if ((yyextra->yyLineNr % 500) == 0)
     //         fprintf(stderr,"\n starting Line %d:",yyextra->yyLineNr);
-    Definition *d   = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
+    const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
     //printf("startCodeLine %d d=%s\n", yyextra->yyLineNr,d ? d->name().data() : "<null>");
     if (!yyextra->includeCodeFragment && d)
     {

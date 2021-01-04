@@ -96,7 +96,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual bool subGrouping() const { return m_subGrouping; }
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const QList<MemberList> &getMemberLists() const { return m_memberLists; }
-    virtual MemberDef    *getMemberByName(const QCString &) const;
+    virtual const MemberDef *getMemberByName(const QCString &) const;
     virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
     virtual ClassLinkedRefMap getClasses() const { return classes; }
     virtual ClassLinkedRefMap getInterfaces() const { return interfaces; }
@@ -138,7 +138,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     LinkedRefMap<const ClassDef> m_usingDeclList;
     SDict<Definition>    *m_innerCompounds = 0;
 
-    MemberSDict          *m_allMembersDict = 0;
+    MemberLinkedRefMap    m_allMembers;
     QList<MemberList>     m_memberLists;
     MemberGroupList       m_memberGroups;
     ClassLinkedRefMap     classes;
@@ -210,7 +210,7 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->getMemberList(lt); }
     virtual const QList<MemberList> &getMemberLists() const
     { return getNSAlias()->getMemberLists(); }
-    virtual MemberDef    *getMemberByName(const QCString &name) const
+    virtual const MemberDef *getMemberByName(const QCString &name) const
     { return getNSAlias()->getMemberByName(name); }
     virtual const MemberGroupList &getMemberGroups() const
     { return getNSAlias()->getMemberGroups(); }
@@ -264,7 +264,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
     setFileName(name);
   }
   m_innerCompounds = new SDict<Definition>(17);
-  m_allMembersDict = 0;
   setReference(lref);
   m_inline=FALSE;
   m_subGrouping=Config_getBool(SUBGROUPING);
@@ -289,7 +288,6 @@ NamespaceDefImpl::NamespaceDefImpl(const char *df,int dl,int dc,
 NamespaceDefImpl::~NamespaceDefImpl()
 {
   delete m_innerCompounds;
-  delete m_allMembersDict;
 }
 
 void NamespaceDefImpl::setFileName(const QCString &fn)
@@ -455,12 +453,8 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
       m_memberLists.append(allMemberList);
     }
     allMemberList->append(md);
-    if (m_allMembersDict==0)
-    {
-      m_allMembersDict = new MemberSDict;
-    }
     //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
-    m_allMembersDict->append(md->localName(),md);
+    m_allMembers.add(md->localName(),md);
     //::addNamespaceMemberNameToIndex(md);
     //static bool sortBriefDocs=Config_getBool(SORT_BRIEF_DOCS);
     switch(md->memberType())
@@ -1465,15 +1459,9 @@ bool NamespaceDefImpl::isLinkable() const
   return isLinkableInProject() || isReference();
 }
 
-MemberDef * NamespaceDefImpl::getMemberByName(const QCString &n) const
+const MemberDef * NamespaceDefImpl::getMemberByName(const QCString &n) const
 {
-  MemberDef *md = 0;
-  if (m_allMembersDict && !n.isEmpty())
-  {
-    md = m_allMembersDict->find(n);
-    //printf("%s::m_allMembersDict->find(%s)=%p\n",name().data(),n.data(),md);
-  }
-  return md;
+  return m_allMembers.find(n);
 }
 
 QCString NamespaceDefImpl::title() const

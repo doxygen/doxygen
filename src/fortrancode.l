@@ -159,8 +159,8 @@ struct fortrancodeYY_state
   QCString      exampleFile;
 
   FileDef *     sourceFileDef = 0;
-  Definition *  currentDefinition = 0;
-  MemberDef *   currentMemberDef = 0;
+  const Definition * currentDefinition = 0;
+  const MemberDef *  currentMemberDef = 0;
   bool          includeCodeFragment = false;
 
   char          stringStartSymbol = '\0'; // single or double quote
@@ -923,7 +923,7 @@ static void startCodeLine(yyscan_t yyscanner)
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
     //lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
 
-    Definition *d   = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
+    const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
     //printf("startCodeLine %d d=%s\n", yyextra->yyLineNr,d ? d->name().data() : "<null>");
     if (!yyextra->includeCodeFragment && d)
     {

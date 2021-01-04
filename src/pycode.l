@@ -81,8 +81,8 @@ struct pycodeYY_state
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   FileDef *     sourceFileDef = 0;
-  Definition *  currentDefinition = 0;
-  MemberDef *   currentMemberDef = 0;
+  const Definition * currentDefinition = 0;
+  const MemberDef *  currentMemberDef = 0;
   bool          includeCodeFragment = FALSE;
   QCString      realScope;
   int           bodyCurlyCount = 0;
@@ -1010,7 +1010,7 @@ static void startCodeLine(yyscan_t yyscanner)
     //lineNumber.sprintf("%05d",yyextra->yyLineNr);
     //lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
 
-    Definition *d   = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
+    const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
     //printf("startCodeLine %d d=%p\n",yyextra->yyLineNr,d);
     //yyextra->code->startLineNumber();
 
@@ -1291,7 +1291,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
 
   if ((lcd=yyextra->theVarContext.findVariable(className))==0) // not a local variable
   {
-    Definition *d = yyextra->currentDefinition;
+    const Definition *d = yyextra->currentDefinition;
     QCString scope = substitute(className,".","::");
 
     cd = yyextra->symbolResolver.resolveClass(d,substitute(className,".","::"));
@@ -1378,7 +1378,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         const NamespaceDef *mnd = getResolvedNamespace(scope);
         if (mnd)
         {
-          MemberDef *mmd=mnd->getMemberByName(locName);
+          const MemberDef *mmd=mnd->getMemberByName(locName);
           if (mmd)
           {
             //printf("name=%s scope=%s\n",locName.data(),scope.data());
@@ -1472,8 +1472,8 @@ static bool findMemberLink(yyscan_t yyscanner,
       sym->getOuterScope()->definitionType()==Definition::TypeClass &&
       yyextra->currentDefinition->definitionType()==Definition::TypeClass)
   {
-    ClassDef *cd = toClassDef(sym->getOuterScope());
-    ClassDef *thisCd = toClassDef(yyextra->currentDefinition);
+    const ClassDef *cd = toClassDef(sym->getOuterScope());
+    const ClassDef *thisCd = toClassDef(yyextra->currentDefinition);
     if (sym->definitionType()==Definition::TypeMember)
     {
       if (yyextra->currentMemberDef && yyextra->collectXRefs)

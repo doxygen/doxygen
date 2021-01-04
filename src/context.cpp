@@ -8532,24 +8532,6 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
   }
 }
 
-MemberListContext::MemberListContext(MemberSDict *list,bool doSort) : RefCountedContext("MemberListContext")
-{
-  p = new Private;
-  if (list)
-  {
-    if (doSort)
-    {
-      list->sort();
-    }
-    MemberSDict::Iterator it(*list);
-    MemberDef *md;
-    for (it.toFirst();(md=it.current());++it)
-    {
-      p->addMember(md);
-    }
-  }
-}
-
 MemberListContext::MemberListContext(std::vector<const MemberDef *> &&ml) : RefCountedContext("MemberListContext")
 {
   p = new Private;

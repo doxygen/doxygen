@@ -1099,13 +1099,3 @@ void MemberList::setAnchors()
   }
 }
 
-
-
-//--------------------------------------------------------------------------
-
-int MemberSDict::compareValues(const MemberDef *c1, const MemberDef *c2) const
-{
-  return genericCompareMembers(c1,c2);
-}
-
-

@@ -104,8 +104,8 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual bool isDocumentationFile() const = 0;
 
-    virtual Definition *getSourceDefinition(int lineNr) const = 0;
-    virtual MemberDef *getSourceMember(int lineNr) const = 0;
+    virtual const Definition *getSourceDefinition(int lineNr) const = 0;
+    virtual const MemberDef *getSourceMember(int lineNr) const = 0;
 
     /*! Returns the absolute path of this file. */
     virtual QCString getPath() const = 0;
@@ -146,7 +146,7 @@ class FileDef : public DefinitionMutable, public Definition
 
     //---------------------------------
 
-    virtual void addSourceRef(int line,Definition *d,MemberDef *md) = 0;
+    virtual void addSourceRef(int line,const Definition *d,const MemberDef *md) = 0;
 
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;

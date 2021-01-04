@@ -34,7 +34,6 @@
 class FileDef;
 class OutputList;
 class SectionRefs;
-class MemberSDict;
 class MemberDef;
 class GroupDef;
 class GroupList;

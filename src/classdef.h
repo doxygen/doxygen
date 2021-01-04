@@ -34,7 +34,6 @@ struct Argument;
 class MemberDef;
 class MemberDefMutable;
 class MemberList;
-class MemberDict;
 class ClassLinkedRefMap;
 class OutputList;
 class FileDef;
