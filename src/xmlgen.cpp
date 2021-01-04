@@ -1363,9 +1363,9 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
 
   for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml.listType()&MemberListType_detailedLists)==0)
+    if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      generateXMLSection(cd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
+      generateXMLSection(cd,ti,t,ml.get(),g_xmlSectionMapper.find(ml->listType()));
     }
   }
 
@@ -1460,9 +1460,9 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   for (const auto &ml : nd->getMemberLists())
   {
-    if ((ml.listType()&MemberListType_declarationLists)!=0)
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
     {
-      generateXMLSection(nd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
+      generateXMLSection(nd,ti,t,ml.get(),g_xmlSectionMapper.find(ml->listType()));
     }
   }
 
@@ -1584,9 +1584,9 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
 
   for (const auto &ml : fd->getMemberLists())
   {
-    if ((ml.listType()&MemberListType_declarationLists)!=0)
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
     {
-      generateXMLSection(fd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
+      generateXMLSection(fd,ti,t,ml.get(),g_xmlSectionMapper.find(ml->listType()));
     }
   }
 
@@ -1657,9 +1657,9 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
 
   for (const auto &ml : gd->getMemberLists())
   {
-    if ((ml.listType()&MemberListType_declarationLists)!=0)
+    if ((ml->listType()&MemberListType_declarationLists)!=0)
     {
-      generateXMLSection(gd,ti,t,&ml,g_xmlSectionMapper.find(ml.listType()));
+      generateXMLSection(gd,ti,t,ml.get(),g_xmlSectionMapper.find(ml->listType()));
     }
   }
 

@@ -394,9 +394,9 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
   int numMembers = 0;
   for (const auto &ml : cd->getMemberLists())
   {
-    if ((ml.listType()&MemberListType_detailedLists)==0)
+    if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      numMembers+=ml.count();
+      numMembers+=ml->count();
     }
   }
   if (numMembers>0)

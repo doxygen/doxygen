@@ -95,6 +95,8 @@ class MemberList : private QList<MemberDef>
     void setAnchors();
 
   private:
+    MemberList(const MemberList &) = delete;
+    MemberList &operator=(const MemberList &) = delete;
     int compareValues(const MemberDef *item1,const MemberDef *item2) const;
     int countEnumValues(const MemberDef *md) const;
     /*
@@ -132,17 +134,17 @@ class MemberLinkedRefMap : public LinkedRefMap<const MemberDef>
 {
 };
 
-class MemberLists : public std::vector<MemberList>
+class MemberLists : public std::vector< std::unique_ptr<MemberList> >
 {
   public:
     MemberLists() = default;
-    MemberList &get(MemberListType lt)
+    const std::unique_ptr<MemberList> &get(MemberListType lt)
     {
       // find the list with the given type
-      auto it = std::find_if(begin(),end(),[&lt](const auto &ml) { return ml.listType()==lt; });
+      auto it = std::find_if(begin(),end(),[&lt](const auto &ml) { return ml->listType()==lt; });
       if (it!=end()) return *it;
       // or create a new list if it is not found
-      emplace_back(lt);
+      emplace_back(std::make_unique<MemberList>(lt));
       return back();
     }
 

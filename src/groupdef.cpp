@@ -226,9 +226,9 @@ void GroupDefImpl::findSectionsInDocumentation()
 
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
-      ml.findSectionsInDocumentation(this);
+      ml->findSectionsInDocumentation(this);
     }
   }
 }
@@ -294,9 +294,9 @@ void GroupDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(&ml,&m_memberGroups,this);
+      ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
   }
 
@@ -569,8 +569,8 @@ void GroupDefImpl::countMembers()
 {
   for (auto &ml : m_memberLists)
   {
-    ml.countDecMembers();
-    ml.countDocMembers();
+    ml->countDecMembers();
+    ml->countDocMembers();
   }
   for (const auto &mg : m_memberGroups)
   {
@@ -1259,9 +1259,9 @@ void GroupDefImpl::writeMemberPages(OutputList &ol)
 
   for (const auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
-       ml.writeDocumentationPage(ol,name(),this);
+       ml->writeDocumentationPage(ol,name(),this);
     }
   }
 
@@ -1534,9 +1534,9 @@ void GroupDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
-      ml.addListReferences(this);
+      ml->addListReferences(this);
     }
   }
 }
@@ -1545,12 +1545,12 @@ void GroupDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList &ml = m_memberLists.get(lt);
-  ml.setInGroup(true);
-  ml.setNeedsSorting(
-      ((ml.listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-      ((ml.listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml.append(md);
+  const auto &ml = m_memberLists.get(lt);
+  ml->setInGroup(true);
+  ml->setNeedsSorting(
+      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+  ml->append(md);
 }
 
 // performs a partial reordering to group elements together with the same scope
@@ -1618,7 +1618,7 @@ void GroupDefImpl::sortMemberLists()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
@@ -1650,9 +1650,9 @@ MemberList *GroupDefImpl::getMemberList(MemberListType lt) const
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()==lt)
+    if (ml->listType()==lt)
     {
-      return const_cast<MemberList*>(&ml);
+      return ml.get();
     }
   }
   return 0;

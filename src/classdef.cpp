@@ -851,9 +851,9 @@ void ClassDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_impl->memberLists)
   {
-    if ((ml.listType()&MemberListType_detailedLists)==0)
+    if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      ::addMembersToMemberGroup(&ml,&m_impl->memberGroups,this);
+      ::addMembersToMemberGroup(ml.get(),&m_impl->memberGroups,this);
     }
   }
 
@@ -1100,8 +1100,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
               case MemberType_Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
-                  MemberList &ml = m_impl->memberLists.get(MemberListType_constructors);
-                  ml.append(md);
+                  m_impl->memberLists.get(MemberListType_constructors)->append(md);
                 }
                 else
                 {
@@ -1167,9 +1166,9 @@ void ClassDefImpl::computeAnchors()
 {
   for (auto &ml : m_impl->memberLists)
   {
-    if ((ml.listType()&MemberListType_detailedLists)==0)
+    if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      ml.setAnchors();
+      ml->setAnchors();
     }
   }
 
@@ -1197,9 +1196,9 @@ void ClassDefImpl::findSectionsInDocumentation()
   }
   for (auto &ml : m_impl->memberLists)
   {
-    if ((ml.listType()&MemberListType_detailedLists)==0)
+    if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      ml.findSectionsInDocumentation(this);
+      ml->findSectionsInDocumentation(this);
     }
   }
 }
@@ -2762,9 +2761,9 @@ void ClassDefImpl::writeMemberPages(OutputList &ol) const
 
   for (const auto &ml : m_impl->memberLists)
   {
-    if (ml.numDocMembers()>ml.numDocEnumValues() && (ml.listType()&MemberListType_detailedLists))
+    if (ml->numDocMembers()>ml->numDocEnumValues() && (ml->listType()&MemberListType_detailedLists))
     {
-      ml.writeDocumentationPage(ol,displayName(),this);
+      ml->writeDocumentationPage(ol,displayName(),this);
     }
   }
 
@@ -4169,9 +4168,9 @@ void ClassDefImpl::addListReferences()
   }
   for (auto &ml : m_impl->memberLists)
   {
-    if (ml.listType()&MemberListType_detailedLists)
+    if (ml->listType()&MemberListType_detailedLists)
     {
-      ml.addListReferences(this);
+      ml->addListReferences(this);
     }
   }
 }
@@ -4210,9 +4209,9 @@ MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
 {
   for (auto &ml : m_impl->memberLists)
   {
-    if (ml.listType()==lt)
+    if (ml->listType()==lt)
     {
-      return &ml;
+      return ml.get();
     }
   }
   return 0;
@@ -4222,17 +4221,17 @@ void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList &ml = m_impl->memberLists.get(lt);
-  ml.setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
-  ml.append(md);
+  const auto &ml = m_impl->memberLists.get(lt);
+  ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
+  ml->append(md);
 
   // for members in the declaration lists we set the section, needed for member grouping
-  if ((ml.listType()&MemberListType_detailedLists)==0)
+  if ((ml->listType()&MemberListType_detailedLists)==0)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
-      mdm->setSectionList(this,&ml);
+      mdm->setSectionList(this,ml.get());
     }
   }
 }
@@ -4241,7 +4240,7 @@ void ClassDefImpl::sortMemberLists()
 {
   for (auto &ml : m_impl->memberLists)
   {
-    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
   std::sort(m_impl->innerClasses.begin(),
             m_impl->innerClasses.end(),
@@ -4321,8 +4320,8 @@ void ClassDefImpl::countMembers()
 {
   for (auto &ml : m_impl->memberLists)
   {
-    ml.countDecMembers();
-    ml.countDocMembers();
+    ml->countDecMembers();
+    ml->countDocMembers();
   }
   for (const auto &mg : m_impl->memberGroups)
   {
@@ -4837,7 +4836,7 @@ void ClassDefImpl::reclassifyMember(MemberDefMutable *md,MemberType t)
   md->setMemberType(t);
   for (auto &ml : m_impl->memberLists)
   {
-    ml.remove(md);
+    ml->remove(md);
   }
   insertMember(md);
 }
@@ -4904,7 +4903,7 @@ void ClassDefImpl::removeMemberFromLists(MemberDef *md)
 {
   for (auto &ml : m_impl->memberLists)
   {
-    ml.remove(md);
+    ml->remove(md);
   }
 }
 

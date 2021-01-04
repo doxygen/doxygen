@@ -319,9 +319,9 @@ void NamespaceDefImpl::findSectionsInDocumentation()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
-      ml.findSectionsInDocumentation(this);
+      ml->findSectionsInDocumentation(this);
     }
   }
 }
@@ -384,9 +384,9 @@ void NamespaceDefImpl::addMembersToMemberGroup()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_declarationLists)
+    if (ml->listType()&MemberListType_declarationLists)
     {
-      ::addMembersToMemberGroup(&ml,&m_memberGroups,this);
+      ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
   }
 
@@ -444,8 +444,8 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
     if (allMemberList==0)
     {
-      m_memberLists.emplace_back(MemberListType_allMembersList);
-      allMemberList = &m_memberLists.back();
+      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList));
+      allMemberList = m_memberLists.back().get();
     }
     allMemberList->append(md);
     //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
@@ -1050,9 +1050,9 @@ void NamespaceDefImpl::writeMemberPages(OutputList &ol)
 
   for (const auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
-      ml.writeDocumentationPage(ol,displayName(),this);
+      ml->writeDocumentationPage(ol,displayName(),this);
     }
   }
   ol.popGeneratorState();
@@ -1105,8 +1105,8 @@ void NamespaceDefImpl::countMembers()
 {
   for (auto &ml : m_memberLists)
   {
-    ml.countDecMembers();
-    ml.countDocMembers();
+    ml->countDecMembers();
+    ml->countDocMembers();
   }
   for (const auto &mg : m_memberGroups)
   {
@@ -1176,9 +1176,9 @@ void NamespaceDefImpl::addListReferences()
   }
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()&MemberListType_documentationLists)
+    if (ml->listType()&MemberListType_documentationLists)
     {
-      ml.addListReferences(this);
+      ml->addListReferences(this);
     }
   }
 }
@@ -1329,18 +1329,18 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  MemberList &ml = m_memberLists.get(lt);
-  ml.setNeedsSorting(
-      ((ml.listType()&MemberListType_declarationLists) && sortBriefDocs) ||
-      ((ml.listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml.append(md);
+  const auto &ml = m_memberLists.get(lt);
+  ml->setNeedsSorting(
+      ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
+      ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
+  ml->append(md);
 
-  if (ml.listType()&MemberListType_declarationLists)
+  if (ml->listType()&MemberListType_declarationLists)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
     {
-      mdm->setSectionList(this,&ml);
+      mdm->setSectionList(this,ml.get());
     }
   }
 }
@@ -1349,7 +1349,7 @@ void NamespaceDefImpl::sortMemberLists()
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml.needsSorting()) { ml.sort(); ml.setNeedsSorting(FALSE); }
+    if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
 
   if (Config_getBool(SORT_BRIEF_DOCS))
@@ -1381,9 +1381,9 @@ MemberList *NamespaceDefImpl::getMemberList(MemberListType lt) const
 {
   for (auto &ml : m_memberLists)
   {
-    if (ml.listType()==lt)
+    if (ml->listType()==lt)
     {
-      return const_cast<MemberList*>(&ml);
+      return ml.get();
     }
   }
   return 0;

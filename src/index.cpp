@@ -3761,9 +3761,9 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
     {
       for (const auto &ml : gd->getMemberLists())
       {
-        if (ml.listType()&MemberListType_documentationLists)
+        if (ml->listType()&MemberListType_documentationLists)
         {
-          numSubItems += ml.count();
+          numSubItems += ml->count();
         }
       }
       numSubItems += gd->getNamespaces().size();
