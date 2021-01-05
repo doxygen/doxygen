@@ -7334,3 +7334,117 @@ FortranFormat convertFileNameFortranParserCode(QCString fn)
 
   return FortranFormat_Unknown;
 }
+//------------------------------------------------------------------------
+
+/// Clear a text block \a s from \a begin to \a end markers
+QCString clearBlock(const char *s,const char *begin,const char *end)
+{
+  if (s==0 || begin==0 || end==0) return s;
+  const char *p, *q;
+  int beginLen = qstrlen(begin);
+  int endLen = qstrlen(end);
+  int resLen = 0;
+  for (p=s; (q=strstr(p,begin))!=0; p=q+endLen)
+  {
+    resLen+=(int)(q-p);
+    p=q+beginLen;
+    if ((q=strstr(p,end))==0)
+    {
+      resLen+=beginLen;
+      break;
+    }
+  }
+  resLen+=qstrlen(p);
+  // resLen is the length of the string without the marked block
+
+  QCString result(resLen+1);
+  char *r;
+  for (r=result.rawData(), p=s; (q=strstr(p,begin))!=0; p=q+endLen)
+  {
+    int l = (int)(q-p);
+    memcpy(r,p,l);
+    r+=l;
+    p=q+beginLen;
+    if ((q=strstr(p,end))==0)
+    {
+      memcpy(r,begin,beginLen);
+      r+=beginLen;
+      break;
+    }
+  }
+  qstrcpy(r,p);
+  return result;
+}
+//----------------------------------------------------------------------
+
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o)
+{
+  // TODO: this is an expensive function that is called a lot -> optimize it
+  QCString begin;
+  QCString end;
+  QCString nobegin;
+  QCString noend;
+  switch (o)
+  {
+    case OutputGenerator::Html:
+      begin = "<!--BEGIN " + name + "-->";
+      end = "<!--END " + name + "-->";
+      nobegin = "<!--BEGIN !" + name + "-->";
+      noend = "<!--END !" + name + "-->";
+      break;
+    case OutputGenerator::Latex:
+      begin = "%%BEGIN " + name;
+      end = "%%END " + name;
+      nobegin = "%%BEGIN !" + name;
+      noend = "%%END !" + name;
+      break;
+    default:
+      break;
+  }
+
+  QCString result = s;
+  if (enable)
+  {
+    result = substitute(result, begin, "");
+    result = substitute(result, end, "");
+    result = clearBlock(result, nobegin, noend);
+  }
+  else
+  {
+    result = substitute(result, nobegin, "");
+    result = substitute(result, noend, "");
+    result = clearBlock(result, begin, end);
+  }
+
+  return result;
+}
+
+QCString removeEmptyLines(const QCString &s)
+{
+  BufStr out(s.length()+1);
+  const char *p=s.data();
+  if (p)
+  {
+    char c;
+    while ((c=*p++))
+    {
+      if (c=='\n')
+      {
+        const char *e = p;
+        while (*e==' ' || *e=='\t') e++;
+        if (*e=='\n')
+        {
+          p=e;
+        }
+        else out.addChar(c);
+      }
+      else
+      {
+        out.addChar(c);
+      }
+    }
+  }
+  out.addChar('\0');
+  //printf("removeEmptyLines(%s)=%s\n",s.data(),out.data());
+  return out.data();
+}

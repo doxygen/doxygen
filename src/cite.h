@@ -59,10 +59,9 @@ class CitationManager
      */
     bool isEmpty() const;
 
-    /** writes the latex code for the standard bibliography
-     *  section to text stream \a t
+    /** lists the bibtex cite files in a comma separated list
      */
-    void writeLatexBibliography(FTextStream &t) const;
+    QCString latexBibFiles();
 
     const char *fileName() const;
     const char *anchorPrefix() const;
