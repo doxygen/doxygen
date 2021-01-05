@@ -81,7 +81,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       // draw all directories which have `dd->parent()` as parent and `dd` as dependent
       const auto newEnd = std::remove_if(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(), [&](const DirDef *const usedDir)
       {
-        if (dd!=usedDir && dd->parent()==usedDir->parent() && !usedDir->isParentOf(dd))
+        if (dd!=usedDir && dd->parent()==usedDir->parent())
         {
           drawDirectory(t, usedDir, usedDir->isCluster() && !Config_getBool(DOT_TRANSPARENT), dirsInGraph);
           return true;
@@ -136,8 +136,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         //    shortName().data(),
         //    !usedDir->isParentOf(this)
         //    );
-        if (dir!=usedDir && dir->parent()==usedDir->parent() &&
-            !usedDir->isParentOf(dd))
+        if (dir!=usedDir && dir->parent()==usedDir->parent())
           // include if both have the same parent (or no parent)
         {
           drawDirectory(t, usedDir, usedDir->isCluster() && !Config_getBool(DOT_TRANSPARENT), dirsInGraph);
