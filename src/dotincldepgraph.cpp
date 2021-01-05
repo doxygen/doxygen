@@ -89,14 +89,9 @@ void DotInclDepGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes
       n->markAsVisible();
       maxNodes--;
       // add direct children
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          queue.append(dn);
-        }
+        queue.append(dn);
       }
     }
   }
@@ -110,20 +105,15 @@ void DotInclDepGraph::determineTruncatedNodes(QList<DotNode> &queue)
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
       bool truncated = FALSE;
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
+        if (!dn->isVisible())
         {
-          if (!dn->isVisible())
-          {
-            truncated = TRUE;
-          }
-          else
-          {
-            queue.append(dn);
-          }
+          truncated = TRUE;
+        }
+        else
+        {
+          queue.append(dn);
         }
       }
       n->markAsTruncated(truncated);
@@ -208,7 +198,7 @@ QCString DotInclDepGraph::writeGraph(FTextStream &out,
 
 bool DotInclDepGraph::isTrivial() const
 {
-  return m_startNode->children()==0;
+  return m_startNode->children().empty();
 }
 
 bool DotInclDepGraph::isTooBig() const
@@ -218,7 +208,7 @@ bool DotInclDepGraph::isTooBig() const
 
 int DotInclDepGraph::numNodes() const
 {
-  return m_startNode->children() ? m_startNode->children()->count() : 0;
+  return (int)m_startNode->children().size();
 }
 
 void DotInclDepGraph::writeXML(FTextStream &t)

@@ -116,7 +116,9 @@ void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSe
       {
         const auto &bn = it->second;
         root = bn.get();
-        if (n->children()==0 || n->children()->findRef(bn.get())==-1) // no arrow yet
+        const auto &children = n->children();
+        auto child_it = std::find(children.begin(),children.end(),bn.get());
+        if (child_it==children.end()) // no arrow yet
         {
           n->addChild(bn.get(),bcd.prot);
           bn->addParent(n);

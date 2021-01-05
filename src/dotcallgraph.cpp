@@ -84,14 +84,9 @@ void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
       n->markAsVisible();
       maxNodes--;
       // add direct children
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          queue.append(dn);
-        }
+        queue.append(dn);
       }
     }
   }
@@ -105,17 +100,12 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
       bool truncated = FALSE;
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          if (!dn->isVisible())
-            truncated = TRUE;
-          else
-            queue.append(dn);
-        }
+        if (!dn->isVisible())
+          truncated = TRUE;
+        else
+          queue.append(dn);
       }
       n->markAsTruncated(truncated);
     }
@@ -201,7 +191,7 @@ QCString DotCallGraph::writeGraph(
 
 bool DotCallGraph::isTrivial() const
 {
-  return m_startNode->children()==0;
+  return m_startNode->children().empty();
 }
 
 bool DotCallGraph::isTooBig() const
@@ -211,6 +201,6 @@ bool DotCallGraph::isTooBig() const
 
 int DotCallGraph::numNodes() const
 {
-  return m_startNode->children() ? m_startNode->children()->count() : 0;
+  return (int)m_startNode->children().size();
 }
 

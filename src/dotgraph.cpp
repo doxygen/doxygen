@@ -316,19 +316,20 @@ void DotGraph::computeGraph(DotNode *root,
   }
   root->clearWriteFlag();
   root->write(md5stream, gt, format, gt!=CallGraph && gt!=Dependency, TRUE, backArrows);
-  if (renderParents && root->parents())
+  if (renderParents)
   {
-    QListIterator<DotNode>  dnli(*root->parents());
-    const DotNode *pn;
-    for (dnli.toFirst();(pn=dnli.current());++dnli)
+    for (const auto &pn : root->parents())
     {
       if (pn->isVisible())
       {
+        const auto &children = pn->children();
+        auto child_it = std::find(children.begin(),children.end(),root);
+        int index = child_it - children.begin();
         root->writeArrow(md5stream,                              // stream
             gt,                                                  // graph type
             format,                                              // output format
             pn,                                                  // child node
-            pn->edgeInfo()->at(pn->children()->findRef(root)),   // edge info
+            &pn->edgeInfo()[index],                              // edge info
             FALSE,                                               // topDown?
             backArrows                                           // point back?
           );

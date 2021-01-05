@@ -115,23 +115,16 @@ void DotClassGraph::determineTruncatedNodes(QList<DotNode> &queue,bool includePa
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
       bool truncated = FALSE;
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          if (!dn->isVisible())
-            truncated = TRUE;
-          else
-            queue.append(dn);
-        }
+        if (!dn->isVisible())
+          truncated = TRUE;
+        else
+          queue.append(dn);
       }
-      if (n->parents() && includeParents)
+      if (includeParents)
       {
-        QListIterator<DotNode> li(*n->parents());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
+        for (const auto &dn : n->parents())
         {
           if (!dn->isVisible())
             truncated = TRUE;
@@ -176,14 +169,9 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
         n->markAsVisible();
         maxNodes--;
         // add direct children
-        if (n->children())
+        for (const auto &dn : n->children())
         {
-          QListIterator<DotNode> li(*n->children());
-          const DotNode *dn;
-          for (li.toFirst();(dn=li.current());++li)
-          {
-            childQueue.append(dn);
-          }
+          childQueue.append(dn);
         }
       }
     }
@@ -207,14 +195,9 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
         n->markAsVisible();
         maxNodes--;
         // add direct parents
-        if (n->parents())
+        for (const auto &dn : n->parents())
         {
-          QListIterator<DotNode> li(*n->parents());
-          const DotNode *dn;
-          for (li.toFirst();(dn=li.current());++li)
-          {
-            parentQueue.append(dn);
-          }
+          parentQueue.append(dn);
         }
       }
     }
@@ -387,9 +370,9 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
 bool DotClassGraph::isTrivial() const
 {
   if (m_graphType==Inheritance)
-    return m_startNode->children()==0 && m_startNode->parents()==0;
+    return m_startNode->children().empty() && m_startNode->parents().empty();
   else
-    return !Config_getBool(UML_LOOK) && m_startNode->children()==0;
+    return !Config_getBool(UML_LOOK) && m_startNode->children().empty();
 }
 
 bool DotClassGraph::isTooBig() const
@@ -400,10 +383,10 @@ bool DotClassGraph::isTooBig() const
 int DotClassGraph::numNodes() const
 {
   int numNodes = 0;
-  numNodes+= m_startNode->children() ? m_startNode->children()->count() : 0;
+  numNodes+= (int)m_startNode->children().size();
   if (m_graphType==Inheritance)
   {
-    numNodes+= m_startNode->parents() ? m_startNode->parents()->count() : 0;
+    numNodes+= (int)m_startNode->parents().size();
   }
   return numNodes;
 }
