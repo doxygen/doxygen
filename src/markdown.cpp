@@ -2734,8 +2734,8 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   if (id.startsWith("autotoc_md")) id = "";
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
-  QCString titleFn = QFileInfo(fileName).baseName().utf8();
   QCString fn      = QFileInfo(fileName).fileName().utf8();
+  QCString titleFn = stripExtensionGeneral(fn,getFileNameExtension(fn));
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = markdownFileNameToId(fileName);
