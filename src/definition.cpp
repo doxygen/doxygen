@@ -291,11 +291,8 @@ DefinitionImpl::~DefinitionImpl()
   {
     removeFromMap(m_impl->symbolName,m_impl->def);
   }
-  if (m_impl)
-  {
-    delete m_impl;
-    m_impl=0;
-  }
+  delete m_impl;
+  m_impl=0;
 }
 
 void DefinitionImpl::setName(const char *name)

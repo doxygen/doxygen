@@ -3553,10 +3553,10 @@ bool hasVisibleRoot(const BaseClassList &bcl)
   for (const auto &bcd : bcl)
   {
     const ClassDef *cd=bcd.classDef;
-    if (cd->isVisibleInHierarchy()) return TRUE;
-    hasVisibleRoot(cd->baseClasses());
+    if (cd->isVisibleInHierarchy()) return true;
+    if (hasVisibleRoot(cd->baseClasses())) return true;
   }
-  return FALSE;
+  return false;
 }
 
 //----------------------------------------------------------------------

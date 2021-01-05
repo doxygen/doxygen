@@ -2669,7 +2669,10 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
   if (list->count()>0)
   {
     TemplateStruct *lastEntry = dynamic_cast<TemplateStruct*>(list->at(list->count()-1).toStruct());
-    lastEntry->set("last",false);
+    if (lastEntry)
+    {
+      lastEntry->set("last",false);
+    }
   }
   entry->set("is_leaf_node",true);
   entry->set("first",list->count()==0);

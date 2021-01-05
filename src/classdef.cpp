@@ -3969,28 +3969,31 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
           Doxygen::classLinkedMap->add(tcname,
             std::unique_ptr<ClassDef>(
               new ClassDefImpl(fileName,startLine,startColumn,tcname,ClassDef::Class))));
-    templateClass->setTemplateMaster(this);
-    templateClass->setOuterScope(getOuterScope());
-    templateClass->setHidden(isHidden());
-    templateClass->setArtificial(isArtificial());
-    m_impl->templateInstances->insert(templSpec,templateClass);
-
-    // also add nested classes
-    for (const auto &innerCd : m_impl->innerClasses)
+    if (templateClass)
     {
-      QCString innerName = tcname+"::"+innerCd->localName();
-      ClassDefMutable *innerClass =
-        toClassDefMutable(
-            Doxygen::classLinkedMap->add(innerName,
-              std::unique_ptr<ClassDef>(
-                new ClassDefImpl(fileName,startLine,startColumn,innerName,ClassDef::Class))));
-      if (innerClass)
+      templateClass->setTemplateMaster(this);
+      templateClass->setOuterScope(getOuterScope());
+      templateClass->setHidden(isHidden());
+      templateClass->setArtificial(isArtificial());
+      m_impl->templateInstances->insert(templSpec,templateClass);
+
+      // also add nested classes
+      for (const auto &innerCd : m_impl->innerClasses)
       {
-        templateClass->addInnerCompound(innerClass);
-        innerClass->setOuterScope(templateClass);
-        innerClass->setHidden(isHidden());
-        innerClass->setArtificial(TRUE);
-        freshInstance=TRUE;
+        QCString innerName = tcname+"::"+innerCd->localName();
+        ClassDefMutable *innerClass =
+          toClassDefMutable(
+              Doxygen::classLinkedMap->add(innerName,
+                std::unique_ptr<ClassDef>(
+                  new ClassDefImpl(fileName,startLine,startColumn,innerName,ClassDef::Class))));
+        if (innerClass)
+        {
+          templateClass->addInnerCompound(innerClass);
+          innerClass->setOuterScope(templateClass);
+          innerClass->setHidden(isHidden());
+          innerClass->setArtificial(TRUE);
+          freshInstance=TRUE;
+        }
       }
     }
   }

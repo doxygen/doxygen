@@ -1485,11 +1485,11 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
         {
           //printf("insertMember successful\n");
           mdm->setGroupDef(fgd,pri,root->fileName,root->startLine,!root->doc.isEmpty());
-        }
-        ClassDefMutable *cdm = toClassDefMutable(mdm->getClassDefOfAnonymousType());
-        if (cdm)
-        {
-          cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+          ClassDefMutable *cdm = toClassDefMutable(mdm->getClassDefOfAnonymousType());
+          if (cdm)
+          {
+            cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
+          }
         }
       }
     }
@@ -1584,7 +1584,6 @@ static void groupClassesWithSameScope(Vec &vec)
               idx = k;
               k++;
             }
-            idx = std::distance(vec.begin(),it);
             // swap the items such that i is inserted after idx
             for (size_t j=i; j<idx; j++)
             {

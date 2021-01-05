@@ -537,7 +537,6 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                         }
 <SkipCPP>"//"/[^/!]                     {
                                           REJECT;
-                                          yyextra->code->codify(yytext);
                                         }
 <Body,FuncCall>"{"                      {
                                           yyextra->theVarContext.pushScope();

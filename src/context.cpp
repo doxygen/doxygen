@@ -4062,7 +4062,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("nameWithContextFor",  &Private::nameWithContextFor);
         init=TRUE;
       }
-      if (!md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
+      if (md && !md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
 
       Cachable &cache = getCache();
       cache.propertyAttrs.reset(TemplateList::alloc());

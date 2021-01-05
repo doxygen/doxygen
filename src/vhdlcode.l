@@ -1268,7 +1268,7 @@ static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,MemberDe
   //printf("generateFuncLink(FuncName=%s)\n",mdef->name().data());
   QCString memberName=mdef->name();
 
-  if (mdef && mdef->isLinkable()) // is it a linkable class
+  if (mdef->isLinkable()) // is it a linkable class
   {
     writeMultiLineCodeLink(yyscanner,ol,mdef,mdef->name());
     addToSearchIndex(yyscanner,memberName);
