@@ -10,7 +10,6 @@
 #include <qfileinfo.h>
 #include <stdlib.h>
 #include "message.h"
-#include "sortdict.h"
 #include "outputgen.h"
 #include "filedef.h"
 #include "memberdef.h"

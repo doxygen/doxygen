@@ -19,8 +19,6 @@
 #include <qcstring.h>
 #include <map>
 
-#include "sortdict.h"
-
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
 #include "dotrunner.h"

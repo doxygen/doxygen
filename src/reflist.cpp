@@ -20,7 +20,6 @@
 #include "util.h"
 #include "ftextstream.h"
 #include "definition.h"
-#include "sortdict.h"
 #include "config.h"
 
 RefList::RefList(const char *listName, const char *pageTitle, const char *secTitle) :
@@ -122,7 +121,7 @@ void RefList::generatePage()
   }
   doc += "</dl>\n";
   //printf("generatePage('%s')\n",doc.data());
-  if (cnt>0) 
+  if (cnt>0)
   {
     addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),0,0,TRUE);
   }

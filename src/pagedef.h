@@ -17,7 +17,6 @@
 #define PAGEDEF_H
 
 #include "definition.h"
-#include "sortdict.h"
 
 class PageLinkedRefMap;
 class OutputList;

@@ -29,7 +29,6 @@
 #include <qlist.h>
 #include <ctype.h>
 #include "types.h"
-#include "sortdict.h"
 #include "docparser.h"
 #include "classdef.h"
 #include "arguments.h"

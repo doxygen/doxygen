@@ -29,7 +29,6 @@
 #include <qcstring.h>
 #include <qdir.h>
 
-#include "sortdict.h"
 #include "ftextstream.h"
 #include "message.h"
 #include "util.h"

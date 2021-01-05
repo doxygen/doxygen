@@ -20,7 +20,6 @@
 
 #include <qlist.h>
 #include "memberdef.h"
-#include "sortdict.h"
 #include "linkedmap.h"
 
 class MemberName

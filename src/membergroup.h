@@ -23,7 +23,6 @@
 #include <memory>
 
 #include <qlist.h>
-#include "sortdict.h"
 #include "types.h"
 #include "reflist.h"
 

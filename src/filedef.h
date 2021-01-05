@@ -25,7 +25,6 @@
 #include <qintdict.h>
 #include <qdict.h>
 #include "definition.h"
-#include "sortdict.h"
 #include "memberlist.h"
 #include "containers.h"
 #include "classlist.h"

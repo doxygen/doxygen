@@ -23,7 +23,6 @@
 
 #include "containers.h"
 #include "ftextstream.h"
-#include "sortdict.h"
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
