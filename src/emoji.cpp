@@ -1521,18 +1521,15 @@ EmojiEntityMapper *EmojiEntityMapper::s_instance = 0;
 
 EmojiEntityMapper::EmojiEntityMapper()
 {
-  m_name2symGh = new QDict<int>(1009);
-  m_name2symGh->setAutoDelete(TRUE);
   // 2 loops to be able to give precedence to the unicodeName (CLDR)
   for (int i = 0; i < g_numEmojiEntities; i++)
   {
-    m_name2symGh->insert(g_emojiEntities[i].name, new int(i));
+    m_name2symGh.insert(std::make_pair(g_emojiEntities[i].name, i));
   }
 }
 
 EmojiEntityMapper::~EmojiEntityMapper()
 {
-  delete m_name2symGh;
 }
 
 /** Returns the one and only instance of the Emoji entity mapper */
@@ -1560,8 +1557,8 @@ void EmojiEntityMapper::deleteInstance()
  */
 int EmojiEntityMapper::symbol2index(const QCString &symName) const
 {
-  int *val = m_name2symGh->find(symName);
-  return val ? *val : -1;
+  auto it = m_name2symGh.find(symName.str());
+  return it!=m_name2symGh.end() ? it->second : -1;
 }
 
 /*!

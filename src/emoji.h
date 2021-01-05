@@ -15,7 +15,9 @@
 #ifndef EMOJIENTITY_H
 #define EMOJIENTITY_H
 
-#include <qdict.h>
+#include <map>
+#include <string>
+
 #include <qfile.h>
 
 class FTextStream;
@@ -35,7 +37,7 @@ class EmojiEntityMapper
     EmojiEntityMapper();
    ~EmojiEntityMapper();
     static EmojiEntityMapper *s_instance;
-    QDict<int> *m_name2symGh;
+    std::map<std::string,int> m_name2symGh;
 };
 
 #endif
