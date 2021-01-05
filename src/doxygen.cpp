@@ -4136,8 +4136,8 @@ static bool findTemplateInstanceRelation(const Entry *root,
             QDict<int> *templateNames,
             bool isArtificial)
 {
-  Debug::print(Debug::Classes,0,"    derived from template %s with parameters %s\n",
-         qPrint(templateClass->name()),qPrint(templSpec));
+  Debug::print(Debug::Classes,0,"    derived from template %s with parameters %s isArtificial=%d\n",
+         qPrint(templateClass->name()),qPrint(templSpec),isArtificial);
   //printf("findTemplateInstanceRelation(base=%s templSpec=%s templateNames=",
   //    templateClass->name().data(),templSpec.data());
   //if (templateNames)
@@ -4163,14 +4163,6 @@ static bool findTemplateInstanceRelation(const Entry *root,
   if (isArtificial)
   {
     instanceClass->setArtificial(TRUE);
-    for (const auto innerClass : instanceClass->getClasses())
-    {
-      ClassDefMutable *innerClassMutable = toClassDefMutable(innerClass);
-      if (innerClassMutable)
-      {
-        innerClassMutable->setArtificial(TRUE);
-      }
-    }
   }
   instanceClass->setLanguage(root->lang);
 
