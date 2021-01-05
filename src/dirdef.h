@@ -17,14 +17,12 @@
 #define DIRDEF_H
 
 #include "linkedmap.h"
-#include "sortdict.h"
 #include "definition.h"
 
 #include <vector>
 #include <map>
 #include <qglobal.h>
 #include <qcstring.h>
-
 
 class FileList;
 class QStrList;
@@ -48,6 +46,7 @@ class FilePair
     FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
     const FileDef *source() const { return m_src; }
     const FileDef *destination() const { return m_dst; }
+    static QCString key(const FileDef *srcFd,const FileDef *dstFd);
   private:
     FileDef *m_src;
     FileDef *m_dst;
@@ -55,13 +54,9 @@ class FilePair
 
 // ------------------
 
-/** A sorted dictionary of FilePair objects. */
-class FilePairDict : public SDict<FilePair>
+/** A linked map of file pairs */
+class FilePairLinkedMap : public LinkedMap<FilePair>
 {
-  public:
-    FilePairDict(uint size) : SDict<FilePair>(size) {}
-  private:
-    int compareValues(const FilePair *item1,const FilePair *item2) const;
 };
 
 // ------------------
@@ -74,14 +69,14 @@ class UsedDir
     virtual ~UsedDir();
     void addFileDep(FileDef *srcFd,FileDef *dstFd);
     FilePair *findFilePair(const char *name);
-    const FilePairDict &filePairs() const { return m_filePairs; }
+    const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
     void sort();
 
   private:
     const DirDef *m_dir;
-    FilePairDict m_filePairs;
+    FilePairLinkedMap m_filePairs;
     bool m_inherited;
 };
 

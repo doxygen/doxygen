@@ -165,7 +165,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         Doxygen::dirRelations.add(relationName,
             std::make_unique<DirRelation>(
                relationName,dir,udir.get()));
-        int nrefs = udir->filePairs().count();
+        size_t nrefs = udir->filePairs().size();
         t << "  " << dir->getOutputFileBase() << "->"
           << usedDir->getOutputFileBase();
         t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";

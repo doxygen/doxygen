@@ -657,8 +657,7 @@ void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
   UsedDir *usedDir = m_usedDirs.find(dir->getOutputFileBase());
   if (usedDir) // dir dependency already present
   {
-     const FilePair *usedPair = usedDir->findFilePair(
-         srcFd->getOutputFileBase()+dstFd->getOutputFileBase());
+     const FilePair *usedPair = usedDir->findFilePair(FilePair::key(srcFd,dstFd));
      if (usedPair==0) // new file dependency
      {
        //printf("  => new file\n");
@@ -756,44 +755,39 @@ bool DirDefImpl::depGraphIsTrivial() const
   return m_usedDirs.empty();
 }
 
-//----------------------------------------------------------------------
-
-int FilePairDict::compareValues(const FilePair *left,const FilePair *right) const
-{
-  int orderHi = qstricmp(left->source()->name(),right->source()->name());
-  if (orderHi!=0) return orderHi;
-  int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
-  return orderLo;
-}
 
 //----------------------------------------------------------------------
 
 UsedDir::UsedDir(const DirDef *dir,bool inherited) :
-   m_dir(dir), m_filePairs(7), m_inherited(inherited)
+   m_dir(dir), m_inherited(inherited)
 {
-  m_filePairs.setAutoDelete(TRUE);
 }
 
 UsedDir::~UsedDir()
 {
 }
 
-
 void UsedDir::addFileDep(FileDef *srcFd,FileDef *dstFd)
 {
-  m_filePairs.append(srcFd->getOutputFileBase()+dstFd->getOutputFileBase(),
-                     new FilePair(srcFd,dstFd));
+  m_filePairs.add(FilePair::key(srcFd,dstFd),std::make_unique<FilePair>(srcFd,dstFd));
 }
 
 void UsedDir::sort()
 {
-  m_filePairs.sort();
+  std::sort(m_filePairs.begin(),
+            m_filePairs.end(),
+            [](const auto &left,const auto &right)
+            {
+              int orderHi = qstricmp(left->source()->name(),right->source()->name());
+              if (orderHi!=0) return orderHi<0;
+              int orderLo = qstricmp(left->destination()->name(),right->destination()->name());
+              return orderLo<0;
+            });
 }
 
 FilePair *UsedDir::findFilePair(const char *name)
 {
-  QCString n=name;
-  return n.isEmpty() ? 0 : m_filePairs.find(n);
+  return m_filePairs.find(name);
 }
 
 DirDef *DirDefImpl::createNewDir(const char *path)
@@ -842,6 +836,13 @@ DirDef *DirDefImpl::mergeDirectoryInTree(const QCString &path)
     p=i+1;
   }
   return dir;
+}
+
+//----------------------------------------------------------------------
+
+QCString FilePair::key(const FileDef *srcFd,const FileDef *dstFd)
+{
+  return srcFd->getOutputFileBase()+";"+dstFd->getOutputFileBase();
 }
 
 //----------------------------------------------------------------------
@@ -909,9 +910,7 @@ void DirRelation::writeDocumentation(OutputList &ol)
   ol.writeString("</th>");
   ol.writeString("</tr>");
 
-  SDict<FilePair>::Iterator fpi(m_dst->filePairs());
-  FilePair *fp;
-  for (fpi.toFirst();(fp=fpi.current());++fpi)
+  for (const auto &fp : m_dst->filePairs())
   {
     ol.writeString("<tr class=\"dirtab\">");
     ol.writeString("<td class=\"dirtab\">");
