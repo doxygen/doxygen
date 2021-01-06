@@ -336,8 +336,6 @@ class ClassDef : public Definition
 
     virtual const TemplateNameMap &getTemplateBaseClassNames() const = 0;
 
-    virtual ClassDef *getVariableInstance(const char *templSpec) const = 0;
-
     virtual bool isUsedOnly() const = 0;
 
     virtual QCString anchor() const = 0;

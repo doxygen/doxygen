@@ -225,7 +225,6 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const MemberLists &getMemberLists() const;
     virtual const MemberGroupList &getMemberGroups() const;
     virtual const TemplateNameMap &getTemplateBaseClassNames() const;
-    virtual ClassDef *getVariableInstance(const char *templSpec) const;
     virtual bool isUsedOnly() const;
     virtual QCString anchor() const;
     virtual bool isEmbeddedInOuterScope() const;
@@ -498,8 +497,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getMemberGroups(); }
     virtual const TemplateNameMap &getTemplateBaseClassNames() const
     { return getCdAlias()->getTemplateBaseClassNames(); }
-    virtual ClassDef *getVariableInstance(const char *templSpec) const
-    { return getCdAlias()->getVariableInstance(templSpec); }
     virtual bool isUsedOnly() const
     { return getCdAlias()->isUsedOnly(); }
     virtual QCString anchor() const
@@ -654,12 +651,6 @@ class ClassDefImpl::IMPL
      */
     TemplateInstanceList templateInstances;
 
-    /*! Template instances that exists of this class, as defined by variables.
-     *  We do NOT want to document these individually. The key in the
-     *  dictionary is the template argument list.
-     */
-    mutable QDict<ClassDef> *variableInstances = 0;
-
     TemplateNameMap templBaseClassNames;
 
     /*! The class this class is an instance of. */
@@ -740,7 +731,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   usesIntfClassDict=0;
   constraintClassDict=0;
   subGrouping=Config_getBool(SUBGROUPING);
-  variableInstances = 0;
   templateMaster =0;
   isAbstract = FALSE;
   isStatic = FALSE;
@@ -780,7 +770,6 @@ ClassDefImpl::IMPL::~IMPL()
   delete usesIntfClassDict;
   delete constraintClassDict;
   delete incInfo;
-  delete variableInstances;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -3976,27 +3965,6 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
         }
       }
     }
-  }
-  return templateClass;
-}
-
-ClassDef *ClassDefImpl::getVariableInstance(const char *templSpec) const
-{
-  if (m_impl->variableInstances==0)
-  {
-    m_impl->variableInstances = new QDict<ClassDef>(17);
-    m_impl->variableInstances->setAutoDelete(TRUE);
-  }
-  ClassDefMutable *templateClass=toClassDefMutable(m_impl->variableInstances->find(templSpec));
-  if (templateClass==0)
-  {
-    Debug::print(Debug::Classes,0,"      New template variable instance class '%s' '%s'\n",qPrint(name()),qPrint(templSpec));
-    QCString tcname = removeRedundantWhiteSpace(name()+templSpec);
-    templateClass = new ClassDefImpl("<code>",1,1,tcname,
-                        ClassDef::Class,0,0,FALSE);
-    templateClass->addMembersToTemplateInstance( this, templateArguments(), templSpec );
-    templateClass->setTemplateMaster(this);
-    m_impl->variableInstances->insert(templSpec,templateClass);
   }
   return templateClass;
 }
