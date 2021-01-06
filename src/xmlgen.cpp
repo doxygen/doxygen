@@ -1719,6 +1719,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
   // + name
   // + title
   // + documentation
+  // + location
 
   const char *kindName = isExample ? "example" : "page";
 
@@ -1843,6 +1844,8 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
         pd->documentation());
   }
   t << "    </detaileddescription>" << endl;
+
+  t << "    <location file=\"" << convertToXML(stripFromPath(pd->getDefFileName())) << "\"/>" << endl;
 
   t << "  </compounddef>" << endl;
   t << "</doxygen>" << endl;
