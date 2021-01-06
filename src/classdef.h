@@ -21,10 +21,6 @@
 #include <vector>
 #include <set>
 
-#include <qlist.h>
-#include <qdict.h>
-#include <qptrdict.h>
-
 #include "containers.h"
 #include "definition.h"
 #include "arguments.h"
@@ -96,6 +92,9 @@ struct TemplateInstanceDef
 using TemplateInstanceList = std::vector<TemplateInstanceDef>;
 
 using TemplateNameMap = std::map<std::string,int>;
+
+using ClassDefSet = std::set<const ClassDef*>;
+
 
 /** A abstract class representing of a compound symbol.
  *
@@ -368,7 +367,7 @@ class ClassDef : public Definition
                 const ClassDef *inheritedFrom,bool additional) const = 0;
     virtual int countInheritanceNodes() const = 0;
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const = 0;
+                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- helpers ----
@@ -451,10 +450,10 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
     virtual void writeTagFile(FTextStream &) = 0;
-    virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
+    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                 MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
-                 QPtrDict<void> *visitedClasses=0) const = 0;
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
 
@@ -469,10 +468,6 @@ ClassDefMutable *createClassDef(
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
-
-// --- Set of classes
-
-using ClassDefSet = std::set<const ClassDef*>;
 
 // --- Cast functions
 

@@ -9166,7 +9166,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
     }
     void findInheritedMembers(const ClassDef *inheritedFrom,const ClassDef *cd,MemberListType lt,
                               int lt2, const QCString &title,bool additionalList,
-                              QPtrDict<void> *visitedClasses)
+                              ClassDefSet &visitedClasses)
     {
       for (const auto &ibcd : cd->baseClasses())
       {
@@ -9179,9 +9179,9 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
           {
             lt2=lt3;
           }
-          if (visitedClasses->find(icd)==0)
+          if (visitedClasses.find(icd)==visitedClasses.end())
           {
-            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+            visitedClasses.insert(icd); // guard for multiple virtual inheritance
             if (lt1!=-1)
             {
               // add member info for members of cd with list type lt
@@ -9203,14 +9203,14 @@ InheritedMemberInfoListContext::InheritedMemberInfoListContext() : RefCountedCon
 void InheritedMemberInfoListContext::addMemberList(
     const ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList)
 {
-  QPtrDict<void> visited(17);
+  ClassDefSet visited;
   bool memberInSection = cd->countMembersIncludingGrouped(lt,cd,FALSE)>0;
   bool show = (additionalList && !memberInSection) || // inherited member to show in the additional inherited members list
               (!additionalList && memberInSection);   // inherited member to show in a member list of the class
   //printf("%s:%s show=%d\n",cd->name().data(),MemberList::listTypeAsString(lt).data(),show);
   if (show)
   {
-    p->findInheritedMembers(cd,cd,lt,-1,title,additionalList,&visited);
+    p->findInheritedMembers(cd,cd,lt,-1,title,additionalList,visited);
   }
 }
 

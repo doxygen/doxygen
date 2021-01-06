@@ -306,11 +306,11 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const;
     virtual int countInheritanceNodes() const;
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const;
-    virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
+                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const;
+    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                 MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
-                 QPtrDict<void> *visitedClasses=0) const;
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const;
 
   private:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
@@ -319,9 +319,10 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle) const;
     void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
     void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
-    void writeInheritedMemberDeclarations(OutputList &ol,MemberListType lt,int lt2,const QCString &title,
+    void writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                                          MemberListType lt,int lt2,const QCString &title,
                                           const ClassDef *inheritedFrom,bool invert,
-                                          bool showAlways,QPtrDict<void> *visitedClasses) const;
+                                          bool showAlways) const;
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE) const;
     void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt) const;
     void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,const ClassDef *inheritedFrom,const char *inheritId) const;
@@ -349,7 +350,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void addClassAttributes(OutputList &ol) const;
     int countInheritedDecMembers(MemberListType lt,
                                  const ClassDef *inheritedFrom,bool invert,bool showAlways,
-                                 QPtrDict<void> *visitedClasses) const;
+                                 ClassDefSet &visitedClasses) const;
     void getTitleForMemberListType(MemberListType type,
                QCString &title,QCString &subtitle) const;
     QCString includeStatement() const;
@@ -534,7 +535,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual int countInheritanceNodes() const
     { return getCdAlias()->countInheritanceNodes(); }
     virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
+                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const
     { return getCdAlias()->countMemberDeclarations(lt,inheritedFrom,lt2,invert,showAlways,visitedClasses); }
 
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
@@ -2237,8 +2238,9 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
         break;
       case LayoutDocEntry::MemberDecl:
         {
+          ClassDefSet visitedClasses;
           const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
-          if (!isSimple) writeMemberDeclarations(ol,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
+          if (!isSimple) writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
         }
         break;
       case LayoutDocEntry::MemberGroups:
@@ -2525,8 +2527,9 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         break;
       case LayoutDocEntry::MemberDecl:
         {
+          ClassDefSet visitedClasses;
           const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
-          writeMemberDeclarations(ol,lmd->type,lmd->title(lang),lmd->subtitle(lang));
+          writeMemberDeclarations(ol,visitedClasses,lmd->type,lmd->title(lang),lmd->subtitle(lang));
         }
         break;
       case LayoutDocEntry::ClassNestedClasses:
@@ -4172,7 +4175,7 @@ void ClassDefImpl::sortMemberLists()
 }
 
 int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                                      int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
+                                      int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const
 {
   //printf("%s: countMemberDeclarations for %d and %d\n",name().data(),lt,lt2);
   int count=0;
@@ -4248,7 +4251,7 @@ void ClassDefImpl::countMembers()
 
 int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
                                        const ClassDef *inheritedFrom,bool invert,bool showAlways,
-                                       QPtrDict<void> *visitedClasses) const
+                                       ClassDefSet &visitedClasses) const
 {
   int inhCount = 0;
   int count = countMembersIncludingGrouped(lt,inheritedFrom,FALSE);
@@ -4266,9 +4269,9 @@ int ClassDefImpl::countInheritedDecMembers(MemberListType lt,
         convertProtectionLevel(lt,ibcd.prot,&lt1,&lt2);
         //printf("%s: convert %d->(%d,%d) prot=%d\n",
         //    icd->name().data(),lt,lt1,lt2,ibcd->prot);
-        if (visitedClasses->find(icd)==0)
+        if (visitedClasses.find(icd)==visitedClasses.end())
         {
-          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+          visitedClasses.insert(icd); // guard for multiple virtual inheritance
           if (lt1!=-1)
           {
             inhCount+=icd->countMemberDeclarations((MemberListType)lt1,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
@@ -4311,8 +4314,8 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
       const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       if (lmd->type!=MemberListType_friends) // friendship is not inherited
       {
-        QPtrDict<void> visited(17);
-        totalCount+=countInheritedDecMembers(lmd->type,this,TRUE,FALSE,&visited);
+        ClassDefSet visited;
+        totalCount+=countInheritedDecMembers(lmd->type,this,TRUE,FALSE,visited);
       }
     }
   }
@@ -4330,8 +4333,8 @@ void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol) const
       const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       if (lmd->type!=MemberListType_friends)
       {
-        QPtrDict<void> visited(17);
-        writeInheritedMemberDeclarations(ol,lmd->type,-1,lmd->title(getLanguage()),this,TRUE,FALSE,&visited);
+        ClassDefSet visited;
+        writeInheritedMemberDeclarations(ol,visited,lmd->type,-1,lmd->title(getLanguage()),this,TRUE,FALSE);
       }
     }
   }
@@ -4362,10 +4365,9 @@ int ClassDefImpl::countMembersIncludingGrouped(MemberListType lt,
 }
 
 
-void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
+void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                MemberListType lt,int lt2,const QCString &title,
-               const ClassDef *inheritedFrom,bool invert,bool showAlways,
-               QPtrDict<void> *visitedClasses) const
+               const ClassDef *inheritedFrom,bool invert,bool showAlways) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
@@ -4387,13 +4389,13 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
           lt2=lt3;
         }
         //printf("%s:convert %d->(%d,%d) prot=%d\n",icd->name().data(),lt,lt1,lt2,ibcd->prot);
-        if (visitedClasses->find(icd)==0)
+        if (visitedClasses.find(icd)==visitedClasses.end())
         {
-          visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+          visitedClasses.insert(icd); // guard for multiple virtual inheritance
           if (lt1!=-1)
           {
-            icd->writeMemberDeclarations(ol,(MemberListType)lt1,
-                title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE,visitedClasses);
+            icd->writeMemberDeclarations(ol,visitedClasses,(MemberListType)lt1,
+                title,QCString(),FALSE,inheritedFrom,lt2,FALSE,TRUE);
           }
         }
         else
@@ -4406,9 +4408,10 @@ void ClassDefImpl::writeInheritedMemberDeclarations(OutputList &ol,
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
+void ClassDefImpl::writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+               MemberListType lt,const QCString &title,
                const char *subTitle,bool showInline,const ClassDef *inheritedFrom,int lt2,
-               bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const
+               bool invert,bool showAlways) const
 {
   //printf("%s: ClassDefImpl::writeMemberDeclarations lt=%d lt2=%d\n",name().data(),lt,lt2);
   MemberList * ml = getMemberList(lt);
@@ -4445,11 +4448,9 @@ void ClassDefImpl::writeMemberDeclarations(OutputList &ol,MemberListType lt,cons
     static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
     if (!inlineInheritedMembers) // show inherited members as separate lists
     {
-      QPtrDict<void> visited(17);
-      writeInheritedMemberDeclarations(ol,lt,lt2,title,
+      writeInheritedMemberDeclarations(ol,visitedClasses,lt,lt2,title,
           inheritedFrom ? inheritedFrom : this,
-          invert,showAlways,
-          visitedClasses==0 ? &visited: visitedClasses);
+          invert,showAlways);
     }
   }
 }
