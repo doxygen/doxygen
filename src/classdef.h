@@ -86,6 +86,17 @@ struct BaseClassDef
 
 using BaseClassList = std::vector<BaseClassDef>;
 
+/** Class that contains information about a template instance relation */
+struct TemplateInstanceDef
+{
+  TemplateInstanceDef(const QCString &ts,const ClassDef *cd) : templSpec(ts), classDef(cd) {}
+  QCString templSpec;
+  const ClassDef *classDef;
+};
+
+using TemplateInstanceList = std::vector<TemplateInstanceDef>;
+
+
 /** A abstract class representing of a compound symbol.
  *
  *  A compound can be a class, struct, union, interface, service, singleton,
@@ -233,7 +244,7 @@ class ClassDef : public Definition
     /** Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
      */
-    virtual QDict<ClassDef> *getTemplateInstances() const = 0;
+    virtual const TemplateInstanceList &getTemplateInstances() const = 0;
 
     /** Returns the template master of which this class is an instance.
      *  Returns 0 if not applicable.

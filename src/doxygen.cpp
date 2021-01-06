@@ -4840,19 +4840,16 @@ static void computeTemplateClassRelations()
     bName=stripTemplateSpecifiersFromScope(bName);
     ClassDefMutable *cd=getClassMutable(bName);
     // strip any anonymous scopes first
-    QDict<ClassDef> *templInstances = 0;
-    if (cd && (templInstances=cd->getTemplateInstances()))
+    if (cd && !cd->getTemplateInstances().empty())
     {
       Debug::print(Debug::Classes,0,"  Template class %s : \n",qPrint(cd->name()));
-      QDictIterator<ClassDef> tdi(*templInstances);
-      ClassDef *itcd;
-      for (tdi.toFirst();(itcd=tdi.current());++tdi) // for each template instance
+      for (const auto &ti : cd->getTemplateInstances()) // for each template instance
       {
-        ClassDefMutable *tcd=toClassDefMutable(itcd);
+        ClassDefMutable *tcd=toClassDefMutable(ti.classDef);
         if (tcd)
         {
           Debug::print(Debug::Classes,0,"    Template instance %s : \n",qPrint(tcd->name()));
-          QCString templSpec = tdi.currentKey();
+          QCString templSpec = ti.templSpec;
           std::unique_ptr<ArgumentList> templArgs = stringToArgumentList(tcd->getLanguage(),templSpec);
           for (const BaseInfo &bi : root->extends)
           {
@@ -7631,19 +7628,12 @@ static void createTemplateInstanceMembers()
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     // that is a template
-    QDict<ClassDef> *templInstances = cd->getTemplateInstances();
-    if (templInstances)
+    for (const auto &ti : cd->getTemplateInstances())
     {
-      QDictIterator<ClassDef> qdi(*templInstances);
-      ClassDef *tcd=0;
-      // for each instance of the template
-      for (qdi.toFirst();(tcd=qdi.current());++qdi)
+      ClassDefMutable *tcdm = toClassDefMutable(ti.classDef);
+      if (tcdm)
       {
-        ClassDefMutable *tcdm = toClassDefMutable(tcd);
-        if (tcdm)
-        {
-          tcdm->addMembersToTemplateInstance(cd.get(),cd->templateArguments(),qdi.currentKey());
-        }
+        tcdm->addMembersToTemplateInstance(cd.get(),cd->templateArguments(),ti.templSpec);
       }
     }
   }

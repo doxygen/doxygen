@@ -196,7 +196,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const;
     virtual bool isSubClass(ClassDef *bcd,int level=0) const;
     virtual bool isAccessibleMember(const MemberDef *md) const;
-    virtual QDict<ClassDef> *getTemplateInstances() const;
+    virtual const TemplateInstanceList &getTemplateInstances() const;
     virtual const ClassDef *templateMaster() const;
     virtual bool isTemplate() const;
     virtual IncludeInfo *includeInfo() const;
@@ -441,7 +441,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isSubClass(bcd,level); }
     virtual bool isAccessibleMember(const MemberDef *md) const
     { return getCdAlias()->isAccessibleMember(md); }
-    virtual QDict<ClassDef> *getTemplateInstances() const
+    virtual const TemplateInstanceList &getTemplateInstances() const
     { return getCdAlias()->getTemplateInstances(); }
     virtual const ClassDef *templateMaster() const
     { return getCdAlias()->templateMaster(); }
@@ -652,7 +652,7 @@ class ClassDefImpl::IMPL
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
      */
-    mutable QDict<ClassDef> *templateInstances = 0;
+    TemplateInstanceList templateInstances;
 
     /*! Template instances that exists of this class, as defined by variables.
      *  We do NOT want to document these individually. The key in the
@@ -740,7 +740,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   usesIntfClassDict=0;
   constraintClassDict=0;
   subGrouping=Config_getBool(SUBGROUPING);
-  templateInstances = 0;
   variableInstances = 0;
   templateMaster =0;
   templBaseClassNames = 0;
@@ -782,7 +781,6 @@ ClassDefImpl::IMPL::~IMPL()
   delete usesIntfClassDict;
   delete constraintClassDict;
   delete incInfo;
-  delete templateInstances;
   delete variableInstances;
   delete templBaseClassNames;
 }
@@ -1209,17 +1207,12 @@ void ClassDefImpl::insertUsedFile(FileDef *fd)
 {
   if (fd==0) return;
   if (m_impl->files.find(fd)==-1) m_impl->files.append(fd);
-  if (m_impl->templateInstances)
+  for (const auto &ti : m_impl->templateInstances)
   {
-    QDictIterator<ClassDef> qdi(*m_impl->templateInstances);
-    ClassDef *cd;
-    for (qdi.toFirst();(cd=qdi.current());++qdi)
+    ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
+    if (cdm)
     {
-      ClassDefMutable *cdm = toClassDefMutable(cd);
-      if (cdm)
-      {
-        cdm->insertUsedFile(fd);
-      }
+      cdm->insertUsedFile(fd);
     }
   }
 }
@@ -3215,15 +3208,11 @@ bool ClassDefImpl::hasNonReferenceSuperClass() const
     if (!found)
     {
       // look for template instances that might have non-reference super classes
-      QDict<ClassDef> *cil = bcd->getTemplateInstances();
-      if (cil)
+      for (const auto &cil : bcd->getTemplateInstances())
       {
-        QDictIterator<ClassDef> tidi(*cil);
-        for ( ; tidi.current() && !found ; ++tidi) // for each template instance
-        {
-          // recurse into the template instance branch
-          found = found || tidi.current()->hasNonReferenceSuperClass();
-        }
+        // recurse into the template instance branch
+        found = cil.classDef->hasNonReferenceSuperClass();
+        if (found) break;
       }
     }
     else
@@ -3939,11 +3928,14 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
     int startLine, int startColumn, const QCString &templSpec,bool &freshInstance) const
 {
   freshInstance = FALSE;
-  if (m_impl->templateInstances==0)
+  auto it = std::find_if(m_impl->templateInstances.begin(),
+                         m_impl->templateInstances.end(),
+                         [&templSpec](const auto &ti) { return templSpec==ti.templSpec; });
+  ClassDefMutable *templateClass=0;
+  if (it!=m_impl->templateInstances.end())
   {
-    m_impl->templateInstances = new QDict<ClassDef>(17);
+    templateClass = toClassDefMutable((*it).classDef);
   }
-  ClassDefMutable *templateClass=toClassDefMutable(m_impl->templateInstances->find(templSpec));
   if (templateClass==0)
   {
     QCString tcname = removeRedundantWhiteSpace(localName()+templSpec);
@@ -3965,7 +3957,7 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
       templateClass->setOuterScope(getOuterScope());
       templateClass->setHidden(isHidden());
       templateClass->setArtificial(isArtificial());
-      m_impl->templateInstances->insert(templSpec,templateClass);
+      m_impl->templateInstances.push_back(TemplateInstanceDef(templSpec,templateClass));
 
       // also add nested classes
       for (const auto &innerCd : m_impl->innerClasses)
@@ -4638,7 +4630,7 @@ FileDef *ClassDefImpl::getFileDef() const
   return m_impl->fileDef;
 }
 
-QDict<ClassDef> *ClassDefImpl::getTemplateInstances() const
+const TemplateInstanceList &ClassDefImpl::getTemplateInstances() const
 {
   return m_impl->templateInstances;
 }

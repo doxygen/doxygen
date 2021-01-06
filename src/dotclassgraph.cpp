@@ -300,30 +300,18 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
       const ClassDef *templMaster=cd->templateMaster();
       if (templMaster)
       {
-        QDictIterator<ClassDef> cli(*templMaster->getTemplateInstances());
-        const ClassDef *templInstance;
-        for (;(templInstance=cli.current());++cli)
+        for (const auto &ti : templMaster->getTemplateInstances())
+        if (ti.classDef==cd)
         {
-          if (templInstance==cd)
-          {
-            addClass(templMaster,n,EdgeInfo::Orange,cli.currentKey(),0,
-              0,TRUE,distance);
-          }
+          addClass(templMaster,n,EdgeInfo::Orange,ti.templSpec,0,0,TRUE,distance);
         }
       }
     }
     else // template relations for super classes
     {
-      const QDict<ClassDef> *templInstances = cd->getTemplateInstances();
-      if (templInstances)
+      for (const auto &ti : cd->getTemplateInstances())
       {
-        QDictIterator<ClassDef> cli(*templInstances);
-        const ClassDef *templInstance;
-        for (;(templInstance=cli.current());++cli)
-        {
-          addClass(templInstance,n,EdgeInfo::Orange,cli.currentKey(),0,
-            0,FALSE,distance);
-        }
+        addClass(ti.classDef,n,EdgeInfo::Orange,ti.templSpec,0,0,FALSE,distance);
       }
     }
   }
