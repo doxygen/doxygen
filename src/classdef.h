@@ -96,6 +96,7 @@ struct TemplateInstanceDef
 
 using TemplateInstanceList = std::vector<TemplateInstanceDef>;
 
+using TemplateNameMap = std::map<std::string,int>;
 
 /** A abstract class representing of a compound symbol.
  *
@@ -333,7 +334,7 @@ class ClassDef : public Definition
     /** Returns the member groups defined for this class */
     virtual const MemberGroupList &getMemberGroups() const = 0;
 
-    virtual QDict<int> *getTemplateBaseClassNames() const = 0;
+    virtual const TemplateNameMap &getTemplateBaseClassNames() const = 0;
 
     virtual ClassDef *getVariableInstance(const char *templSpec) const = 0;
 
@@ -403,7 +404,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setClassName(const char *name) = 0;
     virtual void setClassSpecifier(uint64 spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
-    virtual void setTemplateBaseClassNames(QDict<int> *templateNames) = 0;
+    virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;

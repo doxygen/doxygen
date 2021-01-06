@@ -291,12 +291,13 @@ enum FindBaseClassRelation_Mode
   Undocumented
 };
 
+
 static bool findClassRelation(
                            const Entry *root,
                            Definition *context,
                            ClassDefMutable *cd,
                            const BaseInfo *bi,
-                           QDict<int> *templateNames,
+                           const TemplateNameMap &templateNames,
                            /*bool insertUndocumented*/
                            FindBaseClassRelation_Mode mode,
                            bool isArtificial
@@ -2992,7 +2993,9 @@ static void addInterfaceOrServiceToServiceOrSingleton(
   // "optional" interface/service get Protected which turns into dashed line
   BaseInfo base(rname,
           (root->spec & (Entry::Optional)) ? Protected : Public,Normal);
-  findClassRelation(root,cd,cd,&base,0,DocumentedOnly,true) || findClassRelation(root,cd,cd,&base,0,Undocumented,true);
+  TemplateNameMap templateNames;
+  findClassRelation(root,cd,cd,&base,templateNames,DocumentedOnly,true) ||
+       findClassRelation(root,cd,cd,&base,templateNames,Undocumented,true);
   // add file to list of used files
   cd->insertUsedFile(fd);
 
@@ -3869,10 +3872,9 @@ static void transferRelatedFunctionDocumentation()
  * Example: A template class A with template arguments <R,S,T>
  * that inherits from B<T,T,S> will have T and S in the dictionary.
  */
-static QDict<int> *getTemplateArgumentsInName(const ArgumentList &templateArguments,const QCString &name)
+static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateArguments,const QCString &name)
 {
-  QDict<int> *templateNames = new QDict<int>(17);
-  templateNames->setAutoDelete(TRUE);
+  std::map<std::string,int> templateNames;
   static QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   int count=0;
   for (const Argument &arg : templateArguments)
@@ -3883,9 +3885,9 @@ static QDict<int> *getTemplateArgumentsInName(const ArgumentList &templateArgume
       QCString n = name.mid(i,l);
       if (n==arg.name)
       {
-        if (templateNames->find(n)==0)
+        if (templateNames.find(n.str())==templateNames.end())
         {
-          templateNames->insert(n,new int(count));
+          templateNames.insert(std::make_pair(n.str(),count));
         }
       }
       p=i+l;
@@ -3938,7 +3940,7 @@ static void findUsedClassesForClass(const Entry *root,
                            ClassDefMutable *instanceCd,
                            bool isArtificial,
                            const std::unique_ptr<ArgumentList> &actualArgs = std::unique_ptr<ArgumentList>(),
-                           QDict<int> *templateNames=0
+                           const TemplateNameMap &templateNames = TemplateNameMap()
                            )
 {
   const ArgumentList &formalArgs = masterCd->templateArguments();
@@ -3988,14 +3990,13 @@ static void findUsedClassesForClass(const Entry *root,
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
           //printf("    usedName=%s\n",usedName.data());
 
-          bool delTempNames=FALSE;
-          if (templateNames==0)
+          TemplateNameMap formTemplateNames;
+          if (templateNames.empty())
           {
-            templateNames = getTemplateArgumentsInName(formalArgs,usedName);
-            delTempNames=TRUE;
+            formTemplateNames = getTemplateArgumentsInName(formalArgs,usedName);
           }
           BaseInfo bi(usedName,Public,Normal);
-          findClassRelation(root,context,instanceCd,&bi,templateNames,TemplateInstances,isArtificial);
+          findClassRelation(root,context,instanceCd,&bi,formTemplateNames,TemplateInstances,isArtificial);
 
           for (const Argument &arg : masterCd->templateArguments())
           {
@@ -4056,11 +4057,6 @@ static void findUsedClassesForClass(const Entry *root,
               }
             }
           }
-          if (delTempNames)
-          {
-            delete templateNames;
-            templateNames=0;
-          }
         }
         if (!found && !type.isEmpty()) // used class is not documented in any scope
         {
@@ -4111,7 +4107,7 @@ static void findBaseClassesForClass(
       FindBaseClassRelation_Mode mode,
       bool isArtificial,
       const std::unique_ptr<ArgumentList> &actualArgs = std::unique_ptr<ArgumentList>(),
-      QDict<int> *templateNames=0
+      const TemplateNameMap &templateNames=TemplateNameMap()
     )
 {
   // The base class could ofcouse also be a non-nested class
@@ -4120,11 +4116,10 @@ static void findBaseClassesForClass(
   {
     //printf("masterCd=%s bi.name='%s' #actualArgs=%d\n",
     //    masterCd->localName().data(),bi.name.data(),actualArgs ? (int)actualArgs->size() : -1);
-    bool delTempNames=FALSE;
-    if (templateNames==0)
+    TemplateNameMap formTemplateNames;
+    if (templateNames.empty())
     {
-      templateNames = getTemplateArgumentsInName(formalArgs,bi.name);
-      delTempNames=TRUE;
+      formTemplateNames = getTemplateArgumentsInName(formalArgs,bi.name);
     }
     BaseInfo tbi = bi;
     tbi.name = substituteTemplateArgumentsInString(bi.name,formalArgs,actualArgs);
@@ -4133,7 +4128,7 @@ static void findBaseClassesForClass(
     if (mode==DocumentedOnly)
     {
       // find a documented base class in the correct scope
-      if (!findClassRelation(root,context,instanceCd,&tbi,templateNames,DocumentedOnly,isArtificial))
+      if (!findClassRelation(root,context,instanceCd,&tbi,formTemplateNames,DocumentedOnly,isArtificial))
       {
         // 1.8.2: decided to show inheritance relations even if not documented,
         //        we do make them artificial, so they do not appear in the index
@@ -4141,18 +4136,13 @@ static void findBaseClassesForClass(
         bool b = Config_getBool(HIDE_UNDOC_RELATIONS) ? TRUE : isArtificial;
         //{
           // no documented base class -> try to find an undocumented one
-          findClassRelation(root,context,instanceCd,&tbi,templateNames,Undocumented,b);
+          findClassRelation(root,context,instanceCd,&tbi,formTemplateNames,Undocumented,b);
         //}
       }
     }
     else if (mode==TemplateInstances)
     {
-      findClassRelation(root,context,instanceCd,&tbi,templateNames,TemplateInstances,isArtificial);
-    }
-    if (delTempNames)
-    {
-      delete templateNames;
-      templateNames=0;
+      findClassRelation(root,context,instanceCd,&tbi,formTemplateNames,TemplateInstances,isArtificial);
     }
   }
 }
@@ -4162,21 +4152,16 @@ static void findBaseClassesForClass(
 static void findTemplateInstanceRelation(const Entry *root,
             Definition *context,
             ClassDefMutable *templateClass,const QCString &templSpec,
-            QDict<int> *templateNames,
+            const TemplateNameMap &templateNames,
             bool isArtificial)
 {
   Debug::print(Debug::Classes,0,"    derived from template %s with parameters %s isArtificial=%d\n",
          qPrint(templateClass->name()),qPrint(templSpec),isArtificial);
   //printf("findTemplateInstanceRelation(base=%s templSpec=%s templateNames=",
   //    templateClass->name().data(),templSpec.data());
-  //if (templateNames)
+  //for (const auto &kv : templNames)
   //{
-  //  QDictIterator<int> qdi(*templateNames);
-  //  int *tempArgIndex;
-  //  for (;(tempArgIndex=qdi.current());++qdi)
-  //  {
-  //    printf("(%s->%d) ",qdi.currentKey(),*tempArgIndex);
-  //  }
+  //  printf("(%s->%d) ",kv.first.c_str(),kv.second);
   //}
   //printf("\n");
 
@@ -4351,21 +4336,16 @@ static bool findClassRelation(
                            Definition *context,
                            ClassDefMutable *cd,
                            const BaseInfo *bi,
-                           QDict<int> *templateNames,
+                           const TemplateNameMap &templateNames,
                            FindBaseClassRelation_Mode mode,
                            bool isArtificial
                           )
 {
   //printf("findClassRelation(class=%s base=%s templateNames=",
   //    cd->name().data(),bi->name.data());
-  //if (templateNames)
+  //for (const auto &kv : templateNames)
   //{
-  //  QDictIterator<int> qdi(*templateNames);
-  //  int *tempArgIndex;
-  //  for (;(tempArgIndex=qdi.current());++qdi)
-  //  {
-  //    printf("(%s->%d) ",qdi.currentKey(),*tempArgIndex);
-  //  }
+  //  printf("(%s->%d) ",kv.first.c_str(),kv.second);
   //}
   //printf("\n");
 
@@ -4516,7 +4496,7 @@ static bool findClassRelation(
             found = baseClass!=0 && baseClass!=cd;
           }
         }
-        bool isATemplateArgument = templateNames!=0 && templateNames->find(biName)!=0;
+        bool isATemplateArgument = templateNames.find(biName.str())!=templateNames.end();
         // make templSpec canonical
         // warning: the following line doesn't work for Mixin classes (see bug 560623)
         // templSpec = getCanonicalTemplateSpec(cd, cd->getFileDef(), templSpec);
@@ -4858,16 +4838,14 @@ static void computeTemplateClassRelations()
             const ArgumentList &tl = cd->templateArguments();
             if (!tl.empty())
             {
-              QDict<int> *baseClassNames = tcd->getTemplateBaseClassNames();
-              QDict<int> *templateNames = getTemplateArgumentsInName(tl,bi.name);
+              TemplateNameMap baseClassNames = tcd->getTemplateBaseClassNames();
+              TemplateNameMap templateNames = getTemplateArgumentsInName(tl,bi.name);
               // for each template name that we inherit from we need to
               // substitute the formal with the actual arguments
-              QDict<int> *actualTemplateNames = new QDict<int>(17);
-              actualTemplateNames->setAutoDelete(TRUE);
-              QDictIterator<int> qdi(*templateNames);
-              for (qdi.toFirst();qdi.current();++qdi)
+              TemplateNameMap actualTemplateNames;
+              for (const auto &tn_kv : templateNames)
               {
-                int templIndex = *qdi.current();
+                int templIndex = tn_kv.second;
                 Argument actArg;
                 bool hasActArg=FALSE;
                 if (templIndex<(int)templArgs->size())
@@ -4876,15 +4854,13 @@ static void computeTemplateClassRelations()
                   hasActArg=TRUE;
                 }
                 if (hasActArg &&
-                    baseClassNames!=0 &&
-                    baseClassNames->find(actArg.type)!=0 &&
-                    actualTemplateNames->find(actArg.type)==0
+                    baseClassNames.find(actArg.type.str())!=baseClassNames.end() &&
+                    actualTemplateNames.find(actArg.type.str())==actualTemplateNames.end()
                    )
                 {
-                  actualTemplateNames->insert(actArg.type,new int(templIndex));
+                  actualTemplateNames.insert(std::make_pair(actArg.type.str(),templIndex));
                 }
               }
-              delete templateNames;
 
               tbi.name = substituteTemplateArgumentsInString(bi.name,tl,templArgs);
               // find a documented base class in the correct scope
@@ -4893,7 +4869,6 @@ static void computeTemplateClassRelations()
                 // no documented base class -> try to find an undocumented one
                 findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,Undocumented,TRUE);
               }
-              delete actualTemplateNames;
             }
           }
         }

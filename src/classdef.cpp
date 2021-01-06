@@ -224,7 +224,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const MemberLists &getMemberLists() const;
     virtual const MemberGroupList &getMemberGroups() const;
-    virtual QDict<int> *getTemplateBaseClassNames() const;
+    virtual const TemplateNameMap &getTemplateBaseClassNames() const;
     virtual ClassDef *getVariableInstance(const char *templSpec) const;
     virtual bool isUsedOnly() const;
     virtual QCString anchor() const;
@@ -266,7 +266,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setClassName(const char *name);
     virtual void setClassSpecifier(uint64 spec);
     virtual void setTemplateArguments(const ArgumentList &al);
-    virtual void setTemplateBaseClassNames(QDict<int> *templateNames);
+    virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
     virtual void setTemplateMaster(const ClassDef *tm);
     virtual void setTypeConstraints(const ArgumentList &al);
     virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const char *templSpec);
@@ -496,7 +496,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->getMemberLists(); }
     virtual const MemberGroupList &getMemberGroups() const
     { return getCdAlias()->getMemberGroups(); }
-    virtual QDict<int> *getTemplateBaseClassNames() const
+    virtual const TemplateNameMap &getTemplateBaseClassNames() const
     { return getCdAlias()->getTemplateBaseClassNames(); }
     virtual ClassDef *getVariableInstance(const char *templSpec) const
     { return getCdAlias()->getVariableInstance(templSpec); }
@@ -660,7 +660,7 @@ class ClassDefImpl::IMPL
      */
     mutable QDict<ClassDef> *variableInstances = 0;
 
-    QDict<int> *templBaseClassNames = 0;
+    TemplateNameMap templBaseClassNames;
 
     /*! The class this class is an instance of. */
     const ClassDef *templateMaster = 0;
@@ -742,7 +742,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   subGrouping=Config_getBool(SUBGROUPING);
   variableInstances = 0;
   templateMaster =0;
-  templBaseClassNames = 0;
   isAbstract = FALSE;
   isStatic = FALSE;
   isTemplArg = FALSE;
@@ -782,7 +781,6 @@ ClassDefImpl::IMPL::~IMPL()
   delete constraintClassDict;
   delete incInfo;
   delete variableInstances;
-  delete templBaseClassNames;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -4003,26 +4001,12 @@ ClassDef *ClassDefImpl::getVariableInstance(const char *templSpec) const
   return templateClass;
 }
 
-void ClassDefImpl::setTemplateBaseClassNames(QDict<int> *templateNames)
+void ClassDefImpl::setTemplateBaseClassNames(const TemplateNameMap &templateNames)
 {
-  if (templateNames==0) return;
-  if (m_impl->templBaseClassNames==0)
-  {
-    m_impl->templBaseClassNames = new QDict<int>(17);
-    m_impl->templBaseClassNames->setAutoDelete(TRUE);
-  }
-  // make a deep copy of the dictionary.
-  QDictIterator<int> qdi(*templateNames);
-  for (;qdi.current();++qdi)
-  {
-    if (m_impl->templBaseClassNames->find(qdi.currentKey())==0)
-    {
-      m_impl->templBaseClassNames->insert(qdi.currentKey(),new int(*qdi.current()));
-    }
-  }
+  m_impl->templBaseClassNames = templateNames;
 }
 
-QDict<int> *ClassDefImpl::getTemplateBaseClassNames() const
+const TemplateNameMap &ClassDefImpl::getTemplateBaseClassNames() const
 {
   return m_impl->templBaseClassNames;
 }
