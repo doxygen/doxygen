@@ -3293,7 +3293,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   ambig=FALSE;
   if (n==0) return 0;
 
-  std::unique_lock<std::mutex> lock(g_findFileDefMutex);
+  std::lock_guard<std::mutex> lock(g_findFileDefMutex);
 
   const int maxAddrSize = 20;
   char addr[maxAddrSize];
@@ -3715,7 +3715,7 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
   QCString result;
   if (shortNames) // use short names only
   {
-    std::unique_lock<std::mutex> lock(g_usedNamesMutex);
+    std::lock_guard<std::mutex> lock(g_usedNamesMutex);
     auto kv = g_usedNames.find(name);
     uint num=0;
     if (kv!=g_usedNames.end())
@@ -5248,29 +5248,25 @@ QCString latexFilterURL(const char *s)
   return result.data();
 }
 
+static std::mutex g_rtfFormatMutex;
+static std::unordered_map<std::string,std::string> g_tagMap;
+static QCString g_nextTag( "AAAAAAAAAA" );
 
 QCString rtfFormatBmkStr(const char *name)
 {
-  static QCString g_nextTag( "AAAAAAAAAA" );
-  static QDict<QCString> g_tagDict( 5003 );
-
-  g_tagDict.setAutoDelete(TRUE);
+  std::lock_guard<std::mutex> lock(g_rtfFormatMutex);
 
   // To overcome the 40-character tag limitation, we
   // substitute a short arbitrary string for the name
   // supplied, and keep track of the correspondence
   // between names and strings.
-  QCString key( name );
-  QCString* tag = g_tagDict.find( key );
-  if ( !tag )
-  {
-    // This particular name has not yet been added
-    // to the list. Add it, associating it with the
-    // next tag value, and increment the next tag.
-    tag = new QCString( g_nextTag.copy() ); // Make sure to use a deep copy!
-    g_tagDict.insert( key, tag );
+  QCString tag = g_nextTag;
+  auto result = g_tagMap.insert( std::make_pair(name, g_nextTag) );
 
-    // This is the increment part
+  if (result.second) // new item was added
+  {
+    // increment the next tag.
+
     char* nxtTag = g_nextTag.rawData() + g_nextTag.length() - 1;
     for ( unsigned int i = 0; i < g_nextTag.length(); ++i, --nxtTag )
     {
@@ -5287,7 +5283,7 @@ QCString rtfFormatBmkStr(const char *name)
   }
 
   //printf("Name = %s RTF_tag = %s\n",name,(*tag).data());
-  return *tag;
+  return tag;
 }
 
 bool checkExtension(const char *fName, const char *ext)
