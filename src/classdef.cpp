@@ -200,10 +200,9 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const ClassDef *templateMaster() const;
     virtual bool isTemplate() const;
     virtual IncludeInfo *includeInfo() const;
-    virtual UsesClassDict *usedImplementationClasses() const;
-    virtual UsesClassDict *usedByImplementationClasses() const;
-    virtual UsesClassDict *usedInterfaceClasses() const;
-    virtual ConstraintClassDict *templateTypeConstraints() const;
+    virtual const UsesClassList &usedImplementationClasses() const;
+    virtual const UsesClassList &usedByImplementationClasses() const;
+    virtual const ConstraintClassList &templateTypeConstraints() const;
     virtual bool isTemplateArgument() const;
     virtual const Definition *findInnerCompound(const char *name) const;
     virtual ArgumentLists getTemplateParameterLists() const;
@@ -448,13 +447,11 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isTemplate(); }
     virtual IncludeInfo *includeInfo() const
     { return getCdAlias()->includeInfo(); }
-    virtual UsesClassDict *usedImplementationClasses() const
+    virtual const UsesClassList &usedImplementationClasses() const
     { return getCdAlias()->usedImplementationClasses(); }
-    virtual UsesClassDict *usedByImplementationClasses() const
+    virtual const UsesClassList &usedByImplementationClasses() const
     { return getCdAlias()->usedByImplementationClasses(); }
-    virtual UsesClassDict *usedInterfaceClasses() const
-    { return getCdAlias()->usedInterfaceClasses(); }
-    virtual ConstraintClassDict *templateTypeConstraints() const
+    virtual const ConstraintClassList &templateTypeConstraints() const
     { return getCdAlias()->templateTypeConstraints(); }
     virtual bool isTemplateArgument() const
     { return getCdAlias()->isTemplateArgument(); }
@@ -640,11 +637,10 @@ class ClassDefImpl::IMPL
     ClassLinkedRefMap innerClasses;
 
     /* classes for the collaboration diagram */
-    UsesClassDict *usesImplClassDict = 0;
-    UsesClassDict *usedByImplClassDict = 0;
-    UsesClassDict *usesIntfClassDict = 0;
+    UsesClassList usesImplClassList;
+    UsesClassList usedByImplClassList;
 
-    ConstraintClassDict *constraintClassDict = 0;
+    ConstraintClassList constraintClassList;
 
     /*! Template instances that exists of this class, the key in the
      *  dictionary is the template argument list.
@@ -726,10 +722,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   prot=Public;
   nspace=0;
   fileDef=0;
-  usesImplClassDict=0;
-  usedByImplClassDict=0;
-  usesIntfClassDict=0;
-  constraintClassDict=0;
   subGrouping=Config_getBool(SUBGROUPING);
   templateMaster =0;
   isAbstract = FALSE;
@@ -765,10 +757,6 @@ ClassDefImpl::IMPL::IMPL()
 
 ClassDefImpl::IMPL::~IMPL()
 {
-  delete usesImplClassDict;
-  delete usedByImplClassDict;
-  delete usesIntfClassDict;
-  delete constraintClassDict;
   delete incInfo;
 }
 
@@ -3128,18 +3116,16 @@ void ClassDefImpl::addTypeConstraint(const QCString &typeConstraint,const QCStri
   }
   if (cd)
   {
-    if (m_impl->constraintClassDict==0)
+    auto it = std::find_if(m_impl->constraintClassList.begin(),
+                           m_impl->constraintClassList.end(),
+                           [&cd](const auto &ccd) { return ccd.classDef==cd; });
+
+    if (it==m_impl->constraintClassList.end())
     {
-      m_impl->constraintClassDict = new ConstraintClassDict(17);
-      m_impl->constraintClassDict->setAutoDelete(TRUE);
+      m_impl->constraintClassList.emplace_back(cd);
+      it = m_impl->constraintClassList.end()-1;
     }
-    ConstraintClassDef *ccd=m_impl->constraintClassDict->find(typeConstraint);
-    if (ccd==0)
-    {
-      ccd = new ConstraintClassDef(cd);
-      m_impl->constraintClassDict->insert(typeConstraint,ccd);
-    }
-    ccd->addAccessor(type);
+    (*it).addAccessor(type);
     //printf("Adding constraint '%s' to class %s on type %s\n",
     //       typeConstraint.data(),name().data(),type.data());
   }
@@ -3726,18 +3712,16 @@ void ClassDefImpl::addUsedClass(ClassDef *cd,const char *accessName,
   static bool umlLook = Config_getBool(UML_LOOK);
   if (prot==Private && !extractPrivate) return;
   //printf("%s::addUsedClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
-  if (m_impl->usesImplClassDict==0)
+
+  auto it = std::find_if(m_impl->usesImplClassList.begin(),
+                         m_impl->usesImplClassList.end(),
+                         [&cd](const auto &ucd) { return ucd.classDef==cd; });
+  if (it==m_impl->usesImplClassList.end())
   {
-    m_impl->usesImplClassDict = new UsesClassDict(17);
-    m_impl->usesImplClassDict->setAutoDelete(TRUE);
-  }
-  UsesClassDef *ucd=m_impl->usesImplClassDict->find(cd->name());
-  if (ucd==0)
-  {
-     ucd = new UsesClassDef(cd);
-     m_impl->usesImplClassDict->insert(cd->name(),ucd);
-     //printf("Adding used class %s to class %s via accessor %s\n",
-     //    cd->name().data(),name().data(),accessName);
+    m_impl->usesImplClassList.emplace_back(cd);
+    //printf("Adding used class %s to class %s via accessor %s\n",
+    //    cd->name().data(),name().data(),accessName);
+    it = m_impl->usesImplClassList.end()-1;
   }
   QCString acc = accessName;
   if (umlLook)
@@ -3750,7 +3734,7 @@ void ClassDefImpl::addUsedClass(ClassDef *cd,const char *accessName,
       case Package:   acc.prepend("~"); break;
     }
   }
-  ucd->addAccessor(acc);
+  (*it).addAccessor(acc);
 }
 
 void ClassDefImpl::addUsedByClass(ClassDef *cd,const char *accessName,
@@ -3760,18 +3744,16 @@ void ClassDefImpl::addUsedByClass(ClassDef *cd,const char *accessName,
   static bool umlLook = Config_getBool(UML_LOOK);
   if (prot==Private && !extractPrivate) return;
   //printf("%s::addUsedByClass(%s,%s)\n",name().data(),cd->name().data(),accessName);
-  if (m_impl->usedByImplClassDict==0)
+  //
+  auto it = std::find_if(m_impl->usedByImplClassList.begin(),
+                         m_impl->usedByImplClassList.end(),
+                         [&cd](const auto &ucd) { return ucd.classDef==cd; });
+  if (it==m_impl->usedByImplClassList.end())
   {
-    m_impl->usedByImplClassDict = new UsesClassDict(17);
-    m_impl->usedByImplClassDict->setAutoDelete(TRUE);
-  }
-  UsesClassDef *ucd=m_impl->usedByImplClassDict->find(cd->name());
-  if (ucd==0)
-  {
-     ucd = new UsesClassDef(cd);
-     m_impl->usedByImplClassDict->insert(cd->name(),ucd);
+     m_impl->usedByImplClassList.emplace_back(cd);
      //printf("Adding used by class %s to class %s\n",
      //    cd->name().data(),name().data());
+     it = m_impl->usedByImplClassList.end()-1;
   }
   QCString acc = accessName;
   if (umlLook)
@@ -3784,7 +3766,7 @@ void ClassDefImpl::addUsedByClass(ClassDef *cd,const char *accessName,
       case Package:   acc.prepend("~"); break;
     }
   }
-  ucd->addAccessor(acc);
+  (*it).addAccessor(acc);
 }
 
 
@@ -4602,24 +4584,19 @@ IncludeInfo *ClassDefImpl::includeInfo() const
   return m_impl->incInfo;
 }
 
-UsesClassDict *ClassDefImpl::usedImplementationClasses() const
+const UsesClassList &ClassDefImpl::usedImplementationClasses() const
 {
-  return m_impl->usesImplClassDict;
+  return m_impl->usesImplClassList;
 }
 
-UsesClassDict *ClassDefImpl::usedByImplementationClasses() const
+const UsesClassList &ClassDefImpl::usedByImplementationClasses() const
 {
-  return m_impl->usedByImplClassDict;
+  return m_impl->usedByImplClassList;
 }
 
-UsesClassDict *ClassDefImpl::usedInterfaceClasses() const
+const ConstraintClassList &ClassDefImpl::templateTypeConstraints() const
 {
-  return m_impl->usesIntfClassDict;
-}
-
-ConstraintClassDict *ClassDefImpl::templateTypeConstraints() const
-{
-  return m_impl->constraintClassDict;
+  return m_impl->constraintClassList;
 }
 
 bool ClassDefImpl::isTemplateArgument() const

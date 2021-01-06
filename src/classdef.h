@@ -43,9 +43,6 @@ class NamespaceDef;
 class MemberDef;
 class ExampleList;
 class MemberNameInfoLinkedMap;
-class UsesClassDict;
-class ConstraintClassDict;
-class QTextStream;
 class PackageDef;
 class GroupDef;
 class StringDict;
@@ -54,6 +51,8 @@ class ClassDefImpl;
 class FTextStream;
 class ClassDef;
 class ClassDefMutable;
+class UsesClassList;
+class ConstraintClassList;
 
 /** Class that contains information about an inheritance relation.
  */
@@ -257,13 +256,11 @@ class ClassDef : public Definition
 
     virtual IncludeInfo *includeInfo() const = 0;
 
-    virtual UsesClassDict *usedImplementationClasses() const = 0;
+    virtual const UsesClassList &usedImplementationClasses() const = 0;
 
-    virtual UsesClassDict *usedByImplementationClasses() const = 0;
+    virtual const UsesClassList &usedByImplementationClasses() const = 0;
 
-    virtual UsesClassDict *usedInterfaceClasses() const = 0;
-
-    virtual ConstraintClassDict *templateTypeConstraints() const = 0;
+    virtual const ConstraintClassList &templateTypeConstraints() const = 0;
 
     virtual bool isTemplateArgument() const = 0;
 
@@ -518,27 +515,11 @@ struct UsesClassDef
   bool containment = true;
 };
 
-/** Dictionary of usage relations.
- */
-class UsesClassDict : public QDict<UsesClassDef>
+class UsesClassList : public std::vector<UsesClassDef>
 {
-  public:
-    UsesClassDict(uint size) : QDict<UsesClassDef>(size) {}
-   ~UsesClassDict() {}
-};
-
-/** Iterator class to iterate over a dictionary of usage relations.
- */
-class UsesClassDictIterator : public QDictIterator<UsesClassDef>
-{
-  public:
-    UsesClassDictIterator(const QDict<UsesClassDef> &d)
-      : QDictIterator<UsesClassDef>(d) {}
-   ~UsesClassDictIterator() {}
 };
 
 //------------------------------------------------------------------------
-
 
 /** Class that contains information about a type constraint relations.
  */
@@ -566,23 +547,8 @@ struct ConstraintClassDef
   StringSet accessors;
 };
 
-/** Dictionary of constraint relations.
- */
-class ConstraintClassDict : public QDict<ConstraintClassDef>
+class ConstraintClassList : public std::vector<ConstraintClassDef>
 {
-  public:
-    ConstraintClassDict(uint size) : QDict<ConstraintClassDef>(size) {}
-   ~ConstraintClassDict() {}
-};
-
-/** Iterator class to iterate over a dictionary of constraint relations.
- */
-class ConstraintClassDictIterator : public QDictIterator<ConstraintClassDef>
-{
-  public:
-    ConstraintClassDictIterator(const QDict<ConstraintClassDef> &d)
-      : QDictIterator<ConstraintClassDef>(d) {}
-   ~ConstraintClassDictIterator() {}
 };
 
 //------------------------------------------------------------------------

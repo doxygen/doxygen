@@ -259,35 +259,22 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
   {
     // ---- Add usage relations
 
-    UsesClassDict *dict =
-      base ? cd->usedImplementationClasses() :
-      cd->usedByImplementationClasses()
-      ;
-    if (dict)
+    const UsesClassList &list = base ? cd->usedImplementationClasses()   :
+                                       cd->usedByImplementationClasses() ;
+    for (const auto &ucd : list)
     {
-      UsesClassDictIterator ucdi(*dict);
-      UsesClassDef *ucd;
-      for (;(ucd=ucdi.current());++ucdi)
-      {
-        //printf("addClass: %s templSpec=%s\n",ucd->classDef->name().data(),ucd->templSpecifiers.data());
-        addClass(ucd->classDef,n,EdgeInfo::Purple,joinLabels(ucd->accessors),0,
-          ucd->templSpecifiers,base,distance);
-      }
+      //printf("addClass: %s templSpec=%s\n",ucd.classDef->name().data(),ucd.templSpecifiers.data());
+      addClass(ucd.classDef,n,EdgeInfo::Purple,joinLabels(ucd.accessors),0,
+          ucd.templSpecifiers,base,distance);
     }
   }
   if (Config_getBool(TEMPLATE_RELATIONS) && base)
   {
-    ConstraintClassDict *dict = cd->templateTypeConstraints();
-    if (dict)
+    for (const auto &ccd : cd->templateTypeConstraints())
     {
-      ConstraintClassDictIterator ccdi(*dict);
-      ConstraintClassDef *ccd;
-      for (;(ccd=ccdi.current());++ccdi)
-      {
-        //printf("addClass: %s templSpec=%s\n",ucd->classDef->name().data(),ucd->templSpecifiers.data());
-        addClass(ccd->classDef,n,EdgeInfo::Orange2,joinLabels(ccd->accessors),0,
-          0,TRUE,distance);
-      }
+      //printf("addClass: %s\n",ccd.classDef->name().data());
+      addClass(ccd.classDef,n,EdgeInfo::Orange2,joinLabels(ccd.accessors),0,
+        0,TRUE,distance);
     }
   }
 
