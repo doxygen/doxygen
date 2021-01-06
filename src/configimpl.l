@@ -30,8 +30,6 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 #include <qregexp.h>
-#include <qstack.h>
-#include <qglobal.h>
 
 #include <thread>
 #include <algorithm>
@@ -39,7 +37,6 @@
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
-#include "util.h"
 #include "message.h"
 
 #include "lang_cfg.h"
@@ -239,15 +236,13 @@ void ConfigEnum::convertStrToVal()
     return;
   }
   QCString val = m_value.stripWhiteSpace().lower();
-  const char *s=m_valueRange.first();
-  while (s)
+  for (const auto &s : m_valueRange)
   {
-    if (QCString(s).lower() == val)
+    if (s.lower() == val)
     {
        m_value = s;
        return;
     }
-    s = m_valueRange.next();
   }
 
   config_warn("argument '%s' for option %s is not a valid enum value\n"
@@ -257,72 +252,72 @@ void ConfigEnum::convertStrToVal()
 
 QCString &ConfigImpl::getString(const char *fileName,int num,const char *name) const
 {
-  ConfigOption *opt = m_dict->find(name);
-  if (opt==0)
+  auto it = m_dict.find(name);
+  if (it==m_dict.end())
   {
     config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
-  else if (opt->kind()!=ConfigOption::O_String)
+  else if (it->second->kind()!=ConfigOption::O_String)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of string type!\n",fileName,num,name);
   }
-  return *((ConfigString *)opt)->valueRef();
+  return *((ConfigString *)it->second)->valueRef();
 }
 
 StringVector &ConfigImpl::getList(const char *fileName,int num,const char *name) const
 {
-  ConfigOption *opt = m_dict->find(name);
-  if (opt==0)
+  auto it = m_dict.find(name);
+  if (it==m_dict.end())
   {
     config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
-  else if (opt->kind()!=ConfigOption::O_List)
+  else if (it->second->kind()!=ConfigOption::O_List)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of list type!\n",fileName,num,name);
   }
-  return *((ConfigList *)opt)->valueRef();
+  return *((ConfigList *)it->second)->valueRef();
 }
 
 QCString &ConfigImpl::getEnum(const char *fileName,int num,const char *name) const
 {
-  ConfigOption *opt = m_dict->find(name);
-  if (opt==0)
+  auto it = m_dict.find(name);
+  if (it==m_dict.end())
   {
     config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
-  else if (opt->kind()!=ConfigOption::O_Enum)
+  else if (it->second->kind()!=ConfigOption::O_Enum)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of enum type!\n",fileName,num,name);
   }
-  return *((ConfigEnum *)opt)->valueRef();
+  return *((ConfigEnum *)it->second)->valueRef();
 }
 
 int &ConfigImpl::getInt(const char *fileName,int num,const char *name) const
 {
-  ConfigOption *opt = m_dict->find(name);
-  if (opt==0)
+  auto it = m_dict.find(name);
+  if (it==m_dict.end())
   {
     config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
-  else if (opt->kind()!=ConfigOption::O_Int)
+  else if (it->second->kind()!=ConfigOption::O_Int)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of integer type!\n",fileName,num,name);
   }
-  return *((ConfigInt *)opt)->valueRef();
+  return *((ConfigInt *)it->second)->valueRef();
 }
 
 bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
 {
-  ConfigOption *opt = m_dict->find(name);
-  if (opt==0)
+  auto it = m_dict.find(name);
+  if (it==m_dict.end())
   {
     config_term("%s<%d>: Internal error: Requested unknown option %s!\n",fileName,num,name);
   }
-  else if (opt->kind()!=ConfigOption::O_Bool)
+  else if (it->second->kind()!=ConfigOption::O_Bool)
   {
     config_term("%s<%d>: Internal error: Requested option %s not of boolean type!\n",fileName,num,name);
   }
-  return *((ConfigBool *)opt)->valueRef();
+  return *((ConfigBool *)it->second)->valueRef();
 }
 
 /* ------------------------------------------ */
@@ -516,8 +511,7 @@ static QCString         *g_string=0;
 static StringVector     *g_list=0;
 static QCString          g_listStr;
 static StringVector      g_includePathList;
-static QStack<ConfigFileState> g_includeStack;
-static int               g_includeDepth;
+static std::vector< std::unique_ptr<ConfigFileState> > g_includeStack;
 static bool              g_configUpdate = FALSE;
 static QCString          g_encoding;
 static ConfigImpl       *g_config;
@@ -530,7 +524,7 @@ static ConfigImpl       *g_config;
 static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
   // no file included
-  if (g_includeStack.isEmpty())
+  if (g_includeStack.empty())
   {
     yy_size_t c=0;
     if (g_inputString==0) return c;
@@ -544,7 +538,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
   else
   {
     //assert(g_includeStack.current()->newState==YY_CURRENT_BUFFER);
-    return (yy_size_t)fread(buf,1,max_size,g_includeStack.current()->filePtr);
+    return (yy_size_t)fread(buf,1,max_size,g_includeStack.back()->filePtr);
   }
 }
 
@@ -807,7 +801,7 @@ static FILE *findFile(const char *fileName)
 
 static void readIncludeFile(const char *incName)
 {
-  if (g_includeDepth==MAX_INCLUDE_DEPTH) {
+  if (g_includeStack.size()==MAX_INCLUDE_DEPTH) {
     config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
         MAX_INCLUDE_DEPTH,incName);
   }
@@ -827,7 +821,7 @@ static void readIncludeFile(const char *incName)
   {
     // For debugging
 #if SHOW_INCLUDES
-    for (i=0;i<g_includeStack.count();i++) msg("  ");
+    for (size_t i=0;i<g_includeStack.size();i++) msg("  ");
     msg("@INCLUDE = %s: parsing...\n",inc.data());
 #endif
 
@@ -838,12 +832,11 @@ static void readIncludeFile(const char *incName)
     fs->fileName=g_yyFileName;
     fs->filePtr=f;
     // push the state on the stack
-    g_includeStack.push(fs);
+    g_includeStack.push_back(std::unique_ptr<ConfigFileState>(fs));
     // set the scanner to the include file
     yy_switch_to_buffer(yy_create_buffer(f, YY_BUF_SIZE));
     fs->newState=YY_CURRENT_BUFFER;
     g_yyFileName=inc;
-    g_includeDepth++;
   }
   else
   {
@@ -1014,22 +1007,21 @@ static void readIncludeFile(const char *incName)
 <<EOF>>                                 {
                                           //printf("End of include file\n");
                                           //printf("Include stack depth=%d\n",g_includeStack.count());
-                                          if (g_includeStack.isEmpty())
+                                          if (g_includeStack.empty())
                                           {
                                             //printf("Terminating scanner!\n");
                                             yyterminate();
                                           }
                                           else
                                           {
-                                            ConfigFileState *fs=g_includeStack.pop();
+                                            auto &fs=g_includeStack.back();
                                             fclose(fs->filePtr);
                                             YY_BUFFER_STATE oldBuf = YY_CURRENT_BUFFER;
                                             yy_switch_to_buffer( fs->oldState );
                                             yy_delete_buffer( oldBuf );
                                             g_yyLineNr=fs->lineNr;
                                             g_yyFileName=fs->fileName;
-                                            delete fs; fs=0;
-                                            g_includeDepth--;
+                                            g_includeStack.pop_back();
                                           }
                                         }
 
@@ -1102,9 +1094,7 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
   {
     t << convertToComment(m_header,"");
   }
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (;(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     option->writeTemplate(t,sl,upd);
   }
@@ -1120,9 +1110,7 @@ void ConfigImpl::compareDoxyfile(FTextStream &t)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
   t << endl;
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (;(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     option->m_userComment = "";
     option->compareDoxyfile(t);
@@ -1131,18 +1119,14 @@ void ConfigImpl::compareDoxyfile(FTextStream &t)
 
 void ConfigImpl::convertStrToVal()
 {
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (;(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     option->convertStrToVal();
   }
 }
 void ConfigImpl::emptyValueToDefault()
 {
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (;(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     option->emptyValueToDefault();
   }
@@ -1268,9 +1252,7 @@ void ConfigEnum::substEnvVars()
 
 void ConfigImpl::substituteEnvironmentVars()
 {
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (;(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     option->substEnvVars();
   }
@@ -1278,15 +1260,13 @@ void ConfigImpl::substituteEnvironmentVars()
 
 void ConfigImpl::init()
 {
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (;(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     option->init();
   }
 
   // sanity check if all depends relations are valid
-  for (it.toFirst();(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     QCString depName = option->dependsOn();
     if (!depName.isEmpty())
@@ -1373,9 +1353,7 @@ bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
   g_inputPosition = 0;
   g_yyFileName    = fn;
   g_yyLineNr      = 1;
-  g_includeStack.setAutoDelete(TRUE);
   g_includeStack.clear();
-  g_includeDepth  = 0;
   configimplYYrestart( configimplYYin );
   BEGIN( Start );
   g_configUpdate = update;
@@ -2079,9 +2057,7 @@ void Config::checkAndCorrect()
 #if 0 // TODO: this breaks test 25; SOURCEBROWSER = NO and SOURCE_TOOLTIPS = YES.
       // So this and other regressions should be analysed and fixed before this can be enabled
   // disable any boolean options that depend on disabled options
-  QListIterator<ConfigOption> it = iterator();
-  ConfigOption *option;
-  for (it.toFirst();(option=it.current());++it)
+  for (const auto &option : m_options)
   {
     QCString depName = option->dependsOn(); // option has a dependency
     if (!depName.isEmpty())

@@ -19,10 +19,11 @@
 #ifndef CONFIGIMPL_H
 #define CONFIGIMPL_H
 
-#include <qstrlist.h>
-#include <qdict.h>
-#include <qlist.h>
-#include <qregexp.h>
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <memory>
+
 #include "ftextstream.h"
 #include "containers.h"
 
@@ -151,11 +152,8 @@ class ConfigEnum : public ConfigOption
       m_value = defVal;
       m_defValue = defVal;
     }
-    void addValue(const char *v) { m_valueRange.append(v); }
-    QStrListIterator iterator()
-    {
-      return QStrListIterator(m_valueRange);
-    }
+    void addValue(const char *v) { m_valueRange.push_back(v); }
+    const std::vector<QCString> &values() const { return m_valueRange; }
     QCString *valueRef() { return &m_value; }
     void substEnvVars();
     void writeTemplate(FTextStream &t,bool sl,bool);
@@ -164,7 +162,7 @@ class ConfigEnum : public ConfigOption
     void init() { m_value = m_defValue.copy(); }
 
   private:
-    QStrList m_valueRange;
+    std::vector<QCString> m_valueRange;
     QCString m_value;
     QCString m_defValue;
 };
@@ -292,6 +290,9 @@ class ConfigDisabled : public ConfigOption
 #define ConfigImpl_getBool(val)    ConfigImpl::instance()->getBool(__FILE__,__LINE__,val)
 
 
+using ConfigOptionList = std::vector< std::unique_ptr<ConfigOption> >;
+using ConfigOptionMap  = std::unordered_map< std::string, ConfigOption* >;
+
 /** Singleton for configuration variables.
  *
  *  This object holds the global static variables
@@ -321,14 +322,6 @@ class ConfigImpl
     {
       delete m_instance;
       m_instance=0;
-    }
-
-    /*! Returns an iterator that can by used to iterate over the
-     *  configuration options.
-     */
-    QListIterator<ConfigOption> iterator()
-    {
-      return QListIterator<ConfigOption>(*m_options);
     }
 
     /*!
@@ -371,7 +364,8 @@ class ConfigImpl
      */
     ConfigOption *get(const char *name) const
     {
-      return m_dict->find(name);
+      auto it = m_dict.find(name);
+      return it!=m_dict.end() ? it->second : nullptr;
     }
     /* @} */
 
@@ -386,7 +380,7 @@ class ConfigImpl
     ConfigInfo   *addInfo(const char *name,const char *doc)
     {
       ConfigInfo *result = new ConfigInfo(name,doc);
-      m_options->append(result);
+      m_options.push_back(std::unique_ptr<ConfigOption>(result));
       return result;
     }
 
@@ -397,8 +391,8 @@ class ConfigImpl
                             const char *doc)
     {
       ConfigString *result = new ConfigString(name,doc);
-      m_options->append(result);
-      m_dict->insert(name,result);
+      m_options.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
       return result;
     }
 
@@ -411,8 +405,8 @@ class ConfigImpl
                           const char *defVal)
     {
       ConfigEnum *result = new ConfigEnum(name,doc,defVal);
-      m_options->append(result);
-      m_dict->insert(name,result);
+      m_options.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
       return result;
     }
 
@@ -423,8 +417,8 @@ class ConfigImpl
                           const char *doc)
     {
       ConfigList *result = new ConfigList(name,doc);
-      m_options->append(result);
-      m_dict->insert(name,result);
+      m_options.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
       return result;
     }
 
@@ -438,8 +432,8 @@ class ConfigImpl
                          int minVal,int maxVal,int defVal)
     {
       ConfigInt *result = new ConfigInt(name,doc,minVal,maxVal,defVal);
-      m_options->append(result);
-      m_dict->insert(name,result);
+      m_options.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
       return result;
     }
 
@@ -452,25 +446,25 @@ class ConfigImpl
                           bool defVal)
     {
       ConfigBool *result = new ConfigBool(name,doc,defVal);
-      m_options->append(result);
-      m_dict->insert(name,result);
+      m_options.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
       return result;
     }
     /*! Adds an option that has become obsolete. */
     ConfigOption *addObsolete(const char *name)
     {
-      ConfigObsolete *option = new ConfigObsolete(name);
-      m_dict->insert(name,option);
-      m_obsolete->append(option);
-      return option;
+      ConfigObsolete *result = new ConfigObsolete(name);
+      m_obsolete.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
+      return result;
     }
     /*! Adds an option that has been disabled at compile time. */
     ConfigOption *addDisabled(const char *name)
     {
-      ConfigDisabled *option = new ConfigDisabled(name);
-      m_dict->insert(name,option);
-      m_disabled->append(option);
-      return option;
+      ConfigDisabled *result = new ConfigDisabled(name);
+      m_disabled.push_back(std::unique_ptr<ConfigOption>(result));
+      m_dict.insert(std::make_pair(name,result));
+      return result;
     }
     /*! @} */
 
@@ -545,7 +539,7 @@ class ConfigImpl
     {
       QCString result=m_startComment;
       m_startComment.resize(0);
-      return result.replace(QRegExp("\r"),"");
+      return substitute(result,"\r","");
     }
     /*! Take the user comment and reset it internally
      *  \returns user comment
@@ -554,36 +548,25 @@ class ConfigImpl
     {
       QCString result=m_userComment;
       m_userComment.resize(0);
-      return result.replace(QRegExp("\r"),"");
+      return substitute(result,"\r","");
     }
 
   protected:
 
     ConfigImpl()
     {
-      m_options  = new QList<ConfigOption>;
-      m_obsolete = new QList<ConfigOption>;
-      m_disabled = new QList<ConfigOption>;
-      m_dict     = new QDict<ConfigOption>(257);
-      m_options->setAutoDelete(TRUE);
-      m_obsolete->setAutoDelete(TRUE);
-      m_disabled->setAutoDelete(TRUE);
       m_initialized = FALSE;
       create();
     }
    ~ConfigImpl()
     {
-      delete m_options;
-      delete m_obsolete;
-      delete m_disabled;
-      delete m_dict;
     }
 
   private:
-    QList<ConfigOption> *m_options;
-    QList<ConfigOption> *m_obsolete;
-    QList<ConfigOption> *m_disabled;
-    QDict<ConfigOption> *m_dict;
+    ConfigOptionList m_options;
+    ConfigOptionList m_obsolete;
+    ConfigOptionList m_disabled;
+    ConfigOptionMap  m_dict;
     static ConfigImpl *m_instance;
     QCString m_startComment;
     QCString m_userComment;
