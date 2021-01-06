@@ -20,10 +20,12 @@
 #define LAYOUT_H
 
 #include <memory>
+#include <vector>
 #include <qlist.h>
 #include "types.h"
 
 class LayoutParser;
+struct LayoutNavEntry;
 class MemberList;
 class QTextStream;
 
@@ -116,6 +118,8 @@ private:
   QCString m_title;
 };
 
+using LayoutNavEntryList = std::vector< std::unique_ptr<LayoutNavEntry> >;
+
 /** @brief Base class for the layout of a navigation item at the top of the HTML pages. */
 struct LayoutNavEntry
 {
@@ -152,10 +156,13 @@ struct LayoutNavEntry
       UserGroup
     };
     LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf,
-                   const QCString &tl,const QCString &intro,bool prepend=FALSE)
+                   const QCString &tl,const QCString &intro,bool prepend=false)
       : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro)
-    { m_children.setAutoDelete(TRUE);
-      if (parent) { if (prepend) parent->prependChild(this); else parent->addChild(this); }
+    {
+      if (parent)
+      {
+        if (prepend) parent->addChild(this); else parent->prependChild(this);
+      }
     }
     LayoutNavEntry *parent() const   { return m_parent; }
     Kind kind() const                { return m_kind; }
@@ -165,9 +172,9 @@ struct LayoutNavEntry
     QCString url() const;
     bool visible()                   { return m_visible; }
     void clear()                     { m_children.clear(); }
-    void addChild(LayoutNavEntry *e) { m_children.append(e); }
-    void prependChild(LayoutNavEntry *e) { m_children.prepend(e); }
-    const QList<LayoutNavEntry> &children() const { return m_children; }
+    void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
+    void prependChild(LayoutNavEntry *e) { m_children.insert(m_children.begin(),std::unique_ptr<LayoutNavEntry>(e)); }
+    const LayoutNavEntryList &children() const { return m_children; }
     LayoutNavEntry *find(LayoutNavEntry::Kind k,const char *file=0) const;
 
   private:
@@ -178,9 +185,11 @@ struct LayoutNavEntry
     QCString m_baseFile;
     QCString m_title;
     QCString m_intro;
-    QList<LayoutNavEntry> m_children;
+    LayoutNavEntryList m_children;
     friend class LayoutDocManager;
 };
+
+using LayoutDocEntryList = std::vector< std::unique_ptr<LayoutDocEntry> >;
 
 /** @brief Singleton providing access to the (user configurable) layout of the documentation */
 class LayoutDocManager
@@ -196,7 +205,7 @@ class LayoutDocManager
     static LayoutDocManager &instance();
 
     /** Returns the list of LayoutDocEntry's in representation order for a given page identified by @a part. */
-    const QList<LayoutDocEntry> &docEntries(LayoutPart part) const;
+    const LayoutDocEntryList &docEntries(LayoutPart part) const;
 
     /** returns the (invisible) root of the navigation tree. */
     LayoutNavEntry *rootNavEntry() const;

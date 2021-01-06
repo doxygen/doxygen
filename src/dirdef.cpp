@@ -468,10 +468,7 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
   tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
   tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Directory));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {
     switch (lde->kind())
     {
@@ -536,10 +533,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang = getLanguage();
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Directory));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {
     switch (lde->kind())
     {
@@ -563,7 +557,7 @@ void DirDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeDetailedDescription(ol,ls->title(lang));
         }
         break;

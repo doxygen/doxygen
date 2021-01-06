@@ -2275,17 +2275,15 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 static void renderQuickLinksAsTree(FTextStream &t,const QCString &relPath,LayoutNavEntry *root)
 
 {
-  QListIterator<LayoutNavEntry> li(root->children());
-  LayoutNavEntry *entry;
   int count=0;
-  for (li.toFirst();(entry=li.current());++li)
+  for (const auto &entry : root->children())
   {
     if (entry->visible() && quickLinkVisible(entry->kind())) count++;
   }
   if (count>0) // at least one item is visible
   {
     startQuickIndexList(t,FALSE);
-    for (li.toFirst();(entry=li.current());++li)
+    for (const auto &entry : root->children())
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
       {
@@ -2294,7 +2292,7 @@ static void renderQuickLinksAsTree(FTextStream &t,const QCString &relPath,Layout
         t << fixSpaces(entry->title());
         t << "</span></a>\n";
         // recursive into child list
-        renderQuickLinksAsTree(t,relPath,entry);
+        renderQuickLinksAsTree(t,relPath,entry.get());
         t << "</li>";
       }
     }
@@ -2311,28 +2309,25 @@ static void renderQuickLinksAsTabs(FTextStream &t,const QCString &relPath,
   {
     renderQuickLinksAsTabs(t,relPath,hlEntry->parent(),kind,highlightParent,highlightSearch);
   }
-  if (hlEntry->parent() && hlEntry->parent()->children().count()>0) // draw tabs for row containing hlEntry
+  if (hlEntry->parent() && !hlEntry->parent()->children().empty()) // draw tabs for row containing hlEntry
   {
     bool topLevel = hlEntry->parent()->parent()==0;
-    QListIterator<LayoutNavEntry> li(hlEntry->parent()->children());
-    LayoutNavEntry *entry;
-
     int count=0;
-    for (li.toFirst();(entry=li.current());++li)
+    for (const auto &entry : hlEntry->parent()->children())
     {
       if (entry->visible() && quickLinkVisible(entry->kind())) count++;
     }
     if (count>0) // at least one item is visible
     {
       startQuickIndexList(t,TRUE,topLevel);
-      for (li.toFirst();(entry=li.current());++li)
+      for (const auto &entry : hlEntry->parent()->children())
       {
         if (entry->visible() && quickLinkVisible(entry->kind()))
         {
           QCString url = entry->url();
           startQuickIndexItem(t,url,
-              entry==hlEntry  &&
-              (entry->children().count()>0 ||
+              entry.get()==hlEntry  &&
+              (!entry->children().empty() ||
                (entry->kind()==kind && !highlightParent)
               ),
               TRUE,relPath);
@@ -2475,7 +2470,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
     if (!hlEntry) // highlighted item not found in the index! -> just show the level 1 index...
     {
       highlightParent=TRUE;
-      hlEntry = root->children().getFirst();
+      hlEntry = root->children().front().get();
       if (hlEntry==0)
       {
         return; // argl, empty index!
@@ -2483,7 +2478,7 @@ static void writeDefaultQuickLinks(FTextStream &t,bool compact,
     }
     if (kind==LayoutNavEntry::UserGroup)
     {
-      LayoutNavEntry *e = hlEntry->children().getFirst();
+      LayoutNavEntry *e = hlEntry->children().front().get();
       if (e)
       {
         hlEntry = e;

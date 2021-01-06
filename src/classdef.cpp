@@ -2047,21 +2047,18 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
 
   if (lang!=SrcLangExt_VHDL)
   {
-    for (eli.toFirst();(lde=eli.current());++eli)
+    for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
     {
       if (lde->kind()==LayoutDocEntry::ClassNestedClasses &&
           m_impl->innerClasses.declVisible()
          )
       {
-        LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+        const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
         ol.writeSummaryLink(0,"nested-classes",ls->title(lang),first);
         first=FALSE;
       }
@@ -2075,7 +2072,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
       }
       else if (lde->kind()== LayoutDocEntry::MemberDecl)
       {
-        LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+        const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
         MemberList * ml = getMemberList(lmd->type);
         if (ml && ml->declVisible())
         {
@@ -2155,10 +2152,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
       }
     }
   }
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     switch (lde->kind())
     {
@@ -2179,7 +2173,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
           MemberList * ml = getMemberList(lmd->type);
           if (ml)
           {
@@ -2210,9 +2204,6 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
 
   ol.addIndexItem(name(),0);
   //printf("ClassDefImpl::writeInlineDocumentation(%s)\n",name().data());
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
 
   // part 1: anchor and title
   QCString s = compoundTypeString()+" "+name();
@@ -2255,7 +2246,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
   SrcLangExt lang=getLanguage();
 
   // part 2: the header and detailed description
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     switch (lde->kind())
     {
@@ -2278,7 +2269,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
           if (!isSimple) writeMemberDeclarations(ol,lmd->type,lmd->title(lang),lmd->subtitle(lang),TRUE);
         }
         break;
@@ -2293,7 +2284,7 @@ void ClassDefImpl::writeInlineDocumentation(OutputList &ol) const
         break;
       case LayoutDocEntry::MemberDef:
         {
-          LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
           if (isSimple)
           {
             writeSimpleMemberDocumentation(ol,lmd->type);
@@ -2532,10 +2523,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
 
   SrcLangExt lang = getLanguage();
 
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     switch (lde->kind())
     {
@@ -2569,13 +2557,13 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
           writeMemberDeclarations(ol,lmd->type,lmd->title(lang),lmd->subtitle(lang));
         }
         break;
       case LayoutDocEntry::ClassNestedClasses:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeNestedClasses(ol,ls->title(lang));
         }
         break;
@@ -2584,7 +2572,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeDetailedDescription(ol,pageType,exampleFlag,ls->title(lang));
         }
         break;
@@ -2596,7 +2584,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
         break;
       case LayoutDocEntry::MemberDef:
         {
-          LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
           writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -3280,14 +3268,11 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
     mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
   }
 
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       writePlainMemberDeclaration(ol,lmd->type,inGroup,inheritedFrom,inheritId);
     }
   }
@@ -4300,14 +4285,11 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
 
 void ClassDefImpl::setAnonymousEnumType()
 {
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       MemberList * ml = getMemberList(lmd->type);
       if (ml)
       {
@@ -4376,14 +4358,11 @@ void ClassDefImpl::getTitleForMemberListType(MemberListType type,
                QCString &title,QCString &subtitle) const
 {
   SrcLangExt lang = getLanguage();
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       if (lmd->type==type)
       {
         title = lmd->title(lang);
@@ -4399,22 +4378,15 @@ void ClassDefImpl::getTitleForMemberListType(MemberListType type,
 int ClassDefImpl::countAdditionalInheritedMembers() const
 {
   int totalCount=0;
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       if (lmd->type!=MemberListType_friends) // friendship is not inherited
       {
-        //MemberList *ml = getMemberList(lmd->type);
-        //if (ml==0 || ml->numDecMembers()==0)
-        //{
-          QPtrDict<void> visited(17);
-          totalCount+=countInheritedDecMembers(lmd->type,this,TRUE,FALSE,&visited);
-        //}
+        QPtrDict<void> visited(17);
+        totalCount+=countInheritedDecMembers(lmd->type,this,TRUE,FALSE,&visited);
       }
     }
   }
@@ -4425,14 +4397,11 @@ int ClassDefImpl::countAdditionalInheritedMembers() const
 void ClassDefImpl::writeAdditionalInheritedMembers(OutputList &ol) const
 {
   //printf("**** writeAdditionalInheritedMembers()\n");
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Class));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
   {
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       if (lmd->type!=MemberListType_friends)
       {
         QPtrDict<void> visited(17);

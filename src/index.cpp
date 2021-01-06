@@ -371,13 +371,11 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
   if (hasMembers || numClasses>0)
   {
     Doxygen::indexList->incContentsDepth();
-    QListIterator<LayoutDocEntry> eli(LayoutDocManager::instance().docEntries(part));
-    LayoutDocEntry *lde;
-    for (eli.toFirst();(lde=eli.current());++eli)
+    for (const auto &lde : LayoutDocManager::instance().docEntries(part))
     {
       if (lde->kind()==LayoutDocEntry::MemberDef)
       {
-        LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+        const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
         MemberList *ml = def->getMemberList(lmd->type);
         if (ml)
         {
@@ -1584,13 +1582,11 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
 static int countVisibleMembers(const NamespaceDef *nd)
 {
   int count=0;
-  QListIterator<LayoutDocEntry> eli(LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
   {
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
-      LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+      const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
       MemberList *ml = nd->getMemberList(lmd->type);
       if (ml)
       {
@@ -1611,13 +1607,11 @@ static int countVisibleMembers(const NamespaceDef *nd)
 
 static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
 {
-  QListIterator<LayoutDocEntry> eli(LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
   {
     if (lde->kind()==LayoutDocEntry::MemberDef)
     {
-      LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+      const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
       MemberList *ml = nd->getMemberList(lmd->type);
       if (ml)
       {
@@ -3805,13 +3799,11 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       ol.endTypewriter();
     }
 
-    QListIterator<LayoutDocEntry> eli(LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
-    LayoutDocEntry *lde;
-    for (eli.toFirst();(lde=eli.current());++eli)
+    for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
     {
       if (lde->kind()==LayoutDocEntry::MemberDef && addToIndex)
       {
-        LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+        const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
         MemberList *ml = gd->getMemberList(lmd->type);
         if (ml)
         {
@@ -4070,17 +4062,15 @@ static void writeUserGroupStubPage(OutputList &ol,LayoutNavEntry *lne)
     ol.parseText(lne->title());
     endTitle(ol,0,0);
     ol.startContents();
-    QListIterator<LayoutNavEntry> li(lne->children());
-    LayoutNavEntry *entry;
     int count=0;
-    for (li.toFirst();(entry=li.current());++li)
+    for (const auto &entry: lne->children())
     {
       if (entry->visible()) count++;
     }
     if (count>0)
     {
       ol.writeString("<ul>\n");
-      for (li.toFirst();(entry=li.current());++li)
+      for (const auto &entry: lne->children())
       {
         if (entry->visible())
         {
@@ -4475,12 +4465,10 @@ static void writeIndex(OutputList &ol)
 
 static QArray<bool> indexWritten;
 
-static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry> &entries)
+static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &entries)
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-  QListIterator<LayoutNavEntry> li(entries);
-  LayoutNavEntry *lne;
-  for (li.toFirst();(lne=li.current());++li)
+  for (const auto &lne : entries)
   {
     LayoutNavEntry::Kind kind = lne->kind();
     uint index = (uint)kind;
@@ -4522,7 +4510,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
                 Doxygen::indexList->incContentsDepth();
                 needsClosing=TRUE;
               }
-              if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Namespaces)!=lne) // for backward compatibility with old layout file
+              if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Namespaces)!=lne.get()) // for backward compatibility with old layout file
               {
                 msg("Generating namespace index...\n");
                 writeNamespaceIndex(ol);
@@ -4551,7 +4539,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
             Doxygen::indexList->incContentsDepth();
             needsClosing=TRUE;
           }
-          if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Classes)!=lne) // for backward compatibility with old layout file
+          if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Classes)!=lne.get()) // for backward compatibility with old layout file
           {
             msg("Generating annotated compound index...\n");
             writeAnnotatedIndex(ol);
@@ -4682,7 +4670,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
                 Doxygen::indexList->incContentsDepth();
                 needsClosing=TRUE;
               }
-              if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files)!=lne) // for backward compatibility with old layout file
+              if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files)!=lne.get()) // for backward compatibility with old layout file
               {
                 msg("Generating file index...\n");
                 writeFileIndex(ol);
@@ -4749,7 +4737,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const QList<LayoutNavEntry
             Doxygen::indexList->incContentsDepth();
             needsClosing=TRUE;
           }
-          writeUserGroupStubPage(ol,lne);
+          writeUserGroupStubPage(ol,lne.get());
           break;
         case LayoutNavEntry::None:
           assert(kind != LayoutNavEntry::None); // should never happen, means not properly initialized
@@ -4884,10 +4872,8 @@ void renderMemberIndicesAsJs(FTextStream &t,
 
 static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
 {
-  QListIterator<LayoutNavEntry> li(root->children());
-  LayoutNavEntry *entry;
   int count=0;
-  for (li.toFirst();(entry=li.current());++li)
+  for (const auto &entry : root->children())
   {
     if (entry->visible() && quickLinkVisible(entry->kind())) count++;
   }
@@ -4896,7 +4882,7 @@ static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
     bool firstChild = TRUE;
     if (!first) t << ",";
     t << "children:[" << endl;
-    for (li.toFirst();(entry=li.current());++li)
+    for (const auto &entry : root->children())
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
       {
@@ -4923,7 +4909,7 @@ static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
         }
         else // recursive into child list
         {
-          hasChildren = renderQuickLinksAsJs(t,entry,FALSE);
+          hasChildren = renderQuickLinksAsJs(t,entry.get(),FALSE);
         }
         if (hasChildren) t << "]";
         t << "}";

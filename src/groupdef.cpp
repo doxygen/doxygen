@@ -603,10 +603,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
   tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
   tagFile << "    <title>" << convertToXML(m_title) << "</title>" << endl;
   tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
     {
@@ -686,7 +683,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
           MemberList * ml = getMemberList(lmd->type);
           if (ml)
           {
@@ -1029,12 +1026,9 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
 {
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
-  LayoutDocEntry *lde;
   bool first=TRUE;
   SrcLangExt lang = getLanguage();
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     if ((lde->kind()==LayoutDocEntry::GroupClasses && m_classes.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaces.declVisible()) ||
@@ -1043,7 +1037,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
         (lde->kind()==LayoutDocEntry::GroupDirs && !m_dirList.empty())
        )
     {
-      LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
       QCString label = lde->kind()==LayoutDocEntry::GroupClasses      ? "nested-classes" :
                        lde->kind()==LayoutDocEntry::GroupNamespaces   ? "namespaces"     :
                        lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
@@ -1054,7 +1048,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
     }
     else if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
-      LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+      const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
       MemberList * ml = getMemberList(lmd->type);
       if (ml && ml->declVisible())
       {
@@ -1117,10 +1111,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang=getLanguage();
-  QListIterator<LayoutDocEntry> eli(
-      LayoutDocManager::instance().docEntries(LayoutDocManager::Group));
-  LayoutDocEntry *lde;
-  for (eli.toFirst();(lde=eli.current());++eli)
+  for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
     {
@@ -1132,7 +1123,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::GroupClasses:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeClasses(ol,ls->title(lang));
         }
         break;
@@ -1143,7 +1134,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::GroupNamespaces:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeNamespaces(ol,ls->title(lang));
         }
         break;
@@ -1152,7 +1143,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::MemberDecl:
         {
-          LayoutDocEntryMemberDecl *lmd = (LayoutDocEntryMemberDecl*)lde;
+          const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
           writeMemberDeclarations(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -1161,7 +1152,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::DetailedDesc:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeDetailedDescription(ol,ls->title(lang));
         }
         break;
@@ -1170,7 +1161,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::MemberDef:
         {
-          LayoutDocEntryMemberDef *lmd = (LayoutDocEntryMemberDef*)lde;
+          const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
           writeMemberDocumentation(ol,lmd->type,lmd->title(lang));
         }
         break;
@@ -1179,7 +1170,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::GroupNestedGroups:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeNestedGroups(ol,ls->title(lang));
         }
         break;
@@ -1188,13 +1179,13 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
         break;
       case LayoutDocEntry::GroupDirs:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeDirs(ol,ls->title(lang));
         }
         break;
       case LayoutDocEntry::GroupFiles:
         {
-          LayoutDocEntrySection *ls = (LayoutDocEntrySection*)lde;
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
           writeFiles(ol,ls->title(lang));
         }
         break;

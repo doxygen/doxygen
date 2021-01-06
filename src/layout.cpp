@@ -16,6 +16,8 @@
  *
  */
 
+#include <array>
+
 #include <assert.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -103,9 +105,7 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     const char *file) const
 {
   LayoutNavEntry *result=0;
-  QListIterator<LayoutNavEntry> li(m_children);
-  LayoutNavEntry *entry;
-  for (li.toFirst();(entry=li.current());++li)
+  for (const auto &entry : m_children)
   {
     // depth first search, needed to find the entry furthest from the
     // root in case an entry is in the tree twice
@@ -113,7 +113,7 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     if (result) return result;
     if (entry->kind()==kind && (file==0 || entry->baseFile()==file))
     {
-      return entry;
+      return entry.get();
     }
   }
   return result;
@@ -1483,17 +1483,12 @@ int LayoutParser::m_userGroupCount=0;
 class LayoutDocManager::Private
 {
   public:
-    QList<LayoutDocEntry> docEntries[LayoutDocManager::NrParts];
+    std::array<LayoutDocEntryList,LayoutDocManager::NrParts> docEntries;
     LayoutNavEntry *rootNav;
 };
 
 LayoutDocManager::LayoutDocManager() : d(std::make_unique<Private>())
 {
-  int i;
-  for (i=0;i<LayoutDocManager::NrParts;i++)
-  {
-    d->docEntries[i].setAutoDelete(TRUE);
-  }
   d->rootNav = new LayoutNavEntry;
 }
 
@@ -1522,7 +1517,7 @@ LayoutDocManager & LayoutDocManager::instance()
   return *theInstance;
 }
 
-const QList<LayoutDocEntry> &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
+const LayoutDocEntryList &LayoutDocManager::docEntries(LayoutDocManager::LayoutPart part) const
 {
   return d->docEntries[(int)part];
 }
@@ -1534,7 +1529,7 @@ LayoutNavEntry* LayoutDocManager::rootNavEntry() const
 
 void LayoutDocManager::addEntry(LayoutDocManager::LayoutPart p,LayoutDocEntry *e)
 {
-  d->docEntries[(int)p].append(e);
+  d->docEntries[(int)p].push_back(std::unique_ptr<LayoutDocEntry>(e));
 }
 
 void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
