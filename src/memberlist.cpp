@@ -766,26 +766,20 @@ void MemberList::writeDocumentation(OutputList &ol,
   MemberListIterator mli(*this);
   const MemberDef *md;
 
+  struct OverloadInfo
+  {
+    uint count = 1;
+    uint total = 0;
+  };
+  std::unordered_map<std::string,OverloadInfo> overloadInfo;
   // count the number of overloaded members
-  QDict<uint> overloadTotalDict(67);
-  QDict<uint> overloadCountDict(67);
-  overloadTotalDict.setAutoDelete(TRUE);
-  overloadCountDict.setAutoDelete(TRUE);
   for (mli.toFirst() ; (md=mli.current()) ; ++mli)
   {
     if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) &&
         !(md->isEnumValue() && !showInline))
     {
-      uint *pCount = overloadTotalDict.find(md->name());
-      if (pCount)
-      {
-        (*pCount)++;
-      }
-      else
-      {
-        overloadTotalDict.insert(md->name(),new uint(1));
-        overloadCountDict.insert(md->name(),new uint(1));
-      }
+      auto it = overloadInfo.insert(std::make_pair(md->name(),OverloadInfo())).first;
+      it->second.total++;
     }
   }
 
@@ -794,14 +788,14 @@ void MemberList::writeDocumentation(OutputList &ol,
     if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) &&
         !(md->isEnumValue() && !showInline))
     {
-      uint overloadCount = *overloadTotalDict.find(md->name());
-      uint *pCount = overloadCountDict.find(md->name());
+      auto it = overloadInfo.find(md->name().str());
+      uint overloadCount = it->second.total;
+      uint &count = it->second.count;
       MemberDefMutable *mdm = toMemberDefMutable(md);
       if (mdm)
       {
-        mdm->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container,
+        mdm->writeDocumentation(this,count++,overloadCount,ol,scopeName,container,
             m_inGroup,showEnumValues,showInline);
-        (*pCount)++;
       }
     }
   }
@@ -845,11 +839,14 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 {
   static bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
 
+  struct OverloadInfo
+  {
+    uint count = 1;
+    uint total = 0;
+  };
+  std::unordered_map<std::string,OverloadInfo> overloadInfo;
+
   // count the number of overloaded members
-  QDict<uint> overloadTotalDict(67);
-  QDict<uint> overloadCountDict(67);
-  overloadTotalDict.setAutoDelete(TRUE);
-  overloadCountDict.setAutoDelete(TRUE);
   MemberListIterator mli(*this);
   const MemberDef *imd;
   for (mli.toFirst() ; (imd=mli.current()) ; ++mli)
@@ -858,16 +855,8 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
     if (md->isDetailedSectionLinkable())
     {
-      uint *pCount = overloadTotalDict.find(md->name());
-      if (pCount)
-      {
-        (*pCount)++;
-      }
-      else
-      {
-        overloadTotalDict.insert(md->name(),new uint(1));
-        overloadCountDict.insert(md->name(),new uint(1));
-      }
+      auto it = overloadInfo.insert(std::make_pair(md->name(),OverloadInfo())).first;
+      it->second.total++;
     }
   }
 
@@ -877,8 +866,9 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md->isDetailedSectionLinkable())
     {
-      uint overloadCount = *overloadTotalDict.find(md->name());
-      uint *pCount = overloadCountDict.find(md->name());
+      auto it = overloadInfo.find(md->name().str());
+      uint overloadCount = it->second.total;
+      uint &count = it->second.count;
       QCString diskName=md->getOutputFileBase();
       QCString title=md->qualifiedName();
       startFile(ol,diskName,md->name(),title,HLI_None,!generateTreeView,diskName);
@@ -891,8 +881,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
 
       if (generateTreeView)
       {
-        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container_d,m_inGroup);
-        (*pCount)++;
+        md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_inGroup);
 
         ol.endContents();
         endFileWithNavPath(container_d,ol);
@@ -908,8 +897,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
         ol.writeString("   </td>\n");
         ol.writeString("   <td valign=\"top\" class=\"mempage\">\n");
 
-        md->writeDocumentation(this,*pCount,overloadCount,ol,scopeName,container_d,m_inGroup);
-        (*pCount)++;
+        md->writeDocumentation(this,count++,overloadCount,ol,scopeName,container_d,m_inGroup);
 
         ol.writeString("    </td>\n");
         ol.writeString("  </tr>\n");
