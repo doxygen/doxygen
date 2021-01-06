@@ -3699,6 +3699,10 @@ QCString unescapeCharsInString(const char *s)
   return result;
 }
 
+static std::unordered_map<std::string,int> g_usedNames;
+static std::mutex g_usedNamesMutex;
+static int g_usedNamesCount=1;
+
 /*! This function determines the file name on disk of an item
  *  given its name, which could be a class name with template
  *  arguments, so special characters need to be escaped.
@@ -3711,20 +3715,17 @@ QCString convertNameToFile(const char *name,bool allowDots,bool allowUnderscore)
   QCString result;
   if (shortNames) // use short names only
   {
-    static QDict<int> usedNames(10007);
-    usedNames.setAutoDelete(TRUE);
-    static int count=1;
-
-    int *value=usedNames.find(name);
-    int num;
-    if (value==0)
+    std::unique_lock<std::mutex> lock(g_usedNamesMutex);
+    auto kv = g_usedNames.find(name);
+    uint num=0;
+    if (kv!=g_usedNames.end())
     {
-      usedNames.insert(name,new int(count));
-      num = count++;
+      num = kv->second;
     }
     else
     {
-      num = *value;
+      num = g_usedNamesCount;
+      g_usedNames.insert(std::make_pair(name,g_usedNamesCount++));
     }
     result.sprintf("a%05d",num);
   }
