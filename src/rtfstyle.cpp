@@ -16,12 +16,12 @@
  *
  */
 
-#include "rtfstyle.h"
-
-#include <qfile.h>
-#include <qtextstream.h>
 #include <stdlib.h>
+#include <qfile.h>
+#include <qregexp.h>
+#include <qtextstream.h>
 
+#include "rtfstyle.h"
 #include "message.h"
 
 
@@ -238,10 +238,6 @@ StyleData::StyleData(const char* reference, const char* definition)
   m_definition = definition;
 }
 
-StyleData::~StyleData()
-{
-}
-
 bool StyleData::setStyle(const char* s, const char* styleName)
 {
   static const QRegExp subgroup("^{[^}]*}\\s*");
@@ -302,7 +298,7 @@ bool StyleData::setStyle(const char* s, const char* styleName)
   return TRUE;
 }
 
-void loadStylesheet(const char *name, QDict<StyleData>& dict)
+void loadStylesheet(const char *name, StyleDataMap& map)
 {
   QFile file(name);
   if (!file.open(IO_ReadOnly))
@@ -315,7 +311,6 @@ void loadStylesheet(const char *name, QDict<StyleData>& dict)
   static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
   QTextStream t(&file);
-  t.setEncoding(QTextStream::UnicodeUTF8);
 
   while (!t.eof())
   {
@@ -330,24 +325,20 @@ void loadStylesheet(const char *name, QDict<StyleData>& dict)
       continue;
     }
     QCString key=s.left(sepStart);
-    if (dict[key]==0) // not a valid style sheet name
-    {
-      warn(name,lineNr,"Invalid style sheet name %s ignored.\n",key.data());
-      continue;
-    }
-    StyleData* styleData = dict.find(key);
-    if (styleData == 0)
+    auto it = map.find(key.str());
+    if (it==map.end()) // not a valid style sheet name
     {
       warn(name,lineNr,"Unknown style sheet name %s ignored.\n",key.data());
       continue;
     }
+    StyleData& styleData = it->second;
     s+=" "; // add command separator
-    styleData->setStyle(s.data() + sepStart + sepLength, key.data());
+    styleData.setStyle(s.data() + sepStart + sepLength, key.data());
     lineNr++;
   }
 }
 
-QDict<StyleData> rtf_Style(257);
+StyleDataMap rtf_Style;
 
 void loadExtensions(const char *name)
 {

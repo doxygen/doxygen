@@ -69,9 +69,8 @@ QCString RTFDocVisitor::getStyle(const char *name)
 {
   QCString n;
   n.sprintf("%s%d",name,m_indentLevel);
-  StyleData *sd = rtf_Style[n];
-  ASSERT(sd!=0);
-  return sd->reference();
+  StyleData &sd = rtf_Style[n.str()];
+  return sd.reference();
 }
 
 void RTFDocVisitor::incIndentLevel()
@@ -726,7 +725,7 @@ void RTFDocVisitor::visitPre(DocRoot *r)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocRoot)}\n");
   if (r->indent()) incIndentLevel();
-  m_t << "{" << rtf_Style["BodyText"]->reference() << endl;
+  m_t << "{" << rtf_Style["BodyText"].reference() << endl;
 }
 
 void RTFDocVisitor::visitPost(DocRoot *r)
@@ -746,7 +745,7 @@ void RTFDocVisitor::visitPre(DocSimpleSect *s)
   if (!m_lastIsPara) m_t << "\\par" << endl;
   m_t << "{"; // start desc
   //m_t << "{\\b "; // start bold
-  m_t << "{" << rtf_Style["Heading5"]->reference() << endl;
+  m_t << "{" << rtf_Style["Heading5"].reference() << endl;
   switch(s->type())
   {
     case DocSimpleSect::See:
@@ -869,7 +868,7 @@ void RTFDocVisitor::visitPre(DocSection *s)
   int level = QMIN(s->level()+1,4);
   heading.sprintf("Heading%d",level);
   // set style
-  m_t << rtf_Style[heading]->reference() << endl;
+  m_t << rtf_Style[heading.str()].reference() << endl;
   // make table of contents entry
   filter(s->title());
   m_t << endl << "\\par" << "}" << endl;
@@ -955,7 +954,7 @@ void RTFDocVisitor::visitPre(DocHtmlDescTitle *)
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlDescTitle)}\n");
   //m_t << "\\par" << endl;
   //m_t << "{\\b ";
-  m_t << "{" << rtf_Style["Heading5"]->reference() << endl;
+  m_t << "{" << rtf_Style["Heading5"].reference() << endl;
   m_lastIsPara=FALSE;
 }
 
@@ -1160,7 +1159,7 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
   int level = QMIN(header->level(),5);
   heading.sprintf("Heading%d",level);
   // set style
-  m_t << rtf_Style[heading]->reference();
+  m_t << rtf_Style[heading.str()].reference();
   // make open table of contents entry that will be closed in visitPost method
   m_t << "{\\tc\\tcl" << level << " ";
   m_lastIsPara=FALSE;
@@ -1386,7 +1385,7 @@ void RTFDocVisitor::visitPre(DocParamSect *s)
   m_t << "{"; // start param list
   if (!m_lastIsPara) m_t << "\\par" << endl;
   //m_t << "{\\b "; // start bold
-  m_t << "{" << rtf_Style["Heading5"]->reference() << endl;
+  m_t << "{" << rtf_Style["Heading5"].reference() << endl;
   switch(s->type())
   {
     case DocParamSect::Param:
@@ -1612,7 +1611,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
   }
   m_t << "{"; // start param list
   //m_t << "{\\b "; // start bold
-  m_t << "{" << rtf_Style["Heading5"]->reference() << endl;
+  m_t << "{" << rtf_Style["Heading5"].reference() << endl;
   if (Config_getBool(RTF_HYPERLINKS) && !anonymousEnum)
   {
     QCString refName;
