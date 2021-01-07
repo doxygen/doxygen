@@ -783,7 +783,7 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
   HtmlAttrib* opt;
   for (li.toFirst(); (opt = li.current()); ++li)
   {
-    if (opt->name == "width")
+    if (opt->name=="width")
     {
       m_t << " " << opt->name << "=\"" << opt->value << "\"";
     }
@@ -826,11 +826,11 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
     {
       m_t << " align=\"" << opt->value << "\"";
     }
-    else if (opt->name == "width")
+    else if (opt->name=="width")
     {
       m_t << " width=\"" << opt->value << "\"";
     }
-    else if (opt->name == "class") // handle markdown generated attributes
+    else if (opt->name=="class") // handle markdown generated attributes
     {
       if (opt->value.left(13)=="markdownTable") // handle markdown generated attributes
       {
