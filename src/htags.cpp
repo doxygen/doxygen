@@ -15,8 +15,10 @@
 
 #include <stdio.h>
 
+#include <unordered_map>
+#include <string>
+
 #include <qdir.h>
-#include <qdict.h>
 
 #include "htags.h"
 #include "util.h"
@@ -28,7 +30,7 @@
 bool Htags::useHtags = FALSE;
 
 static QDir g_inputDir;
-static QDict<QCString> g_symbolDict(10007);
+static std::unordered_map<std::string,std::string> g_symbolMap;
 
 /*! constructs command line of htags(1) and executes it.
  *  \retval TRUE success
@@ -111,7 +113,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
   QCString fileMapName = htmlDir+"/HTML/FILEMAP";
   QFileInfo fi(fileMapName);
   /*
-   * Construct FILEMAP dictionary using QDict.
+   * Construct FILEMAP dictionary.
    *
    * In FILEMAP, URL includes 'html' suffix but we cut it off according
    * to the method of FileDef class.
@@ -141,8 +143,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
           QCString value = line.mid(sep+1).stripWhiteSpace();
           int ext=value.findRev('.');
           if (ext!=-1) value=value.left(ext); // strip extension
-          g_symbolDict.setAutoDelete(TRUE);
-          g_symbolDict.insert(key,new QCString(value));
+          g_symbolMap.insert(std::make_pair(key.str(),value.str()));
           //printf("Key/Value=(%s,%s)\n",key.data(),value.data());
         }
       }
@@ -171,11 +172,11 @@ QCString Htags::path2URL(const QCString &path)
   }
   if (!symName.isEmpty())
   {
-    QCString *result = g_symbolDict[symName];
+    auto it = g_symbolMap.find(symName.str());
     //printf("path2URL=%s symName=%s result=%p\n",path.data(),symName.data(),result);
-    if (result)
+    if (it!=g_symbolMap.end())
     {
-      url = "HTML/" + *result;
+      url = QCString("HTML/") + it->second;
     }
   }
   return url;
