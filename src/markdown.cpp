@@ -2399,7 +2399,41 @@ QCString Markdown::processBlocks(const QCString &s,int indent)
       QCString lang;
       blockIndent = indent;
       //printf("isHeaderLine(%s)=%d\n",QCString(data+i).left(size-i).data(),level);
-      if ((level=isHeaderline(data+i,size-i,TRUE))>0)
+      QCString endBlockName;
+      if (data[i]=='@' || data[i]=='\\') endBlockName = isBlockCommand(data+i,i,size-i);
+      if (!endBlockName.isEmpty())
+      {
+        // handle previous line
+        if (isLinkRef(data+pi,i-pi,id,link,title))
+        {
+          m_linkRefs.insert({id.lower().str(),LinkRef(link,title)});
+        }
+        else
+        {
+          writeOneLineHeaderOrRuler(data+pi,i-pi);
+        }
+        m_out.addChar(data[i]);
+        i++;
+        int l = endBlockName.length();
+        while (i<size-l)
+        {
+          if ((data[i]=='\\' || data[i]=='@') && // command
+              data[i-1]!='\\' && data[i-1]!='@') // not escaped
+          {
+            if (qstrncmp(&data[i+1],endBlockName,l)==0)
+            {
+              m_out.addChar(data[i]);
+              m_out.addStr(endBlockName);
+              pi=i;
+              i+=l+1;
+              break;
+            }
+          }
+          m_out.addChar(data[i]);
+          i++;
+        }
+      }
+      else if ((level=isHeaderline(data+i,size-i,TRUE))>0)
       {
         //printf("Found header at %d-%d\n",i,end);
         while (pi<size && data[pi]==' ') pi++;
