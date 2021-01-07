@@ -826,6 +826,11 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
     {
       m_t << " align=\"" << opt->value << "\"";
     }
+    else if (opt->name=="valign" &&
+      (opt->value == "bottom" || opt->value == "top" || opt->value == "middle"))
+    {
+      m_t << " valign=\"" << opt->value << "\"";
+    }
     else if (opt->name=="width")
     {
       m_t << " width=\"" << opt->value << "\"";
