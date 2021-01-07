@@ -778,7 +778,17 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
   m_t << "<table rows=\"" << t->numRows()
-      << "\" cols=\"" << t->numColumns() << "\">" ;
+      << "\" cols=\"" << t->numColumns() << "\"" ;
+  HtmlAttribListIterator li(t->attribs());
+  HtmlAttrib* opt;
+  for (li.toFirst(); (opt = li.current()); ++li)
+  {
+    if (opt->name == "width")
+    {
+      m_t << " " << opt->name << "=\"" << opt->value << "\"";
+    }
+  }
+  m_t << ">";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlTable *)
@@ -816,7 +826,11 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
     {
       m_t << " align=\"" << opt->value << "\"";
     }
-    else if (opt->name=="class") // handle markdown generated attributes
+    else if (opt->name == "width")
+    {
+      m_t << " width=\"" << opt->value << "\"";
+    }
+    else if (opt->name == "class") // handle markdown generated attributes
     {
       if (opt->value.left(13)=="markdownTable") // handle markdown generated attributes
       {
