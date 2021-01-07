@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby 
@@ -39,12 +37,8 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qarray.h>
-#include <qstack.h>
-#include <qregexp.h>
-#include <qfile.h>
 #include <qfileinfo.h>
-  
+
 #include "pyscanner.h"
 #include "entry.h"
 #include "message.h"
@@ -70,7 +64,6 @@
 
 struct pyscannerYY_state
 {
-  pyscannerYY_state() : packageNameCache(257) {}
   CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
@@ -99,7 +92,7 @@ struct pyscannerYY_state
   int                     curIndent = 0;
   int                     commentIndent = 0;
   bool                    importTuple = FALSE;
-  QDict<QCString>         packageNameCache;
+  StringUnorderedMap      packageNameCache;
   char                    atomStart = 0;
   char                    atomEnd = 0;
   int                     atomCount = 0;
@@ -1463,7 +1456,6 @@ static void initParser(yyscan_t yyscanner)
   yyextra->virt = Normal;
   yyextra->previous = 0;
   yyextra->packageCommentAllowed = TRUE;
-  yyextra->packageNameCache.setAutoDelete(TRUE);
 }
 
 static void initEntry(yyscan_t yyscanner)
@@ -1534,10 +1526,10 @@ static inline int computeIndent(const char *s)
 static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  QCString *pScope = yyextra->packageNameCache.find(path);
-  if (pScope)
+  auto it = yyextra->packageNameCache.find(path.str());
+  if (it!=yyextra->packageNameCache.end())
   {
-    return *pScope;
+    return it->second;
   }
   QFileInfo pf(path+"/__init__.py"); // found package initialization file
   if (pf.exists())
@@ -1551,7 +1543,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
 	scope+="::";
       }
       scope+=path.mid(i+1);
-      yyextra->packageNameCache.insert(path,new QCString(scope));
+      yyextra->packageNameCache.insert(std::make_pair(path.str(),scope.str()));
       return scope;
     }
   }
