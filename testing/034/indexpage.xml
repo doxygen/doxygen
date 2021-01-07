@@ -27,5 +27,6 @@
         <para>Visible text. </para>
       </sect1>
     </detaileddescription>
+    <location file="034_internal.dox"/>
   </compounddef>
 </doxygen>

@@ -1496,5 +1496,6 @@
  <emoji name="zzz" unicode="&amp;#x1f4a4;"/> <emoji name="zzz" unicode="&amp;#x1f4a4;"/> from "zzz"<linebreak/>
  </para>
     </detaileddescription>
+    <location file="076_emojis.cpp"/>
   </compounddef>
 </doxygen>

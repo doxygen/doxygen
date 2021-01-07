@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>Another page's text. </para>
     </detaileddescription>
+    <location file="043_page.dox"/>
   </compounddef>
 </doxygen>
