@@ -49,6 +49,7 @@ class ClassDef;
 class ClassDefMutable;
 class UsesClassList;
 class ConstraintClassList;
+class MemberGroupList;
 
 /** Class that contains information about an inheritance relation.
  */
@@ -222,7 +223,7 @@ class ClassDef : public Definition
     /** Returns the Java package this class is in or 0 if not applicable.
      */
 
-    virtual MemberDef    *getMemberByName(const QCString &) const = 0;
+    virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect base class of this
      *  class. This function will recursively traverse all branches of the
@@ -341,7 +342,7 @@ class ClassDef : public Definition
 
     virtual const ClassDef *tagLessReference() const = 0;
 
-    virtual MemberDef *isSmartPointer() const = 0;
+    virtual const MemberDef *isSmartPointer() const = 0;
 
     virtual bool isJavaEnum() const = 0;
 

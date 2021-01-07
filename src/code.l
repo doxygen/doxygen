@@ -2594,7 +2594,7 @@ static const MemberDef *setCallContextForVar(yyscan_t yyscanner,const QCString &
     const ClassDef *mcd = getClass(scope);
     if (mcd && !locName.isEmpty())
     {
-      MemberDef *md=mcd->getMemberByName(locName);
+      const MemberDef *md=mcd->getMemberByName(locName);
       if (md)
       {
         //printf("name=%s scope=%s\n",locName.data(),scope.data());

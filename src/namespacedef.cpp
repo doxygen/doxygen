@@ -445,7 +445,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
       m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList));
       allMemberList = m_memberLists.back().get();
     }
-    allMemberList->append(md);
+    allMemberList->push_back(md);
     //printf("%s::m_allMembersDict->append(%s)\n",name().data(),md->localName().data());
     m_allMembers.add(md->localName(),md);
     //::addNamespaceMemberNameToIndex(md);
@@ -1057,9 +1057,7 @@ void NamespaceDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *cur
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList)
   {
-    MemberListIterator mli(*allMemberList);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *allMemberList)
     {
       if (md->getNamespaceDef()==this && md->isLinkable() && !md->isEnumValue())
       {
@@ -1322,7 +1320,7 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml->append(md);
+  ml->push_back(md);
 
   if (ml->listType()&MemberListType_declarationLists)
   {

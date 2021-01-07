@@ -191,8 +191,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool visibleInParentsDeclList() const;
     virtual const ArgumentList &templateArguments() const;
     virtual NamespaceDef *getNamespaceDef() const;
-    virtual FileDef      *getFileDef() const;
-    virtual MemberDef    *getMemberByName(const QCString &) const;
+    virtual FileDef *getFileDef() const;
+    virtual const MemberDef *getMemberByName(const QCString &) const;
     virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const;
     virtual bool isSubClass(ClassDef *bcd,int level=0) const;
     virtual bool isAccessibleMember(const MemberDef *md) const;
@@ -229,7 +229,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool isEmbeddedInOuterScope() const;
     virtual bool isSimple() const;
     virtual const ClassDef *tagLessReference() const;
-    virtual MemberDef *isSmartPointer() const;
+    virtual const MemberDef *isSmartPointer() const;
     virtual bool isJavaEnum() const;
     virtual QCString title() const;
     virtual QCString generatedFromFiles() const;
@@ -317,8 +317,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     void showUsedFiles(OutputList &ol) const;
 
     void writeDocumentationContents(OutputList &ol,const QCString &pageTitle) const;
-    void internalInsertMember(MemberDef *md,Protection prot,bool addToAllList);
-    void addMemberToList(MemberListType lt,MemberDef *md,bool isBrief);
+    void internalInsertMember(const MemberDef *md,Protection prot,bool addToAllList);
+    void addMemberToList(MemberListType lt,const MemberDef *md,bool isBrief);
     void writeInheritedMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                                           MemberListType lt,int lt2,const QCString &title,
                                           const ClassDef *inheritedFrom,bool invert,
@@ -430,9 +430,9 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->templateArguments(); }
     virtual NamespaceDef *getNamespaceDef() const
     { return getCdAlias()->getNamespaceDef(); }
-    virtual FileDef      *getFileDef() const
+    virtual FileDef *getFileDef() const
     { return getCdAlias()->getFileDef(); }
-    virtual MemberDef    *getMemberByName(const QCString &s) const
+    virtual const MemberDef *getMemberByName(const QCString &s) const
     { return getCdAlias()->getMemberByName(s); }
     virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const
     { return getCdAlias()->isBaseClass(bcd,followInstances,level); }
@@ -505,7 +505,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isSimple(); }
     virtual const ClassDef *tagLessReference() const
     { return getCdAlias()->tagLessReference(); }
-    virtual MemberDef *isSmartPointer() const
+    virtual const MemberDef *isSmartPointer() const
     { return getCdAlias()->isSmartPointer(); }
     virtual bool isJavaEnum() const
     { return getCdAlias()->isJavaEnum(); }
@@ -696,7 +696,7 @@ class ClassDefImpl::IMPL
     bool isSimple = false;
 
     /** Does this class overloaded the -> operator? */
-    MemberDef *arrowOperator = 0;
+    const MemberDef *arrowOperator = 0;
 
     const ClassDef *tagLessRef = 0;
 
@@ -843,7 +843,7 @@ void ClassDefImpl::addMembersToMemberGroup()
 }
 
 // adds new member definition to the class
-void ClassDefImpl::internalInsertMember(MemberDef *md,
+void ClassDefImpl::internalInsertMember(const MemberDef *md,
                                     Protection prot,
                                     bool addToAllList
                                    )
@@ -1074,7 +1074,7 @@ void ClassDefImpl::internalInsertMember(MemberDef *md,
               case MemberType_Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
-                  m_impl->memberLists.get(MemberListType_constructors)->append(md);
+                  m_impl->memberLists.get(MemberListType_constructors)->push_back(md);
                 }
                 else
                 {
@@ -3352,7 +3352,7 @@ bool ClassDefImpl::isSubClass(ClassDef *cd,int level) const
 
 //----------------------------------------------------------------------------
 
-static bool isStandardFunc(MemberDef *md)
+static bool isStandardFunc(const MemberDef *md)
 {
   return md->name()=="operator=" || // assignment operator
          md->isConstructor() ||     // constructor
@@ -3401,14 +3401,14 @@ void ClassDefImpl::mergeMembers()
         {
           for (auto &srcMi : *srcMni)
           {
-            MemberDef *srcMd = srcMi->memberDef();
+            const MemberDef *srcMd = srcMi->memberDef();
             bool found=FALSE;
             bool ambiguous=FALSE;
             bool hidden=FALSE;
             const ClassDef *srcCd = srcMd->getClassDef();
             for (auto &dstMi : *dstMni)
             {
-              MemberDef *dstMd = dstMi->memberDef();
+              const MemberDef *dstMd = dstMi->memberDef();
               if (srcMd!=dstMd) // different members
               {
                 const ClassDef *dstCd = dstMd->getClassDef();
@@ -3972,7 +3972,7 @@ void ClassDefImpl::addMembersToTemplateInstance(const ClassDef *cd,const Argumen
     for (const auto &mi : *mni)
     {
       auto actualArguments_p = stringToArgumentList(getLanguage(),templSpec);
-      MemberDef *md = mi->memberDef();
+      const MemberDef *md = mi->memberDef();
       std::unique_ptr<MemberDefMutable> imd { md->createTemplateInstanceMember(
                           templateArguments,actualArguments_p) };
       //printf("%s->setMemberClass(%p)\n",imd->name().data(),this);
@@ -4097,9 +4097,9 @@ void ClassDefImpl::addListReferences()
   }
 }
 
-MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
+const MemberDef *ClassDefImpl::getMemberByName(const QCString &name) const
 {
-  MemberDef *xmd = 0;
+  const MemberDef *xmd = 0;
   MemberNameInfo *mni = m_impl->allMemberNameInfoLinkedMap.find(name);
   if (mni)
   {
@@ -4139,13 +4139,13 @@ MemberList *ClassDefImpl::getMemberList(MemberListType lt) const
   return 0;
 }
 
-void ClassDefImpl::addMemberToList(MemberListType lt,MemberDef *md,bool isBrief)
+void ClassDefImpl::addMemberToList(MemberListType lt,const MemberDef *md,bool isBrief)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
   const auto &ml = m_impl->memberLists.get(lt);
   ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
-  ml->append(md);
+  ml->push_back(md);
 
   // for members in the declaration lists we set the section, needed for member grouping
   if ((ml->listType()&MemberListType_detailedLists)==0)
@@ -4725,7 +4725,7 @@ bool ClassDefImpl::isSimple() const
   return m_impl->isSimple;
 }
 
-MemberDef *ClassDefImpl::isSmartPointer() const
+const MemberDef *ClassDefImpl::isSmartPointer() const
 {
   return m_impl->arrowOperator;
 }

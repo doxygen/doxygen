@@ -64,7 +64,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void addPage(const PageDef *def) = 0;
     virtual void addExample(const PageDef *def) = 0;
     virtual void addDir(DirDef *dd) = 0;
-    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
+    virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE) = 0;
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;

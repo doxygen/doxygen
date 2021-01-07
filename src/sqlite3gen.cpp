@@ -1848,10 +1848,7 @@ static void generateSqlite3Section( const Definition *d,
                       const char * /*documentation*/=0)
 {
   if (ml==0) return;
-  MemberListIterator mli(*ml);
-  const MemberDef *md;
-
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : *ml)
   {
     // TODO: necessary? just tracking what xmlgen does; xmlgen says:
     // namespace members are also inserted in the file scope, but
@@ -1869,7 +1866,7 @@ static void associateAllClassMembers(const ClassDef *cd, struct Refid scope_refi
   {
     for (auto &mi : *mni)
     {
-      MemberDef *md = mi->memberDef();
+      const MemberDef *md = mi->memberDef();
       QCString qrefid = md->getOutputFileBase() + "_1" + md->anchor();
       associateMember(md, insertRefid(qrefid), scope_refid);
     }
@@ -2007,7 +2004,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   // + member groups
   for (const auto &mg : cd->getMemberGroups())
   {
-    generateSqlite3Section(cd,mg->members(),refid,"user-defined",mg->header(),
+    generateSqlite3Section(cd,&mg->members(),refid,"user-defined",mg->header(),
         mg->documentation());
   }
 
@@ -2064,7 +2061,7 @@ static void generateSqlite3ForNamespace(const NamespaceDef *nd)
   // + member groups
   for (const auto &mg : nd->getMemberGroups())
   {
-    generateSqlite3Section(nd,mg->members(),refid,"user-defined",mg->header(),
+    generateSqlite3Section(nd,&mg->members(),refid,"user-defined",mg->header(),
         mg->documentation());
   }
 
@@ -2219,7 +2216,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
   // + member groups
   for (const auto &mg : fd->getMemberGroups())
   {
-    generateSqlite3Section(fd,mg->members(),refid,"user-defined",mg->header(),
+    generateSqlite3Section(fd,&mg->members(),refid,"user-defined",mg->header(),
           mg->documentation());
   }
 
@@ -2286,7 +2283,7 @@ static void generateSqlite3ForGroup(const GroupDef *gd)
   // + member groups
   for (const auto &mg : gd->getMemberGroups())
   {
-    generateSqlite3Section(gd,mg->members(),refid,"user-defined",mg->header(),
+    generateSqlite3Section(gd,&mg->members(),refid,"user-defined",mg->header(),
         mg->documentation());
   }
 

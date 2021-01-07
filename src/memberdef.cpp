@@ -183,15 +183,15 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isDetailedSectionLinkable() const;
     virtual bool isFriendClass() const;
     virtual bool isDocumentedFriendClass() const;
-    virtual MemberDef *reimplements() const;
-    virtual MemberList *reimplementedBy() const;
+    virtual const MemberDef *reimplements() const;
+    virtual const MemberList &reimplementedBy() const;
     virtual bool isReimplementedBy(const ClassDef *cd) const;
     virtual ClassDef *relatedAlso() const;
     virtual bool hasDocumentedEnumValues() const;
     virtual const MemberDef *getAnonymousEnumType() const;
     virtual bool isDocsForDefinition() const;
     virtual const MemberDef *getEnumScope() const;
-    virtual const MemberList *enumFieldList() const;
+    virtual const MemberList &enumFieldList() const;
     virtual void setEnumBaseType(const QCString &type);
     virtual QCString enumBaseType() const;
     virtual bool hasExamples() const;
@@ -212,7 +212,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool visibleMemberGroup(bool hideNoHeader) const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
-    virtual MemberDef *templateMaster() const;
+    virtual const MemberDef *templateMaster() const;
     virtual QCString getScopeString() const;
     virtual ClassDef *getClassDefOfAnonymousType() const;
     virtual bool isTypedefValCached() const;
@@ -221,10 +221,10 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual QCString getCachedResolvedTypedef() const;
     virtual MemberDef *memberDefinition() const;
     virtual MemberDef *memberDeclaration() const;
-    virtual MemberDef *inheritsDocsFrom() const;
+    virtual const MemberDef *inheritsDocsFrom() const;
     virtual const MemberDef *getGroupAlias() const;
     virtual ClassDef *category() const;
-    virtual MemberDef *categoryRelation() const;
+    virtual const MemberDef *categoryRelation() const;
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString getDeclType() const;
     virtual void getLabels(QStrList &sl,const Definition *container) const;
@@ -256,15 +256,15 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setTemplateSpecialization(bool b);
     virtual void makeRelated();
     virtual void makeForeign();
-    virtual void setInheritsDocsFrom(MemberDef *md);
+    virtual void setInheritsDocsFrom(const MemberDef *md);
     virtual void setTagInfo(const TagInfo *i);
     virtual void setArgsString(const char *as);
-    virtual void setReimplements(MemberDef *md);
-    virtual void insertReimplementedBy(MemberDef *md);
+    virtual void setReimplements(const MemberDef *md);
+    virtual void insertReimplementedBy(const MemberDef *md);
     virtual void setRelatedAlso(ClassDef *cd);
-    virtual void insertEnumField(MemberDef *md);
-    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE);
-    virtual void setEnumClassScope(ClassDef *cd);
+    virtual void insertEnumField(const MemberDef *md);
+    virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE);
+    virtual void setEnumClassScope(const ClassDef *cd);
     virtual void setDocumentedEnumValues(bool value);
     virtual void setAnonymousEnumType(const MemberDef *md);
     virtual bool addExample(const char *anchor,const char *name,const char *file);
@@ -287,7 +287,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void enableCallerGraph(bool e);
     virtual void enableReferencedByRelation(bool e);
     virtual void enableReferencesRelation(bool e);
-    virtual void setTemplateMaster(MemberDef *mt);
+    virtual void setTemplateMaster(const MemberDef *mt);
     virtual void addListReference(Definition *d);
     virtual void setDocsForDefinition(bool b);
     virtual void setGroupAlias(const MemberDef *md);
@@ -297,9 +297,9 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setMemberDefinition(MemberDef *md);
     virtual void setMemberDeclaration(MemberDef *md);
     virtual void setAnonymousUsed() const;
-    virtual void copyArgumentNames(MemberDef *bmd);
+    virtual void copyArgumentNames(const MemberDef *bmd);
     virtual void setCategory(ClassDef *);
-    virtual void setCategoryRelation(MemberDef *);
+    virtual void setCategoryRelation(const MemberDef *);
     virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE);
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
     virtual void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine);
@@ -633,9 +633,9 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isFriendClass(); }
     virtual bool isDocumentedFriendClass() const
     { return getMdAlias()->isDocumentedFriendClass(); }
-    virtual MemberDef *reimplements() const
+    virtual const MemberDef *reimplements() const
     { return getMdAlias()->reimplements(); }
-    virtual MemberList *reimplementedBy() const
+    virtual const MemberList &reimplementedBy() const
     { return getMdAlias()->reimplementedBy(); }
     virtual bool isReimplementedBy(const ClassDef *cd) const
     { return getMdAlias()->isReimplementedBy(cd); }
@@ -649,7 +649,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isDocsForDefinition(); }
     virtual const MemberDef *getEnumScope() const
     { return getMdAlias()->getEnumScope(); }
-    virtual const MemberList *enumFieldList() const
+    virtual const MemberList &enumFieldList() const
     { return getMdAlias()->enumFieldList(); }
     virtual QCString enumBaseType() const
     { return getMdAlias()->enumBaseType(); }
@@ -687,7 +687,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
     { return getMdAlias()->hasReferencedByRelation(); }
-    virtual MemberDef *templateMaster() const
+    virtual const MemberDef *templateMaster() const
     { return getMdAlias()->templateMaster(); }
     virtual QCString getScopeString() const
     { return getMdAlias()->getScopeString(); }
@@ -705,13 +705,13 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->memberDefinition(); }
     virtual MemberDef *memberDeclaration() const
     { return getMdAlias()->memberDeclaration(); }
-    virtual MemberDef *inheritsDocsFrom() const
+    virtual const MemberDef *inheritsDocsFrom() const
     { return getMdAlias()->inheritsDocsFrom(); }
     virtual const MemberDef *getGroupAlias() const
     { return getMdAlias()->getGroupAlias(); }
     virtual ClassDef *category() const
     { return getMdAlias()->category(); }
-    virtual MemberDef *categoryRelation() const
+    virtual const MemberDef *categoryRelation() const
     { return getMdAlias()->categoryRelation(); }
     virtual QCString displayName(bool b=TRUE) const
     { return getMdAlias()->displayName(b); }
@@ -1186,13 +1186,13 @@ class MemberDefImpl::IMPL
     const FileDef      *fileDef  = 0; // member of file definition
     const NamespaceDef *nspace   = 0; // the namespace this member is in.
 
-    MemberDef  *enumScope = 0;    // the enclosing scope, if this is an enum field
+    const MemberDef  *enumScope = 0;    // the enclosing scope, if this is an enum field
     bool        livesInsideEnum = false;
     const MemberDef  *annEnumType = 0;  // the anonymous enum that is the type of this member
-    MemberList *enumFields = 0;   // enumeration fields
+    MemberList enumFields;              // enumeration fields
 
-    MemberDef  *redefines = 0;    // the members that this member redefines
-    MemberList *redefinedBy = 0;  // the list of members that redefine this one
+    const MemberDef  *redefines = 0;    // the members that this member redefines
+    MemberList redefinedBy;             // the list of members that redefine this one
 
     MemberDef  *memDef = 0;       // member definition for this declaration
     MemberDef  *memDec = 0;       // member declaration for this definition
@@ -1230,7 +1230,7 @@ class MemberDefImpl::IMPL
 
     ArgumentList tArgList;      // template argument list of function template
     ArgumentList typeConstraints; // type constraints for template parameters
-    MemberDef *templateMaster;
+    const MemberDef *templateMaster;
     ArgumentLists defTmpArgLists; // lists of template argument lists
                                          // (for template functions in nested template classes)
 
@@ -1262,7 +1262,7 @@ class MemberDefImpl::IMPL
     //QCString inbodyDocs;
 
     // documentation inheritance
-    MemberDef *docProvider = 0;
+    const MemberDef *docProvider = 0;
 
     // to store the output file base from tag files
     QCString explicitOutputFileBase;
@@ -1292,28 +1292,19 @@ class MemberDefImpl::IMPL
                                       //         definition.
                                       // FALSE => block is put before declaration.
     ClassDef *category = 0;
-    MemberDef *categoryRelation = 0;
+    const MemberDef *categoryRelation = 0;
     QCString declFileName;
-    int declLine = 0;
-    int declColumn = 0;
+    int declLine = -1;
+    int declColumn = -1;
     int numberOfFlowKW = 0;
 };
 
-MemberDefImpl::IMPL::IMPL() :
-    enumFields(0),
-    redefinedBy(0),
-    category(0),
-    categoryRelation(0),
-    declLine(-1),
-    declColumn(-1),
-    numberOfFlowKW(0)
+MemberDefImpl::IMPL::IMPL() : enumFields(MemberListType_enumFields)
 {
 }
 
 MemberDefImpl::IMPL::~IMPL()
 {
-  delete redefinedBy;
-  delete enumFields;
 }
 
 void MemberDefImpl::IMPL::init(Definition *d,
@@ -1327,14 +1318,12 @@ void MemberDefImpl::IMPL::init(Definition *d,
   fileDef=0;
   redefines=0;
   relatedAlso=0;
-  redefinedBy=0;
   accessorClass=0;
   nspace=0;
   memDef=0;
   memDec=0;
   group=0;
   grpId=-1;
-  enumFields=0;
   enumScope=0;
   livesInsideEnum=FALSE;
   hasCallGraph = FALSE;
@@ -1454,28 +1443,6 @@ MemberDef *MemberDefImpl::deepCopy() const
   MemberDefImpl *result = new MemberDefImpl(*this);
   // first copy everything by reference
   *result->m_impl = *m_impl;
-  // clear pointers owned by object
-  result->m_impl->redefinedBy= 0;
-  result->m_impl->enumFields=0;
-  // replace pointers owned by the object by deep copies
-  if (m_impl->redefinedBy)
-  {
-    MemberListIterator mli(*m_impl->redefinedBy);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
-    {
-      result->insertReimplementedBy(md);
-    }
-  }
-  if (m_impl->enumFields)
-  {
-    MemberListIterator mli(*m_impl->enumFields);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
-    {
-      result->insertEnumField(md);
-    }
-  }
   result->m_impl->defArgList = m_impl->defArgList;
   result->m_impl->tArgList = m_impl->tArgList;
   result->m_impl->typeConstraints = m_impl->typeConstraints;
@@ -1512,12 +1479,12 @@ MemberDefImpl::~MemberDefImpl()
   m_impl=0;
 }
 
-void MemberDefImpl::setReimplements(MemberDef *md)
+void MemberDefImpl::setReimplements(const MemberDef *md)
 {
   m_impl->redefines = md;
 }
 
-void MemberDefImpl::insertReimplementedBy(MemberDef *md)
+void MemberDefImpl::insertReimplementedBy(const MemberDef *md)
 {
   if (m_impl->templateMaster)
   {
@@ -1527,30 +1494,27 @@ void MemberDefImpl::insertReimplementedBy(MemberDef *md)
       mdm->insertReimplementedBy(md);
     }
   }
-  if (m_impl->redefinedBy==0) m_impl->redefinedBy = new MemberList(MemberListType_redefinedBy);
-  if (m_impl->redefinedBy->findRef(md)==-1)
+  if (!m_impl->redefinedBy.contains(md))
   {
-    m_impl->redefinedBy->inSort(md);
+    m_impl->redefinedBy.inSort(md);
   }
 }
 
-MemberDef *MemberDefImpl::reimplements() const
+const MemberDef *MemberDefImpl::reimplements() const
 {
   return m_impl->redefines;
 }
 
-MemberList *MemberDefImpl::reimplementedBy() const
+const MemberList &MemberDefImpl::reimplementedBy() const
 {
   return m_impl->redefinedBy;
 }
 
 bool MemberDefImpl::isReimplementedBy(const ClassDef *cd) const
 {
-  if (cd && m_impl->redefinedBy)
+  if (cd)
   {
-    MemberListIterator mi(*m_impl->redefinedBy);
-    MemberDef *md;
-    for (mi.toFirst();(md=mi.current());++mi)
+    for (const auto &md : m_impl->redefinedBy)
     {
       const ClassDef *mcd = md->getClassDef();
       if (mcd)
@@ -1565,10 +1529,9 @@ bool MemberDefImpl::isReimplementedBy(const ClassDef *cd) const
   return FALSE;
 }
 
-void MemberDefImpl::insertEnumField(MemberDef *md)
+void MemberDefImpl::insertEnumField(const MemberDef *md)
 {
-  if (m_impl->enumFields==0) m_impl->enumFields=new MemberList(MemberListType_enumFields);
-  m_impl->enumFields->append(md);
+  m_impl->enumFields.push_back(md);
 }
 
 bool MemberDefImpl::addExample(const char *anchor,const char *nameStr, const char *file)
@@ -2767,7 +2730,7 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
 
 void MemberDefImpl::_writeReimplements(OutputList &ol) const
 {
-  MemberDef *bmd=reimplements();
+  const MemberDef *bmd=reimplements();
   const ClassDef *bcd=0;
   if (bmd && (bcd=bmd->getClassDef()))
   {
@@ -2826,25 +2789,22 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
 
 void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
 {
-  MemberList *bml=reimplementedBy();
-  if (bml)
+  const MemberList &bml=reimplementedBy();
+  if (!bml.empty())
   {
-    MemberListIterator mli(*bml);
-    MemberDef *bmd=0;
     uint count=0;
-    const ClassDef *bcd=0;
-    for (mli.toFirst();(bmd=mli.current()) && (bcd=bmd->getClassDef());++mli)
+    for (const auto &bmd : bml)
     {
+      const ClassDef *bcd=bmd->getClassDef();
       // count the members that directly inherit from md and for
       // which the member and class are visible in the docs.
-      if ( bmd->isLinkable() && bcd->isLinkable() )
+      if ( bcd && bmd->isLinkable() && bcd->isLinkable() )
       {
         count++;
       }
     }
     if (count>0)
     {
-      mli.toFirst();
       // write the list of classes that overwrite this member
       ol.startParagraph();
 
@@ -2865,17 +2825,22 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
         ol.parseText(reimplInLine.mid(index,newIndex-index));
         bool ok;
         uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-        //bmd=bml->at(entryIndex);
 
         count=0;
+        auto it = bml.begin();
         // find the entryIndex-th documented entry in the inheritance list.
-        for (mli.toLast();(bmd=mli.current()) && (bcd=bmd->getClassDef());--mli)
+        const MemberDef *bmd = 0;
+        const ClassDef *bcd = 0;
+        while (it!=bml.end())
         {
+          bmd = *it;
+          bcd = bmd->getClassDef();
           if ( bmd->isLinkable() && bcd->isLinkable())
           {
             if (count==entryIndex) break;
             count++;
           }
+          ++it;
         }
 
         if (ok && bcd && bmd) // write link for marker
@@ -2890,7 +2855,6 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
             writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
           }
         }
-        ++mli;
         index=newIndex+matchLen;
       }
       ol.parseText(reimplInLine.right(reimplInLine.length()-index));
@@ -2935,7 +2899,7 @@ void MemberDefImpl::_writeCategoryRelation(OutputList &ol) const
       i=text.find("@0");
       if (i!=-1)
       {
-        MemberDef *md = m_impl->categoryRelation;
+        const MemberDef *md = m_impl->categoryRelation;
         ref  = md->getReference();
         file = md->getOutputFileBase();
         anc  = md->anchor();
@@ -2981,65 +2945,59 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
   if (isEnumerate())
   {
     bool first=TRUE;
-    const MemberList *fmdl=enumFieldList();
-    //printf("** %s: enum values=%d\n",name().data(),fmdl!=0 ? fmdl->count() : 0);
-    if (fmdl)
+    //printf("** %s: enum values=%zu\n",name().data(),enumFieldList().size());
+    for (const auto &fmd : enumFieldList())
     {
-      MemberListIterator it(*fmdl);
-      MemberDef *fmd;
-      for (;(fmd=it.current());++it)
+      //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
+      if (fmd->isLinkable())
       {
-        //printf("Enum %p: isLinkable()=%d\n",fmd,fmd->isLinkable());
-        if (fmd->isLinkable())
+        if (first)
         {
-          if (first)
-          {
-            ol.startDescTable(theTranslator->trEnumerationValues());
-          }
-
-          ol.startDescTableRow();
-          ol.addIndexItem(fmd->name(),ciname);
-          ol.addIndexItem(ciname,fmd->name());
-
-          Doxygen::indexList->addIndexItem(container,fmd);
-
-          ol.startDescTableTitle();
-          ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
-          first=FALSE;
-          ol.docify(fmd->name());
-          ol.disableAllBut(OutputGenerator::Man);
-          ol.writeString(" ");
-          ol.enableAll();
-          ol.endDoxyAnchor(cfname,fmd->anchor());
-          ol.endDescTableTitle();
-          ol.startDescTableData();
-
-          bool hasBrief = !fmd->briefDescription().isEmpty();
-          bool hasDetails = !fmd->documentation().isEmpty();
-
-          if (hasBrief)
-          {
-            ol.generateDoc(fmd->briefFile(),fmd->briefLine(),
-                getOuterScope()?getOuterScope():container,
-                fmd,fmd->briefDescription(),TRUE,FALSE,
-                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-          }
-          // FIXME:PARA
-          //if (!fmd->briefDescription().isEmpty() &&
-          //    !fmd->documentation().isEmpty())
-          //{
-          //  ol.newParagraph();
-          //}
-          if (hasDetails)
-          {
-            ol.generateDoc(fmd->docFile(),fmd->docLine(),
-                getOuterScope()?getOuterScope():container,
-                fmd,fmd->documentation()+"\n",TRUE,FALSE,
-                0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-          }
-          ol.endDescTableData();
-          ol.endDescTableRow();
+          ol.startDescTable(theTranslator->trEnumerationValues());
         }
+
+        ol.startDescTableRow();
+        ol.addIndexItem(fmd->name(),ciname);
+        ol.addIndexItem(ciname,fmd->name());
+
+        Doxygen::indexList->addIndexItem(container,fmd);
+
+        ol.startDescTableTitle();
+        ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
+        first=FALSE;
+        ol.docify(fmd->name());
+        ol.disableAllBut(OutputGenerator::Man);
+        ol.writeString(" ");
+        ol.enableAll();
+        ol.endDoxyAnchor(cfname,fmd->anchor());
+        ol.endDescTableTitle();
+        ol.startDescTableData();
+
+        bool hasBrief = !fmd->briefDescription().isEmpty();
+        bool hasDetails = !fmd->documentation().isEmpty();
+
+        if (hasBrief)
+        {
+          ol.generateDoc(fmd->briefFile(),fmd->briefLine(),
+              getOuterScope()?getOuterScope():container,
+              fmd,fmd->briefDescription(),TRUE,FALSE,
+              0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+        }
+        // FIXME:PARA
+        //if (!fmd->briefDescription().isEmpty() &&
+        //    !fmd->documentation().isEmpty())
+        //{
+        //  ol.newParagraph();
+        //}
+        if (hasDetails)
+        {
+          ol.generateDoc(fmd->docFile(),fmd->docLine(),
+              getOuterScope()?getOuterScope():container,
+              fmd,fmd->documentation()+"\n",TRUE,FALSE,
+              0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+        }
+        ol.endDescTableData();
+        ol.endDescTableRow();
       }
     }
     if (!first)
@@ -3287,10 +3245,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
   {
     // find enum type and insert it in the definition
-    MemberListIterator vmli(*ml);
-    MemberDef *vmd;
-    bool found=FALSE;
-    for ( ; (vmd=vmli.current()) && !found ; ++vmli)
+    bool found=false;
+    for (const auto &vmd : *ml)
     {
       if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
       {
@@ -3300,7 +3256,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
         linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-i-l));
 
-        found=TRUE;
+        found=true;
+        break;
       }
     }
     if (!found) // anonymous compound
@@ -4182,7 +4139,7 @@ void MemberDefImpl::setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setEnumScope(MemberDef *md,bool livesInsideEnum)
+void MemberDefImpl::setEnumScope(const MemberDef *md,bool livesInsideEnum)
 {
   m_impl->enumScope=md;
   m_impl->livesInsideEnum=livesInsideEnum;
@@ -4362,7 +4319,7 @@ Specifier MemberDefImpl::virtualness(int count) const
      return Normal;
   }
   Specifier v = m_impl->virt;
-  MemberDef *rmd = reimplements();
+  const MemberDef *rmd = reimplements();
   while (rmd && v==Normal)
   {
     v = rmd->virtualness(count+1)==Normal ? Normal : Virtual;
@@ -4427,24 +4384,18 @@ void MemberDefImpl::writeTagFile(FTextStream &tagFile) const
   tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
   if (isStrong())
   {
-    MemberList *fmdl=m_impl->enumFields;
-    if (fmdl)
+    for (const auto &fmd : m_impl->enumFields)
     {
-      MemberListIterator mli(*fmdl);
-      MemberDef *fmd;
-      for (mli.toFirst();(fmd=mli.current());++mli)
+      if (!fmd->isReference())
       {
-        if (!fmd->isReference())
+        tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
+        tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
+        idStr = fmd->id();
+        if (!idStr.isEmpty())
         {
-          tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
-          tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
-          idStr = fmd->id();
-          if (!idStr.isEmpty())
-          {
-            tagFile << "\" clangid=\"" << convertToXML(idStr);
-          }
-          tagFile  << "\">" << convertToXML(fmd->name()) << "</enumvalue>" << endl;
+          tagFile << "\" clangid=\"" << convertToXML(idStr);
         }
+        tagFile  << "\">" << convertToXML(fmd->name()) << "</enumvalue>" << endl;
       }
     }
   }
@@ -4543,16 +4494,10 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
 {
   int enumMemCount=0;
 
-  MemberList *fmdl=m_impl->enumFields;
   uint numVisibleEnumValues=0;
-  if (fmdl)
+  for (const auto &fmd : m_impl->enumFields)
   {
-    MemberListIterator mli(*fmdl);
-    MemberDef *fmd;
-    for (mli.toFirst();(fmd=mli.current());++mli)
-    {
-      if (fmd->isBriefSectionVisible()) numVisibleEnumValues++;
-    }
+    if (fmd->isBriefSectionVisible()) numVisibleEnumValues++;
   }
   if (numVisibleEnumValues==0 && !isBriefSectionVisible())
   {
@@ -4590,11 +4535,12 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
   if (numVisibleEnumValues>0 && enumValuesPerLine>0)
   {
     typeDecl.docify("{ ");
-    if (fmdl)
+
+    auto it = m_impl->enumFields.begin();
+    if (it!=m_impl->enumFields.end())
     {
-      MemberListIterator mli(*fmdl);
-      MemberDefMutable *fmd=toMemberDefMutable(mli.current());
-      bool fmdVisible = fmd ? fmd->isBriefSectionVisible() : TRUE;
+      const MemberDef *fmd=*it;
+      bool fmdVisible = fmd->isBriefSectionVisible();
       bool first=true;
       while (fmd)
       {
@@ -4620,11 +4566,11 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
             typeDecl.popGeneratorState();
           }
 
-          if (fmd->hasDocumentation()) // enum value has docs
+          MemberDefMutable *fmdm = toMemberDefMutable(fmd);
+          if (fmdm && fmd->hasDocumentation()) // enum value has docs
           {
-            //fmd->_writeTagData(compoundType);
-            fmd->addToSearchIndex();
-            fmd->writeLink(typeDecl,cd,nd,fd,gd);
+            fmdm->addToSearchIndex();
+            fmdm->writeLink(typeDecl,cd,nd,fd,gd);
           }
           else // no docs for this enum value
           {
@@ -4642,8 +4588,15 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
         }
 
         bool prevVisible = fmdVisible;
-        ++mli;
-        fmd=toMemberDefMutable(mli.current());
+        ++it;
+        if (it!=m_impl->enumFields.end())
+        {
+          fmd=*it;
+        }
+        else
+        {
+          fmd=0;
+        }
         if (prevVisible)
         {
           typeDecl.disable(OutputGenerator::Man);
@@ -5297,7 +5250,7 @@ bool MemberDefImpl::isConstExpr() const
   return (m_impl->memSpec&Entry::ConstExpr)!=0;
 }
 
-const MemberList *MemberDefImpl::enumFieldList() const
+const MemberList &MemberDefImpl::enumFieldList() const
 {
   return m_impl->enumFields;
 }
@@ -5430,7 +5383,7 @@ bool MemberDefImpl::hasReferencesRelation() const
   return m_impl->hasReferencesRelation;
 }
 
-MemberDef *MemberDefImpl::templateMaster() const
+const MemberDef *MemberDefImpl::templateMaster() const
 {
   return m_impl->templateMaster;
 }
@@ -5466,7 +5419,7 @@ MemberDef *MemberDefImpl::memberDeclaration() const
   return m_impl->memDec;
 }
 
-MemberDef *MemberDefImpl::inheritsDocsFrom() const
+const MemberDef *MemberDefImpl::inheritsDocsFrom() const
 {
   return m_impl->docProvider;
 }
@@ -5569,7 +5522,7 @@ void MemberDefImpl::makeForeign()
   m_isLinkableCached = 0;
 }
 
-void MemberDefImpl::setInheritsDocsFrom(MemberDef *md)
+void MemberDefImpl::setInheritsDocsFrom(const MemberDef *md)
 {
   m_impl->docProvider = md;
 }
@@ -5584,7 +5537,7 @@ void MemberDefImpl::setRelatedAlso(ClassDef *cd)
   m_impl->relatedAlso=cd;
 }
 
-void MemberDefImpl::setEnumClassScope(ClassDef *cd)
+void MemberDefImpl::setEnumClassScope(const ClassDef *cd)
 {
   m_impl->classDef = cd;
   m_isLinkableCached = 0;
@@ -5660,7 +5613,7 @@ MemberDef *MemberDefImpl::fromAnonymousMember() const
   return m_impl->annMemb;
 }
 
-void MemberDefImpl::setTemplateMaster(MemberDef *mt)
+void MemberDefImpl::setTemplateMaster(const MemberDef *mt)
 {
   m_impl->templateMaster=mt;
   m_isLinkableCached = 0;
@@ -5701,12 +5654,12 @@ void MemberDefImpl::setCategory(ClassDef *def)
   m_impl->category = def;
 }
 
-MemberDef *MemberDefImpl::categoryRelation() const
+const MemberDef *MemberDefImpl::categoryRelation() const
 {
   return m_impl->categoryRelation;
 }
 
-void MemberDefImpl::setCategoryRelation(MemberDef *md)
+void MemberDefImpl::setCategoryRelation(const MemberDef *md)
 {
   m_impl->categoryRelation = md;
 }
@@ -5731,7 +5684,7 @@ void MemberDefImpl::cacheTypedefVal(const ClassDef*val, const QCString & templSp
   //printf("MemberDefImpl::cacheTypedefVal=%s m_impl=%p\n",m_impl->cachedResolvedType.data(),m_impl);
 }
 
-void MemberDefImpl::copyArgumentNames(MemberDef *bmd)
+void MemberDefImpl::copyArgumentNames(const MemberDef *bmd)
 {
   {
     const ArgumentList &srcAl = bmd->argumentList();

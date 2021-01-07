@@ -1381,9 +1381,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
     MemberList *ml = templ->getMemberList(MemberListType_pubAttribs);
     if (ml)
     {
-      MemberListIterator li(*ml);
-      MemberDef *md;
-      for (li.toFirst();(md=li.current());++li)
+      for (const auto &md : *ml)
       {
         //printf("    Member %s type=%s\n",md->name().data(),md->typeString());
         MemberDefMutable *imd = createMemberDef(md->getDefFileName(),md->getDefLine(),md->getDefColumn(),
@@ -1429,9 +1427,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
     MemberList *ml = cd->getMemberList(MemberListType_pubAttribs);
     if (ml)
     {
-      MemberListIterator li(*ml);
-      MemberDef *md;
-      for (li.toFirst();(md=li.current());++li)
+      for (const auto &md : *ml)
       {
         QCString type = md->typeString();
         if (type.find("::@")!=-1) // member of tag less struct/union
@@ -1463,9 +1459,7 @@ static void processTagLessClasses(const ClassDef *rootCd,
                 MemberList *pml = tagParentCd->getMemberList(MemberListType_pubAttribs);
                 if (pml)
                 {
-                  MemberListIterator pli(*pml);
-                  MemberDef *pmd;
-                  for (pli.toFirst();(pmd=pli.current());++pli)
+                  for (const auto &pmd : *pml)
                   {
                     MemberDefMutable *pmdm = toMemberDefMutable(pmd);
                     if (pmdm && pmd->name()==md->name())
@@ -1988,7 +1982,7 @@ static void findUsingDeclImports(const Entry *root)
           {
             for (auto &mi : *mni)
             {
-              MemberDef *md = mi->memberDef();
+              const MemberDef *md = mi->memberDef();
               if (md && md->protection()!=Private)
               {
                 //printf("found member %s\n",mni->memberName());
@@ -3948,7 +3942,7 @@ static void findUsedClassesForClass(const Entry *root,
   {
     for (auto &mi : *mni)
     {
-      MemberDef *md=mi->memberDef();
+      const MemberDef *md=mi->memberDef();
       if (md->isVariable() || md->isObjCProperty()) // for each member variable in this class
       {
         //printf("    Found variable %s in class %s\n",md->name().data(),masterCd->name().data());
@@ -7425,17 +7419,11 @@ static void findDEV(const MemberNameLinkedMap &mnsd)
       MemberDefMutable *md = toMemberDefMutable(imd.get());
       if (md && md->isEnumerate()) // member is an enum
       {
-        const MemberList *fmdl = md->enumFieldList();
         int documentedEnumValues=0;
-        if (fmdl) // enum has values
+        // for each enum value
+        for (const auto &fmd : md->enumFieldList())
         {
-          MemberListIterator fmni(*fmdl);
-          MemberDef *fmd;
-          // for each enum value
-          for (fmni.toFirst();(fmd=fmni.current());++fmni)
-          {
-            if (fmd->isLinkableInProject()) documentedEnumValues++;
-          }
+          if (fmd->isLinkableInProject()) documentedEnumValues++;
         }
         // at least one enum value is documented
         if (documentedEnumValues>0) md->setDocumentedEnumValues(TRUE);
@@ -7571,10 +7559,8 @@ static void computeMemberRelations()
                    )
                 {
                   //printf("match!\n");
-                  MemberDef *rmd;
-                  if ((rmd=md->reimplements())==0 ||
-                      minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef())
-                     )
+                  const MemberDef *rmd = md->reimplements();
+                  if (rmd==0 || minClassDistance(mcd,bmcd)<minClassDistance(mcd,rmd->getClassDef()))
                   {
                     //printf("setting (new) reimplements member\n");
                     md->setReimplements(bmd);
@@ -8156,7 +8142,7 @@ static void inheritDocumentation()
       //printf("%04d Member '%s'\n",count++,md->qualifiedName().data());
       if (md && md->documentation().isEmpty() && md->briefDescription().isEmpty())
       { // no documentation yet
-        MemberDef *bmd = md->reimplements();
+        const MemberDef *bmd = md->reimplements();
         while (bmd && bmd->documentation().isEmpty() &&
                       bmd->briefDescription().isEmpty()
               )

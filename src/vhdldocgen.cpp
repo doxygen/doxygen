@@ -456,19 +456,15 @@ static void writeClassToDot(FTextStream &t,ClassDef* cd)
 
 static QList<MemberDef>* getPorts(ClassDef *cd)
 {
-  MemberDef* md;
-  QList<MemberDef> *portList=new QList<MemberDef>;
   MemberList *ml=cd->getMemberList(MemberListType_variableMembers);
 
   if (ml==0)
   {
-    delete portList;
     return 0;
   }
 
-  MemberListIterator fmni(*ml);
-
-  for (fmni.toFirst();(md=fmni.current());++fmni)
+  QList<MemberDef> *portList=new QList<MemberDef>;
+  for (const auto &md : *ml)
   {
     if (md->getMemberSpecifiers()==VhdlDocGen::PORT)
     {
@@ -642,14 +638,14 @@ ClassDef* VhdlDocGen::getPackageName(const QCString & name)
   return getClass(name);
 }
 
-static std::map<std::string,MemberDef*>            g_varMap;
+static std::map<std::string,const MemberDef*>      g_varMap;
 static std::vector<ClassDef*>                      g_classList;
 static std::map<ClassDef*,std::vector<ClassDef*> > g_packages;
 
-MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
+const MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& memName)
 {
   ClassDef* cd,*ecd=0;
-  MemberDef *mdef=0;
+  const MemberDef *mdef=0;
 
   cd=getClass(className);
   //printf("VhdlDocGen::findMember(%s,%s)=%p\n",className.data(),memName.data(),cd);
@@ -746,37 +742,30 @@ MemberDef* VhdlDocGen::findMember(const QCString& className, const QCString& mem
  *  This function returns the entity|package
  *  in which the key (type) is found
  */
-MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberListType type)
+const MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberListType type)
 {
-  MemberDef *md=0;
-  MemberList *ml=0;
   QCString keyType=cd->symbolName()+"@"+key;
   //printf("\n %s | %s | %s",cd->symbolName().data(),key.data(,),keyType.data());
 
   auto it = g_varMap.find(keyType.str());
   if (it!=g_varMap.end())
   {
-    md=it->second;
-    if (md)
-    {
-      return md;
-    }
+    return it->second;
   }
   if (std::find(g_classList.begin(),g_classList.end(),cd)!=g_classList.end())
   {
     return 0;
   }
-  ml=cd->getMemberList(type);
+  const MemberList *ml=cd->getMemberList(type);
   g_classList.push_back(cd);
   if (!ml)
   {
     return 0;
   }
-  MemberListIterator fmni(*ml);
   //int l=ml->count();
   //	fprintf(stderr,"\n loading entity %s %s: %d",cd->symbolName().data(),keyType.data(),l);
 
-  for (fmni.toFirst();(md=fmni.current());++fmni)
+  for (const auto &md : *ml)
   {
     QCString tkey=cd->symbolName()+"@"+md->name();
     if (g_varMap.find(tkey.str())==g_varMap.end())
@@ -787,11 +776,7 @@ MemberDef* VhdlDocGen::findMemberDef(ClassDef* cd,const QCString& key,MemberList
   it=g_varMap.find(keyType.str());
   if (it!=g_varMap.end())
   {
-    md=it->second;
-    if (md)
-    {
-      return md;
-    }
+    return it->second;
   }
   return 0;
 }//findMemberDef
@@ -805,24 +790,22 @@ void VhdlDocGen::findAllPackages( ClassDef *cdef)
   if (g_packages.find(cdef)!=g_packages.end()) return;
   std::vector<ClassDef*> cList;
   MemberList *mem=cdef->getMemberList(MemberListType_variableMembers);
-  MemberDef *md;
-
-  if (!mem) return;
-
-  MemberListIterator fmni(*mem);
-  for (fmni.toFirst();(md=fmni.current());++fmni)
+  if (mem)
   {
-    if (VhdlDocGen::isPackage(md))
+    for (const auto &md : *mem)
     {
-      ClassDef* cd=VhdlDocGen::getPackageName(md->name());
-      if (cd)
+      if (VhdlDocGen::isPackage(md))
       {
-        cList.push_back(cd);
-        VhdlDocGen::findAllPackages(cd);
-        g_packages.insert({cdef,cList});
+        ClassDef* cd=VhdlDocGen::getPackageName(md->name());
+        if (cd)
+        {
+          cList.push_back(cd);
+          VhdlDocGen::findAllPackages(cd);
+          g_packages.insert({cdef,cList});
+        }
       }
-    }
-  }//for
+    }//for
+  }
 
 }// findAllPackages
 
@@ -831,18 +814,15 @@ void VhdlDocGen::findAllPackages( ClassDef *cdef)
  * is called in vhdlcode.l
  */
 
-MemberDef* VhdlDocGen::findFunction(const QCString& funcname, const QCString& package)
+const MemberDef* VhdlDocGen::findFunction(const QCString& funcname, const QCString& package)
 {
-  MemberDef* mdef=0;
   ClassDef *cdef=getClass(package.data());
   if (cdef==0) return 0;
 
   MemberList *mem=cdef->getMemberList(MemberListType_pubMethods);
-
   if (mem)
   {
-    MemberListIterator fmni(*mem);
-    for (fmni.toFirst();(mdef=fmni.current());++fmni)
+    for (const auto &mdef : *mem)
     {
       QCString mname=mdef->name();
       if ((VhdlDocGen::isProcedure(mdef) || VhdlDocGen::isVhdlFunction(mdef)) && (compareString(funcname,mname)==0))
@@ -1704,7 +1684,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
     QCString nn=mdef->typeString();
     nn=nn.stripWhiteSpace();
     QCString na=cd->name();
-    MemberDef* memdef=VhdlDocGen::findMember(na,nn);
+    const MemberDef* memdef=VhdlDocGen::findMember(na,nn);
     if (memdef && memdef->isLinkable())
     {
       ol.docify(" ");
@@ -2126,9 +2106,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
   StringSet pack;
 
   bool first=TRUE;
-  MemberDef *imd;
-  MemberListIterator mli(*mlist);
-  for ( ; (imd=mli.current()); ++mli )
+  for (const auto &imd : *mlist)
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
@@ -2156,9 +2134,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
 static bool membersHaveSpecificType(const MemberList *ml,uint64 type)
 {
   if (ml==0) return FALSE;
-  MemberDef *mdd=0;
-  MemberListIterator mmli(*ml);
-  for ( ; (mdd=mmli.current()); ++mmli )
+  for (const auto &mdd : *ml)
   {
     if (mdd->getMemberSpecifiers()==type) //is type in class
     {
@@ -2167,9 +2143,9 @@ static bool membersHaveSpecificType(const MemberList *ml,uint64 type)
   }
   for (const auto &mg : ml->getMemberGroupList())
   {
-    if (mg->members())
+    if (!mg->members().empty())
     {
-      if (membersHaveSpecificType(mg->members(),type)) return TRUE;
+      if (membersHaveSpecificType(&mg->members(),type)) return TRUE;
     }
   }
   return FALSE;
@@ -2200,7 +2176,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
 
   for (const auto &mg : ml->getMemberGroupList())
   {
-    if (membersHaveSpecificType(mg->members(),type))
+    if (membersHaveSpecificType(&mg->members(),type))
     {
       //printf("mg->header=%s\n",mg->header().data());
       bool hasHeader=mg->header()!="[NOHEADER]";
@@ -2220,7 +2196,7 @@ void VhdlDocGen::writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
       }
       ol.startMemberGroup();
       //printf("--- mg->writePlainDeclarations ---\n");
-      VhdlDocGen::writePlainVHDLDeclarations(mg->members(),ol,cd,nd,fd,gd,type);
+      VhdlDocGen::writePlainVHDLDeclarations(&mg->members(),ol,cd,nd,fd,gd,type);
       ol.endMemberGroup(hasHeader);
     }
   }
@@ -2252,7 +2228,7 @@ void VhdlDocGen::writeStringLink(const MemberDef *mdef,QCString mem, OutputList&
     if (cd)
     {
       QCString n=cd->name();
-      MemberDef* memdef=VhdlDocGen::findMember(n,mem);
+      const MemberDef* memdef=VhdlDocGen::findMember(n,mem);
       if (memdef && memdef->isLinkable())
       {
         ol.startBold();

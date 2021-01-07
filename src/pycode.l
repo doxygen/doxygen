@@ -1355,7 +1355,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
       DBG_CTX((stderr,"scope=%s locName=%s mcd=%p\n",scope.data(),locName.data(),mcd));
       if (mcd)
       {
-        MemberDef *mmd = mcd->getMemberByName(locName);
+        const MemberDef *mmd = mcd->getMemberByName(locName);
         if (mmd)
         {
           yyextra->theCallContext.setScope(ScopedTypeVariant(stripClassName(yyscanner,mmd->typeString(),mmd->getOuterScope())));

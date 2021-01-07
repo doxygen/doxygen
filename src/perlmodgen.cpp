@@ -1676,13 +1676,11 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList *enumFields = md->enumFieldList();
-    if (enumFields)
+    const MemberList &enumFields = md->enumFieldList();
+    if (!enumFields.empty())
     {
       m_output.openList("values");
-      MemberListIterator emli(*enumFields);
-      const MemberDef *emd;
-      for (emli.toFirst();(emd=emli.current());++emli)
+      for (const auto &emd : enumFields)
       {
 	m_output.openHash()
 	  .addFieldQuotedString("name", emd->name());
@@ -1713,14 +1711,13 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       .addFieldQuotedString("name", rmd->name())
       .closeHash();
 
-  MemberList *rbml = md->reimplementedBy();
-  if (rbml)
+  const MemberList &rbml = md->reimplementedBy();
+  if (!rbml.empty())
   {
-    MemberListIterator mli(*rbml);
     m_output.openList("reimplemented_by");
-    for (mli.toFirst();(rmd=mli.current());++mli)
+    for (const auto &rbmd : rbml)
       m_output.openHash()
-	.addFieldQuotedString("name", rmd->name())
+	.addFieldQuotedString("name", rbmd->name())
 	.closeHash();
     m_output.closeList();
   }
@@ -1739,9 +1736,7 @@ void PerlModGenerator::generatePerlModSection(const Definition *d,
     m_output.addFieldQuotedString("header", header);
 
   m_output.openList("members");
-  MemberListIterator mli(*ml);
-  const MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : *ml)
   {
     generatePerlModForMember(md,d);
   }
@@ -1787,12 +1782,10 @@ void PerlModGenerator::generatePerlUserDefinedSection(const Definition *d, const
       if (mg->header())
         m_output.addFieldQuotedString("header", mg->header());
 
-      if (mg->members())
+      if (!mg->members().empty())
       {
         m_output.openList("members");
-        MemberListIterator mli(*mg->members());
-        const MemberDef *md;
-        for (mli.toFirst(); (md = mli.current()); ++mli)
+        for (const auto &md : mg->members())
         {
           generatePerlModForMember(md, d);
         }

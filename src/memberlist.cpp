@@ -92,17 +92,10 @@ int genericCompareMembers(const MemberDef *c1,const MemberDef *c2)
   return cmp;
 }
 
-int MemberList::compareValues(const MemberDef *c1, const MemberDef *c2) const
-{
-  return genericCompareMembers(c1,c2);
-}
-
 int MemberList::countInheritableMembers(const ClassDef *inheritedFrom) const
 {
   int count=0;
-  QListIterator<MemberDef> mli(*this);
-  const MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : m_members)
   {
     if (md->isBriefSectionVisible())
     {
@@ -146,9 +139,7 @@ void MemberList::countDecMembers()
   m_typeCnt=m_seqCnt=m_dictCnt=m_protoCnt=m_defCnt=m_friendCnt=0;
   */
   m_numDecMembers=0;
-  QListIterator<MemberDef> mli(*this);
-  MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : m_members)
   {
     //printf("MemberList::countDecMembers(md=%s,%d)\n",md->name().data(),md->isBriefSectionVisible());
     if (md->isBriefSectionVisible())
@@ -227,9 +218,7 @@ void MemberList::countDocMembers()
 {
   if (m_numDocMembers!=-1) return; // used cached value
   m_numDocMembers=0;
-  QListIterator<MemberDef> mli(*this);
-  MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : m_members)
   {
     if (md->isDetailedSectionVisible(m_inGroup,m_inFile) && !md->isAlias())
     {
@@ -250,57 +239,10 @@ void MemberList::countDocMembers()
   //printf("MemberList::countDocMembers()=%d memberGroupList=%p\n",m_numDocMembers,memberGroupList);
 }
 
-void MemberList::inSort(const MemberDef *md)
-{
-  QList<MemberDef>::inSort(md);
-}
-
-void MemberList::append(const MemberDef *md)
-{
-  QList<MemberDef>::append(md);
-}
-
-void MemberList::remove(const MemberDef *md)
-{
-  QList<MemberDef>::remove(md);
-}
-
-void MemberList::sort()
-{
-  QList<MemberDef>::sort();
-}
-
-uint MemberList::count() const
-{
-  return QList<MemberDef>::count();
-}
-
-int MemberList::findRef(const MemberDef *md) const
-{
-  return QList<MemberDef>::findRef(md);
-}
-
-MemberDef *MemberList::getFirst() const
-{
-  return QList<MemberDef>::getFirst();
-}
-
-MemberDef *MemberList::take(uint index)
-{
-  return QList<MemberDef>::take(index);
-}
-
-MemberListIterator::MemberListIterator(const MemberList &l) :
-  QListIterator<MemberDef>(l)
-{
-}
-
 void MemberList::setAnonymousEnumType()
 {
   //printf("MemberList(%p)::setAnonymousEnumType()\n",this);
-  MemberListIterator mli(*this);
-  const MemberDef *md;
-  for ( ; (md=mli.current()); ++mli )
+  for (const auto &md : m_members)
   {
     if (md->isBriefSectionVisible())
     {
@@ -309,21 +251,15 @@ void MemberList::setAnonymousEnumType()
       if (i!=-1) name=name.right(name.length()-i-2);
       if (md->memberType()==MemberType_Enumeration && name[0]=='@')
       {
-        const MemberList *mfl = md->enumFieldList();
-        if (mfl)
+        for (const auto &vmd : md->enumFieldList())
         {
-          MemberListIterator vmli(*mfl);
-          MemberDef *vmd;
-          for ( ; (vmd=vmli.current()) ; ++vmli)
+          MemberDefMutable *vmdm = toMemberDefMutable(vmd);
+          if (vmdm)
           {
-            MemberDefMutable *vmdm = toMemberDefMutable(vmd);
-            if (vmdm)
+            QCString vtype=vmd->typeString();
+            if ((vtype.find(name))!=-1)
             {
-              QCString vtype=vmd->typeString();
-              if ((vtype.find(name))!=-1)
-              {
-                vmdm->setAnonymousEnumType(md);
-              }
+              vmdm->setAnonymousEnumType(md);
             }
           }
         }
@@ -339,14 +275,12 @@ void MemberList::setAnonymousEnumType()
 int MemberList::countEnumValues(const MemberDef *md) const
 {
   int numEnumValues=0;
-  MemberListIterator vmli(*this);
-  const MemberDef *vmd;
   QCString name(md->name());
   int i=name.findRev("::");
   if (i!=-1) name=name.right(name.length()-i-2);
   if (name[0]=='@')
   {
-    for ( ; (vmd=vmli.current()) ; ++vmli)
+    for (const auto &vmd : m_members)
     {
       QCString vtype=vmd->typeString();
       if ((vtype.find(name))!=-1)
@@ -360,9 +294,7 @@ int MemberList::countEnumValues(const MemberDef *md) const
 
 bool MemberList::declVisible() const
 {
-  MemberListIterator mli(*this);
-  const MemberDef *md;
-  for ( ; (md=mli.current()); ++mli )
+  for (const auto &md : m_members)
   {
     if (md->isBriefSectionVisible())
     {
@@ -430,9 +362,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   ol.pushGeneratorState();
 
   bool first=TRUE;
-  const MemberDef *md;
-  MemberListIterator mli(*this);
-  for ( ; (md=mli.current()); ++mli )
+  for (const auto &md : m_members)
   {
     //printf(">>> Member '%s' type=%d visible=%d\n",
     //    md->name().data(),md->memberType(),md->isBriefSectionVisible());
@@ -557,7 +487,7 @@ void MemberList::writePlainDeclarations(OutputList &ol,
   // no variables of the anonymous compound type exist.
   if (cd)
   {
-    for  ( mli.toFirst(); (md=mli.current()) ; ++mli )
+    for (const auto &md : m_members)
     {
       if (md->fromAnonymousScope() && !md->anonymousDeclShown())
       {
@@ -763,9 +693,6 @@ void MemberList::writeDocumentation(OutputList &ol,
   }
   ol.startMemberDocList();
 
-  MemberListIterator mli(*this);
-  const MemberDef *md;
-
   struct OverloadInfo
   {
     uint count = 1;
@@ -773,7 +700,7 @@ void MemberList::writeDocumentation(OutputList &ol,
   };
   std::unordered_map<std::string,OverloadInfo> overloadInfo;
   // count the number of overloaded members
-  for (mli.toFirst() ; (md=mli.current()) ; ++mli)
+  for (const auto &md : m_members)
   {
     if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) &&
         !(md->isEnumValue() && !showInline))
@@ -783,7 +710,7 @@ void MemberList::writeDocumentation(OutputList &ol,
     }
   }
 
-  for (mli.toFirst() ; (md=mli.current()) ; ++mli)
+  for (const auto &md : m_members)
   {
     if (md->isDetailedSectionVisible(m_inGroup,container->definitionType()==Definition::TypeFile) &&
         !(md->isEnumValue() && !showInline))
@@ -820,9 +747,7 @@ void MemberList::writeSimpleDocumentation(OutputList &ol,
     cd = toClassDef(container);
   }
   ol.startMemberDocSimple(cd && cd->isJavaEnum());
-  MemberListIterator mli(*this);
-  const MemberDef *md;
-  for ( ; (md=mli.current()) ; ++mli)
+  for (const auto &md : m_members)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -847,9 +772,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
   std::unordered_map<std::string,OverloadInfo> overloadInfo;
 
   // count the number of overloaded members
-  MemberListIterator mli(*this);
-  const MemberDef *imd;
-  for (mli.toFirst() ; (imd=mli.current()) ; ++mli)
+  for (const auto &imd : m_members)
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
 
@@ -860,7 +783,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
     }
   }
 
-  for ( mli.toFirst() ; (imd=mli.current()) ; ++mli)
+  for (const auto &imd : m_members)
   {
     Definition *container_d = toDefinition(const_cast<DefinitionMutable*>(container));
     MemberDefMutable *md = toMemberDefMutable(imd);
@@ -920,21 +843,17 @@ void MemberList::addMemberGroup(MemberGroup *mg)
 
 void MemberList::addListReferences(Definition *def)
 {
-  MemberListIterator mli(*this);
-  MemberDef *imd;
-  for ( ; (imd=mli.current()) ; ++mli)
+  for (const auto &imd : m_members)
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md && !md->isAlias() && (md->getGroupDef()==0 || def->definitionType()==Definition::TypeGroup))
     {
       md->addListReference(def);
-      const MemberList *enumFields = md->enumFieldList();
-      if (md->memberType()==MemberType_Enumeration && enumFields)
+      const MemberList &enumFields = md->enumFieldList();
+      if (md->memberType()==MemberType_Enumeration && !enumFields.empty())
       {
         //printf("  Adding enum values!\n");
-        MemberListIterator vmli(*enumFields);
-        MemberDef *vmd;
-        for ( ; (vmd=vmli.current()) ; ++vmli)
+        for (const auto &vmd : enumFields)
         {
           MemberDefMutable *vmdm = toMemberDefMutable(vmd);
           if (vmdm)
@@ -954,9 +873,7 @@ void MemberList::addListReferences(Definition *def)
 
 void MemberList::findSectionsInDocumentation(const Definition *d)
 {
-  MemberListIterator mli(*this);
-  MemberDef *imd;
-  for ( ; (imd=mli.current()) ; ++mli)
+  for (const auto &imd : m_members)
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
@@ -1035,9 +952,7 @@ QCString MemberList::listTypeAsString(MemberListType type)
 
 void MemberList::writeTagFile(FTextStream &tagFile)
 {
-  MemberListIterator mli(*this);
-  MemberDef *imd;
-  for ( ; (imd=mli.current()) ; ++mli)
+  for (const auto &imd : m_members)
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
@@ -1045,11 +960,9 @@ void MemberList::writeTagFile(FTextStream &tagFile)
       if (md->getLanguage()!=SrcLangExt_VHDL)
       {
         md->writeTagFile(tagFile);
-        if (md->memberType()==MemberType_Enumeration && md->enumFieldList() && !md->isStrong())
+        if (md->memberType()==MemberType_Enumeration && !md->isStrong())
         {
-          MemberListIterator vmli(*md->enumFieldList());
-          MemberDef *ivmd;
-          for ( ; (ivmd=vmli.current()) ; ++vmli)
+          for (const auto &ivmd : md->enumFieldList())
           {
             MemberDefMutable *vmd = toMemberDefMutable(ivmd);
             if (vmd)
@@ -1075,9 +988,7 @@ void MemberList::writeTagFile(FTextStream &tagFile)
 void MemberList::setAnchors()
 {
   //int count=0;
-  MemberListIterator mli(*this);
-  MemberDef *md;
-  for (;(md=mli.current());++mli)
+  for (const auto &md : m_members)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm && !md->isReference())

@@ -1077,7 +1077,7 @@ class MemberInfoContext : public RefCountedContext, public TemplateStructIntf
 class InheritedMemberInfoContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static InheritedMemberInfoContext *alloc(const ClassDef *cd,MemberList *ml,const QCString &title)
+    static InheritedMemberInfoContext *alloc(const ClassDef *cd,const MemberList *ml,const QCString &title)
     { return new InheritedMemberInfoContext(cd,ml,title); }
 
     // TemplateStructIntf methods
@@ -1086,7 +1086,7 @@ class InheritedMemberInfoContext : public RefCountedContext, public TemplateStru
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    InheritedMemberInfoContext(const ClassDef *cd,MemberList *ml,const QCString &title);
+    InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,const QCString &title);
    ~InheritedMemberInfoContext();
     class Private;
     Private *p;

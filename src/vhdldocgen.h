@@ -133,14 +133,14 @@ class VhdlDocGen
     static const char* findKeyWord(const QCString& word);
 
     static ClassDef* getPackageName(const QCString& name);
-    static MemberDef* findMember(const QCString& className,
+    static const MemberDef* findMember(const QCString& className,
                                  const QCString& memName);
     static void findAllPackages(ClassDef*);
-    static MemberDef* findMemberDef(ClassDef* cd,
+    static const MemberDef* findMemberDef(ClassDef* cd,
                                 const QCString& key,
                                 MemberListType type);
     static ClassDef *getClass(const char *name);
-    static MemberDef* findFunction(const QCString& name,
+    static const MemberDef* findFunction(const QCString& name,
                                    const QCString& package);
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,

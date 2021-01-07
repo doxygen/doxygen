@@ -30,22 +30,20 @@
 #include "md5.h"
 
 MemberGroup::MemberGroup(const Definition *container,int id,const char *hdr,const char *d,const char *docFile,int docLine)
-  : m_container(container), grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
+  : m_container(container),
+    memberList(std::make_unique<MemberList>(MemberListType_memberGroup)),
+    grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
-  static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
-
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
-  memberList      = new MemberList(MemberListType_memberGroup);
-  memberList->setNeedsSorting(sortBriefDocs); // detailed sections are already sorted elsewhere.
+  memberList->setNeedsSorting(Config_getBool(SORT_BRIEF_DOCS)); // detailed sections are already sorted elsewhere.
   //printf("Member group docs='%s'\n",doc.data());
 }
 
 MemberGroup::~MemberGroup()
 {
-  delete memberList;
 }
 
-void MemberGroup::insertMember(MemberDef *md)
+void MemberGroup::insertMember(const MemberDef *md)
 {
   //printf("MemberGroup::insertMember memberList=%p count=%d"
   //       " member section list: %p: md=%p:%s\n",
@@ -54,7 +52,7 @@ void MemberGroup::insertMember(MemberDef *md)
   //       md->getSectionList(),
   //       md,md->name().data());
 
-  MemberDef *firstMd = memberList->getFirst();
+  const MemberDef *firstMd = memberList->empty() ? 0 : memberList->front();
   if (inSameSection && firstMd &&
       firstMd->getSectionList(m_container)!=md->getSectionList(m_container))
   {
@@ -65,7 +63,7 @@ void MemberGroup::insertMember(MemberDef *md)
     inDeclSection = const_cast<MemberList*>(md->getSectionList(m_container));
     //printf("inDeclSection=%p type=%d\n",inDeclSection,inDeclSection->listType());
   }
-  memberList->append(md);
+  memberList->push_back(md);
 
   // copy the group of the first member in the memberGroup
   GroupDef *gd;
@@ -131,16 +129,14 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("** addGroupedInheritedMembers()\n");
-  MemberListIterator li(*memberList);
-  MemberDef *md;
-  for (li.toFirst();(md=li.current());++li)
+  for (const auto &md : *memberList)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList()->listType());
     const MemberList *ml = md->getSectionList(m_container);
     if (ml && lt==ml->listType())
     {
       MemberList mml(lt);
-      mml.append(md);
+      mml.push_back(md);
       mml.countDecMembers();
       mml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
     }
@@ -151,9 +147,7 @@ int MemberGroup::countGroupedInheritedMembers(MemberListType lt)
 {
   //printf("** countGroupedInheritedMembers()\n");
   int count=0;
-  MemberListIterator li(*memberList);
-  MemberDef *md;
-  for (li.toFirst();(md=li.current());++li)
+  for (const auto &md : *memberList)
   {
     //printf("matching %d == %d\n",lt,md->getSectionList()->listType());
     const MemberList *ml = md->getSectionList(m_container);
@@ -203,26 +197,25 @@ int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
 void MemberGroup::distributeMemberGroupDocumentation()
 {
   //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",grpHeader.data());
-  MemberListIterator li(*memberList);
-  MemberDef *md;
-  for (li.toFirst();(md=li.current());++li)
+  const MemberDef *md = 0;
+  for (const auto &smd : *memberList)
   {
     //printf("checking md=%s\n",md->name().data());
     // find the first member of the group with documentation
-    if (!md->documentation().isEmpty()       ||
-        !md->briefDescription().isEmpty()    ||
-        !md->inbodyDocumentation().isEmpty()
+    if (!smd->documentation().isEmpty()       ||
+        !smd->briefDescription().isEmpty()    ||
+        !smd->inbodyDocumentation().isEmpty()
        )
     {
       //printf("found it!\n");
+      md = smd;
       break;
     }
   }
   if (md) // distribute docs of md to other members of the list
   {
     //printf("Member %s has documentation!\n",md->name().data());
-    MemberDef *iomd;
-    for (li.toFirst();(iomd=li.current());++li)
+    for (const auto &iomd : *memberList)
     {
       MemberDefMutable *omd = toMemberDefMutable(iomd);
       if (omd && md!=omd && omd->documentation().isEmpty() &&
@@ -239,57 +232,6 @@ void MemberGroup::distributeMemberGroupDocumentation()
   }
 }
 
-#if 0
-int MemberGroup::varCount() const
-{
-  return memberList->varCount();
-}
-
-int MemberGroup::funcCount() const
-{
-  return memberList->funcCount();
-}
-
-int MemberGroup::enumCount() const
-{
-  return memberList->enumCount();
-}
-
-int MemberGroup::enumValueCount() const
-{
-  return memberList->enumValueCount();
-}
-
-int MemberGroup::typedefCount() const
-{
-  return memberList->typedefCount();
-}
-
-int MemberGroup::sequenceCount() const
-{
-  return memberList->sequenceCount();
-}
-
-int MemberGroup::dictionaryCount() const
-{
-  return memberList->dictionaryCount();
-}
-
-int MemberGroup::protoCount() const
-{
-  return memberList->protoCount();
-}
-
-int MemberGroup::defineCount() const
-{
-  return memberList->defineCount();
-}
-
-int MemberGroup::friendCount() const
-{
-  return memberList->friendCount();
-}
-#endif
 
 int MemberGroup::numDecMembers() const
 {

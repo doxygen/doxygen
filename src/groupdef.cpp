@@ -69,7 +69,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void addPage(const PageDef *def);
     virtual void addExample(const PageDef *def);
     virtual void addDir(DirDef *dd);
-    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE);
+    virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE);
     virtual void removeMember(MemberDef *md);
     virtual bool findGroup(const GroupDef *def) const; // true if def is a subgroup of this group
     virtual void writeDocumentation(OutputList &ol);
@@ -112,7 +112,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
   private:
     void addMemberListToGroup(MemberList *,bool (MemberDef::*)() const);
-    void addMemberToList(MemberListType lt,MemberDef *md);
+    void addMemberToList(MemberListType lt,const MemberDef *md);
     void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title);
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title);
     void removeMemberFromList(MemberListType lt,MemberDef *md);
@@ -145,7 +145,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     PageLinkedRefMap     m_pages;               // list of pages in the group
     PageLinkedRefMap     m_examples;            // list of examples in the group
     DirList              m_dirList;             // list of directories in the group
-    MemberList *         m_allMemberList;
+    MemberList           m_allMemberList;
     MemberNameInfoLinkedMap m_allMemberNameInfoLinkedMap;
     Definition *         m_groupScope;
     MemberLists          m_memberLists;
@@ -164,7 +164,8 @@ GroupDef *createGroupDef(const char *fileName,int line,const char *name,
 //---------------------------------------------------------------------------
 
 GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
-                   const char *refFileName) : DefinitionMixin(df,dl,1,na)
+                   const char *refFileName) : DefinitionMixin(df,dl,1,na),
+                    m_allMemberList(MemberListType_allMembersList)
 {
   m_fileList = new FileList;
   if (refFileName)
@@ -177,8 +178,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
   }
   setGroupTitle( t );
 
-  m_allMemberList = new MemberList(MemberListType_allMembersList);
-
   //visited = 0;
   m_groupScope = 0;
   m_subGrouping=Config_getBool(SUBGROUPING);
@@ -187,7 +186,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
 GroupDefImpl::~GroupDefImpl()
 {
   delete m_fileList;
-  delete m_allMemberList;
 }
 
 void GroupDefImpl::setGroupTitle( const char *t )
@@ -308,7 +306,7 @@ void GroupDefImpl::addMembersToMemberGroup()
 }
 
 
-bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
+bool GroupDefImpl::insertMember(const MemberDef *md,bool docOnly)
 {
   if (md->isHidden()) return FALSE;
   updateLanguage(md);
@@ -352,7 +350,7 @@ bool GroupDefImpl::insertMember(MemberDef *md,bool docOnly)
   }
   mni->push_back(std::make_unique<MemberInfo>(md,md->protection(),md->virtualness(),FALSE));
   //printf("Added member!\n");
-  m_allMemberList->append(md);
+  m_allMemberList.push_back(md);
   switch(md->memberType())
   {
     case MemberType_Variable:
@@ -585,7 +583,7 @@ size_t GroupDefImpl::numDocMembers() const
          m_classes.size()+
          m_namespaces.size()+
          m_groups.size()+
-         m_allMemberList->count()+
+         m_allMemberList.size()+
          m_pages.size()+
          m_examples.size();
 }
@@ -594,7 +592,7 @@ size_t GroupDefImpl::numDocMembers() const
 void GroupDefImpl::computeAnchors()
 {
   //printf("GroupDefImpl::computeAnchors()\n");
-  m_allMemberList->setAnchors();
+  m_allMemberList.setAnchors();
 }
 
 void GroupDefImpl::writeTagFile(FTextStream &tagFile)
@@ -1237,7 +1235,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
 
   if (Config_getBool(SEPARATE_MEMBER_PAGES))
   {
-    m_allMemberList->sort();
+    m_allMemberList.sort();
     writeMemberPages(ol);
   }
 
@@ -1266,9 +1264,7 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
   ol.writeString("      <div class=\"navtab\">\n");
   ol.writeString("        <table>\n");
 
-  MemberListIterator mli(*m_allMemberList);
-  MemberDef *md;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto *md : m_allMemberList)
   {
     if (md->getGroupDef()==this && md->isLinkable() && !md->isEnumValue())
     {
@@ -1532,7 +1528,7 @@ void GroupDefImpl::addListReferences()
   }
 }
 
-void GroupDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
+void GroupDefImpl::addMemberToList(MemberListType lt,const MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
@@ -1541,7 +1537,7 @@ void GroupDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml->append(md);
+  ml->push_back(md);
 }
 
 // performs a partial reordering to group elements together with the same scope

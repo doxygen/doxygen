@@ -140,15 +140,13 @@ static QCString escapeTooltip(const QCString &tooltip)
 }
 
 static void writeBoxMemberList(FTextStream &t,
-  char prot,MemberList *ml,const ClassDef *scope,
+  char prot,const MemberList *ml,const ClassDef *scope,
   bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
   if (ml)
   {
-    MemberListIterator mlia(*ml);
-    MemberDef *mma;
     int totalCount=0;
-    for (mlia.toFirst();(mma = mlia.current());++mlia)
+    for (const auto &mma : *ml)
     {
       if (mma->getClassDef()==scope &&
         (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
@@ -158,7 +156,7 @@ static void writeBoxMemberList(FTextStream &t,
     }
 
     int count=0;
-    for (mlia.toFirst();(mma = mlia.current());++mlia)
+    for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
         (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
@@ -199,9 +197,9 @@ static void writeBoxMemberList(FTextStream &t,
     // write member groups within the memberlist
     for (const auto &mg : ml->getMemberGroupList())
     {
-      if (mg->members())
+      if (!mg->members().empty())
       {
-        writeBoxMemberList(t,prot,mg->members(),scope,isStatic,skipNames);
+        writeBoxMemberList(t,prot,&mg->members(),scope,isStatic,skipNames);
       }
     }
   }
@@ -450,9 +448,9 @@ void DotNode::writeBox(FTextStream &t,
       {
         for (const auto &mg : m_classDef->getMemberGroups())
         {
-          if (mg->members())
+          if (!mg->members().empty())
           {
-            writeBoxMemberList(t,'*',mg->members(),m_classDef,FALSE,&arrowNames);
+            writeBoxMemberList(t,'*',&mg->members(),m_classDef,FALSE,&arrowNames);
           }
         }
       }

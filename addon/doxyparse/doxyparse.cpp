@@ -258,13 +258,11 @@ void cModule(const ClassDef* cd) {
   if (ml) {
     const FileDef *fd = cd->getFileDef();
     const MemberList *fd_ml = fd->getMemberList(MemberListType_allMembersList);
-    if (!fd_ml || fd_ml->count() == 0) {
+    if (!fd_ml || fd_ml->size() == 0) {
       printModule(fd->getOutputFileBase().data());
       printDefines();
     }
-    MemberListIterator mli(*ml);
-    const MemberDef* md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
+    for (const auto &md : *ml) {
       printDefinition("variable", cd->name().data() + std::string("::") + md->name().data(), md->getDefLine());
       protectionInformation(md->protection());
     }
@@ -336,9 +334,7 @@ static void lookupSymbol(const Definition *d) {
 
 void listMembers(const MemberList *ml) {
   if (ml) {
-    MemberListIterator mli(*ml);
-    const MemberDef *md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
+    for (const auto &md : *ml) {
       lookupSymbol((Definition*) md);
     }
   }
@@ -407,7 +403,7 @@ static void listSymbols() {
     for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
       MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
-      if (ml && ml->count() > 0) {
+      if (ml && ml->size() > 0) {
         printModule(fd->getOutputFileBase().data());
         printDefines();
         listMembers(ml);

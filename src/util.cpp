@@ -2415,27 +2415,21 @@ bool getDefs(const QCString &scName,
       if (tmd && tmd->isEnumerate() && tmd->isStrong()) // scoped enum
       {
         //printf("Found scoped enum!\n");
-        const MemberList *tml = tmd->enumFieldList();
-        if (tml)
+        for (const auto &emd : tmd->enumFieldList())
         {
-          MemberListIterator tmi(*tml);
-          MemberDef *emd;
-          for (;(emd=tmi.current());++tmi)
+          if (emd->localName()==mName)
           {
-            if (emd->localName()==mName)
+            if (emd->isLinkable())
             {
-              if (emd->isLinkable())
-              {
-                cd=tmd->getClassDef();
-                md=emd;
-                return TRUE;
-              }
-              else
-              {
-                cd=0;
-                md=0;
-                return FALSE;
-              }
+              cd=tmd->getClassDef();
+              md=emd;
+              return TRUE;
+            }
+            else
+            {
+              cd=0;
+              md=0;
+              return FALSE;
             }
           }
         }
@@ -4303,51 +4297,57 @@ void addMembersToMemberGroup(MemberList *ml,
   ASSERT(context!=0);
   //printf("addMemberToMemberGroup() context=%s\n",context->name().data());
   if (ml==0) return;
-  MemberListIterator mli(*ml);
-  MemberDef *md;
-  uint index;
-  for (index=0;(md=mli.current());)
+
+  struct MoveMemberInfo
+  {
+    MoveMemberInfo(const MemberDef *md,MemberGroup *mg,const RefItemVector &rv)
+      : memberDef(md), memberGroup(mg), sli(rv) {}
+    const MemberDef *memberDef;
+    MemberGroup *memberGroup;
+    RefItemVector sli;
+  };
+  std::vector<MoveMemberInfo> movedMembers;
+
+  for (const auto &md : *ml)
   {
     if (md->isEnumerate()) // insert enum value of this enum into groups
     {
-      const MemberList *fmdl=md->enumFieldList();
-      if (fmdl!=0)
+      for (const auto &fmd : md->enumFieldList())
       {
-        MemberListIterator fmli(*fmdl);
-        MemberDef *fmd;
-        for (fmli.toFirst();(fmd=fmli.current());++fmli)
+        int groupId=fmd->getMemberGroupId();
+        if (groupId!=-1)
         {
-          int groupId=fmd->getMemberGroupId();
-          if (groupId!=-1)
+          auto it = Doxygen::memberGroupInfoMap.find(groupId);
+          if (it!=Doxygen::memberGroupInfoMap.end())
           {
-            auto it = Doxygen::memberGroupInfoMap.find(groupId);
-            if (it!=Doxygen::memberGroupInfoMap.end())
+            auto &info = it->second;
+            auto mg_it = std::find_if(pMemberGroups->begin(),
+                                      pMemberGroups->end(),
+                                      [&groupId](const auto &g)
+                                      { return g->groupId()==groupId; }
+                                     );
+            MemberGroup *mg_ptr = 0;
+            if (mg_it==pMemberGroups->end())
             {
-              auto &info = it->second;
-              auto mg_it = std::find_if(pMemberGroups->begin(),
-                                        pMemberGroups->end(),
-                                        [&groupId](const auto &g)
-                                        { return g->groupId()==groupId; }
-                                       );
-              MemberGroup *mg_ptr = 0;
-              if (mg_it==pMemberGroups->end())
-              {
-                auto mg = std::make_unique<MemberGroup>(
-                          context,
-                          groupId,
-                          info->header,
-                          info->doc,
-                          info->docFile,
-                          info->docLine);
-                mg_ptr = mg.get();
-                pMemberGroups->push_back(std::move(mg));
-              }
-              else
-              {
-                mg_ptr = (*mg_it).get();
-              }
-              mg_ptr->insertMember(fmd); // insert in member group
-              fmd->setMemberGroup(mg_ptr);
+              auto mg = std::make_unique<MemberGroup>(
+                        context,
+                        groupId,
+                        info->header,
+                        info->doc,
+                        info->docFile,
+                        info->docLine);
+              mg_ptr = mg.get();
+              pMemberGroups->push_back(std::move(mg));
+            }
+            else
+            {
+              mg_ptr = (*mg_it).get();
+            }
+            mg_ptr->insertMember(fmd); // insert in member group
+            MemberDefMutable *fmdm = toMemberDefMutable(fmd);
+            if (fmdm)
+            {
+              fmdm->setMemberGroup(mg_ptr);
             }
           }
         }
@@ -4382,14 +4382,22 @@ void addMembersToMemberGroup(MemberList *ml,
         {
           mg_ptr = (*mg_it).get();
         }
-        md = ml->take(index); // remove from member list
-        mg_ptr->insertMember(md->resolveAlias()); // insert in member group
-        mg_ptr->setRefItems(info->m_sli);
-        md->setMemberGroup(mg_ptr);
-        continue;
+        movedMembers.push_back(MoveMemberInfo(md,mg_ptr,info->m_sli));
       }
     }
-    ++mli;++index;
+  }
+
+  // move the members to their group
+  for (const auto &mmi : movedMembers)
+  {
+    ml->remove(mmi.memberDef); // remove from member list
+    mmi.memberGroup->insertMember(mmi.memberDef->resolveAlias()); // insert in member group
+    mmi.memberGroup->setRefItems(mmi.sli);
+    MemberDefMutable *rmdm = toMemberDefMutable(mmi.memberDef);
+    if (rmdm)
+    {
+      rmdm->setMemberGroup(mmi.memberGroup);
+    }
   }
 }
 

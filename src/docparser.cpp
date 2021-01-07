@@ -445,7 +445,7 @@ static void checkArgumentName(const QCString &name)
       QCString inheritedFrom = "";
       QCString docFile = g_memberDef->docFile();
       int docLine = g_memberDef->docLine();
-      MemberDef *inheritedMd = g_memberDef->inheritsDocsFrom();
+      const MemberDef *inheritedMd = g_memberDef->inheritsDocsFrom();
       if (inheritedMd) // documentation was inherited
       {
         inheritedFrom.sprintf(" inherited from member %s at line "
@@ -5350,7 +5350,7 @@ void DocPara::handleInheritDoc()
 {
   if (g_memberDef) // inheriting docs from a member
   {
-    MemberDef *reMd = g_memberDef->reimplements();
+    const MemberDef *reMd = g_memberDef->reimplements();
     if (reMd) // member from which was inherited.
     {
       const MemberDef *thisMd = g_memberDef;

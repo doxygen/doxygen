@@ -41,6 +41,7 @@ class QTextStream;
 class QStrList;
 struct TagInfo;
 class MemberDefMutable;
+class MemberGroupList;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition
@@ -200,8 +201,8 @@ class MemberDef : public Definition
     virtual bool isFriendClass() const = 0;
     virtual bool isDocumentedFriendClass() const = 0;
 
-    virtual MemberDef *reimplements() const = 0;
-    virtual MemberList *reimplementedBy() const = 0;
+    virtual const MemberDef *reimplements() const = 0;
+    virtual const MemberList &reimplementedBy() const = 0;
     virtual bool isReimplementedBy(const ClassDef *cd) const = 0;
 
     virtual ClassDef *relatedAlso() const = 0;
@@ -210,7 +211,7 @@ class MemberDef : public Definition
     virtual const MemberDef *getAnonymousEnumType() const = 0;
     virtual bool isDocsForDefinition() const = 0;
     virtual const MemberDef *getEnumScope() const = 0;
-    virtual const MemberList *enumFieldList() const = 0;
+    virtual const MemberList &enumFieldList() const = 0;
     virtual QCString enumBaseType() const = 0;
 
     virtual bool hasExamples() const = 0;
@@ -239,7 +240,7 @@ class MemberDef : public Definition
     virtual bool hasReferencesRelation() const = 0;
     virtual bool hasReferencedByRelation() const = 0;
 
-    virtual MemberDef *templateMaster() const = 0;
+    virtual const MemberDef *templateMaster() const = 0;
     virtual QCString getScopeString() const = 0;
     virtual ClassDef *getClassDefOfAnonymousType() const = 0;
 
@@ -251,11 +252,11 @@ class MemberDef : public Definition
 
     virtual MemberDef *memberDefinition() const = 0;
     virtual MemberDef *memberDeclaration() const = 0;
-    virtual MemberDef *inheritsDocsFrom() const = 0;
+    virtual const MemberDef *inheritsDocsFrom() const = 0;
     virtual const MemberDef *getGroupAlias() const = 0;
 
     virtual ClassDef *category() const = 0;
-    virtual MemberDef *categoryRelation() const = 0;
+    virtual const MemberDef *categoryRelation() const = 0;
 
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
@@ -318,22 +319,22 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
 
     virtual void makeRelated() = 0;
     virtual void makeForeign() = 0;
-    virtual void setInheritsDocsFrom(MemberDef *md) = 0;
+    virtual void setInheritsDocsFrom(const MemberDef *md) = 0;
     virtual void setTagInfo(const TagInfo *i) = 0;
     virtual void setArgsString(const char *as) = 0;
     virtual void incrementFlowKeyWordCount() = 0;
     virtual void setEnumBaseType(const QCString &type) = 0;
 
     // relation to other members
-    virtual void setReimplements(MemberDef *md) = 0;
-    virtual void insertReimplementedBy(MemberDef *md) = 0;
+    virtual void setReimplements(const MemberDef *md) = 0;
+    virtual void insertReimplementedBy(const MemberDef *md) = 0;
 
     virtual void setRelatedAlso(ClassDef *cd) = 0;
 
     // enumeration specific members
-    virtual void insertEnumField(MemberDef *md) = 0;
-    virtual void setEnumScope(MemberDef *md,bool livesInsideEnum=FALSE) = 0;
-    virtual void setEnumClassScope(ClassDef *cd) = 0;
+    virtual void insertEnumField(const MemberDef *md) = 0;
+    virtual void setEnumScope(const MemberDef *md,bool livesInsideEnum=FALSE) = 0;
+    virtual void setEnumClassScope(const ClassDef *cd) = 0;
     virtual void setDocumentedEnumValues(bool value) = 0;
     virtual void setAnonymousEnumType(const MemberDef *md) = 0;
 
@@ -370,7 +371,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void enableReferencedByRelation(bool e) = 0;
     virtual void enableReferencesRelation(bool e) = 0;
 
-    virtual void setTemplateMaster(MemberDef *mt) = 0;
+    virtual void setTemplateMaster(const MemberDef *mt) = 0;
     virtual void addListReference(Definition *d) = 0;
     virtual void setDocsForDefinition(bool b) = 0;
     virtual void setGroupAlias(const MemberDef *md) = 0;
@@ -384,10 +385,10 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setMemberDefinition(MemberDef *md) = 0;
     virtual void setMemberDeclaration(MemberDef *md) = 0;
 
-    virtual void copyArgumentNames(MemberDef *bmd) = 0;
+    virtual void copyArgumentNames(const MemberDef *bmd) = 0;
 
     virtual void setCategory(ClassDef *) = 0;
-    virtual void setCategoryRelation(MemberDef *) = 0;
+    virtual void setCategoryRelation(const MemberDef *) = 0;
 
     virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) = 0;

@@ -147,10 +147,8 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
 
 void DotGroupCollaboration::addMemberList( MemberList* ml )
 {
-  if ( !( ml && ml->count()) ) return;
-  MemberListIterator defli(*ml);
-  MemberDef *def;
-  for (;(def=defli.current());++defli)
+  if ( ml==0 || ml->empty() ) return;
+  for (const auto &def : *ml)
   {
     QCString tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension
       +"#"+def->anchor();

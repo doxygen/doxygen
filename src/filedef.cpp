@@ -1053,9 +1053,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
   if (allMemberList)
   {
-    MemberListIterator mli(*allMemberList);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *allMemberList)
     {
       if (md->getFileDef()==this && md->getNamespaceDef()==0 && md->isLinkable() && !md->isEnumValue())
       {
@@ -1255,7 +1253,7 @@ void FileDefImpl::insertMember(MemberDef *md)
   //printf("%s:FileDefImpl::insertMember(%s (=%p) list has %d elements)\n",
   //    name().data(),md->name().data(),md,allMemberList.count());
   MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
-  if (allMemberList && allMemberList->findRef(md)!=-1)  // TODO optimize the findRef!
+  if (allMemberList && allMemberList->contains(md))
   {
     return;
   }
@@ -1265,7 +1263,7 @@ void FileDefImpl::insertMember(MemberDef *md)
     m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList));
     allMemberList = m_memberLists.back().get();
   }
-  allMemberList->append(md);
+  allMemberList->push_back(md);
   //::addFileMemberNameToIndex(md);
   switch (md->memberType())
   {
@@ -1876,7 +1874,7 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
   ml->setNeedsSorting(
        ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
        ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
-  ml->append(md);
+  ml->push_back(md);
   if (lt&MemberListType_documentationLists)
   {
     ml->setInFile(TRUE);
@@ -1900,8 +1898,8 @@ void FileDefImpl::sortMemberLists()
 
   for (const auto &mg : m_memberGroups)
   {
-    MemberList *mlg = mg->members();
-    if (mlg->needsSorting()) { mlg->sort(); mlg->setNeedsSorting(FALSE); }
+    MemberList &mlg = const_cast<MemberList&>(mg->members());
+    if (mlg.needsSorting()) { mlg.sort(); mlg.setNeedsSorting(FALSE); }
   }
 
   if (Config_getBool(SORT_BRIEF_DOCS))

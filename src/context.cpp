@@ -2132,7 +2132,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     {
       if (!list)
       {
-        MemberList *ml = m_classDef->getMemberList(type);
+        const MemberList *ml = m_classDef->getMemberList(type);
         if (ml)
         {
           list.reset(MemberListInfoContext::alloc(m_classDef,relPathAsString(),ml,title,""));
@@ -2426,17 +2426,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     void addMembers(const ClassDef *cd,MemberListType lt) const
     {
-      MemberList *ml = cd->getMemberList(lt);
+      const MemberList *ml = cd->getMemberList(lt);
       if (ml)
       {
         Cachable &cache = getCache();
-        MemberListIterator li(*ml);
-        const MemberDef *md;
-        for (li.toFirst();(md=li.current());++li)
+        for (const auto &md : *ml)
         {
           if (md->isBriefSectionVisible())
           {
-            cache.allMembers.append(md);
+            cache.allMembers.push_back(md);
           }
         }
       }
@@ -2796,7 +2794,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     {
       if (!list)
       {
-        MemberList *ml = m_namespaceDef->getMemberList(type);
+        const MemberList *ml = m_namespaceDef->getMemberList(type);
         if (ml)
         {
           list.reset(MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,""));
@@ -3235,7 +3233,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       if (!list)
       {
-        MemberList *ml = m_fileDef->getMemberList(type);
+        const MemberList *ml = m_fileDef->getMemberList(type);
         if (ml)
         {
           list.reset(MemberListInfoContext::alloc(m_fileDef,relPathAsString(),ml,title,""));
@@ -4470,15 +4468,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.enumValues)
       {
-        const MemberList *ml = m_memberDef->enumFieldList();
-        if (ml)
-        {
-          cache.enumValues.reset(MemberListContext::alloc(ml));
-        }
-        else
-        {
-          cache.enumValues.reset(MemberListContext::alloc());
-        }
+        cache.enumValues.reset(MemberListContext::alloc(&m_memberDef->enumFieldList()));
       }
       return cache.enumValues.get();
     }
@@ -4758,11 +4748,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.implements)
       {
-        MemberDef *md = m_memberDef->reimplements();
+        const MemberDef *md = m_memberDef->reimplements();
         cache.implements.reset(TemplateList::alloc());
         if (md)
         {
           const ClassDef *cd = md->getClassDef();
+          // filter on pure virtual/interface methods
           if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
           {
             MemberContext *mc = MemberContext::alloc(md);
@@ -4777,11 +4768,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.reimplements)
       {
-        MemberDef *md = m_memberDef->reimplements();
+        const MemberDef *md = m_memberDef->reimplements();
         cache.reimplements.reset(TemplateList::alloc());
         if (md)
         {
           const ClassDef *cd = md->getClassDef();
+          // filter on non-pure virtual & non interface methods
           if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
             MemberContext *mc = MemberContext::alloc(md);
@@ -4796,20 +4788,15 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.implementedBy)
       {
-        MemberList *ml = m_memberDef->reimplementedBy();
         cache.implementedBy.reset(TemplateList::alloc());
-        if (ml)
+        for (const auto &md : m_memberDef->reimplementedBy())
         {
-          MemberListIterator mli(*ml);
-          MemberDef *md=0;
-          for (mli.toFirst();(md=mli.current());++mli)
+          const ClassDef *cd = md->getClassDef();
+          // filter on pure virtual/interface methods
+          if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
           {
-            const ClassDef *cd = md->getClassDef();
-            if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
-            {
-              MemberContext *mc = new MemberContext(md);
-              cache.implementedBy->append(mc);
-            }
+            MemberContext *mc = new MemberContext(md);
+            cache.implementedBy->append(mc);
           }
         }
       }
@@ -4821,19 +4808,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!cache.reimplementedBy)
       {
         cache.reimplementedBy.reset(TemplateList::alloc());
-        MemberList *ml = m_memberDef->reimplementedBy();
-        if (ml)
+        for (const auto &md : m_memberDef->reimplementedBy())
         {
-          MemberListIterator mli(*ml);
-          MemberDef *md=0;
-          for (mli.toFirst();(md=mli.current());++mli)
+          const ClassDef *cd = md->getClassDef();
+          // filter on non-pure virtual & non interface methods
+          if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
-            const ClassDef *cd = md->getClassDef();
-            if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
-            {
-              MemberContext *mc = new MemberContext(md);
-              cache.reimplementedBy->append(mc);
-            }
+            MemberContext *mc = new MemberContext(md);
+            cache.reimplementedBy->append(mc);
           }
         }
       }
@@ -8518,9 +8500,7 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
   if (list)
   {
     bool details = list->listType()&MemberListType_detailedLists;
-    MemberListIterator mli(*list);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *list)
     {
       if ((md->isBriefSectionVisible() && !details) ||
           (md->isDetailedSectionLinkable() && details)
@@ -8746,7 +8726,7 @@ class MemberGroupInfoContext::Private
     {
       if (!m_cache.memberListContext)
       {
-        m_cache.memberListContext.reset(MemberListContext::alloc(m_memberGroup->members()));
+        m_cache.memberListContext.reset(MemberListContext::alloc(&m_memberGroup->members()));
       }
       return m_cache.memberListContext.get();
     }
@@ -9005,7 +8985,7 @@ TemplateVariant MemberListInfoContext::get(const char *name) const
 class InheritedMemberInfoContext::Private
 {
   public:
-    Private(const ClassDef *cd,MemberList *ml,const QCString &title)
+    Private(const ClassDef *cd,const MemberList *ml,const QCString &title)
       : m_class(cd), m_memberList(ml), m_title(title)
     {
       static bool init=FALSE;
@@ -9065,7 +9045,7 @@ class InheritedMemberInfoContext::Private
 
   private:
     const ClassDef *  m_class;
-    MemberList *m_memberList;
+    const MemberList *m_memberList;
     QCString    m_title;
     mutable SharedPtr<ClassContext> m_classCtx;
     mutable SharedPtr<MemberListContext> m_memberListCtx;
@@ -9076,7 +9056,7 @@ class InheritedMemberInfoContext::Private
 
 PropertyMapper<InheritedMemberInfoContext::Private> InheritedMemberInfoContext::Private::s_inst;
 
-InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,MemberList *ml,
+InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,
                                                        const QCString &title) : RefCountedContext("InheritedMemberInfoContext")
 {
   p = new Private(cd,ml,title);
@@ -9098,26 +9078,21 @@ TemplateVariant InheritedMemberInfoContext::get(const char *name) const
 class InheritedMemberInfoListContext::Private : public GenericNodeListContext
 {
   public:
-    void addMemberList(const ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    void addMemberList(const ClassDef *inheritedFrom,const MemberList &ml,MemberList *combinedList)
     {
-      if (ml)
+      for (const auto &md : ml)
       {
-        MemberListIterator li(*ml);
-        MemberDef *md;
-        for (li.toFirst();(md=li.current());++li)
+        if (md->isBriefSectionVisible() && !md->isReimplementedBy(inheritedFrom))
         {
-          if (md->isBriefSectionVisible() && !md->isReimplementedBy(inheritedFrom))
-          {
-            combinedList->append(md);
-          }
+          combinedList->push_back(md);
         }
       }
     }
-    void addMemberListIncludingGrouped(const ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    void addMemberListIncludingGrouped(const ClassDef *inheritedFrom,const MemberList *ml,MemberList *combinedList)
     {
       if (ml)
       {
-        addMemberList(inheritedFrom,ml,combinedList);
+        addMemberList(inheritedFrom,*ml,combinedList);
         for (const auto *mg : ml->getMemberGroupList())
         {
           addMemberList(inheritedFrom,mg->members(),combinedList);
@@ -9131,17 +9106,15 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       // addMemberGroupsOfGroup?
       for (const auto &mg: cd->getMemberGroups())
       {
-        if (mg->members() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
+        if (!mg->members().empty() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
         {
-          MemberListIterator li(*mg->members());
-          MemberDef *md;
-          for (li.toFirst();(md=li.current());++li)
+          for (const auto &md : mg->members())
           {
             if (lt==md->getSectionList(mg->container())->listType() &&
                 !md->isReimplementedBy(inheritedFrom) &&
                 md->isBriefSectionVisible())
             {
-              combinedList->append(md);
+              combinedList->push_back(md);
             }
           }
         }
@@ -9154,8 +9127,8 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       if (lt2!=-1) count += cd->countMembersIncludingGrouped((MemberListType)lt2,inheritedFrom,additionalList);
       if (count>0)
       {
-        MemberList *ml  = cd->getMemberList(lt1);
-        MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
+        const MemberList *ml  = cd->getMemberList(lt1);
+        const MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
         MemberList *combinedList = new MemberList(lt);
         addMemberListIncludingGrouped(inheritedFrom,ml,combinedList);
         addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList);

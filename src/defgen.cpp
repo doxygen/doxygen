@@ -40,7 +40,7 @@
 
 #define DEF_DB(x)
 
-inline void writeDEFString(FTextStream &t,const char *s)
+static inline void writeDEFString(FTextStream &t,const char *s)
 {
   const char* p=s;
   char c;
@@ -55,9 +55,9 @@ inline void writeDEFString(FTextStream &t,const char *s)
   t << '\'';
 }
 
-void generateDEFForMember(MemberDef *md,
+static void generateDEFForMember(const MemberDef *md,
     FTextStream &t,
-    Definition *def,
+    const Definition *def,
     const char* Prefix)
 {
   QCString memPrefix;
@@ -215,22 +215,16 @@ void generateDEFForMember(MemberDef *md,
   // TODO: exceptions, const volatile
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList *enumList = md->enumFieldList();
-    if (enumList!=0)
+    for (const auto &emd : md->enumFieldList())
     {
-      MemberListIterator emli(*enumList);
-      MemberDef *emd;
-      for (emli.toFirst();(emd=emli.current());++emli)
+      t << memPrefix << "enum = { enum-name = " << emd->name() << ';';
+      if (!emd->initializer().isEmpty())
       {
-        t << memPrefix << "enum = { enum-name = " << emd->name() << ';';
-        if (!emd->initializer().isEmpty())
-        {
-          t << " enum-value = ";
-          writeDEFString(t,emd->initializer());
-          t << ';';
-        }
-        t << " };" << endl;
+        t << " enum-value = ";
+        writeDEFString(t,emd->initializer());
+        t << ';';
       }
+      t << " };" << endl;
     }
   }
 
@@ -301,19 +295,17 @@ void generateDEFForMember(MemberDef *md,
 }
 
 
-void generateDEFClassSection(ClassDef *cd,
+static void generateDEFClassSection(const ClassDef *cd,
     FTextStream &t,
-    MemberList *ml,
+    const MemberList *ml,
     const char *kind)
 {
-  if (cd && ml && ml->count()>0)
+  if (cd && ml && !ml->empty())
   {
     t << "  cp-section = {" << endl;
     t << "    sec-kind = '" << kind << "';" << endl;
 
-    MemberListIterator mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *ml)
     {
       generateDEFForMember(md,t,cd,"sec");
     }
@@ -321,7 +313,7 @@ void generateDEFClassSection(ClassDef *cd,
   }
 }
 
-void generateDEFForClass(ClassDef *cd,FTextStream &t)
+static void generateDEFForClass(const ClassDef *cd,FTextStream &t)
 {
   // + brief description
   // + detailed description
@@ -391,12 +383,12 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
     t << endl << "  };" << endl;
   }
 
-  int numMembers = 0;
+  size_t numMembers = 0;
   for (const auto &ml : cd->getMemberLists())
   {
     if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      numMembers+=ml->count();
+      numMembers+=ml->size();
     }
   }
   if (numMembers>0)
@@ -453,17 +445,15 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
   t << "}; /* " <<  cd->compoundTypeString() << " */" << endl;
 }
 
-void generateDEFSection(Definition *d,
+static void generateDEFSection(const Definition *d,
     FTextStream &t,
-    MemberList *ml,
+    const MemberList *ml,
     const char *kind)
 {
-  if (ml && ml->count()>0)
+  if (ml && !ml->empty())
   {
     t << "    " << kind << " = {" << endl;
-    MemberListIterator mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *ml)
     {
       generateDEFForMember(md,t,d,kind);
     }
@@ -471,7 +461,7 @@ void generateDEFSection(Definition *d,
   }
 }
 
-void generateDEFForNamespace(NamespaceDef *nd,FTextStream &t)
+static void generateDEFForNamespace(const NamespaceDef *nd,FTextStream &t)
 {
   if (nd->isReference()) return; // skip external references
   t << "  namespace = {" << endl;
@@ -499,7 +489,7 @@ void generateDEFForNamespace(NamespaceDef *nd,FTextStream &t)
   t << "  };" << endl;
 }
 
-void generateDEFForFile(FileDef *fd,FTextStream &t)
+static void generateDEFForFile(const FileDef *fd,FTextStream &t)
 {
   if (fd->isReference()) return; // skip external references
 
@@ -586,7 +576,9 @@ void generateDEF()
   FTextStream t(&f);
   t << "AutoGen Definitions dummy;" << endl;
 
-  if (Doxygen::classLinkedMap->size()+Doxygen::inputNameLinkedMap->size()>0)
+  if (Doxygen::classLinkedMap->size()+
+      Doxygen::inputNameLinkedMap->size()+
+      Doxygen::namespaceLinkedMap->size()>0)
   {
     for (const auto &cd : *Doxygen::classLinkedMap)
     {
@@ -598,6 +590,10 @@ void generateDEF()
       {
         generateDEFForFile(fd.get(),t);
       }
+    }
+    for (const auto &nd : *Doxygen::namespaceLinkedMap)
+    {
+      generateDEFForNamespace(nd.get(),t);
     }
   }
   else

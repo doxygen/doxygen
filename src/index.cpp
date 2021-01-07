@@ -307,8 +307,8 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
 {
   bool isAnonymous = md->isAnonymous();
   bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-  const MemberList *enumList = md->enumFieldList();
-  bool isDir = enumList!=0 && md->isEnumerate();
+  const MemberList &enumList = md->enumFieldList();
+  bool isDir = !enumList.empty() && md->isEnumerate();
   if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
   {
     Doxygen::indexList->addContentsItem(isDir,
@@ -325,9 +325,7 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
     {
       Doxygen::indexList->incContentsDepth();
     }
-    MemberListIterator emli(*enumList);
-    MemberDef *emd;
-    for (emli.toFirst();(emd=emli.current());++emli)
+    for (const auto &emd : enumList)
     {
       if (!hideUndocMembers || emd->hasDocumentation())
       {
@@ -379,9 +377,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
         MemberList *ml = def->getMemberList(lmd->type);
         if (ml)
         {
-          MemberListIterator mi(*ml);
-          MemberDef *md;
-          for (mi.toFirst();(md=mi.current());++mi)
+          for (const auto &md : *ml)
           {
             if (memberVisibleInIndex(md))
             {
@@ -1590,9 +1586,7 @@ static int countVisibleMembers(const NamespaceDef *nd)
       MemberList *ml = nd->getMemberList(lmd->type);
       if (ml)
       {
-        MemberListIterator mi(*ml);
-        MemberDef *md;
-        for (mi.toFirst();(md=mi.current());++mi)
+        for (const auto &md : *ml)
         {
           if (memberVisibleInIndex(md))
           {
@@ -1615,9 +1609,7 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
       MemberList *ml = nd->getMemberList(lmd->type);
       if (ml)
       {
-        MemberListIterator mi(*ml);
-        MemberDef *md;
-        for (mi.toFirst();(md=mi.current());++mi)
+        for (const auto &md : *ml)
         {
           //printf("  member %s visible=%d\n",md->name().data(),memberVisibleInIndex(md));
           if (memberVisibleInIndex(md))
@@ -3758,7 +3750,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       {
         if (ml->listType()&MemberListType_documentationLists)
         {
-          numSubItems += ml->count();
+          numSubItems += ml->size();
         }
       }
       numSubItems += gd->getNamespaces().size();
@@ -3807,12 +3799,10 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
         MemberList *ml = gd->getMemberList(lmd->type);
         if (ml)
         {
-          MemberListIterator mi(*ml);
-          MemberDef *md;
-          for (mi.toFirst();(md=mi.current());++mi)
+          for (const auto &md : *ml)
           {
-            const MemberList *enumList = md->enumFieldList();
-            isDir = enumList!=0 && md->isEnumerate();
+            const MemberList &enumList = md->enumFieldList();
+            isDir = !enumList.empty() && md->isEnumerate();
             if (md->isVisible() && !md->isAnonymous())
             {
               Doxygen::indexList->addContentsItem(isDir,
@@ -3822,9 +3812,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
             if (isDir)
             {
               Doxygen::indexList->incContentsDepth();
-              MemberListIterator emli(*enumList);
-              MemberDef *emd;
-              for (emli.toFirst();(emd=emli.current());++emli)
+              for (const auto &emd : enumList)
               {
                 if (emd->isVisible())
                 {

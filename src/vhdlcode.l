@@ -125,9 +125,9 @@ static void nextCodeLine(yyscan_t yyscanner);
 static void writeWord(yyscan_t yyscanner,const char *word,const char* curr_class=0,bool classLink=false);
 static void codifyLines(yyscan_t yyscanner,const char *text,const char *cl=0,bool classlink=false,bool comment=false);
 static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
-                  Definition *d,
+                  const Definition *d,
                   const char *text);
-static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,MemberDef* mdef);
+static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef* mdef);
 static int  countLines(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
 static void startFontClass(yyscan_t yyscanner,const char *s);
@@ -1024,7 +1024,7 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         //ClassDef *cf=VhdlDocGen::getClass(yyextra->tempComp.data());
         QCString nn=yyextra->currentMemberDef->name();
-        MemberDef* mdeff=VhdlDocGen::findMember(yyextra->tempComp,nn);
+        const MemberDef* mdeff=VhdlDocGen::findMember(yyextra->tempComp,nn);
         if (mdeff)
         {
           yyextra->currentMemberDef=mdeff;
@@ -1224,7 +1224,7 @@ static void codifyLines(yyscan_t yyscanner,const char *text,const char *cl,bool 
  * split into multiple links with the same destination, one for each line.
  */
 static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
-                  Definition *d,
+                  const Definition *d,
                   const char *text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1263,7 +1263,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 
 /*! writes a link to a function or procedure
  */
-static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,MemberDef* mdef)
+static void generateFuncLink(yyscan_t yyscanner,CodeOutputInterface &ol,const MemberDef* mdef)
 {
   //printf("generateFuncLink(FuncName=%s)\n",mdef->name().data());
   QCString memberName=mdef->name();
@@ -1291,11 +1291,10 @@ static void generateMemLink(yyscan_t yyscanner,CodeOutputInterface &ol,QCString 
 
   QCString className=clName;
 
-  MemberDef *md=0;
   //MemberDef *comp=0;
   //bool isLocal=false;
 
-  md=VhdlDocGen::findMember(className,memberName);
+  const MemberDef *md=VhdlDocGen::findMember(className,memberName);
   ClassDef *po=VhdlDocGen::getClass(className.data());
 
   if (md==0 && po && (VhdlDocGen::VhdlClasses)po->protection()==VhdlDocGen::PACKBODYCLASS)
@@ -1504,7 +1503,7 @@ static void writeFuncProto(yyscan_t yyscanner)
   {
     temp.stripPrefix("_");// _{package body name}
   }
-  MemberDef *mdef=VhdlDocGen::findFunction(name,temp);
+  const MemberDef *mdef=VhdlDocGen::findFunction(name,temp);
 
   if (mdef)
   {

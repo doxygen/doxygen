@@ -838,16 +838,11 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
       << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
       << convertToXML(rmd->name()) << "</reimplements>" << endl;
   }
-  MemberList *rbml = md->reimplementedBy();
-  if (rbml)
+  for (const auto &rbmd : md->reimplementedBy())
   {
-    MemberListIterator mli(*rbml);
-    for (mli.toFirst();(rmd=mli.current());++mli)
-    {
-      t << "        <reimplementedby refid=\""
-        << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
-        << convertToXML(rmd->name()) << "</reimplementedby>" << endl;
-    }
+    t << "        <reimplementedby refid=\""
+      << memberOutputFileBase(rbmd) << "_1" << rbmd->anchor() << "\">"
+      << convertToXML(rbmd->name()) << "</reimplementedby>" << endl;
   }
 
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
@@ -955,44 +950,38 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
 
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList *enumFields = md->enumFieldList();
-    if (enumFields)
+    for (const auto &emd : md->enumFieldList())
     {
-      MemberListIterator emli(*enumFields);
-      const MemberDef *emd;
-      for (emli.toFirst();(emd=emli.current());++emli)
-      {
-        ti << "    <member refid=\"" << memberOutputFileBase(md)
-           << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>"
-           << convertToXML(emd->name()) << "</name></member>" << endl;
+      ti << "    <member refid=\"" << memberOutputFileBase(md)
+         << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>"
+         << convertToXML(emd->name()) << "</name></member>" << endl;
 
-        t << "        <enumvalue id=\"" << memberOutputFileBase(md) << "_1"
-          << emd->anchor() << "\" prot=\"";
-        switch (emd->protection())
-        {
-          case Public:    t << "public";    break;
-          case Protected: t << "protected"; break;
-          case Private:   t << "private";   break;
-          case Package:   t << "package";   break;
-        }
-        t << "\">" << endl;
-        t << "          <name>";
-        writeXMLString(t,emd->name());
-        t << "</name>" << endl;
-        if (!emd->initializer().isEmpty())
-        {
-          t << "          <initializer>";
-          writeXMLString(t,emd->initializer());
-          t << "</initializer>" << endl;
-        }
-        t << "          <briefdescription>" << endl;
-        writeXMLDocBlock(t,emd->briefFile(),emd->briefLine(),emd->getOuterScope(),emd,emd->briefDescription());
-        t << "          </briefdescription>" << endl;
-        t << "          <detaileddescription>" << endl;
-        writeXMLDocBlock(t,emd->docFile(),emd->docLine(),emd->getOuterScope(),emd,emd->documentation());
-        t << "          </detaileddescription>" << endl;
-        t << "        </enumvalue>" << endl;
+      t << "        <enumvalue id=\"" << memberOutputFileBase(md) << "_1"
+        << emd->anchor() << "\" prot=\"";
+      switch (emd->protection())
+      {
+        case Public:    t << "public";    break;
+        case Protected: t << "protected"; break;
+        case Private:   t << "private";   break;
+        case Package:   t << "package";   break;
       }
+      t << "\">" << endl;
+      t << "          <name>";
+      writeXMLString(t,emd->name());
+      t << "</name>" << endl;
+      if (!emd->initializer().isEmpty())
+      {
+        t << "          <initializer>";
+        writeXMLString(t,emd->initializer());
+        t << "</initializer>" << endl;
+      }
+      t << "          <briefdescription>" << endl;
+      writeXMLDocBlock(t,emd->briefFile(),emd->briefLine(),emd->getOuterScope(),emd,emd->briefDescription());
+      t << "          </briefdescription>" << endl;
+      t << "          <detaileddescription>" << endl;
+      writeXMLDocBlock(t,emd->docFile(),emd->docLine(),emd->getOuterScope(),emd,emd->documentation());
+      t << "          </detaileddescription>" << endl;
+      t << "        </enumvalue>" << endl;
     }
   }
   t << "        <briefdescription>" << endl;
@@ -1058,10 +1047,8 @@ static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &
                       const char *documentation=0)
 {
   if (ml==0) return;
-  MemberListIterator mli(*ml);
-  const MemberDef *md;
   int count=0;
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : *ml)
   {
     if (memberVisible(d,md) && (md->memberType()!=MemberType_EnumValue) &&
         !md->isHidden())
@@ -1082,7 +1069,7 @@ static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &
     writeXMLDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
     t << "</description>" << endl;
   }
-  for (mli.toFirst();(md=mli.current());++mli)
+  for (const auto &md : *ml)
   {
     if (memberVisible(d,md))
     {
@@ -1357,7 +1344,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
   writeTemplateList(cd,t);
   for (const auto &mg : cd->getMemberGroups())
   {
-    generateXMLSection(cd,ti,t,mg->members(),"user-defined",mg->header(),
+    generateXMLSection(cd,ti,t,&mg->members(),"user-defined",mg->header(),
         mg->documentation());
   }
 
@@ -1454,7 +1441,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   for (const auto &mg : nd->getMemberGroups())
   {
-    generateXMLSection(nd,ti,t,mg->members(),"user-defined",mg->header(),
+    generateXMLSection(nd,ti,t,&mg->members(),"user-defined",mg->header(),
           mg->documentation());
   }
 
@@ -1578,7 +1565,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
 
   for (const auto &mg : fd->getMemberGroups())
   {
-    generateXMLSection(fd,ti,t,mg->members(),"user-defined",mg->header(),
+    generateXMLSection(fd,ti,t,&mg->members(),"user-defined",mg->header(),
         mg->documentation());
   }
 
@@ -1651,7 +1638,7 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
 
   for (const auto &mg : gd->getMemberGroups())
   {
-    generateXMLSection(gd,ti,t,mg->members(),"user-defined",mg->header(),
+    generateXMLSection(gd,ti,t,&mg->members(),"user-defined",mg->header(),
         mg->documentation());
   }
 
