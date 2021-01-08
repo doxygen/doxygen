@@ -10088,7 +10088,7 @@ static void devUsage()
 
 static void usage(const char *name,const char *versionString)
 {
-  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2019\n\n",versionString);
+  msg("Doxygen version %s\nCopyright Dimitri van Heesch 1997-2021\n\n",versionString);
   msg("You can use doxygen in a number of ways:\n\n");
   msg("1) Use doxygen to generate a template configuration file:\n");
   msg("    %s [-s] -g [configName]\n\n",name);
