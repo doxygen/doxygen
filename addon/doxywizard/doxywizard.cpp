@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -275,7 +275,7 @@ void MainWindow::about()
               QString::fromLatin1(qVersion());
        }
   t << QString::fromLatin1(")</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2019</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2021</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
