@@ -5616,7 +5616,7 @@ static void addMemberFunction(const Entry *root,
     Debug::print(Debug::FindMembers,0,
         "3. member definition found, "
         "scope needed='%s' scope='%s' args='%s' fileName=%s\n",
-        qPrint(scopeName),cd ? qPrint(cd->name()) : "<none>",
+        qPrint(scopeName),qPrint(cd->name()),
         qPrint(md->argsString()),
         qPrint(root->fileName));
     //printf("Member %s (member scopeName=%s) (this scopeName=%s) isEnumValue()=%d\n",
