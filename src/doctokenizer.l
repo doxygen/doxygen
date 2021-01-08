@@ -755,6 +755,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Para,St_Text>[\-+0-9] |
 <St_Para,St_Text>{WORD1} |
 <St_Para,St_Text>{WORD2} { /* function call */
+                         if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
                            g_token->name = &yytext[1];
@@ -1042,6 +1043,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_TitleN>[\-+0-9]    |
 <St_TitleN>{WORD1}     |
 <St_TitleN>{WORD2}     { /* word */
+                         if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
                            g_token->name = &yytext[1];
