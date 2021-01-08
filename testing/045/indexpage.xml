@@ -19,5 +19,6 @@
         <para>Section 1 text. </para>
       </sect1>
     </detaileddescription>
+    <location file="045_refitem.dox"/>
   </compounddef>
 </doxygen>

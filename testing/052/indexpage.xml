@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>This is English. Output for all languages. </para>
     </detaileddescription>
+    <location file="052_tilde.dox"/>
   </compounddef>
 </doxygen>

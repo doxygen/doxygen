@@ -41,7 +41,7 @@ static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
 static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
                           XmlDocVisitor *parent, QList<DocNode> children,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
-                          const QCString &height, bool inlineImage = FALSE)
+                          const QCString &height, const QCString &alt = QCString(""), bool inlineImage = FALSE)
 {
   t << "<" << cmd;
   if (writeType)
@@ -67,6 +67,10 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
   if (!height.isEmpty())
   {
     t << " height=\"" << convertToXML(height) << "\"";
+  }
+  if (!alt.isEmpty())
+  {
+    t << " alt=\"" << convertToXML(alt) << "\"";
   }
   if (inlineImage)
   {
@@ -774,7 +778,17 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
   m_t << "<table rows=\"" << t->numRows()
-      << "\" cols=\"" << t->numColumns() << "\">" ;
+      << "\" cols=\"" << t->numColumns() << "\"" ;
+  HtmlAttribListIterator li(t->attribs());
+  HtmlAttrib* opt;
+  for (li.toFirst(); (opt = li.current()); ++li)
+  {
+    if (opt->name=="width")
+    {
+      m_t << " " << opt->name << "=\"" << opt->value << "\"";
+    }
+  }
+  m_t << ">";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlTable *)
@@ -811,6 +825,15 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
              (opt->value=="right" || opt->value=="left" || opt->value=="center"))
     {
       m_t << " align=\"" << opt->value << "\"";
+    }
+    else if (opt->name=="valign" &&
+      (opt->value == "bottom" || opt->value == "top" || opt->value == "middle"))
+    {
+      m_t << " valign=\"" << opt->value << "\"";
+    }
+    else if (opt->name=="width")
+    {
+      m_t << " width=\"" << opt->value << "\"";
     }
     else if (opt->name=="class") // handle markdown generated attributes
     {
@@ -907,7 +930,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   {
     baseName = correctURL(url,img->relPath());
   }
-  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img ->isInlineImage());
+  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img->attribs().find("alt"), img->isInlineImage());
 
   // copy the image to the output dir
   FileDef *fd;

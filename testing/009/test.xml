@@ -23,5 +23,6 @@
         </variablelist>
       </para>
     </detaileddescription>
+    <location file="test"/>
   </compounddef>
 </doxygen>
