@@ -1,6 +1,86 @@
 /** \page changelog Changelog
 \tableofcontents{html,latex}
 \section log_1_9 1.9 Series
+\subsection log_1_9_1 Release 1.9.1
+\htmlonly
+<b>(release date 08-01-2021)</b>
+</p>
+<h3>Bug fixes</h3>
+<ul>
+<li>issue #8282: Error on ALIAS declaration without quotes [<a href="https://github.com/doxygen/doxygen/commit/c03dd8a0105a6d020983981d17b1429dd4835103">view</a>]</li>
+<li>issue #8286: Incorrect processing of VHDL strings [<a href="https://github.com/doxygen/doxygen/commit/05fc04d307bc52ac7077c788de751b536032963d">view</a>], [<a href="http://github.com/doxygen/doxygen/commit/175839272b098316a7ec434a85154fbf27669c3e">view</a>]</li>
+<li>issue #8291: Doxygen crash on Windows when INLINE_SIMPLE_STRUCTS=YES [<a href="https://github.com/doxygen/doxygen/commit/4008be91ff3a2b5defb8a54af5edf15b4ca99c0e">view</a>]</li>
+<li>issue #8294: Draw sibling dependee directories within same parent directoy in directory dependency graph.
+[<a href="https://github.com/doxygen/doxygen/commit/f80b03899246f9b2e0d52bafafffaca01ad08f0f">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/a61f19c0bc756482d7e7b4314d84f44d387eeea1">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/95ba6002eb7d5e8c43a64a239d39ca99015caa09">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/6e52be862cdbd5989c31402a3ef1dad5d9a98062">view</a>], and
+[<a href="https://github.com/doxygen/doxygen/commit/9433c13f61452b3f9b3978e8c630d7754d36108c">view</a>]</li>
+<li>issue #8295: segmentation fault [<a href="https://github.com/doxygen/doxygen/commit/1b54e3272da36f17c8d82fda9ee6e8223c9fb201">view</a>]</li>
+<li>issue #8296: LaTeX Error: File ... not found. [<a href="https://github.com/doxygen/doxygen/commit/f3dfa40be43c0a835445e74dcf7b5fb03a9d843c">view</a>], and [<a href="https://github.com/doxygen/doxygen/commit/c5b4375d22dc3b0f97c63df3fdecae7f79a96e62">view</a>]</li>
+<li>issue #8297: fails to parse list of INPUT files [<a href="https://github.com/doxygen/doxygen/commit/4a97d104a07a1796f222bc0763b89396b35e7b7d">view</a>]</li>
+<li>issue #8300: File naming changed in Doxygen 1.9.0 [<a href="https://github.com/doxygen/doxygen/commit/e9ca9dcd2b4606dedfde0e6f9084c654f09becc8">view</a>]</li>
+<li>issue #8304: compilation failure [<a href="https://github.com/doxygen/doxygen/commit/19713dcc51ceb3930770cb25ec85590b86316cf7">view</a>]</li>
+<li>issue #8311: Markdown table: double-quote ruins the output [<a href="https://github.com/doxygen/doxygen/commit/a402beb8e0c0c2fcaaf4b6317d31d52a767e930d">view</a>]</li>
+<li>Fix cases where classes inside inline namespaces could lead to crashes [<a href="https://github.com/doxygen/doxygen/commit/da8c801a4d08baeee8007276c1f73f11c4a890ce">view</a>]</li>
+<li>Fix coverity dead-code warning [<a href="https://github.com/doxygen/doxygen/commit/dabed1c3e46157c6690179c2aadbea5055bfef54">view</a>]</li>
+<li>Fix potential crash with inline namespace [<a href="https://github.com/doxygen/doxygen/commit/4a070f8b60eefa7997c9fdd59553970de3645207">view</a>]</li>
+<li>Incorrect entries on treeview [<a href="https://github.com/doxygen/doxygen/commit/d557c9cc9aed41c305af5c10524e3dad1a902539">view</a>]</li>
+<li>Layout in doxywizard documentation [<a href="https://github.com/doxygen/doxygen/commit/4974050bdc19974a22641f856c9ece95ec973999">view</a>]</li>
+<li>Various fixes based on coverity scan results [<a href="https://github.com/doxygen/doxygen/commit/3f4717ec5583dde8116205e1045095158ab56c15">view</a>]</li>
+<li>bug_549093 Regular HTML comments are removed. [<a href="https://github.com/doxygen/doxygen/commit/7598b054b3bad6a7bf0cd3e3b4dd568d695b4510">view</a>]</li>
+</ul>
+<h3>Features</h3>
+<ul>
+<li>Add a CLANG_ADD_INC_PATHS option which can be used to control whether the directory of every input file is added as an include when using Clang assisted parsing.
+[<a href="https://github.com/doxygen/doxygen/commit/ff3f889eb1d593e89b8b7f1b613658de0fc1d95f">view</a>], and
+[<a href="https://github.com/doxygen/doxygen/commit/3fa5accc93b0ee68ec6bd354cbd0127ae827630f">view</a>]</li>
+<li>Add some missing info to the XML output
+[<a href="https://github.com/doxygen/doxygen/commit/db1d1fa78e53248ea96a26700b52c393f54c521f">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/8e2d091818580e25a133257909c19cddc2f80054">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/8e0f3b40fc36f38cf3b5d78d859b1e8678de0069">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/0db750805f7028a32a30330a1558405dd3eea92e">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/04c8d255bdf00e3e470896965ed37d1f15f8f81b">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/c37fe44163a254835aef8cf05e59979b18552ab0">view</a>],
+[<a href="https://github.com/doxygen/doxygen/commit/352ab16413d51c655741cff927911f6126471198">view</a>],
+and
+[<a href="http://github.com/doxygen/doxygen/commit/7527114a304dbb9e21236a453ed0f2e1bd51b884">view</a>]</li>
+</li>
+</ul>
+<h3>Refactoring and cleanup</h3>
+<ul>
+<li>Embed MemberGroup objects directly in their container [<a href="https://github.com/doxygen/doxygen/commit/d37c654efbd5bb4ea19e1997d1daccb0b01de8b3">view</a>]</li>
+<li>Modernise client side part of searchindex [<a href="https://github.com/doxygen/doxygen/commit/03cfc3d6eb95d2454c6d155c1ce8cb3d3bad3621">view</a>]</li>
+<li>avoid copying MemberLists by not embedding them directly [<a href="https://github.com/doxygen/doxygen/commit/5d980fa30b6524d3d53867e6fd8d6edb67a37eeb">view</a>]</li>
+<li>change MemberGroupSDict to MemberGroupList [<a href="https://github.com/doxygen/doxygen/commit/2bb3a8790770f0aa05cf0b7c2d13e2b5e7e27afe">view</a>]</li>
+<li>change type of m_cache [<a href="https://github.com/doxygen/doxygen/commit/6f6460a6b84c5ab6bced3aea842afd5b28f4bca3">view</a>]</li>
+<li>change type of vhdlSummaryTitles from SDict&lt;QCString&gt; to StringSet [<a href="https://github.com/doxygen/doxygen/commit/3f19ac46f74dca80c3c18afb83675c0fc8e096c4">view</a>]</li>
+<li>moderize Doxygen::dirRelations [<a href="https://github.com/doxygen/doxygen/commit/73127b5d8d36b3cec8df662d4e84d2109bb195d9">view</a>]</li>
+<li>modernise Doxygen::clangUsrMap [<a href="https://github.com/doxygen/doxygen/commit/3867926d7162704c8232af95316dbc14e313f9c3">view</a>]</li>
+<li>modernise MemberGroupList [<a href="https://github.com/doxygen/doxygen/commit/efa76fb818ff37ed2bde1675a11d36dc852727e5">view</a>]</li>
+<li>modernise member indices [<a href="https://github.com/doxygen/doxygen/commit/9c9958f5faac018b4e2f117e9ae5fd7f79a9cc02">view</a>]</li>
+<li>modernize getMemberLists() [<a href="https://github.com/doxygen/doxygen/commit/ef5be2c99caa8e5fbc1cec3ec53e91b2c929f613">view</a>]</li>
+<li>remove SIntDict and SIntList (no longer used) [<a href="https://github.com/doxygen/doxygen/commit/4ea5a30e94f6f8ca089380c19b36a9a98265360a">view</a>]</li>
+<li>remove unused ClassList [<a href="https://github.com/doxygen/doxygen/commit/359ff95956304ea7727ccc82864862622a9a3cf7">view</a>]</li>
+<li>remove unused DirSDict class [<a href="https://github.com/doxygen/doxygen/commit/90be949366f217c3880b46bef08614357551a178">view</a>]</li>
+<li>remove unused Doxygen::entryDBFileName and Doxygen::objDBFileName [<a href="https://github.com/doxygen/doxygen/commit/7f79d52ff6da7bcabc6b0250ca93b4307358e8e3">view</a>]</li>
+<li>remove unused Doxygen::htmlDirMap [<a href="https://github.com/doxygen/doxygen/commit/eec3c9ab5eb881d596b489f1f6024e4ac29f23ce">view</a>]</li>
+<li>remove unused GenericsSDict class [<a href="https://github.com/doxygen/doxygen/commit/941bcb4a363771c85d4c1d748db2cba0df1bcaf4">view</a>]</li>
+<li>remove unused IndexFieldSDict class [<a href="https://github.com/doxygen/doxygen/commit/c24c84b770e7593b3920fe28b83847eb3deff46b">view</a>]</li>
+<li>replace Doxygen::directories by Doxygen::dirLinkedMap [<a href="https://github.com/doxygen/doxygen/commit/54d939984cd99ee3414f6b8aee3a90a134ba8677">view</a>]</li>
+<li>replace Doxygen::groupSDict by Doxygen::groupLinkedMap [<a href="https://github.com/doxygen/doxygen/commit/b6bf2aa567a12a0c4011470e53b0a1740b6eb796">view</a>]</li>
+<li>replace Doxygen::memGrpInfoDict by Doxygen::memberGroupInfoMap [<a href="https://github.com/doxygen/doxygen/commit/34ac30b4e46023e0c86247dac4d47fce0ae1d4f8">view</a>]</li>
+<li>replace ExampleSDict by ExampleList [<a href="https://github.com/doxygen/doxygen/commit/75e96744145e9e21f28691e6d0c9b16523050356">view</a>]</li>
+<li>replace MemberSDict by MemberLinkedRefMap [<a href="https://github.com/doxygen/doxygen/commit/0252f61004cada8f9e10644b850dd6ba47d61438">view</a>]</li>
+<li>replace QMap by std::map in vhdldocgen [<a href="https://github.com/doxygen/doxygen/commit/86a75ee26cee5ea3e40dea57665f534f319cfc5d">view</a>]</li>
+<li>replace type of pack variable from SDict&lt;QCString&gt; to StringSet [<a href="https://github.com/doxygen/doxygen/commit/1c9096bc72f1b21d3090650d81c4ce3f78279a82">view</a>]</li>
+<li>replaced PageSDict by PageLinked*Map [<a href="https://github.com/doxygen/doxygen/commit/6675be21d5085d97b2167959573bc71e42dd93b8">view</a>]</li>
+<li>Optimize: usedDir can not be parent of dd if they have the same parent. [<a href="https://github.com/doxygen/doxygen/commit/6916b03899f9980b536c5735c8069a15eff4e5ce">view</a>]</li>
+<li>Replaced UsedDirsContainer with UsedDirLinkedMap [<a href="https://github.com/doxygen/doxygen/commit/0c1bc5557d811d662b4144f14ef716d9e950d60d">view</a>]</li>
+<li>Substitute `QDict&lt;UsedDir&gt;` with `std::map&lt;QCString, UsedDir * &gt;`. [<a href="https://github.com/doxygen/doxygen/commit/3e1fa4563ba16e413355601fec55072dde89fa35">view</a>]</li>
+</ul>
+<p>
+\endhtmlonly
 
 \subsection log_1_9_0 Release 1.9.0
 \htmlonly
