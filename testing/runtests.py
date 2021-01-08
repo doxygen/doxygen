@@ -52,7 +52,7 @@ def clean_header(errmsg):
 			if (cnt > 0):
 				cnt-=1
 			else:
-				rtnmsg+=0
+				rtnmsg+=o
 	return rtnmsg
  
 class Tester:
