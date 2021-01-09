@@ -146,27 +146,27 @@ class DocbookDocVisitor : public DocVisitor
     void pushEnabled();
     void popEnabled();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+    const QCString &height, bool hasCaption,const DocNodeList &children);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+    const QCString &height, bool hasCaption,const DocNodeList &children);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
     void visitPreStart(FTextStream &t,
-                   const QList<DocNode> &children,
+                   const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
                    bool inlineImage = FALSE);
     void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
-    void visitCaption(const QList<DocNode> &children);
+    void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------

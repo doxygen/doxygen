@@ -84,15 +84,13 @@ static bool supportedHtmlAttribute(const QCString &name)
 }
 
 
-void DocbookDocVisitor::visitCaption(const QList<DocNode> &children)
+void DocbookDocVisitor::visitCaption(const DocNodeList &children)
 {
-  QListIterator<DocNode> cli(children);
-  DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli) n->accept(this);
+  for (const auto &n : children) n->accept(this);
 }
 
 void DocbookDocVisitor::visitPreStart(FTextStream &t,
-                   const QList<DocNode> &children,
+                   const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
@@ -1443,31 +1441,27 @@ DB_VIS_C
 
   if (sect && sect->hasTypeSpecifier())
   {
-    QListIterator<DocNode> li(pl->paramTypes());
-    DocNode *type;
     m_t << "                                <entry>";
-    for (li.toFirst();(type=li.current());++li)
+    for (const auto &type : pl->paramTypes())
     {
       if (type->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)type);
+        visit((DocWord*)type.get());
       }
       else if (type->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)type);
+        visit((DocLinkedWord*)type.get());
       }
       else if (type->kind()==DocNode::Kind_Sep)
       {
-        m_t << " " << ((DocSeparator *)type)->chars() << " ";
+        m_t << " " << ((DocSeparator *)type.get())->chars() << " ";
       }
 
     }
     m_t << "                                </entry>";
   }
 
-  QListIterator<DocNode> li(pl->parameters());
-  DocNode *param;
-  if (!li.toFirst())
+  if (pl->parameters().empty())
   {
     m_t << "                                <entry></entry>" << endl;
   }
@@ -1475,7 +1469,7 @@ DB_VIS_C
   {
     m_t << "                                <entry>";
     int cnt = 0;
-    for (li.toFirst();(param=li.current());++li)
+    for (const auto &param : pl->parameters())
     {
       if (cnt)
       {
@@ -1483,11 +1477,11 @@ DB_VIS_C
       }
       if (param->kind()==DocNode::Kind_Word)
       {
-        visit((DocWord*)param);
+        visit((DocWord*)param.get());
       }
       else if (param->kind()==DocNode::Kind_LinkedWord)
       {
-        visit((DocLinkedWord*)param);
+        visit((DocLinkedWord*)param.get());
       }
       cnt++;
     }
@@ -1665,7 +1659,7 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    const QList<DocNode> &children
+    const DocNodeList &children
     )
 {
 DB_VIS_C
@@ -1714,7 +1708,7 @@ void DocbookDocVisitor::startDiaFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    const QList<DocNode> &children
+    const DocNodeList &children
     )
 {
 DB_VIS_C
@@ -1763,7 +1757,7 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    const QList<DocNode> &children
+    const DocNodeList &children
     )
 {
 DB_VIS_C

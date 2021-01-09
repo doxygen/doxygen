@@ -688,9 +688,7 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
   if (s->hasCaption())
   {
      openSubBlock("caption");
-     QListIterator<DocNode> cli(s->children());
-     DocNode *n;
-     for (cli.toFirst();(n=cli.current());++cli) n->accept(this);
+     for (const auto &n : s->children()) n->accept(this);
      closeSubBlock();
   }
   m_output.addFieldQuotedString("content", s->text());
@@ -1294,25 +1292,21 @@ void PerlModDocVisitor::visitPre(DocParamList *pl)
   leaveText();
   m_output.openHash()
     .openList("parameters");
-  //QStrListIterator li(pl->parameters());
-  //const char *s;
-  QListIterator<DocNode> li(pl->parameters());
-  DocNode *param;
-  for (li.toFirst();(param=li.current());++li)
+  for (const auto &param : pl->parameters())
   {
     QCString name;
     if (param->kind()==DocNode::Kind_Word)
     {
-      name = ((DocWord*)param)->word();
+      name = ((DocWord*)param.get())->word();
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      name = ((DocLinkedWord*)param)->word();
+      name = ((DocLinkedWord*)param.get())->word();
     }
 
     QCString dir = "";
     DocParamSect *sect = 0;
-    if (pl->parent()->kind()==DocNode::Kind_ParamSect)
+    if (pl->parent() && pl->parent()->kind()==DocNode::Kind_ParamSect)
     {
       sect=(DocParamSect*)pl->parent();
     }

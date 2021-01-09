@@ -31,15 +31,13 @@
 #include "emoji.h"
 #include "filedef.h"
 
-static void visitCaption(XmlDocVisitor *parent, QList<DocNode> children)
+static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
 {
-  QListIterator<DocNode> cli(children);
-  DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli) n->accept(parent);
+  for (const auto &n : children) n->accept(parent);
 }
 
 static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
-                          XmlDocVisitor *parent, QList<DocNode> children,
+                          XmlDocVisitor *parent, const DocNodeList &children,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
                           const QCString &height, const QCString &alt = QCString(""), bool inlineImage = FALSE)
 {
@@ -1091,26 +1089,20 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
   if (m_hide) return;
   m_t << "<parameteritem>" << endl;
   m_t << "<parameternamelist>" << endl;
-  //QStrListIterator li(pl->parameters());
-  //const char *s;
-  QListIterator<DocNode> li(pl->parameters());
-  DocNode *param;
-  for (li.toFirst();(param=li.current());++li)
+  for (const auto &param : pl->parameters())
   {
-    if (pl->paramTypes().count()>0)
+    if (!pl->paramTypes().empty())
     {
-      QListIterator<DocNode> li2(pl->paramTypes());
-      DocNode *type;
       m_t << "<parametertype>";
-      for (li2.toFirst();(type=li2.current());++li2)
+      for (const auto &type : pl->paramTypes())
       {
         if (type->kind()==DocNode::Kind_Word)
         {
-          visit((DocWord*)type);
+          visit((DocWord*)type.get());
         }
         else if (type->kind()==DocNode::Kind_LinkedWord)
         {
-          visit((DocLinkedWord*)type);
+          visit((DocLinkedWord*)type.get());
         }
         else if (type->kind()==DocNode::Kind_Sep)
         {
@@ -1141,11 +1133,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
     m_t << ">";
     if (param->kind()==DocNode::Kind_Word)
     {
-      visit((DocWord*)param);
+      visit((DocWord*)param.get());
     }
     else if (param->kind()==DocNode::Kind_LinkedWord)
     {
-      visit((DocLinkedWord*)param);
+      visit((DocLinkedWord*)param.get());
     }
     m_t << "</parametername>" << endl;
   }
