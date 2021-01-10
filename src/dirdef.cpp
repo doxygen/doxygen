@@ -67,8 +67,8 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual void sort();
     virtual void setParent(DirDef *parent);
     virtual void setLevel();
-    virtual void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
-                           FileDef *dstFd,bool inherited);
+    virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
+                                   const FileDef *dstFd,bool inherited);
     virtual void computeDependencies();
 
   public:
@@ -635,8 +635,8 @@ void DirDefImpl::setLevel()
 /** Add as "uses" dependency between \a this dir and \a dir,
  *  that was caused by a dependency on file \a fd.
  */
-void DirDefImpl::addUsesDependency(DirDef *dir,FileDef *srcFd,
-                               FileDef *dstFd,bool inherited)
+void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
+                                   const FileDef *dstFd,bool inherited)
 {
   if (this==dir) return; // do not add self-dependencies
   //static int count=0;
@@ -699,25 +699,19 @@ void DirDefImpl::computeDependencies()
     {
       //printf("  File %s\n",fd->name().data());
       //printf("** dir=%s file=%s\n",shortName().data(),fd->name().data());
-      QList<IncludeInfo> *ifl = fd->includeFileList();
-      if (ifl)
+      for (const auto &ii : fd->includeFileList())
       {
-        QListIterator<IncludeInfo> ifli(*ifl);
-        IncludeInfo *ii;
-        for (ifli.toFirst();(ii=ifli.current());++ifli) // foreach include file
+        //printf("  > %s\n",ii->includeName.data());
+        //printf("    #include %s\n",ii->includeName.data());
+        if (ii.fileDef && ii.fileDef->isLinkable()) // linkable file
         {
-          //printf("  > %s\n",ii->includeName.data());
-          //printf("    #include %s\n",ii->includeName.data());
-          if (ii->fileDef && ii->fileDef->isLinkable()) // linkable file
+          DirDef *usedDir = ii.fileDef->getDirDef();
+          if (usedDir)
           {
-            DirDef *usedDir = ii->fileDef->getDirDef();
-            if (usedDir)
-            {
-              // add dependency: thisDir->usedDir
-              //static int count=0;
-              //printf("      %d: add dependency %s->%s\n",count++,name().data(),usedDir->name().data());
-              addUsesDependency(usedDir,fd,ii->fileDef,FALSE);
-            }
+            // add dependency: thisDir->usedDir
+            //static int count=0;
+            //printf("      %d: add dependency %s->%s\n",count++,name().data(),usedDir->name().data());
+            addUsesDependency(usedDir,fd,ii.fileDef,FALSE);
           }
         }
       }
@@ -761,7 +755,7 @@ UsedDir::~UsedDir()
 {
 }
 
-void UsedDir::addFileDep(FileDef *srcFd,FileDef *dstFd)
+void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd)
 {
   m_filePairs.add(FilePair::key(srcFd,dstFd),std::make_unique<FilePair>(srcFd,dstFd));
 }

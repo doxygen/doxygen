@@ -50,6 +50,7 @@
 
 using DefinitionLineMap = std::unordered_map<int,const Definition *>;
 using MemberDefLineMap  = std::unordered_map<int,const MemberDef *>;
+using IncludeInfoMap = std::unordered_map<std::string, const IncludeInfo *>;
 
 class FileDefImpl : public DefinitionMixin<FileDef>
 {
@@ -83,8 +84,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual DirDef *getDirDef() const      { return m_dir; }
     virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const;
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const  { return m_usingDeclList; }
-    virtual QList<IncludeInfo> *includeFileList() const    { return m_includeList; }
-    virtual QList<IncludeInfo> *includedByFileList() const { return m_includedByList; }
+    virtual const IncludeInfoList &includeFileList() const    { return m_includeList; }
+    virtual const IncludeInfoList &includedByFileList() const { return m_includedByList; }
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const;
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const MemberLists &getMemberLists() const { return m_memberLists; }
@@ -120,8 +121,8 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void combineUsingRelations();
     virtual bool generateSourceFile() const;
     virtual void sortMemberLists();
-    virtual void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported);
-    virtual void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported);
+    virtual void addIncludeDependency(const FileDef *fd,const char *incName,bool local,bool imported);
+    virtual void addIncludedByDependency(const FileDef *fd,const char *incName,bool local,bool imported);
     virtual void addMembersToMemberGroup();
     virtual void distributeMemberGroupDocumentation();
     virtual void findSectionsInDocumentation();
@@ -151,10 +152,10 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void writeBriefDescription(OutputList &ol);
     void writeClassesToTagFile(FTextStream &t,const ClassLinkedRefMap &list);
 
-    QDict<IncludeInfo>   *m_includeDict;
-    QList<IncludeInfo>   *m_includeList;
-    QDict<IncludeInfo>   *m_includedByDict;
-    QList<IncludeInfo>   *m_includedByList;
+    IncludeInfoMap        m_includeMap;
+    IncludeInfoList       m_includeList;
+    IncludeInfoMap        m_includedByMap;
+    IncludeInfoList       m_includedByList;
     LinkedRefMap<const NamespaceDef> m_usingDirList;
     LinkedRefMap<const ClassDef> m_usingDeclList;
     QCString              m_path;
@@ -228,10 +229,6 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
   m_fileName=nm;
   setReference(lref);
   setDiskName(dn?dn:nm);
-  m_includeList       = 0;
-  m_includeDict       = 0;
-  m_includedByList    = 0;
-  m_includedByDict    = 0;
   m_package           = 0;
   m_isSource          = guessSection(nm)==Entry::SOURCE_SEC;
   m_docname           = nm;
@@ -248,10 +245,6 @@ FileDefImpl::FileDefImpl(const char *p,const char *nm,
 /*! destroy the file definition */
 FileDefImpl::~FileDefImpl()
 {
-  delete m_includeDict;
-  delete m_includeList;
-  delete m_includedByDict;
-  delete m_includedByList;
 }
 
 void FileDefImpl::setDiskName(const QCString &name)
@@ -320,29 +313,24 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
   tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
   tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
   tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
-  if (m_includeList && m_includeList->count()>0)
+  for (const auto &ii : m_includeList)
   {
-    QListIterator<IncludeInfo> ili(*m_includeList);
-    IncludeInfo *ii;
-    for (;(ii=ili.current());++ili)
+    const FileDef *fd=ii.fileDef;
+    if (fd && fd->isLinkable() && !fd->isReference())
     {
-      FileDef *fd=ii->fileDef;
-      if (fd && fd->isLinkable() && !fd->isReference())
-      {
-        bool isIDLorJava = FALSE;
-        SrcLangExt lang = fd->getLanguage();
-        isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
-        const char *locStr = (ii->local    || isIDLorJava) ? "yes" : "no";
-        const char *impStr = (ii->imported || isIDLorJava) ? "yes" : "no";
-        tagFile << "    <includes id=\""
-          << convertToXML(fd->getOutputFileBase()) << "\" "
-          << "name=\"" << convertToXML(fd->name()) << "\" "
-          << "local=\"" << locStr << "\" "
-          << "imported=\"" << impStr << "\">"
-          << convertToXML(ii->includeName)
-          << "</includes>"
-          << endl;
-      }
+      bool isIDLorJava = FALSE;
+      SrcLangExt lang = fd->getLanguage();
+      isIDLorJava = lang==SrcLangExt_IDL || lang==SrcLangExt_Java;
+      const char *locStr = (ii.local    || isIDLorJava) ? "yes" : "no";
+      const char *impStr = (ii.imported || isIDLorJava) ? "yes" : "no";
+      tagFile << "    <includes id=\""
+        << convertToXML(fd->getOutputFileBase()) << "\" "
+        << "name=\"" << convertToXML(fd->name()) << "\" "
+        << "local=\"" << locStr << "\" "
+        << "imported=\"" << impStr << "\">"
+        << convertToXML(ii.includeName)
+        << "</includes>"
+        << endl;
     }
   }
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
@@ -540,14 +528,12 @@ void FileDefImpl::writeClassesToTagFile(FTextStream &tagFile, const ClassLinkedR
 
 void FileDefImpl::writeIncludeFiles(OutputList &ol)
 {
-  if (m_includeList && m_includeList->count()>0)
+  if (!m_includeList.empty())
   {
     ol.startTextBlock(TRUE);
-    QListIterator<IncludeInfo> ili(*m_includeList);
-    IncludeInfo *ii;
-    for (;(ii=ili.current());++ili)
+    for (const auto &ii : m_includeList)
     {
-      FileDef *fd=ii->fileDef;
+      const FileDef *fd=ii.fileDef;
       bool isIDLorJava = FALSE;
       if (fd)
       {
@@ -559,7 +545,7 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
       {
         ol.docify("import ");
       }
-      else if (ii->imported) // Objective-C include
+      else if (ii.imported) // Objective-C include
       {
         ol.docify("#import ");
       }
@@ -567,12 +553,12 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
       {
         ol.docify("#include ");
       }
-      if (ii->local || isIDLorJava)
+      if (ii.local || isIDLorJava)
         ol.docify("\"");
       else
         ol.docify("<");
       ol.disable(OutputGenerator::Html);
-      ol.docify(ii->includeName);
+      ol.docify(ii.includeName);
       ol.enableAll();
       ol.disableAllBut(OutputGenerator::Html);
 
@@ -583,15 +569,15 @@ void FileDefImpl::writeIncludeFiles(OutputList &ol)
       {
         ol.writeObjectLink(fd->getReference(),
             fd->generateSourceFile() ? fd->includeName() : fd->getOutputFileBase(),
-            0,ii->includeName);
+            0,ii.includeName);
       }
       else
       {
-        ol.docify(ii->includeName);
+        ol.docify(ii.includeName);
       }
 
       ol.enableAll();
-      if (ii->local || isIDLorJava)
+      if (ii.local || isIDLorJava)
         ol.docify("\"");
       else
         ol.docify(">");
@@ -1393,25 +1379,14 @@ void FileDefImpl::addUsingDeclaration(const ClassDef *cd)
   m_usingDeclList.add(cd->qualifiedName(),cd);
 }
 
-void FileDefImpl::addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported)
+void FileDefImpl::addIncludeDependency(const FileDef *fd,const char *incName,bool local,bool imported)
 {
   //printf("FileDefImpl::addIncludeDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
-  if (!iName.isEmpty() && (!m_includeDict || m_includeDict->find(iName)==0))
+  if (!iName.isEmpty() && m_includeMap.find(iName.str())==m_includeMap.end())
   {
-    if (m_includeDict==0)
-    {
-      m_includeDict   = new QDict<IncludeInfo>(61);
-      m_includeList   = new QList<IncludeInfo>;
-      m_includeList->setAutoDelete(TRUE);
-    }
-    IncludeInfo *ii = new IncludeInfo;
-    ii->fileDef     = fd;
-    ii->includeName = incName;
-    ii->local       = local;
-    ii->imported    = imported;
-    m_includeList->append(ii);
-    m_includeDict->insert(iName,ii);
+    m_includeList.emplace_back(fd,incName,local,imported);
+    m_includeMap.insert(std::make_pair(iName.str(),&m_includeList.back()));
   }
 }
 
@@ -1421,37 +1396,34 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
   visitedFiles.insert(this);
   //printf("( FileDefImpl::addIncludedUsingDirectives for file %s\n",name().data());
 
-  if (m_includeList) // file contains #includes
+  if (!m_includeList.empty()) // file contains #includes
   {
     {
-      QListIterator<IncludeInfo> iii(*m_includeList);
-      IncludeInfo *ii;
-      for (iii.toFirst();(ii=iii.current());++iii) // foreach #include...
+      for (const auto &ii : m_includeList) // foreach #include...
       {
-        if (ii->fileDef) // ...that is a known file
+        if (ii.fileDef) // ...that is a known file
         {
           // recurse into this file
-          ii->fileDef->addIncludedUsingDirectives(visitedFiles);
+          const_cast<FileDef*>(ii.fileDef)->addIncludedUsingDirectives(visitedFiles);
         }
       }
     }
     {
-      QListIterator<IncludeInfo> iii(*m_includeList);
-      IncludeInfo *ii;
       // iterate through list from last to first
-      for (iii.toLast();(ii=iii.current());--iii)
+      for (auto ii_it = m_includeList.rbegin(); ii_it!=m_includeList.rend(); ++ii_it)
       {
-        if (ii->fileDef && ii->fileDef!=this)
+        const auto &ii = *ii_it;
+        if (ii.fileDef && ii.fileDef!=this)
         {
           // add using directives
-          auto unl = ii->fileDef->getUsedNamespaces();
+          auto unl = ii.fileDef->getUsedNamespaces();
           for (auto it = unl.rbegin(); it!=unl.rend(); ++it)
           {
             const auto *nd = *it;
             m_usingDirList.prepend(nd->qualifiedName(),nd);
           }
           // add using declarations
-          auto  udl = ii->fileDef->getUsedClasses();
+          auto  udl = ii.fileDef->getUsedClasses();
           for (auto it = udl.rbegin(); it!=udl.rend(); ++it)
           {
             const auto *cd = *it;
@@ -1465,33 +1437,22 @@ void FileDefImpl::addIncludedUsingDirectives(FileDefSet &visitedFiles)
 }
 
 
-void FileDefImpl::addIncludedByDependency(FileDef *fd,const char *incName,
+void FileDefImpl::addIncludedByDependency(const FileDef *fd,const char *incName,
                                       bool local,bool imported)
 {
   //printf("FileDefImpl::addIncludedByDependency(%p,%s,%d)\n",fd,incName,local);
   QCString iName = fd ? fd->absFilePath().data() : incName;
-  if (!iName.isEmpty() && (m_includedByDict==0 || m_includedByDict->find(iName)==0))
+  if (!iName.isEmpty() && m_includedByMap.find(iName.str())==m_includedByMap.end())
   {
-    if (m_includedByDict==0)
-    {
-      m_includedByDict = new QDict<IncludeInfo>(61);
-      m_includedByList = new QList<IncludeInfo>;
-      m_includedByList->setAutoDelete(TRUE);
-    }
-    IncludeInfo *ii = new IncludeInfo;
-    ii->fileDef     = fd;
-    ii->includeName = incName;
-    ii->local       = local;
-    ii->imported    = imported;
-    m_includedByList->append(ii);
-    m_includedByDict->insert(iName,ii);
+    m_includedByList.emplace_back(fd,incName,local,imported);
+    m_includedByMap.insert(std::make_pair(iName.str(),&m_includedByList.back()));
   }
 }
 
 bool FileDefImpl::isIncluded(const QCString &name) const
 {
   if (name.isEmpty()) return FALSE;
-  return m_includeDict!=0 && m_includeDict->find(name)!=0;
+  return m_includeMap.find(name.str())!=m_includeMap.end();
 }
 
 bool FileDefImpl::generateSourceFile() const
@@ -1970,20 +1931,15 @@ bool FileDefImpl::isLinkableInProject() const
 static void getAllIncludeFilesRecursively(
     StringUnorderedSet &filesVisited,const FileDef *fd,StringVector &incFiles)
 {
-  if (fd->includeFileList())
+  for (const auto &ii : fd->includeFileList())
   {
-    QListIterator<IncludeInfo> iii(*fd->includeFileList());
-    IncludeInfo *ii;
-    for (iii.toFirst();(ii=iii.current());++iii)
+    if (ii.fileDef && !ii.fileDef->isReference() &&
+        filesVisited.find(ii.fileDef->absFilePath().str())==filesVisited.end())
     {
-      if (ii->fileDef && !ii->fileDef->isReference() &&
-          filesVisited.find(ii->fileDef->absFilePath().str())==filesVisited.end())
-      {
-        //printf("FileDefImpl::addIncludeDependency(%s)\n",ii->fileDef->absFilePath().data());
-        incFiles.push_back(ii->fileDef->absFilePath().str());
-        filesVisited.insert(ii->fileDef->absFilePath().str());
-        getAllIncludeFilesRecursively(filesVisited,ii->fileDef,incFiles);
-      }
+      //printf("FileDefImpl::addIncludeDependency(%s)\n",ii->fileDef->absFilePath().data());
+      incFiles.push_back(ii.fileDef->absFilePath().str());
+      filesVisited.insert(ii.fileDef->absFilePath().str());
+      getAllIncludeFilesRecursively(filesVisited,ii.fileDef,incFiles);
     }
   }
 }

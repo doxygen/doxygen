@@ -43,13 +43,13 @@ bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 class FilePair
 {
   public:
-    FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
+    FilePair(const FileDef *src,const FileDef *dst) : m_src(src), m_dst(dst) {}
     const FileDef *source() const { return m_src; }
     const FileDef *destination() const { return m_dst; }
     static QCString key(const FileDef *srcFd,const FileDef *dstFd);
   private:
-    FileDef *m_src;
-    FileDef *m_dst;
+    const FileDef *m_src;
+    const FileDef *m_dst;
 };
 
 // ------------------
@@ -67,7 +67,7 @@ class UsedDir
   public:
     UsedDir(const DirDef *dir,bool inherited);
     virtual ~UsedDir();
-    void addFileDep(FileDef *srcFd,FileDef *dstFd);
+    void addFileDep(const FileDef *srcFd,const FileDef *dstFd);
     FilePair *findFilePair(const char *name);
     const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
@@ -120,8 +120,8 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
-    virtual void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
-                           FileDef *dstFd,bool inherited) = 0;
+    virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
+                                   const FileDef *dstFd,bool inherited) = 0;
     virtual void computeDependencies() = 0;
 };
 

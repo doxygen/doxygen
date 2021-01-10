@@ -179,8 +179,8 @@ static void lookupSymbol(Definition *d)
       case Definition::TypeFile:
         {
           FileDef *fd = dynamic_cast<FileDef*>(d);
-          printf("Kind: File: #includes %d other files\n",
-              fd->includeFileList() ? fd->includeFileList()->count() : 0);
+          printf("Kind: File: #includes %zu other files\n",
+              fd->includeFileList().size());
         }
         break;
       case Definition::TypeNamespace:

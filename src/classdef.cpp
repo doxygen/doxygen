@@ -199,7 +199,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual const TemplateInstanceList &getTemplateInstances() const;
     virtual const ClassDef *templateMaster() const;
     virtual bool isTemplate() const;
-    virtual IncludeInfo *includeInfo() const;
+    virtual const IncludeInfo *includeInfo() const;
     virtual const UsesClassList &usedImplementationClasses() const;
     virtual const UsesClassList &usedByImplementationClasses() const;
     virtual const ConstraintClassList &templateTypeConstraints() const;
@@ -446,7 +446,7 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->templateMaster(); }
     virtual bool isTemplate() const
     { return getCdAlias()->isTemplate(); }
-    virtual IncludeInfo *includeInfo() const
+    virtual const IncludeInfo *includeInfo() const
     { return getCdAlias()->includeInfo(); }
     virtual const UsesClassList &usedImplementationClasses() const
     { return getCdAlias()->usedImplementationClasses(); }
@@ -589,7 +589,7 @@ class ClassDefImpl::IMPL
     /*! Include information about the header file should be included
      *  in the documentation. 0 by default, set by setIncludeFile().
      */
-    IncludeInfo *incInfo = 0;
+    std::unique_ptr<IncludeInfo> incInfo;
 
     /*! List of base class (or super-classes) from which this class derives
      *  directly.
@@ -719,7 +719,6 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
   {
     fileName=ctStr+name;
   }
-  incInfo=0;
   prot=Public;
   nspace=0;
   fileDef=0;
@@ -758,7 +757,6 @@ ClassDefImpl::IMPL::IMPL()
 
 ClassDefImpl::IMPL::~IMPL()
 {
-  delete incInfo;
 }
 
 //-------------------------------------------------------------------------------------------
@@ -1219,7 +1217,7 @@ void ClassDefImpl::setIncludeFile(FileDef *fd,
              const char *includeName,bool local, bool force)
 {
   //printf("ClassDefImpl::setIncludeFile(%p,%s,%d,%d)\n",fd,includeName,local,force);
-  if (!m_impl->incInfo) m_impl->incInfo=new IncludeInfo;
+  if (!m_impl->incInfo) m_impl->incInfo = std::make_unique<IncludeInfo>();
   if ((includeName && m_impl->incInfo->includeName.isEmpty()) ||
       (fd!=0 && m_impl->incInfo->fileDef==0)
      )
@@ -4580,9 +4578,9 @@ bool ClassDefImpl::isTemplate() const
   return !m_impl->tempArgs.empty();
 }
 
-IncludeInfo *ClassDefImpl::includeInfo() const
+const IncludeInfo *ClassDefImpl::includeInfo() const
 {
-  return m_impl->incInfo;
+  return m_impl->incInfo.get();
 }
 
 const UsesClassList &ClassDefImpl::usedImplementationClasses() const

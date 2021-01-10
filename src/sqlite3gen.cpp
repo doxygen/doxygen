@@ -1940,7 +1940,7 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   other values if there's a solid heuristic for *when a class will
   have a header file*.
   */
-  IncludeInfo *ii=cd->includeInfo();
+  const IncludeInfo *ii=cd->includeInfo();
   if (ii)
   {
     QCString nm = ii->includeName;
@@ -2113,97 +2113,88 @@ static void generateSqlite3ForFile(const FileDef *fd)
   step(compounddef_insert);
 
   // + includes files
-  IncludeInfo *ii;
-  if (fd->includeFileList())
+  for (const auto &ii : fd->includeFileList())
   {
-    QListIterator<IncludeInfo> ili(*fd->includeFileList());
-    for (ili.toFirst();(ii=ili.current());++ili)
+    int src_id=insertPath(fd->absFilePath(),!fd->isReference());
+    int dst_id;
+    QCString dst_path;
+
+    if(ii.fileDef) // found file
     {
-      int src_id=insertPath(fd->absFilePath(),!fd->isReference());
-      int dst_id;
-      QCString dst_path;
-
-      if(ii->fileDef) // found file
+      if(ii.fileDef->isReference())
       {
-        if(ii->fileDef->isReference())
-        {
-          // strip tagfile from path
-          QCString tagfile = ii->fileDef->getReference();
-          dst_path = ii->fileDef->absFilePath().copy();
-          dst_path.stripPrefix(tagfile+":");
-        }
-        else
-        {
-          dst_path = ii->fileDef->absFilePath();
-        }
-        dst_id = insertPath(dst_path,ii->local);
+        // strip tagfile from path
+        QCString tagfile = ii.fileDef->getReference();
+        dst_path = ii.fileDef->absFilePath().copy();
+        dst_path.stripPrefix(tagfile+":");
       }
-      else // can't find file
+      else
       {
-        dst_id = insertPath(ii->includeName,ii->local,FALSE);
+        dst_path = ii.fileDef->absFilePath();
       }
+      dst_id = insertPath(dst_path,ii.local);
+    }
+    else // can't find file
+    {
+      dst_id = insertPath(ii.includeName,ii.local,FALSE);
+    }
 
-      DBG_CTX(("-----> FileDef includeInfo for %s\n", ii->includeName.data()));
-      DBG_CTX(("       local:    %d\n", ii->local));
-      DBG_CTX(("       imported: %d\n", ii->imported));
-      if(ii->fileDef)
-      {
-        DBG_CTX(("include: %s\n", ii->fileDef->absFilePath().data()));
-      }
-      DBG_CTX(("       src_id  : %d\n", src_id));
-      DBG_CTX(("       dst_id: %d\n", dst_id));
+    DBG_CTX(("-----> FileDef includeInfo for %s\n", ii.includeName.data()));
+    DBG_CTX(("       local:    %d\n", ii.local));
+    DBG_CTX(("       imported: %d\n", ii.imported));
+    if(ii.fileDef)
+    {
+      DBG_CTX(("include: %s\n", ii.fileDef->absFilePath().data()));
+    }
+    DBG_CTX(("       src_id  : %d\n", src_id));
+    DBG_CTX(("       dst_id: %d\n", dst_id));
 
-      bindIntParameter(incl_select,":local",ii->local);
-      bindIntParameter(incl_select,":src_id",src_id);
-      bindIntParameter(incl_select,":dst_id",dst_id);
-      if (step(incl_select,TRUE,TRUE)==0) {
-        bindIntParameter(incl_insert,":local",ii->local);
-        bindIntParameter(incl_insert,":src_id",src_id);
-        bindIntParameter(incl_insert,":dst_id",dst_id);
-        step(incl_insert);
-      }
+    bindIntParameter(incl_select,":local",ii.local);
+    bindIntParameter(incl_select,":src_id",src_id);
+    bindIntParameter(incl_select,":dst_id",dst_id);
+    if (step(incl_select,TRUE,TRUE)==0) {
+      bindIntParameter(incl_insert,":local",ii.local);
+      bindIntParameter(incl_insert,":src_id",src_id);
+      bindIntParameter(incl_insert,":dst_id",dst_id);
+      step(incl_insert);
     }
   }
 
   // + includedby files
-  if (fd->includedByFileList())
+  for (const auto &ii : fd->includedByFileList())
   {
-    QListIterator<IncludeInfo> ili(*fd->includedByFileList());
-    for (ili.toFirst();(ii=ili.current());++ili)
+    int dst_id=insertPath(fd->absFilePath(),!fd->isReference());
+    int src_id;
+    QCString src_path;
+
+    if(ii.fileDef) // found file
     {
-      int dst_id=insertPath(fd->absFilePath(),!fd->isReference());
-      int src_id;
-      QCString src_path;
-
-      if(ii->fileDef) // found file
+      if(ii.fileDef->isReference())
       {
-        if(ii->fileDef->isReference())
-        {
-          // strip tagfile from path
-          QCString tagfile = ii->fileDef->getReference();
-          src_path = ii->fileDef->absFilePath().copy();
-          src_path.stripPrefix(tagfile+":");
-        }
-        else
-        {
-          src_path = ii->fileDef->absFilePath();
-        }
-        src_id = insertPath(src_path,ii->local);
+        // strip tagfile from path
+        QCString tagfile = ii.fileDef->getReference();
+        src_path = ii.fileDef->absFilePath().copy();
+        src_path.stripPrefix(tagfile+":");
       }
-      else // can't find file
+      else
       {
-        src_id = insertPath(ii->includeName,ii->local,FALSE);
+        src_path = ii.fileDef->absFilePath();
       }
+      src_id = insertPath(src_path,ii.local);
+    }
+    else // can't find file
+    {
+      src_id = insertPath(ii.includeName,ii.local,FALSE);
+    }
 
-      bindIntParameter(incl_select,":local",ii->local);
-      bindIntParameter(incl_select,":src_id",src_id);
-      bindIntParameter(incl_select,":dst_id",dst_id);
-      if (step(incl_select,TRUE,TRUE)==0) {
-        bindIntParameter(incl_insert,":local",ii->local);
-        bindIntParameter(incl_insert,":src_id",src_id);
-        bindIntParameter(incl_insert,":dst_id",dst_id);
-        step(incl_insert);
-      }
+    bindIntParameter(incl_select,":local",ii.local);
+    bindIntParameter(incl_select,":src_id",src_id);
+    bindIntParameter(incl_select,":dst_id",dst_id);
+    if (step(incl_select,TRUE,TRUE)==0) {
+      bindIntParameter(incl_insert,":local",ii.local);
+      bindIntParameter(incl_insert,":src_id",src_id);
+      bindIntParameter(incl_insert,":dst_id",dst_id);
+      step(incl_insert);
     }
   }
 

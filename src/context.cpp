@@ -1765,18 +1765,16 @@ TemplateVariant IncludeInfoContext::get(const char *n) const
 class IncludeInfoListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const QList<IncludeInfo> &list,SrcLangExt lang)
+    Private(const IncludeInfoList &list,SrcLangExt lang)
     {
-      QListIterator<IncludeInfo> li(list);
-      IncludeInfo *ii;
-      for (li.toFirst();(ii=li.current());++li)
+      for (const auto &ii : list)
       {
-        append(IncludeInfoContext::alloc(ii,lang));
+        append(IncludeInfoContext::alloc(&ii,lang));
       }
     }
 };
 
-IncludeInfoListContext::IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang) : RefCountedContext("IncludeListContext")
+IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang) : RefCountedContext("IncludeListContext")
 {
   p = new Private(list,lang);
 }
@@ -3031,10 +3029,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includeList() const
     {
       Cachable &cache = getCache();
-      if (!cache.includeInfoList && m_fileDef->includeFileList())
+      if (!cache.includeInfoList && !m_fileDef->includeFileList().empty())
       {
         cache.includeInfoList.reset(IncludeInfoListContext::alloc(
-              *m_fileDef->includeFileList(),m_fileDef->getLanguage()));
+              m_fileDef->includeFileList(),m_fileDef->getLanguage()));
       }
       if (cache.includeInfoList)
       {

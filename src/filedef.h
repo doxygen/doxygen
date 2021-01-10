@@ -49,12 +49,17 @@ using FileDefSet = std::set<const FileDef*>;
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
-  IncludeInfo() : fileDef(0), local(FALSE), imported(FALSE) {}
-  ~IncludeInfo() {}
-  FileDef *fileDef;
+  IncludeInfo() {}
+  IncludeInfo(const FileDef *fd,const QCString &in,bool loc,bool imp)
+    : fileDef(fd), includeName(in), local(loc), imported(imp) {}
+  const FileDef *fileDef = 0;
   QCString includeName;
-  bool local;
-  bool imported;
+  bool local = false;
+  bool imported = false;
+};
+
+class IncludeInfoList : public std::vector<IncludeInfo>
+{
 };
 
 /** A model of a file symbol.
@@ -121,8 +126,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual DirDef *getDirDef() const = 0;
     virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
-    virtual QList<IncludeInfo> *includeFileList() const = 0;
-    virtual QList<IncludeInfo> *includedByFileList() const = 0;
+    virtual const IncludeInfoList &includeFileList() const = 0;
+    virtual const IncludeInfoList &includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
 
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
@@ -174,8 +179,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
-    virtual void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
+    virtual void addIncludeDependency(const FileDef *fd,const char *incName,bool local,bool imported) = 0;
+    virtual void addIncludedByDependency(const FileDef *fd,const char *incName,bool local,bool imported) = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;

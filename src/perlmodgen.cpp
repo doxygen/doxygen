@@ -1855,7 +1855,7 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
     m_output.closeList();
   }
 
-  IncludeInfo *ii=cd->includeInfo();
+  const IncludeInfo *ii=cd->includeInfo();
   if (ii)
   {
     QCString nm = ii->includeName;
@@ -2005,38 +2005,29 @@ void PerlModGenerator::generatePerlModForFile(const FileDef *fd)
   m_output.openHash()
     .addFieldQuotedString("name", fd->name());
 
-  IncludeInfo *inc;
   m_output.openList("includes");
-  if (fd->includeFileList())
+  for (const auto &inc: fd->includeFileList())
   {
-    QListIterator<IncludeInfo> ili1(*fd->includeFileList());
-    for (ili1.toFirst();(inc=ili1.current());++ili1)
+    m_output.openHash()
+      .addFieldQuotedString("name", inc.includeName);
+    if (inc.fileDef && !inc.fileDef->isReference())
     {
-      m_output.openHash()
-        .addFieldQuotedString("name", inc->includeName);
-      if (inc->fileDef && !inc->fileDef->isReference())
-      {
-        m_output.addFieldQuotedString("ref", inc->fileDef->getOutputFileBase());
-      }
-      m_output.closeHash();
+      m_output.addFieldQuotedString("ref", inc.fileDef->getOutputFileBase());
     }
+    m_output.closeHash();
   }
   m_output.closeList();
 
   m_output.openList("included_by");
-  if (fd->includedByFileList())
+  for (const auto &inc : fd->includedByFileList())
   {
-    QListIterator<IncludeInfo> ili2(*fd->includedByFileList());
-    for (ili2.toFirst();(inc=ili2.current());++ili2)
+    m_output.openHash()
+      .addFieldQuotedString("name", inc.includeName);
+    if (inc.fileDef && !inc.fileDef->isReference())
     {
-      m_output.openHash()
-        .addFieldQuotedString("name", inc->includeName);
-      if (inc->fileDef && !inc->fileDef->isReference())
-      {
-        m_output.addFieldQuotedString("ref", inc->fileDef->getOutputFileBase());
-      }
-      m_output.closeHash();
+      m_output.addFieldQuotedString("ref", inc.fileDef->getOutputFileBase());
     }
+    m_output.closeHash();
   }
   m_output.closeList();
 

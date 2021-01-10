@@ -463,7 +463,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       {
         type = "cl";
       }
-      IncludeInfo *ii = cd->includeInfo();
+      const IncludeInfo *ii = cd->includeInfo();
       if (ii)
       {
         decl=ii->includeName;

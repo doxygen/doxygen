@@ -254,7 +254,7 @@ class ClassDef : public Definition
     /** Returns TRUE if this class is a template */
     virtual bool isTemplate() const = 0;
 
-    virtual IncludeInfo *includeInfo() const = 0;
+    virtual const IncludeInfo *includeInfo() const = 0;
 
     virtual const UsesClassList &usedImplementationClasses() const = 0;
 

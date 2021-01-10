@@ -1456,7 +1456,7 @@ static void writeFileIndex(OutputList &ol)
   {
     for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
-      for (const auto &fd : *fn)
+     for (const auto &fd : *fn)
       {
         writeSingleFileIndex(ol,fd.get());
       }

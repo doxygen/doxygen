@@ -20,60 +20,55 @@
 
 void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
 {
-  QList<IncludeInfo> *includeFiles = m_inverse ? fd->includedByFileList() : fd->includeFileList();
-  if (includeFiles)
+  const IncludeInfoList &includeFiles = m_inverse ? fd->includedByFileList() : fd->includeFileList();
+  for (const auto &ii : includeFiles)
   {
-    QListIterator<IncludeInfo> ili(*includeFiles);
-    IncludeInfo *ii;
-    for (;(ii=ili.current());++ili)
+    const FileDef *bfd = ii.fileDef;
+    QCString in = ii.includeName;
+    //printf(">>>> in='%s' bfd=%p\n",ii->includeName.data(),bfd);
+    bool doc=TRUE,src=FALSE;
+    if (bfd)
     {
-      const FileDef *bfd = ii->fileDef;
-      QCString in = ii->includeName;
-      //printf(">>>> in='%s' bfd=%p\n",ii->includeName.data(),bfd);
-      bool doc=TRUE,src=FALSE;
-      if (bfd)
+      in  = bfd->absFilePath();
+      doc = bfd->isLinkable() && !bfd->isHidden();
+      src = bfd->generateSourceFile();
+    }
+    if (doc || src || !Config_getBool(HIDE_UNDOC_RELATIONS))
+    {
+      QCString url="";
+      if (bfd) url=bfd->getOutputFileBase().copy();
+      if (!doc && src)
       {
-        in  = bfd->absFilePath();
-        doc = bfd->isLinkable() && !bfd->isHidden();
-        src = bfd->generateSourceFile();
+        url=bfd->getSourceFileBase();
       }
-      if (doc || src || !Config_getBool(HIDE_UNDOC_RELATIONS))
+      DotNode *bn = m_usedNodes->find(in);
+      if (bn) // file is already a node in the graph
       {
-        QCString url="";
-        if (bfd) url=bfd->getOutputFileBase().copy();
-        if (!doc && src)
+        n->addChild(bn,0,0,0);
+        bn->addParent(n);
+        bn->setDistance(distance);
+      }
+      else
+      {
+        QCString tmp_url;
+        QCString tooltip;
+        if (bfd)
         {
-          url=bfd->getSourceFileBase();
+          tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
+          tooltip = bfd->briefDescriptionAsTooltip();
         }
-        DotNode *bn = m_usedNodes->find(in);
-        if (bn) // file is already a node in the graph
-        {
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-        }
-        else
-        {
-          QCString tmp_url;
-          QCString tooltip;
-          if (bfd)
-          {
-            tmp_url=doc || src ? bfd->getReference()+"$"+url : QCString();
-            tooltip = bfd->briefDescriptionAsTooltip();
-          }
-          bn = new DotNode(getNextNodeNumber(),// n
-                           ii->includeName,   // label
-                           tooltip,           // tip
-                           tmp_url,           // url
-                           FALSE,             // rootNode
-                           0);                // cd
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          m_usedNodes->insert(in,bn);
-          bn->setDistance(distance);
+        bn = new DotNode(getNextNodeNumber(),// n
+                         ii.includeName,   // label
+                         tooltip,           // tip
+                         tmp_url,           // url
+                         FALSE,             // rootNode
+                         0);                // cd
+        n->addChild(bn,0,0,0);
+        bn->addParent(n);
+        m_usedNodes->insert(in,bn);
+        bn->setDistance(distance);
 
-          if (bfd) buildGraph(bn,bfd,distance+1);
-        }
+        if (bfd) buildGraph(bn,bfd,distance+1);
       }
     }
   }

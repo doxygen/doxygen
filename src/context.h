@@ -48,7 +48,10 @@ class DirList;
 
 class FileDef;
 class FileList;
+
 struct IncludeInfo;
+class IncludeInfoList;
+
 class MemberList;
 class MemberDef;
 struct Argument;
@@ -230,7 +233,7 @@ class IncludeInfoContext : public RefCountedContext, public TemplateStructIntf
 class IncludeInfoListContext : public RefCountedContext, public TemplateListIntf
 {
   public:
-    static IncludeInfoListContext *alloc(const QList<IncludeInfo> &list,SrcLangExt lang)
+    static IncludeInfoListContext *alloc(const IncludeInfoList &list,SrcLangExt lang)
     { return new IncludeInfoListContext(list,lang); }
 
     // TemplateListIntf
@@ -241,7 +244,7 @@ class IncludeInfoListContext : public RefCountedContext, public TemplateListIntf
     virtual int release() { return RefCountedContext::release(); }
 
   private:
-    IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang);
+    IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang);
    ~IncludeInfoListContext();
     class Private;
     Private *p;

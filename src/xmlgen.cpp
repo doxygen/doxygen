@@ -1321,7 +1321,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
       << "</derivedcompoundref>" << endl;
   }
 
-  IncludeInfo *ii=cd->includeInfo();
+  const IncludeInfo *ii=cd->includeInfo();
   if (ii)
   {
     QCString nm = ii->includeName;
@@ -1510,38 +1510,28 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
   writeXMLString(t,fd->name());
   t << "</compoundname>" << endl;
 
-  IncludeInfo *inc;
-
-  if (fd->includeFileList())
+  for (const auto &inc : fd->includeFileList())
   {
-    QListIterator<IncludeInfo> ili1(*fd->includeFileList());
-    for (ili1.toFirst();(inc=ili1.current());++ili1)
+    t << "    <includes";
+    if (inc.fileDef && !inc.fileDef->isReference()) // TODO: support external references
     {
-      t << "    <includes";
-      if (inc->fileDef && !inc->fileDef->isReference()) // TODO: support external references
-      {
-        t << " refid=\"" << inc->fileDef->getOutputFileBase() << "\"";
-      }
-      t << " local=\"" << (inc->local ? "yes" : "no") << "\">";
-      t << inc->includeName;
-      t << "</includes>" << endl;
+      t << " refid=\"" << inc.fileDef->getOutputFileBase() << "\"";
     }
+    t << " local=\"" << (inc.local ? "yes" : "no") << "\">";
+    t << inc.includeName;
+    t << "</includes>" << endl;
   }
 
-  if (fd->includedByFileList())
+  for (const auto &inc : fd->includedByFileList())
   {
-    QListIterator<IncludeInfo> ili2(*fd->includedByFileList());
-    for (ili2.toFirst();(inc=ili2.current());++ili2)
+    t << "    <includedby";
+    if (inc.fileDef && !inc.fileDef->isReference()) // TODO: support external references
     {
-      t << "    <includedby";
-      if (inc->fileDef && !inc->fileDef->isReference()) // TODO: support external references
-      {
-        t << " refid=\"" << inc->fileDef->getOutputFileBase() << "\"";
-      }
-      t << " local=\"" << (inc->local ? "yes" : "no") << "\">";
-      t << inc->includeName;
-      t << "</includedby>" << endl;
+      t << " refid=\"" << inc.fileDef->getOutputFileBase() << "\"";
     }
+    t << " local=\"" << (inc.local ? "yes" : "no") << "\">";
+    t << inc.includeName;
+    t << "</includedby>" << endl;
   }
 
   DotInclDepGraph incDepGraph(fd,FALSE);
