@@ -322,6 +322,7 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
       yyextra->yyLineNr++;
       int l = (int)(p-sp-1);
       char *tmp = (char*)malloc(l+1);
+      strncpy(tmp,sp,l);
       tmp[l]='\0';
       yyextra->code->codify(tmp);
       free(tmp);
@@ -376,7 +377,7 @@ XMLCodeParser::XMLCodeParser() : p(std::make_unique<Private>())
 {
   xmlcodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  xmlcodeYYset_debug(1,yyscanner);
+  xmlcodeYYset_debug(1,p->yyscanner);
 #endif
   resetCodeParserState();
 }
