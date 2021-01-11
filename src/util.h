@@ -35,6 +35,7 @@
 #include "arguments.h"
 #include "containers.h"
 #include "namespacedef.h"
+#include "outputgen.h"
 
 //--------------------------------------------------------------------
 
@@ -168,8 +169,8 @@ QCString substituteClassNames(const QCString &s);
 
 
 QCString clearBlock(const char *s,const char *begin,const char *end);
-
-QCString selectBlock(const QCString& s,const QCString &name,bool which);
+QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o);
+QCString removeEmptyLines(const QCString &s);
 
 QCString resolveDefines(const char *n);
 

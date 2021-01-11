@@ -44,6 +44,9 @@
 #include "resourcemgr.h"
 #include "portable.h"
 
+static QCString g_header;
+static QCString g_footer;
+
 LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFileName)
   : m_relPath(relPath), m_sourceFileName(sourceFileName)
 {
@@ -483,359 +486,29 @@ void LatexGenerator::init()
     term("Could not create output directory %s\n",dname.data());
   }
 
+  if (!Config_getString(LATEX_HEADER).isEmpty())
+  {
+    g_header=fileToString(Config_getString(LATEX_HEADER));
+    //printf("g_header='%s'\n",g_header.data());
+  }
+  else
+  {
+    g_header = ResourceMgr::instance().getAsString("header.tex");
+  }
+  if (!Config_getString(LATEX_FOOTER).isEmpty())
+  {
+    g_footer=fileToString(Config_getString(LATEX_FOOTER));
+    //printf("g_footer='%s'\n",g_footer.data());
+  }
+  else
+  {
+    g_footer = ResourceMgr::instance().getAsString("footer.tex");
+  }
+
   writeLatexMakefile();
   writeMakeBat();
 
   createSubDirs(d);
-}
-
-static void writeDefaultHeaderPart1(FTextStream &t)
-{
-  // part 1
-
-  // Handle batch mode
-  if (Config_getBool(LATEX_BATCHMODE))
-    t << "\\batchmode\n";
-
-  // to overcome problems with too many open files
-  t << "\\let\\mypdfximage\\pdfximage"
-       "\\def\\pdfximage{\\immediate\\mypdfximage}";
-
-  // Set document class depending on configuration
-  QCString documentClass;
-  if (Config_getBool(COMPACT_LATEX))
-    documentClass = "article";
-  else
-    documentClass = "book";
-  t << "\\documentclass[twoside]{" << documentClass << "}\n"
-       "\n";
-  t << "%% moved from doxygen.sty due to workaround for LaTex 2019 version and unmaintained tabu package\n"
-       "\\usepackage{ifthen}\n"
-       "\\ifx\\requestedLaTeXdate\\undefined\n"
-       "\\usepackage{array}\n"
-       "\\else\n"
-       "\\usepackage{array}[=2016-10-06]\n"
-       "\\fi\n"
-       "%%\n";
-
-  // Load required packages
-  t << "% Packages required by doxygen\n"
-       "\\usepackage{fixltx2e}\n" // for \textsubscript
-       "\\usepackage{doxygen}\n";
-  const StringVector &extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
-  for (const auto &extraStyle : extraLatexStyles)
-  {
-    QCString fileName = extraStyle.c_str();
-    if (!fileName.isEmpty())
-    {
-      QFileInfo fi(fileName);
-      if (fi.exists())
-      {
-        if (checkExtension(fi.fileName().data(), LATEX_STYLE_EXTENSION))
-        {
-          // strip the extension, it will be added by the usepackage in the tex conversion process
-          t << "\\usepackage{" << stripExtensionGeneral(fi.fileName().data(), LATEX_STYLE_EXTENSION) << "}\n";
-        }
-        else
-        {
-          t << "\\usepackage{" << fi.fileName().utf8() << "}\n";
-        }
-      }
-    }
-  }
-  t << "\\usepackage{graphicx}\n"
-       "\\usepackage[utf8]{inputenc}\n"
-       "\\usepackage{makeidx}\n"
-       "\\PassOptionsToPackage{warn}{textcomp}\n"
-       "\\usepackage{textcomp}\n"
-       "\\usepackage[nointegrals]{wasysym}\n"
-       "\\usepackage{ifxetex}\n"
-       "\n";
-
-  // Language support
-  QCString languageSupport = theTranslator->latexLanguageSupportCommand();
-  if (!languageSupport.isEmpty())
-  {
-    t << "% NLS support packages\n"
-      << languageSupport
-      << "\n";
-  }
-
-  // Define default fonts
-  t << "% Font selection\n";
-  QCString fontenc = theTranslator->latexFontenc();
-  if (!fontenc.isEmpty())
-  {
-    t << "\\usepackage[" << fontenc << "]{fontenc}\n";
-  }
-  QCString font = theTranslator->latexFont();
-  if (!font.isEmpty())
-  {
-    t << font;
-  }
-  t << "\\usepackage{sectsty}\n"
-       "\\allsectionsfont{%\n"
-       "  \\fontseries{bc}\\selectfont%\n"
-       "  \\color{darkgray}%\n"
-       "}\n"
-       "\\renewcommand{\\DoxyLabelFont}{%\n"
-       "  \\fontseries{bc}\\selectfont%\n"
-       "  \\color{darkgray}%\n"
-       "}\n"
-       "\\newcommand{\\+}{\\discretionary{\\mbox{\\scriptsize$\\hookleftarrow$}}{}{}}\n"
-       "\n";
-
-   QCString emojiDir=Config_getString(LATEX_EMOJI_DIRECTORY);
-   if (emojiDir.isEmpty()) emojiDir = ".";
-   emojiDir = substitute(emojiDir,"\\","/");
-   t << "% Arguments of doxygenemoji:\n"
-        "% 1) ':<text>:' form of the emoji, already \"LaTeX\"-escaped\n"
-        "% 2) file with the name of the emoji without the .png extension\n"
-	"% in case image exist use this otherwise use the ':<text>:' form\n";
-   t << "\\newcommand{\\doxygenemoji}[2]{%\n"
-        "  \\IfFileExists{" << emojiDir << "/#2.png}{\\raisebox{-0.1em}{\\includegraphics[height=0.9em]{" << emojiDir << "/#2.png}}}{#1}%\n"
-        "}\n";
-
-  // Define page & text layout
-  QCString paperName=Config_getEnum(PAPER_TYPE);
-  // "a4wide" package is obsolete (see bug 563698)
-  t << "% Page & text layout\n"
-       "\\usepackage{geometry}\n"
-       "\\geometry{%\n"
-       "  " << paperName << "paper,%\n"
-       "  top=2.5cm,%\n"
-       "  bottom=2.5cm,%\n"
-       "  left=2.5cm,%\n"
-       "  right=2.5cm%\n"
-       "}\n";
-  // \sloppy is obsolete (see bug 563698)
-  // Allow a bit of overflow to go unnoticed by other means
-  t << "\\tolerance=750\n"
-       "\\hfuzz=15pt\n"
-       "\\hbadness=750\n"
-       "\\setlength{\\emergencystretch}{15pt}\n"
-       "\\setlength{\\parindent}{0cm}\n"
-       "\\newcommand{\\doxynormalparskip}{\\setlength{\\parskip}{3ex plus 2ex minus 2ex}}\n"
-       "\\newcommand{\\doxytocparskip}{\\setlength{\\parskip}{1ex plus 0ex minus 0ex}}\n"
-       "\\doxynormalparskip\n";
-  // Redefine paragraph/subparagraph environments, using sectsty fonts
-  t << "\\makeatletter\n"
-       "\\renewcommand{\\paragraph}{%\n"
-       "  \\@startsection{paragraph}{4}{0ex}{-1.0ex}{1.0ex}{%\n"
-       "    \\normalfont\\normalsize\\bfseries\\SS@parafont%\n"
-       "  }%\n"
-       "}\n"
-       "\\renewcommand{\\subparagraph}{%\n"
-       "  \\@startsection{subparagraph}{5}{0ex}{-1.0ex}{1.0ex}{%\n"
-       "    \\normalfont\\normalsize\\bfseries\\SS@subparafont%\n"
-       "  }%\n"
-       "}\n"
-       "\\makeatother\n"
-       "\n";
-  //
-  t << "\\makeatletter\n"
-       "\\newcommand\\hrulefilll{\\leavevmode\\leaders\\hrule\\hskip 0pt plus 1filll\\kern\\z@}\n"
-       "\\makeatother\n"
-       "\n";
-
-  // Headers & footers
-  QGString genString;
-  QCString generatedBy;
-  bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
-  FTextStream tg(&genString);
-  if (timeStamp)
-  {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString(PROJECT_NAME));
-  }
-  else
-  {
-    generatedBy = theTranslator->trGeneratedBy();
-  }
-  filterLatexString(tg, generatedBy,
-                    false, // insideTabbing
-                    false, // insidePre
-                    false, // insideItem
-                    false, // insideTable
-                    false  // keepSpaces
-                   );
-  t << "% Headers & footers\n"
-       "\\usepackage{fancyhdr}\n"
-       "\\pagestyle{fancyplain}\n"
-       "\\renewcommand{\\footrulewidth}{0.4pt}\n"
-       "%\n"
-       "\\fancypagestyle{fancyplain}{\n"
-       "\\fancyhf{}\n"
-       "\\fancyhead[LE, RO]{\\bfseries\\thepage}\n"
-       "\\fancyhead[LO]{\\bfseries\\rightmark}\n"
-       "\\fancyhead[RE]{\\bfseries\\leftmark}\n"
-       "\\fancyfoot[LO, RE]{\\bfseries\\scriptsize " << genString << " Doxygen }\n"
-       "}\n"
-       "%\n"
-       "\\fancypagestyle{plain}{\n"
-       "\\fancyhf{}\n"
-       "\\fancyfoot[LO, RE]{\\bfseries\\scriptsize " << genString << " Doxygen }\n"
-       "\\renewcommand{\\headrulewidth}{0pt}}\n"
-       "%\n"
-       "\\pagestyle{fancyplain}\n"
-       "%\n";
-
-  if (!Config_getBool(COMPACT_LATEX))
-  {
-    t << "\\renewcommand{\\chaptermark}[1]{%\n"
-         "  \\markboth{#1}{}%\n"
-         "}\n";
-  }
-  t << "\\renewcommand{\\sectionmark}[1]{%\n"
-       "  \\markright{\\thesection\\ #1}%\n"
-       "}\n"
-       "\n";
-
-  // ToC, LoF, LoT, bibliography, and index
-  t << "% Indices & bibliography\n"
-       "\\usepackage{natbib}\n"
-       "\\usepackage[titles]{tocloft}\n"
-       "\\setcounter{tocdepth}{3}\n"
-       "\\setcounter{secnumdepth}{5}\n";
-
-  QCString latex_mkidx_command = Config_getString(LATEX_MAKEINDEX_CMD);
-  if (!latex_mkidx_command.isEmpty())
-  {
-    if (latex_mkidx_command[0] == '\\')
-      t << latex_mkidx_command << "\n";
-    else
-      t << '\\' << latex_mkidx_command << "\n";
-  }
-  else
-  {
-    t << "\\makeindex\n";
-  }
-  t << "\n";
-
-  writeExtraLatexPackages(t);
-  writeLatexSpecialFormulaChars(t);
-  QCString macroFile = Config_getString(FORMULA_MACROFILE);
-  if (!macroFile.isEmpty())
-  {
-    QFileInfo fi(macroFile);
-    macroFile=fi.absFilePath().utf8();
-    QCString stripMacroFile = fi.fileName().data();
-    copyFile(macroFile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
-    t << "\\input{" << stripMacroFile << "}" << endl;
-  }
-
-  // Hyperlinks
-  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (pdfHyperlinks)
-  {
-    t << "% Hyperlinks (required, but should be loaded last)\n"
-         "\\ifpdf\n"
-         "  \\usepackage[pdftex,pagebackref=true]{hyperref}\n"
-         "\\else\n"
-         "  \\ifxetex\n"
-         "    \\usepackage[pagebackref=true]{hyperref}\n"
-         "  \\else\n"
-         "    \\usepackage[ps2pdf,pagebackref=true]{hyperref}\n"
-         "  \\fi\n"
-         "\\fi\n"
-         "\n"
-         "\\hypersetup{%\n"
-         "  colorlinks=true,%\n"
-         "  linkcolor=blue,%\n"
-         "  citecolor=blue,%\n"
-         "  unicode%\n"
-         "}\n"
-         "\n";
-  }
-
-  // Custom commands used by the header
-  t << "% Custom commands\n"
-       "\\newcommand{\\clearemptydoublepage}{%\n"
-       "  \\newpage{\\pagestyle{empty}\\cleardoublepage}%\n"
-       "}\n"
-       "\n";
-
-  // caption style definition
-  t << "\\usepackage{caption}\n"
-    << "\\captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}\n\n";
-
-
-  // in page table of contents
-  t << "\\usepackage{etoc}\n"
-       "\\etocsettocstyle{\\doxytocparskip}{\\doxynormalparskip}\n";
-
-  // prevent numbers overlap the titles in toc
-  t << "\\renewcommand{\\numberline}[1]{#1~}\n";
-
-  // End of preamble, now comes the document contents
-  t << "%===== C O N T E N T S =====\n"
-       "\n"
-       "\\begin{document}\n"
-       "\\raggedbottom\n";
-  QCString documentPre = theTranslator->latexDocumentPre();
-  if (!documentPre.isEmpty())
-  {
-    t << documentPre;
-  }
-  t << "\n";
-
-  // Front matter
-  t << "% Titlepage & ToC\n";
-  bool usePDFLatex = Config_getBool(USE_PDFLATEX);
-  if (pdfHyperlinks && usePDFLatex)
-  {
-    // To avoid duplicate page anchors due to reuse of same numbers for
-    // the index (be it as roman numbers)
-    t << "\\hypersetup{pageanchor=false,\n"
-    //  << "             bookmarks=true,\n" // commented out to prevent warning
-      << "             bookmarksnumbered=true,\n"
-      << "             pdfencoding=unicode\n"
-      << "            }\n";
-  }
-  t << "\\pagenumbering{alph}\n"
-       "\\begin{titlepage}\n"
-       "\\vspace*{7cm}\n"
-       "\\begin{center}%\n"
-       "{\\Large ";
-}
-
-static void writeDefaultHeaderPart2(FTextStream &t)
-{
-  // part 2
-  // Finalize project name
-  t << "}\\\\\n"
-       "\\vspace*{1cm}\n"
-       "{\\large ";
-}
-
-static void writeDefaultHeaderPart3(FTextStream &t)
-{
-  // part 3
-  // Finalize project number
-  t << " Doxygen " << getDoxygenVersion() << "}\\\\\n";
-  if (Config_getBool(LATEX_TIMESTAMP))
-    t << "\\vspace*{0.5cm}\n"
-         "{\\small " << dateToString(TRUE) << "}\\\\\n";
-  t << "\\end{center}\n"
-       "\\end{titlepage}\n";
-  bool compactLatex = Config_getBool(COMPACT_LATEX);
-  if (!compactLatex)
-    t << "\\clearemptydoublepage\n";
-  t << "\\pagenumbering{roman}\n";
-
-  // ToC
-  t << "\\tableofcontents\n";
-  if (!compactLatex)
-    t << "\\clearemptydoublepage\n";
-  t << "\\pagenumbering{arabic}\n";
-  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  if (pdfHyperlinks && usePDFLatex)
-  {
-    // re-enable anchors again
-    t << "\\hypersetup{pageanchor=true}\n";
-  }
-  t << "\n"
-       "%--- Begin generated contents ---\n";
 }
 
 static void writeDefaultStyleSheet(FTextStream &t)
@@ -843,56 +516,18 @@ static void writeDefaultStyleSheet(FTextStream &t)
   t << ResourceMgr::instance().getAsString("doxygen.sty");
 }
 
-static void writeDefaultFooter(FTextStream &t)
-{
-  t << "%--- End generated contents ---\n"
-       "\n";
-
-  // Bibliography
-  CitationManager::instance().writeLatexBibliography(t);
-
-  // Index
-  t << "% Index\n";
-  QCString unit;
-  if (Config_getBool(COMPACT_LATEX))
-  {
-    unit = "section";
-  }
-  else
-  {
-    unit = "chapter";
-    t << "\\backmatter\n";
-  }
-  t << "\\newpage\n"
-       "\\phantomsection\n"
-       "\\clearemptydoublepage\n"
-       "\\addcontentsline{toc}{" << unit << "}{\\indexname}\n"
-       "\\printindex\n"
-       "\n";
-  QCString documentPost = theTranslator->latexDocumentPost();
-  if (!documentPost.isEmpty())
-  {
-    t << documentPost;
-  }
-  t << "\\end{document}\n";
-}
-
 void LatexGenerator::writeHeaderFile(QFile &f)
 {
   FTextStream t(&f);
   t << "% Latex header for doxygen " << getDoxygenVersion() << endl;
-  writeDefaultHeaderPart1(t);
-  t << "Your title here";
-  writeDefaultHeaderPart2(t);
-  t << "Generated by";
-  writeDefaultHeaderPart3(t);
+  t << ResourceMgr::instance().getAsString("header.tex");
 }
 
 void LatexGenerator::writeFooterFile(QFile &f)
 {
   FTextStream t(&f);
   t << "% Latex footer for doxygen " << getDoxygenVersion() << endl;
-  writeDefaultFooter(t);
+  t << ResourceMgr::instance().getAsString("footer.tex");
 }
 
 void LatexGenerator::writeStyleSheetFile(QFile &f)
@@ -932,33 +567,164 @@ void LatexGenerator::startProjectNumber()
   t << "\\\\[1ex]\\large ";
 }
 
-void LatexGenerator::startIndexSection(IndexSections is)
+static QCString extraLatexStyleSheet()
 {
-  bool compactLatex = Config_getBool(COMPACT_LATEX);
-  QCString latexHeader = Config_getString(LATEX_HEADER);
-  switch (is)
+  QCString result;
+  const StringVector &extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
+  for (const auto &extraStyle : extraLatexStyles)
   {
-    case isTitlePageStart:
+    QCString fileName = extraStyle.c_str();
+    if (!fileName.isEmpty())
+    {
+      QFileInfo fi(fileName);
+      if (fi.exists())
       {
-        if (latexHeader.isEmpty())
+        result += "\\usepackage{";
+        if (checkExtension(fi.fileName().data(), LATEX_STYLE_EXTENSION))
         {
-          writeDefaultHeaderPart1(t);
+          // strip the extension, it will be added by the usepackage in the tex conversion process
+          result += stripExtensionGeneral(fi.fileName().data(), LATEX_STYLE_EXTENSION);
         }
         else
         {
-          QCString header = fileToString(latexHeader);
-          t << substituteKeywords(header,"",
-                   convertToLaTeX(Config_getString(PROJECT_NAME)),
-                   convertToLaTeX(Config_getString(PROJECT_NUMBER)),
-                   convertToLaTeX(Config_getString(PROJECT_BRIEF)));
+          result += fi.fileName().utf8();
         }
+        result += "}\n";
       }
+    }
+  }
+  return result;
+}
+
+static QCString makeIndex()
+{
+  QCString result;
+  QCString latex_mkidx_command = Config_getString(LATEX_MAKEINDEX_CMD);
+  if (!latex_mkidx_command.isEmpty())
+  {
+    if (latex_mkidx_command[0] == '\\')
+      result += latex_mkidx_command;
+    else
+      result += '\\'+latex_mkidx_command;
+  }
+  else
+  {
+    result += "\\makeindex";
+  }
+  return result;
+}
+
+static QCString substituteLatexKeywords(const QCString &str,
+                                        const QCString &title)
+{
+  bool compactLatex = Config_getBool(COMPACT_LATEX);
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
+  bool usePdfLatex = Config_getBool(USE_PDFLATEX);
+  bool latexBatchmode = Config_getBool(LATEX_BATCHMODE);
+  QCString paperType = Config_getString(PAPER_TYPE);
+
+  QCString style = Config_getString(LATEX_BIB_STYLE);
+  if (style.isEmpty())
+  {
+    style="plain";
+  }
+
+  QGString genString;
+  FTextStream tg(&genString);
+  QCString generatedBy;
+  bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
+  if (timeStamp)
+  {
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString(PROJECT_NAME));
+  }
+  else
+  {
+    generatedBy = theTranslator->trGeneratedBy();
+  }
+  filterLatexString(tg, generatedBy,
+                    false, // insideTabbing
+                    false, // insidePre
+                    false, // insideItem
+                    false, // insideTable
+                    false  // keepSpaces
+                   );
+  generatedBy = genString;
+
+  QCString latexFontenc = theTranslator->latexFontenc();
+
+  QCString latexEmojiDirectory = Config_getString(LATEX_EMOJI_DIRECTORY);
+  if (latexEmojiDirectory.isEmpty()) latexEmojiDirectory = ".";
+  latexEmojiDirectory = substitute(latexEmojiDirectory,"\\","/");
+
+  QGString genExtraLatexPackages;
+  FTextStream tg1(&genExtraLatexPackages);
+  writeExtraLatexPackages(tg1);
+  QCString extraLatexPackages;
+  extraLatexPackages = genExtraLatexPackages;
+
+  QGString genLatexSpecialFormulaChars;
+  FTextStream tg2(&genLatexSpecialFormulaChars);
+  writeLatexSpecialFormulaChars(tg2);
+  QCString latexSpecialFormulaChars;
+  latexSpecialFormulaChars = genLatexSpecialFormulaChars;
+
+  QCString formulaMacrofile = Config_getString(FORMULA_MACROFILE);
+  if (!formulaMacrofile.isEmpty())
+  {
+    QFileInfo fi(formulaMacrofile);
+    formulaMacrofile=fi.absFilePath().utf8();
+    QCString stripMacroFile = fi.fileName().data();
+    copyFile(formulaMacrofile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
+  }
+
+  // first substitute generic keywords
+  QCString result = substituteKeywords(str,title,
+    convertToLaTeX(Config_getString(PROJECT_NAME)),
+    convertToLaTeX(Config_getString(PROJECT_NUMBER)),
+        convertToLaTeX(Config_getString(PROJECT_BRIEF)));
+
+  // additional LaTeX only keywords
+  result = substitute(result,"$latexdocumentpre",theTranslator->latexDocumentPre());
+  result = substitute(result,"$latexdocumentpost",theTranslator->latexDocumentPost());
+  result = substitute(result,"$generatedby",generatedBy);
+  result = substitute(result,"$latexbibstyle",style);
+  result = substitute(result,"$latexcitereference",theTranslator->trCiteReferences());
+  result = substitute(result,"$latexbibfiles",CitationManager::instance().latexBibFiles());
+  result = substitute(result,"$papertype",paperType+"paper");
+  result = substitute(result,"$extralatexstylesheet",extraLatexStyleSheet());
+  result = substitute(result,"$languagesupport",theTranslator->latexLanguageSupportCommand());
+  result = substitute(result,"$latexfontenc",latexFontenc);
+  result = substitute(result,"$latexfont",theTranslator->latexFont());
+  result = substitute(result,"$latexemojidirectory",latexEmojiDirectory);
+  result = substitute(result,"$makeindex",makeIndex());
+  result = substitute(result,"$extralatexpackages",extraLatexPackages);
+  result = substitute(result,"$latexspecialformulachars",latexSpecialFormulaChars);
+  result = substitute(result,"$formulamacrofile",formulaMacrofile);
+
+  // additional LaTeX only conditional blocks
+  result = selectBlock(result,"CITATIONS_PRESENT", !CitationManager::instance().isEmpty(),OutputGenerator::Latex);
+  result = selectBlock(result,"COMPACT_LATEX",compactLatex,OutputGenerator::Latex);
+  result = selectBlock(result,"PDF_HYPERLINKS",pdfHyperlinks,OutputGenerator::Latex);
+  result = selectBlock(result,"USE_PDFLATEX",usePdfLatex,OutputGenerator::Latex);
+  result = selectBlock(result,"LATEX_TIMESTAMP",timeStamp,OutputGenerator::Latex);
+  result = selectBlock(result,"LATEX_BATCHMODE",latexBatchmode,OutputGenerator::Latex);
+  result = selectBlock(result,"LATEX_FONTENC",!latexFontenc.isEmpty(),OutputGenerator::Latex);
+  result = selectBlock(result,"FORMULA_MACROFILE",!formulaMacrofile.isEmpty(),OutputGenerator::Latex);
+
+  result = removeEmptyLines(result);
+
+  return result;
+}
+
+void LatexGenerator::startIndexSection(IndexSections is)
+{
+  bool compactLatex = Config_getBool(COMPACT_LATEX);
+  switch (is)
+  {
+    case isTitlePageStart:
+      t << substituteLatexKeywords(g_header,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
     case isTitlePageAuthor:
-      if (latexHeader.isEmpty())
-      {
-        writeDefaultHeaderPart2(t);
-      }
       break;
     case isMainPage:
       if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
@@ -978,7 +744,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
       break;
     case isNamespaceIndex:
       if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
-      t << "{"; //Namespace Index}\"
+      t << "{"; //Namespace Index}\n"
       break;
     case isClassHierarchyIndex:
       if (compactLatex) t << "\\doxysection"; else t << "\\chapter";
@@ -1094,19 +860,12 @@ void LatexGenerator::startIndexSection(IndexSections is)
 
 void LatexGenerator::endIndexSection(IndexSections is)
 {
-  //bool compactLatex = Config_getBool(COMPACT_LATEX);
   bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
-  QCString latexHeader = Config_getString(LATEX_HEADER);
-  QCString latexFooter = Config_getString(LATEX_FOOTER);
   switch (is)
   {
     case isTitlePageStart:
       break;
     case isTitlePageAuthor:
-      if (latexHeader.isEmpty())
-      {
-        writeDefaultHeaderPart3(t);
-      }
       break;
     case isMainPage:
       {
@@ -1268,18 +1027,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isPageDocumentation2:
       break;
     case isEndIndex:
-      if (latexFooter.isEmpty())
-      {
-        writeDefaultFooter(t);
-      }
-      else
-      {
-        QCString footer = fileToString(latexFooter);
-        t << substituteKeywords(footer,"",
-                   convertToLaTeX(Config_getString(PROJECT_NAME)),
-                   convertToLaTeX(Config_getString(PROJECT_NUMBER)),
-                   convertToLaTeX(Config_getString(PROJECT_BRIEF)));
-      }
+      t << substituteLatexKeywords(g_footer,convertToLaTeX(Config_getString(PROJECT_NAME)));
       break;
   }
 }
@@ -2320,5 +2068,3 @@ void LatexGenerator::writeLabel(const char *l,bool isLast)
 void LatexGenerator::endLabels()
 {
 }
-
-

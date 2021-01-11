@@ -296,73 +296,6 @@ static QCString getConvertLatexMacro()
   out.addChar(0);
   return out.get();
 }
-//------------------------------------------------------------------------
-
-/// Clear a text block \a s from \a begin to \a end markers
-QCString clearBlock(const char *s,const char *begin,const char *end)
-{
-  if (s==0 || begin==0 || end==0) return s;
-  const char *p, *q;
-  int beginLen = qstrlen(begin);
-  int endLen = qstrlen(end);
-  int resLen = 0;
-  for (p=s; (q=strstr(p,begin))!=0; p=q+endLen)
-  {
-    resLen+=(int)(q-p);
-    p=q+beginLen;
-    if ((q=strstr(p,end))==0)
-    {
-      resLen+=beginLen;
-      break;
-    }
-  }
-  resLen+=qstrlen(p);
-  // resLen is the length of the string without the marked block
-
-  QCString result(resLen+1);
-  char *r;
-  for (r=result.rawData(), p=s; (q=strstr(p,begin))!=0; p=q+endLen)
-  {
-    int l = (int)(q-p);
-    memcpy(r,p,l);
-    r+=l;
-    p=q+beginLen;
-    if ((q=strstr(p,end))==0)
-    {
-      memcpy(r,begin,beginLen);
-      r+=beginLen;
-      break;
-    }
-  }
-  qstrcpy(r,p);
-  return result;
-}
-//----------------------------------------------------------------------
-
-QCString selectBlock(const QCString& s,const QCString &name,bool enable)
-{
-  // TODO: this is an expensive function that is called a lot -> optimize it
-  const QCString begin = "<!--BEGIN " + name + "-->";
-  const QCString end = "<!--END " + name + "-->";
-  const QCString nobegin = "<!--BEGIN !" + name + "-->";
-  const QCString noend = "<!--END !" + name + "-->";
-
-  QCString result = s;
-  if (enable)
-  {
-    result = substitute(result, begin, "");
-    result = substitute(result, end, "");
-    result = clearBlock(result, nobegin, noend);
-  }
-  else
-  {
-    result = substitute(result, nobegin, "");
-    result = substitute(result, noend, "");
-    result = clearBlock(result, begin, end);
-  }
-
-  return result;
-}
 
 static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSearch)
 {
@@ -377,36 +310,6 @@ static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSe
     writeClientSearchBox(t, relPath);
   }
   return QCString(result);
-}
-
-static QCString removeEmptyLines(const QCString &s)
-{
-  BufStr out(s.length()+1);
-  const char *p=s.data();
-  if (p)
-  {
-    char c;
-    while ((c=*p++))
-    {
-      if (c=='\n')
-      {
-        const char *e = p;
-        while (*e==' ' || *e=='\t') e++;
-        if (*e=='\n')
-        {
-          p=e;
-        }
-        else out.addChar(c);
-      }
-      else
-      {
-        out.addChar(c);
-      }
-    }
-  }
-  out.addChar('\0');
-  //printf("removeEmptyLines(%s)=%s\n",s.data(),out.data());
-  return out.data();
 }
 
 static QCString substituteHtmlKeywords(const QCString &str,
@@ -592,14 +495,14 @@ static QCString substituteHtmlKeywords(const QCString &str,
   result = substitute(result,"$relpath^",relPath); //<-- must be last
 
   // additional HTML only conditional blocks
-  result = selectBlock(result,"DISABLE_INDEX",disableIndex);
-  result = selectBlock(result,"GENERATE_TREEVIEW",treeView);
-  result = selectBlock(result,"SEARCHENGINE",searchEngine);
-  result = selectBlock(result,"TITLEAREA",titleArea);
-  result = selectBlock(result,"PROJECT_NAME",hasProjectName);
-  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber);
-  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief);
-  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo);
+  result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputGenerator::Html);
+  result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputGenerator::Html);
+  result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputGenerator::Html);
+  result = selectBlock(result,"TITLEAREA",titleArea,OutputGenerator::Html);
+  result = selectBlock(result,"PROJECT_NAME",hasProjectName,OutputGenerator::Html);
+  result = selectBlock(result,"PROJECT_NUMBER",hasProjectNumber,OutputGenerator::Html);
+  result = selectBlock(result,"PROJECT_BRIEF",hasProjectBrief,OutputGenerator::Html);
+  result = selectBlock(result,"PROJECT_LOGO",hasProjectLogo,OutputGenerator::Html);
 
   result = removeEmptyLines(result);
 

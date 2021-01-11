@@ -417,35 +417,9 @@ void CitationManager::generatePage()
   }
 }
 
-void CitationManager::writeLatexBibliography(FTextStream &t) const
+QCString CitationManager::latexBibFiles()
 {
-  if (p->entries.empty()) return;
-
-  QCString style = Config_getString(LATEX_BIB_STYLE);
-  if (style.isEmpty())
-  {
-    style="plain";
-  }
-  QCString unit;
-  if (Config_getBool(COMPACT_LATEX))
-  {
-    unit = "section";
-  }
-  else
-  {
-    unit = "chapter";
-  }
-  t << "% Bibliography\n"
-       "\\newpage\n"
-       "\\phantomsection\n";
-  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!pdfHyperlinks)
-  {
-    t << "\\clearemptydoublepage\n";
-    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
-  }
-  t << "\\bibliographystyle{" << style << "}\n"
-       "\\bibliography{";
+  QCString result;
   const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   int i = 0;
   for (const auto &bibdata : citeDataList)
@@ -458,17 +432,12 @@ void CitationManager::writeLatexBibliography(FTextStream &t) const
     {
       if (!bibFile.isEmpty())
       {
-        if (i) t << ",";
+        if (i) result += ",";
         i++;
-        t << bibTmpFile << QCString().setNum(i);
+        result += bibTmpFile;
+        result += QCString().setNum(i);
       }
     }
   }
-  t << "}\n";
-  if (pdfHyperlinks)
-  {
-    t << "\\addcontentsline{toc}{" << unit << "}{" << theTranslator->trCiteReferences() << "}\n";
-  }
-  t << "\n";
+  return result;
 }
-

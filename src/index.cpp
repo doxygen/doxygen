@@ -4233,10 +4233,7 @@ static void writeIndex(OutputList &ol)
 
   ol.startFile("refman",0,0);
   ol.startIndexSection(isTitlePageStart);
-  if (!Config_getString(LATEX_HEADER).isEmpty())
-  {
-    ol.disable(OutputGenerator::Latex);
-  }
+  ol.disable(OutputGenerator::Latex);
   ol.disable(OutputGenerator::Docbook);
 
   if (projPrefix.isEmpty())
