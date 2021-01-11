@@ -27,26 +27,31 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
 
   int edgeStyle = (label || prot==EdgeInfo::Orange || prot==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
+  QCString fullName;
   if (cd->isAnonymous())
   {
     className="anonymous:";
     className+=label;
+    fullName = className;
   }
   else if (usedName) // name is a typedef
   {
     className=usedName;
+    fullName = className;
   }
   else if (templSpec) // name has a template part
   {
     className=insertTemplateSpecifierInScope(cd->displayName(),templSpec);
+    fullName =insertTemplateSpecifierInScope(cd->name(),templSpec);
   }
   else // just a normal name
   {
     className=cd->displayName();
+    fullName = cd->name();
   }
   //printf("DotClassGraph::addClass(class='%s',parent=%s,prot=%d,label=%s,dist=%d,usedName=%s,templSpec=%s,base=%d)\n",
   //                                 className.data(),n->label().data(),prot,label,distance,usedName,templSpec,base);
-  DotNode *bn = m_usedNodes->find(className);
+  DotNode *bn = m_usedNodes->find(fullName);
   if (bn) // class already inserted
   {
     if (base)
@@ -94,7 +99,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
       n->addParent(bn);
     }
     bn->setDistance(distance);
-    m_usedNodes->insert(className,bn);
+    m_usedNodes->insert(fullName,bn);
     //printf(" add new child node '%s' to %s hidden=%d url=%s\n",
     //    className.data(),n->label().data(),cd->isHidden(),tmp_url.data());
 
