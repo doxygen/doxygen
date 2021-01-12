@@ -15,6 +15,8 @@
  *       Fabio "FJTC" Jun Takada Chino <fjtc at brokenbits dot com dot br>
  *    Maintainer (until 04/28/2011):
  *       Rui Godinho Lopes <rui at ruilopes.com>
+ *    Collaborators:
+ *        Ulisses Guedes <uli1958 at hotmail dot com>
  *
  * Notes about this translation:
  *    Since I'm Brazilian, this translation may be odd or even incorect for
@@ -24,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20200112:
+ * 	- Updated to 1.9.1; 
  * 20190203:
  *	- Slice methods added;
  * 20180612:
@@ -59,7 +63,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public TranslatorAdapter_1_8_19
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2272,7 +2276,15 @@ class TranslatorPortuguese : public TranslatorAdapter_1_8_19
         return "Dados Membros";
     }
 
-
+    //////////////////////////////////////////////////////////////////////////
+    // new since 1.8.19
+    //////////////////////////////////////////////////////////////////////////
+    
+    /** VHDL design unit documentation */
+	virtual QCString trDesignUnitDocumentation()
+	{ 
+	    return "Documentação da Unidade de Projeto"; 
+    }
 };
 
 #endif
