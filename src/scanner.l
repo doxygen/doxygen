@@ -1574,7 +1574,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindMembers>{B}*{TYPEDEFPREFIX}{IDLATTR}?"enum"({BN}+("class"|"struct"))?{BN}+ { // for IDL: typedef [something] enum
                                           QCString text=yytext;
                                           yyextra->isTypedef    = text.find("typedef")!=-1;
-                                          bool isStrongEnum = text.find("struct")!=-1 || text.find("class")!=-1 || yyextra->insideCS;
+                                          bool isStrongEnum =  text.find("class")!=-1 || yyextra->insideCS;
+                                          bool isEnumSytruct = text.find("struct")!=-1;
                                           if (yyextra->insideJava)
                                           {
                                             yyextra->current->section = Entry::CLASS_SEC;
@@ -1589,6 +1590,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (isStrongEnum)
                                           {
                                             yyextra->current->spec |= Entry::Strong;
+                                          }
+                                          if (isEnumSytruct)
+                                          {
+                                            yyextra->current->spec |= Entry::Strong;
+                                            yyextra->current->spec |= Entry::EnumStruct;
                                           }
                                           yyextra->current->fileName  = yyextra->yyFileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;

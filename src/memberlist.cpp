@@ -487,7 +487,14 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.writeString("enum ");
               if (md->isStrong())
               {
-                ol.writeString("class ");
+                if (md->isEnumStruct())
+                {
+                  ol.writeString("struct ");
+                }
+                else
+                {
+                  ol.writeString("class ");
+                }
               }
               ol.insertMemberAlign();
               md->writeEnumDeclaration(ol,cd,nd,fd,gd);
