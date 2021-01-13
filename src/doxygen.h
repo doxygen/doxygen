@@ -61,9 +61,6 @@ class Preprocessor;
 struct MemberGroupInfo;
 class NamespaceDefMutable;
 
-typedef QList<QCString>    StringList;
-typedef QListIterator<QCString>    StringListIterator;
-
 struct LookupInfo
 {
   LookupInfo() = default;

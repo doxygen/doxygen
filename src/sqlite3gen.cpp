@@ -823,13 +823,10 @@ SqlStmt memberdef_param_insert={
   ,NULL
 };
 
-
 class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorSqlite3Impl(StringList &l) : l(l) {
-      l.setAutoDelete(TRUE);
-    }
+    TextGeneratorSqlite3Impl(StringVector &l) : m_list(l) { }
     void writeString(const char * /*s*/,bool /*keepSpaces*/) const
     {
     }
@@ -841,15 +838,16 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
                    const char *anchor,const char * /*text*/
                   ) const
     {
-      QCString *rs=new QCString(file);
+      std::string rs = file;
       if (anchor)
       {
-        rs->append("_1").append(anchor);
+        rs+="_1";
+        rs+=anchor;
       }
-      l.append(rs);
+      m_list.push_back(rs);
     }
   private:
-    StringList &l;
+    StringVector &m_list;
     // the list is filled by linkifyText and consumed by the caller
 };
 
@@ -1019,10 +1017,6 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
   const ArgumentList &defAl = md->argumentList();
   if (declAl.size()>0)
   {
-//    ArgumentListIterator declAli(*declAl);
-//    ArgumentListIterator defAli(*defAl);
-//    const Argument *a;
-//    for (declAli.toFirst();(a=declAli.current());++declAli)
     auto defIt = defAl.begin();
     for (const Argument &a : declAl)
     {
@@ -1041,18 +1035,15 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
       }
       if (!a.type.isEmpty())
       {
-        StringList l;
-        linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a.type);
+        StringVector list;
+        linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,a.type);
 
-        StringListIterator li(l);
-        QCString *s;
-        while ((s=li.current()))
+        for (const auto &s : list)
         {
           QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
           struct Refid src_refid = insertRefid(qsrc_refid);
-          struct Refid dst_refid = insertRefid(s->data());
+          struct Refid dst_refid = insertRefid(s.c_str());
           insertMemberReference(src_refid,dst_refid, "argument");
-          ++li;
         }
         bindTextParameter(param_select,":type",a.type);
         bindTextParameter(param_insert,":type",a.type);
@@ -1074,8 +1065,8 @@ static void insertMemberFunctionParams(int memberdef_id, const MemberDef *md, co
       }
       if (!a.defval.isEmpty())
       {
-        StringList l;
-        linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,a.defval);
+        StringVector list;
+        linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,a.defval);
         bindTextParameter(param_select,":defval",a.defval);
         bindTextParameter(param_insert,":defval",a.defval);
       }
@@ -1727,8 +1718,8 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     }
     QCString typeStr = md->typeString();
     stripQualifiers(typeStr);
-    StringList l;
-    linkifyText(TextGeneratorSqlite3Impl(l), def, md->getBodyDef(),md,typeStr);
+    StringVector list;
+    linkifyText(TextGeneratorSqlite3Impl(list), def, md->getBodyDef(),md,typeStr);
     if (typeStr)
     {
       bindTextParameter(memberdef_insert,":type",typeStr);
@@ -1752,25 +1743,22 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   {
     bindTextParameter(memberdef_insert,":initializer",md->initializer());
 
-    StringList l;
-    linkifyText(TextGeneratorSqlite3Impl(l),def,md->getBodyDef(),md,md->initializer());
-    StringListIterator li(l);
-    QCString *s;
-    while ((s=li.current()))
+    StringVector list;
+    linkifyText(TextGeneratorSqlite3Impl(list),def,md->getBodyDef(),md,md->initializer());
+    for (const auto &s : list)
     {
       if (md->getBodyDef())
       {
         DBG_CTX(("initializer:%s %s %s %d\n",
               md->anchor().data(),
-              s->data(),
+              s.c_str(),
               md->getBodyDef()->getDefFileName().data(),
               md->getStartBodyLine()));
         QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
         struct Refid src_refid = insertRefid(qsrc_refid);
-        struct Refid dst_refid = insertRefid(s->data());
+        struct Refid dst_refid = insertRefid(s.c_str());
         insertMemberReference(src_refid,dst_refid, "initializer");
       }
-      ++li;
     }
   }
 
@@ -1827,14 +1815,12 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   // + source references
   // The cross-references in initializers only work when both the src and dst
   // are defined.
-  auto refList = md->getReferencesMembers();
-  for (const auto &refmd : refList)
+  for (const auto &refmd : md->getReferencesMembers())
   {
     insertMemberReference(md,refmd, "inline");
   }
   // + source referenced by
-  auto refByList = md->getReferencedByMembers();
-  for (const auto &refmd : refByList)
+  for (const auto &refmd : md->getReferencedByMembers())
   {
     insertMemberReference(refmd,md, "inline");
   }
