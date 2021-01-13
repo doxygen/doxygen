@@ -5976,25 +5976,26 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
       numArgs = countAliasArguments(args);
       cmd += QCString().sprintf("{%d}",numArgs);  // alias name + {n}
     }
-    QCString *aliasText=Doxygen::aliasDict.find(cmd);
-    if (numArgs>1 && aliasText==0)
+    auto it = Doxygen::aliasMap.find(cmd.str());
+
+    if (numArgs>1 && it==Doxygen::aliasMap.end())
     { // in case there is no command with numArgs parameters, but there is a command with 1 parameter,
       // we also accept all text as the argument of that command (so you don't have to escape commas)
-      aliasText=Doxygen::aliasDict.find(cmdNoArgs+"{1}");
-      if (aliasText)
+      it = Doxygen::aliasMap.find((cmdNoArgs+"{1}").str());
+      if (it!=Doxygen::aliasMap.end())
       {
         cmd = cmdNoArgs+"{1}";
         args = escapeCommas(args); // escape , so that everything is seen as one argument
       }
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
-    //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
+    //    s.data(),cmd.data(),numArgs,args.data(),it!=Doxygen::aliasMap.end()?it->second.c_str():"<none>");
     if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
-        aliasText) // expand the alias
+        it!=Doxygen::aliasMap.end()) // expand the alias
     {
       //printf("is an alias!\n");
       if (!allowRecursion) aliasesProcessed.insert(cmd.str());
-      QCString val = *aliasText;
+      QCString val = it->second;
       if (hasArgs)
       {
         val = replaceAliasArguments(aliasesProcessed,val,args);
@@ -6079,17 +6080,17 @@ QCString resolveAliasCmd(const QCString aliasCmd)
   return result;
 }
 
-QCString expandAlias(const QCString &aliasName,const QCString &aliasValue)
+std::string expandAlias(const std::string &aliasName,const std::string &aliasValue)
 {
   QCString result;
   StringUnorderedSet aliasesProcessed;
   // avoid expanding this command recursively
-  aliasesProcessed.insert(aliasName.str());
+  aliasesProcessed.insert(aliasName);
   // expand embedded commands
   //printf("Expanding: '%s'->'%s'\n",aliasName.data(),aliasValue.data());
-  result = expandAliasRec(aliasesProcessed,aliasValue);
+  result = expandAliasRec(aliasesProcessed,aliasValue.c_str());
   //printf("Expanding result: '%s'->'%s'\n",aliasName.data(),result.data());
-  return result;
+  return result.str();
 }
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al)
@@ -6378,10 +6379,10 @@ QCString externalRef(const QCString &relPath,const QCString &ref,bool href)
   QCString result;
   if (!ref.isEmpty())
   {
-    QCString *dest = Doxygen::tagDestinationDict[ref];
-    if (dest)
+    auto it = Doxygen::tagDestinationMap.find(ref.str());
+    if (it!=Doxygen::tagDestinationMap.end())
     {
-      result = *dest;
+      result = it->second;
       int l = result.length();
       if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.

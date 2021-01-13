@@ -377,7 +377,7 @@ QCString extractAliasArgs(const QCString &args,int pos);
 int countAliasArguments(const QCString argList);
 
 QCString resolveAliasCmd(const QCString aliasCmd);
-QCString expandAlias(const QCString &aliasName,const QCString &aliasValue);
+std::string expandAlias(const std::string &aliasName,const std::string &aliasValue);
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
 

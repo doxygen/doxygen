@@ -64,13 +64,6 @@ class NamespaceDefMutable;
 typedef QList<QCString>    StringList;
 typedef QListIterator<QCString>    StringListIterator;
 
-class StringDict : public QDict<QCString>
-{
-  public:
-    StringDict(uint size=17) : QDict<QCString>(size) {}
-    virtual ~StringDict() {}
-};
-
 struct LookupInfo
 {
   LookupInfo() = default;
@@ -110,8 +103,8 @@ class Doxygen
     static StringUnorderedMap        namespaceAliasMap;
     static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
-    static StringDict                tagDestinationDict;
-    static StringDict                aliasDict;
+    static StringMap                 tagDestinationMap;
+    static StringMap                 aliasMap;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static NamespaceDefMutable      *globalScope;

@@ -126,7 +126,7 @@ FileNameLinkedMap    *Doxygen::inputNameLinkedMap = 0;
 GroupLinkedMap       *Doxygen::groupLinkedMap = 0;
 PageLinkedMap        *Doxygen::pageLinkedMap = 0;
 PageLinkedMap        *Doxygen::exampleLinkedMap = 0;
-StringDict            Doxygen::aliasDict(257);          // aliases
+StringMap             Doxygen::aliasMap;                     // aliases
 StringSet             Doxygen::inputPaths;
 FileNameLinkedMap    *Doxygen::includeNameLinkedMap = 0;     // include names
 FileNameLinkedMap    *Doxygen::exampleNameLinkedMap = 0;     // examples
@@ -135,7 +135,7 @@ FileNameLinkedMap    *Doxygen::dotFileNameLinkedMap = 0;     // dot files
 FileNameLinkedMap    *Doxygen::mscFileNameLinkedMap = 0;     // msc files
 FileNameLinkedMap    *Doxygen::diaFileNameLinkedMap = 0;     // dia files
 StringUnorderedMap    Doxygen::namespaceAliasMap;            // all namespace aliases
-StringDict            Doxygen::tagDestinationDict(257);      // all tag locations
+StringMap             Doxygen::tagDestinationMap;            // all tag locations
 StringUnorderedSet    Doxygen::expandAsDefinedSet;           // all macros that should be expanded
 MemberGroupInfoMap    Doxygen::memberGroupInfoMap;           // dictionary of the member groups heading
 std::unique_ptr<PageDef> Doxygen::mainPage;
@@ -189,7 +189,7 @@ void clearAll()
   Doxygen::dotFileNameLinkedMap->clear();
   Doxygen::mscFileNameLinkedMap->clear();
   Doxygen::diaFileNameLinkedMap->clear();
-  Doxygen::tagDestinationDict.clear();
+  Doxygen::tagDestinationMap.clear();
   SectionManager::instance().clear();
   CitationManager::instance().clear();
   Doxygen::mainPage.reset();
@@ -263,10 +263,10 @@ void statistics()
 #endif
   //fprintf(stderr,"--- g_excludeNameDict stats ----\n");
   //g_excludeNameDict.statistics();
-  fprintf(stderr,"--- aliasDict stats ----\n");
-  Doxygen::aliasDict.statistics();
-  fprintf(stderr,"--- tagDestinationDict stats ----\n");
-  Doxygen::tagDestinationDict.statistics();
+  //fprintf(stderr,"--- aliasDict stats ----\n");
+  //Doxygen::aliasDict.statistics();
+  //fprintf(stderr,"--- tagDestinationDict stats ----\n");
+  //Doxygen::tagDestinationDict.statistics();
   fprintf(stderr,"--- g_compoundKeywordDict stats ----\n");
   g_compoundKeywordDict.statistics();
 }
@@ -9100,7 +9100,8 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     if (fileName.isEmpty() || destName.isEmpty()) return;
     QFileInfo fi(fileName);
-    Doxygen::tagDestinationDict.insert(fi.absFilePath().utf8(),new QCString(destName));
+    Doxygen::tagDestinationMap.insert(
+        std::make_pair(fi.absFilePath().utf8().str(), destName.str()));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
   }
   else
@@ -9874,11 +9875,9 @@ int readFileOrDirectory(const char *s,
 
 static void expandAliases()
 {
-  QDictIterator<QCString> adi(Doxygen::aliasDict);
-  QCString *s;
-  for (adi.toFirst();(s=adi.current());++adi)
+  for (auto &kv : Doxygen::aliasMap)
   {
-    *s = expandAlias(adi.currentKey(),*s);
+    kv.second = expandAlias(kv.first,kv.second);
   }
 }
 
@@ -9886,11 +9885,10 @@ static void expandAliases()
 
 static void escapeAliases()
 {
-  QDictIterator<QCString> adi(Doxygen::aliasDict);
-  QCString *s;
-  for (adi.toFirst();(s=adi.current());++adi)
+  for (auto &kv : Doxygen::aliasMap)
   {
-    QCString value=*s,newValue;
+    QCString value=kv.second;
+    QCString newValue;
     int in,p=0;
     // for each \n in the alias command value
     while ((in=value.find("\\n",p))!=-1)
@@ -9913,7 +9911,6 @@ static void escapeAliases()
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);
-    *s=newValue;
     p = 0;
     newValue = "";
     while ((in=value.find("^^",p))!=-1)
@@ -9923,7 +9920,7 @@ static void escapeAliases()
       p=in+2;
     }
     newValue+=value.mid(p,value.length()-p);
-    *s=newValue;
+    kv.second=newValue.str();
     //printf("Alias %s has value %s\n",adi.currentKey().data(),s->data());
   }
 }
@@ -9933,30 +9930,26 @@ static void escapeAliases()
 void readAliases()
 {
   // add aliases to a dictionary
-  Doxygen::aliasDict.setAutoDelete(TRUE);
   const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &s : aliasList)
+  for (const auto &al : aliasList)
   {
-    QCString alias=s.c_str();
-    if (Doxygen::aliasDict[alias]==0)
+    QCString alias = al;
+    int i=alias.find('=');
+    if (i>0)
     {
-      int i=alias.find('=');
-      if (i>0)
+      QCString name=alias.left(i).stripWhiteSpace();
+      QCString value=alias.right(alias.length()-i-1);
+      //printf("Alias: found name='%s' value='%s'\n",name.data(),value.data());
+      if (!name.isEmpty())
       {
-        QCString name=alias.left(i).stripWhiteSpace();
-        QCString value=alias.right(alias.length()-i-1);
-        //printf("Alias: found name='%s' value='%s'\n",name.data(),value.data());
-        if (!name.isEmpty())
+        auto it = Doxygen::aliasMap.find(name.str());
+        if (it==Doxygen::aliasMap.end()) // insert new alias
         {
-          QCString *dn=Doxygen::aliasDict[name];
-          if (dn==0) // insert new alias
-          {
-            Doxygen::aliasDict.insert(name,new QCString(value));
-          }
-          else // overwrite previous alias
-          {
-            *dn=value;
-          }
+          Doxygen::aliasMap.insert(std::make_pair(name.str(),value.str()));
+        }
+        else // overwrite previous alias
+        {
+          it->second=value.str();
         }
       }
     }
@@ -10134,7 +10127,7 @@ void initDoxygen()
   Doxygen::dirLinkedMap = new DirLinkedMap;
   Doxygen::pageLinkedMap = new PageLinkedMap;          // all doc pages
   Doxygen::exampleLinkedMap = new PageLinkedMap;       // all examples
-  Doxygen::tagDestinationDict.setAutoDelete(TRUE);
+  //Doxygen::tagDestinationDict.setAutoDelete(TRUE);
   Doxygen::indexList = new IndexList;
 
   // initialisation of these globals depends on

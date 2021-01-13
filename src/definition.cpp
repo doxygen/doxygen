@@ -2097,10 +2097,10 @@ QCString DefinitionImpl::externalReference(const QCString &relPath) const
   QCString ref = getReference();
   if (!ref.isEmpty())
   {
-    QCString *dest = Doxygen::tagDestinationDict[ref];
-    if (dest)
+    auto it = Doxygen::tagDestinationMap.find(ref.str());
+    if (it!=Doxygen::tagDestinationMap.end())
     {
-      QCString result = *dest;
+      QCString result = it->second;
       uint l = result.length();
       if (!relPath.isEmpty() && l>0 && result.at(0)=='.')
       { // relative path -> prepend relPath.

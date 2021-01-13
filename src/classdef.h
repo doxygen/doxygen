@@ -41,7 +41,6 @@ class ExampleList;
 class MemberNameInfoLinkedMap;
 class PackageDef;
 class GroupDef;
-class StringDict;
 struct IncludeInfo;
 class ClassDefImpl;
 class FTextStream;
