@@ -4191,10 +4191,7 @@ static void findTemplateInstanceRelation(const Entry *root,
                      root->fileName,root->startLine,root->startColumn,templSpec,freshInstance));
   if (instanceClass)
   {
-    if (isArtificial)
-    {
-      instanceClass->setArtificial(TRUE);
-    }
+    instanceClass->setArtificial(TRUE);
     instanceClass->setLanguage(root->lang);
 
     if (freshInstance)

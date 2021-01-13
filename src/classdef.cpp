@@ -2102,7 +2102,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
 
 void ClassDefImpl::writeTagFile(FTextStream &tagFile)
 {
-  if (!isLinkableInProject()) return;
+  if (!isLinkableInProject() || isArtificial()) return;
   tagFile << "  <compound kind=\"";
   if (isFortran() && (compoundTypeString() == "type"))
     tagFile << "struct";
@@ -2124,7 +2124,12 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
   }
   for (const Argument &a : m_impl->tempArgs)
   {
-    tagFile << "    <templarg>" << convertToXML(a.name) << "</templarg>" << endl;
+    tagFile << "    <templarg>" << convertToXML(a.type);
+    if (!a.name.isEmpty())
+    {
+      tagFile << " " << convertToXML(a.name);
+    }
+    tagFile << "</templarg>" << endl;
   }
   for (const auto &ibcd : m_impl->inherits)
   {
