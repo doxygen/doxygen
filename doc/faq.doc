@@ -306,6 +306,14 @@ Doc++ but that just wasn't good enough (it didn't support signals and
 slots and did not have the Qt look and feel I had grown to like),
 so I started to write my own tool...
 
+\section faq_bin How to prevent interleaved output
+
+When redirecting all the console output of doxygen, i.e. messages and warnings, this can be interleaved or
+in a non-expected order.
+The, technical, reason for this is that the `stdout` can be buffered.
+It is possible to overcome this by means of the `-b` of doxygen, like e.g `doxygen -b > out.txt 2>&1`.
+Note this might cost a little more time though.
+
 \htmlonly
 Go to the <a href="trouble.html">next</a> section or return to the
  <a href="index.html">index</a>.

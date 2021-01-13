@@ -121,7 +121,6 @@ class Doxygen
     static SearchIndexIntf          *searchIndex;
     static SymbolMap<Definition>     symbolMap;
     static ClangUsrMap              *clangUsrMap;
-    static bool                      outputToWizard;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;
     static DirRelationLinkedMap      dirRelations;
