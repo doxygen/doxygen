@@ -164,7 +164,7 @@ bool                  Doxygen::clangAssistedParsing = FALSE;
 // locally accessible globals
 static std::multimap< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
-static QDict<void>      g_compoundKeywordDict(7);  // keywords recognised as compounds
+static StringSet        g_compoundKeywords;        // keywords recognised as compounds
 static OutputList      *g_outputList = 0;          // list of output generating objects
 static QDict<FileDef>   g_usingDeclarations(1009); // used classes
 static bool             g_successfulRun = FALSE;
@@ -243,35 +243,7 @@ class Statistics
 
 void statistics()
 {
-#if 0
-  fprintf(stderr,"--- inputNameLinkedMap stats ----\n");
-  Doxygen::inputNameLinkedMap->statistics();
-  fprintf(stderr,"--- includeNameDict stats ----\n");
-  Doxygen::includeNameDict->statistics();
-  fprintf(stderr,"--- exampleNameDict stats ----\n");
-  Doxygen::exampleNameDict->statistics();
-  fprintf(stderr,"--- imageNameDict stats ----\n");
-  Doxygen::imageNameDict->statistics();
-  fprintf(stderr,"--- dotFileNameDict stats ----\n");
-  Doxygen::dotFileNameDict->statistics();
-  fprintf(stderr,"--- mscFileNameDict stats ----\n");
-  Doxygen::mscFileNameDict->statistics();
-  fprintf(stderr,"--- diaFileNameDict stats ----\n");
-  Doxygen::diaFileNameDict->statistics();
-  fprintf(stderr,"--- memGrpInfoDict stats ----\n");
-  Doxygen::memGrpInfoDict.statistics();
-#endif
-  //fprintf(stderr,"--- g_excludeNameDict stats ----\n");
-  //g_excludeNameDict.statistics();
-  //fprintf(stderr,"--- aliasDict stats ----\n");
-  //Doxygen::aliasDict.statistics();
-  //fprintf(stderr,"--- tagDestinationDict stats ----\n");
-  //Doxygen::tagDestinationDict.statistics();
-  fprintf(stderr,"--- g_compoundKeywordDict stats ----\n");
-  g_compoundKeywordDict.statistics();
 }
-
-
 
 static void addMemberDocs(const Entry *root,MemberDefMutable *md, const char *funcDecl,
                    const ArgumentList *al,bool over_load,uint64 spec);
@@ -2906,7 +2878,7 @@ static void buildVarList(const Entry *root)
   //printf("buildVarList(%s) section=%08x\n",rootNav->name().data(),rootNav->section());
   int isFuncPtr=-1;
   if (!root->name.isEmpty() &&
-      (root->type.isEmpty() || g_compoundKeywordDict.find(root->type)==0) &&
+      (root->type.isEmpty() || g_compoundKeywords.find(root->type.str())==g_compoundKeywords.end()) &&
       (
        (root->section==Entry::VARIABLE_SEC    // it's a variable
        ) ||
@@ -6746,7 +6718,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString relates)
       ||
       (root->section==Entry::VARIABLE_SEC &&  // variable
        !type.isEmpty() &&                // with a type
-       g_compoundKeywordDict.find(type)==0 // that is not a keyword
+       g_compoundKeywords.find(type.str())==g_compoundKeywords.end() // that is not a keyword
        // (to skip forward declaration of class etc.)
       )
      )
@@ -10145,13 +10117,13 @@ void initDoxygen()
    *            Initialize some global constants
    **************************************************************************/
 
-  g_compoundKeywordDict.insert("template class",(void *)8);
-  g_compoundKeywordDict.insert("template struct",(void *)8);
-  g_compoundKeywordDict.insert("class",(void *)8);
-  g_compoundKeywordDict.insert("struct",(void *)8);
-  g_compoundKeywordDict.insert("union",(void *)8);
-  g_compoundKeywordDict.insert("interface",(void *)8);
-  g_compoundKeywordDict.insert("exception",(void *)8);
+  g_compoundKeywords.insert("template class");
+  g_compoundKeywords.insert("template struct");
+  g_compoundKeywords.insert("class");
+  g_compoundKeywords.insert("struct");
+  g_compoundKeywords.insert("union");
+  g_compoundKeywords.insert("interface");
+  g_compoundKeywords.insert("exception");
 }
 
 void cleanUpDoxygen()
