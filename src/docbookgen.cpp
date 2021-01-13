@@ -256,13 +256,13 @@ void DocbookCodeGenerator::finish()
 }
 void DocbookCodeGenerator::startCodeFragment(const char *)
 {
-DB_GEN_C
+DB_GEN_C1(m_t)
   m_t << "<programlisting>";
 }
 
 void DocbookCodeGenerator::endCodeFragment(const char *)
 {
-DB_GEN_C
+DB_GEN_C1(m_t)
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 

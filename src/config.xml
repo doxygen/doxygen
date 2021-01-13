@@ -2809,7 +2809,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            as set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
            `plain` is used.
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
- <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separeted list of `bib. files
+ <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib. files
            as set by \ref cfg_cite_bib_files "CITE_BIB_FILES" (when necessary a missing `.bib` is
            automatically added).
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
@@ -2832,9 +2832,9 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            \ref cfg_latex_makeindex_cmd "LATEX_MAKEINDEX_CMD". Then the command doesn't start with
            a backslash, a backslash is automatically prepended. In case the setting is empty the
            command `\makeindex` is used.
- <dt><code>$extralatexpackages</code><dd>will be replaced by commands for usinging the packages set
+ <dt><code>$extralatexpackages</code><dd>will be replaced by commands for using the packages set
            in \ref cfg_extra_packages "EXTRA_PACKAGES".
- <dt><code>$extralatexstylesheet</code><dd>will be replaced by commands for usinging the packages set
+ <dt><code>$extralatexstylesheet</code><dd>will be replaced by commands for using the packages set
            in \ref cfg_latex_extra_stylesheet "LATEX_EXTRA_STYLESHEET" (when the extension is the default
            extension, `.sty`, this extension is stripped for the package name).
  <dt><code>$latexspecialformulachars</code><dd>will be replaced by the code for some special

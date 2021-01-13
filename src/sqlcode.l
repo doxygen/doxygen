@@ -378,7 +378,7 @@ SQLCodeParser::SQLCodeParser() : p(std::make_unique<Private>())
 {
   sqlcodeYYlex_init_extra(&p->state, &p->yyscanner);
 #ifdef FLEX_DEBUG
-  sqlcodeYYset_debug(1,yyscanner);
+  sqlcodeYYset_debug(1,p->yyscanner);
 #endif
   resetCodeParserState();
 }
