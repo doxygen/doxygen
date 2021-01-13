@@ -2613,9 +2613,12 @@ static bool isVarWithConstructor(const Entry *root)
       {
         resType=resType.left(len);
         //printf("resType=%s\n",resType.data());
-        if (resType=="int"    || resType=="long" || resType=="float" ||
-            resType=="double" || resType=="char" || resType=="signed" ||
-            resType=="const"  || resType=="unsigned" || resType=="void")
+        if (resType=="int"    || resType=="long"     ||
+            resType=="float"  || resType=="double"   ||
+            resType=="char"   ||
+            resType=="signed" || resType=="unsigned" ||
+            resType=="const"  || resType=="volatile" ||
+            resType=="void")
         {
           result=FALSE; // type keyword -> function prototype
           goto done;

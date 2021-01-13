@@ -510,6 +510,7 @@ int computeQualifiedIndex(const QCString &name)
 //-------------------------------------------------------------------------
 
 static const char constScope[]    = { 'c', 'o', 'n', 's', 't', ':' };
+static const char volatileScope[] = { 'v', 'o', 'l', 'a', 't', 'i', 'l', 'e', ':' };
 static const char virtualScope[]  = { 'v', 'i', 'r', 't', 'u', 'a', 'l', ':' };
 static const char operatorScope[] = { 'o', 'p', 'e', 'r', 'a', 't', 'o', 'r', '?', '?', '?' };
 
@@ -580,6 +581,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   uint i=0;
   uint l=s.length();
   uint csp=0;
+  uint vosp=0;
   uint vsp=0;
   uint osp=0;
   char c;
@@ -604,6 +606,16 @@ QCString removeRedundantWhiteSpace(const QCString &s)
       csp++;
     else // reset counter
       csp=0;
+
+    if (vosp<6 && c==volatileScope[vosp] && // character matches substring "volatile"
+         (vosp>0 ||                     // inside search string
+          i==0  ||                     // if it is the first character
+          !isId(pc)                    // the previous may not be a digit
+         )
+       )
+      vosp++;
+    else // reset counter
+      vosp=0;
 
     // search for "virtual"
     if (vsp<8 && c==virtualScope[vsp] && // character matches substring "virtual"
@@ -742,6 +754,11 @@ QCString removeRedundantWhiteSpace(const QCString &s)
           *dst++=' ';
           csp=0;
         }
+        else if (vosp==9) // replace volatile::A by volatile ::A
+        {
+          *dst++=' ';
+          vosp=0;
+        }
         else if (vsp==8) // replace virtual::A by virtual ::A
         {
           *dst++=' ';
@@ -778,6 +795,13 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           *dst++=' ';
           csp=0;
+        }
+        else if (c=='e' && vosp==8 && i<l-1 && // found 'e' in 'volatile'
+             !(isId(nc) || nc==')' || nc==',' || isspace((uchar)nc))
+           ) // prevent volatile ::A from being converted to volatile::A
+        {
+          *dst++=' ';
+          vosp=0;
         }
         else if (c=='l' && vsp==7 && i<l-1 && // found 'l' in 'virtual'
              !(isId(nc) || nc==')' || nc==',' || isspace((uchar)nc))
