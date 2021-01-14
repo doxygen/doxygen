@@ -166,7 +166,7 @@ static std::multimap< std::string, const Entry* > g_classEntries;
 static StringVector     g_inputFiles;
 static StringSet        g_compoundKeywords;        // keywords recognised as compounds
 static OutputList      *g_outputList = 0;          // list of output generating objects
-static QDict<FileDef>   g_usingDeclarations(1009); // used classes
+static StringSet        g_usingDeclarations; // used classes
 static bool             g_successfulRun = FALSE;
 static bool             g_dumpSymbolMap = FALSE;
 static bool             g_useOutputTemplate = FALSE;
@@ -832,17 +832,14 @@ static Definition *findScopeFromQualifiedName(NamespaceDefMutable *startScope,co
       // the scope relations!
       // Therefore loop through all used classes and see if there is a right
       // scope match between the used class and nestedNameSpecifier.
-      QDictIterator<FileDef> ui(g_usingDeclarations);
-      FileDef *usedFd;
-      for (ui.toFirst();(usedFd=ui.current());++ui)
+      for (const auto &usedName : g_usingDeclarations)
       {
         //printf("Checking using class %s\n",ui.currentKey());
-        if (rightScopeMatch(ui.currentKey(),nestedNameSpecifier))
+        if (rightScopeMatch(usedName.c_str(),nestedNameSpecifier))
         {
           // ui.currentKey() is the fully qualified name of nestedNameSpecifier
           // so use this instead.
-          QCString fqn = QCString(ui.currentKey())+
-                         scope.right(scope.length()-p);
+          QCString fqn = QCString(usedName) + scope.right(scope.length()-p);
           resultScope = buildScopeFromQualifiedName(fqn,startScope->getLanguage(),0);
           //printf("Creating scope from fqn=%s result %p\n",fqn.data(),resultScope);
           if (resultScope)
@@ -1821,15 +1818,7 @@ static void buildListOfUsingDecls(const Entry *root)
      )
   {
     QCString name = substitute(root->name,".","::");
-
-    if (g_usingDeclarations.find(name)==0)
-    {
-      FileDef *fd = root->fileDef();
-      if (fd)
-      {
-        g_usingDeclarations.insert(name,fd);
-      }
-    }
+    g_usingDeclarations.insert(name.str());
   }
   for (const auto &e : root->children()) buildListOfUsingDecls(e.get());
 }
