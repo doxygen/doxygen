@@ -9595,8 +9595,8 @@ static QCString resolveSymlink(QCString path)
   int sepPos=0;
   int oldPos=0;
   QFileInfo fi;
-  QDict<void> nonSymlinks;
-  QDict<void> known;
+  StringSet nonSymlinks;
+  StringSet known;
   QCString result = path;
   QCString oldPrefix = "/";
   do
@@ -9611,7 +9611,7 @@ static QCString resolveSymlink(QCString path)
     sepPos = result.find('/',sepPos+1);
 #endif
     QCString prefix = sepPos==-1 ? result : result.left(sepPos);
-    if (nonSymlinks.find(prefix)==0)
+    if (nonSymlinks.find(prefix.str())==nonSymlinks.end())
     {
       fi.setFile(prefix);
       if (fi.isSymLink())
@@ -9632,8 +9632,8 @@ static QCString resolveSymlink(QCString path)
         }
         result = QDir::cleanDirPath(target).data();
         sepPos = 0;
-        if (known.find(result)) return QCString(); // recursive symlink!
-        known.insert(result,(void*)0x8);
+        if (known.find(result.str())!=known.end()) return QCString(); // recursive symlink!
+        known.insert(result.str());
         if (isRelative)
         {
           sepPos = oldPos;
@@ -9646,7 +9646,7 @@ static QCString resolveSymlink(QCString path)
       }
       else
       {
-        nonSymlinks.insert(prefix,(void*)0x8);
+        nonSymlinks.insert(prefix.str());
         oldPrefix = prefix;
       }
       oldPos = sepPos;
