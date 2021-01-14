@@ -248,7 +248,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0);
     virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force);
     virtual void insertMember(MemberDef *);
-    virtual void insertUsedFile(FileDef *);
+    virtual void insertUsedFile(const FileDef *);
     virtual bool addExample(const char *anchor,const char *name, const char *file);
     virtual void mergeCategory(ClassDef *category);
     virtual void setNamespace(NamespaceDef *nd);
@@ -1177,10 +1177,14 @@ void ClassDefImpl::findSectionsInDocumentation()
 
 
 // add a file name to the used files set
-void ClassDefImpl::insertUsedFile(FileDef *fd)
+void ClassDefImpl::insertUsedFile(const FileDef *fd)
 {
   if (fd==0) return;
-  if (m_impl->files.find(fd)==-1) m_impl->files.append(fd);
+  auto it = std::find(m_impl->files.begin(),m_impl->files.end(),fd);
+  if (it==m_impl->files.end())
+  {
+    m_impl->files.push_back(fd);
+  }
   for (const auto &ti : m_impl->templateInstances)
   {
     ClassDefMutable *cdm = toClassDefMutable(ti.classDef);
@@ -1454,29 +1458,30 @@ QCString ClassDefImpl::generatedFromFiles() const
 {
   QCString result;
   SrcLangExt lang = getLanguage();
+  size_t numFiles = m_impl->files.size();
   if (lang==SrcLangExt_Fortran)
   {
     result = theTranslator->trGeneratedFromFilesFortran(
           getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
-          m_impl->files.count()==1);
+          numFiles==1);
   }
   else if (isJavaEnum())
   {
-    result = theTranslator->trEnumGeneratedFromFiles(m_impl->files.count()==1);
+    result = theTranslator->trEnumGeneratedFromFiles(numFiles==1);
   }
   else if (m_impl->compType==Service)
   {
-    result = theTranslator->trServiceGeneratedFromFiles(m_impl->files.count()==1);
+    result = theTranslator->trServiceGeneratedFromFiles(numFiles==1);
   }
   else if (m_impl->compType==Singleton)
   {
-    result = theTranslator->trSingletonGeneratedFromFiles(m_impl->files.count()==1);
+    result = theTranslator->trSingletonGeneratedFromFiles(numFiles==1);
   }
   else
   {
     result = theTranslator->trGeneratedFromFiles(
           getLanguage()==SrcLangExt_ObjC && m_impl->compType==Interface ? Class : m_impl->compType,
-          m_impl->files.count()==1);
+          numFiles==1);
   }
   return result;
 }
@@ -1499,9 +1504,7 @@ void ClassDefImpl::showUsedFiles(OutputList &ol) const
   ol.enable(OutputGenerator::Docbook);
 
   bool first=TRUE;
-  QListIterator<FileDef> li(m_impl->files);
-  FileDef *fd;
-  for (;(fd=li.current());++li)
+  for (const auto &fd : m_impl->files)
   {
     if (first)
     {

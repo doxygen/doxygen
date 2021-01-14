@@ -1296,20 +1296,15 @@ static void writeInnerGroups(const GroupList &gl, struct Refid outer_refid)
   }
 }
 
-static void writeInnerFiles(const FileList *fl, struct Refid outer_refid)
+static void writeInnerFiles(const FileList &fl, struct Refid outer_refid)
 {
-  if (fl)
+  for (const auto &fd: fl)
   {
-    QListIterator<FileDef> fli(*fl);
-    const FileDef *fd;
-    for (fli.toFirst();(fd=fli.current());++fli)
-    {
-      struct Refid inner_refid = insertRefid(fd->getOutputFileBase());
+    struct Refid inner_refid = insertRefid(fd->getOutputFileBase());
 
-      bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
-      bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
-      step(contains_insert);
-    }
+    bindIntParameter(contains_insert,":inner_rowid", inner_refid.rowid);
+    bindIntParameter(contains_insert,":outer_rowid", outer_refid.rowid);
+    step(contains_insert);
   }
 }
 

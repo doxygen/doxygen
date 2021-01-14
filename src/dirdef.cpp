@@ -49,8 +49,8 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual QCString displayName(bool=TRUE) const { return m_dispName; }
     virtual const QCString &shortName() const { return m_shortName; }
     virtual void addSubDir(DirDef *subdir);
-    virtual FileList *   getFiles() const        { return m_fileList; }
-    virtual void addFile(FileDef *fd);
+    virtual const FileList &getFiles() const { return m_fileList; }
+    virtual void addFile(const FileDef *fd);
     virtual const DirList &subDirs() const { return m_subdirs; }
     virtual bool isCluster() const { return m_subdirs.size()>0; }
     virtual int level() const { return m_level; }
@@ -91,7 +91,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     QCString m_dispName;
     QCString m_shortName;
     QCString m_diskName;
-    FileList *m_fileList;                 // list of files in the group
+    FileList m_fileList;                 // list of files in the group
     int m_dirCount;
     int m_level;
     DirDef *m_parent;
@@ -132,7 +132,6 @@ DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
     m_dispName = m_dispName.left(m_dispName.length()-1);
   }
 
-  m_fileList   = new FileList;
   m_dirCount   = g_dirCount++;
   m_level=-1;
   m_parent=0;
@@ -140,7 +139,6 @@ DirDefImpl::DirDefImpl(const char *path) : DefinitionMixin(path,1,1,path)
 
 DirDefImpl::~DirDefImpl()
 {
-  delete m_fileList;
 }
 
 bool DirDefImpl::isLinkableInProject() const
@@ -165,16 +163,16 @@ void DirDefImpl::setParent(DirDef *p)
    m_parent=p;
 }
 
-void DirDefImpl::addFile(FileDef *fd)
+void DirDefImpl::addFile(const FileDef *fd)
 {
-  m_fileList->append(fd);
-  fd->setDirDef(this);
+  m_fileList.push_back(fd);
+  const_cast<FileDef*>(fd)->setDirDef(this);
 }
 
 void DirDefImpl::sort()
 {
   std::sort(m_subdirs.begin(), m_subdirs.end(), compareDirDefs);
-  m_fileList->sort();
+  std::sort(m_fileList.begin(), m_fileList.end(), compareFileDefs);
 }
 
 static QCString encodeDirName(const QCString &anchor)
@@ -326,7 +324,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
   int numSubdirs = 0;
   for(const auto dd : m_subdirs)
   {
-    if (dd->hasDocumentation() || dd->getFiles()->count()>0)
+    if (dd->hasDocumentation() || !dd->getFiles().empty())
     {
       numSubdirs++;
     }
@@ -341,7 +339,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
     ol.startMemberList();
     for(const auto dd : m_subdirs)
     {
-      if (dd->hasDocumentation() || dd->getFiles()->count()==0)
+      if (dd->hasDocumentation() || dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
         ol.startMemberItem(dd->getOutputFileBase(),0);
@@ -373,9 +371,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
 void DirDefImpl::writeFileList(OutputList &ol)
 {
   int numFiles = 0;
-  QListIterator<FileDef> it(*m_fileList);
-  FileDef *fd;
-  for (it.toFirst();(fd=it.current());++it)
+  for (const auto &fd : m_fileList)
   {
     if (fd->hasDocumentation())
     {
@@ -390,7 +386,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
     ol.parseText(theTranslator->trFile(TRUE,FALSE));
     ol.endMemberHeader();
     ol.startMemberList();
-    for (it.toFirst();(fd=it.current());++it)
+    for (const auto &fd : m_fileList)
     {
       if (fd->hasDocumentation())
       {
@@ -485,14 +481,9 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::DirFiles:
         {
-          if (m_fileList->count()>0)
+          for (const auto &fd : m_fileList)
           {
-            QListIterator<FileDef> it(*m_fileList);
-            FileDef *fd;
-            for (;(fd=it.current());++it)
-            {
               tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
-            }
           }
         }
         break;
@@ -690,29 +681,23 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
  */
 void DirDefImpl::computeDependencies()
 {
-  FileList *fl = m_fileList;
-  if (fl)
+  for (const auto &fd : m_fileList)
   {
-    QListIterator<FileDef> fli(*fl);
-    FileDef *fd;
-    for (fli.toFirst();(fd=fli.current());++fli) // foreach file in dir dd
+    //printf("  File %s\n",fd->name().data());
+    //printf("** dir=%s file=%s\n",shortName().data(),fd->name().data());
+    for (const auto &ii : fd->includeFileList())
     {
-      //printf("  File %s\n",fd->name().data());
-      //printf("** dir=%s file=%s\n",shortName().data(),fd->name().data());
-      for (const auto &ii : fd->includeFileList())
+      //printf("  > %s\n",ii->includeName.data());
+      //printf("    #include %s\n",ii->includeName.data());
+      if (ii.fileDef && ii.fileDef->isLinkable()) // linkable file
       {
-        //printf("  > %s\n",ii->includeName.data());
-        //printf("    #include %s\n",ii->includeName.data());
-        if (ii.fileDef && ii.fileDef->isLinkable()) // linkable file
+        DirDef *usedDir = ii.fileDef->getDirDef();
+        if (usedDir)
         {
-          DirDef *usedDir = ii.fileDef->getDirDef();
-          if (usedDir)
-          {
-            // add dependency: thisDir->usedDir
-            //static int count=0;
-            //printf("      %d: add dependency %s->%s\n",count++,name().data(),usedDir->name().data());
-            addUsesDependency(usedDir,fd,ii.fileDef,FALSE);
-          }
+          // add dependency: thisDir->usedDir
+          //static int count=0;
+          //printf("      %d: add dependency %s->%s\n",count++,name().data(),usedDir->name().data());
+          addUsesDependency(usedDir,fd,ii.fileDef,FALSE);
         }
       }
     }

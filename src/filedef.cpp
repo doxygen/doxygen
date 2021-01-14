@@ -1996,6 +1996,13 @@ int FileDefImpl::numDecMembers() const
   return ml ? ml->numDecMembers() : 0;
 }
 
+// -----------------------
+
+bool compareFileDefs(const FileDef *fd1, const FileDef *fd2)
+{
+  return qstricmp(fd1->name(),fd2->name()) < 0;
+}
+
 // --- Cast functions
 
 FileDef *toFileDef(Definition *d)

@@ -2066,13 +2066,10 @@ void PerlModGenerator::generatePerlModForGroup(const GroupDef *gd)
     .addFieldQuotedString("name", gd->name())
     .addFieldQuotedString("title", gd->groupTitle());
 
-  FileList *fl = gd->getFiles();
-  if (fl)
+  if (!gd->getFiles().empty())
   {
     m_output.openList("files");
-    QListIterator<FileDef> fli(*fl);
-    const FileDef *fd;
-    for (fli.toFirst();(fd=fli.current());++fli)
+    for (const auto &fd : gd->getFiles())
       m_output.openHash()
 	.addFieldQuotedString("name", fd->name())
 	.closeHash();

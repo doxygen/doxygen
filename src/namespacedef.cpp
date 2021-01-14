@@ -327,12 +327,10 @@ void NamespaceDefImpl::findSectionsInDocumentation()
 void NamespaceDefImpl::insertUsedFile(FileDef *fd)
 {
   if (fd==0) return;
-  if (files.find(fd)==-1)
+  auto it = std::find(files.begin(),files.end(),fd);
+  if (it==files.end())
   {
-    if (Config_getBool(SORT_MEMBER_DOCS))
-      files.inSort(fd);
-    else
-      files.append(fd);
+    files.push_back(fd);
   }
 }
 

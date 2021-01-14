@@ -1153,17 +1153,12 @@ static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,FTextStream &t)
   }
 }
 
-static void writeInnerFiles(const FileList *fl,FTextStream &t)
+static void writeInnerFiles(const FileList &fl,FTextStream &t)
 {
-  if (fl)
+  for (const auto &fd : fl)
   {
-    QListIterator<FileDef> fli(*fl);
-    FileDef *fd;
-    for (fli.toFirst();(fd=fli.current());++fli)
-    {
-      t << "    <innerfile refid=\"" << fd->getOutputFileBase()
-        << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
-    }
+    t << "    <innerfile refid=\"" << fd->getOutputFileBase()
+      << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
   }
 }
 

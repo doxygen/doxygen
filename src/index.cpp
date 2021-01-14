@@ -533,9 +533,7 @@ static bool dirHasVisibleChildren(const DirDef *dd)
 {
   if (dd->hasDocumentation()) return TRUE;
 
-  QListIterator<FileDef> fli(*dd->getFiles());
-  FileDef *fd;
-  for (fli.toFirst();(fd=fli.current());++fli)
+  for (const auto &fd : dd->getFiles())
   {
     bool genSourceFile;
     if (fileVisibleInIndex(fd,genSourceFile))
@@ -576,9 +574,9 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
   }
 
   static bool tocExpand = TRUE; //Config_getBool(TOC_EXPAND);
-  bool isDir = dd->subDirs().size()>0 || // there are subdirs
+  bool isDir = !dd->subDirs().empty() ||  // there are subdirs
                (tocExpand &&              // or toc expand and
-                dd->getFiles() && dd->getFiles()->count()>0 // there are files
+                !dd->getFiles().empty()   // there are files
                );
   //printf("gd='%s': pageDict=%d\n",gd->name().data(),gd->pageDict->count());
   if (addToIndex)
@@ -615,13 +613,10 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     endIndexHierarchy(ol,level+1);
   }
 
-  FileList *fileList=dd->getFiles();
   int fileCount=0;
-  if (fileList && fileList->count()>0)
+  if (!dd->getFiles().empty())
   {
-    QListIterator<FileDef> it(*fileList);
-    FileDef *fd;
-    for (;(fd=it.current());++it)
+    for (const auto &fd : dd->getFiles())
     {
       //static bool allExternals = Config_getBool(ALLEXTERNALS);
       //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
@@ -641,7 +636,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     if (fileCount>0)
     {
       startIndexHierarchy(ol,level+1);
-      for (it.toFirst();(fd=it.current());++it)
+      for (const auto &fd : dd->getFiles())
       {
         bool doc,src;
         doc = fileVisibleInIndex(fd,src);
@@ -677,9 +672,7 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
     // write files of this directory
     if (fileCount>0)
     {
-      QListIterator<FileDef> it(*fileList);
-      FileDef *fd;
-      for (;(fd=it.current());++it)
+      for (const auto &fd : dd->getFiles())
       {
         //static bool allExternals = Config_getBool(ALLEXTERNALS);
         //if ((allExternals && fd->isLinkable()) || fd->isLinkableInProject())
@@ -1407,14 +1400,7 @@ static void writeFileIndex(OutputList &ol)
   ol.startIndexList();
   if (Config_getBool(FULL_PATH_NAMES))
   {
-    struct FilesInDir
-    {
-      FilesInDir(const QCString &p) : path(p) {}
-      QCString path;
-      std::vector<const FileDef *> files;
-    };
-
-    std::unordered_map<std::string,std::vector<FilesInDir>::iterator> pathMap;
+    std::unordered_map<std::string,size_t> pathMap;
     std::vector<FilesInDir> outputFiles;
 
     // re-sort input files in (dir,file) output order instead of (file,dir) input order
@@ -1427,12 +1413,12 @@ static void writeFileIndex(OutputList &ol)
         auto it = pathMap.find(path.str());
         if (it!=pathMap.end())
         {
-          it->second->files.push_back(fd.get());
+          outputFiles.at(it->second).files.push_back(fd.get());
         }
         else
         {
+          pathMap.insert(std::make_pair(path.str(),outputFiles.size()));
           outputFiles.emplace_back(path);
-          pathMap.insert(std::make_pair(path.str(),outputFiles.end()-1));
         }
       }
     }
@@ -1443,9 +1429,7 @@ static void writeFileIndex(OutputList &ol)
     // sort the files inside the directory by name
     for (auto &fp : outputFiles)
     {
-      std::sort(fp.files.begin(),
-                fp.files.end(),
-                [](const auto &fd1,const auto &fd2) { return qstricmp(fd1->name(),fd2->name()); });
+      std::sort(fp.files.begin(), fp.files.end(), compareFileDefs);
     }
     // write the results
     for (const auto &fp : outputFiles)
@@ -3759,7 +3743,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       }
       numSubItems += gd->getNamespaces().size();
       numSubItems += gd->getClasses().size();
-      numSubItems += gd->getFiles()->count();
+      numSubItems += gd->getFiles().size();
       numSubItems += gd->getDirs().size();
       numSubItems += gd->getPages().size();
     }
@@ -3869,9 +3853,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       }
       else if (lde->kind()==LayoutDocEntry::GroupFiles && addToIndex)
       {
-        QListIterator<FileDef> it(*gd->getFiles());
-        FileDef *fd;
-        for (;(fd=it.current());++it)
+        for (const auto &fd : gd->getFiles())
         {
           if (fd->isVisible())
           {

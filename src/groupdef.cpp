@@ -100,7 +100,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const { return m_memberGroups; }
 
-    virtual FileList *      getFiles() const        { return m_fileList; }
+    virtual const FileList &getFiles() const                    { return m_fileList; }
     virtual const ClassLinkedRefMap &getClasses() const         { return m_classes; }
     virtual const NamespaceLinkedRefMap &getNamespaces() const  { return m_namespaces; }
     virtual const GroupList &getSubGroups() const               { return m_groups; }
@@ -138,7 +138,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     QCString             m_title;               // title of the group
     bool                 m_titleSet;            // true if title is not the same as the name
     QCString             m_fileName;            // base name of the generated file
-    FileList *           m_fileList;            // list of files in the group
+    FileList             m_fileList;            // list of files in the group
     ClassLinkedRefMap    m_classes;             // list of classes in the group
     NamespaceLinkedRefMap m_namespaces;         // list of namespaces in the group
     GroupList            m_groups;              // list of sub groups.
@@ -167,7 +167,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
                    const char *refFileName) : DefinitionMixin(df,dl,1,na),
                     m_allMemberList(MemberListType_allMembersList)
 {
-  m_fileList = new FileList;
   if (refFileName)
   {
     m_fileName=stripExtension(refFileName);
@@ -185,7 +184,6 @@ GroupDefImpl::GroupDefImpl(const char *df,int dl,const char *na,const char *t,
 
 GroupDefImpl::~GroupDefImpl()
 {
-  delete m_fileList;
 }
 
 void GroupDefImpl::setGroupTitle( const char *t )
@@ -237,9 +235,12 @@ void GroupDefImpl::addFile(const FileDef *def)
   if (def->isHidden()) return;
   updateLanguage(def);
   if (sortBriefDocs)
-    m_fileList->inSort(def);
+    m_fileList.insert( std::upper_bound( m_fileList.begin(), m_fileList.end(), def,
+                                         [](const auto &fd1, const auto &fd2)
+                                         { return qstricmp(fd1->name(),fd2->name())<0; }),
+                       def);
   else
-    m_fileList->append(def);
+    m_fileList.push_back(def);
 }
 
 bool GroupDefImpl::addClass(const ClassDef *cd)
@@ -579,7 +580,7 @@ void GroupDefImpl::countMembers()
 
 size_t GroupDefImpl::numDocMembers() const
 {
-  return m_fileList->count()+
+  return m_fileList.size()+
          m_classes.size()+
          m_namespaces.size()+
          m_groups.size()+
@@ -631,16 +632,11 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
         break;
       case LayoutDocEntry::GroupFiles:
         {
-          if (m_fileList)
+          for (const auto &fd : m_fileList)
           {
-            QListIterator<FileDef> it(*m_fileList);
-            FileDef *fd;
-            for (;(fd=it.current());++it)
+            if (fd->isLinkableInProject())
             {
-              if (fd->isLinkableInProject())
-              {
-                tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
-              }
+              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
             }
           }
         }
@@ -827,15 +823,13 @@ void GroupDefImpl::writeGroupGraph(OutputList &ol)
 void GroupDefImpl::writeFiles(OutputList &ol,const QCString &title)
 {
   // write list of files
-  if (m_fileList->count()>0)
+  if (!m_fileList.empty())
   {
     ol.startMemberHeader("files");
     ol.parseText(title);
     ol.endMemberHeader();
     ol.startMemberList();
-    QListIterator<FileDef> it(*m_fileList);
-    FileDef *fd;
-    for (;(fd=it.current());++it)
+    for (const auto &fd : m_fileList)
     {
       if (!fd->hasDocumentation()) continue;
       ol.startMemberDeclaration();
@@ -1030,7 +1024,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
   {
     if ((lde->kind()==LayoutDocEntry::GroupClasses && m_classes.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaces.declVisible()) ||
-        (lde->kind()==LayoutDocEntry::GroupFiles && m_fileList->count()>0) ||
+        (lde->kind()==LayoutDocEntry::GroupFiles && !m_fileList.empty()) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && !m_groups.empty()) ||
         (lde->kind()==LayoutDocEntry::GroupDirs && !m_dirList.empty())
        )

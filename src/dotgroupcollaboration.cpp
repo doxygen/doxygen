@@ -116,15 +116,10 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   }
 
   // Add files
-  if ( gd->getFiles() && gd->getFiles()->count() )
+  for (const auto &def : gd->getFiles())
   {
-    QListIterator<FileDef> defli(*gd->getFiles());
-    const FileDef *def;
-    for (;(def=defli.current());++defli)
-    {
-      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
-      addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );
-    }
+    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );
   }
 
   // Add pages

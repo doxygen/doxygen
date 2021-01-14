@@ -59,6 +59,8 @@ class IncludeInfoList : public std::vector<IncludeInfo>
 {
 };
 
+bool compareFileDefs(const FileDef *fd1, const FileDef *fd2);
+
 /** A model of a file symbol.
  *
  *  An object of this class contains all file information that is gathered.
@@ -197,20 +199,15 @@ const FileDef      *toFileDef(const Definition *d);
 
 // ------------------
 
-/** Class representing a list of FileDef objects. */
-class FileList : public QList<FileDef>
+class FileList : public std::vector<const FileDef *>
 {
-  public:
-    FileList() : m_pathName("tmp") {}
-    FileList(const char *path) : QList<FileDef>(), m_pathName(path) {}
-   ~FileList() {}
-    QCString path() const { return m_pathName; }
-  private:
-    int compareValues(const FileDef *md1,const FileDef *md2) const
-    {
-      return qstricmp(md1->name(),md2->name());
-    }
-    QCString m_pathName;
+};
+
+struct FilesInDir
+{
+  FilesInDir(const QCString &p) : path(p) {}
+  QCString path;
+  std::vector<const FileDef *> files;
 };
 
 /** Class representing an entry (file or sub directory) in a directory */

@@ -3476,16 +3476,10 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (!cache.files)
       {
         cache.files.reset(TemplateList::alloc());
-        FileList *files = m_dirDef->getFiles();
-        if (files)
+        for (const auto &fd : m_dirDef->getFiles())
         {
-          QListIterator<FileDef> it(*files);
-          const FileDef *fd;
-          for (it.toFirst();(fd=it.current());++it)
-          {
-            FileContext *fc = FileContext::alloc(fd);
-            cache.files->append(fc);
-          }
+          FileContext *fc = FileContext::alloc(fd);
+          cache.files->append(fc);
         }
       }
       return cache.files.get();
@@ -5401,14 +5395,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.files)
       {
         TemplateList *fileList = TemplateList::alloc();
-        if (m_groupDef->getFiles())
+        for (const auto &fd : m_groupDef->getFiles())
         {
-          QListIterator<FileDef> it(*m_groupDef->getFiles());
-          const FileDef *fd;
-          for (it.toFirst();(fd=it.current());++it)
-          {
-            fileList->append(FileContext::alloc(fd));
-          }
+          fileList->append(FileContext::alloc(fd));
         }
         cache.files.reset(fileList);
       }
@@ -6349,10 +6338,7 @@ class NestingNodeContext::Private
       if (dd)
       {
         m_children->addDirs(dd->subDirs(),visitedClasses);
-        if (dd && dd->getFiles())
-        {
-          m_children->addFiles(*dd->getFiles(),visitedClasses);
-        }
+        m_children->addFiles(dd->getFiles(),visitedClasses);
       }
     }
     void addPages(ClassDefSet &visitedClasses)
@@ -6528,9 +6514,7 @@ class NestingContext::Private : public GenericNodeListContext
     }
     void addFiles(const FileList &fList,ClassDefSet &visitedClasses)
     {
-      QListIterator<FileDef> li(fList);
-      const FileDef *fd;
-      for (li.toFirst();(fd=li.current());++li)
+      for (const auto &fd : fList)
       {
         append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
@@ -7142,9 +7126,7 @@ UsedFilesContext::UsedFilesContext(const ClassDef *cd) : RefCountedContext("Used
   p = new Private;
   if (cd)
   {
-    QListIterator<FileDef> li(cd->usedFiles());
-    const FileDef *fd;
-    for (li.toFirst();(fd=li.current());++li)
+    for (const auto &fd : cd->usedFiles())
     {
       p->addFile(fd);
     }

@@ -95,7 +95,7 @@ class GroupDef : public DefinitionMutable, public Definition
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;
 
-    virtual FileList *      getFiles() const = 0;
+    virtual const FileList &getFiles() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
     virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
     virtual const GroupList &getSubGroups() const = 0;
