@@ -297,12 +297,14 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void addIndexItem(const char *s1,const char *s2) = 0;
 
     virtual void writeNonBreakableSpace(int) = 0;
-    virtual void startDescTable(const char *title) = 0;
+    virtual void startDescTable(const char *title,const bool hasInits) = 0;
     virtual void endDescTable() = 0;
     virtual void startDescTableRow() = 0;
     virtual void endDescTableRow() = 0;
     virtual void startDescTableTitle() = 0;
     virtual void endDescTableTitle() = 0;
+    virtual void startDescTableInit() = 0;
+    virtual void endDescTableInit() = 0;
     virtual void startDescTableData() = 0;
     virtual void endDescTableData() = 0;
     virtual void startTextLink(const char *file,const char *anchor) = 0;

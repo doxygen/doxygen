@@ -658,7 +658,7 @@ void ManGenerator::endExamples()
 {
 }
 
-void ManGenerator::startDescTable(const char *title)
+void ManGenerator::startDescTable(const char *title,const bool hasInits)
 {
   if (!m_firstCol)
   { t << endl << ".PP" << endl;

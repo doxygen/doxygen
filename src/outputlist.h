@@ -363,8 +363,8 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::endPageDoc); }
     void writeNonBreakableSpace(int num)
     { forall(&OutputGenerator::writeNonBreakableSpace,num); }
-    void startDescTable(const char *title)
-    { forall(&OutputGenerator::startDescTable,title); }
+    void startDescTable(const char *title,const bool hasInits)
+    { forall(&OutputGenerator::startDescTable,title,hasInits); }
     void endDescTable()
     { forall(&OutputGenerator::endDescTable); }
     void startDescTableRow()
@@ -375,6 +375,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startDescTableTitle); }
     void endDescTableTitle()
     { forall(&OutputGenerator::endDescTableTitle); }
+    void startDescTableInit()
+    { forall(&OutputGenerator::startDescTableInit); }
+    void endDescTableInit()
+    { forall(&OutputGenerator::endDescTableInit); }
     void startDescTableData()
     { forall(&OutputGenerator::startDescTableData); }
     void endDescTableData()
