@@ -2188,7 +2188,7 @@ static void findMembersWithSpecificName(const MemberName *mn,
                                         bool checkStatics,
                                         const FileDef *currentFile,
                                         bool checkCV,
-                                        QList<MemberDef> &members)
+                                        std::vector<const MemberDef *> &members)
 {
   //printf("  Function with global scope name '%s' args='%s'\n",
   //       mn->memberName(),args);
@@ -2219,7 +2219,7 @@ static void findMembersWithSpecificName(const MemberName *mn,
       if (match)
       {
         //printf("Found match!\n");
-        members.append(md);
+        members.push_back(md);
       }
     }
   }
@@ -2645,16 +2645,16 @@ bool getDefs(const QCString &scName,
 
     //else // no scope => global function
     {
-      QList<MemberDef> members;
+      std::vector<const MemberDef *> members;
       // search for matches with strict static checking
       findMembersWithSpecificName(mn,args,TRUE,currentFile,checkCV,members);
-      if (members.count()==0) // nothing found
+      if (members.empty()) // nothing found
       {
         // search again without strict static checking
         findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,members);
       }
       //printf("found %d members\n",members.count());
-      if (members.count()!=1 && args && !qstrcmp(args,"()"))
+      if (members.size()>1 && args && !qstrcmp(args,"()"))
       {
         // no exact match found, but if args="()" an arbitrary
         // member will do
@@ -2674,32 +2674,32 @@ bool getDefs(const QCString &scName,
               (tmd && tmd->isStrong())
              )
           {
-            members.append(mmd);
+            members.push_back(mmd);
           }
         }
       }
       //printf("found %d candidate members\n",members.count());
-      if (members.count()>0) // at least one match
+      if (!members.empty()) // at least one match
       {
         if (currentFile)
         {
           //printf("multiple results; pick one from file:%s\n", currentFile->name().data());
-          QListIterator<MemberDef> mit(members);
-          for (mit.toFirst();(md=mit.current());++mit)
+          for (const auto &rmd : members)
           {
-            if (md->getFileDef() && md->getFileDef()->name() == currentFile->name())
+            if (rmd->getFileDef() && rmd->getFileDef()->name() == currentFile->name())
             {
+              md = rmd;
               break; // found match in the current file
             }
           }
           if (!md) // member not in the current file
           {
-            md=members.getLast();
+            md=members.back();
           }
         }
         else
         {
-          md=members.getLast();
+          md=members.back();
         }
       }
       if (md && (md->getEnumScope()==0 || !md->getEnumScope()->isStrong()))

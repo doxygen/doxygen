@@ -26,7 +26,6 @@
 #include <unordered_map>
 #include <algorithm>
 
-#include <qlist.h>
 #include <ctype.h>
 #include "types.h"
 #include "docparser.h"
