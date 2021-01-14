@@ -21,9 +21,6 @@
 #include <set>
 
 #include "index.h"
-#include <qlist.h>
-#include <qintdict.h>
-#include <qdict.h>
 #include "definition.h"
 #include "memberlist.h"
 #include "containers.h"
@@ -215,27 +212,6 @@ class FileList : public QList<FileDef>
     }
     QCString m_pathName;
 };
-
-class OutputNameList : public QList<FileList>
-{
-  public:
-    OutputNameList() : QList<FileList>() {}
-   ~OutputNameList() {}
- private:
-    int compareValues(const FileList *fl1,const FileList *fl2) const
-    {
-      return qstricmp(fl1->path(),fl2->path());
-    }
-};
-
-class OutputNameDict : public QDict<FileList>
-{
-  public:
-    OutputNameDict(uint size) : QDict<FileList>(size) {}
-   ~OutputNameDict() {}
-};
-
-class Directory;
 
 /** Class representing an entry (file or sub directory) in a directory */
 class DirEntry

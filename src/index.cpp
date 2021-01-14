@@ -1283,7 +1283,7 @@ static void countFiles(int &htmlFiles,int &files)
   }
 }
 
-static void writeSingleFileIndex(OutputList &ol,FileDef *fd)
+static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
 {
   //printf("Found filedef %s\n",fd->name().data());
   bool doc = fd->isLinkableInProject();
@@ -1404,12 +1404,19 @@ static void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
 
-  OutputNameDict outputNameDict(1009);
-  OutputNameList outputNameList;
-  outputNameList.setAutoDelete(TRUE);
-
+  ol.startIndexList();
   if (Config_getBool(FULL_PATH_NAMES))
   {
+    struct FilesInDir
+    {
+      FilesInDir(const QCString &p) : path(p) {}
+      QCString path;
+      std::vector<const FileDef *> files;
+    };
+
+    std::unordered_map<std::string,std::vector<FilesInDir>::iterator> pathMap;
+    std::vector<FilesInDir> outputFiles;
+
     // re-sort input files in (dir,file) output order instead of (file,dir) input order
     for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
@@ -1417,36 +1424,33 @@ static void writeFileIndex(OutputList &ol)
       {
         QCString path=fd->getPath();
         if (path.isEmpty()) path="[external]";
-        FileList *fl = outputNameDict.find(path);
-        if (fl)
+        auto it = pathMap.find(path.str());
+        if (it!=pathMap.end())
         {
-          fl->append(fd.get());
-          //printf("+ inserting %s---%s\n",fd->getPath().data(),fd->name().data());
+          it->second->files.push_back(fd.get());
         }
         else
         {
-          //printf("o inserting %s---%s\n",fd->getPath().data(),fd->name().data());
-          fl = new FileList(path);
-          fl->append(fd.get());
-          outputNameList.append(fl);
-          outputNameDict.insert(path,fl);
+          outputFiles.emplace_back(path);
+          pathMap.insert(std::make_pair(path.str(),outputFiles.end()-1));
         }
       }
     }
-  }
-
-  ol.startIndexList();
-  if (Config_getBool(FULL_PATH_NAMES))
-  {
-    outputNameList.sort();
-    QListIterator<FileList> fnli(outputNameList);
-    FileList *fl;
-    for (fnli.toFirst();(fl=fnli.current());++fnli)
+    // sort the files by path
+    std::sort(outputFiles.begin(),
+              outputFiles.end(),
+              [](const auto &fp1,const auto &fp2) { return qstricmp(fp1.path,fp2.path)<0; });
+    // sort the files inside the directory by name
+    for (auto &fp : outputFiles)
     {
-      fl->sort();
-      QListIterator<FileDef> it(*fl);
-      FileDef *fd;
-      for (;(fd=it.current());++it)
+      std::sort(fp.files.begin(),
+                fp.files.end(),
+                [](const auto &fd1,const auto &fd2) { return qstricmp(fd1->name(),fd2->name()); });
+    }
+    // write the results
+    for (const auto &fp : outputFiles)
+    {
+      for (const auto &fd : fp.files)
       {
         writeSingleFileIndex(ol,fd);
       }
