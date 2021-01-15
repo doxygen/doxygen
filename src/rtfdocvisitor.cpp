@@ -42,16 +42,12 @@
 
 static QCString align(DocHtmlCell *cell)
 {
-  HtmlAttribList attrs = cell->attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : cell->attribs())
   {
-    if (attrs.at(i)->name.lower()=="align")
+    if (attr.name.lower()=="align")
     {
-      if (attrs.at(i)->value.lower()=="center")
-        return "\\qc ";
-      else if (attrs.at(i)->value.lower()=="right")
-        return "\\qr ";
+      if (attr.value.lower()=="center")     return "\\qc ";
+      else if (attr.value.lower()=="right") return "\\qr ";
       else return "";
     }
   }

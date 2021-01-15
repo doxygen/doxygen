@@ -988,22 +988,15 @@ static void handleInitialStyleCommands(DocPara *parent,DocNodeList &children)
 
 static int handleAHref(DocNode *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs)
 {
-  HtmlAttribListIterator li(tagHtmlAttribs);
-  HtmlAttrib *opt;
   uint index=0;
   int retval = RetVal_OK;
-  for (li.toFirst();(opt=li.current());++li,++index)
+  for (const auto &opt : tagHtmlAttribs)
   {
-    if (opt->name=="name" || opt->name=="id") // <a name=label> or <a id=label> tag
+    if (opt.name=="name" || opt.name=="id") // <a name=label> or <a id=label> tag
     {
-      if (!opt->value.isEmpty())
+      if (!opt.value.isEmpty())
       {
-        // copy attributes
-        HtmlAttribList attrList = tagHtmlAttribs;
-        // and remove the href attribute
-        bool result = attrList.remove(index);
-        ASSERT(result);
-        children.push_back(std::make_unique<DocAnchor>(parent,opt->value,TRUE));
+        children.push_back(std::make_unique<DocAnchor>(parent,opt.value,TRUE));
         break; // stop looking for other tag attribs
       }
       else
@@ -1011,14 +1004,13 @@ static int handleAHref(DocNode *parent,DocNodeList &children,const HtmlAttribLis
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),"found <a> tag with name option but without value!");
       }
     }
-    else if (opt->name=="href") // <a href=url>..</a> tag
+    else if (opt.name=="href") // <a href=url>..</a> tag
     {
       // copy attributes
       HtmlAttribList attrList = tagHtmlAttribs;
       // and remove the href attribute
-      bool result = attrList.remove(index);
-      ASSERT(result);
-      DocHRef *href = new DocHRef(parent,attrList,opt->value,g_relPath);
+      attrList.erase(attrList.begin()+index);
+      DocHRef *href = new DocHRef(parent,attrList,opt.value,g_relPath);
       children.push_back(std::unique_ptr<DocHRef>(href));
       g_insideHtmlLink=TRUE;
       retval = href->parse();
@@ -1028,6 +1020,7 @@ static int handleAHref(DocNode *parent,DocNodeList &children,const HtmlAttribLis
     else // unsupported option for tag a
     {
     }
+    ++index;
   }
   return retval;
 }
@@ -1738,26 +1731,24 @@ handlepara:
 
 static void handleImg(DocNode *parent, DocNodeList &children,const HtmlAttribList &tagHtmlAttribs)
 {
-  HtmlAttribListIterator li(tagHtmlAttribs);
-  HtmlAttrib *opt;
   bool found=FALSE;
   uint index=0;
-  for (li.toFirst();(opt=li.current());++li,++index)
+  for (const auto &opt : tagHtmlAttribs)
   {
-    //printf("option name=%s value=%s\n",opt->name.data(),opt->value.data());
-    if (opt->name=="src" && !opt->value.isEmpty())
+    //printf("option name=%s value=%s\n",opt.name.data(),opt.value.data());
+    if (opt.name=="src" && !opt.value.isEmpty())
     {
       // copy attributes
       HtmlAttribList attrList = tagHtmlAttribs;
       // and remove the src attribute
-      bool result = attrList.remove(index);
-      ASSERT(result);
+      attrList.erase(attrList.begin()+index);
       DocImage::Type t = DocImage::Html;
       children.push_back(
           std::make_unique<DocImage>(
-            parent,attrList,findAndCopyImage(opt->value,t,false),t,opt->value));
+            parent,attrList,findAndCopyImage(opt.value,t,false),t,opt.value));
       found = TRUE;
     }
+    ++index;
   }
   if (!found)
   {
@@ -3206,13 +3197,11 @@ endindexentry:
 DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
 {
   m_hasCaptionId = FALSE;
-  HtmlAttribListIterator li(attribs);
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : attribs)
   {
-    if (opt->name=="id" && !opt->value.isEmpty()) // interpret id attribute as an anchor
+    if (opt.name=="id" && !opt.value.isEmpty()) // interpret id attribute as an anchor
     {
-      const SectionInfo *sec = SectionManager::instance().find(opt->value);
+      const SectionInfo *sec = SectionManager::instance().find(opt.value);
       if (sec)
       {
         //printf("Found anchor %s\n",id.data());
@@ -3222,12 +3211,12 @@ DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
       }
       else
       {
-        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Invalid caption id '%s'",qPrint(opt->value));
+        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Invalid caption id '%s'",qPrint(opt.value));
       }
     }
     else // copy attribute
     {
-      m_attribs.append(new HtmlAttrib(*opt));
+      m_attribs.push_back(opt);
     }
   }
   m_parent = parent;
@@ -3351,67 +3340,57 @@ int DocHtmlCell::parseXml()
 
 uint DocHtmlCell::rowSpan() const
 {
-  uint retval = 0;
-  HtmlAttribList attrs = attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : attribs())
   {
-    if (attrs.at(i)->name.lower()=="rowspan")
+    if (attr.name.lower()=="rowspan")
     {
-      retval = attrs.at(i)->value.toUInt();
-      break;
+      return attr.value.toUInt();
     }
   }
-  return retval;
+  return 0;
 }
 
 uint DocHtmlCell::colSpan() const
 {
-  uint retval = 1;
-  HtmlAttribList attrs = attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : attribs())
   {
-    if (attrs.at(i)->name.lower()=="colspan")
+    if (attr.name.lower()=="colspan")
     {
-      retval = QMAX(1,attrs.at(i)->value.toUInt());
-      break;
+      return QMAX(1,attr.value.toUInt());
     }
   }
-  return retval;
+  return 1;
 }
 
 DocHtmlCell::Alignment DocHtmlCell::alignment() const
 {
-  HtmlAttribList attrs = attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : attribs())
   {
-    if (attrs.at(i)->name.lower()=="align")
+    if (attr.name.lower()=="align")
     {
-      if (attrs.at(i)->value.lower()=="center")
+      if (attr.value.lower()=="center")
         return Center;
-      else if (attrs.at(i)->value.lower()=="right")
+      else if (attr.value.lower()=="right")
         return Right;
       else return Left;
     }
-    else if (attrs.at(i)->name.lower()=="class")
+    else if (attr.name.lower()=="class")
     {
-      if (attrs.at(i)->value.lower()=="markdowntableheadcenter")
+      if (attr.value.lower()=="markdowntableheadcenter")
         return Center;
-      else if (attrs.at(i)->value.lower()=="markdowntableheadright")
+      else if (attr.value.lower()=="markdowntableheadright")
         return Right;
-      else if (attrs.at(i)->value.lower()=="markdowntableheadleft")
+      else if (attr.value.lower()=="markdowntableheadleft")
         return Left;
-      else if (attrs.at(i)->value.lower()=="markdowntableheadnone")
+      else if (attr.value.lower()=="markdowntableheadnone")
         return Center;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodycenter")
+      else if (attr.value.lower()=="markdowntablebodycenter")
         return Center;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodyright")
+      else if (attr.value.lower()=="markdowntablebodyright")
         return Right;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodyleft")
+      else if (attr.value.lower()=="markdowntablebodyleft")
         return Left;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodynone")
+      else if (attr.value.lower()=="markdowntablebodynone")
         return Left;
       else return Left;
     }
@@ -5800,13 +5779,11 @@ static bool findAttribute(const HtmlAttribList &tagHtmlAttribs,
                           QCString *result)
 {
 
-  HtmlAttribListIterator li(tagHtmlAttribs);
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : tagHtmlAttribs)
   {
-    if (opt->name==attrName)
+    if (opt.name==attrName)
     {
-      *result = opt->value;
+      *result = opt.value;
       return TRUE;
     }
   }
@@ -6998,7 +6975,7 @@ void DocRoot::parse()
     DocPara *par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty() || par->attribs().count()>0)
+    if (!par->isEmpty() || !par->attribs().empty())
     {
       m_children.push_back(std::unique_ptr<DocPara>(par));
       lastPar=par;

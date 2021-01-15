@@ -949,20 +949,33 @@ void LatexDocVisitor::visitPost(DocHtmlListItem *)
 //  m_t << "\\end{alltt}\\normalsize " << endl;
 //}
 
+
+static bool classEqualsReflist(const DocNode *n)
+{
+  if (n->kind()==DocNode::Kind_HtmlDescList)
+  {
+    HtmlAttribList attrs = ((DocHtmlDescList *)n)->attribs();
+    auto it = std::find_if(attrs.begin(),attrs.end(),
+                        [](const auto &att) { return att.name=="class"; });
+    if (it!=attrs.end() && it->value == "reflist") return true;
+  }
+  return false;
+}
+
+
 static bool listIsNested(const DocNode *n)
 {
   bool isNested=false;
   if (n)
   {
-    if (n->kind()==DocNode::Kind_HtmlDescList && ((DocHtmlDescList *)n)->attribs().find("class") == "reflist") return false;
+    if (classEqualsReflist(n)) return false;
     n  = n->parent();
   }
   while (n && !isNested)
   {
     if (n->kind()==DocNode::Kind_HtmlDescList)
     {
-      QCString val = ((DocHtmlDescList *)n)->attribs().find("class");
-      isNested = (val!="reflist");
+      isNested = !classEqualsReflist(n);
     }
     n  = n->parent();
   }
@@ -972,8 +985,7 @@ static bool listIsNested(const DocNode *n)
 void LatexDocVisitor::visitPre(DocHtmlDescList *dl)
 {
   if (m_hide) return;
-  QCString val = dl->attribs().find("class");
-  if (val=="reflist")
+  if (classEqualsReflist(dl))
   {
     m_t << "\n\\begin{DoxyRefList}";
   }
@@ -987,8 +999,7 @@ void LatexDocVisitor::visitPre(DocHtmlDescList *dl)
 void LatexDocVisitor::visitPost(DocHtmlDescList *dl)
 {
   if (m_hide) return;
-  QCString val = dl->attribs().find("class");
-  if (val=="reflist")
+  if (classEqualsReflist(dl))
   {
     m_t << "\n\\end{DoxyRefList}";
   }

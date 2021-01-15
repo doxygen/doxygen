@@ -298,7 +298,7 @@ static void handleHtmlTag()
     }
     //printf("=====> Adding option name=<%s> value=<%s>\n",
     //    opt.name.data(),opt.value.data());
-    g_token->attribs.append(&opt);
+    g_token->attribs.push_back(opt);
   }
   g_token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
 }

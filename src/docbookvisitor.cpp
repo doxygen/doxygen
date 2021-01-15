@@ -1045,14 +1045,12 @@ DB_VIS_C
 
   m_t << "      <row ";
 
-  HtmlAttribListIterator li(tr->attribs());
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : tr->attribs())
   {
-    if (supportedHtmlAttribute(opt->name))
+    if (supportedHtmlAttribute(opt.name))
     {
       // process supported attributes only
-      m_t << " " << opt->name << "='" << convertToDocBook(opt->value) << "'";
+      m_t << " " << opt.name << "='" << convertToDocBook(opt.value) << "'";
     }
   }
   m_t << ">\n";
@@ -1077,35 +1075,33 @@ DB_VIS_C
   if (m_hide) return;
   m_t << "<entry";
 
-  HtmlAttribListIterator li(c->attribs());
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : c->attribs())
   {
-    if (opt->name=="colspan")
+    if (opt.name=="colspan")
     {
       m_t << " namest='c" << m_colCnt << "'";
-      int cols = opt->value.toInt();
+      int cols = opt.value.toInt();
       m_colCnt += (cols - 1);
       m_t << " nameend='c" << m_colCnt << "'";
     }
-    else if (opt->name=="rowspan")
+    else if (opt.name=="rowspan")
     {
-      int extraRows = opt->value.toInt() - 1;
+      int extraRows = opt.value.toInt() - 1;
       m_t << " morerows='" << extraRows << "'";
     }
-    else if (opt->name=="class")
+    else if (opt.name=="class")
     {
-      if (opt->value.left(13)=="markdownTable") // handle markdown generated attributes
+      if (opt.value.left(13)=="markdownTable") // handle markdown generated attributes
       {
-        if (opt->value.right(5)=="Right")
+        if (opt.value.right(5)=="Right")
         {
           m_t << " align='right'";
         }
-        else if (opt->value.right(4)=="Left")
+        else if (opt.value.right(4)=="Left")
         {
           m_t << " align='left'";
         }
-        else if (opt->value.right(6)=="Center")
+        else if (opt.value.right(6)=="Center")
         {
           m_t << " align='center'";
         }
@@ -1113,13 +1109,13 @@ DB_VIS_C
       }
       else
       {
-        m_t << " class='" << convertToDocBook(opt->value) << "'";
+        m_t << " class='" << convertToDocBook(opt.value) << "'";
       }
     }
-    else if (supportedHtmlAttribute(opt->name))
+    else if (supportedHtmlAttribute(opt.name))
     {
       // process supported attributes only
-      m_t << " " << opt->name << "='" << convertToDocBook(opt->value) << "'";
+      m_t << " " << opt.name << "='" << convertToDocBook(opt.value) << "'";
     }
   }
   m_t << ">";

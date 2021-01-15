@@ -777,13 +777,11 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
   if (m_hide) return;
   m_t << "<table rows=\"" << t->numRows()
       << "\" cols=\"" << t->numColumns() << "\"" ;
-  HtmlAttribListIterator li(t->attribs());
-  HtmlAttrib* opt;
-  for (li.toFirst(); (opt = li.current()); ++li)
+  for (const auto &opt : t->attribs())
   {
-    if (opt->name=="width")
+    if (opt.name=="width")
     {
-      m_t << " " << opt->name << "=\"" << opt->value << "\"";
+      m_t << " " << opt.name << "=\"" << opt.value << "\"";
     }
   }
   m_t << ">";
@@ -811,49 +809,47 @@ void XmlDocVisitor::visitPre(DocHtmlCell *c)
 {
   if (m_hide) return;
   if (c->isHeading()) m_t << "<entry thead=\"yes\""; else m_t << "<entry thead=\"no\"";
-  HtmlAttribListIterator li(c->attribs());
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : c->attribs())
   {
-    if (opt->name=="colspan" || opt->name=="rowspan")
+    if (opt.name=="colspan" || opt.name=="rowspan")
     {
-      m_t << " " << opt->name << "=\"" << opt->value.toInt() << "\"";
+      m_t << " " << opt.name << "=\"" << opt.value.toInt() << "\"";
     }
-    else if (opt->name=="align" &&
-             (opt->value=="right" || opt->value=="left" || opt->value=="center"))
+    else if (opt.name=="align" &&
+             (opt.value=="right" || opt.value=="left" || opt.value=="center"))
     {
-      m_t << " align=\"" << opt->value << "\"";
+      m_t << " align=\"" << opt.value << "\"";
     }
-    else if (opt->name=="valign" &&
-      (opt->value == "bottom" || opt->value == "top" || opt->value == "middle"))
+    else if (opt.name=="valign" &&
+      (opt.value == "bottom" || opt.value == "top" || opt.value == "middle"))
     {
-      m_t << " valign=\"" << opt->value << "\"";
+      m_t << " valign=\"" << opt.value << "\"";
     }
-    else if (opt->name=="width")
+    else if (opt.name=="width")
     {
-      m_t << " width=\"" << opt->value << "\"";
+      m_t << " width=\"" << opt.value << "\"";
     }
-    else if (opt->name=="class") // handle markdown generated attributes
+    else if (opt.name=="class") // handle markdown generated attributes
     {
-      if (opt->value.left(13)=="markdownTable") // handle markdown generated attributes
+      if (opt.value.left(13)=="markdownTable") // handle markdown generated attributes
       {
-        if (opt->value.right(5)=="Right")
+        if (opt.value.right(5)=="Right")
         {
           m_t << " align='right'";
         }
-        else if (opt->value.right(4)=="Left")
+        else if (opt.value.right(4)=="Left")
         {
           m_t << " align='left'";
         }
-        else if (opt->value.right(6)=="Center")
+        else if (opt.value.right(6)=="Center")
         {
           m_t << " align='center'";
         }
         // skip 'markdownTable*' value ending with "None"
       }
-      else if (!opt->value.isEmpty())
+      else if (!opt.value.isEmpty())
       {
-        m_t << " class=\"" << convertToXML(opt->value) << "\"";
+        m_t << " class=\"" << convertToXML(opt.value) << "\"";
       }
     }
   }
@@ -928,7 +924,13 @@ void XmlDocVisitor::visitPre(DocImage *img)
   {
     baseName = correctURL(url,img->relPath());
   }
-  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE, img->type(), img->width(), img->height(), img->attribs().find("alt"), img->isInlineImage());
+  HtmlAttribList attribs = img->attribs();
+  auto it = std::find_if(attribs.begin(),attribs.end(),
+                         [](const auto &att) { return att.name=="alt"; });
+  QCString altValue = it!=attribs.end() ? it->value : "";
+  visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE,
+                img->type(), img->width(), img->height(),
+                altValue, img->isInlineImage());
 
   // copy the image to the output dir
   FileDef *fd;

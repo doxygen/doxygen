@@ -213,30 +213,19 @@ static bool isInvisibleNode(const DocNode *node)
       ;
 }
 
-static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList *mergeInto)
+static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList &mergeInto)
 {
-  HtmlAttribListIterator li(attribs);
-  HtmlAttrib *att;
-  for (li.toFirst();(att=li.current());++li)
+  for (const auto &att : attribs)
   {
-    HtmlAttribListIterator ml(*mergeInto);
-    HtmlAttrib *opt;
-    bool found = false;
-    for (ml.toFirst();(opt=ml.current());++ml)
+    auto it = std::find_if(mergeInto.begin(),mergeInto.end(),
+                           [&att](const auto &opt) { return opt.name==att.name; });
+    if (it!=mergeInto.end()) // attribute name already in mergeInto
     {
-      if (opt->name == att -> name)
-      {
-        found = true;
-        break;
-      }
+       it->value = it->value + " " + att.value;
     }
-    if (found)
+    else // attribute name not yet in mergeInto
     {
-       opt->value = opt->value + " " + att->value;
-    }
-    else
-    {
-      mergeInto->append(att);
+      mergeInto.push_back(att);
     }
   }
 }
@@ -244,31 +233,29 @@ static void mergeHtmlAttributes(const HtmlAttribList &attribs, HtmlAttribList *m
 static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAltValue = 0)
 {
   QCString result;
-  HtmlAttribListIterator li(attribs);
-  HtmlAttrib *att;
-  for (li.toFirst();(att=li.current());++li)
+  for (const auto &att : attribs)
   {
-    if (!att->value.isEmpty())  // ignore attribute without values as they
+    if (!att.value.isEmpty())  // ignore attribute without values as they
                                 // are not XHTML compliant, with the exception
 				// of the alt attribute with the img tag
     {
-      if (att->name=="alt" && pAltValue) // optionally return the value of alt separately
+      if (att.name=="alt" && pAltValue) // optionally return the value of alt separately
                                          // need to convert <img> to <object> for SVG images,
                                          // which do not support the alt attribute
       {
-        *pAltValue = att->value;
+        *pAltValue = att.value;
       }
       else
       {
         result+=" ";
-        result+=att->name;
-        result+="=\""+convertToXML(att->value)+"\"";
+        result+=att.name;
+        result+="=\""+convertToXML(att.value)+"\"";
       }
     }
-    else if (att->name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
+    else if (att.name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
     {
         result+=" ";
-        result+=att->name;
+        result+=att.name;
         result+="=\"nowrap\"";
     }
   }
@@ -1726,10 +1713,10 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       HtmlAttrib opt;
       opt.name  = "style";
       opt.value = "pointer-events: none;";
-      extraAttribs.append(&opt);
+      extraAttribs.push_back(opt);
     }
     QCString alt;
-    mergeHtmlAttributes(img->attribs(),&extraAttribs);
+    mergeHtmlAttributes(img->attribs(),extraAttribs);
     QCString attrs = htmlAttribsToString(extraAttribs,&alt);
     QCString src;
     if (url.isEmpty())
