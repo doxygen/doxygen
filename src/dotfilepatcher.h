@@ -16,8 +16,9 @@
 #ifndef DOTFILEPATCHER_H
 #define DOTFILEPATCHER_H
 
+#include <vector>
+
 #include "qcstring.h"
-#include "qlist.h"
 
 class FTextStream;
 
@@ -54,6 +55,10 @@ class DotFilePatcher
   private:
     struct Map
     {
+      Map(const QCString &mf,const QCString &rp,bool uo,const QCString &ctx,
+          const QCString &lab,bool zoom=false,int gId=-1) :
+        mapFile(mf), relPath(rp), urlOnly(uo), context(ctx),
+        label(lab), zoomable(zoom), graphId(gId) {}
       QCString mapFile;
       QCString relPath;
       bool     urlOnly;
@@ -62,7 +67,7 @@ class DotFilePatcher
       bool     zoomable;
       int      graphId;
     };
-    QList<Map> m_maps;
+    std::vector<Map> m_maps;
     QCString m_patchFile;
 };
 

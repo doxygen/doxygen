@@ -36,9 +36,10 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
     if (rmd->showInCallGraph())
     {
       QCString uniqueId = getUniqueId(rmd);
-      DotNode *bn  = m_usedNodes->find(uniqueId);
-      if (bn) // file is already a node in the graph
+      auto it = m_usedNodes.find(uniqueId.str());
+      if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
+        DotNode *bn = it->second;
         n->addChild(bn,0,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
@@ -56,7 +57,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
           name = rmd->qualifiedName();
         }
         QCString tooltip = rmd->briefDescriptionAsTooltip();
-        bn = new DotNode(
+        DotNode *bn = new DotNode(
             getNextNodeNumber(),
             linkToText(rmd->getLanguage(),name,FALSE),
             tooltip,
@@ -66,7 +67,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
         n->addChild(bn,0,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
-        m_usedNodes->insert(uniqueId,bn);
+        m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
 
         buildGraph(bn,rmd,distance+1);
       }
@@ -74,11 +75,12 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
   }
 }
 
-void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
+void DotCallGraph::determineVisibleNodes(DotNodeDeque &queue, int &maxNodes)
 {
-  while (queue.count()>0 && maxNodes>0)
+  while (!queue.empty() && maxNodes>0)
   {
-    DotNode *n = queue.take(0);
+    DotNode *n = queue.front();
+    queue.pop_front();
     if (!n->isVisible() && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
     {
       n->markAsVisible();
@@ -86,17 +88,18 @@ void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
       // add direct children
       for (const auto &dn : n->children())
       {
-        queue.append(dn);
+        queue.push_back(dn);
       }
     }
   }
 }
 
-void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
+void DotCallGraph::determineTruncatedNodes(DotNodeDeque &queue)
 {
-  while (queue.count()>0)
+  while (!queue.empty())
   {
-    DotNode *n = queue.take(0);
+    DotNode *n = queue.front();
+    queue.pop_front();
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
       bool truncated = FALSE;
@@ -105,7 +108,7 @@ void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
         if (!dn->isVisible())
           truncated = TRUE;
         else
-          queue.append(dn);
+          queue.push_back(dn);
       }
       n->markAsTruncated(truncated);
     }
@@ -135,23 +138,21 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
     TRUE     // root node
   );
   m_startNode->setDistance(0);
-  m_usedNodes = new QDict<DotNode>(1009);
-  m_usedNodes->insert(uniqueId,m_startNode);
+  m_usedNodes.insert(std::make_pair(uniqueId.str(),m_startNode));
   buildGraph(m_startNode,md,1);
 
   int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
-  QList<DotNode> openNodeQueue;
-  openNodeQueue.append(m_startNode);
+  DotNodeDeque openNodeQueue;
+  openNodeQueue.push_back(m_startNode);
   determineVisibleNodes(openNodeQueue,maxNodes);
   openNodeQueue.clear();
-  openNodeQueue.append(m_startNode);
+  openNodeQueue.push_back(m_startNode);
   determineTruncatedNodes(openNodeQueue);
 }
 
 DotCallGraph::~DotCallGraph()
 {
   DotNode::deleteNodes(m_startNode);
-  delete m_usedNodes;
 }
 
 QCString DotCallGraph::getBaseName() const

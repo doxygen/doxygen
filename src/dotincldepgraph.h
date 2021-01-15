@@ -19,6 +19,7 @@
 #include "qcstring.h"
 #include "filedef.h"
 
+#include "dotnode.h"
 #include "dotgraph.h"
 
 /** Representation of an include dependency graph */
@@ -44,11 +45,11 @@ class DotInclDepGraph : public DotGraph
   private:
     QCString diskName() const;
     void buildGraph(DotNode *n,const FileDef *fd,int distance);
-    void determineVisibleNodes(QList<DotNode> &queue,int &maxNodes);
-    void determineTruncatedNodes(QList<DotNode> &queue);
+    void determineVisibleNodes(DotNodeDeque &queue,int &maxNodes);
+    void determineTruncatedNodes(DotNodeDeque &queue);
 
     DotNode        *m_startNode;
-    QDict<DotNode> *m_usedNodes;
+    DotNodeMap      m_usedNodes;
     QCString        m_inclDepFileName;
     QCString        m_inclByDepFileName;
     bool            m_inverse;

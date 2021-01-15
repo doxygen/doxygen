@@ -16,6 +16,7 @@
 #ifndef DOTCALLGRAPH_H
 #define DOTCALLGRAPH_H
 
+#include "dotnode.h"
 #include "dotgraph.h"
 #include "ftextstream.h"
 #include "memberdef.h"
@@ -41,10 +42,10 @@ class DotCallGraph : public DotGraph
 
   private:
     void buildGraph(DotNode *n,const MemberDef *md,int distance);
-    void determineVisibleNodes(QList<DotNode> &queue, int &maxNodes);
-    void determineTruncatedNodes(QList<DotNode> &queue);
+    void determineVisibleNodes(DotNodeDeque &queue, int &maxNodes);
+    void determineTruncatedNodes(DotNodeDeque &queue);
     DotNode        *m_startNode;
-    QDict<DotNode> *m_usedNodes;
+    DotNodeMap      m_usedNodes;
     bool            m_inverse;
     QCString        m_diskName;
     const Definition * m_scope;

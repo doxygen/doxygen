@@ -16,8 +16,8 @@
 #ifndef DOTGROUPCOLLABORATION_H
 #define DOTGROUPCOLLABORATION_H
 
+#include "dotnode.h"
 #include "dotgraph.h"
-#include "qlist.h"
 #include "groupdef.h"
 
 /** Representation of a group collaboration graph */
@@ -58,14 +58,13 @@ class DotGroupCollaboration : public DotGraph
     struct Edge
     {
       Edge(DotNode *start,DotNode *end,EdgeType type)
-        : pNStart(start), pNEnd(end), eType(type)
-      { links.setAutoDelete(TRUE); }
+        : pNStart(start), pNEnd(end), eType(type) {}
 
       DotNode* pNStart;
       DotNode* pNEnd;
       EdgeType eType;
 
-      QList<Link> links;
+      std::vector<Link> links;
       void write( FTextStream &t ) const;
     };
 
@@ -77,9 +76,9 @@ class DotGroupCollaboration : public DotGraph
         const QCString& _label, const QCString& _url );
 
     DotNode        *m_rootNode;
-    QDict<DotNode> *m_usedNodes;
+    DotNodeMap      m_usedNodes;
     QCString        m_diskName;
-    QList<Edge>     m_edges;
+    std::vector< std::unique_ptr<Edge> >     m_edges;
 };
 
 #endif

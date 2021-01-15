@@ -17,7 +17,7 @@
 #define DOTCLASSGRAPH_H
 
 #include "classdef.h"
-
+#include "dotnode.h"
 #include "dotgraph.h"
 
 /** Representation of a class inheritance or dependency graph */
@@ -46,13 +46,13 @@ protected:
 private:
   void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
   bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
-  void determineTruncatedNodes(QList<DotNode> &queue,bool includeParents);
+  void determineTruncatedNodes(DotNodeDeque &queue,bool includeParents);
   void addClass(const ClassDef *cd,DotNode *n,int prot,const char *label,
     const char *usedName,const char *templSpec,
     bool base,int distance);
 
   DotNode        *   m_startNode;
-  QDict<DotNode> *   m_usedNodes;
+  DotNodeMap         m_usedNodes;
   GraphType          m_graphType;
   QCString           m_collabFileName;
   QCString           m_inheritFileName;

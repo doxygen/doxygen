@@ -255,7 +255,6 @@ bool DotFilePatcher::convertMapFile(FTextStream &t,const char *mapName,
 DotFilePatcher::DotFilePatcher(const char *patchFile)
   : m_patchFile(patchFile)
 {
-  m_maps.setAutoDelete(TRUE);
 }
 
 bool DotFilePatcher::isSVGFile() const
@@ -266,30 +265,16 @@ bool DotFilePatcher::isSVGFile() const
 int DotFilePatcher::addMap(const QCString &mapFile,const QCString &relPath,
                            bool urlOnly,const QCString &context,const QCString &label)
 {
-  int id = m_maps.count();
-  Map *map = new Map;
-  map->mapFile  = mapFile;
-  map->relPath  = relPath;
-  map->urlOnly  = urlOnly;
-  map->context  = context;
-  map->label    = label;
-  map->zoomable = FALSE;
-  map->graphId  = -1;
-  m_maps.append(map);
+  int id = (int)m_maps.size();
+  m_maps.emplace_back(mapFile,relPath,urlOnly,context,label);
   return id;
 }
 
 int DotFilePatcher::addFigure(const QCString &baseName,
                               const QCString &figureName,bool heightCheck)
 {
-  int id = m_maps.count();
-  Map *map = new Map;
-  map->mapFile  = figureName;
-  map->urlOnly  = heightCheck;
-  map->label    = baseName;
-  map->zoomable = FALSE;
-  map->graphId  = -1;
-  m_maps.append(map);
+  int id = (int)m_maps.size();
+  m_maps.emplace_back(figureName,"",heightCheck,"",baseName);
   return id;
 }
 
@@ -297,14 +282,8 @@ int DotFilePatcher::addSVGConversion(const QCString &relPath,bool urlOnly,
                                      const QCString &context,bool zoomable,
                                      int graphId)
 {
-  int id = m_maps.count();
-  Map *map = new Map;
-  map->relPath  = relPath;
-  map->urlOnly  = urlOnly;
-  map->context  = context;
-  map->zoomable = zoomable;
-  map->graphId  = graphId;
-  m_maps.append(map);
+  int id = (int)m_maps.size();
+  m_maps.emplace_back("",relPath,urlOnly,context,"",zoomable,graphId);
   return id;
 }
 
@@ -312,14 +291,8 @@ int DotFilePatcher::addSVGObject(const QCString &baseName,
                                  const QCString &absImgName,
                                  const QCString &relPath)
 {
-  int id = m_maps.count();
-  Map *map = new Map;
-  map->mapFile  = absImgName;
-  map->relPath  = relPath;
-  map->label    = baseName;
-  map->zoomable = FALSE;
-  map->graphId  = -1;
-  m_maps.append(map);
+  int id = (int)m_maps.size();
+  m_maps.emplace_back(absImgName,relPath,false,"",baseName);
   return id;
 }
 
@@ -332,10 +305,10 @@ bool DotFilePatcher::run() const
   QCString relPath;
   if (isSVGFile)
   {
-    Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
-    interactiveSVG_local = interactiveSVG_local && map->zoomable;
-    graphId = map->graphId;
-    relPath = map->relPath;
+    const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
+    interactiveSVG_local = interactiveSVG_local && map.zoomable;
+    graphId = map.graphId;
+    relPath = map.relPath;
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    m_patchFile.data(),map->zoomable);
   }
@@ -418,8 +391,8 @@ bool DotFilePatcher::run() const
                                        // unless we are inside the header of the SVG.
                                        // Then we replace it with another header.
       {
-        Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
-        t << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
+        const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
+        t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
     else if ((i=line.find("<!-- SVG"))!=-1 || (i=line.find("[!-- SVG"))!=-1)
@@ -428,15 +401,15 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
+      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
       {
         int e = QMAX(line.find("--]"),line.find("-->"));
-        Map *map = m_maps.at(mapId);
+        const Map &map = m_maps.at(mapId);
         //printf("DotFilePatcher::writeSVGFigure: file=%s zoomable=%d\n",
-        //  m_patchFile.data(),map->zoomable);
-        if (!writeSVGFigureLink(t,map->relPath,map->label,map->mapFile))
+        //  m_patchFile.data(),map.zoomable);
+        if (!writeSVGFigureLink(t,map.relPath,map.label,map.mapFile))
         {
-          err("Problem extracting size from SVG file %s\n",map->mapFile.data());
+          err("Problem extracting size from SVG file %s\n",map.mapFile.data());
         }
         if (e!=-1) t << line.mid(e+3);
       }
@@ -451,17 +424,17 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       t << line.left(i);
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
+      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
       {
         QGString result;
         FTextStream tt(&result);
-        Map *map = m_maps.at(mapId);
+        const Map &map = m_maps.at(mapId);
         //printf("patching MAP %d in file %s with contents of %s\n",
-        //   mapId,m_patchFile.data(),map->mapFile.data());
-        convertMapFile(tt,map->mapFile,map->relPath,map->urlOnly,map->context);
+        //   mapId,m_patchFile.data(),map.mapFile.data());
+        convertMapFile(tt,map.mapFile,map.relPath,map.urlOnly,map.context);
         if (!result.isEmpty())
         {
-          t << "<map name=\"" << correctId(map->label) << "\" id=\"" << correctId(map->label) << "\">" << endl;
+          t << "<map name=\"" << correctId(map.label) << "\" id=\"" << correctId(map.label) << "\">" << endl;
           t << result;
           t << "</map>" << endl;
         }
@@ -477,12 +450,12 @@ bool DotFilePatcher::run() const
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);
       //printf("line='%s' n=%d\n",line.data()+i,n);
-      if (n==1 && mapId>=0 && mapId<(int)m_maps.count())
+      if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
       {
-        Map *map = m_maps.at(mapId);
+        const Map &map = m_maps.at(mapId);
         //printf("patching FIG %d in file %s with contents of %s\n",
-        //   mapId,m_patchFile.data(),map->mapFile.data());
-        if (!writeVecGfxFigure(t,map->label,map->mapFile))
+        //   mapId,m_patchFile.data(),map.mapFile.data());
+        if (!writeVecGfxFigure(t,map.label,map.mapFile))
         {
           err("problem writing FIG %d figure!\n",mapId);
           return FALSE;
@@ -530,8 +503,8 @@ bool DotFilePatcher::run() const
         break;
       }
       line.resize(numBytes+1);
-      Map *map = m_maps.at(0); // there is only one 'map' for a SVG file
-      to << replaceRef(line,map->relPath,map->urlOnly,map->context,"_top");
+      const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
+      to << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
     }
     fi.close();
     fo.close();

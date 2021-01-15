@@ -17,6 +17,8 @@
 #define DOTNODE_H
 
 #include <vector>
+#include <map>
+#include <deque>
 
 #include "dotgraph.h"
 
@@ -126,6 +128,14 @@ class DotNode
     int              m_distance   = 1000;    //!< shortest path to the root node
     bool             m_renumbered = false;   //!< indicates if the node has been renumbered (to prevent endless loops)
     int              m_subgraphId = -1;
+};
+
+class DotNodeMap : public std::map<std::string,DotNode*>
+{
+};
+
+class DotNodeDeque : public std::deque<DotNode*>
+{
 };
 
 #endif
