@@ -210,54 +210,5 @@ struct FilesInDir
   std::vector<const FileDef *> files;
 };
 
-/** Class representing an entry (file or sub directory) in a directory */
-class DirEntry
-{
-  public:
-    enum EntryKind { Dir, File };
-    DirEntry(DirEntry *parent,FileDef *fd)
-       : m_parent(parent), m_name(fd->name()), m_kind(File), m_fd(fd),
-         m_isLast(FALSE) { }
-    DirEntry(DirEntry *parent,QCString name)
-       : m_parent(parent), m_name(name), m_kind(Dir),
-         m_fd(0), m_isLast(FALSE) { }
-    virtual ~DirEntry() { }
-    EntryKind kind() const { return m_kind; }
-    FileDef *file()  const { return m_fd; }
-    bool isLast() const    { return m_isLast; }
-    void setLast(bool b)   { m_isLast=b; }
-    DirEntry *parent() const { return m_parent; }
-    QCString name() const  { return m_name; }
-    QCString path() const  { return parent() ? parent()->path()+"/"+name() : name(); }
-
-  protected:
-    DirEntry *m_parent;
-    QCString m_name;
-
-  private:
-    EntryKind m_kind;
-    FileDef   *m_fd;
-    bool m_isLast;
-};
-
-/** Class representing a directory tree of DirEntry objects. */
-class Directory : public DirEntry
-{
-  public:
-    Directory(Directory *parent,const QCString &name)
-       : DirEntry(parent,name)
-    { m_children.setAutoDelete(TRUE); }
-    virtual ~Directory()              {}
-    void addChild(DirEntry *d)        { m_children.append(d); d->setLast(TRUE); }
-    QList<DirEntry> &children()       { return m_children; }
-    void rename(const QCString &name) { m_name=name; }
-    void reParent(Directory *parent)  { m_parent=parent; }
-
-  private:
-    QList<DirEntry> m_children;
-};
-
-void generateFileTree();
-
 #endif
 

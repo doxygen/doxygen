@@ -11224,7 +11224,6 @@ void parseInput()
   g_s.begin("Building file list...\n");
   buildFileList(root.get());
   g_s.end();
-  //generateFileTree();
 
   g_s.begin("Building class list...\n");
   buildClassList(root.get());
