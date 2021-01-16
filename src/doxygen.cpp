@@ -11576,11 +11576,11 @@ void generateOutput()
     bool generateQhp         = Config_getBool(GENERATE_QHP);
     bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
     bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
-    if (generateEclipseHelp) Doxygen::indexList->addIndex(new EclipseHelp);
-    if (generateHtmlHelp)    Doxygen::indexList->addIndex(new HtmlHelp);
-    if (generateQhp)         Doxygen::indexList->addIndex(new Qhp);
-    if (generateTreeView)    Doxygen::indexList->addIndex(new FTVHelp(TRUE));
-    if (generateDocSet)      Doxygen::indexList->addIndex(new DocSets);
+    if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
+    if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
+    if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
+    if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
+    if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
     Doxygen::indexList->initialize();
     HtmlGenerator::writeTabData();
   }

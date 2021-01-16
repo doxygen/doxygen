@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,7 +17,9 @@
 #define INDEX_H
 
 #include <utility>
-#include <qlist.h>
+#include <vector>
+#include <memory>
+
 #include <qcstring.h>
 
 class Definition;
@@ -55,7 +55,7 @@ class IndexIntf
 class IndexList : public IndexIntf
 {
   private:
-    QList<IndexIntf> m_intfs;
+    std::vector< std::unique_ptr<IndexIntf> > m_intfs;
 
     // For each index format we forward the method call.
     // We use C++11 variadic templates and perfect forwarding to implement foreach() generically,
@@ -63,19 +63,21 @@ class IndexList : public IndexIntf
     template<class... Ts,class... As>
     void foreach(void (IndexIntf::*methodPtr)(Ts...),As&&... args)
     {
-      QListIterator<IndexIntf> li(m_intfs);
-      for (li.toFirst();li.current();++li)
+      for (const auto &intf : m_intfs)
       {
-        (li.current()->*methodPtr)(std::forward<As>(args)...);
+        (intf.get()->*methodPtr)(std::forward<As>(args)...);
       }
     }
 
   public:
     /** Creates a list of indexes */
-    IndexList() { m_intfs.setAutoDelete(TRUE); m_enabled=TRUE; }
-    /** Add an index generator to the list */
-    void addIndex(IndexIntf *intf)
-    { m_intfs.append(intf); }
+    IndexList() { m_enabled=TRUE; }
+
+    /** Add an index generator to the list, using a syntax similar to std::make_unique<T>() */
+    template<class T,class... As>
+    void addIndex(As&&... args)
+    { m_intfs.push_back(std::make_unique<T>(std::forward<As>(args)...)); }
+
     void disable()
     { m_enabled = FALSE; }
     void enable()
