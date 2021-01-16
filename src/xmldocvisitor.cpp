@@ -459,7 +459,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
     {
       m_t << "<programlisting filename=\"" << op->includeFileName() << "\">";
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide = TRUE;
   }
   QCString locLangExt = getFileNameExtension(op->includeFileName());
@@ -467,7 +467,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op->type()!=DocIncOperator::Skip)
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide)
     {
       FileDef *fd = 0;
@@ -489,12 +489,12 @@ void XmlDocVisitor::visit(DocIncOperator *op)
                                          );
       if (fd) delete fd;
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
   if (op->isLast())
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide) m_t << "</programlisting>";
   }
   else
@@ -1249,18 +1249,5 @@ void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
 void XmlDocVisitor::endLink()
 {
   m_t << "</ref>";
-}
-
-void XmlDocVisitor::pushEnabled()
-{
-  m_enabled.push(new bool(m_hide));
-}
-
-void XmlDocVisitor::popEnabled()
-{
-  bool *v=m_enabled.pop();
-  ASSERT(v!=0);
-  m_hide = *v;
-  delete v;
 }
 

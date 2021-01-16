@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,7 +17,6 @@
 #define _HTMLDOCVISITOR_H
 
 #include "docvisitor.h"
-#include <qstack.h>
 #include <qcstring.h>
 
 class Definition;
@@ -34,11 +30,11 @@ class HtmlDocVisitor : public DocVisitor
 {
   public:
     HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const Definition *ctx);
-    
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
+
     void visit(DocWord *);
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
@@ -60,7 +56,7 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
+
     void visitPre(DocAutoList *);
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
@@ -139,9 +135,9 @@ class HtmlDocVisitor : public DocVisitor
   private:
 
     //--------------------------------------
-    // helper functions 
+    // helper functions
     //--------------------------------------
-    
+
     void writeObfuscatedMailAddress(const QCString &url);
     void filter(const char *str);
     void filterQuotedCdataAttr(const char* str);
@@ -154,9 +150,6 @@ class HtmlDocVisitor : public DocVisitor
     void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context);
     void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context);
 
-    void pushEnabled();
-    void popEnabled();
-
     void forceEndParagraph(DocNode *n);
     void forceStartParagraph(DocNode *n);
 
@@ -168,7 +161,6 @@ class HtmlDocVisitor : public DocVisitor
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
-    QStack<bool> m_enabled;
     const Definition *m_ctx;
     QCString m_langExt;
 };

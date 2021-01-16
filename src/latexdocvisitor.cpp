@@ -557,7 +557,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   if (op->isFirst())
   {
     if (!m_hide) m_ci.startCodeFragment("DoxyCodeInclude");
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide = TRUE;
   }
   QCString locLangExt = getFileNameExtension(op->includeFileName());
@@ -565,7 +565,7 @@ void LatexDocVisitor::visit(DocIncOperator *op)
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op->type()!=DocIncOperator::Skip)
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide)
     {
       FileDef *fd = 0;
@@ -586,12 +586,12 @@ void LatexDocVisitor::visit(DocIncOperator *op)
                                          );
       if (fd) delete fd;
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
   if (op->isLast())
   {
-    popEnabled();
+    m_hide=popHidden();
     if (!m_hide) m_ci.endCodeFragment("DoxyCodeInclude");
   }
   else
@@ -1382,7 +1382,7 @@ void LatexDocVisitor::visitPre(DocImage *img)
   }
   else // other format -> skip
   {
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
 }
@@ -1396,7 +1396,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
   }
   else // other format
   {
-    popEnabled();
+    m_hide = popHidden();
   }
 }
 
@@ -1822,19 +1822,6 @@ void LatexDocVisitor::endLink(const QCString &ref,const QCString &file,const QCS
       m_t << "}";
     }
   }
-}
-
-void LatexDocVisitor::pushEnabled()
-{
-  m_enabled.push(new bool(m_hide));
-}
-
-void LatexDocVisitor::popEnabled()
-{
-  bool *v=m_enabled.pop();
-  ASSERT(v!=0);
-  m_hide = *v;
-  delete v;
 }
 
 void LatexDocVisitor::startDotFile(const QCString &fileName,

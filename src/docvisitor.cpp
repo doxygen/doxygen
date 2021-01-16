@@ -14,6 +14,7 @@
 
 
 #include <unordered_map>
+#include <stack>
 
 #include "parserintf.h"
 #include "docvisitor.h"
@@ -25,6 +26,7 @@ struct DocVisitor::Private
 {
   int id;
   std::unordered_map< std::string, std::unique_ptr<CodeParserInterface> > parserFactoryMap;
+  std::stack<bool> hidden;
 };
 
 DocVisitor::DocVisitor(int id) : m_p(std::make_unique<Private>())
@@ -55,4 +57,17 @@ CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
 int DocVisitor::id() const
 {
   return m_p->id;
+}
+
+void DocVisitor::pushHidden(bool hide)
+{
+  m_p->hidden.push(hide);
+}
+
+bool DocVisitor::popHidden()
+{
+  if (m_p->hidden.empty()) return false;
+  bool v = m_p->hidden.top();
+  m_p->hidden.pop();
+  return v;
 }

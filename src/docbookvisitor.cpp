@@ -511,7 +511,7 @@ DB_VIS_C
     {
       m_t << "<programlisting>";
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide = TRUE;
   }
   QCString locLangExt = getFileNameExtension(op->includeFileName());
@@ -519,7 +519,7 @@ DB_VIS_C
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op->type()!=DocIncOperator::Skip)
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide)
     {
       FileDef *fd = 0;
@@ -541,12 +541,12 @@ DB_VIS_C
                                        );
       if (fd) delete fd;
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
   if (op->isLast())
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide) m_t << "</programlisting>";
   }
   else
@@ -1201,7 +1201,7 @@ DB_VIS_C
   }
   else
   {
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
 }
@@ -1243,7 +1243,7 @@ DB_VIS_C
   }
   else
   {
-    popEnabled();
+    m_hide = popHidden();
   }
 }
 
@@ -1604,19 +1604,6 @@ void DocbookDocVisitor::endLink()
 {
 DB_VIS_C
   m_t << "</link>";
-}
-
-void DocbookDocVisitor::pushEnabled()
-{
-DB_VIS_C
-  m_enabled.push(m_hide);
-}
-
-void DocbookDocVisitor::popEnabled()
-{
-DB_VIS_C
-  m_hide=m_enabled.top();
-  m_enabled.pop();
 }
 
 void DocbookDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)

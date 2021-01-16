@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,7 +20,6 @@
 #define _XMLDOCVISITOR_H
 
 #include "docvisitor.h"
-#include <qstack.h>
 #include <qcstring.h>
 
 class FTextStream;
@@ -32,11 +31,11 @@ class XmlDocVisitor : public DocVisitor
 {
   public:
     XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci);
-    
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
+
     void visit(DocWord *);
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
@@ -58,7 +57,7 @@ class XmlDocVisitor : public DocVisitor
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
+
     void visitPre(DocAutoList *);
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
@@ -142,16 +141,13 @@ class XmlDocVisitor : public DocVisitor
   private:
 
     //--------------------------------------
-    // helper functions 
+    // helper functions
     //--------------------------------------
-    
+
     void filter(const char *str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink();
-
-    void pushEnabled();
-    void popEnabled();
 
     //--------------------------------------
     // state variables
@@ -161,7 +157,6 @@ class XmlDocVisitor : public DocVisitor
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
-    QStack<bool> m_enabled;
     QCString m_langExt;
 };
 

@@ -540,12 +540,12 @@ void RTFDocVisitor::visit(DocIncOperator *op)
       m_t << "\\par" << endl;
       m_t << rtf_Style_Reset << getStyle("CodeExample");
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide = TRUE;
   }
   if (op->type()!=DocIncOperator::Skip)
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide)
     {
       FileDef *fd = 0;
@@ -566,12 +566,12 @@ void RTFDocVisitor::visit(DocIncOperator *op)
                                        );
       if (fd) delete fd;
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
   if (op->isLast())
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide)
     {
       m_t << "\\par";
@@ -1206,7 +1206,7 @@ void RTFDocVisitor::includePicturePreRTF(const QCString name, bool isTypeRTF, bo
   }
   else // other format -> skip
   {
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
 }
@@ -1241,7 +1241,7 @@ void RTFDocVisitor::includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool 
   }
   else
   {
-    popEnabled();
+    m_hide = popHidden();
   }
 }
 
@@ -1350,27 +1350,6 @@ void RTFDocVisitor::visitPost(DocSecRefList *)
   m_t << "}" << endl;
   m_lastIsPara=TRUE;
 }
-
-//void RTFDocVisitor::visitPre(DocLanguage *l)
-//{
-//  DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocLanguage)}\n");
-//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    pushEnabled();
-//    m_hide = TRUE;
-//  }
-//}
-//
-//void RTFDocVisitor::visitPost(DocLanguage *l)
-//{
-//  DBG_RTF("{\\comment RTFDocVisitor::visitPost(DocLanguage)}\n");
-//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    popEnabled();
-//  }
-//}
 
 void RTFDocVisitor::visitPre(DocParamSect *s)
 {
@@ -1813,19 +1792,6 @@ void RTFDocVisitor::endLink(const QCString &ref)
     m_t << "}";
   }
   m_lastIsPara=FALSE;
-}
-
-void RTFDocVisitor::pushEnabled()
-{
-  m_enabled.push(new bool(m_hide));
-}
-
-void RTFDocVisitor::popEnabled()
-{
-  bool *v=m_enabled.pop();
-  ASSERT(v!=0);
-  m_hide = *v;
-  delete v;
 }
 
 void RTFDocVisitor::writeDotFile(DocDotFile *df)

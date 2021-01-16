@@ -176,9 +176,6 @@ class LatexDocVisitor : public DocVisitor
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
 
-    void pushEnabled();
-    void popEnabled();
-
     //--------------------------------------
     // state variables
     //--------------------------------------
@@ -190,7 +187,6 @@ class LatexDocVisitor : public DocVisitor
     bool m_hide;
     bool m_hideCaption;
     bool m_insideTabbing;
-    QStack<bool> m_enabled;
     QCString m_langExt;
 
     struct TableState

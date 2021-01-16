@@ -143,8 +143,6 @@ class DocbookDocVisitor : public DocVisitor
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();
-    void pushEnabled();
-    void popEnabled();
     void startMscFile(const QCString &fileName,const QCString &width,
     const QCString &height, bool hasCaption,const DocNodeList &children);
     void endMscFile(bool hasCaption);

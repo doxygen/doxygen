@@ -782,7 +782,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   {
     forceEndParagraph(op);
     if (!m_hide) m_ci.startCodeFragment("DoxyCode");
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
   QCString locLangExt = getFileNameExtension(op->includeFileName());
@@ -790,7 +790,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   if (op->type()!=DocIncOperator::Skip)
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide)
     {
       FileDef *fd = 0;
@@ -816,12 +816,12 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
                                );
       if (fd) delete fd;
     }
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
   if (op->isLast())
   {
-    popEnabled();
+    m_hide = popHidden();
     if (!m_hide) m_ci.endCodeFragment("DoxyCode");
     forceStartParagraph(op);
   }
@@ -1771,7 +1771,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
   }
   else // other format -> skip
   {
-    pushEnabled();
+    pushHidden(m_hide);
     m_hide=TRUE;
   }
 }
@@ -1801,7 +1801,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
   }
   else // other format
   {
-    popEnabled();
+    m_hide = popHidden();
   }
 }
 
@@ -1926,25 +1926,6 @@ void HtmlDocVisitor::visitPost(DocSecRefList *s)
   m_t << "</div>" << endl;
   forceStartParagraph(s);
 }
-
-//void HtmlDocVisitor::visitPre(DocLanguage *l)
-//{
-//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    pushEnabled();
-//    m_hide = TRUE;
-//  }
-//}
-//
-//void HtmlDocVisitor::visitPost(DocLanguage *l)
-//{
-//  QCString langId = Config_getEnum(OUTPUT_LANGUAGE);
-//  if (l->id().lower()!=langId.lower())
-//  {
-//    popEnabled();
-//  }
-//}
 
 void HtmlDocVisitor::visitPre(DocParamSect *s)
 {
@@ -2286,19 +2267,6 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
 void HtmlDocVisitor::endLink()
 {
   m_t << "</a>";
-}
-
-void HtmlDocVisitor::pushEnabled()
-{
-  m_enabled.push(new bool(m_hide));
-}
-
-void HtmlDocVisitor::popEnabled()
-{
-  bool *v=m_enabled.pop();
-  ASSERT(v!=0);
-  m_hide = *v;
-  delete v;
 }
 
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
