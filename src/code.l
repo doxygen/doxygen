@@ -2016,20 +2016,15 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>^{B}*"//"[!/][^\n]*\n                { // remove special one-line comment
-                                          if (Config_getBool(STRIP_CODE_COMMENTS))
-                                          {
-                                            yyextra->yyLineNr++;
-                                            //nextCodeLine(yyscanner);
-                                          }
-                                          else
+<*>^{B}*"//"[!/][^\n]*                  { // remove special one-line comment
+                                          if (!Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             startFontClass(yyscanner,"comment");
                                             codifyLines(yyscanner,yytext);
                                             endFontClass(yyscanner);
                                           }
                                         }
-<*>"//"[!/][^\n]*/\n                    { // strip special one-line comment
+<*>"//"[!/][^\n]*                       { // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
                                           if (!Config_getBool(STRIP_CODE_COMMENTS))
                                           {
