@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,10 +16,10 @@
 #ifndef _LATEXDOCVISITOR_H
 #define _LATEXDOCVISITOR_H
 
+#include <stack>
+
 #include "docvisitor.h"
-#include <qstack.h>
 #include <qcstring.h>
-#include <qlist.h>
 
 class FTextStream;
 class LatexCodeGenerator;
@@ -149,7 +146,7 @@ class LatexDocVisitor : public DocVisitor
       int column;
     };
 
-    typedef QList<ActiveRowSpan> RowSpanList;
+    typedef std::vector<ActiveRowSpan> RowSpanList;
 
     //--------------------------------------
     // helper functions
@@ -191,78 +188,75 @@ class LatexDocVisitor : public DocVisitor
 
     struct TableState
     {
-      TableState() : numCols(0), currentColumn(0), inRowSpan(FALSE),
-                     inColSpan(FALSE), firstRow(FALSE)
-      { rowSpans.setAutoDelete(TRUE); }
       RowSpanList rowSpans;
-      int  numCols;
-      int currentColumn;
-      bool inRowSpan;
-      bool inColSpan;
-      bool firstRow;
+      int  numCols = 0;
+      int currentColumn = 0;
+      bool inRowSpan = false;
+      bool inColSpan = false;
+      bool firstRow = false;
     };
-    QStack<TableState> m_tableStateStack; // needed for nested tables
+    std::stack<TableState> m_tableStateStack; // needed for nested tables
     RowSpanList m_emptyRowSpanList;
 
     void pushTableState()
     {
-      m_tableStateStack.push(new TableState);
+      m_tableStateStack.push(TableState());
     }
     void popTableState()
     {
-      delete m_tableStateStack.pop();
+      m_tableStateStack.pop();
     }
     int currentColumn() const
     {
-      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->currentColumn : 0;
+      return !m_tableStateStack.empty() ? m_tableStateStack.top().currentColumn : 0;
     }
     void setCurrentColumn(int col)
     {
-      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->currentColumn = col;
+      if (!m_tableStateStack.empty()) m_tableStateStack.top().currentColumn = col;
     }
     int numCols() const
     {
-      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->numCols : 0;
+      return !m_tableStateStack.empty() ? m_tableStateStack.top().numCols : 0;
     }
     void setNumCols(int num)
     {
-      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->numCols = num;
+      if (!m_tableStateStack.empty()) m_tableStateStack.top().numCols = num;
     }
     bool inRowSpan() const
     {
-      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->inRowSpan : FALSE;
+      return !m_tableStateStack.empty() ? m_tableStateStack.top().inRowSpan : FALSE;
     }
     void setInRowSpan(bool b)
     {
-      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->inRowSpan = b;
+      if (!m_tableStateStack.empty()) m_tableStateStack.top().inRowSpan = b;
     }
     bool inColSpan() const
     {
-      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->inColSpan : FALSE;
+      return !m_tableStateStack.empty() ? m_tableStateStack.top().inColSpan : FALSE;
     }
     void setInColSpan(bool b)
     {
-      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->inColSpan = b;
+      if (!m_tableStateStack.empty()) m_tableStateStack.top().inColSpan = b;
     }
     bool firstRow() const
     {
-      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->firstRow : FALSE;
+      return !m_tableStateStack.empty() ? m_tableStateStack.top().firstRow : FALSE;
     }
     void setFirstRow(bool b)
     {
-      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->firstRow = b;
+      if (!m_tableStateStack.empty()) m_tableStateStack.top().firstRow = b;
     }
-    const RowSpanList &rowSpans()
+    RowSpanList &rowSpans()
     {
-      return !m_tableStateStack.isEmpty() ? m_tableStateStack.top()->rowSpans : m_emptyRowSpanList;
+      return !m_tableStateStack.empty() ? m_tableStateStack.top().rowSpans : m_emptyRowSpanList;
     }
-    void addRowSpan(ActiveRowSpan *span)
+    void addRowSpan(ActiveRowSpan &&span)
     {
-      if (!m_tableStateStack.isEmpty()) m_tableStateStack.top()->rowSpans.append(span);
+      if (!m_tableStateStack.empty()) m_tableStateStack.top().rowSpans.push_back(std::move(span));
     }
     bool insideTable() const
     {
-      return !m_tableStateStack.isEmpty();
+      return !m_tableStateStack.empty();
     }
 
 };

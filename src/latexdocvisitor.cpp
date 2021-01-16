@@ -179,7 +179,6 @@ LatexDocVisitor::LatexDocVisitor(FTextStream &t,LatexCodeGenerator &ci,
     m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
     m_langExt(langExt)
 {
-  m_tableStateStack.setAutoDelete(TRUE);
 }
 
   //--------------------------------------
@@ -1144,20 +1143,18 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
   int c=currentColumn();
   while (c<=numCols()) // end of row while inside a row span?
   {
-    uint i;
-    for (i=0;i<rowSpans().count();i++)
+    for (const auto &span : rowSpans())
     {
-      ActiveRowSpan *span = rowSpans().at(i);
       //printf("  found row span: column=%d rs=%d cs=%d rowIdx=%d cell->rowIdx=%d i=%d c=%d\n",
       //    span->column, span->rowSpan,span->colSpan,row->rowIndex(),span->cell->rowIndex(),i,c);
-      if (span->rowSpan>0 && span->column==c &&  // we are at a cell in a row span
-          row->rowIndex()>span->cell->rowIndex() // but not the row that started the span
+      if (span.rowSpan>0 && span.column==c &&  // we are at a cell in a row span
+          row->rowIndex()>span.cell->rowIndex() // but not the row that started the span
          )
       {
         m_t << "&";
-        if (span->colSpan>1) // row span is also part of a column span
+        if (span.colSpan>1) // row span is also part of a column span
         {
-          m_t << "\\multicolumn{" << span->colSpan << "}{";
+          m_t << "\\multicolumn{" << span.colSpan << "}{";
           m_t <<  "}|}{}";
         }
         else // solitary row span
@@ -1172,23 +1169,21 @@ void LatexDocVisitor::visitPost(DocHtmlRow *row)
   m_t << "\\\\";
 
   int col = 1;
-  uint i;
-  for (i=0;i<rowSpans().count();i++)
+  for (auto &span : rowSpans())
   {
-    ActiveRowSpan *span = rowSpans().at(i);
-    if (span->rowSpan>0) span->rowSpan--;
-    if (span->rowSpan<=0)
+    if (span.rowSpan>0) span.rowSpan--;
+    if (span.rowSpan<=0)
     {
       // inactive span
     }
-    else if (span->column>col)
+    else if (span.column>col)
     {
-      m_t << "\\cline{" << col << "-" << (span->column-1) << "}";
-      col = span->column+span->colSpan;
+      m_t << "\\cline{" << col << "-" << (span.column-1) << "}";
+      col = span.column+span.colSpan;
     }
     else
     {
-      col = span->column+span->colSpan;
+      col = span.column+span.colSpan;
     }
   }
 
@@ -1229,21 +1224,19 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
   setCurrentColumn(currentColumn()+1);
 
   //Skip columns that span from above.
-  uint i;
-  for (i=0;i<rowSpans().count();i++)
+  for (const auto &span : rowSpans())
   {
-    ActiveRowSpan *span = rowSpans().at(i);
-    if (span->rowSpan>0 && span->column==currentColumn())
+    if (span.rowSpan>0 && span.column==currentColumn())
     {
-      if (row && span->colSpan>1)
+      if (row && span.colSpan>1)
       {
-        m_t << "\\multicolumn{" << span->colSpan << "}{";
+        m_t << "\\multicolumn{" << span.colSpan << "}{";
         if (currentColumn() /*c->columnIndex()*/==1) // add extra | for first column
         {
           m_t << "|";
         }
         m_t << "l|}{" << (c->isHeading()? "\\columncolor{\\tableheadbgcolor}" : "") << "}"; // alignment not relevant, empty column
-        setCurrentColumn(currentColumn()+span->colSpan);
+        setCurrentColumn(currentColumn()+span.colSpan);
       }
       else
       {
@@ -1283,7 +1276,7 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
     //printf("adding row span: cell={r=%d c=%d rs=%d cs=%d} curCol=%d\n",
     //                       c->rowIndex(),c->columnIndex(),c->rowSpan(),c->colSpan(),
     //                       currentColumn());
-    addRowSpan(new ActiveRowSpan(c,rs,cs,currentColumn()));
+    addRowSpan(ActiveRowSpan(c,rs,cs,currentColumn()));
     m_t << "\\multirow{" << rs << "}{*}{";
   }
   if (a==DocHtmlCell::Center)
