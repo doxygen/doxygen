@@ -298,7 +298,8 @@ static bool memberVisibleInIndex(const MemberDef *md)
   bool extractStatic = Config_getBool(EXTRACT_STATIC);
   return (!isAnonymous &&
       (!hideUndocMembers || md->hasDocumentation()) &&
-      (!md->isStatic() || extractStatic)
+      (!md->isStatic() || extractStatic) &&
+      md->isLinkable()
      );
 }
 
