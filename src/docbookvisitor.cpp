@@ -311,10 +311,15 @@ void DocbookDocVisitor::visit(DocVerbatim *s)
 {
 DB_VIS_C
   if (m_hide) return;
-  SrcLangExt langExt = getLanguageFromFileName(m_langExt);
+  QCString lang = m_langExt;
+  if (!s->language().isEmpty()) // explicit language setting
+  {
+    lang = s->language();
+  }
+  SrcLangExt langExt = getLanguageFromCodeLang(lang);
   switch(s->type())
   {
-    case DocVerbatim::Code: // fall though
+    case DocVerbatim::Code:
       m_t << "<literallayout><computeroutput>";
       getCodeParser(m_langExt).parseCode(m_ci,s->context(),
                                          s->text(),
