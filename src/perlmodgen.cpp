@@ -18,9 +18,9 @@
  */
 
 #include <stdlib.h>
+#include <stack>
 
 #include <qdir.h>
-#include <qstack.h>
 #include <qdict.h>
 #include <qfile.h>
 
@@ -192,7 +192,7 @@ private:
   int m_indentation;
   bool m_blockstart;
 
-  QStack<PerlModOutputStream> m_saved;
+  std::stack<PerlModOutputStream*> m_saved;
   char m_spaces[PERLOUTPUT_MAX_INDENTATION * 2 + 2];
 };
 
@@ -206,7 +206,8 @@ void PerlModOutput::icloseSave(QCString &s)
 {
   s = m_stream->m_s;
   delete m_stream;
-  m_stream = m_saved.pop();
+  m_stream = m_saved.top();
+  m_saved.pop();
 }
 
 void PerlModOutput::incIndent()
