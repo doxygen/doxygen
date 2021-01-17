@@ -20,9 +20,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <qlist.h>
-#include <qdict.h>
 #include <qfileinfo.h>
+#include <algorithm>
 
 #include "ftvhelp.h"
 #include "config.h"
@@ -38,8 +37,6 @@
 #include "classdef.h"
 #include "util.h"
 #include "resourcemgr.h"
-
-#define MAX_INDENT 1024
 
 static int folderId=1;
 
@@ -75,7 +72,8 @@ struct FTVNode
           const char *n,bool sepIndex,bool navIndex,const Definition *df)
     : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), index(0),
       parent(0), separateIndex(sepIndex), addToNavIndex(navIndex),
-      def(df) { children.setAutoDelete(TRUE); }
+      def(df) {}
+ ~FTVNode() { for (const auto &child : children) delete child; }
   int computeTreeDepth(int level) const;
   int numNodesAtLevel(int level,int maxLevel) const;
   bool isLast;
@@ -85,7 +83,7 @@ struct FTVNode
   QCString anchor;
   QCString name;
   int index;
-  QList<FTVNode> children;
+  std::vector<FTVNode*> children;
   FTVNode *parent;
   bool separateIndex;
   bool addToNavIndex;
@@ -95,11 +93,9 @@ struct FTVNode
 int FTVNode::computeTreeDepth(int level) const
 {
   int maxDepth=level;
-  QListIterator<FTVNode> li(children);
-  FTVNode *n;
-  for (;(n=li.current());++li)
+  for (const auto &n : children)
   {
-    if (n->children.count()>0)
+    if (!n->children.empty())
     {
       int d = n->computeTreeDepth(level+1);
       if (d>maxDepth) maxDepth=d;
@@ -114,9 +110,7 @@ int FTVNode::numNodesAtLevel(int level,int maxLevel) const
   if (level<maxLevel)
   {
     num++; // this node
-    QListIterator<FTVNode> li(children);
-    FTVNode *n;
-    for (;(n=li.current());++li)
+    for (const auto &n : children)
     {
       num+=n->numNodesAtLevel(level+1,maxLevel);
     }
@@ -133,8 +127,7 @@ int FTVNode::numNodesAtLevel(int level,int maxLevel) const
 FTVHelp::FTVHelp(bool TLI)
 {
   /* initial depth */
-  m_indentNodes = new QList<FTVNode>[MAX_INDENT];
-  m_indentNodes[0].setAutoDelete(TRUE);
+  m_indentNodes.resize(1);
   m_indent=0;
   m_topLevelIndex = TLI;
 }
@@ -142,7 +135,15 @@ FTVHelp::FTVHelp(bool TLI)
 /*! Destroys the ftv help object. */
 FTVHelp::~FTVHelp()
 {
-  delete[] m_indentNodes;
+  for (auto &idx : m_indentNodes)
+  {
+    for (auto &n : idx)
+    {
+      delete n;
+    }
+    idx.clear();
+  }
+  m_indentNodes.clear();
 }
 
 /*! This will create a folder tree view table of contents file (tree.js).
@@ -169,7 +170,7 @@ void FTVHelp::incContentsDepth()
 {
   //printf("%p: incContentsDepth() indent=%d\n",this,m_indent);
   m_indent++;
-  ASSERT(m_indent<MAX_INDENT);
+  m_indentNodes.resize(m_indent+1);
 }
 
 /*! Decrease the level of the contents hierarchy.
@@ -183,15 +184,16 @@ void FTVHelp::decContentsDepth()
   if (m_indent>0)
   {
     m_indent--;
-    QList<FTVNode> *nl = &m_indentNodes[m_indent];
-    FTVNode *parent = nl->getLast();
+    std::vector<FTVNode*> &nl = m_indentNodes[m_indent];
+    FTVNode *parent = nl.back();
     if (parent)
     {
-      QList<FTVNode> *children = &m_indentNodes[m_indent+1];
-      while (!children->isEmpty())
+      std::vector<FTVNode*> &children = m_indentNodes[m_indent+1];
+      for (const auto &child : children)
       {
-        parent->children.append(children->take(0));
+        parent->children.push_back(child);
       }
+      children.clear();
     }
   }
 }
@@ -217,20 +219,22 @@ void FTVHelp::addContentsItem(bool isDir,
                               )
 {
   //printf("%p: m_indent=%d addContentsItem(%s,%s,%s,%s)\n",this,m_indent,name,ref,file,anchor);
-  QList<FTVNode> *nl = &m_indentNodes[m_indent];
+  std::vector<FTVNode*> &nl = m_indentNodes[m_indent];
   FTVNode *newNode = new FTVNode(isDir,ref,file,anchor,name,separateIndex,addToNavIndex,def);
-  if (!nl->isEmpty())
+  if (!nl.empty())
   {
-    nl->getLast()->isLast=FALSE;
+    nl.back()->isLast=FALSE;
   }
-  nl->append(newNode);
-  newNode->index = nl->count()-1;
+  nl.push_back(newNode);
+  newNode->index = static_cast<int>(nl.size()-1);
   if (m_indent>0)
   {
-    QList<FTVNode> *pnl = &m_indentNodes[m_indent-1];
-    newNode->parent = pnl->getLast();
+    std::vector<FTVNode*> &pnl = m_indentNodes[m_indent-1];
+    if (!pnl.empty())
+    {
+      newNode->parent = pnl.back();
+    }
   }
-
 }
 
 static QCString node2URL(const FTVNode *n,bool overruleFile=FALSE,bool srcLink=FALSE)
@@ -380,11 +384,9 @@ static char compoundIcon(const ClassDef *cd)
   return icon;
 }
 
-void FTVHelp::generateTree(FTextStream &t, const QList<FTVNode> &nl,int level,int maxLevel,int &index)
+void FTVHelp::generateTree(FTextStream &t, const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index)
 {
-  QListIterator<FTVNode> nli(nl);
-  FTVNode *n;
-  for (nli.toFirst();(n=nli.current());++nli)
+  for (const auto &n : nl)
   {
     t << "<tr id=\"row_" << generateIndentLabel(n,0) << "\"";
     if ((index&1)==0) // even row
@@ -510,17 +512,8 @@ struct NavIndexEntry
   QCString path;
 };
 
-class NavIndexEntryList : public QList<NavIndexEntry>
+class NavIndexEntryList : public std::vector<NavIndexEntry>
 {
-  public:
-    NavIndexEntryList() : QList<NavIndexEntry>() { setAutoDelete(TRUE); }
-   ~NavIndexEntryList() {}
-  private:
-    int compareValues(const NavIndexEntry *item1,const NavIndexEntry *item2) const
-    {
-      // sort list based on url
-      return qstrcmp(item1->url,item2->url);
-    }
 };
 
 static QCString pathToNode(const FTVNode *leaf,const FTVNode *n)
@@ -566,15 +559,13 @@ static QCString convertFileId2Var(const QCString &fileId)
 }
 
 static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
-                           const QList<FTVNode> &nl,int level,bool &first)
+                           const std::vector<FTVNode*> &nl,int level,bool &first)
 {
   static QCString htmlOutput = Config_getString(HTML_OUTPUT);
   QCString indentStr;
   indentStr.fill(' ',level*2);
   bool found=FALSE;
-  QListIterator<FTVNode> nli(nl);
-  const FTVNode *n;
-  for (nli.toFirst();(n=nli.current());++nli)
+  for (const auto &n : nl)
   {
     // terminate previous entry
     if (!first) t << "," << endl;
@@ -596,16 +587,16 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
         doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
-          navIndex.append(new NavIndexEntry(node2URL(n,TRUE,FALSE),pathToNode(n,n)));
+          navIndex.emplace_back(node2URL(n,TRUE,FALSE),pathToNode(n,n));
         }
         if (src)
         {
-          navIndex.append(new NavIndexEntry(node2URL(n,TRUE,TRUE),pathToNode(n,n)));
+          navIndex.emplace_back(node2URL(n,TRUE,TRUE),pathToNode(n,n));
         }
       }
       else
       {
-        navIndex.append(new NavIndexEntry(node2URL(n),pathToNode(n,n)));
+        navIndex.emplace_back(node2URL(n),pathToNode(n,n));
       }
     }
 
@@ -614,7 +605,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
       bool firstChild=TRUE;
       t << indentStr << "  [ ";
       generateJSLink(t,n);
-      if (n->children.count()>0) // write children to separate file for dynamic loading
+      if (!n->children.empty()) // write children to separate file for dynamic loading
       {
         QCString fileId = n->file;
         if (n->anchor)
@@ -655,7 +646,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,FTextStream &t,
   return found;
 }
 
-static void generateJSNavTree(const QList<FTVNode> &nodeList)
+static void generateJSNavTree(const std::vector<FTVNode*> &nodeList)
 {
   QCString htmlOutput = Config_getString(HTML_OUTPUT);
   QFile f(htmlOutput+"/navtreedata.js");
@@ -690,9 +681,9 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     t << "\"index" << Doxygen::htmlFileExtension << "\", ";
 
     // add special entry for index page
-    navIndex.append(new NavIndexEntry("index"+Doxygen::htmlFileExtension,""));
+    navIndex.emplace_back("index"+Doxygen::htmlFileExtension,"");
     // related page index is written as a child of index.html, so add this as well
-    navIndex.append(new NavIndexEntry("pages"+Doxygen::htmlFileExtension,""));
+    navIndex.emplace_back("pages"+Doxygen::htmlFileExtension,"");
 
     bool first=TRUE;
     generateJSTree(navIndex,t,nodeList,1,first);
@@ -704,7 +695,9 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
     t << "];" << endl << endl;
 
     // write the navigation index (and sub-indices)
-    navIndex.sort();
+    std::sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
+        { return qstrcmp(n1.url,n2.url)<0; });
+
     int subIndex=0;
     int elemCount=0;
     const int maxElemCount=250;
@@ -718,11 +711,11 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
       t << "[" << endl;
       tsidx << "var NAVTREEINDEX" << subIndex << " =" << endl;
       tsidx << "{" << endl;
-      QListIterator<NavIndexEntry> li(navIndex);
-      NavIndexEntry *e;
       first=TRUE;
-      for (li.toFirst();(e=li.current());) // for each entry
+      auto it = navIndex.begin();
+      while (it!=navIndex.end())
       {
+        const NavIndexEntry &e = *it;
         if (elemCount==0)
         {
           if (!first)
@@ -733,15 +726,15 @@ static void generateJSNavTree(const QList<FTVNode> &nodeList)
           {
             first=FALSE;
           }
-          t << "\"" << e->url << "\"";
+          t << "\"" << e.url << "\"";
         }
-        tsidx << "\"" << e->url << "\":[" << e->path << "]";
-        ++li;
-        if (li.current() && elemCount<maxElemCount-1) tsidx << ","; // not last entry
+        tsidx << "\"" << e.url << "\":[" << e.path << "]";
+        ++it;
+        if (it!=navIndex.end() && elemCount<maxElemCount-1) tsidx << ","; // not last entry
         tsidx << endl;
 
         elemCount++;
-        if (li.current() && elemCount>=maxElemCount) // switch to new sub-index
+        if (it!=navIndex.end() && elemCount>=maxElemCount) // switch to new sub-index
         {
           tsidx << "};" << endl;
           elemCount=0;
@@ -794,12 +787,10 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
 {
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   t << "<div class=\"directory\">\n";
-  QListIterator<FTVNode> li(m_indentNodes[0]);
-  FTVNode *n;
   int d=1, depth=1;
-  for (;(n=li.current());++li)
+  for (const auto &n : m_indentNodes[0])
   {
-    if (n->children.count()>0)
+    if (!n->children.empty())
     {
       d = n->computeTreeDepth(2);
       if (d>depth) depth=d;
@@ -824,7 +815,7 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
       for (int i=1;i<=depth;i++)
       {
         int num=0;
-        for (li.toFirst();(n=li.current());++li)
+        for (const auto &n : m_indentNodes[0])
         {
           num+=n->numNodesAtLevel(0,i);
         }
@@ -841,7 +832,7 @@ void FTVHelp::generateTreeViewInline(FTextStream &t)
   }
   //printf("preferred depth=%d\n",preferredDepth);
 
-  if (m_indentNodes[0].count())
+  if (!m_indentNodes[0].empty())
   {
     t << "<table class=\"directory\">\n";
     int index=0;

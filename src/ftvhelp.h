@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -24,7 +24,7 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
-#include <qlist.h>
+#include <vector>
 #include "index.h"
 
 class QFile;
@@ -60,14 +60,11 @@ class FTVHelp : public IndexIntf
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(FTextStream &t,const QList<FTVNode> &nl,int level,int maxLevel,int &index);
-    //bool generateJSTree(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
-    //bool generateJSTreeTopLevel(FTextStream &tidx,FTextStream &t,const QList<FTVNode> &nl,int level,bool &first);
+    void generateTree(FTextStream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
     QCString generateIndentLabel(FTVNode *n,int level);
     void generateIndent(FTextStream &t,FTVNode *n,bool opened);
     void generateLink(FTextStream &t,FTVNode *n);
-    //void generateJSLink(FTextStream &t,FTVNode *n);
-    QList<FTVNode> *m_indentNodes;
+    std::vector< std::vector<FTVNode*> > m_indentNodes;
     int m_indent;
     bool m_topLevelIndex;
 };
