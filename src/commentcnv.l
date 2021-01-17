@@ -27,8 +27,8 @@
   
 #include <stdio.h>
 #include <stdlib.h>
+#include <stack>
 
-#include <qstack.h>
 #include <qregexp.h>
 #include <qtextstream.h>
 #include <qglobal.h>
@@ -80,7 +80,7 @@ struct commentcnvYY_state
   QCString fileName;
   int      lineNr = 0;
   int      condCtx = 0;
-  QStack<CondCtx> condStack;
+  std::stack<CondCtx> condStack;
   std::stack<int> commentStack;
   QCString blockName;
   int      lastCommentContext = 0;
@@ -1029,7 +1029,7 @@ static void startCondSection(yyscan_t yyscanner,const char *sectId)
   //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(yyextra->fileName,yyextra->lineNr,sectId);
-  yyextra->condStack.push(new CondCtx(yyextra->lineNr,sectId,yyextra->skip));
+  yyextra->condStack.push(CondCtx(yyextra->lineNr,sectId,yyextra->skip));
   if (!expResult) // not enabled
   {
     yyextra->skip=TRUE;
@@ -1039,15 +1039,16 @@ static void startCondSection(yyscan_t yyscanner,const char *sectId)
 static void endCondSection(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->condStack.isEmpty())
+  if (yyextra->condStack.empty())
   {
     warn(yyextra->fileName,yyextra->lineNr,"Found \\endcond command without matching \\cond");
     yyextra->skip=FALSE;
   }
   else
   {
-    CondCtx *ctx = yyextra->condStack.pop();
-    yyextra->skip=ctx->skip;
+    const CondCtx &ctx = yyextra->condStack.top();
+    yyextra->skip=ctx.skip;
+    yyextra->condStack.pop();
   }
   //printf("endCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
 }
@@ -1151,8 +1152,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   yyextra->lang = getLanguageFromFileName(fileName);
   yyextra->pythonDocString = FALSE;
   yyextra->lineNr   = 1;
-  yyextra->condStack.clear();
-  yyextra->condStack.setAutoDelete(TRUE);
+  while (!yyextra->condStack.empty()) yyextra->condStack.pop();
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
@@ -1175,13 +1175,14 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     BEGIN(Scan);
   }
   yylex(yyscanner);
-  while (!yyextra->condStack.isEmpty())
+  while (!yyextra->condStack.empty())
   {
-    CondCtx *ctx = yyextra->condStack.pop();
+    const CondCtx &ctx = yyextra->condStack.top();
     QCString sectionInfo = " ";
-    if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx->sectionId.stripWhiteSpace().data());
-    warn(yyextra->fileName,ctx->lineNr,"Conditional section%sdoes not have "
+    if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
+    warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
+    yyextra->condStack.pop();
   }
   if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt_Markdown && yyextra->lang!=SrcLangExt_Fortran)
   {
