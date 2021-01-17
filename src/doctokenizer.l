@@ -25,10 +25,10 @@
 %{
 
 #include <ctype.h>
+#include <stack>
 
 #include <qfile.h>
 #include <qstring.h>
-#include <qstack.h>
 #include <qdict.h>
 #include <qregexp.h>
 
@@ -72,6 +72,8 @@ static int          g_autoListLevel;
 
 struct DocLexerContext
 {
+  DocLexerContext(TokenInfo *tk,int r,int lvl,yy_size_t pos,const char *s,YY_BUFFER_STATE bs)
+    : token(tk), rule(r), autoListLevel(lvl), inputPos(pos), inputString(s), state(bs) {}
   TokenInfo *token;
   int rule;
   int autoListLevel;
@@ -80,7 +82,7 @@ struct DocLexerContext
   YY_BUFFER_STATE state;
 };
 
-static QStack<DocLexerContext> g_lexerStack;
+static std::stack< std::unique_ptr<DocLexerContext> > g_lexerStack;
 
 static int g_yyLineNr = 0;
 
@@ -94,28 +96,23 @@ static const char *stateToString(int state);
 
 void doctokenizerYYpushContext()
 {
-  DocLexerContext *ctx = new DocLexerContext;
-  ctx->rule = YY_START;
-  ctx->autoListLevel = g_autoListLevel;
-  ctx->token = g_token;
-  ctx->inputPos = g_inputPos;
-  ctx->inputString = g_inputString;
-  ctx->state = YY_CURRENT_BUFFER;
-  g_lexerStack.push(ctx);
+  g_lexerStack.push(
+      std::make_unique<DocLexerContext>(
+        g_token,YY_START,g_autoListLevel,g_inputPos,g_inputString,YY_CURRENT_BUFFER));
   yy_switch_to_buffer(yy_create_buffer(doctokenizerYYin, YY_BUF_SIZE));
 }
 
 bool doctokenizerYYpopContext()
 {
-  if (g_lexerStack.isEmpty()) return FALSE;
-  DocLexerContext *ctx = g_lexerStack.pop();
+  if (g_lexerStack.empty()) return FALSE;
+  const auto &ctx = g_lexerStack.top();
   g_autoListLevel = ctx->autoListLevel;
   g_inputPos = ctx->inputPos;
   g_inputString = ctx->inputString;
   yy_delete_buffer(YY_CURRENT_BUFFER);
   yy_switch_to_buffer(ctx->state);
   BEGIN(ctx->rule);
-  delete ctx;
+  g_lexerStack.pop();
   return TRUE;
 }
 
