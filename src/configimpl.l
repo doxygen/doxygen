@@ -1210,7 +1210,7 @@ static void substEnvVarsInStrList(StringVector &sl)
               c=result.at(i);
               if (c=='"') // end quote
               {
-                results.push_back(result.mid(p,i-p).data());
+                results.push_back(result.mid(p,i-p).str());
                 p=i+1;
                 break;
               }
@@ -1222,7 +1222,7 @@ static void substEnvVarsInStrList(StringVector &sl)
           }
           else if (c==' ' || c=='\t') // separator
           {
-            if (i>p) results.push_back(result.mid(p,i-p).data());
+            if (i>p) results.push_back(result.mid(p,i-p).str());
             p=i+1;
           }
         }
@@ -1234,7 +1234,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     }
     else // just goto the next element in the list
     {
-      if (!result.isEmpty()) results.push_back(result.data());
+      if (!result.isEmpty()) results.push_back(result.str());
     }
   }
   sl = results;
@@ -1409,7 +1409,7 @@ static void cleanUpPaths(StringVector &str)
       QFileInfo fi(path.c_str());
       if (fi.exists() && fi.isDir())
       {
-        path = fi.absFilePath().utf8().data();
+        path = fi.absFilePath().utf8().str();
         if (path[path.size()-1]!='/') path+='/';
       }
     }
@@ -1545,7 +1545,7 @@ void Config::checkAndCorrect()
     QString p = QDir::currentDirPath();
     if (p.at(p.length()-1)!='/')
         p.append('/');
-    stripFromPath.push_back(p.utf8().data());
+    stripFromPath.push_back(p.utf8().str());
   }
   else
   {
@@ -1882,7 +1882,7 @@ void Config::checkAndCorrect()
   if (inputSources.empty())
   {
     // use current dir as the default
-    inputSources.push_back(QDir::currentDirPath().utf8().data());
+    inputSources.push_back(QDir::currentDirPath().utf8().str());
   }
   else
   {
