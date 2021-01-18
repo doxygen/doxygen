@@ -656,10 +656,6 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
  */
 void VHDLOutlineParser::mapLibPackage( Entry* root)
 {
-  //QList<Entry> epp=libUse;
-  //EntryListIterator eli(epp);
-  //Entry *rt;
-  //for (;(rt=eli.current());++eli)
   for (const auto &rt : p->libUse)
   {
     if (addLibUseClause(rt->name))

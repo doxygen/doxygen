@@ -13,6 +13,7 @@
  *
  */
 
+#include <chrono>
 #include <locale.h>
 
 #include <qfileinfo.h>
@@ -199,17 +200,18 @@ void clearAll()
 class Statistics
 {
   public:
-    Statistics() { stats.setAutoDelete(TRUE); }
+    Statistics() {}
     void begin(const char *name)
     {
       msg("%s", name);
-      stat *entry= new stat(name,0);
-      stats.append(entry);
-      time.restart();
+      stats.emplace_back(name,0);
+      startTime = std::chrono::steady_clock::now();
     }
     void end()
     {
-      stats.getLast()->elapsed=((double)time.elapsed())/1000.0;
+      std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
+      stats.back().elapsed = std::chrono::duration_cast<
+                                std::chrono::microseconds>(endTime - startTime).count()/1000000.0;
     }
     void print()
     {
@@ -220,11 +222,9 @@ class Statistics
         restore=TRUE;
       }
       msg("----------------------\n");
-      QListIterator<stat> sli(stats);
-      stat *s;
-      for ( sli.toFirst(); (s=sli.current()); ++sli )
+      for (const auto &s : stats)
       {
-        msg("Spent %.3f seconds in %s",s->elapsed,s->name);
+        msg("Spent %.6f seconds in %s",s.elapsed,s.name);
       }
       if (restore) Debug::setFlag("time");
     }
@@ -233,17 +233,13 @@ class Statistics
     {
       const char *name;
       double elapsed;
-      stat() : name(NULL),elapsed(0) {}
+      //stat() : name(NULL),elapsed(0) {}
       stat(const char *n, double el) : name(n),elapsed(el) {}
     };
-    QList<stat> stats;
-    QTime       time;
+    std::vector<stat> stats;
+    std::chrono::steady_clock::time_point startTime;
 } g_s;
 
-
-void statistics()
-{
-}
 
 static void addMemberDocs(const Entry *root,MemberDefMutable *md, const char *funcDecl,
                    const ArgumentList *al,bool over_load,uint64 spec);
@@ -1781,9 +1777,6 @@ static void findUsingDirectives(const Entry *root)
           nd->setMetaData(root->metaData);
           nd->setInline((root->spec&Entry::Inline)!=0);
 
-          //QListIterator<Grouping> gli(*root->groups);
-          //Grouping *g;
-          //for (;(g=gli.current());++gli)
           for (const Grouping &g : root->groups)
           {
             GroupDef *gd=0;
@@ -11890,7 +11883,7 @@ void generateOutput()
 
   if (Debug::isFlagSet(Debug::Time))
   {
-    msg("Total elapsed time: %.3f seconds\n(of which %.3f seconds waiting for external tools to finish)\n",
+    msg("Total elapsed time: %.6f seconds\n(of which %.6f seconds waiting for external tools to finish)\n",
          ((double)Debug::elapsedTime()),
          Portable::getSysElapsedTime()
         );

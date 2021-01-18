@@ -1141,9 +1141,6 @@ STARTDOCSYMS      "##"
 			// do something based on the type of the IDENTIFIER
 			if (yyextra->current->type.isEmpty())
                         {
-                          //QListIterator<Entry> eli(*(yyextra->current_root->children()));
-                          //Entry *child;
-                          //for (eli.toFirst();(child=eli.yyextra->current());++eli)
                           for (const auto &child : yyextra->current_root->children())
                           {
                             if (child->name == QCString(yytext))

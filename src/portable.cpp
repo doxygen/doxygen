@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <chrono>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #undef UNICODE
@@ -17,7 +18,6 @@ extern char **environ;
 
 #include <ctype.h>
 #include <qglobal.h>
-#include <qdatetime.h>
 #include <qglobal.h>
 #include <qdir.h>
 #include <map>
@@ -34,7 +34,7 @@ static std::map<std::string,std::string> proc_env = std::map<std::string,std::st
 #endif
 
 static double  g_sysElapsedTime;
-static QTime   g_time;
+static std::chrono::steady_clock::time_point g_startTime;
 
 
 int Portable::system(const char *command,const char *args,bool commandHasConsole)
@@ -69,7 +69,7 @@ int Portable::system(const char *command,const char *args,bool commandHasConsole
 
   // on Solaris fork() duplicates the memory usage
   // so we use vfork instead
-  
+
   // spawn shell
   if ((pid=vfork())<0)
   {
@@ -138,11 +138,11 @@ int Portable::system(const char *command,const char *args,bool commandHasConsole
   }
   else
   {
-    // Because ShellExecuteEx can delegate execution to Shell extensions 
-    // (data sources, context menu handlers, verb implementations) that 
-    // are activated using Component Object Model (COM), COM should be 
-    // initialized before ShellExecuteEx is called. Some Shell extensions 
-    // require the COM single-threaded apartment (STA) type. 
+    // Because ShellExecuteEx can delegate execution to Shell extensions
+    // (data sources, context menu handlers, verb implementations) that
+    // are activated using Component Object Model (COM), COM should be
+    // initialized before ShellExecuteEx is called. Some Shell extensions
+    // require the COM single-threaded apartment (STA) type.
     // For that case COM is initialized as follows
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -156,13 +156,13 @@ int Portable::system(const char *command,const char *args,bool commandHasConsole
     SHELLEXECUTEINFOW sInfo = {
       sizeof(SHELLEXECUTEINFOW),   /* structure size */
       SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI,  /* tell us the process
-                                                       *  handle so we can wait till it's done | 
-                                                       *  do not display msg box if error 
+                                                       *  handle so we can wait till it's done |
+                                                       *  do not display msg box if error
                                                        */
       NULL,                       /* window handle */
       NULL,                       /* action to perform: open */
       (LPCWSTR)commandw.ucs2(),   /* file to execute */
-      (LPCWSTR)argsw.ucs2(),      /* argument list */ 
+      (LPCWSTR)argsw.ucs2(),      /* argument list */
       NULL,                       /* use current working dir */
       SW_HIDE,                    /* minimize on start-up */
       0,                          /* application instance handle */
@@ -180,7 +180,7 @@ int Portable::system(const char *command,const char *args,bool commandHasConsole
     }
     else if (sInfo.hProcess)      /* executable was launched, wait for it to finish */
     {
-      WaitForSingleObject(sInfo.hProcess,INFINITE); 
+      WaitForSingleObject(sInfo.hProcess,INFINITE);
       /* get process exit code */
       DWORD exitCode;
       if (!GetExitCodeProcess(sInfo.hProcess,&exitCode))
@@ -269,7 +269,7 @@ void Portable::unsetenv(const char *variable)
 }
 
 const char *Portable::getenv(const char *variable)
-{  
+{
 #if defined(_WIN32) && !defined(__CYGWIN__)
     return ::getenv(variable);
 #else
@@ -303,7 +303,7 @@ portable_off_t Portable::fseek(FILE *f,portable_off_t offset, int whence)
 portable_off_t Portable::ftell(FILE *f)
 {
 #if defined(__MINGW32__)
-  return ftello64(f);  
+  return ftello64(f);
 #elif defined(_WIN32) && !defined(__CYGWIN__)
   return _ftelli64(f);
 #else
@@ -448,12 +448,14 @@ int Portable::pclose(FILE *stream)
 
 void Portable::sysTimerStart()
 {
-  g_time.start();
+  g_startTime = std::chrono::steady_clock::now();
 }
 
 void Portable::sysTimerStop()
 {
-  g_sysElapsedTime+=((double)g_time.elapsed())/1000.0;
+  std::chrono::steady_clock::time_point endTime = std::chrono::steady_clock::now();
+  g_sysElapsedTime+= std::chrono::duration_cast<
+                         std::chrono::microseconds>(endTime - g_startTime).count()/1000000.0;
 }
 
 double Portable::getSysElapsedTime()
@@ -561,7 +563,7 @@ static const char * portable_memmem (const char *haystack, size_t haystack_len,
 const char *Portable::strnstr(const char *haystack, const char *needle, size_t haystack_len)
 {
   size_t needle_len = strnlen(needle, haystack_len);
-  if (needle_len < haystack_len || !needle[needle_len]) 
+  if (needle_len < haystack_len || !needle[needle_len])
   {
     const char *x = portable_memmem(haystack, haystack_len, needle, needle_len);
     if (x && !memchr(haystack, 0, x - haystack))
