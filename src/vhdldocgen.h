@@ -21,7 +21,6 @@
  * vhdl documents
  */
 
-#include <qdict.h>
 #include <qcstring.h>
 #include "layout.h"
 #include "arguments.h"
@@ -39,8 +38,6 @@ class GroupDef;
 class FileDef;
 class NamespaceDef;
 struct Argument;
-
-
 
 struct VhdlConfNode
 {
@@ -248,7 +245,7 @@ class VhdlDocGen
   static void resetCodeVhdlParserState();
 
   private:
-    static void findAllArchitectures(QList<QCString>& ql,const ClassDef *cd);
+    static void findAllArchitectures(std::vector<QCString>& ql,const ClassDef *cd);
     static bool compareArgList(const ArgumentList &,const ArgumentList &);
     static void writeVhdlLink(const ClassDef* cdd ,OutputList& ol,QCString& type,QCString& name,QCString& beh);
     static void writeStringLink(const MemberDef *mdef,QCString mem,OutputList& ol);
@@ -295,22 +292,22 @@ class FlowChart
     static void startDot(FTextStream &t);
     static void endDot(FTextStream &t);
     static void codify(FTextStream &t,const char *str);
-    static void writeShape(FTextStream &t,const FlowChart* fl);
+    static void writeShape(FTextStream &t,const FlowChart &fl);
     static void writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
-    static void writeEdge(FTextStream &t,const FlowChart* fl_from,const FlowChart* fl_to,int i);
+    static void writeEdge(FTextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
     static void writeFlowLinks(FTextStream &t);
 
     static QCString getNodeName(int n);
     static void colTextNodes();
 
-    static int getNextTextLink(const FlowChart* fl,uint index);
-    static int getNextIfLink(const FlowChart*,uint);
+    static int getNextTextLink(const FlowChart& fl,uint index);
+    static int getNextIfLink(const FlowChart&,uint);
     static int getNextNode(int,int);
     static int findNode(int index,int stamp,int type);
     static int findNode(int index,int type);
     static int findNextLoop(int j,int stamp);
     static int findPrevLoop(int j,int stamp,bool endif=FALSE);
-    static int findLabel(int j,QCString &);
+    static int findLabel(int j,const QCString &);
     static void delFlowList();
     static const char* getNodeType(int c);
 
@@ -320,15 +317,13 @@ class FlowChart
     static void writeFlowChart();
     static void alignFuncProc(QCString & q,const ArgumentList &al,bool isFunc);
     static QCString convertNameToFileName();
-    static void printNode(const FlowChart* n);
+    static void printNode(const FlowChart& n);
     static void printFlowTree();
     static void buildCommentNodes(FTextStream &t);
     static void alignCommentNode(FTextStream &t,QCString com);
 
     static void  printUmlTree();
-    static QCString printPlantUmlNode(const FlowChart *flo,bool,bool);
-
-    static QList<FlowChart> flowList;
+    static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);
 
     FlowChart(int typ,const char*  t,const char* ex,const char* label=0);
     ~FlowChart();
@@ -344,5 +339,7 @@ private:
     QCString text;
     QCString exp;
 };
+
+extern std::vector<FlowChart> flowList;
 
 #endif

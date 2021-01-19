@@ -73,14 +73,13 @@ static void addInstance(ClassDefMutable* entity, ClassDefMutable* arch, ClassDef
 static void createSVG();
 static void startDot(FTextStream &t);
 static void startTable(FTextStream &t,const QCString &className);
-static QList<MemberDef>* getPorts(ClassDef *cd);
+static std::vector<const MemberDef *> getPorts(const ClassDef *cd);
 static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd);
 static void endDot(FTextStream &t);
-static void writeTable(QList<MemberDef>* port,FTextStream & t);
+static void writeTable(const std::vector<const MemberDef*> &portList,FTextStream & t);
 static void endTable(FTextStream &t);
 static void writeClassToDot(FTextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(FTextStream &t,const QCString &a,const QCString &b,const QCString &style);
-//static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd);
 static const MemberDef *flowMember=0;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)
@@ -206,25 +205,18 @@ void VhdlDocGen::writeOverview()
       continue;
     }
 
-    QList<MemberDef>* port= getPorts(cd.get());
-    if (port==0)
+    std::vector<const MemberDef *> ports = getPorts(cd.get());
+    if (ports.empty())
     {
-      continue;
-    }
-    if (port->count()==0)
-    {
-      delete port;
-      port=NULL;
       continue;
     }
 
     startTable(t,cd->name());
     writeClassToDot(t,cd.get());
-    writeTable(port,t);
+    writeTable(ports,t);
     endTable(t);
 
     writeVhdlEntityToolTip(t,cd.get());
-    delete port;
 
     for (const auto &bcd : cd->baseClasses())
     {
@@ -299,34 +291,6 @@ static QCString formatBriefNote(const QCString &brief,ClassDef * cd)
   return vForm;
 }
 
-#if 0
-static void writeVhdlPortToolTip(FTextStream& t,QList<MemberDef>* port,ClassDef *cd)
-{
-/*
-  uint len=port->count();
-  MemberDef *md;
-
-  for (uint j=0;j<len;j++)
-  {
-    md=(MemberDef*)port->at(j);
-    QCString brief=md->briefDescriptionAsTooltip();
-    if (brief.isEmpty()) continue;
-
-    QCString node="node";
-    node+=VhdlDocGen::getRecordNumber();
-    t << node <<"[shape=box margin=0.1, label=<\n";
-    t<<"<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"2\" >\n ";
-    t<<"<TR><TD BGCOLOR=\"lightcyan\"> ";
-    t<<brief;
-    t<<" </TD></TR></TABLE>>];";
-    QCString dotn=cd->name()+":";
-    dotn+=md->name();
-    //  writeVhdlDotLink(t,dotn,node,"dotted");
-  }
-*/
-}
-#endif
-
 static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd)
 {
 
@@ -348,7 +312,7 @@ static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd)
   writeVhdlDotLink(t,dotn,node,"dotted");
 }
 
-static void writeColumn(FTextStream &t,MemberDef *md,bool start)
+static void writeColumn(FTextStream &t,const MemberDef *md,bool start)
 {
   QCString toolTip;
 
@@ -454,55 +418,49 @@ static void writeClassToDot(FTextStream &t,ClassDef* cd)
   t << " </TD></TR>\n";
 }
 
-static QList<MemberDef>* getPorts(ClassDef *cd)
+static std::vector<const MemberDef*> getPorts(const ClassDef *cd)
 {
-  MemberList *ml=cd->getMemberList(MemberListType_variableMembers);
+  MemberList *ml = cd->getMemberList(MemberListType_variableMembers);
+  std::vector<const MemberDef *> portList;
 
   if (ml==0)
   {
-    return 0;
+    return portList;
   }
 
-  QList<MemberDef> *portList=new QList<MemberDef>;
   for (const auto &md : *ml)
   {
     if (md->getMemberSpecifiers()==VhdlDocGen::PORT)
     {
-      portList->append(md);
+      portList.push_back(md);
     }
   }
-
   return portList;
 }
 
 //writeColumn(FTextStream &t,QCString name,bool start)
 
-static void writeTable(QList<MemberDef>* port,FTextStream & t)
+static void writeTable(const std::vector<const MemberDef*> &portList,FTextStream & t)
 {
-  MemberDef *md;
-  uint len=port->count();
+  std::vector<const MemberDef *> inPorts;
+  std::vector<const MemberDef *> outPorts;
 
-  QList<MemberDef> inPorts;
-  QList<MemberDef> outPorts;
-
-  uint j;
-  for (j=0;j<len;j++)
+  for (const auto &md : portList)
   {
-    md=(MemberDef*)port->at(j);
     QCString qc=md->typeString();
-    if(qc=="in")
+    if (qc=="in")
     {
-      inPorts.append(md);
+      inPorts.push_back(md);
     }
     else
     {
-      outPorts.append(md);
+      outPorts.push_back(md);
     }
   }
 
-  int inp  = inPorts.count();
-  int outp = outPorts.count();
-  int maxLen;
+  size_t inp  = inPorts.size();
+  size_t outp = outPorts.size();
+  size_t maxLen;
 
   if (inp>=outp)
   {
@@ -513,13 +471,13 @@ static void writeTable(QList<MemberDef>* port,FTextStream & t)
     maxLen=outp;
   }
 
-  int i;
-  for(i=0;i<maxLen;i++)
+  size_t i;
+  for (i=0;i<maxLen;i++)
   {
     //write inports
     if (i<inp)
     {
-      md=(MemberDef*)inPorts.at(i);
+      auto md = inPorts[i];
       writeColumn(t,md,TRUE);
     }
     else
@@ -529,7 +487,7 @@ static void writeTable(QList<MemberDef>* port,FTextStream & t)
 
     if (i<outp)
     {
-      md=(MemberDef*)outPorts.at(i);
+      auto md = outPorts[i];
       writeColumn(t,md,FALSE);
     }
     else
@@ -875,8 +833,7 @@ QCString VhdlDocGen::getClassName(const ClassDef* cd)
 
 void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
 {
-  QList<QCString> ql;
-  ql.setAutoDelete(TRUE);
+  std::vector<QCString> ql;
   QCString nn=cd->className();
   int ii=(int)cd->protection()+2;
 
@@ -918,16 +875,14 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   if (ii==VhdlDocGen::ENTITY)
   {
     VhdlDocGen::findAllArchitectures(ql,cd);
-    int j=ql.count();
-    for (int i=0;i<j;i++)
+    for (const auto &s : ql)
     {
-      QCString *temp=ql.at(i);
-      QCStringList qlist=QCStringList::split("-",*temp);
+      QCStringList qlist=QCStringList::split("-",s);
       QCString s1=qlist[0];
       QCString s2=qlist[1];
       s1.stripPrefix("_");
-      if (j==1) s1.resize(0);
-      ClassDef*cc = getClass(temp->data());
+      if (ql.size()==1) s1.resize(0);
+      ClassDef *cc = getClass(s);
       if (cc)
       {
         VhdlDocGen::writeVhdlLink(cc,ol,type,s2,s1);
@@ -947,19 +902,18 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
 /*
  * finds all architectures which belongs to an entity
  */
-void VhdlDocGen::findAllArchitectures(QList<QCString>& qll,const ClassDef *cd)
+void VhdlDocGen::findAllArchitectures(std::vector<QCString>& qll,const ClassDef *cd)
 {
   for (const auto &citer : *Doxygen::classLinkedMap)
   {
-    QCString jj=citer->className();
-    if (cd != citer.get() && jj.contains('-')!=-1)
+    QCString className=citer->className();
+    int pos;
+    if (cd != citer.get() && (pos=className.find('-'))!=-1)
     {
-      QCStringList ql=QCStringList::split("-",jj);
-      QCString temp=ql[1];
-      if (qstricmp(cd->className(),temp)==0)
+      QCString postfix=className.mid(pos+1);
+      if (qstricmp(cd->className(),postfix)==0)
       {
-        QCString *cl=new QCString(jj);
-        qll.insert(0,cl);
+        qll.push_back(className);
       }
     }
   }// for
@@ -2784,15 +2738,16 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
 }
 
 
-static QList<MemberDef> mdList;
+static std::vector<const MemberDef*> mdList;
 
-static MemberDef* findMemFlow(const MemberDef* mdef)
+static const MemberDef* findMemFlow(const MemberDef* mdef)
 {
-  for(uint j=0;j<mdList.count();j++)
+  for (const auto &md : mdList)
   {
-    MemberDef* md=(MemberDef*)mdList.at(j);
     if (md->name()==mdef->name() &&  md->getStartBodyLine()==mdef->getStartBodyLine())
+    {
       return md;
+    }
   }
   return 0;
 }
@@ -2802,8 +2757,8 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   if (mdef==0) return;
 
   QCString codeFragment;
-  MemberDef* mm=0;
-  if((mm=findMemFlow(mdef))!=0)
+  const MemberDef* mm=0;
+  if ((mm=findMemFlow(mdef))!=0)
   {
     // don't create the same flowchart twice
     VhdlDocGen::setFlowMember(mm);
@@ -2811,7 +2766,7 @@ void VhdlDocGen::createFlowChart(const MemberDef *mdef)
   }
   else
   {
-    mdList.append(mdef);
+    mdList.push_back(mdef);
   }
 
   //fprintf(stderr,"\n create flow mem %s %p\n",mdef->name().data(),mdef);
@@ -2912,7 +2867,7 @@ bool VhdlDocGen::isMisc(const MemberDef *mdef)
 #define EMPTY    (EEND                    | FlowChart::ELSIF_NO)
 #define EE       (FlowChart::ELSE_NO      | FlowChart::ELSIF_NO)
 #define EMPTNODE (ENDCL | EEND            | FlowChart::ELSIF_NO)
-#define FLOWLEN (flowList.count()-1)
+#define FLOWLEN (flowList.size()-1)
 
 static int ifcounter=0;
 static int nodeCounter=0;
@@ -2941,7 +2896,7 @@ static struct
   "lightcyan"    // textNode
 };
 
-QList<FlowChart>  FlowChart::flowList;
+std::vector<FlowChart> flowList;
 
 #ifdef DEBUGFLOW
 static std::map<std::string,int> g_keyMap;
@@ -2984,114 +2939,116 @@ void alignText(QCString & q)
 // #endif
 }
 
-void FlowChart::printNode(const FlowChart* flo)
+void FlowChart::printNode(const FlowChart& flo)
 {
-  if (flo==0) return;
   QCString ui="-";
   QCString q,t;
   QRegExp ep("[\t\n\r]");
 
   ui.fill('-',255);
 
-  if (flo->type & STARTL)
+  if (flo.type & STARTL)
   {
-    if (flo->stamp>0)
+    if (flo.stamp>0)
     {
-      q=ui.left(2*flo->stamp);
+      q=ui.left(2*flo.stamp);
     }
     else
     {
       q=" ";
     }
-    QCString nn=flo->exp.stripWhiteSpace();
-    printf("\nYES: %s%s[%d,%d]",q.data(),nn.data(),flo->stamp,flo->id);
+    QCString nn=flo.exp.stripWhiteSpace();
+    printf("\nYES: %s%s[%d,%d]",q.data(),nn.data(),flo.stamp,flo.id);
   }
   else
   {
-    if (flo->type & COMMENT_NO)
+    if (flo.type & COMMENT_NO)
     {
-      t=flo->label;
+      t=flo.label;
     }
     else
     {
-      t=flo->text;
+      t=flo.text;
     }
     t=t.replace(ep,"");
     if (t.isEmpty())
     {
       t=" ";
     }
-    if (flo->stamp>0)
+    if (flo.stamp>0)
     {
-      q=ui.left(2*flo->stamp);
+      q=ui.left(2*flo.stamp);
     }
     else
     {
       q=" ";
     }
-    if (flo->type & EMPTNODE)
+    if (flo.type & EMPTNODE)
     {
-      printf("\n NO: %s%s[%d,%d]",q.data(),FlowChart::getNodeType(flo->type),flo->stamp,flo->id);
+      printf("\n NO: %s%s[%d,%d]",q.data(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
     }
-    else if (flo->type & COMMENT_NO)
+    else if (flo.type & COMMENT_NO)
     {
-      printf("\n NO: %s%s[%d,%d]",t.data(),FlowChart::getNodeType(flo->type),flo->stamp,flo->id);
+      printf("\n NO: %s%s[%d,%d]",t.data(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
     }
     else
     {
-      printf("\n NO: %s[%d,%d]",t.data(),flo->stamp,flo->id);
+      printf("\n NO: %s[%d,%d]",t.data(),flo.stamp,flo.id);
     }
   }
 }
 
 void  FlowChart::printFlowTree()
 {
-  uint size=flowList.count();
-  for (uint j=0;j<size;j++)
+  for (const auto &flowChart : flowList)
   {
-    printNode(flowList.at(j));
+    printNode(flowChart);
   }
 }
 
 void  FlowChart::colTextNodes()
 {
-  FlowChart *flno = NULL;
+  FlowChart *flno = nullptr;
   bool found=FALSE;
-  for (uint j=0;j<flowList.count();j++)
+  for (size_t j=0;j<flowList.size();j++)
   {
-    FlowChart *flo=flowList.at(j);
-    if (flo->type&TEXT_NO)
+    FlowChart &flo = flowList[j];
+    if (flo.type&TEXT_NO)
     {
       if (!found)
       {
-        flno=flo;
+        flno=&flo;
       }
       else
       {
-        flno->text+=flo->text;
-        flowList.remove(flo);
+        flno->text+=flo.text;
+        flowList.erase(flowList.begin()+j);
         if (j>0) j=j-1;
       }
       found=TRUE;
     }
     else
+    {
       found=FALSE;
+    }
   }
 
   // find if..endif without text
   //       if..elseif without text
-  for (uint j=0;j<flowList.count()-1;j++)
+  if (!flowList.empty())
   {
-    FlowChart *flo=flowList.at(j);
-    int kind=flo->type;
-    if ( (kind & IFF) || (flo->type & ELSE_NO))
+    for (size_t j=0;j<flowList.size()-1;j++)
     {
-      FlowChart *ftemp=flowList.at(j+1);
-      if (ftemp->type & EMPTY)
+      const FlowChart &flo = flowList[j];
+      int kind = flo.type;
+      if ( (kind & IFF) || (flo.type & ELSE_NO))
       {
-        FlowChart *fNew = new FlowChart(TEXT_NO,"empty ",0);
-        fNew->stamp=flo->stamp;
-        flowList.insert(j+1,fNew);
+        const FlowChart &ftemp = flowList[j+1];
+        if (ftemp.type & EMPTY)
+        {
+          flowList.insert(flowList.begin()+j+1,FlowChart(TEXT_NO,"empty ",0));
+          flowList[j+1].stamp = flo.stamp;
+        }
       }
     }
   }
@@ -3109,13 +3066,6 @@ void FlowChart::delFlowList()
 {
   ifcounter=0;
   nodeCounter=0;
-  uint size=flowList.count();
-
-  for (uint j=0;j <size ;j++)
-  {
-    FlowChart *fll=flowList.at(j);
-    delete fll;
-  }
   flowList.clear();
 }
 
@@ -3157,81 +3107,84 @@ void FlowChart::alignCommentNode(FTextStream &t,QCString com)
 
 void FlowChart::buildCommentNodes(FTextStream & t)
 {
-  uint size=flowList.count();
+  size_t size=flowList.size();
   bool begin=false;
 
-  for (uint j=0;j < size-1 ;j++)
+  if (size>0)
   {
-    FlowChart *fll=flowList.at(j);
-    if (fll->type & COMMENT_NO)
+    for (uint j=0;j < size-1 ;j++)
     {
-      FlowChart* to=flowList.at(j+1);
-      if (to->type & COMMENT_NO)
+      FlowChart &fll = flowList[j];
+      if (fll.type & COMMENT_NO)
       {
-        fll->label+="\n";
-        QCString temp=fll->label+to->label;
-        to->label=temp;
-        flowList.remove(j);
-        size--;
-        if (j>0) j--;
+        FlowChart &to=flowList[j+1];
+        if (to.type & COMMENT_NO)
+        {
+          to.label = fll.label+"\n"+to.label;
+          flowList.erase(flowList.begin()+j);
+          if (size>0) size--;
+          if (j>0) j--;
+        }
       }
-    }
-  }// for
+    }// for
+  }
 
-  for (uint j=0;j <flowList.count() ;j++)
+  for (size_t j=0;j <flowList.size() ;j++)
   {
-    FlowChart *fll=flowList.at(j);
+    const FlowChart &fll=flowList[j];
 
-    if (fll->type & BEGIN_NO)
+    if (fll.type & BEGIN_NO)
     {
       begin = true;
       continue;
     }
 
-    if (fll->type & COMMENT_NO)
+    if (fll.type & COMMENT_NO)
     {
-      FlowChart* to;
+      const FlowChart *to;
       if (!begin)
       {
         //  comment between function/process .. begin is linked to start node
-        to=flowList.at(0);
+        to = &flowList[0];
+      }
+      else if (j>0 && flowList[j-1].line==fll.line)
+      {
+        to = &flowList[j-1];
       }
       else
       {
-        if (j>0 && flowList.at(j-1)->line==fll->line)
-          to=flowList.at(j-1);
-        else
-          to=flowList.at(j+1);
-       }
-      t << getNodeName(fll->id);
+        to = &flowList[j+1];
+      }
+      t << getNodeName(fll.id);
       t << "[shape=none, label=<\n";
       t << "<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\" CELLPADDING=\"2\" >\n ";
       t << "<TR><TD BGCOLOR=\"";
       t << flowCol.comment;
       t << "\" > ";
 
-      FlowChart::alignCommentNode(t,fll->label);
+      FlowChart::alignCommentNode(t,fll.label);
       t << " </TD></TR></TABLE>>];";
-      writeEdge(t,fll->id,to->id,2);
+      writeEdge(t,fll.id,to->id,2);
     }
   }// for
 
   // delete comment nodes;
-  size=flowList.count();
-  for (uint j=0;j < size;j++)
+  size=flowList.size();
+  for (size_t j=0; j<size; j++)
   {
-    FlowChart *fll=flowList.at(j);
-    if (fll->type & (COMMENT_NO | BEGIN_NO))
+    FlowChart &fll=flowList[j];
+    if (fll.type & (COMMENT_NO | BEGIN_NO))
     {
       int diff=FLOWLEN-(j+1);
-      flowList.remove(j);
 
-	   if ((fll->type & COMMENT_NO) && diff > 1)
-		  flowList.at(j+1)->label=fll->label;
+      if ((fll.type & COMMENT_NO) && diff > 1)
+      {
+        flowList[j+1].label = fll.label;
+      }
 
-	   delete fll;
-      fll=0;
-      size--;
+      flowList.erase(flowList.begin()+j);
+
+      if (size>0) size--;
       if (j>0) j--;
     }
   }// for;
@@ -3312,17 +3265,15 @@ void FlowChart::addFlowChart(int type,const char* text,const char* exp, const ch
     expression=expression.replace(reg1,"\\\"");
   }
 
-  FlowChart *fl=new FlowChart(type,typeString.data(),expression.data(),label);
-
-  fl->line=1; // TODO: use getLine(); of the parser
-
   if (type & (START_NO | VARIABLE_NO))
   {
-    flowList.prepend(fl);
+    flowList.insert(flowList.begin(),FlowChart(type,typeString,expression,label));
+    flowList.front().line=1; // TODO: use getLine(); of the parser
   }
   else
   {
-    flowList.append(fl);
+    flowList.emplace_back(type,typeString,expression,label);
+    flowList.back().line=1;  // TODO: use getLine(); of the parser
   }
 }
 
@@ -3332,12 +3283,12 @@ void FlowChart::moveToPrevLevel()
   ifcounter--;
 }
 
-QCString FlowChart::printPlantUmlNode(const FlowChart *flo,bool ca,bool endL)
+QCString FlowChart::printPlantUmlNode(const FlowChart &flo,bool ca,bool endL)
 {
   QCString t;
-  QCString exp=flo->exp.stripWhiteSpace();
-  QCString text=flo->text.stripWhiteSpace();
-  switch (flo->type)
+  QCString exp=flo.exp.stripWhiteSpace();
+  QCString text=flo.text.stripWhiteSpace();
+  switch (flo.type)
   {
     case START_NO:   t=":"+text+"|"; break;
     case IF_NO :     t="\nif ("+exp+") then (yes)"; break;
@@ -3364,7 +3315,7 @@ QCString FlowChart::printPlantUmlNode(const FlowChart *flo,bool ca,bool endL)
     case LOOP_NO:    t="\nwhile (infinite loop)"; break;
     case NEXT_NO:    break;
     case EMPTY_NO:   break;
-    case COMMENT_NO: t="\n note left \n "+flo->label+"\nend note \n"; break;
+    case COMMENT_NO: t="\n note left \n "+flo.label+"\nend note \n"; break;
     case BEGIN_NO:   t="\n:begin;"; break;
     default:         assert(false); break;
   }
@@ -3377,19 +3328,18 @@ void  FlowChart::printUmlTree()
   int whenCounter = 0;
 
   QCString qcs;
-  uint size=flowList.count();
-  bool endList;
-  for (uint j=0;j<size;j++)
+  size_t size=flowList.size();
+  for (size_t j=0;j<size;j++)
   {
-    endList=j==FLOWLEN;
-    FlowChart *flo=flowList.at(j);
-    if (flo->type==CASE_NO)
+    bool endList = j==FLOWLEN;
+    const FlowChart &flo = flowList[j];
+    if (flo.type==CASE_NO)
     {
       caseCounter++;
       whenCounter=0;
     }
 
-    if (flo->type==END_CASE)
+    if (flo.type==END_CASE)
     {
       caseCounter--;
     }
@@ -3398,7 +3348,7 @@ void  FlowChart::printUmlTree()
 
     qcs+=printPlantUmlNode(flo,ca,endList);
 
-    if (flo->type==WHEN_NO)
+    if (flo.type==WHEN_NO)
     {
       whenCounter++;
     }
@@ -3530,11 +3480,8 @@ void FlowChart::writeFlowChart()
 
   startDot(t);
   buildCommentNodes(t);
-  uint size=flowList.count();
-
-  for (uint j=0;j <size ;j++)
+  for (const auto &fll : flowList)
   {
-    FlowChart *fll=flowList.at(j);
     writeShape(t,fll);
   }
   writeFlowLinks(t);
@@ -3545,15 +3492,15 @@ void FlowChart::writeFlowChart()
   FlowChart::createSVG();
 }// writeFlowChart
 
-void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
+void FlowChart::writeShape(FTextStream &t,const FlowChart &fl)
 {
-  if (fl->type & EEND) return;
+  if (fl.type & EEND) return;
   QCString var;
-  if (fl->type & LOOP)
+  if (fl.type & LOOP)
   {
     var=" loop";
   }
-  else if (fl->type & IFF)
+  else if (fl.type & IFF)
   {
     var=" then";
   }
@@ -3562,33 +3509,33 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
     var="";
   }
 
-  t<<getNodeName(fl->id).data();
+  t << getNodeName(fl.id);
 
 #ifdef DEBUGFLOW
-  QCString qq(getNodeName(fl->id).data());
-  g_keyMap.insert({qq.str(),fl->id});
+  QCString qq(getNodeName(fl.id));
+  g_keyMap.insert({qq.str(),fl.id});
 #endif
 
-  bool dec=(fl->type & DECLN);
-  bool exit=(fl->type & EXITNEXT);
-  if (exit && !fl->exp.isEmpty())
+  bool dec=(fl.type & DECLN);
+  bool exit=(fl.type & EXITNEXT);
+  if (exit && !fl.exp.isEmpty())
   {
     dec=TRUE;
   }
   if (dec)
   {
-    QCString exp=fl->exp;
+    QCString exp=fl.exp;
     alignText(exp);
 
     t << " [shape=diamond,style=filled,color=\"";
     t << flowCol.decisionNode;
     t << "\",label=\" ";
     QCString kl;
-    if (exit) kl=fl->text+"  ";
+    if (exit) kl=fl.text+"  ";
 
-    if (fl->label)
+    if (fl.label)
     {
-      kl+=fl->label+":"+exp+var;
+      kl+=fl.label+":"+exp+var;
     }
     else
     {
@@ -3598,14 +3545,14 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
     FlowChart::alignCommentNode(t,kl);
     t << "\"]\n";
   }
-  else if (fl->type & ENDCL)
+  else if (fl.type & ENDCL)
   {
-    QCString val=fl->text;
+    QCString val=fl.text;
     t << " [shape=ellipse ,label=\""+val+"\"]\n";
   }
-  else if (fl->type & STARTFIN)
+  else if (fl.type & STARTFIN)
   {
-    QCString val=fl->text;
+    QCString val=fl.text;
     t << "[shape=box , style=rounded label=<\n";
     t << "<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"0\" CELLPADDING=\"0\" >\n ";
     t << "<TR><TD BGCOLOR=\"";
@@ -3616,13 +3563,13 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
   }
   else
   {
-    if (fl->text.isEmpty()) return;
-    bool isVar=(fl->type & FlowChart::VARIABLE_NO);
-    QCString q=fl->text;
+    if (fl.text.isEmpty()) return;
+    bool isVar=(fl.type & FlowChart::VARIABLE_NO);
+    QCString q=fl.text;
 
     if (exit)
     {
-      q+=" "+fl->label;
+      q+=" "+fl.label;
     }
 
     int z=q.findRev("\n");
@@ -3647,14 +3594,14 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart* fl)
 }
 
 
-void FlowChart::writeEdge(FTextStream &t,const FlowChart* fl_from,const FlowChart* fl_to,int i)
+void FlowChart::writeEdge(FTextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i)
 {
-  bool b=fl_from->type & STARTL;
-  bool c=fl_to->type & STARTL;
+  bool b=fl_from.type & STARTL;
+  bool c=fl_to.type & STARTL;
 
 #ifdef DEBUGFLOW
-  QCString s1(getNodeName(fl_from->id).data());
-  QCString s2(getNodeName(fl_to->id).data());
+  QCString s1(getNodeName(fl_from.id).data());
+  QCString s2(getNodeName(fl_to.id).data());
   auto it = g_keyMap.find(s1.str());
   auto it1 = g_keyMap.find(s2.str());
   // checks if the link is connected to a valid node
@@ -3662,7 +3609,7 @@ void FlowChart::writeEdge(FTextStream &t,const FlowChart* fl_from,const FlowChar
   assert(it1!=g_keyMap.end());
 #endif
 
-  writeEdge(t,fl_from->id,fl_to->id,i,b,c);
+  writeEdge(t,fl_from.id,fl_to.id,i,b,c);
 }
 
 void FlowChart::writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom,bool bTo)
@@ -3729,50 +3676,50 @@ void FlowChart::alignFuncProc( QCString & q,const ArgumentList &al,bool isFunc)
 
 int FlowChart::findNextLoop(int index,int stamp)
 {
-  for (uint j=index+1;j<flowList.count();j++)
+  for (size_t j=index+1; j<flowList.size(); j++)
   {
-    FlowChart *flo=flowList.at(j);
-    if (flo->stamp==stamp)
+    const FlowChart &flo = flowList[j];
+    if (flo.stamp==stamp)
     {
       continue;
     }
-    if (flo->type&END_LOOP)
+    if (flo.type&END_LOOP)
     {
       return j;
     }
   }
-  return flowList.count()-1;
+  return flowList.size()-1;
 }
 
 int FlowChart::findPrevLoop(int index,int stamp,bool endif)
 {
-  for (uint j=index;j>0;j--)
+  for (size_t j=index;j>0;j--)
   {
-    FlowChart *flo=flowList.at(j);
-    if (flo->type & LOOP)
+    const FlowChart &flo = flowList[j];
+    if (flo.type & LOOP)
     {
-      if (flo->stamp==stamp && endif)
+      if (flo.stamp==stamp && endif)
       {
         return j;
       }
       else
       {
-        if (flo->stamp<stamp)
+        if (flo.stamp<stamp)
         {
           return j;
         }
       }
     }
   }
-  return flowList.count()-1;
+  return flowList.size()-1;
 }
 
-int FlowChart::findLabel(int index,QCString &label)
+int FlowChart::findLabel(int index,const QCString &label)
 {
-  for (uint j=index;j>0;j--)
+  for (size_t j=index;j>0;j--)
   {
-    FlowChart *flo=flowList.at(j);
-    if ((flo->type & LOOP) && !flo->label.isEmpty() && qstricmp(flo->label,label)==0)
+    const FlowChart &flo = flowList[j];
+    if ((flo.type & LOOP) && !flo.label.isEmpty() && qstricmp(flo.label,label)==0)
     {
       return j;
     }
@@ -3783,10 +3730,10 @@ int FlowChart::findLabel(int index,QCString &label)
 
 int FlowChart::findNode(int index,int stamp,int type)
 {
-  for (uint j=index+1;j<flowList.count();j++)
+  for (size_t j=index+1; j<flowList.size(); j++)
   {
-    FlowChart *flo=flowList.at(j);
-    if (flo->type==type && flo->stamp==stamp)
+    const FlowChart &flo = flowList[j];
+    if (flo.type==type && flo.stamp==stamp)
     {
       return j;
     }
@@ -3796,11 +3743,11 @@ int FlowChart::findNode(int index,int stamp,int type)
 
 int FlowChart::getNextNode(int index,int stamp)
 {
-  for (uint j=index+1;j<flowList.count();j++)
+  for (size_t j=index+1; j<flowList.size(); j++)
   {
-    FlowChart *flo=flowList.at(j);
-    int kind=flo->type;
-    int s=flo->stamp;
+    const FlowChart &flo = flowList[j];
+    int kind = flo.type;
+    int s    = flo.stamp;
     if (s>stamp)
     {
       continue;
@@ -3835,9 +3782,9 @@ int FlowChart::getNextNode(int index,int stamp)
   return FLOWLEN;
 }
 
-int FlowChart::getNextIfLink(const FlowChart* fl,uint index)
+int FlowChart::getNextIfLink(const FlowChart &fl,uint index)
 {
-  int stamp=fl->stamp;
+  int stamp=fl.stamp;
   uint start = index+1;
   int endifNode  = findNode(start,stamp,ENDIF_NO);
   int elseifNode = findNode(start,stamp,ELSIF_NO);
@@ -3855,23 +3802,23 @@ int FlowChart::getNextIfLink(const FlowChart* fl,uint index)
     return elseNode+1;
   }
 
-  stamp=flowList.at(endifNode)->stamp;
+  stamp=flowList[endifNode].stamp;
   return getNextNode(endifNode,stamp);
 }
 
 void FlowChart::writeFlowLinks(FTextStream &t)
 {
-  uint size=flowList.count();
+  size_t size=flowList.size();
   if (size<2) return;
 
   // write start link
-  writeEdge(t,flowList.at(0),flowList.at(1),2);
+  writeEdge(t,flowList[0],flowList[1],2);
 
-  for (uint j=0;j<size;j++)
+  for (size_t j=0;j<size;j++)
   {
-    FlowChart *fll=flowList.at(j);
-    int kind=fll->type;
-    int stamp=fll->stamp;
+    const FlowChart &fll = flowList[j];
+    int kind  = fll.type;
+    int stamp = fll.stamp;
     if (kind & EEND)
     {
       continue;
@@ -3879,98 +3826,98 @@ void FlowChart::writeFlowLinks(FTextStream &t)
 
     if (kind & IFF)
     {
-      writeEdge(t,fll,flowList.at(j+1),0);
+      writeEdge(t,fll,flowList[j+1],0);
       int z=getNextIfLink(fll,j);
       // assert(z>-1);
-      writeEdge(t,fll,flowList.at(z),1);
+      writeEdge(t,fll,flowList[z],1);
     }
     else if (kind & LOOP_NO)
     {
-      writeEdge(t,fll,flowList.at(j+1),2);
+      writeEdge(t,fll,flowList[j+1],2);
       continue;
     }
     else if (kind & (CASE_NO | FOR_NO | WHILE_NO))
     {
       if (kind & CASE_NO)
       {
-        writeEdge(t,fll,flowList.at(j+1),2);
+        writeEdge(t,fll,flowList[j+1],2);
         continue;
       }
       else
       {
-        writeEdge(t,fll,flowList.at(j+1),0);
+        writeEdge(t,fll,flowList[j+1],0);
       }
 
       kind=END_LOOP;
-      int z=findNode(j+1,fll->stamp,kind);
-      z=getNextNode(z,flowList.at(z)->stamp);
+      int z=findNode(j+1,fll.stamp,kind);
+      z=getNextNode(z,flowList[z].stamp);
 
       // assert(z>-1);
-      writeEdge(t,fll,flowList.at(z),1);
+      writeEdge(t,fll,flowList[z],1);
       continue;
     }
     else if (kind & (TEXT_NO | VARIABLE_NO))
     {
       int z=getNextNode(j,stamp);
-      writeEdge(t,fll,flowList.at(z),2);
+      writeEdge(t,fll,flowList[z],2);
     }
     else if (kind & WHEN_NO)
     {
       // default value
-      if (qstricmp(fll->text.simplifyWhiteSpace().data(),"others")==0)
+      if (qstricmp(fll.text.simplifyWhiteSpace(),"others")==0)
       {
-        writeEdge(t,fll,flowList.at(j+1),2);
+        writeEdge(t,fll,flowList[j+1],2);
         continue;
       }
 
 
-      writeEdge(t,fll,flowList.at(j+1),0);
+      writeEdge(t,fll,flowList[j+1],0);
       int u=findNode(j,stamp,WHEN_NO);
       int v=findNode(j,stamp-1,END_CASE);
 
       if (u>0 && u<v)
       {
-        writeEdge(t,fll,flowList.at(u),1);
+        writeEdge(t,fll,flowList[u],1);
       }
       else
       {
-        writeEdge(t,fll,flowList.at(v),1);
+        writeEdge(t,fll,flowList[v],1);
       }
     }
     else if (kind & END_CASE)
     {
-      int z=FlowChart::getNextNode(j,fll->stamp);
-      writeEdge(t,fll,flowList.at(z),2);
+      int z=FlowChart::getNextNode(j,fll.stamp);
+      writeEdge(t,fll,flowList[z],2);
     }
     else if (kind & END_LOOP)
     {
-      int z=findPrevLoop(j,fll->stamp,true);
-      writeEdge(t,fll,flowList.at(z),2);
+      int z=findPrevLoop(j,fll.stamp,true);
+      writeEdge(t,fll,flowList[z],2);
     }
     else if (kind & RETURN_NO)
     {
-      writeEdge(t,fll,FlowChart::flowList.at(size-1),2);
+      writeEdge(t,fll,flowList[size-1],2);
     }
     else if (kind & (EXIT_NO | NEXT_NO))
     {
       int z;
       bool b = kind==NEXT_NO;
-      if (fll->exp)
+      if (fll.exp)
       {
-        writeEdge(t,fll,flowList.at(j+1),1);
+        writeEdge(t,fll,flowList[j+1],1);
       }
-      if (!fll->label.isEmpty())
+      if (!fll.label.isEmpty())
       {
-        z=findLabel(j,fll->label);
+        z=findLabel(j,fll.label);
         if (b)
         {
-          writeEdge(t,fll,flowList.at(z),0);
+          writeEdge(t,fll,flowList[z],0);
         }
         else
         {
-          z=findNode(z,flowList.at(z)->stamp,END_LOOP);
-          z=getNextNode(z,flowList.at(z)->stamp);
-          writeEdge(t,fll,flowList.at(z),0);
+          z=findNode(z,flowList[z].stamp,END_LOOP);
+          z=getNextNode(z,flowList[z].stamp);
+          writeEdge(t,fll,flowList[z],0);
         }
         continue;
       }
@@ -3978,17 +3925,17 @@ void FlowChart::writeFlowLinks(FTextStream &t)
       {
         if (b)
         {
-          z=findPrevLoop(j,fll->stamp);
-          writeEdge(t,fll,flowList.at(z),0);
+          z=findPrevLoop(j,fll.stamp);
+          writeEdge(t,fll,flowList[z],0);
           continue;
         }
         else
         {
-          z =findNextLoop(j,fll->stamp-1);
+          z =findNextLoop(j,fll.stamp-1);
         }
-        z=getNextNode(z,flowList.at(z)->stamp);
+        z=getNextNode(z,flowList[z].stamp);
       }
-      writeEdge(t,fll,flowList.at(z),0);
+      writeEdge(t,fll,flowList[z],0);
     }
   } //for
 } //writeFlowLinks
