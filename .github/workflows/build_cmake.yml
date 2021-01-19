@@ -77,7 +77,7 @@ jobs:
           } Catch [Exception] {
             Write-Host $_.Exception | format-list -force
           }
-        } while (((Test-Path "miktexsetup-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
+        } while (((Test-Path "miktexsetup-4.1-x64.zip") -eq $false) -and ($attemptCount -le $maxAttempts))  
       shell: pwsh
       if: matrix.config.os == 'windows-latest'
       
@@ -135,7 +135,7 @@ jobs:
     - name: Install MikTex packages (Windows)
       shell: bash
       run: |
-        ./miktexsetup --local-package-repository=C:/miktex-repository \
+        ./miktexsetup_standalone --local-package-repository=C:/miktex-repository \
                       --package-set=essential \
                       --shared \
                       install
