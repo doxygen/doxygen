@@ -125,7 +125,7 @@ jobs:
     - name: Download MikTex packages (Windows)
       shell: bash
       run: |
-        ./miktexsetup --verbose \
+        ./miktexsetup_standalone --verbose \
                       --local-package-repository=C:/miktex-repository \
                       --remote-package-repository="https://ctan.math.illinois.edu/systems/win32/miktex/tm/packages/" \
                       --package-set=essential \
