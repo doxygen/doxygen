@@ -1175,8 +1175,7 @@ static void substEnvVarsInStrList(StringVector &sl)
   for (const auto &s : sl)
   {
     QCString result = s.c_str();
-    // an argument with quotes will have an extra space at the end, so wasQuoted will be TRUE.
-    bool wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1);
+    bool wasQuoted = (result.find(' ')!=-1) || (result.find('\t')!=-1) || (result.find('"')!=-1);
     // here we strip the quote again
     substEnvVarsInString(result);
 
@@ -1229,7 +1228,7 @@ static void substEnvVarsInStrList(StringVector &sl)
       }
       if (p!=l) // add the leftover as a string
       {
-        results.push_back(result.right(l-p).data());
+        results.push_back(result.right(l-p).str());
       }
     }
     else // just goto the next element in the list
