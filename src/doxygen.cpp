@@ -11793,7 +11793,7 @@ void generateOutput()
   warn_flush();
 
   g_s.begin("Running plantuml with JAVA...\n");
-  PlantumlManager::instance()->run();
+  PlantumlManager::instance().run();
   g_s.end();
 
   warn_flush();
