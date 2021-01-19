@@ -73,7 +73,7 @@ jobs:
         Do {
           $attemptCount++;
           Try {
-            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-4.0-x64.zip","miktexsetup-4.0-x64.zip")
+            $wc.DownloadFile("https://ctan.math.illinois.edu/systems/win32/miktex/setup/windows-x64/miktexsetup-4.1-x64.zip","miktexsetup-4.1-x64.zip")
           } Catch [Exception] {
             Write-Host $_.Exception | format-list -force
           }
@@ -119,7 +119,7 @@ jobs:
     - name: Extract MikTex zip (Windows)
       shell: bash
       run: |
-        unzip miktexsetup-4.0-x64.zip
+        unzip miktexsetup-4.1-x64.zip
       if: matrix.config.os == 'windows-latest'
 
     - name: Download MikTex packages (Windows)
