@@ -128,40 +128,40 @@ template<class T> class SharedPtr
 class GenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
-    GenericConstIterator(const QList<TemplateVariant> &list)
-      : m_it(list) { }
+    GenericConstIterator(const std::vector<TemplateVariant> &list) : m_list(list) {}
     virtual ~GenericConstIterator() {}
     void toFirst()
     {
-      m_it.toFirst();
+      m_index=0;
     }
     void toLast()
     {
-      m_it.toLast();
+      m_index=m_list.size()-1;
     }
     void toNext()
     {
-      if (m_it.current()) ++m_it;
+      if (m_index<static_cast<int>(m_list.size())) ++m_index;
     }
     void toPrev()
     {
-      if (m_it.current()) --m_it;
+      if (m_index>=0) --m_index;
     }
     bool current(TemplateVariant &v) const
     {
-      if (m_it.current())
+      if (m_index>=0 && m_index<static_cast<int>(m_list.size()))
       {
-        v = *m_it.current();
-        return TRUE;
+        v = m_list[m_index];
+        return true;
       }
       else
       {
         v = TemplateVariant();
-        return FALSE;
+        return false;
       }
     }
   private:
-    QListIterator<TemplateVariant> m_it;
+    const std::vector<TemplateVariant> &m_list;
+    int m_index=0;
 };
 
 //------------------------------------------------------------------------
@@ -172,7 +172,6 @@ class GenericNodeListContext : public TemplateListIntf
   public:
     GenericNodeListContext() : m_refCount(0)
     {
-      m_children.setAutoDelete(TRUE);
     }
     static GenericNodeListContext *alloc()
     {
@@ -182,14 +181,14 @@ class GenericNodeListContext : public TemplateListIntf
     // TemplateListIntf methods
     uint count() const
     {
-      return m_children.count();
+      return static_cast<uint>(m_children.size());
     }
     TemplateVariant at(uint index) const
     {
       TemplateVariant result;
       if (index<count())
       {
-        result = *m_children.at(index);
+        result = m_children[index];
       }
       return result;
     }
@@ -200,11 +199,11 @@ class GenericNodeListContext : public TemplateListIntf
 
     void append(const TemplateVariant &ctn)
     {
-      m_children.append(new TemplateVariant(ctn));
+      m_children.emplace_back(ctn);
     }
     bool isEmpty() const
     {
-      return m_children.isEmpty();
+      return m_children.empty();
     }
     int addRef()
     {
@@ -220,7 +219,7 @@ class GenericNodeListContext : public TemplateListIntf
       return count;
     }
   private:
-    mutable QList<TemplateVariant> m_children;
+    std::vector< TemplateVariant > m_children;
     int m_refCount;
 };
 
