@@ -1351,6 +1351,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  yyextra->yyLineNr++;
 					  yyextra->defLitText+=yytext;
 					  yyextra->defText+=' ';
+  					  outputChar(yyscanner,'\n');
   					}
 <RemoveCComment>"*/"{B}*"#"	        { // see bug 594021 for a usecase for this rule
                                           if (yyextra->lastCContext==SkipCPPBlock)
