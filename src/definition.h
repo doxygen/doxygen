@@ -47,7 +47,7 @@ class FTextStream;
 struct DocInfo
 {
     QCString doc;
-    int      line;
+    int      line = -1;
     QCString file;
 };
 
@@ -56,17 +56,17 @@ struct BriefInfo
 {
     QCString doc;
     QCString tooltip;
-    int      line;
+    int      line = -1;
     QCString file;
 };
 
 /** Data associated with description found in the body. */
 struct BodyInfo
 {
-    int      defLine;     //!< line number of the start of the definition
-    int      startLine;   //!< line number of the start of the definition's body
-    int      endLine;     //!< line number of the end of the definition's body
-    FileDef *fileDef;     //!< file definition containing the function body
+    int      defLine = -1;     //!< line number of the start of the definition
+    int      startLine = -1;   //!< line number of the start of the definition's body
+    int      endLine = -1;     //!< line number of the end of the definition's body
+    FileDef *fileDef = 0;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.
