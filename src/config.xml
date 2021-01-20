@@ -1740,11 +1740,11 @@ to disable this feature.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CLANG_ADD_INC_PATHS' setting='USE_LIBCLANG' defval='1'>
+    <option type='bool' id='CLANG_ADD_INC_PATHS' setting='USE_LIBCLANG' depends='CLANG_ASSISTED_PARSING' defval='1'>
       <docs>
 <![CDATA[
-  If clang assisted parsing is enabled and the \c CLANG_ADD_INC_PATHS tag
-  is set to \c YES then doxygen will add the directory of each input to the
+  If the \c CLANG_ASSISTED_PARSING tag is set to \c YES and the \c CLANG_ADD_INC_PATHS
+  tag is set to \c YES then doxygen will add the directory of each input to the
   include path.
 ]]>
       </docs>
