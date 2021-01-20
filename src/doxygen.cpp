@@ -9124,7 +9124,7 @@ static void generateConfigFile(const char *configFile,bool shortList,
     term("Cannot open file %s for writing\n",configFile);
   }
 }
-static void compareDoxyfile()
+static void compareDoxyfile(const bool longList)
 {
   QFile f;
   char configFile[2];
@@ -9134,7 +9134,7 @@ static void compareDoxyfile()
   if (fileOpened)
   {
     FTextStream t(&f);
-    Config::compareDoxyfile(t);
+    Config::compareDoxyfile(t,longList);
   }
   else
   {
@@ -10108,6 +10108,8 @@ static void usage(const char *name,const char *versionString)
   msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",name);
+  msg("   to get also the comments in the results use\n");
+  msg("    %s -xl [configFile]\n\n",name);
   msg("8) Use doxygen to show a list of built-in emojis.\n");
   msg("    %s -f emoji outputFileName\n\n",name);
   msg("    If - is used for outputFileName doxygen will write to standard output.\n\n");
@@ -10286,6 +10288,7 @@ void readConfiguration(int argc, char **argv)
   const char *listName;
   bool genConfig=FALSE;
   bool shortList=FALSE;
+  bool longList=FALSE;
   bool diffList=FALSE;
   bool updateConfig=FALSE;
   int retVal;
@@ -10330,6 +10333,8 @@ void readConfiguration(int argc, char **argv)
         }
         break;
       case 'x':
+        longList=FALSE;
+        if (argv[optind][2]=='l') longList=TRUE;
         diffList=TRUE;
         break;
       case 's':
@@ -10634,7 +10639,7 @@ void readConfiguration(int argc, char **argv)
 
   if (diffList)
   {
-    compareDoxyfile();
+    compareDoxyfile(longList);
     cleanUpDoxygen();
     exit(0);
   }

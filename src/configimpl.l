@@ -338,24 +338,29 @@ void ConfigInfo::writeTemplate(FTextStream &t, bool sl,bool)
   t << "#---------------------------------------------------------------------------\n";
 }
 
+static void writeUserComment(FTextStream &t,bool sl, QCString userComment, QCString doc, const bool compare = false)
+{
+  if (!sl && !compare)
+  {
+    t << endl;
+    t << convertToComment(doc, userComment);
+    t << endl;
+  }
+  else if (!userComment.isEmpty())
+  {
+    t << convertToComment("", userComment);
+  }
+}
+
 void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
 {
-  if (!sl)
-  {
-    t << endl;
-    t << convertToComment(m_doc, m_userComment);
-    t << endl;
-  }
-  else if (!m_userComment.isEmpty())
-  {
-    t << convertToComment("", m_userComment);
-  }
+  writeUserComment(t, sl, m_userComment, m_doc);
   t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
   writeStringList(t,m_value);
   t << "\n";
 }
 
-void ConfigList::compareDoxyfile(FTextStream &t)
+void ConfigList::compareDoxyfile(FTextStream &t, const bool longList)
 {
   auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
@@ -363,9 +368,10 @@ void ConfigList::compareDoxyfile(FTextStream &t)
   int valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
   {
-    writeTemplate(t,TRUE,TRUE);
+    writeTemplate(t,!longList,TRUE);
     return;
   }
+  else writeUserComment(t, !longList, m_userComment, m_doc, true);
   auto it1 = m_value.begin();
   auto it2 = m_defaultValue.begin();
   while (it1!=m_value.end() && it2!=m_defaultValue.end())
@@ -379,9 +385,10 @@ void ConfigList::compareDoxyfile(FTextStream &t)
     {
       if (get_stripped(*it1) != get_stripped(*it2)) // not the default, write as difference
       {
-        writeTemplate(t,TRUE,TRUE);
+        writeTemplate(t,!longList,TRUE);
         return;
       }
+      else writeUserComment(t, !longList, m_userComment, m_doc, true);
       ++it1;
       ++it2;
     }
@@ -390,60 +397,35 @@ void ConfigList::compareDoxyfile(FTextStream &t)
 
 void ConfigEnum::writeTemplate(FTextStream &t,bool sl,bool)
 {
-  if (!sl)
-  {
-    t << endl;
-    t << convertToComment(m_doc, m_userComment);
-    t << endl;
-  }
-  else if (!m_userComment.isEmpty())
-  {
-    t << convertToComment("", m_userComment);
-  }
+  writeUserComment(t, sl, m_userComment, m_doc);
   t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
   writeStringValue(t,m_value);
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(FTextStream &t)
+void ConfigEnum::compareDoxyfile(FTextStream &t, const bool longList)
 {
-  if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
+  if (m_value != m_defValue) writeTemplate(t,!longList,TRUE);
+  else writeUserComment(t, !longList, m_userComment, m_doc, true);
 }
 
 void ConfigString::writeTemplate(FTextStream &t,bool sl,bool)
 {
-  if (!sl)
-  {
-    t << endl;
-    t << convertToComment(m_doc, m_userComment);
-    t << endl;
-  }
-  else if (!m_userComment.isEmpty())
-  {
-    t << convertToComment("", m_userComment);
-  }
+  writeUserComment(t, sl, m_userComment, m_doc);
   t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
   writeStringValue(t,m_value);
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(FTextStream &t)
+void ConfigString::compareDoxyfile(FTextStream &t, const bool longList)
 {
-  if (m_value.stripWhiteSpace() != m_defValue.stripWhiteSpace()) writeTemplate(t,TRUE,TRUE);
+  if (m_value.stripWhiteSpace() != m_defValue.stripWhiteSpace()) writeTemplate(t,!longList,TRUE);
+  else writeUserComment(t, !longList, m_userComment, m_doc, true);
 }
 
 void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
 {
-  if (!sl)
-  {
-    t << endl;
-    t << convertToComment(m_doc, m_userComment);
-    t << endl;
-  }
-  else if (!m_userComment.isEmpty())
-  {
-    t << convertToComment("", m_userComment);
-  }
+  writeUserComment(t, sl, m_userComment, m_doc);
   t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
   if (upd && !m_valueString.isEmpty())
   {
@@ -456,23 +438,15 @@ void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(FTextStream &t)
+void ConfigInt::compareDoxyfile(FTextStream &t, const bool longList)
 {
-  if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
+  if (m_value != m_defValue) writeTemplate(t,!longList,TRUE);
+  else writeUserComment(t, !longList, m_userComment, m_doc, true);
 }
 
 void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
 {
-  if (!sl)
-  {
-    t << endl;
-    t << convertToComment(m_doc, m_userComment);
-    t << endl;
-  }
-  else if (!m_userComment.isEmpty())
-  {
-    t << convertToComment("", m_userComment);
-  }
+  writeUserComment(t, sl, m_userComment, m_doc);
   t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
   if (upd && !m_valueString.isEmpty())
   {
@@ -485,9 +459,10 @@ void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(FTextStream &t)
+void ConfigBool::compareDoxyfile(FTextStream &t, const bool longList)
 {
-  if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
+  if (m_value != m_defValue) writeTemplate(t,!longList,TRUE);
+  else writeUserComment(t, !longList, m_userComment, m_doc, true);
 }
 
 void ConfigObsolete::writeTemplate(FTextStream &,bool,bool) {}
@@ -1116,7 +1091,7 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
   }
 }
 
-void ConfigImpl::compareDoxyfile(FTextStream &t)
+void ConfigImpl::compareDoxyfile(FTextStream &t, const bool longList)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
   t << endl;
@@ -1124,8 +1099,13 @@ void ConfigImpl::compareDoxyfile(FTextStream &t)
   ConfigOption *option;
   for (;(option=it.current());++it)
   {
-    option->m_userComment = "";
-    option->compareDoxyfile(t);
+    if (!longList) option->m_userComment = "";
+    option->compareDoxyfile(t, longList);
+  }
+  if (longList && m_userComment)
+  {
+    t << "\n";
+    t << takeUserComment();
   }
 }
 
@@ -2108,10 +2088,10 @@ void Config::writeTemplate(FTextStream &t,bool shortList,bool update)
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(FTextStream &t)
+void Config::compareDoxyfile(FTextStream &t, const bool longList)
 {
   postProcess(FALSE, TRUE);
-  ConfigImpl::instance()->compareDoxyfile(t);
+  ConfigImpl::instance()->compareDoxyfile(t,longList);
 }
 
 bool Config::parse(const char *fileName,bool update)
