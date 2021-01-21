@@ -527,11 +527,12 @@ class TemplateContextImpl : public TemplateContext
     void setEscapeIntf(const QCString &ext,TemplateEscapeIntf *intf)
     {
       int i=(!ext.isEmpty() && ext.at(0)=='.') ? 1 : 0;
-      m_escapeIntfDict.insert(ext.mid(i),new TemplateEscapeIntf*(intf));
+      m_escapeIntfMap.insert(std::make_pair(ext.mid(i).str(),intf));
     }
     void selectEscapeIntf(const QCString &ext)
-    { TemplateEscapeIntf **ppIntf = m_escapeIntfDict.find(ext);
-      m_activeEscapeIntf = ppIntf ? *ppIntf : 0;
+    {
+      auto it = m_escapeIntfMap.find(ext.str());
+      m_activeEscapeIntf = it!=m_escapeIntfMap.end() ? it->second : 0;
     }
     void setActiveEscapeIntf(TemplateEscapeIntf *intf) { m_activeEscapeIntf = intf; }
     void setSpacelessIntf(TemplateSpacelessIntf *intf) { m_spacelessIntf = intf; }
@@ -570,15 +571,15 @@ class TemplateContextImpl : public TemplateContext
     QCString m_templateName;
     int m_line = 0;
     QCString m_outputDir;
-    QList< QDict<TemplateVariant> > m_contextStack;
+    std::deque< std::map<std::string,TemplateVariant> > m_contextStack;
     TemplateBlockContext m_blockContext;
-    QDict<TemplateEscapeIntf*> m_escapeIntfDict;
+    std::unordered_map<std::string, TemplateEscapeIntf*> m_escapeIntfMap;
     TemplateEscapeIntf *m_activeEscapeIntf = 0;
     TemplateSpacelessIntf *m_spacelessIntf = 0;
     bool m_spacelessEnabled = false;
     bool m_tabbingEnabled = false;
     TemplateAutoRef<TemplateStruct> m_indices;
-    QDict< QStack<TemplateVariant> > m_indexStacks;
+    std::unordered_map< std::string, std::stack<TemplateVariant> > m_indexStacks;
     QCString m_encoding;
     void *m_fromUtf8 = 0;
 };
@@ -1324,11 +1325,11 @@ class TemplateFilterFactory
 
     TemplateVariant apply(const QCString &name,const TemplateVariant &v,const TemplateVariant &arg, bool &ok)
     {
-      FilterFunction *func = (FilterFunction*)m_registry.find(name);
-      if (func)
+      auto it = m_registry.find(name.str());
+      if (it!=m_registry.end())
       {
         ok=TRUE;
-        return (*func)(v,arg);
+        return it->second(v,arg);
       }
       else
       {
@@ -1339,7 +1340,7 @@ class TemplateFilterFactory
 
     void registerFilter(const QCString &name,FilterFunction *func)
     {
-      m_registry.insert(name,(void*)func);
+      m_registry.insert(std::make_pair(name.str(),func));
     }
 
     /** @brief Helper class for registering a filter function */
@@ -1353,7 +1354,7 @@ class TemplateFilterFactory
     };
 
   private:
-    QDict<void> m_registry;
+    std::unordered_map<std::string,FilterFunction*> m_registry;
 };
 
 // register a handlers for each filter we support
@@ -2326,9 +2327,6 @@ TemplateContextImpl::TemplateContextImpl(const TemplateEngine *e)
   : m_engine(e), m_templateName("<unknown>"), m_line(1), m_activeEscapeIntf(0),
     m_spacelessIntf(0), m_spacelessEnabled(FALSE), m_tabbingEnabled(FALSE), m_indices(TemplateStruct::alloc())
 {
-  m_indexStacks.setAutoDelete(TRUE);
-  m_contextStack.setAutoDelete(TRUE);
-  m_escapeIntfDict.setAutoDelete(TRUE);
   m_fromUtf8 = (void*)(-1);
   push();
   set("index",m_indices.get());
@@ -2384,12 +2382,13 @@ QCString TemplateContextImpl::recode(const QCString &s)
 
 void TemplateContextImpl::set(const char *name,const TemplateVariant &v)
 {
-  TemplateVariant *pv = m_contextStack.getFirst()->find(name);
-  if (pv)
+  auto &ctx = m_contextStack.front();
+  auto it = ctx.find(name);
+  if (it!=ctx.end())
   {
-    m_contextStack.getFirst()->remove(name);
+    ctx.erase(it);
   }
-  m_contextStack.getFirst()->insert(name,new TemplateVariant(v));
+  ctx.insert(std::make_pair(name,v));
 }
 
 TemplateVariant TemplateContextImpl::get(const QCString &name) const
@@ -2462,12 +2461,13 @@ TemplateVariant TemplateContextImpl::get(const QCString &name) const
 
 const TemplateVariant *TemplateContextImpl::getRef(const QCString &name) const
 {
-  QListIterator< QDict<TemplateVariant> > it(m_contextStack);
-  QDict<TemplateVariant> *dict;
-  for (it.toFirst();(dict=it.current());++it)
+  for (const auto &ctx : m_contextStack)
   {
-    TemplateVariant *v = dict->find(name);
-    if (v) return v;
+    auto it = ctx.find(name.str());
+    if (it!=ctx.end())
+    {
+      return &it->second;
+    }
   }
   return 0; // not found
 }
@@ -2480,16 +2480,18 @@ TemplateVariant TemplateContextImpl::getPrimary(const QCString &name) const
 
 void TemplateContextImpl::push()
 {
-  QDict<TemplateVariant> *dict = new QDict<TemplateVariant>;
-  dict->setAutoDelete(TRUE);
-  m_contextStack.prepend(dict);
+  m_contextStack.push_front(std::map<std::string,TemplateVariant>());
 }
 
 void TemplateContextImpl::pop()
 {
-  if (!m_contextStack.removeFirst())
+  if (m_contextStack.empty())
   {
     warn(m_templateName,m_line,"pop() called on empty context stack!\n");
+  }
+  else
+  {
+    m_contextStack.pop_front();
   }
 }
 
@@ -2510,19 +2512,20 @@ void TemplateContextImpl::warn(const char *fileName,int line,const char *fmt,...
 void TemplateContextImpl::openSubIndex(const QCString &indexName)
 {
   //printf("TemplateContextImpl::openSubIndex(%s)\n",indexName.data());
-  QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
-  if (!stack || stack->isEmpty() || stack->top()->type()==TemplateVariant::List) // error: no stack yet or no entry
+  auto kv = m_indexStacks.find(indexName.str());
+  if (kv==m_indexStacks.end() || kv->second.empty() || kv->second.top().type()==TemplateVariant::List) // error: no stack yet or no entry
   {
     warn(m_templateName,m_line,"opensubindex for index %s without preceding indexentry",indexName.data());
     return;
   }
   // get the parent entry to add the list to
-  TemplateStruct *entry = dynamic_cast<TemplateStruct*>(stack->top()->toStruct());
+  auto &stack = kv->second;
+  TemplateStruct *entry = dynamic_cast<TemplateStruct*>(stack.top().toStruct());
   if (entry)
   {
     // add new list to the stack
     TemplateList *list = TemplateList::alloc();
-    stack->push(new TemplateVariant(list));
+    stack.emplace(list);
     entry->set("children",list);
     entry->set("is_leaf_node",false);
   }
@@ -2531,22 +2534,23 @@ void TemplateContextImpl::openSubIndex(const QCString &indexName)
 void TemplateContextImpl::closeSubIndex(const QCString &indexName)
 {
   //printf("TemplateContextImpl::closeSubIndex(%s)\n",indexName.data());
-  QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
-  if (!stack || stack->count()<3)
+  auto kv = m_indexStacks.find(indexName.str());
+  if (kv==m_indexStacks.end() || kv->second.size()<3)
   {
     warn(m_templateName,m_line,"closesubindex for index %s without matching open",indexName.data());
   }
-  else // stack->count()>=2
+  else
   {
-    if (stack->top()->type()==TemplateVariant::Struct)
+    auto stack = kv->second; // stack.size()>2
+    if (stack.top().type()==TemplateVariant::Struct)
     {
-      delete stack->pop(); // pop struct
-      delete stack->pop(); // pop list
+      stack.pop(); // pop struct
+      stack.pop(); // pop list
     }
     else // empty list! correct "is_left_node" attribute of the parent entry
     {
-      delete stack->pop(); // pop list
-      TemplateStruct *entry = dynamic_cast<TemplateStruct*>(stack->top()->toStruct());
+      stack.pop(); // pop list
+      TemplateStruct *entry = dynamic_cast<TemplateStruct*>(stack.top().toStruct());
       if (entry)
       {
         entry->set("is_leaf_node",true);
@@ -2584,42 +2588,42 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
   //  ++it;
   //}
   TemplateVariant parent(FALSE);
-  QStack<TemplateVariant> *stack = m_indexStacks.find(indexName);
-  if (!stack) // no stack yet, create it!
+  auto kv = m_indexStacks.find(indexName.str());
+  if (kv==m_indexStacks.end()) // no stack yet, create it!
   {
-    stack = new QStack<TemplateVariant>;
-    stack->setAutoDelete(TRUE);
-    m_indexStacks.insert(indexName,stack);
+    kv = m_indexStacks.insert(std::make_pair(indexName.str(),std::stack<TemplateVariant>())).first;
   }
   TemplateList *list  = 0;
-  if (stack->isEmpty()) // first item, create empty list and add it to the index
+  auto stack = kv->second;
+  if (stack.empty()) // first item, create empty list and add it to the index
   {
     list = TemplateList::alloc();
-    stack->push(new TemplateVariant(list));
+    stack.emplace(list);
     m_indices->set(indexName,list); // make list available under index
   }
   else // stack not empty
   {
-    if (stack->top()->type()==TemplateVariant::Struct) // already an entry in the list
+    if (stack.top().type()==TemplateVariant::Struct) // already an entry in the list
     {
       // remove current entry from the stack
-      delete stack->pop();
+      stack.pop();
     }
     else // first entry after opensubindex
     {
-      ASSERT(stack->top()->type()==TemplateVariant::List);
+      ASSERT(stack.top().type()==TemplateVariant::List);
     }
-    if (stack->count()>1)
+    if (stack.size()>1)
     {
-      TemplateVariant *tmp = stack->pop();
+      TemplateVariant tmp = stack.top();
+      stack.pop();
       // To prevent a cyclic dependency between parent and child which causes a memory
       // leak, we wrap the parent into a weak reference version.
-      parent = new TemplateStructWeakRef(stack->top()->toStruct());
-      stack->push(tmp);
+      parent = new TemplateStructWeakRef(stack.top().toStruct());
+      stack.push(tmp);
       ASSERT(parent.type()==TemplateVariant::Struct);
     }
     // get list to add new item
-    list = dynamic_cast<TemplateList*>(stack->top()->toList());
+    list = dynamic_cast<TemplateList*>(stack.top().toList());
   }
   TemplateStruct *entry = TemplateStruct::alloc();
   // add user specified fields to the entry
@@ -2641,7 +2645,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
   entry->set("parent",parent);
   entry->set("path",TemplateVariant::Delegate::fromFunction(entry,getPathFunc));
   entry->set("last",true);
-  stack->push(new TemplateVariant(entry));
+  stack.emplace(entry);
   list->append(entry);
 }
 
@@ -4472,13 +4476,14 @@ class TemplateNodeFactory
                          int line,
                          const QCString &data)
     {
-      if (m_registry.find(name)==0) return 0;
-      return ((CreateFunc)m_registry[name])(parser,parent,line,data);
+      auto it = m_registry.find(name.str());
+      if (it==m_registry.end()) return 0;
+      return it->second(parser,parent,line,data);
     }
 
     void registerTemplateNode(const QCString &name,CreateFunc func)
     {
-      m_registry.insert(name,(void*)func);
+      m_registry.insert(std::make_pair(name.str(),func));
     }
 
     /** @brief Helper class for registering a template AST node */
@@ -4492,7 +4497,7 @@ class TemplateNodeFactory
     };
 
   private:
-    QDict<void> m_registry;
+    std::unordered_map<std::string,CreateFunc> m_registry;
 };
 
 // register a handler for each start tag we support
