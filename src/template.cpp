@@ -15,6 +15,11 @@
 
 #include "template.h"
 
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+#include <deque>
+
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -241,9 +246,8 @@ int TemplateVariant::toInt() const
 class TemplateStruct::Private
 {
   public:
-    Private() : fields(17), refCount(0)
-    { fields.setAutoDelete(TRUE); }
-    QDict<TemplateVariant> fields;
+    Private() : refCount(0) {}
+    std::unordered_map<std::string,TemplateVariant> fields;
     int refCount = 0;
 };
 
@@ -274,21 +278,21 @@ int TemplateStruct::release()
 
 void TemplateStruct::set(const char *name,const TemplateVariant &v)
 {
-  TemplateVariant *pv = p->fields.find(name);
-  if (pv) // change existing field
+  auto it = p->fields.find(name);
+  if (it!=p->fields.end()) // change existing field
   {
-    *pv = v;
+    it->second = v;
   }
   else // insert new field
   {
-    p->fields.insert(name,new TemplateVariant(v));
+    p->fields.insert(std::make_pair(name,v));
   }
 }
 
 TemplateVariant TemplateStruct::get(const char *name) const
 {
-  TemplateVariant *v = p->fields.find(name);
-  return v ? *v : TemplateVariant();
+  auto it = p->fields.find(name);
+  return it!=p->fields.end() ? it->second : TemplateVariant();
 }
 
 TemplateStruct *TemplateStruct::alloc()
@@ -871,16 +875,6 @@ class FilterListSort
       QCString key;
       TemplateVariant value;
     };
-    class SortList : public QList<ListElem>
-    {
-      public:
-        SortList() { setAutoDelete(TRUE); }
-      private:
-        int compareValues(const ListElem *item1,const ListElem *item2) const
-        {
-          return qstrcmp(item1->key,item2->key);
-        }
-    };
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
     {
@@ -893,28 +887,30 @@ class FilterListSort
         TemplateList *result = TemplateList::alloc();
 
         // create list of items based on v using the data in args as a sort key
+        using SortList = std::vector<ListElem>;
         SortList sortList;
+        sortList.reserve(v.toList()->count());
         for (it->toFirst();(it->current(item));it->toNext())
         {
           TemplateStructIntf *s = item.toStruct();
           if (s)
           {
             QCString sortKey = determineSortKey(s,args.toString());
-            sortList.append(new ListElem(sortKey,item));
+            sortList.emplace_back(sortKey,item);
             //printf("sortKey=%s\n",sortKey.data());
           }
         }
         delete it;
 
         // sort the list
-        sortList.sort();
+        std::sort(sortList.begin(),
+                  sortList.end(),
+                  [](const auto &lhs,const auto &rhs) { return qstrcmp(lhs.key,rhs.key)<0; });
 
         // add sorted items to the result list
-        QListIterator<ListElem> sit(sortList);
-        ListElem *elem;
-        for (sit.toFirst();(elem=sit.current());++sit)
+        for (const auto &elem : sortList)
         {
-          result->append(elem->value);
+          result->append(elem.value);
         }
         return result;
       }
@@ -959,16 +955,6 @@ class FilterGroupBy
       QCString key;
       TemplateVariant value;
     };
-    class SortList : public QList<ListElem>
-    {
-      public:
-        SortList() { setAutoDelete(TRUE); }
-      private:
-        int compareValues(const ListElem *item1,const ListElem *item2) const
-        {
-          return qstrcmp(item1->key,item2->key);
-        }
-    };
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
     {
@@ -981,36 +967,38 @@ class FilterGroupBy
         TemplateList *result = TemplateList::alloc();
 
         // create list of items based on v using the data in args as a sort key
+        using SortList = std::vector<ListElem>;
         SortList sortList;
+        sortList.reserve(v.toList()->count());
         for (it->toFirst();(it->current(item));it->toNext())
         {
           TemplateStructIntf *s = item.toStruct();
           if (s)
           {
             QCString sortKey = determineSortKey(s,args.toString());
-            sortList.append(new ListElem(sortKey,item));
+            sortList.emplace_back(sortKey,item);
             //printf("sortKey=%s\n",sortKey.data());
           }
         }
         delete it;
 
         // sort the list
-        sortList.sort();
+        std::sort(sortList.begin(),
+                  sortList.end(),
+                  [](const auto &lhs,const auto &rhs) { return qstrcmp(lhs.key,rhs.key)<0; });
 
         // add sorted items to the result list
-        QListIterator<ListElem> sit(sortList);
-        ListElem *elem;
         TemplateList *groupList=0;
         QCString prevKey;
-        for (sit.toFirst();(elem=sit.current());++sit)
+        for (const auto &elem : sortList)
         {
-          if (groupList==0 || elem->key!=prevKey)
+          if (groupList==0 || elem.key!=prevKey)
           {
             groupList = TemplateList::alloc();
             result->append(groupList);
-            prevKey = elem->key;
+            prevKey = elem.key;
           }
-          groupList->append(elem->value);
+          groupList->append(elem.value);
         }
         return result;
       }
@@ -1096,61 +1084,30 @@ class FilterAlphaIndex
     struct ListElem
     {
       ListElem(uint k,const TemplateVariant &v) : key(k), value(v) {}
-      uint key;
+      QCString key;
       TemplateVariant value;
     };
-    class SortList : public QList<ListElem>
+    static QCString keyToLabel(const char *startLetter)
     {
-      public:
-        SortList() { setAutoDelete(TRUE); }
-      private:
-        int compareValues(const ListElem *item1,const ListElem *item2) const
-        {
-          return item1->key-item2->key;
-        }
-    };
-    static QCString keyToLetter(uint startLetter)
-    {
-      return QString(QChar(startLetter)).utf8();
-    }
-    static QCString keyToLabel(uint startLetter)
-    {
-      char s[11]; // 0x12345678 + '\0'
-      if ((startLetter>='0' && startLetter<='9') ||
-          (startLetter>='a' && startLetter<='z') ||
-          (startLetter>='A' && startLetter<='Z'))
+      const char *p = startLetter;
+      if (startLetter==0 || *startLetter==0) return "";
+      char c = *p;
+      QCString result;
+      if (c<127 && c>31) // printable ASCII character
       {
-        int i=0;
-        if (startLetter>='0' && startLetter<='9') s[i++] = 'x';
-        s[i++]=(char)tolower((char)startLetter);
-        s[i++]=0;
+        result+=c;
       }
       else
       {
+        result="0x";
         const char hex[]="0123456789abcdef";
-        int i=0;
-        s[i++]='x';
-        if (startLetter>(1<<24)) // 4 byte character
+        while ((c=*p++))
         {
-          s[i++]=hex[(startLetter>>28)&0xf];
-          s[i++]=hex[(startLetter>>24)&0xf];
+          result+=hex[((unsigned char)c)>>4];
+          result+=hex[((unsigned char)c)&0xf];
         }
-        if (startLetter>(1<<16)) // 3 byte character
-        {
-          s[i++]=hex[(startLetter>>20)&0xf];
-          s[i++]=hex[(startLetter>>16)&0xf];
-        }
-        if (startLetter>(1<<8)) // 2 byte character
-        {
-          s[i++]=hex[(startLetter>>12)&0xf];
-          s[i++]=hex[(startLetter>>8)&0xf];
-        }
-        // one byte character
-        s[i++]=hex[(startLetter>>4)&0xf];
-        s[i++]=hex[(startLetter>>0)&0xf];
-        s[i++]=0;
       }
-      return s;
+      return result;
     }
     static uint determineSortKey(TemplateStructIntf *s,const QCString &attribName)
     {
@@ -1171,42 +1128,44 @@ class FilterAlphaIndex
         TemplateList *result = TemplateList::alloc();
 
         // create list of items based on v using the data in args as a sort key
+        using SortList = std::vector<ListElem>;
         SortList sortList;
+        sortList.reserve(v.toList()->count());
         for (it->toFirst();(it->current(item));it->toNext())
         {
           TemplateStructIntf *s = item.toStruct();
           if (s)
           {
             uint sortKey = determineSortKey(s,args.toString());
-            sortList.append(new ListElem(sortKey,item));
+            sortList.emplace_back(sortKey,item);
             //printf("sortKey=%s\n",sortKey.data());
           }
         }
         delete it;
 
         // sort the list
-        sortList.sort();
+        std::sort(sortList.begin(),
+                  sortList.end(),
+                  [](const auto &lhs,const auto &rhs) { return qstrcmp(lhs.key,rhs.key)<0; });
 
         // create an index from the sorted list
-        uint letter=0;
-        QListIterator<ListElem> sit(sortList);
-        ListElem *elem;
+        QCString letter;
         TemplateStruct *indexNode = 0;
         TemplateList *indexList = 0;
-        for (sit.toFirst();(elem=sit.current());++sit)
+        for (const auto &elem : sortList)
         {
-          if (letter!=elem->key || indexNode==0)
+          if (letter!=elem.key || indexNode==0)
           {
             // create new indexNode
             indexNode = TemplateStruct::alloc();
             indexList = TemplateList::alloc();
-            indexNode->set("letter", keyToLetter(elem->key));
-            indexNode->set("label",  keyToLabel(elem->key));
+            indexNode->set("letter", elem.key);
+            indexNode->set("label",  keyToLabel(elem.key));
             indexNode->set("items",indexList);
             result->append(indexNode);
-            letter=elem->key;
+            letter=elem.key;
           }
-          indexList->append(elem->value);
+          indexList->append(elem.value);
         }
         return result;
       }
@@ -1433,6 +1392,8 @@ class ExprAst
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(); }
 };
 
+using ExprAstList = std::vector< std::unique_ptr<ExprAst> >;
+
 /** @brief Class representing a number in the AST */
 class ExprAstNumber : public ExprAst
 {
@@ -1469,10 +1430,9 @@ class ExprAstVariable : public ExprAst
 class ExprAstFunctionVariable : public ExprAst
 {
   public:
-    ExprAstFunctionVariable(ExprAst *var,const QList<ExprAst> &args)
-      : m_var(var), m_args(args)
+    ExprAstFunctionVariable(ExprAst *var, ExprAstList &&args)
+      : m_var(var), m_args(std::move(args))
     { TRACE(("ExprAstFunctionVariable()\n"));
-      m_args.setAutoDelete(TRUE);
     }
    ~ExprAstFunctionVariable()
     {
@@ -1481,9 +1441,9 @@ class ExprAstFunctionVariable : public ExprAst
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       std::vector<TemplateVariant> args;
-      for (uint i=0;i<m_args.count();i++)
+      for (const auto &exprArg : m_args)
       {
-        TemplateVariant v = m_args.at(i)->resolve(c);
+        TemplateVariant v = exprArg->resolve(c);
         args.push_back(v);
       }
       TemplateVariant v = m_var->resolve(c);
@@ -1495,7 +1455,7 @@ class ExprAstFunctionVariable : public ExprAst
     }
   private:
     ExprAst *m_var = 0;
-    QList<ExprAst> m_args;
+    ExprAstList m_args;
 };
 
 /** @brief Class representing a filter in the AST */
@@ -1717,25 +1677,42 @@ class TemplateNode
 
 //----------------------------------------------------------
 
+/** @brief Class representing a lexical token in a template */
+class TemplateToken
+{
+  public:
+    enum Type { Text, Variable, Block };
+    TemplateToken(Type t,const char *d,int l) : type(t), data(d), line(l) {}
+    Type type = Text;
+    QCString data;
+    int line = 0;
+};
+
+using TemplateTokenPtr = std::unique_ptr<TemplateToken>;
+using TemplateTokenStream = std::deque< TemplateTokenPtr >;
+
+//----------------------------------------------------------
+
 /** @brief Parser for templates */
 class TemplateParser
 {
   public:
     TemplateParser(const TemplateEngine *engine,
-                   const QCString &templateName,QList<TemplateToken> &tokens);
+                   const QCString &templateName,
+                   TemplateTokenStream &tokens);
     void parse(TemplateNode *parent,int line,const QStrList &stopAt,
                QList<TemplateNode> &nodes);
     bool hasNextToken() const;
-    TemplateToken *takeNextToken();
+    TemplateTokenPtr takeNextToken();
     void removeNextToken();
-    void prependToken(const TemplateToken *token);
+    void prependToken(TemplateTokenPtr &&token);
     const TemplateToken *currentToken() const;
     QCString templateName() const { return m_templateName; }
     void warn(const char *fileName,int line,const char *fmt,...) const;
   private:
     const TemplateEngine *m_engine = 0;
     QCString m_templateName;
-    QList<TemplateToken> &m_tokens;
+    TemplateTokenStream &m_tokens;
 };
 
 //--------------------------------------------------------------------
@@ -2023,17 +2000,15 @@ class ExpressionParser
             m_curToken.op==Operator::Colon)
         {
           getNextToken();
-          ExprAst *argExpr = parsePrimaryExpression();
-          QList<ExprAst> args;
-          args.append(argExpr);
+          ExprAstList args;
+          args.push_back(std::unique_ptr<ExprAst>(parsePrimaryExpression()));
           while (m_curToken.type==ExprToken::Operator &&
                  m_curToken.op==Operator::Comma)
           {
             getNextToken();
-            argExpr = parsePrimaryExpression();
-            args.append(argExpr);
+            args.push_back(std::unique_ptr<ExprAst>(parsePrimaryExpression()));
           }
-          expr = new ExprAstFunctionVariable(expr,args);
+          expr = new ExprAstFunctionVariable(expr,std::move(args));
         }
       }
       TRACE(("}parseIdentifierOptionalArgs()\n"));
@@ -2282,19 +2257,6 @@ class ExpressionParser
     ExprToken m_curToken;
     int m_line = 0;
     const char *m_tokenStream;
-};
-
-//----------------------------------------------------------
-
-/** @brief Class representing a lexical token in a template */
-class TemplateToken
-{
-  public:
-    enum Type { Text, Variable, Block };
-    TemplateToken(Type t,const char *d,int l) : type(t), data(d), line(l) {}
-    Type type = Text;
-    QCString data;
-    int line = 0;
 };
 
 //----------------------------------------------------------
@@ -2888,7 +2850,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
         parser->parse(this,line,stopAt,guardedNodes->trueNodes);
         m_ifGuardedNodes.append(guardedNodes);
       }
-      TemplateToken *tok = parser->takeNextToken();
+      auto tok = parser->takeNextToken();
 
       // elif 'nodes'
       while (tok && tok->data.left(5)=="elif ")
@@ -2900,7 +2862,6 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
         parser->parse(this,tok->line,stopAt,guardedNodes->trueNodes);
         m_ifGuardedNodes.append(guardedNodes);
         // proceed to the next token
-        delete tok;
         tok = parser->takeNextToken();
       }
 
@@ -2912,7 +2873,6 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
         parser->parse(this,line,stopAt,m_falseNodes);
         parser->removeNextToken(); // skip over endif
       }
-      delete tok;
       TRACE(("}TemplateNodeIf(%s)\n",data.data()));
     }
     ~TemplateNodeIf()
@@ -3242,14 +3202,13 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       stopAt.append("endfor");
       stopAt.append("empty");
       parser->parse(this,line,stopAt,m_loopNodes);
-      TemplateToken *tok = parser->takeNextToken();
+      auto tok = parser->takeNextToken();
       if (tok && tok->data=="empty")
       {
         stopAt.removeLast();
         parser->parse(this,line,stopAt,m_emptyNodes);
         parser->removeNextToken(); // skip over endfor
       }
-      delete tok;
       TRACE(("}TemplateNodeFor(%s)\n",data.data()));
     }
 
@@ -4642,11 +4601,11 @@ class TemplateLexer
 {
   public:
     TemplateLexer(const TemplateEngine *engine,const QCString &fileName,const QCString &data);
-    void tokenize(QList<TemplateToken> &tokens);
+    void tokenize(TemplateTokenStream &tokens);
     void setOpenCloseCharacters(char openChar,char closeChar)
     { m_openChar=openChar; m_closeChar=closeChar; }
   private:
-    void addToken(QList<TemplateToken> &tokens,
+    void addToken(TemplateTokenStream &tokens,
                   const char *data,int line,int startPos,int endPos,
                   TemplateToken::Type type);
     void reset();
@@ -4664,7 +4623,7 @@ TemplateLexer::TemplateLexer(const TemplateEngine *engine,const QCString &fileNa
   m_closeChar='}';
 }
 
-void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
+void TemplateLexer::tokenize(TemplateTokenStream &tokens)
 {
   enum LexerStates
   {
@@ -4867,7 +4826,7 @@ void TemplateLexer::tokenize(QList<TemplateToken> &tokens)
   }
 }
 
-void TemplateLexer::addToken(QList<TemplateToken> &tokens,
+void TemplateLexer::addToken(TemplateTokenStream &tokens,
                              const char *data,int line,
                              int startPos,int endPos,
                              TemplateToken::Type type)
@@ -4878,7 +4837,7 @@ void TemplateLexer::addToken(QList<TemplateToken> &tokens,
     QCString text(len);
     qstrncpy(text.rawData(),data+startPos,len);
     if (type!=TemplateToken::Text) text = text.stripWhiteSpace();
-    tokens.append(new TemplateToken(type,text,line));
+    tokens.push_back(std::make_unique<TemplateToken>(type,text,line));
   }
 }
 
@@ -4886,7 +4845,7 @@ void TemplateLexer::addToken(QList<TemplateToken> &tokens,
 
 TemplateParser::TemplateParser(const TemplateEngine *engine,
                                const QCString &templateName,
-                               QList<TemplateToken> &tokens) :
+                               TemplateTokenStream &tokens) :
    m_engine(engine), m_templateName(templateName), m_tokens(tokens)
 {
 }
@@ -4899,7 +4858,7 @@ void TemplateParser::parse(
   // process the tokens. Build node list
   while (hasNextToken())
   {
-    TemplateToken *tok = takeNextToken();
+    auto tok = takeNextToken();
     //printf("%p:Token type=%d data='%s' line=%d\n",
     //       parent,tok->type,tok->data.data(),tok->line);
     switch(tok->type)
@@ -4918,19 +4877,20 @@ void TemplateParser::parse(
           {
             command=command.left(sep);
           }
+          TemplateToken *tok_ptr = tok.get();
           if (stopAt.contains(command))
           {
-            prependToken(tok);
+            prependToken(std::move(tok));
             TRACE(("}TemplateParser::parse: stop\n"));
             return;
           }
           QCString arg;
           if (sep!=-1)
           {
-            arg = tok->data.mid(sep+1);
+            arg = tok_ptr->data.mid(sep+1);
           }
           TemplateNode *node = TemplateNodeFactory::instance()->
-                               create(command,this,parent,tok->line,arg);
+                               create(command,this,parent,tok_ptr->line,arg);
           if (node)
           {
             nodes.append(node);
@@ -4944,16 +4904,15 @@ void TemplateParser::parse(
                    command=="endrange"       || command=="endtabbing"   ||
                    command=="endencoding")
           {
-            warn(m_templateName,tok->line,"Found tag '%s' without matching start tag",command.data());
+            warn(m_templateName,tok_ptr->line,"Found tag '%s' without matching start tag",command.data());
           }
           else
           {
-            warn(m_templateName,tok->line,"Unknown tag '%s'",command.data());
+            warn(m_templateName,tok_ptr->line,"Unknown tag '%s'",command.data());
           }
         }
         break;
     }
-    delete tok;
   }
   if (!stopAt.isEmpty())
   {
@@ -4973,27 +4932,30 @@ void TemplateParser::parse(
 
 bool TemplateParser::hasNextToken() const
 {
-  return !m_tokens.isEmpty();
+  return !m_tokens.empty();
 }
 
-TemplateToken *TemplateParser::takeNextToken()
+TemplateTokenPtr TemplateParser::takeNextToken()
 {
-  return m_tokens.take(0);
+  if (m_tokens.empty()) return TemplateTokenPtr();
+  auto tok = std::move(m_tokens.front());
+  m_tokens.pop_front();
+  return tok;
 }
 
 const TemplateToken *TemplateParser::currentToken() const
 {
-  return m_tokens.getFirst();
+  return m_tokens.front().get();
 }
 
 void TemplateParser::removeNextToken()
 {
-  m_tokens.removeFirst();
+  m_tokens.pop_front();
 }
 
-void TemplateParser::prependToken(const TemplateToken *token)
+void TemplateParser::prependToken(TemplateTokenPtr &&token)
 {
-  m_tokens.prepend(token);
+  m_tokens.push_front(std::move(token));
 }
 
 void TemplateParser::warn(const char *fileName,int line,const char *fmt,...) const
@@ -5021,8 +4983,7 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCS
   {
     lexer.setOpenCloseCharacters('<','>');
   }
-  QList<TemplateToken> tokens;
-  tokens.setAutoDelete(TRUE);
+  TemplateTokenStream tokens;
   lexer.tokenize(tokens);
   TemplateParser parser(engine,name,tokens);
   parser.parse(this,1,QStrList(),m_nodes);
