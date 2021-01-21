@@ -1694,6 +1694,23 @@ using TemplateTokenStream = std::deque< TemplateTokenPtr >;
 
 //----------------------------------------------------------
 
+/** @brief Class representing a list of AST nodes in a template */
+class TemplateNodeList : public std::vector< std::unique_ptr<TemplateNode> >
+{
+  public:
+    void render(FTextStream &ts,TemplateContext *c)
+    {
+      TRACE(("{TemplateNodeList::render\n"));
+      for (const auto &tn : *this)
+      {
+        tn->render(ts,c);
+      }
+      TRACE(("}TemplateNodeList::render\n"));
+    }
+};
+
+//----------------------------------------------------------
+
 /** @brief Parser for templates */
 class TemplateParser
 {
@@ -1702,7 +1719,7 @@ class TemplateParser
                    const QCString &templateName,
                    TemplateTokenStream &tokens);
     void parse(TemplateNode *parent,int line,const QStrList &stopAt,
-               QList<TemplateNode> &nodes);
+               TemplateNodeList &nodes);
     bool hasNextToken() const;
     TemplateTokenPtr takeNextToken();
     void removeNextToken();
@@ -2262,29 +2279,6 @@ class ExpressionParser
 
 //----------------------------------------------------------
 
-/** @brief Class representing a list of AST nodes in a template */
-class TemplateNodeList : public QList<TemplateNode>
-{
-  public:
-    TemplateNodeList()
-    {
-      setAutoDelete(TRUE);
-    }
-    void render(FTextStream &ts,TemplateContext *c)
-    {
-      TRACE(("{TemplateNodeList::render\n"));
-      QListIterator<TemplateNode> it(*this);
-      TemplateNode *tn=0;
-      for (it.toFirst();(tn=it.current());++it)
-      {
-        tn->render(ts,c);
-      }
-      TRACE(("}TemplateNodeList::render\n"));
-    }
-};
-
-//----------------------------------------------------------
-
 /** @brief Internal class representing the implementation of a template */
 class TemplateImpl : public TemplateNode, public Template
 {
@@ -2541,7 +2535,7 @@ void TemplateContextImpl::closeSubIndex(const QCString &indexName)
   }
   else
   {
-    auto stack = kv->second; // stack.size()>2
+    auto &stack = kv->second; // stack.size()>2
     if (stack.top().type()==TemplateVariant::Struct)
     {
       stack.pop(); // pop struct
@@ -2594,7 +2588,7 @@ void TemplateContextImpl::addIndexEntry(const QCString &indexName,const std::vec
     kv = m_indexStacks.insert(std::make_pair(indexName.str(),std::stack<TemplateVariant>())).first;
   }
   TemplateList *list  = 0;
-  auto stack = kv->second;
+  auto &stack = kv->second;
   if (stack.empty()) // first item, create empty list and add it to the index
   {
     list = TemplateList::alloc();
@@ -2756,7 +2750,6 @@ class TemplateNodeVariable : public TemplateNode
     QCString m_templateName;
     int m_line = 0;
     ExprAst *m_var = 0;
-    QList<ExprAst> m_args;
 };
 
 //----------------------------------------------------------
@@ -2834,7 +2827,6 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     TemplateNodeIf(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data) :
       TemplateNodeCreator<TemplateNodeIf>(parser,parent,line)
     {
-      m_ifGuardedNodes.setAutoDelete(TRUE);
       TRACE(("{TemplateNodeIf(%s)\n",data.data()));
       if (data.isEmpty())
       {
@@ -2847,24 +2839,24 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
 
       // if 'nodes'
       {
-        GuardedNodes *guardedNodes = new GuardedNodes;
+        m_ifGuardedNodes.push_back(std::make_unique<GuardedNodes>());
+        auto &guardedNodes = m_ifGuardedNodes.back();
         ExpressionParser ex(parser,line);
         guardedNodes->line = line;
         guardedNodes->guardAst = ex.parse(data);
         parser->parse(this,line,stopAt,guardedNodes->trueNodes);
-        m_ifGuardedNodes.append(guardedNodes);
       }
       auto tok = parser->takeNextToken();
 
       // elif 'nodes'
       while (tok && tok->data.left(5)=="elif ")
       {
+        m_ifGuardedNodes.push_back(std::make_unique<GuardedNodes>());
+        auto &guardedNodes = m_ifGuardedNodes.back();
         ExpressionParser ex(parser,line);
-        GuardedNodes *guardedNodes = new GuardedNodes;
         guardedNodes->line = tok->line;
         guardedNodes->guardAst = ex.parse(tok->data.mid(5));
         parser->parse(this,tok->line,stopAt,guardedNodes->trueNodes);
-        m_ifGuardedNodes.append(guardedNodes);
         // proceed to the next token
         tok = parser->takeNextToken();
       }
@@ -2890,9 +2882,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       ci->setLocation(m_templateName,m_line);
       //printf("TemplateNodeIf::render #trueNodes=%d #falseNodes=%d\n",m_trueNodes.count(),m_falseNodes.count());
       bool processed=FALSE;
-      QListIterator<GuardedNodes> li(m_ifGuardedNodes);
-      GuardedNodes *nodes;
-      for (li.toFirst();(nodes=li.current()) && !processed;++li)
+      for (auto &nodes : m_ifGuardedNodes)
       {
         if (nodes->guardAst)
         {
@@ -2901,6 +2891,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
           {
             nodes->trueNodes.render(ts,c);
             processed=TRUE;
+            break;
           }
         }
         else
@@ -2923,7 +2914,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       ExprAst *guardAst = 0;
       TemplateNodeList trueNodes;
     };
-    QList<GuardedNodes> m_ifGuardedNodes;
+    std::vector< std::unique_ptr<GuardedNodes> > m_ifGuardedNodes;
     TemplateNodeList m_falseNodes;
 };
 
@@ -3472,16 +3463,14 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
           TemplateBlockContext *bc = ci->blockContext();
 
           // add overruling blocks to the context
-          QListIterator<TemplateNode> li(m_nodes);
-          TemplateNode *n;
-          for (li.toFirst();(n=li.current());++li)
+          for (const auto &n : m_nodes)
           {
-            TemplateNodeBlock *nb = dynamic_cast<TemplateNodeBlock*>(n);
+            TemplateNodeBlock *nb = dynamic_cast<TemplateNodeBlock*>(n.get());
             if (nb)
             {
               bc->add(nb);
             }
-            TemplateNodeMsg *msg = dynamic_cast<TemplateNodeMsg*>(n);
+            TemplateNodeMsg *msg = dynamic_cast<TemplateNodeMsg*>(n.get());
             if (msg)
             {
               msg->render(ts,c);
@@ -3818,17 +3807,15 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
 {
     struct Mapping
     {
-      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
-     ~Mapping() { delete value; }
+      Mapping(const QCString &n,std::unique_ptr<ExprAst> &&e) : name(n), value(std::move(e)) {}
       QCString name;
-      ExprAst *value = 0;
+      std::unique_ptr<ExprAst> value = 0;
     };
   public:
     TemplateNodeIndexEntry(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeIndexEntry>(parser,parent,line)
     {
       TRACE(("{TemplateNodeIndexEntry(%s)\n",data.data()));
-      m_args.setAutoDelete(TRUE);
       ExpressionParser expParser(parser,line);
       std::vector<QCString> args = split(data," ");
       auto it = args.begin();
@@ -3849,7 +3836,7 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
             ExprAst *expr = expParser.parse(arg.mid(j+1));
             if (expr)
             {
-              m_args.append(new Mapping(arg.left(j),expr));
+              m_args.emplace_back(arg.left(j),std::unique_ptr<ExprAst>(expr));
             }
           }
           else
@@ -3868,19 +3855,17 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
       if (!m_name.isEmpty())
       {
         ci->setLocation(m_templateName,m_line);
-        QListIterator<Mapping> it(m_args);
-        Mapping *mapping;
         std::vector<TemplateKeyValue> list;
-        for (it.toFirst();(mapping=it.current());++it)
+        for (const auto &mapping : m_args)
         {
-          list.push_back(TemplateKeyValue(mapping->name,mapping->value->resolve(c)));
+          list.emplace_back(mapping.name,mapping.value->resolve(c));
         }
         ci->addIndexEntry(m_name,list);
       }
     }
   private:
     QCString m_name;
-    QList<Mapping> m_args;
+    std::vector<Mapping> m_args;
 };
 
 //----------------------------------------------------------
@@ -3963,17 +3948,15 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
 {
     struct Mapping
     {
-      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
-     ~Mapping() { delete value; }
+      Mapping(const QCString &n,std::unique_ptr<ExprAst> &&e) : name(n), value(std::move(e)) {}
       QCString name;
-      ExprAst *value;
+      std::unique_ptr<ExprAst> value;
     };
   public:
     TemplateNodeWith(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
       : TemplateNodeCreator<TemplateNodeWith>(parser,parent,line)
     {
       TRACE(("{TemplateNodeWith(%s)\n",data.data()));
-      m_args.setAutoDelete(TRUE);
       ExpressionParser expParser(parser,line);
       QCString filteredData = removeSpacesAroundEquals(data);
       std::vector<QCString> args = split(filteredData," ");
@@ -3987,7 +3970,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
           ExprAst *expr = expParser.parse(arg.mid(j+1));
           if (expr)
           {
-            m_args.append(new Mapping(arg.left(j),expr));
+            m_args.emplace_back(arg.left(j),std::unique_ptr<ExprAst>(expr));
           }
         }
         else
@@ -4011,19 +3994,17 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
       if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       c->push();
-      QListIterator<Mapping> it(m_args);
-      Mapping *mapping;
-      for (it.toFirst();(mapping=it.current());++it)
+      for (const auto &mapping : m_args)
       {
-        TemplateVariant value = mapping->value->resolve(c);
-        ci->set(mapping->name,value);
+        TemplateVariant value = mapping.value->resolve(c);
+        ci->set(mapping.name,value);
       }
       m_nodes.render(ts,c);
       c->pop();
     }
   private:
     TemplateNodeList m_nodes;
-    QList<Mapping> m_args;
+    std::vector<Mapping> m_args;
 };
 
 //----------------------------------------------------------
@@ -4036,7 +4017,6 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       : TemplateNodeCreator<TemplateNodeCycle>(parser,parent,line)
     {
       TRACE(("{TemplateNodeCycle(%s)\n",data.data()));
-      m_args.setAutoDelete(TRUE);
       m_index=0;
       ExpressionParser expParser(parser,line);
       std::vector<QCString> args = split(data," ");
@@ -4046,13 +4026,13 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
         ExprAst *expr = expParser.parse(*it);
         if (expr)
         {
-          m_args.append(expr);
+          m_args.push_back(std::unique_ptr<ExprAst>(expr));
         }
         ++it;
       }
-      if (m_args.count()<2)
+      if (m_args.size()<2)
       {
-          parser->warn(parser->templateName(),line,"expected at least two arguments for cycle command, got %d",m_args.count());
+          parser->warn(parser->templateName(),line,"expected at least two arguments for cycle command, got %zu",m_args.size());
       }
       TRACE(("}TemplateNodeCycle(%s)\n",data.data()));
     }
@@ -4060,9 +4040,9 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
-      if (m_index<m_args.count())
+      if (m_index<m_args.size())
       {
-        TemplateVariant v = m_args.at(m_index)->resolve(c);
+        TemplateVariant v = m_args[m_index]->resolve(c);
         if (v.type()==TemplateVariant::Function)
         {
           v = v.call(std::vector<TemplateVariant>());
@@ -4090,14 +4070,14 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
           }
         }
       }
-      if (++m_index==m_args.count()) // wrap around
+      if (++m_index==m_args.size()) // wrap around
       {
         m_index=0;
       }
     }
   private:
-    uint m_index = 0;
-    QList<ExprAst> m_args;
+    size_t m_index = 0;
+    ExprAstList m_args;
 };
 
 //----------------------------------------------------------
@@ -4108,13 +4088,13 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     struct Mapping
     {
       Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
-     ~Mapping() { delete value; }
+     ~Mapping() { }
       QCString name;
       ExprAst *value = 0;
     };
   public:
     TemplateNodeSet(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeSet>(parser,parent,line), m_mapping(0)
+      : TemplateNodeCreator<TemplateNodeSet>(parser,parent,line)
     {
       TRACE(("{TemplateNodeSet(%s)\n",data.data()));
       ExpressionParser expParser(parser,line);
@@ -4123,13 +4103,12 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
       ExprAst *expr = 0;
       if (j>0 && (expr = expParser.parse(data.mid(j+1))))
       {
-        m_mapping = new Mapping(data.left(j),expr);
+        m_mapping = std::make_unique<Mapping>(data.left(j),expr);
       }
       TRACE(("}TemplateNodeSet(%s)\n",data.data()));
     }
     ~TemplateNodeSet()
     {
-      delete m_mapping;
     }
     void render(FTextStream &, TemplateContext *c)
     {
@@ -4143,7 +4122,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
       }
     }
   private:
-    Mapping *m_mapping = 0;
+    std::unique_ptr<Mapping> m_mapping;
 };
 
 //----------------------------------------------------------
@@ -4857,7 +4836,7 @@ TemplateParser::TemplateParser(const TemplateEngine *engine,
 
 void TemplateParser::parse(
                      TemplateNode *parent,int line,const QStrList &stopAt,
-                     QList<TemplateNode> &nodes)
+                     TemplateNodeList &nodes)
 {
   TRACE(("{TemplateParser::parse\n"));
   // process the tokens. Build node list
@@ -4869,10 +4848,10 @@ void TemplateParser::parse(
     switch(tok->type)
     {
       case TemplateToken::Text:
-        nodes.append(new TemplateNodeText(this,parent,tok->line,tok->data));
+        nodes.push_back(std::make_unique<TemplateNodeText>(this,parent,tok->line,tok->data));
         break;
       case TemplateToken::Variable: // {{ var }}
-        nodes.append(new TemplateNodeVariable(this,parent,tok->line,tok->data));
+        nodes.push_back(std::make_unique<TemplateNodeVariable>(this,parent,tok->line,tok->data));
         break;
       case TemplateToken::Block:    // {% tag %}
         {
@@ -4894,11 +4873,11 @@ void TemplateParser::parse(
           {
             arg = tok_ptr->data.mid(sep+1);
           }
-          TemplateNode *node = TemplateNodeFactory::instance()->
-                               create(command,this,parent,tok_ptr->line,arg);
+          std::unique_ptr<TemplateNode> node { TemplateNodeFactory::instance()->
+                               create(command,this,parent,tok_ptr->line,arg) };
           if (node)
           {
-            nodes.append(node);
+            nodes.push_back(std::move(node));
           }
           else if (command=="empty"          || command=="else"         ||
                    command=="endif"          || command=="endfor"       ||
@@ -5003,17 +4982,15 @@ void TemplateImpl::render(FTextStream &ts, TemplateContext *c)
 {
   TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
   if (ci==0) return; // should not happen
-  if (!m_nodes.isEmpty())
+  if (!m_nodes.empty())
   {
-    TemplateNodeExtend *ne = dynamic_cast<TemplateNodeExtend*>(m_nodes.getFirst());
+    TemplateNodeExtend *ne = dynamic_cast<TemplateNodeExtend*>(m_nodes.front().get());
     if (ne==0) // normal template, add blocks to block context
     {
       TemplateBlockContext *bc = ci->blockContext();
-      QListIterator<TemplateNode> li(m_nodes);
-      TemplateNode *n;
-      for (li.toFirst();(n=li.current());++li)
+      for (const auto &n : m_nodes)
       {
-        TemplateNodeBlock *nb = dynamic_cast<TemplateNodeBlock*>(n);
+        TemplateNodeBlock *nb = dynamic_cast<TemplateNodeBlock*>(n.get());
         if (nb)
         {
           bc->add(nb);
@@ -5047,55 +5024,57 @@ class TemplateEngine::Private
         int m_line = 0;
     };
   public:
-    Private(TemplateEngine *engine) : m_templateCache(17) /*, m_indent(0)*/, m_engine(engine)
+    Private(TemplateEngine *engine) : m_engine(engine)
     {
-      m_templateCache.setAutoDelete(TRUE);
-      m_includeStack.setAutoDelete(TRUE);
     }
     Template *loadByName(const QCString &fileName,int line)
     {
       //for (int i=0;i<m_indent;i++) printf("  ");
       //m_indent++;
       //printf("loadByName(%s,%d) {\n",fileName.data(),line);
-      m_includeStack.append(new IncludeEntry(IncludeEntry::Template,fileName,QCString(),line));
-      Template *templ = m_templateCache.find(fileName);
-      if (templ==0) // first time template is referenced
+      m_includeStack.emplace_back(IncludeEntry::Template,fileName,QCString(),line);
+      auto kv = m_templateCache.find(fileName.str());
+      if (kv==m_templateCache.end()) // first time template is referenced
       {
         QCString filePath = m_templateDirName+"/"+fileName;
         QFile f(filePath);
-        if (f.open(IO_ReadOnly))
+        if (f.open(IO_ReadOnly)) // read template from disk
         {
-           QFileInfo fi(filePath);
-           int size=fi.size();
-           QCString data(size+1);
-           if (f.readBlock(data.rawData(),size)==size)
-           {
-             templ = new TemplateImpl(m_engine,filePath,data,m_extension);
-             m_templateCache.insert(fileName,templ);
-             return templ;
-           }
+          QFileInfo fi(filePath);
+          int size=fi.size();
+          QCString data(size+1);
+          if (f.readBlock(data.rawData(),size)==size)
+          {
+            kv = m_templateCache.insert(
+                std::make_pair(fileName.str(),
+                  std::make_unique<TemplateImpl>(m_engine,filePath,data,m_extension))).first;
+          }
         }
-        // fallback to default built-in template
-        const QCString data = ResourceMgr::instance().getAsString(fileName);
-        if (!data.isEmpty())
+        else // fallback to default built-in template
         {
-          templ = new TemplateImpl(m_engine,fileName,data,m_extension);
-          m_templateCache.insert(fileName,templ);
-        }
-        else
-        {
-          err("Could not open template file %s\n",fileName.data());
+          const QCString data = ResourceMgr::instance().getAsString(fileName);
+          if (!data.isEmpty())
+          {
+            kv = m_templateCache.insert(
+                std::make_pair(fileName.str(),
+                  std::make_unique<TemplateImpl>(m_engine,fileName,data,m_extension))).first;
+          }
+          else
+          {
+            err("Could not open template file %s\n",fileName.data());
+          }
         }
       }
-      return templ;
+      return kv!=m_templateCache.end() ? kv->second.get() : 0;
     }
+
     void unload(Template * /*t*/)
     {
       //(void)t;
       //m_indent--;
       //for (int i=0;i<m_indent;i++) printf("  ");
       //printf("}\n");
-      m_includeStack.removeLast();
+      m_includeStack.pop_back();
     }
 
     void enterBlock(const QCString &fileName,const QCString &blockName,int line)
@@ -5103,7 +5082,7 @@ class TemplateEngine::Private
       //for (int i=0;i<m_indent;i++) printf("  ");
       //m_indent++;
       //printf("enterBlock(%s,%s,%d) {\n",fileName.data(),blockName.data(),line);
-      m_includeStack.append(new IncludeEntry(IncludeEntry::Block,fileName,blockName,line));
+      m_includeStack.emplace_back(IncludeEntry::Block,fileName,blockName,line);
     }
 
     void leaveBlock()
@@ -5111,29 +5090,28 @@ class TemplateEngine::Private
       //m_indent--;
       //for (int i=0;i<m_indent;i++) printf("  ");
       //printf("}\n");
-      m_includeStack.removeLast();
+      m_includeStack.pop_back();
     }
 
     void printIncludeContext(const char *fileName,int line) const
     {
-      QListIterator<IncludeEntry> li(m_includeStack);
-      li.toLast();
-      IncludeEntry *ie=li.current();
-      while ((ie=li.current()))
+      auto it = m_includeStack.rbegin();
+      while (it!=m_includeStack.rend())
       {
-        --li;
-        IncludeEntry *next=li.current();
-        if (ie->type()==IncludeEntry::Template)
+        const IncludeEntry &ie = *it;
+        ++it;
+        const IncludeEntry *next = it!=m_includeStack.rend() ? &(*it) : 0;
+        if (ie.type()==IncludeEntry::Template)
         {
           if (next)
           {
-            warn(fileName,line,"  inside template '%s' included from template '%s' at line %d",ie->fileName().data(),next->fileName().data(),ie->line());
+            warn(fileName,line,"  inside template '%s' included from template '%s' at line %d",ie.fileName().data(),next->fileName().data(),ie.line());
           }
         }
-        else // ie->type()==IncludeEntry::Block
+        else // ie.type()==IncludeEntry::Block
         {
-          warn(fileName,line,"  included by block '%s' inside template '%s' at line %d",ie->blockName().data(),
-              ie->fileName().data(),ie->line());
+          warn(fileName,line,"  included by block '%s' inside template '%s' at line %d",ie.blockName().data(),
+              ie.fileName().data(),ie.line());
         }
       }
     }
@@ -5154,10 +5132,10 @@ class TemplateEngine::Private
     }
 
   private:
-    QDict<Template> m_templateCache;
+    std::unordered_map< std::string, std::unique_ptr<Template> > m_templateCache;
     //mutable int m_indent;
     TemplateEngine *m_engine = 0;
-    QList<IncludeEntry> m_includeStack;
+    std::vector<IncludeEntry> m_includeStack;
     QCString m_extension;
     QCString m_templateDirName;
 };
