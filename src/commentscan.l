@@ -592,12 +592,10 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"</summary>"                   { // start of a .NET XML style detailed description
-                                          setOutput(yyscanner,OutputBrief);
                                           addOutput(yyscanner,yytext);
                                           setOutput(yyscanner,OutputDoc);
                                         }
 <Comment>"</remarks>"                   { // end of a brief or detailed description
-
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner,yytext);
                                         }
