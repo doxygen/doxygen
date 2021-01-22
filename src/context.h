@@ -18,7 +18,6 @@
 
 #include "types.h"
 #include "template.h"
-#include <qlist.h>
 #include <stdio.h>
 #include "classdef.h"
 #include "searchindex.h"

@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Global functions
 **
@@ -36,7 +36,7 @@
 **********************************************************************/
 
 #include "qglobal.h"
-#include "qasciidict.h"
+//#include "qasciidict.h"
 #include "qstring.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -554,6 +554,7 @@ bool qt_check_pointer( bool c, const char *n, int l )
 }
 
 
+#if 0
 static bool firstObsoleteWarning(const char *obj, const char *oldfunc )
 {
     static QAsciiDict<int> *obsoleteDict = 0;
@@ -617,6 +618,7 @@ void qObsolete(	 const char *message )
 	return;
     qDebug( "%s", message );
 }
+#endif
 
 
 /*!

@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QMap
 **
@@ -35,7 +35,7 @@
 **
 **********************************************************************/
 
-#include "qmap.h"
+#include "qmap_p.h"
 
 typedef QMapNodeBase* NodePtr;
 typedef QMapNodeBase Node;
@@ -105,7 +105,7 @@ void QMapPrivateBase::rebalance( NodePtr x, NodePtr& root)
 		x->parent->parent->color = Node::Red;
 		x = x->parent->parent;
 	    } else {
-		if (x == x->parent->left) { 
+		if (x == x->parent->left) {
 		    x = x->parent;
 		    rotateRight( x, root );
 		}
@@ -140,7 +140,7 @@ NodePtr QMapPrivateBase::removeAndRebalance( NodePtr z, NodePtr& root,
 	    }
     }
     if (y != z) {
-	z->left->parent = y; 
+	z->left->parent = y;
 	y->left = z->left;
 	if (y != z->right) {
 	    x_parent = y->parent;
@@ -150,13 +150,13 @@ NodePtr QMapPrivateBase::removeAndRebalance( NodePtr z, NodePtr& root,
 	    y->right = z->right;
 	    z->right->parent = y;
 	} else {
-	    x_parent = y;  
+	    x_parent = y;
 	}
 	if (root == z)
 	    root = y;
 	else if (z->parent->left == z)
 	    z->parent->left = y;
-	else 
+	else
 	    z->parent->right = y;
 	y->parent = z->parent;
 	// Swap the colors
@@ -164,10 +164,10 @@ NodePtr QMapPrivateBase::removeAndRebalance( NodePtr z, NodePtr& root,
 	y->color = z->color;
 	z->color = c;
 	y = z;
-    } else {       
+    } else {
 	x_parent = y->parent;
 	if (x)
-	    x->parent = y->parent;   
+	    x->parent = y->parent;
 	if (root == z)
 	    root = x;
 	else if (z->parent->left == z)
@@ -182,12 +182,12 @@ NodePtr QMapPrivateBase::removeAndRebalance( NodePtr z, NodePtr& root,
 	}
 	if (rightmost == z) {
 	    if (z->left == 0)
-		rightmost = z->parent;  
+		rightmost = z->parent;
 	    else
 		rightmost = x->maximum();
 	}
     }
-    if (y->color != Node::Red) { 
+    if (y->color != Node::Red) {
 	while (x != root && (x == 0 || x->color == Node::Black)) {
 	    if (x == x_parent->left) {
 		NodePtr w = x_parent->right;
@@ -232,7 +232,7 @@ NodePtr QMapPrivateBase::removeAndRebalance( NodePtr z, NodePtr& root,
 		    x_parent = x_parent->parent;
 		} else {
 		    if (w->left == 0 || w->left->color == Node::Black) {
-			if (w->right) 
+			if (w->right)
 			    w->right->color = Node::Black;
 			w->color = Node::Red;
 			rotateLeft(w, root);

@@ -3,18 +3,16 @@
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <qcstringlist.h>
 
 #include "parserintf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qarray.h>
-#include <qcstringlist.h>
 
 #include <qfile.h>
-#include <qdict.h>
-#include <string>
 #include "types.h"
 #include "entry.h"
 #include "vhdldocgen.h"

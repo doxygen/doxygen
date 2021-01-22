@@ -29,7 +29,6 @@
 
 #include <qfile.h>
 #include <qstring.h>
-#include <qdict.h>
 #include <qregexp.h>
 
 #include "doctokenizer.h"

@@ -56,11 +56,8 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qarray.h>
-#include <qstack.h>
 #include <qregexp.h>
 #include <qfile.h>
-#include <qmap.h>
 
 #include "fortranscanner.h"
 #include "entry.h"

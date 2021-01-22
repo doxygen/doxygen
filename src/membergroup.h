@@ -22,7 +22,6 @@
 #include <map>
 #include <memory>
 
-#include <qlist.h>
 #include "types.h"
 #include "reflist.h"
 

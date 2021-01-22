@@ -20,7 +20,6 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qtextstream.h>
-#include <qintdict.h>
 #include <qregexp.h>
 #include "docbookgen.h"
 #include "doxygen.h"

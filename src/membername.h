@@ -18,7 +18,6 @@
 #ifndef MEMBERNAME_H
 #define MEMBERNAME_H
 
-#include <qlist.h>
 #include "memberdef.h"
 #include "linkedmap.h"
 

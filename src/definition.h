@@ -19,8 +19,6 @@
 #define DEFINITION_H
 
 #include <vector>
-#include <qlist.h>
-#include <qdict.h>
 
 #include "types.h"
 #include "reflist.h"

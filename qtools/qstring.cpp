@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of the QString class and related Unicode functions
 **
@@ -45,7 +45,7 @@
 #include "qregexp.h"
 #include "qdatastream.h"
 #include "qtextcodec.h"
-#include "qstack.h"
+#include "qstack_p.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -12745,7 +12745,7 @@ bool QString::findArg(int& pos, int& len) const
   arbitrary list of arguments.  The format string supports all
   the escape sequences of printf() in the standard C library.
 
-  The %s escape sequence expects a utf8() encoded string. 
+  The %s escape sequence expects a utf8() encoded string.
   The format string \e cformat is expected to be in latin1. If you need a unicode
   format string, use QString::arg() instead. For typesafe
   string building, with full Unicode support, you can use QTextOStream

@@ -683,8 +683,6 @@ def main():
 		print("#ifndef CONFIGVALUES_H")
 		print("#define CONFIGVALUES_H")
 		print("")
-		print("#include <qdict.h>")
-		print("#include <qstrlist.h>")
 		print("#include <qcstring.h>")
 		print("#include \"containers.h\"")
 		print("#include \"settings.h\"")

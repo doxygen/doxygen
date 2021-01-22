@@ -21,7 +21,6 @@
 #include <vector>
 #include <memory>
 
-#include <qlist.h>
 #include <sys/types.h>
 
 #include "types.h"

@@ -20,7 +20,6 @@
 #define _DOCTOKENIZER_H
 
 #include <qcstring.h>
-#include <qlist.h>
 #include <stdio.h>
 #include "htmlattrib.h"
 

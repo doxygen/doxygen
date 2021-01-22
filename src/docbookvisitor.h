@@ -18,8 +18,6 @@
 
 #include "containers.h"
 #include "docvisitor.h"
-#include <qstack.h>
-#include <qlist.h>
 #include <qcstring.h>
 #include <docparser.h>
 

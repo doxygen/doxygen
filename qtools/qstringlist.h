@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QStringList class
 **
@@ -39,7 +39,7 @@
 #define QSTRINGLIST_H
 
 #ifndef QT_H
-#include "qvaluelist.h"
+#include "qvaluelist_p.h"
 #include "qstring.h"
 #include "qregexp.h"
 #endif // QT_H

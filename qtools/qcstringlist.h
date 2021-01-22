@@ -14,7 +14,7 @@
 #ifndef QCSTRINGLIST_H
 #define QCSTRINGLIST_H
 
-#include "qvaluelist.h"
+#include "qvaluelist_p.h"
 #include "qcstring.h"
 #include "qregexp.h"
 

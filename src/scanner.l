@@ -37,7 +37,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qarray.h>
 #include <qregexp.h>
 #include <qfile.h>
 

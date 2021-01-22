@@ -21,7 +21,6 @@
 
 #include <memory>
 #include <vector>
-#include <qlist.h>
 #include "types.h"
 
 class LayoutParser;

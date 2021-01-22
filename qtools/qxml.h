@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QXmlSimpleReader and related classes.
 **
@@ -51,8 +51,8 @@
 #include <qfile.h>
 #include <qstring.h>
 #include <qstringlist.h>
-#include <qvaluestack.h>
-#include <qmap.h>
+#include <qvaluestack_p.h>
+#include <qmap_p.h>
 #endif // QT_H
 
 #ifndef QT_NO_XML

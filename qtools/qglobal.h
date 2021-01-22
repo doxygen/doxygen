@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Global type declarations and definitions
 **
@@ -276,7 +276,7 @@
 #define _CC_V2002
 #else
 #define _CC_V1998
-#endif 
+#endif
 #endif
 
 #ifndef Q_PACKED
@@ -612,12 +612,14 @@ Q_EXPORT msg_handler qInstallMsgHandler( msg_handler );
 
 Q_EXPORT void qSuppressObsoleteWarnings( bool = TRUE );
 
+#if 0
 #if !defined(QT_REJECT_OBSOLETE)
 #define QT_OBSOLETE
 Q_EXPORT void qObsolete( const char *obj, const char *oldfunc,
 			 const char *newfunc );
 Q_EXPORT void qObsolete( const char *obj, const char *oldfunc );
 Q_EXPORT void qObsolete( const char *message );
+#endif
 #endif
 
 // DvH: added to avoid warnings on recent gcc versions

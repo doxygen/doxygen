@@ -21,7 +21,6 @@
 #include <stack>
 
 #include <qdir.h>
-#include <qdict.h>
 #include <qfile.h>
 
 #include "perlmodgen.h"

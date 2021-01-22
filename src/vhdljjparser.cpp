@@ -12,7 +12,6 @@
 
 #include <qcstring.h>
 #include <qfileinfo.h>
-#include <qcstringlist.h>
 #include "containers.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"

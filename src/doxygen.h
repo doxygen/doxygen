@@ -17,9 +17,6 @@
 #define DOXYGEN_H
 
 #include <qdatetime.h>
-#include <qstrlist.h>
-#include <qdict.h>
-#include <qintdict.h>
 
 #include "containers.h"
 #include "ftextstream.h"

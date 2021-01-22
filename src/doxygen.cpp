@@ -19,15 +19,12 @@
 #include <qfileinfo.h>
 #include <qfile.h>
 #include <qdir.h>
-#include <qdict.h>
 #include <qregexp.h>
-#include <qstrlist.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <qtextcodec.h>
 #include <errno.h>
-#include <qptrdict.h>
 #include <qtextstream.h>
 
 #include <algorithm>

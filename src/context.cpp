@@ -247,21 +247,20 @@ class PropertyMapper
     };
 
   public:
-    PropertyMapper() : m_map(63) { m_map.setAutoDelete(TRUE); }
-
     /** Add a property to the map
      *  @param[in] name   The name of the property to add.
      *  @param[in] handle The method to call when the property is accessed.
      */
     void addProperty(const char *name,typename PropertyFunc::Handler handle)
     {
-      if (m_map.find(name))
+      auto it = m_map.find(name);
+      if (it==m_map.end())
       {
         err("Error: adding property '%s' more than once",name);
       }
       else
       {
-        m_map.insert(name,new PropertyFunc(handle));
+        m_map.insert(std::make_pair(name,std::make_unique<PropertyFunc>(handle)));
       }
     }
 
@@ -275,16 +274,12 @@ class PropertyMapper
     {
       //printf("PropertyMapper::get(%s)\n",name);
       TemplateVariant result;
-      PropertyFuncIntf *func = m_map.find(name);
-      if (func)
-      {
-        result = (*func)(obj);
-      }
-      return result;
+      auto it = m_map.find(name);
+      return it!=m_map.end() ? (*it->second)(obj) : TemplateVariant();
     }
 
   private:
-    QDict<PropertyFuncIntf> m_map;
+    std::unordered_map<std::string,std::unique_ptr<PropertyFuncIntf>> m_map;
 };
 
 
@@ -295,15 +290,15 @@ class PropertyMapper
 class ConfigContext::Private
 {
   public:
-    Private() { m_cachedLists.setAutoDelete(TRUE); }
+    Private() { }
     virtual ~Private() { }
     TemplateVariant fetchList(const QCString &name,const StringVector &list)
     {
-      TemplateVariant *v = m_cachedLists.find(name);
-      if (v==0)
+      auto it = m_cachedLists.find(name.str());
+      if (it==m_cachedLists.end())
       {
         TemplateList *tlist = TemplateList::alloc();
-        m_cachedLists.insert(name,new TemplateVariant(tlist));
+        m_cachedLists.insert(std::make_pair(name.str(),TemplateVariant(tlist)));
         for (const auto &s : list)
         {
           tlist->append(s.c_str());
@@ -312,11 +307,11 @@ class ConfigContext::Private
       }
       else
       {
-        return *v;
+        return it->second;
       }
     }
   private:
-    QDict<TemplateVariant> m_cachedLists;
+    std::unordered_map<std::string,TemplateVariant> m_cachedLists;
 };
 //%% }
 

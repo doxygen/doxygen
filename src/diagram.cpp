@@ -15,8 +15,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <qlist.h>
-#include <qarray.h>
 #include "ftextstream.h"
 #include <qfile.h>
 
