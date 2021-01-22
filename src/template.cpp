@@ -19,19 +19,10 @@
 #include <algorithm>
 #include <unordered_map>
 #include <deque>
+#include <cstdio>
 
-#include <stdio.h>
-#include <stdarg.h>
-
-#include <qlist.h>
-#include <qarray.h>
-#include <qdict.h>
-#include <qstrlist.h>
-#include <qvaluelist.h>
-#include <qstack.h>
 #include <qfile.h>
 #include <qregexp.h>
-#include <qcstring.h>
 #include <qdir.h>
 
 #include "ftextstream.h"
@@ -490,13 +481,14 @@ class TemplateBlockContext
   public:
     TemplateBlockContext();
     TemplateNodeBlock *get(const QCString &name) const;
-    TemplateNodeBlock *pop(const QCString &name) const;
+    TemplateNodeBlock *pop(const QCString &name);
     void add(TemplateNodeBlock *block);
     void add(TemplateBlockContext *ctx);
     void push(TemplateNodeBlock *block);
     void clear();
+    using NodeBlockList = std::deque<TemplateNodeBlock*>;
   private:
-    QDict< QList<TemplateNodeBlock> > m_blocks;
+    std::map< std::string, NodeBlockList > m_blocks;
 };
 
 /** @brief A container to store a key-value pair */
@@ -1718,7 +1710,7 @@ class TemplateParser
     TemplateParser(const TemplateEngine *engine,
                    const QCString &templateName,
                    TemplateTokenStream &tokens);
-    void parse(TemplateNode *parent,int line,const QStrList &stopAt,
+    void parse(TemplateNode *parent,int line,const StringVector &stopAt,
                TemplateNodeList &nodes);
     bool hasNextToken() const;
     TemplateTokenPtr takeNextToken();
@@ -2832,10 +2824,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       {
         parser->warn(m_templateName,line,"missing argument for if tag");
       }
-      QStrList stopAt;
-      stopAt.append("endif");
-      stopAt.append("elif");
-      stopAt.append("else");
+      StringVector stopAt = { "endif", "elif", "else" };
 
       // if 'nodes'
       {
@@ -2864,8 +2853,8 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
       // else 'nodes'
       if (tok && tok->data=="else")
       {
-        stopAt.removeLast(); // remove "else"
-        stopAt.removeLast(); // remove "elif"
+        stopAt.pop_back(); // remove "else"
+        stopAt.pop_back(); // remove "elif"
         parser->parse(this,line,stopAt,m_falseNodes);
         parser->removeNextToken(); // skip over endif
       }
@@ -2929,8 +2918,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
       TRACE(("{TemplateNodeRepeat(%s)\n",data.data()));
       ExpressionParser expParser(parser,line);
       m_expr = expParser.parse(data);
-      QStrList stopAt;
-      stopAt.append("endrepeat");
+      StringVector stopAt = { "endrepeat" };
       parser->parse(this,line,stopAt,m_repeatNodes);
       parser->removeNextToken(); // skip over endrepeat
       TRACE(("}TemplateNodeRepeat(%s)\n",data.data()));
@@ -3039,8 +3027,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       m_startExpr = expParser.parse(start);
       m_endExpr   = expParser.parse(end);
 
-      QStrList stopAt;
-      stopAt.append("endrange");
+      StringVector stopAt = { "endrange" };
       parser->parse(this,line,stopAt,m_loopNodes);
       parser->removeNextToken(); // skip over endrange
       TRACE(("}TemplateNodeRange(%s)\n",data.data()));
@@ -3193,14 +3180,12 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       ExpressionParser expParser(parser,line);
       m_expr = expParser.parse(exprStr);
 
-      QStrList stopAt;
-      stopAt.append("endfor");
-      stopAt.append("empty");
+      StringVector stopAt = { "endfor", "empty" };
       parser->parse(this,line,stopAt,m_loopNodes);
       auto tok = parser->takeNextToken();
       if (tok && tok->data=="empty")
       {
-        stopAt.removeLast();
+        stopAt.pop_back();
         parser->parse(this,line,stopAt,m_emptyNodes);
         parser->removeNextToken(); // skip over endfor
       }
@@ -3309,8 +3294,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       : TemplateNodeCreator<TemplateNodeMsg>(parser,parent,line)
     {
       TRACE(("{TemplateNodeMsg()\n"));
-      QStrList stopAt;
-      stopAt.append("endmsg");
+      StringVector stopAt = { "endmsg" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endmsg
       TRACE(("}TemplateNodeMsg()\n"));
@@ -3350,8 +3334,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
       {
         parser->warn(parser->templateName(),line,"block tag without name");
       }
-      QStrList stopAt;
-      stopAt.append("endblock");
+      StringVector stopAt = { "endblock" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endblock
       TRACE(("}TemplateNodeBlock(%s)\n",data.data()));
@@ -3429,7 +3412,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
         parser->warn(m_templateName,line,"extend tag is missing template file argument");
       }
       m_extendExpr = ep.parse(data);
-      QStrList stopAt;
+      StringVector stopAt;
       parser->parse(this,line,stopAt,m_nodes);
       TRACE(("}TemplateNodeExtend(%s)\n",data.data()));
     }
@@ -3709,8 +3692,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
         parser->warn(m_templateName,line,"recursetree tag is missing data argument");
       }
       m_treeExpr = ep.parse(data);
-      QStrList stopAt;
-      stopAt.append("endrecursetree");
+      StringVector stopAt = { "endrecursetree" };
       parser->parse(this,line,stopAt,m_treeNodes);
       parser->removeNextToken(); // skip over endrecursetree
       TRACE(("}TemplateNodeTree(%s)\n",data.data()));
@@ -3979,8 +3961,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
         }
         ++it;
       }
-      QStrList stopAt;
-      stopAt.append("endwith");
+      StringVector stopAt = { "endwith" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endwith
       TRACE(("}TemplateNodeWith(%s)\n",data.data()));
@@ -4135,8 +4116,7 @@ class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
       : TemplateNodeCreator<TemplateNodeSpaceless>(parser,parent,line)
     {
       TRACE(("{TemplateNodeSpaceless()\n"));
-      QStrList stopAt;
-      stopAt.append("endspaceless");
+      StringVector stopAt = { "endspaceless" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endwith
       TRACE(("}TemplateNodeSpaceless()\n"));
@@ -4178,8 +4158,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
         m_listExpr = expParser.parse(data.mid(i+4,w-i-4));
         m_patternExpr = expParser.parse(data.right(data.length()-w-6));
       }
-      QStrList stopAt;
-      stopAt.append("endmarkers");
+      StringVector stopAt = { "endmarkers" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endmarkers
       TRACE(("}TemplateNodeMarkers(%s)\n",data.data()));
@@ -4284,8 +4263,7 @@ class TemplateNodeTabbing : public TemplateNodeCreator<TemplateNodeTabbing>
       : TemplateNodeCreator<TemplateNodeTabbing>(parser,parent,line)
     {
       TRACE(("{TemplateNodeTabbing()\n"));
-      QStrList stopAt;
-      stopAt.append("endtabbing");
+      StringVector stopAt = { "endtabbing" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endtabbing
       TRACE(("}TemplateNodeTabbing()\n"));
@@ -4398,8 +4376,7 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
       {
         m_encExpr = ep.parse(data);
       }
-      QStrList stopAt;
-      stopAt.append("endencoding");
+      StringVector stopAt = { "endencoding" };
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endencoding
       TRACE(("}TemplateNodeEncoding(%s)\n",data.data()));
@@ -4504,57 +4481,53 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeCloseSubIndex> autoRefClose
 
 //----------------------------------------------------------
 
-TemplateBlockContext::TemplateBlockContext() : m_blocks(257)
+TemplateBlockContext::TemplateBlockContext()
 {
-  m_blocks.setAutoDelete(TRUE);
 }
 
 TemplateNodeBlock *TemplateBlockContext::get(const QCString &name) const
 {
-  QList<TemplateNodeBlock> *list = m_blocks.find(name);
-  if (list==0 || list->count()==0)
+  auto it = m_blocks.find(name.str());
+  if (it==m_blocks.end() || it->second.empty())
   {
     return 0;
   }
   else
   {
-    return list->getLast();
+    return it->second.back();
   }
 }
 
-TemplateNodeBlock *TemplateBlockContext::pop(const QCString &name) const
+TemplateNodeBlock *TemplateBlockContext::pop(const QCString &name)
 {
-  QList<TemplateNodeBlock> *list = m_blocks.find(name);
-  if (list==0 || list->count()==0)
+  auto it = m_blocks.find(name.str());
+  if (it==m_blocks.end() || it->second.empty())
   {
     return 0;
   }
   else
   {
-    return list->take(list->count()-1);
+    TemplateNodeBlock *bld = it->second.back();
+    it->second.pop_back();
+    return bld;
   }
 }
 
 void TemplateBlockContext::add(TemplateNodeBlock *block)
 {
-  QList<TemplateNodeBlock> *list = m_blocks.find(block->name());
-  if (list==0)
+  auto it = m_blocks.find(block->name().str());
+  if (it==m_blocks.end())
   {
-    list = new QList<TemplateNodeBlock>;
-    m_blocks.insert(block->name(),list);
+    it = m_blocks.insert(std::make_pair(block->name().str(),NodeBlockList())).first;
   }
-  list->prepend(block);
+  it->second.push_front(block);
 }
 
 void TemplateBlockContext::add(TemplateBlockContext *ctx)
 {
-  QDictIterator< QList<TemplateNodeBlock> > di(ctx->m_blocks);
-  QList<TemplateNodeBlock> *list;
-  for (di.toFirst();(list=di.current());++di)
+  for (auto &kv : ctx->m_blocks)
   {
-    QListIterator<TemplateNodeBlock> li(*list);
-    TemplateNodeBlock *nb;
-    for (li.toFirst();(nb=li.current());++li)
+    for (auto &nb : kv.second)
     {
       add(nb);
     }
@@ -4568,13 +4541,12 @@ void TemplateBlockContext::clear()
 
 void TemplateBlockContext::push(TemplateNodeBlock *block)
 {
-  QList<TemplateNodeBlock> *list = m_blocks.find(block->name());
-  if (list==0)
+  auto it = m_blocks.find(block->name().str());
+  if (it==m_blocks.end())
   {
-    list = new QList<TemplateNodeBlock>;
-    m_blocks.insert(block->name(),list);
+    it = m_blocks.insert(std::make_pair(block->name().str(),NodeBlockList())).first;
   }
-  list->append(block);
+  it->second.push_back(block);
 }
 
 
@@ -4835,7 +4807,7 @@ TemplateParser::TemplateParser(const TemplateEngine *engine,
 }
 
 void TemplateParser::parse(
-                     TemplateNode *parent,int line,const QStrList &stopAt,
+                     TemplateNode *parent,int line,const StringVector &stopAt,
                      TemplateNodeList &nodes)
 {
   TRACE(("{TemplateParser::parse\n"));
@@ -4862,7 +4834,7 @@ void TemplateParser::parse(
             command=command.left(sep);
           }
           TemplateToken *tok_ptr = tok.get();
-          if (stopAt.contains(command))
+          if (std::find(stopAt.begin(),stopAt.end(),command)!=stopAt.end())
           {
             prependToken(std::move(tok));
             TRACE(("}TemplateParser::parse: stop\n"));
@@ -4898,15 +4870,13 @@ void TemplateParser::parse(
         break;
     }
   }
-  if (!stopAt.isEmpty())
+  if (!stopAt.empty())
   {
-    QStrListIterator it(stopAt);
-    const char *s;
     QCString options;
-    for (it.toFirst();(s=it.current());++it)
+    for (const auto &s : stopAt)
     {
       if (!options.isEmpty()) options+=", ";
-      options+=s;
+      options+=s.c_str();
     }
     warn(m_templateName,line,"Unclosed tag in template, expected one of: %s",
         options.data());
@@ -4970,7 +4940,7 @@ TemplateImpl::TemplateImpl(TemplateEngine *engine,const QCString &name,const QCS
   TemplateTokenStream tokens;
   lexer.tokenize(tokens);
   TemplateParser parser(engine,name,tokens);
-  parser.parse(this,1,QStrList(),m_nodes);
+  parser.parse(this,1,StringVector(),m_nodes);
 }
 
 TemplateImpl::~TemplateImpl()
