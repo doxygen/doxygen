@@ -1083,7 +1083,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
     m_t << endl;
   }
 
-  writeStartTableCommand(m_t,t->parent(),t->numColumns());
+  writeStartTableCommand(m_t,t->parent(),(uint)t->numColumns());
 
   if (t->hasCaption())
   {
@@ -1095,7 +1095,7 @@ void LatexDocVisitor::visitPre(DocHtmlTable *t)
     m_t << "\\\\\n";
   }
 
-  setNumCols(t->numColumns());
+  setNumCols((uint)t->numColumns());
   m_t << "\\hline\n";
 
   // check if first row is a heading and then render the row already here

@@ -3175,7 +3175,7 @@ void FlowChart::buildCommentNodes(FTextStream & t)
     FlowChart &fll=flowList[j];
     if (fll.type & (COMMENT_NO | BEGIN_NO))
     {
-      int diff=FLOWLEN-(j+1);
+      size_t diff=FLOWLEN-(j+1);
 
       if ((fll.type & COMMENT_NO) && diff > 1)
       {
@@ -3674,7 +3674,7 @@ void FlowChart::alignFuncProc( QCString & q,const ArgumentList &al,bool isFunc)
   q+=temp;
 }
 
-int FlowChart::findNextLoop(int index,int stamp)
+size_t FlowChart::findNextLoop(size_t index,int stamp)
 {
   for (size_t j=index+1; j<flowList.size(); j++)
   {
@@ -3691,7 +3691,7 @@ int FlowChart::findNextLoop(int index,int stamp)
   return flowList.size()-1;
 }
 
-int FlowChart::findPrevLoop(int index,int stamp,bool endif)
+size_t FlowChart::findPrevLoop(size_t index,int stamp,bool endif)
 {
   for (size_t j=index;j>0;j--)
   {
@@ -3714,7 +3714,7 @@ int FlowChart::findPrevLoop(int index,int stamp,bool endif)
   return flowList.size()-1;
 }
 
-int FlowChart::findLabel(int index,const QCString &label)
+size_t FlowChart::findLabel(size_t index,const QCString &label)
 {
   for (size_t j=index;j>0;j--)
   {
@@ -3728,7 +3728,7 @@ int FlowChart::findLabel(int index,const QCString &label)
   return 0;
 }
 
-int FlowChart::findNode(int index,int stamp,int type)
+size_t FlowChart::findNode(size_t index,int stamp,int type)
 {
   for (size_t j=index+1; j<flowList.size(); j++)
   {
@@ -3741,7 +3741,7 @@ int FlowChart::findNode(int index,int stamp,int type)
   return 0;
 }// findNode
 
-int FlowChart::getNextNode(int index,int stamp)
+size_t FlowChart::getNextNode(size_t index,int stamp)
 {
   for (size_t j=index+1; j<flowList.size(); j++)
   {
@@ -3782,15 +3782,13 @@ int FlowChart::getNextNode(int index,int stamp)
   return FLOWLEN;
 }
 
-int FlowChart::getNextIfLink(const FlowChart &fl,uint index)
+size_t FlowChart::getNextIfLink(const FlowChart &fl,size_t index)
 {
   int stamp=fl.stamp;
-  uint start = index+1;
-  int endifNode  = findNode(start,stamp,ENDIF_NO);
-  int elseifNode = findNode(start,stamp,ELSIF_NO);
-  int elseNode   = findNode(start,stamp,ELSE_NO);
-
-  assert(endifNode>-1);
+  size_t start = index+1;
+  size_t endifNode  = findNode(start,stamp,ENDIF_NO);
+  size_t elseifNode = findNode(start,stamp,ELSIF_NO);
+  size_t elseNode   = findNode(start,stamp,ELSE_NO);
 
   if (elseifNode>0 && elseifNode<endifNode)
   {
@@ -3827,7 +3825,7 @@ void FlowChart::writeFlowLinks(FTextStream &t)
     if (kind & IFF)
     {
       writeEdge(t,fll,flowList[j+1],0);
-      int z=getNextIfLink(fll,j);
+      size_t z=getNextIfLink(fll,j);
       // assert(z>-1);
       writeEdge(t,fll,flowList[z],1);
     }
@@ -3849,7 +3847,7 @@ void FlowChart::writeFlowLinks(FTextStream &t)
       }
 
       kind=END_LOOP;
-      int z=findNode(j+1,fll.stamp,kind);
+      size_t z=findNode(j+1,fll.stamp,kind);
       z=getNextNode(z,flowList[z].stamp);
 
       // assert(z>-1);
@@ -3858,7 +3856,7 @@ void FlowChart::writeFlowLinks(FTextStream &t)
     }
     else if (kind & (TEXT_NO | VARIABLE_NO))
     {
-      int z=getNextNode(j,stamp);
+      size_t z=getNextNode(j,stamp);
       writeEdge(t,fll,flowList[z],2);
     }
     else if (kind & WHEN_NO)
@@ -3872,8 +3870,8 @@ void FlowChart::writeFlowLinks(FTextStream &t)
 
 
       writeEdge(t,fll,flowList[j+1],0);
-      int u=findNode(j,stamp,WHEN_NO);
-      int v=findNode(j,stamp-1,END_CASE);
+      size_t u=findNode(j,stamp,WHEN_NO);
+      size_t v=findNode(j,stamp-1,END_CASE);
 
       if (u>0 && u<v)
       {
@@ -3886,12 +3884,12 @@ void FlowChart::writeFlowLinks(FTextStream &t)
     }
     else if (kind & END_CASE)
     {
-      int z=FlowChart::getNextNode(j,fll.stamp);
+      size_t z=FlowChart::getNextNode(j,fll.stamp);
       writeEdge(t,fll,flowList[z],2);
     }
     else if (kind & END_LOOP)
     {
-      int z=findPrevLoop(j,fll.stamp,true);
+      size_t z=findPrevLoop(j,fll.stamp,true);
       writeEdge(t,fll,flowList[z],2);
     }
     else if (kind & RETURN_NO)
@@ -3900,7 +3898,7 @@ void FlowChart::writeFlowLinks(FTextStream &t)
     }
     else if (kind & (EXIT_NO | NEXT_NO))
     {
-      int z;
+      size_t z;
       bool b = kind==NEXT_NO;
       if (fll.exp)
       {

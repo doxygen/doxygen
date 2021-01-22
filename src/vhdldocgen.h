@@ -300,14 +300,13 @@ class FlowChart
     static QCString getNodeName(int n);
     static void colTextNodes();
 
-    static int getNextTextLink(const FlowChart& fl,uint index);
-    static int getNextIfLink(const FlowChart&,uint);
-    static int getNextNode(int,int);
-    static int findNode(int index,int stamp,int type);
-    static int findNode(int index,int type);
-    static int findNextLoop(int j,int stamp);
-    static int findPrevLoop(int j,int stamp,bool endif=FALSE);
-    static int findLabel(int j,const QCString &);
+    static size_t getNextIfLink(const FlowChart&,size_t);
+    static size_t getNextNode(size_t index,int stamp);
+    static size_t findNode(size_t index,int stamp,int type);
+    static size_t findNode(size_t index,int type);
+    static size_t findNextLoop(size_t j,int stamp);
+    static size_t findPrevLoop(size_t j,int stamp,bool endif=FALSE);
+    static size_t findLabel(size_t j,const QCString &);
     static void delFlowList();
     static const char* getNodeType(int c);
 

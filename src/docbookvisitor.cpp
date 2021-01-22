@@ -1007,7 +1007,7 @@ DB_VIS_C
   m_bodySet.push(false);
   if (m_hide) return;
   m_t << "<informaltable frame=\"all\">" << endl;
-  m_t << "    <tgroup cols=\"" << t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
+  m_t << "    <tgroup cols=\"" << (unsigned int)t->numColumns() << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">" << endl;
   for (uint i = 0; i <t->numColumns(); i++)
   {
     // do something with colwidth based of cell width specification (be aware of possible colspan in the header)?

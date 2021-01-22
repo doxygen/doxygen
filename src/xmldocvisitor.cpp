@@ -775,8 +775,8 @@ void XmlDocVisitor::visitPost(DocHtmlDescData *)
 void XmlDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
-  m_t << "<table rows=\"" << t->numRows()
-      << "\" cols=\"" << t->numColumns() << "\"" ;
+  m_t << "<table rows=\"" << (uint)t->numRows()
+      << "\" cols=\"" << (uint)t->numColumns() << "\"" ;
   for (const auto &opt : t->attribs())
   {
     if (opt.name=="width")

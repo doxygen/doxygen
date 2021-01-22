@@ -169,7 +169,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
         size_t nrefs = udir->filePairs().size();
         t << "  " << dir->getOutputFileBase() << "->"
           << usedDir->getOutputFileBase();
-        t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
+        t << " [headlabel=\"" << (uint)nrefs << "\", labeldistance=1.5";
         if (linkRelations)
         {
           t << " headhref=\"" << relationName << Doxygen::htmlFileExtension << "\"";

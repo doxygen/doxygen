@@ -908,7 +908,7 @@ static void handleStyleEnter(DocNode *parent,DocNodeList &children,
           DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   DBG(("HandleStyleEnter\n"));
-  DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.size(),s,tagName,TRUE,attribs);
+  DocStyleChange *sc= new DocStyleChange(parent,(uint)g_nodeStack.size(),s,tagName,TRUE,attribs);
   children.push_back(std::unique_ptr<DocStyleChange>(sc));
   g_styleStack.push(sc);
 }
@@ -952,7 +952,7 @@ static void handleStyleLeave(DocNode *parent,DocNodeList &children,
   {
     children.push_back(
         std::make_unique<DocStyleChange>(
-          parent,g_nodeStack.size(),s,g_styleStack.top()->tagName(),FALSE));
+          parent,(uint)g_nodeStack.size(),s,g_styleStack.top()->tagName(),FALSE));
     g_styleStack.pop();
   }
 }
@@ -968,7 +968,7 @@ static void handlePendingStyleCommands(DocNode *parent,DocNodeList &children)
     const DocStyleChange *sc = g_styleStack.top();
     while (sc && sc->position()>=g_nodeStack.size())
     { // there are unclosed style modifiers in the paragraph
-      children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),sc->style(),sc->tagName(),FALSE));
+      children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),sc->style(),sc->tagName(),FALSE));
       g_initialStyleStack.push(sc);
       g_styleStack.pop();
       sc = g_styleStack.top();
@@ -1396,9 +1396,9 @@ reparsetoken:
           break;
         case CMD_EMPHASIS:
           {
-            children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE));
             if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
@@ -1410,9 +1410,9 @@ reparsetoken:
           break;
         case CMD_BOLD:
           {
-            children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE));
             if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
@@ -1424,9 +1424,9 @@ reparsetoken:
           break;
         case CMD_CODE:
           {
-            children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),DocStyleChange::Code,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Code,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.push_back(std::make_unique<DocStyleChange>(parent,g_nodeStack.size(),DocStyleChange::Code,tokenName,FALSE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Code,tokenName,FALSE));
             if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
@@ -5279,21 +5279,21 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Found unknown command '%c%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
-      m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName);
-      m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
       break;
     case CMD_BOLD:
-      m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName);
-      m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
       break;
     case CMD_CODE:
-      m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName);
-      m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
       if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
       break;
     case CMD_BSLASH:
@@ -6026,9 +6026,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
           //printf("paramName=%s\n",paramName.data());
-          m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Italic,tagName,TRUE));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,tagName,TRUE));
           m_children.push_back(std::make_unique<DocWord>(this,paramName));
-          m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Italic,tagName,FALSE));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,tagName,FALSE));
           if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
         }
         else
@@ -6073,7 +6073,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       g_hasReturnCommand=TRUE;
       break;
     case XML_TERM:
-      //m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Bold,TRUE));
+      //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,TRUE));
       if (insideTable(this))
       {
         retval=RetVal_TableCell;
@@ -6118,9 +6118,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           bool inSeeBlock = g_inSeeBlock;
           g_token->name = cref;
           g_inSeeBlock = TRUE;
-          m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Code,tagName,TRUE));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,tagName,TRUE));
           handleLinkedWord(this,m_children,TRUE);
-          m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Code,tagName,FALSE));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,tagName,FALSE));
           g_inSeeBlock = inSeeBlock;
         }
         else
@@ -6362,7 +6362,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
 
     case XML_TERM:
-      //m_children.push_back(std::make_unique<DocStyleChange>(this,g_nodeStack.size(),DocStyleChange::Bold,FALSE));
+      //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
     case XML_REMARKS:
