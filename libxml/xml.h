@@ -1,6 +1,21 @@
 #ifndef XML_H
 #define XML_H
 
+/******************************************************************************
+ *
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
+ * for any purpose. It is provided "as is" without express or implied warranty.
+ * See the GNU General Public License for more details.
+ *
+ * Documents produced by Doxygen are derivative works derived from the
+ * input used in their production; they are not affected by this license.
+ *
+ */
+
 #include <memory>
 #include <functional>
 #include <string>
@@ -61,8 +76,9 @@ class XMLParser : public XMLLocator
     /*! Parses a file gives the contents of the file as a string.
      *  @param fileName the name of the file, used for error reporting.
      *  @param inputString the contents of the file as a zero terminated UTF-8 string.
+     *  @param debugEnable indicates if debugging via -d lex is enabled or not.
      */
-    void parse(const char *fileName,const char *inputString);
+    void parse(const char *fileName,const char *inputString,bool debugEnabled);
 
   private:
    virtual int lineNr() const override;

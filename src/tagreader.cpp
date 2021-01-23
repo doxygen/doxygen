@@ -38,6 +38,7 @@
 #include "filename.h"
 #include "section.h"
 #include "containers.h"
+#include "debug.h"
 
 /** Information about an linkable anchor */
 class TagAnchorInfo
@@ -1499,7 +1500,7 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   handlers.error         = [&tagFileParser](const std::string &fileName,int lineNr,const std::string &msg) { tagFileParser.error(fileName,lineNr,msg); };
   XMLParser parser(handlers);
   tagFileParser.setDocumentLocator(&parser);
-  parser.parse(fullName,inputStr);
+  parser.parse(fullName,inputStr,Debug::isFlagSet(Debug::Lex));
   tagFileParser.buildLists(root);
   tagFileParser.addIncludes();
   //tagFileParser.dump();

@@ -26,6 +26,7 @@ target_link_libraries(doxyparse
 doxymain
 qtools
 md5
+xml
 lodepng
 mscgen
 doxygen_version

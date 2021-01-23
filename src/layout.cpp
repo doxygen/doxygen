@@ -32,6 +32,7 @@
 #include "config.h"
 #include "xml.h"
 #include "resourcemgr.h"
+#include "debug.h"
 
 inline QCString compileOptions(const QCString &def)
 {
@@ -1503,7 +1504,7 @@ void LayoutDocManager::init()
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",layout_default);
+  parser.parse("layout_default.xml",layout_default,Debug::isFlagSet(Debug::Lex));
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1546,7 +1547,7 @@ void LayoutDocManager::parse(const char *fileName)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName,fileToString(fileName));
+  parser.parse(fileName,fileToString(fileName),Debug::isFlagSet(Debug::Lex));
 }
 
 //---------------------------------------------------------------------------------

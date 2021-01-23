@@ -6,6 +6,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/liblodepng
     ${PROJECT_SOURCE_DIR}/libmscgen
     ${PROJECT_SOURCE_DIR}/libversion
+    ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
@@ -114,7 +115,6 @@ set(LEX_FILES scanner
     commentcnv
     commentscan
     constexp
-    xml
     xmlcode
     sqlcode
     configimpl)
@@ -190,7 +190,6 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/scanner.l.h
     ${GENERATED_SRC}/sqlcode.l.h
     ${GENERATED_SRC}/vhdlcode.l.h
-    ${GENERATED_SRC}/xml.l.h
     ${GENERATED_SRC}/xmlcode.l.h
     ${GENERATED_SRC}/code.cpp
     ${GENERATED_SRC}/commentcnv.cpp
@@ -206,7 +205,6 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/scanner.cpp
     ${GENERATED_SRC}/sqlcode.cpp
     ${GENERATED_SRC}/vhdlcode.cpp
-    ${GENERATED_SRC}/xml.cpp
     ${GENERATED_SRC}/xmlcode.cpp
     #
     ${GENERATED_SRC}/ce_parse.cpp
@@ -348,6 +346,7 @@ target_link_libraries(doxygen PRIVATE
     md5
     lodepng
     mscgen
+    xml
     doxygen_version
     vhdlparser
     ${SQLITE3_LIBRARIES}
