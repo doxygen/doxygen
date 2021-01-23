@@ -160,7 +160,7 @@ struct LayoutNavEntry
     {
       if (parent)
       {
-        if (prepend) parent->addChild(this); else parent->prependChild(this);
+        if (prepend) parent->prependChild(this); else parent->addChild(this);
       }
     }
     LayoutNavEntry *parent() const   { return m_parent; }
