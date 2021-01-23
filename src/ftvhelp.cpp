@@ -185,9 +185,9 @@ void FTVHelp::decContentsDepth()
   {
     m_indent--;
     std::vector<FTVNode*> &nl = m_indentNodes[m_indent];
-    FTVNode *parent = nl.back();
-    if (parent)
+    if (!nl.empty())
     {
+      FTVNode *parent = nl.back();
       std::vector<FTVNode*> &children = m_indentNodes[m_indent+1];
       for (const auto &child : children)
       {
