@@ -6,14 +6,14 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
  */
 
-#include <qmap.h>
+#include <qmap_p.h>
 
 #include "dochandler.h"
 #include "debug.h"
@@ -92,21 +92,21 @@ void dochandler_exit()
   delete s_typeMapper;
   delete s_highlightMapper;
 }
-  
+
 //----------------------------------------------------------------------
 // MarkupHandler
 //----------------------------------------------------------------------
 
 MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
-  : m_children(children), m_curString(curString), 
+  : m_children(children), m_curString(curString),
     m_curMarkup(IDocMarkup::Normal), m_headingLevel(0)
 {
   addStartHandler("bold",this,&MarkupHandler::startBold);
   addEndHandler("bold",this,&MarkupHandler::endBold);
-  
+
   addStartHandler("emphasis",this,&MarkupHandler::startEmphasis);
   addEndHandler("emphasis",this,&MarkupHandler::endEmphasis);
-  
+
   addStartHandler("computeroutput",this,&MarkupHandler::startComputerOutput);
   addEndHandler("computeroutput",this,&MarkupHandler::endComputerOutput);
 
@@ -127,7 +127,7 @@ MarkupHandler::MarkupHandler(QList<DocImpl> &children,QString &curString)
 
   addStartHandler("heading1",this,&MarkupHandler::startHeading1);
   addEndHandler("heading1",this,&MarkupHandler::endHeading1);
-  
+
   addStartHandler("heading2",this,&MarkupHandler::startHeading2);
   addEndHandler("heading2",this,&MarkupHandler::endHeading2);
 
@@ -371,11 +371,11 @@ void MarkupHandler::endHeading6()
 // ListItemHandler
 //----------------------------------------------------------------------
 
-ListItemHandler::ListItemHandler(IBaseHandler *parent) 
+ListItemHandler::ListItemHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
-  
+
   addEndHandler("listitem",this,&ListItemHandler::endListItem);
 
   addStartHandler("para",this,&ListItemHandler::startParagraph);
@@ -550,7 +550,7 @@ void TocItemHandler::endTocItem()
 // ParameterHandler
 //----------------------------------------------------------------------
 
-ParameterHandler::ParameterHandler(IBaseHandler *parent) : 
+ParameterHandler::ParameterHandler(IBaseHandler *parent) :
   m_parent(parent)
 {
   addEndHandler("parametername",this,&ParameterHandler::endParameterName);
@@ -577,7 +577,7 @@ void ParameterHandler::endParameterName()
 // ParameterListHandler
 //----------------------------------------------------------------------
 
-ParameterItemHandler::ParameterItemHandler(IBaseHandler *parent) 
+ParameterItemHandler::ParameterItemHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   addEndHandler("parameteritem",this,&ParameterItemHandler::endParameterItem);
@@ -628,7 +628,7 @@ IDocIterator *ParameterItemHandler::paramNames() const
 // ParameterListHandler
 //----------------------------------------------------------------------
 
-ParameterListHandler::ParameterListHandler(IBaseHandler *parent) 
+ParameterListHandler::ParameterListHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   addEndHandler("parameterlist",this,&ParameterListHandler::endParameterList);
@@ -831,7 +831,7 @@ void RefHandler::startRef(const QXmlAttributes& attrib)
   m_parent->setDelegate(this);
   m_refId = attrib.value("refid");
   m_extId = attrib.value("external");
-  ASSERT(attrib.value("kindref")=="compound" || 
+  ASSERT(attrib.value("kindref")=="compound" ||
          attrib.value("kindref")=="member");
   m_targetKind = attrib.value("kindref")=="compound" ?  Compound : Member;
   debug(2,"Start ref refId=%s\n",m_refId.data());
@@ -1014,9 +1014,9 @@ void VariableListEntryHandler::startParagraph(const QXmlAttributes& attrib)
   m_description->startParagraph(attrib);
 }
 
-ILinkedTextIterator *VariableListEntryHandler::term() const 
-{ 
-  return new LinkedTextIterator(m_term); 
+ILinkedTextIterator *VariableListEntryHandler::term() const
+{
+  return new LinkedTextIterator(m_term);
 }
 
 
@@ -1024,7 +1024,7 @@ ILinkedTextIterator *VariableListEntryHandler::term() const
 // VariableListHandler
 //----------------------------------------------------------------------
 
-VariableListHandler::VariableListHandler(IBaseHandler *parent) 
+VariableListHandler::VariableListHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   m_entries.setAutoDelete(TRUE);
@@ -1248,11 +1248,11 @@ void ProgramListingHandler::startLineNumber(const QXmlAttributes& attrib)
   m_hasLineNumber=TRUE;
   clh->startLineNumber(attrib);
 }
-  
+
 void ProgramListingHandler::startCodeLine(const QXmlAttributes& attrib)
 {
   CodeLineHandler *clh = 0;
-  if (!m_hasLineNumber) 
+  if (!m_hasLineNumber)
   {
     clh = new CodeLineHandler(this);
     m_children.append(clh);
@@ -1263,7 +1263,7 @@ void ProgramListingHandler::startCodeLine(const QXmlAttributes& attrib)
   }
   ASSERT(clh!=0);
   clh->startCodeLine(attrib);
-  m_hasLineNumber=FALSE; 
+  m_hasLineNumber=FALSE;
 }
 
 IDocIterator *ProgramListingHandler::codeLines() const
@@ -1566,11 +1566,11 @@ IDocIterator *TableHandler::rows() const
 // CopyHandler
 //----------------------------------------------------------------------
 
-CopyHandler::CopyHandler(IBaseHandler *parent) 
+CopyHandler::CopyHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
-  
+
   addEndHandler("copydoc",this,&CopyHandler::endCopy);
 
   addStartHandler("para",this,&CopyHandler::startParagraph);
@@ -1672,7 +1672,7 @@ void SymbolHandler::startSymbol(const QXmlAttributes& attrib)
 // ParagraphHandler
 //----------------------------------------------------------------------
 
-ParagraphHandler::ParagraphHandler(IBaseHandler *parent) 
+ParagraphHandler::ParagraphHandler(IBaseHandler *parent)
   : m_parent(parent)
 {
   m_children.setAutoDelete(TRUE);
@@ -2040,7 +2040,7 @@ DocSectionHandler::DocSectionHandler(IBaseHandler *parent,int level)
   m_subsections.setAutoDelete(TRUE);
   addStartHandler("title",this,&DocSectionHandler::startTitle);
   addStartHandler("para",this,&DocSectionHandler::startParagraph);
-  if (level<6) 
+  if (level<6)
   {
     sectionKey.sprintf("sect%d",level+1);
     addStartHandler(sectionKey.utf8(),this,&DocSectionHandler::startSubSection);
@@ -2103,9 +2103,9 @@ IDocIterator *DocSectionHandler::subSections() const
   return new DocSectionSubIterator(*this);
 }
 
-IDocInternal *DocSectionHandler::internal() const 
-{ 
-  return m_internal; 
+IDocInternal *DocSectionHandler::internal() const
+{
+  return m_internal;
 }
 
 //----------------------------------------------------------------------
@@ -2233,8 +2233,8 @@ IDocIterator *DocHandler::contents() const
   return new DocIterator(*this);
 }
 
-IDocInternal *DocHandler::internal() const 
-{ 
-  return m_internal; 
+IDocInternal *DocHandler::internal() const
+{
+  return m_internal;
 }
 
