@@ -18,7 +18,7 @@
 #include <vector>
 #include <qcstring.h>
 
-/*! \brief Class reprenting a HTML attibute. */
+/*! \brief Class representing a HTML attribute. */
 struct HtmlAttrib
 {
   QCString name;
