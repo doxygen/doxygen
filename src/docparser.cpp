@@ -971,7 +971,7 @@ static void handlePendingStyleCommands(DocNode *parent,DocNodeList &children)
       children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),sc->style(),sc->tagName(),FALSE));
       g_initialStyleStack.push(sc);
       g_styleStack.pop();
-      sc = g_styleStack.top();
+      sc = !g_styleStack.empty() ? g_styleStack.top() : 0;
     }
   }
 }
