@@ -2654,7 +2654,7 @@ bool getDefs(const QCString &scName,
         findMembersWithSpecificName(mn,args,FALSE,currentFile,checkCV,members);
       }
       //printf("found %d members\n",members.count());
-      if (members.size()>1 && args && !qstrcmp(args,"()"))
+      if (members.size()!=1 && args && !qstrcmp(args,"()"))
       {
         // no exact match found, but if args="()" an arbitrary
         // member will do
