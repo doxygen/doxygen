@@ -29,7 +29,7 @@ class QCString;
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci);
+    DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes

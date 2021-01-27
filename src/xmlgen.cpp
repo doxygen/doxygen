@@ -419,7 +419,7 @@ static void writeXMLDocBlock(FTextStream &t,
   // create a code generator
   XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
   // create a parse tree visitor for XML
-  XmlDocVisitor *visitor = new XmlDocVisitor(t,*xmlCodeGen);
+  XmlDocVisitor *visitor = new XmlDocVisitor(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
   // visit all nodes
   root->accept(visitor);
   // clean up

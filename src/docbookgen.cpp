@@ -610,11 +610,11 @@ DB_GEN_C
   }
 }
 
-void DocbookGenerator::writeDoc(DocNode *n,const Definition *,const MemberDef *,int)
+void DocbookGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int)
 {
 DB_GEN_C
   DocbookDocVisitor *visitor =
-    new DocbookDocVisitor(t,*this);
+    new DocbookDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);
   delete visitor;
 }
