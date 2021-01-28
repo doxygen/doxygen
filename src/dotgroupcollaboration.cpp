@@ -156,27 +156,23 @@ DotGroupCollaboration::Edge* DotGroupCollaboration::addEdge(
   const QCString& _label, const QCString& _url )
 {
   // search a existing link.
-  Edge *newEdge;
-  for (const auto &edge : m_edges)
-  {
-    if ( edge->pNStart==_pNStart && edge->pNEnd==_pNEnd && edge->eType==_eType)
-    { // edge already found
-      newEdge = edge.get();
-      break;
-    }
-  }
-  if ( newEdge==0 ) // new link
+  auto it = std::find_if(m_edges.begin(),m_edges.end(),
+      [&_pNStart,&_pNEnd,&_eType](const auto &edge)
+      { return edge->pNStart==_pNStart && edge->pNEnd==_pNEnd && edge->eType==_eType; });
+
+  if (it==m_edges.end()) // new link
   {
     m_edges.emplace_back(std::make_unique<Edge>(_pNStart,_pNEnd,_eType));
-    newEdge = m_edges.back().get();
+    it = m_edges.end()-1;
   }
 
-  if (!_label.isEmpty())
+  if (!_label.isEmpty()) // add label
   {
-    newEdge->links.emplace_back(_label,_url);
+    (*it)->links.emplace_back(_label,_url);
   }
 
-  return newEdge;
+  // return found or added edge
+  return (*it).get();
 }
 
 void DotGroupCollaboration::addCollaborationMember(
