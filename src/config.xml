@@ -558,12 +558,12 @@ Go to the <a href="commands.html">next</a> section or return to the
 \endverbatim
  For example adding
 \verbatim
- "sideeffect=@par Side Effects:\n"
+ "sideeffect=@par Side Effects:^^"
 \endverbatim
  will allow you to
  put the command \c \\sideeffect (or \c \@sideeffect) in the documentation, which
  will result in a user-defined paragraph with heading "Side Effects:".
- You can put \ref cmdn "\\n"'s in the value part of an alias to insert newlines
+ Note that you cannot put \ref cmdn "\\n"'s in the value part of an alias to insert newlines
  (in the resulting output).
  You can put `^^` in the value part of an alias to insert a newline as if
  a physical newline was in the original file.
