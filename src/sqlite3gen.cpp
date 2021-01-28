@@ -1399,7 +1399,7 @@ QCString getSQLDocBlock(const Definition *scope,
   );
   XMLCodeGenerator codeGen(t);
   // create a parse tree visitor for XML
-  XmlDocVisitor *visitor = new XmlDocVisitor(t,codeGen);
+  XmlDocVisitor *visitor = new XmlDocVisitor(t,codeGen,scope?scope->getDefFileExtension():QCString(""));
   root->accept(visitor);
   delete visitor;
   delete root;
