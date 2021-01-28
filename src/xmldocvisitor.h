@@ -30,7 +30,7 @@ class QCString;
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci);
+    XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes

@@ -150,8 +150,8 @@ void DocbookDocVisitor::visitPostEnd(FTextStream &t, bool hasCaption, bool inlin
   }
 }
 
-DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci)
-  : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci)
+DocbookDocVisitor::DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt)
+  : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci),m_langExt(langExt)
 {
 DB_VIS_C
   // m_t << "<section>" << endl;

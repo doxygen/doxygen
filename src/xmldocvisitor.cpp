@@ -88,8 +88,9 @@ static void visitPostEnd(FTextStream &t, const char *cmd)
   t << "</" << cmd << ">" << endl;
 }
 
-XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci)
-  : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE)
+XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt)
+  : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
+    m_langExt(langExt)
 {
 }
 
