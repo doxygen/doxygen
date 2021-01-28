@@ -5508,7 +5508,7 @@ bool updateLanguageMapping(const QCString &extension,const QCString &language)
   QCString extName = extension.lower();
   if (extName.isEmpty()) return FALSE;
   if (extName.at(0)!='.') extName.prepend(".");
-  auto it = g_extLookup.find(extension.str());
+  auto it = g_extLookup.find(extName.str());
   if (it!=g_extLookup.end())
   {
     g_extLookup.erase(it); // language was already register for this ext
