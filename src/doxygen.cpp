@@ -10058,6 +10058,8 @@ void initDoxygen()
                                                          make_parser_factory<SQLCodeParser>());
   Doxygen::parserManager->registerParser("md",           make_parser_factory<MarkdownOutlineParser>(),
                                                          make_parser_factory<FileCodeParser>());
+  Doxygen::parserManager->registerParser("unparsed",     make_parser_factory<FileOutlineParser>(),
+                                                         make_parser_factory<FileCodeParser>());
 
   // register any additional parsers here...
 
