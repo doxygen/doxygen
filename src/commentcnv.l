@@ -1170,10 +1170,16 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
     BEGIN(CComment);
     yyextra->commentStack.push(yyextra->lineNr);
   }
+  else if (yyextra->lang==SrcLangExt_Unparsed)
+  {
+    ADDARRAY(yyextra->inBuf->data(),strlen(yyextra->inBuf->data()));
+  }
   else
   {
     BEGIN(Scan);
   }
+  if (yyextra->lang!=SrcLangExt_Unparsed)
+  {
   yylex(yyscanner);
   while (!yyextra->condStack.empty())
   {
@@ -1201,6 +1207,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
         "Nesting level %d %s",yyextra->nestingCount,tmp.data());
   }
   yyextra->nestingCount = 0;
+  }
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     yyextra->outBuf->at(yyextra->outBuf->curPos())='\0';
