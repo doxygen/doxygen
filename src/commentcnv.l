@@ -1178,36 +1178,38 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   {
     BEGIN(Scan);
   }
+
   if (yyextra->lang!=SrcLangExt_Unparsed)
   {
-  yylex(yyscanner);
-  while (!yyextra->condStack.empty())
-  {
-    const CondCtx &ctx = yyextra->condStack.top();
-    QCString sectionInfo = " ";
-    if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
-    warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "
-	"a corresponding \\endcond command within this file.",sectionInfo.data());
-    yyextra->condStack.pop();
-  }
-  if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt_Markdown && yyextra->lang!=SrcLangExt_Fortran)
-  {
-    QCString tmp= "(probable line reference: ";
-    bool first = TRUE;
-    while (!yyextra->commentStack.empty())
+    yylex(yyscanner);
+    while (!yyextra->condStack.empty())
     {
-      int lineNr = yyextra->commentStack.top();
-      if (!first) tmp += ", ";
-      tmp += QCString().setNum(lineNr);
-      first = FALSE;
-      yyextra->commentStack.pop();
+      const CondCtx &ctx = yyextra->condStack.top();
+      QCString sectionInfo = " ";
+      if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
+      warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "
+	  "a corresponding \\endcond command within this file.",sectionInfo.data());
+      yyextra->condStack.pop();
     }
-    tmp += ")";
-    warn(yyextra->fileName,yyextra->lineNr,"Reached end of file while still inside a (nested) comment. "
-        "Nesting level %d %s",yyextra->nestingCount,tmp.data());
+    if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt_Markdown && yyextra->lang!=SrcLangExt_Fortran)
+    {
+      QCString tmp= "(probable line reference: ";
+      bool first = TRUE;
+      while (!yyextra->commentStack.empty())
+      {
+        int lineNr = yyextra->commentStack.top();
+        if (!first) tmp += ", ";
+        tmp += QCString().setNum(lineNr);
+        first = FALSE;
+        yyextra->commentStack.pop();
+      }
+      tmp += ")";
+      warn(yyextra->fileName,yyextra->lineNr,"Reached end of file while still inside a (nested) comment. "
+          "Nesting level %d %s",yyextra->nestingCount,tmp.data());
+    }
+    yyextra->nestingCount = 0;
   }
-  yyextra->nestingCount = 0;
-  }
+
   if (Debug::isFlagSet(Debug::CommentCnv))
   {
     yyextra->outBuf->at(yyextra->outBuf->curPos())='\0';

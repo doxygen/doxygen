@@ -6599,7 +6599,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_SQL:      return "SQL";
     case SrcLangExt_Markdown: return "Markdown";
     case SrcLangExt_Slice:    return "Slice";
-    case SrcLangExt_unparsed: return "unparsed";
+    case SrcLangExt_Unparsed: return "unparsed";
   }
   return "Unknown";
 }
