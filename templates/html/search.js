@@ -342,7 +342,7 @@ function SearchBox(name, resultsPath, inFrame, label, extension)
     }
     else if (code <128)
     {
-      idxChar = idxChar.toLower();
+      idxChar = idxChar.toLowerCase();
     }
 
     var resultsPage;
