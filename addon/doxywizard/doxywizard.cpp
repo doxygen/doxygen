@@ -553,7 +553,11 @@ void MainWindow::runDoxygen()
     m_runProcess->setEnvironment(env);
 
     QStringList args;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),Qt::SkipEmptyParts);
+#else
     QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),QString::SkipEmptyParts);
+#endif
 
     args << runOptions;
     args << QString::fromLatin1("-b"); // make stdout unbuffered
