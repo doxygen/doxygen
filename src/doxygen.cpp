@@ -106,6 +106,14 @@
 #include "clangparser.h"
 #include "symbolresolver.h"
 
+#if USE_SQLITE3
+#include <sqlite3.h>
+#endif
+
+#if USE_LIBCLANG
+#include <clang/Basic/Version.h>
+#endif
+
 // provided by the generated file resources.cpp
 extern void initResources();
 
@@ -9959,6 +9967,39 @@ static void devUsage()
 
 
 //----------------------------------------------------------------------------
+// print the version of doxygen
+
+static void version(const bool extended)
+{
+  QCString versionString = getFullVersion();
+  msg("%s\n",versionString.data());
+  if (extended)
+  {
+    QCString extVers;
+#if USE_SQLITE3
+    if (!extVers.isEmpty()) extVers+= ", ";
+    extVers += "sqlite3 ";
+    extVers += sqlite3_libversion();
+#endif
+#if USE_LIBCLANG
+    if (!extVers.isEmpty()) extVers+= ", ";
+    extVers += "clang support ";
+    extVers += CLANG_VERSION_STRING;
+#endif
+#if MULTITHREADED_SOURCE_GENERATOR
+    if (!extVers.isEmpty()) extVers+= ", ";
+    extVers += "multi-threaded support ";
+#endif
+    if (!extVers.isEmpty())
+    {
+      int lastComma = extVers.findRev(',');
+      if (lastComma != -1) extVers = extVers.replace(lastComma,1," and");
+      msg("    with %s.\n",extVers.data());
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
 // print the usage of doxygen
 
 static void usage(const char *name,const char *versionString)
@@ -9992,7 +10033,7 @@ static void usage(const char *name,const char *versionString)
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted 'Doxyfile' will be used as a default.\n");
   msg("If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
-  msg("-v print version string\n");
+  msg("-v print version string, -V print extended version information\n");
 }
 
 //----------------------------------------------------------------------------
@@ -10400,7 +10441,12 @@ void readConfiguration(int argc, char **argv)
         g_dumpSymbolMap = TRUE;
         break;
       case 'v':
-        msg("%s\n",versionString.data());
+        version(false);
+        cleanUpDoxygen();
+        exit(0);
+        break;
+      case 'V':
+        version(true);
         cleanUpDoxygen();
         exit(0);
         break;
@@ -10412,7 +10458,14 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstrcmp(&argv[optind][2],"version")==0)
         {
-          msg("%s\n",versionString.data());
+          version(false);
+          cleanUpDoxygen();
+          exit(0);
+        }
+        else if ((qstrcmp(&argv[optind][2],"Version")==0) || 
+                 (qstrcmp(&argv[optind][2],"VERSION")==0))
+        {
+          version(true);
           cleanUpDoxygen();
           exit(0);
         }
