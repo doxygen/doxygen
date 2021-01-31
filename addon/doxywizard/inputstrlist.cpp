@@ -250,7 +250,7 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
   {
     if (!first)
     {
-      t << " \\" << endl;
+      t << " \\\n";
       t << "                         ";
     }
     first=false;
