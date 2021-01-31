@@ -15,28 +15,28 @@ jobs:
             os: ubuntu-18.04,
             build_type: "Release", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
           }
         - {
             name: "Ubuntu Latest GCC Debug",
             os: ubuntu-18.04,
             build_type: "Debug", cc: "gcc", cxx: "g++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES"
+            cmake_extra_opts: "-Dbuild_search=YES -Dbuild_app=YES -Dbuild_parse=YES -Dbuild_xmlparser=YES -Duse_sqlite3=ON"
           }
         - {
             name: "Ubuntu Latest Clang Release",
             os: ubuntu-20.04,
             build_type: "Release", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
           }
         - {
             name: "Ubuntu Latest Clang Debug",
             os: ubuntu-20.04,
             build_type: "Debug", cc: "clang", cxx: "clang++",
             build_gen: "Unix Makefiles",
-            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO"
+            cmake_extra_opts: "-Duse_libclang=YES -Dstatic_libclang=YES -Duse_libc++=NO -Duse_sqlite3=ON"
           }
         - {
             name: "macOS Latest Release",
