@@ -1270,14 +1270,27 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
     }
   }
   int rs = c->rowSpan();
+  int va = c->valignment();
   if (rs>0)
   {
     setInRowSpan(TRUE);
+    m_t << "\\multirow";
+    switch(va)
+    {
+      case DocHtmlCell::Top:
+        m_t << "[t]";
+        break;
+      case DocHtmlCell::Bottom:
+        m_t << "[b]";
+        break;
+      default:
+        break;
+    }
     //printf("adding row span: cell={r=%d c=%d rs=%d cs=%d} curCol=%d\n",
     //                       c->rowIndex(),c->columnIndex(),c->rowSpan(),c->colSpan(),
     //                       currentColumn());
     addRowSpan(ActiveRowSpan(c,rs,cs,currentColumn()));
-    m_t << "\\multirow{" << rs << "}{*}{";
+    m_t << "{" << rs << "}{*}{";
   }
   if (a==DocHtmlCell::Center)
   {
