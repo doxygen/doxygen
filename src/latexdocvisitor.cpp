@@ -1283,6 +1283,8 @@ void LatexDocVisitor::visitPre(DocHtmlCell *c)
       case DocHtmlCell::Bottom:
         m_t << "[b]";
         break;
+      case DocHtmlCell::Middle:
+        break; // No alignment option needed
       default:
         break;
     }

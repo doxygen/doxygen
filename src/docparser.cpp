@@ -3408,6 +3408,8 @@ DocHtmlCell::Valignment DocHtmlCell::valignment() const
         return Top;
       else if (attr.value.lower()=="bottom")
         return Bottom;
+      else if (attr.value.lower()=="middle")
+        return Middle;
       else return Middle;
     }
   }
