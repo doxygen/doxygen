@@ -249,7 +249,8 @@ files and can be used for validation or to steer XSLT scripts.
 
 In the `addon/doxmlparser` directory you can find a parser library for reading
 the XML output produced by doxygen in an incremental way
-(see `addon/doxmlparser/include/doxmlintf.h` for the interface of the library)
+(see `addon/doxmlparser/doxmparser/index.py` and `addon/doxmlparser/doxmlparser/compound.py`
+for the interface of the library)
 
 \subsection man_out Man page output
 \addindex man
