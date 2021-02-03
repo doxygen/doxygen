@@ -796,6 +796,8 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->inSpecialComment=FALSE;
 				     yyextra->inRoseComment=FALSE;
+                                     yyextra->readLineCtx = Scan; // reset, otherwise ther will be problems with:
+                                                                  //   static void handleCondSectionId
 				     BEGIN(Scan); 
                                    }
 <ReadLine>"/**"                    {
