@@ -163,6 +163,7 @@ class HtmlDocVisitor : public DocVisitor
     bool m_hide;
     const Definition *m_ctx;
     QCString m_langExt;
+    QCString m_anchorHtml;
 };
 
 #endif
