@@ -7197,7 +7197,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 
       // deep copy group list from parent (see bug 727732)
       bool autoGroupNested = Config_getBool(GROUP_NESTED_COMPOUNDS);
-      if (autoGroupNested && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
+      if (autoGroupNested && !rt->groups.empty() && ce->section!=Entry::ENUM_SEC && !(ce->spec&Entry::Enum))
       {
         ce->groups = rt->groups;
       }

@@ -1373,8 +1373,8 @@ void addGroupToGroups(const Entry *root,GroupDef *subGroup)
 /*! Add a member to the group with the highest priority */
 void addMemberToGroups(const Entry *root,MemberDef *md)
 {
-  //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%d\n",
-  //    root, root->name.data(), md, md->name().data(), root->groups->count() );
+  //printf("addMemberToGroups:  Root %p = %s, md %p=%s groups=%zu\n",
+  //    root, root->name.data(), md, md->name().data(), root->groups.size() );
 
   // Search entry's group list for group with highest pri.
   Grouping::GroupPri_t pri = Grouping::GROUPING_LOWEST;
