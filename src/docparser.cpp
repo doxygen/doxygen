@@ -829,6 +829,7 @@ inline void errorHandleDefaultToken(DocNode *parent,int tok,
   {
     case TK_COMMAND_AT:
       cmd_start = "@";
+      // fall through
     case TK_COMMAND_BS:
       children.push_back(std::make_unique<DocWord>(parent,TK_COMMAND_CHAR(tok) + g_token->name));
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Illegal command %s as part of a %s",
@@ -1519,7 +1520,7 @@ reparsetoken:
           {
             QCString scope;
             doctokenizerYYsetStateSetScope();
-            doctokenizerYYlex();
+            (void)doctokenizerYYlex();
             scope = g_token->name;
             g_context = scope;
             //printf("Found scope='%s'\n",scope.data());

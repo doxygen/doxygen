@@ -288,6 +288,7 @@ void DotGroupCollaboration::Edge::write( FTextStream &t ) const
     {
       if (first) first=FALSE; else t << "\\n";
       t << DotNode::convertLabel(link.label);
+      count++;
     }
     if (count==maxLabels) t << "\\n...";
     t << "\"";

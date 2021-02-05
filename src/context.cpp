@@ -4046,11 +4046,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("nameWithContextFor",  &Private::nameWithContextFor);
         init=TRUE;
       }
-      if (md && !md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
+      if (!md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
 
       Cachable &cache = getCache();
       cache.propertyAttrs.reset(TemplateList::alloc());
-      if (md && md->isProperty())
+      if (md->isProperty())
       {
         if (md->isGettable())           cache.propertyAttrs->append("get");
         if (md->isPrivateGettable())    cache.propertyAttrs->append("private get");
@@ -4060,7 +4060,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         if (md->isProtectedSettable())  cache.propertyAttrs->append("protected set");
       }
       cache.eventAttrs.reset(TemplateList::alloc());
-      if (md && md->isEvent())
+      if (md->isEvent())
       {
         if (md->isAddable())   cache.eventAttrs->append("add");
         if (md->isRemovable()) cache.eventAttrs->append("remove");

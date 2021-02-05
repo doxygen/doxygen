@@ -3046,8 +3046,9 @@ void  FlowChart::colTextNodes()
         const FlowChart &ftemp = flowList[j+1];
         if (ftemp.type & EMPTY)
         {
-          flowList.insert(flowList.begin()+j+1,FlowChart(TEXT_NO,"empty ",0));
-          flowList[j+1].stamp = flo.stamp;
+          FlowChart fc(TEXT_NO,"empty ",0);
+          fc.stamp = flo.stamp;
+          flowList.insert(flowList.begin()+j+1,fc);
         }
       }
     }
