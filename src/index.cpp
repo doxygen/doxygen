@@ -25,7 +25,6 @@
 
 #include <assert.h>
 #include <qtextstream.h>
-#include <qdatetime.h>
 #include <qdir.h>
 #include <qregexp.h>
 

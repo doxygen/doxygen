@@ -16,7 +16,6 @@
 
 #include "qstrlist.h"
 #include "qdatastream.h"
-#include "qtl.h"
 
 /*!
   Splits the string \a str using \a sep as separator. Returns the

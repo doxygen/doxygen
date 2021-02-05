@@ -17,6 +17,8 @@
  *
  */
 
+#include <chrono>
+#include <ctime>
 #include <stdlib.h>
 
 #include <qdir.h>
@@ -48,16 +50,20 @@
 #include "filename.h"
 #include "namespacedef.h"
 
+
 //#define DBG_RTF(x) x;
 #define DBG_RTF(x)
 
 static QCString dateToRTFDateString()
 {
-  const QDateTime &d = QDateTime::currentDateTime();
+  auto now = std::chrono::system_clock::now();
+  auto time = std::chrono::system_clock::to_time_t(now);
+  auto tm = *localtime(&time);
+
   QCString result;
   result.sprintf("\\yr%d\\mo%d\\dy%d\\hr%d\\min%d\\sec%d",
-      d.date().year(), d.date().month(), d.date().day(),
-      d.time().hour(),d.time().minute(),d.time().second());
+      tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+      tm.tm_hour, tm.tm_min, tm.tm_sec);
   return result;
 }
 

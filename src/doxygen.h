@@ -16,8 +16,6 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
-#include <qdatetime.h>
-
 #include "containers.h"
 #include "ftextstream.h"
 #include "membergroup.h"
