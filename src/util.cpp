@@ -1933,12 +1933,10 @@ static bool matchArgument2(
     dstA.canType=""; // invalidate cached type value
   }
 
-  if (srcA.canType.isEmpty())
+  if (srcA.canType.isEmpty() || dstA.canType.isEmpty())
   {
+    // need to re-evaluate both see issue #8370
     srcA.canType = extractCanonicalArgType(srcScope,srcFileScope,srcA);
-  }
-  if (dstA.canType.isEmpty())
-  {
     dstA.canType = extractCanonicalArgType(dstScope,dstFileScope,dstA);
   }
 
