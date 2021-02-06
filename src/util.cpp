@@ -22,6 +22,7 @@
 #include <cinttypes>
 #include <string.h>
 
+#include <ctime>
 #include <mutex>
 #include <unordered_set>
 
