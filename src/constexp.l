@@ -132,7 +132,7 @@ ConstExpressionParser::~ConstExpressionParser()
   delete p;
 }
 
-bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString &s)
+bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::string &s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
@@ -146,13 +146,13 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const QCString
   yyextra->inputPosition = 0;
   constexpYYrestart( yyin, p->yyscanner );
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+  printlex(yy_flex_debug, true, __FILE__, fileName);
   //printf("Expression: '%s'\n",s.data());
 
   constexpYYparse(p->yyscanner);
 
   //printf("Result: %ld\n",(long)g_resultValue);
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
+  printlex(yy_flex_debug, false, __FILE__, fileName);
   bool result = (long)yyextra->resultValue!=0;
 
   return result;

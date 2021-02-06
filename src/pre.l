@@ -2702,7 +2702,7 @@ static bool computeExpression(yyscan_t yyscanner,const QCString &expr)
   e = removeIdsAndMarkers(e);
   if (e.isEmpty()) return FALSE;
   //printf("parsing '%s'\n",e.data());
-  return state->constExpParser.parse(state->yyFileName,state->yyLineNr,e);
+  return state->constExpParser.parse(state->yyFileName,state->yyLineNr,e.str());
 }
 
 /*! expands the macro definition in \a name
