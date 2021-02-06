@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QFileInfo class
 **
@@ -40,7 +40,6 @@
 
 #ifndef QT_H
 #include "qfile.h"
-#include "qdatetime.h"
 #endif // QT_H
 
 
@@ -115,14 +114,11 @@ public:
 
     uint	size()		const;
 
-    QDateTime	lastModified()	const;
-    QDateTime	lastRead()	const;
-
 private:
     void	doStat() const;
     static void slashify( QString & );
     static void makeAbs( QString & );
-    
+
     QString	fn;
     QFileInfoCache *fic;
     bool	cache;

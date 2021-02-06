@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of QDir class
 **
@@ -72,7 +72,7 @@ public:
 		      DefaultFilter = -1 };
 
     enum SortSpec   { Name	    = 0x00,
-		      Time	    = 0x01,
+	//	      Time	    = 0x01,
 		      Size	    = 0x02,
 		      Unsorted	    = 0x03,
 		       SortByMask    = 0x03,
@@ -112,15 +112,15 @@ public:
     virtual void setNameFilter( const QString &nameFilter );
     FilterSpec filter() const;
     virtual void setFilter( int filterSpec );
-    SortSpec sorting() const;
-    virtual void setSorting( int sortSpec );
+    //SortSpec sorting() const;
+    //virtual void setSorting( int sortSpec );
 
     bool	matchAllDirs() const;
     virtual void setMatchAllDirs( bool );
 
     uint count() const;
     QString	operator[]( int ) const;
-    
+
     virtual QStrList encodedEntryList( int filterSpec = DefaultFilter,
 				       int sortSpec   = DefaultSort  ) const;
     virtual QStrList encodedEntryList( const QString &nameFilter,
@@ -210,10 +210,12 @@ inline QDir::FilterSpec QDir::filter() const
     return filtS;
 }
 
+#if 0
 inline QDir::SortSpec QDir::sorting() const
 {
     return sortS;
 }
+#endif
 
 inline bool QDir::matchAllDirs() const
 {

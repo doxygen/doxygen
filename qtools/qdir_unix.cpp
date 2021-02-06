@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QDirclass
 **
@@ -97,7 +97,7 @@ QString QDir::canonicalPath() const
 
 bool QDir::mkdir( const QString &dirName, bool acceptAbsPath ) const
 {
-    return MKDIR( QFile::encodeName(filePath(dirName,acceptAbsPath)), 0777 ) 
+    return MKDIR( QFile::encodeName(filePath(dirName,acceptAbsPath)), 0777 )
 	== 0;
 }
 

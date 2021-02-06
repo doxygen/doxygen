@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QDir class
 **
@@ -575,6 +575,7 @@ void QDir::setFilter( int filterSpec )
 
 // ### Unsorted+DirsFirst ? Unsorted+Reversed?
 
+#if 0
 /*!
   Sets the sorting order used by entryList() and entryInfoList().
 
@@ -604,6 +605,7 @@ void QDir::setSorting( int sortSpec )
     sortS = (SortSpec) sortSpec;
     dirty = TRUE;
 }
+#endif
 
 /*!
   \fn bool QDir::matchAllDirs() const
@@ -1157,6 +1159,7 @@ int qt_cmp_si( const void *n1, const void *n2 )
     int r = 0;
     int sortBy = qt_cmp_si_sortSpec & QDir::SortByMask;
 
+#if 0
     switch ( sortBy ) {
       case QDir::Time:
 	r = f1->item->lastModified().secsTo(f2->item->lastModified());
@@ -1167,6 +1170,7 @@ int qt_cmp_si( const void *n1, const void *n2 )
       default:
 	;
     }
+#endif
 
     if ( r == 0 && sortBy != QDir::Unsorted ) {
 	// Still not sorted - sort by name

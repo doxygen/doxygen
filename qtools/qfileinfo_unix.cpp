@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QFileInfo class
 **
@@ -46,7 +46,6 @@
 
 #include "qfileinfo.h"
 #include "qfiledefs_p.h"
-#include "qdatetime.h"
 #include "qdir.h"
 
 #if defined(_OS_SUN_)
@@ -284,42 +283,6 @@ uint QFileInfo::size() const
     else
 	return 0;
 }
-
-
-/*!
-  Returns the date and time when the file was last modified.
-  \sa lastRead()
-*/
-
-QDateTime QFileInfo::lastModified() const
-{
-    QDateTime dt;
-    if ( !fic || !cache )
-	doStat();
-    if ( fic )
-	dt.setTime_t( (uint)fic->st.st_mtime );
-    return dt;
-}
-
-/*!
-  Returns the date and time when the file was last read (accessed).
-
-  On systems that do not support last read times, the modification time is
-  returned.
-
-  \sa lastModified()
-*/
-
-QDateTime QFileInfo::lastRead() const
-{
-    QDateTime dt;
-    if ( !fic || !cache )
-	doStat();
-    if ( fic )
-	dt.setTime_t( (uint)fic->st.st_atime );
-    return dt;
-}
-
 
 void QFileInfo::doStat() const
 {

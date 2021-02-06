@@ -1,19 +1,19 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Based on qfileinfo_unix.cpp 
+ * Based on qfileinfo_unix.cpp
  *
  * Copyright (C) 1992-2000 Trolltech AS.
  */
@@ -22,12 +22,11 @@
 
 #include "qfileinfo.h"
 #include "qfiledefs_p.h"
-#include "qdatetime.h"
 #include "qdir.h"
 
 static void reslashify( QString& n )
 {
-  for ( int i=0; i<(int)n.length(); i++ ) 
+  for ( int i=0; i<(int)n.length(); i++ )
   {
      if ( n[i] == '/' )
           n[i] = '\\';
@@ -36,7 +35,7 @@ static void reslashify( QString& n )
 
 void QFileInfo::slashify( QString& n )
 {
-  for ( int i=0; i<(int)n.length(); i++ ) 
+  for ( int i=0; i<(int)n.length(); i++ )
   {
      if ( n[i] == '\\' )
           n[i] = '/';
@@ -110,7 +109,7 @@ static const uint nobodyID = (uint) -2;
 /*!
   Returns the owner of the file.
 
-  On systems where files do not have owners this function returns 
+  On systems where files do not have owners this function returns
   a null string.
 
   Note that this function can be time-consuming under UNIX. (in the order
@@ -210,42 +209,6 @@ uint QFileInfo::size() const
     else
 	return 0;
 }
-
-
-/*!
-  Returns the date and time when the file was last modified.
-  \sa lastRead()
-*/
-
-QDateTime QFileInfo::lastModified() const
-{
-    QDateTime dt;
-    if ( !fic || !cache )
-	doStat();
-    if ( fic )
-	dt.setTime_t( fic->st.st_mtime );
-    return dt;
-}
-
-/*!
-  Returns the date and time when the file was last read (accessed).
-
-  On systems that do not support last read times, the modification time is
-  returned.
-
-  \sa lastModified()
-*/
-
-QDateTime QFileInfo::lastRead() const
-{
-    QDateTime dt;
-    if ( !fic || !cache )
-	doStat();
-    if ( fic )
-	dt.setTime_t( fic->st.st_atime );
-    return dt;
-}
-
 
 void QFileInfo::doStat() const
 {

@@ -5,7 +5,6 @@ qbuffer.cpp
 qcollection.cpp
 qcstring.cpp
 qdatastream.cpp
-qdatetime.cpp
 qdir.cpp
 qfile.cpp
 qfileinfo.cpp

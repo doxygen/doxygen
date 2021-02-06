@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QFileInfo class
 **
@@ -39,7 +39,6 @@
 
 #include "qfileinfo.h"
 #include "qfiledefs_p.h"
-#include "qdatetime.h"
 #include "qdir.h"
 
 extern bool qt_file_access( const QString& fn, int t );

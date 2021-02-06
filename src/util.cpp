@@ -30,7 +30,6 @@
 #include <qregexp.h>
 #include <qfileinfo.h>
 #include <qdir.h>
-#include <qdatetime.h>
 
 #include "util.h"
 #include "message.h"
@@ -1418,11 +1417,10 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
   return "";
 }
 
-static QDateTime getCurrentDateTime()
+static std::tm getCurrentDateTime()
 {
-  QDateTime current = QDateTime::currentDateTime();
   QCString sourceDateEpoch = Portable::getenv("SOURCE_DATE_EPOCH");
-  if (!sourceDateEpoch.isEmpty())
+  if (!sourceDateEpoch.isEmpty()) // see https://reproducible-builds.org/specs/source-date-epoch/
   {
     bool ok;
     uint64 epoch = sourceDateEpoch.toUInt64(&ok);
@@ -1436,42 +1434,39 @@ static QDateTime getCurrentDateTime()
         warnedOnce=TRUE;
       }
     }
-    else if (epoch>UINT_MAX)
+    else // use given epoch value as current 'built' time
     {
-      static bool warnedOnce=FALSE;
-      if (!warnedOnce)
-      {
-        warn_uncond("Environment variable SOURCE_DATE_EPOCH must have a value smaller than or equal to %d; actual value %" PRIu64 "\n",UINT_MAX, (uint64_t)epoch);
-        warnedOnce=TRUE;
-      }
-    }
-    else // all ok, replace current time with epoch value
-    {
-      current.setTimeUtc_t((ulong)epoch); // TODO: add support for 64bit epoch value
+      auto epoch_start    = std::chrono::time_point<std::chrono::system_clock>{};
+      auto epoch_seconds  = std::chrono::seconds(epoch);
+      auto build_time     = epoch_start + epoch_seconds;
+      std::time_t time    = std::chrono::system_clock::to_time_t(build_time);
+      return *gmtime(&time);
     }
   }
-  return current;
+
+  // return current local time
+  auto now = std::chrono::system_clock::now();
+  std::time_t time = std::chrono::system_clock::to_time_t(now);
+  return *localtime(&time);
 }
 
 QCString dateToString(bool includeTime)
 {
-  const QDateTime current = getCurrentDateTime();
-  return theTranslator->trDateTime(current.date().year(),
-                                   current.date().month(),
-                                   current.date().day(),
-                                   current.date().dayOfWeek(),
-                                   current.time().hour(),
-                                   current.time().minute(),
-                                   current.time().second(),
+  auto current = getCurrentDateTime();
+  return theTranslator->trDateTime(current.tm_year + 1900,
+                                   current.tm_mon + 1,
+                                   current.tm_mday,
+                                   (current.tm_wday+6)%7+1, // map: Sun=0..Sat=6 to Mon=1..Sun=7
+                                   current.tm_hour,
+                                   current.tm_min,
+                                   current.tm_sec,
                                    includeTime);
 }
 
 QCString yearToString()
 {
-  const QDateTime current = getCurrentDateTime();
-  QCString result;
-  result.sprintf("%d", current.date().year());
-  return result;
+  auto current = getCurrentDateTime();
+  return QCString().setNum(current.tm_year+1900);
 }
 
 //----------------------------------------------------------------------
