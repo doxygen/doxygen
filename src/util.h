@@ -219,9 +219,9 @@ QCString substituteKeywords(const QCString &s,const char *title,
 
 int getPrefixIndex(const QCString &name);
 
-QCString removeAnonymousScopes(const QCString &s);
+QCString removeAnonymousScopes(const char *s);
 
-QCString replaceAnonymousScopes(const QCString &s,const char *replacement=0);
+QCString replaceAnonymousScopes(const char *s,const char *replacement=0);
 
 bool hasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
@@ -263,7 +263,7 @@ void addMembersToMemberGroup(/* in,out */ MemberList *ml,
                              /* in,out */ MemberGroupList *pMemberGroups,
                              /* in */     const Definition *context);
 
-int extractClassNameFromType(const QCString &type,int &pos,
+int extractClassNameFromType(const char *type,int &pos,
                               QCString &name,QCString &templSpec,SrcLangExt=SrcLangExt_Unknown);
 
 QCString normalizeNonTemplateArgumentsInString(
@@ -272,7 +272,7 @@ QCString normalizeNonTemplateArgumentsInString(
        const ArgumentList &formalArgs);
 
 QCString substituteTemplateArgumentsInString(
-       const QCString &name,
+       const std::string &name,
        const ArgumentList &formalArgs,
        const std::unique_ptr<ArgumentList> &actualArgs);
 
@@ -351,9 +351,9 @@ void createSubDirs(QDir &d);
 
 QCString stripPath(const char *s);
 
-bool containsWord(const QCString &s,const QCString &word);
+bool containsWord(const char *s,const char *word);
 
-bool findAndRemoveWord(QCString &s,const QCString &word);
+bool findAndRemoveWord(QCString &s,const char *word);
 
 QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine);
 
@@ -380,13 +380,13 @@ std::string expandAlias(const std::string &aliasName,const std::string &aliasVal
 
 void writeTypeConstraints(OutputList &ol,const Definition *d,const ArgumentList &al);
 
-QCString convertCharEntitiesToUTF8(const QCString &s);
+QCString convertCharEntitiesToUTF8(const char *s);
 
 void stackTrace();
 
 bool readInputFile(const char *fileName,BufStr &inBuf,
                    bool filter=TRUE,bool isSourceCode=FALSE);
-QCString filterTitle(const QCString &title);
+QCString filterTitle(const std::string &title);
 
 bool patternMatch(const QFileInfo &fi,const StringVector &patList);
 

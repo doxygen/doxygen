@@ -15,20 +15,23 @@
  */
 
 #include <stdlib.h>
-#include <ctype.h>
 #include <errno.h>
 #include <math.h>
 #include <limits.h>
-#include <cinttypes>
 #include <string.h>
 
-#include <ctime>
 #include <mutex>
 #include <unordered_set>
+#include <regex>
+#include <codecvt>
+#include <iostream>
+#include <algorithm>
+#include <ctime>
+#include <cctype>
+#include <cinttypes>
 
 #include "md5.h"
 
-#include <qregexp.h>
 #include <qfileinfo.h>
 #include <qdir.h>
 
@@ -158,54 +161,68 @@ const int maxInheritanceDepth = 100000;
    "bla @1"              => "bla"
 \endverbatim
  */
-QCString removeAnonymousScopes(const QCString &s)
+QCString removeAnonymousScopes(const char *str)
 {
-  QCString result;
-  if (s.isEmpty()) return result;
-  static QRegExp re("[ :]*@[0-9]+[: ]*");
-  int i,l,sl=s.length();
-  int p=0;
-  while ((i=re.match(s,p,&l))!=-1)
+  std::string result;
+  if (str==0) return result;
+
+  // helper to check if the found delimiter starts with a colon
+  auto startsWithColon = [](const std::string &del)
   {
-    result+=s.mid(p,i-p);
-    int c=i;
-    bool b1=FALSE,b2=FALSE;
-    while (c<i+l && s.at(c)!='@') if (s.at(c++)==':') b1=TRUE;
-    c=i+l-1;
-    while (c>=i && s.at(c)!='@') if (s.at(c--)==':') b2=TRUE;
-    if (b1 && b2)
+    for (size_t i=0;i<del.size();i++)
     {
-      result+="::";
+      if (del[i]=='@') return false;
+      else if (del[i]==':') return true;
     }
-    p=i+l;
+    return false;
+  };
+
+  // helper to check if the found delimiter ends with a colon
+  auto endsWithColon = [](const std::string &del)
+  {
+    for (size_t i=del.size()-1;i>=0;i--)
+    {
+      if (del[i]=='@') return false;
+      else if (del[i]==':') return true;
+    }
+    return false;
+  };
+
+  static std::regex re("[ :]*@[[:digit:]]+[: ]*");
+  std::string s = str;
+  std::sregex_iterator iter( s.begin(), s.end(), re);
+  std::sregex_iterator end;
+  size_t p=0;
+  size_t sl=s.length();
+  bool needsSeparator=false;
+  for ( ; iter!=end ; ++iter)
+  {
+    const auto &match = *iter;
+    size_t i = match.position();
+    if (i>p) // add non-matching prefix
+    {
+      if (needsSeparator) result+="::";
+      needsSeparator=false;
+      result+=s.substr(p,i-p);
+    }
+    std::string delim = match.str();
+    needsSeparator = needsSeparator || (startsWithColon(delim) && endsWithColon(delim));
+    p = match.position()+match.length();
   }
-  result+=s.right(sl-p);
-  //printf("removeAnonymousScopes('%s')='%s'\n",s.data(),result.data());
+  if (p<sl) // add trailing remainder
+  {
+    if (needsSeparator) result+="::";
+    result+=s.substr(p);
+  }
   return result;
 }
 
 // replace anonymous scopes with __anonymous__ or replacement if provided
-QCString replaceAnonymousScopes(const QCString &s,const char *replacement)
+QCString replaceAnonymousScopes(const char *s,const char *replacement)
 {
-  QCString result;
-  if (s.isEmpty()) return result;
-  static QRegExp re("@[0-9]+");
-  int i,l,sl=s.length();
-  int p=0;
-  while ((i=re.match(s,p,&l))!=-1)
-  {
-    result+=s.mid(p,i-p);
-    if (replacement)
-    {
-      result+=replacement;
-    }
-    else
-    {
-      result+="__anonymous__";
-    }
-    p=i+l;
-  }
-  result+=s.right(sl-p);
+  if (s==0) return QCString();
+  static std::regex marker("@[[:digit:]]+");
+  std::string result = regex_replace(s,marker,replacement?replacement:"__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",s.data(),result.data());
   return result;
 }
@@ -872,37 +889,40 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     const char *text, bool autoBreak,bool external,
     bool keepSpaces,int indentLevel)
 {
-  //printf("linkify='%s'\n",text);
-  static QRegExp regExp("[a-z_A-Z\\x80-\\xFF][~!a-z_A-Z0-9$\\\\.:\\x80-\\xFF]*");
-  static QRegExp regExpSplit("(?!:),");
   if (text==0) return;
-  QCString txtStr=text;
-  int strLen = txtStr.length();
+  //printf("linkify='%s'\n",text);
+  std::string txtStr=text;
+  size_t strLen = txtStr.length();
   if (strLen==0) return;
+
+  static std::regex regExp("[[:alpha:]_][[:alnum:]_~!\\\\.:$]*");
+  std::sregex_iterator it( txtStr.begin(), txtStr.end(), regExp);
+  std::sregex_iterator end;
+
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
   //    scope?scope->name().data():"<none>",
   //    fileScope?fileScope->name().data():"<none>",
   //    txtStr.data(),strLen,external);
-  int matchLen;
-  int index=0;
-  int newIndex;
-  int skipIndex=0;
-  int floatingIndex=0;
-  // read a word from the text string
-  while ((newIndex=regExp.match(txtStr,index,&matchLen))!=-1)
+  size_t index=0;
+  size_t skipIndex=0;
+  size_t floatingIndex=0;
+  for (; it!=end ; ++it) // for each word from the text string
   {
+    const auto &match = *it;
+    size_t newIndex = match.position();
+    size_t matchLen = match.length();
     floatingIndex+=newIndex-skipIndex+matchLen;
     if (newIndex>0 && txtStr.at(newIndex-1)=='0') // ignore hex numbers (match x00 in 0x00)
     {
-      out.writeString(txtStr.mid(skipIndex,newIndex+matchLen-skipIndex),keepSpaces);
+      std::string part = txtStr.substr(skipIndex,newIndex+matchLen-skipIndex);
+      out.writeString(part.c_str(),keepSpaces);
       skipIndex=index=newIndex+matchLen;
       continue;
     }
 
     // add non-word part to the result
     bool insideString=FALSE;
-    int i;
-    for (i=index;i<newIndex;i++)
+    for (size_t i=index;i<newIndex;i++)
     {
       if (txtStr.at(i)=='"') insideString=!insideString;
     }
@@ -910,33 +930,36 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     //printf("floatingIndex=%d strlen=%d autoBreak=%d\n",floatingIndex,strLen,autoBreak);
     if (strLen>35 && floatingIndex>30 && autoBreak) // try to insert a split point
     {
-      QCString splitText = txtStr.mid(skipIndex,newIndex-skipIndex);
-      int splitLength = splitText.length();
-      int offset=1;
-      i=splitText.find(regExpSplit,0);
-      if (i==-1) { i=splitText.find('<'); if (i!=-1) offset=0; }
-      if (i==-1) i=splitText.find('>');
-      if (i==-1) i=splitText.find(' ');
+      std::string splitText = txtStr.substr(skipIndex,newIndex-skipIndex);
+      size_t splitLength = splitText.length();
+      size_t offset=1;
+      size_t i = splitText.find(',');
+      if (i==std::string::npos) { i=splitText.find('<'); if (i!=std::string::npos) offset=0; }
+      if (i==std::string::npos) i=splitText.find('>');
+      if (i==std::string::npos) i=splitText.find(' ');
       //printf("splitText=[%s] len=%d i=%d offset=%d\n",splitText.data(),splitLength,i,offset);
-      if (i!=-1) // add a link-break at i in case of Html output
+      if (i!=std::string::npos) // add a link-break at i in case of Html output
       {
-        out.writeString(splitText.left(i+offset),keepSpaces);
+        std::string part1 = splitText.substr(0,i+offset);
+        out.writeString(part1.c_str(),keepSpaces);
         out.writeBreak(indentLevel==0 ? 0 : indentLevel+1);
-        out.writeString(splitText.right(splitLength-i-offset),keepSpaces);
+        std::string part2 = splitText.substr(i+offset);
+        out.writeString(part2.c_str(),keepSpaces);
         floatingIndex=splitLength-i-offset+matchLen;
       }
       else
       {
-        out.writeString(splitText,keepSpaces);
+        out.writeString(splitText.c_str(),keepSpaces);
       }
     }
     else
     {
       //ol.docify(txtStr.mid(skipIndex,newIndex-skipIndex));
-      out.writeString(txtStr.mid(skipIndex,newIndex-skipIndex),keepSpaces);
+      std::string part = txtStr.substr(skipIndex,newIndex-skipIndex);
+      out.writeString(part.c_str(),keepSpaces);
     }
     // get word from string
-    QCString word=txtStr.mid(newIndex,matchLen);
+    std::string word=txtStr.substr(newIndex,matchLen);
     QCString matchWord = substitute(substitute(word,"\\","::"),".","::");
     //printf("linkifyText word=%s matchWord=%s scope=%s\n",
     //    word.data(),matchWord.data(),scope?scope->name().data():"<none>");
@@ -963,7 +986,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
             out.writeLink(typeDef->getReference(),
                 typeDef->getOutputFileBase(),
                 typeDef->anchor(),
-                word);
+                word.c_str());
             found=TRUE;
           }
         }
@@ -976,7 +999,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         {
           if (cd!=self)
           {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
             found=TRUE;
           }
         }
@@ -988,7 +1011,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
         {
           if (cd!=self)
           {
-            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
+            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word.c_str());
             found=TRUE;
           }
         }
@@ -1048,7 +1071,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           if (!(scope && (scope->getLanguage() == SrcLangExt_Fortran) && md->isVariable() && (md->getLanguage() != SrcLangExt_Fortran)))
           {
             out.writeLink(md->getReference(),md->getOutputFileBase(),
-                md->anchor(),word);
+                md->anchor(),word.c_str());
             //printf("found symbol %s\n",matchWord.data());
             found=TRUE;
           }
@@ -1058,7 +1081,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 
     if (!found) // add word to the result
     {
-      out.writeString(word,keepSpaces);
+      out.writeString(word.c_str(),keepSpaces);
     }
     // set next start point in the string
     //printf("index=%d/%d\n",index,txtStr.length());
@@ -1066,30 +1089,32 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   }
   // add last part of the string to the result.
   //ol.docify(txtStr.right(txtStr.length()-skipIndex));
-  out.writeString(txtStr.right(txtStr.length()-skipIndex),keepSpaces);
+  std::string lastPart = txtStr.substr(skipIndex);
+  out.writeString(lastPart.c_str(),keepSpaces);
 }
 
 
 void writeExamples(OutputList &ol,const ExampleList &list)
 {
-  QCString exampleLine=theTranslator->trWriteList((int)list.size());
+  std::string exampleLine=theTranslator->trWriteList((int)list.size()).str();
 
-  //bool latexEnabled = ol.isEnabled(OutputGenerator::Latex);
-  //bool manEnabled   = ol.isEnabled(OutputGenerator::Man);
-  //bool htmlEnabled  = ol.isEnabled(OutputGenerator::Html);
-  QRegExp marker("@[0-9]+");
-  int index=0,newIndex,matchLen;
+  static std::regex marker("@[[:digit:]]+");
+  std::sregex_iterator it(exampleLine.begin(),exampleLine.end(),marker);
+  std::sregex_iterator end;
+  size_t index=0;
   // now replace all markers in inheritLine with links to the classes
-  while ((newIndex=marker.match(exampleLine,index,&matchLen))!=-1)
+  for ( ; it!=end ; ++it)
   {
-    bool ok;
-    ol.parseText(exampleLine.mid(index,newIndex-index));
-    uint entryIndex = exampleLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-    if (ok && entryIndex<list.size())
+    const auto &match = *it;
+    size_t newIndex = match.position();
+    size_t matchLen = match.length();
+    auto prefixPart = exampleLine.substr(index,newIndex-index);
+    ol.parseText(prefixPart);
+    unsigned long entryIndex = std::stoul(match.str().substr(1));
+    if (entryIndex<(unsigned long)list.size())
     {
       const auto &e = list[entryIndex];
       ol.pushGeneratorState();
-      //if (latexEnabled) ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::RTF);
       ol.disable(OutputGenerator::Docbook);
@@ -1099,19 +1124,16 @@ void writeExamples(OutputList &ol,const ExampleList &list)
       ol.popGeneratorState();
 
       ol.pushGeneratorState();
-      //if (latexEnabled) ol.enable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Man);
       ol.disable(OutputGenerator::Html);
       // link for Latex / pdf with anchor because the sources
       // are not hyperlinked (not possible with a verbatim environment).
       ol.writeObjectLink(0,e.file,0,e.name);
-      //if (manEnabled) ol.enable(OutputGenerator::Man);
-      //if (htmlEnabled) ol.enable(OutputGenerator::Html);
       ol.popGeneratorState();
     }
     index=newIndex+matchLen;
   }
-  ol.parseText(exampleLine.right(exampleLine.length()-index));
+  ol.parseText(exampleLine.substr(index));
   ol.writeString(".");
 }
 
@@ -1249,6 +1271,72 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
+template<class StringType>
+static bool isMatchingWildcard(const StringType &input,size_t input_pos,
+                               const StringType &pattern,size_t pattern_pos,
+                               bool caseSensitive)
+{
+  // end of pattern reached
+  if (pattern_pos==pattern.length())
+  {
+    // match iff also at the end of the input string
+    return input_pos==input.length();
+  }
+
+  // if we are at the end of the input string
+  if (input_pos==input.length())
+  {
+    // match iff the remainer of the pattern is '*'s
+    for (size_t i=pattern_pos; i<pattern.size();i++)
+    {
+      if (pattern[i]!='*') return false;
+    }
+    return true;
+  }
+
+  auto input_char   = input[input_pos];
+  auto pattern_char = pattern[pattern_pos];
+  if (!caseSensitive)
+  {
+    input_char   = std::tolower(input_char);
+    pattern_char = std::tolower(pattern_char);
+  }
+  // if current character matches against '?' pattern or literally
+  if (pattern[pattern_pos]=='?' || input_char==pattern_char)
+  {
+    // then continue with the next one
+    return isMatchingWildcard(input,input_pos+1,pattern,pattern_pos+1,caseSensitive);
+  }
+
+  // current character in the pattern is '*'
+  if (pattern[pattern_pos]=='*')
+  {
+    // try the same match against the next character in the input (current char is eaten by '*')
+    return isMatchingWildcard(input,input_pos+1,pattern,pattern_pos  ,caseSensitive) ||
+    // or try to match against the next character in the pattern ('*' matches an empty string)
+           isMatchingWildcard(input,input_pos  ,pattern,pattern_pos+1,caseSensitive);
+  }
+
+  // found a mismatch
+  return false;
+}
+
+static bool isMatchingWildcard(const std::string &input,const std::string &pattern,
+                               bool caseSensitive=false)
+{
+  if (!caseSensitive) // to properly match input 'FÓÓ' against pattern 'fóó*' we need
+                      // to convert the std::string to a std::wstring so std::tolower works
+                      // on multi-byte characters like Ó and not one individual bytes.
+  {
+    std::wstring_convert< std::codecvt_utf8<wchar_t> > conv;
+    return isMatchingWildcard(conv.from_bytes(input),0,conv.from_bytes(pattern),0,caseSensitive);
+  }
+  else // simple case were we can do byte matching for characters.
+  {
+    return isMatchingWildcard(input,0,pattern,0,caseSensitive);
+  }
+}
+
 static QCString getFilterFromList(const char *name,const StringVector &filterList,bool &found)
 {
   found=FALSE;
@@ -1260,8 +1348,7 @@ static QCString getFilterFromList(const char *name,const StringVector &filterLis
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-      QRegExp fpat(filterPattern,Portable::fileSystemIsCaseSensitive(),TRUE);
-      if (fpat.match(name)!=-1)
+      if (isMatchingWildcard(name,filterPattern.str(),Portable::fileSystemIsCaseSensitive()))
       {
         // found a match!
         QCString filterName = fs.mid(i_equals+1);
@@ -1818,8 +1905,6 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
   //printf("extractCanonicalType(type=%s) start: def=%s file=%s\n",type.data(),
   //    d ? d->name().data() : "<null>",fs ? fs->name().data() : "<null>");
 
-  //static QRegExp id("[a-z_A-Z\\x80-\\xFF][:a-z_A-Z0-9\\x80-\\xFF]*");
-
   QCString canType;
   QCString templSpec,word;
   int i,p=0,pp=0;
@@ -1848,17 +1933,25 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
                               // (i.e. type is not a template specialization)
                               // then resolve any identifiers inside.
     {
-      static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
-      int tp=0,tl,ti;
+      static std::regex re("[[:alpha:]_][[:alnum:]_]*");
+      std::string ts = templSpec.str();
+      std::sregex_iterator it(ts.begin(),ts.end(),re);
+      std::sregex_iterator end;
+
+      size_t tp=0;
       // for each identifier template specifier
       //printf("adding resolved %s to %s\n",templSpec.data(),canType.data());
-      while ((ti=re.match(templSpec,tp,&tl))!=-1)
+      for (; it!=end ; ++it)
       {
-        canType += templSpec.mid(tp,ti-tp);
-        canType += getCanonicalTypeForIdentifier(d,fs,templSpec.mid(ti,tl),0);
+        const auto &match = *it;
+        size_t ti = match.position();
+        size_t tl = match.length();
+        std::string matchStr = match.str();
+        canType += ts.substr(tp,ti-tp);
+        canType += getCanonicalTypeForIdentifier(d,fs,matchStr.c_str(),0);
         tp=ti+tl;
       }
-      canType+=templSpec.right(templSpec.length()-tp);
+      canType+=ts.substr(tp);
     }
 
     pp=p;
@@ -3236,34 +3329,6 @@ void generateFileRef(OutputDocInterface &od,const char *name,const char *text)
 
 //----------------------------------------------------------------------
 
-#if 0
-QCString substituteClassNames(const QCString &s)
-{
-  int i=0,l,p;
-  QCString result;
-  if (s.isEmpty()) return result;
-  QRegExp r("[a-z_A-Z][a-z_A-Z0-9]*");
-  while ((p=r.match(s,i,&l))!=-1)
-  {
-    QCString *subst;
-    if (p>i) result+=s.mid(i,p-i);
-    if ((subst=substituteDict[s.mid(p,l)]))
-    {
-      result+=*subst;
-    }
-    else
-    {
-      result+=s.mid(p,l);
-    }
-    i=p+l;
-  }
-  result+=s.mid(i,s.length()-i);
-  return result;
-}
-#endif
-
-//----------------------------------------------------------------------
-
 /** Cache element for the file name to FileDef mapping cache. */
 struct FindFileCacheElem
 {
@@ -4240,21 +4305,28 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 
 
 
-QCString convertCharEntitiesToUTF8(const QCString &s)
+QCString convertCharEntitiesToUTF8(const char *str)
 {
-  QCString result;
-  static QRegExp entityPat("&[a-zA-Z]+[0-9]*;");
+  if (str==0) return QCString();
 
-  if (s.length()==0) return result;
+  static std::regex re("&[[:alpha:]][[:alnum:]]*;");
+  std::string s = str;
+  std::sregex_iterator it(s.begin(),s.end(),re);
+  std::sregex_iterator end;
+
   GrowBuf growBuf;
-  int p,i=0,l;
-  while ((p=entityPat.match(s,i,&l))!=-1)
+  size_t p,i=0,l;
+  //while ((p=entityPat.match(s,i,&l))!=-1)
+  for (; it!=end ; ++it)
   {
+    const auto &match = *it;
+    p = match.position();
+    l = match.length();
     if (p>i)
     {
-      growBuf.addStr(s.mid(i,p-i));
+      growBuf.addStr(s.substr(i,p-i));
     }
-    QCString entity = s.mid(p,l);
+    std::string entity = match.str();
     DocSymbol::SymType symType = HtmlEntityMapper::instance()->name2sym(entity);
     const char *code=0;
     if (symType!=DocSymbol::Sym_Unknown && (code=HtmlEntityMapper::instance()->utf8(symType)))
@@ -4263,11 +4335,11 @@ QCString convertCharEntitiesToUTF8(const QCString &s)
     }
     else
     {
-      growBuf.addStr(s.mid(p,l));
+      growBuf.addStr(entity);
     }
     i=p+l;
   }
-  growBuf.addStr(s.mid(i,s.length()-i));
+  growBuf.addStr(s.substr(i));
   growBuf.addChar(0);
   //printf("convertCharEntitiesToUTF8(%s)->%s\n",s.data(),growBuf.get());
   return growBuf.get();
@@ -4400,71 +4472,71 @@ void addMembersToMemberGroup(MemberList *ml,
  *  class \a name and a template argument list \a templSpec. If -1 is returned
  *  there are no more matches.
  */
-int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
+int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static const QRegExp re_norm("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
-  static const QRegExp re_ftn("[a-z_A-Z\\x80-\\xFF][()=_a-z_A-Z0-9:\\x80-\\xFF]*");
-  QRegExp re;
+  static std::regex re_norm("[[:alpha:]_][[:alnum:]_:]*");
+  static std::regex re_fortran("[[:alpha:]_][[:alnum:]_:()=]*");
+  static std::regex &re = re_norm;
 
   name.resize(0);
   templSpec.resize(0);
-  int i,l;
-  int typeLen=type.length();
+  if (type==0) return -1;
+  size_t typeLen=qstrlen(type);
   if (typeLen>0)
   {
     if (lang == SrcLangExt_Fortran)
     {
-      if (type.at(pos)==',') return -1;
-      if (type.left(4).lower()=="type")
+      if (type[pos]==',') return -1;
+      if (QCString(type).left(4).lower()!="type")
       {
-        re = re_norm;
-      }
-      else
-      {
-        re = re_ftn;
+        re = re_fortran;
       }
     }
-    else
-    {
-      re = re_norm;
-    }
+    std::string part = type + pos;
+    std::sregex_iterator it(part.begin(),part.end(),re);
+    std::sregex_iterator end;
 
-    if ((i=re.match(type,pos,&l))!=-1) // for each class name in the type
+    if (it!=end)
     {
-      int ts=i+l;
-      int te=ts;
-      int tl=0;
-      while (type.at(ts)==' ' && ts<typeLen) ts++,tl++; // skip any whitespace
-      if (type.at(ts)=='<') // assume template instance
+      const auto &match = *it;
+      size_t i = pos + match.position();
+      size_t l = match.length();
+      size_t ts = i+l;
+      size_t te = ts;
+      size_t tl = 0;
+
+      while (ts<typeLen && type[ts]==' ') ts++,tl++; // skip any whitespace
+      if (ts<typeLen && type[ts]=='<') // assume template instance
       {
         // locate end of template
         te=ts+1;
         int brCount=1;
         while (te<typeLen && brCount!=0)
         {
-          if (type.at(te)=='<')
+          if (type[te]=='<')
           {
-            if (te<typeLen-1 && type.at(te+1)=='<') te++; else brCount++;
+            if (te<typeLen-1 && type[te+1]=='<') te++; else brCount++;
           }
-          if (type.at(te)=='>')
+          if (type[te]=='>')
           {
-            if (te<typeLen-1 && type.at(te+1)=='>') te++; else brCount--;
+            if (te<typeLen-1 && type[te+1]=='>') te++; else brCount--;
           }
           te++;
         }
       }
-      name = type.mid(i,l);
+      name = match.str();
       if (te>ts)
       {
-        templSpec = type.mid(ts,te-ts),tl+=te-ts;
+        templSpec = QCString(type).mid(ts,te-ts);
+        tl+=te-ts;
         pos=i+l+tl;
       }
       else // no template part
       {
         pos=i+l;
       }
-      //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE\n",
-      //    type.data(),pos,name.data(),templSpec.data());
+      //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
+      //    type.data(),pos,name.data(),templSpec.data(),i);
       return i;
     }
   }
@@ -4485,13 +4557,19 @@ QCString normalizeNonTemplateArgumentsInString(
   p++;
   QCString result = name.left(p);
 
-  static QRegExp re("[a-z:_A-Z\\x80-\\xFF][a-z:_A-Z0-9\\x80-\\xFF]*");
-  int l,i;
+  static std::regex re("[[:alpha:]_:][[:alnum:]_:]*");
+  std::string s = result.mid(p).str();
+  std::sregex_iterator it(s.begin(),s.end(),re);
+  std::sregex_iterator end;
+  size_t pi=0;
   // for each identifier in the template part (e.g. B<T> -> T)
-  while ((i=re.match(name,p,&l))!=-1)
+  for (; it!=end ; ++it)
   {
-    result += name.mid(p,i-p);
-    QCString n = name.mid(i,l);
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
+    result += s.substr(pi,i-pi);
+    std::string n = match.str();
     bool found=FALSE;
     for (const Argument &formArg : formalArgs)
     {
@@ -4505,7 +4583,7 @@ QCString normalizeNonTemplateArgumentsInString(
     {
       // try to resolve the type
       SymbolResolver resolver;
-      const ClassDef *cd = resolver.resolveClass(context,n);
+      const ClassDef *cd = resolver.resolveClass(context,n.c_str());
       if (cd)
       {
         result+=cd->name();
@@ -4519,9 +4597,9 @@ QCString normalizeNonTemplateArgumentsInString(
     {
       result+=n;
     }
-    p=i+l;
+    pi=i+l;
   }
-  result+=name.right(name.length()-p);
+  result+=s.substr(pi);
   //printf("normalizeNonTemplateArgumentInString(%s)=%s\n",name.data(),result.data());
   return removeRedundantWhiteSpace(result);
 }
@@ -4534,21 +4612,27 @@ QCString normalizeNonTemplateArgumentsInString(
  *  prevent recursive substitution.
  */
 QCString substituteTemplateArgumentsInString(
-    const QCString &name,
+    const std::string &name,
     const ArgumentList &formalArgs,
     const std::unique_ptr<ArgumentList> &actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
   //    name.data(),argListToString(formalArgs).data(),argListToString(actualArgs).data());
   if (formalArgs.empty()) return name;
-  QCString result;
-  static QRegExp re("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9:\\x80-\\xFF]*");
-  int p=0,l,i;
-  // for each identifier in the base class name (e.g. B<T> -> B and T)
-  while ((i=re.match(name,p,&l))!=-1)
+  std::string result;
+
+  static std::regex re("[[:alpha:]_][[:alnum:]_:]*");
+  std::sregex_iterator it(name.begin(),name.end(),re);
+  std::sregex_iterator end;
+  size_t p=0;
+
+  for (; it!=end ; ++it)
   {
-    result += name.mid(p,i-p);
-    QCString n = name.mid(i,l);
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
+    if (i>p) result += name.substr(p,i-p);
+    std::string n = match.str();
     ArgumentList::iterator actIt;
     if (actualArgs)
     {
@@ -4616,7 +4700,7 @@ QCString substituteTemplateArgumentsInString(
                  formArg.defval!=name /* to prevent recursion */
             )
         {
-          result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs)+" ";
+          result += substituteTemplateArgumentsInString(formArg.defval.str(),formalArgs,actualArgs)+" ";
           found=TRUE;
         }
       }
@@ -4626,7 +4710,7 @@ QCString substituteTemplateArgumentsInString(
                formArg.defval!=name /* to prevent recursion */
               )
       {
-        result += substituteTemplateArgumentsInString(formArg.defval,formalArgs,actualArgs)+" ";
+        result += substituteTemplateArgumentsInString(formArg.defval.str(),formalArgs,actualArgs)+" ";
         found=TRUE;
       }
       if (actualArgs && actIt!=actualArgs->end())
@@ -4640,10 +4724,10 @@ QCString substituteTemplateArgumentsInString(
     }
     p=i+l;
   }
-  result+=name.right(name.length()-p);
+  result+=name.substr(p);
   //printf("      Inheritance relation %s -> %s\n",
   //    name.data(),result.data());
-  return result.stripWhiteSpace();
+  return QCString(result).stripWhiteSpace();
 }
 
 
@@ -5354,36 +5438,55 @@ QCString stripPath(const char *s)
 }
 
 /** returns \c TRUE iff string \a s contains word \a w */
-bool containsWord(const QCString &s,const QCString &word)
+bool containsWord(const char *str,const char *word)
 {
-  static QRegExp wordExp("[a-z_A-Z\\x80-\\xFF]+");
-  int p=0,i,l;
-  while ((i=wordExp.match(s,p,&l))!=-1)
+  if (str==0 || word==0) return false;
+  static std::regex re("[[:alpha:]_]+");
+  std::string s = str;
+  for (std::sregex_iterator it(s.begin(),s.end(),re) ; it!=std::sregex_iterator() ; ++it)
   {
-    if (s.mid(i,l)==word) return TRUE;
-    p=i+l;
+    if (it->str()==word) return true;
   }
-  return FALSE;
+  return false;
 }
 
-bool findAndRemoveWord(QCString &s,const QCString &word)
+/** removes occurrences of whole \a word from \a sentence,
+ *  while keeps internal spaces and reducing multiple sequences of spaces.
+ *  Example: sentence=` cat+ catfish cat cat concat cat`, word=`cat` returns: `+ catfish concat`
+ */
+bool findAndRemoveWord(QCString &sentence,const char *word)
 {
-  static QRegExp wordExp("[a-z_A-Z\\x80-\\xFF]+");
-  int p=0,i,l;
-  while ((i=wordExp.match(s,p,&l))!=-1)
+  static std::regex re("[^[:alpha:]_]+");
+  std::string s = sentence.str();
+  std::sregex_token_iterator it(s.begin(),s.end(),re,{-1,0});
+  std::sregex_token_iterator end;
+
+  bool found=false;
+  std::string result;
+  bool keepSpaces=false; // skip leading whitespace
+  for (;it!=end;it++)
   {
-    if (s.mid(i,l)==word)
+    std::string part = it->str();
+    bool whiteSpaceOnly = std::all_of(part.begin(),part.end(),
+                                      [](const auto ch) { return std::isspace(ch); });
+    bool matchingWord = part==word;
+    if (!matchingWord && (keepSpaces || !whiteSpaceOnly))
     {
-      if (i>0 && isspace((uchar)s.at(i-1)))
-        i--,l++;
-      else if (i+l<(int)s.length() && isspace((uchar)s.at(i+l)))
-        l++;
-      s = s.left(i)+s.mid(i+l); // remove word + spacing
-      return TRUE;
+      result+=part;
+      keepSpaces=!whiteSpaceOnly; // skip sequences of spaces
     }
-    p=i+l;
+    else if (matchingWord)
+    {
+      found=true;
+    }
   }
-  return FALSE;
+
+  // trim trailing whitespace
+  result.erase(std::find_if(result.rbegin(), result.rend(),
+        [](const auto ch) { return !std::isspace(ch); }).base(), result.end());
+
+  sentence = result;
+  return found;
 }
 
 /** Special version of QCString::stripWhiteSpace() that only strips
@@ -5432,25 +5535,6 @@ QCString stripLeadingAndTrailingEmptyLines(const QCString &s,int &docLine)
   //printf("docLine='%s' len=%d li=%d bi=%d\n",s.data(),s.length(),li,bi);
   return s.mid(li,bi-li);
 }
-
-#if 0
-void stringToSearchIndex(const QCString &docBaseUrl,const QCString &title,
-    const QCString &str,bool priority,const QCString &anchor)
-{
-  static bool searchEngine = Config_getBool(SEARCHENGINE);
-  if (searchEngine)
-  {
-    Doxygen::searchIndex->setCurrentDoc(title,docBaseUrl,anchor);
-    static QRegExp wordPattern("[a-z_A-Z\\x80-\\xFF][a-z_A-Z0-9\\x80-\\xFF]*");
-    int i,p=0,l;
-    while ((i=wordPattern.match(str,p,&l))!=-1)
-    {
-      Doxygen::searchIndex->addWord(str.mid(i,l),priority);
-      p=i+l;
-    }
-  }
-}
-#endif
 
 //--------------------------------------------------------------------------
 
@@ -5738,18 +5822,37 @@ int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos)
   }
   else if (c=='&') // skip over character entities
   {
-    static QRegExp re1("&#[0-9]+;");     // numerical entity
-    static QRegExp re2("&[A-Z_a-z]+;");  // named entity
-    int l1,l2;
-    int i1 = re1.match(utf8Str,startPos,&l1);
-    int i2 = re2.match(utf8Str,startPos,&l2);
-    if (i1!=-1)
+    int (*matcher)(int) = 0;
+    c = (uchar)utf8Str[startPos+bytes];
+    if (c=='#') // numerical entity?
     {
-      bytes=l1;
+      bytes++;
+      c = (uchar)utf8Str[startPos+bytes];
+      if (c=='x') // hexadecimal entity?
+      {
+        bytes++;
+        matcher = std::isxdigit;
+      }
+      else // decimal entity
+      {
+        matcher = std::isdigit;
+      }
     }
-    else if (i2!=-1)
+    else if (std::isalnum(c)) // named entity?
     {
-      bytes=l2;
+      bytes++;
+      matcher = std::isalnum;
+    }
+    if (matcher)
+    {
+      while ((c = (uchar)utf8Str[startPos+bytes])!=0 && matcher(c))
+      {
+        bytes++;
+      }
+    }
+    if (c!=';')
+    {
+      bytes=1; // not a valid entity, reset bytes counter
     }
   }
   return startPos+bytes;
@@ -5760,6 +5863,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 {
   QGString s;
   if (doc.isEmpty()) return s.data();
+  //printf("parseCommentAsText(%s)\n",doc.data());
   FTextStream t(&s);
   DocNode *root = validatingParseDoc(fileName,lineNr,
       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
@@ -5799,7 +5903,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 //--------------------------------------------------------------------------------------
 
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
-                               const QCString s,bool allowRecursion=FALSE);
+                               const std::string &s,bool allowRecursion=FALSE);
 
 struct Marker
 {
@@ -5911,7 +6015,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
     //printf("part before marker %d: '%s'\n",i,aliasValue.mid(p,m->pos-p).data());
     if (m.number>0 && m.number<=(int)args.size()) // valid number
     {
-      result+=expandAliasRec(aliasesProcessed,args.at(m.number-1),TRUE);
+      result+=expandAliasRec(aliasesProcessed,args.at(m.number-1).str(),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    args.at(m->number-1)->data());
     }
@@ -5923,7 +6027,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   // expand the result again
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
-  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",","));
+  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",",").str());
 
   return result;
 }
@@ -5950,19 +6054,27 @@ static QCString escapeCommas(const QCString &s)
   return result.data();
 }
 
-static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString s,bool allowRecursion)
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::string &s,bool allowRecursion)
 {
-  QCString result;
-  static QRegExp cmdPat("[\\\\@][a-z_A-Z][a-z_A-Z0-9]*");
-  QCString value=s;
-  int i,p=0,l;
-  while ((i=cmdPat.match(value,p,&l))!=-1)
+  //QCString result;
+  std::string result;
+  std::regex re("[\\\\@][[:alpha:]_][[:alnum:]_]*");
+  std::sregex_iterator re_it(s.begin(),s.end(),re);
+  std::sregex_iterator end;
+  size_t p = 0;
+  //QCString value=s;
+  //int i,p=0,l;
+  //while ((i=cmdPat.match(value,p,&l))!=-1)
+  for ( ; re_it!=end ; ++re_it)
   {
-    result+=value.mid(p,i-p);
-    QCString args = extractAliasArgs(value,i+l);
+    const auto &match = *re_it;
+    size_t i = match.position();
+    size_t l = match.length();
+    if (i>p) result+=s.substr(p,i-p);
+    QCString args = extractAliasArgs(s,i+l);
     bool hasArgs = !args.isEmpty();            // found directly after command
     int argsLen = args.length();
-    QCString cmd = value.mid(i+1,l-1);
+    QCString cmd = match.str().substr(1);
     QCString cmdNoArgs = cmd;
     int numArgs=0;
     if (hasArgs)
@@ -5996,7 +6108,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
         //printf("replace '%s'->'%s' args='%s'\n",
         //       aliasText->data(),val.data(),args.data());
       }
-      result+=expandAliasRec(aliasesProcessed,val);
+      result+=expandAliasRec(aliasesProcessed,val.str()).str();
       if (!allowRecursion) aliasesProcessed.erase(cmd.str());
       p=i+l;
       if (hasArgs) p+=argsLen+2;
@@ -6004,11 +6116,11 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCStri
     else // command is not an alias
     {
       //printf("not an alias!\n");
-      result+=value.mid(i,l);
+      result+=match.str();
       p=i+l;
     }
   }
-  result+=value.right(value.length()-p);
+  result+=s.substr(p);
 
   //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
   return result;
@@ -6069,7 +6181,7 @@ QCString resolveAliasCmd(const QCString aliasCmd)
   QCString result;
   StringUnorderedSet aliasesProcessed;
   //printf("Expanding: '%s'\n",aliasCmd.data());
-  result = expandAliasRec(aliasesProcessed,aliasCmd);
+  result = expandAliasRec(aliasesProcessed,aliasCmd.str());
   //printf("Expanding result: '%s'->'%s'\n",aliasCmd.data(),result.data());
   return result;
 }
@@ -6269,18 +6381,23 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 }
 
 // Replace %word by word in title
-QCString filterTitle(const QCString &title)
+QCString filterTitle(const std::string &title)
 {
-  QCString tf;
-  static QRegExp re("%[A-Z_a-z]");
-  int p=0,i,l;
-  while ((i=re.match(title,p,&l))!=-1)
+  std::string tf;
+  std::regex re("%[A-Z_A-z]");
+  std::sregex_iterator it(title.begin(),title.end(),re);
+  std::sregex_iterator end;
+  size_t p = 0;
+  for (; it!=end ; ++it)
   {
-    tf+=title.mid(p,i-p);
-    tf+=title.mid(i+1,l-1); // skip %
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
+    if (i>p) tf+=title.substr(p,i-p);
+    tf+=match.str().substr(1); // skip %
     p=i+l;
   }
-  tf+=title.right(title.length()-p);
+  tf+=title.substr(p);
   return tf;
 }
 
@@ -6301,23 +6418,20 @@ bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 
   if (!patList.empty())
   {
-    QCString fn = fi.fileName().data();
-    QCString fp = fi.filePath().data();
-    QCString afp= fi.absFilePath().data();
+    std::string fn = fi.fileName().data();
+    std::string fp = fi.filePath().data();
+    std::string afp= fi.absFilePath().data();
 
-    for (const auto &pat: patList)
+    for (auto pattern: patList)
     {
-      QCString pattern = pat.c_str();
-      if (!pattern.isEmpty())
+      if (!pattern.empty())
       {
-        int i=pattern.find('=');
-        if (i!=-1) pattern=pattern.left(i); // strip of the extension specific filter name
+        size_t i=pattern.find('=');
+        if (i!=std::string::npos) pattern=pattern.substr(0,i); // strip of the extension specific filter name
 
-        QRegExp re(pattern,caseSenseNames,TRUE);
-
-        found = re.match(fn)!=-1 ||
-                re.match(fp)!=-1 ||
-                re.match(afp)!=-1;
+        found = isMatchingWildcard(fn,pattern,caseSenseNames)  ||
+                isMatchingWildcard(fp,pattern,caseSenseNames)  ||
+                isMatchingWildcard(afp,pattern,caseSenseNames);
         if (found) break;
         //printf("Matching '%s' against pattern '%s' found=%d\n",
         //    fi->fileName().data(),pattern.data(),found);
@@ -6326,36 +6440,6 @@ bool patternMatch(const QFileInfo &fi,const StringVector &patList)
   }
   return found;
 }
-
-#if 0 // move to HtmlGenerator::writeSummaryLink
-void writeSummaryLink(OutputList &ol,const char *label,const char *title,
-                      bool &first,const char *file)
-{
-  if (first)
-  {
-    ol.writeString("  <div class=\"summary\">\n");
-    first=FALSE;
-  }
-  else
-  {
-    ol.writeString(" &#124;\n");
-  }
-  if (file)
-  {
-    ol.writeString("<a href=\"");
-    ol.writeString(file);
-    ol.writeString(Doxygen::htmlFileExtension);
-  }
-  else
-  {
-    ol.writeString("<a href=\"#");
-    ol.writeString(label);
-  }
-  ol.writeString("\">");
-  ol.writeString(title);
-  ol.writeString("</a>");
-}
-#endif
 
 QCString externalLinkTarget(const bool parent)
 {
@@ -6429,18 +6513,24 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
  */
 QCString replaceColorMarkers(const char *str)
 {
-  QCString result;
-  QCString s=str;
-  if (s.isEmpty()) return result;
-  static QRegExp re("##[0-9A-Fa-f][0-9A-Fa-f]");
+  if (str==0) return QCString();
+  std::string result;
+  std::string s=str;
+  static std::regex re("##[0-9A-Fa-f][0-9A-Fa-f]");
+  std::sregex_iterator it(s.begin(),s.end(),re);
+  std::sregex_iterator end;
   static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  int i,l,sl=s.length(),p=0;
-  while ((i=re.match(s,p,&l))!=-1)
+  size_t sl=s.length();
+  size_t p=0;
+  for (; it!=end ; ++it)
   {
-    result+=s.mid(p,i-p);
-    QCString lumStr = s.mid(i+2,l-2);
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
+    if (i>p) result+=s.substr(p,i-p);
+    std::string lumStr = match.str().substr(2);
 #define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
                      ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
                      ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
@@ -6466,7 +6556,7 @@ QCString replaceColorMarkers(const char *str)
     result+=colStr;
     p=i+l;
   }
-  result+=s.right(sl-p);
+  if (p<sl) result+=s.substr(p);
   return result;
 }
 
@@ -6908,27 +6998,43 @@ bool classVisibleInIndex(const ClassDef *cd)
 
 //----------------------------------------------------------------------------
 
+/** Strip the direction part from docs and return it as a string in canonical form
+ *  The input \a docs string can start with e.g. "[in]", "[in, out]", "[inout]", "[out,in]"...
+ *  @returns either "[in,out]", "[in]", or "[out]" or the empty string.
+ */
 QCString extractDirection(QCString &docs)
 {
-  QRegExp re("\\[[ inout,]+\\]"); // [...]
-  int l=0;
-  if (re.match(docs,0,&l)==0 && l>2)
+  std::regex re("\\[[ inout,]+\\]");
+  std::string s = docs.str();
+  std::sregex_iterator it(s.begin(),s.end(),re);
+  std::sregex_iterator end;
+  if (it!=end)
   {
-    // make dir the part inside [...] without separators
-    QCString dir=substitute(substitute(docs.mid(1,l-2)," ",""),",","");
-    int inIndex, outIndex;
-    unsigned char ioMask=0;
-    if (( inIndex=dir.find( "in"))!=-1) dir.remove (inIndex,2),ioMask|=(1<<0);
-    if ((outIndex=dir.find("out"))!=-1) dir.remove(outIndex,3),ioMask|=(1<<1);
-    if (dir.isEmpty() && ioMask!=0) // only in and/or out attributes found
+    const auto &match = *it;
+    size_t p = match.position();
+    size_t l = match.length();
+    if (p==0 && l>2)
     {
-      docs = docs.mid(l); // strip attributes
-      if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
-      else if (ioMask==(1<<0))     return "[in]";
-      else if (ioMask==(1<<1))     return "[out]";
+      // make dir the part inside [...] without separators
+      std::string dir = match.str().substr(1,l-2);
+      // strip , and ' ' from dir
+      dir.erase(std::remove_if(dir.begin(),dir.end(),
+                               [](const char c) { return c==' ' || c==','; }
+                              ),dir.end());
+      size_t inIndex, outIndex;
+      unsigned char ioMask=0;
+      if (( inIndex=dir.find( "in"))!=std::string::npos) dir.erase( inIndex,2),ioMask|=(1<<0);
+      if ((outIndex=dir.find("out"))!=std::string::npos) dir.erase(outIndex,3),ioMask|=(1<<1);
+      if (dir.empty() && ioMask!=0) // only in and/or out attributes found
+      {
+        docs = s.substr(l); // strip attributes
+        if (ioMask==((1<<0)|(1<<1))) return "[in,out]";
+        else if (ioMask==(1<<0))     return "[in]";
+        else if (ioMask==(1<<1))     return "[out]";
+      }
     }
   }
-  return QCString();
+  return "";
 }
 
 //-----------------------------------------------------------

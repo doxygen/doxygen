@@ -521,7 +521,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   if (typeClass && typeClass->isTemplate() &&
       actTemplParams && !actTemplParams->empty())
   {
-    type = substituteTemplateArgumentsInString(type,
+    type = substituteTemplateArgumentsInString(type.str(),
             typeClass->templateArguments(),actTemplParams);
   }
   QCString typedefValue = type;

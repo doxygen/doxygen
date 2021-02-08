@@ -358,6 +358,12 @@ class QCString
       return m_rep;
     }
 
+    QCString &operator+=( const std::string &str)
+    {
+      m_rep+=str;
+      return *this;
+    }
+
     /** Appends string \a str to this string and returns a reference to the result. */
     QCString &operator+=( const char *str )
     {

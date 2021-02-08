@@ -796,7 +796,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
      )
   {
     writeMemberTemplateLists(md,t);
-    QCString typeStr = md->typeString(); //replaceAnonymousScopes(md->typeString());
+    QCString typeStr = md->typeString();
     stripQualifiers(typeStr);
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
@@ -1728,7 +1728,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     QCString title;
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
+      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()).str());
     }
     else
     {
@@ -1742,7 +1742,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     const SectionInfo *si = SectionManager::instance().find(pd->name());
     if (si)
     {
-      t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(filterTitle(si->title())))
+      t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title()).str()))
         << "</title>" << endl;
     }
   }

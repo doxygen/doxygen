@@ -14,7 +14,8 @@
  */
 
 #include <chrono>
-#include <locale.h>
+#include <clocale>
+#include <locale>
 
 #include <qfileinfo.h>
 #include <qfile.h>
@@ -3916,7 +3917,7 @@ static void findUsedClassesForClass(const Entry *root,
         QCString templSpec;
         bool found=FALSE;
         // the type can contain template variables, replace them if present
-        type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
+        type = substituteTemplateArgumentsInString(type.str(),formalArgs,actualArgs);
 
         //printf("      template substitution gives=%s\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
@@ -4075,7 +4076,7 @@ static void findBaseClassesForClass(
       formTemplateNames = getTemplateArgumentsInName(formalArgs,bi.name);
     }
     BaseInfo tbi = bi;
-    tbi.name = substituteTemplateArgumentsInString(bi.name,formalArgs,actualArgs);
+    tbi.name = substituteTemplateArgumentsInString(bi.name.str(),formalArgs,actualArgs);
     //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
 
     if (mode==DocumentedOnly)
@@ -4815,7 +4816,7 @@ static void computeTemplateClassRelations()
                 }
               }
 
-              tbi.name = substituteTemplateArgumentsInString(bi.name,tl,templArgs);
+              tbi.name = substituteTemplateArgumentsInString(bi.name.str(),tl,templArgs);
               // find a documented base class in the correct scope
               if (!findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
               {
@@ -10072,9 +10073,10 @@ void initDoxygen()
   initResources();
   const char *lang = Portable::getenv("LC_ALL");
   if (lang) Portable::setenv("LANG",lang);
-  setlocale(LC_ALL,"");
-  setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
-  setlocale(LC_NUMERIC,"C");
+  std::setlocale(LC_ALL,"");
+  std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
+  std::setlocale(LC_NUMERIC,"C");
+  std::locale::global(std::locale("en_US.UTF-8"));
 
   Portable::correct_path();
 

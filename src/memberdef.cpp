@@ -4178,29 +4178,29 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
     // replace formal arguments with actuals
     for (Argument &arg : *actualArgList)
     {
-      arg.type = substituteTemplateArgumentsInString(arg.type,formalArgs,actualArgs);
+      arg.type = substituteTemplateArgumentsInString(arg.type.str(),formalArgs,actualArgs);
     }
     actualArgList->setTrailingReturnType(
-       substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs));
+       substituteTemplateArgumentsInString(actualArgList->trailingReturnType().str(),formalArgs,actualArgs));
   }
 
   QCString methodName=name();
   if (methodName.left(9)=="operator ") // conversion operator
   {
-    methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
+    methodName=substituteTemplateArgumentsInString(methodName.str(),formalArgs,actualArgs);
   }
 
   MemberDefMutable *imd = createMemberDef(
                        getDefFileName(),getDefLine(),getDefColumn(),
-                       substituteTemplateArgumentsInString(m_impl->type,formalArgs,actualArgs),
+                       substituteTemplateArgumentsInString(m_impl->type.str(),formalArgs,actualArgs),
                        methodName,
-                       substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
+                       substituteTemplateArgumentsInString(m_impl->args.str(),formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
                        m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
   imd->moveArgumentList(std::move(actualArgList));
-  imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
+  imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def.str(),formalArgs,actualArgs));
   imd->setBodyDef(getBodyDef());
   imd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
   //imd->setBodyMember(this);

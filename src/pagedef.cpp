@@ -288,7 +288,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //1.}
 
-  Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title()));
+  Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title().str()));
 }
 
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
