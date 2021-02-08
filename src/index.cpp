@@ -1410,17 +1410,19 @@ static void writeFileIndex(OutputList &ol)
         QCString path=fd->getPath();
         if (path.isEmpty()) path="[external]";
         auto it = pathMap.find(path.str());
-        if (it!=pathMap.end())
+        if (it!=pathMap.end()) // existing path -> append
         {
           outputFiles.at(it->second).files.push_back(fd.get());
         }
-        else
+        else // new path -> create path entry + append
         {
           pathMap.insert(std::make_pair(path.str(),outputFiles.size()));
           outputFiles.emplace_back(path);
+          outputFiles.back().files.push_back(fd.get());
         }
       }
     }
+
     // sort the files by path
     std::sort(outputFiles.begin(),
               outputFiles.end(),
