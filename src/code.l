@@ -896,11 +896,9 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           endFontClass(yyscanner);
                                           BEGIN(UsingName);
                                         }
-<UsingName>{ID}("::"{ID})*              { addUsingDirective(yyscanner,yytext);
+<UsingName>{ID}("::"{ID})*              {
+                                          addUsingDirective(yyscanner,yytext);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
-                                          DBG_CTX((stderr,"** scope stack push CLASSBLOCK\n"));
-                                          yyextra->scopeStack.push(CLASSBLOCK);
-                                          pushScope(yyscanner,yytext);
                                           BEGIN(Body);
                                         }
 <UsingName>\n                           { codifyLines(yyscanner,yytext); BEGIN(Body); }
