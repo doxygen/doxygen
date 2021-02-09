@@ -258,8 +258,9 @@ bool GroupDefImpl::addClass(const ClassDef *cd)
 
 bool GroupDefImpl::addNamespace(const NamespaceDef *def)
 {
+  //printf("adding namespace hidden=%d\n",def->isHidden());
   if (def->isHidden()) return false;
-  if (m_namespaces.find(def->name())!=0)
+  if (m_namespaces.find(def->name())==0)
   {
     updateLanguage(def);
     m_namespaces.add(def->name(),def);
@@ -1310,11 +1311,11 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
 
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
 {
-  //printf("root->groups.size()=%d\n",root->groups.size());
+  //printf("root->groups.size()=%zu\n",root->groups.size());
   for (const Grouping &g : root->groups)
   {
     GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
-    //printf("group '%s'\n",s->data());
+    //printf("group '%s' gd=%p\n",g.groupname.data(),(void*)gd);
     if (gd && gd->addNamespace(nd))
     {
       NamespaceDefMutable *ndm = toNamespaceDefMutable(nd);
