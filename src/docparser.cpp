@@ -4518,7 +4518,7 @@ int DocParamList::parse(const QCString &cmdName)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
-    retval=0;
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
   doctokenizerYYsetStateParam();
@@ -4556,14 +4556,17 @@ int DocParamList::parse(const QCString &cmdName)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(saveCmdName));
-    retval=0;
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
   if (tok!=TK_WHITESPACE) /* premature end of comment block */
   {
-    warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected token in comment block while parsing the "
-        "argument of command %s",qPrint(saveCmdName));
-    retval=0;
+    if (tok!=TK_NEWPARA) /* empty param description */
+    {
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected token in comment block while parsing the "
+          "argument of command %s",qPrint(saveCmdName));
+    }
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
 
