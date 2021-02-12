@@ -17,10 +17,10 @@
 
 #include <cstdio>
 #include <algorithm>
+#include <regex>
 
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qregexp.h>
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
@@ -1630,18 +1630,22 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
     ol.startParagraph();
     //parseText(ol,theTranslator->trInherits()+" ");
 
-    QCString inheritLine = theTranslator->trInheritsList((int)m_impl->inherits.size());
-    QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
+    std::string inheritLine = theTranslator->trInheritsList((int)m_impl->inherits.size()).str();
+    static std::regex marker("@[[:digit:]]+");
+    std::sregex_iterator it(inheritLine.begin(),inheritLine.end(),marker);
+    std::sregex_iterator end;
+    size_t index=0;
     // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    for ( ; it!=end ; ++it)
     {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
-      bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef &bcd=m_impl->inherits.at(entryIndex);
-      if (ok)
+      const auto &match = *it;
+      size_t newIndex = match.position();
+      size_t matchLen = match.length();
+      ol.parseText(inheritLine.substr(index,newIndex-index));
+      unsigned long entryIndex = std::stoul(match.str().substr(1));
+      if (entryIndex<(unsigned long)m_impl->inherits.size())
       {
+        BaseClassDef &bcd=m_impl->inherits[entryIndex];
         ClassDef *cd=bcd.classDef;
 
         // use the class name but with the template arguments as given
@@ -1663,11 +1667,11 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
       }
       else
       {
-        err("invalid marker %d in inherits list!\n",entryIndex);
+        err("invalid marker %zu in inherits list!\n",entryIndex);
       }
       index=newIndex+matchLen;
     }
-    ol.parseText(inheritLine.right(inheritLine.length()-(uint)index));
+    ol.parseText(inheritLine.substr(index));
     ol.endParagraph();
   }
 
@@ -1675,18 +1679,22 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   if (!m_impl->inheritedBy.empty())
   {
     ol.startParagraph();
-    QCString inheritLine = theTranslator->trInheritedByList((int)m_impl->inheritedBy.size());
-    QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
+    std::string inheritLine = theTranslator->trInheritedByList((int)m_impl->inheritedBy.size()).str();
+    static std::regex marker("@[[:digit:]]+");
+    std::sregex_iterator it(inheritLine.begin(),inheritLine.end(),marker);
+    std::sregex_iterator end;
+    size_t index=0;
     // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    for ( ; it!=end ; ++it)
     {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
-      bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef &bcd=m_impl->inheritedBy.at(entryIndex);
-      if (ok)
+      const auto &match = *it;
+      size_t newIndex = match.position();
+      size_t matchLen = match.length();
+      ol.parseText(inheritLine.substr(index,newIndex-index));
+      unsigned long entryIndex = std::stoul(match.str().substr(1));
+      if (entryIndex<(unsigned long)m_impl->inherits.size())
       {
+        BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
         ClassDef *cd=bcd.classDef;
         if (cd->isLinkable())
         {
@@ -1698,9 +1706,13 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
         }
         writeInheritanceSpecifier(ol,bcd);
       }
+      else
+      {
+        err("invalid marker %zu in inheritedBy list!\n",entryIndex);
+      }
       index=newIndex+matchLen;
     }
-    ol.parseText(inheritLine.right(inheritLine.length()-(uint)index));
+    ol.parseText(inheritLine.substr(index));
     ol.endParagraph();
   }
 
