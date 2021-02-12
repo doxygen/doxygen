@@ -107,7 +107,7 @@ WARN_LOGFILE           = warnings.log
 #---------------------------------------------------------------------------
 INPUT                  = src \
                          vhdlparser \
-                         xml
+                         libxml
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
                          *.cpp \
