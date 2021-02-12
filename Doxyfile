@@ -106,10 +106,12 @@ WARN_LOGFILE           = warnings.log
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT                  = src \
-                         vhdlparser
+                         vhdlparser \
+                         xml
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
                          *.cpp \
+                         *.l \
                          *.md
 RECURSIVE              = NO
 EXCLUDE                =

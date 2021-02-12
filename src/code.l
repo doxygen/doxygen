@@ -98,6 +98,11 @@ struct codeYY_state
   QCString      parmType;
   QCString      parmName;
 
+  bool          beginCodeLine = true; //!< signals whether or not we should with the first line
+                                      //!< write a start line code or not. Essential
+                                      //!< when this code parser is called from another 
+                                      //!< code parser.
+
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
@@ -3788,6 +3793,12 @@ void CCodeParser::resetCodeParserState()
   yyextra->anchorCount = 0;
 }
 
+void CCodeParser::setStartCodeLine(const bool inp)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->beginCodeLine = inp;
+}
+
 void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const QCString &s,
                 SrcLangExt lang,bool exBlock, const char *exName,FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
@@ -3862,7 +3873,8 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
   }
   yyextra->includeCodeFragment = inlineFragment;
   //printf("** exBlock=%d exName=%s include=%d\n",exBlock,exName,inlineFragment);
-  startCodeLine(yyscanner);
+
+  if (yyextra->beginCodeLine) startCodeLine(yyscanner);
   yyextra->type.resize(0);
   yyextra->name.resize(0);
   yyextra->args.resize(0);

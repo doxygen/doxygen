@@ -325,6 +325,7 @@ int guessSection(const char *name)
       n.right(4)==".i++"  ||
       n.right(4)==".inl"  ||
       n.right(4)==".xml"  ||
+      n.right(4)==".lex"  ||
       n.right(4)==".sql"
      ) return Entry::SOURCE_SEC;
   if (n.right(2)==".h"    || // header
@@ -5483,6 +5484,7 @@ g_lang2extMap[] =
   { "xml",         "xml",           SrcLangExt_XML      },
   { "sql",         "sql",           SrcLangExt_SQL      },
   { "md",          "md",            SrcLangExt_Markdown },
+  { "lex",         "lex",           SrcLangExt_Lex      },
   { 0,             0,              (SrcLangExt)0        }
 };
 
@@ -5580,6 +5582,9 @@ void initDefaultExtensionMapping()
   updateLanguageMapping(".md",       "md");
   updateLanguageMapping(".markdown", "md");
   updateLanguageMapping(".ice",      "slice");
+  updateLanguageMapping(".l",        "lex");
+  updateLanguageMapping(".doxygen_lex_c", "c"); // this is a placeholder so we can map initializations
+                                                // in the lex scanning to cpp
 }
 
 void addCodeOnlyMappings()
@@ -6592,6 +6597,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_SQL:      return "SQL";
     case SrcLangExt_Markdown: return "Markdown";
     case SrcLangExt_Slice:    return "Slice";
+    case SrcLangExt_Lex:      return "Lex";
   }
   return "Unknown";
 }

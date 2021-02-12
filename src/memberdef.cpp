@@ -3512,10 +3512,17 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     else
       ol.parseText(theTranslator->trInitialValue());
     ol.endBold();
-    auto intf = Doxygen::parserManager->getCodeParser(getDefFileExtension());
+    QCString langCorrected = getDefFileExtension();
+    SrcLangExt srcLangExt = getLanguageFromFileName(getDefFileExtension());
+    if (srcLangExt == SrcLangExt_Lex)
+    {
+      langCorrected = ".doxygen_lex_c";
+      srcLangExt = SrcLangExt_Cpp;
+    }
+    auto intf = Doxygen::parserManager->getCodeParser(langCorrected);
     intf->resetCodeParserState();
     ol.startCodeFragment("DoxyCode");
-    intf->parseCode(ol,scopeName,m_impl->initializer,lang,FALSE,0,const_cast<FileDef*>(getFileDef()),
+    intf->parseCode(ol,scopeName,m_impl->initializer,srcLangExt,FALSE,0,const_cast<FileDef*>(getFileDef()),
                      -1,-1,TRUE,this,FALSE,this);
     ol.endCodeFragment("DoxyCode");
   }

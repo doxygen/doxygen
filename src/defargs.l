@@ -27,12 +27,12 @@
  *  The Argument list as a whole can be pure, constant or volatile.
  *
  *  Examples of input strings are:
- *  \code
+ *  \verbatim
  *    "(int a,int b) const"
  *    "(const char *s="hello world",int=5) = 0"
  *    "<class T,class N>"
  *    "(char c,const char)"
- *  \endcode
+ *  \endverbatim
  *
  *  Note: It is not always possible to distinguish between the name and 
  *        type of an argument. In case of doubt the name is added to the

@@ -6842,7 +6842,8 @@ static void setContext(yyscan_t yyscanner)
   yyextra->insideObjC  = yyextra->language==SrcLangExt_ObjC;
   yyextra->insideJS    = yyextra->language==SrcLangExt_JS;
   yyextra->insideSlice = yyextra->language==SrcLangExt_Slice;
-  yyextra->insideCpp   = yyextra->language==SrcLangExt_Cpp;
+  yyextra->insideCpp   = (yyextra->language==SrcLangExt_Cpp ||
+                          yyextra->language==SrcLangExt_Lex);
   //printf("setContext(%s) yyextra->insideIDL=%d yyextra->insideJava=%d yyextra->insideCS=%d "
   //       "yyextra->insideD=%d yyextra->insidePHP=%d yyextra->insideObjC=%d\n",
   //       yyextra->yyFileName.data(),yyextra->insideIDL,yyextra->insideJava,yyextra->insideCS,yyextra->insideD,yyextra->insidePHP,yyextra->insideObjC
@@ -7458,7 +7459,7 @@ bool COutlineParser::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
-  return (SrcLangExt_Cpp == lang) ||
+  return (SrcLangExt_Cpp == lang) || (SrcLangExt_Lex == lang) ||
    !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" ||
       fe==".php4" || fe==".inc" || fe==".phtml"|| fe==".php5"
     );

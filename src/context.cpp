@@ -1540,6 +1540,7 @@ class DefinitionContext
         case SrcLangExt_SQL:      result="sql";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
         case SrcLangExt_Slice:    result="slice";    break;
+        case SrcLangExt_Lex:      result="lex";      break;
       }
       return result;
     }

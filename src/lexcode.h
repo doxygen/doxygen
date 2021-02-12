@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,25 +13,29 @@
  *
  */
 
-#ifndef CODE_H
-#define CODE_H
+
+#ifndef LEXCODE_H
+#define LEXCODE_H
 
 #include "parserintf.h"
 
+class CodeOutputInterface;
 class FileDef;
 class MemberDef;
 class QCString;
 class Definition;
 
-class CCodeParser : public CodeParserInterface
+/** LEX code scanner.
+ */
+class LexCodeParser : public CodeParserInterface
 {
   public:
-    CCodeParser();
-    virtual ~CCodeParser();
+    LexCodeParser();
+    virtual ~LexCodeParser();
     void parseCode(CodeOutputInterface &codeOutIntf,
                    const char *scopeName,
                    const QCString &input,
-                   SrcLangExt lang,
+                   SrcLangExt,
                    bool isExampleBlock,
                    const char *exampleName=0,
                    FileDef *fileDef=0,
@@ -46,10 +48,10 @@ class CCodeParser : public CodeParserInterface
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState();
-    void setStartCodeLine(const bool inp);
   private:
     struct Private;
     std::unique_ptr<Private> p;
 };
+
 
 #endif
