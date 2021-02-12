@@ -20,9 +20,9 @@
 #include <unordered_map>
 #include <deque>
 #include <cstdio>
+#include <regex>
 
 #include <qfile.h>
-#include <qregexp.h>
 #include <qdir.h>
 
 #include "ftextstream.h"
@@ -4184,26 +4184,32 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
           {
             TemplateListIntf::ConstIterator *it = list->createIterator();
             c->push();
-            QCString str = patternStr.toString();
-            QRegExp marker("@[0-9]+"); // pattern for a marker, i.e. @0, @1 ... @12, etc
-            int index=0,newIndex,matchLen;
-            while ((newIndex=marker.match(str,index,&matchLen))!=-1)
+            std::string str = patternStr.toString().str();
+
+            static std::regex marker("@[[:digit:]]+");
+            std::sregex_iterator re_it(str.begin(),str.end(),marker);
+            std::sregex_iterator end;
+            size_t index=0;
+            for ( ; re_it!=end ; ++re_it)
             {
+              const auto &match = *re_it;
+              size_t newIndex = match.position();
+              size_t matchLen = match.length();
+              std::string part = str.substr(index,newIndex-index);
               if (ci->needsRecoding())
               {
-                ts << ci->recode(str.mid(index,newIndex-index)); // write text before marker
+                ts << ci->recode(part); // write text before marker
               }
               else
               {
-                ts << str.mid(index,newIndex-index); // write text before marker
+                ts << part; // write text before marker
               }
-              bool ok;
-              uint entryIndex = str.mid(newIndex+1,matchLen-1).toUInt(&ok); // get marker id
+              unsigned long entryIndex = std::stoul(match.str().substr(1));
               TemplateVariant var;
-              uint i=0;
+              size_t i=0;
               // search for list element at position id
               for (it->toFirst(); (it->current(var)) && i<entryIndex; it->toNext(),i++) {}
-              if (ok && i==entryIndex) // found element
+              if (i==entryIndex) // found element
               {
                 TemplateAutoRef<TemplateStruct> s(TemplateStruct::alloc());
                 s->set("id",(int)i);
@@ -4214,10 +4220,6 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
                 m_nodes.render(ts,c);
                 ci->enableSpaceless(wasSpaceless);
               }
-              else if (!ok)
-              {
-                ci->warn(m_templateName,m_line,"markers pattern string has invalid markers '%s'",str.data());
-              }
               else if (i<entryIndex)
               {
                 ci->warn(m_templateName,m_line,"markers list does not an element for marker position %d",i);
@@ -4226,11 +4228,11 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             }
             if (ci->needsRecoding())
             {
-              ts << ci->recode(str.right(str.length()-index)); // write text after last marker
+              ts << ci->recode(str.substr(index)); // write text after last marker
             }
             else
             {
-              ts << str.right(str.length()-index); // write text after last marker
+              ts << str.substr(index); // write text after last marker
             }
             c->pop();
             delete it;
