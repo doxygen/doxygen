@@ -19,9 +19,9 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
+#include <regex>
 
 #include <ctype.h>
-#include <qregexp.h>
 #include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -164,7 +164,7 @@ static bool matchExcludedSymbols(const char *name)
 {
   const StringVector &exclSyms = Config_getList(EXCLUDE_SYMBOLS);
   if (exclSyms.empty()) return FALSE; // nothing specified
-  QCString symName = name;
+  std::string symName = name;
   for (const auto &pat : exclSyms)
   {
     QCString pattern = pat.c_str();
@@ -176,15 +176,15 @@ static bool matchExcludedSymbols(const char *name)
       pattern=pattern.left(pattern.length()-1),forceEnd=TRUE;
     if (pattern.find('*')!=-1) // wildcard mode
     {
-      QRegExp re(substitute(pattern,"*",".*"),TRUE);
-      int pl;
-      int i = re.match(symName,0,&pl);
-      //printf("  %d = re.match(%s) pattern=%s pl=%d len=%d\n",i,symName.data(),pattern.data(),pl,symName.length());
-      if (i!=-1) // wildcard match
+      std::regex re(substitute(pattern,"*",".*").str());
+      std::sregex_iterator it(symName.begin(),symName.end(),re);
+      std::sregex_iterator end;
+      if (it!=end) // wildcard match
       {
-        uint ui=(uint)i;
-        uint sl=symName.length();
-        // check if it is a whole word match
+        const auto &match = *it;
+        size_t ui = match.position();
+        size_t pl = match.length();
+        size_t sl = symName.length();
         if ((ui==0     || pattern.at(0)=='*'                  || (!isId(symName.at(ui-1))  && !forceStart)) &&
             (ui+pl==sl || pattern.at(pattern.length()-1)=='*' || (!isId(symName.at(ui+pl)) && !forceEnd))
            )
@@ -196,12 +196,12 @@ static bool matchExcludedSymbols(const char *name)
     }
     else if (!pattern.isEmpty()) // match words
     {
-      int i = symName.find(pattern);
-      if (i!=-1) // we have a match!
+      size_t i = symName.find(pattern);
+      if (i!=std::string::npos) // we have a match!
       {
-        uint ui=(uint)i;
-        uint pl=pattern.length();
-        uint sl=symName.length();
+        size_t ui=i;
+        size_t pl=pattern.length();
+        size_t sl=symName.length();
         // check if it is a whole word match
         if ((ui==0     || (!isId(symName.at(ui-1))  && !forceStart)) &&
             (ui+pl==sl || (!isId(symName.at(ui+pl)) && !forceEnd))
@@ -1212,137 +1212,141 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
     ol.parseText(text);
     ol.docify(" ");
 
-    QCString ldefLine=theTranslator->trWriteList((int)members.size());
-
-    QRegExp marker("@[0-9]+");
-    uint index=0;
-    int matchLen;
-    int newIndex;
-    // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(ldefLine,index,&matchLen))!=-1)
+    std::string ldefLine=theTranslator->trWriteList((int)members.size()).str();
+    static std::regex marker("@[[:digit:]]+");
+    std::sregex_iterator it(ldefLine.begin(),ldefLine.end(),marker);
+    std::sregex_iterator end;
+    size_t index=0;
+    // now replace all markers in ldefLine with links to the members
+    for ( ; it!=end ; ++it)
     {
-      bool ok;
-      ol.parseText(ldefLine.mid(index,(uint)newIndex-index));
-      uint entryIndex = ldefLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      const MemberDef *md=members.at(entryIndex);
-      if (ok && md)
+      const auto &match = *it;
+      size_t newIndex = match.position();
+      size_t matchLen = match.length();
+      ol.parseText(ldefLine.substr(index,newIndex-index));
+      unsigned long entryIndex = std::stoul(match.str().substr(1));
+      if (entryIndex<(unsigned long)members.size())
       {
-        QCString scope=md->getScopeString();
-        QCString name=md->name();
-        //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
-        if (!scope.isEmpty() && scope!=scopeName)
+        const MemberDef *md=members[entryIndex];
+        if (md)
         {
-          name.prepend(scope+getLanguageSpecificSeparator(m_impl->lang));
-        }
-        if (!md->isObjCMethod() &&
-            (md->isFunction() || md->isSlot() ||
-             md->isPrototype() || md->isSignal()
-            )
-           )
-        {
-          name+="()";
-        }
-        //DefinitionImpl *d = md->getOutputFileBase();
-        //if (d==Doxygen::globalScope) d=md->getBodyDef();
-        if (sourceBrowser &&
-            !(md->isLinkable() && !refLinkSource) &&
-            md->getStartBodyLine()!=-1 &&
-            md->getBodyDef()
-           )
-        {
-          //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope);
-          // for HTML write a real link
-          ol.pushGeneratorState();
-          //ol.disableAllBut(OutputGenerator::Html);
+          QCString scope=md->getScopeString();
+          QCString name=md->name();
+          //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
+          if (!scope.isEmpty() && scope!=scopeName)
+          {
+            name.prepend(scope+getLanguageSpecificSeparator(m_impl->lang));
+          }
+          if (!md->isObjCMethod() &&
+              (md->isFunction() || md->isSlot() ||
+               md->isPrototype() || md->isSignal()
+              )
+             )
+          {
+            name+="()";
+          }
+          //DefinitionImpl *d = md->getOutputFileBase();
+          //if (d==Doxygen::globalScope) d=md->getBodyDef();
+          if (sourceBrowser &&
+              !(md->isLinkable() && !refLinkSource) &&
+              md->getStartBodyLine()!=-1 &&
+              md->getBodyDef()
+             )
+          {
+            //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope);
+            // for HTML write a real link
+            ol.pushGeneratorState();
+            //ol.disableAllBut(OutputGenerator::Html);
 
-          ol.disable(OutputGenerator::Man);
-          if (!latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
-          }
-          if (!docbookSourceCode)
-          {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (!rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
-          const int maxLineNrStr = 10;
-          char anchorStr[maxLineNrStr];
-          qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
-          //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
-          ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
-          ol.popGeneratorState();
+            ol.disable(OutputGenerator::Man);
+            if (!latexSourceCode)
+            {
+              ol.disable(OutputGenerator::Latex);
+            }
+            if (!docbookSourceCode)
+            {
+              ol.disable(OutputGenerator::Docbook);
+            }
+            if (!rtfSourceCode)
+            {
+              ol.disable(OutputGenerator::RTF);
+            }
+            const int maxLineNrStr = 10;
+            char anchorStr[maxLineNrStr];
+            qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
+            //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
+            ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
+            ol.popGeneratorState();
 
-          // for the other output formats just mention the name
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Html);
-          if (latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
+            // for the other output formats just mention the name
+            ol.pushGeneratorState();
+            ol.disable(OutputGenerator::Html);
+            if (latexSourceCode)
+            {
+              ol.disable(OutputGenerator::Latex);
+            }
+            if (docbookSourceCode)
+            {
+              ol.disable(OutputGenerator::Docbook);
+            }
+            if (rtfSourceCode)
+            {
+              ol.disable(OutputGenerator::RTF);
+            }
+            ol.docify(name);
+            ol.popGeneratorState();
           }
-          if (docbookSourceCode)
+          else if (md->isLinkable() /*&& d && d->isLinkable()*/)
           {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
-          ol.docify(name);
-          ol.popGeneratorState();
-        }
-        else if (md->isLinkable() /*&& d && d->isLinkable()*/)
-        {
-          // for HTML write a real link
-          ol.pushGeneratorState();
-          //ol.disableAllBut(OutputGenerator::Html);
-          ol.disable(OutputGenerator::Man);
-          if (!latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
-          }
-          if (!docbookSourceCode)
-          {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (!rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
+            // for HTML write a real link
+            ol.pushGeneratorState();
+            //ol.disableAllBut(OutputGenerator::Html);
+            ol.disable(OutputGenerator::Man);
+            if (!latexSourceCode)
+            {
+              ol.disable(OutputGenerator::Latex);
+            }
+            if (!docbookSourceCode)
+            {
+              ol.disable(OutputGenerator::Docbook);
+            }
+            if (!rtfSourceCode)
+            {
+              ol.disable(OutputGenerator::RTF);
+            }
 
-          ol.writeObjectLink(md->getReference(),
-              md->getOutputFileBase(),
-              md->anchor(),name);
-          ol.popGeneratorState();
+            ol.writeObjectLink(md->getReference(),
+                md->getOutputFileBase(),
+                md->anchor(),name);
+            ol.popGeneratorState();
 
-          // for the other output formats just mention the name
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Html);
-          if (latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
+            // for the other output formats just mention the name
+            ol.pushGeneratorState();
+            ol.disable(OutputGenerator::Html);
+            if (latexSourceCode)
+            {
+              ol.disable(OutputGenerator::Latex);
+            }
+            if (docbookSourceCode)
+            {
+              ol.disable(OutputGenerator::Docbook);
+            }
+            if (rtfSourceCode)
+            {
+              ol.disable(OutputGenerator::RTF);
+            }
+            ol.docify(name);
+            ol.popGeneratorState();
           }
-          if (docbookSourceCode)
+          else
           {
-            ol.disable(OutputGenerator::Docbook);
+            ol.docify(name);
           }
-          if (rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
-          ol.docify(name);
-          ol.popGeneratorState();
-        }
-        else
-        {
-          ol.docify(name);
         }
       }
-      index=(uint)newIndex+matchLen;
+      index=newIndex+matchLen;
     }
-    ol.parseText(ldefLine.right(ldefLine.length()-index));
+    ol.parseText(ldefLine.substr(index));
     ol.writeString(".");
     ol.endParagraph();
   }
@@ -1850,8 +1854,7 @@ QCString abbreviate(const char *s,const char *name)
   const StringVector &briefDescAbbrev = Config_getList(ABBREVIATE_BRIEF);
   for (const auto &p : briefDescAbbrev)
   {
-    QCString str = p.c_str();
-    str.replace(QRegExp("\\$name"), scopelessName);  // replace $name with entity name
+    QCString str = substitute(p.c_str(),"$name",scopelessName); // replace $name with entity name
     str += " ";
     stripWord(result,str);
   }
