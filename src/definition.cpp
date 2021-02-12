@@ -1208,147 +1208,136 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
   {
     auto members = refMapToVector(membersMap);
 
+    auto replaceFunc = [this,&members,scopeName](OutputList &ol,size_t entryIndex)
+    {
+      const MemberDef *md=members[entryIndex];
+      if (md)
+      {
+        QCString scope=md->getScopeString();
+        QCString name=md->name();
+        //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
+        if (!scope.isEmpty() && scope!=scopeName)
+        {
+          name.prepend(scope+getLanguageSpecificSeparator(m_impl->lang));
+        }
+        if (!md->isObjCMethod() &&
+            (md->isFunction() || md->isSlot() ||
+             md->isPrototype() || md->isSignal()
+            )
+           )
+        {
+          name+="()";
+        }
+        //DefinitionImpl *d = md->getOutputFileBase();
+        //if (d==Doxygen::globalScope) d=md->getBodyDef();
+        if (sourceBrowser &&
+            !(md->isLinkable() && !refLinkSource) &&
+            md->getStartBodyLine()!=-1 &&
+            md->getBodyDef()
+           )
+        {
+          //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope);
+          // for HTML write a real link
+          ol.pushGeneratorState();
+          //ol.disableAllBut(OutputGenerator::Html);
+
+          ol.disable(OutputGenerator::Man);
+          if (!latexSourceCode)
+          {
+            ol.disable(OutputGenerator::Latex);
+          }
+          if (!docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
+          if (!rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
+          }
+          const int maxLineNrStr = 10;
+          char anchorStr[maxLineNrStr];
+          qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
+          //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
+          ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
+          ol.popGeneratorState();
+
+          // for the other output formats just mention the name
+          ol.pushGeneratorState();
+          ol.disable(OutputGenerator::Html);
+          if (latexSourceCode)
+          {
+            ol.disable(OutputGenerator::Latex);
+          }
+          if (docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
+          if (rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
+          }
+          ol.docify(name);
+          ol.popGeneratorState();
+        }
+        else if (md->isLinkable() /*&& d && d->isLinkable()*/)
+        {
+          // for HTML write a real link
+          ol.pushGeneratorState();
+          //ol.disableAllBut(OutputGenerator::Html);
+          ol.disable(OutputGenerator::Man);
+          if (!latexSourceCode)
+          {
+            ol.disable(OutputGenerator::Latex);
+          }
+          if (!docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
+          if (!rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
+          }
+
+          ol.writeObjectLink(md->getReference(),
+              md->getOutputFileBase(),
+              md->anchor(),name);
+          ol.popGeneratorState();
+
+          // for the other output formats just mention the name
+          ol.pushGeneratorState();
+          ol.disable(OutputGenerator::Html);
+          if (latexSourceCode)
+          {
+            ol.disable(OutputGenerator::Latex);
+          }
+          if (docbookSourceCode)
+          {
+            ol.disable(OutputGenerator::Docbook);
+          }
+          if (rtfSourceCode)
+          {
+            ol.disable(OutputGenerator::RTF);
+          }
+          ol.docify(name);
+          ol.popGeneratorState();
+        }
+        else
+        {
+          ol.docify(name);
+        }
+      }
+    };
+
     ol.startParagraph("reference");
     ol.parseText(text);
     ol.docify(" ");
-
-    std::string ldefLine=theTranslator->trWriteList((int)members.size()).str();
-    static std::regex marker("@[[:digit:]]+");
-    std::sregex_iterator it(ldefLine.begin(),ldefLine.end(),marker);
-    std::sregex_iterator end;
-    size_t index=0;
-    // now replace all markers in ldefLine with links to the members
-    for ( ; it!=end ; ++it)
-    {
-      const auto &match = *it;
-      size_t newIndex = match.position();
-      size_t matchLen = match.length();
-      ol.parseText(ldefLine.substr(index,newIndex-index));
-      unsigned long entryIndex = std::stoul(match.str().substr(1));
-      if (entryIndex<(unsigned long)members.size())
-      {
-        const MemberDef *md=members[entryIndex];
-        if (md)
-        {
-          QCString scope=md->getScopeString();
-          QCString name=md->name();
-          //printf("class=%p scope=%s scopeName=%s\n",md->getClassDef(),scope.data(),scopeName);
-          if (!scope.isEmpty() && scope!=scopeName)
-          {
-            name.prepend(scope+getLanguageSpecificSeparator(m_impl->lang));
-          }
-          if (!md->isObjCMethod() &&
-              (md->isFunction() || md->isSlot() ||
-               md->isPrototype() || md->isSignal()
-              )
-             )
-          {
-            name+="()";
-          }
-          //DefinitionImpl *d = md->getOutputFileBase();
-          //if (d==Doxygen::globalScope) d=md->getBodyDef();
-          if (sourceBrowser &&
-              !(md->isLinkable() && !refLinkSource) &&
-              md->getStartBodyLine()!=-1 &&
-              md->getBodyDef()
-             )
-          {
-            //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope);
-            // for HTML write a real link
-            ol.pushGeneratorState();
-            //ol.disableAllBut(OutputGenerator::Html);
-
-            ol.disable(OutputGenerator::Man);
-            if (!latexSourceCode)
-            {
-              ol.disable(OutputGenerator::Latex);
-            }
-            if (!docbookSourceCode)
-            {
-              ol.disable(OutputGenerator::Docbook);
-            }
-            if (!rtfSourceCode)
-            {
-              ol.disable(OutputGenerator::RTF);
-            }
-            const int maxLineNrStr = 10;
-            char anchorStr[maxLineNrStr];
-            qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
-            //printf("Write object link to %s\n",md->getBodyDef()->getSourceFileBase().data());
-            ol.writeObjectLink(0,md->getBodyDef()->getSourceFileBase(),anchorStr,name);
-            ol.popGeneratorState();
-
-            // for the other output formats just mention the name
-            ol.pushGeneratorState();
-            ol.disable(OutputGenerator::Html);
-            if (latexSourceCode)
-            {
-              ol.disable(OutputGenerator::Latex);
-            }
-            if (docbookSourceCode)
-            {
-              ol.disable(OutputGenerator::Docbook);
-            }
-            if (rtfSourceCode)
-            {
-              ol.disable(OutputGenerator::RTF);
-            }
-            ol.docify(name);
-            ol.popGeneratorState();
-          }
-          else if (md->isLinkable() /*&& d && d->isLinkable()*/)
-          {
-            // for HTML write a real link
-            ol.pushGeneratorState();
-            //ol.disableAllBut(OutputGenerator::Html);
-            ol.disable(OutputGenerator::Man);
-            if (!latexSourceCode)
-            {
-              ol.disable(OutputGenerator::Latex);
-            }
-            if (!docbookSourceCode)
-            {
-              ol.disable(OutputGenerator::Docbook);
-            }
-            if (!rtfSourceCode)
-            {
-              ol.disable(OutputGenerator::RTF);
-            }
-
-            ol.writeObjectLink(md->getReference(),
-                md->getOutputFileBase(),
-                md->anchor(),name);
-            ol.popGeneratorState();
-
-            // for the other output formats just mention the name
-            ol.pushGeneratorState();
-            ol.disable(OutputGenerator::Html);
-            if (latexSourceCode)
-            {
-              ol.disable(OutputGenerator::Latex);
-            }
-            if (docbookSourceCode)
-            {
-              ol.disable(OutputGenerator::Docbook);
-            }
-            if (rtfSourceCode)
-            {
-              ol.disable(OutputGenerator::RTF);
-            }
-            ol.docify(name);
-            ol.popGeneratorState();
-          }
-          else
-          {
-            ol.docify(name);
-          }
-        }
-      }
-      index=newIndex+matchLen;
-    }
-    ol.parseText(ldefLine.substr(index));
+    writeMarkerList(ol,
+                    theTranslator->trWriteList((int)members.size()).str(),
+                    members.size(),
+                    replaceFunc);
     ol.writeString(".");
     ol.endParagraph();
+
   }
   ol.popGeneratorState();
 }

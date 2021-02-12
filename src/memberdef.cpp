@@ -13,6 +13,8 @@
  *
  */
 
+#include <regex>
+
 #include <stdio.h>
 #include <qglobal.h>
 #include <qregexp.h>
@@ -2790,76 +2792,69 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
 void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
 {
   const MemberList &bml=reimplementedBy();
-  if (!bml.empty())
+  size_t count=0;
+  for (const auto &bmd : bml)
   {
-    uint count=0;
-    for (const auto &bmd : bml)
+    const ClassDef *bcd=bmd->getClassDef();
+    // count the members that directly inherit from md and for
+    // which the member and class are visible in the docs.
+    if ( bcd && bmd->isLinkable() && bcd->isLinkable() )
     {
-      const ClassDef *bcd=bmd->getClassDef();
-      // count the members that directly inherit from md and for
-      // which the member and class are visible in the docs.
-      if ( bcd && bmd->isLinkable() && bcd->isLinkable() )
-      {
-        count++;
-      }
+      count++;
     }
-    if (count>0)
+  }
+  if (count>0)
+  {
+    auto replaceFunc = [&bml](OutputList &ol,size_t entryIndex)
     {
-      // write the list of classes that overwrite this member
-      ol.startParagraph();
-
-      QCString reimplInLine;
-      if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
+      size_t count=0;
+      auto it = bml.begin();
+      // find the entryIndex-th documented entry in the inheritance list.
+      const MemberDef *bmd = 0;
+      const ClassDef *bcd = 0;
+      while (it!=bml.end())
       {
-        reimplInLine = theTranslator->trImplementedInList(count);
-      }
-      else
-      {
-        reimplInLine = theTranslator->trReimplementedInList(count);
-      }
-      static QRegExp marker("@[0-9]+");
-      int index=0,newIndex,matchLen;
-      // now replace all markers in reimplInLine with links to the classes
-      while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
-      {
-        ol.parseText(reimplInLine.mid(index,newIndex-index));
-        bool ok;
-        uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-
-        count=0;
-        auto it = bml.begin();
-        // find the entryIndex-th documented entry in the inheritance list.
-        const MemberDef *bmd = 0;
-        const ClassDef *bcd = 0;
-        while (it!=bml.end())
+        bmd = *it;
+        bcd = bmd->getClassDef();
+        if ( bmd->isLinkable() && bcd->isLinkable())
         {
-          bmd = *it;
-          bcd = bmd->getClassDef();
-          if ( bmd->isLinkable() && bcd->isLinkable())
-          {
-            if (count==entryIndex) break;
-            count++;
-          }
-          ++it;
+          if (count==entryIndex) break;
+          count++;
         }
-
-        if (ok && bcd && bmd) // write link for marker
-        {
-          //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-          //    bmd->anchor(),bcd->name());
-          ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
-              bmd->anchor(),bcd->displayName());
-
-          if (bmd->isLinkableInProject() )
-          {
-            writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
-          }
-        }
-        index=newIndex+matchLen;
+        ++it;
       }
-      ol.parseText(reimplInLine.right(reimplInLine.length()-index));
-      ol.endParagraph();
+
+      if (bcd && bmd) // write link for marker
+      {
+        //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+        //    bmd->anchor(),bcd->name());
+        ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
+            bmd->anchor(),bcd->displayName());
+
+        if (bmd->isLinkableInProject() )
+        {
+          writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
+        }
+      }
+    };
+
+    QCString reimplInLine;
+    if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
+    {
+      reimplInLine = theTranslator->trImplementedInList(count);
     }
+    else
+    {
+      reimplInLine = theTranslator->trReimplementedInList(count);
+    }
+
+    // write the list of classes that overwrite this member
+    ol.startParagraph();
+    writeMarkerList(ol,
+                    reimplInLine.str(),
+                    count,
+                    replaceFunc);
+    ol.endParagraph();
   }
 }
 

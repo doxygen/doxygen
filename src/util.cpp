@@ -1093,13 +1093,11 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   out.writeString(lastPart.c_str(),keepSpaces);
 }
 
-
-void writeExamples(OutputList &ol,const ExampleList &list)
+void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
+                     std::function<void(OutputList &ol,size_t index)> replaceFunc)
 {
-  std::string exampleLine=theTranslator->trWriteList((int)list.size()).str();
-
   static std::regex marker("@[[:digit:]]+");
-  std::sregex_iterator it(exampleLine.begin(),exampleLine.end(),marker);
+  std::sregex_iterator it(markerText.begin(),markerText.end(),marker);
   std::sregex_iterator end;
   size_t index=0;
   // now replace all markers in inheritLine with links to the classes
@@ -1108,32 +1106,42 @@ void writeExamples(OutputList &ol,const ExampleList &list)
     const auto &match = *it;
     size_t newIndex = match.position();
     size_t matchLen = match.length();
-    auto prefixPart = exampleLine.substr(index,newIndex-index);
-    ol.parseText(prefixPart);
+    ol.parseText(markerText.substr(index,newIndex-index));
     unsigned long entryIndex = std::stoul(match.str().substr(1));
-    if (entryIndex<(unsigned long)list.size())
+    if (entryIndex<(unsigned long)numMarkers)
     {
-      const auto &e = list[entryIndex];
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Latex);
-      ol.disable(OutputGenerator::RTF);
-      ol.disable(OutputGenerator::Docbook);
-      // link for Html / man
-      //printf("writeObjectLink(file=%s)\n",e->file.data());
-      ol.writeObjectLink(0,e.file,e.anchor,e.name);
-      ol.popGeneratorState();
-
-      ol.pushGeneratorState();
-      ol.disable(OutputGenerator::Man);
-      ol.disable(OutputGenerator::Html);
-      // link for Latex / pdf with anchor because the sources
-      // are not hyperlinked (not possible with a verbatim environment).
-      ol.writeObjectLink(0,e.file,0,e.name);
-      ol.popGeneratorState();
+      replaceFunc(ol,entryIndex);
     }
     index=newIndex+matchLen;
   }
-  ol.parseText(exampleLine.substr(index));
+  ol.parseText(markerText.substr(index));
+}
+
+void writeExamples(OutputList &ol,const ExampleList &list)
+{
+  auto replaceFunc = [&list](OutputList &ol,size_t entryIndex)
+  {
+    const auto &e = list[entryIndex];
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Latex);
+    ol.disable(OutputGenerator::RTF);
+    ol.disable(OutputGenerator::Docbook);
+    // link for Html / man
+    //printf("writeObjectLink(file=%s)\n",e->file.data());
+    ol.writeObjectLink(0,e.file,e.anchor,e.name);
+    ol.popGeneratorState();
+
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::Man);
+    ol.disable(OutputGenerator::Html);
+    // link for Latex / pdf with anchor because the sources
+    // are not hyperlinked (not possible with a verbatim environment).
+    ol.writeObjectLink(0,e.file,0,e.name);
+    ol.popGeneratorState();
+  };
+
+  writeMarkerList(ol, theTranslator->trWriteList((int)list.size()).str(), list.size(), replaceFunc);
+
   ol.writeString(".");
 }
 

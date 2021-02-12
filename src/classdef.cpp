@@ -1627,92 +1627,61 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
   if (!m_impl->inherits.empty())
   {
-    ol.startParagraph();
-    //parseText(ol,theTranslator->trInherits()+" ");
-
-    std::string inheritLine = theTranslator->trInheritsList((int)m_impl->inherits.size()).str();
-    static std::regex marker("@[[:digit:]]+");
-    std::sregex_iterator it(inheritLine.begin(),inheritLine.end(),marker);
-    std::sregex_iterator end;
-    size_t index=0;
-    // now replace all markers in inheritLine with links to the classes
-    for ( ; it!=end ; ++it)
+    auto replaceFunc = [this](OutputList &ol,size_t entryIndex)
     {
-      const auto &match = *it;
-      size_t newIndex = match.position();
-      size_t matchLen = match.length();
-      ol.parseText(inheritLine.substr(index,newIndex-index));
-      unsigned long entryIndex = std::stoul(match.str().substr(1));
-      if (entryIndex<(unsigned long)m_impl->inherits.size())
+      BaseClassDef &bcd=m_impl->inherits[entryIndex];
+      ClassDef *cd=bcd.classDef;
+
+      // use the class name but with the template arguments as given
+      // in the inheritance relation
+      QCString displayName = insertTemplateSpecifierInScope(
+          cd->displayName(),bcd.templSpecifiers);
+
+      if (cd->isLinkable())
       {
-        BaseClassDef &bcd=m_impl->inherits[entryIndex];
-        ClassDef *cd=bcd.classDef;
-
-        // use the class name but with the template arguments as given
-        // in the inheritance relation
-        QCString displayName = insertTemplateSpecifierInScope(
-            cd->displayName(),bcd.templSpecifiers);
-
-        if (cd->isLinkable())
-        {
-          ol.writeObjectLink(cd->getReference(),
-                             cd->getOutputFileBase(),
-                             cd->anchor(),
-                             displayName);
-        }
-        else
-        {
-          ol.docify(displayName);
-        }
+        ol.writeObjectLink(cd->getReference(),
+            cd->getOutputFileBase(),
+            cd->anchor(),
+            displayName);
       }
       else
       {
-        err("invalid marker %zu in inherits list!\n",entryIndex);
+        ol.docify(displayName);
       }
-      index=newIndex+matchLen;
-    }
-    ol.parseText(inheritLine.substr(index));
+    };
+
+    ol.startParagraph();
+    writeMarkerList(ol,
+                    theTranslator->trInheritsList((int)m_impl->inherits.size()).str(),
+                    m_impl->inherits.size(),
+                    replaceFunc);
     ol.endParagraph();
   }
 
   // write subclasses
   if (!m_impl->inheritedBy.empty())
   {
-    ol.startParagraph();
-    std::string inheritLine = theTranslator->trInheritedByList((int)m_impl->inheritedBy.size()).str();
-    static std::regex marker("@[[:digit:]]+");
-    std::sregex_iterator it(inheritLine.begin(),inheritLine.end(),marker);
-    std::sregex_iterator end;
-    size_t index=0;
-    // now replace all markers in inheritLine with links to the classes
-    for ( ; it!=end ; ++it)
+
+    auto replaceFunc = [this](OutputList &ol,size_t entryIndex)
     {
-      const auto &match = *it;
-      size_t newIndex = match.position();
-      size_t matchLen = match.length();
-      ol.parseText(inheritLine.substr(index,newIndex-index));
-      unsigned long entryIndex = std::stoul(match.str().substr(1));
-      if (entryIndex<(unsigned long)m_impl->inherits.size())
+      BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
+      ClassDef *cd=bcd.classDef;
+      if (cd->isLinkable())
       {
-        BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
-        ClassDef *cd=bcd.classDef;
-        if (cd->isLinkable())
-        {
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
-        }
-        else
-        {
-          ol.docify(cd->displayName());
-        }
-        writeInheritanceSpecifier(ol,bcd);
+        ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
       }
       else
       {
-        err("invalid marker %zu in inheritedBy list!\n",entryIndex);
+        ol.docify(cd->displayName());
       }
-      index=newIndex+matchLen;
-    }
-    ol.parseText(inheritLine.substr(index));
+      writeInheritanceSpecifier(ol,bcd);
+    };
+
+    ol.startParagraph();
+    writeMarkerList(ol,
+                    theTranslator->trInheritedByList((int)m_impl->inheritedBy.size()).str(),
+                    m_impl->inheritedBy.size(),
+                    replaceFunc);
     ol.endParagraph();
   }
 
