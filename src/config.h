@@ -59,7 +59,7 @@ namespace Config
   /*! Writes a the differences between the current configuration and the
    *  template configuration to stream \a t.
    */
-  void compareDoxyfile(FTextStream &t);
+  void compareDoxyfile(FTextStream &t, const bool longList);
 
   /*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be

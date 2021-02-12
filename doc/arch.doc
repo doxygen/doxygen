@@ -261,8 +261,10 @@ Studio projects), e.g. `setenv TEST_FLAGS "--id 5 --id 7"` and `make tests`.
 In case one has to communicate through e.g. a forum the configuration settings that
 are different from the standard doxygen configuration file settings one can run the
 doxygen command: with the `-x` option and the name of the configuration file (default
-is `Doxyfile`). The output will be a list of the not default settings (in `Doxyfile`
+is `Doxyfile`). The output will be a list of the non default settings (in `Doxyfile`
 format).
+To have also the standard comments of the non default items and all the user comments
+use `-xl` instead of `-x`.
 
 \htmlonly
 Return to the <a href="index.html">index</a>.
