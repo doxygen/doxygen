@@ -26,6 +26,8 @@
 
 #include <ctype.h>
 #include <stack>
+#include <regex>
+#include <string>
 
 #include <qfile.h>
 #include <qstring.h>
@@ -513,9 +515,11 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            lineCount(yytext,yyleng);
-                           QCString text=yytext;
-                           static QRegExp re("[*+]");
-                           int listPos = text.findRev(re);
+                           std::string text=yytext;
+                           static std::regex re("[*+][^*+]*$"); // find last + or *
+                           std::smatch match;
+                           std::regex_search(text,match,re);
+                           size_t listPos = match.position();
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(yytext,listPos);
@@ -529,13 +533,13 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                          else
                          {
-                           QCString text=yytext;
-                           static QRegExp re("[1-9]");
-                           int digitPos = text.find(re);
-                           int dotPos = text.find('.',digitPos);
-                           g_token->isEnumList = TRUE;
-                           g_token->id         = atoi(QCString(yytext).mid(digitPos,dotPos-digitPos));
-                           g_token->indent     = computeIndent(yytext,digitPos);
+                           std::string text=yytext;
+                           static std::regex re("[1-9]+");
+                           std::smatch match;
+                           std::regex_search(text,match,re);
+                           g_token->isEnumList = true;
+                           g_token->id         = std::stoul(match.str());
+                           g_token->indent     = computeIndent(yytext,match.position());
                            return TK_LISTITEM;
                          }
                        }
@@ -556,12 +560,14 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            lineCount(yytext,yyleng);
-                           QCString text=extractPartAfterNewLine(yytext);
-                           static QRegExp re("[*+]");
-                           int markPos = text.findRev(re);
+                           std::string text=extractPartAfterNewLine(yytext).str();
+                           static std::regex re("[*+][^*+]*$"); // find last + or *
+                           std::smatch match;
+                           std::regex_search(text,match,re);
+                           size_t markPos = match.position();
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
-                           g_token->indent     = computeIndent(text,markPos);
+                           g_token->indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
                          }
                        }
@@ -573,13 +579,13 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            lineCount(yytext,yyleng);
-                           QCString text=extractPartAfterNewLine(yytext);
-                           static QRegExp re("[1-9]");
-                           int digitPos = text.find(re);
-                           int dotPos = text.find('.',digitPos);
-                           g_token->isEnumList = TRUE;
-                           g_token->id         = atoi(QCString(text).mid(digitPos,dotPos-digitPos));
-                           g_token->indent     = computeIndent(text,digitPos);
+                           std::string text=extractPartAfterNewLine(yytext).str();
+                           static std::regex re("[1-9]+");
+                           std::smatch match;
+                           std::regex_search(text,match,re);
+                           g_token->isEnumList = true;
+                           g_token->id         = std::stoul(match.str());
+                           g_token->indent     = computeIndent(text.c_str(),match.position());
                            return TK_LISTITEM;
                          }
                        }
