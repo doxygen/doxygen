@@ -1342,7 +1342,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  documentation.
  If \ref cfg_extract_all "EXTRACT_ALL" is set to \c YES then this flag will
  automatically be disabled.
- See also \ref cfg_warn_if_incomplete_paramdoc "WARN_IF_INCOMPLETE_PARAMDOC"
+ See also \ref cfg_warn_if_incomplete_doc "WARN_IF_INCOMPLETE_DOC"
 ]]>
       </docs>
     </option>
