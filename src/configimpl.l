@@ -29,10 +29,10 @@
 
 #include <qfileinfo.h>
 #include <qdir.h>
-#include <qregexp.h>
 
 #include <thread>
 #include <algorithm>
+#include <regex>
 
 #include "configimpl.h"
 #include "version.h"
@@ -1132,25 +1132,31 @@ void ConfigImpl::emptyValueToDefault()
   }
 }
 
-static void substEnvVarsInString(QCString &s)
+static void substEnvVarsInString(QCString &str)
 {
-  static QRegExp re("\\$\\([a-z_A-Z0-9.-]+\\)");
-  static QRegExp re2("\\$\\([a-z_A-Z0-9.-]+\\([a-z_A-Z0-9.-]+\\)\\)"); // For e.g. PROGRAMFILES(X86)
-  if (s.isEmpty()) return;
-  int p=0;
-  int i,l;
-  //printf("substEnvVarInString(%s) start\n",s.data());
-  while ((i=re.match(s,p,&l))!=-1 || (i=re2.match(s,p,&l))!=-1)
+  if (str.isEmpty()) return;
+  // match e.g. $(HOME) but also $(PROGRAMFILES(X86))
+  static std::regex re("\\$\\([[:alpha:]_][[:alnum:].-]*(\\([[:alpha:]_][[:alnum:].-]*\\))?\\)");
+  std::string s = str.str();
+  std::sregex_iterator it(s.begin(),s.end(),re);
+  std::sregex_iterator end;
+  std::string result;
+  size_t p = 0;
+  for (; it!=end ; ++it)
   {
-    //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    QCString env=Portable::getenv(s.mid(i+2,l-3));
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
+    result+=s.substr(p,i-p);
+    std::string matchStr = match.str();
+    std::string matchContents = matchStr.substr(2,matchStr.length()-3);
+    QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
     substEnvVarsInString(env); // recursively expand variables if needed.
-    s = s.left(i)+env+s.right(s.length()-i-l);
-    p=i+env.length(); // next time start at the end of the expanded string
+    result+=env.str();
+    p=i+l;
   }
-  s=s.stripWhiteSpace(); // to strip the bogus space that was added when an argument
-                         // has quotes
-  //printf("substEnvVarInString(%s) end\n",s.data());
+  result+=s.substr(p);
+  str = QCString(result).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
@@ -1641,16 +1647,16 @@ void Config::checkAndCorrect()
   //------------------------
   // check ALIASES
   const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &s : aliasList)
+  for (const auto &alias : aliasList)
   {
-    QRegExp re1("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");         // alias without argument
-    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]+}[ \t]*="); // alias with argument
-    QCString alias=s.c_str();
-    alias=alias.stripWhiteSpace();
-    if (alias.find(re1)!=0 && alias.find(re2)!=0)
+    // match aliases of the form 'name=' and 'name{2} ='
+    static std::regex re("[[:alpha:]_][[:alnum:]_]*(\\{[[:digit:]]+\\})?[[:space:]]*=");
+    std::sregex_iterator it(alias.begin(),alias.end(),re);
+    std::sregex_iterator end;
+    if (it==end)
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
-          alias.data());
+          alias.c_str());
     }
   }
 
