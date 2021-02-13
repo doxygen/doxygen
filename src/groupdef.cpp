@@ -17,9 +17,9 @@
 
 #include <algorithm>
 #include <vector>
+#include <regex>
 
 #include <ctype.h>
-#include <qregexp.h>
 
 #include "groupdef.h"
 #include "classdef.h"
@@ -1090,12 +1090,15 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    static QRegExp we("[a-zA-Z_][-a-zA-Z_0-9]*");
-    int i=0,p=0,l=0;
-    while ((i=we.match(m_title,p,&l))!=-1) // foreach word in the title
+    static std::regex we("[[:alpha:]_][[:alnum:]_\\-]*");
+    std::string title = m_title.str();
+    std::sregex_iterator it(title.begin(),title.end(),we);
+    std::sregex_iterator end;
+    for (; it!=end ; ++it)
     {
-      Doxygen::searchIndex->addWord(m_title.mid(i,l),TRUE);
-      p=i+l;
+      const auto &match = *it;
+      std::string matchStr = match.str();
+      Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
     }
   }
 
