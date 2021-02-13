@@ -304,6 +304,10 @@ struct preYY_state
   DefineMap                                localDefines;   // macros defined in this file
   DefineList                               macroDefinitions;
   LinkedMap<PreIncludeInfo>                includeRelations;
+
+  bool                                     debugEnabled = false;
+  bool                                     debugLineno = false;
+  Debug::DebugMask                         optionSet = Debug::Quiet; 
 };
 
 // stateless functions
@@ -1563,9 +1567,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                               }
                                               else
                                               {
-                                                if (Debug::isFlagSet(Debug::Preprocessor))
+                                                if (yyextra->debugEnabled)
                                                 {
-                                                  Debug::print(Debug::Preprocessor,0,"#include %s: was already processed by another thread! not storing data...\n",qPrint(toFileName));
+                                                  Debug::print(yyextra->optionSet,0,"#include %s: was already processed by another thread! not storing data...\n",qPrint(toFileName));
                                                 }
                                               }
                                             }
@@ -2844,6 +2848,7 @@ static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCStr
 
 static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
 {
+  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   uint i=0;
 
@@ -2890,13 +2895,13 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
       }
 
       //printf("Found include file!\n");
-      if (Debug::isFlagSet(Debug::Preprocessor))
+      if (yyextra->debugEnabled)
       {
         for (i=0;i<state->includeStack.size();i++) 
         {
-          Debug::print(Debug::Preprocessor,0,"  ");
+          Debug::print(yyextra->optionSet,0,"  ");
         }
-        Debug::print(Debug::Preprocessor,0,"#include %s: parsing...\n",incFileName.data());
+        Debug::print(yyextra->optionSet,0,"#include %s: parsing...\n",incFileName.data());
       }
 
       if (state->includeStack.empty() && oldFileDef)
@@ -2966,19 +2971,19 @@ static void readIncludeFile(yyscan_t yyscanner,const QCString &inc)
         }
       }
 
-      if (Debug::isFlagSet(Debug::Preprocessor))
+      if (yyextra->debugEnabled)
       {
         for (i=0;i<state->includeStack.size();i++) 
         {
-          Debug::print(Debug::Preprocessor,0,"  ");
+          Debug::print(yyextra->optionSet,0,"  ");
         }
 	if (alreadyProcessed)
 	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: already processed! skipping...\n",qPrint(incFileName));
+          Debug::print(yyextra->optionSet,0,"#include %s: already processed! skipping...\n",qPrint(incFileName));
 	}
 	else
 	{
-          Debug::print(Debug::Preprocessor,0,"#include %s: not found! skipping...\n",qPrint(incFileName));
+          Debug::print(yyextra->optionSet,0,"#include %s: not found! skipping...\n",qPrint(incFileName));
 	}
         //printf("error: include file %s not found\n",yytext);
       }
@@ -3333,6 +3338,11 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   preYYset_debug(1,yyscanner);
 #endif
 
+  yyextra->debugEnabled = Debug::isFlagSet(Debug::Preprocessor) || Debug::isFlagSet(Debug::PreprocessorNolineno);
+  yyextra->debugLineno  = !Debug::isFlagSet(Debug::PreprocessorNolineno);
+  if (Debug::isFlagSet(Debug::Preprocessor)) yyextra->optionSet = Debug::Preprocessor;
+  else if (Debug::isFlagSet(Debug::PreprocessorNolineno)) yyextra->optionSet = Debug::PreprocessorNolineno;
+
   printlex(yy_flex_debug, TRUE, __FILE__, fileName);
   uint orgOffset=output.curPos();
   //printf("##########################\n%s\n####################\n",
@@ -3383,12 +3393,12 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
   // make sure we don't extend a \cond with missing \endcond over multiple files (see bug 624829)
   forceEndCondSection(yyscanner);
 
-  if (Debug::isFlagSet(Debug::Preprocessor))
+  if (yyextra->debugEnabled)
   {
     std::lock_guard<std::mutex> lock(g_debugMutex);
     char *orgPos=output.data()+orgOffset;
     char *newPos=output.data()+output.curPos();
-    Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",fileName,newPos-orgPos);
+    Debug::print(yyextra->optionSet,0,"Preprocessor output of %s (size: %d bytes):\n",fileName,newPos-orgPos);
     int line=1;
     Debug::print(Debug::Preprocessor,0,"---------\n00001 ");
     while (orgPos<newPos) 
@@ -3397,24 +3407,24 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
       if (*orgPos=='\n') Debug::print(Debug::Preprocessor,0,"%05d ",++line);
       orgPos++;
     }
-    Debug::print(Debug::Preprocessor,0,"\n---------\n");
+    Debug::print(yyextra->optionSet,0,"\n---------\n");
     if (yyextra->contextDefines.size()>0)
     {
-      Debug::print(Debug::Preprocessor,0,"Macros accessible in this file (%s):\n", fileName);
-      Debug::print(Debug::Preprocessor,0,"---------\n");
+      Debug::print(yyextra->optionSet,0,"Macros accessible in this file (%s):\n", fileName);
+      Debug::print(yyextra->optionSet,0,"---------\n");
       for (auto &kv : yyextra->contextDefines)
       {
-        Debug::print(Debug::Preprocessor,0,"%s ",qPrint(kv.second.name));
+        Debug::print(yyextra->optionSet,0,"%s ",qPrint(kv.second.name));
       }
       for (auto &kv : yyextra->localDefines)
       {
-        Debug::print(Debug::Preprocessor,0,"%s ",qPrint(kv.second.name));
+        Debug::print(yyextra->optionSet,0,"%s ",qPrint(kv.second.name));
       }
-      Debug::print(Debug::Preprocessor,0,"\n---------\n");
+      Debug::print(yyextra->optionSet,0,"\n---------\n");
     }
     else
     {
-      Debug::print(Debug::Preprocessor,0,"No macros accessible in this file (%s).\n", fileName);
+      Debug::print(yyextra->optionSet,0,"No macros accessible in this file (%s).\n", fileName);
     }
   }
 

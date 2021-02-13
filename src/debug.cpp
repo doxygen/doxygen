@@ -31,6 +31,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "functions",         Debug::Functions         },
   { "variables",         Debug::Variables         },
   { "preprocessor",      Debug::Preprocessor      },
+  { "preprocessornolineno",Debug::PreprocessorNolineno},
   { "classes",           Debug::Classes           },
   { "commentcnv",        Debug::CommentCnv        },
   { "commentscan",       Debug::CommentScan       },
@@ -79,13 +80,18 @@ static int labelToEnumValue(const char *l)
 int Debug::setFlag(const char *lab)
 {
   int retVal = labelToEnumValue(lab);
-  curMask = (DebugMask)(curMask | labelToEnumValue(lab));
+  curMask = (DebugMask)(curMask | retVal);
   return retVal;
 }
 
 void Debug::clearFlag(const char *lab)
 {
   curMask = (DebugMask)(curMask & ~labelToEnumValue(lab));
+}
+
+void Debug::clearFlag(const DebugMask mask)
+{
+  curMask = (DebugMask)(curMask & ~(int)(mask));
 }
 
 void Debug::setPriority(int p)

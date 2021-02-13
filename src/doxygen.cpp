@@ -10206,6 +10206,20 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(1);
         }
+        else
+        {
+          switch (retVal)
+          {
+            case Debug::Preprocessor:
+              Debug::clearFlag(Debug::PreprocessorNolineno);
+              break;
+            case Debug::PreprocessorNolineno:
+              Debug::clearFlag(Debug::Preprocessor);
+              break;
+            default:
+              break;
+          }
+        }
         break;
       case 'x':
         diffList=TRUE;
