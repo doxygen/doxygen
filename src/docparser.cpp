@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cassert>
+#include <regex>
 
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -425,7 +426,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
  *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
-static void checkArgumentName(const QCString &name)
+static void checkArgumentName(const std::string &name)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
@@ -436,11 +437,13 @@ static void checkArgumentName(const QCString &name)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
-  static QRegExp re("$?[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
-  int p=0,i=0,l;
-  while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
+  static std::regex re("(\\$[[:alnum:]_]|[[:alpha:]_])[[:alnum:]_]*\\.*");
+  std::sregex_iterator it(name.begin(),name.end(),re);
+  std::sregex_iterator end;
+  for (; it!=end ; ++it)
   {
-    QCString aName=name.mid(i,l);
+    const auto &match = *it;
+    QCString aName=match.str();
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName='%s'\n",aName.data());
     bool found=FALSE;
@@ -482,7 +485,6 @@ static void checkArgumentName(const QCString &name)
 	  qPrint(aName), qPrint(scope), qPrint(g_memberDef->name()),
 	  qPrint(alStr), qPrint(inheritedFrom));
     }
-    p=i+l;
   }
 }
 /*! Collects the return values found with \@retval command
@@ -872,9 +874,9 @@ static int handleStyleArgument(DocNode *parent,DocNodeList &children,
           tok!=TK_ENDLIST
         )
   {
-    static QRegExp specialChar("[.,|()\\[\\]:;\\?]");
+    static std::regex specialChar("[.,|()\\[\\]:;\\?]");
     if (tok==TK_WORD && g_token->name.length()==1 &&
-        g_token->name.find(specialChar)!=-1)
+        std::regex_match(g_token->name.str(),specialChar))
     {
       // special character that ends the markup command
       return tok;
@@ -4533,13 +4535,13 @@ int DocParamList::parse(const QCString &cmdName)
         handleParameterType(this,m_paramTypes,g_token->name.left(typeSeparator));
         g_token->name = g_token->name.mid(typeSeparator+1);
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name.str());
         ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
       }
       else
       {
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name.str());
       }
     }
     else if (m_type==DocParamSect::RetVal)
@@ -4591,7 +4593,7 @@ int DocParamList::parseXml(const QCString &paramName)
   if (m_type==DocParamSect::Param)
   {
     g_hasParamCommand=TRUE;
-    checkArgumentName(g_token->name);
+    checkArgumentName(g_token->name.str());
   }
   else if (m_type==DocParamSect::RetVal)
   {

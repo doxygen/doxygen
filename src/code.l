@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qregexp.h>
 #include <qdir.h>
 
 #include "code.h"

@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <stack>
 
-#include <qregexp.h>
 #include <qtextstream.h>
 #include <qglobal.h>
 
