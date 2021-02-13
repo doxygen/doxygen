@@ -1136,7 +1136,7 @@ static void substEnvVarsInString(QCString &str)
 {
   if (str.isEmpty()) return;
   // match e.g. $(HOME) but also $(PROGRAMFILES(X86))
-  static std::regex re("\\$\\([[:alpha:]_][[:alnum:].-]*(\\([[:alpha:]_][[:alnum:].-]*\\))?\\)");
+  static std::regex re("\\$\\(([[:alpha:]_][[:alnum:].-]*(\\([[:alpha:]_][[:alnum:].-]*\\))?)\\)");
   std::string s = str.str();
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
@@ -1148,8 +1148,7 @@ static void substEnvVarsInString(QCString &str)
     size_t i = match.position();
     size_t l = match.length();
     result+=s.substr(p,i-p);
-    std::string matchStr = match.str();
-    std::string matchContents = matchStr.substr(2,matchStr.length()-3);
+    std::string matchContents = match[1].str();
     QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
     substEnvVarsInString(env); // recursively expand variables if needed.
     result+=env.str();

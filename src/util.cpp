@@ -222,7 +222,7 @@ QCString replaceAnonymousScopes(const char *s,const char *replacement)
 {
   if (s==0) return QCString();
   static std::regex marker("@[[:digit:]]+");
-  std::string result = regex_replace(s,marker,replacement?replacement:"__anonymous__");
+  std::string result = std::regex_replace(s,marker,replacement?replacement:"__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",s.data(),result.data());
   return result;
 }
@@ -1096,7 +1096,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(OutputList &ol,size_t index)> replaceFunc)
 {
-  static std::regex marker("@[[:digit:]]+");
+  static std::regex marker("@([[:digit:]]+)");
   std::sregex_iterator it(markerText.begin(),markerText.end(),marker);
   std::sregex_iterator end;
   size_t index=0;
@@ -1107,7 +1107,7 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
     size_t newIndex = match.position();
     size_t matchLen = match.length();
     ol.parseText(markerText.substr(index,newIndex-index));
-    unsigned long entryIndex = std::stoul(match.str().substr(1));
+    unsigned long entryIndex = std::stoul(match[1]);
     if (entryIndex<(unsigned long)numMarkers)
     {
       replaceFunc(ol,entryIndex);
@@ -6066,7 +6066,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
 {
   //QCString result;
   std::string result;
-  std::regex re("[\\\\@][[:alpha:]_][[:alnum:]_]*");
+  std::regex re("[\\\\@]([[:alpha:]_][[:alnum:]_]*)");
   std::sregex_iterator re_it(s.begin(),s.end(),re);
   std::sregex_iterator end;
   size_t p = 0;
@@ -6082,7 +6082,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
     QCString args = extractAliasArgs(s,i+l);
     bool hasArgs = !args.isEmpty();            // found directly after command
     int argsLen = args.length();
-    QCString cmd = match.str().substr(1);
+    QCString cmd = match[1].str();
     QCString cmdNoArgs = cmd;
     int numArgs=0;
     if (hasArgs)
@@ -6392,7 +6392,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 QCString filterTitle(const std::string &title)
 {
   std::string tf;
-  std::regex re("%[A-Z_A-z]");
+  std::regex re("%([A-Z_a-z]+)");
   std::sregex_iterator it(title.begin(),title.end(),re);
   std::sregex_iterator end;
   size_t p = 0;
@@ -6402,7 +6402,7 @@ QCString filterTitle(const std::string &title)
     size_t i = match.position();
     size_t l = match.length();
     if (i>p) tf+=title.substr(p,i-p);
-    tf+=match.str().substr(1); // skip %
+    tf+=match[1].str(); // skip %
     p=i+l;
   }
   tf+=title.substr(p);
@@ -6524,7 +6524,7 @@ QCString replaceColorMarkers(const char *str)
   if (str==0) return QCString();
   std::string result;
   std::string s=str;
-  static std::regex re("##[0-9A-Fa-f][0-9A-Fa-f]");
+  static std::regex re("##([0-9A-Fa-f][0-9A-Fa-f])");
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
   static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
@@ -6538,7 +6538,7 @@ QCString replaceColorMarkers(const char *str)
     size_t i = match.position();
     size_t l = match.length();
     if (i>p) result+=s.substr(p,i-p);
-    std::string lumStr = match.str().substr(2);
+    std::string lumStr = match[1].str();
 #define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
                      ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
                      ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
@@ -7012,7 +7012,7 @@ bool classVisibleInIndex(const ClassDef *cd)
  */
 QCString extractDirection(QCString &docs)
 {
-  std::regex re("\\[[ inout,]+\\]");
+  std::regex re("\\[([ inout,]+)\\]");
   std::string s = docs.str();
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
@@ -7024,7 +7024,7 @@ QCString extractDirection(QCString &docs)
     if (p==0 && l>2)
     {
       // make dir the part inside [...] without separators
-      std::string dir = match.str().substr(1,l-2);
+      std::string dir = match[1].str();
       // strip , and ' ' from dir
       dir.erase(std::remove_if(dir.begin(),dir.end(),
                                [](const char c) { return c==' ' || c==','; }

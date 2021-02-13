@@ -4186,7 +4186,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             c->push();
             std::string str = patternStr.toString().str();
 
-            static std::regex marker("@[[:digit:]]+");
+            static std::regex marker("@([[:digit:]]+)");
             std::sregex_iterator re_it(str.begin(),str.end(),marker);
             std::sregex_iterator end;
             size_t index=0;
@@ -4204,7 +4204,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               {
                 ts << part; // write text before marker
               }
-              unsigned long entryIndex = std::stoul(match.str().substr(1));
+              unsigned long entryIndex = std::stoul(match[1].str());
               TemplateVariant var;
               size_t i=0;
               // search for list element at position id
