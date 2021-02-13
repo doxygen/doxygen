@@ -33,11 +33,11 @@
 
 #include <stdio.h>
 #include <qglobal.h>
-#include <qregexp.h>
 #include <qfileinfo.h>
 
 #include <unordered_map>
 #include <functional>
+#include <regex>
 
 #include "markdown.h"
 #include "growbuf.h"
@@ -1471,15 +1471,15 @@ static int isHRuler(const char *data,int size)
 static QCString extractTitleId(QCString &title, int level)
 {
   TRACE(title.data());
-  //static QRegExp r1("^[a-z_A-Z][a-z_A-Z0-9\\-]*:");
-  static QRegExp r2("\\{#[a-z_A-Z][a-z_A-Z0-9\\-]*\\}");
-  int l=0;
-  int i = r2.match(title,0,&l);
-  if (i!=-1 && title.mid(i+l).stripWhiteSpace().isEmpty()) // found {#id} style id
+  // match e.g. '{#id-b11} ' and capture 'id-b11'
+  static std::regex r2("\\{#([a-z_A-Z][a-z_A-Z0-9\\-]*)\\}[[:space:]]*$");
+  std::smatch match;
+  std::string ti = title.str();
+  if (std::regex_search(ti,match,r2))
   {
-    QCString id = title.mid(i+2,l-3);
-    title = title.left(i);
-    //printf("found id='%s' title='%s'\n",id.data(),title.data());
+    std::string id = match[1].str();
+    title = title.left(match.position());
+    //printf("found match id='%s' title=%s\n",id.c_str(),title.data());
     return id;
   }
   if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
