@@ -56,7 +56,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qregexp.h>
 #include <qfile.h>
 
 #include "fortranscanner.h"
@@ -1151,7 +1150,8 @@ private                                 {
 
                                           if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
-                                            yyextra->current_root->name.replace(QRegExp("\\$interface\\$"), yytext);
+                                            yyextra->current_root->name = substitute(
+                                                yyextra->current_root->name, "$interface$", yytext);
                                           }
 
                                           BEGIN(Parameterlist);
