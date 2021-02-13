@@ -25,12 +25,6 @@
 static QCString outputFormat;
 static const char *warning_str = "warning: ";
 static const char *error_str = "error: ";
-//static int warnFormatOrder; // 1 = $file,$line,$text
-//                            // 2 = $text,$line,$file
-//                            // 3 = $line,$text,$file
-//                            // 4 = $file,$text,$line
-//                            // 5 = $text,$file,$line
-//                            // 6 = $line,$file,$text
 
 static FILE *warnFile = stderr;
 
@@ -47,55 +41,6 @@ static std::mutex g_mutex;
 
 void initWarningFormat()
 {
-//  int filePos = Config_getString(WARN_FORMAT).find("$file");
-//  int linePos = Config_getString(WARN_FORMAT).find("$line");
-//  int textPos = Config_getString(WARN_FORMAT).find("$text");
-//
-//  // sort items on position (there are 6 cases)
-//  warnFormatOrder = 1;
-//  if (filePos>linePos && filePos>textPos)
-//  {
-//    if (linePos>textPos) // $text,$line,$file
-//    {
-//      warnFormatOrder = 2;
-//    }
-//    else                 // $line,$text,$file
-//    {
-//      warnFormatOrder = 3;
-//    }
-//  }
-//  else if (filePos<linePos && filePos<textPos)
-//  {
-//    if (linePos>textPos) // $file,$text,$line
-//    {
-//      warnFormatOrder = 4;
-//    }
-//  }
-//  else if (filePos<linePos && filePos>textPos) // $text,$file,$line
-//  {
-//    warnFormatOrder = 5;
-//  }
-//  else // $line,$file,$text
-//  {
-//    warnFormatOrder = 6;
-//  }
-//  outputFormat =
-//      substitute(
-//        substitute(
-//          substitute(
-//            Config_getString(WARN_FORMAT),
-//           "$file","%s"
-//          ),
-//          "$text","%s"
-//        ),
-//        "$line","%d"
-//      )+'\n';
-
-  //    replace(QRegExp("\\$file"),"%s").
-  //    replace(QRegExp("\\$text"),"%s").
-  //    replace(QRegExp("\\$line"),"%d")+
-  //    '\n';
-
   outputFormat = Config_getString(WARN_FORMAT);
 
   if (!Config_getString(WARN_LOGFILE).isEmpty())
