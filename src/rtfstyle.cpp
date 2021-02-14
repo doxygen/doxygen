@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -16,14 +13,12 @@
  *
  */
 
-#include <stdlib.h>
-#include <qfile.h>
-#include <qregexp.h>
-#include <qtextstream.h>
+#include <regex>
+#include <string>
+#include <fstream>
 
 #include "rtfstyle.h"
 #include "message.h"
-
 
 RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
 
@@ -37,6 +32,21 @@ QCString rtf_manager;
 QCString rtf_documentType;
 QCString rtf_documentId;
 QCString rtf_keywords;
+
+static std::map<std::string,QCString &> g_styleMap =
+{
+  { "Title",        rtf_title        },
+  { "Subject",      rtf_subject      },
+  { "Comments",     rtf_comments     },
+  { "Company",      rtf_company      },
+  { "LogoFilename", rtf_logoFilename },
+  { "Author",       rtf_author       },
+  { "Manager",      rtf_manager      },
+  { "DocumentType", rtf_documentType },
+  { "DocumentId",   rtf_documentId   },
+  { "Keywords",     rtf_keywords     }
+};
+
 
 char rtf_Style_Reset[] = "\\pard\\plain ";
 
@@ -224,116 +234,80 @@ Rtf_Style_Default rtf_Style_Default[] =
   }
 };
 
-static const QRegExp s_clause("\\\\s[0-9]+\\s*");
+static const std::regex s_clause("\\\\s([[:digit:]]+)[[:space:]]*");
 
-StyleData::StyleData(const char* reference, const char* definition)
+StyleData::StyleData(const std::string &reference, const std::string &definition)
 {
-  const char *ref = reference;
-
-  int start = s_clause.match(ref); ASSERT(start >= 0);
-  ref += start;
-  m_index = (int)atol(ref + 2); ASSERT(m_index > 0);
-
-  m_reference = ref;
+  std::smatch match;
+  if (regex_search(reference,match,s_clause))
+  {
+    m_index = static_cast<int>(std::stoul(match[1].str()));
+  }
+  else // error
+  {
+    m_index = 0;
+  }
+  m_reference = reference;
   m_definition = definition;
 }
 
-bool StyleData::setStyle(const char* s, const char* styleName)
+bool StyleData::setStyle(const std::string &command, const std::string &styleName)
 {
-  static const QRegExp subgroup("^{[^}]*}\\s*");
-  static const QRegExp any_clause("^\\\\[a-z][a-z0-9-]*\\s*");
+  std::smatch match;
+  if (!regex_search(command,match,s_clause))
+  {
+    err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
+    return false;
+  }
+  m_index = static_cast<int>(std::stoul(match[1].str()));
 
-  int len = 0;     // length of a particular RTF formatting control
-  int ref_len = 0; // length of the whole formatting section of a style
-  int start = s_clause.match(s, 0, &len);
-  if (start < 0)
+  static std::regex definition_splitter("^(.*)(\\\\sbasedon[[:digit:]]+.*)$");
+  if (regex_match(command,match,definition_splitter))
   {
-    err("Style sheet '%s' contains no '\\s' clause.\n{%s}\n", styleName, s);
-    return FALSE;
+    m_reference  = match[1].str();
+    m_definition = match[2].str();
   }
-  s += start;
-  m_index = (int)atol(s + 2); ASSERT(m_index > 0);
 
-  // search for the end of pure formatting codes
-  const char* end = s + len;
-  ref_len = len;
-  bool haveNewDefinition = TRUE;
-  for(;;)
-  {
-    if (*end == '{')
-    {
-      // subgroups are used for \\additive
-      if (0 != subgroup.match(end, 0, &len))
-        break;
-      else
-      {
-        end += len;
-        ref_len += len;
-      }
-    }
-    else if (*end == '\\')
-    {
-      if (0 == qstrncmp(end, "\\snext", 6))
-        break;
-      if (0 == qstrncmp(end, "\\sbasedon", 9))
-        break;
-      if (0 != any_clause.match(end, 0, &len))
-        break;
-      end += len;
-      ref_len += len;
-    }
-    else if (*end == 0)
-    { // no style-definition part, keep default value
-      haveNewDefinition = FALSE;
-      break;
-    }
-    else // plain name without leading \\snext
-      break;
-  }
-  m_reference = s;
-  if (haveNewDefinition)
-  {
-    m_definition = end;
-  }
-  return TRUE;
+  return true;
 }
+
 
 void loadStylesheet(const char *name, StyleDataMap& map)
 {
-  QFile file(name);
-  if (!file.open(IO_ReadOnly))
+  std::ifstream file(name);
+  if (!file.is_open())
   {
-    err("Can't open RTF style sheet file %s. Using defaults.\n",name);
+    err("Can't open RTF style sheet file %s. Using defaults.",name);
     return;
   }
   msg("Loading RTF style sheet %s...\n",name);
 
-  static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
-  QTextStream t(&file);
 
-  while (!t.eof())
+  for (std::string line ; getline(file,line) ; ) // for each line
   {
-    QCString s(4096); // string buffer of max line length
-    s = t.readLine().stripWhiteSpace().utf8();
-    if (s.isEmpty() || s.at(0)=='#') continue; // skip blanks & comments
-    int sepLength;
-    int sepStart = separator.match(s,0,&sepLength);
-    if (sepStart<=0) // no valid assignment statement
+    if (line.empty() || line[0]=='#') continue; // skip blanks & comments
+    static std::regex assignment_splitter("[[:space:]]*=[[:space:]]*");
+    std::smatch match;
+    if (std::regex_search(line,match,assignment_splitter))
     {
-      warn(name,lineNr,"Assignment of style sheet name expected!\n");
-      continue;
+      std::string key   = match.prefix();
+      std::string value = match.suffix();
+      auto it = map.find(key);
+      if (it!=map.end())
+      {
+        StyleData& styleData = it->second;
+        styleData.setStyle(value,key);
+      }
+      else
+      {
+        warn(name,lineNr,"Unknown style sheet name %s ignored.",key.data());
+      }
     }
-    QCString key=s.left(sepStart);
-    auto it = map.find(key.str());
-    if (it==map.end()) // not a valid style sheet name
+    else
     {
-      warn(name,lineNr,"Unknown style sheet name %s ignored.\n",key.data());
-      continue;
+      warn(name,lineNr,"Assignment of style sheet name expected line='%s'!",line.c_str());
     }
-    StyleData& styleData = it->second;
-    s+=" "; // add command separator
-    styleData.setStyle(s.data() + sepStart + sepLength, key.data());
     lineNr++;
   }
 }
@@ -342,44 +316,39 @@ StyleDataMap rtf_Style;
 
 void loadExtensions(const char *name)
 {
-  QFile file(name);
-  if (!file.open(IO_ReadOnly))
+  std::ifstream file(name);
+  if (!file.is_open())
   {
-    err("Can't open RTF extensions file %s. Using defaults.\n",name);
+    err("Can't open RTF extensions file %s. Using defaults.",name);
     return;
   }
   msg("Loading RTF extensions %s...\n",name);
 
-  static const QRegExp separator("[ \t]*=[ \t]*");
   uint lineNr=1;
-  QTextStream t(&file);
-  t.setEncoding(QTextStream::UnicodeUTF8);
 
-  while (!t.eof())
+  for (std::string line ; getline(file,line) ; ) // for each line
   {
-    QCString s(4096); // string buffer of max line length
-    s = t.readLine().stripWhiteSpace().utf8();
-    if (s.length()==0 || s.at(0)=='#') continue; // skip blanks & comments
-    int sepLength;
-    int sepStart = separator.match(s,0,&sepLength);
-    if (sepStart<=0) // no valid assignment statement
+    if (line.empty() || line[0]=='#') continue; // skip blanks & comments
+    std::smatch match;
+    static std::regex assignment_splitter("[[:space:]]*=[[:space:]]*");
+    if (std::regex_search(line,match,assignment_splitter))
     {
-      warn(name,lineNr,"Assignment of extension field expected!\n");
-      continue;
+      std::string key   = match.prefix();
+      std::string value = match.suffix();
+      auto it = g_styleMap.find(key);
+      if (it!=g_styleMap.end())
+      {
+        it->second = value;
+      }
+      else
+      {
+        warn(name,lineNr,"Ignoring unknown extension key '%s'...",key.c_str());
+      }
     }
-    QCString key=s.left(sepStart);
-    QCString data=s.data() + sepStart + sepLength;
-
-    if (key == "Title")           rtf_title            = data.data();
-    if (key == "Subject")         rtf_subject          = data.data();
-    if (key == "Comments")        rtf_comments         = data.data();
-    if (key == "Company")         rtf_company          = data.data();
-    if (key == "LogoFilename")    rtf_logoFilename     = data.data();
-    if (key == "Author")          rtf_author           = data.data();
-    if (key == "Manager")         rtf_manager          = data.data();
-    if (key == "DocumentType")    rtf_documentType     = data.data();
-    if (key == "DocumentId")      rtf_documentId       = data.data();
-    if (key == "Keywords")        rtf_keywords         = data.data();
+    else
+    {
+      warn(name,lineNr,"Assignment of style sheet name expected!");
+    }
     lineNr++;
   }
 }

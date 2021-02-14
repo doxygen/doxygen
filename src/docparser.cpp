@@ -876,7 +876,7 @@ static int handleStyleArgument(DocNode *parent,DocNodeList &children,
   {
     static std::regex specialChar("[.,|()\\[\\]:;\\?]");
     if (tok==TK_WORD && g_token->name.length()==1 &&
-        std::regex_match(g_token->name.str(),specialChar))
+        std::regex_search(g_token->name.str(),specialChar))
     {
       // special character that ends the markup command
       return tok;
