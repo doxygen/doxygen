@@ -3390,11 +3390,12 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
     char *newPos=output.data()+output.curPos();
     Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",fileName,newPos-orgPos);
     int line=1;
-    Debug::print(Debug::Preprocessor,0,"---------\n00001 ");
+    Debug::print(Debug::Preprocessor,0,"---------\n");
+    if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
     while (orgPos<newPos) 
     {
       putchar(*orgPos);
-      if (*orgPos=='\n') Debug::print(Debug::Preprocessor,0,"%05d ",++line);
+      if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
       orgPos++;
     }
     Debug::print(Debug::Preprocessor,0,"\n---------\n");

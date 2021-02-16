@@ -37,7 +37,8 @@ class Debug
                      Lex          = 0x00002000,
                      Plantuml     = 0x00004000,
                      FortranFixed2Free = 0x00008000,
-                     Cite         = 0x00010000
+                     Cite         = 0x00010000,
+                     NoLineNo     = 0x00020000
                    };
     static void print(DebugMask mask,int prio,const char *fmt,...);
 
