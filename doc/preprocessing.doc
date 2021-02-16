@@ -259,7 +259,7 @@ you can run doxygen as follows:
 \verbatim
   doxygen -d Preprocessor
 \endverbatim
-when the line numbers are no required:
+or when the line numbers are not wanted:
 \verbatim
   doxygen -d Preprocessor -d NoLineno
 \endverbatim
