@@ -17,7 +17,6 @@
 
 #include <stdio.h>
 #include <qglobal.h>
-#include <qregexp.h>
 #include <assert.h>
 #include "md5.h"
 #include "memberdef.h"
@@ -922,27 +921,12 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         ol.startParameterName(TRUE);
       }
     }
-    QRegExp re(")("),res("(.*\\*");
-    int vp=a.type.find(re);
-    int wp=a.type.find(res);
-
-    // use the following to put the function pointer type before the name
-    bool hasFuncPtrType=FALSE;
 
     if (!a.attrib.isEmpty() && !md->isObjCMethod()) // argument has an IDL attribute
     {
       ol.docify(a.attrib+" ");
     }
-    if (hasFuncPtrType) // argument type is a function pointer
-    {
-      //printf("a.type='%s' a.name='%s'\n",a.type.data(),a.name.data());
-      QCString n=a.type.left(vp);
-      if (hasFuncPtrType) n=a.type.left(wp);
-      if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
-      if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
-    }
-    else // non-function pointer type
+
     {
       QCString n=a.type;
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
@@ -952,6 +936,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
       }
     }
+
     if (!isDefine)
     {
       if (paramTypeStarted)
@@ -961,16 +946,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       }
       ol.startParameterName(defArgList.size()<2);
     }
-    if (hasFuncPtrType)
-    {
-      ol.docify(a.type.mid(wp,vp-wp));
-    }
     if (!a.name.isEmpty() || a.type=="...") // argument has a name
     {
-      //if (!hasFuncPtrType)
-      //{
-      //  ol.docify(" ");
-      //}
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Docbook);
       ol.disable(OutputGenerator::Html);
@@ -993,12 +970,6 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     if (!a.array.isEmpty())
     {
       ol.docify(a.array);
-    }
-    if (hasFuncPtrType) // write the part of the argument type
-                        // that comes after the name
-    {
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),
-                  md,a.type.right(a.type.length()-vp));
     }
     if (!a.defval.isEmpty()) // write the default value
     {
@@ -1857,6 +1828,8 @@ void MemberDefImpl::writeLink(OutputList &ol,
  */
 ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 {
+  //printf("%s:getClassDefOfAnonymousType() cache=%s\n",name().data(),
+  //                   m_impl->cachedAnonymousType?m_impl->cachedAnonymousType->name().data():"<empty>");
   if (m_impl->cachedAnonymousType) return m_impl->cachedAnonymousType;
 
   QCString cname;
@@ -1873,20 +1846,18 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static QRegExp r("@[0-9]+");
-  int l,i=r.match(ltype,0,&l);
-  //printf("ltype='%s' i=%d\n",ltype.data(),i);
+
   // search for the last anonymous scope in the member type
   ClassDef *annoClassDef=0;
-  if (i!=-1) // found anonymous scope in type
-  {
-    int il=i-1,ir=i+l;
-    // extract anonymous scope
-    while (il>=0 && (isId(ltype.at(il)) || ltype.at(il)==':' || ltype.at(il)=='@')) il--;
-    if (il>0) il++; else if (il<0) il=0;
-    while (ir<(int)ltype.length() && (isId(ltype.at(ir)) || ltype.at(ir)==':' || ltype.at(ir)=='@')) ir++;
 
-    QCString annName = ltype.mid(il,ir-il);
+  // match expression if it contains at least one @1 marker, e.g.
+  // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
+  static const std::regex r("[[:alnum:]_@:]*@[[:digit:]]+[[:alnum:]_@:]*");
+  std::string stype = ltype.str();
+  std::smatch match;
+  if (std::regex_search(stype,match,r)) // found anonymous scope in type
+  {
+    QCString annName = match.str();
 
     // if inside a class or namespace try to prepend the scope name
     if (!cname.isEmpty() && annName.left(cname.length()+2)!=cname+"::")
@@ -2132,18 +2103,20 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static QRegExp r("@[0-9]+");
-
+  static const std::regex r("@[[:digit:]]+");
+  std::smatch match;
+  std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
-  int l,i=r.match(ltype,0,&l);
-  if (i!=-1) // member has an anonymous type
+  if (std::regex_search(stype,match,r)) // member has an anonymous type
   {
+    size_t i = match.position();
+    size_t l = match.length();
     //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
     //    annoClassDef,annMemb,cname.data(),ltype.mid(i,l).data());
 
     if (annoClassDef) // type is an anonymous compound
     {
-      int ir=i+l;
+      size_t ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
       ol.startAnonTypeScope(s_indentLevel++);
       annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
@@ -2932,6 +2905,9 @@ void MemberDefImpl::_writeTypeConstraints(OutputList &ol) const
   }
 }
 
+// match from the start of the scope until the last marker
+static const std::regex reAnonymous("[[:alnum:]_:]*@[[:digit:]]+([^@]*@[[:digit:]]+)?");
+
 void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
                                  const QCString &cfname,const QCString &ciname,
                                  const QCString &cname) const
@@ -3032,21 +3008,14 @@ QCString MemberDefImpl::displayDefinition() const
       ldef=ldef.mid(2);
     }
   }
-  static QRegExp r("@[0-9]+");
-  int l,i=r.match(ldef,0,&l);
-  if (i!=-1) // replace anonymous parts with { ... }
+
+  std::string sdef = ldef.str();
+  std::smatch match;
+  if (std::regex_search(sdef,match,reAnonymous))
   {
-    int si=ldef.find(' '),pi,ei=i+l;
-    if (si==-1) si=0;
-    while ((pi=r.match(ldef,i+l,&l))!=-1)
-    {
-      i=pi;
-      ei=i+l;
-    }
-    int ni=ldef.find("::",si);
-    if (ni>=ei) ei=ni+2;
-    ldef = ldef.left(si) + " { ... } " + ldef.right(ldef.length()-ei);
+    ldef = match.prefix().str() + " { ... } " + match.suffix().str();
   }
+
   const ClassDef *cd=getClassDef();
   if (cd && cd->isObjectiveC())
   {
@@ -3066,9 +3035,9 @@ QCString MemberDefImpl::displayDefinition() const
     {
       ldef=ldef.left(dp+1);
     }
-    l=ldef.length();
+    int l=ldef.length();
     //printf("start >%s<\n",ldef.data());
-    i=l-1;
+    int i=l-1;
     while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
     while (i>=0 && isspace((uchar)ldef.at(i))) i--;
     if (i>0)
@@ -3216,7 +3185,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     title += "()";
   }
   int i=0,l;
-  static QRegExp r("@[0-9]+");
 
   if (lang == SrcLangExt_Slice)
   {
@@ -3237,19 +3205,26 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   QStrList sl;
   getLabels(sl,scopedContainer);
 
-  if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
+  static std::regex r("@[0-9]+");
+  std::smatch match;
+  std::string sdef = ldef.str();
+  if ((isVariable() || isTypedef()) && std::regex_search(sdef,match,r))
   {
+    i = (int)match.position();
+    l = (int)match.length();
     // find enum type and insert it in the definition
     bool found=false;
     for (const auto &vmd : *ml)
     {
-      if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
+      if (vmd->isEnumerate() && match.str()==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.left(i));
+        std::string prefix = match.prefix().str();
+        std::string suffix = match.suffix().str();
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-i-l));
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
 
         found=true;
         break;
@@ -3261,21 +3236,20 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
       ol.startMemberDoc(ciname,name(),memAnchor,"",memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
-      int si=ldef.find(' '),pi,ei=i+l;
-      if (si==-1) si=0;
-      while ((pi=r.match(ldef,i+l,&l))!=-1)
-      {
-        i=pi;
-        ei=i+l;
-      }
-      // first si characters of ldef contain compound type name
+
       ol.startMemberDocName(isObjCMethod());
-      ol.docify(ldef.left(si));
-      ol.docify(" { ... } ");
-      // last ei characters of ldef contain pointer/reference specifiers
-      int ni=ldef.find("::",si);
-      if (ni>=ei) ei=ni+2;
-      linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-ei));
+      if (std::regex_search(sdef,match,reAnonymous))
+      {
+        std::string prefix = match.prefix().str();
+        std::string suffix = match.suffix().str();
+        ol.docify(prefix.c_str());
+        ol.docify(" { ... } ");
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
+      }
+      else
+      {
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef);
+      }
     }
   }
   else // not an enum value or anonymous compound
@@ -3637,21 +3611,18 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 }
 
 // strip scope and field name from the type
-// example: "struct N::S.v.c" will become "struct v"
+// example: "struct N<K::J>::S.v.c" will become "struct v"
 static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
   if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
-  static QRegExp re("[A-Z_a-z0-9]+::");
-  int i,l;
-  while ((i=re.match(ts,0,&l))!=-1)
+  static const std::regex re("[[:alpha:]_][[:alnum:]_]*(<[^>]*>)?::([[:alpha:]_][[:alnum:]_]*)");
+  std::smatch match;
+  std::string t = ts.str();
+  if (std::regex_search(t,match,re))
   {
-    ts=ts.left(i)+ts.mid(i+l);
+    ts = match[2].str(); // take the identifier after the last :: (second capture group)
   }
-  i=ts.findRev('.');
-  if (i!=-1) ts = ts.left(i);
-  i=ts.findRev('.');
-  if (i!=-1) ts = ts.right(ts.length()-i-1);
   //printf("simplifyTypeForTable(%s)->%s\n",s.data(),ts.data());
   return ts;
 }
