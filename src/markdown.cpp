@@ -213,6 +213,26 @@ inline int isNewline(const char *data)
   return 0;
 }
 
+// escape double quotes in string
+static QCString escapeDoubleQuotes(const QCString &s)
+{
+  TRACE(s.data());
+  if (s.isEmpty()) return "";
+  GrowBuf growBuf;
+  const char *p=s;
+  char c,pc='\0';
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '"':  if (pc!='\\')  { growBuf.addChar('\\'); } growBuf.addChar(c);   break;
+      default:   growBuf.addChar(c); break;
+    }
+    pc=c;
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 // escape characters that have a special meaning later on.
 static QCString escapeSpecialChars(const QCString &s)
 {
@@ -775,13 +795,13 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
   if (!explicitTitle && !content.isEmpty())
   {
     m_out.addStr(" \"");
-    m_out.addStr(content);
+    m_out.addStr(escapeDoubleQuotes(content));
     m_out.addStr("\"");
   }
   else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
   {
     m_out.addStr(" \"");
-    m_out.addStr(title);
+    m_out.addStr(escapeDoubleQuotes(title));
     m_out.addStr("\"");
   }
   else
