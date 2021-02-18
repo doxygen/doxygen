@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
+#include <regex>
 
 #include <ctype.h>
 #include "types.h"
@@ -457,6 +458,10 @@ bool mainPageHasTitle();
 bool openOutputFile(const char *outFile,QFile &f);
 void writeExtraLatexPackages(FTextStream &t);
 void writeLatexSpecialFormulaChars(FTextStream &t);
+
+StringVector split(const std::string &s,const std::string &delimiter);
+StringVector split(const std::string &s,const std::regex &delimiter);
+int findIndex(StringVector &sv,const std::string &s);
 
 bool recognizeFixedForm(const char* contents, FortranFormat format);
 FortranFormat convertFileNameFortranParserCode(QCString fn);

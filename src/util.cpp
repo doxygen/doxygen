@@ -7485,3 +7485,42 @@ QCString removeEmptyLines(const QCString &s)
   //printf("removeEmptyLines(%s)=%s\n",s.data(),out.data());
   return out.data();
 }
+
+/// split input string \a s by string delimiter \a delimiter.
+/// returns a vector of non-empty strings that are between the delimiters
+StringVector split(const std::string &s,const std::string &delimiter)
+{
+  StringVector result;
+  size_t prev = 0, pos = 0, len = s.length();
+  do
+  {
+    pos = s.find(delimiter, prev);
+    if (pos == std::string::npos) pos = len;
+    if (pos>prev) result.push_back(s.substr(prev,pos-prev));
+    prev = pos + delimiter.length();
+  }
+  while (pos<len && prev<len);
+  return result;
+}
+
+/// split input string \a s by regular expression delimiter \a delimiter.
+/// returns a vector of non-empty strings that are between the delimiters
+StringVector split(const std::string &s,const std::regex &delimiter)
+{
+  StringVector result;
+  std::sregex_token_iterator iter(s.begin(), s.end(), delimiter, -1);
+  std::sregex_token_iterator end;
+  for ( ; iter != end; ++iter)
+  {
+    result.push_back(*iter);
+  }
+  return result;
+}
+
+/// find the index of a string in a vector of strings, returns -1 if the string could not be found
+int findIndex(StringVector &sv,const std::string &s)
+{
+  auto it = std::find(sv.begin(),sv.end(),s);
+  return it!=sv.end() ? (int)(it-sv.begin()) : -1;
+}
+
