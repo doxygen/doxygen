@@ -124,12 +124,29 @@ CMD       ("\\"|"@")
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
+Bopt      {B}*
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+
+  /* no comment start / end signs inside square brackets */
+NCOMM [^/\*]
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
+  // doxygen start comment
+DCOMM ("/\*!"|"/\**"|"/\/!"|"/\/\/")
+
+  // Optional any character
+ANYopt .*
+  // Optional all but newline
+NONLopt [^\n]*
 
 %x DefSection
 %x OptPrefix
@@ -205,26 +222,26 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DefSection>^{nws}       {
                            BEGIN(DefSectionLine);
                          }
-<DefSection>"//".*{nl}   {
+<DefSection>{CPPC}.*{nl}   {
                            yyextra->CCodeBuffer += yytext;
                          }
-<DefSection>^{ws}*"/*"   {
+<DefSection>^{ws}*{CCS}   {
                            yyextra->CCodeBuffer += yytext;
                            yyextra->lastContext = YY_START;
                            BEGIN(COMMENT);
                          }
-<COMMENT>"*/"{ws}*{nl}   {
+<COMMENT>{CCE}{ws}*{nl}   {
                            yyextra->CCodeBuffer+=yytext;
                            BEGIN(yyextra->lastContext);
                          }
-<COMMENT>"*/"            {
+<COMMENT>{CCE}            {
                            yyextra->CCodeBuffer+=yytext;
                            BEGIN(yyextra->lastContext);
                          }
 <COMMENT>[^*\n]+         {
                            yyextra->CCodeBuffer += yytext;
                          }
-<COMMENT>"//"|"/*"       {
+<COMMENT>{CPPC}|{CCS}       {
                            yyextra->CCodeBuffer += yytext;
                          }
 <COMMENT>{nl}              {
@@ -374,7 +391,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <RulesPattern>"\\\\"     {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                          }
-<RulesPattern>"/*"       {
+<RulesPattern>{CCS}       {
                            yyextra->CCodeBuffer += yytext;
                            yyextra->lastContext = YY_START;
                            BEGIN(COMMENT);
@@ -401,7 +418,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                             yyextra->CCodeBuffer += yytext;
                                           ++yyextra->curlyCount ;
                           }
-<SkipCurly>"}"/{BN}*("/*!"|"/**"|"//!"|"///")"<!--" | /* see bug710917 */
+<SkipCurly>"}"/{BN}*{DCOMM}"<!--" | /* see bug710917 */
 <SkipCurly>"}"            {
                             yyextra->CCodeBuffer += yytext;
                             if( yyextra->curlyCount )
@@ -409,7 +426,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                               --yyextra->curlyCount ;
                             }
                           }
-<SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" {
+<SkipCurly>"}"{BN}*{DCOMM}"<" {
                             yyextra->CCodeBuffer += yytext;
                             if ( yyextra->curlyCount )
                             {
@@ -449,12 +466,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCurly>[^\n#"'@\\/{}<]+ {
                             yyextra->CCodeBuffer += yytext;
                           }
-<SkipCurly>"/*"           {
+<SkipCurly>{CCS}           {
                             yyextra->CCodeBuffer += yytext;
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipComment);
                           }
-<SkipCurly>"//"           {
+<SkipCurly>{CPPC}           {
                             yyextra->CCodeBuffer += yytext;
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipCxxComment);
@@ -468,12 +485,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCurly>.              {
                             yyextra->CCodeBuffer += yytext;
                           }
-<SkipCurly>("//"{B}*)?"/*!" {
+<SkipCurly>({CPPC}{B}*)?{CCS}"!" {
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockContext   = YY_START;
                             BEGIN( DocBlock );
                           }
-<SkipCurly>"/**"[*]+{BL}  {
+<SkipCurly>{CCS}"*"[*]+{BL}  {
                             bool javadocBanner = Config_getBool(JAVADOC_BANNER);
                             yyextra->CCodeBuffer += yytext;
                             if( javadocBanner )
@@ -486,17 +503,17 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                               BEGIN( Comment ) ;
                             }
                           }
-<SkipCurly>("//"{B}*)?"/**"/[^/*] {
+<SkipCurly>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                              yyextra->CCodeBuffer += yytext;
                              yyextra->docBlockContext   = YY_START;
                              BEGIN( DocBlock );
                           }
-<SkipCurly>"//!"          {
+<SkipCurly>{CPPC}"!"          {
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockContext   = YY_START;
                             BEGIN( DocLine );
                           }
-<SkipCurly>"///"/[^/]     {
+<SkipCurly>{CPPC}"/"/[^/]     {
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockContext   = YY_START;
                             BEGIN( DocLine );
@@ -516,7 +533,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                              yyextra->CCodeBuffer += yytext;
                              BEGIN( yyextra->lastStringContext );
                           }
-<SkipString>"/*"|"*/"|"//" {
+<SkipString>{CCS}|{CCE}|{CPPC} {
                             yyextra->CCodeBuffer += yytext;
                           }
 <SkipString>\n            {
@@ -528,15 +545,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCxxComment>.*"\\\n"  {  // line continuation
                             yyextra->CCodeBuffer += yytext;
                           }
-<SkipCxxComment>.*/\n     {
+<SkipCxxComment>{ANYopt}/\n     {
                             yyextra->CCodeBuffer += yytext;
                             BEGIN( yyextra->lastCContext ) ;
                           }
 <Comment>{BN}+            {
                             yyextra->CCodeBuffer += yytext ;
                           }
-<Comment>"/*"             { yyextra->CCodeBuffer += yytext ; }
-<Comment>"//"             { yyextra->CCodeBuffer += yytext ; }
+<Comment>{CCS}             { yyextra->CCodeBuffer += yytext ; }
+<Comment>{CPPC}             { yyextra->CCodeBuffer += yytext ; }
 <Comment>{CMD}("code"|"verbatim") {
                             yyextra->insideCode=TRUE;
                             yyextra->CCodeBuffer += yytext ;
@@ -546,12 +563,12 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                             yyextra->CCodeBuffer += yytext ;
                           }
 <Comment>[^ \.\t\r\n\/\*]+ { yyextra->CCodeBuffer += yytext ; }
-<Comment>"*/"             { yyextra->CCodeBuffer += yytext ;
+<Comment>{CCE}             { yyextra->CCodeBuffer += yytext ;
                                           if (!yyextra->insideCode) BEGIN( yyextra->lastContext ) ;
                           }
 <Comment>.                { yyextra->CCodeBuffer += *yytext ; }
 
-<SkipComment>"//"|"/*"    {
+<SkipComment>{CPPC}|{CCS}    {
                             yyextra->CCodeBuffer += yytext;
                           }
 <SkipComment>[^\*\n]+     {
@@ -560,7 +577,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipComment>\n           {
                             yyextra->CCodeBuffer += yytext;
                           }
-<SkipComment>{B}*"*/"     {
+<SkipComment>{B}*{CCE}     {
                             yyextra->CCodeBuffer += yytext;
                             BEGIN( yyextra->lastCContext );
                           }
@@ -588,41 +605,41 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 
 
   /* ---- Single line comments ------ */
-<DocLine>[^\n]*"\n"[ \t]*"//"[/!][<]? { // continuation of multiline C++-style comment
+<DocLine>[^\n]*"\n"[ \t]*{CPPC}[/!][<]? { // continuation of multiline C++-style comment
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocLine>{B}*"///"[/]+{B}*/"\n" { // ignore marker line (see bug700345)
-                            yyextra->CCodeBuffer += yytext;
-                            BEGIN( yyextra->docBlockContext );
-                          }
-<DocLine>[^\n]*/"\n"{B}*"//"[!/]{B}*{CMD}"}" { // next line is an end group marker, see bug 752712
+<DocLine>{B}*{CPPC}"/"[/]+{Bopt}/"\n" { // ignore marker line (see bug700345)
                             yyextra->CCodeBuffer += yytext;
                             BEGIN( yyextra->docBlockContext );
                           }
-<DocLine>[^\n]*/"\n"      { // whole line
+<DocLine>{NONLopt}/"\n"{B}*{CPPC}[!/]{B}*{CMD}"}" { // next line is an end group marker, see bug 752712
+                            yyextra->CCodeBuffer += yytext;
+                            BEGIN( yyextra->docBlockContext );
+                          }
+<DocLine>{NONLopt}/"\n"      { // whole line
                             yyextra->CCodeBuffer += yytext;
                             BEGIN( yyextra->docBlockContext );
                           }
 
  /* ---- Comments blocks ------ */
 
-<DocBlock>"*"*"*/"        { // end of comment block
+<DocBlock>"*"*{CCE}        { // end of comment block
                             yyextra->CCodeBuffer += yytext;
                             BEGIN(yyextra->docBlockContext);
                           }
 <DocBlock>^{B}*"*"+/[^/]  {
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*] { // start of a comment line
+<DocBlock>^{B}*({CPPC})?{B}*"*"+/[^/a-z_A-Z0-9*] { // start of a comment line
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocBlock>^{B}*("//"){B}* { // strip embedded C++ comments if at the start of a line
+<DocBlock>^{B}*({CPPC}){B}* { // strip embedded C++ comments if at the start of a line
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocBlock>"//"            { // slashes in the middle of a comment block
+<DocBlock>{CPPC}            { // slashes in the middle of a comment block
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocBlock>"/*"            { // start of a new comment in the
+<DocBlock>{CCS}            { // start of a new comment in the
                             // middle of a comment block
                             yyextra->CCodeBuffer += yytext;
                           }
@@ -777,10 +794,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[^\<@/*\]~\$\\\n]+ { // any character that is not special
+<DocCopyBlock>[^\<@/\*\]~\$\\\n]+ { // any character that is not special
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocCopyBlock>"/*"|"*/"|"//" {
+<DocCopyBlock>{CCS}|{CCE}|{CPPC} {
                             if (yytext[1]=='*')
                             {
                               yyextra->nestedComment=TRUE;
@@ -797,7 +814,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <DocCopyBlock>.           { // any other character
                             yyextra->CCodeBuffer += yytext;
                           }
-<SkipCurlyEndDoc>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { // desc is followed by another one
+<SkipCurlyEndDoc>"}"{BN}*{DCOMM}"<" { // desc is followed by another one
                             yyextra->docBlockContext   = SkipCurlyEndDoc;
                             yyextra->CCodeBuffer += yytext;
                             if (yytext[yyleng-3]=='/')

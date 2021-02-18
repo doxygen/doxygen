@@ -321,7 +321,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
-<Start>^{BS}"namelist"/[//]             {  // Namelist specification
+<Start>^{BS}"namelist"/[/]              {  // Namelist specification
                                           startFontClass(yyscanner,"keywordtype");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -1067,7 +1067,7 @@ static bool getFortranNamespaceDefs(const QCString &mname,
   @param tname the name of the type
   @param moduleName name of enclosing module or null, if global entry
   @param cd the entry, if found or null
-  @param usedict dictionary of data of USE-statement
+  @param useMap map of data of USE-statement
   @returns true, if type is found
 */
 static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName,
@@ -1105,9 +1105,10 @@ static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName
 
 /**
   searches for definition of function memberName
+  @param yyscanner the scanner data to be used
   @param memberName the name of the function/variable
   @param moduleName name of enclosing module or null, if global entry
-  @param usedict array of data of USE-statement
+  @param useMap map of data of USE-statement
   @returns MemberDef pointer, if found, or nullptr otherwise
 */
 static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,

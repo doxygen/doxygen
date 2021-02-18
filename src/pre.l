@@ -340,10 +340,22 @@ static Define *      isDefined(yyscan_t yyscanner,const char *name);
 
 ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 B       [ \t]
+Bopt    {B}*
 BN	[ \t\r\n]
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
+  // optional characters after import
+ENDIMPORTopt [^\\\n]*
+  // Optional white space
+WSopt [ \t\r]*
 
 %option noyywrap
 
@@ -402,7 +414,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           outputArray(yyscanner,yytext,(int)yyleng);
                                           BEGIN(LexCopyLine);
                                         }
-<Start>^{B}*/[^#]			{
+<Start>^{Bopt}/[^#]			{
  					  outputArray(yyscanner,yytext,(int)yyleng);
   					  BEGIN(CopyLine);
 					}
@@ -650,7 +662,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <FindDefineArgs>{CHARLIT}		{
   					  yyextra->defArgsStr+=yytext;
   					}
-<FindDefineArgs>"/*"[*]?                {
+<FindDefineArgs>{CCS}[*]?                {
                                           yyextra->defArgsStr+=yytext;
                                           BEGIN(ArgCopyCComment);
                                         }
@@ -677,7 +689,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <ArgCopyCComment>[^*\n]+		{
 					  yyextra->defArgsStr+=yytext;
   					}
-<ArgCopyCComment>"*/"			{
+<ArgCopyCComment>{CCE}			{
 					  yyextra->defArgsStr+=yytext;
   					  BEGIN(FindDefineArgs);
   					}
@@ -699,7 +711,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           BEGIN(FindDefineArgs);
                                         }
 
-<ReadString>"//"|"/*"			{
+<ReadString>{CPPC}|{CCS}			{
   					  yyextra->defArgsStr+=yytext;
   					}
 <ReadString>\\/\r?\n			{ // line continuation
@@ -875,7 +887,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					}
 <DefinedExpr1,DefinedExpr2>.
 <SkipCPPBlock>^{B}*"#"			{ BEGIN(SkipCommand); }
-<SkipCPPBlock>^{B}*/[^#]		{ BEGIN(SkipLine); }
+<SkipCPPBlock>^{Bopt}/[^#]		{ BEGIN(SkipLine); }
 <SkipCPPBlock>\n			{ yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
 <SkipCPPBlock>.
 <SkipCommand>"if"(("n")?("def"))?/[ \t(!] {
@@ -931,15 +943,15 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  BEGIN(SkipString);
 					}
 <SkipLine>.
-<SkipString>"//"/[^\n]*                 {
+<SkipString>{CPPC}/[^\n]*                 {
                                         }
-<SkipLine,SkipCommand,SkipCPPBlock>"//"[^\n]* {
+<SkipLine,SkipCommand,SkipCPPBlock>{CPPC}[^\n]* {
   					  yyextra->lastCPPContext=YY_START;
   					  BEGIN(RemoveCPPComment);
 					}
-<SkipString>"/*"/[^\n]*                 {
+<SkipString>{CCS}/[^\n]*                 {
                                         }
-<SkipLine,SkipCommand,SkipCPPBlock>"/*"/[^\n]* {
+<SkipLine,SkipCommand,SkipCPPBlock>{CCS}/[^\n]* {
 					  yyextra->lastCContext=YY_START;
   					  BEGIN(RemoveCComment);
   					}
@@ -954,7 +966,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  BEGIN(SkipLine);
   					}
 <SkipString>.				{ }
-<IncludeID>{ID}{B}*/"("			{
+<IncludeID>{ID}{Bopt}/"("			{
   					  yyextra->nospaces=TRUE;
 				          yyextra->roundCount=0;
 					  yyextra->defArgsStr=yytext;
@@ -978,7 +990,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(Start);
 					  }
   					}
-<EndImport>[^\\\n]*/\n			{
+<EndImport>{ENDIMPORTopt}/\n			{
   					  BEGIN(Start);
   					}
 <EndImport>\\[\r]?"\n"			{
@@ -1117,20 +1129,20 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  yyextra->insideComment=FALSE;
   					}
   */
-<DefineText>"/*"[!*]?			{
+<DefineText>{CCS}[!*]?			{
 					  yyextra->defText+=yytext;
 					  yyextra->defLitText+=yytext;
 					  yyextra->lastCContext=YY_START;
 					  yyextra->commentCount=1;
   					  BEGIN(CopyCComment);
   					}
-<DefineText>"//"[!/]?			{
+<DefineText>{CPPC}[!/]?			{
   					  outputArray(yyscanner,yytext,(int)yyleng);
   					  yyextra->lastCPPContext=YY_START;
 					  yyextra->defLitText+=' ';
   					  BEGIN(SkipCPPComment);
   					}
-<SkipCComment>[/]?"*/"			{
+<SkipCComment>[/]?{CCE}			{
   					  if (yytext[0]=='/') outputChar(yyscanner,'/');
   					  outputChar(yyscanner,'*');outputChar(yyscanner,'/');
 					  if (--yyextra->commentCount<=0)
@@ -1144,10 +1156,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    BEGIN(yyextra->lastCContext);
 					  }
   					}
-<SkipCComment>"//"("/")*		{
+<SkipCComment>{CPPC}("/")*		{
   					  outputArray(yyscanner,yytext,(int)yyleng);
   					}
-<SkipCComment>"/*"			{
+<SkipCComment>{CCS}			{
   					  outputChar(yyscanner,'/');outputChar(yyscanner,'*');
 					  //yyextra->commentCount++;
   					}
@@ -1257,7 +1269,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(yyextra->condCtx);
                                           }
   					}
-<SkipCComment,SkipCPPComment>[\\@]"cond"[ \t\r]*/\n { // no guard
+<SkipCComment,SkipCPPComment>[\\@]"cond"{WSopt}/\n { // no guard
                                           if (YY_START==SkipCComment)
                                           {
                                             yyextra->ccomment=TRUE;
@@ -1275,8 +1287,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCond>\n                            { yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
 <SkipCond>.                             { }
 <SkipCond>[^\/\!*\\@\n]+                { }
-<SkipCond>"//"[/!]                      { yyextra->ccomment=FALSE; }
-<SkipCond>"/*"[*!]                      { yyextra->ccomment=TRUE; }
+<SkipCond>{CPPC}[/!]                      { yyextra->ccomment=FALSE; }
+<SkipCond>{CCS}[*!]                      { yyextra->ccomment=TRUE; }
 <SkipCond,SkipCComment,SkipCPPComment>[\\@][\\@]"endcond"/[^a-z_A-Z0-9\x80-\xFF] {
                                           if (!yyextra->skip)
                                           {
@@ -1328,7 +1340,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             BEGIN(SkipCComment);
                                           }
                                         }
-<SkipVerbatim>"*/"|"/*"			{
+<SkipVerbatim>{CCE}|{CCS}			{
   					  outputArray(yyscanner,yytext,(int)yyleng);
   					}
 <SkipCComment,SkipVerbatim>[^*\\@\x06~`\n\/]+ {
@@ -1351,7 +1363,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                           yyextra->yyLineNr++;
                                           yyextra->yyMLines++;
                                         }
-<CopyCComment>"*/"			{
+<CopyCComment>{CCE}			{
 					  yyextra->defLitText+=yytext;
 					  yyextra->defText+=yytext;
   					  BEGIN(yyextra->lastCContext);
@@ -1361,7 +1373,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					  yyextra->defLitText+=yytext;
 					  yyextra->defText+=' ';
   					}
-<RemoveCComment>"*/"{B}*"#"	        { // see bug 594021 for a usecase for this rule
+<RemoveCComment>{CCE}{B}*"#"	        { // see bug 594021 for a usecase for this rule
                                           if (yyextra->lastCContext==SkipCPPBlock)
 					  {
 					    BEGIN(SkipCommand);
@@ -1371,9 +1383,9 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    REJECT;
 					  }
 					}
-<RemoveCComment>"*/"		        { BEGIN(yyextra->lastCContext); }
-<RemoveCComment>"//"			
-<RemoveCComment>"/*"
+<RemoveCComment>{CCE}		        { BEGIN(yyextra->lastCContext); }
+<RemoveCComment>{CPPC}			
+<RemoveCComment>{CCS}
 <RemoveCComment>[^*\x06\n]+
 <RemoveCComment>\n			{ yyextra->yyLineNr++; outputChar(yyscanner,'\n'); }
 <RemoveCComment>.			
@@ -1384,10 +1396,10 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					  unput(*yytext);
   					  BEGIN(yyextra->lastCPPContext);
   					}
-<SkipCPPComment>"/*"			{
+<SkipCPPComment>{CCS}			{
   					  outputChar(yyscanner,'/');outputChar(yyscanner,'*');
   					}
-<SkipCPPComment>"//"			{
+<SkipCPPComment>{CPPC}			{
   					  outputChar(yyscanner,'/');outputChar(yyscanner,'/');
   					}
 <SkipCPPComment>[^\x06\@\\\n]+		{
@@ -1396,8 +1408,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 <SkipCPPComment>.			{
   					  outputChar(yyscanner,*yytext);
   					}
-<RemoveCPPComment>"/*"
-<RemoveCPPComment>"//"
+<RemoveCPPComment>{CCS}
+<RemoveCPPComment>{CPPC}
 <RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
 <DefineText>"#"				{
@@ -1510,8 +1522,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
   					    BEGIN(SkipSingleQuote);
 					  }
 					}
-<SkipDoubleQuote>"//"[/]?		{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
-<SkipDoubleQuote>"/*"[*]?		{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
+<SkipDoubleQuote>{CPPC}[/]?		{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
+<SkipDoubleQuote>{CCS}[*]?		{ yyextra->defText += yytext; yyextra->defLitText+=yytext; }
 <SkipDoubleQuote>\"			{
   					  yyextra->defText += *yytext; yyextra->defLitText+=yytext;
 					  BEGIN(DefineText);
@@ -1591,8 +1603,8 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
                                             yyextra->localDefines.clear();
 					  }
   					}
-<*>"/*"/"*/"				|
-<*>"/*"[*!]?				{
+<*>{CCS}/{CCE}				|
+<*>{CCS}[*!]?				{
                                           if (YY_START==SkipVerbatim || YY_START==SkipCond)
                                           {
                                             REJECT;
@@ -1614,7 +1626,7 @@ CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
 					    BEGIN(SkipCComment);
                                           }
   					}
-<*>"//"[/!]?				{
+<*>{CPPC}[/!]?				{
                                           if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->yyFileName)==SrcLangExt_Fortran)
                                           {
                                             REJECT;

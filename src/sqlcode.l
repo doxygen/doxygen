@@ -119,7 +119,7 @@ variable        @{idchar}+
 
 simplecomment   --.*
 commentopen     "/\*"
-commentclose    "\*/"
+commentclose    "\*\/"
 
 %x COMMENT
 

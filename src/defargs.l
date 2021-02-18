@@ -115,9 +115,17 @@ static bool nameIsActuallyPartOfType(QCString &name);
 %}
 
 B       [ \t]
+Bopt    {B}*
 ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
+
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
 
 %option noyywrap
 
@@ -169,7 +177,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
   					  yyextra->curArgDefValue+=*yytext;
   					  BEGIN( CopyArgString );
   					}
-<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{B}*/{ID} { 
+<ReadFuncArgType>"("([^:)]+{B}*"::")*{B}*[&*\^]+{Bopt}/{ID} { 
   					  // function pointer as argument
 					  yyextra->curArgTypeName+=yytext;
 					  //yyextra->curArgTypeName=yyextra->curArgTypeName.simplifyWhiteSpace();
@@ -337,7 +345,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadFuncArgType>"="			{
 					  BEGIN( ReadFuncArgDef );
   					}
-<ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*("/*"[*!]|"//"[/!])"<" {
+<ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*({CCS}[*!]|{CPPC}[/!])"<" {
 					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=*yytext;  
 					  QCString text=yytext;
@@ -547,7 +555,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadDocLine>[^\n]+			{
   					  yyextra->curArgDocs+=yytext;
   					}
-<ReadDocBlock>"*/"			{ 
+<ReadDocBlock>{CCE}			{ 
   					  if (yyextra->lastDocChar!=0)
 					    unput(yyextra->lastDocChar);
   					  BEGIN(yyextra->lastDocContext); 
@@ -563,7 +571,7 @@ RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 <ReadDocBlock>.				{
   					  yyextra->curArgDocs+=*yytext;
   					}
-<*>("/*"[*!]|"//"[/!])("<"?)		{
+<*>({CCS}[*!]|{CPPC}[/!])("<"?)		{
   					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=0;  
 					  if (yytext[1]=='/')
@@ -764,8 +772,8 @@ static bool nameIsActuallyPartOfType(QCString &name)
 }
 
 /*! Converts an argument string into an ArgumentList.
+ *  \param[in] lang langage of the current argument list
  *  \param[in] argsString the list of Arguments.
- *  \param[out] al a reference to resulting argument list pointer.
  *  \param[out] extraTypeChars point to string to which trailing characters 
  *              for complex types are written to
  */

@@ -76,7 +76,7 @@ class XMLParser : public XMLLocator
     /*! Parses a file gives the contents of the file as a string.
      *  @param fileName the name of the file, used for error reporting.
      *  @param inputString the contents of the file as a zero terminated UTF-8 string.
-     *  @param debugEnable indicates if debugging via -d lex is enabled or not.
+     *  @param debugEnabled indicates if debugging via -d lex is enabled or not.
      */
     void parse(const char *fileName,const char *inputString,bool debugEnabled);
 

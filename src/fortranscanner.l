@@ -1795,7 +1795,8 @@ static void copyEntry(std::shared_ptr<Entry> dest, const std::shared_ptr<Entry> 
 
 /** fill empty interface module procedures with info from
     corresponding module subprogs
-    @TODO: handle procedures in used modules
+
+    TODO: handle procedures in used modules
 */
 void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
 {
