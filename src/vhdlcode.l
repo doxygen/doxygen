@@ -324,7 +324,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       QCString qcs(yytext);
                                       VhdlDocGen::deleteAllChars(qcs,'"');
                                       VhdlDocGen::deleteAllChars(qcs,' ');
-                                      if (VhdlDocGen::isNumber(qcs))
+                                      if (VhdlDocGen::isNumber(qcs.str()))
                                       {
                                         writeFont(yyscanner,"vhdllogic",yytext);
                                       }
@@ -411,7 +411,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                               yyextra->vhdlKeyDict.find(yyextra->prevString.str())==yyextra->vhdlKeyDict.end())
                                           {
                                             val=val.stripWhiteSpace();
-                                            if (VhdlDocGen::isNumber(val))
+                                            if (VhdlDocGen::isNumber(val.str()))
                                             {
                                               startFontClass(yyscanner,"vhdllogic");
                                               codifyLines(yyscanner,yytext,yyextra->currClass.data());
@@ -846,7 +846,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       VhdlDocGen::deleteAllChars(qcs,'"');
                                       VhdlDocGen::deleteAllChars(qcs,' ');
 
-                                      if (VhdlDocGen::isNumber(qcs))
+                                      if (VhdlDocGen::isNumber(qcs.str()))
                                       {
                                         writeFont(yyscanner,"vhdllogic",yytext);
                                       }
@@ -978,7 +978,7 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
     return true;
   }
 
-  if (VhdlDocGen::isNumber(name))
+  if (VhdlDocGen::isNumber(name.str()))
   {
     startFontClass(yyscanner,"vhdllogic");
     yyextra->code->codify(name.data());
@@ -1160,13 +1160,16 @@ static void writeWord(yyscan_t yyscanner,const char *word,const char* curr_class
       else
       {
          QCString qc(temp.data());
-         if (VhdlDocGen::isNumber(qc)){
-                         startFontClass(yyscanner,"vhdllogic");
-                         yyextra->code->codify(temp.data());
-                         endFontClass(yyscanner);
-                              }
+         if (VhdlDocGen::isNumber(qc.str()))
+         {
+           startFontClass(yyscanner,"vhdllogic");
+           yyextra->code->codify(temp.data());
+           endFontClass(yyscanner);
+         }
          else
-        yyextra->code->codify(temp.data());
+         {
+           yyextra->code->codify(temp.data());
+         }
       }
     }
   }

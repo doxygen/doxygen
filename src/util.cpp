@@ -7518,9 +7518,17 @@ StringVector split(const std::string &s,const std::regex &delimiter)
 }
 
 /// find the index of a string in a vector of strings, returns -1 if the string could not be found
-int findIndex(StringVector &sv,const std::string &s)
+int findIndex(const StringVector &sv,const std::string &s)
 {
   auto it = std::find(sv.begin(),sv.end(),s);
   return it!=sv.end() ? (int)(it-sv.begin()) : -1;
+}
+
+/// find the index of the first occurrence of pattern \a re in a string \a s
+/// returns -1 if the pattern could not be found
+int findIndex(const std::string &s,const std::regex &re)
+{
+  std::smatch match;
+  return (std::regex_search(s,match,re)) ? (int)match.position() : -1;
 }
 

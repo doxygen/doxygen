@@ -461,7 +461,8 @@ void writeLatexSpecialFormulaChars(FTextStream &t);
 
 StringVector split(const std::string &s,const std::string &delimiter);
 StringVector split(const std::string &s,const std::regex &delimiter);
-int findIndex(StringVector &sv,const std::string &s);
+int findIndex(const StringVector &sv,const std::string &s);
+int findIndex(const std::string &s,const std::regex &re);
 
 bool recognizeFixedForm(const char* contents, FortranFormat format);
 FortranFormat convertFileNameFortranParserCode(QCString fn);
