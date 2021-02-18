@@ -1524,12 +1524,13 @@ void FileDefImpl::combineUsingRelations()
 
 bool FileDefImpl::isDocumentationFile() const
 {
-  return name().right(4)==".doc" ||
+  return getLanguageFromFileName(getFileNameExtension(name())) != SrcLangExt_Unparsed &&
+        (name().right(4)==".doc" ||
          name().right(4)==".txt" ||
          name().right(4)==".dox" ||
          name().right(3)==".md"  ||
          name().right(9)==".markdown" ||
-         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt_Markdown;
+         getLanguageFromFileName(getFileNameExtension(name())) == SrcLangExt_Markdown);
 }
 
 void FileDefImpl::acquireFileVersion()

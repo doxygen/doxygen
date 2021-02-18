@@ -18,6 +18,14 @@
 
 #include "parserintf.h"
 
+class FileOutlineParser : public OutlineParserInterface
+{
+  public:
+    void parseInput(const char *, const char *,const std::shared_ptr<Entry> &, ClangTUParser*);
+    bool needsPreprocessing(const QCString &) const { return FALSE; }
+    void parsePrototype(const char *) {}
+};
+
 /** @brief Generic code parser */
 class FileCodeParser : public CodeParserInterface
 {

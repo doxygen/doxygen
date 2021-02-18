@@ -15,6 +15,41 @@
 
 #include "fileparser.h"
 #include "outputgen.h"
+#include "filedef.h"
+#include "entry.h"
+#include "commentscan.h"
+
+void FileOutlineParser::parseInput(const char *fileName, const char *fileBuf,const std::shared_ptr<Entry> &root, ClangTUParser*)
+{
+  CommentScanner commentScanner;
+  std::shared_ptr<Entry> current = std::make_shared<Entry>();
+  current->lang = SrcLangExt_Unparsed;
+  current->fileName = fileName;
+  current->docFile  = fileName;
+  current->docLine  = 1;
+  int lineNr=1;
+  Protection prot=Public;
+  bool needsEntry = FALSE;
+  int position=0;
+  QCString processedDocs = QCString("\\file \n\\verbinclude ") + fileName;
+
+  commentScanner.enterFile(fileName,lineNr);
+  commentScanner.parseCommentBlock(
+        this,
+        current.get(),
+        processedDocs,
+        fileName,
+        lineNr,
+        FALSE,     // isBrief
+        FALSE,     // javadoc autobrief
+        FALSE,     // inBodyDocs
+        prot,      // protection
+        position,
+        needsEntry,
+        true);
+  root->moveToSubEntryAndKeep(current);
+  commentScanner.leaveFile(fileName,lineNr);
+}
 
 void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                const char *,     // scopeName

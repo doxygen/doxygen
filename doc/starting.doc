@@ -38,7 +38,7 @@ tries to be complete):
 
 First, assure that your programming language has a reasonable chance of being
 recognized by doxygen. These languages are supported by default: C, C++, C#,
-Objective-C, IDL, Java, VHDL, PHP, Python, Fortran and D. It
+Objective-C, IDL, Java, VHDL, PHP, Python, Fortran, Slice, Markdown and D. It
 is possible to configure certain file type extensions to use certain parsers:
 see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details.
 Also, completely different languages can be supported by using preprocessor

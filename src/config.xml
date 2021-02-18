@@ -652,6 +652,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  free formatted Fortran: FortranFree, unknown formatted Fortran: Fortran. In
  the later case the parser tries to guess whether the code is fixed or free
  formatted code, this is the default for Fortran type files).
+ Furthermore it is possible to include files verbatim in the decumentation by using as language: unparsed.
 
  For instance to make doxygen treat
  <code>.inc</code> files as Fortran files (default is PHP), and <code>.f</code> files as C (default is Fortran),

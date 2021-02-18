@@ -5483,6 +5483,7 @@ g_lang2extMap[] =
   { "xml",         "xml",           SrcLangExt_XML      },
   { "sql",         "sql",           SrcLangExt_SQL      },
   { "md",          "md",            SrcLangExt_Markdown },
+  { "unparsed",    "unparsed",      SrcLangExt_Unparsed },
   { 0,             0,              (SrcLangExt)0        }
 };
 
@@ -6592,6 +6593,7 @@ QCString langToString(SrcLangExt lang)
     case SrcLangExt_SQL:      return "SQL";
     case SrcLangExt_Markdown: return "Markdown";
     case SrcLangExt_Slice:    return "Slice";
+    case SrcLangExt_Unparsed: return "unparsed";
   }
   return "Unknown";
 }
