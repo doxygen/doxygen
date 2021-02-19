@@ -5153,10 +5153,15 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
        inc_line = lineBlock(inc_text, blockId);
        inc_text = extractBlock(inc_text, blockId);
      }
+
+     Markdown markdown(fileName,inc_line);
+     QCString strippedDoc = stripIndentation(inc_text);
+     QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,inc_line) : strippedDoc;
+
      docParserPushContext();
      g_fileName = fileName;
      setDoctokinizerLineNr(inc_line);
-     internalValidatingParseDoc(this,m_children,inc_text);
+     internalValidatingParseDoc(this,m_children,processedDoc);
      docParserPopContext();
   }
   else
