@@ -239,7 +239,7 @@ static const std::regex s_clause("\\\\s([[:digit:]]+)[[:space:]]*");
 StyleData::StyleData(const std::string &reference, const std::string &definition)
 {
   std::smatch match;
-  if (regex_search(reference,match,s_clause))
+  if (std::regex_search(reference,match,s_clause))
   {
     m_index = static_cast<int>(std::stoul(match[1].str()));
   }
@@ -254,7 +254,7 @@ StyleData::StyleData(const std::string &reference, const std::string &definition
 bool StyleData::setStyle(const std::string &command, const std::string &styleName)
 {
   std::smatch match;
-  if (!regex_search(command,match,s_clause))
+  if (!std::regex_search(command,match,s_clause))
   {
     err("Style sheet '%s' contains no '\\s' clause.\n{%s}", styleName.c_str(), command.c_str());
     return false;
@@ -262,7 +262,7 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
   m_index = static_cast<int>(std::stoul(match[1].str()));
 
   static std::regex definition_splitter("^(.*)(\\\\sbasedon[[:digit:]]+.*)$");
-  if (regex_match(command,match,definition_splitter))
+  if (std::regex_match(command,match,definition_splitter))
   {
     m_reference  = match[1].str();
     m_definition = match[2].str();
