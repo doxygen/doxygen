@@ -42,7 +42,7 @@
 #ifndef QT_NO_DIR
 #include "qfileinfo.h"
 #include "qfiledefs_p.h"
-#include "qregexp.h"
+#include "qregexp_p.h"
 #include "qstringlist.h"
 #include <stdlib.h>
 #include <ctype.h>

@@ -21,7 +21,6 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qcstring.h>
-#include <qregexp.h>
 #include <ctype.h>
 #include <qcstringlist.h>
 

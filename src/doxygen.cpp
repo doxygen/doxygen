@@ -2220,7 +2220,7 @@ static MemberDef *addVariableToFile(
     {
       ttype.stripPrefix("struct ");
       ttype.stripPrefix("union ");
-      static std::regex re("[:alpha:]_][:alnum:]_]*");
+      static std::regex re("[[:alpha:]_][[:alnum:]_]*");
       std::smatch match;
       std::string typ = ttype.str();
       if (std::regex_search(typ,match,re))

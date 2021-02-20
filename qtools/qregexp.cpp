@@ -35,7 +35,7 @@
 **
 **********************************************************************/
 
-#include "qregexp.h"
+#include "qregexp_p.h"
 #include <ctype.h>
 #include <stdlib.h>
 

@@ -31,7 +31,6 @@
 
 #include <qfile.h>
 #include <qstring.h>
-#include <qregexp.h>
 
 #include "doctokenizer.h"
 #include "cmdmapper.h"

@@ -13,8 +13,6 @@
  *
  */
 
-#include <qregexp.h>
-
 #include "pagedef.h"
 #include "groupdef.h"
 #include "docparser.h"

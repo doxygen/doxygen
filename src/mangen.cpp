@@ -445,7 +445,6 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
         {
 	      FTextStream linkstream;
 	      linkstream.setDevice(&linkfile);
-	      //linkstream.setEncoding(QTextStream::UnicodeUTF8);
 	      linkstream << ".so " << getSubdir() << "/" << buildFileName( manName ) << endl;
 	}
     }

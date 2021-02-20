@@ -2109,14 +2109,14 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   bool endAnonScopeNeeded=FALSE;
   if (std::regex_search(stype,match,r)) // member has an anonymous type
   {
-    size_t i = match.position();
-    size_t l = match.length();
+    int i = (int)match.position();
+    int l = (int)match.length();
     //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
     //    annoClassDef,annMemb,cname.data(),ltype.mid(i,l).data());
 
     if (annoClassDef) // type is an anonymous compound
     {
-      size_t ir=i+l;
+      int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
       ol.startAnonTypeScope(s_indentLevel++);
       annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
@@ -2778,9 +2778,9 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
   }
   if (count>0)
   {
-    auto replaceFunc = [&bml](OutputList &ol,size_t entryIndex)
+    auto replaceFunc = [&bml,&ol](size_t entryIndex)
     {
-      size_t count=0;
+      size_t cnt=0;
       auto it = bml.begin();
       // find the entryIndex-th documented entry in the inheritance list.
       const MemberDef *bmd = 0;
@@ -2791,8 +2791,8 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
         bcd = bmd->getClassDef();
         if ( bmd->isLinkable() && bcd->isLinkable())
         {
-          if (count==entryIndex) break;
-          count++;
+          if (cnt==entryIndex) break;
+          cnt++;
         }
         ++it;
       }
@@ -2814,11 +2814,11 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
     QCString reimplInLine;
     if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
     {
-      reimplInLine = theTranslator->trImplementedInList(count);
+      reimplInLine = theTranslator->trImplementedInList((int)count);
     }
     else
     {
-      reimplInLine = theTranslator->trReimplementedInList(count);
+      reimplInLine = theTranslator->trReimplementedInList((int)count);
     }
 
     // write the list of classes that overwrite this member
@@ -3184,8 +3184,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   {
     title += "()";
   }
-  int i=0,l;
-
   if (lang == SrcLangExt_Slice)
   {
     // Remove the container scope from the member name.
@@ -3210,8 +3208,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   std::string sdef = ldef.str();
   if ((isVariable() || isTypedef()) && std::regex_search(sdef,match,r))
   {
-    i = (int)match.position();
-    l = (int)match.length();
     // find enum type and insert it in the definition
     bool found=false;
     for (const auto &vmd : *ml)
@@ -3343,7 +3339,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       }
       int dl=ldef.length();
       //printf("start >%s<\n",ldef.data());
-      i=dl-1;
+      int i=dl-1;
       while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
       while (i>=0 && isspace((uchar)ldef.at(i))) i--;
       if (i>0)

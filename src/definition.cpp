@@ -1208,7 +1208,7 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const char *scopeName,
   {
     auto members = refMapToVector(membersMap);
 
-    auto replaceFunc = [this,&members,scopeName](OutputList &ol,size_t entryIndex)
+    auto replaceFunc = [this,&members,scopeName,&ol](size_t entryIndex)
     {
       const MemberDef *md=members[entryIndex];
       if (md)

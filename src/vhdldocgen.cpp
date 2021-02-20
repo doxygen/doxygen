@@ -2406,7 +2406,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   QCString label;
   if (!entity.contains(":")) return "";
 
-  static std::regex exp("[:()[:space:]]");
+  static std::regex exp("[:()[[:space:]]");
   auto ql=split(entity.str(),exp);
   if (ql.size()<2)
   {
@@ -2436,7 +2436,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
 QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 {
-  static std::regex exp("[()[:space:]]");
+  static std::regex exp("[()[[:space:]]");
 
   auto ql = split(entity.str(),exp);
 

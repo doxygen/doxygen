@@ -94,7 +94,7 @@ QDataStream &operator<<( QDataStream &, const QByteArray & );
 QDataStream &operator>>( QDataStream &, QByteArray & );
 #endif
 
-class QRegExp;
+//class QRegExp;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -181,15 +181,15 @@ class QCString
     int	find( char c, int index=0, bool cs=TRUE ) const;
     int	find( const char *str, int index=0, bool cs=TRUE ) const;
     int find( const QCString &str, int index=0, bool cs=TRUE ) const;
-    int	find( const QRegExp &rx, int index=0 ) const;
+    //int	find( const QRegExp &rx, int index=0 ) const;
 
     int	findRev( char c, int index=-1, bool cs=TRUE) const;
     int	findRev( const char *str, int index=-1, bool cs=TRUE) const;
-    int	findRev( const QRegExp &rx, int index=-1 ) const;
+    //int	findRev( const QRegExp &rx, int index=-1 ) const;
 
     int	contains( char c, bool cs=TRUE ) const;
     int	contains( const char *str, bool cs=TRUE ) const;
-    int contains( const QRegExp &rx ) const;
+    //int contains( const QRegExp &rx ) const;
 
     bool stripPrefix(const char *prefix)
     {
@@ -295,7 +295,7 @@ class QCString
     }
 
     QCString &replace( uint index, uint len, const char *s);
-    QCString &replace( const QRegExp &rx, const char *str );
+    //QCString &replace( const QRegExp &rx, const char *str );
 
     short  toShort(  bool *ok=0, int base=10 ) const;
     ushort toUShort( bool *ok=0, int base=10 ) const;

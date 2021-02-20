@@ -42,7 +42,7 @@
 
 #include "qfileinfo.h"
 #include "qfiledefs_p.h"
-#include "qregexp.h"
+//#include "qregexp.h"
 #include "qstringlist.h"
 #include <stdlib.h>
 #include <ctype.h>

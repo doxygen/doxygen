@@ -49,7 +49,7 @@
   QString class
  *****************************************************************************/
 
-class QRegExp;
+//class QRegExp;
 class QString;
 class QCharRef;
 
@@ -451,14 +451,14 @@ public:
     int		find( QChar c, int index=0, bool cs=TRUE ) const;
     int		find( char c, int index=0, bool cs=TRUE ) const;
     int		find( const QString &str, int index=0, bool cs=TRUE ) const;
-    int		find( const QRegExp &, int index=0 ) const;
+    //int		find( const QRegExp &, int index=0 ) const;
 #ifndef QT_NO_CAST_ASCII
     int		find( const char* str, int index=0 ) const;
 #endif
     int		findRev( QChar c, int index=-1, bool cs=TRUE) const;
     int		findRev( char c, int index=-1, bool cs=TRUE) const;
     int		findRev( const QString &str, int index=-1, bool cs=TRUE) const;
-    int		findRev( const QRegExp &, int index=-1 ) const;
+    //int		findRev( const QRegExp &, int index=-1 ) const;
 #ifndef QT_NO_CAST_ASCII
     int		findRev( const char* str, int index=-1 ) const;
 #endif
@@ -469,7 +469,7 @@ public:
     int		contains( const char* str, bool cs=TRUE ) const;
 #endif
     int		contains( const QString &str, bool cs=TRUE ) const;
-    int		contains( const QRegExp & ) const;
+    //int		contains( const QRegExp & ) const;
 
     QString	left( uint len )  const;
     QString	right( uint len ) const;
@@ -497,7 +497,7 @@ public:
     QString    &remove( uint index, uint len );
     QString    &replace( uint index, uint len, const QString & );
     QString    &replace( uint index, uint len, const QChar*, uint clen );
-    QString    &replace( const QRegExp &, const QString & );
+    //QString    &replace( const QRegExp &, const QString & );
 
     short	toShort( bool *ok=0, int base=10 )	const;
     ushort	toUShort( bool *ok=0, int base=10 )	const;

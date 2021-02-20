@@ -41,7 +41,7 @@
 #ifndef QT_H
 #include "qvaluelist_p.h"
 #include "qstring.h"
-#include "qregexp.h"
+//#include "qregexp.h"
 #endif // QT_H
 
 #ifndef QT_NO_STRINGLIST
@@ -66,11 +66,11 @@ public:
     static QStringList split( const QString &sep, const QString &str, bool allowEmptyEntries = FALSE );
     static QStringList split( const QCString &sep, const QCString &str, bool allowEmptyEntries = FALSE );
     static QStringList split( const QChar &sep, const QString &str, bool allowEmptyEntries = FALSE );
-    static QStringList split( const QRegExp &sep, const QString &str, bool allowEmptyEntries = FALSE );
+    //static QStringList split( const QRegExp &sep, const QString &str, bool allowEmptyEntries = FALSE );
     QString join( const QString &sep ) const;
 
     QStringList grep( const QString &str, bool cs = TRUE ) const;
-    QStringList grep( const QRegExp &expr ) const;
+    //QStringList grep( const QRegExp &expr ) const;
 };
 
 #ifndef QT_NO_DATASTREAM

@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <qregexp.h>
+//#include <qregexp.h>
 #include <qdatastream.h>
 
 QCString &QCString::sprintf( const char *format, ... )
@@ -87,12 +87,14 @@ int QCString::find( const QCString &str, int index, bool cs ) const
   return find(str.data(),index,cs);
 }
 
+#if 0
 int QCString::find( const QRegExp &rx, int index ) const
 {
   if ( index < 0 )
     index += length();
   return rx.match( data(), index );
 }
+#endif
 
 int QCString::findRev( char c, int index, bool cs) const
 {
@@ -146,6 +148,7 @@ int QCString::findRev( const char *str, int index, bool cs) const
   return -1;
 }
 
+#if 0
 int QCString::findRev( const QRegExp &rx, int index ) const
 {
   if ( index < 0 )			// neg index ==> start from end
@@ -159,6 +162,7 @@ int QCString::findRev( const QRegExp &rx, int index ) const
   }
   return -1;
 }
+#endif
 
 int QCString::contains( char c, bool cs ) const
 {
@@ -202,6 +206,7 @@ int QCString::contains( const char *str, bool cs ) const
   return count;
 }
 
+#if 0
 int QCString::contains( const QRegExp &rx ) const
 {
   if ( isEmpty() )
@@ -217,6 +222,7 @@ int QCString::contains( const QRegExp &rx ) const
   }
   return count;
 }
+#endif
 
 
 QCString QCString::simplifyWhiteSpace() const
@@ -253,6 +259,7 @@ QCString &QCString::replace( uint index, uint len, const char *s)
   return *this;
 }
 
+#if 0
 QCString &QCString::replace( const QRegExp &rx, const char *str )
 {
   if ( isEmpty() )
@@ -273,6 +280,7 @@ QCString &QCString::replace( const QRegExp &rx, const char *str )
   }
   return *this;
 }
+#endif
 
 static bool ok_in_base( char c, int base )
 {

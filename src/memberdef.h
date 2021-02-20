@@ -36,7 +36,6 @@ class MemberGroup;
 class ExampleList;
 class OutputList;
 class GroupDef;
-class QTextStream;
 class QStrList;
 struct TagInfo;
 class MemberDefMutable;

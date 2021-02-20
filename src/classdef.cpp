@@ -1627,7 +1627,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
   if (!m_impl->inherits.empty())
   {
-    auto replaceFunc = [this](OutputList &ol,size_t entryIndex)
+    auto replaceFunc = [this,&ol](size_t entryIndex)
     {
       BaseClassDef &bcd=m_impl->inherits[entryIndex];
       ClassDef *cd=bcd.classDef;
@@ -1662,7 +1662,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
   if (!m_impl->inheritedBy.empty())
   {
 
-    auto replaceFunc = [this](OutputList &ol,size_t entryIndex)
+    auto replaceFunc = [this,&ol](size_t entryIndex)
     {
       BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
       ClassDef *cd=bcd.classDef;

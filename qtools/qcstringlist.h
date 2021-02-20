@@ -16,7 +16,7 @@
 
 #include "qvaluelist_p.h"
 #include "qcstring.h"
-#include "qregexp.h"
+//#include "qregexp.h"
 
 class QStrList;
 class QDataStream;
@@ -38,11 +38,11 @@ public:
 
     static QCStringList split( const QCString &sep, const QCString &str, bool allowEmptyEntries = FALSE );
     static QCStringList split( char sep,            const QCString &str, bool allowEmptyEntries = FALSE );
-    static QCStringList split( const QRegExp &sep,  const QCString &str, bool allowEmptyEntries = FALSE );
+    //static QCStringList split( const QRegExp &sep,  const QCString &str, bool allowEmptyEntries = FALSE );
     QCString join( const QCString &sep ) const;
 
     QCStringList grep( const QCString &str, bool cs = TRUE ) const;
-    QCStringList grep( const QRegExp &expr ) const;
+    //QCStringList grep( const QRegExp &expr ) const;
 };
 
 extern Q_EXPORT QDataStream &operator>>( QDataStream &, QCStringList& );

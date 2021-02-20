@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <qtextstream.h>
 #include <qdir.h>
-#include <qregexp.h>
 
 #include "message.h"
 #include "index.h"

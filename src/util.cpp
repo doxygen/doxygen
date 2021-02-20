@@ -180,7 +180,7 @@ QCString removeAnonymousScopes(const char *str)
   // helper to check if the found delimiter ends with a colon
   auto endsWithColon = [](const std::string &del)
   {
-    for (size_t i=del.size()-1;i>=0;i--)
+    for (int i=(int)del.size()-1;i>=0;i--)
     {
       if (del[i]=='@') return false;
       else if (del[i]==':') return true;
@@ -1094,7 +1094,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 }
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
-                     std::function<void(OutputList &ol,size_t index)> replaceFunc)
+                     std::function<void(size_t)> replaceFunc)
 {
   static std::regex marker("@([[:digit:]]+)");
   std::sregex_iterator it(markerText.begin(),markerText.end(),marker);
@@ -1110,7 +1110,7 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
     unsigned long entryIndex = std::stoul(match[1]);
     if (entryIndex<(unsigned long)numMarkers)
     {
-      replaceFunc(ol,entryIndex);
+      replaceFunc(entryIndex);
     }
     index=newIndex+matchLen;
   }
@@ -1119,7 +1119,7 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
 
 void writeExamples(OutputList &ol,const ExampleList &list)
 {
-  auto replaceFunc = [&list](OutputList &ol,size_t entryIndex)
+  auto replaceFunc = [&list,&ol](size_t entryIndex)
   {
     const auto &e = list[entryIndex];
     ol.pushGeneratorState();
@@ -1306,8 +1306,8 @@ static bool isMatchingWildcard(const StringType &input,size_t input_pos,
   auto pattern_char = pattern[pattern_pos];
   if (!caseSensitive)
   {
-    input_char   = std::tolower(input_char);
-    pattern_char = std::tolower(pattern_char);
+    input_char   = (typename StringType::value_type)std::tolower(input_char);
+    pattern_char = (typename StringType::value_type)std::tolower(pattern_char);
   }
   // if current character matches against '?' pattern or literally
   if (pattern[pattern_pos]=='?' || input_char==pattern_char)
@@ -4489,7 +4489,7 @@ int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &
   name.resize(0);
   templSpec.resize(0);
   if (type==0) return -1;
-  size_t typeLen=qstrlen(type);
+  int typeLen=qstrlen(type);
   if (typeLen>0)
   {
     if (lang == SrcLangExt_Fortran)
@@ -4500,18 +4500,18 @@ int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &
         re = re_fortran;
       }
     }
-    std::string part = type + pos;
-    std::sregex_iterator it(part.begin(),part.end(),re);
+    std::string s = type;
+    std::sregex_iterator it(s.begin()+pos,s.end(),re);
     std::sregex_iterator end;
 
     if (it!=end)
     {
       const auto &match = *it;
-      size_t i = pos + match.position();
-      size_t l = match.length();
-      size_t ts = i+l;
-      size_t te = ts;
-      size_t tl = 0;
+      int i = pos+(int)match.position();
+      int l = (int)match.length();
+      int ts = i+l;
+      int te = ts;
+      int tl = 0;
 
       while (ts<typeLen && type[ts]==' ') ts++,tl++; // skip any whitespace
       if (ts<typeLen && type[ts]=='<') // assume template instance
@@ -4544,13 +4544,13 @@ int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &
         pos=i+l;
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
-      //    type.data(),pos,name.data(),templSpec.data(),i);
+      //    type,pos,name.data(),templSpec.data(),i);
       return i;
     }
   }
   pos = typeLen;
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
-  //       type.data(),pos,name.data(),templSpec.data());
+  //       type,pos,name.data(),templSpec.data());
   return -1;
 }
 
@@ -6069,15 +6069,15 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
   std::regex re("[\\\\@]([[:alpha:]_][[:alnum:]_]*)");
   std::sregex_iterator re_it(s.begin(),s.end(),re);
   std::sregex_iterator end;
-  size_t p = 0;
+  int p = 0;
   //QCString value=s;
   //int i,p=0,l;
   //while ((i=cmdPat.match(value,p,&l))!=-1)
   for ( ; re_it!=end ; ++re_it)
   {
     const auto &match = *re_it;
-    size_t i = match.position();
-    size_t l = match.length();
+    int i = (int)match.position();
+    int l = (int)match.length();
     if (i>p) result+=s.substr(p,i-p);
     QCString args = extractAliasArgs(s,i+l);
     bool hasArgs = !args.isEmpty();            // found directly after command
