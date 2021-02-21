@@ -1294,7 +1294,7 @@ static bool isMatchingWildcard(const StringType &input,size_t input_pos,
   // if we are at the end of the input string
   if (input_pos==input.length())
   {
-    // match iff the remainer of the pattern is '*'s
+    // match iff the remainder of the pattern is '*'s
     for (size_t i=pattern_pos; i<pattern.size();i++)
     {
       if (pattern[i]!='*') return false;
