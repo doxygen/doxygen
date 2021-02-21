@@ -1279,70 +1279,35 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
-template<class StringType>
-static bool isMatchingWildcard(const StringType &input,size_t input_pos,
-                               const StringType &pattern,size_t pattern_pos,
-                               bool caseSensitive)
+static std::string wildcard2regex(const std::string &pattern)
 {
-  // end of pattern reached
-  if (pattern_pos==pattern.length())
+  std::string result="^"; // match start of input
+  char c;
+  const char *p = pattern.c_str();
+  while ((c=*p++))
   {
-    // match iff also at the end of the input string
-    return input_pos==input.length();
-  }
-
-  // if we are at the end of the input string
-  if (input_pos==input.length())
-  {
-    // match iff the remainer of the pattern is '*'s
-    for (size_t i=pattern_pos; i<pattern.size();i++)
+    switch(c)
     {
-      if (pattern[i]!='*') return false;
+      case '*': result+=".*"; break; // '*' => '.*'
+      case '?': result+='.';  break; // '?' => '.'
+      case '.': case '+': case '\\': case '$': case '^': result+='\\'; result+=c; break; // escape
+      case '[': if (*p=='^') { result+="[^"; p++; } else result+=c; break; // don't escape ^ after [
+      default: result+=c; break; // just copy
     }
-    return true;
   }
-
-  auto input_char   = input[input_pos];
-  auto pattern_char = pattern[pattern_pos];
-  if (!caseSensitive)
-  {
-    input_char   = (typename StringType::value_type)std::tolower(input_char);
-    pattern_char = (typename StringType::value_type)std::tolower(pattern_char);
-  }
-  // if current character matches against '?' pattern or literally
-  if (pattern[pattern_pos]=='?' || input_char==pattern_char)
-  {
-    // then continue with the next one
-    return isMatchingWildcard(input,input_pos+1,pattern,pattern_pos+1,caseSensitive);
-  }
-
-  // current character in the pattern is '*'
-  if (pattern[pattern_pos]=='*')
-  {
-    // try the same match against the next character in the input (current char is eaten by '*')
-    return isMatchingWildcard(input,input_pos+1,pattern,pattern_pos  ,caseSensitive) ||
-    // or try to match against the next character in the pattern ('*' matches an empty string)
-           isMatchingWildcard(input,input_pos  ,pattern,pattern_pos+1,caseSensitive);
-  }
-
-  // found a mismatch
-  return false;
+  result+='$'; // match end of input
+  return result;
 }
 
 static bool isMatchingWildcard(const std::string &input,const std::string &pattern,
                                bool caseSensitive=false)
 {
-  if (!caseSensitive) // to properly match input 'FÓÓ' against pattern 'fóó*' we need
-                      // to convert the std::string to a std::wstring so std::tolower works
-                      // on multi-byte characters like Ó and not one individual bytes.
-  {
-    std::wstring_convert< std::codecvt_utf8<wchar_t> > conv;
-    return isMatchingWildcard(conv.from_bytes(input),0,conv.from_bytes(pattern),0,caseSensitive);
-  }
-  else // simple case were we can do byte matching for characters.
-  {
-    return isMatchingWildcard(input,0,pattern,0,caseSensitive);
-  }
+
+  std::regex::flag_type flags = std::regex::ECMAScript;
+  if (!caseSensitive) flags |= std::regex::icase;
+  std::string re_str = wildcard2regex(pattern);
+  std::regex rePattern(wildcard2regex(pattern),flags);
+  return std::regex_match(input,rePattern);
 }
 
 static QCString getFilterFromList(const char *name,const StringVector &filterList,bool &found)
