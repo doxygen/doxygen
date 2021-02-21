@@ -1975,7 +1975,7 @@ static void processConcatOperators(QCString &expr)
       size_t n = i+match.position();
       size_t l = match.length();
       //printf("Match: '%s'\n",expr.data()+i);
-      if (n+l+1<e.length() && e[n+l]=='@' && expr[n+l+1]=='-')
+      if (n+l+1<e.length() && e[static_cast<int>(n+l)]=='@' && expr[static_cast<int>(n+l+1)]=='-')
       {
         // remove no-rescan marker after ID
         l+=2;
@@ -1983,7 +1983,7 @@ static void processConcatOperators(QCString &expr)
       //printf("found '%s'\n",expr.mid(n,l).data());
       // remove the ## operator and the surrounding whitespace
       e=e.substr(0,n)+e.substr(n+l);
-      int k=n-1;
+      int k=static_cast<int>(n)-1;
       while (k>=0 && isId(e[k])) k--; 
       if (k>0 && e[k]=='-' && e[k-1]=='@')
       {
@@ -3301,7 +3301,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       }
       else // simple define with argument
       {
-        int ine=i_equals - (nonRecursive ? 1 : 0);
+        int ine=static_cast<int>(i_equals) - (nonRecursive ? 1 : 0);
         def.name = ds.substr(0,ine);
         def.definition = ds.substr(i_equals+1);
       }

@@ -6902,7 +6902,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
     char c;
     if (matches.length()==3 && !matches[2].str().empty()) // found something like "int (*func)(int arg)"
     {
-      size_t s = matches.position()+1; // keep opening (
+      uint s = static_cast<uint>(matches.position())+1; // keep opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       int i=(int)s;
       while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i++;
@@ -6914,7 +6914,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
     }
     else if (matches.length()==3) // redundant braces like in "int (*var)"
     {
-      size_t s = matches.position(); // strip opening (
+      uint s = static_cast<uint>(matches.position()); // strip opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       s++;
       int i=(int)s+1;

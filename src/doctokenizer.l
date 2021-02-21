@@ -518,7 +518,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                            static std::regex re("[*+][^*+]*$"); // find last + or *
                            std::smatch match;
                            std::regex_search(text,match,re);
-                           size_t listPos = match.position();
+                           int listPos = static_cast<int>(match.position());
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(yytext,listPos);
@@ -563,7 +563,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                            static std::regex re("[*+][^*+]*$"); // find last + or *
                            std::smatch match;
                            std::regex_search(text,match,re);
-                           size_t markPos = match.position();
+                           int markPos = static_cast<int>(match.position());
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(text.c_str(),markPos);
