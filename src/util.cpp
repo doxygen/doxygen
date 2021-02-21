@@ -1306,7 +1306,7 @@ static bool isMatchingWildcard(const std::string &input,const std::string &patte
   std::regex::flag_type flags = std::regex::ECMAScript;
   if (!caseSensitive) flags |= std::regex::icase;
   std::string re_str = wildcard2regex(pattern);
-  std::regex rePattern(wildcard2regex(pattern),flags);
+  std::regex rePattern(re_str,flags);
   return std::regex_match(input,rePattern);
 }
 
