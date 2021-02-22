@@ -234,7 +234,7 @@ Rtf_Style_Default rtf_Style_Default[] =
   }
 };
 
-static const std::regex s_clause("\\\\s([[:digit:]]+)[[:space:]]*");
+static const std::regex s_clause("\\\\s([[:digit:]]+)[[:space:]]*", std::regex::optimize);
 
 StyleData::StyleData(const std::string &reference, const std::string &definition)
 {
@@ -261,7 +261,7 @@ bool StyleData::setStyle(const std::string &command, const std::string &styleNam
   }
   m_index = static_cast<int>(std::stoul(match[1].str()));
 
-  static std::regex definition_splitter("^(.*)(\\\\sbasedon[[:digit:]]+.*)$");
+  static const std::regex definition_splitter("^(.*)(\\\\sbasedon[[:digit:]]+.*)$", std::regex::optimize);
   if (std::regex_match(command,match,definition_splitter))
   {
     m_reference  = match[1].str();
@@ -287,7 +287,7 @@ void loadStylesheet(const char *name, StyleDataMap& map)
   for (std::string line ; getline(file,line) ; ) // for each line
   {
     if (line.empty() || line[0]=='#') continue; // skip blanks & comments
-    static std::regex assignment_splitter("[[:space:]]*=[[:space:]]*");
+    static const std::regex assignment_splitter("[[:space:]]*=[[:space:]]*", std::regex::optimize);
     std::smatch match;
     if (std::regex_search(line,match,assignment_splitter))
     {
@@ -330,7 +330,7 @@ void loadExtensions(const char *name)
   {
     if (line.empty() || line[0]=='#') continue; // skip blanks & comments
     std::smatch match;
-    static std::regex assignment_splitter("[[:space:]]*=[[:space:]]*");
+    static const std::regex assignment_splitter("[[:space:]]*=[[:space:]]*", std::regex::optimize);
     if (std::regex_search(line,match,assignment_splitter))
     {
       std::string key   = match.prefix();

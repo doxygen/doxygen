@@ -1090,7 +1090,7 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    static std::regex we("[[:alpha:]_][[:alnum:]_\\-]*");
+    static const std::regex we("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_\\-]*", std::regex::optimize);
     std::string title = m_title.str();
     std::sregex_iterator it(title.begin(),title.end(),we);
     std::sregex_iterator end;

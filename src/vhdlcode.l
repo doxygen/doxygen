@@ -359,7 +359,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       tt=tt.lower();
                                       VhdlDocGen::deleteAllChars(tt,';');
                                       tt.stripWhiteSpace();
-                                      static std::regex regg("[[:space:]]+");
+                                      static const std::regex regg("[[:space:]]+", std::regex::optimize);
                                       auto ql = split(tt.str(),regg);
                                       int index=findIndex(ql,"if")+1;
                                       index+=findIndex(ql,"case")+1;
@@ -959,7 +959,7 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
   if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
   {
     std::string inside = name.str().substr(1,len-2);
-    static std::regex regg("[[:space:]]+");
+    static const std::regex regg("[[:space:]]+", std::regex::optimize);
     auto qrl=split(inside,regg);
     if (VhdlDocGen::isNumber(qrl[0]))
     {

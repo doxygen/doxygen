@@ -1962,7 +1962,7 @@ static void processConcatOperators(QCString &expr)
   if (expr.isEmpty()) return;
   //printf("processConcatOperators: in='%s'\n",expr.data());
   std::string e = expr.str();
-  static std::regex r("[[:space:]]*##[[:space:]]*");
+  static const std::regex r("[[:space:]]*##[[:space:]]*", std::regex::optimize);
   std::sregex_iterator end;
 
   size_t i=0;
@@ -3206,7 +3206,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
-      std::regex reId("[[:alpha:]_][[:alnum:]_]*");
+      static const std::regex reId("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*", std::regex::optimize);
       std::sregex_iterator end;
       bool varArgs = false;
       int count = 0;

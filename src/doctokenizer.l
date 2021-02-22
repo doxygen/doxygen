@@ -515,7 +515,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            lineCount(yytext,yyleng);
                            std::string text=yytext;
-                           static std::regex re("[*+][^*+]*$"); // find last + or *
+                           static const std::regex re("[*+][^*+]*$", std::regex::optimize); // find last + or *
                            std::smatch match;
                            std::regex_search(text,match,re);
                            size_t listPos = match.position();
@@ -533,7 +533,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            std::string text=yytext;
-                           static std::regex re("[1-9]+");
+                           static const std::regex re("[1-9]+", std::regex::optimize);
                            std::smatch match;
                            std::regex_search(text,match,re);
                            g_token->isEnumList = true;
@@ -560,7 +560,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            lineCount(yytext,yyleng);
                            std::string text=extractPartAfterNewLine(yytext).str();
-                           static std::regex re("[*+][^*+]*$"); // find last + or *
+                           static const std::regex re("[*+][^*+]*$", std::regex::optimize); // find last + or *
                            std::smatch match;
                            std::regex_search(text,match,re);
                            size_t markPos = match.position();
@@ -579,7 +579,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            lineCount(yytext,yyleng);
                            std::string text=extractPartAfterNewLine(yytext).str();
-                           static std::regex re("[1-9]+");
+                           static const std::regex re("[1-9]+", std::regex::optimize);
                            std::smatch match;
                            std::regex_search(text,match,re);
                            g_token->isEnumList = true;

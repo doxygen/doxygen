@@ -1136,7 +1136,7 @@ static void substEnvVarsInString(QCString &str)
 {
   if (str.isEmpty()) return;
   // match e.g. $(HOME) but also $(PROGRAMFILES(X86))
-  static std::regex re("\\$\\(([[:alpha:]_][[:alnum:].-]*(\\([[:alpha:]_][[:alnum:].-]*\\))?)\\)");
+  static const std::regex re("\\$\\(([[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF.-]*(\\([[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF.-]*\\))?)\\)", std::regex::optimize);
   std::string s = str.str();
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
@@ -1649,7 +1649,7 @@ void Config::checkAndCorrect()
   for (const auto &alias : aliasList)
   {
     // match aliases of the form 'name=' and 'name{2} ='
-    static std::regex re("[[:alpha:]_][[:alnum:]_]*(\\{[[:digit:]]+\\})?[[:space:]]*=");
+    static const std::regex re("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*(\\{[[:digit:]]+\\})?[[:space:]]*=", std::regex::optimize);
     std::sregex_iterator it(alias.begin(),alias.end(),re);
     std::sregex_iterator end;
     if (it==end)

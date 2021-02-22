@@ -1034,7 +1034,7 @@ void VhdlDocGen::parseFuncProto(const char* text,QCString& name,QCString& ret,bo
 
 QCString VhdlDocGen::getIndexWord(const char* c,int index)
 {
-  static std::regex reg("[[:space:]:|]");
+  static const std::regex reg("[[:space:]:|]",std::regex::optimize);
   auto ql=split(c,reg);
 
   if ((size_t)index < ql.size())
@@ -1122,7 +1122,7 @@ QCString VhdlDocGen::getProcessNumber()
 
 void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberDef* mdef)
 {
-  static std::regex reg("[\\[\\]\\.\\/\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]");
+  static const std::regex reg("[\\[\\]\\.\\/\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]",std::regex::optimize);
   QCString qcs = s;
   qcs+=QCString(" ");// parsing the last sign
   QCString find=qcs;
@@ -1191,7 +1191,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
  */
 bool VhdlDocGen::isNumber(const std::string& s)
 {
-  static std::regex regg("[0-9][0-9eEfFbBcCdDaA_.#-+?xXzZ]*");
+  static const std::regex regg("[0-9][0-9eEfFbBcCdDaA_.#-+?xXzZ]*",std::regex::optimize);
   return std::regex_match(s,regg);
 }// isNumber
 
@@ -2298,7 +2298,7 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
         }
         else
         {
-          static std::regex ee("[[:space:]=]");
+          static const std::regex ee("[[:space:]=]",std::regex::optimize);
           int in=findIndex(temp.str(),ee);
           QCString ff=temp.left(in);
           temp.stripPrefix(ff.data());
@@ -2324,7 +2324,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
   VhdlDocGen::deleteAllChars(qcs,';');
   qcs=qcs.stripWhiteSpace();
 
-  static std::regex reg("[[:space:]=]");
+  static const std::regex reg("[[:space:]=]",std::regex::optimize);
   int i = findIndex(qcs.str(),reg);
   if (i<0) return;
   if (i==0)
@@ -2406,7 +2406,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   QCString label;
   if (!entity.contains(":")) return "";
 
-  static std::regex exp("[:()[[:space:]]");
+  static const std::regex exp("[:()[[:space:]]",std::regex::optimize);
   auto ql=split(entity.str(),exp);
   if (ql.size()<2)
   {
@@ -2436,7 +2436,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
 QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 {
-  static std::regex exp("[()[[:space:]]");
+  static const std::regex exp("[()[[:space:]]",std::regex::optimize);
 
   auto ql = split(entity.str(),exp);
 
@@ -2704,7 +2704,7 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
         bcd.usedName.append("(2)");
         return;
       }
-      static std::regex reg("[[:digit:]]+");
+      static const std::regex reg("[[:digit:]]+",std::regex::optimize);
       QCString s=n.left(i);
       QCString r=n.right(n.length()-i);
       std::string t=r.str();
@@ -2952,7 +2952,7 @@ void FlowChart::printNode(const FlowChart& flo)
     {
       t=flo.text.str();
     }
-    static std::regex ep("[[:space:]]");
+    static const std::regex ep("[[:space:]]",std::regex::optimize);
     t = std::regex_replace(t,ep,std::string(""));
     if (t.empty())
     {

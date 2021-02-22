@@ -1472,7 +1472,7 @@ static QCString extractTitleId(QCString &title, int level)
 {
   TRACE(title.data());
   // match e.g. '{#id-b11} ' and capture 'id-b11'
-  static std::regex r2("\\{#([a-z_A-Z][a-z_A-Z0-9\\-]*)\\}[[:space:]]*$");
+  static const std::regex r2("\\{#([a-z_A-Z][a-z_A-Z0-9\\-]*)\\}[[:space:]]*$", std::regex::optimize);
   std::smatch match;
   std::string ti = title.str();
   if (std::regex_search(ti,match,r2))

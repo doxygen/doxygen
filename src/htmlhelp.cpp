@@ -154,7 +154,7 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
                        const char *url,const char *anchor,bool hasLink,
                        bool reversed)
 {
-  static std::regex re("@[[:digit:]]+");
+  static const std::regex re("@[[:digit:]]+", std::regex::optimize);
   std::string key = level1;
   if (level2) key+= std::string("?") + level2;
   if (std::regex_search(key,re)) // skip anonymous stuff

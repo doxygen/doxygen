@@ -4186,7 +4186,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             c->push();
             std::string str = patternStr.toString().str();
 
-            static std::regex marker("@([[:digit:]]+)");
+            static const std::regex marker("@([[:digit:]]+)", std::regex::optimize);
             std::sregex_iterator re_it(str.begin(),str.end(),marker);
             std::sregex_iterator end;
             size_t index=0;

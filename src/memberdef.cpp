@@ -1852,7 +1852,7 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 
   // match expression if it contains at least one @1 marker, e.g.
   // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
-  static const std::regex r("[[:alnum:]_@:]*@[[:digit:]]+[[:alnum:]_@:]*");
+  static const std::regex r("[[:alnum:]\\x80-\\xFF_@:]*@[[:digit:]]+[[:alnum:]\\x80-\\xFF_@:]*", std::regex::optimize);
   std::string stype = ltype.str();
   std::smatch match;
   if (std::regex_search(stype,match,r)) // found anonymous scope in type
@@ -2103,7 +2103,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static const std::regex r("@[[:digit:]]+");
+  static const std::regex r("@[[:digit:]]+", std::regex::optimize);
   std::smatch match;
   std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
@@ -2906,7 +2906,7 @@ void MemberDefImpl::_writeTypeConstraints(OutputList &ol) const
 }
 
 // match from the start of the scope until the last marker
-static const std::regex reAnonymous("[[:alnum:]_:]*@[[:digit:]]+([^@]*@[[:digit:]]+)?");
+static const std::regex reAnonymous("[[:alnum:]\\x80-\\xFF_:]*@[[:digit:]]+([^@]*@[[:digit:]]+)?", std::regex::optimize);
 
 void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
                                  const QCString &cfname,const QCString &ciname,
@@ -3203,7 +3203,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   QStrList sl;
   getLabels(sl,scopedContainer);
 
-  static std::regex r("@[0-9]+");
+  static const std::regex r("@[0-9]+", std::regex::optimize);
   std::smatch match;
   std::string sdef = ldef.str();
   if ((isVariable() || isTypedef()) && std::regex_search(sdef,match,r))
@@ -3612,7 +3612,7 @@ static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
   if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
-  static const std::regex re("[[:alpha:]_][[:alnum:]_]*(<[^>]*>)?::([[:alpha:]_][[:alnum:]_]*)");
+  static const std::regex re("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*(<[^>]*>)?::([[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*)", std::regex::optimize);
   std::smatch match;
   std::string t = ts.str();
   if (std::regex_search(t,match,re))

@@ -436,7 +436,7 @@ static void checkArgumentName(const std::string &name)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
-  static std::regex re("(\\$[[:alnum:]_]|[[:alpha:]_])[[:alnum:]_]*\\.*");
+  static const std::regex re("(\\$[[:alnum:]\\x80-\\xFF_]|[[:alpha:]\\x80-\\xFF_])[[:alnum:]\\x80-\\xFF_]*\\.*", std::regex::optimize);
   std::sregex_iterator it(name.begin(),name.end(),re);
   std::sregex_iterator end;
   for (; it!=end ; ++it)
@@ -873,7 +873,7 @@ static int handleStyleArgument(DocNode *parent,DocNodeList &children,
           tok!=TK_ENDLIST
         )
   {
-    static std::regex specialChar("[.,|()\\[\\]:;\\?]");
+    static const std::regex specialChar("[.,|()\\[\\]:;\\?]", std::regex::optimize);
     if (tok==TK_WORD && g_token->name.length()==1 &&
         std::regex_search(g_token->name.str(),specialChar))
     {

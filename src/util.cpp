@@ -188,7 +188,7 @@ QCString removeAnonymousScopes(const char *str)
     return false;
   };
 
-  static std::regex re("[ :]*@[[:digit:]]+[: ]*");
+  static const std::regex re("[ :]*@[[:digit:]]+[: ]*", std::regex::optimize);
   std::string s = str;
   std::sregex_iterator iter( s.begin(), s.end(), re);
   std::sregex_iterator end;
@@ -221,7 +221,7 @@ QCString removeAnonymousScopes(const char *str)
 QCString replaceAnonymousScopes(const char *s,const char *replacement)
 {
   if (s==0) return QCString();
-  static std::regex marker("@[[:digit:]]+");
+  static const std::regex marker("@[[:digit:]]+", std::regex::optimize);
   std::string result = std::regex_replace(s,marker,replacement?replacement:"__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",s.data(),result.data());
   return result;
@@ -895,7 +895,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static std::regex regExp("[[:alpha:]_][[:alnum:]_~!\\\\.:$]*");
+  static const std::regex regExp("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_~!\\\\.:$]*", std::regex::optimize);
   std::sregex_iterator it( txtStr.begin(), txtStr.end(), regExp);
   std::sregex_iterator end;
 
@@ -1096,7 +1096,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc)
 {
-  static std::regex marker("@([[:digit:]]+)");
+  static const std::regex marker("@([[:digit:]]+)", std::regex::optimize);
   std::sregex_iterator it(markerText.begin(),markerText.end(),marker);
   std::sregex_iterator end;
   size_t index=0;
@@ -1906,7 +1906,7 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
                               // (i.e. type is not a template specialization)
                               // then resolve any identifiers inside.
     {
-      static std::regex re("[[:alpha:]_][[:alnum:]_]*");
+      static const std::regex re("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*", std::regex::optimize);
       std::string ts = templSpec.str();
       std::sregex_iterator it(ts.begin(),ts.end(),re);
       std::sregex_iterator end;
@@ -4282,7 +4282,7 @@ QCString convertCharEntitiesToUTF8(const char *str)
 {
   if (str==0) return QCString();
 
-  static std::regex re("&[[:alpha:]][[:alnum:]]*;");
+  static const std::regex re("&[[:alpha:]\\x80-\\xFF][[:alnum:]\\x80-\\xFF]*;", std::regex::optimize);
   std::string s = str;
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
@@ -4447,8 +4447,8 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static std::regex re_norm("[[:alpha:]_][[:alnum:]_:]*");
-  static std::regex re_fortran("[[:alpha:]_][[:alnum:]_:()=]*");
+  static std::regex re_norm("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_:]*");
+  static std::regex re_fortran("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_:()=]*");
   static std::regex &re = re_norm;
 
   name.resize(0);
@@ -4530,7 +4530,7 @@ QCString normalizeNonTemplateArgumentsInString(
   p++;
   QCString result = name.left(p);
 
-  static std::regex re("[[:alpha:]_:][[:alnum:]_:]*");
+  static const std::regex re("[[:alpha:]\\x80-\\xFF_:][[:alnum:]\\x80-\\xFF_:]*", std::regex::optimize);
   std::string s = result.mid(p).str();
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
@@ -4594,7 +4594,7 @@ QCString substituteTemplateArgumentsInString(
   if (formalArgs.empty()) return name;
   std::string result;
 
-  static std::regex re("[[:alpha:]_][[:alnum:]_:]*");
+  static const std::regex re("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_:]*", std::regex::optimize);
   std::sregex_iterator it(name.begin(),name.end(),re);
   std::sregex_iterator end;
   size_t p=0;
@@ -5414,7 +5414,7 @@ QCString stripPath(const char *s)
 bool containsWord(const char *str,const char *word)
 {
   if (str==0 || word==0) return false;
-  static std::regex re("[[:alpha:]_]+");
+  static const std::regex re("[[:alpha:]\\x80-\\xFF_]+", std::regex::optimize);
   std::string s = str;
   for (std::sregex_iterator it(s.begin(),s.end(),re) ; it!=std::sregex_iterator() ; ++it)
   {
@@ -5429,7 +5429,7 @@ bool containsWord(const char *str,const char *word)
  */
 bool findAndRemoveWord(QCString &sentence,const char *word)
 {
-  static std::regex re("[^[:alpha:]_]+");
+  static const std::regex re("[^[:alpha:]\\x80-\\xFF_]+", std::regex::optimize);
   std::string s = sentence.str();
   std::sregex_token_iterator it(s.begin(),s.end(),re,{-1,0});
   std::sregex_token_iterator end;
@@ -6031,13 +6031,10 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
 {
   //QCString result;
   std::string result;
-  std::regex re("[\\\\@]([[:alpha:]_][[:alnum:]_]*)");
+  std::regex re("[\\\\@]([[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*)");
   std::sregex_iterator re_it(s.begin(),s.end(),re);
   std::sregex_iterator end;
   int p = 0;
-  //QCString value=s;
-  //int i,p=0,l;
-  //while ((i=cmdPat.match(value,p,&l))!=-1)
   for ( ; re_it!=end ; ++re_it)
   {
     const auto &match = *re_it;
@@ -6489,7 +6486,7 @@ QCString replaceColorMarkers(const char *str)
   if (str==0) return QCString();
   std::string result;
   std::string s=str;
-  static std::regex re("##([0-9A-Fa-f][0-9A-Fa-f])");
+  static const std::regex re("##([0-9A-Fa-f][0-9A-Fa-f])", std::regex::optimize);
   std::sregex_iterator it(s.begin(),s.end(),re);
   std::sregex_iterator end;
   static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);

@@ -3739,7 +3739,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                 }
                                                 else
                                                 {
-                                                  static std::regex re("@[0-9]+$");
+                                                  static const std::regex re("@[0-9]+$", std::regex::optimize);
                                                   if (!yyextra->isTypedef && yyextra->memspecEntry &&
                                                       !std::regex_search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
                                                   {
@@ -4831,7 +4831,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->fileName = yyextra->yyFileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;
-                                          static std::regex re("\\([^)]*[*&][^]*\\)");
+                                          static const std::regex re("\\([^)]*[*&][^]*\\)", std::regex::optimize);
                                           std::smatch match;
                                           std::string type = yyextra->current->type.str();
                                           int ti=-1;
@@ -6895,7 +6895,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
   int si = yyextra->current->args.length();
   if (yyextra->oldStyleArgType.isEmpty()) // new argument
   {
-    static std::regex re("(\\([^)]*\\))[[:space:]]*(\\([^)]*\\))?");
+    static const std::regex re("(\\([^)]*\\))[[:space:]]*(\\([^)]*\\))?", std::regex::optimize);
     std::string args = yyextra->current->args.str();
     std::smatch matches;
     std::regex_search(args,matches,re);

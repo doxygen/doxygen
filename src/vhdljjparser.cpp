@@ -272,9 +272,9 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
 
 int VHDLOutlineParser::checkInlineCode(QCString &doc)
 {
-  static std::regex csRe("[\\\\@]code");
-  static std::regex cendRe("[[:space:]]*[\\\\@]endcode");
-  static std::regex cbriefRe("[\\\\@]brief");
+  static const std::regex csRe("[\\\\@]code", std::regex::optimize);
+  static const std::regex cendRe("[[:space:]]*[\\\\@]endcode", std::regex::optimize);
+  static const std::regex cbriefRe("[\\\\@]brief", std::regex::optimize);
 
   // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
   auto findRe = [](const QCString &str,const std::regex &re,int pos=0) -> int

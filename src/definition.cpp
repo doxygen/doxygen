@@ -176,7 +176,7 @@ static bool matchExcludedSymbols(const char *name)
       pattern=pattern.left(pattern.length()-1),forceEnd=TRUE;
     if (pattern.find('*')!=-1) // wildcard mode
     {
-      std::regex re(substitute(pattern,"*",".*").str());
+      const std::regex re(substitute(pattern,"*",".*").str());
       std::sregex_iterator it(symName.begin(),symName.end(),re);
       std::sregex_iterator end;
       if (it!=end) // wildcard match
