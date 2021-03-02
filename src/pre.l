@@ -34,7 +34,6 @@
 #include <utility>
 #include <mutex>
 #include <thread>
-#include <regex>
 
 #include <stdio.h>
 #include <assert.h>
@@ -60,6 +59,7 @@
 #include "condparser.h"
 #include "config.h"
 #include "filedef.h"
+#include "regex.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -1962,17 +1962,17 @@ static void processConcatOperators(QCString &expr)
   if (expr.isEmpty()) return;
   //printf("processConcatOperators: in='%s'\n",expr.data());
   std::string e = expr.str();
-  static const std::regex r("[[:space:]]*##[[:space:]]*", std::regex::optimize);
-  std::sregex_iterator end;
+  static const reg::Ex r(R"(\s*##\s*)");
+  reg::Iterator end;
 
   size_t i=0;
   for (;;)
   {
-    std::sregex_iterator it(e.begin()+i,e.end(),r);
+    reg::Iterator it(e,r,i);
     if (it!=end)
     {
       const auto &match = *it;
-      size_t n = i+match.position();
+      size_t n = match.position();
       size_t l = match.length();
       //printf("Match: '%s'\n",expr.data()+i);
       if (n+l+1<e.length() && e[n+l]=='@' && expr[n+l+1]=='-')
@@ -3206,8 +3206,8 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
-      static const std::regex reId("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*", std::regex::optimize);
-      std::sregex_iterator end;
+      static const reg::Ex reId(R"(\a\w*)");
+      reg::Iterator end;
       bool varArgs = false;
       int count = 0;
       std::map<std::string,int> argMap;
@@ -3221,12 +3221,12 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       {
         size_t i=i_obrace+1;
         //printf("predefined function macro '%s'\n",ds.c_str());
-        std::sregex_iterator it(ds.begin()+i,ds.end(),reId);
+        reg::Iterator it(ds,reId,i);
         // gather the formal arguments in a dictionary 
         while (i<i_cbrace && it!=end)
         {
           const auto &match = *it;
-          size_t pi = match.position()+i;
+          size_t pi = match.position();
           size_t l  = match.length();
           if (l>0) // see bug375037
           {
@@ -3244,7 +3244,7 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       // strip definition part
       std::string definition;
       std::string in=ds.substr(i_equals+1);
-      std::sregex_iterator re_it(in.begin(),in.end(),reId);
+      reg::Iterator re_it(in,reId);
       size_t i=0;
       // substitute all occurrences of formal arguments by their 
       // corresponding markers

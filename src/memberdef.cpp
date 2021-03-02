@@ -13,11 +13,11 @@
  *
  */
 
-#include <regex>
 
 #include <stdio.h>
 #include <qglobal.h>
 #include <assert.h>
+
 #include "md5.h"
 #include "memberdef.h"
 #include "membername.h"
@@ -37,7 +37,6 @@
 #include "dotcallgraph.h"
 #include "searchindex.h"
 #include "parserintf.h"
-
 #include "vhdldocgen.h"
 #include "arguments.h"
 #include "memberlist.h"
@@ -45,6 +44,7 @@
 #include "filedef.h"
 #include "config.h"
 #include "definitionimpl.h"
+#include "regex.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1852,10 +1852,10 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 
   // match expression if it contains at least one @1 marker, e.g.
   // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
-  static const std::regex r("[[:alnum:]\\x80-\\xFF_@:]*@[[:digit:]]+[[:alnum:]\\x80-\\xFF_@:]*", std::regex::optimize);
   std::string stype = ltype.str();
-  std::smatch match;
-  if (std::regex_search(stype,match,r)) // found anonymous scope in type
+  static const reg::Ex r(R"([\w@:]*@\d+[\w@:]*)");
+  reg::Match match;
+  if (reg::search(stype,match,r)) // found anonymous scope in type
   {
     QCString annName = match.str();
 
@@ -2103,11 +2103,11 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static const std::regex r("@[[:digit:]]+", std::regex::optimize);
-  std::smatch match;
+  static const reg::Ex r(R"(@\d+)");
+  reg::Match match;
   std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
-  if (std::regex_search(stype,match,r)) // member has an anonymous type
+  if (reg::search(stype,match,r)) // member has an anonymous type
   {
     int i = (int)match.position();
     int l = (int)match.length();
@@ -2905,9 +2905,6 @@ void MemberDefImpl::_writeTypeConstraints(OutputList &ol) const
   }
 }
 
-// match from the start of the scope until the last marker
-static const std::regex reAnonymous("[[:alnum:]\\x80-\\xFF_:]*@[[:digit:]]+([^@]*@[[:digit:]]+)?", std::regex::optimize);
-
 void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
                                  const QCString &cfname,const QCString &ciname,
                                  const QCString &cname) const
@@ -2978,6 +2975,9 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
   }
 }
 
+// match from the start of the scope until the last marker
+static const reg::Ex reAnonymous(R"([\w:@]*@\d+)");
+
 QCString MemberDefImpl::displayDefinition() const
 {
   QCString ldef = definition();
@@ -3010,8 +3010,8 @@ QCString MemberDefImpl::displayDefinition() const
   }
 
   std::string sdef = ldef.str();
-  std::smatch match;
-  if (std::regex_search(sdef,match,reAnonymous))
+  reg::Match match;
+  if (reg::search(sdef,match,reAnonymous))
   {
     ldef = match.prefix().str() + " { ... } " + match.suffix().str();
   }
@@ -3203,10 +3203,10 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   QStrList sl;
   getLabels(sl,scopedContainer);
 
-  static const std::regex r("@[0-9]+", std::regex::optimize);
-  std::smatch match;
+  static const reg::Ex r(R"(@\d+)");
+  reg::Match match;
   std::string sdef = ldef.str();
-  if ((isVariable() || isTypedef()) && std::regex_search(sdef,match,r))
+  if ((isVariable() || isTypedef()) && reg::search(sdef,match,r))
   {
     // find enum type and insert it in the definition
     bool found=false;
@@ -3234,7 +3234,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       // search for the last anonymous compound name in the definition
 
       ol.startMemberDocName(isObjCMethod());
-      if (std::regex_search(sdef,match,reAnonymous))
+      if (reg::search(sdef,match,reAnonymous))
       {
         std::string prefix = match.prefix().str();
         std::string suffix = match.suffix().str();
@@ -3612,60 +3612,17 @@ static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
   if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
-  static const std::regex re("[[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*(<[^>]*>)?::([[:alpha:]\\x80-\\xFF_][[:alnum:]\\x80-\\xFF_]*)", std::regex::optimize);
-  std::smatch match;
+  static const reg::Ex re1(R"(\a\w*::(\a\w*))");       // non-template version
+  static const reg::Ex re2(R"(\a\w*<[^>]*>::(\a\w*))"); // template version
+  reg::Match match;
   std::string t = ts.str();
-  if (std::regex_search(t,match,re))
+  if (reg::search(t,match,re1) || reg::search(t,match,re2))
   {
-    ts = match[2].str(); // take the identifier after the last :: (second capture group)
+    ts = match[1].str(); // take the identifier after the last ::
   }
   //printf("simplifyTypeForTable(%s)->%s\n",s.data(),ts.data());
   return ts;
 }
-
-#if 0
-/** Returns the type definition corresponding to a member's return type.
- *  @param[in]  scope The scope in which to search for the class definition.
- *  @param[in]  type  The string representing the member's return type.
- *  @param[in]  lang  The programming language in which the class is defined.
- *  @param[out] start The string position where the class definition name was found.
- *  @param[out] length The length of the class definition's name.
- */
-static Definition *getClassFromType(Definition *scope,const QCString &type,SrcLangExt lang,int &start,int &length)
-{
-  int pos=0;
-  int i;
-  QCString name;
-  QCString templSpec;
-  while ((i=extractClassNameFromType(type,pos,name,templSpec,lang))!=-1)
-  {
-    ClassDef *cd=0;
-    MemberDef *md=0;
-    int l = name.length()+templSpec.length();
-    if (!templSpec.isEmpty())
-    {
-      cd = getResolvedClass(scope,0,name+templSpec,&md);
-    }
-    cd = getResolvedClass(scope,0,name);
-    if (cd)
-    {
-      start=i;
-      length=l;
-      printf("getClassFromType: type=%s name=%s start=%d length=%d\n",type.data(),name.data(),start,length);
-      return cd;
-    }
-    else if (md)
-    {
-      start=i;
-      length=l;
-      printf("getClassFromType: type=%s name=%s start=%d length=%d\n",type.data(),name.data(),start,length);
-      return md;
-    }
-    pos=i+l;
-  }
-  return 0;
-}
-#endif
 
 QCString MemberDefImpl::fieldType() const
 {

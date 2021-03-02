@@ -10,7 +10,6 @@
  *
  */
 
-#include <regex>
 #include <string>
 
 #include <qcstring.h>
@@ -34,6 +33,7 @@
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
+#include "regex.h"
 
 using namespace vhdl::parser;
 
@@ -272,28 +272,28 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
 
 int VHDLOutlineParser::checkInlineCode(QCString &doc)
 {
-  static const std::regex csRe("[\\\\@]code", std::regex::optimize);
-  static const std::regex cendRe("[[:space:]]*[\\\\@]endcode", std::regex::optimize);
-  static const std::regex cbriefRe("[\\\\@]brief", std::regex::optimize);
+  static const reg::Ex csRe(R"([\\@]code)");
+  static const reg::Ex cendRe(R"(\s*[\\@]endcode)");
+  static const reg::Ex cbriefRe(R"([\\@]brief)");
 
   // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
-  auto findRe = [](const QCString &str,const std::regex &re,int pos=0) -> int
+  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> int
   {
     if ((int)str.length()<pos) return -1;
-    std::smatch match;
+    reg::Match match;
     const std::string s = str.str();
-    if (std::regex_search(s.begin()+pos,s.end(),match,re)) // match found
+    if (reg::search(s,match,re,pos)) // match found
     {
-      return (int)match.position()+pos;
+      return (int)match.position();
     }
     else // not found
     {
       return -1;
     }
   };
-  auto replaceRe = [](const QCString &str,const std::regex &re,const QCString &replacement) -> QCString
+  auto replaceRe = [](const QCString &str,const reg::Ex &re,const QCString &replacement) -> QCString
   {
-    return std::regex_replace(str.str(), re, replacement.str());
+    return reg::replace(str.str(), re, replacement.str());
   };
 
   int index = findRe(doc,csRe);

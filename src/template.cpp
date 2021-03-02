@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include <deque>
 #include <cstdio>
-#include <regex>
 
 #include <qfile.h>
 #include <qdir.h>
@@ -30,6 +29,7 @@
 #include "util.h"
 #include "resourcemgr.h"
 #include "portable.h"
+#include "regex.h"
 
 #define ENABLE_TRACING 0
 
@@ -4186,9 +4186,9 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
             c->push();
             std::string str = patternStr.toString().str();
 
-            static const std::regex marker("@([[:digit:]]+)", std::regex::optimize);
-            std::sregex_iterator re_it(str.begin(),str.end(),marker);
-            std::sregex_iterator end;
+            static const reg::Ex marker(R"(@\d+)");
+            reg::Iterator re_it(str,marker);
+            reg::Iterator end;
             size_t index=0;
             for ( ; re_it!=end ; ++re_it)
             {
@@ -4204,7 +4204,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               {
                 ts << part; // write text before marker
               }
-              unsigned long entryIndex = std::stoul(match[1].str());
+              unsigned long entryIndex = std::stoul(match.str().substr(1));
               TemplateVariant var;
               size_t i=0;
               // search for list element at position id

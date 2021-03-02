@@ -136,7 +136,7 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
     }
     void toLast()
     {
-      m_index=m_list.size()-1;
+      m_index=(int)m_list.size()-1;
     }
     void toNext()
     {

@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cassert>
-#include <regex>
 
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -24,6 +23,7 @@
 #include <ctype.h>
 #include <qcstringlist.h>
 
+#include "regex.h"
 #include "doxygen.h"
 #include "debug.h"
 #include "util.h"
@@ -436,9 +436,9 @@ static void checkArgumentName(const std::string &name)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
-  static const std::regex re("(\\$[[:alnum:]\\x80-\\xFF_]|[[:alpha:]\\x80-\\xFF_])[[:alnum:]\\x80-\\xFF_]*\\.*", std::regex::optimize);
-  std::sregex_iterator it(name.begin(),name.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(\$?\w+\.*)");
+  reg::Iterator it(name,re);
+  reg::Iterator end;
   for (; it!=end ; ++it)
   {
     const auto &match = *it;
@@ -873,9 +873,9 @@ static int handleStyleArgument(DocNode *parent,DocNodeList &children,
           tok!=TK_ENDLIST
         )
   {
-    static const std::regex specialChar("[.,|()\\[\\]:;\\?]", std::regex::optimize);
+    static const reg::Ex specialChar(R"([.,|()\[\]:;?])");
     if (tok==TK_WORD && g_token->name.length()==1 &&
-        std::regex_search(g_token->name.str(),specialChar))
+        reg::match(g_token->name.str(),specialChar))
     {
       // special character that ends the markup command
       return tok;

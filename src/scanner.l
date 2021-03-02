@@ -29,7 +29,6 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
-#include <regex>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +50,7 @@
 
 #include "clangparser.h"
 #include "markdown.h"
+#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -3739,9 +3739,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                                 }
                                                 else
                                                 {
-                                                  static const std::regex re("@[0-9]+$", std::regex::optimize);
+                                                  static const reg::Ex re(R"(@\d+$)");
                                                   if (!yyextra->isTypedef && yyextra->memspecEntry &&
-                                                      !std::regex_search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
+                                                      !reg::search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
                                                   {
                                                     // enabled the next two lines for bug 623424
                                                     yyextra->current->doc.resize(0);
@@ -4831,11 +4831,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->fileName = yyextra->yyFileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;
-                                          static const std::regex re("\\([^)]*[*&][^]*\\)", std::regex::optimize);
-                                          std::smatch match;
+                                          static const reg::Ex re(R"(\([^)]*[*&][^)]*\))");
+                                          reg::Match match;
                                           std::string type = yyextra->current->type.str();
                                           int ti=-1;
-                                          if (std::regex_search(type,match,re))
+                                          if (reg::search(type,match,re))
                                           {
                                             ti = (int)match.position();
                                           }
@@ -6895,16 +6895,26 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
   int si = yyextra->current->args.length();
   if (yyextra->oldStyleArgType.isEmpty()) // new argument
   {
-    static const std::regex re("(\\([^)]*\\))[[:space:]]*(\\([^)]*\\))?", std::regex::optimize);
     std::string args = yyextra->current->args.str();
-    std::smatch matches;
-    std::regex_search(args,matches,re);
-    char c;
-    if (matches.length()==3 && !matches[2].str().empty()) // found something like "int (*func)(int arg)"
+    static const reg::Ex re(R"(\([^)]*\).*)"); // find first (...)
+    int bi1=-1;
+    int bi2=-1;
+    reg::Match match;
+    if (reg::search(args,match,re))
     {
-      size_t s = matches.position()+1; // keep opening (
+      bi1=(int)match.position();
+      size_t secondMatchStart = match.position()+match.length(); // search again after first match
+      if (reg::search(args,match,re,secondMatchStart))
+      {
+        bi2=(int)match.position();
+      }
+    }
+    char c;
+    if (bi1!=-1 && bi2!=-1) // found something like "int (*func)(int arg)"
+    {
+      int s=bi2+1; // keep opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
-      int i=(int)s;
+      int i=s;
       while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i++;
       yyextra->oldStyleArgType += yyextra->current->args.mid(s,i-s);
       s=i;
@@ -6912,12 +6922,12 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
       oldStyleArgName = yyextra->current->args.mid(s,i-s);
       yyextra->oldStyleArgType+=yyextra->current->args.mid(i);
     }
-    else if (matches.length()==3) // redundant braces like in "int (*var)"
+    else if (bi1!=-1) // redundant braces like in "int (*var)"
     {
-      size_t s = matches.position(); // strip opening (
+      int s=bi1; // strip opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       s++;
-      int i=(int)s+1;
+      int i=s+1;
       while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i++;
       yyextra->oldStyleArgType += yyextra->current->args.mid(s,i-s);
       s=i;

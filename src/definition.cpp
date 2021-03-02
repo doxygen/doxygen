@@ -19,13 +19,13 @@
 #include <iterator>
 #include <unordered_map>
 #include <string>
-#include <regex>
 
 #include <ctype.h>
 #include "md5.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "regex.h"
 #include "config.h"
 #include "definitionimpl.h"
 #include "doxygen.h"
@@ -176,12 +176,10 @@ static bool matchExcludedSymbols(const char *name)
       pattern=pattern.left(pattern.length()-1),forceEnd=TRUE;
     if (pattern.find('*')!=-1) // wildcard mode
     {
-      const std::regex re(substitute(pattern,"*",".*").str());
-      std::sregex_iterator it(symName.begin(),symName.end(),re);
-      std::sregex_iterator end;
-      if (it!=end) // wildcard match
+      const reg::Ex re(substitute(pattern,"*",".*").str());
+      reg::Match match;
+      if (reg::search(symName,match,re)) // wildcard match
       {
-        const auto &match = *it;
         size_t ui = match.position();
         size_t pl = match.length();
         size_t sl = symName.length();

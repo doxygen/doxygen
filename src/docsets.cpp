@@ -201,7 +201,7 @@ void DocSets::finalize()
 QCString DocSets::Private::indent()
 {
   QCString result;
-  result.fill(' ',(indentStack.size()+2)*2);
+  result.fill(' ',((int)indentStack.size()+2)*2);
   return result;
 }
 

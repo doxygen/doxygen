@@ -281,6 +281,7 @@ add_library(doxymain STATIC
     qhp.cpp
     qhpxmlwriter.cpp
     reflist.cpp
+    regex.cpp
     resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp

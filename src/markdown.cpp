@@ -37,7 +37,6 @@
 
 #include <unordered_map>
 #include <functional>
-#include <regex>
 
 #include "markdown.h"
 #include "growbuf.h"
@@ -51,6 +50,7 @@
 #include "section.h"
 #include "message.h"
 #include "portable.h"
+#include "regex.h"
 
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
@@ -1472,13 +1472,13 @@ static QCString extractTitleId(QCString &title, int level)
 {
   TRACE(title.data());
   // match e.g. '{#id-b11} ' and capture 'id-b11'
-  static const std::regex r2("\\{#([a-z_A-Z][a-z_A-Z0-9\\-]*)\\}[[:space:]]*$", std::regex::optimize);
-  std::smatch match;
+  static const reg::Ex r2(R"({#(\a[\w-]*)}\s*$)");
+  reg::Match match;
   std::string ti = title.str();
-  if (std::regex_search(ti,match,r2))
+  if (reg::search(ti,match,r2))
   {
     std::string id = match[1].str();
-    title = title.left(match.position());
+    title = title.left((int)match.position());
     //printf("found match id='%s' title=%s\n",id.c_str(),title.data());
     return id;
   }
