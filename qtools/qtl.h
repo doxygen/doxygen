@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Definition of Qt template library classes
 **
@@ -38,33 +38,8 @@
 #define QTL_H
 
 #ifndef QT_H
-#include "qtextstream.h"
 #include "qstring.h"
 #endif // QT_H
-
-#ifndef QT_NO_TEXTSTREAM
-template <class T>
-class QTextOStreamIterator
-{
-protected:
-    QTextOStream& stream;
-    QString separator;
-
-public:
-    QTextOStreamIterator( QTextOStream& s) : stream( s ) {}
-    QTextOStreamIterator( QTextOStream& s, const QString& sep )
-	: stream( s ), separator( sep )  {}
-    QTextOStreamIterator<T>& operator= ( const T& x ) {
-	stream << x;
-	if ( !separator.isEmpty() )
-	    stream << separator;
-	return *this;
-    }
-    QTextOStreamIterator<T>& operator*() { return *this; }
-    QTextOStreamIterator<T>& operator++() { return *this; }
-    QTextOStreamIterator<T>& operator++(int) { return *this; }
-};
-#endif //QT_NO_TEXTSTREAM
 
 template <class InputIterator, class OutputIterator>
 inline OutputIterator qCopy( InputIterator _begin, InputIterator _end,

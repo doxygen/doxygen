@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,6 +19,7 @@
 #define FORMULA_H
 
 #include <memory>
+#include <string>
 #include <qcstring.h>
 
 /*! Manager class to handle formulas */
@@ -36,9 +37,9 @@ class FormulaManager
     static FormulaManager &instance();
     void readFormulas(const char *dir,bool doCompare=false);
     void clear();
-    int addFormula(const char *formulaText);
+    int addFormula(const std::string &formulaText);
     void generateImages(const char *outputDir,Format format,HighDPI hd = HighDPI::Off) const;
-    QCString findFormula(int formulaId) const;
+    std::string findFormula(int formulaId) const;
     bool hasFormulas() const;
     DisplaySize displaySize(int formulaId) const;
   private:

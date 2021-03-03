@@ -25,7 +25,6 @@
 #include <sys/stat.h>
 #include <qtextcodec.h>
 #include <errno.h>
-#include <qtextstream.h>
 
 #include <algorithm>
 #include <unordered_map>

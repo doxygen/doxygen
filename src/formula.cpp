@@ -22,13 +22,13 @@
 #include "image.h"
 
 #include <qfile.h>
-#include <qtextstream.h>
 #include <qdir.h>
 
 #include <map>
 #include <vector>
 #include <string>
 #include <utility>
+#include <fstream>
 
 // TODO: remove these dependencies
 #include "doxygen.h" // for Doxygen::indexList
@@ -72,50 +72,40 @@ FormulaManager &FormulaManager::instance()
 
 void FormulaManager::readFormulas(const char *dir,bool doCompare)
 {
-  QFile f(QCString(dir)+"/formula.repository");
-  if (f.open(IO_ReadOnly)) // open repository
+  std::ifstream f(std::string(dir)+"/formula.repository");
+  if (f.is_open())
   {
     uint formulaCount=0;
     msg("Reading formula repository...\n");
-    QTextStream t(&f);
-    QCString line;
+    std::string line;
     int lineNr=1;
-    while (!t.eof())
+    while (getline(f,line))
     {
-      line=t.readLine().utf8();
-      // old format: \_form#<digits>:formula
-      // new format: \_form#<digits>=<digits>x<digits>:formula
-      int hi=line.find('#');
-      int ei=line.find('=');
-      int se=line.find(':'); // find name and text separator.
-      if (hi==-1 || se==-1 || hi>se)
+      // format: \_form#<digits>=<digits>x<digits>:formula
+      size_t hi=line.find('#');
+      size_t ei=line.find('=');
+      size_t se=line.find(':'); // find name and text separator.
+      if (ei==std::string::npos || hi==std::string::npos || se==std::string::npos || hi>se || ei<hi || ei>se)
       {
         warn_uncond("%s/formula.repository is corrupted at line %d!\n",dir,lineNr);
         break;
       }
       else
       {
-        QCString formName = line.left(se);
-        QCString formText = line.right(line.length()-se-1);
+        std::string formName = line.substr(0,se); // '\_form#<digits>=<digits>x<digits>' part
+        std::string formText = line.substr(se+1); // 'formula' part
         int w=-1,h=-1;
-        if (ei!=-1 && ei>hi && ei<se) // new format
+        size_t xi=formName.find('x',ei);
+        if (xi!=std::string::npos)
         {
-          int xi=formName.find('x',ei);
-          if (xi!=-1)
-          {
-            w=formName.mid(ei+1,xi-ei-1).toInt();
-            h=formName.mid(xi+1).toInt();
-          }
-          formName = formName.left(ei);
+          w=std::stoi(formName.substr(ei+1,xi-ei-1)); // digits from '=<digits>x' part as int
+          h=std::stoi(formName.substr(xi+1));         // digits from 'x<digits>' part as int
         }
-        else
-        {
-          ei=formName.length();
-        }
+        formName = formName.substr(0,ei); // keep only the '\_form#<digits>' part
         if (doCompare)
         {
-          int formId = formName.mid(hi+1,ei-hi-1).toInt();
-          QCString storedFormText = FormulaManager::instance().findFormula(formId);
+          int formId = stoi(formName.substr(hi+1));
+          std::string storedFormText = FormulaManager::instance().findFormula(formId);
           if (storedFormText!=formText)
           {
             term("discrepancy between formula repositories! Remove "
@@ -123,13 +113,10 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
           }
           formulaCount++;
         }
-        else
+        int id = addFormula(formText);
+        if (w!=-1 && h!=-1)
         {
-          int id = addFormula(formText);
-          if (w!=-1 && h!=-1)
-          {
-            p->storeDisplaySize(id,w,h);
-          }
+          p->storeDisplaySize(id,w,h);
         }
       }
       lineNr++;
@@ -476,28 +463,27 @@ void FormulaManager::clear()
   p->formulaMap.clear();
 }
 
-int FormulaManager::addFormula(const char *formulaText)
+int FormulaManager::addFormula(const std::string &formulaText)
 {
-  std::string key = toStdString(formulaText);
-  auto it = p->formulaMap.find(key);
+  auto it = p->formulaMap.find(formulaText);
   if (it!=p->formulaMap.end()) // already stored
   {
     return it->second;
   }
   // store new formula
   int id = (int)p->formulas.size();
-  p->formulaMap.insert(std::pair<std::string,int>(key,id));
-  p->formulas.push_back(key);
+  p->formulaMap.insert(std::pair<std::string,int>(formulaText,id));
+  p->formulas.push_back(formulaText);
   return id;
 }
 
-QCString FormulaManager::findFormula(int formulaId) const
+std::string FormulaManager::findFormula(int formulaId) const
 {
   if (formulaId>=0 && formulaId<(int)p->formulas.size())
   {
-    return p->formulas[formulaId].c_str();
+    return p->formulas[formulaId];
   }
-  return QCString();
+  return std::string();
 }
 
 bool FormulaManager::hasFormulas() const

@@ -19,6 +19,7 @@
 #define _BUFSTR_H
 
 #include <cstdlib>
+#include <qcstring.h>
 
 /*! @brief Buffer used to store strings
  *

@@ -36,7 +36,6 @@
 
 #include <qdir.h>
 #include <qfile.h>
-#include <qtextstream.h>
 
 #define DEF_DB(x)
 

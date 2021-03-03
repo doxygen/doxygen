@@ -16,7 +16,6 @@ qgstring.cpp
 qiodevice.cpp
 qregexp.cpp
 qstring.cpp
-qtextstream.cpp
 qtextcodec.cpp
 qstringlist.cpp
 qcstringlist.cpp

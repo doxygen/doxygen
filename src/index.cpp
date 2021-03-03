@@ -24,7 +24,6 @@
 #include <array>
 
 #include <assert.h>
-#include <qtextstream.h>
 #include <qdir.h>
 
 #include "message.h"

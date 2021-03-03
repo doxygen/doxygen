@@ -17,7 +17,6 @@
 
 #include <qdir.h>
 #include <qfile.h>
-#include <qtextstream.h>
 
 #include "xmlgen.h"
 #include "doxygen.h"

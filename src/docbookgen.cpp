@@ -19,7 +19,6 @@
 
 #include <qdir.h>
 #include <qfile.h>
-#include <qtextstream.h>
 #include "docbookgen.h"
 #include "doxygen.h"
 #include "message.h"
