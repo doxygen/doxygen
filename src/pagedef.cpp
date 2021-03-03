@@ -80,7 +80,7 @@ PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const cha
 
 PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
                  const char *d,const char *t)
- : DefinitionMixin(f,l,1,n), m_title(t)
+ : DefinitionMixin(f,l,1,n), m_title(t?t:n)
 {
   setDocumentation(d,f,l);
   m_pageScope = 0;
