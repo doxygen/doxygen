@@ -232,8 +232,10 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
        /* start command character */
 CMD       ("\\"|"@")
 BN        [ \t\n\r]
+BNopt     {BN}*
 BL        [ \t\r]*"\n"
 B         [ \t]
+Bopt      {B}*
 ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SCOPENAME "$"?(({ID}?{BN}*"::"{BN}*)*)(((~|!){BN}*)?{ID})
 TSCOPE    {ID}("<"[a-z_A-Z0-9 \t\*\&,:]*">")?
@@ -252,6 +254,22 @@ ASSIGNOP  "="|"*="|"/="|"%="|"+="|"-="|"<<="|">>="|"&="|"^="|"|="
 LOGICOP   "=="|"!="|">"|"<"|">="|"<="|"&&"|"||"|"!"|"<=>"
 BITOP     "&"|"|"|"^"|"<<"|">>"|"~"
 OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
+
+  /* no comment start / end signs inside square brackets */
+NCOMM [^/\*]
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
+  // doxygen start comment
+DCOMM ("/\*!"|"/\**"|"/\/!"|"/\/\/")
+
+  // Optional any character
+ANYopt .*
+  // Optional all but newline
+NONLopt [^\n]*
 
 %option noyywrap
 
@@ -1122,7 +1140,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
   */
 <FindMembers>{B}*"typename"{BN}+        { lineCount(yyscanner); }
-<FindMembers>{B}*"namespace"{BN}*/[^a-z_A-Z0-9] {
+<FindMembers>{B}*"namespace"{BNopt}/[^a-z_A-Z0-9] {
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::NAMESPACE_SEC;
                                           yyextra->current->type = "namespace" ;
@@ -1596,12 +1614,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           if (yytext[yyleng-1]=='{') unput('{');
                                           BEGIN( CompoundName ) ;
                                         }
-<Operator>"("{BN}*")"({BN}*"<"[^>]*">"){BN}*/"("  {  // A::operator()<int>(int arg)
+<Operator>"("{BN}*")"({BN}*"<"[^>]*">"){BNopt}/"("  {  // A::operator()<int>(int arg)
                                           lineCount(yyscanner);
                                           yyextra->current->name += "()";
                                           BEGIN( FindMembers );
                                         }
-<Operator>"("{BN}*")"{BN}*/"("          {
+<Operator>"("{BN}*")"{BNopt}/"("        {
                                           lineCount(yyscanner);
                                           yyextra->current->name += yytext ;
                                           yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
@@ -1768,7 +1786,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->previous->spec |= Entry::Alias;
                                           BEGIN(FindMembers);
                                         }
-<UsingAlias>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<UsingAlias>";"{BN}*{DCOMM}"<" {
                                           yyextra->docBlockContext   = UsingAliasEnd;
                                           yyextra->docBlockInBody    = FALSE;
                                           yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
@@ -1821,7 +1839,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           addType(yyscanner);
                                           yyextra->current->name=n.left(n.length()-2);
                                         }
-<FindMembers>{SCOPENAME}{BN}*/"<"       { // Note: this could be a return type!
+<FindMembers>{SCOPENAME}{BNopt}/"<"     { // Note: this could be a return type!
                                           yyextra->roundCount=0;
                                           yyextra->sharpCount=0;
                                           lineCount(yyscanner);
@@ -1835,7 +1853,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           else
                                             BEGIN( EndTemplate );
                                         }
-<FindMemberName>{SCOPENAME}{BN}*/"<"    {
+<FindMemberName>{SCOPENAME}{BNopt}/"<"  {
                                           yyextra->sharpCount=0;
                                           yyextra->roundCount=0;
                                           lineCount(yyscanner);
@@ -1908,7 +1926,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( ReadFuncArgType ) ;
                                           }
                                         }
-<EndTemplate>">"{BN}*/"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
+<EndTemplate>">"{BNopt}/"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
                                           lineCount(yyscanner);
                                           yyextra->current->name+='>';
                                           if (yyextra->roundCount==0)
@@ -1916,7 +1934,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN(FindMembers);
                                           }
                                         }
-<EndTemplate>">"{BN}*/"::"              {
+<EndTemplate>">"{BNopt}/"::"              {
                                           lineCount(yyscanner);
                                           yyextra->current->name+='>';
                                           // *yyextra->currentTemplateSpec+='>';
@@ -2434,7 +2452,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->name += yytext ;
                                           addType(yyscanner);
                                         }
-<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs,DefinePHPEnd>";"{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<FindMembers,MemberSpec,Function,NextSemi,EnumBaseType,BitFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs,DefinePHPEnd>";"{BN}*{DCOMM}"<" {
                                           if (yyextra->current->bodyLine==-1)
                                           {
                                             yyextra->current->bodyLine=yyextra->yyLineNr;
@@ -2469,7 +2487,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( DocBlock );
                                           }
                                         }
-<MemberSpec,FindFields,FindMembers,NextSemi,EnumBaseType,BitFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs>","{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<MemberSpec,FindFields,FindMembers,NextSemi,EnumBaseType,BitFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs>","{BN}*{DCOMM}"<" {
                                           yyextra->docBlockContext   = YY_START;
                                           yyextra->docBlockInBody    = FALSE;
                                           yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
@@ -2498,7 +2516,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( DocBlock );
                                           }
                                         }
-<DefineEnd,FindFields,FindFieldArg,ReadInitializer,ReadInitializerPtr,OldStyleArgs>{BN}*("/**"|"//!"|"/*!"|"///")"<" {
+<DefineEnd,FindFields,FindFieldArg,ReadInitializer,ReadInitializerPtr,OldStyleArgs>{BN}*{DCOMM}"<" {
                                           if (yyextra->current->bodyLine==-1)
                                           {
                                             yyextra->current->bodyLine=yyextra->yyLineNr;
@@ -2526,7 +2544,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           }
                                         }
 
-<FindMembers,FindFields>("//"([!/]){B}*{CMD}"{")|("/*"([!*]){B}*{CMD}"{")       {
+<FindMembers,FindFields>({CPPC}([!/]){B}*{CMD}"{")|({CCS}([!*]){B}*{CMD}"{")       {
                                           //handleGroupStartCommand(yyextra->current->name);
                                           if (yyextra->previous && yyextra->previous->section==Entry::GROUPDOC_SEC)
                                           {
@@ -2578,7 +2596,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             }
                                           }
                                         }
-<FindMembers,FindFields,ReadInitializer,ReadInitializerPtr>"//"([!/]){B}*{CMD}"}".*|"/*"([!*]){B}*{CMD}"}"[^*]*"*/"     {
+<FindMembers,FindFields,ReadInitializer,ReadInitializerPtr>{CPPC}([!/]){B}*{CMD}"}".*|{CCS}([!*]){B}*{CMD}"}"[^*]*{CCE}     {
                                           bool insideEnum = YY_START==FindFields || ((YY_START==ReadInitializer || YY_START==ReadInitializerPtr) && yyextra->lastInitializerContext==FindFields); // see bug746226
                                           yyextra->commentScanner.close(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr,insideEnum);
                                           lineCount(yyscanner);
@@ -2836,7 +2854,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           *yyextra->pCopyQuotedString+=*yytext;
                                           BEGIN( yyextra->lastStringContext );
                                         }
-<CopyString,CopyPHPString>"/*"|"*/"|"//" {
+<CopyString,CopyPHPString>{CCS}|{CCE}|{CPPC} {
                                           *yyextra->pCopyQuotedString+=yytext;
                                         }
 <CopyString,CopyPHPString>\n            {
@@ -2863,7 +2881,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           *yyextra->pCopyQuotedGString += yytext;
                                           BEGIN( yyextra->lastStringContext );
                                         }
-<CopyGString,CopyPHPGString>"/*"|"*/"|"//" {
+<CopyGString,CopyPHPGString>{CCS}|{CCE}|{CPPC} {
                                           *yyextra->pCopyQuotedGString+=yytext;
                                         }
 <CopyGString,CopyPHPGString>\n          {
@@ -3384,20 +3402,20 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           BEGIN( IDLProp );
                                         }
 <IDLPropName>{BN}*"("{BN}*{ID}{BN}*")"{BN}*     {
-                                           if (yyextra->odlProp)
-                                           {
-                                             yyextra->idlProp += yytext;
-                                           }
+                                          if (yyextra->odlProp)
+                                          {
+                                            yyextra->idlProp += yytext;
+                                          }
                                         }
-<IDLPropName>{ID}{BN}*/";"              {
-                                           if (yyextra->odlProp)
-                                           {
-                                             yyextra->current->name = yytext;
-                                             yyextra->idlProp = yyextra->idlProp.stripWhiteSpace();
-                                             yyextra->odlProp = false;
+<IDLPropName>{ID}{BNopt}/";"            {
+                                          if (yyextra->odlProp)
+                                          {
+                                            yyextra->current->name = yytext;
+                                            yyextra->idlProp = yyextra->idlProp.stripWhiteSpace();
+                                            yyextra->odlProp = false;
 
-                                             BEGIN( IDLProp );
-                                           }
+                                            BEGIN( IDLProp );
+                                          }
                                         }
 <IDLProp>{BN}*"["[^\]]*"]"{BN}*         {  // attribute of a parameter
                                            yyextra->idlAttr = yytext;
@@ -3575,7 +3593,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FindFieldArg>","                       { unput(*yytext); BEGIN(FindFields); }
   */
 <ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<]*     { yyextra->current->program += yytext ; }
-<ReadBody,ReadNSBody,ReadBodyIntf>"//".*                { yyextra->current->program += yytext ; }
+<ReadBody,ReadNSBody,ReadBodyIntf>{CPPC}.*                { yyextra->current->program += yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"#".* { if (!yyextra->insidePHP)
                                             REJECT;
                                           // append PHP comment.
@@ -3603,11 +3621,11 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->lastStringContext=YY_START;
                                           BEGIN( CopyGString );
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>"/*"{B}*              { yyextra->current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{CCS}{B}*              { yyextra->current->program += yytext ;
                                           yyextra->lastContext = YY_START ;
                                           BEGIN( Comment ) ;
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>"/*"{BL}              { yyextra->current->program += yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{CCS}{BL}              { yyextra->current->program += yytext ;
                                           ++yyextra->yyLineNr ;
                                           yyextra->lastContext = YY_START ;
                                           BEGIN( Comment ) ;
@@ -4039,7 +4057,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FuncPtr>.                              {
                                           //printf("error: FuncPtr '%c' unexpected at line %d of %s\n",*yytext,yyextra->yyLineNr,yyextra->yyFileName);
                                         }
-<FuncPtrOperator>"("{BN}*")"{BN}*/"("   {
+<FuncPtrOperator>"("{BN}*")"{BNopt}/"(" {
                                           yyextra->current->name += yytext;
                                           yyextra->current->name = yyextra->current->name.simplifyWhiteSpace();
                                           lineCount(yyscanner);
@@ -4055,17 +4073,17 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <FuncPtrOperator>.                      {
                                           yyextra->current->name += *yytext;
                                         }
-<EndFuncPtr>")"{BN}*/";"                { // a variable with extra braces
+<EndFuncPtr>")"{BNopt}/";"              { // a variable with extra braces
                                           lineCount(yyscanner);
                                           yyextra->current->type+=yyextra->funcPtrType.data()+1;
                                           BEGIN(FindMembers);
                                         }
-<EndFuncPtr>")"{BN}*/"("                { // a function pointer
+<EndFuncPtr>")"{BNopt}/"("              { // a function pointer
                                           lineCount(yyscanner);
                                           yyextra->current->type+=yyextra->funcPtrType+")";
                                           BEGIN(FindMembers);
                                         }
-<EndFuncPtr>")"{BN}*/"["                { // an array of variables
+<EndFuncPtr>")"{BNopt}/"["              { // an array of variables
                                           lineCount(yyscanner);
                                           yyextra->current->type+=yyextra->funcPtrType.data();
                                           yyextra->current->args += ")";
@@ -4107,12 +4125,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->type+=yyextra->funcPtrType+")(";
                                           BEGIN(FuncFuncType);
                                         }
-<FuncFuncEnd>")"{BN}*/[;{]              {
+<FuncFuncEnd>")"{BNopt}/[;{]            {
                                           lineCount(yyscanner);
                                           yyextra->current->type+=yyextra->funcPtrType.data()+1;
                                           BEGIN(Function);
                                         }
-<FuncFuncEnd>")"{BN}*/"["               { // function returning a pointer to an array
+<FuncFuncEnd>")"{BNopt}/"["             { // function returning a pointer to an array
                                           lineCount(yyscanner);
                                           yyextra->current->type+=yyextra->funcPtrType;
                                           yyextra->current->args+=")";
@@ -4246,7 +4264,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           BEGIN( yyextra->currentArgumentContext );
                                         }
         /* a special comment */
-<ReadFuncArgType,ReadTempArgs>("/*"[*!]|"//"[/!])("<"?) {
+<ReadFuncArgType,ReadTempArgs>({CCS}[*!]|{CPPC}[/!])("<"?) {
                                           if (yyextra->currentArgumentContext==DefineEnd)
                                           {
                                             // for defines we interpret a comment
@@ -4273,12 +4291,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           }
                                         }
         /* a non-special comment */
-<ReadFuncArgType,ReadTempArgs>"/**/"    { /* empty comment */ }
-<ReadFuncArgType,ReadTempArgs>"/*"      {
+<ReadFuncArgType,ReadTempArgs>{CCS}{CCE}    { /* empty comment */ }
+<ReadFuncArgType,ReadTempArgs>{CCS}      {
                                           yyextra->lastCContext = YY_START;
                                           BEGIN( SkipComment );
                                         }
-<ReadFuncArgType,ReadTempArgs>"//"      {
+<ReadFuncArgType,ReadTempArgs>{CPPC}      {
                                           yyextra->lastCContext = YY_START;
                                           BEGIN( SkipCxxComment );
                                         }
@@ -4296,7 +4314,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
   */
         /* ')' followed by a special comment */
-<ReadFuncArgType>")"{BN}*("/*"[*!]|"//"[/!])"<" {
+<ReadFuncArgType>")"{BN}*({CCS}[*!]|{CPPC}[/!])"<" {
                                           lineCount(yyscanner);
                                           if (yyextra->currentArgumentContext==DefineEnd)
                                           {
@@ -4329,7 +4347,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                         }
 <CopyArgComment>^{B}*"*"+/{BN}+
 <CopyArgComment>[^\n\\\@\*]+            { yyextra->fullArgString+=yytext; }
-<CopyArgComment>"*/"                    { yyextra->fullArgString+=yytext;
+<CopyArgComment>{CCE}                    { yyextra->fullArgString+=yytext;
                                           if (yyextra->lastCopyArgChar!=0)
                                             unput(yyextra->lastCopyArgChar);
                                           BEGIN( yyextra->lastCommentInArgContext );
@@ -4988,7 +5006,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           //addToBody(yytext);
                                           ++yyextra->curlyCount ;
                                         }
-<SkipCurly>"}"/{BN}*("/*!"|"/**"|"//!"|"///")"<!--" | /* see bug710917 */
+<SkipCurly>"}"/{BN}*{DCOMM}"<!--" | /* see bug710917 */)
 <SkipCurly>"}"                          {
                                           //addToBody(yytext);
                                           if( yyextra->curlyCount )
@@ -5006,7 +5024,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( yyextra->lastCurlyContext ) ;
                                           }
                                         }
-<SkipCurly>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" {
+<SkipCurly>"}"{BN}*{DCOMM}"<" {
                                           lineCount(yyscanner);
                                           if ( yyextra->curlyCount )
                                           {
@@ -5037,7 +5055,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             }
                                           }
                                         }
-<SkipCurlyEndDoc>"}"{BN}*("/*!"|"/**"|"//!"|"///")"<" { // desc is followed by another one
+<SkipCurlyEndDoc>"}"{BN}*{DCOMM}"<" { // desc is followed by another one
                                           yyextra->docBlockContext   = SkipCurlyEndDoc;
                                           yyextra->docBlockInBody    = FALSE;
                                           yyextra->docBlockAutoBrief = ( yytext[yyleng-2]=='*' && Config_getBool(JAVADOC_AUTOBRIEF) ) ||
@@ -5114,12 +5132,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           //addToBody(yytext);
                                           lineCount(yyscanner);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>"/*"    {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>{CCS}    {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipComment);
                                         }
-<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>"//"  {
+<SkipInits,SkipC11Inits,SkipCurly,SkipCurlyCpp,SkipC11Attribute>{CPPC}  {
                                           //addToBody(yytext);
                                           yyextra->lastCContext = YY_START;
                                           BEGIN(SkipCxxComment);
@@ -5172,7 +5190,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <SkipPHPString>\'                       {
                                           BEGIN( yyextra->lastStringContext );
                                         }
-<SkipString,SkipPHPString>"/*"|"*/"|"//" { }
+<SkipString,SkipPHPString>{CCS}|{CCE}|{CPPC} { }
 <SkipString,SkipPHPString>\n            {
                                           lineCount(yyscanner);
                                         }
@@ -5397,7 +5415,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           lineCount(yyscanner);
                                           BEGIN( ClassVar );
                                         }
-<ClassVar>{SCOPENAME}{BN}*/"("          {
+<ClassVar>{SCOPENAME}{BNopt}/"("        {
                                           if (yyextra->insideIDL && qstrncmp(yytext,"switch",6)==0 && !isId(yytext[6]))
                                           {
                                             // Corba IDL style union
@@ -5511,8 +5529,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( FindMembers );
                                           }
                                         }
-<CSConstraintType,CSConstraintName>"/**/" { /* empty comment */ }
-<CSConstraintType,CSConstraintName>("/*"[*!]|"//"[/!])("<"?)    { // special comment
+<CSConstraintType,CSConstraintName>{CCS}{CCE} { /* empty comment */ }
+<CSConstraintType,CSConstraintName>({CCS}[*!]|{CPPC}[/!])("<"?)    { // special comment
                                           yyextra->fullArgString.resize(0);
                                           yyextra->lastCopyArgChar='#'; // end marker
                                           yyextra->lastCommentInArgContext=YY_START;
@@ -5633,7 +5651,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           }
                                           BEGIN( FindMembers );
                                         }
-<Bases,ClassVar>"///"/[^/]              {
+<Bases,ClassVar>{CPPC}"/"/[^/]              {
                                           if (!yyextra->insideObjC)
                                           {
                                             REJECT;
@@ -5649,9 +5667,9 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( ReadBodyIntf );
                                           }
                                         }
-<Bases,ClassVar>("//"{B}*)?"/**"/[^/*]  |
-<Bases,ClassVar>("//"{B}*)?"/*!"        |
-<Bases,ClassVar>"//!"                   |
+<Bases,ClassVar>({CPPC}{B}*)?{CCS}"*"/{NCOMM}  |
+<Bases,ClassVar>({CPPC}{B}*)?{CCS}"!"        |
+<Bases,ClassVar>{CPPC}"!"                   |
 <Bases,ClassVar>[\-+]{BN}*              {
                                           if (!yyextra->insideObjC)
                                           {
@@ -5955,8 +5973,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <Comment>{BN}+                          { yyextra->current->program += yytext ;
                                           lineCount(yyscanner) ;
                                         }
-<Comment>"/*"                           { yyextra->current->program += yytext ; }
-<Comment>"//"                           { yyextra->current->program += yytext ; }
+<Comment>{CCS}                           { yyextra->current->program += yytext ; }
+<Comment>{CPPC}                           { yyextra->current->program += yytext ; }
 <Comment>{CMD}("code"|"verbatim")       {
                                           yyextra->insideCode=TRUE;
                                           yyextra->current->program += yytext ;
@@ -5966,12 +5984,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           yyextra->current->program += yytext ;
                                         }
 <Comment>[^ \.\t\r\n\/\*]+              { yyextra->current->program += yytext ; }
-<Comment>"*/"                           { yyextra->current->program += yytext ;
+<Comment>{CCE}                           { yyextra->current->program += yytext ;
                                           if (!yyextra->insideCode) BEGIN( yyextra->lastContext ) ;
                                         }
 <Comment>.                              { yyextra->current->program += *yytext ; }
 
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,Bases,OldStyleArgs>("//"{B}*)?"/*!" {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,SkipC11Inits,SkipC11Attribute,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"!" {
                                           //printf("Start doc block at %d\n",yyextra->yyLineNr);
                                           if (!yyextra->current->doc.isEmpty())
                                           {
@@ -6004,7 +6022,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           startCommentBlock(yyscanner,FALSE);
                                           BEGIN( DocBlock );
                                         }
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>"/**"[*]+{BL} {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>{CCS}"*"[*]+{BL} {
                                           bool javadocBanner = Config_getBool(JAVADOC_BANNER);
                                           lineCount(yyscanner);
 
@@ -6043,7 +6061,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN( Comment ) ;
                                           }
                                         }
-<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>("//"{B}*)?"/**"/[^/*] {
+<FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                                           yyextra->lastDocContext = YY_START;
 
                                           //printf("Found comment block at %s:%d\n",yyextra->yyFileName,yyextra->yyLineNr);
@@ -6070,7 +6088,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           startCommentBlock(yyscanner,FALSE);
                                           BEGIN( DocBlock );
                                         }
-<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"//!" {
+<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"!" {
                                           yyextra->lastDocContext = YY_START;
                                           if (yyextra->current_root->section & Entry::SCOPE_MASK)
                                           {
@@ -6087,7 +6105,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           startCommentBlock(yyscanner,yyextra->current->brief.isEmpty());
                                           BEGIN( DocLine );
                                         }
-<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>"///"/[^/] {
+<FindMembers,FindFields,MemberSpec,SkipCurly,FuncQual,Operator,ClassVar,Bases,OldStyleArgs>{CPPC}"/"/[^/] {
                                           yyextra->lastDocContext = YY_START;
                                           if (yyextra->current_root->section & Entry::SCOPE_MASK)
                                           {
@@ -6213,8 +6231,8 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 <CSAccessorDecl>"."                     {}
 <CSAccessorDecl>\n                      { lineCount(yyscanner); }
 <CSString>"\""                          { BEGIN(CSAccessorDecl);}
-<CSString>"//"                          {} // Otherwise the rule <*>"//" will kick in
-<CSString>"/*"                          {} // Otherwise the rule <*>"/*" will kick in
+<CSString>{CPPC}                          {} // Otherwise the rule <*>"//" will kick in
+<CSString>{CCS}                          {} // Otherwise the rule <*>"/*" will kick in
 <CSString>\n                            { lineCount(yyscanner); }
 <CSString>"."                           {}
 
@@ -6283,22 +6301,22 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
  /**********************************************************************************/
 
  /* ---- Single line comments ------ */
-<DocLine>[^\n]*"\n"[ \t]*"//"[/!][<]?   { // continuation of multiline C++-style comment
+<DocLine>[^\n]*"\n"[ \t]*{CPPC}[/!][<]?   { // continuation of multiline C++-style comment
                                            yyextra->docBlock+=yytext;
                                            int markerLen = yytext[yyleng-1]=='<' ? 4 : 3;
                                            yyextra->docBlock.resize(yyextra->docBlock.length() - markerLen);
                                            lineCount(yyscanner);
                                         }
-<DocLine>{B}*"///"[/]+{B}*/"\n"         { // ignore marker line (see bug700345)
+<DocLine>{B}*{CPPC}"/"[/]+{Bopt}/"\n"         { // ignore marker line (see bug700345)
                                           handleCommentBlock(yyscanner,yyextra->docBlock.data(),yyextra->current->brief.isEmpty());
                                           BEGIN( yyextra->docBlockContext );
                                         }
-<DocLine>[^\n]*/"\n"{B}*"//"[!/]{B}*{CMD}"}"    { // next line is an end group marker, see bug 752712
+<DocLine>{NONLopt}/"\n"{B}*{CPPC}[!/]{B}*{CMD}"}"    { // next line is an end group marker, see bug 752712
                                           yyextra->docBlock+=yytext;
                                           handleCommentBlock(yyscanner,yyextra->docBlock.data(),yyextra->current->brief.isEmpty());
                                           BEGIN( yyextra->docBlockContext );
                                         }
-<DocLine>[^\n]*/"\n"                    { // whole line
+<DocLine>{NONLopt}/"\n"                    { // whole line
                                           yyextra->docBlock+=yytext;
                                           handleCommentBlock(yyscanner,yyextra->docBlock.data(),yyextra->current->brief.isEmpty());
                                           BEGIN( yyextra->docBlockContext );
@@ -6306,7 +6324,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
 
  /* ---- Comments blocks ------ */
 
-<DocBlock>"*"*"*/"                      { // end of comment block
+<DocBlock>"*"*{CCE}                      { // end of comment block
                                           handleCommentBlock(yyscanner,yyextra->docBlock.data(),FALSE);
                                           BEGIN(yyextra->docBlockContext);
                                         }
@@ -6316,17 +6334,17 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
                                           yyextra->docBlock+=indent;
                                         }
-<DocBlock>^{B}*("//")?{B}*"*"+/[^//a-z_A-Z0-9*] { // start of a comment line
+<DocBlock>^{B}*({CPPC})?{B}*"*"+/[^/a-z_A-Z0-9*] { // start of a comment line
                                           QCString indent;
                                           indent.fill(' ',computeIndent(yytext,yyextra->column));
                                           yyextra->docBlock+=indent;
                                         }
-<DocBlock>^{B}*("//"){B}*               { // strip embedded C++ comments if at the start of a line
+<DocBlock>^{B}*({CPPC}){B}*               { // strip embedded C++ comments if at the start of a line
                                         }
-<DocBlock>"//"                          { // slashes in the middle of a comment block
+<DocBlock>{CPPC}                          { // slashes in the middle of a comment block
                                           yyextra->docBlock+=yytext;
                                         }
-<DocBlock>"/*"                          { // start of a new comment in the
+<DocBlock>{CCS}                          { // start of a new comment in the
                                           // middle of a comment block
                                           yyextra->docBlock+=yytext;
                                         }
@@ -6502,10 +6520,10 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[^\<@/*\]~\$\\\n]+        { // any character that is not special
+<DocCopyBlock>[^\<@/\*\]~\$\\\n]+       { // any character that is not special
                                           yyextra->docBlock+=yytext;
                                         }
-<DocCopyBlock>"/*"|"*/"|"//"            {
+<DocCopyBlock>{CCS}|{CCE}|{CPPC}           {
                                           if (yytext[1]=='*')
                                           {
                                             yyextra->nestedComment=TRUE;
@@ -6622,7 +6640,7 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                             lineCount(yyscanner);
                                           }
                                         }
-<SkipCxxComment>.*/\n                   {
+<SkipCxxComment>{ANYopt}/\n                   {
                                           BEGIN( yyextra->lastCContext ) ;
                                         }
 <SkipComment>[^\*\n]+
@@ -6680,12 +6698,12 @@ OPERATOR  "operator"{B}*({ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP})
                                           }
                                         }
 <*>.
-<SkipComment>"//"|"/*"
-<*>"/*"                                 { yyextra->lastCContext = YY_START ;
+<SkipComment>{CPPC}|{CCS}
+<*>{CCS}                                 { yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipComment ) ;
                                         }
-<SkipComment>{B}*"*/"                   { BEGIN( yyextra->lastCContext ) ; }
-<*>"//"                                 {
+<SkipComment>{B}*{CCE}                   { BEGIN( yyextra->lastCContext ) ; }
+<*>{CPPC}                                 {
                                           yyextra->lastCContext = YY_START ;
                                           BEGIN( SkipCxxComment ) ;
                                         }
@@ -6846,7 +6864,8 @@ static void setContext(yyscan_t yyscanner)
   yyextra->insideObjC  = yyextra->language==SrcLangExt_ObjC;
   yyextra->insideJS    = yyextra->language==SrcLangExt_JS;
   yyextra->insideSlice = yyextra->language==SrcLangExt_Slice;
-  yyextra->insideCpp   = yyextra->language==SrcLangExt_Cpp;
+  yyextra->insideCpp   = (yyextra->language==SrcLangExt_Cpp ||
+                          yyextra->language==SrcLangExt_Lex);
   //printf("setContext(%s) yyextra->insideIDL=%d yyextra->insideJava=%d yyextra->insideCS=%d "
   //       "yyextra->insideD=%d yyextra->insidePHP=%d yyextra->insideObjC=%d\n",
   //       yyextra->yyFileName.data(),yyextra->insideIDL,yyextra->insideJava,yyextra->insideCS,yyextra->insideD,yyextra->insidePHP,yyextra->insideObjC
@@ -7473,7 +7492,7 @@ bool COutlineParser::needsPreprocessing(const QCString &extension) const
 {
   QCString fe=extension.lower();
   SrcLangExt lang = getLanguageFromFileName(extension);
-  return (SrcLangExt_Cpp == lang) ||
+  return (SrcLangExt_Cpp == lang) || (SrcLangExt_Lex == lang) ||
    !( fe==".java" || fe==".as"  || fe==".d"    || fe==".php" ||
       fe==".php4" || fe==".inc" || fe==".phtml"|| fe==".php5"
     );

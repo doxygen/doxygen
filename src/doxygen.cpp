@@ -77,6 +77,8 @@
 #include "fortranscanner.h"
 #include "xmlcode.h"
 #include "sqlcode.h"
+#include "lexcode.h"
+#include "lexscanner.h"
 #include "code.h"
 #include "portable.h"
 #include "vhdljjparser.h"
@@ -10091,6 +10093,8 @@ void initDoxygen()
                                                          make_parser_factory<SQLCodeParser>());
   Doxygen::parserManager->registerParser("md",           make_parser_factory<MarkdownOutlineParser>(),
                                                          make_parser_factory<FileCodeParser>());
+  Doxygen::parserManager->registerParser("lex",          make_parser_factory<LexOutlineParser>(),
+                                                         make_parser_factory<LexCodeParser>());
 
   // register any additional parsers here...
 

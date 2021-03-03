@@ -170,6 +170,23 @@ FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
 NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   //- end: NUMBER ---------------------------------------------------------------------------
 
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
+
+  // Optional any character
+ANYopt .*
+
+  // Optional white space
+WSopt [ \t\r]*
+  // readline non special
+RLopt [^\\@\n\*\/]*
+  // Optional slash
+SLASHopt [/]*
+
 %%
 
 <Scan>{NUMBER}			    { //Note similar code in code.l
@@ -276,8 +293,8 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <Scan>\n                           { /* new line */ 
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
-<Scan>"//!"/.*\n[ \t]*"//"[\/!][^\/] | /* start C++ style special comment block */
-<Scan>("///"[/]*)/[^/].*\n[ \t]*"//"[\/!][^\/] { /* start C++ style special comment block */
+<Scan>{CPPC}"!"/.*\n[ \t]*{CPPC}[\/!][^\/] | /* start C++ style special comment block */
+<Scan>({CPPC}"/"[/]*)/[^/].*\n[ \t]*{CPPC}[\/!][^\/] { /* start C++ style special comment block */
   				     if (yyextra->mlBrief) 
 				     {
 				       REJECT; // bail out if we do not need to convert
@@ -298,7 +315,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				       BEGIN(ReadLine);
 				     }
                                    }
-<Scan>"//##Documentation".*/\n	   { /* Start of Rational Rose ANSI C++ comment block */
+<Scan>{CPPC}"##Documentation"{ANYopt}/\n	   { /* Start of Rational Rose ANSI C++ comment block */
                                      if (yyextra->mlBrief) REJECT;
                                      int i=17; //=strlen("//##Documentation");
 				     yyextra->blockHeadCol=yyextra->col;
@@ -307,22 +324,22 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
-<Scan>"//"[!\/]/.*\n[ \t]*"//"[|\/][ \t]*[@\\]"}" { // next line contains an end marker, see bug 752712
+<Scan>{CPPC}[!\/]/.*\n[ \t]*{CPPC}[|\/][ \t]*[@\\]"}" { // next line contains an end marker, see bug 752712
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>"//"/.*\n	                   { /* one line C++ comment */ 
+<Scan>{CPPC}/.*\n	                   { /* one line C++ comment */ 
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
 				   }
-<Scan>"/**/"                       { /* avoid matching next rule for empty C comment, see bug 711723 */
+<Scan>{CCS}{CCE}                       { /* avoid matching next rule for empty C comment, see bug 711723 */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<Scan>"/*"[*!]?			   { /* start of a C comment */
+<Scan>{CCS}[*!]?			   { /* start of a C comment */
                                      if (yyextra->lang==SrcLangExt_Python)
 				     {
 				       REJECT;
@@ -443,8 +460,14 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				     yyextra->lastCommentContext = YY_START;
                                      BEGIN(Verbatim);
                                    }
+<Scan>"\\\""                       { /* escaped double quote */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
+<Scan>"\\\\"                       { /* escaped backslash */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
 <Scan>.                            { /* any other character */
-                                     copyToOutput(yyscanner,yytext,(int)yyleng); 
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
@@ -501,7 +524,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				       BEGIN(yyextra->lastCommentContext);
 				     }
                                    }
-<VerbatimCode>^[ \t]*"//"[\!\/]?   { /* skip leading comments */
+<VerbatimCode>^[ \t]*{CPPC}[\!\/]?   { /* skip leading comments */
   				     if (!yyextra->inSpecialComment)
 				     {
                                        copyToOutput(yyscanner,yytext,(int)yyleng); 
@@ -530,7 +553,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <Verbatim,VerbatimCode>\n	   { /* new line in verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
-<Verbatim>^[ \t]*"//"[/!]          {
+<Verbatim>^[ \t]*{CPPC}[/!]          {
   				     if (yyextra->blockName=="dot" || yyextra->blockName=="msc" || yyextra->blockName=="uml" || yyextra->blockName.at(0)=='f')
 				     {
 				       // see bug 487871, strip /// from dot images and formulas.
@@ -596,7 +619,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <CComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */ 
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
-<CComment>"*"+[^*/\\@\n{\"]*       { /* stars without slashes */
+<CComment>"*"+[^*\/\\@\n{\"]*      { /* stars without slashes */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
@@ -728,18 +751,18 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <CComment>.			   {
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
   				   }
-<SComment>^[ \t]*"///"[\/]*/\n     {
+<SComment>^[ \t]*{CPPC}"/"{SLASHopt}/\n     {
   				     replaceComment(yyscanner,0);
   				   }
-<SComment>\n[ \t]*"///"[\/]*/\n    {
+<SComment>\n[ \t]*{CPPC}"/"{SLASHopt}/\n    {
                                      replaceComment(yyscanner,1); 
                                    }
-<SComment>^[ \t]*"///"[^\/\n]/.*\n { 
+<SComment>^[ \t]*{CPPC}"/"[^\/\n]/.*\n { 
   				     replaceComment(yyscanner,0);
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
   				   }
-<SComment>\n[ \t]*"//"[\/!]("<")?[ \t]*[\\@]"}".*\n {   
+<SComment>\n[ \t]*{CPPC}[\/!]("<")?[ \t]*[\\@]"}".*\n {   
                                      /* See Bug 752712: end the multiline comment when finding a @} or \} command */
                                      copyToOutput(yyscanner," */",3); 
 				     copyToOutput(yyscanner,yytext,(int)yyleng); 
@@ -747,26 +770,26 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				     yyextra->inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
-<SComment>\n[ \t]*"///"[^\/\n]/.*\n  { 
+<SComment>\n[ \t]*{CPPC}"/"[^\/\n]/.*\n  { 
                                      replaceComment(yyscanner,1); 
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
   				   }
-<SComment>^[ \t]*"//!"             |    // just //!
-<SComment>^[ \t]*"//!<"/.*\n       |    // or   //!< something
-<SComment>^[ \t]*"//!"[^<]/.*\n    {    // or   //!something
+<SComment>^[ \t]*{CPPC}"!"             |    // just //!
+<SComment>^[ \t]*{CPPC}"!<"/.*\n       |    // or   //!< something
+<SComment>^[ \t]*{CPPC}"!"[^<]/.*\n    {    // or   //!something
   				     replaceComment(yyscanner,0);
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<SComment>\n[ \t]*"//!"            |
-<SComment>\n[ \t]*"//!<"/.*\n      |
-<SComment>\n[ \t]*"//!"[^<\n]/.*\n { 
+<SComment>\n[ \t]*{CPPC}"!"            |
+<SComment>\n[ \t]*{CPPC}"!<"/.*\n      |
+<SComment>\n[ \t]*{CPPC}"!"[^<\n]/.*\n { 
                                      replaceComment(yyscanner,1); 
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<SComment>^[ \t]*"//##"/.*\n       {
+<SComment>^[ \t]*{CPPC}"##"/.*\n       {
                                      if (!yyextra->inRoseComment)
 				     {
 				       REJECT;
@@ -778,7 +801,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				       BEGIN(ReadLine);
 				     }
                                    }
-<SComment>\n[ \t]*"//##"/.*\n      {
+<SComment>\n[ \t]*{CPPC}"##"/.*\n      {
                                      if (!yyextra->inRoseComment)
 				     {
 				       REJECT;
@@ -797,19 +820,19 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				     yyextra->inRoseComment=FALSE;
 				     BEGIN(Scan); 
                                    }
-<ReadLine>"/**"                    {
+<ReadLine>{CCS}"*"                    {
 				     copyToOutput(yyscanner,"/&zwj;**",8);
 				   }
-<ReadLine>"*/"                     {
+<ReadLine>{CCE}                     {
 				     copyToOutput(yyscanner,"*&zwj;/",7);
 				   }
 <ReadLine>"*"                      {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*/]*             {
+<ReadLine>{RLopt}                  {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				   }
-<ReadLine>[^\\@\n\*/]*/\n          {
+<ReadLine>{RLopt}/\n               {
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
@@ -843,7 +866,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <CondLine>[!()&| \ta-z_A-Z0-9.\-]+ {
                                      handleCondSectionId(yyscanner,yytext);
   				   }
-<CComment,ReadLine>[\\@]"cond"[ \t\r]*/\n {
+<CComment,ReadLine>[\\@]"cond"{WSopt}/\n {
   				     yyextra->condCtx=YY_START;
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
                                    }
@@ -861,9 +884,9 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 				     yyextra->lastEscaped=0;
 				     BEGIN( ReadAliasArgs );
   				   }
-<ReadAliasArgs>^[ \t]*"//"[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
+<ReadAliasArgs>^[ \t]*{CPPC}[/!]/[^\n]+   { // skip leading special comments (see bug 618079)
   				   }
-<ReadAliasArgs>"*/"		   { // oops, end of comment in the middle of an alias?
+<ReadAliasArgs>{CCE}		   { // oops, end of comment in the middle of an alias?
                                      if (yyextra->lang==SrcLangExt_Python)
 				     {
 				       REJECT;

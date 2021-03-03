@@ -97,6 +97,11 @@ struct codeYY_state
   QCString      parmType;
   QCString      parmName;
 
+  bool          beginCodeLine = true; //!< signals whether or not we should with the first line
+                                      //!< write a start line code or not. Essential
+                                      //!< when this code parser is called from another 
+                                      //!< code parser.
+
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
@@ -255,6 +260,7 @@ static std::mutex g_countFlowKeywordsMutex;
 %}
 
 B       [ \t]
+Bopt    {B}*
 BN      [ \t\n\r]
 ID      "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
 SEP     ("::"|"\\")
@@ -278,6 +284,8 @@ OPERATOR {ARITHOP}|{ASSIGNOP}|{LOGICOP}|{BITOP}
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 
+  /* no comment start / end signs inside square brackets */
+NCOMM [^/\*]
   //- start: NUMBER -------------------------------------------------------------------------
   // Note same defines in commentcnv.l: keep in sync
 DECIMAL_INTEGER  [1-9][0-9']*[0-9]?[uU]?[lL]?[lL]?
@@ -305,6 +313,18 @@ FLOAT_HEXADECIMAL {HEX_FP1}|{HEX_FP2}
 FLOAT_NUMBER {FLOAT_DECIMAL}|{FLOAT_HEXADECIMAL}
 NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
   //- end: NUMBER ---------------------------------------------------------------------------
+
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
+
+  // ENDIDopt
+ENDIDopt ("::"{ID})*
+  // Optional end qualifiers
+ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"sealed"|"override"))*
 
 %option noyywrap
 
@@ -534,7 +554,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <SkipCPP>\\[\r]?\n                      {
                                           codifyLines(yyscanner,yytext);
                                         }
-<SkipCPP>"//"/[^/!]                     {
+<SkipCPP>{CPPC}/[^/!]                     {
                                           REJECT;
                                         }
 <Body,FuncCall>"{"                      {
@@ -738,7 +758,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           BEGIN( Bases );
                                         }
 <PackageName>[ \t]*";"                  |
-<Bases>^{B}*/"@"{ID}                    | // Objective-C interface
+<Bases>^{Bopt}/"@"{ID}                    | // Objective-C interface
 <Bases,ClassName,ClassVar,CppCliTypeModifierFollowup>{B}*"{"{B}* {
                                           yyextra->theVarContext.pushScope();
                                           yyextra->code->codify(yytext);
@@ -858,7 +878,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                         }
 
 
-<Body>{SCOPEPREFIX}?"operator"{B}*"()"{B}*/"(" {
+<Body>{SCOPEPREFIX}?"operator"{B}*"()"{Bopt}/"(" {
                                           addType(yyscanner);
                                           generateFunctionLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->bracketCount=0;
@@ -1089,7 +1109,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           generatePHPVariableLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext+7;
                                         }
-<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"("::"{ID})*/{B}* { // A<T> *pt;
+<Body,TemplCast>{SCOPENAME}{B}*"<"[^\n\/\-\.\{\"\>\(]*">"{ENDIDopt}/{B}* { // A<T> *pt;
                                           if (isCastKeyword(yytext) && YY_START==Body)
                                           {
                                             REJECT;
@@ -1167,7 +1187,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <SkipStringS>[^\'\\\r\n]*               {
                                           yyextra->code->codify(yytext);
                                         }
-<SkipString,SkipStringS>"//"|"/*"       {
+<SkipString,SkipStringS>{CPPC}|{CCS}       {
                                           yyextra->code->codify(yytext);
                                         }
 <SkipString>@?\"                        {
@@ -1412,21 +1432,21 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                     }
                                     DBG_CTX((stderr,"close\n"));
                                   }
-<ObjCCall,ObjCMName>"//".*        {
+<ObjCCall,ObjCMName>{CPPC}.*        {
                                     yyextra->currentCtx->format+=escapeComment(yyscanner,yytext);
                                   }
-<ObjCCall,ObjCMName>"/*"          {
+<ObjCCall,ObjCMName>{CCS}          {
                                     yyextra->lastObjCCallContext = YY_START;
                                     yyextra->currentCtx->comment=yytext;
                                     BEGIN(ObjCCallComment);
                                   }
-<ObjCCallComment>"*/"             {
+<ObjCCallComment>{CCE}             {
                                     yyextra->currentCtx->comment+=yytext;
                                     yyextra->currentCtx->format+=escapeComment(yyscanner,yyextra->currentCtx->comment);
                                     BEGIN(yyextra->lastObjCCallContext);
                                   }
 <ObjCCallComment>[^*\n]+          { yyextra->currentCtx->comment+=yytext; }
-<ObjCCallComment>"//"|"/*"        { yyextra->currentCtx->comment+=yytext; }
+<ObjCCallComment>{CPPC}|{CCS}        { yyextra->currentCtx->comment+=yytext; }
 <ObjCCallComment>\n               { yyextra->currentCtx->comment+=*yytext; }
 <ObjCCallComment>.                { yyextra->currentCtx->comment+=*yytext; }
 <ObjCCall>{ID}                    {
@@ -1667,7 +1687,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN( SkipInits );
                                           }
                                         }
-<CallEnd>("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"sealed"|"override"))*/{BN}*(";"|"="|"throw"{BN}*"(") {
+<CallEnd>{ENDQopt}/{BN}*(";"|"="|"throw"{BN}*"(") {
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -1847,18 +1867,18 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           yyextra->memCallContext = YY_START;
                                           BEGIN( MemberCall );
                                         }
-<SkipComment>"/*"("!"?)"*/"             {
+<SkipComment>{CCS}("!"?){CCE}           {
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                           BEGIN( yyextra->lastCContext ) ;
                                         }
-<SkipComment>"//"|"/*"                  {
+<SkipComment>{CPPC}|{CCS}               {
                                           yyextra->code->codify(yytext);
                                         }
-<SkipComment>[^*/\n]+                   {
+<SkipComment>[^*\/\n]+                  {
                                           yyextra->code->codify(yytext);
                                         }
-<SkipComment>[ \t]*"*/"                 {
+<SkipComment>[ \t]*{CCE}                {
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                           if (yyextra->lastCContext==SkipCPP)
@@ -1882,10 +1902,10 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <SkipCxxComment>.                       {
                                           yyextra->code->codify(yytext);
                                         }
-<RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)?{B}*"/*"[*!]/[^/*] {
+<RemoveSpecialCComment>{CCE}{B}*\n({B}*\n)*({B}*(({CPPC}"@"[{}])|({CCS}"@"[{}]{CCE})){B}*\n)?{B}*{CCS}[*!]/{NCOMM} {
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<RemoveSpecialCComment>"*/"{B}*\n({B}*\n)*({B}*(("//@"[{}])|("/*@"[{}]"*/")){B}*\n)? {
+<RemoveSpecialCComment>{CCE}{B}*\n({B}*\n)*({B}*(({CPPC}"@"[{}])|({CCS}"@"[{}]{CCE})){B}*\n)? {
                                           if (yyextra->lastSpecialCContext==SkipCxxComment)
                                           { // force end of C++ comment here
                                             yyextra->yyLineNr+=QCString(yytext).contains('\n');
@@ -1908,11 +1928,11 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(yyextra->lastSpecialCContext);
                                           }
                                         }
-<RemoveSpecialCComment>"*/"             {
+<RemoveSpecialCComment>{CCE}             {
                                           BEGIN(yyextra->lastSpecialCContext);
                                         }
 <RemoveSpecialCComment>[^*\n]+
-<RemoveSpecialCComment>"//"|"/*"
+<RemoveSpecialCComment>{CPPC}|{CCS}
 <RemoveSpecialCComment>\n  { yyextra->yyLineNr++; }
 <RemoveSpecialCComment>.
 <MemberCall>[^a-z_A-Z0-9(\n]            {
@@ -1921,7 +1941,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           yyextra->name.resize(0);
                                           BEGIN(yyextra->memCallContext);
                                         }
-<*>\n({B}*"//"[!/][^\n]*\n)+            { // remove special one-line comment
+<*>\n({B}*{CPPC}[!/][^\n]*\n)+            { // remove special one-line comment
                                           if (YY_START==SkipCPP) REJECT;
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -1945,7 +1965,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           BEGIN( yyextra->lastSkipCppContext ) ;
                                           unput('\n');
                                         }
-<*>\n{B}*"//@"[{}].*\n                  { // remove one-line group marker
+<*>\n{B}*{CPPC}"@"[{}].*\n                  { // remove one-line group marker
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             yyextra->yyLineNr+=2;
@@ -1963,7 +1983,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN( yyextra->lastCContext ) ;
                                           }
                                         }
-<*>\n{B}*"/*@"[{}]                      { // remove one-line group marker
+<*>\n{B}*{CCS}"@"[{}]                      { // remove one-line group marker
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -1982,7 +2002,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>^{B}*"//@"[{}].*\n                   { // remove one-line group marker
+<*>^{B}*{CPPC}"@"[{}].*\n                   { // remove one-line group marker
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             yyextra->yyLineNr++;
@@ -1995,7 +2015,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             endFontClass(yyscanner);
                                           }
                                         }
-<*>^{B}*"/*@"[{}]                       { // remove multi-line group marker
+<*>^{B}*{CCS}"@"[{}]                       { // remove multi-line group marker
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -2013,7 +2033,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>^{B}*"//"[!/][^\n]*                  { // remove special one-line comment
+<*>^{B}*{CPPC}[!/][^\n]*                  { // remove special one-line comment
                                           if (!Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             startFontClass(yyscanner,"comment");
@@ -2021,7 +2041,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             endFontClass(yyscanner);
                                           }
                                         }
-<*>"//"[!/][^\n]*                       { // strip special one-line comment
+<*>{CPPC}[!/][^\n]*                       { // strip special one-line comment
                                           if (YY_START==SkipComment || YY_START==SkipString) REJECT;
                                           if (!Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -2030,7 +2050,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             endFontClass(yyscanner);
                                           }
                                         }
-<*>\n{B}*"/*"[!*]/[^/*]                 {
+<*>\n{B}*{CCS}[!*]/{NCOMM}                 {
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -2049,7 +2069,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>^{B}*"/**"[*]+/[^/]                  { // special C "banner" comment block at a new line
+<*>^{B}*{CCS}"*"[*]+/[^/]                  { // special C "banner" comment block at a new line
                                           if (Config_getBool(JAVADOC_BANNER) && Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -2067,7 +2087,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>^{B}*"/*"[!*]/[^/*]                  { // special C comment block at a new line
+<*>^{B}*{CCS}[!*]/{NCOMM}                  { // special C comment block at a new line
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
                                             if (YY_START != RemoveSpecialCComment) yyextra->lastSpecialCContext = YY_START;
@@ -2085,7 +2105,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>"/*"[!*]/[^/*]                       { // special C comment block half way a line
+<*>{CCS}[!*]/{NCOMM}                       { // special C comment block half way a line
                                           if (YY_START==SkipString) REJECT;
                                           if (Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -2104,7 +2124,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                             BEGIN(SkipComment);
                                           }
                                         }
-<*>"/*"("!"?)"*/"                       {
+<*>{CCS}("!"?){CCE}                       {
                                           if (YY_START==SkipString) REJECT;
                                           if (!Config_getBool(STRIP_CODE_COMMENTS))
                                           {
@@ -2116,7 +2136,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
 <SkipComment>[^\*\n]+                   {
                                           yyextra->code->codify(yytext);
                                         }
-<*>"/*"                                 {
+<*>{CCS}                                 {
                                           startFontClass(yyscanner,"comment");
                                           yyextra->code->codify(yytext);
                                           // check is to prevent getting stuck in skipping C++ comments
@@ -2132,7 +2152,7 @@ NUMBER {INTEGER_NUMBER}|{FLOAT_NUMBER}
                                           yyextra->lastVerbStringContext=YY_START;
                                           BEGIN(SkipVerbString);
                                         }
-<*>"//"                                 {
+<*>{CPPC}                                 {
                                           startFontClass(yyscanner,"comment");
                                           yyextra->code->codify(yytext);
                                           yyextra->lastCContext = YY_START ;
@@ -3785,6 +3805,12 @@ void CCodeParser::resetCodeParserState()
   yyextra->anchorCount = 0;
 }
 
+void CCodeParser::setStartCodeLine(const bool inp)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  yyextra->beginCodeLine = inp;
+}
+
 void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const QCString &s,
                 SrcLangExt lang,bool exBlock, const char *exName,FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
@@ -3859,7 +3885,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const char *className,const 
   }
   yyextra->includeCodeFragment = inlineFragment;
   DBG_CTX((stderr,"** exBlock=%d exName=%s include=%d\n",exBlock,exName,inlineFragment));
-  startCodeLine(yyscanner);
+  if (yyextra->beginCodeLine) startCodeLine(yyscanner);
   yyextra->type.resize(0);
   yyextra->name.resize(0);
   yyextra->args.resize(0);

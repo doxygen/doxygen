@@ -117,6 +117,8 @@ set(LEX_FILES scanner
     constexp
     xmlcode
     sqlcode
+    lexcode
+    lexscanner
     configimpl)
 
 # unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
@@ -184,6 +186,8 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/doctokenizer.l.h
     ${GENERATED_SRC}/fortrancode.l.h
     ${GENERATED_SRC}/fortranscanner.l.h
+    ${GENERATED_SRC}/lexcode.l.h
+    ${GENERATED_SRC}/lexscanner.l.h
     ${GENERATED_SRC}/pre.l.h
     ${GENERATED_SRC}/pycode.l.h
     ${GENERATED_SRC}/pyscanner.l.h
@@ -199,6 +203,8 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/doctokenizer.cpp
     ${GENERATED_SRC}/fortrancode.cpp
     ${GENERATED_SRC}/fortranscanner.cpp
+    ${GENERATED_SRC}/lexcode.cpp
+    ${GENERATED_SRC}/lexscanner.cpp
     ${GENERATED_SRC}/pre.cpp
     ${GENERATED_SRC}/pycode.cpp
     ${GENERATED_SRC}/pyscanner.cpp

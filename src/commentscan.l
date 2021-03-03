@@ -469,7 +469,8 @@ DETAILEDHTMLOPT {CODE}
 BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
-BS        ^(({B}*"//")?)(({B}*"*"+)?){B}*
+Bopt      {B}*
+BS        ^(({B}*"/""/")?)(({B}*"*"+)?){B}*
 ATTR      ({B}+[^>\n]*)?
 DOCNL     "\n"|"\\ilinebr"
 LC        "\\"{B}*"\n"
@@ -487,6 +488,18 @@ SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
 TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
+
+  // C start comment 
+CCS   "/\*"
+  // C end comment
+CCE   "*\/"
+  // Cpp comment 
+CPPC  "/\/"
+
+  // end of section title with asterisk
+STAopt [^\n@\\*]*
+  // end of section title without asterisk
+STopt  [^\n@\\]*
 
 %option noyywrap
 
@@ -541,7 +554,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
   /* What can happen in while parsing a comment block:
    *   commands (e.g. @page, or \page)
    *   escaped commands (e.g. @@page or \\page).
-   *   formulas (e.g. \f$ \f[ \f{..)
+   *   formulas (e.g. \f$...\f$ \f[...\f] \f{...\f})
    *   directories (e.g. \doxygen\src\)
    *   autolist end. (e.g. a dot on an otherwise empty line)
    *   newlines.
@@ -768,7 +781,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
 <Comment>[a-z_A-Z]+                     { // normal word
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>^{B}*"."{B}*/\n                { // explicit end autolist: e.g "  ."
+<Comment>^{B}*"."{Bopt}/\n                { // explicit end autolist: e.g "  ."
                                             addOutput(yyscanner,yytext);
                                         }
 <Comment>^{B}*[1-9][0-9]*"."{B}+        |
@@ -795,7 +808,7 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           }
                                           addOutput(yyscanner,yytext);
                                         }
-<Comment>^{B}*([\-:|]{B}*)*("--"|"---")({B}*[\-:|])*{B}*/\n { // horizontal line (dashed)
+<Comment>^{B}*([\-:|]{B}*)*("--"|"---")({B}*[\-:|])*{Bopt}/\n { // horizontal line (dashed)
                                             addOutput(yyscanner,yytext);
                                         }
 <Comment>{CMD}"---"                     { // escaped mdash
@@ -1342,12 +1355,12 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                               );
                                           BEGIN(Comment);
                                         }
-<SectionTitle>[^\n@\\*]*/"\n"           { // end of section title
+<SectionTitle>{STAopt}/"\n"             { // end of section title
                                           addSection(yyscanner);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
                                         }
-<SectionTitle>[^\n@\\]*/"\\ilinebr"     { // end of section title
+<SectionTitle>{STopt}/"\\ilinebr"       { // end of section title
                                           addSection(yyscanner);
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
@@ -1449,11 +1462,11 @@ RCSTAG    "$"{ID}":"[^\n$]+"$"
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           addOutput(yyscanner,'\n');
                                         }
-<FormatBlock>"/*"                       { // start of a C-comment
+<FormatBlock>{CCS}                       { // start of a C-comment
                                           if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim")) yyextra->commentCount++;
                                           addOutput(yyscanner,yytext);
                                         }
-<FormatBlock>"*/"                       { // end of a C-comment
+<FormatBlock>{CCE}                       { // end of a C-comment
                                           addOutput(yyscanner,yytext);
                                           if (!(yyextra->blockName=="code" || yyextra->blockName=="verbatim"))
                                           {

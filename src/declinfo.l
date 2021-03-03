@@ -83,6 +83,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
 %}
 
 B       [ \t]
+Bopt    {B}*
 ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
 %x      Start
@@ -188,11 +189,11 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Template>.			{
   				  yyextra->name+=*yytext;
   				}
-<Operator>{B}*"("{B}*")"{B}*"<>"{B}*/"("	{
+<Operator>{B}*"("{B}*")"{B}*"<>"{Bopt}/"("	{
   				  yyextra->name+="() <>";
 				  BEGIN(ReadArgs);
   				}
-<Operator>{B}*"("{B}*")"{B}*/"("	{
+<Operator>{B}*"("{B}*")"{Bopt}/"("	{
   				  yyextra->name+="()";
 				  BEGIN(ReadArgs);
   				}

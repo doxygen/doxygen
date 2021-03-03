@@ -647,7 +647,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  With this tag you can assign which parser to use for a given extension.
  Doxygen has a built-in mapping, but you can override or extend it using this tag.
  The format is <code>ext=language</code>, where \c ext is a file extension, and language is one of
- the parsers supported by doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, D, PHP,
+ the parsers supported by doxygen: IDL, Java, JavaScript, Csharp (C#), C, C++, Lex, D, PHP,
  md (Markdown), Objective-C, Python, Slice, VHDL, Fortran (fixed format Fortran: FortranFixed,
  free formatted Fortran: FortranFree, unknown formatted Fortran: Fortran. In
  the later case the parser tries to guess whether the code is fixed or free
@@ -1445,6 +1445,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
       <value name='*.hxx'/>
       <value name='*.hpp'/>
       <value name='*.h++'/>
+      <value name='*.l'/>
       <value name='*.cs'/>
       <value name='*.d'/>
       <value name='*.php'/>
