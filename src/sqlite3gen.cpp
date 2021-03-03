@@ -2348,7 +2348,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   {
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
+      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()).str());
     }
     else
     {

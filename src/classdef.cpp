@@ -20,7 +20,6 @@
 
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qregexp.h>
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
@@ -1627,80 +1626,61 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 
   if (!m_impl->inherits.empty())
   {
-    ol.startParagraph();
-    //parseText(ol,theTranslator->trInherits()+" ");
-
-    QCString inheritLine = theTranslator->trInheritsList((int)m_impl->inherits.size());
-    QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
-    // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+    auto replaceFunc = [this,&ol](size_t entryIndex)
     {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
-      bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef &bcd=m_impl->inherits.at(entryIndex);
-      if (ok)
+      BaseClassDef &bcd=m_impl->inherits[entryIndex];
+      ClassDef *cd=bcd.classDef;
+
+      // use the class name but with the template arguments as given
+      // in the inheritance relation
+      QCString displayName = insertTemplateSpecifierInScope(
+          cd->displayName(),bcd.templSpecifiers);
+
+      if (cd->isLinkable())
       {
-        ClassDef *cd=bcd.classDef;
-
-        // use the class name but with the template arguments as given
-        // in the inheritance relation
-        QCString displayName = insertTemplateSpecifierInScope(
-            cd->displayName(),bcd.templSpecifiers);
-
-        if (cd->isLinkable())
-        {
-          ol.writeObjectLink(cd->getReference(),
-                             cd->getOutputFileBase(),
-                             cd->anchor(),
-                             displayName);
-        }
-        else
-        {
-          ol.docify(displayName);
-        }
+        ol.writeObjectLink(cd->getReference(),
+            cd->getOutputFileBase(),
+            cd->anchor(),
+            displayName);
       }
       else
       {
-        err("invalid marker %d in inherits list!\n",entryIndex);
+        ol.docify(displayName);
       }
-      index=newIndex+matchLen;
-    }
-    ol.parseText(inheritLine.right(inheritLine.length()-(uint)index));
+    };
+
+    ol.startParagraph();
+    writeMarkerList(ol,
+                    theTranslator->trInheritsList((int)m_impl->inherits.size()).str(),
+                    m_impl->inherits.size(),
+                    replaceFunc);
     ol.endParagraph();
   }
 
   // write subclasses
   if (!m_impl->inheritedBy.empty())
   {
-    ol.startParagraph();
-    QCString inheritLine = theTranslator->trInheritedByList((int)m_impl->inheritedBy.size());
-    QRegExp marker("@[0-9]+");
-    int index=0,newIndex,matchLen;
-    // now replace all markers in inheritLine with links to the classes
-    while ((newIndex=marker.match(inheritLine,index,&matchLen))!=-1)
+
+    auto replaceFunc = [this,&ol](size_t entryIndex)
     {
-      ol.parseText(inheritLine.mid(index,newIndex-index));
-      bool ok;
-      uint entryIndex = inheritLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-      BaseClassDef &bcd=m_impl->inheritedBy.at(entryIndex);
-      if (ok)
+      BaseClassDef &bcd=m_impl->inheritedBy[entryIndex];
+      ClassDef *cd=bcd.classDef;
+      if (cd->isLinkable())
       {
-        ClassDef *cd=bcd.classDef;
-        if (cd->isLinkable())
-        {
-          ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
-        }
-        else
-        {
-          ol.docify(cd->displayName());
-        }
-        writeInheritanceSpecifier(ol,bcd);
+        ol.writeObjectLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),cd->displayName());
       }
-      index=newIndex+matchLen;
-    }
-    ol.parseText(inheritLine.right(inheritLine.length()-(uint)index));
+      else
+      {
+        ol.docify(cd->displayName());
+      }
+      writeInheritanceSpecifier(ol,bcd);
+    };
+
+    ol.startParagraph();
+    writeMarkerList(ol,
+                    theTranslator->trInheritedByList((int)m_impl->inheritedBy.size()).str(),
+                    m_impl->inheritedBy.size(),
+                    replaceFunc);
     ol.endParagraph();
   }
 

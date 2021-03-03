@@ -29,11 +29,11 @@
 
 #include <qfileinfo.h>
 #include <qdir.h>
-#include <qregexp.h>
 
 #include <thread>
 #include <algorithm>
 
+#include "regex.h"
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
@@ -1132,25 +1132,35 @@ void ConfigImpl::emptyValueToDefault()
   }
 }
 
-static void substEnvVarsInString(QCString &s)
+static void substEnvVarsInString(QCString &str)
 {
-  static QRegExp re("\\$\\([a-z_A-Z0-9.-]+\\)");
-  static QRegExp re2("\\$\\([a-z_A-Z0-9.-]+\\([a-z_A-Z0-9.-]+\\)\\)"); // For e.g. PROGRAMFILES(X86)
-  if (s.isEmpty()) return;
-  int p=0;
-  int i,l;
-  //printf("substEnvVarInString(%s) start\n",s.data());
-  while ((i=re.match(s,p,&l))!=-1 || (i=re2.match(s,p,&l))!=-1)
+  if (str.isEmpty()) return;
+  auto replace = [](const std::string &s, const reg::Ex &re) -> std::string
   {
-    //printf("Found environment var s.mid(%d,%d)='%s'\n",i+2,l-3,s.mid(i+2,l-3).data());
-    QCString env=Portable::getenv(s.mid(i+2,l-3));
-    substEnvVarsInString(env); // recursively expand variables if needed.
-    s = s.left(i)+env+s.right(s.length()-i-l);
-    p=i+env.length(); // next time start at the end of the expanded string
-  }
-  s=s.stripWhiteSpace(); // to strip the bogus space that was added when an argument
-                         // has quotes
-  //printf("substEnvVarInString(%s) end\n",s.data());
+    reg::Iterator it(s,re);
+    reg::Iterator end;
+    std::string result;
+    size_t p = 0;
+    for (; it!=end ; ++it)
+    {
+      const auto &match = *it;
+      size_t i = match.position();
+      size_t l = match.length();
+      result+=s.substr(p,i-p);
+      std::string matchContents = match[1].str();
+      QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
+      substEnvVarsInString(env); // recursively expand variables if needed.
+      result+=env.str();
+      p=i+l;
+    }
+    result+=s.substr(p);
+    return result;
+  };
+
+  // match e.g. re1=$(HOME) but also re2=$(PROGRAMFILES(X86))
+  static const reg::Ex re1(R"(\$\((\a[\w.-]*)\))");
+  static const reg::Ex re2(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))");
+  str = QCString(replace(replace(str.str(),re1),re2)).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
@@ -1641,16 +1651,15 @@ void Config::checkAndCorrect()
   //------------------------
   // check ALIASES
   const StringVector &aliasList = Config_getList(ALIASES);
-  for (const auto &s : aliasList)
+  for (const auto &alias : aliasList)
   {
-    QRegExp re1("[a-z_A-Z][a-z_A-Z0-9]*[ \t]*=");         // alias without argument
-    QRegExp re2("[a-z_A-Z][a-z_A-Z0-9]*{[0-9]+}[ \t]*="); // alias with argument
-    QCString alias=s.c_str();
-    alias=alias.stripWhiteSpace();
-    if (alias.find(re1)!=0 && alias.find(re2)!=0)
+    // match aliases of the form re1='name=' and re2='name{2} ='
+    static const reg::Ex re1(R"(\a\w*\s*=)");
+    static const reg::Ex re2(R"(\a\w*{\d+}\s*=)");
+    if (!reg::search(alias,re1) && !reg::search(alias,re2))
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
-          alias.data());
+          alias.c_str());
     }
   }
 

@@ -15,8 +15,6 @@
  *
  */
 
-#include <qregexp.h>
-
 #include "memberlist.h"
 #include "classdef.h"
 #include "message.h"

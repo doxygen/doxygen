@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QStringList
 **
@@ -189,6 +189,7 @@ QStringList QStringList::split( const QCString &sep, const QCString &str, bool a
   return split(QString(sep.data()),QString(str.data()),allowEmptyEntries);
 }
 
+#if 0
 /*!
   Splits the string \a str using the regular expression \a sep as separator. Returns the
   list of strings. If \a allowEmptyEntries is TRUE, also empty
@@ -228,6 +229,7 @@ QStringList QStringList::split( const QRegExp &sep, const QString &str, bool all
 
     return lst;
 }
+#endif
 
 /*!
   Returns a list of all strings containing the substring \a str.
@@ -245,6 +247,7 @@ QStringList QStringList::grep( const QString &str, bool cs ) const
     return res;
 }
 
+#if 0
 /*!
   Returns a list of all strings containing a substring that matches
   the regular expression \a expr.
@@ -259,6 +262,7 @@ QStringList QStringList::grep( const QRegExp &expr ) const
 
     return res;
 }
+#endif
 
 /*!
   Joins the stringlist into a single string with each element

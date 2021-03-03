@@ -33,7 +33,6 @@
 
 #include <stdio.h>
 #include <qglobal.h>
-#include <qregexp.h>
 #include <qfileinfo.h>
 
 #include <unordered_map>
@@ -51,6 +50,7 @@
 #include "section.h"
 #include "message.h"
 #include "portable.h"
+#include "regex.h"
 
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
@@ -213,6 +213,26 @@ inline int isNewline(const char *data)
   return 0;
 }
 
+// escape double quotes in string
+static QCString escapeDoubleQuotes(const QCString &s)
+{
+  TRACE(s.data());
+  if (s.isEmpty()) return "";
+  GrowBuf growBuf;
+  const char *p=s;
+  char c,pc='\0';
+  while ((c=*p++))
+  {
+    switch (c)
+    {
+      case '"':  if (pc!='\\')  { growBuf.addChar('\\'); } growBuf.addChar(c);   break;
+      default:   growBuf.addChar(c); break;
+    }
+    pc=c;
+  }
+  growBuf.addChar(0);
+  return growBuf.get();
+}
 // escape characters that have a special meaning later on.
 static QCString escapeSpecialChars(const QCString &s)
 {
@@ -775,13 +795,13 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
   if (!explicitTitle && !content.isEmpty())
   {
     m_out.addStr(" \"");
-    m_out.addStr(content);
+    m_out.addStr(escapeDoubleQuotes(content));
     m_out.addStr("\"");
   }
   else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
   {
     m_out.addStr(" \"");
-    m_out.addStr(title);
+    m_out.addStr(escapeDoubleQuotes(title));
     m_out.addStr("\"");
   }
   else
@@ -1451,15 +1471,15 @@ static int isHRuler(const char *data,int size)
 static QCString extractTitleId(QCString &title, int level)
 {
   TRACE(title.data());
-  //static QRegExp r1("^[a-z_A-Z][a-z_A-Z0-9\\-]*:");
-  static QRegExp r2("\\{#[a-z_A-Z][a-z_A-Z0-9\\-]*\\}");
-  int l=0;
-  int i = r2.match(title,0,&l);
-  if (i!=-1 && title.mid(i+l).stripWhiteSpace().isEmpty()) // found {#id} style id
+  // match e.g. '{#id-b11} ' and capture 'id-b11'
+  static const reg::Ex r2(R"({#(\a[\w-]*)}\s*$)");
+  reg::Match match;
+  std::string ti = title.str();
+  if (reg::search(ti,match,r2))
   {
-    QCString id = title.mid(i+2,l-3);
-    title = title.left(i);
-    //printf("found id='%s' title='%s'\n",id.data(),title.data());
+    std::string id = match[1].str();
+    title = title.left((int)match.position());
+    //printf("found match id='%s' title=%s\n",id.c_str(),title.data());
     return id;
   }
   if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))

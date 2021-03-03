@@ -42,7 +42,7 @@
 #endif
 
 #include "qstring.h"
-#include "qregexp.h"
+#include "qregexp_p.h"
 #include "qdatastream.h"
 #include "qtextcodec.h"
 #include "qstack_p.h"
@@ -13750,7 +13750,7 @@ QString &QString::replace( uint index, uint len, const QChar* s, uint slen )
 }
 
 
-
+#if 0
 /*!
   Finds the first occurrence of the regular expression \a rx, starting at
   position \a index. If \a index is -1, the search starts at the last
@@ -13863,6 +13863,7 @@ QString &QString::replace( const QRegExp &rx, const QString &str )
     }
     return *this;
 }
+#endif
 
 static bool
 ok_in_base( QChar c, int base )

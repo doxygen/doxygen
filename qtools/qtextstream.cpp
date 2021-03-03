@@ -1,5 +1,5 @@
 /****************************************************************************
-** 
+**
 **
 ** Implementation of QTextStream class
 **
@@ -39,7 +39,6 @@
 
 #ifndef QT_NO_TEXTSTREAM
 #include "qtextcodec.h"
-#include "qregexp.h"
 #include "qbuffer.h"
 #include "qfile.h"
 #include <stdio.h>

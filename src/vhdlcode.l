@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qregexp.h>
 #include <qdir.h>
 #include <qcstringlist.h>
 
@@ -55,6 +54,7 @@
 #include "classdef.h"
 #include "filedef.h"
 #include "tooltip.h"
+#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -226,9 +226,8 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 <Map>[^()\n,--]*                    { /* write and link a port map lines */
                                       QCString tt(yytext);
                                       VhdlDocGen::deleteAllChars(tt,',');
-                                      QRegExp r("=>");
-                                      QCStringList ql=QCStringList::split(r,tt);
-                                      if (ql.count()>=2)
+                                      auto ql = split(tt.str(),"=>");
+                                      if (ql.size()>=2)
                                       {
                                         unsigned int index=0;
                                         QCString t1=ql[0];
@@ -325,7 +324,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       QCString qcs(yytext);
                                       VhdlDocGen::deleteAllChars(qcs,'"');
                                       VhdlDocGen::deleteAllChars(qcs,' ');
-                                      if (VhdlDocGen::isNumber(qcs))
+                                      if (VhdlDocGen::isNumber(qcs.str()))
                                       {
                                         writeFont(yyscanner,"vhdllogic",yytext);
                                       }
@@ -355,17 +354,17 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                     }
 
 <ParseType>{ENDEFUNC}               {
-                                      QRegExp regg("[\\s]");
                                       QCString tt(yytext);
                                       codifyLines(yyscanner,yytext,yyextra->currClass.data());
                                       tt=tt.lower();
                                       VhdlDocGen::deleteAllChars(tt,';');
                                       tt.stripWhiteSpace();
-                                      QCStringList ql=QCStringList::split(regg,tt);
-                                      int index=ql.findIndex(QCString("if"))+1;
-                                      index+=ql.findIndex(QCString("case"))+1;
-                                      index+=ql.findIndex(QCString("loop"))+1;
-                                      index+=ql.findIndex(QCString("generate"))+1;
+                                      static const reg::Ex regg(R"(\s+)"); // any number of whitespace
+                                      auto ql = split(tt.str(),regg);
+                                      int index=findIndex(ql,"if")+1;
+                                      index+=findIndex(ql,"case")+1;
+                                      index+=findIndex(ql,"loop")+1;
+                                      index+=findIndex(ql,"generate")+1;
                                       if (index==0)
                                       {
                                         BEGIN(Bases);
@@ -412,7 +411,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                               yyextra->vhdlKeyDict.find(yyextra->prevString.str())==yyextra->vhdlKeyDict.end())
                                           {
                                             val=val.stripWhiteSpace();
-                                            if (VhdlDocGen::isNumber(val))
+                                            if (VhdlDocGen::isNumber(val.str()))
                                             {
                                               startFontClass(yyscanner,"vhdllogic");
                                               codifyLines(yyscanner,yytext,yyextra->currClass.data());
@@ -847,7 +846,7 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                       VhdlDocGen::deleteAllChars(qcs,'"');
                                       VhdlDocGen::deleteAllChars(qcs,' ');
 
-                                      if (VhdlDocGen::isNumber(qcs))
+                                      if (VhdlDocGen::isNumber(qcs.str()))
                                       {
                                         writeFont(yyscanner,"vhdllogic",yytext);
                                       }
@@ -955,18 +954,18 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (name.isEmpty()) return false;
-  static QRegExp regg("[\\s\"]");
 
   int len=name.length();
   if (name.at(0)=='"' && name.at(len-1)=='"' && len > 2)
   {
-    QCStringList qrl=QCStringList::split(regg,name);
+    std::string inside = name.str().substr(1,len-2);
+    static const reg::Ex regg(R"(\s+)"); // any number of whitespace
+    auto qrl=split(inside,regg);
     if (VhdlDocGen::isNumber(qrl[0]))
     {
       yyextra->code->codify("\"");
       startFontClass(yyscanner,"vhdllogic");
-      QCString mid=name.mid(1,len-2); //" 1223 "
-      yyextra->code->codify(mid.data());
+      yyextra->code->codify(inside.c_str());
       endFontClass(yyscanner);
       yyextra->code->codify("\"");
     }
@@ -979,7 +978,7 @@ static bool checkVhdlString(yyscan_t yyscanner,QCString &name)
     return true;
   }
 
-  if (VhdlDocGen::isNumber(name))
+  if (VhdlDocGen::isNumber(name.str()))
   {
     startFontClass(yyscanner,"vhdllogic");
     yyextra->code->codify(name.data());
@@ -1161,13 +1160,16 @@ static void writeWord(yyscan_t yyscanner,const char *word,const char* curr_class
       else
       {
          QCString qc(temp.data());
-         if (VhdlDocGen::isNumber(qc)){
-                         startFontClass(yyscanner,"vhdllogic");
-                         yyextra->code->codify(temp.data());
-                         endFontClass(yyscanner);
-                              }
+         if (VhdlDocGen::isNumber(qc.str()))
+         {
+           startFontClass(yyscanner,"vhdllogic");
+           yyextra->code->codify(temp.data());
+           endFontClass(yyscanner);
+         }
          else
-        yyextra->code->codify(temp.data());
+         {
+           yyextra->code->codify(temp.data());
+         }
       }
     }
   }
@@ -1329,7 +1331,13 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol
   cd = getClass(className.data());
   if (!cd && curr_class)
   {
-     if (QCString(curr_class).contains(QRegExp("::"+QCString(clName)+"$"))) cd = getClass(curr_class);
+    QCString cls = curr_class;
+    QCString suffix = "::";
+    suffix+=clName;
+    if (cls.right(suffix.length())==suffix)
+    {
+      cd = getClass(curr_class);
+    }
   }
 
   while (cd)

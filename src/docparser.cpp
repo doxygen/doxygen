@@ -20,10 +20,10 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qcstring.h>
-#include <qregexp.h>
 #include <ctype.h>
 #include <qcstringlist.h>
 
+#include "regex.h"
 #include "doxygen.h"
 #include "debug.h"
 #include "util.h"
@@ -425,7 +425,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
  *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
-static void checkArgumentName(const QCString &name)
+static void checkArgumentName(const std::string &name)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
@@ -436,11 +436,13 @@ static void checkArgumentName(const QCString &name)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
-  static QRegExp re("$?[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
-  int p=0,i=0,l;
-  while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
+  static const reg::Ex re(R"(\$?\w+\.*)");
+  reg::Iterator it(name,re);
+  reg::Iterator end;
+  for (; it!=end ; ++it)
   {
-    QCString aName=name.mid(i,l);
+    const auto &match = *it;
+    QCString aName=match.str();
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
     //printf("aName='%s'\n",aName.data());
     bool found=FALSE;
@@ -482,7 +484,6 @@ static void checkArgumentName(const QCString &name)
 	  qPrint(aName), qPrint(scope), qPrint(g_memberDef->name()),
 	  qPrint(alStr), qPrint(inheritedFrom));
     }
-    p=i+l;
   }
 }
 /*! Collects the return values found with \@retval command
@@ -512,7 +513,7 @@ static void checkRetvalName(const QCString &name)
  */
 static void checkUnOrMultipleDocumentedParams()
 {
-  if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
+  if (g_memberDef && g_hasParamCommand)
   {
     const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
       g_memberDef->argumentList() :
@@ -544,7 +545,7 @@ static void checkUnOrMultipleDocumentedParams()
             if (argName == par) count++;
           }
         }
-        if (count > 1)
+        if ((count > 1) &&  Config_getBool(WARN_IF_DOC_ERROR))
         {
           warn_doc_error(g_memberDef->getDefFileName(),
                          g_memberDef->getDefLine(),
@@ -555,7 +556,7 @@ static void checkUnOrMultipleDocumentedParams()
                          " has multiple @param documentation sections").data());
         }
       }
-      if (notArgCnt>0)
+      if ((notArgCnt>0) && Config_getBool(WARN_IF_INCOMPLETE_DOC))
       {
         bool first=TRUE;
         QCString errMsg=
@@ -587,10 +588,10 @@ static void checkUnOrMultipleDocumentedParams()
             errMsg+="  parameter '"+argName+"'";
           }
         }
-        warn_doc_error(g_memberDef->getDefFileName(),
-                       g_memberDef->getDefLine(),
-                       "%s",
-                       substitute(errMsg,"%","%%").data());
+        warn_incomplete_doc(g_memberDef->getDefFileName(),
+                            g_memberDef->getDefLine(),
+                            "%s",
+                            substitute(errMsg,"%","%%").data());
       }
     }
   }
@@ -872,9 +873,9 @@ static int handleStyleArgument(DocNode *parent,DocNodeList &children,
           tok!=TK_ENDLIST
         )
   {
-    static QRegExp specialChar("[.,|()\\[\\]:;\\?]");
+    static const reg::Ex specialChar(R"([.,|()\[\]:;?])");
     if (tok==TK_WORD && g_token->name.length()==1 &&
-        g_token->name.find(specialChar)!=-1)
+        reg::match(g_token->name.str(),specialChar))
     {
       // special character that ends the markup command
       return tok;
@@ -4518,7 +4519,7 @@ int DocParamList::parse(const QCString &cmdName)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
-    retval=0;
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
   doctokenizerYYsetStateParam();
@@ -4533,13 +4534,13 @@ int DocParamList::parse(const QCString &cmdName)
         handleParameterType(this,m_paramTypes,g_token->name.left(typeSeparator));
         g_token->name = g_token->name.mid(typeSeparator+1);
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name.str());
         ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
       }
       else
       {
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name.str());
       }
     }
     else if (m_type==DocParamSect::RetVal)
@@ -4556,14 +4557,17 @@ int DocParamList::parse(const QCString &cmdName)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(saveCmdName));
-    retval=0;
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
   if (tok!=TK_WHITESPACE) /* premature end of comment block */
   {
-    warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected token in comment block while parsing the "
-        "argument of command %s",qPrint(saveCmdName));
-    retval=0;
+    if (tok!=TK_NEWPARA) /* empty param description */
+    {
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected token in comment block while parsing the "
+          "argument of command %s",qPrint(saveCmdName));
+    }
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
 
@@ -4588,7 +4592,7 @@ int DocParamList::parseXml(const QCString &paramName)
   if (m_type==DocParamSect::Param)
   {
     g_hasParamCommand=TRUE;
-    checkArgumentName(g_token->name);
+    checkArgumentName(g_token->name.str());
   }
   else if (m_type==DocParamSect::RetVal)
   {

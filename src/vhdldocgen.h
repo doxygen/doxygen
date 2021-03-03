@@ -207,7 +207,7 @@ class VhdlDocGen
     static QCString getRecordNumber();
 
     static QCString getClassName(const ClassDef*);
-    static bool isNumber(const QCString& s);
+    static bool isNumber(const std::string& s);
     static QCString getProtectionName(int prot);
 
     static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);

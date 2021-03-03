@@ -22,8 +22,6 @@
 #include <stdlib.h>
 
 #include <qdir.h>
-#include <qregexp.h>
-#include <qtextstream.h>
 
 #include "rtfgen.h"
 #include "config.h"

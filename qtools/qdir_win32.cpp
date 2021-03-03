@@ -1,19 +1,19 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2001 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
  * Documents produced by Doxygen are derivative works derived from the
  * input used in their production; they are not affected by this license.
  *
- * Based on qdir_unix.cpp 
+ * Based on qdir_unix.cpp
  *
  * Copyright (C) 1992-2000 Trolltech AS.
  */
@@ -27,7 +27,7 @@
 
 #include "qfileinfo.h"
 #include "qfiledefs_p.h"
-#include "qregexp.h"
+#include "qregexp_p.h"
 #include "qstringlist.h"
 #include <stdlib.h>
 #include <ctype.h>
@@ -80,7 +80,7 @@ static QString p_getenv( QString name )
 
 void QDir::slashify( QString& n )
 {
-  for ( int i=0; i<(int)n.length(); i++ ) 
+  for ( int i=0; i<(int)n.length(); i++ )
   {
      if ( n[i] == '\\' )
           n[i] = '/';
@@ -175,7 +175,7 @@ bool QDir::rename( const QString &name, const QString &newName,
     return ::rename( QFile::encodeName(fn1),
 		     QFile::encodeName(fn2) ) == 0;
 #else
-    return MoveFileW( ( LPCWSTR ) fn1.ucs2(), ( LPCWSTR ) fn2.ucs2() ) != 0;    
+    return MoveFileW( ( LPCWSTR ) fn1.ucs2(), ( LPCWSTR ) fn2.ucs2() ) != 0;
 #endif
 }
 
@@ -343,7 +343,7 @@ bool QDir::readDirEntries( const QString &nameFilter,
 #else
     ff = FindFirstFileW ( ( LPCWSTR ) p.ucs2(), &finfo );
 #endif
-    if ( ff == FF_ERROR ) 
+    if ( ff == FF_ERROR )
     {
 #if defined(DEBUG)
       warning( "QDir::readDirEntries: Cannot read the directory: %s",
@@ -351,12 +351,12 @@ bool QDir::readDirEntries( const QString &nameFilter,
 #endif
     return FALSE;
     }
-    
-    while ( TRUE ) 
+
+    while ( TRUE )
     {
 	if ( first )
 	    first = FALSE;
-	else 
+	else
         {
 #if defined(__CYGWIN32_)
 	    if ( FF_GETNEXT(ff,&finfo) == -1 )
@@ -393,7 +393,7 @@ bool QDir::readDirEntries( const QString &nameFilter,
 	    continue;
 
 	QString name = fname;
-	if ( doExecable ) 
+	if ( doExecable )
         {
 	    QString ext = name.right(4).lower();
 	    if ( ext == ".exe" || ext == ".com" || ext == ".bat" ||
@@ -401,7 +401,7 @@ bool QDir::readDirEntries( const QString &nameFilter,
 		isExecable = TRUE;
 	}
 
-	if  ( (doDirs && isDir) || (doFiles && isFile) ) 
+	if  ( (doDirs && isDir) || (doFiles && isFile) )
         {
 	    if ( noSymLinks && isSymLink )
 		continue;

@@ -19,7 +19,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <qregexp.h>
 #include <qfile.h>
 #include <qfileinfo.h>
 
@@ -34,6 +33,7 @@
 #include "filedef.h"
 #include "util.h"
 #include "linkedmap.h"
+#include "regex.h"
 
 //----------------------------------------------------------------------------
 
@@ -154,13 +154,15 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
                        const char *url,const char *anchor,bool hasLink,
                        bool reversed)
 {
-  QCString key = level1;
-  if (level2) key+= (QCString)"?" + level2;
-  if (key.find(QRegExp("@[0-9]+"))!=-1) // skip anonymous stuff
+  static const reg::Ex re(R"(@\d+)");
+  std::string key = level1;
+  if (level2) key+= std::string("?") + level2;
+  if (reg::search(key,re)) // skip anonymous stuff
   {
     return;
   }
-  m_map.add(key+anchor,key,url,anchor,hasLink,reversed);
+  std::string key_anchor = key+anchor;
+  m_map.add(key_anchor.c_str(),key.c_str(),url,anchor,hasLink,reversed);
 }
 
 static QCString field2URL(const IndexField *f,bool checkReversed)

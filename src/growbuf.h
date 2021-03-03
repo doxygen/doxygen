@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #define GROW_AMOUNT 1024
 
@@ -24,6 +25,15 @@ class GrowBuf
                           uint l=s.length();
                           if (m_pos+l>=m_len) { m_len+=l+GROW_AMOUNT; m_str = (char*)realloc(m_str,m_len); }
                           strcpy(&m_str[m_pos],s.data());
+                          m_pos+=l;
+                        }
+                      }
+    void addStr(const std::string &s) {
+                        if (!s.empty())
+                        {
+                          uint l=(uint)s.length();
+                          if (m_pos+l>=m_len) { m_len+=l+GROW_AMOUNT; m_str = (char*)realloc(m_str,m_len); }
+                          strcpy(&m_str[m_pos],s.c_str());
                           m_pos+=l;
                         }
                       }

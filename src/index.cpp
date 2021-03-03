@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <qtextstream.h>
 #include <qdir.h>
-#include <qregexp.h>
 
 #include "message.h"
 #include "index.h"
@@ -3465,7 +3464,7 @@ static void writeExampleIndex(OutputList &ol)
       ol.writeObjectLink(0,n,0,pd->title());
       if (addToIndex)
       {
-        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title()),pd->getReference(),n,0,FALSE,TRUE);
+        Doxygen::indexList->addContentsItem(FALSE,filterTitle(pd->title().str()),pd->getReference(),n,0,FALSE,TRUE);
       }
     }
     else
@@ -3516,7 +3515,7 @@ static bool mainPageHasOwnTitle()
   QCString title;
   if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title());
+    title = filterTitle(Doxygen::mainPage->title().str());
   }
   return !projectName.isEmpty() && mainPageHasTitle() && qstricmp(title,projectName)!=0;
 }
@@ -3538,7 +3537,7 @@ static void writePages(const PageDef *pd,FTVHelp *ftv)
     if (pd->title().isEmpty())
       pageTitle=pd->name();
     else
-      pageTitle=filterTitle(pd->title());
+      pageTitle=filterTitle(pd->title().str());
 
     if (ftv)
     {
@@ -4094,7 +4093,7 @@ static void writeIndex(OutputList &ol)
   }
   else if (Doxygen::mainPage)
   {
-    title = filterTitle(Doxygen::mainPage->title());
+    title = filterTitle(Doxygen::mainPage->title().str());
   }
 
   QCString indexName="index";

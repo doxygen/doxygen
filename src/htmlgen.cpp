@@ -21,7 +21,6 @@
 #include <mutex>
 
 #include <qdir.h>
-#include <qregexp.h>
 #include "message.h"
 #include "htmlgen.h"
 #include "config.h"
@@ -1075,7 +1074,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
   }
 
   m_lastFile = fileName;
-  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title)),m_relPath);
+  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title?title:"")),m_relPath);
 
   t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
     << getDoxygenVersion() << " -->" << endl;

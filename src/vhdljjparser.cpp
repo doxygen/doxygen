@@ -10,6 +10,8 @@
  *
  */
 
+#include <string>
+
 #include <qcstring.h>
 #include <qfileinfo.h>
 #include "containers.h"
@@ -31,6 +33,7 @@
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
+#include "regex.h"
 
 using namespace vhdl::parser;
 
@@ -269,12 +272,33 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
 
 int VHDLOutlineParser::checkInlineCode(QCString &doc)
 {
-  QRegExp cs("[\\\\@]code");
-  QRegExp cend("[\\s ]*[\\\\@]endcode");
-  QRegExp cbrief("[\\\\@]brief");
-  int index = doc.find(cs);
+  static const reg::Ex csRe(R"([\\@]code)");
+  static const reg::Ex cendRe(R"(\s*[\\@]endcode)");
+  static const reg::Ex cbriefRe(R"([\\@]brief)");
 
-  if (doc.contains(cend) > 0)
+  // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
+  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> int
+  {
+    if ((int)str.length()<pos) return -1;
+    reg::Match match;
+    const std::string s = str.str();
+    if (reg::search(s,match,re,pos)) // match found
+    {
+      return (int)match.position();
+    }
+    else // not found
+    {
+      return -1;
+    }
+  };
+  auto replaceRe = [](const QCString &str,const reg::Ex &re,const QCString &replacement) -> QCString
+  {
+    return reg::replace(str.str(), re, replacement.str());
+  };
+
+  int index = findRe(doc,csRe);
+
+  if (findRe(doc,cendRe)!=-1)
     return 1;
 
   if (index < 0)
@@ -282,9 +306,9 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
 
   VhdlParser::SharedState *s = &p->shared;
   p->strComment += doc;
-  p->code = p->inputString.find(cs, p->code + 1);
+  p->code = findRe(p->inputString,csRe, p->code + 1);
   int com = p->inputString.find(p->strComment.data());
-  int ref = p->inputString.find(cend, p->code + 1);
+  int ref = findRe(p->inputString,cendRe, p->code + 1);
   int len = p->strComment.size();
 
   int ll = com + len;
@@ -296,24 +320,24 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   VhdlDocGen::prepareComment(p->strComment);
   QCStringList ql = QCStringList::split('\n', p->strComment);
 
-   QCString co;
-   QCString na;
-   for (QCString qcs : ql)
-   {
-     qcs = qcs.simplifyWhiteSpace();
-     if (qcs.contains(cs))
-     {
-       int i = qcs.find('{');
-       int j = qcs.find('}');
-       if (i > 0 && j > 0 && j > i)
-       {
-         na = qcs.mid(i + 1, (j - i - 1));
-       }
-       continue;
-     }
-     qcs = qcs.replace(cbrief, "");
-     co += qcs;
-     co += '\n';
+  QCString co;
+  QCString na;
+  for (QCString qcs : ql)
+  {
+    qcs = qcs.simplifyWhiteSpace();
+    if (findRe(qcs,csRe)!=-1)
+    {
+      int i = qcs.find('{');
+      int j = qcs.find('}');
+      if (i > 0 && j > 0 && j > i)
+      {
+        na = qcs.mid(i + 1, (j - i - 1));
+      }
+      continue;
+    }
+    qcs = replaceRe(qcs,cbriefRe, "");
+    co += qcs;
+    co += '\n';
   }
 
   VhdlDocGen::prepareComment(co);

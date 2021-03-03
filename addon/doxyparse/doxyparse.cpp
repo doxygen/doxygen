@@ -42,7 +42,6 @@
 #include <map>
 #include <qdir.h>
 #include <qcstring.h>
-#include <qregexp.h>
 #include "namespacedef.h"
 #include "portable.h"
 
@@ -184,8 +183,8 @@ static int isPartOfCStruct(const MemberDef * md) {
 
 std::string sanitizeString(std::string data) {
   QCString new_data = QCString(data.c_str());
-  new_data.replace(QRegExp("\""), "");
-  new_data.replace(QRegExp("\\"), ""); // https://github.com/analizo/analizo/issues/138
+  new_data = substitute(new_data,"\"", "");
+  new_data = substitute(new_data,"\'", ""); // https://github.com/analizo/analizo/issues/138
   return !new_data.isEmpty() ? new_data.data() : "";
 }
 

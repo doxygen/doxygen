@@ -76,6 +76,7 @@ QCStringList QCStringList::split( const QCString &sep, const QCString &str, bool
     return lst;
 }
 
+#if 0
 /*!
   Splits the string \a str using the regular expression \a sep as separator. Returns the
   list of strings. If \a allowEmptyEntries is TRUE, also empty
@@ -115,6 +116,7 @@ QCStringList QCStringList::split( const QRegExp &sep, const QCString &str, bool 
 
     return lst;
 }
+#endif
 
 /*!
   Returns a list of all strings containing the substring \a str.
@@ -132,6 +134,7 @@ QCStringList QCStringList::grep( const QCString &str, bool cs ) const
     return res;
 }
 
+#if 0
 /*!
   Returns a list of all strings containing a substring that matches
   the regular expression \a expr.
@@ -146,6 +149,7 @@ QCStringList QCStringList::grep( const QRegExp &expr ) const
 
     return res;
 }
+#endif
 
 /*!
   Joins the stringlist into a single string with each element

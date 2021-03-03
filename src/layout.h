@@ -26,7 +26,6 @@
 class LayoutParser;
 struct LayoutNavEntry;
 class MemberList;
-class QTextStream;
 
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry

@@ -25,6 +25,8 @@
 #include <assert.h>
 #include <string.h>
 #include <map>
+#include <algorithm>
+
 #include <qcstring.h>
 #include <qfileinfo.h>
 #include <qcstringlist.h>
@@ -59,7 +61,7 @@
 #include "plantuml.h"
 #include "vhdljjparser.h"
 #include "VhdlParser.h"
-//#include "vhdlcode.h"
+#include "regex.h"
 #include "plantuml.h"
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
@@ -271,23 +273,19 @@ static void writeVhdlDotLink(FTextStream &t,
 
 static QCString formatBriefNote(const QCString &brief,ClassDef * cd)
 {
-  QRegExp ep("[\n]");
   QCString vForm;
   QCString repl("<BR ALIGN=\"LEFT\"/>");
   QCString file=cd->getDefFileName();
 
   int k=cd->briefLine();
 
-  QCStringList qsl=QCStringList::split(ep,brief);
-  for(uint j=0;j<qsl.count();j++)
+  auto qsl=split(brief.str(),"\n");
+  for(const auto &line : qsl)
   {
-    QCString qcs=qsl[j];
-    vForm+=parseCommentAsText(cd,NULL,qcs,file,k);
+    vForm+=parseCommentAsText(cd,NULL,line.c_str(),file,k);
     k++;
-    vForm+='\n';
+    vForm+=repl;
   }
-
-  vForm.replace(ep,repl.data());
   return vForm;
 }
 
@@ -316,7 +314,6 @@ static void writeColumn(FTextStream &t,const MemberDef *md,bool start)
 {
   QCString toolTip;
 
-  static QRegExp reg("[%]");
   bool bidir=(md!=0 &&( qstricmp(md->typeString(),"inout")==0));
 
   if (md)
@@ -325,10 +322,8 @@ static void writeColumn(FTextStream &t,const MemberDef *md,bool start)
     if (!toolTip.isEmpty())
     {
       QCString largs = md->argsString();
-      if (!largs.isEmpty())
-        largs=largs.replace(reg," ");
       toolTip+=" [";
-      toolTip+=largs;
+      toolTip+=substitute(largs,"%"," ");
       toolTip+="]";
     }
   }
@@ -355,7 +350,7 @@ static void writeColumn(FTextStream &t,const MemberDef *md,bool start)
       QCString largs = md->argsString();
       if (!largs.isEmpty())
       {
-        largs=largs.replace(reg," ");
+        largs=substitute(largs,"%"," ");
         codify(t,largs.data());
       }
     }
@@ -1013,8 +1008,9 @@ void VhdlDocGen::parseFuncProto(const char* text,QCString& name,QCString& ret,bo
   else
   {
     s1=s1.stripWhiteSpace();
-    int i=s1.find("(",0,FALSE);
-    int s=s1.find(QRegExp("[ \\t]"));
+    int i=s1.find('(');
+    int s=s1.find(' ');
+    if (s==-1) s=s1.find('\t');
     if (i==-1 || i<s)
       s1=VhdlDocGen::getIndexWord(s1.data(),1);
     else // s<i, s=start of name, i=end of name
@@ -1037,13 +1033,10 @@ void VhdlDocGen::parseFuncProto(const char* text,QCString& name,QCString& ret,bo
 
 QCString VhdlDocGen::getIndexWord(const char* c,int index)
 {
-  QCStringList ql;
-  QCString temp(c);
-  QRegExp reg("[\\s:|]");
+  static const reg::Ex reg(R"([\s|])");
+  auto ql=split(c,reg);
 
-  ql=QCStringList::split(reg,temp);
-
-  if (ql.count() > (unsigned int)index)
+  if ((size_t)index < ql.size())
   {
     return ql[index];
   }
@@ -1128,7 +1121,7 @@ QCString VhdlDocGen::getProcessNumber()
 
 void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberDef* mdef)
 {
-  QRegExp reg("[\\[\\]\\.\\/\\:\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]");
+  static const reg::Ex reg(R"([\[\]./<>:\s,;'+*|&=()\"-])");
   QCString qcs = s;
   qcs+=QCString(" ");// parsing the last sign
   QCString find=qcs;
@@ -1136,9 +1129,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
   char buf[2];
   buf[1]='\0';
 
-  int j;
-  int len;
-  j = reg.match(temp.data(),0,&len);
+  int j = findIndex(temp.str(),reg);
 
   ol.startBold();
   if (j>=0)
@@ -1148,7 +1139,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
       find=find.left(j);
       buf[0]=temp[j];
       const char *ss=VhdlDocGen::findKeyWord(find);
-      bool k=isNumber(find); // is this a number
+      bool k=isNumber(find.str()); // is this a number
       if (k)
       {
         ol.docify(" ");
@@ -1184,7 +1175,7 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
       {
         temp=st;
       }
-      j = reg.match(temp.data(),0,&len);
+      j = findIndex(temp.str(),reg);
     }//while
   }//if
   else
@@ -1197,16 +1188,10 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
 /*!
  * returns TRUE if this string is a number
  */
-bool VhdlDocGen::isNumber(const QCString& s)
+bool VhdlDocGen::isNumber(const std::string& s)
 {
-  static QRegExp regg("[0-9][0-9eEfFbBcCdDaA_.#-+?xXzZ]*");
-
-  if (s.isEmpty()) return FALSE;
-  int j,len;
-  j = regg.match(s.data(),0,&len);
-  if ((j==0) && (len==(int)s.length())) return TRUE;
-  return FALSE;
-
+  static const reg::Ex regg(R"([0-9][0-9eEfFbBcCdDaA_.#+?xXzZ-]*)");
+  return reg::match(s,regg);
 }// isNumber
 
 
@@ -1666,7 +1651,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
       writeLink(mdef,ol);
       ol.docify(" ");
 
-      largs=largs.replace(QRegExp("#")," ");
+      largs=substitute(largs,"#"," ");
       VhdlDocGen::formatString(largs,ol,mdef);
       return hasParams;
     }
@@ -2312,8 +2297,8 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
         }
         else
         {
-          QRegExp ee("[\\s=]");
-          int in=temp.find(ee);
+          static const reg::Ex ee(R"([\s=])");
+          int in=findIndex(temp.str(),ee);
           QCString ff=temp.left(in);
           temp.stripPrefix(ff.data());
           ff.append("#");
@@ -2332,14 +2317,14 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
 static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCString & fileName,QCString & brief)
 {
   if (qcs.isEmpty())return;
-  QRegExp reg("[\\s=]");
   QCString n;
   // bool bo=(qstricmp(type,qcs.data())==0);
 
   VhdlDocGen::deleteAllChars(qcs,';');
   qcs=qcs.stripWhiteSpace();
 
-  int i= qcs.find(reg);
+  static const reg::Ex reg(R"([\s=])");
+  int i = findIndex(qcs.str(),reg);
   if (i<0) return;
   if (i==0)
   {
@@ -2417,26 +2402,28 @@ static void writeUCFLink(const MemberDef* mdef,OutputList &ol)
 //        for cell_inst : [entity] work.proto [ (label|expr) ]
 QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 {
-  int index;
   QCString label;
   if (!entity.contains(":")) return "";
 
-  QRegExp exp("[:()\\s]");
-  QCStringList ql=QCStringList::split(exp,entity);
-  //int ii=ql.findIndex(ent);
-  assert(ql.count()>=2);
+  static const reg::Ex exp(R"([:()\s])");
+  auto ql=split(entity.str(),exp);
+  if (ql.size()<2)
+  {
+    return "";
+  }
   label  = ql[0];
   entity = ql[1];
+  int index;
   if ((index=entity.findRev("."))>=0)
   {
     entity.remove(0,index+1);
   }
 
-  if (ql.count()==3)
+  if (ql.size()==3)
   {
-    arch= ql[2];
-    ql=QCStringList::split(exp,arch);
-    if (ql.count()>1) // expression
+    arch = ql[2];
+    ql=split(arch.str(),exp);
+    if (ql.size()>1) // expression
     {
       arch="";
     }
@@ -2448,26 +2435,29 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
 QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 {
-  int index;
-  QRegExp exp("[()\\s]");
+  static const reg::Ex exp(R"([()\s])");
 
-  QCString label="";
-  QCStringList ql=QCStringList::split(exp,entity);
+  auto ql = split(entity.str(),exp);
 
-  if (ql.contains("open"))
+  if (findIndex(ql,"open")!=-1)
   {
     return "open";
   }
 
-  label=ql[0];
+  if (ql.size()<2)
+  {
+    return "";
+  }
 
+  std::string label=ql[0];
   entity = ql[1];
+  int index;
   if ((index=entity.findRev("."))>=0)
   {
     entity.remove(0,index+1);
   }
 
-  if (ql.count()==3)
+  if (ql.size()==3)
   {
     arch=ql[2];
   }
@@ -2607,14 +2597,6 @@ ferr:
   md->setDocumentation(cur->doc.data(),cur->docFile.data(),cur->docLine);
   FileDef *fd=ar->getFileDef();
   md->setBodyDef(fd);
-  //QCString info="Info: Elaborating entity "+n1;
-  //fd=ar->getFileDef();
-  //info+=" for hierarchy ";
-  //QRegExp epr("[|]");
-  //QCString label=cur->type+":"+cur->write+":"+cur->name;
-  //label.replace(epr,":");
-  //info+=label;
-  //fprintf(stderr,"\n[%s:%d:%s]\n",fd->fileName().data(),cur->startLine,info.data());
   ar->insertMember(md.get());
   MemberName *mn = Doxygen::functionNameLinkedMap->add(uu);
   mn->push_back(std::move(md));
@@ -2721,15 +2703,15 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
         bcd.usedName.append("(2)");
         return;
       }
-      static QRegExp reg("[0-9]+");
+      static const reg::Ex reg(R"(\d+)");
       QCString s=n.left(i);
       QCString r=n.right(n.length()-i);
-      QCString t=r;
+      std::string t=r.str();
       VhdlDocGen::deleteAllChars(r,')');
       VhdlDocGen::deleteAllChars(r,'(');
       r.setNum(r.toInt()+1);
-      t.replace(reg,r.data());
-      s.append(t.data());
+      reg::replace(t, reg, r.str());
+      s.append(t.c_str());
       bcd.usedName=s;
       bcd.templSpecifiers=t;
     }
@@ -2913,13 +2895,12 @@ void alignText(QCString & q)
 
   q.append(" ...");
 
-  QRegExp reg("[\\s|]");
   QCString str(q.data());
   QCString temp;
 
   while (str.length()>80)
   {
-    int j=str.findRev(reg,80);
+    int j=std::max(str.findRev(' ',80),str.findRev('|',80));
     if (j<=0)
     {
       temp+=str;
@@ -2942,8 +2923,8 @@ void alignText(QCString & q)
 void FlowChart::printNode(const FlowChart& flo)
 {
   QCString ui="-";
-  QCString q,t;
-  QRegExp ep("[\t\n\r]");
+  std::string q;
+  std::string t;
 
   ui.fill('-',255);
 
@@ -2951,7 +2932,7 @@ void FlowChart::printNode(const FlowChart& flo)
   {
     if (flo.stamp>0)
     {
-      q=ui.left(2*flo.stamp);
+      q=ui.left(2*flo.stamp).str();
     }
     else
     {
@@ -2964,20 +2945,21 @@ void FlowChart::printNode(const FlowChart& flo)
   {
     if (flo.type & COMMENT_NO)
     {
-      t=flo.label;
+      t=flo.label.str();
     }
     else
     {
-      t=flo.text;
+      t=flo.text.str();
     }
-    t=t.replace(ep,"");
-    if (t.isEmpty())
+    static const reg::Ex ep(R"(\s)");
+    t = reg::replace(t,ep,std::string());
+    if (t.empty())
     {
       t=" ";
     }
     if (flo.stamp>0)
     {
-      q=ui.left(2*flo.stamp);
+      q=ui.left(2*flo.stamp).str();
     }
     else
     {
@@ -2985,15 +2967,15 @@ void FlowChart::printNode(const FlowChart& flo)
     }
     if (flo.type & EMPTNODE)
     {
-      printf("\n NO: %s%s[%d,%d]",q.data(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
+      printf("\n NO: %s%s[%d,%d]",q.c_str(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
     }
     else if (flo.type & COMMENT_NO)
     {
-      printf("\n NO: %s%s[%d,%d]",t.data(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
+      printf("\n NO: %s%s[%d,%d]",t.c_str(),FlowChart::getNodeType(flo.type),flo.stamp,flo.id);
     }
     else
     {
-      printf("\n NO: %s[%d,%d]",t.data(),flo.stamp,flo.id);
+      printf("\n NO: %s[%d,%d]",t.c_str(),flo.stamp,flo.id);
     }
   }
 }
@@ -3247,9 +3229,6 @@ FlowChart::FlowChart(int typ,const char * t,const char* ex,const char* lab)
 
 void FlowChart::addFlowChart(int type,const char* text,const char* exp, const char *label)
 {
-  static QRegExp reg("[;]");
-  static QRegExp reg1("[\"]");
-
   if (!VhdlDocGen::getFlowMember()) return;
 
   QCString typeString(text);
@@ -3258,12 +3237,12 @@ void FlowChart::addFlowChart(int type,const char* text,const char* exp, const ch
 
   if (text)
   {
-    typeString=typeString.replace(reg,"\n");
+    typeString=substitute(typeString,";","\n");
   }
 
   if (exp)
   {
-    expression=expression.replace(reg1,"\\\"");
+    expression=substitute(expression,"\"","\\\"");
   }
 
   if (type & (START_NO | VARIABLE_NO))
@@ -3366,23 +3345,7 @@ void  FlowChart::printUmlTree()
 
 QCString FlowChart::convertNameToFileName()
 {
-  static QRegExp exp ("[^][a-z_A-Z0-9]");
-  QCString temp,qcs;
-  const  MemberDef* md=VhdlDocGen::getFlowMember();
-
-  // temp.sprintf("%p",md);
-  qcs=md->name();
-
-  #if 0
-  if (qcs.find(exp,0)>=0)
-  {
-    qcs.prepend("Z");
-    qcs=qcs.replace(exp,"_");
-  }
-  #endif
-
-  //QCString tt= qcs;VhdlDocGen::getRecordNumber();
-  return qcs;
+  return VhdlDocGen::getFlowMember()->name();
 }
 
 const char* FlowChart::getNodeType(int c)

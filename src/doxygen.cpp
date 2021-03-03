@@ -14,12 +14,12 @@
  */
 
 #include <chrono>
-#include <locale.h>
+#include <clocale>
+#include <locale>
 
 #include <qfileinfo.h>
 #include <qfile.h>
 #include <qdir.h>
-#include <qregexp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -107,6 +107,15 @@
 #include "threadpool.h"
 #include "clangparser.h"
 #include "symbolresolver.h"
+#include "regex.h"
+
+#if USE_SQLITE3
+#include <sqlite3.h>
+#endif
+
+#if USE_LIBCLANG
+#include <clang/Basic/Version.h>
+#endif
 
 // provided by the generated file resources.cpp
 extern void initResources();
@@ -2213,12 +2222,12 @@ static MemberDef *addVariableToFile(
     {
       ttype.stripPrefix("struct ");
       ttype.stripPrefix("union ");
-      static QRegExp re("[a-z_A-Z][a-z_A-Z0-9]*");
-      int l,s;
-      s = re.match(ttype,0,&l);
-      if (s>=0)
+      static const reg::Ex re(R"(\a\w*)");
+      reg::Match match;
+      std::string typ = ttype.str();
+      if (reg::search(typ,match,re))
       {
-        QCString typeValue = ttype.mid(s,l);
+        QCString typeValue = match.str();
         ClassDefMutable *cd = getClassMutable(typeValue);
         if (cd)
         {
@@ -2425,27 +2434,36 @@ static MemberDef *addVariableToFile(
  *  \returns -1 if this is not a function pointer variable or
  *           the index at which the closing brace of (...*name) was found.
  */
-static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
+static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength=0)
 {
   if (lang == SrcLangExt_Fortran || lang == SrcLangExt_VHDL)
   {
     return -1; // Fortran and VHDL do not have function pointers
   }
-  static const QRegExp re("([^)]*[\\*\\^][^)]*)");
-  int i=-1,l;
-  int bb=type.find('<');
-  int be=type.findRev('>');
-  if (!type.isEmpty() &&             // return type is non-empty
-      (i=re.match(type,0,&l))!=-1 && // contains (...*...)
-      type.find("operator")==-1 &&   // not an operator
-      (type.find(")(")==-1 || type.find("typedef ")!=-1) &&
-                                    // not a function pointer return type
+
+  static const reg::Ex re(R"(\([^)]*[*^][^)]*\))");
+  reg::Match match;
+  size_t i=std::string::npos;
+  size_t l=0;
+  if (reg::search(type,match,re)) // contains (...*...)
+  {
+    i = match.position();
+    l = match.length();
+  }
+  size_t bb=type.find('<');
+  size_t be=type.rfind('>');
+
+  if (!type.empty()                            &&  // return type is non-empty
+      i!=std::string::npos                     &&   // contains (...*...)
+      type.find("operator")==std::string::npos &&   // not an operator
+      (type.find(")(")==std::string::npos || type.find("typedef ")!=std::string::npos) &&
+                                                    // not a function pointer return type
       !(bb<i && i<be) // bug665855: avoid treating "typedef A<void (T*)> type" as a function pointer
      )
   {
-    if (pLength) *pLength=l;
-    //printf("findFunctionPtr=%d\n",i);
-    return i;
+    if (pLength) *pLength=(int)l;
+    //printf("findFunctionPtr=%d\n",(int)i);
+    return (int)i;
   }
   else
   {
@@ -2460,8 +2478,6 @@ static int findFunctionPtr(const QCString &type,int lang, int *pLength=0)
  */
 static bool isVarWithConstructor(const Entry *root)
 {
-  static QRegExp initChars("[0-9\"'&*!^]+");
-  static QRegExp idChars("[a-z_A-Z][a-z_A-Z0-9]*");
   bool result=FALSE;
   bool typeIsClass = false;
   bool typePtrType = false;
@@ -2518,9 +2534,12 @@ static bool isVarWithConstructor(const Entry *root)
     }
     for (const Argument &a : root->argList)
     {
+      static const reg::Ex initChars(R"([\d"'&*!^]+)");
+      reg::Match match;
       if (!a.name.isEmpty() || !a.defval.isEmpty())
       {
-        if (a.name.find(initChars)==0)
+        std::string name = a.name.str();
+        if (reg::search(name,match,initChars) && match.position()==0)
         {
           result=TRUE;
         }
@@ -2549,17 +2568,18 @@ static bool isVarWithConstructor(const Entry *root)
          result=FALSE; // argument is a typedef
          goto done;
       }
-      if (a.type.find(initChars)==0)
+      std::string atype = a.type.str();
+      if (reg::search(atype,match,initChars) && match.position()==0)
       {
         result=TRUE; // argument type starts with typical initializer char
         goto done;
       }
-      QCString resType=resolveTypeDef(ctx,a.type);
-      if (resType.isEmpty()) resType=a.type;
-      int len;
-      if (idChars.match(resType,0,&len)==0) // resType starts with identifier
+      std::string resType=resolveTypeDef(ctx,a.type).str();
+      if (resType.empty()) resType=atype;
+      static const reg::Ex idChars(R"(\a\w*)");
+      if (reg::search(resType,match,idChars) && match.position()==0) // resType starts with identifier
       {
-        resType=resType.left(len);
+        resType=match.str();
         //printf("resType=%s\n",resType.data());
         if (resType=="int"    || resType=="long" || resType=="float" ||
             resType=="double" || resType=="char" || resType=="signed" ||
@@ -2606,15 +2626,15 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       // type="" name="int *" args="(var[10])"
 
       type=name;
-      static const QRegExp reName("[a-z_A-Z][a-z_A-Z0-9]*");
-      int l=0;
-      int j=0;
-      int i=args.isEmpty() ? -1 : reName.match(args,0,&l);
-      if (i!=-1)
+      std::string sargs = args.str();
+      static const reg::Ex reName(R"(\a\w*)");
+      reg::Match match;
+      if (reg::search(sargs,match,reName))
       {
-        name=args.mid(i,l);
-        j=args.find(')',i+l)-i-l;
-        if (j >= 0) args=args.mid(i+l,j);
+        name  = match.str();           // e.g. 'var'  in '(var[10])'
+        sargs = match.suffix().str();  // e.g. '[10]) in '(var[10])'
+        size_t j = sargs.find(')');
+        if (j!=std::string::npos) args=sargs.substr(0,j); // extract, e.g '[10]' from '[10])'
       }
       //printf("new: type='%s' name='%s' args='%s'\n",
       //    type.data(),name.data(),args.data());
@@ -2622,7 +2642,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
     else
     {
       int i=isFuncPtr;
-      if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(type,root->lang); // for typedefs isFuncPtr is not yet set
+      if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(type.str(),root->lang); // for typedefs isFuncPtr is not yet set
       Debug::print(Debug::Variables,0,"  functionPtr? %s\n",i!=-1?"yes":"no");
       if (i!=-1) // function pointer
       {
@@ -2864,7 +2884,7 @@ static void buildVarList(const Entry *root)
        (root->section==Entry::VARIABLE_SEC    // it's a variable
        ) ||
        (root->section==Entry::FUNCTION_SEC && // or maybe a function pointer variable
-        (isFuncPtr=findFunctionPtr(root->type,root->lang))!=-1
+        (isFuncPtr=findFunctionPtr(root->type.str(),root->lang))!=-1
        ) ||
        (root->section==Entry::FUNCTION_SEC && // class variable initialized by constructor
         isVarWithConstructor(root)
@@ -3029,24 +3049,8 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
 {
   FileDef *fd=root->fileDef();
 
-  int l;
-  static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
   QCString type = rtype;
   QCString args = rargs;
-  int ts=type.find('<');
-  int te=type.findRev('>');
-  int i=re.match(type,0,&l);
-  if (i!=-1 && ts!=-1 && ts<te && ts<i && i<te) // avoid changing A<int(int*)>, see bug 677315
-  {
-    i=-1;
-  }
-
-  if (cd->getLanguage()==SrcLangExt_Cpp && // only C has pointers
-      !type.isEmpty() && (root->spec&Entry::Alias)==0 && i!=-1) // function variable
-  {
-    args+=type.right(type.length()-i-l);
-    type=type.left(i+l);
-  }
 
   QCString name=removeRedundantWhiteSpace(rname);
   if (name.left(2)=="::") name=name.right(name.length()-2);
@@ -3059,6 +3063,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   else                          mtype=MemberType_Function;
 
   // strip redundant template specifier for constructors
+  int i = -1;
   int j = -1;
   if ((fd==0 || fd->getLanguage()==SrcLangExt_Cpp) &&
       name.left(9)!="operator " &&   // not operator
@@ -3366,21 +3371,9 @@ static void buildFunctionList(const Entry *root)
         }
       }
 
-      static QRegExp re("([a-z_A-Z0-9: ]*[ &*]+[ ]*");
-      int ts=root->type.find('<');
-      int te=root->type.findRev('>');
-      int ti;
       if (!root->parent()->name.isEmpty() &&
           (root->parent()->section & Entry::COMPOUND_MASK) &&
-          cd &&
-          // do some fuzzy things to exclude function pointers
-          (root->type.isEmpty() ||
-           ((ti=root->type.find(re,0))==-1 ||      // type does not contain ..(..*
-            (ts!=-1 && ts<te && ts<ti && ti<te) || // outside of < ... >
-           root->args.find(")[")!=-1) ||           // and args not )[.. -> function pointer
-           root->type.find(")(")!=-1 || root->type.find("operator")!=-1 || // type contains ..)(.. and not "operator"
-           cd->getLanguage()!=SrcLangExt_Cpp                               // language other than C
-          )
+          cd
          )
       {
         Debug::print(Debug::Functions,0,"  --> member %s of class %s!\n",
@@ -3819,25 +3812,26 @@ static void transferRelatedFunctionDocumentation()
  * Example: A template class A with template arguments <R,S,T>
  * that inherits from B<T,T,S> will have T and S in the dictionary.
  */
-static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateArguments,const QCString &name)
+static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateArguments,const std::string &name)
 {
   std::map<std::string,int> templateNames;
-  static QRegExp re("[a-z_A-Z][a-z_A-Z0-9:]*");
   int count=0;
   for (const Argument &arg : templateArguments)
   {
-    int i,p=0,l;
-    while ((i=re.match(name,p,&l))!=-1)
+    static const reg::Ex re(R"(\a[\w:]*)");
+    reg::Iterator it(name,re);
+    reg::Iterator end;
+    for (; it!=end ; ++it)
     {
-      QCString n = name.mid(i,l);
+      const auto &match = *it;
+      std::string n = match.str();
       if (n==arg.name)
       {
-        if (templateNames.find(n.str())==templateNames.end())
+        if (templateNames.find(n)==templateNames.end())
         {
-          templateNames.insert(std::make_pair(n.str(),count));
+          templateNames.insert(std::make_pair(n,count));
         }
       }
-      p=i+l;
     }
   }
   return templateNames;
@@ -3910,7 +3904,7 @@ static void findUsedClassesForClass(const Entry *root,
         QCString templSpec;
         bool found=FALSE;
         // the type can contain template variables, replace them if present
-        type = substituteTemplateArgumentsInString(type,formalArgs,actualArgs);
+        type = substituteTemplateArgumentsInString(type.str(),formalArgs,actualArgs);
 
         //printf("      template substitution gives=%s\n",type.data());
         while (!found && extractClassNameFromType(type,pos,usedClassName,templSpec,root->lang)!=-1)
@@ -3940,7 +3934,7 @@ static void findUsedClassesForClass(const Entry *root,
           TemplateNameMap formTemplateNames;
           if (templateNames.empty())
           {
-            formTemplateNames = getTemplateArgumentsInName(formalArgs,usedName);
+            formTemplateNames = getTemplateArgumentsInName(formalArgs,usedName.str());
           }
           BaseInfo bi(usedName,Public,Normal);
           findClassRelation(root,context,instanceCd,&bi,formTemplateNames,TemplateInstances,isArtificial);
@@ -4066,10 +4060,10 @@ static void findBaseClassesForClass(
     TemplateNameMap formTemplateNames;
     if (templateNames.empty())
     {
-      formTemplateNames = getTemplateArgumentsInName(formalArgs,bi.name);
+      formTemplateNames = getTemplateArgumentsInName(formalArgs,bi.name.str());
     }
     BaseInfo tbi = bi;
-    tbi.name = substituteTemplateArgumentsInString(bi.name,formalArgs,actualArgs);
+    tbi.name = substituteTemplateArgumentsInString(bi.name.str(),formalArgs,actualArgs);
     //printf("bi->name=%s tbi.name=%s\n",bi->name.data(),tbi.name.data());
 
     if (mode==DocumentedOnly)
@@ -4786,7 +4780,7 @@ static void computeTemplateClassRelations()
             if (!tl.empty())
             {
               TemplateNameMap baseClassNames = tcd->getTemplateBaseClassNames();
-              TemplateNameMap templateNames = getTemplateArgumentsInName(tl,bi.name);
+              TemplateNameMap templateNames = getTemplateArgumentsInName(tl,bi.name.str());
               // for each template name that we inherit from we need to
               // substitute the formal with the actual arguments
               TemplateNameMap actualTemplateNames;
@@ -4809,7 +4803,7 @@ static void computeTemplateClassRelations()
                 }
               }
 
-              tbi.name = substituteTemplateArgumentsInString(bi.name,tl,templArgs);
+              tbi.name = substituteTemplateArgumentsInString(bi.name.str(),tl,templArgs);
               // find a documented base class in the correct scope
               if (!findClassRelation(root,cd,tcd,&tbi,actualTemplateNames,DocumentedOnly,FALSE))
               {
@@ -5329,18 +5323,23 @@ static bool scopeIsTemplate(const Definition *d)
 static QCString substituteTemplatesInString(
     const ArgumentLists &srcTempArgLists,
     const ArgumentLists &dstTempArgLists,
-    const QCString &src
+    const std::string &src
     )
 {
-  QCString dst;
-  QRegExp re( "[A-Za-z_][A-Za-z_0-9]*");
+  std::string dst;
+  static const reg::Ex re(R"(\a\w*)");
+  reg::Iterator it(src,re);
+  reg::Iterator end;
   //printf("type=%s\n",sa->type.data());
-  int i,p=0,l;
-  while ((i=re.match(src,p,&l))!=-1) // for each word in srcType
+  size_t p=0;
+  for (; it!=end ; ++it) // for each word in srcType
   {
+    const auto &match = *it;
+    size_t i = match.position();
+    size_t l = match.length();
     bool found=FALSE;
-    dst+=src.mid(p,i-p);
-    QCString name=src.mid(i,l);
+    dst+=src.substr(p,i-p);
+    std::string name=match.str();
 
     auto srcIt = srcTempArgLists.begin();
     auto dstIt = dstTempArgLists.begin();
@@ -5383,7 +5382,7 @@ static QCString substituteTemplatesInString(
             }
             if (!tdaName.isEmpty())
             {
-              name=tdaName; // substitute
+              name=tdaName.str(); // substitute
               found=TRUE;
             }
           }
@@ -5399,7 +5398,7 @@ static QCString substituteTemplatesInString(
     dst+=name;
     p=i+l;
   }
-  dst+=src.right(src.length()-p);
+  dst+=src.substr(p);
   //printf("  substituteTemplatesInString(%s)=%s\n",
   //    src.data(),dst.data());
   return dst;
@@ -5415,8 +5414,8 @@ static void substituteTemplatesInArgList(
   auto dstIt = dst.begin();
   for (const Argument &sa : src)
   {
-    QCString dstType =  substituteTemplatesInString(srcTempArgLists,dstTempArgLists,sa.type);
-    QCString dstArray = substituteTemplatesInString(srcTempArgLists,dstTempArgLists,sa.array);
+    QCString dstType =  substituteTemplatesInString(srcTempArgLists,dstTempArgLists,sa.type.str());
+    QCString dstArray = substituteTemplatesInString(srcTempArgLists,dstTempArgLists,sa.array.str());
     if (dstIt == dst.end())
     {
       Argument da = sa;
@@ -5438,7 +5437,7 @@ static void substituteTemplatesInArgList(
   dst.setPureSpecifier(src.pureSpecifier());
   dst.setTrailingReturnType(substituteTemplatesInString(
                              srcTempArgLists,dstTempArgLists,
-                             src.trailingReturnType()));
+                             src.trailingReturnType().str()));
   //printf("substituteTemplatesInArgList: replacing %s with %s\n",
   //    argListToString(src).data(),argListToString(dst).data()
   //    );
@@ -6640,7 +6639,7 @@ static void filterMemberDocumentation(const Entry *root,const QCString relates)
   QCString type = root->type;
   QCString args = root->args;
   if ( // detect func variable/typedef to func ptr
-      (i=findFunctionPtr(type,root->lang,&l))!=-1
+      (i=findFunctionPtr(type.str(),root->lang,&l))!=-1
      )
   {
     //printf("Fixing function pointer!\n");
@@ -8589,6 +8588,7 @@ static void findMainPage(Entry *root)
       //printf("mainpage: docLine=%d startLine=%d\n",root->docLine,root->startLine);
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
+      if (title.isEmpty()) title = Config_getString(PROJECT_NAME);
       //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
       QCString indexName="index";
       Doxygen::mainPage.reset(createPageDef(root->docFile,root->docLine,
@@ -9961,6 +9961,39 @@ static void devUsage()
 
 
 //----------------------------------------------------------------------------
+// print the version of doxygen
+
+static void version(const bool extended)
+{
+  QCString versionString = getFullVersion();
+  msg("%s\n",versionString.data());
+  if (extended)
+  {
+    QCString extVers;
+#if USE_SQLITE3
+    if (!extVers.isEmpty()) extVers+= ", ";
+    extVers += "sqlite3 ";
+    extVers += sqlite3_libversion();
+#endif
+#if USE_LIBCLANG
+    if (!extVers.isEmpty()) extVers+= ", ";
+    extVers += "clang support ";
+    extVers += CLANG_VERSION_STRING;
+#endif
+#if MULTITHREADED_SOURCE_GENERATOR
+    if (!extVers.isEmpty()) extVers+= ", ";
+    extVers += "multi-threaded support ";
+#endif
+    if (!extVers.isEmpty())
+    {
+      int lastComma = extVers.findRev(',');
+      if (lastComma != -1) extVers = extVers.replace(lastComma,1," and");
+      msg("    with %s.\n",extVers.data());
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
 // print the usage of doxygen
 
 static void usage(const char *name,const char *versionString)
@@ -9994,7 +10027,7 @@ static void usage(const char *name,const char *versionString)
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted 'Doxyfile' will be used as a default.\n");
   msg("If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
-  msg("-v print version string\n");
+  msg("-v print version string, -V print extended version information\n");
 }
 
 //----------------------------------------------------------------------------
@@ -10033,9 +10066,9 @@ void initDoxygen()
   initResources();
   const char *lang = Portable::getenv("LC_ALL");
   if (lang) Portable::setenv("LANG",lang);
-  setlocale(LC_ALL,"");
-  setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
-  setlocale(LC_NUMERIC,"C");
+  std::setlocale(LC_ALL,"");
+  std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
+  std::setlocale(LC_NUMERIC,"C");
 
   Portable::correct_path();
 
@@ -10404,7 +10437,12 @@ void readConfiguration(int argc, char **argv)
         g_dumpSymbolMap = TRUE;
         break;
       case 'v':
-        msg("%s\n",versionString.data());
+        version(false);
+        cleanUpDoxygen();
+        exit(0);
+        break;
+      case 'V':
+        version(true);
         cleanUpDoxygen();
         exit(0);
         break;
@@ -10416,7 +10454,14 @@ void readConfiguration(int argc, char **argv)
         }
         else if (qstrcmp(&argv[optind][2],"version")==0)
         {
-          msg("%s\n",versionString.data());
+          version(false);
+          cleanUpDoxygen();
+          exit(0);
+        }
+        else if ((qstrcmp(&argv[optind][2],"Version")==0) ||
+                 (qstrcmp(&argv[optind][2],"VERSION")==0))
+        {
+          version(true);
           cleanUpDoxygen();
           exit(0);
         }

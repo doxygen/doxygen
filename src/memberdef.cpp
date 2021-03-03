@@ -13,10 +13,11 @@
  *
  */
 
+
 #include <stdio.h>
 #include <qglobal.h>
-#include <qregexp.h>
 #include <assert.h>
+
 #include "md5.h"
 #include "memberdef.h"
 #include "membername.h"
@@ -36,7 +37,6 @@
 #include "dotcallgraph.h"
 #include "searchindex.h"
 #include "parserintf.h"
-
 #include "vhdldocgen.h"
 #include "arguments.h"
 #include "memberlist.h"
@@ -44,6 +44,7 @@
 #include "filedef.h"
 #include "config.h"
 #include "definitionimpl.h"
+#include "regex.h"
 
 //-----------------------------------------------------------------------------
 
@@ -920,27 +921,12 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         ol.startParameterName(TRUE);
       }
     }
-    QRegExp re(")("),res("(.*\\*");
-    int vp=a.type.find(re);
-    int wp=a.type.find(res);
-
-    // use the following to put the function pointer type before the name
-    bool hasFuncPtrType=FALSE;
 
     if (!a.attrib.isEmpty() && !md->isObjCMethod()) // argument has an IDL attribute
     {
       ol.docify(a.attrib+" ");
     }
-    if (hasFuncPtrType) // argument type is a function pointer
-    {
-      //printf("a.type='%s' a.name='%s'\n",a.type.data(),a.name.data());
-      QCString n=a.type.left(vp);
-      if (hasFuncPtrType) n=a.type.left(wp);
-      if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
-      if (!cName.isEmpty()) n=addTemplateNames(n,scope->name(),cName);
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
-    }
-    else // non-function pointer type
+
     {
       QCString n=a.type;
       if (md->isObjCMethod()) { n.prepend("("); n.append(")"); }
@@ -950,6 +936,7 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
         linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),md,n);
       }
     }
+
     if (!isDefine)
     {
       if (paramTypeStarted)
@@ -959,16 +946,8 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
       }
       ol.startParameterName(defArgList.size()<2);
     }
-    if (hasFuncPtrType)
-    {
-      ol.docify(a.type.mid(wp,vp-wp));
-    }
     if (!a.name.isEmpty() || a.type=="...") // argument has a name
     {
-      //if (!hasFuncPtrType)
-      //{
-      //  ol.docify(" ");
-      //}
       ol.disable(OutputGenerator::Latex);
       ol.disable(OutputGenerator::Docbook);
       ol.disable(OutputGenerator::Html);
@@ -991,12 +970,6 @@ static bool writeDefArgumentList(OutputList &ol,const Definition *scope,const Me
     if (!a.array.isEmpty())
     {
       ol.docify(a.array);
-    }
-    if (hasFuncPtrType) // write the part of the argument type
-                        // that comes after the name
-    {
-      linkifyText(TextGeneratorOLImpl(ol),scope,md->getBodyDef(),
-                  md,a.type.right(a.type.length()-vp));
     }
     if (!a.defval.isEmpty()) // write the default value
     {
@@ -1855,6 +1828,8 @@ void MemberDefImpl::writeLink(OutputList &ol,
  */
 ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 {
+  //printf("%s:getClassDefOfAnonymousType() cache=%s\n",name().data(),
+  //                   m_impl->cachedAnonymousType?m_impl->cachedAnonymousType->name().data():"<empty>");
   if (m_impl->cachedAnonymousType) return m_impl->cachedAnonymousType;
 
   QCString cname;
@@ -1871,20 +1846,18 @@ ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
   //if (ltype.left(7)=="static ") ltype=ltype.right(ltype.length()-7);
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static QRegExp r("@[0-9]+");
-  int l,i=r.match(ltype,0,&l);
-  //printf("ltype='%s' i=%d\n",ltype.data(),i);
+
   // search for the last anonymous scope in the member type
   ClassDef *annoClassDef=0;
-  if (i!=-1) // found anonymous scope in type
-  {
-    int il=i-1,ir=i+l;
-    // extract anonymous scope
-    while (il>=0 && (isId(ltype.at(il)) || ltype.at(il)==':' || ltype.at(il)=='@')) il--;
-    if (il>0) il++; else if (il<0) il=0;
-    while (ir<(int)ltype.length() && (isId(ltype.at(ir)) || ltype.at(ir)==':' || ltype.at(ir)=='@')) ir++;
 
-    QCString annName = ltype.mid(il,ir-il);
+  // match expression if it contains at least one @1 marker, e.g.
+  // 'struct A::@1::@2::B' matches 'A::@1::@2::B' but 'struct A::B' does not match.
+  std::string stype = ltype.str();
+  static const reg::Ex r(R"([\w@:]*@\d+[\w@:]*)");
+  reg::Match match;
+  if (reg::search(stype,match,r)) // found anonymous scope in type
+  {
+    QCString annName = match.str();
 
     // if inside a class or namespace try to prepend the scope name
     if (!cname.isEmpty() && annName.left(cname.length()+2)!=cname+"::")
@@ -2130,12 +2103,14 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   }
   // strip 'friend' keyword from ltype
   ltype.stripPrefix("friend ");
-  static QRegExp r("@[0-9]+");
-
+  static const reg::Ex r(R"(@\d+)");
+  reg::Match match;
+  std::string stype = ltype.str();
   bool endAnonScopeNeeded=FALSE;
-  int l,i=r.match(ltype,0,&l);
-  if (i!=-1) // member has an anonymous type
+  if (reg::search(stype,match,r)) // member has an anonymous type
   {
+    int i = (int)match.position();
+    int l = (int)match.length();
     //printf("annoClassDef=%p annMemb=%p scopeName='%s' anonymous='%s'\n",
     //    annoClassDef,annMemb,cname.data(),ltype.mid(i,l).data());
 
@@ -2790,76 +2765,69 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
 void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
 {
   const MemberList &bml=reimplementedBy();
-  if (!bml.empty())
+  size_t count=0;
+  for (const auto &bmd : bml)
   {
-    uint count=0;
-    for (const auto &bmd : bml)
+    const ClassDef *bcd=bmd->getClassDef();
+    // count the members that directly inherit from md and for
+    // which the member and class are visible in the docs.
+    if ( bcd && bmd->isLinkable() && bcd->isLinkable() )
     {
-      const ClassDef *bcd=bmd->getClassDef();
-      // count the members that directly inherit from md and for
-      // which the member and class are visible in the docs.
-      if ( bcd && bmd->isLinkable() && bcd->isLinkable() )
-      {
-        count++;
-      }
+      count++;
     }
-    if (count>0)
+  }
+  if (count>0)
+  {
+    auto replaceFunc = [&bml,&ol](size_t entryIndex)
     {
-      // write the list of classes that overwrite this member
-      ol.startParagraph();
-
-      QCString reimplInLine;
-      if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
+      size_t cnt=0;
+      auto it = bml.begin();
+      // find the entryIndex-th documented entry in the inheritance list.
+      const MemberDef *bmd = 0;
+      const ClassDef *bcd = 0;
+      while (it!=bml.end())
       {
-        reimplInLine = theTranslator->trImplementedInList(count);
-      }
-      else
-      {
-        reimplInLine = theTranslator->trReimplementedInList(count);
-      }
-      static QRegExp marker("@[0-9]+");
-      int index=0,newIndex,matchLen;
-      // now replace all markers in reimplInLine with links to the classes
-      while ((newIndex=marker.match(reimplInLine,index,&matchLen))!=-1)
-      {
-        ol.parseText(reimplInLine.mid(index,newIndex-index));
-        bool ok;
-        uint entryIndex = reimplInLine.mid(newIndex+1,matchLen-1).toUInt(&ok);
-
-        count=0;
-        auto it = bml.begin();
-        // find the entryIndex-th documented entry in the inheritance list.
-        const MemberDef *bmd = 0;
-        const ClassDef *bcd = 0;
-        while (it!=bml.end())
+        bmd = *it;
+        bcd = bmd->getClassDef();
+        if ( bmd->isLinkable() && bcd->isLinkable())
         {
-          bmd = *it;
-          bcd = bmd->getClassDef();
-          if ( bmd->isLinkable() && bcd->isLinkable())
-          {
-            if (count==entryIndex) break;
-            count++;
-          }
-          ++it;
+          if (cnt==entryIndex) break;
+          cnt++;
         }
-
-        if (ok && bcd && bmd) // write link for marker
-        {
-          //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
-          //    bmd->anchor(),bcd->name());
-          ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
-              bmd->anchor(),bcd->displayName());
-
-          if (bmd->isLinkableInProject() )
-          {
-            writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
-          }
-        }
-        index=newIndex+matchLen;
+        ++it;
       }
-      ol.parseText(reimplInLine.right(reimplInLine.length()-index));
-      ol.endParagraph();
+
+      if (bcd && bmd) // write link for marker
+      {
+        //ol.writeObjectLink(bcd->getReference(),bcd->getOutputFileBase(),
+        //    bmd->anchor(),bcd->name());
+        ol.writeObjectLink(bmd->getReference(),bmd->getOutputFileBase(),
+            bmd->anchor(),bcd->displayName());
+
+        if (bmd->isLinkableInProject() )
+        {
+          writePageRef(ol,bmd->getOutputFileBase(),bmd->anchor());
+        }
+      }
+    };
+
+    QCString reimplInLine;
+    if (m_impl->virt==Pure || (getClassDef() && getClassDef()->compoundType()==ClassDef::Interface))
+    {
+      reimplInLine = theTranslator->trImplementedInList((int)count);
     }
+    else
+    {
+      reimplInLine = theTranslator->trReimplementedInList((int)count);
+    }
+
+    // write the list of classes that overwrite this member
+    ol.startParagraph();
+    writeMarkerList(ol,
+                    reimplInLine.str(),
+                    count,
+                    replaceFunc);
+    ol.endParagraph();
   }
 }
 
@@ -3007,6 +2975,9 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
   }
 }
 
+// match from the start of the scope until the last marker
+static const reg::Ex reAnonymous(R"([\w:@]*@\d+)");
+
 QCString MemberDefImpl::displayDefinition() const
 {
   QCString ldef = definition();
@@ -3037,21 +3008,14 @@ QCString MemberDefImpl::displayDefinition() const
       ldef=ldef.mid(2);
     }
   }
-  static QRegExp r("@[0-9]+");
-  int l,i=r.match(ldef,0,&l);
-  if (i!=-1) // replace anonymous parts with { ... }
+
+  std::string sdef = ldef.str();
+  reg::Match match;
+  if (reg::search(sdef,match,reAnonymous))
   {
-    int si=ldef.find(' '),pi,ei=i+l;
-    if (si==-1) si=0;
-    while ((pi=r.match(ldef,i+l,&l))!=-1)
-    {
-      i=pi;
-      ei=i+l;
-    }
-    int ni=ldef.find("::",si);
-    if (ni>=ei) ei=ni+2;
-    ldef = ldef.left(si) + " { ... } " + ldef.right(ldef.length()-ei);
+    ldef = match.prefix().str() + " { ... } " + match.suffix().str();
   }
+
   const ClassDef *cd=getClassDef();
   if (cd && cd->isObjectiveC())
   {
@@ -3071,9 +3035,9 @@ QCString MemberDefImpl::displayDefinition() const
     {
       ldef=ldef.left(dp+1);
     }
-    l=ldef.length();
+    int l=ldef.length();
     //printf("start >%s<\n",ldef.data());
-    i=l-1;
+    int i=l-1;
     while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
     while (i>=0 && isspace((uchar)ldef.at(i))) i--;
     if (i>0)
@@ -3220,9 +3184,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   {
     title += "()";
   }
-  int i=0,l;
-  static QRegExp r("@[0-9]+");
-
   if (lang == SrcLangExt_Slice)
   {
     // Remove the container scope from the member name.
@@ -3242,19 +3203,24 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   QStrList sl;
   getLabels(sl,scopedContainer);
 
-  if ((isVariable() || isTypedef()) && (i=r.match(ldef,0,&l))!=-1)
+  static const reg::Ex r(R"(@\d+)");
+  reg::Match match;
+  std::string sdef = ldef.str();
+  if ((isVariable() || isTypedef()) && reg::search(sdef,match,r))
   {
     // find enum type and insert it in the definition
     bool found=false;
     for (const auto &vmd : *ml)
     {
-      if (vmd->isEnumerate() && ldef.mid(i,l)==vmd->name())
+      if (vmd->isEnumerate() && match.str()==vmd->name())
       {
         ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
         ol.startMemberDoc(ciname,name(),memAnchor,name(),memCount,memTotal,showInline);
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.left(i));
+        std::string prefix = match.prefix().str();
+        std::string suffix = match.suffix().str();
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,prefix.c_str());
         vmd->writeEnumDeclaration(ol,getClassDef(),getNamespaceDef(),getFileDef(),getGroupDef());
-        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-i-l));
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
 
         found=true;
         break;
@@ -3266,21 +3232,20 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       ol.startDoxyAnchor(cfname,cname,memAnchor,doxyName,doxyArgs);
       ol.startMemberDoc(ciname,name(),memAnchor,"",memCount,memTotal,showInline);
       // search for the last anonymous compound name in the definition
-      int si=ldef.find(' '),pi,ei=i+l;
-      if (si==-1) si=0;
-      while ((pi=r.match(ldef,i+l,&l))!=-1)
-      {
-        i=pi;
-        ei=i+l;
-      }
-      // first si characters of ldef contain compound type name
+
       ol.startMemberDocName(isObjCMethod());
-      ol.docify(ldef.left(si));
-      ol.docify(" { ... } ");
-      // last ei characters of ldef contain pointer/reference specifiers
-      int ni=ldef.find("::",si);
-      if (ni>=ei) ei=ni+2;
-      linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef.right(ldef.length()-ei));
+      if (reg::search(sdef,match,reAnonymous))
+      {
+        std::string prefix = match.prefix().str();
+        std::string suffix = match.suffix().str();
+        ol.docify(prefix.c_str());
+        ol.docify(" { ... } ");
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,suffix.c_str());
+      }
+      else
+      {
+        linkifyText(TextGeneratorOLImpl(ol),scopedContainer,getBodyDef(),this,ldef);
+      }
     }
   }
   else // not an enum value or anonymous compound
@@ -3374,7 +3339,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       }
       int dl=ldef.length();
       //printf("start >%s<\n",ldef.data());
-      i=dl-1;
+      int i=dl-1;
       while (i>=0 && (isId(ldef.at(i)) || ldef.at(i)==':')) i--;
       while (i>=0 && isspace((uchar)ldef.at(i))) i--;
       if (i>0)
@@ -3649,68 +3614,22 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 }
 
 // strip scope and field name from the type
-// example: "struct N::S.v.c" will become "struct v"
+// example: "struct N<K::J>::S.v.c" will become "struct v"
 static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
   if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
-  static QRegExp re("[A-Z_a-z0-9]+::");
-  int i,l;
-  while ((i=re.match(ts,0,&l))!=-1)
+  static const reg::Ex re1(R"(\a\w*::(\a\w*))");       // non-template version
+  static const reg::Ex re2(R"(\a\w*<[^>]*>::(\a\w*))"); // template version
+  reg::Match match;
+  std::string t = ts.str();
+  if (reg::search(t,match,re1) || reg::search(t,match,re2))
   {
-    ts=ts.left(i)+ts.mid(i+l);
+    ts = match[1].str(); // take the identifier after the last ::
   }
-  i=ts.findRev('.');
-  if (i!=-1) ts = ts.left(i);
-  i=ts.findRev('.');
-  if (i!=-1) ts = ts.right(ts.length()-i-1);
   //printf("simplifyTypeForTable(%s)->%s\n",s.data(),ts.data());
   return ts;
 }
-
-#if 0
-/** Returns the type definition corresponding to a member's return type.
- *  @param[in]  scope The scope in which to search for the class definition.
- *  @param[in]  type  The string representing the member's return type.
- *  @param[in]  lang  The programming language in which the class is defined.
- *  @param[out] start The string position where the class definition name was found.
- *  @param[out] length The length of the class definition's name.
- */
-static Definition *getClassFromType(Definition *scope,const QCString &type,SrcLangExt lang,int &start,int &length)
-{
-  int pos=0;
-  int i;
-  QCString name;
-  QCString templSpec;
-  while ((i=extractClassNameFromType(type,pos,name,templSpec,lang))!=-1)
-  {
-    ClassDef *cd=0;
-    MemberDef *md=0;
-    int l = name.length()+templSpec.length();
-    if (!templSpec.isEmpty())
-    {
-      cd = getResolvedClass(scope,0,name+templSpec,&md);
-    }
-    cd = getResolvedClass(scope,0,name);
-    if (cd)
-    {
-      start=i;
-      length=l;
-      printf("getClassFromType: type=%s name=%s start=%d length=%d\n",type.data(),name.data(),start,length);
-      return cd;
-    }
-    else if (md)
-    {
-      start=i;
-      length=l;
-      printf("getClassFromType: type=%s name=%s start=%d length=%d\n",type.data(),name.data(),start,length);
-      return md;
-    }
-    pos=i+l;
-  }
-  return 0;
-}
-#endif
 
 QCString MemberDefImpl::fieldType() const
 {
@@ -4185,29 +4104,29 @@ MemberDefMutable *MemberDefImpl::createTemplateInstanceMember(
     // replace formal arguments with actuals
     for (Argument &arg : *actualArgList)
     {
-      arg.type = substituteTemplateArgumentsInString(arg.type,formalArgs,actualArgs);
+      arg.type = substituteTemplateArgumentsInString(arg.type.str(),formalArgs,actualArgs);
     }
     actualArgList->setTrailingReturnType(
-       substituteTemplateArgumentsInString(actualArgList->trailingReturnType(),formalArgs,actualArgs));
+       substituteTemplateArgumentsInString(actualArgList->trailingReturnType().str(),formalArgs,actualArgs));
   }
 
   QCString methodName=name();
   if (methodName.left(9)=="operator ") // conversion operator
   {
-    methodName=substituteTemplateArgumentsInString(methodName,formalArgs,actualArgs);
+    methodName=substituteTemplateArgumentsInString(methodName.str(),formalArgs,actualArgs);
   }
 
   MemberDefMutable *imd = createMemberDef(
                        getDefFileName(),getDefLine(),getDefColumn(),
-                       substituteTemplateArgumentsInString(m_impl->type,formalArgs,actualArgs),
+                       substituteTemplateArgumentsInString(m_impl->type.str(),formalArgs,actualArgs),
                        methodName,
-                       substituteTemplateArgumentsInString(m_impl->args,formalArgs,actualArgs),
+                       substituteTemplateArgumentsInString(m_impl->args.str(),formalArgs,actualArgs),
                        m_impl->exception, m_impl->prot,
                        m_impl->virt, m_impl->stat, m_impl->related, m_impl->mtype,
                        ArgumentList(), ArgumentList(), ""
                    );
   imd->moveArgumentList(std::move(actualArgList));
-  imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def,formalArgs,actualArgs));
+  imd->setDefinition(substituteTemplateArgumentsInString(m_impl->def.str(),formalArgs,actualArgs));
   imd->setBodyDef(getBodyDef());
   imd->setBodySegment(getDefLine(),getStartBodyLine(),getEndBodyLine());
   //imd->setBodyMember(this);

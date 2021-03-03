@@ -56,7 +56,6 @@
 //#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qregexp.h>
 #include <qcstringlist.h>
 
 #include "defargs.h"

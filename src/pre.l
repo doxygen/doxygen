@@ -41,7 +41,6 @@
 #include <errno.h>
 
 #include <qcstring.h>
-#include <qregexp.h>
 #include <qfileinfo.h>
 
 #include "containers.h"
@@ -60,6 +59,7 @@
 #include "condparser.h"
 #include "config.h"
 #include "filedef.h"
+#include "regex.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -1980,31 +1980,48 @@ static QCString stringize(const QCString &s)
  */
 static void processConcatOperators(QCString &expr)
 {
-  //printf("processConcatOperators: in='%s'\n",expr.data());
-  QRegExp r("[ \\t\\n]*##[ \\t\\n]*");
-  int l,n,i=0;
   if (expr.isEmpty()) return;
-  while ((n=r.match(expr,i,&l))!=-1)
+  //printf("processConcatOperators: in='%s'\n",expr.data());
+  std::string e = expr.str();
+  static const reg::Ex r(R"(\s*##\s*)");
+  reg::Iterator end;
+
+  size_t i=0;
+  for (;;)
   {
-    //printf("Match: '%s'\n",expr.data()+i);
-    if (n+l+1<(int)expr.length() && expr.at(n+l)=='@' && expr.at(n+l+1)=='-')
+    reg::Iterator it(e,r,i);
+    if (it!=end)
     {
-      // remove no-rescan marker after ID
-      l+=2;
+      const auto &match = *it;
+      size_t n = match.position();
+      size_t l = match.length();
+      //printf("Match: '%s'\n",expr.data()+i);
+      if (n+l+1<e.length() && e[n+l]=='@' && expr[n+l+1]=='-')
+      {
+        // remove no-rescan marker after ID
+        l+=2;
+      }
+      //printf("found '%s'\n",expr.mid(n,l).data());
+      // remove the ## operator and the surrounding whitespace
+      e=e.substr(0,n)+e.substr(n+l);
+      int k=n-1;
+      while (k>=0 && isId(e[k])) k--; 
+      if (k>0 && e[k]=='-' && e[k-1]=='@')
+      {
+        // remove no-rescan marker before ID
+        e=e.substr(0,k-1)+e.substr(k+1);
+        n-=2;
+      }
+      i=n;
     }
-    //printf("found '%s'\n",expr.mid(n,l).data());
-    // remove the ## operator and the surrounding whitespace
-    expr=expr.left(n)+expr.right(expr.length()-n-l);
-    int k=n-1;
-    while (k>=0 && isId(expr.at(k))) k--;
-    if (k>0 && expr.at(k)=='-' && expr.at(k-1)=='@')
+    else
     {
-      // remove no-rescan marker before ID
-      expr=expr.left(k-1)+expr.right(expr.length()-k-1);
-      n-=2;
+      break;
     }
-    i=n;
   }
+
+  expr = e;
+
   //printf("processConcatOperators: out='%s'\n",expr.data());
 }
 
@@ -3193,30 +3210,29 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
 
   // add predefined macros
   const StringVector &predefList = Config_getList(PREDEFINED);
-  for (const auto &defStr : predefList)
+  for (const auto &ds : predefList)
   {
-    QCString ds = defStr.c_str();
-    int i_equals=ds.find('=');
-    int i_obrace=ds.find('(');
-    int i_cbrace=ds.find(')');
-    bool nonRecursive = i_equals>0 && ds.at(i_equals-1)==':';
+    size_t i_equals=ds.find('=');
+    size_t i_obrace=ds.find('(');
+    size_t i_cbrace=ds.find(')');
+    bool nonRecursive = i_equals!=std::string::npos && i_equals>0 && ds[i_equals-1]==':';
 
-    if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && ds.at(i_equals-1)==':'))
+    if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && ds[i_equals-1]==':'))
     {
       continue; // no define name
     }
 
-    if (i_obrace<i_equals && i_cbrace<i_equals &&
-        i_obrace!=-1      && i_cbrace!=-1      &&
+    if (i_obrace<i_equals && i_cbrace<i_equals && 
+        i_obrace!=std::string::npos && i_cbrace!=std::string::npos && 
         i_obrace<i_cbrace
        ) // predefined function macro definition
     {
+      static const reg::Ex reId(R"(\a\w*)");
+      reg::Iterator end;
       bool varArgs = false;
       int count = 0;
-      int i,pi,l;
       std::map<std::string,int> argMap;
-      QRegExp reId("[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*"); // regexp matching an id
-      if (ds.mid(i_obrace+1,i_cbrace-i_obrace-1)=="...")
+      if (ds.substr(i_obrace+1,i_cbrace-i_obrace-1)=="...")
       {
         varArgs = true;
         argMap.emplace("__VA_ARGS__",count);
@@ -3224,14 +3240,18 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       }
       else
       {
-        //printf("predefined function macro '%s'\n",qPrint(ds.mid(i_obrace+1,i_cbrace-i_obrace-1)));
-        i=i_obrace+1;
-        // gather the formal arguments in a dictionary
-        while (i<i_cbrace && (pi=reId.match(ds,i,&l)))
+        size_t i=i_obrace+1;
+        //printf("predefined function macro '%s'\n",ds.c_str());
+        reg::Iterator it(ds,reId,i);
+        // gather the formal arguments in a dictionary 
+        while (i<i_cbrace && it!=end)
         {
+          const auto &match = *it;
+          size_t pi = match.position();
+          size_t l  = match.length();
           if (l>0) // see bug375037
           {
-            argMap.emplace(toStdString(ds.mid(pi,l)),count);
+            argMap.emplace(match.str(),count);
             count++;
             i=pi+l;
           }
@@ -3239,18 +3259,24 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
           {
             i++;
           }
+          ++it;
         }
       }
       // strip definition part
-      QCString tmp=ds.right(ds.length()-i_equals-1);
-      QCString definition;
-      i=0;
-      // substitute all occurrences of formal arguments by their
+      std::string definition;
+      std::string in=ds.substr(i_equals+1);
+      reg::Iterator re_it(in,reId);
+      size_t i=0;
+      // substitute all occurrences of formal arguments by their 
       // corresponding markers
-      while ((pi=reId.match(tmp,i,&l))!=-1)
+      for (; re_it!=end; ++re_it)
       {
-        if (pi>i) definition+=tmp.mid(i,pi-i);
-        auto it = argMap.find(tmp.mid(pi,l).data());
+        const auto &match = *re_it;
+        size_t pi = match.position();
+        size_t l  = match.length();
+        if (pi>i) definition+=in.substr(i,pi-i);
+
+        auto it = argMap.find(match.str());
         if (it!=argMap.end())
         {
           int argIndex = it->second;
@@ -3260,15 +3286,15 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         }
         else
         {
-          definition+=tmp.mid(pi,l);
+          definition+=match.str();
         }
         i=pi+l;
       }
-      if (i<(int)tmp.length()) definition+=tmp.mid(i,tmp.length()-i);
+      definition+=in.substr(i);
 
       // add define definition to the dictionary of defines for this file
-      QCString dname = ds.left(i_obrace);
-      if (!dname.isEmpty())
+      std::string dname = ds.substr(0,i_obrace);
+      if (!dname.empty())
       {
         Define def;
         def.name         = dname;
@@ -3284,16 +3310,12 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
         //printf("#define '%s' '%s' #nargs=%d\n",
         //  def->name.data(),def->definition.data(),def->nargs);
       }
-
     }
-    else if ((i_obrace==-1 || i_obrace>i_equals) &&
-        (i_cbrace==-1 || i_cbrace>i_equals) &&
-        !ds.isEmpty() && (int)ds.length()>i_equals
-        ) // predefined non-function macro definition
+    else if (!ds.empty()) // predefined non-function macro definition
     {
-      //printf("predefined normal macro '%s'\n",defStr);
+      //printf("predefined normal macro '%s'\n",ds.c_str());
       Define def;
-      if (i_equals==-1) // simple define without argument
+      if (i_equals==std::string::npos) // simple define without argument
       {
         def.name = ds;
         def.definition = "1"; // substitute occurrences by 1 (true)
@@ -3301,8 +3323,8 @@ static void initPredefined(yyscan_t yyscanner,const char *fileName)
       else // simple define with argument
       {
         int ine=i_equals - (nonRecursive ? 1 : 0);
-        def.name = ds.left(ine);
-        def.definition = ds.right(ds.length()-i_equals-1);
+        def.name = ds.substr(0,ine);
+        def.definition = ds.substr(i_equals+1);
       }
       if (!def.name.isEmpty())
       {
@@ -3411,11 +3433,12 @@ void Preprocessor::processFile(const char *fileName,BufStr &input,BufStr &output
     char *newPos=output.data()+output.curPos();
     Debug::print(Debug::Preprocessor,0,"Preprocessor output of %s (size: %d bytes):\n",fileName,newPos-orgPos);
     int line=1;
-    Debug::print(Debug::Preprocessor,0,"---------\n00001 ");
-    while (orgPos<newPos)
+    Debug::print(Debug::Preprocessor,0,"---------\n");
+    if (!Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"00001 ");
+    while (orgPos<newPos) 
     {
       putchar(*orgPos);
-      if (*orgPos=='\n') Debug::print(Debug::Preprocessor,0,"%05d ",++line);
+      if (*orgPos=='\n' && !Debug::isFlagSet(Debug::NoLineNo)) Debug::print(Debug::Preprocessor,0,"%05d ",++line);
       orgPos++;
     }
     Debug::print(Debug::Preprocessor,0,"\n---------\n");

@@ -1,8 +1,6 @@
 /*****************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -37,7 +35,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qregexp.h>
 #include <qfile.h>
 
 #include "scanner.h"
@@ -53,6 +50,7 @@
 
 #include "clangparser.h"
 #include "markdown.h"
+#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -3759,9 +3757,9 @@ NONLopt [^\n]*
                                                 }
                                                 else
                                                 {
-                                                  static QRegExp re("@[0-9]+$");
+                                                  static const reg::Ex re(R"(@\d+$)");
                                                   if (!yyextra->isTypedef && yyextra->memspecEntry &&
-                                                      yyextra->memspecEntry->name.find(re)==-1) // not typedef or anonymous type (see bug691071)
+                                                      !reg::search(yyextra->memspecEntry->name.str(),re)) // not typedef or anonymous type (see bug691071)
                                                   {
                                                     // enabled the next two lines for bug 623424
                                                     yyextra->current->doc.resize(0);
@@ -4851,10 +4849,16 @@ NONLopt [^\n]*
                                           yyextra->current->fileName = yyextra->yyFileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;
-                                          static QRegExp re("([^)]*[*&][^)]*)"); // (...*...)
+                                          static const reg::Ex re(R"(\([^)]*[*&][^)]*\))");
+                                          reg::Match match;
+                                          std::string type = yyextra->current->type.str();
+                                          int ti=-1;
+                                          if (reg::search(type,match,re))
+                                          {
+                                            ti = (int)match.position();
+                                          }
                                           int ts=yyextra->current->type.find('<');
                                           int te=yyextra->current->type.findRev('>');
-                                          int ti=yyextra->current->type.find(re,0);
 
                                           // bug677315: A<int(void *, char *)> get(); is not a function pointer
                                           bool isFunction = ti==-1 || // not a (...*...) pattern
@@ -6910,13 +6914,24 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
   int si = yyextra->current->args.length();
   if (yyextra->oldStyleArgType.isEmpty()) // new argument
   {
-    static QRegExp re("([^)]*)");
-    int bi1 = yyextra->current->args.findRev(re);
-    int bi2 = bi1!=-1 ? yyextra->current->args.findRev(re,bi1-1) : -1;
+    std::string args = yyextra->current->args.str();
+    static const reg::Ex re(R"(\([^)]*\).*)"); // find first (...)
+    int bi1=-1;
+    int bi2=-1;
+    reg::Match match;
+    if (reg::search(args,match,re))
+    {
+      bi1=(int)match.position();
+      size_t secondMatchStart = match.position()+match.length(); // search again after first match
+      if (reg::search(args,match,re,secondMatchStart))
+      {
+        bi2=(int)match.position();
+      }
+    }
     char c;
     if (bi1!=-1 && bi2!=-1) // found something like "int (*func)(int arg)"
     {
-      int s=bi2+1;
+      int s=bi2+1; // keep opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       int i=s;
       while (i<si && ((c=yyextra->current->args.at(i))=='*' || isspace((uchar)c))) i++;
@@ -6928,7 +6943,7 @@ static void splitKnRArg(yyscan_t yyscanner,QCString &oldStyleArgPtr,QCString &ol
     }
     else if (bi1!=-1) // redundant braces like in "int (*var)"
     {
-      int s=bi1;
+      int s=bi1; // strip opening (
       yyextra->oldStyleArgType = yyextra->current->args.left(s);
       s++;
       int i=s+1;

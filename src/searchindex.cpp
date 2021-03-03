@@ -18,7 +18,6 @@
 #include <assert.h>
 
 #include <qfile.h>
-#include <qregexp.h>
 
 #include "searchindex.h"
 #include "config.h"
@@ -200,7 +199,6 @@ static int charsToIndex(const char *word)
 
 void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
 {
-  static QRegExp nextPart("[_a-z:][A-Z]");
   if (word==0 || word[0]=='\0') return;
   QCString wStr = QCString(word).lower();
   //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,wStr.data());
@@ -227,7 +225,14 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
   }
   if (!found) // no prefix stripped
   {
-    if ((i=nextPart.match(word))>=1)
+    i=0;
+    while (word[i]!=0 &&
+           !((word[i]=='_' || word[i]==':' || (word[i]>='a' && word[i]<='z')) &&  // [_a-z:]
+             (word[i+1]>='A' && word[i+1]<='Z')))                                 // [A-Z]
+    {
+      i++;
+    }
+    if (word[i]!=0 && i>=1)
     {
       addWord(word+i+1,hiPriority,TRUE);
     }

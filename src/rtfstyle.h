@@ -63,8 +63,8 @@ struct StyleData
 
   public:
     StyleData() = default;
-    StyleData(const char* reference, const char* definition);
-    bool setStyle(const char* s, const char* styleName);
+    StyleData(const std::string &reference, const std::string &definition);
+    bool setStyle(const std::string &command, const std::string &styleName);
     const char *reference() const { return m_reference.c_str(); }
     const char *definition() const { return m_definition.c_str(); }
     uint index() const { return m_index; }
