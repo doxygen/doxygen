@@ -82,7 +82,7 @@ class Ex
      *
      *  @note that capture ranges cannot be nested, and `*`, `+`, and `?` do not work on
      *  capture ranges. e.g. `(abd)?` is not valid. If multiple capture ranges are
-     *  specified then some character has to be inbetween them,
+     *  specified then some character has to be in between them,
      *  e.g. this does not work `(.*)(a.*)`, but this does `(.*)a(.*)`.
      *
      *  In Wildcard mode `*` is used to match any sequence of zero or more characters.
