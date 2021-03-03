@@ -15,7 +15,7 @@
  *
  */
 
-#ifndef SCANNER_LEL_H
+#ifndef SCANNER_LEX_H
 #define SCANNER_LEX_H
 
 #include "parserintf.h"
