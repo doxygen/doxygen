@@ -159,7 +159,7 @@ class Ex::Private
 #endif
     bool matchAt(size_t tokenPos,const std::string &str,Match &match,size_t pos,int level) const;
 
-    /** Flag indicating the expression was succesfully compiled */
+    /** Flag indicating the expression was successfully compiled */
     bool error = false;
 
     /** The token stream representing the compiled regular expression. */
