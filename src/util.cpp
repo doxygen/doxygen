@@ -22,7 +22,6 @@
 
 #include <mutex>
 #include <unordered_set>
-#include <regex>
 #include <codecvt>
 #include <iostream>
 #include <algorithm>
@@ -35,6 +34,7 @@
 #include <qfileinfo.h>
 #include <qdir.h>
 
+#include "regex.h"
 #include "util.h"
 #include "message.h"
 #include "classdef.h"
@@ -188,10 +188,10 @@ QCString removeAnonymousScopes(const char *str)
     return false;
   };
 
-  static std::regex re("[ :]*@[[:digit:]]+[: ]*");
+  static const reg::Ex re(R"([\s:]*@\d+[\s:]*)");
   std::string s = str;
-  std::sregex_iterator iter( s.begin(), s.end(), re);
-  std::sregex_iterator end;
+  reg::Iterator iter(s,re);
+  reg::Iterator end;
   size_t p=0;
   size_t sl=s.length();
   bool needsSeparator=false;
@@ -221,8 +221,8 @@ QCString removeAnonymousScopes(const char *str)
 QCString replaceAnonymousScopes(const char *s,const char *replacement)
 {
   if (s==0) return QCString();
-  static std::regex marker("@[[:digit:]]+");
-  std::string result = std::regex_replace(s,marker,replacement?replacement:"__anonymous__");
+  static const reg::Ex marker(R"(@\d+)");
+  std::string result = reg::replace(s,marker,replacement?replacement:"__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",s.data(),result.data());
   return result;
 }
@@ -895,9 +895,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static std::regex regExp("[[:alpha:]_][[:alnum:]_~!\\\\.:$]*");
-  std::sregex_iterator it( txtStr.begin(), txtStr.end(), regExp);
-  std::sregex_iterator end;
+  static const reg::Ex regExp(R"(\a[\w~!\\.:$]*)");
+  reg::Iterator it(txtStr,regExp);
+  reg::Iterator end;
 
   //printf("linkifyText scope=%s fileScope=%s strtxt=%s strlen=%d external=%d\n",
   //    scope?scope->name().data():"<none>",
@@ -1096,9 +1096,9 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc)
 {
-  static std::regex marker("@([[:digit:]]+)");
-  std::sregex_iterator it(markerText.begin(),markerText.end(),marker);
-  std::sregex_iterator end;
+  static const reg::Ex marker(R"(@(\d+))");
+  reg::Iterator it(markerText,marker);
+  reg::Iterator end;
   size_t index=0;
   // now replace all markers in inheritLine with links to the classes
   for ( ; it!=end ; ++it)
@@ -1107,7 +1107,7 @@ void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMark
     size_t newIndex = match.position();
     size_t matchLen = match.length();
     ol.parseText(markerText.substr(index,newIndex-index));
-    unsigned long entryIndex = std::stoul(match[1]);
+    unsigned long entryIndex = std::stoul(match[1].str());
     if (entryIndex<(unsigned long)numMarkers)
     {
       replaceFunc(entryIndex);
@@ -1279,72 +1279,6 @@ int filterCRLF(char *buf,int len)
   return dest;                 // length of the valid part of the buf
 }
 
-template<class StringType>
-static bool isMatchingWildcard(const StringType &input,size_t input_pos,
-                               const StringType &pattern,size_t pattern_pos,
-                               bool caseSensitive)
-{
-  // end of pattern reached
-  if (pattern_pos==pattern.length())
-  {
-    // match iff also at the end of the input string
-    return input_pos==input.length();
-  }
-
-  // if we are at the end of the input string
-  if (input_pos==input.length())
-  {
-    // match iff the remainder of the pattern is '*'s
-    for (size_t i=pattern_pos; i<pattern.size();i++)
-    {
-      if (pattern[i]!='*') return false;
-    }
-    return true;
-  }
-
-  auto input_char   = input[input_pos];
-  auto pattern_char = pattern[pattern_pos];
-  if (!caseSensitive)
-  {
-    input_char   = (typename StringType::value_type)std::tolower(input_char);
-    pattern_char = (typename StringType::value_type)std::tolower(pattern_char);
-  }
-  // if current character matches against '?' pattern or literally
-  if (pattern[pattern_pos]=='?' || input_char==pattern_char)
-  {
-    // then continue with the next one
-    return isMatchingWildcard(input,input_pos+1,pattern,pattern_pos+1,caseSensitive);
-  }
-
-  // current character in the pattern is '*'
-  if (pattern[pattern_pos]=='*')
-  {
-    // try the same match against the next character in the input (current char is eaten by '*')
-    return isMatchingWildcard(input,input_pos+1,pattern,pattern_pos  ,caseSensitive) ||
-    // or try to match against the next character in the pattern ('*' matches an empty string)
-           isMatchingWildcard(input,input_pos  ,pattern,pattern_pos+1,caseSensitive);
-  }
-
-  // found a mismatch
-  return false;
-}
-
-static bool isMatchingWildcard(const std::string &input,const std::string &pattern,
-                               bool caseSensitive=false)
-{
-  if (!caseSensitive) // to properly match input 'FÓÓ' against pattern 'fóó*' we need
-                      // to convert the std::string to a std::wstring so std::tolower works
-                      // on multi-byte characters like Ó and not one individual bytes.
-  {
-    std::wstring_convert< std::codecvt_utf8<wchar_t> > conv;
-    return isMatchingWildcard(conv.from_bytes(input),0,conv.from_bytes(pattern),0,caseSensitive);
-  }
-  else // simple case were we can do byte matching for characters.
-  {
-    return isMatchingWildcard(input,0,pattern,0,caseSensitive);
-  }
-}
-
 static QCString getFilterFromList(const char *name,const StringVector &filterList,bool &found)
 {
   found=FALSE;
@@ -1356,7 +1290,14 @@ static QCString getFilterFromList(const char *name,const StringVector &filterLis
     if (i_equals!=-1)
     {
       QCString filterPattern = fs.left(i_equals);
-      if (isMatchingWildcard(name,filterPattern.str(),Portable::fileSystemIsCaseSensitive()))
+      QCString input = name;
+      if (!Portable::fileSystemIsCaseSensitive())
+      {
+        filterPattern = filterPattern.lower();
+        input = input.lower();
+      }
+      reg::Ex re(filterPattern.str(),reg::Ex::Mode::Wildcard);
+      if (re.isValid() && reg::match(input.str(),re))
       {
         // found a match!
         QCString filterName = fs.mid(i_equals+1);
@@ -1941,10 +1882,10 @@ static QCString extractCanonicalType(const Definition *d,const FileDef *fs,QCStr
                               // (i.e. type is not a template specialization)
                               // then resolve any identifiers inside.
     {
-      static std::regex re("[[:alpha:]_][[:alnum:]_]*");
       std::string ts = templSpec.str();
-      std::sregex_iterator it(ts.begin(),ts.end(),re);
-      std::sregex_iterator end;
+      static const reg::Ex re(R"(\a\w*)");
+      reg::Iterator it(ts,re);
+      reg::Iterator end;
 
       size_t tp=0;
       // for each identifier template specifier
@@ -4317,14 +4258,13 @@ QCString convertCharEntitiesToUTF8(const char *str)
 {
   if (str==0) return QCString();
 
-  static std::regex re("&[[:alpha:]][[:alnum:]]*;");
   std::string s = str;
-  std::sregex_iterator it(s.begin(),s.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(&\a\w*;)");
+  reg::Iterator it(s,re);
+  reg::Iterator end;
 
   GrowBuf growBuf;
   size_t p,i=0,l;
-  //while ((p=entityPat.match(s,i,&l))!=-1)
   for (; it!=end ; ++it)
   {
     const auto &match = *it;
@@ -4482,9 +4422,9 @@ void addMembersToMemberGroup(MemberList *ml,
  */
 int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &templSpec,SrcLangExt lang)
 {
-  static std::regex re_norm("[[:alpha:]_][[:alnum:]_:]*");
-  static std::regex re_fortran("[[:alpha:]_][[:alnum:]_:()=]*");
-  static std::regex &re = re_norm;
+  static reg::Ex re_norm(R"(\a[\w:]*)");
+  static reg::Ex re_fortran(R"(\a[\w:()=]*)");
+  static const reg::Ex *re = &re_norm;
 
   name.resize(0);
   templSpec.resize(0);
@@ -4497,17 +4437,17 @@ int extractClassNameFromType(const char *type,int &pos,QCString &name,QCString &
       if (type[pos]==',') return -1;
       if (QCString(type).left(4).lower()!="type")
       {
-        re = re_fortran;
+        re = &re_fortran;
       }
     }
     std::string s = type;
-    std::sregex_iterator it(s.begin()+pos,s.end(),re);
-    std::sregex_iterator end;
+    reg::Iterator it(s,*re,(int)pos);
+    reg::Iterator end;
 
     if (it!=end)
     {
       const auto &match = *it;
-      int i = pos+(int)match.position();
+      int i = (int)match.position();
       int l = (int)match.length();
       int ts = i+l;
       int te = ts;
@@ -4565,10 +4505,10 @@ QCString normalizeNonTemplateArgumentsInString(
   p++;
   QCString result = name.left(p);
 
-  static std::regex re("[[:alpha:]_:][[:alnum:]_:]*");
   std::string s = result.mid(p).str();
-  std::sregex_iterator it(s.begin(),s.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"([\a:][\w:]*)");
+  reg::Iterator it(s,re);
+  reg::Iterator end;
   size_t pi=0;
   // for each identifier in the template part (e.g. B<T> -> T)
   for (; it!=end ; ++it)
@@ -4629,9 +4569,9 @@ QCString substituteTemplateArgumentsInString(
   if (formalArgs.empty()) return name;
   std::string result;
 
-  static std::regex re("[[:alpha:]_][[:alnum:]_:]*");
-  std::sregex_iterator it(name.begin(),name.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(\a[\w:]*)");
+  reg::Iterator it(name,re);
+  reg::Iterator end;
   size_t p=0;
 
   for (; it!=end ; ++it)
@@ -5449,9 +5389,9 @@ QCString stripPath(const char *s)
 bool containsWord(const char *str,const char *word)
 {
   if (str==0 || word==0) return false;
-  static std::regex re("[[:alpha:]_]+");
+  static const reg::Ex re(R"(\a+)");
   std::string s = str;
-  for (std::sregex_iterator it(s.begin(),s.end(),re) ; it!=std::sregex_iterator() ; ++it)
+  for (reg::Iterator it(s,re) ; it!=reg::Iterator() ; ++it)
   {
     if (it->str()==word) return true;
   }
@@ -5464,36 +5404,36 @@ bool containsWord(const char *str,const char *word)
  */
 bool findAndRemoveWord(QCString &sentence,const char *word)
 {
-  static std::regex re("[^[:alpha:]_]+");
+  static reg::Ex re(R"(\s*(\<\a+\>)\s*)");
   std::string s = sentence.str();
-  std::sregex_token_iterator it(s.begin(),s.end(),re,{-1,0});
-  std::sregex_token_iterator end;
-
-  bool found=false;
+  reg::Iterator it(s,re);
+  reg::Iterator end;
   std::string result;
-  bool keepSpaces=false; // skip leading whitespace
-  for (;it!=end;it++)
+  bool found=false;
+  size_t p=0;
+  for ( ; it!=end ; ++it)
   {
-    std::string part = it->str();
-    bool whiteSpaceOnly = std::all_of(part.begin(),part.end(),
-                                      [](const auto ch) { return std::isspace(ch); });
-    bool matchingWord = part==word;
-    if (!matchingWord && (keepSpaces || !whiteSpaceOnly))
+    const auto match = *it;
+    std::string part = match[1].str();
+    if (part!=word)
     {
-      result+=part;
-      keepSpaces=!whiteSpaceOnly; // skip sequences of spaces
+      size_t i = match.position();
+      size_t l = match.length();
+      result+=s.substr(p,i-p);
+      result+=match.str();
+      p=i+l;
     }
-    else if (matchingWord)
+    else
     {
       found=true;
+      size_t i = match[1].position();
+      size_t l = match[1].length();
+      result+=s.substr(p,i-p);
+      p=i+l;
     }
   }
-
-  // trim trailing whitespace
-  result.erase(std::find_if(result.rbegin(), result.rend(),
-        [](const auto ch) { return !std::isspace(ch); }).base(), result.end());
-
-  sentence = result;
+  result+=s.substr(p);
+  sentence = QCString(result).simplifyWhiteSpace();
   return found;
 }
 
@@ -6064,15 +6004,12 @@ static QCString escapeCommas(const QCString &s)
 
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::string &s,bool allowRecursion)
 {
-  //QCString result;
   std::string result;
-  std::regex re("[\\\\@]([[:alpha:]_][[:alnum:]_]*)");
-  std::sregex_iterator re_it(s.begin(),s.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"([\\@](\a\w*))");
+  reg::Iterator re_it(s,re);
+  reg::Iterator end;
+
   int p = 0;
-  //QCString value=s;
-  //int i,p=0,l;
-  //while ((i=cmdPat.match(value,p,&l))!=-1)
   for ( ; re_it!=end ; ++re_it)
   {
     const auto &match = *re_it;
@@ -6392,9 +6329,9 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 QCString filterTitle(const std::string &title)
 {
   std::string tf;
-  std::regex re("%([A-Z_a-z]+)");
-  std::sregex_iterator it(title.begin(),title.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(%[a-z_A-Z]+)");
+  reg::Iterator it(title,re);
+  reg::Iterator end;
   size_t p = 0;
   for (; it!=end ; ++it)
   {
@@ -6402,7 +6339,7 @@ QCString filterTitle(const std::string &title)
     size_t i = match.position();
     size_t l = match.length();
     if (i>p) tf+=title.substr(p,i-p);
-    tf+=match[1].str(); // skip %
+    tf+=match.str().substr(1); // skip %
     p=i+l;
   }
   tf+=title.substr(p);
@@ -6437,9 +6374,15 @@ bool patternMatch(const QFileInfo &fi,const StringVector &patList)
         size_t i=pattern.find('=');
         if (i!=std::string::npos) pattern=pattern.substr(0,i); // strip of the extension specific filter name
 
-        found = isMatchingWildcard(fn,pattern,caseSenseNames)  ||
-                isMatchingWildcard(fp,pattern,caseSenseNames)  ||
-                isMatchingWildcard(afp,pattern,caseSenseNames);
+        if (!caseSenseNames)
+        {
+          pattern = QCString(pattern).lower().str();
+          fn      = QCString(fn).lower().str();
+          fp      = QCString(fn).lower().str();
+          afp     = QCString(fn).lower().str();
+        }
+        reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
+        found = re.isValid() && (reg::match(fn,re) || reg::match(fp,re) || reg::match(afp,re));
         if (found) break;
         //printf("Matching '%s' against pattern '%s' found=%d\n",
         //    fi->fileName().data(),pattern.data(),found);
@@ -6524,9 +6467,9 @@ QCString replaceColorMarkers(const char *str)
   if (str==0) return QCString();
   std::string result;
   std::string s=str;
-  static std::regex re("##([0-9A-Fa-f][0-9A-Fa-f])");
-  std::sregex_iterator it(s.begin(),s.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(##[0-9A-Fa-f][0-9A-Fa-f])");
+  reg::Iterator it(s,re);
+  reg::Iterator end;
   static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
@@ -6538,7 +6481,7 @@ QCString replaceColorMarkers(const char *str)
     size_t i = match.position();
     size_t l = match.length();
     if (i>p) result+=s.substr(p,i-p);
-    std::string lumStr = match[1].str();
+    std::string lumStr = match.str().substr(2);
 #define HEXTONUM(x) (((x)>='0' && (x)<='9') ? ((x)-'0') :       \
                      ((x)>='a' && (x)<='f') ? ((x)-'a'+10) :    \
                      ((x)>='A' && (x)<='F') ? ((x)-'A'+10) : 0)
@@ -7012,10 +6955,10 @@ bool classVisibleInIndex(const ClassDef *cd)
  */
 QCString extractDirection(QCString &docs)
 {
-  std::regex re("\\[([ inout,]+)\\]");
   std::string s = docs.str();
-  std::sregex_iterator it(s.begin(),s.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(\[([ inout,]+)\])");
+  reg::Iterator it(s,re);
+  reg::Iterator end;
   if (it!=end)
   {
     const auto &match = *it;
@@ -7505,15 +7448,21 @@ StringVector split(const std::string &s,const std::string &delimiter)
 
 /// split input string \a s by regular expression delimiter \a delimiter.
 /// returns a vector of non-empty strings that are between the delimiters
-StringVector split(const std::string &s,const std::regex &delimiter)
+StringVector split(const std::string &s,const reg::Ex &delimiter)
 {
   StringVector result;
-  std::sregex_token_iterator iter(s.begin(), s.end(), delimiter, -1);
-  std::sregex_token_iterator end;
+  reg::Iterator iter(s, delimiter);
+  reg::Iterator end;
+  size_t p=0;
   for ( ; iter != end; ++iter)
   {
-    result.push_back(*iter);
+    const auto &match = *iter;
+    size_t i=match.position();
+    size_t l=match.length();
+    if (i>p) result.push_back(s.substr(p,i-p));
+    p=i+l;
   }
+  if (p<s.length()) result.push_back(s.substr(p));
   return result;
 }
 
@@ -7526,9 +7475,9 @@ int findIndex(const StringVector &sv,const std::string &s)
 
 /// find the index of the first occurrence of pattern \a re in a string \a s
 /// returns -1 if the pattern could not be found
-int findIndex(const std::string &s,const std::regex &re)
+int findIndex(const std::string &s,const reg::Ex &re)
 {
-  std::smatch match;
-  return (std::regex_search(s,match,re)) ? (int)match.position() : -1;
+  reg::Match match;
+  return reg::search(s,match,re) ? (int)match.position() : -1;
 }
 

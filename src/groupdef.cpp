@@ -17,7 +17,6 @@
 
 #include <algorithm>
 #include <vector>
-#include <regex>
 
 #include <ctype.h>
 
@@ -46,6 +45,7 @@
 #include "dirdef.h"
 #include "config.h"
 #include "definitionimpl.h"
+#include "regex.h"
 
 //---------------------------------------------------------------------------
 
@@ -1090,10 +1090,10 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   if (Doxygen::searchIndex)
   {
     Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    static std::regex we("[[:alpha:]_][[:alnum:]_\\-]*");
     std::string title = m_title.str();
-    std::sregex_iterator it(title.begin(),title.end(),we);
-    std::sregex_iterator end;
+    static const reg::Ex re(R"(\a[\w-]*)");
+    reg::Iterator it(title,re);
+    reg::Iterator end;
     for (; it!=end ; ++it)
     {
       const auto &match = *it;

@@ -16,7 +16,6 @@
  */
 
 #include <algorithm>
-#include <regex>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +33,7 @@
 #include "filedef.h"
 #include "util.h"
 #include "linkedmap.h"
+#include "regex.h"
 
 //----------------------------------------------------------------------------
 
@@ -154,10 +154,10 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
                        const char *url,const char *anchor,bool hasLink,
                        bool reversed)
 {
-  static std::regex re("@[[:digit:]]+");
+  static const reg::Ex re(R"(@\d+)");
   std::string key = level1;
   if (level2) key+= std::string("?") + level2;
-  if (std::regex_search(key,re)) // skip anonymous stuff
+  if (reg::search(key,re)) // skip anonymous stuff
   {
     return;
   }

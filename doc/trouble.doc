@@ -34,7 +34,7 @@
     or unions with the same name in your code. It should not crash however,
     rather it should ignore all of the classes with the same name except one.
 <li>Some commands do not work inside the arguments of other commands.
-    Inside a HTML link (i.e. \<a&nbsp;href="..."\>...\<a\>) for instance 
+    Inside a HTML link (i.e. \<a&nbsp;href="..."\>...\</a\>) for instance 
     other commands (including other HTML commands) do not work!
     The sectioning commands are an important exception. 
 <li>Redundant braces can confuse doxygen in some cases. 

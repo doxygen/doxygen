@@ -32,8 +32,8 @@
 
 #include <thread>
 #include <algorithm>
-#include <regex>
 
+#include "regex.h"
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
@@ -1135,27 +1135,32 @@ void ConfigImpl::emptyValueToDefault()
 static void substEnvVarsInString(QCString &str)
 {
   if (str.isEmpty()) return;
-  // match e.g. $(HOME) but also $(PROGRAMFILES(X86))
-  static std::regex re("\\$\\(([[:alpha:]_][[:alnum:].-]*(\\([[:alpha:]_][[:alnum:].-]*\\))?)\\)");
-  std::string s = str.str();
-  std::sregex_iterator it(s.begin(),s.end(),re);
-  std::sregex_iterator end;
-  std::string result;
-  size_t p = 0;
-  for (; it!=end ; ++it)
+  auto replace = [](const std::string &s, const reg::Ex &re) -> std::string
   {
-    const auto &match = *it;
-    size_t i = match.position();
-    size_t l = match.length();
-    result+=s.substr(p,i-p);
-    std::string matchContents = match[1].str();
-    QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
-    substEnvVarsInString(env); // recursively expand variables if needed.
-    result+=env.str();
-    p=i+l;
-  }
-  result+=s.substr(p);
-  str = QCString(result).stripWhiteSpace();
+    reg::Iterator it(s,re);
+    reg::Iterator end;
+    std::string result;
+    size_t p = 0;
+    for (; it!=end ; ++it)
+    {
+      const auto &match = *it;
+      size_t i = match.position();
+      size_t l = match.length();
+      result+=s.substr(p,i-p);
+      std::string matchContents = match[1].str();
+      QCString env=Portable::getenv(matchContents.c_str()); // get content of $(..) match
+      substEnvVarsInString(env); // recursively expand variables if needed.
+      result+=env.str();
+      p=i+l;
+    }
+    result+=s.substr(p);
+    return result;
+  };
+
+  // match e.g. re1=$(HOME) but also re2=$(PROGRAMFILES(X86))
+  static const reg::Ex re1(R"(\$\((\a[\w.-]*)\))");
+  static const reg::Ex re2(R"(\$\((\a[\w.-]*\(\a[\w.-]*\))\))");
+  str = QCString(replace(replace(str.str(),re1),re2)).stripWhiteSpace();
 }
 
 static void substEnvVarsInStrList(StringVector &sl)
@@ -1648,11 +1653,10 @@ void Config::checkAndCorrect()
   const StringVector &aliasList = Config_getList(ALIASES);
   for (const auto &alias : aliasList)
   {
-    // match aliases of the form 'name=' and 'name{2} ='
-    static std::regex re("[[:alpha:]_][[:alnum:]_]*(\\{[[:digit:]]+\\})?[[:space:]]*=");
-    std::sregex_iterator it(alias.begin(),alias.end(),re);
-    std::sregex_iterator end;
-    if (it==end)
+    // match aliases of the form re1='name=' and re2='name{2} ='
+    static const reg::Ex re1(R"(\a\w*\s*=)");
+    static const reg::Ex re2(R"(\a\w*{\d+}\s*=)");
+    if (!reg::search(alias,re1) && !reg::search(alias,re2))
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
           alias.c_str());

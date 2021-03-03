@@ -31,7 +31,6 @@
 #include <unordered_map>
 #include <memory>
 #include <cinttypes>
-#include <regex>
 
 #include "version.h"
 #include "doxygen.h"
@@ -106,6 +105,7 @@
 #include "threadpool.h"
 #include "clangparser.h"
 #include "symbolresolver.h"
+#include "regex.h"
 
 #if USE_SQLITE3
 #include <sqlite3.h>
@@ -2220,10 +2220,10 @@ static MemberDef *addVariableToFile(
     {
       ttype.stripPrefix("struct ");
       ttype.stripPrefix("union ");
-      static std::regex re("[[:alpha:]_][[:alnum:]_]*");
-      std::smatch match;
+      static const reg::Ex re(R"(\a\w*)");
+      reg::Match match;
       std::string typ = ttype.str();
-      if (std::regex_search(typ,match,re))
+      if (reg::search(typ,match,re))
       {
         QCString typeValue = match.str();
         ClassDefMutable *cd = getClassMutable(typeValue);
@@ -2439,11 +2439,11 @@ static int findFunctionPtr(const std::string &type,SrcLangExt lang, int *pLength
     return -1; // Fortran and VHDL do not have function pointers
   }
 
-  static std::regex re("\\([^)]*[*\\^][^)]*\\)");
-  std::smatch match;
+  static const reg::Ex re(R"(\([^)]*[*^][^)]*\))");
+  reg::Match match;
   size_t i=std::string::npos;
   size_t l=0;
-  if (std::regex_search(type,match,re)) // contains (...*...)
+  if (reg::search(type,match,re)) // contains (...*...)
   {
     i = match.position();
     l = match.length();
@@ -2532,12 +2532,12 @@ static bool isVarWithConstructor(const Entry *root)
     }
     for (const Argument &a : root->argList)
     {
-      static std::regex initChars("[0-9\"'&*!^]+");
-      std::smatch match;
+      static const reg::Ex initChars(R"([\d"'&*!^]+)");
+      reg::Match match;
       if (!a.name.isEmpty() || !a.defval.isEmpty())
       {
         std::string name = a.name.str();
-        if (std::regex_search(name,match,initChars) && match.position()==0)
+        if (reg::search(name,match,initChars) && match.position()==0)
         {
           result=TRUE;
         }
@@ -2567,15 +2567,15 @@ static bool isVarWithConstructor(const Entry *root)
          goto done;
       }
       std::string atype = a.type.str();
-      if (std::regex_search(atype,match,initChars) && match.position()==0)
+      if (reg::search(atype,match,initChars) && match.position()==0)
       {
         result=TRUE; // argument type starts with typical initializer char
         goto done;
       }
       std::string resType=resolveTypeDef(ctx,a.type).str();
       if (resType.empty()) resType=atype;
-      static std::regex idChars("[[:alpha:]_][[:alnum:]_]*");
-      if (std::regex_search(resType,match,idChars) && match.position()==0) // resType starts with identifier
+      static const reg::Ex idChars(R"(\a\w*)");
+      if (reg::search(resType,match,idChars) && match.position()==0) // resType starts with identifier
       {
         resType=match.str();
         //printf("resType=%s\n",resType.data());
@@ -2625,9 +2625,9 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
 
       type=name;
       std::string sargs = args.str();
-      static const std::regex reName("[[:alpha:]_][[:alnum:]_]*");
-      std::smatch match;
-      if (std::regex_search(sargs,match,reName))
+      static const reg::Ex reName(R"(\a\w*)");
+      reg::Match match;
+      if (reg::search(sargs,match,reName))
       {
         name  = match.str();           // e.g. 'var'  in '(var[10])'
         sargs = match.suffix().str();  // e.g. '[10]) in '(var[10])'
@@ -3816,9 +3816,9 @@ static TemplateNameMap getTemplateArgumentsInName(const ArgumentList &templateAr
   int count=0;
   for (const Argument &arg : templateArguments)
   {
-    static std::regex re("[[:alpha:]_][[:alnum:]_:]*");
-    std::sregex_iterator it(name.begin(),name.end(),re);
-    std::sregex_iterator end;
+    static const reg::Ex re(R"(\a[\w:]*)");
+    reg::Iterator it(name,re);
+    reg::Iterator end;
     for (; it!=end ; ++it)
     {
       const auto &match = *it;
@@ -5325,9 +5325,9 @@ static QCString substituteTemplatesInString(
     )
 {
   std::string dst;
-  static const std::regex re("[[:alpha:]_][[:alnum:]_]*");
-  std::sregex_iterator it(src.begin(),src.end(),re);
-  std::sregex_iterator end;
+  static const reg::Ex re(R"(\a\w*)");
+  reg::Iterator it(src,re);
+  reg::Iterator end;
   //printf("type=%s\n",sa->type.data());
   size_t p=0;
   for (; it!=end ; ++it) // for each word in srcType
@@ -8586,6 +8586,7 @@ static void findMainPage(Entry *root)
       //printf("mainpage: docLine=%d startLine=%d\n",root->docLine,root->startLine);
       //printf("Found main page! \n======\n%s\n=======\n",root->doc.data());
       QCString title=root->args.stripWhiteSpace();
+      if (title.isEmpty()) title = Config_getString(PROJECT_NAME);
       //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
       QCString indexName="index";
       Doxygen::mainPage.reset(createPageDef(root->docFile,root->docLine,
@@ -10066,7 +10067,6 @@ void initDoxygen()
   std::setlocale(LC_ALL,"");
   std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   std::setlocale(LC_NUMERIC,"C");
-  std::locale::global(std::locale("en_US.UTF-8"));
 
   Portable::correct_path();
 
@@ -10454,7 +10454,7 @@ void readConfiguration(int argc, char **argv)
           cleanUpDoxygen();
           exit(0);
         }
-        else if ((qstrcmp(&argv[optind][2],"Version")==0) || 
+        else if ((qstrcmp(&argv[optind][2],"Version")==0) ||
                  (qstrcmp(&argv[optind][2],"VERSION")==0))
         {
           version(true);

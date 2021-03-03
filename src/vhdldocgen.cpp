@@ -26,7 +26,6 @@
 #include <string.h>
 #include <map>
 #include <algorithm>
-#include <regex>
 
 #include <qcstring.h>
 #include <qfileinfo.h>
@@ -62,7 +61,7 @@
 #include "plantuml.h"
 #include "vhdljjparser.h"
 #include "VhdlParser.h"
-//#include "vhdlcode.h"
+#include "regex.h"
 #include "plantuml.h"
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
@@ -1034,7 +1033,7 @@ void VhdlDocGen::parseFuncProto(const char* text,QCString& name,QCString& ret,bo
 
 QCString VhdlDocGen::getIndexWord(const char* c,int index)
 {
-  static std::regex reg("[[:space:]:|]");
+  static const reg::Ex reg(R"([\s|])");
   auto ql=split(c,reg);
 
   if ((size_t)index < ql.size())
@@ -1122,7 +1121,7 @@ QCString VhdlDocGen::getProcessNumber()
 
 void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberDef* mdef)
 {
-  static std::regex reg("[\\[\\]\\.\\/\\<\\>\\:\\s\\,\\;\\'\\+\\-\\*\\|\\&\\=\\(\\)\"]");
+  static const reg::Ex reg(R"([\[\]./<>:\s,;'+*|&=()\"-])");
   QCString qcs = s;
   qcs+=QCString(" ");// parsing the last sign
   QCString find=qcs;
@@ -1191,8 +1190,8 @@ void VhdlDocGen::writeFormatString(const QCString& s,OutputList&ol,const MemberD
  */
 bool VhdlDocGen::isNumber(const std::string& s)
 {
-  static std::regex regg("[0-9][0-9eEfFbBcCdDaA_.#-+?xXzZ]*");
-  return std::regex_match(s,regg);
+  static const reg::Ex regg(R"([0-9][0-9eEfFbBcCdDaA_.#+?xXzZ-]*)");
+  return reg::match(s,regg);
 }// isNumber
 
 
@@ -2298,7 +2297,7 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,QCString fileName,b
         }
         else
         {
-          static std::regex ee("[[:space:]=]");
+          static const reg::Ex ee(R"([\s=])");
           int in=findIndex(temp.str(),ee);
           QCString ff=temp.left(in);
           temp.stripPrefix(ff.data());
@@ -2324,7 +2323,7 @@ static void initUCF(Entry* root,const char*  type,QCString &  qcs,int line,QCStr
   VhdlDocGen::deleteAllChars(qcs,';');
   qcs=qcs.stripWhiteSpace();
 
-  static std::regex reg("[[:space:]=]");
+  static const reg::Ex reg(R"([\s=])");
   int i = findIndex(qcs.str(),reg);
   if (i<0) return;
   if (i==0)
@@ -2406,7 +2405,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
   QCString label;
   if (!entity.contains(":")) return "";
 
-  static std::regex exp("[:()[[:space:]]");
+  static const reg::Ex exp(R"([:()\s])");
   auto ql=split(entity.str(),exp);
   if (ql.size()<2)
   {
@@ -2436,7 +2435,7 @@ QCString VhdlDocGen::parseForConfig(QCString & entity,QCString & arch)
 
 QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
 {
-  static std::regex exp("[()[[:space:]]");
+  static const reg::Ex exp(R"([()\s])");
 
   auto ql = split(entity.str(),exp);
 
@@ -2704,14 +2703,14 @@ void VhdlDocGen::addBaseClass(ClassDef* cd,ClassDef *ent)
         bcd.usedName.append("(2)");
         return;
       }
-      static std::regex reg("[[:digit:]]+");
+      static const reg::Ex reg(R"(\d+)");
       QCString s=n.left(i);
       QCString r=n.right(n.length()-i);
       std::string t=r.str();
       VhdlDocGen::deleteAllChars(r,')');
       VhdlDocGen::deleteAllChars(r,'(');
       r.setNum(r.toInt()+1);
-      std::regex_replace(t, reg, r.str());
+      reg::replace(t, reg, r.str());
       s.append(t.c_str());
       bcd.usedName=s;
       bcd.templSpecifiers=t;
@@ -2952,8 +2951,8 @@ void FlowChart::printNode(const FlowChart& flo)
     {
       t=flo.text.str();
     }
-    static std::regex ep("[[:space:]]");
-    t = std::regex_replace(t,ep,std::string(""));
+    static const reg::Ex ep(R"(\s)");
+    t = reg::replace(t,ep,std::string());
     if (t.empty())
     {
       t=" ";

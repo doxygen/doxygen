@@ -26,7 +26,6 @@
 
 #include <ctype.h>
 #include <stack>
-#include <regex>
 #include <string>
 
 #include <qfile.h>
@@ -42,6 +41,7 @@
 #include "doxygen.h"
 #include "portable.h"
 #include "cite.h"
+#include "regex.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -515,10 +515,10 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            lineCount(yytext,yyleng);
                            std::string text=yytext;
-                           static std::regex re("[*+][^*+]*$"); // find last + or *
-                           std::smatch match;
-                           std::regex_search(text,match,re);
-                           int listPos = static_cast<int>(match.position());
+                           static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
+                           reg::Match match;
+                           reg::search(text,match,re);
+                           size_t listPos = match.position();
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(yytext,listPos);
@@ -533,9 +533,9 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            std::string text=yytext;
-                           static std::regex re("[1-9]+");
-                           std::smatch match;
-                           std::regex_search(text,match,re);
+                           static const reg::Ex re(R"(\d+)");
+                           reg::Match match;
+                           reg::search(text,match,re);
                            g_token->isEnumList = true;
                            g_token->id         = std::stoul(match.str());
                            g_token->indent     = computeIndent(yytext,match.position());
@@ -560,10 +560,10 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            lineCount(yytext,yyleng);
                            std::string text=extractPartAfterNewLine(yytext).str();
-                           static std::regex re("[*+][^*+]*$"); // find last + or *
-                           std::smatch match;
-                           std::regex_search(text,match,re);
-                           int markPos = static_cast<int>(match.position());
+                           static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
+                           reg::Match match;
+                           reg::search(text,match,re);
+                           size_t markPos = match.position();
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(text.c_str(),markPos);
@@ -579,9 +579,9 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          {
                            lineCount(yytext,yyleng);
                            std::string text=extractPartAfterNewLine(yytext).str();
-                           static std::regex re("[1-9]+");
-                           std::smatch match;
-                           std::regex_search(text,match,re);
+                           static const reg::Ex re(R"(\d+)");
+                           reg::Match match;
+                           reg::search(text,match,re);
                            g_token->isEnumList = true;
                            g_token->id         = std::stoul(match.str());
                            g_token->indent     = computeIndent(text.c_str(),match.position());

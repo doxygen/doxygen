@@ -26,7 +26,6 @@
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
-#include <regex>
 
 #include <ctype.h>
 #include "types.h"
@@ -36,6 +35,7 @@
 #include "containers.h"
 #include "namespacedef.h"
 #include "outputgen.h"
+#include "regex.h"
 
 //--------------------------------------------------------------------
 
@@ -460,9 +460,9 @@ void writeExtraLatexPackages(FTextStream &t);
 void writeLatexSpecialFormulaChars(FTextStream &t);
 
 StringVector split(const std::string &s,const std::string &delimiter);
-StringVector split(const std::string &s,const std::regex &delimiter);
+StringVector split(const std::string &s,const reg::Ex &delimiter);
 int findIndex(const StringVector &sv,const std::string &s);
-int findIndex(const std::string &s,const std::regex &re);
+int findIndex(const std::string &s,const reg::Ex &re);
 
 bool recognizeFixedForm(const char* contents, FortranFormat format);
 FortranFormat convertFileNameFortranParserCode(QCString fn);

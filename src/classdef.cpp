@@ -17,7 +17,6 @@
 
 #include <cstdio>
 #include <algorithm>
-#include <regex>
 
 #include <qfile.h>
 #include <qfileinfo.h>
