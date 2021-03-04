@@ -335,14 +335,10 @@ function SearchBox(name, resultsPath, inFrame, label, extension)
     var searchValue = this.DOMSearchField().value.replace(/^ +/, "");
 
     var code = searchValue.toLowerCase().charCodeAt(0);
-    var idxChar = searchValue.substr(0, 1);
+    var idxChar = searchValue.substr(0, 1).toLowerCase();
     if ( 0xD800 <= code && code <= 0xDBFF && searchValue > 1) // surrogate pair
     {
       idxChar = searchValue.substr(0, 2);
-    }
-    else if (code <128)
-    {
-      idxChar = idxChar.toLowerCase();
     }
 
     var resultsPage;

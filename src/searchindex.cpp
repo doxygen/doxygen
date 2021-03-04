@@ -36,6 +36,7 @@
 #include "resourcemgr.h"
 #include "namespacedef.h"
 #include "classdef.h"
+#include "caseconvert.h"
 
 //---------------------------------------------------------------------------------------------
 // the following part is for the server based search engine
@@ -553,25 +554,86 @@ QCString searchName(const Definition *d)
 QCString searchId(const Definition *d)
 {
   QCString s = searchName(d);
-  int c;
-  uint i;
   QCString result;
-  for (i=0;i<s.length();i++)
+  const char *input = s.data();
+
+  for (uint i=0;i<s.length();)
   {
-    c=s.at(i);
-    if (c>0x7f || c<0) // part of multibyte character
+    char ids[MAX_UTF8_CHAR_SIZE];
+    const unsigned char uc = (unsigned char)input[i];
+    bool validUTF8Char = false;
+    int c=s.at(i);
+    if ((c>0x7f || c<0) || isalnum(c))
     {
-      result+=(char)c;
+      int l = 0;
+      if (uc <= 0xf7)
+      {
+        const char* pt = input+i+1;
+        if ((uc&0x80)==0x00)
+        {
+          ids[0] = input[i];
+          l=1; // 0xxx.xxxx => normal single byte ascii character
+        }
+        else
+        {
+          ids[ 0 ] = input[i];
+          if ((uc&0xE0)==0xC0)
+          {
+            l=2; // 110x.xxxx: >=2 byte character
+          }
+          if ((uc&0xF0)==0xE0)
+          {
+            l=3; // 1110.xxxx: >=3 byte character
+          }
+          if ((uc&0xF8)==0xF0)
+          {
+            l=4; // 1111.0xxx: >=4 byte character
+          }
+        }
+        validUTF8Char = l>0;
+        if (!validUTF8Char) l = 1;
+        for (int m=1; m<l && validUTF8Char; ++m)
+        {
+          unsigned char ct = (unsigned char)*pt;
+          if (ct==0 || (ct&0xC0)!=0x80) // invalid unicode character
+          {
+            validUTF8Char=false;
+          }
+          else
+          {
+            ids[ m ] = *pt++;
+          }
+        }
+        if (validUTF8Char) // got a valid unicode character
+        {
+          ids[ l ] = 0;
+          if (StrToLwrExt((unsigned char *)ids, &caseBuffer)) result += (char *)caseBuffer.outBuf;
+        }
+        else
+        {
+          for (int m=0; m<l; ++m)
+          {
+            char val[4];
+            sprintf(val,"_%02x",(uchar)ids[m]);
+            result+=val;
+          }
+        }
+      }
+      else
+      {
+          char val[4];
+          sprintf(val,"_%02x",(uchar)c);
+          result+=val;
+          l=1;
+      }
+      i+=l;
     }
-    else if (isalnum(c)) // simply alpha numerical character
-    {
-      result+=(char)tolower(c);
-    }
-    else // other 'unprintable' characters
+    else
     {
       char val[4];
       sprintf(val,"_%02x",(uchar)c);
       result+=val;
+      i++;
     }
   }
   return result;

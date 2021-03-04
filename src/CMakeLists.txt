@@ -220,6 +220,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/resources.cpp
     #
     arguments.cpp
+    caseconvert.cpp
     cite.cpp
     clangparser.cpp
     classdef.cpp

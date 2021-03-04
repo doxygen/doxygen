@@ -71,6 +71,7 @@
 #include "dirdef.h"
 #include "htmlentity.h"
 #include "symbolresolver.h"
+#include "caseconvert.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -3501,12 +3502,7 @@ int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modi
     int l = 0;
     if ((uc&0x80)==0x00)
     {
-      switch (modifier)
-      {
-        case CaseModifier::None:    ids[0]=*input;                break;
-        case CaseModifier::ToUpper: ids[0]=(char)toupper(*input); break;
-        case CaseModifier::ToLower: ids[0]=(char)tolower(*input); break;
-      }
+      ids[0]=*input;
       l=1; // 0xxx.xxxx => normal single byte ascii character
     }
     else
@@ -3542,6 +3538,19 @@ int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modi
     {
       ids[ l ] = 0;
       inputLen=l;
+      switch (modifier)
+      {
+        case CaseModifier::None:
+          break;
+        case CaseModifier::ToUpper:
+          inputLen = StrToUprExt((unsigned char *)ids, &caseBuffer);
+          memcpy(ids,caseBuffer.outBuf,inputLen);
+          break;
+        case CaseModifier::ToLower:
+          inputLen = StrToLwrExt((unsigned char *)ids, &caseBuffer);
+          memcpy(ids,caseBuffer.outBuf,inputLen);
+          break;
+      }
     }
   }
   return inputLen;
