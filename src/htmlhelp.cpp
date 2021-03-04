@@ -161,7 +161,15 @@ void HtmlHelpIndex::addItem(const char *level1,const char *level2,
   {
     return;
   }
-  std::string key_anchor = key+anchor;
+  std::string key_anchor;
+  if (anchor)
+  {
+    key_anchor = key+anchor;
+  }
+  else
+  {
+    key_anchor = key;
+  }
   m_map.add(key_anchor.c_str(),key.c_str(),url,anchor,hasLink,reversed);
 }
 
