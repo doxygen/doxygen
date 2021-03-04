@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include <qiodevice.h>
-#include <qstring.h>
 #include <qgstring.h>
 
 /** @brief Simplified and optimized version of QTextStream */

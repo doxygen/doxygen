@@ -2549,7 +2549,7 @@ void HtmlGenerator::endContents()
 
 void HtmlGenerator::startPageDoc(const char *pageTitle)
 {
-  t << "<div" << getDirHtmlClassOfPage(pageTitle) << ">";
+  t << "<div>";
 }
 
 void HtmlGenerator::endPageDoc()

@@ -21,7 +21,6 @@
 
 #include <vector>
 #include <map>
-#include <qglobal.h>
 #include <qcstring.h>
 
 class FileList;

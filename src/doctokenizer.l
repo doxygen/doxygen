@@ -29,7 +29,6 @@
 #include <string>
 
 #include <qfile.h>
-#include <qstring.h>
 
 #include "doctokenizer.h"
 #include "cmdmapper.h"

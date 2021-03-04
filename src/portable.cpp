@@ -17,8 +17,6 @@ extern char **environ;
 #endif
 
 #include <ctype.h>
-#include <qglobal.h>
-#include <qglobal.h>
 #include <qdir.h>
 #include <map>
 #include <string>

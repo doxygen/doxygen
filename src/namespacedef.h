@@ -18,7 +18,6 @@
 
 #include <set>
 
-#include <qstrlist.h>
 #include "definition.h"
 #include "filedef.h"
 #include "linkedmap.h"

@@ -961,9 +961,8 @@ void HtmlDocVisitor::visitPre(DocAutoList *l)
   }
   else
   {
-    m_t << "<ul";
+    m_t << "<ul>";
   }
-  m_t << getDirHtmlClassOfNode(getTextDirByConfig(l)) << ">";
   if (!l->isPreformatted()) m_t << "\n";
 }
 
@@ -1229,7 +1228,6 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   // if the first element of a paragraph is something that should be outside of
   // the paragraph (<ul>,<dl>,<table>,..) then that will already started the
   // paragraph and we don't need to do it here
-  bool paragraphAlreadyStarted = false;
   size_t nodeIndex = 0;
   if (p && nodeIndex<p->children().size())
   {
@@ -1242,7 +1240,6 @@ void HtmlDocVisitor::visitPre(DocPara *p)
       const DocNode *n = p->children().at(nodeIndex).get();
       if (mustBeOutsideParagraph(n))
       {
-        paragraphAlreadyStarted = true;
         needsTag = FALSE;
       }
     }
@@ -1261,9 +1258,7 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //printf("  needsTag=%d\n",needsTag);
   // write the paragraph tag (if needed)
   if (needsTag)
-    m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(p), contexts[t]) << htmlAttribsToString(p->attribs()) << ">";
-  else if(!paragraphAlreadyStarted)
-    m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(p)) << htmlAttribsToString(p->attribs());
+    m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)
@@ -1343,10 +1338,7 @@ void HtmlDocVisitor::visitPre(DocSimpleSect *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  if (s->type() != DocSimpleSect::Return)
-    m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(s), "section " + s->typeString()) << "><dt>";
-  else
-    m_t << "<dl class=\"section " << s->typeString() << "\"><dt>";
+  m_t << "<dl class=\"section " << s->typeString() << "\"><dt>";
   switch(s->type())
   {
     case DocSimpleSect::See:
@@ -1442,7 +1434,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<h" << s->level() << getDirHtmlClassOfNode(getTextDirByConfig(s->title())) << ">";
+  m_t << "<h" << s->level() << ">";
   m_t << "<a class=\"anchor\" id=\"" << s->anchor();
   m_t << "\"></a>" << endl;
   filter(convertCharEntitiesToUTF8(s->title().data()));
@@ -1466,7 +1458,7 @@ void HtmlDocVisitor::visitPre(DocHtmlList *s)
   {
     m_t << "<ul" << htmlAttribsToString(s->attribs());
   }
-  m_t << getDirHtmlClassOfNode(getTextDirByConfig(s)) << ">\n";
+  m_t << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlList *s)
@@ -1514,9 +1506,7 @@ void HtmlDocVisitor::visitPost(DocHtmlDescList *dl)
 void HtmlDocVisitor::visitPre(DocHtmlDescTitle *dt)
 {
   if (m_hide) return;
-  m_t << "<dt" << htmlAttribsToString(dt->attribs())
-    << getDirHtmlClassOfNode(getTextDirByConfig(dt))
-    << ">";
+  m_t << "<dt" << htmlAttribsToString(dt->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescTitle *)
@@ -1528,9 +1518,7 @@ void HtmlDocVisitor::visitPost(DocHtmlDescTitle *)
 void HtmlDocVisitor::visitPre(DocHtmlDescData *dd)
 {
   if (m_hide) return;
-  m_t << "<dd" << htmlAttribsToString(dd->attribs())
-    << getDirHtmlClassOfNode(getTextDirByConfig(dd))
-    << ">";
+  m_t << "<dd" << htmlAttribsToString(dd->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlDescData *)
@@ -1557,21 +1545,11 @@ void HtmlDocVisitor::visitPre(DocHtmlTable *t)
   QCString attrs = htmlAttribsToString(t->attribs());
   if (attrs.isEmpty())
   {
-    m_t << "<table";
-    if(t->hasCaption())
-      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t->caption()), "doxtable");
-    else
-      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t), "doxtable");
-    m_t << ">\n";
+    m_t << "<table class=\"doxtable\">\n";
   }
   else
   {
-    m_t << "<table";
-    if (t->hasCaption())
-      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t->caption()));
-    else
-      m_t << getDirHtmlClassOfNode(getTextDirByConfig(t));
-    m_t << htmlAttribsToString(t->attribs()) << ">\n";
+    m_t << "<table" << htmlAttribsToString(t->attribs()) << ">\n";
   }
 }
 
@@ -1663,10 +1641,7 @@ void HtmlDocVisitor::visitPre(DocHtmlHeader *header)
 {
   if (m_hide) return;
   forceEndParagraph(header);
-  m_t << "<h" << header->level()
-      << htmlAttribsToString(header->attribs())
-      << getDirHtmlClassOfNode(getTextDirByConfig(header))
-      << ">";
+  m_t << "<h" << header->level() << htmlAttribsToString(header->attribs()) << ">";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlHeader *header)
@@ -1761,7 +1736,6 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       else
       {
         m_t << "<div class=\"caption\">" << endl;
-        m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(img));
       }
     }
     else if (inlineImage)
@@ -2054,8 +2028,7 @@ void HtmlDocVisitor::visitPre(DocXRefItem *x)
   bool anonymousEnum = x->file()=="@";
   if (!anonymousEnum)
   {
-    m_t << "<dl" << getDirHtmlClassOfNode(getTextDirByConfig(x), x->key())
-        << "><dt><b><a class=\"el\" href=\""
+    m_t << "<dl class=\"" << x->key() << "\"><dt><b><a class=\"el\" href=\""
         << x->relPath() << addHtmlExtensionIfMissing(x->file())
         << "#" << x->anchor() << "\">";
   }
@@ -2103,16 +2076,7 @@ void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
   if (m_hide) return;
   forceEndParagraph(b);
   QCString attrs = htmlAttribsToString(b->attribs());
-  if (attrs.isEmpty())
-  {
-    m_t << "<blockquote" << getDirHtmlClassOfNode(getTextDirByConfig(b), "doxtable")
-      << ">\n";
-  }
-  else
-  {
-    m_t << "<blockquote" << getDirHtmlClassOfNode(getTextDirByConfig(b))
-      << htmlAttribsToString(b->attribs()) << ">\n";
-  }
+  m_t << "<blockquote class=\"doxtable\"" << htmlAttribsToString(b->attribs()) << ">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocHtmlBlockQuote *b)
@@ -2476,10 +2440,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     if (isFirst && isLast) needsTag = FALSE;
     //printf("forceStart first=%d last=%d needsTag=%d\n",isFirst,isLast,needsTag);
 
-    if (needsTag)
-      m_t << "<p" << getDirHtmlClassOfNode(getTextDirByConfig(para, nodeIndex)) << ">";
-    else
-      m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(para, nodeIndex));
+    if (needsTag) m_t << "<p>";
   }
 }
 

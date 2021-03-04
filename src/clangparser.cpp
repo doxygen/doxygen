@@ -7,7 +7,6 @@
 #include <clang-c/Index.h>
 #include "clang/Tooling/CompilationDatabase.h"
 #include "clang/Tooling/Tooling.h"
-#include <qfileinfo.h>
 #include <stdlib.h>
 #include "message.h"
 #include "outputgen.h"
@@ -381,10 +380,10 @@ void ClangTUParser::switchToFile(const FileDef *fd)
   }
 }
 
-QCString ClangTUParser::lookup(uint line,const char *symbol)
+std::string ClangTUParser::lookup(uint line,const char *symbol)
 {
   //printf("ClangParser::lookup(%d,%s)\n",line,symbol);
-  QCString result;
+  std::string result;
   if (symbol==0) return result;
   static bool clangAssistedParsing = Config_getBool(CLANG_ASSISTED_PARSING);
   if (!clangAssistedParsing) return result;
@@ -911,9 +910,9 @@ void ClangTUParser::parse()
 {
 }
 
-QCString ClangTUParser::lookup(uint,const char *)
+std::string ClangTUParser::lookup(uint,const char *)
 {
-  return "";
+  return std::string();
 }
 
 class ClangParser::Private

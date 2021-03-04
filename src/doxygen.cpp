@@ -13,23 +13,22 @@
  *
  */
 
-#include <chrono>
-#include <clocale>
-#include <locale>
-
 #include <qfileinfo.h>
 #include <qfile.h>
 #include <qdir.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <qtextcodec.h>
 #include <errno.h>
 
 #include <algorithm>
 #include <unordered_map>
 #include <memory>
 #include <cinttypes>
+#include <chrono>
+#include <clocale>
+#include <locale>
 
 #include "version.h"
 #include "doxygen.h"
@@ -11951,7 +11950,6 @@ void generateOutput()
   thisDir.remove(Doxygen::filterDBFileName);
   finishWarnExit();
   Config::deinit();
-  QTextCodec::deleteAllCodecs();
   delete Doxygen::clangUsrMap;
   g_successfulRun=TRUE;
 }

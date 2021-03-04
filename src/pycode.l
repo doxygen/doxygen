@@ -69,7 +69,7 @@ struct pycodeYY_state
 {
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
   QCString      curClassName;
-  QStrList      curClassBases;
+  StringVector  curClassBases;
 
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
@@ -380,7 +380,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       // probably be more strict
                                       // about what to accept.
 
-                                      yyextra->curClassBases.inSort(yytext);
+                                      yyextra->curClassBases.push_back(yytext);
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                       // codify(yyscanner,yytext);
                                     }
@@ -397,8 +397,7 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
 
                                       std::unique_ptr<ClassDef> classDefToAdd { createClassDef("<code>",1,1,yyextra->curClassName,ClassDef::Class,0,0,FALSE) };
                                       ScopedTypeVariant var(yyextra->curClassName);
-                                      char *s=yyextra->curClassBases.first();
-                                      while (s)
+                                      for (const auto &s : yyextra->curClassBases)
                                       {
                                         const ClassDef *baseDefToAdd = 0;
                                         // find class in the local scope
@@ -410,15 +409,13 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                         // Try to find class in global scope
                                         if (baseDefToAdd==0)
                                         {
-                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s);
+                                          baseDefToAdd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str());
                                         }
 
                                         if (baseDefToAdd && baseDefToAdd->name()!=yyextra->curClassName)
                                         {
                                           var.localDef()->insertBaseClass(baseDefToAdd->name());
                                         }
-
-                                        s=yyextra->curClassBases.next();
                                       }
                                       yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(var)));
 

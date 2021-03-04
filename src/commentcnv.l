@@ -29,8 +29,6 @@
 #include <stdlib.h>
 #include <stack>
 
-#include <qglobal.h>
-
 #include "bufstr.h"
 #include "debug.h"
 #include "message.h"

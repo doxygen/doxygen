@@ -16,7 +16,6 @@
 #include <map>
 #include <qfile.h>
 #include <qcstring.h>
-#include <qglobal.h>
 #include <string.h>
 
 #include "resourcemgr.h"

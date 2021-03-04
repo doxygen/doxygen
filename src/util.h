@@ -255,7 +255,7 @@ QCString convertToXML(const char *s, bool keepEntities=FALSE);
 
 QCString convertToDocBook(const char *s);
 
-QCString convertToJSString(const char *s, bool applyTextDir = true);
+QCString convertToJSString(const char *s);
 
 QCString convertToPSString(const char *s);
 

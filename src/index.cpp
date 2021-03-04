@@ -4801,7 +4801,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
         firstMember=FALSE;
       }
       t << endl << "{text:\"" << convertToJSString(getInfo(i)->title) << "\",url:\""
-        << convertToJSString(getInfo(i)->fname+Doxygen::htmlFileExtension, false) << "\"";
+        << convertToJSString(getInfo(i)->fname+Doxygen::htmlFileExtension) << "\"";
 
       // Check if we have many members, then add sub entries per letter...
       // quick alphabetical index
@@ -4829,7 +4829,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
           else // other pages of multi page index
             anchor=fullName+"_"+is+extension+"#index_";
           t << "{text:\"" << convertToJSString(ci) << "\",url:\""
-            << convertToJSString(anchor+convertToId(is), false) << "\"}";
+            << convertToJSString(anchor+convertToId(is)) << "\"}";
           firstLetter=FALSE;
         }
         t << "]";
@@ -4863,7 +4863,7 @@ static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
         firstChild=FALSE;
         QCString url = entry->url();
         t << "{text:\"" << convertToJSString(entry->title()) << "\",url:\""
-          << convertToJSString(url, false) << "\"";
+          << convertToJSString(url) << "\"";
         bool hasChildren=FALSE;
         if (entry->kind()==LayoutNavEntry::NamespaceMembers)
         {

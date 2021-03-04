@@ -23,7 +23,6 @@
 #include <vector>
 #include <memory>
 
-#include <qstring.h>
 #include <qcstring.h>
 
 #include "docvisitor.h"
@@ -35,15 +34,6 @@ class Definition;
 class MemberGroup;
 
 //---------------------------------------------------------------------------
-QString::Direction getTextDirByConfig(const QString &text);
-QString::Direction getTextDirByConfig(const DocNode *node);
-QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex);
-QCString getDirHtmlClassOfNode(QString::Direction textDir, const QCString &initValue="");
-QCString getDirHtmlClassOfPage(QCString pageTitle);
-QCString getHtmlDirEmbeddingChar(QString::Direction textDir);
-QCString getJsDirEmbeddingChar(QString::Direction textDir);
-//---------------------------------------------------------------------------
-
 
 /*! Main entry point for the documentation parser.
  *  @param fileName  File in which the documentation block is found (or the
@@ -170,8 +160,8 @@ class DocNode
     /*! Returns TRUE iff this node is inside a preformatted section */
     bool isPreformatted() const { return m_insidePre; }
 
-    virtual QString::Direction getTextDir()     const { return QString::DirNeutral; }
-    virtual QString::Direction getTextBasicDir() const { return QString::DirNeutral; }
+    //virtual QString::Direction getTextDir()     const { return QString::DirNeutral; }
+    //virtual QString::Direction getTextBasicDir() const { return QString::DirNeutral; }
 
   protected:
     /*! Sets whether or not this item is inside a preformatted section */
@@ -200,39 +190,6 @@ class CompAccept : public DocNode
     }
     const DocNodeList &children() const { return m_children; }
     DocNodeList &children() { return m_children; }
-    QString::Direction getTextDir(uint nodeIndex) const
-    {
-      unsigned char resultDir = QString::DirNeutral;
-      for (const auto &node : m_children)
-      {
-        resultDir |= (unsigned char)node->getTextDir();
-        if (resultDir == QString::DirMixed)
-        {
-          return QString::DirMixed;
-        }
-      }
-      return static_cast<QString::Direction>(resultDir);
-    }
-    QString::Direction getTextBasicDir(uint nodeIndex) const
-    {
-      for (const auto &node : m_children)
-      {
-        QString::Direction nodeDir = node->getTextBasicDir();
-        if (nodeDir != QString::DirNeutral)
-        {
-          return nodeDir;
-        }
-      }
-      return QString::DirNeutral;
-    }
-    virtual QString::Direction getTextDir() const
-    {
-      return getTextDir(0);
-    }
-    virtual QString::Direction getTextBasicDir() const
-    {
-      return getTextBasicDir(0);
-    }
 
   protected:
     DocNodeList m_children;
@@ -248,8 +205,6 @@ class DocWord : public DocNode
     QCString word() const { return m_word; }
     Kind kind() const { return Kind_Word; }
     void accept(DocVisitor *v) { v->visit(this); }
-    virtual QString::Direction getTextDir() const { return QString(word()).direction(); };
-    virtual QString::Direction getTextBasicDir() const { return QString(word()).basicDirection(); };
 
   private:
     QCString  m_word;
@@ -271,8 +226,6 @@ class DocLinkedWord : public DocNode
     QCString anchor() const     { return m_anchor; }
     QCString tooltip() const    { return m_tooltip; }
     void accept(DocVisitor *v) { v->visit(this); }
-    virtual QString::Direction getTextDir() const { return QString(word()).direction(); };
-    virtual QString::Direction getTextBasicDir() const { return QString(word()).basicDirection(); };
 
   private:
     QCString  m_word;
@@ -293,8 +246,6 @@ class DocURL : public DocNode
     Kind kind() const          { return Kind_URL; }
     void accept(DocVisitor *v) { v->visit(this); }
     bool isEmail() const       { return m_isEmail; }
-    virtual QString::Direction getTextDir() const { return QString::DirLTR; };
-    virtual QString::Direction getTextBasicDir() const { return QString::DirLTR; };
 
   private:
     QCString  m_url;

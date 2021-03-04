@@ -18,8 +18,6 @@
 #ifndef PARSERINTF_H
 #define PARSERINTF_H
 
-#include <qstrlist.h>
-
 #include <functional>
 #include <memory>
 #include <map>

@@ -15,7 +15,6 @@
 
 
 #include <stdio.h>
-#include <qglobal.h>
 #include <assert.h>
 
 #include "md5.h"

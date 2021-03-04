@@ -32,7 +32,6 @@
  */
 
 #include <stdio.h>
-#include <qglobal.h>
 #include <qfileinfo.h>
 
 #include <unordered_map>
