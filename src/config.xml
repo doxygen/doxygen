@@ -3249,6 +3249,9 @@ front of it.
 <![CDATA[
 If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
 \c Sqlite3 database with symbols found by doxygen stored in tables.
+
+  @note The availability of this option depends on whether or not doxygen
+  was generated with the `-Duse_sqlite3=ON` option for CMake.
 ]]>
       </docs>
     </option>
@@ -3258,6 +3261,9 @@ If the \c GENERATE_SQLITE3 tag is set to \c YES doxygen will generate a
 The \c SQLITE3_OUTPUT tag is used to specify where the \c Sqlite3 database will be put.
 If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be
 put in front of it.
+
+  @note The availability of this option depends on whether or not doxygen
+  was generated with the `-Duse_sqlite3=ON` option for CMake.
 ]]>
       </docs>
     </option>
@@ -3267,6 +3273,9 @@ put in front of it.
 The \c SQLITE3_OVERWRITE_DB tag is set to \c YES, the existing doxygen_sqlite3.db
 database file will be recreated with each doxygen run.
 If set to \c NO, doxygen will warn if an a database file is already found and not modify it.
+
+  @note The availability of this option depends on whether or not doxygen
+  was generated with the `-Duse_sqlite3=ON` option for CMake.
 ]]>
       </docs>
     </option>
