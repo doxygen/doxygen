@@ -124,7 +124,7 @@ static void clearCommentStack(yyscan_t yyscanner);
 
 %}
 
-MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 
 %option noyywrap
 
@@ -401,8 +401,8 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
-<CComment,ReadLine>{MAILADR}      |
-<CComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
+<CComment,ReadLine>{MAILADDR}      |
+<CComment,ReadLine>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"{@code"/[ \t\n]	   {

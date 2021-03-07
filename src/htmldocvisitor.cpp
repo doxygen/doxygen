@@ -357,9 +357,26 @@ void HtmlDocVisitor::visit(DocURL *u)
     uint size=5,i;
     for (i=0;i<url.length();)
     {
-      filter(url.mid(i,size));
+      uint extra = 0;
+      for (uint j = 0; j < size && (i + j + extra) < url.length() ; j++)
+      {
+        unsigned char c = static_cast<unsigned char>(url.at(i + j + extra));
+        if ((c&0xE0)==0xC0)
+        {
+          extra+=1; // 110x.xxxx: >=2 byte character
+        }
+        if ((c&0xF0)==0xE0)
+        {
+          extra+=2; // 1110.xxxx: >=3 byte character
+        }
+        if ((c&0xF8)==0xF0)
+        {
+          extra+=3; // 1111.0xxx: >=4 byte character
+        }
+      }
+      filter(url.mid(i,size + extra));
       if (i<url.length()-size) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
-      i+=size;
+      i+=size + extra;
       if (size==5) size=4; else size=5;
     }
     m_t << "</a>";
