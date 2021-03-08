@@ -23,9 +23,9 @@
 #include "resourcemgr.h"
 #include "util.h"
 #include "debug.h"
+#include "fileinfo.h"
 
 #include <qfile.h>
-#include <qfileinfo.h>
 #include <qdir.h>
 
 #include <map>
@@ -112,7 +112,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   {
     return;
   }
-  QFileInfo fi(bibFile);
+  FileInfo fi(bibFile.str());
   if (!fi.exists())
   {
     err("bib file %s not found!\n",bibFile.data());
@@ -287,7 +287,7 @@ void CitationManager::generatePage()
   {
     QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
+    FileInfo fi(bibFile.str());
     if (fi.exists())
     {
       if (!bibFile.isEmpty())
@@ -317,55 +317,57 @@ void CitationManager::generatePage()
   QDir::setCurrent(oldDir);
 
   // 6. read back the file
-  f.setName(citeListFile);
-  if (!f.open(IO_ReadOnly))
-  {
-    err("could not open file %s for reading\n",citeListFile.data());
-  }
-
   QCString doc;
-  QFileInfo fi(citeListFile);
-  QCString input(fi.size()+1);
-  f.readBlock(input.rawData(),fi.size());
-  f.close();
-  input.at(fi.size())='\0';
-
-  bool insideBib=FALSE;
-  int pos=0,s;
-  //printf("input=[%s]\n",input.data());
-  while ((s=input.find('\n',pos))!=-1)
   {
-    QCString line = input.mid((uint)pos,(uint)(s-pos));
-    //printf("pos=%d s=%d line=[%s]\n",pos,s,line.data());
-    pos=s+1;
-
-    if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
-    else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
-    // determine text to use at the location of the @cite command
-    if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
+    f.setName(citeListFile);
+    if (!f.open(IO_ReadOnly))
     {
-      int j=line.find("\">[");
-      int k=line.find("]</a>");
-      if (j!=-1 && k!=-1)
+      err("could not open file %s for reading\n",citeListFile.data());
+    }
+
+    FileInfo fi(citeListFile.str());
+    QCString input(fi.size()+1);
+    f.readBlock(input.rawData(),fi.size());
+    f.close();
+    input.at(fi.size())='\0';
+
+    bool insideBib=FALSE;
+    int pos=0,s;
+    //printf("input=[%s]\n",input.data());
+    while ((s=input.find('\n',pos))!=-1)
+    {
+      QCString line = input.mid((uint)pos,(uint)(s-pos));
+      //printf("pos=%d s=%d line=[%s]\n",pos,s,line.data());
+      pos=s+1;
+
+      if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
+      else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
+      // determine text to use at the location of the @cite command
+      if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
       {
-        uint ui=(uint)i;
-        uint uj=(uint)j;
-        uint uk=(uint)k;
-        QCString label = line.mid(ui+14,uj-ui-14);
-        QCString number = line.mid(uj+2,uk-uj-1);
-        label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
-        line = line.left(ui+14) + label + line.right(line.length()-uj);
-        auto it = p->entries.find(label.data());
-        //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),it->second.get());
-        if (it!=p->entries.end())
+        int j=line.find("\">[");
+        int k=line.find("]</a>");
+        if (j!=-1 && k!=-1)
         {
-          it->second->setText(number);
+          uint ui=(uint)i;
+          uint uj=(uint)j;
+          uint uk=(uint)k;
+          QCString label = line.mid(ui+14,uj-ui-14);
+          QCString number = line.mid(uj+2,uk-uj-1);
+          label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
+          line = line.left(ui+14) + label + line.right(line.length()-uj);
+          auto it = p->entries.find(label.data());
+          //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),it->second.get());
+          if (it!=p->entries.end())
+          {
+            it->second->setText(number);
+          }
         }
       }
+      if (insideBib) doc+=line+"\n";
     }
-    if (insideBib) doc+=line+"\n";
+    //printf("doc=[%s]\n",doc.data());
   }
-  //printf("doc=[%s]\n",doc.data());
 
   // 7. add it as a page
   addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1,1);
@@ -382,7 +384,7 @@ void CitationManager::generatePage()
       QCString bibFile = bibdata.c_str();
       // Note: file can now have multiple dots
       if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-      fi.setFile(bibFile);
+      FileInfo fi(bibFile.str());
       if (fi.exists())
       {
         if (!bibFile.isEmpty())
@@ -427,7 +429,7 @@ QCString CitationManager::latexBibFiles()
     QCString bibFile = bibdata.c_str();
     // Note: file can now have multiple dots
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
+    FileInfo fi(bibFile.str());
     if (fi.exists())
     {
       if (!bibFile.isEmpty())

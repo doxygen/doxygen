@@ -20,7 +20,6 @@
 
 #include <assert.h>
 #include <qfile.h>
-#include <qfileinfo.h>
 
 #include "layout.h"
 #include "message.h"

@@ -14,8 +14,6 @@
  */
 
 
-#include <qfileinfo.h>
-
 #include "docbookvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -35,6 +33,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "growbuf.h"
+#include "fileinfo.h"
 
 #if 0
 #define DB_VIS_C DB_VIS_C1(m_t)
@@ -425,8 +424,8 @@ DB_VIS_C
     case DocInclude::IncWithLines:
       {
         m_t << "<literallayout><computeroutput>";
-        QFileInfo cfi( inc->file() );
-        FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( inc->file().str() );
+        FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
         getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                                   inc->text(),
                                                   langExt,
@@ -474,8 +473,8 @@ DB_VIS_C
       break;
     case DocInclude::SnipWithLines:
       {
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          m_t << "<literallayout><computeroutput>";
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
@@ -525,8 +524,8 @@ DB_VIS_C
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),

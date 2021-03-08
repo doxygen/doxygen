@@ -28,7 +28,6 @@
 #include <algorithm>
 
 #include <qcstring.h>
-#include <qfileinfo.h>
 #include <qcstringlist.h>
 
 /* --------------------------------------------------------------- */

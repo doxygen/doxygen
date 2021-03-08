@@ -20,8 +20,7 @@
 #include "doxygen.h"
 #include "message.h"
 #include "debug.h"
-
-#include <qfileinfo.h>
+#include "fileinfo.h"
 
 QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format)
 {
@@ -128,7 +127,7 @@ PlantumlManager &PlantumlManager::instance()
 PlantumlManager::PlantumlManager()
 {
   QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
-  QFileInfo fi(outputFilename);
+  FileInfo fi(outputFilename.str());
   if (fi.exists())
   {
     m_cachedPlantumlAllContent = fileToString(outputFilename);

@@ -27,7 +27,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include <qfileinfo.h>
 #include <qdir.h>
 
 #include <thread>
@@ -41,6 +40,7 @@
 
 #include "lang_cfg.h"
 #include "configoptions.h"
+#include "fileinfo.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -766,7 +766,7 @@ static void processList()
 static FILE *tryPath(const char *path,const char *fileName)
 {
   QCString absName=(path ? (QCString)path+"/"+fileName : (QCString)fileName);
-  QFileInfo fi(absName);
+  FileInfo fi(absName.str());
   if (fi.exists() && fi.isFile())
   {
     FILE *f=Portable::fopen(absName,"r");
@@ -1327,7 +1327,7 @@ static QCString configFileToString(const char *name)
   }
   else // read from file
   {
-    QFileInfo fi(name);
+    FileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
       config_err("file '%s' not found\n",name);
@@ -1393,10 +1393,10 @@ static void cleanUpPaths(StringVector &str)
     std::replace(path.begin(),path.end(),'\\','/');
     if ((path[0]!='/' && (path.size()<=2 || path[1]!=':')) || path[path.size()-1]!='/')
     {
-      QFileInfo fi(path.c_str());
+      FileInfo fi(path);
       if (fi.exists() && fi.isDir())
       {
-        path = fi.absFilePath().utf8().str();
+        path = fi.absFilePath();
         if (path[path.size()-1]!='/') path+='/';
       }
     }
@@ -1551,7 +1551,7 @@ void Config::checkAndCorrect()
   QCString headerFile = Config_getString(HTML_HEADER);
   if (!headerFile.isEmpty())
   {
-    QFileInfo fi(headerFile);
+    FileInfo fi(headerFile.str());
     if (!fi.exists())
     {
       config_term("tag HTML_HEADER: header file '%s' "
@@ -1564,7 +1564,7 @@ void Config::checkAndCorrect()
   QCString footerFile = Config_getString(HTML_FOOTER);
   if (!footerFile.isEmpty())
   {
-    QFileInfo fi(footerFile);
+    FileInfo fi(footerFile.str());
     if (!fi.exists())
     {
       config_term("tag HTML_FOOTER: footer file '%s' "
@@ -1579,7 +1579,7 @@ void Config::checkAndCorrect()
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
     if (!mathJaxCodefile.isEmpty())
     {
-      QFileInfo fi(mathJaxCodefile);
+      FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
       {
         config_term("tag MATHJAX_CODEFILE file '%s' "
@@ -1599,7 +1599,7 @@ void Config::checkAndCorrect()
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
   if (!latexHeaderFile.isEmpty())
   {
-    QFileInfo fi(latexHeaderFile);
+    FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
     {
       config_term("tag LATEX_HEADER: header file '%s' "
@@ -1612,7 +1612,7 @@ void Config::checkAndCorrect()
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
   if (!latexFooterFile.isEmpty())
   {
-    QFileInfo fi(latexFooterFile);
+    FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
     {
       config_term("tag LATEX_FOOTER: footer file '%s' "
@@ -1625,7 +1625,7 @@ void Config::checkAndCorrect()
   const StringVector &includePath = Config_getList(INCLUDE_PATH);
   for (const auto &s : includePath)
   {
-    QFileInfo fi(s.c_str());
+    FileInfo fi(s);
     if (!fi.exists()) warn_uncond("tag INCLUDE_PATH: include path '%s' "
                           "does not exist\n",s.c_str());
   }
@@ -1774,14 +1774,15 @@ void Config::checkAndCorrect()
   QCString dotPath = Config_getString(DOT_PATH);
   if (!dotPath.isEmpty())
   {
-    QFileInfo fi(dotPath);
+    FileInfo fi(dotPath.str());
     if (fi.exists() && fi.isFile()) // user specified path + exec
     {
-      dotPath=fi.dirPath(TRUE).utf8()+"/";
+      dotPath=fi.dirPath(TRUE)+"/";
     }
     else
     {
-      QFileInfo dp(dotPath+"/dot"+Portable::commandExtension());
+      QCString dotExe = dotPath+"/dot"+Portable::commandExtension();
+      FileInfo dp(dotExe.str());
       if (!dp.exists() || !dp.isFile())
       {
         warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
@@ -1789,7 +1790,7 @@ void Config::checkAndCorrect()
       }
       else
       {
-        dotPath=dp.dirPath(TRUE).utf8()+"/";
+        dotPath=dp.dirPath(TRUE)+"/";
       }
     }
 #if defined(_WIN32) // convert slashes
@@ -1808,13 +1809,14 @@ void Config::checkAndCorrect()
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
   {
-    QFileInfo pu(plantumlJarPath);
+    FileInfo pu(plantumlJarPath.str());
     if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
     {
-      QFileInfo jar(plantumlJarPath+Portable::pathSeparator()+"plantuml.jar");
+      QCString plantumlJar = plantumlJarPath+Portable::pathSeparator()+"plantuml.jar";
+      FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE).utf8()+Portable::pathSeparator();
+        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
       }
       else
       {
@@ -1825,7 +1827,7 @@ void Config::checkAndCorrect()
     }
     else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE).utf8()+Portable::pathSeparator();
+      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
     }
     else
     {
@@ -1841,7 +1843,8 @@ void Config::checkAndCorrect()
   QCString diaPath = Config_getString(DIA_PATH);
   if (!diaPath.isEmpty())
   {
-    QFileInfo dp(diaPath+"/dia"+Portable::commandExtension());
+    QCString diaExe = diaPath+"/dia"+Portable::commandExtension();
+    FileInfo dp(diaExe.str());
     if (!dp.exists() || !dp.isFile())
     {
       warn_uncond("dia could not be found at %s\n",diaPath.data());
@@ -1849,7 +1852,7 @@ void Config::checkAndCorrect()
     }
     else
     {
-      diaPath=dp.dirPath(TRUE).utf8()+"/";
+      diaPath=dp.dirPath(TRUE)+"/";
 #if defined(_WIN32) // convert slashes
       uint i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
@@ -1874,7 +1877,7 @@ void Config::checkAndCorrect()
   {
     for (const auto &s : inputSources)
     {
-      QFileInfo fi(s.c_str());
+      FileInfo fi(s.c_str());
       if (!fi.exists())
       {
         warn_uncond("tag INPUT: input source '%s' does not exist\n",s.c_str());

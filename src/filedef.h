@@ -189,7 +189,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addListReferences() = 0;
 };
 
-FileDef *createFileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
+FileDef *createFileDef(const std::string &p,const std::string &n,const char *ref=0,const char *dn=0);
 
 
 // --- Cast functions

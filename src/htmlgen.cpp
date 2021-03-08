@@ -51,6 +51,7 @@
 #include "resourcemgr.h"
 #include "tooltip.h"
 #include "growbuf.h"
+#include "fileinfo.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -141,7 +142,7 @@ static QCString getConvertLatexMacro()
   QCString macrofile = Config_getString(FORMULA_MACROFILE);
   if (macrofile.isEmpty()) return "";
   QCString s = fileToString(macrofile);
-  macrofile = QFileInfo(macrofile).absFilePath().utf8();
+  macrofile = FileInfo(macrofile.str()).absFilePath();
   int size = s.length();
   GrowBuf out(size);
   const char *data = s.data();
@@ -346,10 +347,10 @@ static QCString substituteHtmlKeywords(const QCString &str,
   }
   else
   {
-    QFileInfo cssfi(cssFile);
+    FileInfo cssfi(cssFile.str());
     if (cssfi.exists())
     {
-      cssFile = cssfi.fileName().utf8();
+      cssFile = cssfi.fileName();
     }
     else
     {
@@ -359,15 +360,14 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   extraCssText = "";
   const StringVector &extraCssFile = Config_getList(HTML_EXTRA_STYLESHEET);
-  for (const auto &extraFile : extraCssFile)
+  for (const auto &fileName : extraCssFile)
   {
-    QCString fileName = extraFile.c_str();
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
-      QFileInfo fi(fileName);
+      FileInfo fi(fileName);
       if (fi.exists())
       {
-        extraCssText += "<link href=\"$relpath^"+stripPath(fileName)+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
+        extraCssText += "<link href=\"$relpath^"+stripPath(fileName.c_str())+"\" rel=\"stylesheet\" type=\"text/css\"/>\n";
       }
     }
   }
@@ -1198,7 +1198,7 @@ void HtmlGenerator::writeStyleInfo(int part)
     else // write user defined style sheet
     {
       QCString cssname=Config_getString(HTML_STYLESHEET);
-      QFileInfo cssfi(cssname);
+      FileInfo cssfi(cssname.str());
       if (!cssfi.exists() || !cssfi.isFile() || !cssfi.isReadable())
       {
         err("style sheet %s does not exist or is not readable!", Config_getString(HTML_STYLESHEET).data());
@@ -1208,22 +1208,21 @@ void HtmlGenerator::writeStyleInfo(int part)
         // convert style sheet to string
         QCString fileStr = fileToString(cssname);
         // write the string into the output dir
-        startPlainFile(cssfi.fileName().utf8());
+        startPlainFile(cssfi.fileName().c_str());
         t << fileStr;
         endPlainFile();
       }
-      Doxygen::indexList->addStyleSheetFile(cssfi.fileName().utf8());
+      Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
     }
     const StringVector &extraCssFiles = Config_getList(HTML_EXTRA_STYLESHEET);
-    for (const auto &extraCss : extraCssFiles)
+    for (const auto &fileName : extraCssFiles)
     {
-      QCString fileName = extraCss.c_str();
-      if (!fileName.isEmpty())
+      if (!fileName.empty())
       {
-        QFileInfo fi(fileName);
+        FileInfo fi(fileName);
         if (fi.exists())
         {
-          Doxygen::indexList->addStyleSheetFile(fi.fileName().utf8());
+          Doxygen::indexList->addStyleSheetFile(fi.fileName().c_str());
         }
       }
     }

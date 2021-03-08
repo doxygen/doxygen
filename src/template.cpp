@@ -30,6 +30,7 @@
 #include "resourcemgr.h"
 #include "portable.h"
 #include "regex.h"
+#include "fileinfo.h"
 
 #define ENABLE_TRACING 0
 
@@ -5012,7 +5013,7 @@ class TemplateEngine::Private
         QFile f(filePath);
         if (f.open(IO_ReadOnly)) // read template from disk
         {
-          QFileInfo fi(filePath);
+          FileInfo fi(filePath.str());
           int size=fi.size();
           QCString data(size+1);
           if (f.readBlock(data.rawData(),size)==size)

@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <qfile.h>
-#include <qfileinfo.h>
 
 #include "htmlhelp.h"
 #include "config.h"
@@ -34,6 +33,7 @@
 #include "util.h"
 #include "linkedmap.h"
 #include "regex.h"
+#include "fileinfo.h"
 
 //----------------------------------------------------------------------------
 
@@ -560,7 +560,7 @@ void HtmlHelp::Private::createProjectFile()
     }
     for (auto &s : imageFiles)
     {
-      t << QFileInfo(s.c_str()).fileName().data() << endl;
+      t << FileInfo(s).fileName() << endl;
     }
     f.close();
   }

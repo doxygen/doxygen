@@ -13,7 +13,6 @@
 #include <string>
 
 #include <qcstring.h>
-#include <qfileinfo.h>
 #include "containers.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"

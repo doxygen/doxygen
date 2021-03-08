@@ -37,8 +37,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qfileinfo.h>
-
 #include "pyscanner.h"
 #include "entry.h"
 #include "message.h"
@@ -50,6 +48,7 @@
 #include "commentscan.h"
 #include "arguments.h"
 #include "markdown.h"
+#include "fileinfo.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -1528,7 +1527,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
   {
     return it->second;
   }
-  QFileInfo pf(path+"/__init__.py"); // found package initialization file
+  FileInfo pf(path.str()+"/__init__.py"); // found package initialization file
   if (pf.exists())
   {
     int i=path.findRev('/');
@@ -1550,8 +1549,8 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
 static QCString findPackageScope(yyscan_t yyscanner,const char *fileName)
 {
   if (fileName==0) return "";
-  QFileInfo fi(fileName);
-  return findPackageScopeFromPath(yyscanner,fi.dirPath(TRUE).data());
+  FileInfo fi(fileName);
+  return findPackageScopeFromPath(yyscanner,fi.dirPath(true).c_str());
 }
 
 static void addFrom(yyscan_t yyscanner,bool all)
@@ -1811,9 +1810,9 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
   //setContext();
   msg("Parsing file %s...\n",yyextra->yyFileName.data());
 
-  QFileInfo fi(fileName);
+  FileInfo fi(fileName);
   yyextra->moduleScope = findPackageScope(yyscanner,fileName);
-  QCString baseName=fi.baseName().utf8();
+  QCString baseName=fi.baseName();
   if (baseName!="__init__") // package initializer file is not a package itself
   {
     if (!yyextra->moduleScope.isEmpty())

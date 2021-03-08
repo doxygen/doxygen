@@ -16,8 +16,6 @@
  *
  */
 
-#include <qfileinfo.h>
-
 #include "rtfdocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -36,6 +34,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "fileinfo.h"
 
 //#define DBG_RTF(x) m_t << x
 #define DBG_RTF(x) do {} while(0)
@@ -423,8 +422,8 @@ void RTFDocVisitor::visit(DocInclude *inc)
          m_t << "{" << endl;
          m_t << "\\par" << endl;
          m_t << rtf_Style_Reset << getStyle("CodeExample");
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
@@ -493,8 +492,8 @@ void RTFDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::SnipWithLines:
       {
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          m_t << "{" << endl;
          if (!m_lastIsPara) m_t << "\\par" << endl;
          m_t << rtf_Style_Reset << getStyle("CodeExample");
@@ -551,8 +550,8 @@ void RTFDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),op->text(),langExt,

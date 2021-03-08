@@ -20,6 +20,7 @@
 #include "util.h"
 #include "portable.h"
 #include "image.h"
+#include "fileinfo.h"
 
 #include <qfile.h>
 #include <qdir.h>
@@ -142,9 +143,9 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   QCString stripMacroFile;
   if (!macroFile.isEmpty())
   {
-    QFileInfo fi(macroFile);
-    macroFile=fi.absFilePath().utf8();
-    stripMacroFile = fi.fileName().data();
+    FileInfo fi(macroFile.str());
+    macroFile=fi.absFilePath();
+    stripMacroFile = fi.fileName();
   }
 
   // go to the html output directory (i.e. path)
@@ -176,7 +177,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       QCString resultName;
       resultName.sprintf("form_%d.%s",i,format==Format::Vector?"svg":"png");
       // only formulas for which no image exists are generated
-      QFileInfo fi(resultName);
+      FileInfo fi(resultName.str());
       if (!fi.exists())
       {
         // we force a pagebreak after each formula
@@ -241,7 +242,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
 
       // extract the bounding box info from the generate .epsi file
       int x1=0,y1=0,x2=0,y2=0;
-      QFileInfo fi(formBase+"_tmp.epsi");
+      FileInfo fi((formBase+"_tmp.epsi").str());
       if (fi.exists())
       {
         QString eps = fileToString(formBase+"_tmp.epsi");

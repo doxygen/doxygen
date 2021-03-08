@@ -25,6 +25,7 @@
 #include "message.h"
 #include "config.h"
 #include "portable.h"
+#include "fileinfo.h"
 
 
 bool Htags::useHtags = FALSE;
@@ -111,7 +112,7 @@ bool Htags::execute(const QCString &htmldir)
 bool Htags::loadFilemap(const QCString &htmlDir)
 {
   QCString fileMapName = htmlDir+"/HTML/FILEMAP";
-  QFileInfo fi(fileMapName);
+  FileInfo fi(fileMapName.str());
   /*
    * Construct FILEMAP dictionary.
    *

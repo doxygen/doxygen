@@ -13,7 +13,6 @@
  *
  */
 
-#include <qfileinfo.h>
 #include <qfile.h>
 #include <qdir.h>
 
@@ -106,6 +105,7 @@
 #include "clangparser.h"
 #include "symbolresolver.h"
 #include "regex.h"
+#include "fileinfo.h"
 
 #if USE_SQLITE3
 #include <sqlite3.h>
@@ -9050,9 +9050,9 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
     fileName = tagLine.left(eqPos).stripWhiteSpace();
     destName = tagLine.right(tagLine.length()-eqPos-1).stripWhiteSpace();
     if (fileName.isEmpty() || destName.isEmpty()) return;
-    QFileInfo fi(fileName);
+    FileInfo fi(fileName.str());
     Doxygen::tagDestinationMap.insert(
-        std::make_pair(fi.absFilePath().utf8().str(), destName.str()));
+        std::make_pair(fi.absFilePath(), destName.str()));
     //printf("insert tagDestination %s->%s\n",fi.fileName().data(),destName.data());
   }
   else
@@ -9060,7 +9060,7 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
     fileName = tagLine;
   }
 
-  QFileInfo fi(fileName);
+  FileInfo fi(fileName.str());
   if (!fi.exists() || !fi.isFile())
   {
     err("Tag file '%s' does not exist or is not a file. Skipping it...\n",
@@ -9073,7 +9073,7 @@ static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
   else
     msg("Reading tag file '%s'...\n",fileName.data());
 
-  parseTagFile(root,fi.absFilePath().utf8());
+  parseTagFile(root,fi.absFilePath().c_str());
 }
 
 //----------------------------------------------------------------------------
@@ -9082,18 +9082,18 @@ static void copyLatexStyleSheet()
   const StringVector &latexExtraStyleSheet = Config_getList(LATEX_EXTRA_STYLESHEET);
   for (const auto &sheet : latexExtraStyleSheet)
   {
-    QCString fileName = sheet.c_str();
-    if (!fileName.isEmpty())
+    std::string fileName = sheet;
+    if (!fileName.empty())
     {
-      QFileInfo fi(fileName);
+      FileInfo fi(fileName);
       if (!fi.exists())
       {
         err("Style sheet '%s' specified by LATEX_EXTRA_STYLESHEET does not exist!\n",fileName.data());
       }
       else
       {
-        QCString destFileName = Config_getString(LATEX_OUTPUT)+"/"+fi.fileName().data();
-        if (!checkExtension(fi.fileName().data(), LATEX_STYLE_EXTENSION))
+        QCString destFileName = Config_getString(LATEX_OUTPUT)+"/"+fi.fileName();
+        if (!checkExtension(fi.fileName().c_str(), LATEX_STYLE_EXTENSION))
         {
           destFileName += LATEX_STYLE_EXTENSION;
         }
@@ -9109,7 +9109,7 @@ static void copyStyleSheet()
   QCString htmlStyleSheet = Config_getString(HTML_STYLESHEET);
   if (!htmlStyleSheet.isEmpty())
   {
-    QFileInfo fi(htmlStyleSheet);
+    FileInfo fi(htmlStyleSheet.str());
     if (!fi.exists())
     {
       err("Style sheet '%s' specified by HTML_STYLESHEET does not exist!\n",htmlStyleSheet.data());
@@ -9117,20 +9117,20 @@ static void copyStyleSheet()
     }
     else
     {
-      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName().data();
+      QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
       copyFile(htmlStyleSheet,destFileName);
     }
   }
   const StringVector &htmlExtraStyleSheet = Config_getList(HTML_EXTRA_STYLESHEET);
   for (const auto &sheet : htmlExtraStyleSheet)
   {
-    QCString fileName = sheet.c_str();
-    if (!fileName.isEmpty())
+    std::string fileName = sheet;
+    if (!fileName.empty())
     {
-      QFileInfo fi(fileName);
+      FileInfo fi(fileName);
       if (!fi.exists())
       {
-        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.data());
+        err("Style sheet '%s' specified by HTML_EXTRA_STYLESHEET does not exist!\n",fileName.c_str());
       }
       else if (fi.fileName()=="doxygen.css" || fi.fileName()=="tabs.css" || fi.fileName()=="navtree.css")
       {
@@ -9138,7 +9138,7 @@ static void copyStyleSheet()
       }
       else
       {
-        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName().data();
+        QCString destFileName = Config_getString(HTML_OUTPUT)+"/"+fi.fileName();
         copyFile(fileName, destFileName);
       }
     }
@@ -9150,7 +9150,7 @@ static void copyLogo(const QCString &outputOption)
   QCString projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
   {
-    QFileInfo fi(projectLogo);
+    FileInfo fi(projectLogo.str());
     if (!fi.exists())
     {
       err("Project logo '%s' specified by PROJECT_LOGO does not exist!\n",projectLogo.data());
@@ -9158,29 +9158,28 @@ static void copyLogo(const QCString &outputOption)
     }
     else
     {
-      QCString destFileName = outputOption+"/"+fi.fileName().data();
+      QCString destFileName = outputOption+"/"+fi.fileName();
       copyFile(projectLogo,destFileName);
-      Doxygen::indexList->addImageFile(fi.fileName().data());
+      Doxygen::indexList->addImageFile(fi.fileName().c_str());
     }
   }
 }
 
 static void copyExtraFiles(const StringVector &files,const QCString &filesOption,const QCString &outputOption)
 {
-  for (const auto &file : files)
+  for (const auto &fileName : files)
   {
-    QCString fileName = file.c_str();
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
-      QFileInfo fi(fileName);
+      FileInfo fi(fileName);
       if (!fi.exists())
       {
-        err("Extra file '%s' specified in %s does not exist!\n", fileName.data(),filesOption.data());
+        err("Extra file '%s' specified in %s does not exist!\n", fileName.c_str(),filesOption.data());
       }
       else
       {
-        QCString destFileName = outputOption+"/"+fi.fileName().data();
-        Doxygen::indexList->addImageFile(fi.fileName().utf8());
+        QCString destFileName = outputOption+"/"+fi.fileName();
+        Doxygen::indexList->addImageFile(fi.fileName().c_str());
         copyFile(fileName, destFileName);
       }
     }
@@ -9300,7 +9299,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
     extension = ".no_extension";
   }
 
-  QFileInfo fi(fileName);
+  FileInfo fi(fileName.str());
   BufStr preBuf(fi.size()+4096);
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
@@ -9310,7 +9309,8 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
     const StringVector &includePath = Config_getList(INCLUDE_PATH);
     for (const auto &s : includePath)
     {
-      preprocessor.addSearchDir(QFileInfo(s.c_str()).absFilePath().utf8());
+      std::string absPath = FileInfo(s).absFilePath();
+      preprocessor.addSearchDir(absPath.c_str());
     }
     BufStr inBuf(fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
@@ -9573,7 +9573,6 @@ static QCString resolveSymlink(QCString path)
 {
   int sepPos=0;
   int oldPos=0;
-  QFileInfo fi;
   StringSet nonSymlinks;
   StringSet known;
   QCString result = path;
@@ -9592,14 +9591,14 @@ static QCString resolveSymlink(QCString path)
     QCString prefix = sepPos==-1 ? result : result.left(sepPos);
     if (nonSymlinks.find(prefix.str())==nonSymlinks.end())
     {
-      fi.setFile(prefix);
+      FileInfo fi(prefix.str());
       if (fi.isSymLink())
       {
-        QString target = fi.readLink();
-        bool isRelative = QFileInfo(target).isRelative();
+        QCString target = fi.readLink();
+        bool isRelative = FileInfo(target.str()).isRelative();
         if (isRelative)
         {
-          target = QDir::cleanDirPath(oldPrefix+"/"+target.data());
+          target = QDir::cleanDirPath(oldPrefix+"/"+target.data()).utf8();
         }
         if (sepPos!=-1)
         {
@@ -9707,7 +9706,7 @@ static int readDir(QFileInfo *fi,
           //printf("New file %s\n",name.data());
           if (fnMap)
           {
-            std::unique_ptr<FileDef> fd { createFileDef(cfi->dirPath().utf8()+"/",name) };
+            std::unique_ptr<FileDef> fd { createFileDef(cfi->dirPath().utf8().str()+"/",name.str()) };
             FileName *fn=0;
             if (!name.isEmpty())
             {
@@ -9794,7 +9793,7 @@ int readFileOrDirectory(const char *s,
             //printf("New file %s\n",name.data());
             if (fnMap)
             {
-              std::unique_ptr<FileDef> fd { createFileDef(dirPath+"/",name) };
+              std::unique_ptr<FileDef> fd { createFileDef(dirPath.str()+"/",name.str()) };
               if (!name.isEmpty())
               {
                 FileName *fn = fnMap->add(name,filePath);
@@ -10334,7 +10333,7 @@ void readConfiguration(int argc, char **argv)
         else if (qstricmp(formatName,"html")==0)
         {
           Config::init();
-          if (optind+4<argc || QFileInfo("Doxyfile").exists())
+          if (optind+4<argc || FileInfo("Doxyfile").exists())
              // explicit config file mentioned or default found on disk
           {
             QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
@@ -10381,7 +10380,7 @@ void readConfiguration(int argc, char **argv)
         else if (qstricmp(formatName,"latex")==0)
         {
           Config::init();
-          if (optind+4<argc || QFileInfo("Doxyfile").exists())
+          if (optind+4<argc || FileInfo("Doxyfile").exists())
           {
             QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
             if (!Config::parse(df))
@@ -10499,7 +10498,7 @@ void readConfiguration(int argc, char **argv)
 
   Config::init();
 
-  QFileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
+  FileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
   if (optind>=argc)
   {
     if (configFileInfo1.exists())
@@ -10523,7 +10522,7 @@ void readConfiguration(int argc, char **argv)
   }
   else
   {
-    QFileInfo fi(argv[optind]);
+    FileInfo fi(argv[optind]);
     if (fi.exists() || qstrcmp(argv[optind],"-")==0 || genConfig)
     {
       configName=argv[optind];
@@ -10572,7 +10571,7 @@ void readConfiguration(int argc, char **argv)
   }
 
   /* Perlmod wants to know the path to the config file.*/
-  QFileInfo configFileInfo(configName);
+  FileInfo configFileInfo(configName);
   setPerlModDoxyfile(configFileInfo.absFilePath().data());
 
 }

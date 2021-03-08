@@ -25,6 +25,7 @@
 #include "dotgraph.h"
 #include "dotnode.h"
 #include "dotfilepatcher.h"
+#include "fileinfo.h"
 
 #define MAP_CMD "cmapx"
 
@@ -63,12 +64,12 @@ static bool checkDeliverables(const QCString &file1,
   bool file2Ok = TRUE;
   if (!file1.isEmpty())
   {
-    QFileInfo fi(file1);
+    FileInfo fi(file1.str());
     file1Ok = (fi.exists() && fi.size()>0);
   }
   if (!file2.isEmpty())
   {
-    QFileInfo fi(file2);
+    FileInfo fi(file2.str());
     file2Ok = (fi.exists() && fi.size()>0);
   }
   return file1Ok && file2Ok;
@@ -77,7 +78,7 @@ static bool checkDeliverables(const QCString &file1,
 static bool insertMapFile(FTextStream &out,const QCString &mapFile,
                           const QCString &relPath,const QCString &mapLabel)
 {
-  QFileInfo fi(mapFile);
+  FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
     QGString tmpstr;

@@ -55,6 +55,7 @@ class SectionInfo;
 class QDir;
 class Definition;
 class BufStr;
+class FileInfo;
 class QFileInfo;
 class QStrList;
 class FTextStream;
@@ -390,6 +391,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,
                    bool filter=TRUE,bool isSourceCode=FALSE);
 QCString filterTitle(const std::string &title);
 
+bool patternMatch(const FileInfo &fi,const StringVector &patList);
 bool patternMatch(const QFileInfo &fi,const StringVector &patList);
 
 QCString externalLinkTarget(const bool parent = false);

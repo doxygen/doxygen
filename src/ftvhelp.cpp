@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <qfileinfo.h>
 #include <algorithm>
 
 #include "ftvhelp.h"

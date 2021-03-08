@@ -13,8 +13,6 @@
  *
  */
 
-#include <qfileinfo.h>
-
 #include "mandocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -28,6 +26,7 @@
 #include "filedef.h"
 #include "htmlentity.h"
 #include "emoji.h"
+#include "fileinfo.h"
 
 ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
                              const char *langExt)
@@ -252,8 +251,8 @@ void ManDocVisitor::visit(DocInclude *inc)
          if (!m_firstCol) m_t << endl;
          m_t << ".PP" << endl;
          m_t << ".nf" << endl;
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
@@ -336,8 +335,8 @@ void ManDocVisitor::visit(DocInclude *inc)
          if (!m_firstCol) m_t << endl;
          m_t << ".PP" << endl;
          m_t << ".nf" << endl;
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
@@ -392,8 +391,8 @@ void ManDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),op->text(),langExt,

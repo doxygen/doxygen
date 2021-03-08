@@ -21,6 +21,8 @@ extern char **environ;
 #include <map>
 #include <string>
 
+#include "fileinfo.h"
+
 #include "util.h"
 #ifndef NODEBUG
 #include "debug.h"
@@ -340,7 +342,7 @@ char  Portable::pathListSeparator()
 
 static bool ExistsOnPath(const char *fileName)
 {
-  QFileInfo fi1(fileName);
+  FileInfo fi1(fileName);
   if (fi1.exists()) return true;
 
   const char *p = Portable::getenv("PATH");
@@ -354,7 +356,7 @@ static bool ExistsOnPath(const char *fileName)
     QCString locFile(paths.mid(strt,idx-strt));
     locFile += pathSep;
     locFile += fileName;
-    QFileInfo fi(locFile);
+    FileInfo fi(locFile.str());
     if (fi.exists()) return true;
     strt = idx + 1;
   }
@@ -364,7 +366,7 @@ static bool ExistsOnPath(const char *fileName)
   {
     locFile += pathSep;
     locFile += fileName;
-    QFileInfo fi(locFile);
+    FileInfo fi(locFile.str());
     if (fi.exists()) return true;
   }
   return false;

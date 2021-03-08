@@ -71,6 +71,7 @@
 #include "dirdef.h"
 #include "htmlentity.h"
 #include "symbolresolver.h"
+#include "fileinfo.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1429,7 +1430,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
   }
   else // read from file
   {
-    QFileInfo fi(name);
+    FileInfo fi(name);
     if (!fi.exists() || !fi.isFile())
     {
       err("file '%s' not found\n",name);
@@ -3197,7 +3198,7 @@ bool resolveLink(/* in */ const char *scName,
     *resContext=nd;
     return TRUE;
   }
-  else if ((dir=Doxygen::dirLinkedMap->find(QFileInfo(linkRef).absFilePath().utf8()+"/"))
+  else if ((dir=Doxygen::dirLinkedMap->find(FileInfo(linkRef.str()).absFilePath()+"/"))
       && dir->isLinkable()) // TODO: make this location independent like filedefs
   {
     *resContext=dir;
@@ -5624,9 +5625,9 @@ void addCodeOnlyMappings()
 
 SrcLangExt getLanguageFromFileName(const QCString& fileName)
 {
-  QFileInfo fi(fileName);
-  // we need only the part after the last ".", newer implementations of QFileInfo have 'suffix()' for this.
-  QCString extName = fi.extension(FALSE).lower().data();
+  FileInfo fi(fileName.str());
+  // we need only the part after the last ".", newer implementations of FileInfo have 'suffix()' for this.
+  QCString extName = QCString(fi.extension(FALSE)).lower();
   if (extName.isEmpty()) extName=".no_extension";
   if (extName.at(0)!='.') extName.prepend(".");
   auto it = g_extLookup.find(extName.str());
@@ -6238,7 +6239,7 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
   //uint oldPos = dest.curPos();
   //printf(".......oldPos=%d\n",oldPos);
 
-  QFileInfo fi(fileName);
+  FileInfo fi(fileName);
   if (!fi.exists()) return FALSE;
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
@@ -6352,6 +6353,48 @@ QCString filterTitle(const std::string &title)
 // returns TRUE if the name of the file represented by 'fi' matches
 // one of the file patterns in the 'patList' list.
 
+bool patternMatch(const FileInfo &fi,const StringVector &patList)
+{
+  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
+  bool found = FALSE;
+
+  // For platforms where the file system is non case sensitive overrule the setting
+  if (!Portable::fileSystemIsCaseSensitive())
+  {
+    caseSenseNames = FALSE;
+  }
+
+  if (!patList.empty())
+  {
+    std::string fn = fi.fileName();
+    std::string fp = fi.filePath();
+    std::string afp= fi.absFilePath();
+
+    for (auto pattern: patList)
+    {
+      if (!pattern.empty())
+      {
+        size_t i=pattern.find('=');
+        if (i!=std::string::npos) pattern=pattern.substr(0,i); // strip of the extension specific filter name
+
+        if (!caseSenseNames)
+        {
+          pattern = QCString(pattern).lower().str();
+          fn      = QCString(fn).lower().str();
+          fp      = QCString(fp).lower().str();
+          afp     = QCString(afp).lower().str();
+        }
+        reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
+        found = re.isValid() && (reg::match(fn,re) || reg::match(fp,re) || reg::match(afp,re));
+        if (found) break;
+        //printf("Matching '%s' against pattern '%s' found=%d\n",
+        //    fi->fileName().data(),pattern.data(),found);
+      }
+    }
+  }
+  return found;
+}
+
 bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 {
   bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
@@ -6365,9 +6408,9 @@ bool patternMatch(const QFileInfo &fi,const StringVector &patList)
 
   if (!patList.empty())
   {
-    std::string fn = fi.fileName().data();
-    std::string fp = fi.filePath().data();
-    std::string afp= fi.absFilePath().data();
+    std::string fn = fi.fileName().utf8().data();
+    std::string fp = fi.filePath().utf8().data();
+    std::string afp= fi.absFilePath().utf8().data();
 
     for (auto pattern: patList)
     {
@@ -6380,8 +6423,8 @@ bool patternMatch(const QFileInfo &fi,const StringVector &patList)
         {
           pattern = QCString(pattern).lower().str();
           fn      = QCString(fn).lower().str();
-          fp      = QCString(fn).lower().str();
-          afp     = QCString(fn).lower().str();
+          fp      = QCString(fp).lower().str();
+          afp     = QCString(afp).lower().str();
         }
         reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
         found = re.isValid() && (reg::match(fn,re) || reg::match(fp,re) || reg::match(afp,re));
@@ -6393,6 +6436,7 @@ bool patternMatch(const QFileInfo &fi,const StringVector &patList)
   }
   return found;
 }
+
 
 QCString externalLinkTarget(const bool parent)
 {
@@ -6521,7 +6565,7 @@ bool copyFile(const QCString &src,const QCString &dest)
   QFile sf(src);
   if (sf.open(IO_ReadOnly))
   {
-    QFileInfo fi(src);
+    FileInfo fi(src.str());
     QFile df(dest);
     if (df.open(IO_WriteOnly))
     {
@@ -7204,14 +7248,14 @@ bool openOutputFile(const char *outFile,QFile &f)
   }
   else // write to file
   {
-    QFileInfo fi(outFile);
+    FileInfo fi(outFile);
     if (fi.exists()) // create a backup
     {
-      QDir dir=fi.dir();
-      QFileInfo backup(fi.fileName()+".bak");
+      QDir dir;
+      FileInfo backup(fi.fileName()+".bak");
       if (backup.exists()) // remove existing backup
-        dir.remove(backup.fileName());
-      dir.rename(fi.fileName(),fi.fileName()+".bak");
+        dir.remove(backup.fileName().c_str());
+      dir.rename(QCString(fi.fileName()),QCString(fi.fileName()+".bak"));
     }
     f.setName(outFile);
     fileOpened = f.open(IO_WriteOnly|IO_Translate);

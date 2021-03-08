@@ -44,6 +44,7 @@
 #include "pagedef.h"
 #include "dirdef.h"
 #include "section.h"
+#include "fileinfo.h"
 
 #include <sys/stat.h>
 #include <qdir.h>
@@ -2403,14 +2404,14 @@ static sqlite3* openDbConnection()
     return NULL;
   }
 
-  QCString dbFileName = "doxygen_sqlite3.db";
-  QFileInfo fi(outputDirectory+"/"+dbFileName);
+  std::string dbFileName = "doxygen_sqlite3.db";
+  FileInfo fi(outputDirectory.str()+"/"+dbFileName);
 
   if (fi.exists())
   {
     if (Config_getBool(SQLITE3_RECREATE_DB))
     {
-       QDir().remove(fi.absFilePath());
+       QDir().remove(fi.absFilePath().c_str());
     }
     else
     {
@@ -2420,7 +2421,7 @@ static sqlite3* openDbConnection()
   }
 
   rc = sqlite3_open_v2(
-    fi.absFilePath().utf8(),
+    fi.absFilePath().c_str(),
     &db,
     SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
     0

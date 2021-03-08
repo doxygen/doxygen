@@ -42,15 +42,27 @@ class LinkedMap
 
     //! Find an object given the key.
     //! Returns a pointer to the element if found or nullptr if it is not found.
-    const T *find(const char *key_) const
+    const T *find(const std::string &key) const
     {
-      std::string key(key_ ? key_ : "");
       auto it = m_lookup.find(key);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
+    //! Find an object given the key.
+    //! Returns a pointer to the element if found or nullptr if it is not found.
+    const T *find(const char *key) const
+    {
+      return find(std::string(key ? key : ""));
+    }
+
     //! A non-const wrapper for find() const
     T* find(const char *key)
+    {
+      return const_cast<T*>(static_cast<const LinkedMap&>(*this).find(key));
+    }
+
+    //! A non-const wrapper for find() const
+    T* find(const std::string &key)
     {
       return const_cast<T*>(static_cast<const LinkedMap&>(*this).find(key));
     }
@@ -171,15 +183,27 @@ class LinkedRefMap
 
     //! find an object given the key.
     //! Returns a pointer to the object if found or nullptr if it is not found.
-    const T *find(const char *key_) const
+    const T *find(const std::string &key) const
     {
-      std::string key(key_ ? key_ : "");
       auto it = m_lookup.find(key);
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
+    //! find an object given the key.
+    //! Returns a pointer to the object if found or nullptr if it is not found.
+    const T *find(const char *key) const
+    {
+      return find(std::string(key ? key : ""));
+    }
+
     //! non-const wrapper for find() const
     T* find(const char *key)
+    {
+      return const_cast<T*>(static_cast<const LinkedRefMap&>(*this).find(key));
+    }
+
+    //! non-const wrapper for find() const
+    T* find(const std::string &key)
     {
       return const_cast<T*>(static_cast<const LinkedRefMap&>(*this).find(key));
     }

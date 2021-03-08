@@ -16,7 +16,6 @@
  *
  */
 #include "htmlattrib.h"
-#include <qfileinfo.h>
 #include "latexdocvisitor.h"
 #include "latexgen.h"
 #include "docparser.h"
@@ -35,6 +34,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "fileinfo.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -456,8 +456,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
     case DocInclude::IncWithLines:
       {
         m_ci.startCodeFragment("DoxyCodeInclude");
-        QFileInfo cfi( inc->file() );
-        FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( inc->file().str() );
+        FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
         getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                                   inc->text(),
                                                   langExt,
@@ -521,8 +521,8 @@ void LatexDocVisitor::visit(DocInclude *inc)
       break;
     case DocInclude::SnipWithLines:
       {
-        QFileInfo cfi( inc->file() );
-        FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( inc->file().str() );
+        FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
         m_ci.startCodeFragment("DoxyCodeInclude");
         getCodeParser(inc->extension()).parseCode(m_ci,
                                                   inc->context(),
@@ -570,8 +570,8 @@ void LatexDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),op->text(),langExt,

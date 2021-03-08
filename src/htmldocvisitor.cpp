@@ -34,6 +34,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "formula.h"
+#include "fileinfo.h"
 
 static const int NUM_HTML_LIST_TYPES = 4;
 static const char types[][NUM_HTML_LIST_TYPES] = {"1", "a", "i", "A"};
@@ -676,8 +677,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       {
          forceEndParagraph(inc);
          m_ci.startCodeFragment("DoxyCode");
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            inc->text(),
@@ -745,8 +746,8 @@ void HtmlDocVisitor::visit(DocInclude *inc)
       {
          forceEndParagraph(inc);
          m_ci.startCodeFragment("DoxyCode");
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
@@ -796,8 +797,8 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
       getCodeParser(locLangExt).parseCode(
                                 m_ci,

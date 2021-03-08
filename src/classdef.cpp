@@ -19,7 +19,6 @@
 #include <algorithm>
 
 #include <qfile.h>
-#include <qfileinfo.h>
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
@@ -50,6 +49,7 @@
 #include "membergroup.h"
 #include "definitionimpl.h"
 #include "symbolresolver.h"
+#include "fileinfo.h"
 
 //-----------------------------------------------------------------------------
 
@@ -1738,10 +1738,10 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
       unsigned int length = 0;
       for (const auto &s : paths)
       {
-        QFileInfo info(s.c_str());
+        FileInfo info(s);
         if (info.exists())
         {
-          QCString prefix = info.absFilePath().utf8();
+          QCString prefix = info.absFilePath();
           if (prefix.at(prefix.length() - 1) != '/')
           {
             prefix += '/';

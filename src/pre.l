@@ -41,7 +41,6 @@
 #include <errno.h>
 
 #include <qcstring.h>
-#include <qfileinfo.h>
 
 #include "containers.h"
 #include "pre.h"
@@ -60,6 +59,7 @@
 #include "config.h"
 #include "filedef.h"
 #include "regex.h"
+#include "fileinfo.h"
 
 #define YY_NO_UNISTD_H 1
 
@@ -1674,8 +1674,8 @@ static void setFileName(yyscan_t yyscanner,const char *name)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   bool ambig;
-  QFileInfo fi(name);
-  state->yyFileName=fi.absFilePath().utf8();
+  FileInfo fi(name);
+  state->yyFileName=fi.absFilePath();
   state->yyFileDef=findFileDef(Doxygen::inputNameLinkedMap,state->yyFileName,ambig);
   if (state->yyFileDef==0) // if this is not an input file check if it is an
                       // include file
@@ -1738,13 +1738,13 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
   alreadyProcessed = FALSE;
   FileState *fs = 0;
   //printf("checkAndOpenFile(%s)\n",fileName.data());
-  QFileInfo fi(fileName);
+  FileInfo fi(fileName.str());
   if (fi.exists() && fi.isFile())
   {
     const StringVector &exclPatterns = Config_getList(EXCLUDE_PATTERNS);
     if (patternMatch(fi,exclPatterns)) return 0;
 
-    QCString absName = fi.absFilePath().utf8();
+    QCString absName = fi.absFilePath();
 
     // global guard
     if (state->curlyCount==0) // not #include inside { ... }
@@ -1809,7 +1809,7 @@ static FileState *findFile(yyscan_t yyscanner, const char *fileName,bool localIn
   }
   if (localInclude && !state->yyFileName.isEmpty())
   {
-    QFileInfo fi(state->yyFileName);
+    FileInfo fi(state->yyFileName.str());
     if (fi.exists())
     {
       QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+fileName;
@@ -2846,29 +2846,29 @@ static QCString determineAbsoluteIncludeName(const QCString &curFile,const QCStr
 {
   bool searchIncludes = Config_getBool(SEARCH_INCLUDES);
   QCString absIncFileName = incFileName;
-  QFileInfo fi(curFile);
+  FileInfo fi(curFile.str());
   if (fi.exists())
   {
     QCString absName = QCString(fi.dirPath(TRUE).data())+"/"+incFileName;
-    QFileInfo fi2(absName);
+    FileInfo fi2(absName.str());
     if (fi2.exists())
     {
-      absIncFileName=fi2.absFilePath().utf8();
+      absIncFileName=fi2.absFilePath();
     }
     else if (searchIncludes) // search in INCLUDE_PATH as well
     {
       const StringVector &includePath = Config_getList(INCLUDE_PATH);
       for (const auto &incPath : includePath)
       {
-        QFileInfo fi3(incPath.c_str());
+        FileInfo fi3(incPath);
         if (fi3.exists() && fi3.isDir())
         {
-          absName = QCString(fi3.absFilePath().utf8())+"/"+incFileName;
+          absName = QCString(fi3.absFilePath())+"/"+incFileName;
           //printf("trying absName=%s\n",absName.data());
-          QFileInfo fi4(absName);
+          FileInfo fi4(absName.str());
           if (fi4.exists())
           {
-            absIncFileName=fi4.absFilePath().utf8();
+            absIncFileName=fi4.absFilePath();
             break;
           }
           //printf( "absIncFileName = %s\n", absIncFileName.data() );
@@ -3350,8 +3350,8 @@ struct Preprocessor::Private
 void Preprocessor::addSearchDir(const char *dir)
 {
   YY_EXTRA_TYPE state = preYYget_extra(p->yyscanner);
-  QFileInfo fi(dir);
-  if (fi.isDir()) state->pathList.push_back(fi.absFilePath().utf8().data());
+  FileInfo fi(dir);
+  if (fi.isDir()) state->pathList.push_back(fi.absFilePath());
 }
 
 Preprocessor::Preprocessor() : p(std::make_unique<Private>())

@@ -256,6 +256,7 @@ add_library(doxymain STATIC
     emoji.cpp
     entry.cpp
     filedef.cpp
+    fileinfo.cpp
     fileparser.cpp
     formula.cpp
     ftvhelp.cpp

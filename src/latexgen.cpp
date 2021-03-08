@@ -43,6 +43,7 @@
 #include "filename.h"
 #include "resourcemgr.h"
 #include "portable.h"
+#include "fileinfo.h"
 
 static QCString g_header;
 static QCString g_footer;
@@ -571,23 +572,22 @@ static QCString extraLatexStyleSheet()
 {
   QCString result;
   const StringVector &extraLatexStyles = Config_getList(LATEX_EXTRA_STYLESHEET);
-  for (const auto &extraStyle : extraLatexStyles)
+  for (const auto &fileName : extraLatexStyles)
   {
-    QCString fileName = extraStyle.c_str();
-    if (!fileName.isEmpty())
+    if (!fileName.empty())
     {
-      QFileInfo fi(fileName);
+      FileInfo fi(fileName);
       if (fi.exists())
       {
         result += "\\usepackage{";
-        if (checkExtension(fi.fileName().data(), LATEX_STYLE_EXTENSION))
+        if (checkExtension(fi.fileName().c_str(), LATEX_STYLE_EXTENSION))
         {
           // strip the extension, it will be added by the usepackage in the tex conversion process
-          result += stripExtensionGeneral(fi.fileName().data(), LATEX_STYLE_EXTENSION);
+          result += stripExtensionGeneral(fi.fileName().c_str(), LATEX_STYLE_EXTENSION);
         }
         else
         {
-          result += fi.fileName().utf8();
+          result += fi.fileName();
         }
         result += "}\n";
       }
@@ -671,8 +671,8 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString formulaMacrofile = Config_getString(FORMULA_MACROFILE);
   if (!formulaMacrofile.isEmpty())
   {
-    QFileInfo fi(formulaMacrofile);
-    formulaMacrofile=fi.absFilePath().utf8();
+    FileInfo fi(formulaMacrofile.str());
+    formulaMacrofile=fi.absFilePath();
     QCString stripMacroFile = fi.fileName().data();
     copyFile(formulaMacrofile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
   }

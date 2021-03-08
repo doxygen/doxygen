@@ -181,9 +181,9 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     bool                  m_subGrouping;
 };
 
-FileDef *createFileDef(const char *p,const char *n,const char *ref,const char *dn)
+FileDef *createFileDef(const std::string &p,const std::string &n,const char *ref,const char *dn)
 {
-  return new FileDefImpl(p,n,ref,dn);
+  return new FileDefImpl(p.c_str(),n.c_str(),ref,dn);
 }
 
 

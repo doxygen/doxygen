@@ -32,7 +32,6 @@
  */
 
 #include <stdio.h>
-#include <qfileinfo.h>
 
 #include <unordered_map>
 #include <functional>
@@ -50,6 +49,7 @@
 #include "message.h"
 #include "portable.h"
 #include "regex.h"
+#include "fileinfo.h"
 
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
@@ -1068,16 +1068,16 @@ int Markdown::processLink(const char *data,int,int size)
         m_out.addStr("@ref ");
         if (!(Portable::isAbsolutePath(link) || isURL(link)))
         {
-          QFileInfo forg(link);
+          FileInfo forg(link.str());
           if (forg.exists() && forg.isReadable())
           {
-            link = forg.absFilePath().data();
+            link = forg.absFilePath();
           }
           else if (!(forg.exists() && forg.isReadable()))
           {
-            QFileInfo fi(m_fileName);
+            FileInfo fi(m_fileName.str());
             QCString mdFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + link;
-            QFileInfo fmd(mdFile);
+            FileInfo fmd(mdFile.str());
             if (fmd.exists() && fmd.isReadable())
             {
               link = fmd.absFilePath().data();
@@ -2739,7 +2739,8 @@ QCString Markdown::process(const QCString &input, int &startNewlines)
 QCString markdownFileNameToId(const QCString &fileName)
 {
   TRACE(fileName.data());
-  QCString baseFn  = stripFromPath(QFileInfo(fileName).absFilePath().utf8());
+  std::string absFileName = FileInfo(fileName.str()).absFilePath();
+  QCString baseFn  = stripFromPath(absFileName.c_str());
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
   QCString baseName = baseFn;
@@ -2787,7 +2788,7 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   if (id.startsWith("autotoc_md")) id = "";
   int indentLevel=title.isEmpty() ? 0 : -1;
   markdown.setIndentLevel(indentLevel);
-  QCString fn      = QFileInfo(fileName).fileName().utf8();
+  QCString fn      = FileInfo(fileName).fileName();
   QCString titleFn = stripExtensionGeneral(fn,getFileNameExtension(fn));
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
@@ -2796,8 +2797,8 @@ void MarkdownOutlineParser::parseInput(const char *fileName,
   {
     if (!mdfileAsMainPage.isEmpty() &&
         (fn==mdfileAsMainPage || // name reference
-         QFileInfo(fileName).absFilePath()==
-         QFileInfo(mdfileAsMainPage).absFilePath()) // file reference with path
+         FileInfo(fileName).absFilePath()==
+         FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
        )
     {
       docs.prepend("@anchor " + id + "\\ilinebr ");

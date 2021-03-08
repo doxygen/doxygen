@@ -18,7 +18,6 @@
 #include <cassert>
 
 #include <qfile.h>
-#include <qfileinfo.h>
 #include <qcstring.h>
 #include <ctype.h>
 #include <qcstringlist.h>
@@ -52,6 +51,7 @@
 #include "markdown.h"
 #include "htmlentity.h"
 #include "emoji.h"
+#include "fileinfo.h"
 
 #define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
 
@@ -348,7 +348,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
-      QFileInfo outfi(outputFile);
+      FileInfo outfi(outputFile.str());
       if (outfi.isSymLink())
       {
         QFile::remove(outputFile);
@@ -1836,7 +1836,7 @@ static void readTextFileByName(const QCString &file,QCString &text)
 {
   if (Portable::isAbsolutePath(file.data()))
   {
-    QFileInfo fi(file);
+    FileInfo fi(file.str());
     if (fi.exists())
     {
       text = fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
@@ -1846,11 +1846,11 @@ static void readTextFileByName(const QCString &file,QCString &text)
   const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
   for (const auto &s : examplePathList)
   {
-    QCString absFileName = QCString(s.c_str())+Portable::pathSeparator()+file;
-    QFileInfo fi(absFileName);
+    std::string absFileName = s+Portable::pathSeparator()+file.str();
+    FileInfo fi(absFileName);
     if (fi.exists())
     {
-      text = fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
+      text = fileToString(QCString(absFileName),Config_getBool(FILTER_SOURCE_FILES));
       return;
     }
   }

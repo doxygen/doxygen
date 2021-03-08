@@ -13,8 +13,6 @@
  *
  */
 
-#include <qfileinfo.h>
-
 #include "xmldocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -30,6 +28,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "filedef.h"
+#include "fileinfo.h"
 
 static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
 {
@@ -332,8 +331,8 @@ void XmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::IncWithLines:
       {
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
@@ -423,8 +422,8 @@ void XmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::SnipWithLines:
       {
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
@@ -474,8 +473,8 @@ void XmlDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),
