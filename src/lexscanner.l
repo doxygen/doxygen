@@ -74,6 +74,9 @@ struct lexscannerYY_state
   bool             nestedComment = false;
 
   QCString         prefix = "yy";
+  bool             reentrant = false;
+  bool             bison_bridge = false;
+  bool             bison_locations = false;
   QCString         CCodeBuffer;
   int              roundCount = 0;
   int              squareCount = 0;
@@ -108,7 +111,7 @@ TopStart        "%top{"{nl}
 TopEnd          "}"{nl}
 LiteralStart    "%{"{nl}
 LiteralEnd      "%}"{nl}
-OptPrefix       "%option"{ws}+"prefix"{ws}*"="{ws}*
+Option          "%option"
 RulesStart      "%%"{nl}
 RulesEnd        "%%"{nl}
 RulesSharp      "<"[^>]*">"
@@ -149,6 +152,7 @@ ANYopt .*
 NONLopt [^\n]*
 
 %x DefSection
+%x Option
 %x OptPrefix
 %x DefSectionLine
 %x RulesSectionInit
@@ -180,19 +184,61 @@ NONLopt [^\n]*
 %%
 
 <*>\x0d
-<DefSection>{OptPrefix}  {
+<DefSection>{Option}     {
+                           BEGIN (Option);
+                         }
+<Option>"prefix"{ws}*"="{ws}* {
                            BEGIN (OptPrefix);
                          }
 <OptPrefix>"\""[^\"]*"\"" {
                            yyextra->prefix = yytext;
                            yyextra->prefix = yyextra->prefix.mid(1,yyleng-2);
+                           BEGIN (Option);
                          }
-<OptPrefix>{nl}          {
+<Option>"reentrant"      {
+                           yyextra-> reentrant = true;
+                         }
+<Option>"bison-bridge"   {
+                           yyextra-> bison_bridge = true;
+                         }
+<Option>"bison-locations" {
+                           yyextra-> bison_bridge = true;
+                           yyextra-> bison_locations = true;
+                         }
+<Option>{nws}+
+<Option>{ws}+
+<Option>{nl}             {
                            yyextra->CCodeBuffer += yytext;
                            BEGIN (DefSection);
                          }
 <DefSection>^{RulesStart} {
-                           yyextra->CCodeBuffer += "int " + yyextra->prefix + "lex (yyscan_t yyscanner) {\n";
+                           {
+                             bool fill = false;
+                             yyextra->CCodeBuffer += "int " + yyextra->prefix + "lex (";
+                             if (yyextra->bison_bridge )
+                             {
+                               if (fill) yyextra->CCodeBuffer += ",";
+                               yyextra->CCodeBuffer += "YYSTYPE * yylval_param";
+                               fill = true;
+                             }
+                             if (yyextra->bison_locations)
+                             {
+                               if (fill) yyextra->CCodeBuffer += ",";
+                               yyextra->CCodeBuffer += "YYLTYPE * yylloc_param";
+                               fill = true;
+                             }
+                             if (yyextra->reentrant)
+                             {
+                               if (fill) yyextra->CCodeBuffer += ",";
+                               yyextra->CCodeBuffer += "yyscan_t yyscanner";
+                               fill = true;
+                             }
+                             if (!yyextra->bison_bridge && !yyextra->bison_locations && !yyextra->reentrant)
+                             {
+                               yyextra->CCodeBuffer += "void";
+                             }
+                             yyextra->CCodeBuffer += ") {\n";
+                           }
                            BEGIN (RulesSectionInit);
                          }
 <DefSection>^{TopStart}  {
