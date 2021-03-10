@@ -76,7 +76,6 @@ struct lexscannerYY_state
   QCString         prefix = "yy";
   QCString         CCodeBuffer;
   int              roundCount = 0;
-  int              squareCount = 0;
 
   QCString         yyFileName;
   ClangTUParser   *clangParser = 0;
@@ -111,12 +110,13 @@ LiteralEnd      "%}"{nl}
 OptPrefix       "%option"{ws}+"prefix"{ws}*"="{ws}*
 RulesStart      "%%"{nl}
 RulesEnd        "%%"{nl}
-RulesSharp      "<"[^>]*">"
+RulesSharp      "<"[^>\n]*">"
 RulesCurly      "{"[^{}\n]*"}"
 StartSquare     "["
 StartDouble     "\""
 StartRound      "("
-EscapeRulesCharOpen  "\\["|"\\<"|"\\{"|"\\("|"\\\""|"\\{"|"\\ "
+StartRoundQuest "(?"
+EscapeRulesCharOpen  "\\["|"\\<"|"\\{"|"\\("|"\\\""|"\\ "|"\\\\"
 EscapeRulesCharClose "\\]"|"\\>"|"\\}"|"\\)"
 EscapeRulesChar      {EscapeRulesCharOpen}|{EscapeRulesCharClose}
 
@@ -131,14 +131,14 @@ CODE      [cC][oO][dD][eE]
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
-
+CHARCE    "[:"[^:]*":]"
   /* no comment start / end signs inside square brackets */
 NCOMM [^/\*]
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
   // doxygen start comment
 DCOMM ("/\*!"|"/\**"|"/\/!"|"/\/\/")
@@ -158,6 +158,7 @@ NONLopt [^\n]*
 %x RulesSquare
 %x RulesRoundSquare
 %x RulesRound
+%x RulesRoundQuest
 %x UserSection
 
 %x TopSection
@@ -309,28 +310,24 @@ NONLopt [^\n]*
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
 <RulesPattern>{StartSquare} {
-                           yyextra->squareCount++;
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                            yyextra->lastContext = YY_START;
                            BEGIN(RulesSquare);
+                        }
+<RulesSquare,RulesRoundSquare>{CHARCE} {
+                           yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
 <RulesSquare,RulesRoundSquare>"\\[" |
 <RulesSquare,RulesRoundSquare>"\\]" {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
-<RulesSquare,RulesRoundSquare>"[" {
-                           yyextra->squareCount++;
-                           yyextra->CCodeBuffer += repeatChar(' ', yyleng);
-                        }
 <RulesSquare>"]"        {
-                           yyextra->squareCount--;
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
-                           if (!yyextra->squareCount) BEGIN(RulesPattern);
+                           BEGIN(RulesPattern);
                         }
 <RulesRoundSquare>"]"   {
-                           yyextra->squareCount--;
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
-                           if (!yyextra->squareCount) BEGIN(RulesRound) ;
+                           BEGIN(RulesRound) ;
                         }
 <RulesSquare,RulesRoundSquare>"\\\\" {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
@@ -338,6 +335,21 @@ NONLopt [^\n]*
 <RulesSquare,RulesRoundSquare>. {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
+<RulesPattern>{StartRoundQuest} {
+                           yyextra->CCodeBuffer += repeatChar(' ', yyleng);
+                           yyextra->lastContext = YY_START;
+                           BEGIN(RulesRoundQuest);
+                         }
+<RulesRoundQuest>{nl}    {
+                           yyextra->CCodeBuffer += "\n";
+                         }
+<RulesRoundQuest>[^)]    {
+                           yyextra->CCodeBuffer += repeatChar(' ', yyleng);
+                         }
+<RulesRoundQuest>")"     {
+                           yyextra->CCodeBuffer += repeatChar(' ', yyleng);
+                           BEGIN(yyextra->lastContext);
+                         }
 <RulesPattern>{StartRound} {
                            yyextra->roundCount++;
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
@@ -348,7 +360,6 @@ NONLopt [^\n]*
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
 <RulesRound>{StartSquare} {
-                           yyextra->squareCount++;
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                            BEGIN(RulesRoundSquare);
                         }
@@ -356,8 +367,7 @@ NONLopt [^\n]*
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                            BEGIN(RulesRoundDouble);
                         }
-<RulesRound>"\\("       |
-<RulesRound>"\\)"       {
+<RulesRound>{EscapeRulesChar} {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
 <RulesRound>"("         {
@@ -368,6 +378,12 @@ NONLopt [^\n]*
                            yyextra->roundCount--;
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                            if (!yyextra->roundCount) BEGIN( yyextra->lastContext ) ;
+                        }
+<RulesRound>{nl}        {
+                           yyextra->CCodeBuffer += "\n";
+                        }
+<RulesRound>{ws}        {
+                           yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                         }
 <RulesRound>.           {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
@@ -391,7 +407,7 @@ NONLopt [^\n]*
 <RulesPattern>"\\\\"     {
                            yyextra->CCodeBuffer += repeatChar(' ', yyleng);
                          }
-<RulesPattern>{CCS}       {
+<RulesPattern>{CCS}      {
                            yyextra->CCodeBuffer += yytext;
                            yyextra->lastContext = YY_START;
                            BEGIN(COMMENT);
@@ -835,9 +851,11 @@ NONLopt [^\n]*
                             yyextra->CCodeBuffer += yytext;
                           }
 
-  /*
+
+ /*
 <*>.  { fprintf(stderr,"Lex scanner Def rule for %s: #%s#\n",stateToString(YY_START),yytext);}
-  */
+<*>{nl}  { fprintf(stderr,"Lex scanner Def rule for newline %s: #%s#\n",stateToString(YY_START),yytext);}
+ */
 <*><<EOF>>                {
                             handleCCode(yyscanner);
                             yyterminate();
