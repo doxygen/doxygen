@@ -115,13 +115,13 @@ QCString DotGraph::writeGraph(
 {
   m_graphFormat = gf;
   m_textFormat = ef;
-  m_dir = QDir(path);
+  m_dir = Dir(path);
   m_fileName = fileName;
   m_relPath = relPath;
   m_generateImageMap = generateImageMap;
   m_graphId = graphId;
 
-  m_absPath  = QCString(m_dir.absPath().data()) + "/";
+  m_absPath  = m_dir.absPath() + "/";
   m_baseName = getBaseName();
 
   computeTheGraph();
@@ -139,7 +139,7 @@ bool DotGraph::prepareDotFile()
 {
   if (!m_dir.exists())
   {
-    term("Output dir %s does not exist!\n", m_dir.path().data());
+    term("Output dir %s does not exist!\n", m_dir.path().c_str());
   }
 
   QCString sigStr(33);

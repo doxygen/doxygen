@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <stack>
 
-#include <qdir.h>
 #include <qfile.h>
 
 #include "perlmodgen.h"
@@ -43,6 +42,7 @@
 #include "util.h"
 #include "htmlentity.h"
 #include "emoji.h"
+#include "dir.h"
 
 #define PERLOUTPUT_MAX_INDENTATION 40
 
@@ -1483,7 +1483,7 @@ static QCString pathDoxyExec;
 void setPerlModDoxyfile(const QCString &qs)
 {
   pathDoxyfile = qs;
-  pathDoxyExec = QDir::currentDirPath().utf8();
+  pathDoxyExec = Dir::currentDirPath();
 }
 
 class PerlModGenerator
@@ -1519,7 +1519,7 @@ public:
   void generatePerlModForPage(PageDef *pi);
 
   bool createOutputFile(QFile &f, const char *s);
-  bool createOutputDir(QDir &perlModDir);
+  bool createOutputDir(Dir &perlModDir);
   bool generateDoxyLatexTex();
   bool generateDoxyFormatTex();
   bool generateDoxyStructurePM();
@@ -2199,45 +2199,9 @@ bool PerlModGenerator::createOutputFile(QFile &f, const char *s)
   return true;
 }
 
-bool PerlModGenerator::createOutputDir(QDir &perlModDir)
+bool PerlModGenerator::createOutputDir(Dir &perlModDir)
 {
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
-  if (outputDirectory.isEmpty())
-  {
-    outputDirectory=QDir::currentDirPath().utf8();
-  }
-  else
-  {
-    QDir dir(outputDirectory);
-    if (!dir.exists())
-    {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDirectory))
-      {
-	term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-	    "exist and cannot be created\n",outputDirectory.data());
-      }
-      else
-      {
-	msg("Notice: Output directory '%s' does not exist. "
-	    "I have created it for you.\n", outputDirectory.data());
-      }
-      dir.cd(outputDirectory);
-    }
-    outputDirectory=dir.absPath().utf8();
-  }
-
-  QDir dir(outputDirectory);
-  if (!dir.exists())
-  {
-    dir.setPath(QDir::currentDirPath());
-    if (!dir.mkdir(outputDirectory))
-    {
-      err("Cannot create directory %s\n",outputDirectory.data());
-      return false;
-    }
-  }
-
+  std::string outputDirectory = Config_getString(OUTPUT_DIRECTORY).str();
   perlModDir.setPath(outputDirectory+"/perlmod");
   if (!perlModDir.exists() && !perlModDir.mkdir(outputDirectory+"/perlmod"))
   {
@@ -2911,13 +2875,13 @@ void PerlModGenerator::generate()
   // + related pages
   // - examples
 
-  QDir perlModDir;
+  Dir perlModDir;
   if (!createOutputDir(perlModDir))
     return;
 
   bool perlmodLatex = Config_getBool(PERLMOD_LATEX);
 
-  QCString perlModAbsPath = perlModDir.absPath().utf8();
+  QCString perlModAbsPath = perlModDir.absPath();
   pathDoxyDocsPM = perlModAbsPath + "/DoxyDocs.pm";
   pathDoxyStructurePM = perlModAbsPath + "/DoxyStructure.pm";
   pathMakefile = perlModAbsPath + "/Makefile";

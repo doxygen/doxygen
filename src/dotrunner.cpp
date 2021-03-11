@@ -24,6 +24,7 @@
 #include "message.h"
 #include "ftextstream.h"
 #include "config.h"
+#include "dir.h"
 
 // the graphicx LaTeX has a limitation of maximum size of 16384
 // To be on the save side we take it a little bit smaller i.e. 150 inch * 72 dpi
@@ -66,25 +67,26 @@ static void checkPngResult(const char *imgName)
 
 static bool resetPDFSize(const int width,const int height, const char *base)
 {
-  QCString tmpName = QCString(base)+".tmp";
-  QCString patchFile = QCString(base)+".dot";
-  if (!QDir::current().rename(patchFile,tmpName))
+  std::string tmpName   = std::string(base)+".tmp";
+  std::string patchFile = std::string(base)+".dot";
+  Dir thisDir;
+  if (!thisDir.rename(patchFile,tmpName))
   {
     err("Failed to rename file %s to %s!\n",patchFile.data(),tmpName.data());
     return FALSE;
   }
-  QFile fi(tmpName);
-  QFile fo(patchFile);
+  QFile fi(tmpName.c_str());
+  QFile fo(patchFile.c_str());
   if (!fi.open(IO_ReadOnly))
   {
     err("problem opening file %s for patching!\n",tmpName.data());
-    QDir::current().rename(tmpName,patchFile);
+    thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
   if (!fo.open(IO_WriteOnly))
   {
     err("problem opening file %s for patching!\n",patchFile.data());
-    QDir::current().rename(tmpName,patchFile);
+    thisDir.rename(tmpName,patchFile);
     fi.close();
     return FALSE;
   }
@@ -110,7 +112,7 @@ static bool resetPDFSize(const int width,const int height, const char *base)
   fi.close();
   fo.close();
   // remove temporary file
-  QDir::current().remove(tmpName);
+  thisDir.remove(tmpName);
   return TRUE;
 }
 

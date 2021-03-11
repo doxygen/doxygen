@@ -22,7 +22,6 @@
 #include <cstdio>
 
 #include <qfile.h>
-#include <qdir.h>
 
 #include "ftextstream.h"
 #include "message.h"
@@ -31,6 +30,7 @@
 #include "portable.h"
 #include "regex.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #define ENABLE_TRACING 0
 
@@ -2772,36 +2772,35 @@ template<class T> class TemplateNodeCreator : public TemplateNode
       return dynamic_cast<TemplateImpl*>(root);
     }
   protected:
-    void mkpath(TemplateContextImpl *ci,const QCString &fileName)
+    void mkpath(TemplateContextImpl *ci,const std::string &fileName)
     {
-      int i=fileName.find('/');
-      QCString outputDir = ci->outputDirectory();
-      QDir d(outputDir);
+      size_t i=fileName.find('/');
+      std::string outputDir = ci->outputDirectory().str();
+      Dir d(outputDir);
       if (!d.exists())
       {
-        QDir rootDir;
-        rootDir.setPath(QDir::currentDirPath());
+        Dir rootDir;
         if (!rootDir.mkdir(outputDir))
         {
           err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-	      "exist and cannot be created\n",outputDir.data());
+	      "exist and cannot be created\n",outputDir.c_str());
           return;
         }
         d.setPath(outputDir);
       }
-      int j=0;
-      while (i!=-1) // fileName contains path part
+      size_t j=0;
+      while (i!=std::string::npos) // fileName contains path part
       {
         if (d.exists())
         {
-          bool ok = d.mkdir(fileName.mid(j,i-j));
+          bool ok = d.mkdir(fileName.substr(j,i-j));
           if (!ok)
           {
-            err("Failed to create directory '%s'\n",(fileName.mid(j,i-j)).data());
+            err("Failed to create directory '%s'\n",(fileName.substr(j,i-j)).c_str());
             break;
           }
-          QCString dirName = outputDir+'/'+fileName.left(i);
-          d = QDir(dirName);
+          std::string dirName = outputDir+'/'+fileName.substr(0,i);
+          d = Dir(dirName);
           j = i+1;
         }
         i=fileName.find('/',i+1);
@@ -3629,7 +3628,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
             TemplateImpl *createTemplate = ct ? dynamic_cast<TemplateImpl*>(ct) : 0;
             if (createTemplate)
             {
-              mkpath(ci,outputFile);
+              mkpath(ci,outputFile.str());
               if (!ci->outputDirectory().isEmpty())
               {
                 outputFile.prepend(ci->outputDirectory()+"/");
@@ -4338,7 +4337,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
           if (m_asExpr)
           {
             QCString targetFile = m_asExpr->resolve(c).toString();
-            mkpath(ci,targetFile);
+            mkpath(ci,targetFile.str());
             if (targetFile.isEmpty())
             { ci->warn(m_templateName,m_line,"invalid parameter at right side of 'as' for resource command\n");
             }

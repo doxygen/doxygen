@@ -16,8 +16,6 @@
 #include <cstdlib>
 #include <cassert>
 
-#include <qdir.h>
-
 #include "config.h"
 #include "dot.h"
 #include "dotrunner.h"
@@ -29,6 +27,7 @@
 #include "doxygen.h"
 #include "language.h"
 #include "index.h"
+#include "dir.h"
 
 #define MAP_CMD "cmapx"
 
@@ -273,7 +272,7 @@ bool DotManager::run() const
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format)
 {
-  QDir d(outDir);
+  Dir d(outDir);
   if (!d.exists())
   {
     term("Output dir %s does not exist!\n",outDir);
@@ -281,8 +280,8 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
 
   QCString imgExt = getDotImageExtension();
   QCString imgName = (QCString)outFile+"."+imgExt;
-  QCString absImgName = d.absPath().utf8()+"/"+imgName;
-  QCString absOutFile = d.absPath().utf8()+"/"+outFile;
+  QCString absImgName = QCString(d.absPath())+"/"+imgName;
+  QCString absOutFile = QCString(d.absPath())+"/"+outFile;
 
   DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
@@ -326,7 +325,7 @@ void writeDotImageMapFromFile(FTextStream &t,
                             const QCString &context,int graphId)
 {
 
-  QDir d(outDir);
+  Dir d(outDir.str());
   if (!d.exists())
   {
     term("Output dir %s does not exist!\n",outDir.data());
@@ -335,7 +334,7 @@ void writeDotImageMapFromFile(FTextStream &t,
   QCString mapName = baseName+".map";
   QCString imgExt = getDotImageExtension();
   QCString imgName = baseName+"."+imgExt;
-  QCString absOutFile = d.absPath().utf8()+"/"+mapName;
+  QCString absOutFile = QCString(d.absPath())+"/"+mapName;
 
   DotRunner dotRun(inFile.data());
   dotRun.addJob(MAP_CMD,absOutFile);
@@ -368,5 +367,5 @@ void writeDotImageMapFromFile(FTextStream &t,
       t << "</map>" << endl;
     }
   }
-  d.remove(absOutFile);
+  d.remove(absOutFile.str());
 }

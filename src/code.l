@@ -38,7 +38,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qdir.h>
 
 #include "code.h"
 #include "entry.h"
@@ -58,6 +57,7 @@
 #include "tooltip.h"
 #include "scopedtypevariant.h"
 #include "symbolresolver.h"
+#include "dir.h"
 
 // Toggle for some debugging info
 //#define DBG_CTX(x) fprintf x
@@ -92,7 +92,7 @@ struct codeYY_state
 
   std::unordered_map< std::string, ScopedTypeVariant > codeClassMap;
   QCString      curClassName;
-  QStrList      curClassBases;
+  StringVector  curClassBases;
 
   QCString      parmType;
   QCString      parmName;
@@ -497,7 +497,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             if (ambig) // multiple input files match the name
                                             {
                                               DBG_CTX((stderr,"===== yes %s is ambiguous\n",yytext));
-                                              QCString name = QDir::cleanDirPath(yytext).utf8();
+                                              QCString name = Dir::cleanDirPath(yytext);
                                               if (!name.isEmpty() && yyextra->sourceFileDef)
                                               {
                                                 const FileName *fn = Doxygen::inputNameLinkedMap->find(name);
@@ -783,8 +783,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                               DBG_CTX((stderr,"Adding new class %s\n",yyextra->curClassName.data()));
                                               ScopedTypeVariant var(yyextra->curClassName);
                                               // insert base classes.
-                                              char *s=yyextra->curClassBases.first();
-                                              while (s)
+                                              for (const auto &s : yyextra->curClassBases)
                                               {
                                                 const ClassDef *bcd=0;
                                                 auto it = yyextra->codeClassMap.find(s);
@@ -792,12 +791,11 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                                 {
                                                   bcd = toClassDef(it->second.globalDef());
                                                 }
-                                                if (bcd==0) bcd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s);
+                                                if (bcd==0) bcd=yyextra->symbolResolver.resolveClass(yyextra->currentDefinition,s.c_str());
                                                 if (bcd && bcd->name()!=yyextra->curClassName)
                                                 {
                                                   var.localDef()->insertBaseClass(bcd->name());
                                                 }
-                                                s=yyextra->curClassBases.next();
                                               }
                                               yyextra->codeClassMap.emplace(std::make_pair(yyextra->curClassName.str(),std::move(var)));
                                             }
@@ -819,7 +817,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                         }
 <Bases>{SEP}?({ID}{SEP})*{ID}           {
                                           DBG_CTX((stderr,"%s:addBase(%s)\n",yyextra->curClassName.data(),yytext));
-                                          yyextra->curClassBases.inSort(yytext);
+                                          yyextra->curClassBases.push_back(yytext);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                         }
 <Bases>"<"                              {

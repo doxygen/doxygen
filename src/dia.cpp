@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -20,8 +18,8 @@
 #include "config.h"
 #include "message.h"
 #include "util.h"
+#include "dir.h"
 
-#include <qdir.h>
 
 static const int maxCmdLine = 40960;
 
@@ -33,10 +31,10 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   absOutFile+=outFile;
 
   // chdir to the output dir, so dot can find the font file.
-  QCString oldDir = QDir::currentDirPath().utf8();
+  std::string oldDir = Dir::currentDirPath();
   // go to the html output directory (i.e. path)
-  QDir::setCurrent(outDir);
-  //printf("Going to dir %s\n",QDir::currentDirPath().data());
+  Dir::setCurrent(outDir);
+  //printf("Going to dir %s\n",Dir::currentDirPath().c_str());
   QCString diaExe = Config_getString(DIA_PATH)+"dia"+Portable::commandExtension();
   QCString diaArgs;
   QCString extension;
@@ -85,6 +83,6 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   }
 
 error:
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
 }
 

@@ -481,8 +481,8 @@ static void writeMakeBat()
 void LatexGenerator::init()
 {
   QCString dname = Config_getString(LATEX_OUTPUT);
-  QDir d(dname);
-  if (!d.exists() && !d.mkdir(dname))
+  Dir d(dname.str());
+  if (!d.exists() && !d.mkdir(dname.str()))
   {
     term("Could not create output directory %s\n",dname.data());
   }

@@ -21,8 +21,6 @@
 #include <ctime>
 #include <stdlib.h>
 
-#include <qdir.h>
-
 #include "rtfgen.h"
 #include "config.h"
 #include "message.h"
@@ -47,6 +45,7 @@
 #include "classlist.h"
 #include "filename.h"
 #include "namespacedef.h"
+#include "dir.h"
 
 
 //#define DBG_RTF(x) x;
@@ -171,8 +170,8 @@ void RTFGenerator::writeExtensionsFile(QFile &file)
 void RTFGenerator::init()
 {
   QCString dir=Config_getString(RTF_OUTPUT);
-  QDir d(dir);
-  if (!d.exists() && !d.mkdir(dir))
+  Dir d(dir.str());
+  if (!d.exists() && !d.mkdir(dir.str()))
   {
     term("Could not create output directory %s\n",dir.data());
   }
@@ -2374,7 +2373,7 @@ static void encodeForOutput(FTextStream &t,const char *s)
  * VERY brittle routine inline RTF's included by other RTF's.
  * it is recursive and ugly.
  */
-static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncludeHeader=TRUE)
+static bool preProcessFile(Dir &d,QCString &infName, FTextStream &t, bool bIncludeHeader=TRUE)
 {
   QFile f(infName);
   if (!f.open(IO_ReadOnly))
@@ -2444,7 +2443,7 @@ static bool preProcessFile(QDir &d,QCString &infName, FTextStream &t, bool bIncl
   }
   f.close();
   // remove temporary file
-  d.remove(infName);
+  d.remove(infName.str());
   return TRUE;
 }
 
@@ -2596,18 +2595,18 @@ err:
  */
 bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
 {
-  QDir d(path);
+  Dir d(path);
   // store the original directory
   if (!d.exists())
   {
     err("Output dir %s does not exist!\n",path);
     return FALSE;
   }
-  QCString oldDir = QDir::currentDirPath().utf8();
+  std::string oldDir = Dir::currentDirPath();
 
   // go to the html output directory (i.e. path)
-  QDir::setCurrent(d.absPath());
-  QDir thisDir;
+  Dir::setCurrent(d.absPath());
+  Dir thisDir;
 
   QCString combinedName = (QCString)path+"/combined.rtf";
   QCString mainRTFName  = (QCString)path+"/"+name;
@@ -2616,7 +2615,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   if (!outf.open(IO_WriteOnly))
   {
     err("Failed to open %s for writing!\n",combinedName.data());
-    QDir::setCurrent(oldDir);
+    Dir::setCurrent(oldDir);
     return FALSE;
   }
   FTextStream outt(&outf);
@@ -2625,19 +2624,19 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   {
     // it failed, remove the temp file
     outf.close();
-    thisDir.remove(combinedName);
-    QDir::setCurrent(oldDir);
+    thisDir.remove(combinedName.str());
+    Dir::setCurrent(oldDir);
     return FALSE;
   }
 
   // everything worked, move the files
   outf.close();
-  thisDir.remove(mainRTFName);
-  thisDir.rename(combinedName,mainRTFName);
+  thisDir.remove(mainRTFName.str());
+  thisDir.rename(combinedName.str(),mainRTFName.str());
 
   testRTFOutput(mainRTFName);
 
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
   return TRUE;
 }
 

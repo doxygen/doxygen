@@ -3318,7 +3318,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
     cachedResult = g_findFileDefCache.insert(key.str(),FindFileCacheElem(0,FALSE));
   }
 
-  QCString name=QDir::cleanDirPath(n).utf8();
+  QCString name=Dir::cleanDirPath(n);
   QCString path;
   int slashPos;
   const FileName *fn;
@@ -3328,12 +3328,11 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   {
     path=name.left(slashPos+1);
     name=name.right(name.length()-slashPos-1);
-    //printf("path=%s name=%s\n",path.data(),name.data());
   }
   if (name.isEmpty()) goto exit;
   if ((fn=fnMap->find(name)))
   {
-    //printf("fn->count()=%d\n",fn->count());
+    //printf("fn->size()=%zu\n",fn->size());
     if (fn->size()==1)
     {
       const std::unique_ptr<FileDef> &fd = fn->front();
@@ -3785,7 +3784,7 @@ QCString relativePathToRoot(const char *name)
   return result;
 }
 
-void createSubDirs(QDir &d)
+void createSubDirs(const Dir &d)
 {
   if (Config_getBool(CREATE_SUBDIRS))
   {
@@ -3795,7 +3794,7 @@ void createSubDirs(QDir &d)
     {
       QCString subdir;
       subdir.sprintf("d%x",l1);
-      if (!d.exists(subdir) && !d.mkdir(subdir))
+      if (!d.exists(subdir.str()) && !d.mkdir(subdir.str()))
       {
         term("Failed to create output directory '%s'\n",subdir.data());
       }
@@ -3803,7 +3802,7 @@ void createSubDirs(QDir &d)
       {
         QCString subsubdir;
         subsubdir.sprintf("d%x/d%02x",l1,l2);
-        if (!d.exists(subsubdir) && !d.mkdir(subsubdir))
+        if (!d.exists(subsubdir.str()) && !d.mkdir(subsubdir.str()))
         {
           term("Failed to create output directory '%s'\n",subsubdir.data());
         }
@@ -7251,11 +7250,11 @@ bool openOutputFile(const char *outFile,QFile &f)
     FileInfo fi(outFile);
     if (fi.exists()) // create a backup
     {
-      QDir dir;
+      Dir dir;
       FileInfo backup(fi.fileName()+".bak");
       if (backup.exists()) // remove existing backup
-        dir.remove(backup.fileName().c_str());
-      dir.rename(QCString(fi.fileName()),QCString(fi.fileName()+".bak"));
+        dir.remove(backup.fileName());
+      dir.rename(fi.fileName(),fi.fileName()+".bak");
     }
     f.setName(outFile);
     fileOpened = f.open(IO_WriteOnly|IO_Translate);

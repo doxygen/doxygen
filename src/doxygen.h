@@ -130,7 +130,7 @@ void generateOutput();
 void readAliases();
 void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
-int readFileOrDirectory(const char *s,
+void readFileOrDirectory(const char *s,
                         FileNameLinkedMap *fnDict,
                         StringUnorderedSet *exclSet,
                         const StringVector *patList,

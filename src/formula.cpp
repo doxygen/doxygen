@@ -21,9 +21,9 @@
 #include "portable.h"
 #include "image.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #include <qfile.h>
-#include <qdir.h>
 
 #include <map>
 #include <vector>
@@ -35,7 +35,7 @@
 #include "doxygen.h" // for Doxygen::indexList
 #include "index.h"   // for Doxygen::indexList
 
-static int determineInkscapeVersion(QDir &thisDir);
+static int determineInkscapeVersion(Dir &thisDir);
 
 // Remove the temporary files
 #define RM_TMP_FILES (true)
@@ -132,13 +132,13 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
 
 void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) const
 {
-  QDir d(path);
+  Dir d(path);
   // store the original directory
   if (!d.exists())
   {
     term("Output directory '%s' does not exist!\n",path);
   }
-  QCString oldDir = QDir::currentDirPath().utf8();
+  std::string oldDir = Dir::currentDirPath();
   QCString macroFile = Config_getString(FORMULA_MACROFILE);
   QCString stripMacroFile;
   if (!macroFile.isEmpty())
@@ -149,8 +149,8 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   }
 
   // go to the html output directory (i.e. path)
-  QDir::setCurrent(d.absPath());
-  QDir thisDir;
+  Dir::setCurrent(d.absPath());
+  Dir thisDir;
   // generate a latex file containing one formula per page.
   QCString texName="_formulas.tex";
   IntVector formulasToGenerate;
@@ -202,7 +202,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       err("Problems running latex. Check your installation or look "
           "for typos in _formulas.tex and check _formulas.log!\n");
       Portable::sysTimerStop();
-      QDir::setCurrent(oldDir);
+      Dir::setCurrent(oldDir);
       return;
     }
     Portable::sysTimerStop();
@@ -222,7 +222,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       {
         err("Problems running dvips. Check your installation!\n");
         Portable::sysTimerStop();
-        QDir::setCurrent(oldDir);
+        Dir::setCurrent(oldDir);
         return;
       }
       Portable::sysTimerStop();
@@ -235,7 +235,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       {
         err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
         Portable::sysTimerStop();
-        QDir::setCurrent(oldDir);
+        Dir::setCurrent(oldDir);
         return;
       }
       Portable::sysTimerStop();
@@ -245,7 +245,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       FileInfo fi((formBase+"_tmp.epsi").str());
       if (fi.exists())
       {
-        QString eps = fileToString(formBase+"_tmp.epsi");
+        QCString eps = fileToString(formBase+"_tmp.epsi");
         int i = eps.find("%%BoundingBox:");
         if (i!=-1)
         {
@@ -279,7 +279,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         {
           err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
           Portable::sysTimerStop();
-          QDir::setCurrent(oldDir);
+          Dir::setCurrent(oldDir);
           return;
         }
         Portable::sysTimerStop();
@@ -293,7 +293,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
           {
             err("Problems running pdf2svg. Check your installation!\n");
             Portable::sysTimerStop();
-            QDir::setCurrent(oldDir);
+            Dir::setCurrent(oldDir);
             return;
           }
           Portable::sysTimerStop();
@@ -304,7 +304,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
           if (inkscapeVersion == -1)
           {
             err("Problems determining the version of inkscape. Check your installation!\n");
-            QDir::setCurrent(oldDir);
+            Dir::setCurrent(oldDir);
             return;
           }
           else if (inkscapeVersion == 0)
@@ -320,7 +320,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
           {
             err("Problems running inkscape. Check your installation!\n");
             Portable::sysTimerStop();
-            QDir::setCurrent(oldDir);
+            Dir::setCurrent(oldDir);
             return;
           }
           Portable::sysTimerStop();
@@ -333,7 +333,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
 
         if (RM_TMP_FILES)
         {
-          thisDir.remove(formBase+"_tmp.pdf");
+          thisDir.remove(formBase.str()+"_tmp.pdf");
         }
       }
       else // format==Format::Bitmap
@@ -346,7 +346,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         {
           err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
           Portable::sysTimerStop();
-          QDir::setCurrent(oldDir);
+          Dir::setCurrent(oldDir);
           return;
         }
 
@@ -385,7 +385,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         {
           err("Problems correcting the eps files from %s_tmp.eps to %s_tmp_corr.eps\n",
               formBase.data(),formBase.data());
-          QDir::setCurrent(oldDir);
+          Dir::setCurrent(oldDir);
           return;
         }
 
@@ -403,23 +403,23 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         {
           err("Problems running %s. Check your installation!\n",Portable::ghostScriptCommand());
           Portable::sysTimerStop();
-          QDir::setCurrent(oldDir);
+          Dir::setCurrent(oldDir);
           return;
         }
         Portable::sysTimerStop();
 
         if (RM_TMP_FILES)
         {
-          thisDir.remove(formBase+"_tmp.eps");
-          thisDir.remove(formBase+"_tmp_corr.eps");
+          thisDir.remove(formBase.str()+"_tmp.eps");
+          thisDir.remove(formBase.str()+"_tmp_corr.eps");
         }
       }
 
       // remove intermediate image files
       if (RM_TMP_FILES)
       {
-        thisDir.remove(formBase+"_tmp.ps");
-        thisDir.remove(formBase+"_tmp.epsi");
+        thisDir.remove(formBase.str()+"_tmp.ps");
+        thisDir.remove(formBase.str()+"_tmp.epsi");
       }
       pageIndex++;
     }
@@ -455,7 +455,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
     f.close();
   }
   // reset the directory to the original location.
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
 }
 
 void FormulaManager::clear()
@@ -499,7 +499,7 @@ FormulaManager::DisplaySize FormulaManager::displaySize(int formulaId) const
 
 // helper function to detect and return the major version of inkscape.
 // return -1 if the version cannot be determined.
-static int determineInkscapeVersion(QDir &thisDir)
+static int determineInkscapeVersion(Dir &thisDir)
 {
   // The command line interface (CLI) of Inkscape 1.0 has changed in comparison to
   // previous versions. In order to invokine Inkscape, the used version is detected
@@ -563,7 +563,7 @@ static int determineInkscapeVersion(QDir &thisDir)
     }
     if (RM_TMP_FILES)
     {
-      thisDir.remove(inkscapeVersionFile);
+      thisDir.remove(inkscapeVersionFile.str());
     }
     Portable::sysTimerStop();
   }

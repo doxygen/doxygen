@@ -24,7 +24,6 @@
 #include <qcstring.h>
 
 class FileList;
-class QStrList;
 class FileDef;
 class OutputList;
 class UsedDir;

@@ -252,8 +252,9 @@ static int idCounter;
 *	end;
 */
 
-QString VHDLOutlineParser::getNameID(){
- return QString::number(idCounter++,10);
+QCString VHDLOutlineParser::getNameID()
+{
+  return QCString().setNum(idCounter++);
 }
 
 void VHDLOutlineParser::handleFlowComment(const char* doc)

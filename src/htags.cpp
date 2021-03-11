@@ -18,19 +18,17 @@
 #include <unordered_map>
 #include <string>
 
-#include <qdir.h>
-
 #include "htags.h"
 #include "util.h"
 #include "message.h"
 #include "config.h"
 #include "portable.h"
 #include "fileinfo.h"
-
+#include "qdir.h"
 
 bool Htags::useHtags = FALSE;
 
-static QDir g_inputDir;
+static Dir g_inputDir;
 static std::unordered_map<std::string,std::string> g_symbolMap;
 
 /*! constructs command line of htags(1) and executes it.
@@ -46,14 +44,13 @@ bool Htags::execute(const QCString &htmldir)
   QCString projectName = Config_getString(PROJECT_NAME);
   QCString projectNumber = Config_getString(PROJECT_NUMBER);
 
-  QCString cwd = QDir::currentDirPath().utf8();
   if (inputSource.empty())
   {
-    g_inputDir.setPath(cwd);
+    g_inputDir.setPath(Dir::currentDirPath());
   }
   else if (inputSource.size()==1)
   {
-    g_inputDir.setPath(inputSource.back().c_str());
+    g_inputDir.setPath(inputSource.back());
     if (!g_inputDir.exists())
       err("Cannot find directory %s. "
           "Check the value of the INPUT tag in the configuration file.\n",
@@ -89,8 +86,8 @@ bool Htags::execute(const QCString &htmldir)
     commandLine += "\" ";
   }
   commandLine += " \"" + htmldir + "\"";
-  QCString oldDir = QDir::currentDirPath().utf8();
-  QDir::setCurrent(g_inputDir.absPath());
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(g_inputDir.absPath());
   //printf("CommandLine=[%s]\n",commandLine.data());
   Portable::sysTimerStart();
   bool result=Portable::system("htags",commandLine,FALSE)==0;
@@ -99,7 +96,7 @@ bool Htags::execute(const QCString &htmldir)
     err("Problems running %s. Check your installation\n", "htags");
   }
   Portable::sysTimerStop();
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
   return result;
 }
 
@@ -165,7 +162,7 @@ bool Htags::loadFilemap(const QCString &htmlDir)
 QCString Htags::path2URL(const QCString &path)
 {
   QCString url,symName=path;
-  QCString dir = g_inputDir.absPath().utf8();
+  QCString dir = g_inputDir.absPath();
   int dl=dir.length();
   if ((int)symName.length()>dl+1)
   {

@@ -24,9 +24,9 @@
 #include "util.h"
 #include "debug.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #include <qfile.h>
-#include <qdir.h>
 
 #include <map>
 #include <string>
@@ -276,8 +276,8 @@ void CitationManager::generatePage()
   //    Strictly not required when only latex is generated
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
-  QDir thisDir;
-  if (!thisDir.exists(bibOutputDir) && !thisDir.mkdir(bibOutputDir))
+  Dir thisDir;
+  if (!thisDir.exists(bibOutputDir.str()) && !thisDir.mkdir(bibOutputDir.str()))
   {
     err("Failed to create temporary output directory '%s', skipping citations\n",bibOutputDir.data());
     return;
@@ -299,8 +299,8 @@ void CitationManager::generatePage()
     }
   }
 
-  QString oldDir = QDir::currentDirPath();
-  QDir::setCurrent(outputDir);
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(outputDir.str());
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
@@ -314,7 +314,7 @@ void CitationManager::generatePage()
   }
   Portable::sysTimerStop();
 
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
 
   // 6. read back the file
   QCString doc;
@@ -405,17 +405,18 @@ void CitationManager::generatePage()
   // 9. Remove temporary files
   if (!citeDebug)
   {
-    thisDir.remove(citeListFile);
-    thisDir.remove(doxygenBstFile);
-    thisDir.remove(bib2xhtmlFile);
+    thisDir.remove(citeListFile.str());
+    thisDir.remove(doxygenBstFile.str());
+    thisDir.remove(bib2xhtmlFile.str());
     // we might try to remove too many files as empty files didn't get a corresponding new file
     // but the remove function does not emit an error for it and we don't catch the error return
     // so no problem.
     for (size_t j = 1; j <= citeDataList.size(); j++)
     {
-      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib");
+      QCString bibFile = bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib";
+      thisDir.remove(bibFile.str());
     }
-    thisDir.rmdir(bibOutputDir);
+    thisDir.rmdir(bibOutputDir.str());
   }
 }
 

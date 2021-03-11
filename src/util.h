@@ -36,6 +36,7 @@
 #include "namespacedef.h"
 #include "outputgen.h"
 #include "regex.h"
+#include "dir.h"
 
 //--------------------------------------------------------------------
 
@@ -52,12 +53,10 @@ class GroupDef;
 struct TagInfo;
 class PageDef;
 class SectionInfo;
-class QDir;
 class Definition;
 class BufStr;
 class FileInfo;
 class QFileInfo;
-class QStrList;
 class FTextStream;
 class QFile;
 
@@ -350,7 +349,7 @@ void addDirPrefix(QCString &fileName);
 
 QCString relativePathToRoot(const char *name);
 
-void createSubDirs(QDir &d);
+void createSubDirs(const Dir &d);
 
 QCString stripPath(const char *s);
 

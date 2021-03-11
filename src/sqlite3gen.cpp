@@ -45,9 +45,9 @@
 #include "dirdef.h"
 #include "section.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #include <sys/stat.h>
-#include <qdir.h>
 #include <string.h>
 #include <sqlite3.h>
 
@@ -2393,7 +2393,6 @@ static sqlite3* openDbConnection()
 {
 
   QCString outputDirectory = Config_getString(SQLITE3_OUTPUT);
-  QDir sqlite3Dir(outputDirectory);
   sqlite3 *db;
   int rc;
 
@@ -2411,7 +2410,7 @@ static sqlite3* openDbConnection()
   {
     if (Config_getBool(SQLITE3_RECREATE_DB))
     {
-       QDir().remove(fi.absFilePath().c_str());
+       Dir().remove(fi.absFilePath());
     }
     else
     {

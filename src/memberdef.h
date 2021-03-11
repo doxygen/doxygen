@@ -36,7 +36,6 @@ class MemberGroup;
 class ExampleList;
 class OutputList;
 class GroupDef;
-class QStrList;
 struct TagInfo;
 class MemberDefMutable;
 class MemberGroupList;
@@ -258,7 +257,7 @@ class MemberDef : public Definition
 
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual QCString getDeclType() const = 0;
-    virtual void getLabels(QStrList &sl,const Definition *container) const = 0;
+    virtual StringVector getLabels(const Definition *container) const = 0;
 
     virtual const ArgumentList &typeConstraints() const = 0;
 

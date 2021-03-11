@@ -38,7 +38,7 @@ class FileInfo
     std::string fileName() const;
     std::string baseName() const;
     std::string extension(bool complete) const;
-    std::string dirPath(bool absPath = false) const;
+    std::string dirPath(bool absPath = true) const;
   private:
     static void correctPath(std::string &s);
     std::string m_name;

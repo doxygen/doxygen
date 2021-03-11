@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 
-#include <qdir.h>
 #include <qfile.h>
 #include "docbookgen.h"
 #include "doxygen.h"
@@ -51,6 +50,7 @@
 #include "membergroup.h"
 #include "dirdef.h"
 #include "section.h"
+#include "dir.h"
 
 // no debug info
 #define Docbook_DB(x) do {} while(0)
@@ -296,8 +296,8 @@ DB_GEN_C
 void DocbookGenerator::init()
 {
   QCString dir=Config_getString(DOCBOOK_OUTPUT);
-  QDir d(dir);
-  if (!d.exists() && !d.mkdir(dir))
+  Dir d(dir.str());
+  if (!d.exists() && !d.mkdir(dir.str()))
   {
     term("Could not create output directory %s\n",dir.data());
   }

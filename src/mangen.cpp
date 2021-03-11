@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 
-#include <qdir.h>
 #include "message.h"
 #include "mangen.h"
 #include "config.h"
@@ -30,6 +29,7 @@
 #include "docparser.h"
 #include "mandocvisitor.h"
 #include "language.h"
+#include "dir.h"
 
 static QCString getExtension()
 {
@@ -101,13 +101,13 @@ void ManGenerator::init()
 {
   QCString manOutput = Config_getString(MAN_OUTPUT);
 
-  QDir d(manOutput);
-  if (!d.exists() && !d.mkdir(manOutput))
+  Dir d(manOutput.str());
+  if (!d.exists() && !d.mkdir(manOutput.str()))
   {
     term("Could not create output directory %s\n",manOutput.data());
   }
-  d.setPath(manOutput + "/" + getSubdir());
-  if (!d.exists() && !d.mkdir(manOutput + "/" + getSubdir()))
+  std::string manDir = manOutput.str()+"/"+getSubdir().str();
+  if (!d.exists(manDir) && !d.mkdir(manDir))
   {
     term("Could not create output directory %s/%s\n",manOutput.data(), getSubdir().data());
   }

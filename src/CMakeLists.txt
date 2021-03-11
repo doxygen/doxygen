@@ -232,6 +232,7 @@ add_library(doxymain STATIC
     definition.cpp
     dia.cpp
     diagram.cpp
+    dir.cpp
     dirdef.cpp
     docbookgen.cpp
     docbookvisitor.cpp

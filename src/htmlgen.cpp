@@ -20,7 +20,6 @@
 
 #include <mutex>
 
-#include <qdir.h>
 #include "message.h"
 #include "htmlgen.h"
 #include "config.h"
@@ -52,6 +51,7 @@
 #include "tooltip.h"
 #include "growbuf.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -878,8 +878,8 @@ HtmlGenerator::~HtmlGenerator()
 void HtmlGenerator::init()
 {
   QCString dname = Config_getString(HTML_OUTPUT);
-  QDir d(dname);
-  if (!d.exists() && !d.mkdir(dname))
+  Dir d(dname.str());
+  if (!d.exists() && !d.mkdir(dname.str()))
   {
     term("Could not create output directory %s\n",dname.data());
   }

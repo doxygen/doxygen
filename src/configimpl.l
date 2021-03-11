@@ -27,10 +27,10 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include <qdir.h>
-
 #include <thread>
 #include <algorithm>
+
+#include <qfile.h>
 
 #include "regex.h"
 #include "configimpl.h"
@@ -41,6 +41,7 @@
 #include "lang_cfg.h"
 #include "configoptions.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -1529,10 +1530,8 @@ void Config::checkAndCorrect()
   StringVector stripFromPath = Config_getList(STRIP_FROM_PATH);
   if (stripFromPath.empty()) // by default use the current path
   {
-    QString p = QDir::currentDirPath();
-    if (p.at(p.length()-1)!='/')
-        p.append('/');
-    stripFromPath.push_back(p.utf8().str());
+    std::string p = Dir::currentDirPath()+"/";
+    stripFromPath.push_back(p);
   }
   else
   {
@@ -1871,7 +1870,7 @@ void Config::checkAndCorrect()
   if (inputSources.empty())
   {
     // use current dir as the default
-    inputSources.push_back(QDir::currentDirPath().utf8().str());
+    inputSources.push_back(Dir::currentDirPath());
   }
   else
   {

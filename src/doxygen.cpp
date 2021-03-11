@@ -106,6 +106,7 @@
 #include "symbolresolver.h"
 #include "regex.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #if USE_SQLITE3
 #include <sqlite3.h>
@@ -9598,7 +9599,7 @@ static QCString resolveSymlink(QCString path)
         bool isRelative = FileInfo(target.str()).isRelative();
         if (isRelative)
         {
-          target = QDir::cleanDirPath(oldPrefix+"/"+target.data()).utf8();
+          target = Dir::cleanDirPath(oldPrefix.str()+"/"+target.str());
         }
         if (sepPos!=-1)
         {
@@ -9608,7 +9609,7 @@ static QCString resolveSymlink(QCString path)
           }
           target+=result.mid(sepPos);
         }
-        result = QDir::cleanDirPath(target).data();
+        result = Dir::cleanDirPath(target.str());
         sepPos = 0;
         if (known.find(result.str())!=known.end()) return QCString(); // recursive symlink!
         known.insert(result.str());
@@ -9631,7 +9632,7 @@ static QCString resolveSymlink(QCString path)
     }
   }
   while (sepPos!=-1);
-  return QDir::cleanDirPath(result).data();
+  return Dir::cleanDirPath(result.str());
 }
 
 static std::mutex g_pathsVisitedMutex;
@@ -9643,7 +9644,7 @@ static StringUnorderedSet g_pathsVisited(1009);
 // The directory is read iff the recursiveFlag is set.
 // The contents of all files is append to the input string
 
-static int readDir(QFileInfo *fi,
+static void readDir(FileInfo *fi,
             FileNameLinkedMap *fnMap,
             StringUnorderedSet *exclSet,
             const StringVector *patList,
@@ -9656,84 +9657,72 @@ static int readDir(QFileInfo *fi,
             StringSet *paths
            )
 {
-  QCString dirName = fi->absFilePath().utf8();
-  if (paths && !dirName.isEmpty())
+  std::string dirName = fi->absFilePath();
+  if (paths && !dirName.empty())
   {
-    paths->insert(dirName.data());
+    paths->insert(dirName);
   }
   if (fi->isSymLink())
   {
-    dirName = resolveSymlink(dirName.data());
-    if (dirName.isEmpty()) return 0;            // recursive symlink
+    dirName = resolveSymlink(dirName);
+    if (dirName.empty()) return;  // recursive symlink
 
     std::lock_guard<std::mutex> lock(g_pathsVisitedMutex);
-    if (g_pathsVisited.find(dirName.str())!=g_pathsVisited.end()) return 0; // already visited path
-    g_pathsVisited.insert(dirName.str());
+    if (g_pathsVisited.find(dirName)!=g_pathsVisited.end()) return; // already visited path
+    g_pathsVisited.insert(dirName);
   }
-  QDir dir(dirName);
-  dir.setFilter( QDir::Files | QDir::Dirs | QDir::Hidden );
-  int totalSize=0;
+  Dir dir(dirName);
   msg("Searching for files in directory %s\n", fi->absFilePath().data());
   //printf("killSet=%p count=%d\n",killSet,killSet ? (int)killSet->count() : -1);
 
-  const QFileInfoList *list = dir.entryInfoList();
-  if (list)
+  for (const auto &dirEntry : dir.iterator())
   {
-    QFileInfoListIterator it( *list );
-    QFileInfo *cfi;
-
-    while ((cfi=it.current()))
-    {
-      if (exclSet==0 || exclSet->find(cfi->absFilePath().utf8().data())==exclSet->end())
-      { // file should not be excluded
-        //printf("killSet->find(%s)\n",cfi->absFilePath().data());
-        if (!cfi->exists() || !cfi->isReadable())
+    FileInfo cfi(dirEntry.path());
+    if (exclSet==0 || exclSet->find(cfi.absFilePath())==exclSet->end())
+    { // file should not be excluded
+      //printf("killSet->find(%s)\n",cfi->absFilePath().data());
+      if (!cfi.exists() || !cfi.isReadable())
+      {
+        if (errorIfNotExist)
         {
-          if (errorIfNotExist)
-          {
-            warn_uncond("source '%s' is not a readable file or directory... skipping.\n",cfi->absFilePath().data());
-          }
-        }
-        else if (cfi->isFile() &&
-            (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
-            (patList==0 || patternMatch(*cfi,*patList)) &&
-            (exclPatList==0 || !patternMatch(*cfi,*exclPatList)) &&
-            (killSet==0 || killSet->find(cfi->absFilePath().utf8().data())==killSet->end())
-            )
-        {
-          totalSize+=cfi->size()+cfi->absFilePath().length()+4;
-          QCString name=cfi->fileName().utf8();
-          //printf("New file %s\n",name.data());
-          if (fnMap)
-          {
-            std::unique_ptr<FileDef> fd { createFileDef(cfi->dirPath().utf8().str()+"/",name.str()) };
-            FileName *fn=0;
-            if (!name.isEmpty())
-            {
-              fn = fnMap->add(name,cfi->absFilePath().utf8());
-              fn->push_back(std::move(fd));
-            }
-          }
-          if (resultList) resultList->push_back(cfi->absFilePath().utf8().data());
-          if (resultSet) resultSet->insert(cfi->absFilePath().utf8().data());
-          if (killSet) killSet->insert(cfi->absFilePath().utf8().data());
-        }
-        else if (recursive &&
-            (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi->isSymLink()) &&
-            cfi->isDir() &&
-            (exclPatList==0 || !patternMatch(*cfi,*exclPatList)) &&
-            cfi->fileName().at(0)!='.') // skip "." ".." and ".dir"
-        {
-          cfi->setFile(cfi->absFilePath());
-          totalSize+=readDir(cfi,fnMap,exclSet,
-              patList,exclPatList,resultList,resultSet,errorIfNotExist,
-              recursive,killSet,paths);
+          warn_uncond("source '%s' is not a readable file or directory... skipping.\n",cfi.absFilePath().c_str());
         }
       }
-      ++it;
+      else if (cfi.isFile() &&
+          (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
+          (patList==0 || patternMatch(cfi,*patList)) &&
+          (exclPatList==0 || !patternMatch(cfi,*exclPatList)) &&
+          (killSet==0 || killSet->find(cfi.absFilePath())==killSet->end())
+          )
+      {
+        std::string name=cfi.fileName();
+        if (fnMap)
+        {
+          std::unique_ptr<FileDef> fd { createFileDef(cfi.dirPath()+"/",name) };
+          FileName *fn=0;
+          if (!name.empty())
+          {
+            fn = fnMap->add(name.c_str(),cfi.absFilePath().c_str());
+            fn->push_back(std::move(fd));
+          }
+        }
+        if (resultList) resultList->push_back(cfi.absFilePath());
+        if (resultSet) resultSet->insert(cfi.absFilePath());
+        if (killSet) killSet->insert(cfi.absFilePath());
+      }
+      else if (recursive &&
+          (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
+          cfi.isDir() &&
+          (exclPatList==0 || !patternMatch(cfi,*exclPatList)) &&
+          cfi.fileName().at(0)!='.') // skip "." ".." and ".dir"
+      {
+        FileInfo acfi(cfi.absFilePath());
+        readDir(&acfi,fnMap,exclSet,
+            patList,exclPatList,resultList,resultSet,errorIfNotExist,
+            recursive,killSet,paths);
+      }
     }
   }
-  return totalSize;
 }
 
 
@@ -9741,7 +9730,7 @@ static int readDir(QFileInfo *fi,
 // read a file or all files in a directory and append their contents to the
 // input string. The names of the files are appended to the 'fiList' list.
 
-int readFileOrDirectory(const char *s,
+void readFileOrDirectory(const char *s,
                         FileNameLinkedMap *fnMap,
                         StringUnorderedSet *exclSet,
                         const StringVector *patList,
@@ -9756,16 +9745,12 @@ int readFileOrDirectory(const char *s,
 {
   //printf("killSet count=%d\n",killSet ? (int)killSet->size() : -1);
   // strip trailing slashes
-  if (s==0) return 0;
-  QCString fs = s;
-  char lc = fs.at(fs.length()-1);
-  if (lc=='/' || lc=='\\') fs = fs.left(fs.length()-1);
+  if (s==0) return;
 
-  QFileInfo fi(fs);
+  FileInfo fi(s);
   //printf("readFileOrDirectory(%s)\n",s);
-  int totalSize=0;
   {
-    if (exclSet==0 || exclSet->find(fi.absFilePath().utf8().data())==exclSet->end())
+    if (exclSet==0 || exclSet->find(fi.absFilePath())==exclSet->end())
     {
       if (!fi.exists() || !fi.isReadable())
       {
@@ -9778,47 +9763,43 @@ int readFileOrDirectory(const char *s,
       {
         if (fi.isFile())
         {
-          QCString dirPath = fi.dirPath(TRUE).utf8();
-          QCString filePath = fi.absFilePath().utf8();
-          if (paths && !dirPath.isEmpty())
+          std::string dirPath = fi.dirPath(true);
+          std::string filePath = fi.absFilePath();
+          if (paths && !dirPath.empty())
           {
-            paths->insert(dirPath.data());
+            paths->insert(dirPath);
           }
           //printf("killSet.find(%s)=%d\n",fi.absFilePath().data(),killSet.find(fi.absFilePath())!=killSet.end());
-          if (killSet==0 || killSet->find(filePath.data())==killSet->end())
+          if (killSet==0 || killSet->find(filePath)==killSet->end())
           {
-            totalSize+=fi.size()+fi.absFilePath().length()+4; //readFile(&fi,fiList,input);
-            //fiList->inSort(new FileInfo(fi));
-            QCString name=fi.fileName().utf8();
-            //printf("New file %s\n",name.data());
+            std::string name=fi.fileName();
             if (fnMap)
             {
-              std::unique_ptr<FileDef> fd { createFileDef(dirPath.str()+"/",name.str()) };
-              if (!name.isEmpty())
+              std::unique_ptr<FileDef> fd { createFileDef(dirPath+"/",name) };
+              if (!name.empty())
               {
-                FileName *fn = fnMap->add(name,filePath);
+                FileName *fn = fnMap->add(name.c_str(),filePath.c_str());
                 fn->push_back(std::move(fd));
               }
             }
             if (resultList || resultSet)
             {
-              if (resultList) resultList->push_back(filePath.data());
-              if (resultSet) resultSet->insert(filePath.data());
+              if (resultList) resultList->push_back(filePath);
+              if (resultSet) resultSet->insert(filePath);
             }
 
-            if (killSet) killSet->insert(fi.absFilePath().utf8().data());
+            if (killSet) killSet->insert(fi.absFilePath());
           }
         }
         else if (fi.isDir()) // readable dir
         {
-          totalSize+=readDir(&fi,fnMap,exclSet,patList,
+          readDir(&fi,fnMap,exclSet,patList,
               exclPatList,resultList,resultSet,errorIfNotExist,
               recursive,killSet,paths);
         }
       }
     }
   }
-  return totalSize;
 }
 
 //----------------------------------------------------------------------------
@@ -10669,11 +10650,11 @@ void adjustConfiguration()
 #ifdef HAS_SIGNALS
 static void stopDoxygen(int)
 {
-  QDir thisDir;
+  Dir thisDir;
   msg("Cleaning up...\n");
   if (!Doxygen::filterDBFileName.isEmpty())
   {
-    thisDir.remove(Doxygen::filterDBFileName);
+    thisDir.remove(Doxygen::filterDBFileName.str());
   }
   killpg(0,SIGINT);
   exit(1);
@@ -10767,11 +10748,11 @@ static void exitDoxygen()
 {
   if (!g_successfulRun)  // premature exit
   {
-    QDir thisDir;
+    Dir thisDir;
     msg("Exiting...\n");
     if (!Doxygen::filterDBFileName.isEmpty())
     {
-      thisDir.remove(Doxygen::filterDBFileName);
+      thisDir.remove(Doxygen::filterDBFileName.str());
     }
   }
 }
@@ -10789,8 +10770,8 @@ static QCString createOutputDirectory(const QCString &baseDirName,
   {
     result.prepend(baseDirName+'/');
   }
-  QDir formatDir(result);
-  if (!formatDir.exists() && !formatDir.mkdir(result))
+  Dir formatDir(result.str());
+  if (!formatDir.exists() && !formatDir.mkdir(result.str()))
   {
     err("Could not create output directory %s\n", result.data());
     cleanUpDoxygen();
@@ -11014,15 +10995,15 @@ void parseInput()
   QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
   if (outputDirectory.isEmpty())
   {
-    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,QDir::currentDirPath().utf8());
+    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,Dir::currentDirPath().c_str());
   }
   else
   {
-    QDir dir(outputDirectory);
+    Dir dir(outputDirectory.str());
     if (!dir.exists())
     {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDirectory))
+      dir.setPath(Dir::currentDirPath());
+      if (!dir.mkdir(outputDirectory.str()))
       {
         err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
@@ -11034,9 +11015,9 @@ void parseInput()
         msg("Notice: Output directory '%s' does not exist. "
             "I have created it for you.\n", outputDirectory.data());
       }
-      dir.cd(outputDirectory);
+      dir.setPath(outputDirectory.str());
     }
-    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,dir.absPath().utf8());
+    outputDirectory = Config_updateString(OUTPUT_DIRECTORY,dir.absPath().c_str());
   }
 
   /**************************************************************************
@@ -11453,8 +11434,6 @@ void parseInput()
             namespaceComp);
   g_s.end();
 
-  QDir thisDir;
-
   g_s.begin("Determining which enums are documented\n");
   findDocumentedEnumValues();
   g_s.end();
@@ -11674,11 +11653,11 @@ void generateOutput()
   if (generateHtml && searchEngine)
   {
     QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
-    QDir searchDir(searchDirName);
-    if (!searchDir.exists() && !searchDir.mkdir(searchDirName))
+    Dir searchDir(searchDirName.str());
+    if (!searchDir.exists() && !searchDir.mkdir(searchDirName.str()))
     {
       term("Could not create search results directory '%s' $PWD='%s'\n",
-          searchDirName.data(),QDir::currentDirPath().data());
+          searchDirName.data(),Dir::currentDirPath().c_str());
     }
     HtmlGenerator::writeSearchData(searchDirName);
     if (!serverBasedSearch) // client side search index
@@ -11876,8 +11855,8 @@ void generateOutput()
       !Config_getString(HHC_LOCATION).isEmpty())
   {
     g_s.begin("Running html help compiler...\n");
-    QString oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString(HTML_OUTPUT));
+    std::string oldDir = Dir::currentDirPath();
+    Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
     Portable::setShortDir();
     Portable::sysTimerStart();
     if (Portable::system(Config_getString(HHC_LOCATION), "index.hhp", Debug::isFlagSet(Debug::ExtCmd))!=1)
@@ -11885,7 +11864,7 @@ void generateOutput()
       err("failed to run html help compiler on index.hhp\n");
     }
     Portable::sysTimerStop();
-    QDir::setCurrent(oldDir);
+    Dir::setCurrent(oldDir);
     g_s.end();
   }
 
@@ -11896,19 +11875,19 @@ void generateOutput()
       !Config_getString(QHG_LOCATION).isEmpty())
   {
     g_s.begin("Running qhelpgenerator...\n");
-    QCString const qhpFileName = Qhp::getQhpFileName();
-    QCString const qchFileName = getQchFileName();
+    QCString qhpFileName = Qhp::getQhpFileName();
+    QCString qchFileName = getQchFileName();
 
-    QCString const args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
-    QString const oldDir = QDir::currentDirPath();
-    QDir::setCurrent(Config_getString(HTML_OUTPUT));
+    QCString args = QCString().sprintf("%s -o \"%s\"", qhpFileName.data(), qchFileName.data());
+    std::string oldDir = Dir::currentDirPath();
+    Dir::setCurrent(Config_getString(HTML_OUTPUT).str());
     Portable::sysTimerStart();
     if (Portable::system(Config_getString(QHG_LOCATION), args.data(), FALSE))
     {
       err("failed to run qhelpgenerator on index.qhp\n");
     }
     Portable::sysTimerStop();
-    QDir::setCurrent(oldDir);
+    Dir::setCurrent(oldDir);
     g_s.end();
   }
 
@@ -11945,8 +11924,8 @@ void generateOutput()
   cleanUpDoxygen();
 
   finalizeSearchIndexer();
-  QDir thisDir;
-  thisDir.remove(Doxygen::filterDBFileName);
+  Dir thisDir;
+  thisDir.remove(Doxygen::filterDBFileName.str());
   finishWarnExit();
   Config::deinit();
   delete Doxygen::clangUsrMap;

@@ -15,7 +15,6 @@
 
 #include <stdlib.h>
 
-#include <qdir.h>
 #include <qfile.h>
 
 #include "xmlgen.h"
@@ -47,6 +46,7 @@
 #include "section.h"
 #include "htmlentity.h"
 #include "resourcemgr.h"
+#include "dir.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -1832,7 +1832,7 @@ void generateXML()
   // - examples
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
-  QDir xmlDir(outputDirectory);
+  Dir xmlDir(outputDirectory.str());
   createSubDirs(xmlDir);
 
   ResourceMgr::instance().copyResource("xml.xsd",outputDirectory);

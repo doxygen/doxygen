@@ -20,6 +20,7 @@
 #include "message.h"
 #include "doxygen.h"
 #include "classlist.h"
+#include "dir.h"
 
 QCString DotGfxHierarchyTable::getBaseName() const
 {
@@ -77,7 +78,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
 
   if (m_rootSubgraphs.empty()) return;
 
-  QDir d(path);
+  Dir d(path);
   // store the original directory
   if (!d.exists())
   {

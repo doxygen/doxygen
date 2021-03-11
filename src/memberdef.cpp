@@ -227,7 +227,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual const MemberDef *categoryRelation() const;
     virtual QCString displayName(bool=TRUE) const;
     virtual QCString getDeclType() const;
-    virtual void getLabels(QStrList &sl,const Definition *container) const;
+    virtual StringVector getLabels(const Definition *container) const;
     virtual const ArgumentList &typeConstraints() const;
     virtual QCString documentation() const;
     virtual QCString briefDescription(bool abbr=FALSE) const;
@@ -717,8 +717,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->displayName(b); }
     virtual QCString getDeclType() const
     { return getMdAlias()->getDeclType(); }
-    virtual void getLabels(QStrList &sl,const Definition *container) const
-    { return getMdAlias()->getLabels(sl,container); }
+    virtual StringVector getLabels(const Definition *container) const
+    { return getMdAlias()->getLabels(container); }
     virtual const ArgumentList &typeConstraints() const
     { return getMdAlias()->typeConstraints(); }
     virtual QCString documentation() const
@@ -2355,23 +2355,26 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
-      QStrList sl;
+      StringVector sl;
 
-      if (isGettable())             sl.append("get");
-      if (isProtectedGettable())    sl.append("protected get");
-      if (isSettable())             sl.append("set");
-      if (isProtectedSettable())    sl.append("protected set");
+      if (isGettable())             sl.push_back("get");
+      if (isProtectedGettable())    sl.push_back("protected get");
+      if (isSettable())             sl.push_back("set");
+      if (isProtectedSettable())    sl.push_back("protected set");
       if (extractPrivate)
       {
-        if (isPrivateGettable())    sl.append("private get");
-        if (isPrivateSettable())    sl.append("private set");
+        if (isPrivateGettable())    sl.push_back("private get");
+        if (isPrivateSettable())    sl.push_back("private set");
       }
-      const char *s=sl.first();
-      while (s)
+      bool first=true;
+      for (const auto &s : sl)
       {
-         ol.docify(s);
-         s=sl.next();
-         if (s) ol.docify(", ");
+         if (!first)
+         {
+           ol.docify(", ");
+           first=false;
+         }
+         ol.docify(s.c_str());
       }
       ol.docify("]");
       ol.endTypewriter();
@@ -2382,16 +2385,19 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.writeLatexSpacing();
       ol.startTypewriter();
       ol.docify(" [");
-      QStrList sl;
-      if (isAddable())   sl.append("add");
-      if (isRemovable()) sl.append("remove");
-      if (isRaisable())  sl.append("raise");
-      const char *s=sl.first();
-      while (s)
+      StringVector sl;
+      if (isAddable())   sl.push_back("add");
+      if (isRemovable()) sl.push_back("remove");
+      if (isRaisable())  sl.push_back("raise");
+      bool first=true;
+      for (const auto &s : sl)
       {
-         ol.docify(s);
-         s=sl.next();
-         if (s) ol.docify(", ");
+        if (!first)
+        {
+          ol.docify(", ");
+          first=false;
+        }
+        ol.docify(s.c_str());
       }
       ol.docify("]");
       ol.endTypewriter();
@@ -2534,8 +2540,9 @@ bool MemberDefImpl::isDetailedSectionVisible(bool inGroup,bool inFile) const
   return result;
 }
 
-void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
+StringVector MemberDefImpl::getLabels(const Definition *container) const
 {
+  StringVector sl;
   static bool inlineInfo = Config_getBool(INLINE_INFO);
 
   Specifier lvirt=virtualness();
@@ -2559,82 +2566,82 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
     static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
     if (optVhdl)
     {
-      sl.append(theTranslator->trVhdlType(getMemberSpecifiers(),TRUE));
+      sl.push_back(theTranslator->trVhdlType(getMemberSpecifiers(),TRUE).str());
     }
     else
     {
-      if (isFriend()) sl.append("friend");
-      else if (isRelated()) sl.append("related");
+      if (isFriend()) sl.push_back("friend");
+      else if (isRelated()) sl.push_back("related");
       else
       {
-        if      (isExternal())            sl.append("extern");
-        if      (inlineInfo && isInline()) sl.append("inline");
-        if      (isExplicit())            sl.append("explicit");
-        if      (isMutable())             sl.append("mutable");
-        if      (isStatic())              sl.append("static");
-        if      (isGettable())            sl.append("get");
-        if      (isProtectedGettable())   sl.append("protected get");
-        if      (isSettable())            sl.append("set");
-        if      (isProtectedSettable())   sl.append("protected set");
+        if      (isExternal())            sl.push_back("extern");
+        if      (inlineInfo && isInline()) sl.push_back("inline");
+        if      (isExplicit())            sl.push_back("explicit");
+        if      (isMutable())             sl.push_back("mutable");
+        if      (isStatic())              sl.push_back("static");
+        if      (isGettable())            sl.push_back("get");
+        if      (isProtectedGettable())   sl.push_back("protected get");
+        if      (isSettable())            sl.push_back("set");
+        if      (isProtectedSettable())   sl.push_back("protected set");
         if (extractPrivate)
         {
-          if    (isPrivateGettable())     sl.append("private get");
-          if    (isPrivateSettable())     sl.append("private set");
+          if    (isPrivateGettable())     sl.push_back("private get");
+          if    (isPrivateSettable())     sl.push_back("private set");
         }
-        if      (isConstExpr())           sl.append("constexpr");
-        if      (isAddable())             sl.append("add");
-        if      (!isUNOProperty() && isRemovable()) sl.append("remove");
-        if      (isRaisable())            sl.append("raise");
-        if      (isReadable())            sl.append("read");
-        if      (isWritable())            sl.append("write");
-        if      (isFinal())               sl.append("final");
-        if      (isAbstract())            sl.append("abstract");
-        if      (isOverride())            sl.append("override");
-        if      (isInitonly())            sl.append("initonly");
-        if      (isSealed())              sl.append("sealed");
-        if      (isNew())                 sl.append("new");
-        if      (isOptional())            sl.append("optional");
-        if      (isRequired())            sl.append("required");
+        if      (isConstExpr())           sl.push_back("constexpr");
+        if      (isAddable())             sl.push_back("add");
+        if      (!isUNOProperty() && isRemovable()) sl.push_back("remove");
+        if      (isRaisable())            sl.push_back("raise");
+        if      (isReadable())            sl.push_back("read");
+        if      (isWritable())            sl.push_back("write");
+        if      (isFinal())               sl.push_back("final");
+        if      (isAbstract())            sl.push_back("abstract");
+        if      (isOverride())            sl.push_back("override");
+        if      (isInitonly())            sl.push_back("initonly");
+        if      (isSealed())              sl.push_back("sealed");
+        if      (isNew())                 sl.push_back("new");
+        if      (isOptional())            sl.push_back("optional");
+        if      (isRequired())            sl.push_back("required");
 
-        if      (isNonAtomic())           sl.append("nonatomic");
-        else if (isObjCProperty())        sl.append("atomic");
+        if      (isNonAtomic())           sl.push_back("nonatomic");
+        else if (isObjCProperty())        sl.push_back("atomic");
 
         // mutual exclusive Objective 2.0 property attributes
-        if      (isAssign())              sl.append("assign");
-        else if (isCopy())                sl.append("copy");
-        else if (isRetain())              sl.append("retain");
-        else if (isWeak())                sl.append("weak");
-        else if (isStrong())              sl.append("strong");
-        else if (isUnretained())          sl.append("unsafe_unretained");
+        if      (isAssign())              sl.push_back("assign");
+        else if (isCopy())                sl.push_back("copy");
+        else if (isRetain())              sl.push_back("retain");
+        else if (isWeak())                sl.push_back("weak");
+        else if (isStrong())              sl.push_back("strong");
+        else if (isUnretained())          sl.push_back("unsafe_unretained");
 
         if (!isObjCMethod())
         {
-          if      (protection()==Protected) sl.append("protected");
-          else if (protection()==Private)   sl.append("private");
-          else if (protection()==Package)   sl.append("package");
+          if      (protection()==Protected) sl.push_back("protected");
+          else if (protection()==Private)   sl.push_back("private");
+          else if (protection()==Package)   sl.push_back("package");
 
-          if      (lvirt==Virtual)          sl.append("virtual");
-          else if (lvirt==Pure)             sl.append("pure virtual");
-          if      (isSignal())              sl.append("signal");
-          if      (isSlot())                sl.append("slot");
-          if      (isDefault())             sl.append("default");
-          if      (isDelete())              sl.append("delete");
-          if      (isNoExcept())            sl.append("noexcept");
-          if      (isAttribute())           sl.append("attribute");
-          if      (isUNOProperty())         sl.append("property");
-          if      (isReadonly())            sl.append("readonly");
-          if      (isBound())               sl.append("bound");
-          if      (isUNOProperty() && isRemovable()) sl.append("removable");
-          if      (isConstrained())         sl.append("constrained");
-          if      (isTransient())           sl.append("transient");
-          if      (isMaybeVoid())           sl.append("maybevoid");
-          if      (isMaybeDefault())        sl.append("maybedefault");
-          if      (isMaybeAmbiguous())      sl.append("maybeambiguous");
-          if      (isPublished())           sl.append("published"); // enum
+          if      (lvirt==Virtual)          sl.push_back("virtual");
+          else if (lvirt==Pure)             sl.push_back("pure virtual");
+          if      (isSignal())              sl.push_back("signal");
+          if      (isSlot())                sl.push_back("slot");
+          if      (isDefault())             sl.push_back("default");
+          if      (isDelete())              sl.push_back("delete");
+          if      (isNoExcept())            sl.push_back("noexcept");
+          if      (isAttribute())           sl.push_back("attribute");
+          if      (isUNOProperty())         sl.push_back("property");
+          if      (isReadonly())            sl.push_back("readonly");
+          if      (isBound())               sl.push_back("bound");
+          if      (isUNOProperty() && isRemovable()) sl.push_back("removable");
+          if      (isConstrained())         sl.push_back("constrained");
+          if      (isTransient())           sl.push_back("transient");
+          if      (isMaybeVoid())           sl.push_back("maybevoid");
+          if      (isMaybeDefault())        sl.push_back("maybedefault");
+          if      (isMaybeAmbiguous())      sl.push_back("maybeambiguous");
+          if      (isPublished())           sl.push_back("published"); // enum
         }
         if (isObjCProperty() && isImplementation())
         {
-          sl.append("implementation");
+          sl.push_back("implementation");
         }
       }
       if (getClassDef() &&
@@ -2643,14 +2650,15 @@ void MemberDefImpl::getLabels(QStrList &sl,const Definition *container) const
           !isRelated()
          )
       {
-        sl.append("inherited");
+        sl.push_back("inherited");
       }
     }
   }
   else if (isObjCMethod() && isImplementation())
   {
-    sl.append("implementation");
+    sl.push_back("implementation");
   }
+  return sl;
 }
 
 void MemberDefImpl::_writeCallGraph(OutputList &ol) const
@@ -3199,8 +3207,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   ol.pushGeneratorState();
 
   bool htmlEndLabelTable=FALSE;
-  QStrList sl;
-  getLabels(sl,scopedContainer);
+  StringVector sl = getLabels(scopedContainer);
 
   static const reg::Ex r(R"(@\d+)");
   reg::Match match;
@@ -3303,7 +3310,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
       }
     }
 
-    if (sl.count()>0)
+    if (!sl.empty())
     {
       ol.pushGeneratorState();
       ol.disableAll();
@@ -3407,15 +3414,14 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
 
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Html);
-  if (sl.count()>0)
+  if (!sl.empty())
   {
     ol.startLabels();
-    const char *s=sl.first();
-    while (s)
+    size_t count=0;
+    for (const auto &s : sl)
     {
-      const char *ns = sl.next();
-      ol.writeLabel(s,ns==0);
-      s=ns;
+      count++;
+      ol.writeLabel(s.c_str(),count==sl.size());
     }
     ol.endLabels();
   }
@@ -3441,12 +3447,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     ol.writeString("  </td>\n");
     ol.writeString("  <td class=\"mlabels-right\">\n");
     ol.startLabels();
-    const char *s=sl.first();
-    while (s)
+    size_t count=0;
+    for (const auto &s : sl)
     {
-      const char *ns = sl.next();
-      ol.writeLabel(s,ns==0);
-      s=ns;
+      count++;
+      ol.writeLabel(s.c_str(),count==sl.size());
     }
     ol.endLabels();
     ol.writeString("  </td>\n");

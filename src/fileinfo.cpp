@@ -20,27 +20,37 @@ namespace fs = ghc::filesystem;
 
 size_t FileInfo::size() const
 {
-  return static_cast<size_t>(fs::file_size(fs::path(m_name)));
+  std::error_code ec;
+  size_t result = static_cast<size_t>(fs::file_size(fs::path(m_name),ec));
+  return ec ? 0 : result;
 }
 
 bool FileInfo::exists() const
 {
-  return fs::exists(fs::status(m_name));
+  std::error_code ec;
+  bool result = fs::exists(fs::path(m_name),ec);
+  return !ec && result;
 }
 
 bool FileInfo::isWritable() const
 {
-  return (fs::status(m_name).permissions() & fs::perms::owner_write)!=fs::perms::none;
+  std::error_code ec;
+  fs::file_status status = fs::status(m_name,ec);
+  return !ec && (status.permissions() & fs::perms::owner_write)!=fs::perms::none;
 }
 
 bool FileInfo::isReadable() const
 {
-  return (fs::status(m_name).permissions() & fs::perms::owner_read)!=fs::perms::none;
+  std::error_code ec;
+  fs::file_status status = fs::status(m_name,ec);
+  return !ec && (status.permissions() & fs::perms::owner_read)!=fs::perms::none;
 }
 
 bool FileInfo::isExecutable() const
 {
-  return (fs::status(m_name).permissions() & fs::perms::owner_exec)!=fs::perms::none;
+  std::error_code ec;
+  fs::file_status status = fs::status(m_name,ec);
+  return !ec && (status.permissions() & fs::perms::owner_exec)!=fs::perms::none;
 }
 
 bool FileInfo::isRelative() const
@@ -50,22 +60,30 @@ bool FileInfo::isRelative() const
 
 bool FileInfo::isFile() const
 {
-  return fs::is_regular_file(fs::status(m_name));
+  std::error_code ec;
+  fs::file_status status = fs::status(m_name,ec);
+  return !ec && fs::is_regular_file(status);
 }
 
 bool FileInfo::isDir() const
 {
-  return fs::is_directory(fs::status(m_name));
+  std::error_code ec;
+  fs::file_status status = fs::status(m_name,ec);
+  return !ec && fs::is_directory(status);
 }
 
 bool FileInfo::isSymLink() const
 {
-  return fs::is_symlink(fs::status(m_name));
+  std::error_code ec;
+  fs::file_status status = fs::status(m_name,ec);
+  return !ec && fs::is_symlink(status);
 }
 
 std::string FileInfo::readLink() const
 {
-  return fs::read_symlink(fs::path(m_name)).string();
+  std::error_code ec;
+  fs::path targetPath =  fs::read_symlink(fs::path(m_name));
+  return !ec ? targetPath.string() : std::string();
 }
 
 std::string FileInfo::filePath() const
@@ -81,13 +99,15 @@ void FileInfo::correctPath(std::string &s)
 std::string FileInfo::absFilePath() const
 {
   std::string result;
-  if (fs::exists(fs::status(m_name)))
+  std::error_code ec;
+  fs::path path(m_name);
+  if (fs::exists(path,ec))
   {
-    result = fs::canonical(m_name).string();
+    result = fs::canonical(path,ec).string();
   }
   else
   {
-    result = (fs::current_path() / m_name).string();
+    result = (fs::current_path(ec) / m_name).string();
   }
   correctPath(result);
   return result;
@@ -117,14 +137,25 @@ std::string FileInfo::dirPath(bool absPath) const
   std::string result;
   if (absPath)
   {
-    result = fs::canonical(m_name).parent_path().string();
+    result = absFilePath();
   }
   else
   {
-    result = fs::relative(m_name).parent_path().string();
-    if (result.empty()) result=".";
+    result = m_name;
+    correctPath(result);
   }
-  correctPath(result);
-  return result;
+  size_t pos = result.rfind('/');
+  if (pos==std::string::npos)
+  {
+    return ".";
+  }
+  else if (pos==0)
+  {
+    return "/";
+  }
+  else
+  {
+    return result.substr(0,pos);
+  }
 }
 

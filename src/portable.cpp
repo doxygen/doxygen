@@ -17,13 +17,13 @@ extern char **environ;
 #endif
 
 #include <ctype.h>
-#include <qdir.h>
 #include <map>
 #include <string>
 
 #include "fileinfo.h"
 
 #include "util.h"
+#include "dir.h"
 #ifndef NODEBUG
 #include "debug.h"
 #endif
@@ -519,14 +519,14 @@ void Portable::setShortDir()
   long     length = 0;
   TCHAR*   buffer = NULL;
   // First obtain the size needed by passing NULL and 0.
-  length = GetShortPathName(QDir::currentDirPath().data(), NULL, 0);
+  length = GetShortPathName(Dir::currentDirPath().c_str(), NULL, 0);
   // Dynamically allocate the correct size
   // (terminating null char was included in length)
   buffer = new TCHAR[length];
   // Now simply call again using same (long) path.
-  length = GetShortPathName(QDir::currentDirPath().data(), buffer, length);
+  length = GetShortPathName(Dir::currentDirPath().c_str(), buffer, length);
   // Set the correct directory (short name)
-  QDir::setCurrent(buffer);
+  Dir::setCurrent(buffer);
   delete [] buffer;
 #endif
 }

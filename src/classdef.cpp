@@ -2431,23 +2431,22 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const char *h
 
 void ClassDefImpl::addClassAttributes(OutputList &ol) const
 {
-  QStrList sl;
-  if (isFinal())    sl.append("final");
-  if (isSealed())   sl.append("sealed");
-  if (isAbstract()) sl.append("abstract");
-  if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.append("published");
+  StringVector sl;
+  if (isFinal())    sl.push_back("final");
+  if (isSealed())   sl.push_back("sealed");
+  if (isAbstract()) sl.push_back("abstract");
+  if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
   ol.pushGeneratorState();
   ol.disableAllBut(OutputGenerator::Html);
-  if (sl.count()>0)
+  if (!sl.empty())
   {
     ol.startLabels();
-    const char *s=sl.first();
-    while (s)
+    size_t i=0;
+    for (const auto &s : sl)
     {
-      const char *ns = sl.next();
-      ol.writeLabel(s,ns==0);
-      s=ns;
+      i++;
+      ol.writeLabel(s.c_str(),i==sl.size());
     }
     ol.endLabels();
   }
@@ -3001,47 +3000,50 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             && memberWritten)
         {
           ol.writeString("<span class=\"mlabel\">");
-          QStrList sl;
+          StringVector sl;
           if (lang==SrcLangExt_VHDL)
           {
-            sl.append(theTranslator->trVhdlType(md->getMemberSpecifiers(),TRUE)); //append vhdl type
+            sl.push_back(theTranslator->trVhdlType(md->getMemberSpecifiers(),TRUE).str()); //append vhdl type
           }
-          else if (md->isFriend()) sl.append("friend");
-          else if (md->isRelated()) sl.append("related");
+          else if (md->isFriend()) sl.push_back("friend");
+          else if (md->isRelated()) sl.push_back("related");
           else
           {
             if (Config_getBool(INLINE_INFO) && md->isInline())
-                                       sl.append("inline");
-            if (md->isExplicit())      sl.append("explicit");
-            if (md->isMutable())       sl.append("mutable");
-            if (prot==Protected)       sl.append("protected");
-            else if (prot==Private)    sl.append("private");
-            else if (prot==Package)    sl.append("package");
+                                       sl.push_back("inline");
+            if (md->isExplicit())      sl.push_back("explicit");
+            if (md->isMutable())       sl.push_back("mutable");
+            if (prot==Protected)       sl.push_back("protected");
+            else if (prot==Private)    sl.push_back("private");
+            else if (prot==Package)    sl.push_back("package");
             if (virt==Virtual && getLanguage()!=SrcLangExt_ObjC)
-                                       sl.append("virtual");
-            else if (virt==Pure)       sl.append("pure virtual");
-            if (md->isStatic())        sl.append("static");
-            if (md->isSignal())        sl.append("signal");
-            if (md->isSlot())          sl.append("slot");
+                                       sl.push_back("virtual");
+            else if (virt==Pure)       sl.push_back("pure virtual");
+            if (md->isStatic())        sl.push_back("static");
+            if (md->isSignal())        sl.push_back("signal");
+            if (md->isSlot())          sl.push_back("slot");
 // this is the extra member page
-            if (md->isOptional())      sl.append("optional");
-            if (md->isAttribute())     sl.append("attribute");
-            if (md->isUNOProperty())   sl.append("property");
-            if (md->isReadonly())      sl.append("readonly");
-            if (md->isBound())         sl.append("bound");
-            if (md->isRemovable())     sl.append("removable");
-            if (md->isConstrained())   sl.append("constrained");
-            if (md->isTransient())     sl.append("transient");
-            if (md->isMaybeVoid())     sl.append("maybevoid");
-            if (md->isMaybeDefault())  sl.append("maybedefault");
-            if (md->isMaybeAmbiguous())sl.append("maybeambiguous");
+            if (md->isOptional())      sl.push_back("optional");
+            if (md->isAttribute())     sl.push_back("attribute");
+            if (md->isUNOProperty())   sl.push_back("property");
+            if (md->isReadonly())      sl.push_back("readonly");
+            if (md->isBound())         sl.push_back("bound");
+            if (md->isRemovable())     sl.push_back("removable");
+            if (md->isConstrained())   sl.push_back("constrained");
+            if (md->isTransient())     sl.push_back("transient");
+            if (md->isMaybeVoid())     sl.push_back("maybevoid");
+            if (md->isMaybeDefault())  sl.push_back("maybedefault");
+            if (md->isMaybeAmbiguous())sl.push_back("maybeambiguous");
           }
-          const char *s=sl.first();
-          while (s)
+          bool firstSpan=true;
+          for (const auto &s : sl)
           {
-            ol.docify(s);
-            s=sl.next();
-            if (s) ol.writeString("</span><span class=\"mlabel\">");
+            if (!firstSpan)
+            {
+              ol.writeString("</span><span class=\"mlabel\">");
+              firstSpan=false;
+            }
+            ol.docify(s.c_str());
           }
           ol.writeString("</span>");
         }

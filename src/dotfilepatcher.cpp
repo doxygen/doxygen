@@ -18,13 +18,13 @@
 
 #include "qstring.h"
 #include "config.h"
-#include "qdir.h"
 #include "message.h"
 #include "ftextstream.h"
 #include "docparser.h"
 #include "doxygen.h"
 #include "util.h"
 #include "dot.h"
+#include "dir.h"
 
 static const char svgZoomHeader[] =
 "<svg id=\"main\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" onload=\"init(evt)\">\n"
@@ -312,25 +312,26 @@ bool DotFilePatcher::run() const
     //printf("DotFilePatcher::addSVGConversion: file=%s zoomable=%d\n",
     //    m_patchFile.data(),map->zoomable);
   }
-  QCString tmpName = m_patchFile+".tmp";
-  QCString patchFile = m_patchFile;
-  if (!QDir::current().rename(patchFile,tmpName))
+  std::string tmpName = m_patchFile.str()+".tmp";
+  std::string patchFile = m_patchFile.str();
+  Dir thisDir;
+  if (!thisDir.rename(patchFile,tmpName))
   {
-    err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.data());
+    err("Failed to rename file %s to %s!\n",m_patchFile.data(),tmpName.c_str());
     return FALSE;
   }
-  QFile fi(tmpName);
-  QFile fo(patchFile);
+  QFile fi(tmpName.c_str());
+  QFile fo(patchFile.c_str());
   if (!fi.open(IO_ReadOnly))
   {
-    err("problem opening file %s for patching!\n",tmpName.data());
-    QDir::current().rename(tmpName,patchFile);
+    err("problem opening file %s for patching!\n",tmpName.c_str());
+    thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
   if (!fo.open(IO_WriteOnly))
   {
     err("problem opening file %s for patching!\n",m_patchFile.data());
-    QDir::current().rename(tmpName,patchFile);
+    thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
   FTextStream t(&fo);
@@ -481,11 +482,11 @@ bool DotFilePatcher::run() const
     fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
-    fi.setName(tmpName);
+    fi.setName(tmpName.c_str());
     fo.setName(orgName);
     if (!fi.open(IO_ReadOnly))
     {
-      err("problem opening file %s for reading!\n",tmpName.data());
+      err("problem opening file %s for reading!\n",tmpName.c_str());
       return FALSE;
     }
     if (!fo.open(IO_WriteOnly))
@@ -510,7 +511,7 @@ bool DotFilePatcher::run() const
     fo.close();
   }
   // remove temporary file
-  QDir::current().remove(tmpName);
+  thisDir.remove(tmpName);
   return TRUE;
 }
 

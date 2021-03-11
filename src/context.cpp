@@ -14,7 +14,6 @@
  */
 
 #include <assert.h>
-#include <qdir.h>
 
 #include "context.h"
 #include "config.h"
@@ -54,6 +53,7 @@
 #include "groupdef.h"
 #include "searchindex.h"
 #include "resourcemgr.h"
+#include "dir.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -4687,16 +4687,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.labels)
       {
-        QStrList sl;
-        m_memberDef->getLabels(sl,m_memberDef->getOuterScope());
+        StringVector sl = m_memberDef->getLabels(m_memberDef->getOuterScope());
         TemplateList *tl = TemplateList::alloc();
-        if (sl.count()>0)
+        for (const auto &s : sl)
         {
-          QStrListIterator it(sl);
-          for (;it.current();++it)
-          {
-            tl->append(*it);
-          }
+          tl->append(s.c_str());
         }
         cache.labels.reset(tl);
       }
@@ -10118,7 +10113,7 @@ void generateOutputViaTemplate()
           g_globals.outputFormat = ContextOutputFormat_Html;
           g_globals.dynSectionId = 0;
           g_globals.outputDir    = Config_getString(HTML_OUTPUT);
-          QDir dir(g_globals.outputDir);
+          Dir dir(g_globals.outputDir.str());
           createSubDirs(dir);
           HtmlEscaper htmlEsc;
           ctx->setEscapeIntf(Config_getString(HTML_FILE_EXTENSION),&htmlEsc);
@@ -10143,7 +10138,7 @@ void generateOutputViaTemplate()
           g_globals.outputFormat = ContextOutputFormat_Latex;
           g_globals.dynSectionId = 0;
           g_globals.outputDir    = Config_getString(LATEX_OUTPUT);
-          QDir dir(g_globals.outputDir);
+          Dir dir(g_globals.outputDir.str());
           createSubDirs(dir);
           LatexEscaper latexEsc;
           ctx->setEscapeIntf(".tex",&latexEsc);
@@ -10173,17 +10168,17 @@ void generateOutputViaTemplate()
 void generateTemplateFiles(const char *templateDir)
 {
   if (!templateDir) return;
-  QDir thisDir;
+  Dir thisDir;
   if (!thisDir.exists(templateDir) && !thisDir.mkdir(templateDir))
   {
     err("Failed to create output directory '%s'\n",templateDir);
     return;
   }
-  QCString outDir = QCString(templateDir)+"/html";
+  std::string outDir = std::string(templateDir)+"/html";
   if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
   {
-    err("Failed to create output directory '%s'\n",outDir.data());
+    err("Failed to create output directory '%s'\n",outDir.c_str());
     return;
   }
-  ResourceMgr::instance().writeCategory("html",outDir);
+  ResourceMgr::instance().writeCategory("html",outDir.c_str());
 }

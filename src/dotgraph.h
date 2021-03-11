@@ -18,7 +18,7 @@
 
 #include <qcstring.h>
 #include <qgstring.h>
-#include <qdir.h>
+#include "dir.h"
 
 class FTextStream;
 class DotNode;
@@ -77,7 +77,7 @@ class DotGraph
     // the following variables are used while writing the graph to a .dot file
     GraphOutputFormat      m_graphFormat = GOF_BITMAP;
     EmbeddedOutputFormat   m_textFormat = EOF_Html;
-    QDir                   m_dir;
+    Dir                    m_dir;
     QCString               m_fileName;
     QCString               m_relPath;
     bool                   m_generateImageMap = false;

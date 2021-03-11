@@ -33,8 +33,8 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "filename.h"
+#include "dir.h"
 
-#include <qdir.h>
 #include <qfile.h>
 
 #define DEF_DB(x)
@@ -522,50 +522,15 @@ static void generateDEFForFile(const FileDef *fd,FTextStream &t)
 
 void generateDEF()
 {
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
-  if (outputDirectory.isEmpty())
-  {
-    outputDirectory=QDir::currentDirPath().utf8();
-  }
-  else
-  {
-    QDir dir(outputDirectory);
-    if (!dir.exists())
-    {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDirectory))
-      {
-        term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-            "exist and cannot be created\n",outputDirectory.data());
-      }
-      else
-      {
-        msg("Notice: Output directory '%s' does not exist. "
-            "I have created it for you.\n", outputDirectory.data());
-      }
-      dir.cd(outputDirectory);
-    }
-    outputDirectory=dir.absPath().utf8();
-  }
-
-  QDir dir(outputDirectory);
-  if (!dir.exists())
-  {
-    dir.setPath(QDir::currentDirPath());
-    if (!dir.mkdir(outputDirectory))
-    {
-      err("Cannot create directory %s\n",outputDirectory.data());
-      return;
-    }
-  }
-  QDir defDir(outputDirectory+"/def");
-  if (!defDir.exists() && !defDir.mkdir(outputDirectory+"/def"))
+  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY)+"/def";
+  Dir defDir(outputDirectory.str());
+  if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
     err("Could not create def directory in %s\n",outputDirectory.data());
     return;
   }
 
-  QCString fileName=outputDirectory+"/def/doxygen.def";
+  QCString fileName=outputDirectory+"/doxygen.def";
   QFile f(fileName);
   if (!f.open(IO_WriteOnly))
   {
