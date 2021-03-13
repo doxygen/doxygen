@@ -734,7 +734,21 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   // for symbols we need to normalize the separator, so A#B, or A\B, or A.B becomes A::B
   cmdArg = substitute(cmdArg,"#","::");
   cmdArg = substitute(cmdArg,"\\","::");
-  cmdArg = substitute(cmdArg,".","::");
+  static bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
+  if (extractAnonNs &&
+      cmdArg.startsWith("anonymous_namespace{")
+      )
+  {
+    int rightBracePos = cmdArg.find("}", std::strlen("anonymous_namespace{"));
+    QCString leftPart = cmdArg.left(rightBracePos + 1);
+    QCString rightPart = cmdArg.right(cmdArg.size() - rightBracePos - 1);
+    rightPart = substitute(rightPart, ".", "::");
+    cmdArg = leftPart + rightPart;
+  }
+  else
+  {
+    cmdArg = substitute(cmdArg,".","::");
+  }
 
   int l=(int)cmdArg.length();
 
