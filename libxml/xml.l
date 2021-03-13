@@ -282,7 +282,7 @@ static void addElement(yyscan_t yyscanner)
     yyextra->xpath.push_back(yyextra->name);
     if (yyextra->handlers.startElement)
     {
-      yyextra->handlers.startElement(yyextra->name,yyextra->attrs);
+      yyextra->handlers.startElement(yyextra->name,yyextra->attrs,yyextra->lineNr);
     }
     if (yy_flex_debug)
     {

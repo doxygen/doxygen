@@ -90,6 +90,7 @@ class TagMemberInfo
     Specifier virt = Normal;
     bool isStatic = false;
     std::vector<TagEnumValueInfo> enumValues;
+    int lineNr;
 };
 
 /** Base class for all compound types */
@@ -104,6 +105,7 @@ class TagCompoundInfo
     std::string name;
     std::string filename;
     std::vector<TagAnchorInfo> docAnchors;
+    int lineNr;
   private:
     CompoundType m_type;
 };
@@ -261,7 +263,7 @@ class TagFileParser
       m_state = Invalid;
     }
 
-    void startElement( const std::string &name, const XMLHandlers::Attributes& attrib );
+    void startElement( const std::string &name, const XMLHandlers::Attributes& attrib, const int );
     void endElement( const std::string &name );
     void characters ( const std::string & ch ) { m_curString+=ch; }
     void error( const std::string &fileName,int lineNr,const std::string &msg)
@@ -272,7 +274,7 @@ class TagFileParser
     void dump();
     void buildLists(const std::shared_ptr<Entry> &root);
     void addIncludes();
-    void startCompound( const XMLHandlers::Attributes& attrib );
+    void startCompound( const XMLHandlers::Attributes& attrib, const int lineNr );
 
     void endCompound()
     {
@@ -293,13 +295,14 @@ class TagFileParser
       }
     }
 
-    void startMember( const XMLHandlers::Attributes& attrib)
+    void startMember( const XMLHandlers::Attributes& attrib, const int lineNr)
     {
       m_curMember = TagMemberInfo();
       m_curMember.kind      = XMLHandlers::value(attrib,"kind");
       std::string protStr   = XMLHandlers::value(attrib,"protection");
       std::string virtStr   = XMLHandlers::value(attrib,"virtualness");
       std::string staticStr = XMLHandlers::value(attrib,"static");
+      m_curMember.lineNr    = lineNr;
       if (protStr=="protected")
       {
         m_curMember.prot = Protected;
@@ -343,7 +346,7 @@ class TagFileParser
       }
     }
 
-    void startEnumValue( const XMLHandlers::Attributes& attrib)
+    void startEnumValue( const XMLHandlers::Attributes& attrib, const int lineNr)
     {
       if (m_state==InMember)
       {
@@ -496,12 +499,12 @@ class TagFileParser
       }
     }
 
-    void startStringValue(const XMLHandlers::Attributes& )
+    void startStringValue(const XMLHandlers::Attributes&, const int lineNr )
     {
       m_curString = "";
     }
 
-    void startDocAnchor(const XMLHandlers::Attributes& attrib )
+    void startDocAnchor(const XMLHandlers::Attributes& attrib, const int lineNr )
     {
       m_fileName  = XMLHandlers::value(attrib,"file");
       m_title     = XMLHandlers::value(attrib,"title");
@@ -542,7 +545,7 @@ class TagFileParser
       }
     }
 
-    void startBase(const XMLHandlers::Attributes& attrib )
+    void startBase(const XMLHandlers::Attributes& attrib, const int lineNr )
     {
       m_curString="";
       if (m_state==InClass && m_curCompound)
@@ -583,7 +586,7 @@ class TagFileParser
       }
     }
 
-    void startIncludes(const XMLHandlers::Attributes& attrib )
+    void startIncludes(const XMLHandlers::Attributes& attrib, const int lineNr )
     {
       m_curIncludes = TagIncludeInfo();
       m_curIncludes.id         = XMLHandlers::value(attrib,"id");
@@ -743,7 +746,7 @@ class TagFileParser
       }
     }
 
-    void startIgnoreElement(const XMLHandlers::Attributes& )
+    void startIgnoreElement(const XMLHandlers::Attributes&, const int lineNr )
     {
     }
 
@@ -804,16 +807,16 @@ class TagFileParser
 
 struct ElementCallbacks
 {
-  using StartCallback = std::function<void(TagFileParser&,const XMLHandlers::Attributes&)>;
+  using StartCallback = std::function<void(TagFileParser&,const XMLHandlers::Attributes&, const int)>;
   using EndCallback   = std::function<void(TagFileParser&)>;
 
   StartCallback startCb;
   EndCallback   endCb;
 };
 
-ElementCallbacks::StartCallback startCb(void (TagFileParser::*fn)(const XMLHandlers::Attributes &))
+ElementCallbacks::StartCallback startCb(void (TagFileParser::*fn)(const XMLHandlers::Attributes &, const int))
 {
-  return [fn](TagFileParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr); };
+  return [fn](TagFileParser &parser,const XMLHandlers::Attributes &attr,const int lineNr) { (parser.*fn)(attr,lineNr); };
 }
 
 ElementCallbacks::EndCallback endCb(void (TagFileParser::*fn)())
@@ -882,13 +885,13 @@ static const std::map< std::string, CompoundFactory > g_compoundFactory =
 
 //---------------------------------------------------------------------------------------------------------------
 
-void TagFileParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
+void TagFileParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib, const int lineNr )
 {
-  //printf("startElement '%s'\n",name.data());
+  //printf("startElement '%s' line %d\n",name.data(), lineNr);
   auto it = g_elementHandlers.find(name);
   if (it!=std::end(g_elementHandlers))
   {
-    it->second.startCb(*this,attrib);
+    it->second.startCb(*this,attrib,lineNr);
   }
   else
   {
@@ -910,7 +913,7 @@ void TagFileParser::endElement( const std::string &name )
   }
 }
 
-void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
+void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib, const int lineNr)
 {
   m_curString = "";
   std::string kind   = XMLHandlers::value(attrib,"kind");
@@ -921,6 +924,7 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   {
     m_curCompound = it->second.make_instance();
     m_state       = it->second.state;
+    m_curCompound->lineNr = lineNr;
   }
   else
   {
@@ -1150,6 +1154,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->stat       = tmi.isStatic;
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
+    me->startLine  = tmi.lineNr;
     if (ce->section == Entry::GROUPDOC_SEC)
     {
       me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
@@ -1282,6 +1287,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->tagInfoData.tagName  = m_tagName;
       ce->tagInfoData.anchor   = tci->anchor;
       ce->tagInfoData.fileName = tci->filename;
+      ce->startLine = tci->lineNr;
       ce->hasTagInfo  = TRUE;
       ce->id       = tci->clangId;
       ce->lang     = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
@@ -1322,6 +1328,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
 
       std::string fullName = m_tagName+":"+tfi->path+stripPath(tfi->name).str();
       fe->fileName = fullName;
+      fe->startLine = tfi->lineNr;
       //printf("createFileDef() filename=%s\n",tfi->filename.data());
       std::string tagid = m_tagName+":"+tfi->path;
       std::unique_ptr<FileDef> fd { createFileDef(tagid.c_str(),
@@ -1355,6 +1362,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ne,tni->docAnchors);
       ne->tagInfoData.tagName  = m_tagName;
       ne->tagInfoData.fileName = tni->filename;
+      ne->startLine = tni->lineNr;
       ne->hasTagInfo  = TRUE;
       ne->id       = tni->clangId;
 
@@ -1376,6 +1384,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(pe,tpgi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpgi->filename;
+      pe->startLine = tpgi->lineNr;
       pe->hasTagInfo  = TRUE;
 
       buildMemberList(pe,tpgi->members);
@@ -1397,6 +1406,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ge,tgi->docAnchors);
       ge->tagInfoData.tagName  = m_tagName;
       ge->tagInfoData.fileName = tgi->filename;
+      ge->startLine = tgi->lineNr;
       ge->hasTagInfo  = TRUE;
 
       buildMemberList(ge,tgi->members);
@@ -1439,6 +1449,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpi->filename;
+      pe->startLine = tpi->lineNr;
       pe->hasTagInfo  = TRUE;
       root->moveToSubEntryAndKeep(pe);
     }
@@ -1494,7 +1505,7 @@ void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
   XMLHandlers handlers;
   // connect the generic events handlers of the XML parser to the specific handlers of the tagFileParser object
   handlers.startDocument = [&tagFileParser]()                                                              { tagFileParser.startDocument(); };
-  handlers.startElement  = [&tagFileParser](const std::string &name,const XMLHandlers::Attributes &attrs)  { tagFileParser.startElement(name,attrs); };
+  handlers.startElement  = [&tagFileParser](const std::string &name,const XMLHandlers::Attributes &attrs,const int lineNr)  { tagFileParser.startElement(name,attrs,lineNr); };
   handlers.endElement    = [&tagFileParser](const std::string &name)                                       { tagFileParser.endElement(name); };
   handlers.characters    = [&tagFileParser](const std::string &chars)                                      { tagFileParser.characters(chars); };
   handlers.error         = [&tagFileParser](const std::string &fileName,int lineNr,const std::string &msg) { tagFileParser.error(fileName,lineNr,msg); };

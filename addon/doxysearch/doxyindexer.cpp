@@ -175,7 +175,7 @@ class XMLContentHandler
     };
 
     /** Handler for a start tag. Called for <doc> and <field> tags */
-    void startElement(const std::string &name, const XMLHandlers::Attributes &attrib)
+    void startElement(const std::string &name, const XMLHandlers::Attributes &attrib, const int lineNr)
     {
       m_data="";
       if (name=="field")
@@ -354,7 +354,7 @@ int main(int argc,const char **argv)
     }
     XMLContentHandler contentHandler(outputDir);
     XMLHandlers handlers;
-    handlers.startElement = [&contentHandler](const std::string &name,const XMLHandlers::Attributes &attrs)  { contentHandler.startElement(name,attrs);   };
+    handlers.startElement = [&contentHandler](const std::string &name,const XMLHandlers::Attributes &attrs, const int lineNr)  { contentHandler.startElement(name,attrs,lineNr);   };
     handlers.endElement   = [&contentHandler](const std::string &name)                                       { contentHandler.endElement(name);           };
     handlers.characters   = [&contentHandler](const std::string &chars)                                      { contentHandler.characters(chars);          };
     handlers.error        = [&contentHandler](const std::string &fileName,int lineNr,const std::string &msg) { contentHandler.error(fileName,lineNr,msg); };

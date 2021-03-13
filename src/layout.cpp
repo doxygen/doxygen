@@ -176,7 +176,7 @@ class LayoutParser
     {
       ::warn(fileName.c_str(),lineNr,"%s",msg.c_str());
     }
-    void startElement( const std::string &name, const XMLHandlers::Attributes& attrib );
+    void startElement( const std::string &name, const XMLHandlers::Attributes& attrib, const int );
     void endElement( const std::string &name );
 
     void startSimpleEntry(LayoutDocEntry::Kind k,const XMLHandlers::Attributes &attrib)
@@ -1440,7 +1440,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 
 };
 
-void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
+void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib, const int )
 {
   //printf("startElement [%s]::[%s]\n",m_scope.data(),name.data());
   auto it = g_elementHandlers.find(m_scope.str()+name);
@@ -1498,7 +1498,7 @@ void LayoutDocManager::init()
 {
   LayoutParser &layoutParser = LayoutParser::instance();
   XMLHandlers handlers;
-  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
+  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs,const int lineNr) { layoutParser.startElement(name,attrs, lineNr); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
   handlers.error        = [&layoutParser](const std::string &fileName,int lineNr,const std::string &msg) { layoutParser.error(fileName,lineNr,msg); };
   XMLParser parser(handlers);
@@ -1542,7 +1542,7 @@ void LayoutDocManager::parse(const char *fileName)
 {
   LayoutParser &layoutParser = LayoutParser::instance();
   XMLHandlers handlers;
-  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs) { layoutParser.startElement(name,attrs); };
+  handlers.startElement = [&layoutParser](const std::string &name,const XMLHandlers::Attributes &attrs,const int lineNr) { layoutParser.startElement(name,attrs,lineNr); };
   handlers.endElement   = [&layoutParser](const std::string &name) { layoutParser.endElement(name); };
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);

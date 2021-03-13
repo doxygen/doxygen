@@ -29,7 +29,7 @@ class XMLHandlers
     using Attributes       = std::unordered_map<std::string,std::string>;
     using StartDocType     = void();
     using EndDocType       = void();
-    using StartElementType = void(const std::string &,const Attributes &);
+    using StartElementType = void(const std::string &,const Attributes &, const int);
     using EndElementType   = void(const std::string &);
     using ErrorType        = void(const std::string,int,const std::string &);
     using CharsType        = void(const std::string &);
