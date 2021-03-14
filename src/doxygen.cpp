@@ -13,9 +13,6 @@
  *
  */
 
-#include <qfile.h>
-#include <qdir.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -8980,12 +8977,11 @@ static QCString fixSlashes(QCString &s)
 static void generateConfigFile(const char *configFile,bool shortList,
                                bool updateOnly=FALSE)
 {
-  QFile f;
-  bool fileOpened=openOutputFile(configFile,f);
+  std::ofstream t;
+  bool fileOpened=openOutputFile(configFile,t);
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
-    FTextStream t(&f);
     Config::writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -9010,35 +9006,26 @@ static void generateConfigFile(const char *configFile,bool shortList,
     term("Cannot open file %s for writing\n",configFile);
   }
 }
+
 static void compareDoxyfile()
 {
-  QFile f;
+  std::ofstream f;
   char configFile[2];
   configFile[0] = '-';
   configFile[1] = '\0';
   bool fileOpened=openOutputFile(configFile,f);
   if (fileOpened)
   {
-    FTextStream t(&f);
-    Config::compareDoxyfile(t);
+    Config::compareDoxyfile(f);
   }
   else
   {
     term("Cannot open file %s for writing\n",configFile);
   }
 }
+
 //----------------------------------------------------------------------------
 // read and parse a tag file
-
-//static bool readLineFromFile(QFile &f,QCString &s)
-//{
-//  char c=0;
-//  s.resize(0);
-//  while (!f.atEnd() && (c=f.getch())!='\n') s+=c;
-//  return f.atEnd();
-//}
-
-//----------------------------------------------------------------------------
 
 static void readTagFile(const std::shared_ptr<Entry> &root,const char *tl)
 {
@@ -9301,7 +9288,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
   }
 
   FileInfo fi(fileName.str());
-  BufStr preBuf(fi.size()+4096);
+  BufStr preBuf((uint)fi.size()+4096);
 
   if (Config_getBool(ENABLE_PREPROCESSING) &&
       parser.needsPreprocessing(extension))
@@ -9313,7 +9300,7 @@ static std::shared_ptr<Entry> parseFile(OutlineParserInterface &parser,
       std::string absPath = FileInfo(s).absFilePath();
       preprocessor.addSearchDir(absPath.c_str());
     }
-    BufStr inBuf(fi.size()+4096);
+    BufStr inBuf((uint)fi.size()+4096);
     msg("Preprocessing %s...\n",fn);
     readInputFile(fileName,inBuf);
     preprocessor.processFile(fileName,inBuf,preBuf);
@@ -9891,7 +9878,7 @@ void readAliases()
 
 //----------------------------------------------------------------------------
 
-static void dumpSymbol(FTextStream &t,Definition *d)
+static void dumpSymbol(std::ostream &t,Definition *d)
 {
   QCString anchor;
   if (d->definitionType()==Definition::TypeMember)
@@ -9910,15 +9897,14 @@ static void dumpSymbol(FTextStream &t,Definition *d)
     << d->name() << "','"
     << d->getDefFileName() << "','"
     << d->getDefLine()
-    << "');" << endl;
+    << "');\n";
 }
 
 static void dumpSymbolMap()
 {
-  QFile f("symbols.sql");
-  if (f.open(IO_WriteOnly))
+  std::ofstream t("symbols.sql",std::ofstream::out | std::ofstream::binary);
+  if (t.is_open())
   {
-    FTextStream t(&f);
     for (const auto &kv : Doxygen::symbolMap)
     {
       dumpSymbol(t,kv.second);
@@ -10247,7 +10233,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          QFile f;
+          std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
             RTFGenerator::writeExtensionsFile(f);
@@ -10275,7 +10261,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          QFile f;
+          std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
             EmojiEntityMapper::instance()->writeEmojiFile(f);
@@ -10303,7 +10289,7 @@ void readConfiguration(int argc, char **argv)
             cleanUpDoxygen();
             exit(1);
           }
-          QFile f;
+          std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
             RTFGenerator::writeStyleSheetFile(f);
@@ -10340,7 +10326,7 @@ void readConfiguration(int argc, char **argv)
             warn_uncond("Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
-          QFile f;
+          std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
             HtmlGenerator::writeHeaderFile(f, argv[optind+3]);
@@ -10386,7 +10372,7 @@ void readConfiguration(int argc, char **argv)
             warn_uncond("Output language %s not supported! Using English instead.\n", outputLanguage.data());
           }
 
-          QFile f;
+          std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
             LatexGenerator::writeHeaderFile(f);
@@ -10666,22 +10652,21 @@ static void writeTagFile()
   QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
-  QFile tag(generateTagFile);
-  if (!tag.open(IO_WriteOnly))
+  std::ofstream tagFile(generateTagFile.str(),std::ofstream::out);
+  if (!tagFile.is_open())
   {
     err("cannot open tag file %s for writing\n",
         generateTagFile.data()
        );
     return;
   }
-  FTextStream tagFile(&tag);
-  tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" << endl;
+  tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>\n";
   tagFile << "<tagfile doxygen_version=\"" << getDoxygenVersion() << "\"";
   if (strlen(getGitVersion())>0)
   {
     tagFile << " doxygen_gitid=\"" << getGitVersion() << "\"";
   }
-  tagFile << ">" << endl;
+  tagFile << ">\n";
 
   // for each file
   for (const auto &fn : *Doxygen::inputNameLinkedMap)
@@ -10721,27 +10706,7 @@ static void writeTagFile()
   }
   if (Doxygen::mainPage) Doxygen::mainPage->writeTagFile(tagFile);
 
-  /*
-  if (Doxygen::mainPage && !Config_getString(GENERATE_TAGFILE).isEmpty())
-  {
-    tagFile << "  <compound kind=\"page\">" << endl
-                     << "    <name>"
-                     << convertToXML(Doxygen::mainPage->name())
-                     << "</name>" << endl
-                     << "    <title>"
-                     << convertToXML(Doxygen::mainPage->title())
-                     << "</title>" << endl
-                     << "    <filename>"
-                     << convertToXML(Doxygen::mainPage->getOutputFileBase())
-                     << Doxygen::htmlFileExtension
-                     << "</filename>" << endl;
-
-    mainPage->writeDocAnchorsToTagFile();
-    tagFile << "  </compound>" << endl;
-  }
-  */
-
-  tagFile << "</tagfile>" << endl;
+  tagFile << "</tagfile>\n";
 }
 
 static void exitDoxygen()
@@ -11136,8 +11101,8 @@ void parseInput()
     defaultLayoutUsed = TRUE;
   }
 
-  QFile layoutFile(layoutFileName);
-  if (layoutFile.open(IO_ReadOnly))
+  FileInfo fi(layoutFileName.str());
+  if (fi.exists())
   {
     msg("Parsing layout file %s...\n",layoutFileName.data());
     LayoutDocManager::instance().parse(layoutFileName);

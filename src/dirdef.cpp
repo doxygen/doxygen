@@ -26,7 +26,6 @@
 #include "dot.h"
 #include "dotdirdeps.h"
 #include "layout.h"
-#include "ftextstream.h"
 #include "config.h"
 #include "docparser.h"
 #include "definitionimpl.h"
@@ -62,7 +61,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual QCString shortTitle() const;
     virtual bool hasDetailedDescription() const;
     virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(FTextStream &t);
+    virtual void writeTagFile(std::ostream &t);
     virtual void setDiskName(const QCString &name) { m_diskName = name; }
     virtual void sort();
     virtual void setParent(DirDef *parent);
@@ -458,12 +457,12 @@ bool DirDefImpl::hasDetailedDescription() const
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
-void DirDefImpl::writeTagFile(FTextStream &tagFile)
+void DirDefImpl::writeTagFile(std::ostream &tagFile)
 {
-  tagFile << "  <compound kind=\"dir\">" << endl;
-  tagFile << "    <name>" << convertToXML(displayName()) << "</name>" << endl;
-  tagFile << "    <path>" << convertToXML(name()) << "</path>" << endl;
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  tagFile << "  <compound kind=\"dir\">\n";
+  tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";
+  tagFile << "    <path>" << convertToXML(name()) << "</path>\n";
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Directory))
   {
     switch (lde->kind())
@@ -474,7 +473,7 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
           {
             for(const auto dd : m_subdirs)
             {
-              tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
+              tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>\n";
             }
           }
         }
@@ -483,7 +482,7 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
         {
           for (const auto &fd : m_fileList)
           {
-              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
+              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>\n";
           }
         }
         break;
@@ -492,7 +491,7 @@ void DirDefImpl::writeTagFile(FTextStream &tagFile)
     }
   }
   writeDocAnchorsToTagFile(tagFile);
-  tagFile << "  </compound>" << endl;
+  tagFile << "  </compound>\n";
 }
 
 void DirDefImpl::writeDocumentation(OutputList &ol)

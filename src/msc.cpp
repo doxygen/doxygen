@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -15,6 +13,8 @@
  *
  */
 
+#include <sstream>
+
 #include "msc.h"
 #include "portable.h"
 #include "config.h"
@@ -23,43 +23,40 @@
 #include "doxygen.h"
 #include "index.h"
 #include "util.h"
-#include "ftextstream.h"
 #include "mscgen_api.h"
 #include "dir.h"
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(FTextStream &t,const char *mapName,const QCString relPath,
+static bool convertMapFile(std::ostream &t,const char *mapName,const QCString relPath,
                            const QCString &context)
 {
-  QFile f(mapName);
-  if (!f.open(IO_ReadOnly))
+  std::ifstream f(mapName,std::ifstream::in);
+  if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
         "If you installed Graphviz/dot after a previous failing run, \n"
         "try deleting the output directory and rerun doxygen.\n",mapName);
-    return FALSE;
+    return false;
   }
   const int maxLineLen=1024;
-  char buf[maxLineLen];
   char url[maxLineLen];
   char ref[maxLineLen];
   int x1,y1,x2,y2;
-  while (!f.atEnd())
+  std::string line;
+  while (getline(f,line))
   {
-    bool isRef = FALSE;
-    int numBytes = f.readLine(buf,maxLineLen);
-    buf[numBytes-1]='\0';
-    //printf("ReadLine '%s'\n",buf);
-    if (qstrncmp(buf,"rect",4)==0)
+    bool isRef = false;
+    //printf("ReadLine '%s'\n",line.c_str());
+    if (qstrncmp(line.c_str(),"rect",4)==0)
     {
       // obtain the url and the coordinates in the order used by graphviz-1.5
-      sscanf(buf,"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
+      sscanf(line.c_str(),"rect %s %d,%d %d,%d",url,&x1,&y1,&x2,&y2);
 
       if (qstrcmp(url,"\\ref")==0 || qstrcmp(url,"@ref")==0)
       {
-        isRef = TRUE;
-        sscanf(buf,"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
+        isRef = true;
+        sscanf(line.c_str(),"rect %s %s %d,%d %d,%d",ref,url,&x1,&y1,&x2,&y2);
       }
 
       // sanity checks
@@ -83,11 +80,11 @@ static bool convertMapFile(FTextStream &t,const char *mapName,const QCString rel
       }
       t << "\" shape=\"rect\" coords=\""
         << x1 << "," << y1 << "," << x2 << "," << y2 << "\""
-        << " alt=\"\"/>" << endl;
+        << " alt=\"\"/>\n";
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 void writeMscGraphFromFile(const char *inFile,const char *outDir,
@@ -156,15 +153,16 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
     return "";
   }
 
-  QGString result;
-  FTextStream tmpout(&result);
-  convertMapFile(tmpout, outFile, relPath, context);
+  std::stringstream t;
+  convertMapFile(t, outFile, relPath, context);
+  QCString result = t.str();
+
   Dir().remove(outFile.str());
 
-  return result.data();
+  return result;
 }
 
-void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
+void writeMscImageMapFromFile(std::ostream &t,const QCString &inFile,
                               const QCString &outDir,
                               const QCString &relPath,
                               const QCString &baseName,
@@ -192,12 +190,12 @@ void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
   if (!imap.isEmpty())
   {
     t << "\" alt=\""
-      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
-    t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>" << endl;
+      << baseName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
+    t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">" << imap << "</map>\n";
   }
   else
   {
-    t << "\" alt=\"" << baseName << "\" border=\"0\"/>" << endl;
+    t << "\" alt=\"" << baseName << "\" border=\"0\"/>\n";
   }
 }
 

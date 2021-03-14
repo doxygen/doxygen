@@ -13,6 +13,8 @@
 *
 */
 
+#include <sstream>
+
 #include "dotgroupcollaboration.h"
 #include "classlist.h"
 #include "doxygen.h"
@@ -207,7 +209,7 @@ QCString DotGroupCollaboration::getBaseName() const
 
 void DotGroupCollaboration::computeTheGraph()
 {
-  FTextStream md5stream(&m_theGraph);
+  std::stringstream md5stream;
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
@@ -230,6 +232,7 @@ void DotGroupCollaboration::computeTheGraph()
 
   writeGraphFooter(md5stream);
 
+  m_theGraph = md5stream.str();
 }
 
 QCString DotGroupCollaboration::getMapLabel() const
@@ -237,7 +240,7 @@ QCString DotGroupCollaboration::getMapLabel() const
   return escapeCharsInString(m_baseName, FALSE);
 }
 
-QCString DotGroupCollaboration::writeGraph( FTextStream &t,
+QCString DotGroupCollaboration::writeGraph( std::ostream &t,
   GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
   const char *path, const char *fileName, const char *relPath,
   bool generateImageMap,int graphId)
@@ -247,7 +250,7 @@ QCString DotGroupCollaboration::writeGraph( FTextStream &t,
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
-void DotGroupCollaboration::Edge::write( FTextStream &t ) const
+void DotGroupCollaboration::Edge::write( std::ostream &t ) const
 {
   const char* linkTypeColor[] = {
     "darkorchid3"
@@ -304,7 +307,7 @@ void DotGroupCollaboration::Edge::write( FTextStream &t ) const
     break;
   }
   t << ", " << arrowStyle;
-  t << "];" << endl;
+  t << "];\n";
 }
 
 bool DotGroupCollaboration::isTrivial() const
@@ -312,7 +315,7 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes.size() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(FTextStream &t,const QCString &title) const
+void DotGroupCollaboration::writeGraphHeader(std::ostream &t,const QCString &title) const
 {
   int fontSize      = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
@@ -325,11 +328,11 @@ void DotGroupCollaboration::writeGraphHeader(FTextStream &t,const QCString &titl
   {
     t << "\"" << convertToXML(title) << "\"";
   }
-  t << endl;
-  t << "{" << endl;
+  t << "\n";
+  t << "{\n";
   if (Config_getBool(DOT_TRANSPARENT))
   {
-    t << "  bgcolor=\"transparent\";" << endl;
+    t << "  bgcolor=\"transparent\";\n";
   }
   t << "  edge [fontname=\"" << fontName << "\",fontsize=\"" << fontSize << "\","
     "labelfontname=\"" << fontName << "\",labelfontsize=\"" << fontSize << "\"];\n";

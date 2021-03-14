@@ -1076,7 +1076,7 @@ int Markdown::processLink(const char *data,int,int size)
           else if (!(forg.exists() && forg.isReadable()))
           {
             FileInfo fi(m_fileName.str());
-            QCString mdFile = m_fileName.left(m_fileName.length()-fi.fileName().length()) + link;
+            QCString mdFile = m_fileName.left(m_fileName.length()-(uint)fi.fileName().length()) + link;
             FileInfo fmd(mdFile.str());
             if (fmd.exists() && fmd.isReadable())
             {

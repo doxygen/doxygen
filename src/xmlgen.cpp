@@ -15,8 +15,6 @@
 
 #include <stdlib.h>
 
-#include <qfile.h>
-
 #include "xmlgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -107,12 +105,12 @@ static const char *xmlSectionMapper(MemberListType ml)
 }
 
 
-inline void writeXMLString(FTextStream &t,const char *s)
+inline void writeXMLString(std::ostream &t,const char *s)
 {
   t << convertToXML(s);
 }
 
-inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
+inline void writeXMLCodeString(std::ostream &t,const char *s, int &col)
 {
   char c;
   while ((c=*s++))
@@ -146,28 +144,26 @@ inline void writeXMLCodeString(FTextStream &t,const char *s, int &col)
 }
 
 
-static void writeXMLHeader(FTextStream &t)
+static void writeXMLHeader(std::ostream &t)
 {
-  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
+  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"compound.xsd\" ";
   t << "version=\"" << getDoxygenVersion() << "\" ";
   t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
-  t << ">" << endl;
+  t << ">\n";
 }
 
 static void writeCombineScript()
 {
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/combine.xslt";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
 
   t <<
   "<!-- XSLT script to combine the generated output into a single file. \n"
@@ -188,7 +184,7 @@ static void writeCombineScript()
 
 }
 
-void writeXMLLink(FTextStream &t,const char *extRef,const char *compoundId,
+void writeXMLLink(std::ostream &t,const char *extRef,const char *compoundId,
                   const char *anchorId,const char *text,const char *tooltip)
 {
   t << "<ref refid=\"" << compoundId;
@@ -207,7 +203,7 @@ void writeXMLLink(FTextStream &t,const char *extRef,const char *compoundId,
 class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorXMLImpl(FTextStream &t): m_t(t) {}
+    TextGeneratorXMLImpl(std::ostream &t): m_t(t) {}
     void writeString(const char *s,bool /*keepSpaces*/) const
     {
       writeXMLString(m_t,s);
@@ -220,7 +216,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
       writeXMLLink(m_t,extRef,file,anchor,text,0);
     }
   private:
-    FTextStream &m_t;
+    std::ostream &m_t;
 };
 
 //-------------------------------------------------------------------------------------------
@@ -291,7 +287,7 @@ void XMLCodeGenerator::endCodeLine()
     m_t << "</highlight>";
     m_normalHLNeedStartTag=TRUE;
   }
-  m_t << "</codeline>" << endl; // non DocBook
+  m_t << "</codeline>\n"; // non DocBook
   m_lineNumber = -1;
   m_refId.resize(0);
   m_external.resize(0);
@@ -340,17 +336,17 @@ void XMLCodeGenerator::finish()
 
 void XMLCodeGenerator::startCodeFragment(const char *)
 {
-  m_t << "    <programlisting>" << endl;
+  m_t << "    <programlisting>\n";
 }
 
 void XMLCodeGenerator::endCodeFragment(const char *)
 {
-  m_t << "    </programlisting>" << endl;
+  m_t << "    </programlisting>\n";
 }
 
 //-------------------------------------------------------------------------------------------
 
-static void writeTemplateArgumentList(FTextStream &t,
+static void writeTemplateArgumentList(std::ostream &t,
                                       const ArgumentList &al,
                                       const Definition *scope,
                                       const FileDef *fileScope,
@@ -360,50 +356,50 @@ static void writeTemplateArgumentList(FTextStream &t,
   indentStr.fill(' ',indent);
   if (al.hasParameters())
   {
-    t << indentStr << "<templateparamlist>" << endl;
+    t << indentStr << "<templateparamlist>\n";
     for (const Argument &a : al)
     {
-      t << indentStr << "  <param>" << endl;
+      t << indentStr << "  <param>\n";
       if (!a.type.isEmpty())
       {
         t << indentStr <<  "    <type>";
         linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.type);
-        t << "</type>" << endl;
+        t << "</type>\n";
       }
       if (!a.name.isEmpty())
       {
-        t << indentStr <<  "    <declname>" << convertToXML(a.name) << "</declname>" << endl;
-        t << indentStr <<  "    <defname>" << convertToXML(a.name) << "</defname>" << endl;
+        t << indentStr <<  "    <declname>" << convertToXML(a.name) << "</declname>\n";
+        t << indentStr <<  "    <defname>" << convertToXML(a.name) << "</defname>\n";
       }
       if (!a.defval.isEmpty())
       {
         t << indentStr << "    <defval>";
         linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.defval);
-        t << "</defval>" << endl;
+        t << "</defval>\n";
       }
       if (!a.typeConstraint.isEmpty())
       {
         t << indentStr << "    <typeconstraint>";
         linkifyText(TextGeneratorXMLImpl(t),scope,fileScope,0,a.typeConstraint);
-        t << "</typeconstraint>" << endl;
+        t << "</typeconstraint>\n";
       }
-      t << indentStr << "  </param>" << endl;
+      t << indentStr << "  </param>\n";
     }
-    t << indentStr << "</templateparamlist>" << endl;
+    t << indentStr << "</templateparamlist>\n";
   }
 }
 
-static void writeMemberTemplateLists(const MemberDef *md,FTextStream &t)
+static void writeMemberTemplateLists(const MemberDef *md,std::ostream &t)
 {
   writeTemplateArgumentList(t,md->templateArguments(),md->getClassDef(),md->getFileDef(),8);
 }
 
-static void writeTemplateList(const ClassDef *cd,FTextStream &t)
+static void writeTemplateList(const ClassDef *cd,std::ostream &t)
 {
   writeTemplateArgumentList(t,cd->templateArguments(),cd,0,4);
 }
 
-static void writeXMLDocBlock(FTextStream &t,
+static void writeXMLDocBlock(std::ostream &t,
                       const QCString &fileName,
                       int lineNr,
                       const Definition *scope,
@@ -428,7 +424,7 @@ static void writeXMLDocBlock(FTextStream &t,
 
 }
 
-void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
+void writeXMLCodeBlock(std::ostream &t,FileDef *fd)
 {
   auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
@@ -453,7 +449,7 @@ void writeXMLCodeBlock(FTextStream &t,FileDef *fd)
   delete xmlGen;
 }
 
-static void writeMemberReference(FTextStream &t,const Definition *def,const MemberDef *rmd,const char *tagName)
+static void writeMemberReference(std::ostream &t,const Definition *def,const MemberDef *rmd,const char *tagName)
 {
   QCString scope = rmd->getScopeString();
   QCString name = rmd->name();
@@ -472,7 +468,7 @@ static void writeMemberReference(FTextStream &t,const Definition *def,const Memb
       t << " endline=\"" << rmd->getEndBodyLine() << "\"";
     }
   }
-  t << ">" << convertToXML(name) << "</" << tagName << ">" << endl;
+  t << ">" << convertToXML(name) << "</" << tagName << ">\n";
 
 }
 
@@ -510,7 +506,7 @@ static QCString memberOutputFileBase(const MemberDef *md)
 }
 
 
-static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream &t,const Definition *def)
+static void generateXMLForMember(const MemberDef *md,std::ostream &ti,std::ostream &t,const Definition *def)
 {
 
   // + declaration/definition arg lists
@@ -558,7 +554,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
 
   ti << "    <member refid=\"" << memberOutputFileBase(md)
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
-     << convertToXML(md->name()) << "</name></member>" << endl;
+     << convertToXML(md->name()) << "</name></member>\n";
 
   QCString scopeName;
   if (md->getClassDef())
@@ -788,7 +784,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     t << "\"";
   }
 
-  t << ">" << endl;
+  t << ">\n";
 
   if (md->memberType()!=MemberType_Define &&
       md->memberType()!=MemberType_Enumeration
@@ -799,33 +795,33 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     stripQualifiers(typeStr);
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,typeStr);
-    t << "</type>" << endl;
-    t << "        <definition>" << convertToXML(md->definition()) << "</definition>" << endl;
-    t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>" << endl;
+    t << "</type>\n";
+    t << "        <definition>" << convertToXML(md->definition()) << "</definition>\n";
+    t << "        <argsstring>" << convertToXML(md->argsString()) << "</argsstring>\n";
   }
 
   if (md->memberType() == MemberType_Enumeration)
   {
     t << "        <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->enumBaseType());
-    t << "</type>" << endl;
+    t << "</type>\n";
   }
 
-  t << "        <name>" << convertToXML(md->name()) << "</name>" << endl;
+  t << "        <name>" << convertToXML(md->name()) << "</name>\n";
 
   if (md->memberType() == MemberType_Property)
   {
     if (md->isReadable())
-      t << "        <read>" << convertToXML(md->getReadAccessor()) << "</read>" << endl;
+      t << "        <read>" << convertToXML(md->getReadAccessor()) << "</read>\n";
     if (md->isWritable())
-      t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>" << endl;
+      t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>\n";
   }
 
   if (md->memberType()==MemberType_Variable && md->bitfieldString())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
-    t << "        <bitfield>" << convertToXML(bitfield) << "</bitfield>" << endl;
+    t << "        <bitfield>" << convertToXML(bitfield) << "</bitfield>\n";
   }
 
   const MemberDef *rmd = md->reimplements();
@@ -833,22 +829,22 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   {
     t << "        <reimplements refid=\""
       << memberOutputFileBase(rmd) << "_1" << rmd->anchor() << "\">"
-      << convertToXML(rmd->name()) << "</reimplements>" << endl;
+      << convertToXML(rmd->name()) << "</reimplements>\n";
   }
   for (const auto &rbmd : md->reimplementedBy())
   {
     t << "        <reimplementedby refid=\""
       << memberOutputFileBase(rbmd) << "_1" << rbmd->anchor() << "\">"
-      << convertToXML(rbmd->name()) << "</reimplementedby>" << endl;
+      << convertToXML(rbmd->name()) << "</reimplementedby>\n";
   }
 
   if (md->isFriendClass()) // for friend classes we show a link to the class as a "parameter"
   {
-    t << "        <param>" << endl;
+    t << "        <param>\n";
     t << "          <type>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->name());
-    t << "</type>" << endl;
-    t << "        </param>" << endl;
+    t << "</type>\n";
+    t << "        </param>\n";
   }
   else if (isFunc) //function
   {
@@ -866,51 +862,51 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
           defArg = &(*defIt);
           ++defIt;
         }
-        t << "        <param>" << endl;
+        t << "        <param>\n";
         if (!a.attrib.isEmpty())
         {
           t << "          <attributes>";
           writeXMLString(t,a.attrib);
-          t << "</attributes>" << endl;
+          t << "</attributes>\n";
         }
         if (!a.type.isEmpty())
         {
           t << "          <type>";
           linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.type);
-          t << "</type>" << endl;
+          t << "</type>\n";
         }
         if (!a.name.isEmpty())
         {
           t << "          <declname>";
           writeXMLString(t,a.name);
-          t << "</declname>" << endl;
+          t << "</declname>\n";
         }
         if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
         {
           t << "          <defname>";
           writeXMLString(t,defArg->name);
-          t << "</defname>" << endl;
+          t << "</defname>\n";
         }
         if (!a.array.isEmpty())
         {
           t << "          <array>";
           writeXMLString(t,a.array);
-          t << "</array>" << endl;
+          t << "</array>\n";
         }
         if (!a.defval.isEmpty())
         {
           t << "          <defval>";
           linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,a.defval);
-          t << "</defval>" << endl;
+          t << "</defval>\n";
         }
         if (defArg && defArg->hasDocumentation())
         {
           t << "          <briefdescription>";
           writeXMLDocBlock(t,md->getDefFileName(),md->getDefLine(),
                            md->getOuterScope(),md,defArg->docs);
-          t << "</briefdescription>" << endl;
+          t << "</briefdescription>\n";
         }
-        t << "        </param>" << endl;
+        t << "        </param>\n";
       }
     }
   }
@@ -920,13 +916,13 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     if (md->argumentList().empty())     // special case for "foo()" to
                                         // distinguish it from "foo".
     {
-      t << "        <param></param>" << endl;
+      t << "        <param></param>\n";
     }
     else
     {
       for (const Argument &a : md->argumentList())
       {
-        t << "        <param><defname>" << a.type << "</defname></param>" << endl;
+        t << "        <param><defname>" << a.type << "</defname></param>\n";
       }
     }
   }
@@ -935,14 +931,14 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
   {
     t << "        <initializer>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->initializer());
-    t << "</initializer>" << endl;
+    t << "</initializer>\n";
   }
 
   if (md->excpString())
   {
     t << "        <exceptions>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->excpString());
-    t << "</exceptions>" << endl;
+    t << "</exceptions>\n";
   }
 
   if (md->memberType()==MemberType_Enumeration) // enum
@@ -951,7 +947,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     {
       ti << "    <member refid=\"" << memberOutputFileBase(md)
          << "_1" << emd->anchor() << "\" kind=\"enumvalue\"><name>"
-         << convertToXML(emd->name()) << "</name></member>" << endl;
+         << convertToXML(emd->name()) << "</name></member>\n";
 
       t << "        <enumvalue id=\"" << memberOutputFileBase(md) << "_1"
         << emd->anchor() << "\" prot=\"";
@@ -962,34 +958,34 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
         case Private:   t << "private";   break;
         case Package:   t << "package";   break;
       }
-      t << "\">" << endl;
+      t << "\">\n";
       t << "          <name>";
       writeXMLString(t,emd->name());
-      t << "</name>" << endl;
+      t << "</name>\n";
       if (!emd->initializer().isEmpty())
       {
         t << "          <initializer>";
         writeXMLString(t,emd->initializer());
-        t << "</initializer>" << endl;
+        t << "</initializer>\n";
       }
-      t << "          <briefdescription>" << endl;
+      t << "          <briefdescription>\n";
       writeXMLDocBlock(t,emd->briefFile(),emd->briefLine(),emd->getOuterScope(),emd,emd->briefDescription());
-      t << "          </briefdescription>" << endl;
-      t << "          <detaileddescription>" << endl;
+      t << "          </briefdescription>\n";
+      t << "          <detaileddescription>\n";
       writeXMLDocBlock(t,emd->docFile(),emd->docLine(),emd->getOuterScope(),emd,emd->documentation());
-      t << "          </detaileddescription>" << endl;
-      t << "        </enumvalue>" << endl;
+      t << "          </detaileddescription>\n";
+      t << "        </enumvalue>\n";
     }
   }
-  t << "        <briefdescription>" << endl;
+  t << "        <briefdescription>\n";
   writeXMLDocBlock(t,md->briefFile(),md->briefLine(),md->getOuterScope(),md,md->briefDescription());
-  t << "        </briefdescription>" << endl;
-  t << "        <detaileddescription>" << endl;
+  t << "        </briefdescription>\n";
+  t << "        <detaileddescription>\n";
   writeXMLDocBlock(t,md->docFile(),md->docLine(),md->getOuterScope(),md,md->documentation());
-  t << "        </detaileddescription>" << endl;
-  t << "        <inbodydescription>" << endl;
+  t << "        </detaileddescription>\n";
+  t << "        <inbodydescription>\n";
   writeXMLDocBlock(t,md->docFile(),md->inbodyLine(),md->getOuterScope(),md,md->inbodyDocumentation());
-  t << "        </inbodydescription>" << endl;
+  t << "        </inbodydescription>\n";
   if (md->getDefLine()!=-1)
   {
     t << "        <location file=\""
@@ -1012,7 +1008,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
         << md->getDeclLine() << "\" declcolumn=\""
         << md->getDeclColumn() << "\"";
     }
-    t << "/>" << endl;
+    t << "/>\n";
   }
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
@@ -1027,7 +1023,7 @@ static void generateXMLForMember(const MemberDef *md,FTextStream &ti,FTextStream
     writeMemberReference(t,def,refmd,"referencedby");
   }
 
-  t << "      </memberdef>" << endl;
+  t << "      </memberdef>\n";
 }
 
 // namespace members are also inserted in the file scope, but
@@ -1039,7 +1035,7 @@ static bool memberVisible(const Definition *d,const MemberDef *md)
            md->getNamespaceDef()==0;
 }
 
-static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &t,
+static void generateXMLSection(const Definition *d,std::ostream &ti,std::ostream &t,
                       const MemberList *ml,const char *kind,const char *header=0,
                       const char *documentation=0)
 {
@@ -1055,16 +1051,16 @@ static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &
   }
   if (count==0) return; // empty list
 
-  t << "      <sectiondef kind=\"" << kind << "\">" << endl;
+  t << "      <sectiondef kind=\"" << kind << "\">\n";
   if (header)
   {
-    t << "      <header>" << convertToXML(header) << "</header>" << endl;
+    t << "      <header>" << convertToXML(header) << "</header>\n";
   }
   if (documentation)
   {
     t << "      <description>";
     writeXMLDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
-    t << "</description>" << endl;
+    t << "</description>\n";
   }
   for (const auto &md : *ml)
   {
@@ -1073,12 +1069,12 @@ static void generateXMLSection(const Definition *d,FTextStream &ti,FTextStream &
       generateXMLForMember(md,ti,t,d);
     }
   }
-  t << "      </sectiondef>" << endl;
+  t << "      </sectiondef>\n";
 }
 
-static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
+static void writeListOfAllMembers(const ClassDef *cd,std::ostream &t)
 {
-  t << "    <listofallmembers>" << endl;
+  t << "    <listofallmembers>\n";
   for (auto &mni : cd->memberNameInfoLinkedMap())
   {
     for (auto &mi : *mni)
@@ -1110,14 +1106,14 @@ static void writeListOfAllMembers(const ClassDef *cd,FTextStream &t)
           t << " ambiguityscope=\"" << convertToXML(mi->ambiguityResolutionScope()) << "\"";
         }
         t << "><scope>" << convertToXML(cd->name()) << "</scope><name>" <<
-          convertToXML(md->name()) << "</name></member>" << endl;
+          convertToXML(md->name()) << "</name></member>\n";
       }
     }
   }
-  t << "    </listofallmembers>" << endl;
+  t << "    </listofallmembers>\n";
 }
 
-static void writeInnerClasses(const ClassLinkedRefMap &cl,FTextStream &t)
+static void writeInnerClasses(const ClassLinkedRefMap &cl,std::ostream &t)
 {
   for (const auto &cd : cl)
   {
@@ -1132,12 +1128,12 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,FTextStream &t)
          case Private:   t << "private";    break;
          case Package:   t << "package";    break;
       }
-      t << "\">" << convertToXML(cd->name()) << "</innerclass>" << endl;
+      t << "\">" << convertToXML(cd->name()) << "</innerclass>\n";
     }
   }
 }
 
-static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,FTextStream &t)
+static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,std::ostream &t)
 {
   for (const auto &nd : nl)
   {
@@ -1145,21 +1141,21 @@ static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,FTextStream &t)
     {
       t << "    <innernamespace refid=\"" << nd->getOutputFileBase()
         << "\"" << (nd->isInline() ? " inline=\"yes\"" : "")
-        << ">" << convertToXML(nd->name()) << "</innernamespace>" << endl;
+        << ">" << convertToXML(nd->name()) << "</innernamespace>\n";
     }
   }
 }
 
-static void writeInnerFiles(const FileList &fl,FTextStream &t)
+static void writeInnerFiles(const FileList &fl,std::ostream &t)
 {
   for (const auto &fd : fl)
   {
     t << "    <innerfile refid=\"" << fd->getOutputFileBase()
-      << "\">" << convertToXML(fd->name()) << "</innerfile>" << endl;
+      << "\">" << convertToXML(fd->name()) << "</innerfile>\n";
   }
 }
 
-static void writeInnerPages(const PageLinkedRefMap &pl,FTextStream &t)
+static void writeInnerPages(const PageLinkedRefMap &pl,std::ostream &t)
 {
   for (const auto &pd : pl)
   {
@@ -1168,33 +1164,33 @@ static void writeInnerPages(const PageLinkedRefMap &pl,FTextStream &t)
     {
       t << "_" << pd->name();
     }
-    t << "\">" << convertToXML(pd->title()) << "</innerpage>" << endl;
+    t << "\">" << convertToXML(pd->title()) << "</innerpage>\n";
   }
 }
 
-static void writeInnerGroups(const GroupList &gl,FTextStream &t)
+static void writeInnerGroups(const GroupList &gl,std::ostream &t)
 {
   for (const auto &sgd : gl)
   {
     t << "    <innergroup refid=\"" << sgd->getOutputFileBase()
       << "\">" << convertToXML(sgd->groupTitle())
-      << "</innergroup>" << endl;
+      << "</innergroup>\n";
   }
 }
 
-static void writeInnerDirs(const DirList *dl,FTextStream &t)
+static void writeInnerDirs(const DirList *dl,std::ostream &t)
 {
   if (dl)
   {
     for(const auto subdir : *dl)
     {
       t << "    <innerdir refid=\"" << subdir->getOutputFileBase()
-        << "\">" << convertToXML(subdir->displayName()) << "</innerdir>" << endl;
+        << "\">" << convertToXML(subdir->displayName()) << "</innerdir>\n";
     }
   }
 }
 
-static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
+static void generateXMLForClass(const ClassDef *cd,std::ostream &ti)
 {
   // + brief description
   // + detailed description
@@ -1222,18 +1218,16 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
 
   ti << "  <compound refid=\"" << classOutputFileBase(cd)
      << "\" kind=\"" << cd->compoundTypeString()
-     << "\"><name>" << convertToXML(cd->name()) << "</name>" << endl;
+     << "\"><name>" << convertToXML(cd->name()) << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\""
@@ -1250,10 +1244,10 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
   if (cd->isAbstract()) t << "\" abstract=\"yes";
-  t << "\">" << endl;
+  t << "\">\n";
   t << "    <compoundname>";
   writeXMLString(t,cd->name());
-  t << "</compoundname>" << endl;
+  t << "</compoundname>\n";
   for (const auto &bcd : cd->baseClasses())
   {
     t << "    <basecompoundref ";
@@ -1288,7 +1282,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
     {
       t << convertToXML(bcd.classDef->displayName());
     }
-    t  << "</basecompoundref>" << endl;
+    t  << "</basecompoundref>\n";
   }
   for (const auto &bcd : cd->subClasses())
   {
@@ -1310,7 +1304,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
       case Pure:    t << "pure-virtual"; break;
     }
     t << "\">" << convertToXML(bcd.classDef->displayName())
-      << "</derivedcompoundref>" << endl;
+      << "</derivedcompoundref>\n";
   }
 
   const IncludeInfo *ii=cd->includeInfo();
@@ -1327,7 +1321,7 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
       }
       t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
       t << nm;
-      t << "</includes>" << endl;
+      t << "</includes>\n";
     }
   }
 
@@ -1348,25 +1342,25 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
     }
   }
 
-  t << "    <briefdescription>" << endl;
+  t << "    <briefdescription>\n";
   writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
-  t << "    </detaileddescription>" << endl;
+  t << "    </detaileddescription>\n";
   DotClassGraph inheritanceGraph(cd,Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
-    t << "    <inheritancegraph>" << endl;
+    t << "    <inheritancegraph>\n";
     inheritanceGraph.writeXML(t);
-    t << "    </inheritancegraph>" << endl;
+    t << "    </inheritancegraph>\n";
   }
   DotClassGraph collaborationGraph(cd,Collaboration);
   if (!collaborationGraph.isTrivial())
   {
-    t << "    <collaborationgraph>" << endl;
+    t << "    <collaborationgraph>\n";
     collaborationGraph.writeXML(t);
-    t << "    </collaborationgraph>" << endl;
+    t << "    </collaborationgraph>\n";
   }
   t << "    <location file=\""
     << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
@@ -1382,15 +1376,15 @@ static void generateXMLForClass(const ClassDef *cd,FTextStream &ti)
       t << " bodystart=\"" << cd->getStartBodyLine() << "\" bodyend=\""
         << cd->getEndBodyLine() << "\"";
     }
-  t << "/>" << endl;
+  t << "/>\n";
   writeListOfAllMembers(cd,t);
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
 
-  ti << "  </compound>" << endl;
+  ti << "  </compound>\n";
 }
 
-static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
+static void generateXMLForNamespace(const NamespaceDef *nd,std::ostream &ti)
 {
   // + contained class definitions
   // + contained namespace definitions
@@ -1405,28 +1399,26 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
 
   ti << "  <compound refid=\"" << nd->getOutputFileBase()
      << "\" kind=\"namespace\"" << "><name>"
-     << convertToXML(nd->name()) << "</name>" << endl;
+     << convertToXML(nd->name()) << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << nd->getOutputFileBase()
     << "\" kind=\"namespace\" "
     << (nd->isInline()?"inline=\"yes\" ":"")
     << "language=\""
-    << langToString(nd->getLanguage()) << "\">" << endl;
+    << langToString(nd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
   writeXMLString(t,nd->name());
-  t << "</compoundname>" << endl;
+  t << "</compoundname>\n";
 
   writeInnerClasses(nd->getClasses(),t);
   writeInnerNamespaces(nd->getNamespaces(),t);
@@ -1445,23 +1437,23 @@ static void generateXMLForNamespace(const NamespaceDef *nd,FTextStream &ti)
     }
   }
 
-  t << "    <briefdescription>" << endl;
+  t << "    <briefdescription>\n";
   writeXMLDocBlock(t,nd->briefFile(),nd->briefLine(),nd,0,nd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
-  t << "    </detaileddescription>" << endl;
+  t << "    </detaileddescription>\n";
   t << "    <location file=\""
     << convertToXML(stripFromPath(nd->getDefFileName())) << "\" line=\""
     << nd->getDefLine() << "\"" << " column=\""
-    << nd->getDefColumn() << "\"/>" << endl ;
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
+    << nd->getDefColumn() << "\"/>\n" ;
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
 
-  ti << "  </compound>" << endl;
+  ti << "  </compound>\n";
 }
 
-static void generateXMLForFile(FileDef *fd,FTextStream &ti)
+static void generateXMLForFile(FileDef *fd,std::ostream &ti)
 {
   // + includes files
   // + includedby files
@@ -1481,26 +1473,24 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
 
   ti << "  <compound refid=\"" << fd->getOutputFileBase()
      << "\" kind=\"file\"><name>" << convertToXML(fd->name())
-     << "</name>" << endl;
+     << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << fd->getOutputFileBase()
     << "\" kind=\"file\" language=\""
-    << langToString(fd->getLanguage()) << "\">" << endl;
+    << langToString(fd->getLanguage()) << "\">\n";
   t << "    <compoundname>";
   writeXMLString(t,fd->name());
-  t << "</compoundname>" << endl;
+  t << "</compoundname>\n";
 
   for (const auto &inc : fd->includeFileList())
   {
@@ -1511,7 +1501,7 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
     }
     t << " local=\"" << (inc.local ? "yes" : "no") << "\">";
     t << inc.includeName;
-    t << "</includes>" << endl;
+    t << "</includes>\n";
   }
 
   for (const auto &inc : fd->includedByFileList())
@@ -1523,23 +1513,23 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
     }
     t << " local=\"" << (inc.local ? "yes" : "no") << "\">";
     t << inc.includeName;
-    t << "</includedby>" << endl;
+    t << "</includedby>\n";
   }
 
   DotInclDepGraph incDepGraph(fd,FALSE);
   if (!incDepGraph.isTrivial())
   {
-    t << "    <incdepgraph>" << endl;
+    t << "    <incdepgraph>\n";
     incDepGraph.writeXML(t);
-    t << "    </incdepgraph>" << endl;
+    t << "    </incdepgraph>\n";
   }
 
   DotInclDepGraph invIncDepGraph(fd,TRUE);
   if (!invIncDepGraph.isTrivial())
   {
-    t << "    <invincdepgraph>" << endl;
+    t << "    <invincdepgraph>\n";
     invIncDepGraph.writeXML(t);
-    t << "    </invincdepgraph>" << endl;
+    t << "    </invincdepgraph>\n";
   }
 
   writeInnerClasses(fd->getClasses(),t);
@@ -1559,24 +1549,24 @@ static void generateXMLForFile(FileDef *fd,FTextStream &ti)
     }
   }
 
-  t << "    <briefdescription>" << endl;
+  t << "    <briefdescription>\n";
   writeXMLDocBlock(t,fd->briefFile(),fd->briefLine(),fd,0,fd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,fd->docFile(),fd->docLine(),fd,0,fd->documentation());
-  t << "    </detaileddescription>" << endl;
+  t << "    </detaileddescription>\n";
   if (Config_getBool(XML_PROGRAMLISTING))
   {
     writeXMLCodeBlock(t,fd);
   }
-  t << "    <location file=\"" << convertToXML(stripFromPath(fd->getDefFileName())) << "\"/>" << endl;
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
+  t << "    <location file=\"" << convertToXML(stripFromPath(fd->getDefFileName())) << "\"/>\n";
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
 
-  ti << "  </compound>" << endl;
+  ti << "  </compound>\n";
 }
 
-static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
+static void generateXMLForGroup(const GroupDef *gd,std::ostream &ti)
 {
   // + members
   // + member groups
@@ -1593,24 +1583,22 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
   if (gd->isReference()) return; // skip external references
 
   ti << "  <compound refid=\"" << gd->getOutputFileBase()
-     << "\" kind=\"group\"><name>" << convertToXML(gd->name()) << "</name>" << endl;
+     << "\" kind=\"group\"><name>" << convertToXML(gd->name()) << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+gd->getOutputFileBase()+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
 
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
   writeXMLHeader(t);
   t << "  <compounddef id=\""
-    << gd->getOutputFileBase() << "\" kind=\"group\">" << endl;
-  t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>" << endl;
-  t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>" << endl;
+    << gd->getOutputFileBase() << "\" kind=\"group\">\n";
+  t << "    <compoundname>" << convertToXML(gd->name()) << "</compoundname>\n";
+  t << "    <title>" << convertToXML(gd->groupTitle()) << "</title>\n";
 
   writeInnerFiles(gd->getFiles(),t);
   writeInnerClasses(gd->getClasses(),t);
@@ -1632,58 +1620,56 @@ static void generateXMLForGroup(const GroupDef *gd,FTextStream &ti)
     }
   }
 
-  t << "    <briefdescription>" << endl;
+  t << "    <briefdescription>\n";
   writeXMLDocBlock(t,gd->briefFile(),gd->briefLine(),gd,0,gd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,gd->docFile(),gd->docLine(),gd,0,gd->documentation());
-  t << "    </detaileddescription>" << endl;
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
+  t << "    </detaileddescription>\n";
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
 
-  ti << "  </compound>" << endl;
+  ti << "  </compound>\n";
 }
 
-static void generateXMLForDir(DirDef *dd,FTextStream &ti)
+static void generateXMLForDir(DirDef *dd,std::ostream &ti)
 {
   if (dd->isReference()) return; // skip external references
   ti << "  <compound refid=\"" << dd->getOutputFileBase()
      << "\" kind=\"dir\"><name>" << convertToXML(dd->displayName())
-     << "</name>" << endl;
+     << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
 
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
   writeXMLHeader(t);
   t << "  <compounddef id=\""
-    << dd->getOutputFileBase() << "\" kind=\"dir\">" << endl;
-  t << "    <compoundname>" << convertToXML(dd->displayName()) << "</compoundname>" << endl;
+    << dd->getOutputFileBase() << "\" kind=\"dir\">\n";
+  t << "    <compoundname>" << convertToXML(dd->displayName()) << "</compoundname>\n";
 
   writeInnerDirs(&dd->subDirs(),t);
   writeInnerFiles(dd->getFiles(),t);
 
-  t << "    <briefdescription>" << endl;
+  t << "    <briefdescription>\n";
   writeXMLDocBlock(t,dd->briefFile(),dd->briefLine(),dd,0,dd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,dd->docFile(),dd->docLine(),dd,0,dd->documentation());
-  t << "    </detaileddescription>" << endl;
-  t << "    <location file=\"" << convertToXML(stripFromPath(dd->name())) << "\"/>" << endl;
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
+  t << "    </detaileddescription>\n";
+  t << "    <location file=\"" << convertToXML(stripFromPath(dd->name())) << "\"/>\n";
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
 
-  ti << "  </compound>" << endl;
+  ti << "  </compound>\n";
 }
 
-static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
+static void generateXMLForPage(PageDef *pd,std::ostream &ti,bool isExample)
 {
   // + name
   // + title
@@ -1703,24 +1689,22 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
 
   ti << "  <compound refid=\"" << pageName
      << "\" kind=\"" << kindName << "\"><name>" << convertToXML(pd->name())
-     << "</name>" << endl;
+     << "</name>\n";
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+pageName+".xml";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
 
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName;
-  t << "\" kind=\"" << kindName << "\">" << endl;
+  t << "\" kind=\"" << kindName << "\">\n";
   t << "    <compoundname>" << convertToXML(pd->name())
-    << "</compoundname>" << endl;
+    << "</compoundname>\n";
 
   if (pd==Doxygen::mainPage.get()) // main page is special
   {
@@ -1734,7 +1718,7 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
       title = Config_getString(PROJECT_NAME);
     }
     t << "    <title>" << convertToXML(convertCharEntitiesToUTF8(title))
-      << "</title>" << endl;
+      << "</title>\n";
   }
   else
   {
@@ -1742,14 +1726,14 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     if (si)
     {
       t << "    <title>" << convertToXML(filterTitle(convertCharEntitiesToUTF8(si->title()).str()))
-        << "</title>" << endl;
+        << "</title>\n";
     }
   }
   writeInnerPages(pd->getSubPages(),t);
   const SectionRefs &sectionRefs = pd->getSectionRefs();
   if (pd->localToc().isXmlEnabled() && !sectionRefs.empty())
   {
-    t << "    <tableofcontents>" << endl;
+    t << "    <tableofcontents>\n";
     int level=1,l;
     bool inLi[5]={ FALSE, FALSE, FALSE, FALSE, FALSE };
     int maxLevel = pd->localToc().xmlLevel();
@@ -1763,25 +1747,25 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
         {
           for (l=level;l<nextLevel;l++)
           {
-            if (l < maxLevel) t << "    <tableofcontents>" << endl;
+            if (l < maxLevel) t << "    <tableofcontents>\n";
           }
         }
         else if (nextLevel<level)
         {
           for (l=level;l>nextLevel;l--)
           {
-            if (l <= maxLevel && inLi[l]) t << "    </tocsect>" << endl;
+            if (l <= maxLevel && inLi[l]) t << "    </tocsect>\n";
             inLi[l]=FALSE;
-            if (l <= maxLevel) t << "    </tableofcontents>" << endl;
+            if (l <= maxLevel) t << "    </tableofcontents>\n";
           }
         }
         if (nextLevel <= maxLevel)
         {
-          if (inLi[nextLevel]) t << "    </tocsect>" << endl;
+          if (inLi[nextLevel]) t << "    </tocsect>\n";
           QCString titleDoc = convertToXML(si->title());
-          t << "      <tocsect>" << endl;
-          t << "        <name>" << (si->title().isEmpty()?si->label():titleDoc) << "</name>" << endl;
-          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si->label()) << "</reference>" << endl;
+          t << "      <tocsect>\n";
+          t << "        <name>" << (si->title().isEmpty()?si->label():titleDoc) << "</name>\n";
+          t << "        <reference>"  <<  convertToXML(pageName) << "_1" << convertToXML(si->label()) << "</reference>\n";
           inLi[nextLevel]=TRUE;
           level = nextLevel;
         }
@@ -1789,19 +1773,19 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     }
     while (level>1 && level <= maxLevel)
     {
-      if (inLi[level]) t << "    </tocsect>" << endl;
+      if (inLi[level]) t << "    </tocsect>\n";
       inLi[level]=FALSE;
-      t << "    </tableofcontents>" << endl;
+      t << "    </tableofcontents>\n";
       level--;
     }
-    if (level <= maxLevel && inLi[level]) t << "    </tocsect>" << endl;
+    if (level <= maxLevel && inLi[level]) t << "    </tocsect>\n";
     inLi[level]=FALSE;
-    t << "    </tableofcontents>" << endl;
+    t << "    </tableofcontents>\n";
   }
-  t << "    <briefdescription>" << endl;
+  t << "    <briefdescription>\n";
   writeXMLDocBlock(t,pd->briefFile(),pd->briefLine(),pd,0,pd->briefDescription());
-  t << "    </briefdescription>" << endl;
-  t << "    <detaileddescription>" << endl;
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
   if (isExample)
   {
     writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
@@ -1812,14 +1796,14 @@ static void generateXMLForPage(PageDef *pd,FTextStream &ti,bool isExample)
     writeXMLDocBlock(t,pd->docFile(),pd->docLine(),pd,0,
         pd->documentation());
   }
-  t << "    </detaileddescription>" << endl;
+  t << "    </detaileddescription>\n";
 
-  t << "    <location file=\"" << convertToXML(stripFromPath(pd->getDefFileName())) << "\"/>" << endl;
+  t << "    <location file=\"" << convertToXML(stripFromPath(pd->getDefFileName())) << "\"/>\n";
 
-  t << "  </compounddef>" << endl;
-  t << "</doxygen>" << endl;
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
 
-  ti << "  </compound>" << endl;
+  ti << "  </compound>\n";
 }
 
 void generateXML()
@@ -1839,8 +1823,8 @@ void generateXML()
   ResourceMgr::instance().copyResource("index.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
@@ -1862,35 +1846,33 @@ void generateXML()
       s[len]='\0';
       if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
       {
-        FTextStream t(&f);
         HtmlEntityMapper::instance()->writeXMLSchema(t);
       }
       else
       {
-        f.writeBlock(startLine,len);
+        t.write(startLine,len);
       }
     }
     startLine=endLine;
   }
-  f.close();
+  t.close();
 
   fileName=outputDirectory+"/index.xml";
-  f.setName(fileName);
-  if (!f.open(IO_WriteOnly))
+  t.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  FTextStream t(&f);
-  //t.setEncoding(FTextStream::UnicodeUTF8);
+  //t.setEncoding(std::ostream::UnicodeUTF8);
 
   // write index header
-  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" << endl;;
+  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
   t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
   t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
   t << "version=\"" << getDoxygenVersion() << "\" ";
   t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
-  t << ">" << endl;
+  t << ">\n";
 
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
@@ -1935,8 +1917,8 @@ void generateXML()
     generateXMLForPage(Doxygen::mainPage.get(),t,FALSE);
   }
 
-  //t << "  </compoundlist>" << endl;
-  t << "</doxygenindex>" << endl;
+  //t << "  </compoundlist>\n";
+  t << "</doxygenindex>\n";
 
   writeCombineScript();
 }

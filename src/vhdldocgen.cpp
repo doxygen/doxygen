@@ -72,15 +72,15 @@ static void addInstance(ClassDefMutable* entity, ClassDefMutable* arch, ClassDef
 
 //---------- create svg -------------------------------------------------------------
 static void createSVG();
-static void startDot(FTextStream &t);
-static void startTable(FTextStream &t,const QCString &className);
+static void startDot(std::ostream &t);
+static void startTable(std::ostream &t,const QCString &className);
 static std::vector<const MemberDef *> getPorts(const ClassDef *cd);
-static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd);
-static void endDot(FTextStream &t);
-static void writeTable(const std::vector<const MemberDef*> &portList,FTextStream & t);
-static void endTable(FTextStream &t);
-static void writeClassToDot(FTextStream &t,ClassDef* cd);
-static void writeVhdlDotLink(FTextStream &t,const QCString &a,const QCString &b,const QCString &style);
+static void writeVhdlEntityToolTip(std::ostream& t,ClassDef *cd);
+static void endDot(std::ostream &t);
+static void writeTable(const std::vector<const MemberDef*> &portList,std::ostream & t);
+static void endTable(std::ostream &t);
+static void writeClassToDot(std::ostream &t,ClassDef* cd);
+static void writeVhdlDotLink(std::ostream &t,const QCString &a,const QCString &b,const QCString &style);
 static const MemberDef *flowMember=0;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)
@@ -96,7 +96,7 @@ void VhdlDocGen::setFlowMember( const MemberDef* mem)
 
 
 //--------------------------------------------------------------------------------------------------
-static void codify(FTextStream &t,const char *str)
+static void codify(std::ostream &t,const char *str)
 {
   if (str)
   {
@@ -188,10 +188,8 @@ void VhdlDocGen::writeOverview()
 
   QCString ov =Config_getString(HTML_OUTPUT);
   QCString fileName=ov+"/vhdl_design.dot";
-  QFile f(fileName);
-  FTextStream  t(&f);
-
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Warning: Cannot open file %s for writing\n",fileName.data());
     return;
@@ -233,13 +231,13 @@ void VhdlDocGen::writeOverview()
 
   endDot(t);
   //  writePortLinks(t);
-  f.close();
+  t.close();
   createSVG();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void startDot(FTextStream &t)
+static void startDot(std::ostream &t)
 {
   t << " digraph G { \n";
   t << "rankdir=LR \n";
@@ -247,18 +245,18 @@ static void startDot(FTextStream &t)
   t << "stylesheet=\"doxygen.css\"\n";
 }
 
-static void endDot(FTextStream &t)
+static void endDot(std::ostream &t)
 {
   t <<" } \n";
 }
 
-static void startTable(FTextStream &t,const QCString &className)
+static void startTable(std::ostream &t,const QCString &className)
 {
   t << className <<" [ shape=none , fontname=\"arial\",  fontcolor=\"blue\" , \n";
   t << "label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n";
 }
 
-static void writeVhdlDotLink(FTextStream &t,
+static void writeVhdlDotLink(std::ostream &t,
     const QCString &a,const QCString &b,const QCString &style)
 {
   t << a << "->" << b;
@@ -288,7 +286,7 @@ static QCString formatBriefNote(const QCString &brief,ClassDef * cd)
   return vForm;
 }
 
-static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd)
+static void writeVhdlEntityToolTip(std::ostream& t,ClassDef *cd)
 {
 
   QCString brief=cd->briefDescription();
@@ -309,7 +307,7 @@ static void writeVhdlEntityToolTip(FTextStream& t,ClassDef *cd)
   writeVhdlDotLink(t,dotn,node,"dotted");
 }
 
-static void writeColumn(FTextStream &t,const MemberDef *md,bool start)
+static void writeColumn(std::ostream &t,const MemberDef *md,bool start)
 {
   QCString toolTip;
 
@@ -392,13 +390,13 @@ static void writeColumn(FTextStream &t,const MemberDef *md,bool start)
   }
 }
 
-static void endTable(FTextStream &t)
+static void endTable(std::ostream &t)
 {
   t << "</TABLE>>\n";
   t << "] \n";
 }
 
-static void writeClassToDot(FTextStream &t,ClassDef* cd)
+static void writeClassToDot(std::ostream &t,ClassDef* cd)
 {
   t << "<TR><TD COLSPAN=\"2\" BGCOLOR=\"yellow\" ";
   t << "PORT=\"";
@@ -432,9 +430,9 @@ static std::vector<const MemberDef*> getPorts(const ClassDef *cd)
   return portList;
 }
 
-//writeColumn(FTextStream &t,QCString name,bool start)
+//writeColumn(std::ostream &t,QCString name,bool start)
 
-static void writeTable(const std::vector<const MemberDef*> &portList,FTextStream & t)
+static void writeTable(const std::vector<const MemberDef*> &portList,std::ostream & t)
 {
   std::vector<const MemberDef *> inPorts;
   std::vector<const MemberDef *> outPorts;
@@ -1691,7 +1689,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
   return hasParams;
 }
 
-void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,FTextStream &tagFile)
+void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,std::ostream &tagFile)
 {
   tagFile << "    <member kind=\"";
   if (VhdlDocGen::isGeneric(mdef))      tagFile << "generic";
@@ -1716,21 +1714,21 @@ void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,FTextStream &tagFile)
   if (VhdlDocGen::isAlias(mdef))        tagFile << "alias";
   if (VhdlDocGen::isCompInst(mdef))     tagFile << "configuration";
 
-  tagFile << "\">" << endl;
-  tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>" << endl;
-  tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>" << endl;
-  tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>" << endl;
-  tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>" << endl;
+  tagFile << "\">\n";
+  tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>\n";
+  tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>\n";
+  tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>\n";
+  tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>\n";
 
   if (VhdlDocGen::isVhdlFunction(mdef))
-    tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),TRUE)) << "</arglist>" << endl;
+    tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),TRUE)) << "</arglist>\n";
   else if (VhdlDocGen::isProcedure(mdef))
-    tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),FALSE)) << "</arglist>" << endl;
+    tagFile << "      <arglist>" << convertToXML(VhdlDocGen::convertArgumentListToString(mdef->argumentList(),FALSE)) << "</arglist>\n";
   else
-    tagFile << "      <arglist>" << convertToXML(mdef->argsString()) << "</arglist>" << endl;
+    tagFile << "      <arglist>" << convertToXML(mdef->argsString()) << "</arglist>\n";
 
   mdef->writeDocAnchorsToTagFile(tagFile);
-  tagFile << "    </member>" << endl;
+  tagFile << "    </member>\n";
 }
 
 /* writes a vhdl type declaration */
@@ -3051,7 +3049,7 @@ void FlowChart::delFlowList()
   flowList.clear();
 }
 
-void FlowChart::alignCommentNode(FTextStream &t,QCString com)
+void FlowChart::alignCommentNode(std::ostream &t,QCString com)
 {
   uint max=0;
   QCString s;
@@ -3087,7 +3085,7 @@ void FlowChart::alignCommentNode(FTextStream &t,QCString com)
 }
 
 
-void FlowChart::buildCommentNodes(FTextStream & t)
+void FlowChart::buildCommentNodes(std::ostream & t)
 {
   size_t size=flowList.size();
   bool begin=false;
@@ -3172,7 +3170,7 @@ void FlowChart::buildCommentNodes(FTextStream & t)
   }// for;
 }
 
-void FlowChart::codify(FTextStream &t,const char *str)
+void FlowChart::codify(std::ostream &t,const char *str)
 {
   if (str)
   {
@@ -3398,7 +3396,7 @@ void FlowChart::createSVG()
   }
 }
 
-void FlowChart::startDot(FTextStream &t)
+void FlowChart::startDot(std::ostream &t)
 {
   t << " digraph G { \n";
   t << "rankdir=TB \n";
@@ -3406,7 +3404,7 @@ void FlowChart::startDot(FTextStream &t)
   t << "stylesheet=\"doxygen.css\"\n";
 }
 
-void FlowChart::endDot(FTextStream &t)
+void FlowChart::endDot(std::ostream &t)
 {
   t << " } \n";
 }
@@ -3417,10 +3415,8 @@ void FlowChart::writeFlowChart()
 
   QCString ov = Config_getString(HTML_OUTPUT);
   QCString fileName = ov+"/flow_design.dot";
-  QFile f(fileName);
-  FTextStream t(&f);
-
-  if (!f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     err("Cannot open file %s for writing\n",fileName.data());
     return;
@@ -3437,7 +3433,7 @@ void FlowChart::writeFlowChart()
   {
     printUmlTree();
     delFlowList();
-    f.close();
+    t.close();
     return;
   }
 
@@ -3451,11 +3447,11 @@ void FlowChart::writeFlowChart()
 
   FlowChart::endDot(t);
   delFlowList();
-  f.close();
+  t.close();
   FlowChart::createSVG();
 }// writeFlowChart
 
-void FlowChart::writeShape(FTextStream &t,const FlowChart &fl)
+void FlowChart::writeShape(std::ostream &t,const FlowChart &fl)
 {
   if (fl.type & EEND) return;
   QCString var;
@@ -3557,7 +3553,7 @@ void FlowChart::writeShape(FTextStream &t,const FlowChart &fl)
 }
 
 
-void FlowChart::writeEdge(FTextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i)
+void FlowChart::writeEdge(std::ostream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i)
 {
   bool b=fl_from.type & STARTL;
   bool c=fl_to.type & STARTL;
@@ -3575,7 +3571,7 @@ void FlowChart::writeEdge(FTextStream &t,const FlowChart &fl_from,const FlowChar
   writeEdge(t,fl_from.id,fl_to.id,i,b,c);
 }
 
-void FlowChart::writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom,bool bTo)
+void FlowChart::writeEdge(std::ostream &t,int fl_from,int fl_to,int i,bool bFrom,bool bTo)
 {
   QCString label,col;
 
@@ -3767,7 +3763,7 @@ size_t FlowChart::getNextIfLink(const FlowChart &fl,size_t index)
   return getNextNode(endifNode,stamp);
 }
 
-void FlowChart::writeFlowLinks(FTextStream &t)
+void FlowChart::writeFlowLinks(std::ostream &t)
 {
   size_t size=flowList.size();
   if (size<2) return;

@@ -104,7 +104,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeSummaryLinks(OutputList &ol) const;
-    virtual void writeTagFile(FTextStream &t);
+    virtual void writeTagFile(std::ostream &t);
     virtual void writeSourceHeader(OutputList &ol);
     virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser);
     virtual void writeSourceFooter(OutputList &ol);
@@ -150,7 +150,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void endMemberDocumentation(OutputList &ol);
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
-    void writeClassesToTagFile(FTextStream &t,const ClassLinkedRefMap &list);
+    void writeClassesToTagFile(std::ostream &t,const ClassLinkedRefMap &list);
 
     IncludeInfoMap        m_includeMap;
     IncludeInfoList       m_includeList;
@@ -307,12 +307,12 @@ bool FileDefImpl::hasDetailedDescription() const
          );
 }
 
-void FileDefImpl::writeTagFile(FTextStream &tagFile)
+void FileDefImpl::writeTagFile(std::ostream &tagFile)
 {
-  tagFile << "  <compound kind=\"file\">" << endl;
-  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-  tagFile << "    <path>" << convertToXML(getPath()) << "</path>" << endl;
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  tagFile << "  <compound kind=\"file\">\n";
+  tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "    <path>" << convertToXML(getPath()) << "</path>\n";
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
   for (const auto &ii : m_includeList)
   {
     const FileDef *fd=ii.fileDef;
@@ -329,8 +329,7 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
         << "local=\"" << locStr << "\" "
         << "imported=\"" << impStr << "\">"
         << convertToXML(ii.includeName)
-        << "</includes>"
-        << endl;
+        << "</includes>\n";
     }
   }
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
@@ -363,7 +362,7 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
           {
             if (nd->isLinkableInProject())
             {
-              tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+              tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>\n";
             }
           }
         }
@@ -392,7 +391,7 @@ void FileDefImpl::writeTagFile(FTextStream &tagFile)
   }
 
   writeDocAnchorsToTagFile(tagFile);
-  tagFile << "  </compound>" << endl;
+  tagFile << "  </compound>\n";
 }
 
 void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
@@ -514,14 +513,14 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
   ol.writeSynopsis();
 }
 
-void FileDefImpl::writeClassesToTagFile(FTextStream &tagFile, const ClassLinkedRefMap &list)
+void FileDefImpl::writeClassesToTagFile(std::ostream &tagFile, const ClassLinkedRefMap &list)
 {
   for (const auto &cd : list)
   {
     if (cd->isLinkableInProject())
     {
       tagFile << "    <class kind=\"" << cd->compoundTypeString() <<
-        "\">" << convertToXML(cd->name()) << "</class>" << endl;
+        "\">" << convertToXML(cd->name()) << "</class>\n";
     }
   }
 }

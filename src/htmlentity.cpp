@@ -15,7 +15,6 @@
 
 #include "htmlentity.h"
 #include "message.h"
-#include "ftextstream.h"
 
 //! Number of doxygen commands mapped as if it were HTML entities
 static const int g_numberHtmlMappedCmds = 11;
@@ -474,7 +473,7 @@ DocSymbol::SymType HtmlEntityMapper::name2sym(const QCString &symName) const
   return it!=m_name2sym.end() ? it->second : DocSymbol::Sym_Unknown;
 }
 
-void HtmlEntityMapper::writeXMLSchema(FTextStream &t)
+void HtmlEntityMapper::writeXMLSchema(std::ostream &t)
 {
   for (int i=0;i<g_numHtmlEntities - g_numberHtmlMappedCmds;i++)
   {

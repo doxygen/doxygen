@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qdir.h>
 #include <qcstringlist.h>
 
 #include "vhdlcode.h"

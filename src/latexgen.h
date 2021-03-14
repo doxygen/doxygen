@@ -21,16 +21,14 @@
 #include "config.h"
 #include "outputgen.h"
 
-class QFile;
-
 #define LATEX_STYLE_EXTENSION ".sty"
 
 class LatexCodeGenerator : public CodeOutputInterface
 {
   public:
-    LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFile);
+    LatexCodeGenerator(std::ostream &t,const QCString &relPath,const QCString &sourceFile);
     LatexCodeGenerator();
-    void setTextStream(FTextStream &t);
+    void setTextStream(std::ostream &t);
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
     void codify(const char *text);
@@ -67,7 +65,7 @@ class LatexCodeGenerator : public CodeOutputInterface
                         const char *tooltip);
     void docify(const char *str);
     bool m_streamSet = false;
-    FTextStream m_t;
+    std::ostream m_t;
     QCString m_relPath;
     QCString m_sourceFileName;
     int m_col = 0;
@@ -87,9 +85,9 @@ class LatexGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
-    static void writeStyleSheetFile(QFile &f);
-    static void writeHeaderFile(QFile &f);
-    static void writeFooterFile(QFile &f);
+    static void writeStyleSheetFile(std::ostream &t);
+    static void writeHeaderFile(std::ostream &t);
+    static void writeFooterFile(std::ostream &t);
 
     virtual OutputType type() const { return Latex; }
 
@@ -148,14 +146,14 @@ class LatexGenerator : public OutputGenerator
     void writeString(const char *text);
     void startIndexListItem() {}
     void endIndexListItem() {}
-    void startIndexList() { t << "\\begin{DoxyCompactList}"    << endl; }
-    void endIndexList()   { t << "\\end{DoxyCompactList}"      << endl; }
+    void startIndexList() { t << "\\begin{DoxyCompactList}\n"; }
+    void endIndexList()   { t << "\\end{DoxyCompactList}\n"; }
     void startIndexKey();
     void endIndexKey();
     void startIndexValue(bool);
     void endIndexValue(const char *,bool);
-    void startItemList()  { t << "\\begin{DoxyCompactItemize}" << endl; }
-    void endItemList()    { t << "\\end{DoxyCompactItemize}"   << endl; }
+    void startItemList()  { t << "\\begin{DoxyCompactItemize}\n"; }
+    void endItemList()    { t << "\\end{DoxyCompactItemize}\n"; }
     void startIndexItem(const char *ref,const char *file);
     void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
@@ -170,7 +168,7 @@ class LatexGenerator : public OutputGenerator
     void endTypewriter()   { t << "}";      }
     void startGroupHeader(int);
     void endGroupHeader(int);
-    void startItemListItem() { t << "\\item " << endl; }
+    void startItemListItem() { t << "\\item \n"; }
     void endItemListItem()   {}
 
     void startMemberSections() {}
@@ -204,7 +202,7 @@ class LatexGenerator : public OutputGenerator
     void insertMemberAlign(bool) {}
     void insertMemberAlignLeft(int,bool){}
 
-    void writeRuler() { t << endl << endl; }
+    void writeRuler() { t << "\n\n"; }
     void writeAnchor(const char *fileName,const char *name);
     void startEmphasis() { t << "{\\em ";  }
     void endEmphasis()   { t << "}"; }
@@ -225,11 +223,11 @@ class LatexGenerator : public OutputGenerator
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
     void startSubsection() { t << "\\subsection*{"; }
-    void endSubsection() { t << "}" << endl; }
+    void endSubsection() { t << "}\n"; }
     void startSubsubsection() { t << "\\subsubsection*{"; }
-    void endSubsubsection() { t << "}" << endl; }
-    void startCenter()      { t << "\\begin{center}" << endl; }
-    void endCenter()        { t << "\\end{center}" << endl; }
+    void endSubsubsection() { t << "}\n"; }
+    void startCenter()      { t << "\\begin{center}\n"; }
+    void endCenter()        { t << "\\end{center}\n"; }
     void startSmall()       { t << "\\footnotesize "; }
     void endSmall()         { t << "\\normalsize "; }
     void startMemberDescription(const char *,const char *,bool);
@@ -239,12 +237,12 @@ class LatexGenerator : public OutputGenerator
     void writeInheritedSectionTitle(const char *,const char *,const char *,
                       const char *,const char *,const char *) {}
     void startDescList(SectionTypes)     { t << "\\begin{Desc}\n\\item["; }
-    void endDescList()       { t << "\\end{Desc}" << endl; }
+    void endDescList()       { t << "\\end{Desc}\n"; }
     void startExamples();
     void endExamples();
     void startParamList(ParamListTypes,const char *title);
     void endParamList();
-    void startDescForItem()     { t << "\\par" << endl; }
+    void startDescForItem()     { t << "\\par\n"; }
     void endDescForItem()       {}
     void startSection(const char *,const char *,SectionType);
     void endSection(const char *,SectionType);
@@ -293,7 +291,7 @@ class LatexGenerator : public OutputGenerator
     void endTextBlock(bool) {}
 
     void startMemberDocPrefixItem() {}
-    void endMemberDocPrefixItem() { t << "\\\\" << endl; }
+    void endMemberDocPrefixItem() { t << "\\\\\n"; }
     void startMemberDocName(bool) {}
     void endMemberDocName() {}
     void startParameterType(bool,const char *);

@@ -75,7 +75,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
-    virtual void writeTagFile(FTextStream &);
+    virtual void writeTagFile(std::ostream &);
     virtual size_t numDocMembers() const;
     virtual bool isLinkableInProject() const;
     virtual bool isLinkable() const;
@@ -597,12 +597,12 @@ void GroupDefImpl::computeAnchors()
   m_allMemberList.setAnchors();
 }
 
-void GroupDefImpl::writeTagFile(FTextStream &tagFile)
+void GroupDefImpl::writeTagFile(std::ostream &tagFile)
 {
-  tagFile << "  <compound kind=\"group\">" << endl;
-  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-  tagFile << "    <title>" << convertToXML(m_title) << "</title>" << endl;
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  tagFile << "  <compound kind=\"group\">\n";
+  tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "    <title>" << convertToXML(m_title) << "</title>\n";
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
@@ -614,7 +614,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
             if (cd->isLinkableInProject())
             {
               tagFile << "    <class kind=\"" << cd->compoundTypeString()
-                      << "\">" << convertToXML(cd->name()) << "</class>" << endl;
+                      << "\">" << convertToXML(cd->name()) << "</class>\n";
             }
           }
         }
@@ -626,7 +626,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
             if (nd->isLinkableInProject())
             {
               tagFile << "    <namespace>" << convertToXML(nd->name())
-                      << "</namespace>" << endl;
+                      << "</namespace>\n";
             }
           }
         }
@@ -637,7 +637,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
           {
             if (fd->isLinkableInProject())
             {
-              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>" << endl;
+              tagFile << "    <file>" << convertToXML(fd->name()) << "</file>\n";
             }
           }
         }
@@ -649,7 +649,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
             QCString pageName = pd->getOutputFileBase();
             if (pd->isLinkableInProject())
             {
-              tagFile << "    <page>" << convertToXML(pageName) << "</page>" << endl;
+              tagFile << "    <page>" << convertToXML(pageName) << "</page>\n";
             }
           }
         }
@@ -660,7 +660,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
           {
             if (dd->isLinkableInProject())
             {
-              tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>" << endl;
+              tagFile << "    <dir>" << convertToXML(dd->displayName()) << "</dir>\n";
             }
           }
         }
@@ -671,7 +671,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
           {
             if (gd->isVisible())
             {
-              tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>" << endl;
+              tagFile << "    <subgroup>" << convertToXML(gd->name()) << "</subgroup>\n";
             }
           }
         }
@@ -699,7 +699,7 @@ void GroupDefImpl::writeTagFile(FTextStream &tagFile)
     }
   }
   writeDocAnchorsToTagFile(tagFile);
-  tagFile << "  </compound>" << endl;
+  tagFile << "  </compound>\n";
 }
 
 void GroupDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)

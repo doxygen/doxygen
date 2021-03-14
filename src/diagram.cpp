@@ -15,8 +15,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "ftextstream.h"
-#include <qfile.h>
+#include <fstream>
 
 #include "diagram.h"
 #include "image.h"
@@ -107,13 +106,13 @@ class TreeDiagram
     uint computeRows();
     void moveChildren(DiagramItem *root,int dx);
     void computeExtremes(uint *labelWidth,uint *xpos);
-    void drawBoxes(FTextStream &t,Image *image,
+    void drawBoxes(std::ostream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellHeight,
                    QCString relPath="",
                    bool generateMap=TRUE);
-    void drawConnectors(FTextStream &t,Image *image,
+    void drawConnectors(std::ostream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellheight);
@@ -232,7 +231,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
   }
 }
 
-static void writeVectorBox(FTextStream &t,DiagramItem *di,
+static void writeVectorBox(std::ostream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
   if (di->virtualness()==Virtual) t << "dashed\n";
@@ -241,7 +240,7 @@ static void writeVectorBox(FTextStream &t,DiagramItem *di,
   if (di->virtualness()==Virtual) t << "solid\n";
 }
 
-static void writeMapArea(FTextStream &t,const ClassDef *cd,QCString relPath,
+static void writeMapArea(std::ostream &t,const ClassDef *cd,QCString relPath,
                          uint x,uint y,uint w,uint h)
 {
   if (cd->isLinkable())
@@ -267,7 +266,7 @@ static void writeMapArea(FTextStream &t,const ClassDef *cd,QCString relPath,
     }
     t << "alt=\"" << convertToXML(cd->displayName());
     t << "\" shape=\"rect\" coords=\"" << x << "," << y << ",";
-    t << (x+w) << "," << (y+h) << "\"/>" << endl;
+    t << (x+w) << "," << (y+h) << "\"/>\n";
   }
 }
 //-----------------------------------------------------------------------------
@@ -564,7 +563,7 @@ class DualDirIterator
     typename C::reverse_iterator m_rit;
 };
 
-void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
+void TreeDiagram::drawBoxes(std::ostream &t,Image *image,
                             bool doBase,bool bitmap,
                             uint baseRows,uint superRows,
                             uint cellWidth,uint cellHeight,
@@ -694,7 +693,7 @@ void TreeDiagram::drawBoxes(FTextStream &t,Image *image,
   }
 }
 
-void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
+void TreeDiagram::drawConnectors(std::ostream &t,Image *image,
                                  bool doBase,bool bitmap,
                                  uint baseRows,uint superRows,
                                  uint cellWidth,uint cellHeight)
@@ -742,7 +741,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
           }
           else // draw vectors
           {
-            t << protToString(di->protection()) << endl;
+            t << protToString(di->protection()) << "\n";
             if (doBase)
             {
               t << "1 " << (di->xPos()/(float)gridWidth) << " "
@@ -811,7 +810,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             }
             else
             {
-              t << protToString(di->protection()) << endl;
+              t << protToString(di->protection()) << "\n";
               if (doBase)
               {
                 t << "1 " << xf << " " << yf << " hedge\n";
@@ -850,7 +849,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
           }
           else
           {
-            t << protToString(di->protection()) << endl;
+            t << protToString(di->protection()) << "\n";
             if (doBase)
             {
               t << "1 " << xf << " " << yf << " hedge\n";
@@ -859,7 +858,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             {
               t << "0 " << xf << " " << yf << " hedge\n";
             }
-            t << protToString(getMinProtectionLevel(dil)) << endl;
+            t << protToString(getMinProtectionLevel(dil)) << "\n";
             if (doBase)
             {
               t << xf << " " << ysf << " " << yf << " vedge\n";
@@ -909,7 +908,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
           }
           else // draw pixels
           {
-            t << protToString(di->protection()) << endl;
+            t << protToString(di->protection()) << "\n";
             if (doBase)
             {
               t << "1 " << di->xPos()/(float)gridWidth << " "
@@ -949,7 +948,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
           }
           else
           {
-            t << protToString(p) << endl;
+            t << protToString(p) << "\n";
             if (doBase)
             {
               t << "0 " << di->xPos()/(float)gridWidth  << " "
@@ -984,7 +983,7 @@ void TreeDiagram::drawConnectors(FTextStream &t,Image *image,
             }
             else
             {
-              t << protToString(p) << endl;
+              t << protToString(p) << "\n";
               if (doBase)
               {
                 t << first->xPos()/(float)gridWidth << " "
@@ -1043,7 +1042,7 @@ ClassDiagram::~ClassDiagram()
 {
 }
 
-void ClassDiagram::writeFigure(FTextStream &output,const char *path,
+void ClassDiagram::writeFigure(std::ostream &output,const char *path,
                                const char *fileName) const
 {
   uint baseRows=p->base.computeRows();
@@ -1078,7 +1077,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
             "\\begin{center}\n"
             "\\leavevmode\n";
   output << "\\includegraphics[height=" << realHeight << "cm]{"
-                                        << fileName << "}" << endl;
+                                        << fileName << "}\n";
   output << "\\end{center}\n"
             "\\end{figure}\n";
 
@@ -1086,13 +1085,11 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
 
   QCString epsBaseName=(QCString)path+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
-  QFile f1;
-  f1.setName(epsName.data());
-  if (!f1.open(IO_WriteOnly))
+  std::ofstream t(epsName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
-    term("Could not open file %s for writing\n",f1.name().data());
+    term("Could not open file %s for writing\n",epsName.data());
   }
-  FTextStream t(&f1);
 
   //printf("writeEPS() rows=%d cols=%d\n",rows,cols);
 
@@ -1317,7 +1314,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
   p->base.drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
   p->super.drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
 
-  f1.close();
+  t.close();
   if (Config_getBool(USE_PDFLATEX))
   {
     QCString epstopdfArgs(4096);
@@ -1336,7 +1333,7 @@ void ClassDiagram::writeFigure(FTextStream &output,const char *path,
 }
 
 
-void ClassDiagram::writeImage(FTextStream &t,const char *path,
+void ClassDiagram::writeImage(std::ostream &t,const char *path,
                               const char *relPath,const char *fileName,
                               bool generateMap) const
 {

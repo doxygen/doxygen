@@ -19,17 +19,18 @@
 #ifndef _RTFDOCVISITOR_H
 #define _RTFDOCVISITOR_H
 
+#include <iostream>
+
 #include "docvisitor.h"
 #include <qcstring.h>
 
-class FTextStream;
 class CodeOutputInterface;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    RTFDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -161,7 +162,7 @@ class RTFDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    std::ostream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

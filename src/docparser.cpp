@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <cassert>
 
-#include <qfile.h>
 #include <qcstring.h>
 #include <ctype.h>
 #include <qcstringlist.h>
@@ -52,6 +51,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
 
@@ -317,8 +317,8 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
     }
 
     QCString inputFile = fd->absFilePath();
-    QFile inImage(inputFile);
-    if (inImage.open(IO_ReadOnly))
+    FileInfo infi(inputFile.str());
+    if (infi.exists())
     {
       result = fileName;
       int i;
@@ -351,34 +351,18 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       FileInfo outfi(outputFile.str());
       if (outfi.isSymLink())
       {
-        QFile::remove(outputFile);
+        Dir().remove(outputFile.str());
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),
             "destination of image %s is a symlink, replacing with image",
             qPrint(outputFile));
       }
       if (outputFile!=inputFile) // prevent copying to ourself
       {
-        QFile outImage(outputFile.data());
-        if (outImage.open(IO_WriteOnly)) // copy the image
+        if (copyFile(inputFile,outputFile) && type==DocImage::Html)
         {
-          char *buffer = new char[inImage.size()];
-          inImage.readBlock(buffer,inImage.size());
-          outImage.writeBlock(buffer,inImage.size());
-          outImage.flush();
-          delete[] buffer;
-          if (type==DocImage::Html) Doxygen::indexList->addImageFile(result);
-        }
-        else
-        {
-          warn_doc_error(g_fileName,getDoctokinizerLineNr(),
-              "could not write output image %s",qPrint(outputFile));
+          Doxygen::indexList->addImageFile(result);
         }
       }
-      //else
-      //{
-      //  warn(g_fileName,getDoctokinizerLineNr(),
-      //       "Prevented to copy file %s onto itself!\n",qPrint(inputFile));
-      //}
     }
     else
     {
@@ -1780,7 +1764,7 @@ DocEmoji::DocEmoji(DocNode *parent,const QCString &symName) :
     if (locSymName.at(0)!=':')     locSymName.prepend(":");
   }
   m_symName = locSymName;
-  m_index = EmojiEntityMapper::instance()->symbol2index(m_symName);
+  m_index = EmojiEntityMapper::instance()->symbol2index(m_symName.str());
   if (m_index==-1)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Found unsupported emoji symbol '%s'\n",qPrint(m_symName));

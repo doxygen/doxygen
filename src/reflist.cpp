@@ -14,11 +14,10 @@
  */
 
 #include <algorithm>
-
 #include <stdio.h>
+
 #include "reflist.h"
 #include "util.h"
-#include "ftextstream.h"
 #include "definition.h"
 #include "config.h"
 

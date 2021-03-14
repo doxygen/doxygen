@@ -56,8 +56,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qfile.h>
-
 #include "fortranscanner.h"
 #include "entry.h"
 #include "message.h"
@@ -837,8 +835,8 @@ private                                 {
                                         }
 {ATTR_SPEC}.                            { /* update yyextra->current yyextra->modifiers when it is an ATTR_SPEC and not a variable name */
                                           /* buyyextra->625519 */
-                                          QChar chr = yytext[(int)yyleng-1];
-                                          if (chr.isLetter() || chr.isDigit() || (chr == '_'))
+                                          char chr = yytext[(int)yyleng-1];
+                                          if (isId(chr))
                                           {
                                             yyextra->colNr -= (int)yyleng;
                                             REJECT;
@@ -1177,7 +1175,7 @@ private                                 {
 <Parameterlist>{ID}                     {
                                           //yyextra->current->type not yet available
                                           QCString param = yytext;
-                                          // std::cout << "3=========> got parameter " << param << std::endl;
+                                          // std::cout << "3=========> got parameter " << param << "\n";
                                           yyextra->current->args += param;
                                           Argument arg;
                                           arg.name = param;
@@ -2428,7 +2426,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
 static Argument *getParameter(yyscan_t yyscanner,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<std::endl;
+  // std::cout<<"addFortranParameter(): "<<name<<" DOCS:"<<(docs.isNull()?QCString("null"):docs)<<"\n";
   Argument *ret = 0;
   for (Argument &a:yyextra->current_root->argList)
   {

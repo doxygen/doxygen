@@ -14,8 +14,6 @@
 */
 
 #include "dotnode.h"
-
-#include "ftextstream.h"
 #include "classdef.h"
 #include "config.h"
 #include "memberlist.h"
@@ -139,7 +137,7 @@ static QCString escapeTooltip(const QCString &tooltip)
   return result;
 }
 
-static void writeBoxMemberList(FTextStream &t,
+static void writeBoxMemberList(std::ostream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
   bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
@@ -378,7 +376,7 @@ void DotNode::deleteNodes(DotNode *node)
   }
 }
 
-void DotNode::writeBox(FTextStream &t,
+void DotNode::writeBox(std::ostream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren) const
@@ -500,10 +498,10 @@ void DotNode::writeBox(FTextStream &t,
   {
     t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
   }
-  t << "];" << endl;
+  t << "];\n";
 }
 
-void DotNode::writeArrow(FTextStream &t,
+void DotNode::writeArrow(std::ostream &t,
                          GraphType gt,
                          GraphOutputFormat format,
                          const DotNode *cn,
@@ -549,10 +547,10 @@ void DotNode::writeArrow(FTextStream &t,
   }
 
   if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
-  t << "];" << endl;
+  t << "];\n";
 }
 
-void DotNode::write(FTextStream &t,
+void DotNode::write(std::ostream &t,
                     GraphType gt,
                     GraphOutputFormat format,
                     bool topDown,
@@ -603,10 +601,10 @@ void DotNode::write(FTextStream &t,
   //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
 }
 
-void DotNode::writeXML(FTextStream &t,bool isClassGraph) const
+void DotNode::writeXML(std::ostream &t,bool isClassGraph) const
 {
-  t << "      <node id=\"" << m_number << "\">" << endl;
-  t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
+  t << "      <node id=\"" << m_number << "\">\n";
+  t << "        <label>" << convertToXML(m_label) << "</label>\n";
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
@@ -620,7 +618,7 @@ void DotNode::writeXML(FTextStream &t,bool isClassGraph) const
       {
         t << " external=\"" << convertToXML(refPtr) << "\"";
       }
-      t << "/>" << endl;
+      t << "/>\n";
     }
   }
   auto it = m_edgeInfo.begin();
@@ -645,7 +643,7 @@ void DotNode::writeXML(FTextStream &t,bool isClassGraph) const
     {
       t << "include";
     }
-    t << "\">" << endl;
+    t << "\">\n";
     if (!edgeInfo.label().isEmpty())
     {
       int p=0;
@@ -654,23 +652,23 @@ void DotNode::writeXML(FTextStream &t,bool isClassGraph) const
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
-          << "</edgelabel>" << endl;
+          << "</edgelabel>\n";
         p=ni+1;
       }
       t << "          <edgelabel>"
         << convertToXML(edgeInfo.label().right(edgeInfo.label().length()-p))
-        << "</edgelabel>" << endl;
+        << "</edgelabel>\n";
     }
-    t << "        </childnode>" << endl;
+    t << "        </childnode>\n";
     ++it;
   }
-  t << "      </node>" << endl;
+  t << "      </node>\n";
 }
 
-void DotNode::writeDocbook(FTextStream &t,bool isClassGraph) const
+void DotNode::writeDocbook(std::ostream &t,bool isClassGraph) const
 {
-  t << "      <node id=\"" << m_number << "\">" << endl;
-  t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
+  t << "      <node id=\"" << m_number << "\">\n";
+  t << "        <label>" << convertToXML(m_label) << "</label>\n";
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
@@ -684,7 +682,7 @@ void DotNode::writeDocbook(FTextStream &t,bool isClassGraph) const
       {
         t << " external=\"" << convertToXML(refPtr) << "\"";
       }
-      t << "/>" << endl;
+      t << "/>\n";
     }
   }
   auto it = m_edgeInfo.begin();
@@ -709,7 +707,7 @@ void DotNode::writeDocbook(FTextStream &t,bool isClassGraph) const
     {
       t << "include";
     }
-    t << "\">" << endl;
+    t << "\">\n";
     if (!edgeInfo.label().isEmpty())
     {
       int p=0;
@@ -718,27 +716,27 @@ void DotNode::writeDocbook(FTextStream &t,bool isClassGraph) const
       {
         t << "          <edgelabel>"
           << convertToXML(edgeInfo.label().mid(p,ni-p))
-          << "</edgelabel>" << endl;
+          << "</edgelabel>\n";
         p=ni+1;
       }
       t << "          <edgelabel>"
         << convertToXML(edgeInfo.label().right(edgeInfo.label().length()-p))
-        << "</edgelabel>" << endl;
+        << "</edgelabel>\n";
     }
-    t << "        </childnode>" << endl;
+    t << "        </childnode>\n";
     ++it;
   }
-  t << "      </node>" << endl;
+  t << "      </node>\n";
 }
 
 
-void DotNode::writeDEF(FTextStream &t) const
+void DotNode::writeDEF(std::ostream &t) const
 {
   const char* nodePrefix = "        node-";
 
-  t << "      node = {" << endl;
-  t << nodePrefix << "id    = " << m_number << ';' << endl;
-  t << nodePrefix << "label = '" << m_label << "';" << endl;
+  t << "      node = {\n";
+  t << nodePrefix << "id    = " << m_number << ";\n";
+  t << nodePrefix << "label = '" << m_label << "';\n";
 
   if (!m_url.isEmpty())
   {
@@ -748,23 +746,23 @@ void DotNode::writeDEF(FTextStream &t) const
     if (urlPtr)
     {
       *urlPtr++='\0';
-      t << nodePrefix << "link = {" << endl << "  "
-        << nodePrefix << "link-id = '" << urlPtr << "';" << endl;
+      t << nodePrefix << "link = {\n" << "  "
+        << nodePrefix << "link-id = '" << urlPtr << "';\n";
 
       if (*refPtr!='\0')
       {
         t << "  " << nodePrefix << "link-external = '"
-          << refPtr << "';" << endl;
+          << refPtr << "';\n";
       }
-      t << "        };" << endl;
+      t << "        };\n";
     }
   }
   auto it = m_edgeInfo.begin();
   for (const auto &childNode : m_children)
   {
     const EdgeInfo &edgeInfo = *it;
-    t << "        node-child = {" << endl;
-    t << "          child-id = '" << childNode->number() << "';" << endl;
+    t << "        node-child = {\n";
+    t << "          child-id = '" << childNode->number() << "';\n";
     t << "          relation = ";
 
     switch (edgeInfo.color())
@@ -777,18 +775,18 @@ void DotNode::writeDEF(FTextStream &t) const
       case EdgeInfo::Orange2: t << "type-constraint"; break;
       case EdgeInfo::Grey:    ASSERT(0); break;
     }
-    t << ';' << endl;
+    t << ";\n";
 
     if (!edgeInfo.label().isEmpty())
     {
-      t << "          edgelabel = <<_EnD_oF_dEf_TeXt_" << endl
-        << edgeInfo.label() << endl
-        << "_EnD_oF_dEf_TeXt_;" << endl;
+      t << "          edgelabel = <<_EnD_oF_dEf_TeXt_\n"
+        << edgeInfo.label() << "\n"
+        << "_EnD_oF_dEf_TeXt_;\n";
     }
-    t << "        }; /* node-child */" << endl;
+    t << "        }; /* node-child */\n";
     ++it;
   }
-  t << "      }; /* node */" << endl;
+  t << "      }; /* node */\n";
 }
 
 

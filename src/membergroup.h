@@ -36,7 +36,6 @@ class GroupDef;
 class OutputList;
 class Definition;
 class DefinitionMutable;
-class FTextStream;
 class RefItem;
 
 /** A class representing a group of members. */
@@ -61,7 +60,7 @@ class MemberGroup
                const Definition *container,bool showEnumValues,bool showInline) const;
     void writeDocumentationPage(OutputList &ol,const char *scopeName,
                const DefinitionMutable *container) const;
-    void writeTagFile(FTextStream &);
+    void writeTagFile(std::ostream &);
     void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
                const ClassDef *inheritedFrom,const QCString &inheritId) const;

@@ -19,7 +19,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <qfile.h>
 
 #include "htmlhelp.h"
 #include "config.h"
@@ -120,7 +119,7 @@ class HtmlHelpIndex
     void addItem(const char *first,const char *second,
                  const char *url, const char *anchor,
                  bool hasLink,bool reversed);
-    void writeFields(FTextStream &t);
+    void writeFields(std::ostream &t);
     size_t size() const { return m_map.size(); }
   private:
     LinkedMap<IndexField> m_map;
@@ -210,7 +209,7 @@ static QCString field2URL(const IndexField *f,bool checkReversed)
  *      b1     -> link to url#anchor
  *  </pre>
  */
-void HtmlHelpIndex::writeFields(FTextStream &t)
+void HtmlHelpIndex::writeFields(std::ostream &t)
 {
   std::sort(std::begin(m_map),
             std::end(m_map),
@@ -234,7 +233,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
     }
 
     { // finish old list at level 2
-      if (level2Started) t << "  </UL>" << endl;
+      if (level2Started) t << "  </UL>\n";
       level2Started=FALSE;
 
       // <Antony>
@@ -287,12 +286,12 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
     }
     if (!level2Started && !level2.isEmpty())
     { // start new list at level 2
-      t << "  <UL>" << endl;
+      t << "  <UL>\n";
       level2Started=TRUE;
     }
     else if (level2Started && level2.isEmpty())
     { // end list at level 2
-      t << "  </UL>" << endl;
+      t << "  </UL>\n";
       level2Started=FALSE;
     }
     if (level2Started)
@@ -304,7 +303,7 @@ void HtmlHelpIndex::writeFields(FTextStream &t)
          "</OBJECT>\n";
     }
   }
-  if (level2Started) t << "  </UL>" << endl;
+  if (level2Started) t << "  </UL>\n";
 }
 
 //----------------------------------------------------------------------------
@@ -314,9 +313,7 @@ class HtmlHelp::Private
   public:
     Private() : index(recoder) {}
     void createProjectFile();
-    QFile cf;
-    QFile kf;
-    FTextStream cts,kts;
+    std::ofstream cts,kts;
     bool ctsItemPresent = false;
     int dc = 0;
     StringSet indexFiles;
@@ -447,13 +444,12 @@ void HtmlHelp::initialize()
 
   /* open the contents file */
   QCString fName = Config_getString(HTML_OUTPUT) + "/index.hhc";
-  p->cf.setName(fName);
-  if (!p->cf.open(IO_WriteOnly))
+  p->cts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!p->cts.is_open())
   {
     term("Could not open file %s for writing\n",fName.data());
   }
   /* Write the header of the contents file */
-  p->cts.setDevice(&p->cf);
   p->cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -463,13 +459,12 @@ void HtmlHelp::initialize()
 
   /* open the contents file */
   fName = Config_getString(HTML_OUTPUT) + "/index.hhk";
-  p->kf.setName(fName);
-  if (!p->kf.open(IO_WriteOnly))
+  p->kts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!p->kts.is_open())
   {
     term("Could not open file %s for writing\n",fName.data());
   }
   /* Write the header of the contents file */
-  p->kts.setDevice(&p->kf);
   p->kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
          "<HTML><HEAD></HEAD><BODY>\n"
          "<OBJECT type=\"text/site properties\">\n"
@@ -500,11 +495,9 @@ void HtmlHelp::Private::createProjectFile()
 {
   /* Write the project file */
   QCString fName = Config_getString(HTML_OUTPUT) + "/index.hhp";
-  QFile f(fName);
-  if (f.open(IO_WriteOnly))
+  std::ofstream t(fName.str(),std::ofstream::out | std::ofstream::binary);
+  if (t.is_open())
   {
-    FTextStream t(&f);
-
     const char *hhcFile = "\"index.hhc\"";
     const char *hhkFile = "\"index.hhk\"";
     bool hhkPresent = index.size()>0;
@@ -523,12 +516,12 @@ void HtmlHelp::Private::createProjectFile()
     t << "Default Window=main\n"
          "Default topic=" << indexName << "\n";
     if (hhkPresent) t << "Index file=index.hhk\n";
-    t << "Language=" << getLanguageString() << endl;
+    t << "Language=" << getLanguageString() << "\n";
     if (Config_getBool(BINARY_TOC)) t << "Binary TOC=YES\n";
     if (Config_getBool(GENERATE_CHI)) t << "Create CHI file=YES\n";
-    t << "Title=" << recoder.recode(Config_getString(PROJECT_NAME)) << endl << endl;
+    t << "Title=" << recoder.recode(Config_getString(PROJECT_NAME)) << "\n\n";
 
-    t << "[WINDOWS]" << endl;
+    t << "[WINDOWS]\n";
 
     // NOTE: the 0x10387e number is a set of bits specifying the buttons
     //       which should appear in the CHM viewer; that specific value
@@ -544,25 +537,25 @@ void HtmlHelp::Private::createProjectFile()
     {
       t << "main=\"" << recoder.recode(Config_getString(PROJECT_NAME)) << "\"," << hhcFile << ","
          << hhkFile << ",\"" << indexName << "\",\"" <<
-         indexName << "\",,,,,0x23520,,0x70387e,,,,,,,,0" << endl << endl;
+         indexName << "\",,,,,0x23520,,0x70387e,,,,,,,,0\n\n";
     }
     else
     {
       t << "main=\"" << recoder.recode(Config_getString(PROJECT_NAME)) << "\"," << hhcFile << ","
          << hhkFile << ",\"" << indexName << "\",\"" <<
-         indexName << "\",,,,,0x23520,,0x10387e,,,,,,,,0" << endl << endl;
+         indexName << "\",,,,,0x23520,,0x10387e,,,,,,,,0\n\n";
     }
 
-    t << "[FILES]" << endl;
+    t << "[FILES]\n";
     for (auto &s : indexFiles)
     {
-      t << s.c_str() << endl;
+      t << s.c_str() << "\n";
     }
     for (auto &s : imageFiles)
     {
-      t << FileInfo(s).fileName() << endl;
+      t << FileInfo(s).fileName() << "\n";
     }
-    f.close();
+    t.close();
   }
   else
   {
@@ -585,8 +578,7 @@ void HtmlHelp::finalize()
   p->cts << "</UL>\n";
   p->cts << "</BODY>\n";
   p->cts << "</HTML>\n";
-  p->cts.unsetDevice();
-  p->cf.close();
+  p->cts.close();
 
   p->index.writeFields(p->kts);
 
@@ -594,8 +586,7 @@ void HtmlHelp::finalize()
   p->kts << "</UL>\n";
   p->kts << "</BODY>\n";
   p->kts << "</HTML>\n";
-  p->kts.unsetDevice();
-  p->kf.close();
+  p->kts.close();
 
   p->createProjectFile();
 

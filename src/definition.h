@@ -19,6 +19,7 @@
 #define DEFINITION_H
 
 #include <vector>
+#include <iostream>
 
 #include "types.h"
 #include "reflist.h"
@@ -39,7 +40,6 @@ class SectionInfo;
 class Definition;
 class DefinitionMutable;
 class DefinitionImpl;
-class FTextStream;
 
 /** Data associated with a detailed description. */
 struct DocInfo
@@ -383,7 +383,7 @@ class DefinitionMutable
     virtual void writeNavigationPath(OutputList &ol) const = 0;
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
     virtual void writeSummaryLinks(OutputList &) const = 0;
-    virtual void writeDocAnchorsToTagFile(FTextStream &) const = 0;
+    virtual void writeDocAnchorsToTagFile(std::ostream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 
     // ---------------------------------

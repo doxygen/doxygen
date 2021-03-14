@@ -23,7 +23,6 @@
 #include "dotfilepatcher.h"
 #include "dotrunner.h"
 
-class FTextStream;
 class DotRunner;
 class DotRunnerQueue;
 
@@ -50,7 +49,7 @@ class DotManager
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format);
-void writeDotImageMapFromFile(FTextStream &t,
+void writeDotImageMapFromFile(std::ostream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
                               const QCString& context,int graphId=-1);

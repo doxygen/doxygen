@@ -42,7 +42,6 @@ class DirDef;
 class FTVHelp;
 class Entry;
 class MemberDef;
-class FTextStream;
 
 /** A model of a group of symbols. */
 class GroupDef : public DefinitionMutable, public Definition
@@ -70,7 +69,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void writeTagFile(std::ostream &) = 0;
     virtual size_t numDocMembers() const = 0;
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;

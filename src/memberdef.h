@@ -409,7 +409,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
                  bool inGroup,bool showEnumValues=FALSE,bool
                  showInline=FALSE) const = 0;
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const = 0;
-    virtual void writeTagFile(FTextStream &) const = 0;
+    virtual void writeTagFile(std::ostream &) const = 0;
     virtual void writeLink(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                  bool onlyText=FALSE) const = 0;

@@ -3,8 +3,8 @@
  * Copyright (C) 2008 Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -17,11 +17,8 @@
 #include "qhpxmlwriter.h"
 #include "util.h"
 
-#include <qfile.h>
-
-QhpXmlWriter::QhpXmlWriter() 
-    : m_out(&m_backend), m_indentLevel(0), 
-      m_curLineIndented(false), m_compress(false)
+QhpXmlWriter::QhpXmlWriter()
+    : m_indentLevel(0), m_curLineIndented(false), m_compress(false)
 {
 }
 
@@ -41,12 +38,12 @@ void QhpXmlWriter::setCompressionEnabled(bool enabled)
 
 void QhpXmlWriter::insert(QhpXmlWriter const & source)
 {
-  m_out << source.m_backend.data();
+  m_backend << source.m_backend.str();
 }
 
-void QhpXmlWriter::dumpTo(QFile & file)
+void QhpXmlWriter::dumpTo(std::ostream & file)
 {
-  file.writeBlock(m_backend.data(), m_backend.length());
+  file << m_backend.str();
 }
 
 void QhpXmlWriter::open(char const * elementName,
@@ -71,7 +68,7 @@ void QhpXmlWriter::openCloseContent(char const * elementName,
 {
   indent();
   openPure(elementName);
-  m_out << convertToXML(content);
+  m_backend << convertToXML(content);
   closePure(elementName);
   newLine();
 }
@@ -86,7 +83,7 @@ void QhpXmlWriter::close(char const * elementName)
 
 void QhpXmlWriter::declaration(char const * version, char const * encoding)
 {
-  m_out << "<?xml version=\"" << version << "\" encoding=\"" << encoding << "\"?>";
+  m_backend << "<?xml version=\"" << version << "\" encoding=\"" << encoding << "\"?>";
   newLine();
 }
 
@@ -96,9 +93,9 @@ void QhpXmlWriter::indent()
   {
     return;
   }
-  for (int i = 0; i < m_indentLevel; i++) 
+  for (int i = 0; i < m_indentLevel; i++)
   {
-    m_out << "  ";
+    m_backend << "  ";
   }
   m_curLineIndented = true;
 }
@@ -107,7 +104,7 @@ void QhpXmlWriter::newLine()
 {
   if (!m_compress)
   {
-    m_out << "\n";
+    m_backend << "\n";
     m_curLineIndented = false;
   }
 }
@@ -115,7 +112,7 @@ void QhpXmlWriter::newLine()
 void QhpXmlWriter::openPureHelper(char const * elementName,
                                   char const * const * attributes, bool close)
 {
-  m_out << "<" << elementName;
+  m_backend << "<" << elementName;
   if (attributes)
   {
     for (char const * const * walker = attributes;
@@ -125,17 +122,17 @@ void QhpXmlWriter::openPureHelper(char const * elementName,
       char const * const value = walker[1];
       if (!value)
       {
-        continue;  
+        continue;
       }
-      m_out << " " << key << "=\"" << convertToXML(value) << "\"";
+      m_backend << " " << key << "=\"" << convertToXML(value) << "\"";
     }
   }
 
   if (close)
   {
-    m_out << " /";
+    m_backend << " /";
   }
-  m_out << ">";
+  m_backend << ">";
 }
 
 void QhpXmlWriter::openPure(char const * elementName,
@@ -152,6 +149,6 @@ void QhpXmlWriter::openClosePure(char const * elementName,
 
 void QhpXmlWriter::closePure(char const * elementName)
 {
-  m_out << "</" << elementName << ">";
+  m_backend << "</" << elementName << ">";
 }
 

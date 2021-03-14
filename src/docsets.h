@@ -17,12 +17,11 @@
 #define DOCSETS_H
 
 #include <memory>
+#include <iostream>
 
 #include "index.h"
 
-class QFile;
 class Definition;
-class FTextStream;
 
 /** A class that generates docset files.
  *
@@ -55,7 +54,7 @@ class DocSets  : public IndexIntf
     void addStyleSheetFile(const char *) {}
 
   private:
-    void writeToken(FTextStream &t, const Definition *d,
+    void writeToken(std::ostream &t, const Definition *d,
                     const QCString &type, const QCString &lang,
                     const char *scope=0, const char *anchor=0,
                     const char *decl=0);

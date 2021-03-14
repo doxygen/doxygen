@@ -179,7 +179,7 @@ QCString DotCallGraph::getMapLabel() const
 }
 
 QCString DotCallGraph::writeGraph(
-        FTextStream &out,
+        std::ostream &out,
         GraphOutputFormat graphFormat,
         EmbeddedOutputFormat textFormat,
         const char *path,

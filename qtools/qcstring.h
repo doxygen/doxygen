@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
+#include <ostream>
 
 class QGString;
 
@@ -358,16 +359,22 @@ class QCString
       return m_rep;
     }
 
-    QCString &operator+=( const std::string &str)
+    QCString &operator+=( const QCString &s)
     {
-      m_rep+=str;
+      m_rep+=s.str();
+      return *this;
+    }
+
+    QCString &operator+=( const std::string &s)
+    {
+      m_rep+=s;
       return *this;
     }
 
     /** Appends string \a str to this string and returns a reference to the result. */
-    QCString &operator+=( const char *str )
+    QCString &operator+=( const char *s )
     {
-      if (str) m_rep+=str;
+      if (s) m_rep+=s;
       return *this;
     }
 
@@ -519,6 +526,12 @@ inline QCString substitute(const QCString &s,char srcChar,char dstChar)
   std::string ss = s.str();
   std::replace(ss.begin(),ss.end(),srcChar,dstChar);
   return ss;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const QCString& s)
+{
+    os << s.str();
+    return os;
 }
 
 #endif // QCSTRING_H

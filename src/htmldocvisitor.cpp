@@ -13,7 +13,6 @@
  *
  */
 
-#include <qdir.h>
 #include "htmldocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -265,7 +264,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 
 //-------------------------------------------------------------------------
 
-HtmlDocVisitor::HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,
+HtmlDocVisitor::HtmlDocVisitor(std::ostream &t,CodeOutputInterface &ci,
                                const Definition *ctx)
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE),
                                  m_hide(FALSE), m_ctx(ctx)
@@ -472,20 +471,20 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
 }
 
 
-static void visitPreCaption(FTextStream &t, DocVerbatim *s)
+static void visitPreCaption(std::ostream &t, DocVerbatim *s)
 {
   if (s->hasCaption())
   {
-    t << "<div class=\"caption\">" << endl;
+    t << "<div class=\"caption\">\n";
   }
 }
 
 
-static void visitPostCaption(FTextStream &t, DocVerbatim *s)
+static void visitPostCaption(std::ostream &t, DocVerbatim *s)
 {
   if (s->hasCaption())
   {
-    t << "</div>" << endl;
+    t << "</div>\n";
   }
 }
 
@@ -559,24 +558,25 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
             dotindex++,
             ".dot"
            );
-        QFile file(fileName);
-        if (!file.open(IO_WriteOnly))
+        std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+        if (!file.is_open())
         {
           err("Could not open file %s for writing\n",fileName.data());
         }
         else
         {
-          file.writeBlock( s->text(), s->text().length() );
+          QCString stext = s->text();
+          file.write( stext.data(), stext.length() );
           file.close();
 
-          m_t << "<div class=\"dotgraph\">" << endl;
+          m_t << "<div class=\"dotgraph\">\n";
           writeDotFile(fileName,s->relPath(),s->context());
           visitPreCaption(m_t, s);
           visitCaption(this, s->children());
           visitPostCaption(m_t, s);
-          m_t << "</div>" << endl;
+          m_t << "</div>\n";
 
-          if (Config_getBool(DOT_CLEANUP)) file.remove();
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(fileName.str());
         }
         forceStartParagraph(s);
       }
@@ -592,8 +592,8 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
             (Config_getString(HTML_OUTPUT)+"/inline_mscgraph_").data(),
             mscindex++
             );
-        QFile file(baseName+".msc");
-        if (!file.open(IO_WriteOnly))
+        std::ofstream file(baseName.str()+".msc",std::ofstream::out | std::ofstream::binary);
+        if (!file.is_open())
         {
           err("Could not open file %s.msc for writing\n",baseName.data());
         }
@@ -603,17 +603,17 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           text+=s->text();
           text+="}";
 
-          file.writeBlock( text, text.length() );
+          file.write( text.data(), text.length() );
           file.close();
 
-          m_t << "<div class=\"mscgraph\">" << endl;
+          m_t << "<div class=\"mscgraph\">\n";
           writeMscFile(baseName+".msc",s->relPath(),s->context());
           visitPreCaption(m_t, s);
           visitCaption(this, s->children());
           visitPostCaption(m_t, s);
-          m_t << "</div>" << endl;
+          m_t << "</div>\n";
 
-          if (Config_getBool(DOT_CLEANUP)) file.remove();
+          if (Config_getBool(DOT_CLEANUP)) Dir().remove(baseName.str()+".msc");
         }
         forceStartParagraph(s);
       }
@@ -629,12 +629,12 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           format = PlantumlManager::PUML_SVG;
         }
         QCString baseName = PlantumlManager::instance().writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
-        m_t << "<div class=\"plantumlgraph\">" << endl;
+        m_t << "<div class=\"plantumlgraph\">\n";
         writePlantUMLFile(baseName,s->relPath(),s->context());
         visitPreCaption(m_t, s);
         visitCaption(this, s->children());
         visitPostCaption(m_t, s);
-        m_t << "</div>" << endl;
+        m_t << "</div>\n";
         forceStartParagraph(s);
       }
       break;
@@ -828,7 +828,7 @@ void HtmlDocVisitor::visit(DocIncOperator *op)
   }
   else
   {
-    if (!m_hide) m_t << endl;
+    if (!m_hide) m_t << "\n";
   }
 }
 
@@ -839,7 +839,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
   if (bDisplay)
   {
     forceEndParagraph(f);
-    m_t << "<p class=\"formulaDsp\">" << endl;
+    m_t << "<p class=\"formulaDsp\">\n";
   }
 
   if (Config_getBool(USE_MATHJAX))
@@ -888,7 +888,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
   }
   if (bDisplay)
   {
-    m_t << endl << "</p>" << endl;
+    m_t << "\n</p>\n";
     forceStartParagraph(f);
   }
 }
@@ -911,8 +911,8 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
 
 void HtmlDocVisitor::visit(DocSimpleSectSep *)
 {
-  m_t << "</dd>" << endl;
-  m_t << "<dd>" << endl;
+  m_t << "</dd>\n";
+  m_t << "<dd>\n";
 }
 
 void HtmlDocVisitor::visit(DocCite *cite)
@@ -1437,7 +1437,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
   forceEndParagraph(s);
   m_t << "<h" << s->level() << ">";
   m_t << "<a class=\"anchor\" id=\"" << s->anchor();
-  m_t << "\"></a>" << endl;
+  m_t << "\"></a>\n";
   filter(convertCharEntitiesToUTF8(s->title().data()));
   m_t << "</h" << s->level() << ">\n";
 }
@@ -1608,7 +1608,7 @@ void HtmlDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
   //forceEndParagraph(i);
-  //m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>" << endl;
+  //m_t << "<p><b>" << theTranslator->trForInternalUseOnly() << "</b></p>\n";
 }
 
 void HtmlDocVisitor::visitPost(DocInternal *)
@@ -1671,7 +1671,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
     {
       baseName=baseName.right(baseName.length()-i-1);
     }
-    if (!inlineImage) m_t << "<div class=\"image\">" << endl;
+    if (!inlineImage) m_t << "<div class=\"image\">\n";
     QCString sizeAttribs;
     if (!img->width().isEmpty())
     {
@@ -1713,7 +1713,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       }
       else
       {
-        m_t << ">" << alt << "</object>" << endl;
+        m_t << ">" << alt << "</object>\n";
       }
     }
     else
@@ -1736,7 +1736,7 @@ void HtmlDocVisitor::visitPre(DocImage *img)
       }
       else
       {
-        m_t << "<div class=\"caption\">" << endl;
+        m_t << "<div class=\"caption\">\n";
       }
     }
     else if (inlineImage)
@@ -1770,7 +1770,7 @@ void HtmlDocVisitor::visitPost(DocImage *img)
     }
     if (!inlineImage) // end <div class="image">
     {
-      m_t << "</div>" << endl;
+      m_t << "</div>\n";
       forceStartParagraph(img);
     }
   }
@@ -1783,11 +1783,11 @@ void HtmlDocVisitor::visitPost(DocImage *img)
 void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  m_t << "<div class=\"dotgraph\">" << endl;
+  m_t << "<div class=\"dotgraph\">\n";
   writeDotFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
   {
-    m_t << "<div class=\"caption\">" << endl;
+    m_t << "<div class=\"caption\">\n";
   }
 }
 
@@ -1796,19 +1796,19 @@ void HtmlDocVisitor::visitPost(DocDotFile *df)
   if (m_hide) return;
   if (df->hasCaption())
   {
-    m_t << "</div>" << endl;
+    m_t << "</div>\n";
   }
-  m_t << "</div>" << endl;
+  m_t << "</div>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  m_t << "<div class=\"mscgraph\">" << endl;
+  m_t << "<div class=\"mscgraph\">\n";
   writeMscFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
   {
-    m_t << "<div class=\"caption\">" << endl;
+    m_t << "<div class=\"caption\">\n";
   }
 }
 void HtmlDocVisitor::visitPost(DocMscFile *df)
@@ -1816,19 +1816,19 @@ void HtmlDocVisitor::visitPost(DocMscFile *df)
   if (m_hide) return;
   if (df->hasCaption())
   {
-    m_t << "</div>" << endl;
+    m_t << "</div>\n";
   }
-  m_t << "</div>" << endl;
+  m_t << "</div>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  m_t << "<div class=\"diagraph\">" << endl;
+  m_t << "<div class=\"diagraph\">\n";
   writeDiaFile(df->file(),df->relPath(),df->context());
   if (df->hasCaption())
   {
-    m_t << "<div class=\"caption\">" << endl;
+    m_t << "<div class=\"caption\">\n";
   }
 }
 void HtmlDocVisitor::visitPost(DocDiaFile *df)
@@ -1836,9 +1836,9 @@ void HtmlDocVisitor::visitPost(DocDiaFile *df)
   if (m_hide) return;
   if (df->hasCaption())
   {
-    m_t << "</div>" << endl;
+    m_t << "</div>\n";
   }
-  m_t << "</div>" << endl;
+  m_t << "</div>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocLink *lnk)
@@ -1890,15 +1890,15 @@ void HtmlDocVisitor::visitPre(DocSecRefList *s)
 {
   if (m_hide) return;
   forceEndParagraph(s);
-  m_t << "<div>" << endl;
-  m_t << "<ul class=\"multicol\">" << endl;
+  m_t << "<div>\n";
+  m_t << "<ul class=\"multicol\">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocSecRefList *s)
 {
   if (m_hide) return;
-  m_t << "</ul>" << endl;
-  m_t << "</div>" << endl;
+  m_t << "</ul>\n";
+  m_t << "</div>\n";
   forceStartParagraph(s);
 }
 
@@ -1931,16 +1931,16 @@ void HtmlDocVisitor::visitPre(DocParamSect *s)
   }
   m_t << "<dl class=\"" << className << "\"><dt>";
   m_t << heading;
-  m_t << "</dt><dd>" << endl;
-  m_t << "  <table class=\"" << className << "\">" << endl;
+  m_t << "</dt><dd>\n";
+  m_t << "  <table class=\"" << className << "\">\n";
 }
 
 void HtmlDocVisitor::visitPost(DocParamSect *s)
 {
   if (m_hide) return;
-  m_t << "  </table>" << endl;
-  m_t << "  </dd>" << endl;
-  m_t << "</dl>" << endl;
+  m_t << "  </table>\n";
+  m_t << "  </dd>\n";
+  m_t << "</dl>\n";
   forceStartParagraph(s);
 }
 
@@ -2017,7 +2017,7 @@ void HtmlDocVisitor::visitPost(DocParamList *)
 {
   //printf("DocParamList::visitPost\n");
   if (m_hide) return;
-  m_t << "</td></tr>" << endl;
+  m_t << "</td></tr>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocXRefItem *x)
@@ -2047,7 +2047,7 @@ void HtmlDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
   if (x->title().isEmpty()) return;
-  m_t << "</dd></dl>" << endl;
+  m_t << "</dd></dl>\n";
   forceStartParagraph(x);
 }
 
@@ -2083,7 +2083,7 @@ void HtmlDocVisitor::visitPre(DocHtmlBlockQuote *b)
 void HtmlDocVisitor::visitPost(DocHtmlBlockQuote *b)
 {
   if (m_hide) return;
-  m_t << "</blockquote>" << endl;
+  m_t << "</blockquote>\n";
   forceStartParagraph(b);
 }
 
@@ -2295,7 +2295,7 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
   QCString outDir = Config_getString(HTML_OUTPUT);
   writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
 
-  m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
+  m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
 }
 
 void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
@@ -2317,15 +2317,15 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
   if (imgExt=="svg")
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG);
-    //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />" << endl;
+    //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />\n";
     //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
-    //m_t << "</iframe>" << endl;
-    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>" << endl;
+    //m_t << "</iframe>\n";
+    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
   }
   else
   {
     PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
-    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />" << endl;
+    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
   }
 }
 

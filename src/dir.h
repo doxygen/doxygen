@@ -86,6 +86,7 @@ class Dir final
     bool remove(const std::string &path,bool acceptsAbsPath=true) const;
     bool rename(const std::string &orgName,const std::string &newName,
                 bool acceptsAbsPath=true) const;
+    bool copy(const std::string &src,const std::string &dest,bool acceptsAbsPath=true) const;
     std::string absPath() const;
 
     bool isRelative() const;

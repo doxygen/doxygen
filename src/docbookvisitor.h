@@ -18,10 +18,11 @@
 
 #include "containers.h"
 #include "docvisitor.h"
-#include <qcstring.h>
-#include <docparser.h>
+#include "docparser.h"
 
-class FTextStream;
+#include <qcstring.h>
+#include <iostream>
+
 class CodeOutputInterface;
 class QCString;
 
@@ -29,7 +30,7 @@ class QCString;
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    DocbookDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -154,19 +155,19 @@ class DocbookDocVisitor : public DocVisitor
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
-    void visitPreStart(FTextStream &t,
+    void visitPreStart(std::ostream &t,
                    const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
                    bool inlineImage = FALSE);
-    void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
+    void visitPostEnd(std::ostream &t, bool hasCaption, bool inlineImage = FALSE);
     void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
-    FTextStream &m_t;
+    std::ostream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;

@@ -17,9 +17,8 @@
 #ifndef QHPXMLWRITER_H
 #define QHPXMLWRITER_H
 
-#include "ftextstream.h"
-
-class QFile;
+#include <iostream>
+#include <sstream>
 
 class QhpXmlWriter
 {
@@ -30,7 +29,7 @@ class QhpXmlWriter
     void setIndentLevel(int level);
     void setCompressionEnabled(bool enabled);
     void insert(QhpXmlWriter const & source);
-    void dumpTo(QFile & file);
+    void dumpTo(std::ostream & file);
     void open(char const * elementName,
               char const * const * attributes = 0);
     void openClose(char const * elementName,
@@ -52,8 +51,7 @@ class QhpXmlWriter
                        char const * const * attributes = 0);
     void closePure(char const * elementName);
 
-    QGString m_backend;
-    FTextStream m_out;
+    std::stringstream m_backend;
     int  m_indentLevel;
     bool m_curLineIndented;
     bool m_compress;

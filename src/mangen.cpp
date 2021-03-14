@@ -163,7 +163,7 @@ void ManGenerator::startFile(const char *,const char *manName,const char *,int)
 
 void ManGenerator::endFile()
 {
-  t << endl;
+  t << "\n";
   endPlainFile();
 }
 
@@ -177,10 +177,10 @@ void ManGenerator::endTitleHead(const char *,const char *name)
     t << "Doxygen";
   else
     t << Config_getString(PROJECT_NAME);
-  t << "\" \\\" -*- nroff -*-" << endl;
-  t << ".ad l" << endl;
-  t << ".nh" << endl;
-  t << ".SH NAME" << endl;
+  t << "\" \\\" -*- nroff -*-\n";
+  t << ".ad l\n";
+  t << ".nh\n";
+  t << ".SH NAME\n";
   t << name;
   m_firstCol=FALSE;
   m_paragraph=TRUE;
@@ -191,8 +191,8 @@ void ManGenerator::newParagraph()
 {
   if (!m_paragraph)
   {
-    if (!m_firstCol) t << endl;
-    t << ".PP" << endl;
+    if (!m_firstCol) t << "\n";
+    t << ".PP\n";
     m_firstCol=TRUE;
   }
   m_paragraph=TRUE;
@@ -202,8 +202,8 @@ void ManGenerator::startParagraph(const char *)
 {
   if (!m_paragraph)
   {
-    if (!m_firstCol) t << endl;
-    t << ".PP" << endl;
+    if (!m_firstCol) t << "\n";
+    t << ".PP\n";
     m_firstCol=TRUE;
   }
   m_paragraph=TRUE;
@@ -259,7 +259,7 @@ void ManGenerator::endHtmlLink()
 
 void ManGenerator::startGroupHeader(int)
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".SH \"";
   m_upperCase=TRUE;
   m_firstCol=FALSE;
@@ -267,7 +267,7 @@ void ManGenerator::startGroupHeader(int)
 
 void ManGenerator::endGroupHeader(int)
 {
-  t << "\"\n.PP " << endl;
+  t << "\"\n.PP \n";
   m_firstCol=TRUE;
   m_paragraph=TRUE;
   m_upperCase=FALSE;
@@ -275,7 +275,7 @@ void ManGenerator::endGroupHeader(int)
 
 void ManGenerator::startMemberHeader(const char *,int)
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".SS \"";
 }
 
@@ -357,7 +357,7 @@ void ManGenerator::writeChar(char c)
 void ManGenerator::startDescList(SectionTypes)
 {
   if (!m_firstCol)
-  { t << endl << ".PP" << endl;
+  { t << "\n" << ".PP\n";
     m_firstCol=TRUE; m_paragraph=TRUE;
     m_col=0;
   }
@@ -367,7 +367,7 @@ void ManGenerator::startDescList(SectionTypes)
 
 void ManGenerator::startTitle()
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".SH \"";
   m_firstCol=FALSE;
   m_paragraph=FALSE;
@@ -380,8 +380,8 @@ void ManGenerator::endTitle()
 
 void ManGenerator::startItemListItem()
 {
-  if (!m_firstCol) t << endl;
-  t << ".TP" << endl;
+  if (!m_firstCol) t << "\n";
+  t << ".TP\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
   m_col=0;
@@ -394,15 +394,15 @@ void ManGenerator::endItemListItem()
 void ManGenerator::startCodeFragment(const char *)
 {
   newParagraph();
-  t << ".nf" << endl;
+  t << ".nf\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
 }
 
 void ManGenerator::endCodeFragment(const char *)
 {
-  if (!m_firstCol) t << endl;
-  t << ".fi" << endl;
+  if (!m_firstCol) t << "\n";
+  t << ".fi\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
   m_col=0;
@@ -410,7 +410,7 @@ void ManGenerator::endCodeFragment(const char *)
 
 void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool)
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".SS \"";
   m_firstCol=FALSE;
   m_paragraph=FALSE;
@@ -437,18 +437,15 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
 
     // - remove dangerous characters and append suffix, then add dir prefix
     QCString fileName=dir()+"/"+buildFileName( baseName );
-    QFile linkfile( fileName );
-    // - only create file if it doesn't exist already
-    if ( !linkfile.open( IO_ReadOnly ) )
+    FileInfo fi(fileName.str());
+    if (!fi.exists())
     {
-	if ( linkfile.open( IO_WriteOnly ) )
-        {
-	      FTextStream linkstream;
-	      linkstream.setDevice(&linkfile);
-	      linkstream << ".so " << getSubdir() << "/" << buildFileName( manName ) << endl;
-	}
+      std::ofstream linkStream(fileName.str(),std::ofstream::out | std::ofstream::binary);
+      if (linkStream.is_open())
+      {
+        linkStream << ".so " << getSubdir() << "/" << buildFileName( manName ) << "\n";
+      }
     }
-    linkfile.close();
 }
 
 void ManGenerator::endMemberDoc(bool)
@@ -458,7 +455,7 @@ void ManGenerator::endMemberDoc(bool)
 
 void ManGenerator::startSubsection()
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".SS \"";
   m_firstCol=FALSE;
   m_paragraph=FALSE;
@@ -472,7 +469,7 @@ void ManGenerator::endSubsection()
 
 void ManGenerator::startSubsubsection()
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << "\n.SS \"";
   m_firstCol=FALSE;
   m_paragraph=FALSE;
@@ -485,7 +482,7 @@ void ManGenerator::endSubsubsection()
 
 void ManGenerator::writeSynopsis()
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".SH SYNOPSIS\n.br\n.PP\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
@@ -493,7 +490,7 @@ void ManGenerator::writeSynopsis()
 
 void ManGenerator::startDescItem()
 {
-  if (!m_firstCol) t << endl;
+  if (!m_firstCol) t << "\n";
   t << ".IP \"";
   m_firstCol=FALSE;
 }
@@ -506,9 +503,9 @@ void ManGenerator::startDescItem()
 
 void ManGenerator::startDescForItem()
 {
-  if (!m_firstCol) t << endl;
-  if (!m_paragraph) t << ".in -1c" << endl;
-  t << ".in +1c" << endl;
+  if (!m_firstCol) t << "\n";
+  if (!m_paragraph) t << ".in -1c\n";
+  t << ".in +1c\n";
   m_firstCol=TRUE;
   m_paragraph=FALSE;
   m_col=0;
@@ -520,7 +517,7 @@ void ManGenerator::endDescForItem()
 
 void ManGenerator::endDescItem()
 {
-  t << "\" 1c" << endl;
+  t << "\" 1c\n";
   m_firstCol=TRUE;
 }
 
@@ -642,7 +639,7 @@ void ManGenerator::endSection(const char *,SectionType type)
 void ManGenerator::startExamples()
 {
   if (!m_firstCol)
-  { t << endl << ".PP" << endl;
+  { t << "\n" << ".PP\n";
     m_firstCol=TRUE; m_paragraph=TRUE;
     m_col=0;
   }
@@ -660,7 +657,7 @@ void ManGenerator::endExamples()
 void ManGenerator::startDescTable(const char *title)
 {
   if (!m_firstCol)
-  { t << endl << ".PP" << endl;
+  { t << "\n.PP\n";
     m_firstCol=TRUE; m_paragraph=TRUE;
     m_col=0;
   }
@@ -680,7 +677,7 @@ void ManGenerator::endDescTable()
 void ManGenerator::startParamList(ParamListTypes,const char *title)
 {
   if (!m_firstCol)
-  { t << endl << ".PP" << endl;
+  { t << "\n.PP\n";
     m_firstCol=TRUE; m_paragraph=TRUE;
     m_col=0;
   }
@@ -707,7 +704,7 @@ void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,i
 void ManGenerator::startConstraintList(const char *header)
 {
   if (!m_firstCol)
-  { t << endl << ".PP" << endl;
+  { t << "\n.PP\n";
     m_firstCol=TRUE; m_paragraph=TRUE;
     m_col=0;
   }
@@ -747,7 +744,7 @@ void ManGenerator::startConstraintDocs()
 
 void ManGenerator::endConstraintDocs()
 {
-  t << endl; m_firstCol=TRUE;
+  t << "\n"; m_firstCol=TRUE;
 }
 
 void ManGenerator::endConstraintList()
@@ -759,14 +756,14 @@ void ManGenerator::startInlineHeader()
 {
   if (!m_firstCol)
   {
-    t << endl << ".PP" << endl << ".in -1c" << endl;
+    t << "\n.PP\n" << ".in -1c\n";
   }
   t << ".RI \"\\fB";
 }
 
 void ManGenerator::endInlineHeader()
 {
-  t << "\\fP\"" << endl << ".in +1c" << endl;
+  t << "\\fP\"\n" << ".in +1c\n";
   m_firstCol = FALSE;
 }
 
@@ -774,7 +771,7 @@ void ManGenerator::startMemberDocSimple(bool isEnum)
 {
   if (!m_firstCol)
   {
-    t << endl << ".PP" << endl;
+    t << "\n.PP\n";
   }
   t << "\\fB";
   if (isEnum)
@@ -785,15 +782,15 @@ void ManGenerator::startMemberDocSimple(bool isEnum)
   {
     docify(theTranslator->trCompoundMembers());
   }
-  t << ":\\fP" << endl;
-  t << ".RS 4" << endl;
+  t << ":\\fP\n";
+  t << ".RS 4\n";
 }
 
 void ManGenerator::endMemberDocSimple(bool)
 {
-  if (!m_firstCol) t << endl;
-  t << ".RE" << endl;
-  t << ".PP" << endl;
+  if (!m_firstCol) t << "\n";
+  t << ".RE\n";
+  t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -822,9 +819,9 @@ void ManGenerator::startInlineMemberDoc()
 
 void ManGenerator::endInlineMemberDoc()
 {
-  if (!m_firstCol) t << endl;
-  t << ".br" << endl;
-  t << ".PP" << endl;
+  if (!m_firstCol) t << "\n";
+  t << ".br\n";
+  t << ".PP\n";
   m_firstCol=TRUE;
 }
 

@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
+#include <fstream>
 
 #include <ctype.h>
 #include "types.h"
@@ -56,9 +57,6 @@ class SectionInfo;
 class Definition;
 class BufStr;
 class FileInfo;
-class QFileInfo;
-class FTextStream;
-class QFile;
 
 //--------------------------------------------------------------------
 
@@ -317,7 +315,7 @@ QCString unescapeCharsInString(const char *s);
 
 void addGroupListToTitle(OutputList &ol,const Definition *d);
 
-void filterLatexString(FTextStream &t,const char *str,
+void filterLatexString(std::ostream &t,const char *str,
                        bool insideTabbing,
                        bool insidePre,
                        bool insideItem,
@@ -391,12 +389,11 @@ bool readInputFile(const char *fileName,BufStr &inBuf,
 QCString filterTitle(const std::string &title);
 
 bool patternMatch(const FileInfo &fi,const StringVector &patList);
-bool patternMatch(const QFileInfo &fi,const StringVector &patList);
 
 QCString externalLinkTarget(const bool parent = false);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos);
-const char *writeUtf8Char(FTextStream &t,const char *s);
+const char *writeUtf8Char(std::ostream &t,const char *s);
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
@@ -456,9 +453,9 @@ void convertProtectionLevel(
                   );
 
 bool mainPageHasTitle();
-bool openOutputFile(const char *outFile,QFile &f);
-void writeExtraLatexPackages(FTextStream &t);
-void writeLatexSpecialFormulaChars(FTextStream &t);
+bool openOutputFile(const char *outFile,std::ofstream &f);
+void writeExtraLatexPackages(std::ostream &t);
+void writeLatexSpecialFormulaChars(std::ostream &t);
 
 StringVector split(const std::string &s,const std::string &delimiter);
 StringVector split(const std::string &s,const reg::Ex &delimiter);

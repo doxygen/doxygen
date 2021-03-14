@@ -26,7 +26,6 @@ class Definition;
 class DefinitionMutable;
 class MemberDef;
 class OutputList;
-class FTextStream;
 
 /** \brief Abstract interface for index generators. */
 class IndexIntf

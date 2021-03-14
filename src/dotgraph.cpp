@@ -13,6 +13,8 @@
 *
 */
 
+#include <sstream>
+
 #include "config.h"
 #include "doxygen.h"
 #include "index.h"
@@ -39,22 +41,21 @@
 static bool checkMd5Signature(const QCString &baseName,
                               const QCString &md5)
 {
-  QFile f(baseName+".md5");
-  if (f.open(IO_ReadOnly))
+  std::ifstream f(baseName.str()+".md5",std::ifstream::in | std::ifstream::binary);
+  if (f.is_open())
   {
     // read checksum
     QCString md5stored(33);
-    int bytesRead=f.readBlock(md5stored.rawData(),32);
+    f.read(md5stored.rawData(),32);
     md5stored[32]='\0';
     // compare checksum
-    if (bytesRead==32 && md5==md5stored)
+    if (!f.fail() && md5==md5stored)
     {
       // bail out if equal
-      return FALSE;
+      return false;
     }
   }
-  f.close();
-  return TRUE;
+  return true;
 }
 
 static bool checkDeliverables(const QCString &file1,
@@ -75,24 +76,23 @@ static bool checkDeliverables(const QCString &file1,
   return file1Ok && file2Ok;
 }
 
-static bool insertMapFile(FTextStream &out,const QCString &mapFile,
+static bool insertMapFile(std::ostream &out,const QCString &mapFile,
                           const QCString &relPath,const QCString &mapLabel)
 {
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
-    QGString tmpstr;
-    FTextStream tmpout(&tmpstr);
-    DotFilePatcher::convertMapFile(tmpout,mapFile,relPath,FALSE);
-    if (!tmpstr.isEmpty())
+    std::stringstream t;
+    DotFilePatcher::convertMapFile(t,mapFile,relPath,false);
+    if (t.tellg()>0)
     {
-      out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">" << endl;
-      out << tmpstr;
-      out << "</map>" << endl;
+      out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">\n";
+      out << t.str();
+      out << "</map>\n";
     }
-    return TRUE;
+    return true;
   }
-  return FALSE; // no map file yet, need to generate it
+  return false; // no map file yet, need to generate it
 }
 
 //--------------------------------------------------------------------
@@ -104,7 +104,7 @@ QCString DotGraph::imgName() const
 }
 
 QCString DotGraph::writeGraph(
-        FTextStream& t,           // output stream for the code file (html, ...)
+        std::ostream& t,           // output stream for the code file (html, ...)
         GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
         EmbeddedOutputFormat ef,  // html, latex, ...
         const char* path,         // output folder
@@ -164,14 +164,13 @@ bool DotGraph::prepareDotFile()
   // need to rebuild the image
 
   // write .dot file because image was new or has changed
-  QFile f(absDotName());
-  if (!f.open(IO_WriteOnly))
+  std::ofstream f(absDotName().str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
-    err("Could not open file %s for writing\n",f.name().data());
+    err("Could not open file %s for writing\n",absDotName().data());
     return TRUE;
   }
-  FTextStream t(&f);
-  t << m_theGraph;
+  f << m_theGraph;
   f.close();
 
   if (m_graphFormat == GOF_BITMAP)
@@ -197,22 +196,22 @@ bool DotGraph::prepareDotFile()
   return TRUE;
 }
 
-void DotGraph::generateCode(FTextStream &t)
+void DotGraph::generateCode(std::ostream &t)
 {
   QCString imgExt = getDotImageExtension();
   if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
   {
-    t << "<para>" << endl;
-    t << "    <informalfigure>" << endl;
-    t << "        <mediaobject>" << endl;
-    t << "            <imageobject>" << endl;
+    t << "<para>\n";
+    t << "    <informalfigure>\n";
+    t << "        <mediaobject>\n";
+    t << "            <imageobject>\n";
     t << "                <imagedata";
     t << " width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\"" << m_relPath << m_baseName << "." << imgExt << "\">";
-    t << "</imagedata>" << endl;
-    t << "            </imageobject>" << endl;
-    t << "        </mediaobject>" << endl;
-    t << "    </informalfigure>" << endl;
-    t << "</para>" << endl;
+    t << "</imagedata>\n";
+    t << "            </imageobject>\n";
+    t << "        </mediaobject>\n";
+    t << "    </informalfigure>\n";
+    t << "</para>\n";
   }
   else if (m_graphFormat==GOF_BITMAP && m_generateImageMap) // produce HTML to include the image
   {
@@ -230,22 +229,22 @@ void DotGraph::generateCode(FTextStream &t)
         int mapId = DotManager::instance()->
                createFilePatcher(m_fileName.data())->
                addSVGObject(m_baseName,absImgName(),m_relPath);
-        t << "<!-- SVG " << mapId << " -->" << endl;
+        t << "<!-- SVG " << mapId << " -->\n";
       }
-      if (!m_noDivTag) t << "</div>" << endl;
+      if (!m_noDivTag) t << "</div>\n";
     }
     else // add link to bitmap file with image map
     {
       if (!m_noDivTag) t << "<div class=\"center\">";
       t << "<img src=\"" << relImgName() << "\" border=\"0\" usemap=\"#" << correctId(getMapLabel()) << "\" alt=\"" << getImgAltText() << "\"/>";
       if (!m_noDivTag) t << "</div>";
-      t << endl;
+      t << "\n";
       if (m_regenerate || !insertMapFile(t, absMapName(), m_relPath, correctId(getMapLabel())))
       {
         int mapId = DotManager::instance()->
           createFilePatcher(m_fileName.data())->
           addMap(absMapName(), m_relPath, m_urlOnly, QCString(), getMapLabel());
-        t << "<!-- MAP " << mapId << " -->" << endl;
+        t << "<!-- MAP " << mapId << " -->\n";
       }
     }
   }
@@ -256,12 +255,12 @@ void DotGraph::generateCode(FTextStream &t)
       int figId = DotManager::instance()->
                   createFilePatcher(m_fileName.data())->
                   addFigure(m_baseName,absBaseName(),FALSE /*TRUE*/);
-      t << endl << "% FIG " << figId << endl;
+      t << "\n% FIG " << figId << "\n";
     }
   }
 }
 
-void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
+void DotGraph::writeGraphHeader(std::ostream &t,const QCString &title)
 {
   int fontSize      = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
@@ -274,7 +273,7 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
   {
     t << "\"" << convertToXML(title) << "\"";
   }
-  t << endl << "{" << endl;
+  t << "\n{\n";
   if (Config_getBool(INTERACTIVE_SVG)) // insert a comment to force regeneration when this
                        // option is toggled
   {
@@ -283,7 +282,7 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
   t << " // LATEX_PDF_SIZE\n"; // write placeholder for LaTeX PDF bounding box size replacement
   if (Config_getBool(DOT_TRANSPARENT))
   {
-    t << "  bgcolor=\"transparent\";" << endl;
+    t << "  bgcolor=\"transparent\";\n";
   }
   t << "  edge [fontname=\"" << fontName << "\","
          "fontsize=\"" << fontSize << "\","
@@ -293,9 +292,9 @@ void DotGraph::writeGraphHeader(FTextStream &t,const QCString &title)
          "fontsize=\"" << fontSize << "\",shape=record];\n";
 }
 
-void DotGraph::writeGraphFooter(FTextStream &t)
+void DotGraph::writeGraphFooter(std::ostream &t)
 {
-  t << "}" << endl;
+  t << "}\n";
 }
 
 void DotGraph::computeGraph(DotNode *root,
@@ -305,15 +304,14 @@ void DotGraph::computeGraph(DotNode *root,
                             bool renderParents,
                             bool backArrows,
                             const QCString &title,
-                            QGString &graphStr)
+                            QCString &graphStr)
 {
   //printf("computeMd5Signature\n");
-  QGString buf;
-  FTextStream md5stream(&buf);
+  std::stringstream md5stream;
   writeGraphHeader(md5stream,title);
   if (!rank.isEmpty())
   {
-    md5stream << "  rankdir=\"" << rank << "\";" << endl;
+    md5stream << "  rankdir=\"" << rank << "\";\n";
   }
   root->clearWriteFlag();
   root->write(md5stream, gt, format, gt!=CallGraph && gt!=Dependency, TRUE, backArrows);
@@ -346,6 +344,6 @@ void DotGraph::computeGraph(DotNode *root,
   }
   writeGraphFooter(md5stream);
 
-  graphStr=buf.data();
+  graphStr=md5stream.str();
 }
 

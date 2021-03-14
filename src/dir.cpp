@@ -259,6 +259,16 @@ bool Dir::rename(const std::string &orgName,const std::string &newName,bool acce
   return !ec;
 }
 
+bool Dir::copy(const std::string &srcName,const std::string &dstName,bool acceptsAbsPath) const
+{
+  const auto copyOptions = fs::copy_options::overwrite_existing;
+  std::error_code ec;
+  std::string sn = filePath(srcName,acceptsAbsPath);
+  std::string dn = filePath(dstName,acceptsAbsPath);
+  fs::copy(sn,dn,copyOptions,ec);
+  return !ec;
+}
+
 std::string Dir::currentDirPath()
 {
   std::error_code ec;

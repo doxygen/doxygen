@@ -166,7 +166,6 @@ add_library(doxycfg STATIC
     ${GENERATED_SRC}/settings.h
     portable.cpp
     portable_c.c
-    ftextstream.cpp
     message.cpp
     debug.cpp
 )

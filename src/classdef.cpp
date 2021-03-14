@@ -18,7 +18,6 @@
 #include <cstdio>
 #include <algorithm>
 
-#include <qfile.h>
 #include "classdef.h"
 #include "classlist.h"
 #include "entry.h"
@@ -300,7 +299,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               const ClassDef *inheritedFrom,const QCString &inheritId) const;
-    virtual void writeTagFile(FTextStream &);
+    virtual void writeTagFile(std::ostream &);
 
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const;
     virtual int countInheritanceNodes() const;
@@ -2047,7 +2046,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeTagFile(FTextStream &tagFile)
+void ClassDefImpl::writeTagFile(std::ostream &tagFile)
 {
   if (!isLinkableInProject() || isArtificial()) return;
   tagFile << "  <compound kind=\"";
@@ -2057,17 +2056,17 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
     tagFile << compoundTypeString();
   tagFile << "\"";
   if (isObjectiveC()) { tagFile << " objc=\"yes\""; }
-  tagFile << ">" << endl;
-  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  tagFile << ">\n";
+  tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
   if (!anchor().isEmpty())
   {
-    tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+    tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   }
   QCString idStr = id();
   if (!idStr.isEmpty())
   {
-    tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+    tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
   for (const Argument &a : m_impl->tempArgs)
   {
@@ -2076,7 +2075,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
     {
       tagFile << " " << convertToXML(a.name);
     }
-    tagFile << "</templarg>" << endl;
+    tagFile << "</templarg>\n";
   }
   for (const auto &ibcd : m_impl->inherits)
   {
@@ -2098,7 +2097,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
         {
           tagFile << " virtualness=\"virtual\"";
         }
-        tagFile << ">" << convertToXML(cd->name()) << "</base>" << endl;
+        tagFile << ">" << convertToXML(cd->name()) << "</base>\n";
       }
     }
   }
@@ -2116,7 +2115,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
                )
             {
               tagFile << "    <class kind=\"" << innerCd->compoundTypeString() <<
-                "\">" << convertToXML(innerCd->name()) << "</class>" << endl;
+                "\">" << convertToXML(innerCd->name()) << "</class>\n";
             }
           }
         }
@@ -2144,7 +2143,7 @@ void ClassDefImpl::writeTagFile(FTextStream &tagFile)
     }
   }
   writeDocAnchorsToTagFile(tagFile);
-  tagFile << "  </compound>" << endl;
+  tagFile << "  </compound>\n";
 }
 
 /** Write class documentation inside another container (i.e. a group) */

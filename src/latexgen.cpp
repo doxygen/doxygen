@@ -15,9 +15,9 @@
  *
  */
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <sstream>
 
-#include <qdir.h>
 #include "latexgen.h"
 #include "config.h"
 #include "message.h"
@@ -48,22 +48,21 @@
 static QCString g_header;
 static QCString g_footer;
 
-LatexCodeGenerator::LatexCodeGenerator(FTextStream &t,const QCString &relPath,const QCString &sourceFileName)
-  : m_relPath(relPath), m_sourceFileName(sourceFileName)
+LatexCodeGenerator::LatexCodeGenerator(std::ostream &t,const QCString &relPath,const QCString &sourceFileName)
+  : m_t(nullptr), m_relPath(relPath), m_sourceFileName(sourceFileName)
 {
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
   setTextStream(t);
 }
 
-LatexCodeGenerator::LatexCodeGenerator()
+LatexCodeGenerator::LatexCodeGenerator() : m_t(nullptr)
 {
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }
 
-void LatexCodeGenerator::setTextStream(FTextStream &t)
+void LatexCodeGenerator::setTextStream(std::ostream &t)
 {
-  m_streamSet = t.device()!=0;
-  m_t.setDevice(t.device());
+  m_t.rdbuf(t.rdbuf());
 }
 
 void LatexCodeGenerator::setRelativePath(const QCString &path)
@@ -303,8 +302,8 @@ static void writeLatexMakefile()
 {
   bool generateBib = !CitationManager::instance().isEmpty();
   QCString fileName=Config_getString(LATEX_OUTPUT)+"/Makefile";
-  QFile file(fileName);
-  if (!file.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     term("Could not open file %s for writing\n",fileName.data());
   }
@@ -312,85 +311,84 @@ static void writeLatexMakefile()
   QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
   // end insertion by KONNO Akihisa <konno@researchers.jp> 2002-03-05
-  FTextStream t(&file);
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "LATEX_CMD=" << latex_command << endl
-      << endl
-      << "all: refman.dvi" << endl
-      << endl
-      << "ps: refman.ps" << endl
-      << endl
-      << "pdf: refman.pdf" << endl
-      << endl
-      << "ps_2on1: refman_2on1.ps" << endl
-      << endl
-      << "pdf_2on1: refman_2on1.pdf" << endl
-      << endl
-      << "refman.ps: refman.dvi" << endl
-      << "\tdvips -o refman.ps refman.dvi" << endl
-      << endl;
-    t << "refman.pdf: refman.ps" << endl;
-    t << "\tps2pdf refman.ps refman.pdf" << endl << endl;
-    t << "refman.dvi: clean refman.tex doxygen.sty" << endl
-      << "\techo \"Running latex...\"" << endl
-      << "\t$(LATEX_CMD) refman.tex" << endl
-      << "\techo \"Running makeindex...\"" << endl
-      << "\t" << mkidx_command << " refman.idx" << endl;
+    t << "LATEX_CMD=" << latex_command << "\n"
+      << "\n"
+      << "all: refman.dvi\n"
+      << "\n"
+      << "ps: refman.ps\n"
+      << "\n"
+      << "pdf: refman.pdf\n"
+      << "\n"
+      << "ps_2on1: refman_2on1.ps\n"
+      << "\n"
+      << "pdf_2on1: refman_2on1.pdf\n"
+      << "\n"
+      << "refman.ps: refman.dvi\n"
+      << "\tdvips -o refman.ps refman.dvi\n"
+      << "\n";
+    t << "refman.pdf: refman.ps\n";
+    t << "\tps2pdf refman.ps refman.pdf\n\n";
+    t << "refman.dvi: clean refman.tex doxygen.sty\n"
+      << "\techo \"Running latex...\"\n"
+      << "\t$(LATEX_CMD) refman.tex\n"
+      << "\techo \"Running makeindex...\"\n"
+      << "\t" << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
-      t << "\techo \"Running bibtex...\"" << endl;
-      t << "\tbibtex refman" << endl;
-      t << "\techo \"Rerunning latex....\"" << endl;
-      t << "\t$(LATEX_CMD) refman.tex" << endl;
+      t << "\techo \"Running bibtex...\"\n";
+      t << "\tbibtex refman\n";
+      t << "\techo \"Rerunning latex....\"\n";
+      t << "\t$(LATEX_CMD) refman.tex\n";
     }
-    t << "\techo \"Rerunning latex....\"" << endl
-      << "\t$(LATEX_CMD) refman.tex" << endl
-      << "\tlatex_count=8 ; \\" << endl
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
-      << "\t    do \\" << endl
-      << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      $(LATEX_CMD) refman.tex ; \\" << endl
-      << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
-      << "\t    done" << endl
-      << "\t" << mkidx_command << " refman.idx" << endl
-      << "\t$(LATEX_CMD) refman.tex" << endl << endl
-      << "refman_2on1.ps: refman.ps" << endl
-      << "\tpsnup -2 refman.ps >refman_2on1.ps" << endl
-      << endl
-      << "refman_2on1.pdf: refman_2on1.ps" << endl
-      << "\tps2pdf refman_2on1.ps refman_2on1.pdf" << endl;
+    t << "\techo \"Rerunning latex....\"\n"
+      << "\t$(LATEX_CMD) refman.tex\n"
+      << "\tlatex_count=8 ; \\\n"
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\\n"
+      << "\t    do \\\n"
+      << "\t      echo \"Rerunning latex....\" ;\\\n"
+      << "\t      $(LATEX_CMD) refman.tex ; \\\n"
+      << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
+      << "\t    done\n"
+      << "\t" << mkidx_command << " refman.idx\n"
+      << "\t$(LATEX_CMD) refman.tex\n\n"
+      << "refman_2on1.ps: refman.ps\n"
+      << "\tpsnup -2 refman.ps >refman_2on1.ps\n"
+      << "\n"
+      << "refman_2on1.pdf: refman_2on1.ps\n"
+      << "\tps2pdf refman_2on1.ps refman_2on1.pdf\n";
   }
   else // use pdflatex for higher quality output
   {
-    t << "LATEX_CMD=" << latex_command << endl
-      << endl;
-    t << "all: refman.pdf" << endl << endl
-      << "pdf: refman.pdf" << endl << endl;
-    t << "refman.pdf: clean refman.tex" << endl;
-    t << "\t$(LATEX_CMD) refman" << endl;
-    t << "\t" << mkidx_command << " refman.idx" << endl;
+    t << "LATEX_CMD=" << latex_command << "\n"
+      << "\n";
+    t << "all: refman.pdf\n\n"
+      << "pdf: refman.pdf\n\n";
+    t << "refman.pdf: clean refman.tex\n";
+    t << "\t$(LATEX_CMD) refman\n";
+    t << "\t" << mkidx_command << " refman.idx\n";
     if (generateBib)
     {
-      t << "\tbibtex refman" << endl;
-      t << "\t$(LATEX_CMD) refman" << endl;
+      t << "\tbibtex refman\n";
+      t << "\t$(LATEX_CMD) refman\n";
     }
-    t << "\t$(LATEX_CMD) refman" << endl
-      << "\tlatex_count=8 ; \\" << endl
-      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\" << endl
-      << "\t    do \\" << endl
-      << "\t      echo \"Rerunning latex....\" ;\\" << endl
-      << "\t      $(LATEX_CMD) refman ;\\" << endl
-      << "\t      latex_count=`expr $$latex_count - 1` ;\\" << endl
-      << "\t    done" << endl
-      << "\t" << mkidx_command << " refman.idx" << endl
-      << "\t$(LATEX_CMD) refman" << endl << endl;
+    t << "\t$(LATEX_CMD) refman\n"
+      << "\tlatex_count=8 ; \\\n"
+      << "\twhile egrep -s 'Rerun (LaTeX|to get cross-references right)' refman.log && [ $$latex_count -gt 0 ] ;\\\n"
+      << "\t    do \\\n"
+      << "\t      echo \"Rerunning latex....\" ;\\\n"
+      << "\t      $(LATEX_CMD) refman ;\\\n"
+      << "\t      latex_count=`expr $$latex_count - 1` ;\\\n"
+      << "\t    done\n"
+      << "\t" << mkidx_command << " refman.idx\n"
+      << "\t$(LATEX_CMD) refman\n\n";
   }
 
-  t << endl
-    << "clean:" << endl
+  t << "\n"
+    << "clean:\n"
     << "\trm -f "
-    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf" << endl;
+    << "*.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n";
 }
 
 static void writeMakeBat()
@@ -400,80 +398,79 @@ static void writeMakeBat()
   QCString fileName=dir+"/make.bat";
   QCString latex_command = theTranslator->latexCommandName();
   QCString mkidx_command = Config_getString(MAKEINDEX_CMD_NAME);
-  QFile file(fileName);
   bool generateBib = !CitationManager::instance().isEmpty();
-  if (!file.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!t.is_open())
   {
     term("Could not open file %s for writing\n",fileName.data());
   }
-  FTextStream t(&file);
-  t << "set Dir_Old=%cd%\n";
-  t << "cd /D %~dp0\n\n";
-  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\n\n";
+  t << "set Dir_Old=%cd%\r\n";
+  t << "cd /D %~dp0\r\n\r\n";
+  t << "del /s /f *.ps *.dvi *.aux *.toc *.idx *.ind *.ilg *.log *.out *.brf *.blg *.bbl refman.pdf\r\n\r\n";
   if (!Config_getBool(USE_PDFLATEX)) // use plain old latex
   {
-    t << "set LATEX_CMD=" << latex_command << "\n";
-    t << "%LATEX_CMD% refman.tex\n";
-    t << "echo ----\n";
-    t << mkidx_command << " refman.idx\n";
+    t << "set LATEX_CMD=" << latex_command << "\r\n";
+    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "echo ----\r\n";
+    t << mkidx_command << " refman.idx\r\n";
     if (generateBib)
     {
-      t << "bibtex refman\n";
-      t << "echo ----\n";
-      t << "\t%LATEX_CMD% refman.tex\n";
+      t << "bibtex refman\r\n";
+      t << "echo ----\r\n";
+      t << "\t%LATEX_CMD% refman.tex\r\n";
     }
-    t << "setlocal enabledelayedexpansion\n";
-    t << "set count=8\n";
-    t << ":repeat\n";
-    t << "set content=X\n";
-    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
-    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\n";
-    t << "if !content! == X goto :skip\n";
-    t << "set /a count-=1\n";
-    t << "if !count! EQU 0 goto :skip\n\n";
-    t << "echo ----\n";
-    t << "%LATEX_CMD% refman.tex\n";
-    t << "goto :repeat\n";
-    t << ":skip\n";
-    t << "endlocal\n";
-    t << mkidx_command << " refman.idx\n";
-    t << "%LATEX_CMD% refman.tex\n";
-    t << "dvips -o refman.ps refman.dvi\n";
+    t << "setlocal enabledelayedexpansion\r\n";
+    t << "set count=8\r\n";
+    t << ":repeat\r\n";
+    t << "set content=X\r\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X goto :skip\r\n";
+    t << "set /a count-=1\r\n";
+    t << "if !count! EQU 0 goto :skip\r\n\r\n";
+    t << "echo ----\r\n";
+    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "goto :repeat\r\n";
+    t << ":skip\r\n";
+    t << "endlocal\r\n";
+    t << mkidx_command << " refman.idx\r\n";
+    t << "%LATEX_CMD% refman.tex\r\n";
+    t << "dvips -o refman.ps refman.dvi\r\n";
     t << Portable::ghostScriptCommand();
     t << " -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite "
-         "-sOutputFile=refman.pdf -c save pop -f refman.ps\n";
+         "-sOutputFile=refman.pdf -c save pop -f refman.ps\r\n";
   }
   else // use pdflatex
   {
-    t << "set LATEX_CMD=" << latex_command << "\n";
-    t << "%LATEX_CMD% refman\n";
-    t << "echo ----\n";
-    t << mkidx_command << " refman.idx\n";
+    t << "set LATEX_CMD=" << latex_command << "\r\n";
+    t << "%LATEX_CMD% refman\r\n";
+    t << "echo ----\r\n";
+    t << mkidx_command << " refman.idx\r\n";
     if (generateBib)
     {
-      t << "bibtex refman" << endl;
-      t << "%LATEX_CMD% refman" << endl;
+      t << "bibtex refman\r\n";
+      t << "%LATEX_CMD% refman\r\n";
     }
-    t << "echo ----\n";
-    t << "%LATEX_CMD% refman\n\n";
-    t << "setlocal enabledelayedexpansion\n";
-    t << "set count=8\n";
-    t << ":repeat\n";
-    t << "set content=X\n";
-    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\n";
-    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\n";
-    t << "if !content! == X goto :skip\n";
-    t << "set /a count-=1\n";
-    t << "if !count! EQU 0 goto :skip\n\n";
-    t << "echo ----\n";
-    t << "%LATEX_CMD% refman\n";
-    t << "goto :repeat\n";
-    t << ":skip\n";
-    t << "endlocal\n";
-    t << mkidx_command << " refman.idx\n";
-    t << "%LATEX_CMD% refman\n";
-    t << "cd /D %Dir_Old%\n";
-    t << "set Dir_Old=\n";
+    t << "echo ----\r\n";
+    t << "%LATEX_CMD% refman\r\n\r\n";
+    t << "setlocal enabledelayedexpansion\r\n";
+    t << "set count=8\r\n";
+    t << ":repeat\r\n";
+    t << "set content=X\r\n";
+    t << "for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun LaTeX\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X for /F \"tokens=*\" %%T in ( 'findstr /C:\"Rerun to get cross-references right\" refman.log' ) do set content=\"%%~T\"\r\n";
+    t << "if !content! == X goto :skip\r\n";
+    t << "set /a count-=1\r\n";
+    t << "if !count! EQU 0 goto :skip\r\n\r\n";
+    t << "echo ----\r\n";
+    t << "%LATEX_CMD% refman\r\n";
+    t << "goto :repeat\r\n";
+    t << ":skip\r\n";
+    t << "endlocal\r\n";
+    t << mkidx_command << " refman.idx\r\n";
+    t << "%LATEX_CMD% refman\r\n";
+    t << "cd /D %Dir_Old%\r\n";
+    t << "set Dir_Old=\r\n";
   }
 #endif
 }
@@ -512,29 +509,26 @@ void LatexGenerator::init()
   createSubDirs(d);
 }
 
-static void writeDefaultStyleSheet(FTextStream &t)
+static void writeDefaultStyleSheet(std::ostream &t)
 {
   t << ResourceMgr::instance().getAsString("doxygen.sty");
 }
 
-void LatexGenerator::writeHeaderFile(QFile &f)
+void LatexGenerator::writeHeaderFile(std::ostream &t)
 {
-  FTextStream t(&f);
-  t << "% Latex header for doxygen " << getDoxygenVersion() << endl;
+  t << "% Latex header for doxygen " << getDoxygenVersion() << "\n";
   t << ResourceMgr::instance().getAsString("header.tex");
 }
 
-void LatexGenerator::writeFooterFile(QFile &f)
+void LatexGenerator::writeFooterFile(std::ostream &t)
 {
-  FTextStream t(&f);
-  t << "% Latex footer for doxygen " << getDoxygenVersion() << endl;
+  t << "% Latex footer for doxygen " << getDoxygenVersion() << "\n";
   t << ResourceMgr::instance().getAsString("footer.tex");
 }
 
-void LatexGenerator::writeStyleSheetFile(QFile &f)
+void LatexGenerator::writeStyleSheetFile(std::ostream &t)
 {
-  FTextStream t(&f);
-  t << "% stylesheet for doxygen " << getDoxygenVersion() << endl;
+  t << "% stylesheet for doxygen " << getDoxygenVersion() << "\n";
   writeDefaultStyleSheet(t);
 }
 
@@ -629,10 +623,9 @@ static QCString substituteLatexKeywords(const QCString &str,
     style="plain";
   }
 
-  QGString genString;
-  FTextStream tg(&genString);
-  QCString generatedBy;
+  std::stringstream tg;
   bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
+  QCString generatedBy;
   if (timeStamp)
   {
     generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString(PROJECT_NAME));
@@ -648,7 +641,7 @@ static QCString substituteLatexKeywords(const QCString &str,
                     false, // insideTable
                     false  // keepSpaces
                    );
-  generatedBy = genString;
+  generatedBy = tg.str();
 
   QCString latexFontenc = theTranslator->latexFontenc();
 
@@ -656,17 +649,13 @@ static QCString substituteLatexKeywords(const QCString &str,
   if (latexEmojiDirectory.isEmpty()) latexEmojiDirectory = ".";
   latexEmojiDirectory = substitute(latexEmojiDirectory,"\\","/");
 
-  QGString genExtraLatexPackages;
-  FTextStream tg1(&genExtraLatexPackages);
+  std::stringstream tg1;
   writeExtraLatexPackages(tg1);
-  QCString extraLatexPackages;
-  extraLatexPackages = genExtraLatexPackages;
+  QCString extraLatexPackages = tg1.str();
 
-  QGString genLatexSpecialFormulaChars;
-  FTextStream tg2(&genLatexSpecialFormulaChars);
+  std::stringstream tg2;
   writeLatexSpecialFormulaChars(tg2);
-  QCString latexSpecialFormulaChars;
-  latexSpecialFormulaChars = genLatexSpecialFormulaChars;
+  QCString latexSpecialFormulaChars = tg2.str();
 
   QCString formulaMacrofile = Config_getString(FORMULA_MACROFILE);
   if (!formulaMacrofile.isEmpty())
@@ -1063,17 +1052,17 @@ void LatexGenerator::writeStyleInfo(int part)
 
 void LatexGenerator::newParagraph()
 {
-  t << endl << endl;
+  t << "\n" << "\n";
 }
 
 void LatexGenerator::startParagraph(const char *)
 {
-  t << endl << endl;
+  t << "\n" << "\n";
 }
 
 void LatexGenerator::endParagraph()
 {
-  t << endl << endl;
+  t << "\n" << "\n";
 }
 
 void LatexGenerator::writeString(const char *text)
@@ -1094,7 +1083,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 {
   if (!ref && fn)
   {
-    t << "}{\\pageref{" << stripPath(fn) << "}}{}" << endl;
+    t << "}{\\pageref{" << stripPath(fn) << "}}{}\n";
   }
 }
 
@@ -1102,7 +1091,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 //{
 //  t << "\\item\\contentsline{section}{";
 //  docify(text);
-//  t << "}{\\pageref{" << stripPath(text) << "}}" << endl;
+//  t << "}{\\pageref{" << stripPath(text) << "}}\n";
 //}
 
 
@@ -1146,7 +1135,7 @@ void LatexGenerator::writeStartAnnoItem(const char *,const char *,
 
 void LatexGenerator::writeEndAnnoItem(const char *name)
 {
-  t << "}{\\pageref{" << stripPath(name) << "}}{}" << endl;
+  t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
 
 void LatexGenerator::startIndexKey()
@@ -1167,7 +1156,7 @@ void LatexGenerator::startIndexValue(bool hasBrief)
 void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
 {
   //if (hasBrief) t << ")";
-  t << "}{\\pageref{" << stripPath(name) << "}}{}" << endl;
+  t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
 
 //void LatexGenerator::writeClassLink(const char *,const char *,
@@ -1260,14 +1249,14 @@ void LatexGenerator::startTitleHead(const char *fileName)
 
 void LatexGenerator::endTitleHead(const char *fileName,const char *name)
 {
-  t << "}" << endl;
+  t << "}\n";
   if (name)
   {
     t << "\\label{" << stripPath(fileName) << "}\\index{";
     t << latexEscapeLabelName(name);
     t << "@{";
     t << latexEscapeIndexChars(name);
-    t << "}}" << endl;
+    t << "}}\n";
   }
 }
 
@@ -1312,7 +1301,7 @@ void LatexGenerator::startGroupHeader(int extraIndentLevel)
 void LatexGenerator::endGroupHeader(int)
 {
   m_disableLinks=FALSE;
-  t << "}" << endl;
+  t << "}\n";
 }
 
 void LatexGenerator::startMemberHeader(const char *,int)
@@ -1331,7 +1320,7 @@ void LatexGenerator::startMemberHeader(const char *,int)
 void LatexGenerator::endMemberHeader()
 {
   m_disableLinks=FALSE;
-  t << "}" << endl;
+  t << "}\n";
 }
 
 void LatexGenerator::startMemberDoc(const char *clname,
@@ -1355,7 +1344,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
     t << latexEscapeLabelName(memname);
     t << "@{";
     t << latexEscapeIndexChars(memname);
-    t << "}}" << endl;
+    t << "}}\n";
 
     t << "\\index{";
     t << latexEscapeLabelName(memname);
@@ -1370,7 +1359,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
       t << latexEscapeIndexChars(clname);
       t << "}";
     }
-    t << "}" << endl;
+    t << "}\n";
   }
   static const char *levelLab[] = { "doxysubsubsection","doxyparagraph","doxysubparagraph", "doxysubparagraph" };
   bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -1423,7 +1412,7 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
   t << "\\label{";
   if (fName) t << stripPath(fName);
   if (anchor) t << "_" << anchor;
-  t << "}} " << endl;
+  t << "}} \n";
 }
 
 void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
@@ -1433,18 +1422,18 @@ void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
 void LatexGenerator::writeAnchor(const char *fName,const char *name)
 {
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
-  t << "\\label{" << stripPath(name) << "}" << endl;
+  t << "\\label{" << stripPath(name) << "}\n";
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
     if (fName)
     {
-      t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}" << endl;
+      t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}\n";
     }
     else
     {
-      t << "\\Hypertarget{" << stripPath(name) << "}" << endl;
+      t << "\\Hypertarget{" << stripPath(name) << "}\n";
     }
   }
 }
@@ -1516,7 +1505,7 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionType type)
 
 void LatexGenerator::endSection(const char *lab,SectionType)
 {
-  t << "}\\label{" << lab << "}" << endl;
+  t << "}\\label{" << lab << "}\n";
 }
 
 
@@ -1556,8 +1545,8 @@ void LatexGenerator::startAnonTypeScope(int indent)
 {
   if (indent==0)
   {
-    t << "\\begin{tabbing}" << endl;
-    t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill" << endl;
+    t << "\\begin{tabbing}\n";
+    t << "xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=xx\\=\\kill\n";
     m_insideTabbing=TRUE;
   }
   m_indent=indent;
@@ -1567,7 +1556,7 @@ void LatexGenerator::endAnonTypeScope(int indent)
 {
   if (indent==0)
   {
-    t << endl << "\\end{tabbing}";
+    t << "\n" << "\\end{tabbing}";
     m_insideTabbing=FALSE;
   }
   m_indent=indent;
@@ -1594,7 +1583,7 @@ void LatexGenerator::startMemberItem(const char *,int annoType,const char *)
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!m_insideTabbing)
   {
-    t << "\\item " << endl;
+    t << "\\item \n";
     templateMemberItem = (annoType == 3);
   }
 }
@@ -1606,7 +1595,7 @@ void LatexGenerator::endMemberItem()
     t << "\\\\";
   }
   templateMemberItem = FALSE;
-  t << endl;
+  t << "\n";
 }
 
 void LatexGenerator::startMemberDescription(const char *,const char *,bool)
@@ -1666,13 +1655,13 @@ void LatexGenerator::writeNonBreakableSpace(int)
 void LatexGenerator::startDescTable(const char *title)
 {
   m_codeGen.incUsedTableLevel();
-  t << "\\begin{DoxyEnumFields}{" << title << "}" << endl;
+  t << "\\begin{DoxyEnumFields}{" << title << "}\n";
 }
 
 void LatexGenerator::endDescTable()
 {
   m_codeGen.decUsedTableLevel();
-  t << "\\end{DoxyEnumFields}" << endl;
+  t << "\\end{DoxyEnumFields}\n";
 }
 
 void LatexGenerator::startDescTableRow()
@@ -1702,7 +1691,7 @@ void LatexGenerator::startDescTableData()
 
 void LatexGenerator::endDescTableData()
 {
-  t << "\\\\\n\\hline\n" << endl;
+  t << "\\\\\n\\hline\n\n";
 }
 
 void LatexGenerator::lastIndexPage()
@@ -1714,7 +1703,7 @@ void LatexGenerator::startMemberList()
 {
   if (!m_insideTabbing)
   {
-    t << "\\begin{DoxyCompactItemize}" << endl;
+    t << "\\begin{DoxyCompactItemize}\n";
   }
 }
 
@@ -1723,7 +1712,7 @@ void LatexGenerator::endMemberList()
   //printf("LatexGenerator::endMemberList(%d)\n",m_insideTabbing);
   if (!m_insideTabbing)
   {
-    t << "\\end{DoxyCompactItemize}"   << endl;
+    t << "\\end{DoxyCompactItemize}\n";
   }
 }
 
@@ -1746,8 +1735,8 @@ void LatexGenerator::startMemberGroupHeader(bool hasHeader)
 void LatexGenerator::endMemberGroupHeader()
 {
   // changed back to rev 756 due to bug 660501
-  t << "}\\par" << endl;
-  //t << "}" << endl;
+  t << "}\\par\n";
+  //t << "}\n";
 }
 
 void LatexGenerator::startMemberGroupDocs()
@@ -1767,7 +1756,7 @@ void LatexGenerator::startMemberGroup()
 void LatexGenerator::endMemberGroup(bool hasHeader)
 {
   if (hasHeader)t << "\\end{Indent}";
-  t << endl;
+  t << "\n";
 }
 
 void LatexGenerator::startDotGraph()
@@ -1818,12 +1807,12 @@ void LatexGenerator::endDirDepGraph(DotDirDeps &g)
 
 void LatexGenerator::startDescription()
 {
-  t << "\\begin{description}" << endl;
+  t << "\\begin{description}\n";
 }
 
 void LatexGenerator::endDescription()
 {
-  t << "\\end{description}" << endl;
+  t << "\\end{description}\n";
   m_firstDescItem=TRUE;
 }
 
@@ -1837,7 +1826,7 @@ void LatexGenerator::endDescItem()
 {
   if (m_firstDescItem)
   {
-    t << "]" << endl;
+    t << "]\n";
     m_firstDescItem=FALSE;
   }
   else
@@ -1855,7 +1844,7 @@ void LatexGenerator::startExamples()
 
 void LatexGenerator::endExamples()
 {
-  t << "\\end{Desc}" << endl;
+  t << "\\end{Desc}\n";
 }
 
 void LatexGenerator::startParamList(ParamListTypes,const char *title)
@@ -1867,7 +1856,7 @@ void LatexGenerator::startParamList(ParamListTypes,const char *title)
 
 void LatexGenerator::endParamList()
 {
-  t << "\\end{Desc}" << endl;
+  t << "\\end{Desc}\n";
 }
 
 void LatexGenerator::startParameterList(bool openBracket)
@@ -1929,7 +1918,7 @@ void LatexGenerator::startConstraintList(const char *header)
   t << "\\begin{Desc}\n\\item[";
   docify(header);
   t << "]";
-  t << "\\begin{description}" << endl;
+  t << "\\begin{description}\n";
 }
 
 void LatexGenerator::startConstraintParam()
@@ -1961,8 +1950,8 @@ void LatexGenerator::endConstraintDocs()
 
 void LatexGenerator::endConstraintList()
 {
-  t << "\\end{description}" << endl;
-  t << "\\end{Desc}" << endl;
+  t << "\\end{description}\n";
+  t << "\\end{Desc}\n";
 }
 
 void LatexGenerator::startInlineHeader()
@@ -1979,7 +1968,7 @@ void LatexGenerator::startInlineHeader()
 
 void LatexGenerator::endInlineHeader()
 {
-  t << "}" << endl;
+  t << "}\n";
 }
 
 void LatexGenerator::lineBreak(const char *)
@@ -2007,7 +1996,7 @@ void LatexGenerator::startMemberDocSimple(bool isEnum)
     t << "\\begin{DoxyFields}{";
     docify(theTranslator->trCompoundMembers());
   }
-  t << "}" << endl;
+  t << "}\n";
 }
 
 void LatexGenerator::endMemberDocSimple(bool isEnum)
@@ -2015,11 +2004,11 @@ void LatexGenerator::endMemberDocSimple(bool isEnum)
   m_codeGen.decUsedTableLevel();
   if (isEnum)
   {
-    t << "\\end{DoxyEnumFields}" << endl;
+    t << "\\end{DoxyEnumFields}\n";
   }
   else
   {
-    t << "\\end{DoxyFields}" << endl;
+    t << "\\end{DoxyFields}\n";
   }
 }
 
@@ -2030,7 +2019,7 @@ void LatexGenerator::startInlineMemberType()
 
 void LatexGenerator::endInlineMemberType()
 {
-  t << "&" << endl;
+  t << "&\n";
   m_insideTabbing = FALSE;
 }
 
@@ -2041,7 +2030,7 @@ void LatexGenerator::startInlineMemberName()
 
 void LatexGenerator::endInlineMemberName()
 {
-  t << "&" << endl;
+  t << "&\n";
   m_insideTabbing = FALSE;
 }
 
@@ -2051,7 +2040,7 @@ void LatexGenerator::startInlineMemberDoc()
 
 void LatexGenerator::endInlineMemberDoc()
 {
-  t << "\\\\\n\\hline\n" << endl;
+  t << "\\\\\n\\hline\n\n";
 }
 
 void LatexGenerator::startLabels()

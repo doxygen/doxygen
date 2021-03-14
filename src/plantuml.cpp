@@ -229,12 +229,12 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       pumlArguments+=puFileName;
       pumlArguments+="\" ";
 
-      QFile file(puFileName);
-      if (!file.open(IO_WriteOnly))
+      std::ofstream file(puFileName.str(),std::ofstream::out | std::ofstream::binary);
+      if (!file.is_open())
       {
         err("Could not open file %s for writing\n",puFileName.data());
       }
-      file.writeBlock( nb.content, nb.content.length() );
+      file.write( nb.content.data(), nb.content.length() );
       file.close();
       Debug::print(Debug::Plantuml,0,"*** %s Running Plantuml arguments:%s\n","PlantumlManager::runPlantumlContent",qPrint(pumlArguments));
 
@@ -247,7 +247,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       else if (Config_getBool(DOT_CLEANUP))
       {
         Debug::print(Debug::Plantuml,0,"*** %s Remove %s file\n","PlantumlManager::runPlantumlContent",qPrint(puFileName));
-        file.remove();
+        Dir().remove(puFileName.str());
       }
       Portable::sysTimerStop();
 
@@ -284,12 +284,12 @@ void PlantumlManager::run()
   runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, PUML_SVG);
   runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, PUML_EPS);
   QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
-  QFile file(outputFilename);
-  if (!file.open(IO_WriteOnly))
+  std::ofstream file(outputFilename.str(),std::ofstream::out | std::ofstream::binary);
+  if (!file.is_open())
   {
     err("Could not open file %s for writing\n",CACHE_FILENAME);
   }
-  file.writeBlock( m_currentPlantumlAllContent, m_currentPlantumlAllContent.length() );
+  file.write( m_currentPlantumlAllContent.data(), m_currentPlantumlAllContent.length() );
   file.close();
 }
 

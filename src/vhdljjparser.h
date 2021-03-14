@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qfile.h>
 #include "types.h"
 #include "entry.h"
 #include "vhdldocgen.h"

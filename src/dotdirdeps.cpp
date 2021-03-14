@@ -13,9 +13,9 @@
 *
 */
 
-#include "dotdirdeps.h"
+#include <sstream>
 
-#include "ftextstream.h"
+#include "dotdirdeps.h"
 #include "util.h"
 #include "doxygen.h"
 #include "config.h"
@@ -29,7 +29,7 @@ using DirDefMap = std::map<std::string,const DirDef *>;
  * @param[in] fillBackground if the node shall be explicitly filled
  * @param[in,out] directoriesInGraph lists the directories which have been written to the output stream
  */
-static void drawDirectory(FTextStream &outStream, const DirDef *const directory, const bool fillBackground,
+static void drawDirectory(std::ostream &outStream, const DirDef *const directory, const bool fillBackground,
     DirDefMap &directoriesInGraph)
 {
   outStream << "  " << directory->getOutputFileBase() << " [shape=box "
@@ -46,7 +46,7 @@ static void drawDirectory(FTextStream &outStream, const DirDef *const directory,
   directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
 }
 
-void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
+void writeDotDirDepGraph(std::ostream &t,const DirDef *dd,bool linkRelations)
 {
   int fontSize = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
@@ -199,9 +199,10 @@ QCString DotDirDeps::getBaseName() const
 void DotDirDeps::computeTheGraph()
 {
   // compute md5 checksum of the graph were are about to generate
-  FTextStream md5stream(&m_theGraph);
+  std::stringstream md5stream;
   //m_dir->writeDepGraph(md5stream);
   writeDotDirDepGraph(md5stream,m_dir,m_linkRelations);
+  m_theGraph = md5stream.str();
 }
 
 QCString DotDirDeps::getMapLabel() const
@@ -214,7 +215,7 @@ QCString DotDirDeps::getImgAltText() const
   return convertToXML(m_dir->displayName());
 }
 
-QCString DotDirDeps::writeGraph(FTextStream &out,
+QCString DotDirDeps::writeGraph(std::ostream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
   const char *path,

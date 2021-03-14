@@ -15,7 +15,6 @@
 
 #include "emoji.h"
 #include "message.h"
-#include "ftextstream.h"
 #include "util.h"
 
 static struct emojiEntityInfo
@@ -1555,21 +1554,20 @@ void EmojiEntityMapper::deleteInstance()
  * @return the code for the requested Emoji entity name,
  *         in case the requested Emoji item does not exist `-1` is returned.
  */
-int EmojiEntityMapper::symbol2index(const QCString &symName) const
+int EmojiEntityMapper::symbol2index(const std::string &symName) const
 {
-  auto it = m_name2symGh.find(symName.str());
+  auto it = m_name2symGh.find(symName);
   return it!=m_name2symGh.end() ? it->second : -1;
 }
 
 /*!
  * @brief Writes the list of supported emojis to the given file.
  */
-void EmojiEntityMapper::writeEmojiFile(QFile &file)
+void EmojiEntityMapper::writeEmojiFile(std::ostream &t)
 {
-  FTextStream t(&file);
   for (int i = 0; i < g_numEmojiEntities; i++)
   {
-    t << g_emojiEntities[i].name << endl;
+    t << g_emojiEntities[i].name << "\n";
   }
 }
 

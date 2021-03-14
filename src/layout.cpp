@@ -19,7 +19,6 @@
 #include <array>
 
 #include <assert.h>
-#include <qfile.h>
 
 #include "layout.h"
 #include "message.h"
@@ -1553,14 +1552,13 @@ void LayoutDocManager::parse(const char *fileName)
 
 void writeDefaultLayoutFile(const char *fileName)
 {
-  QFile f(fileName);
-  bool ok = openOutputFile(fileName,f);
+  std::ofstream t(fileName,std::ofstream::out);
+  bool ok = openOutputFile(fileName,t);
   if (!ok)
   {
     err("Failed to open file %s for writing!\n",fileName);
     return;
   }
-  FTextStream t(&f);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
   t << substitute(layout_default,"$doxygenversion",getDoxygenVersion());
 }

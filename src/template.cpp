@@ -20,10 +20,9 @@
 #include <unordered_map>
 #include <deque>
 #include <cstdio>
+#include <fstream>
+#include <sstream>
 
-#include <qfile.h>
-
-#include "ftextstream.h"
 #include "message.h"
 #include "util.h"
 #include "resourcemgr.h"
@@ -1661,7 +1660,7 @@ class TemplateNode
     TemplateNode(TemplateNode *parent) : m_parent(parent) {}
     virtual ~TemplateNode() {}
 
-    virtual void render(FTextStream &ts, TemplateContext *c) = 0;
+    virtual void render(std::ostream &ts, TemplateContext *c) = 0;
 
     TemplateNode *parent() { return m_parent; }
 
@@ -1691,7 +1690,7 @@ using TemplateTokenStream = std::deque< TemplateTokenPtr >;
 class TemplateNodeList : public std::vector< std::unique_ptr<TemplateNode> >
 {
   public:
-    void render(FTextStream &ts,TemplateContext *c)
+    void render(std::ostream &ts,TemplateContext *c)
     {
       TRACE(("{TemplateNodeList::render\n"));
       for (const auto &tn : *this)
@@ -2279,7 +2278,7 @@ class TemplateImpl : public TemplateNode, public Template
     TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data,
                  const QCString &extension);
    ~TemplateImpl();
-    void render(FTextStream &ts, TemplateContext *c);
+    void render(std::ostream &ts, TemplateContext *c);
 
     TemplateEngine *engine() const { return m_engine; }
     TemplateBlockContext *blockContext() { return &m_blockContext; }
@@ -2648,7 +2647,7 @@ class TemplateNodeText : public TemplateNode
       TRACE(("TemplateNodeText('%s')\n",replace(data,'\n',' ').data()));
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -2702,7 +2701,7 @@ class TemplateNodeVariable : public TemplateNode
       delete m_var;
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -2864,7 +2863,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     {
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -2927,7 +2926,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     {
       delete m_expr;
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3039,7 +3038,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       delete m_endExpr;
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3197,7 +3196,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       delete m_expr;
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3299,7 +3298,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       parser->removeNextToken(); // skip over endmsg
       TRACE(("}TemplateNodeMsg()\n"));
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3308,9 +3307,8 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       ci->setActiveEscapeIntf(0); // avoid escaping things we send to standard out
       bool enable = ci->spacelessEnabled();
       ci->enableSpaceless(FALSE);
-      FTextStream ts(stdout);
-      m_nodes.render(ts,c);
-      ts << endl;
+      m_nodes.render(std::cout,c);
+      std::cout << "\n";
       ci->setActiveEscapeIntf(escIntf);
       ci->enableSpaceless(enable);
     }
@@ -3340,7 +3338,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
       TRACE(("}TemplateNodeBlock(%s)\n",data.data()));
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3353,8 +3351,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
         if (nb) // block is overruled
         {
           ci->push();
-          QGString super;
-          FTextStream ss(&super);
+          std::stringstream ss;
           // get super block of block nb
           TemplateNodeBlock *sb = ci->blockContext()->get(m_blockName);
           if (sb && sb!=nb && sb!=this) // nb and sb both overrule this block
@@ -3365,6 +3362,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
           {
             m_nodes.render(ss,c); // render parent of nb to string
           }
+          QCString super = ss.str();
           // add 'block.super' variable to allow access to parent block content
           TemplateAutoRef<TemplateStruct> superBlock(TemplateStruct::alloc());
           superBlock->set("super",TemplateVariant(super.data(),TRUE));
@@ -3421,7 +3419,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       delete m_extendExpr;
     }
 
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3498,7 +3496,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     {
       delete m_includeExpr;
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3537,12 +3535,12 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
 
 //----------------------------------------------------------
 
-static void stripLeadingWhiteSpace(QGString &s)
+static void stripLeadingWhiteSpace(QCString &s)
 {
   const char *src = s.data();
   if (src)
   {
-    char *dst = s.data();
+    char *dst = s.rawData();
     char c;
     bool skipSpaces=TRUE;
     while ((c=*src++))
@@ -3595,7 +3593,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       delete m_templateExpr;
       delete m_fileExpr;
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3634,15 +3632,14 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
                 outputFile.prepend(ci->outputDirectory()+"/");
               }
               //printf("NoteCreate(%s)\n",outputFile.data());
-              QFile f(outputFile);
-              if (f.open(IO_WriteOnly))
+              std::ofstream ts(outputFile.str(),std::ofstream::out | std::ofstream::binary);
+              if (ts.is_open())
               {
                 TemplateEscapeIntf *escIntf = ci->escapeIntf();
                 ci->selectEscapeIntf(extension);
-                FTextStream ts(&f);
-                QGString out;
-                FTextStream os(&out);
+                std::stringstream os;
                 createTemplate->render(os,c);
+                QCString out = os.str();
                 stripLeadingWhiteSpace(out);
                 ts << out;
                 t->engine()->unload(t);
@@ -3713,8 +3710,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       TemplateContext *c = ctx->templateCtx;
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return QCString(); // should not happen
-      QGString result;
-      FTextStream ss(&result);
+      std::stringstream ss;
       c->push();
       TemplateVariant node;
       TemplateListIntf::ConstIterator *it = ctx->list->createIterator();
@@ -3756,9 +3752,9 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       }
       c->pop();
       delete it;
-      return result.data();
+      return ss.str();
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       //printf("TemplateNodeTree::render()\n");
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -3830,7 +3826,7 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
       }
       TRACE(("}TemplateNodeIndexEntry(%s)\n",data.data()));
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3872,7 +3868,7 @@ class TemplateNodeOpenSubIndex : public TemplateNodeCreator<TemplateNodeOpenSubI
       }
       TRACE(("}TemplateNodeOpenSubIndex(%s)\n",data.data()));
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3908,7 +3904,7 @@ class TemplateNodeCloseSubIndex : public TemplateNodeCreator<TemplateNodeCloseSu
       }
       TRACE(("}TemplateNodeCloseSubIndex(%s)\n",data.data()));
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3969,7 +3965,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     ~TemplateNodeWith()
     {
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4017,7 +4013,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       }
       TRACE(("}TemplateNodeCycle(%s)\n",data.data()));
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
@@ -4091,7 +4087,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     ~TemplateNodeSet()
     {
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4121,7 +4117,7 @@ class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
       parser->removeNextToken(); // skip over endwith
       TRACE(("}TemplateNodeSpaceless()\n"));
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4168,7 +4164,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       delete m_listExpr;
       delete m_patternExpr;
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4270,7 +4266,7 @@ class TemplateNodeTabbing : public TemplateNodeCreator<TemplateNodeTabbing>
       parser->removeNextToken(); // skip over endtabbing
       TRACE(("}TemplateNodeTabbing()\n"));
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4319,7 +4315,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       delete m_resExpr;
       delete m_asExpr;
     }
-    void render(FTextStream &, TemplateContext *c)
+    void render(std::ostream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4387,7 +4383,7 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
     {
       delete m_encExpr;
     }
-    void render(FTextStream &ts, TemplateContext *c)
+    void render(std::ostream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4950,7 +4946,7 @@ TemplateImpl::~TemplateImpl()
   //printf("deleting template %s\n",m_name.data());
 }
 
-void TemplateImpl::render(FTextStream &ts, TemplateContext *c)
+void TemplateImpl::render(std::ostream &ts, TemplateContext *c)
 {
   TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
   if (ci==0) return; // should not happen
@@ -5009,13 +5005,14 @@ class TemplateEngine::Private
       if (kv==m_templateCache.end()) // first time template is referenced
       {
         QCString filePath = m_templateDirName+"/"+fileName;
-        QFile f(filePath);
-        if (f.open(IO_ReadOnly)) // read template from disk
+        std::ifstream f(filePath.str(),std::ifstream::in | std::ifstream::binary);
+        if (f.is_open()) // read template from disk
         {
           FileInfo fi(filePath.str());
-          int size=fi.size();
+          int size=(int)fi.size();
           QCString data(size+1);
-          if (f.readBlock(data.rawData(),size)==size)
+          f.read(data.rawData(),size);
+          if (!f.fail())
           {
             kv = m_templateCache.insert(
                 std::make_pair(fileName.str(),

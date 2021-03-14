@@ -28,7 +28,6 @@
 #include "reflist.h"
 
 class SectionInfo;
-class QFile;
 class FileDef;
 
 /** This class stores information about an inheritance relation

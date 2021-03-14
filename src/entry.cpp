@@ -17,7 +17,6 @@
 
 #include <algorithm>
 #include <stdlib.h>
-#include <qfile.h>
 #include "entry.h"
 #include "util.h"
 #include "section.h"

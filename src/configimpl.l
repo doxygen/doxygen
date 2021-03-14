@@ -26,11 +26,10 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <errno.h>
-
 #include <thread>
 #include <algorithm>
-
-#include <qfile.h>
+#include <fstream>
+#include <iostream>
 
 #include "regex.h"
 #include "configimpl.h"
@@ -129,18 +128,18 @@ static QCString convertToComment(const QCString &s, const QCString &u)
   return result;
 }
 
-void ConfigOption::writeBoolValue(FTextStream &t,bool v)
+void ConfigOption::writeBoolValue(std::ostream &t,bool v)
 {
   t << " ";
   if (v) t << "YES"; else t << "NO";
 }
 
-void ConfigOption::writeIntValue(FTextStream &t,int i)
+void ConfigOption::writeIntValue(std::ostream &t,int i)
 {
   t << " " << i;
 }
 
-void ConfigOption::writeStringValue(FTextStream &t,const QCString &s)
+void ConfigOption::writeStringValue(std::ostream &t,const QCString &s)
 {
   char c;
   bool needsEscaping=FALSE;
@@ -171,12 +170,12 @@ void ConfigOption::writeStringValue(FTextStream &t,const QCString &s)
   }
 }
 
-void ConfigOption::writeStringList(FTextStream &t,const StringVector &l)
+void ConfigOption::writeStringList(std::ostream &t,const StringVector &l)
 {
   bool first=TRUE;
   for (const auto &p : l)
   {
-    if (!first) t << " \\" << endl;
+    if (!first) t << " \\\n";
     QCString s=p.c_str();
     if (!first)
       t << "                        ";
@@ -323,24 +322,24 @@ bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
 
 /* ------------------------------------------ */
 
-void ConfigInfo::writeTemplate(FTextStream &t, bool sl,bool)
+void ConfigInfo::writeTemplate(std::ostream &t, bool sl,bool)
 {
   if (!sl)
   {
     t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
-  t << "# " << m_doc << endl;
+  t << "# " << m_doc << "\n";
   t << "#---------------------------------------------------------------------------\n";
 }
 
-void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
+void ConfigList::writeTemplate(std::ostream &t,bool sl,bool)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -351,7 +350,7 @@ void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigList::compareDoxyfile(FTextStream &t)
+void ConfigList::compareDoxyfile(std::ostream &t)
 {
   auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
@@ -384,13 +383,13 @@ void ConfigList::compareDoxyfile(FTextStream &t)
   }
 }
 
-void ConfigEnum::writeTemplate(FTextStream &t,bool sl,bool)
+void ConfigEnum::writeTemplate(std::ostream &t,bool sl,bool)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -401,18 +400,18 @@ void ConfigEnum::writeTemplate(FTextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(FTextStream &t)
+void ConfigEnum::compareDoxyfile(std::ostream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigString::writeTemplate(FTextStream &t,bool sl,bool)
+void ConfigString::writeTemplate(std::ostream &t,bool sl,bool)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -423,18 +422,18 @@ void ConfigString::writeTemplate(FTextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(FTextStream &t)
+void ConfigString::compareDoxyfile(std::ostream &t)
 {
   if (m_value.stripWhiteSpace() != m_defValue.stripWhiteSpace()) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigInt::writeTemplate(std::ostream &t,bool sl,bool upd)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -452,24 +451,25 @@ void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(FTextStream &t)
+void ConfigInt::compareDoxyfile(std::ostream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigBool::writeTemplate(std::ostream &t,bool sl,bool upd)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
     t << convertToComment("", m_userComment);
   }
-  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  QCString spaces = m_spaces.left(MAX_OPTION_LENGTH-m_name.length());
+  t << m_name << spaces << "=";
   if (upd && !m_valueString.isEmpty())
   {
     writeStringValue(t,m_valueString);
@@ -481,13 +481,13 @@ void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(FTextStream &t)
+void ConfigBool::compareDoxyfile(std::ostream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigObsolete::writeTemplate(FTextStream &,bool,bool) {}
-void ConfigDisabled::writeTemplate(FTextStream &,bool,bool) {}
+void ConfigObsolete::writeTemplate(std::ostream &,bool,bool) {}
+void ConfigDisabled::writeTemplate(std::ostream &,bool,bool) {}
 
 /* -----------------------------------------------------------------
  *
@@ -1083,14 +1083,14 @@ static void readIncludeFile(const char *incName)
 /*@ ----------------------------------------------------------------------------
  */
 
-void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigImpl::writeTemplate(std::ostream &t,bool sl,bool upd)
 {
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
   if (m_startComment)
   {
-    t << takeStartComment() << endl;
+    t << takeStartComment() << "\n";
   }
-  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
+  t << "# Doxyfile " << getDoxygenVersion() << "\n\n";
   if (!sl)
   {
     t << convertToComment(m_header,"");
@@ -1107,10 +1107,10 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
   }
 }
 
-void ConfigImpl::compareDoxyfile(FTextStream &t)
+void ConfigImpl::compareDoxyfile(std::ostream &t)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
-  t << endl;
+  t << "\n";
   for (const auto &option : m_options)
   {
     option->m_userComment = "";
@@ -1302,53 +1302,32 @@ void ConfigImpl::create()
 static QCString configFileToString(const char *name)
 {
   if (name==0 || name[0]==0) return 0;
-  QFile f;
+
+  auto stream2string = [](std::istream &in) -> std::string
+  {
+    std::string ret;
+    char buffer[4096];
+    while (in.read(buffer, sizeof(buffer))) ret.append(buffer, sizeof(buffer));
+    ret.append(buffer, in.gcount());
+    if (!ret.empty() && ret[ret.length()-1]!='\n') ret+='\n'; // to help the scanner
+    return ret;
+  };
 
   bool fileOpened=FALSE;
   if (name[0]=='-' && name[1]==0) // read from stdin
   {
-    fileOpened=f.open(IO_ReadOnly,stdin);
-    if (fileOpened)
-    {
-      const int bSize=4096;
-      QCString contents(bSize+1);
-      int totalSize=0;
-      int size;
-      while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
-      {
-        totalSize+=bSize;
-        contents.resize(totalSize+bSize+1);
-      }
-      totalSize+=size+2;
-      contents.resize(totalSize);
-      contents.at(totalSize-2)='\n'; // to help the scanner
-      contents.at(totalSize-1)='\0';
-      return contents;
-    }
+    // read contents from stdin into contents string
+    return stream2string(std::cin);
   }
   else // read from file
   {
-    FileInfo fi(name);
-    if (!fi.exists() || !fi.isFile())
+    std::ifstream f(name,std::istream::in);
+    if (!f.is_open())
     {
       config_err("file '%s' not found\n",name);
       return "";
     }
-    f.setName(name);
-    fileOpened=f.open(IO_ReadOnly);
-    if (fileOpened)
-    {
-      int fsize=f.size();
-      QCString contents(fsize+2);
-      f.readBlock(contents.rawData(),fsize);
-      f.close();
-      if (fsize==0 || contents[fsize-1]=='\n')
-        contents[fsize]='\0';
-      else
-        contents[fsize]='\n'; // to help the scanner
-      contents[fsize+1]='\0';
-      return contents;
-    }
+    return stream2string(f);
   }
   if (!fileOpened)
   {
@@ -2090,12 +2069,12 @@ void Config::checkAndCorrect()
 
 }
 
-void Config::writeTemplate(FTextStream &t,bool shortList,bool update)
+void Config::writeTemplate(std::ostream &t,bool shortList,bool update)
 {
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(FTextStream &t)
+void Config::compareDoxyfile(std::ostream &t)
 {
   postProcess(FALSE, TRUE);
   ConfigImpl::instance()->compareDoxyfile(t);

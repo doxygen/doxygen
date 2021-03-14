@@ -20,8 +20,6 @@
 
 #include "outputgen.h"
 
-class QFile;
-
 /** Generator for Man page output. */
 class ManGenerator : public OutputGenerator
 {
@@ -136,7 +134,7 @@ class ManGenerator : public OutputGenerator
     void endDescription()   {}
     void startDescItem();
     void endDescItem();
-    void lineBreak(const char *) { t << "\n.br" << endl; }
+    void lineBreak(const char *) { t << "\n.br\n"; }
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool);
     void endMemberDoc(bool);
@@ -145,7 +143,7 @@ class ManGenerator : public OutputGenerator
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
-    void writeEndAnnoItem(const char *) { t << endl; m_firstCol=TRUE; }
+    void writeEndAnnoItem(const char *) { t << "\n"; m_firstCol=TRUE; }
     void startSubsection();
     void endSubsection();
     void startSubsubsection();
@@ -196,7 +194,7 @@ class ManGenerator : public OutputGenerator
     void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
-    void startDescTableData() { t << endl; m_firstCol=TRUE; }
+    void startDescTableData() { t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() {}
 
     void startDotGraph() {}

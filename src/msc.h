@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,8 +16,9 @@
 #ifndef _MSC_H
 #define _MSC_H
 
+#include <iostream>
+
 class QCString;
-class FTextStream;
 
 enum MscOutputFormat { MSC_BITMAP , MSC_EPS, MSC_SVG };
 
@@ -29,7 +28,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
 QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
                                 const QCString& relPath,const QCString& context);
 
-void writeMscImageMapFromFile(FTextStream &t,const QCString &inFile,
+void writeMscImageMapFromFile(std::ostream &t,const QCString &inFile,
                               const QCString &outDir, const QCString &relPath,
                               const QCString &baseName, const QCString &context,
 			      MscOutputFormat format

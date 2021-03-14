@@ -16,11 +16,11 @@
 #ifndef DOTGRAPH_H
 #define DOTGRAPH_H
 
+#include <iostream>
+
 #include <qcstring.h>
-#include <qgstring.h>
 #include "dir.h"
 
-class FTextStream;
 class DotNode;
 
 enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
@@ -39,7 +39,7 @@ class DotGraph
     /** returns node numbers. The Counter is reset by the constructor */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
 
-    QCString writeGraph(FTextStream &t,
+    QCString writeGraph(std::ostream &t,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
                         const char *path,
@@ -49,8 +49,8 @@ class DotGraph
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(FTextStream& t, const QCString& title = QCString());
-    static void writeGraphFooter(FTextStream& t);
+    static void writeGraphHeader(std::ostream& t, const QCString& title = QCString());
+    static void writeGraphFooter(std::ostream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
                              GraphOutputFormat format,
@@ -58,7 +58,7 @@ class DotGraph
                              bool renderParents,
                              bool backArrows,
                              const QCString& title,
-                             QGString& graphStr
+                             QCString& graphStr
                             );
 
     virtual QCString getBaseName() const = 0;
@@ -85,7 +85,7 @@ class DotGraph
 
     QCString               m_absPath;
     QCString               m_baseName;
-    QGString               m_theGraph;
+    QCString               m_theGraph;
     bool                   m_regenerate = false;
     bool                   m_doNotAddImageToIndex = false;
     bool                   m_noDivTag = false;
@@ -97,7 +97,7 @@ class DotGraph
     DotGraph &operator=(const DotGraph &);
 
     bool prepareDotFile();
-    void generateCode(FTextStream &t);
+    void generateCode(std::ostream &t);
 
     int m_curNodeNumber = 0;
 };

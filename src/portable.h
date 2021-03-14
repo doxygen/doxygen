@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <stdint.h>
 
-
-
+class Buf;
 
 #if defined(_WIN32)
 typedef __int64 portable_off_t;
@@ -45,12 +45,13 @@ namespace Portable
   const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
   const char *   devNull();
   bool           checkForExecutable(const char *fileName);
+  size_t         recodeUtf8StringToW(const char *inputStr,uint16_t **buf);
 }
 
 
 extern "C" {
   void *         portable_iconv_open(const char* tocode, const char* fromcode);
-  size_t         portable_iconv (void *cd, char** inbuf, size_t *inbytesleft, 
+  size_t         portable_iconv (void *cd, char** inbuf, size_t *inbytesleft,
                                  char* * outbuf, size_t *outbytesleft);
   int            portable_iconv_close (void *cd);
 }

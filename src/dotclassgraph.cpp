@@ -441,7 +441,7 @@ QCString DotClassGraph::getImgAltText() const
   return "";
 }
 
-QCString DotClassGraph::writeGraph(FTextStream &out,
+QCString DotClassGraph::writeGraph(std::ostream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
   const char *path,
@@ -456,7 +456,7 @@ QCString DotClassGraph::writeGraph(FTextStream &out,
 
 //--------------------------------------------------------------------
 
-void DotClassGraph::writeXML(FTextStream &t)
+void DotClassGraph::writeXML(std::ostream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -464,7 +464,7 @@ void DotClassGraph::writeXML(FTextStream &t)
   }
 }
 
-void DotClassGraph::writeDocbook(FTextStream &t)
+void DotClassGraph::writeDocbook(std::ostream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -472,7 +472,7 @@ void DotClassGraph::writeDocbook(FTextStream &t)
   }
 }
 
-void DotClassGraph::writeDEF(FTextStream &t)
+void DotClassGraph::writeDEF(std::ostream &t)
 {
   for (const auto &kv : m_usedNodes)
   {

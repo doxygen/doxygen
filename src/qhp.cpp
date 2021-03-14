@@ -3,8 +3,8 @@
  * Copyright (C) 2008 Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -23,9 +23,9 @@
 #include "doxygen.h"
 #include "filedef.h"
 
+#include <fstream>
 #include <qcstringlist.h>
 #include <string.h>
-#include <qfile.h>
 
 static QCString makeFileName(const char * withoutExtension)
 {
@@ -47,7 +47,7 @@ static QCString makeFileName(const char * withoutExtension)
 static QCString makeRef(const char * withoutExtension, const char * anchor)
 {
   //printf("QHP::makeRef(%s,%s)\n",withoutExtension,anchor);
-  if (!withoutExtension) return QCString(); 
+  if (!withoutExtension) return QCString();
   QCString result = makeFileName(withoutExtension);
   if (!anchor) return result;
   return result+"#"+anchor;
@@ -97,7 +97,7 @@ void Qhp::initialize()
   QCString filterName = Config_getString(QHP_CUST_FILTER_NAME);
   if (!filterName.isEmpty())
   {
-    const char * tagAttributes[] = 
+    const char * tagAttributes[] =
     { "name", filterName, 0 };
     m_doc.open("customFilter", tagAttributes);
 
@@ -165,8 +165,8 @@ void Qhp::finalize()
   m_doc.close("QtHelpProject");
 
   QCString fileName = Config_getString(HTML_OUTPUT) + "/" + getQhpFileName();
-  QFile file(fileName);
-  if (!file.open(IO_WriteOnly))
+  std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!file.is_open())
   {
     term("Could not open file %s for writing\n", fileName.data());
   }
@@ -188,8 +188,8 @@ void Qhp::decContentsDepth()
   m_sectionLevel--;
 }
 
-void Qhp::addContentsItem(bool /*isDir*/, const char * name, 
-                          const char * /*ref*/, const char * file, 
+void Qhp::addContentsItem(bool /*isDir*/, const char * name,
+                          const char * /*ref*/, const char * file,
                           const char *anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,
                           const Definition * /*def*/)

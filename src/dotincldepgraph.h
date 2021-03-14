@@ -28,14 +28,14 @@ class DotInclDepGraph : public DotGraph
   public:
     DotInclDepGraph(const FileDef *fd,bool inverse);
     ~DotInclDepGraph();
-    QCString writeGraph(FTextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+    QCString writeGraph(std::ostream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const char *path,const char *fileName,const char *relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
-    void writeXML(FTextStream &t);
-    void writeDocbook(FTextStream &t);
+    void writeXML(std::ostream &t);
+    void writeDocbook(std::ostream &t);
 
   protected:
     virtual QCString getBaseName() const;

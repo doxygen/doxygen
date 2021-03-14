@@ -180,7 +180,7 @@ QCString DotInclDepGraph::getMapLabel() const
   }
 }
 
-QCString DotInclDepGraph::writeGraph(FTextStream &out,
+QCString DotInclDepGraph::writeGraph(std::ostream &out,
                                      GraphOutputFormat graphFormat,
                                      EmbeddedOutputFormat textFormat,
                                      const char *path,
@@ -207,7 +207,7 @@ int DotInclDepGraph::numNodes() const
   return (int)m_startNode->children().size();
 }
 
-void DotInclDepGraph::writeXML(FTextStream &t)
+void DotInclDepGraph::writeXML(std::ostream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -215,7 +215,7 @@ void DotInclDepGraph::writeXML(FTextStream &t)
   }
 }
 
-void DotInclDepGraph::writeDocbook(FTextStream &t)
+void DotInclDepGraph::writeDocbook(std::ostream &t)
 {
   for (const auto &kv : m_usedNodes)
   {

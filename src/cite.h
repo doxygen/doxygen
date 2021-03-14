@@ -21,8 +21,6 @@
 
 #include <qcstring.h>
 
-class FTextStream;
-
 /// Citation-related data.
 struct CiteInfo
 {

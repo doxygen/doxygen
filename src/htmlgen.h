@@ -17,18 +17,15 @@
 #define HTMLGEN_H
 
 #include "outputgen.h"
-#include "ftextstream.h"
-
-class QFile;
 
 class HtmlCodeGenerator : public CodeOutputInterface
 {
   public:
-    HtmlCodeGenerator(FTextStream &t,const QCString &relPath);
+    HtmlCodeGenerator(std::ostream &t,const QCString &relPath);
     HtmlCodeGenerator();
     int id() const { return m_id; }
     void setId(int id) { m_id = id; }
-    void setTextStream(FTextStream &t);
+    void setTextStream(std::ostream &t);
     void setRelativePath(const QCString &path);
     void codify(const char *text);
     void writeCodeLink(const char *ref,const char *file,
@@ -59,7 +56,7 @@ class HtmlCodeGenerator : public CodeOutputInterface
                         const char *tooltip);
     void docify(const char *str);
     bool m_streamSet = false;
-    FTextStream m_t;
+    std::ostream m_t;
     int m_col = 0;
     QCString m_relPath;
     bool m_lineOpen = false;
@@ -78,11 +75,11 @@ class HtmlGenerator : public OutputGenerator
 
     virtual OutputType type() const { return Html; }
     static void init();
-    static void writeStyleSheetFile(QFile &f);
-    static void writeHeaderFile(QFile &f, const char *cssname);
-    static void writeFooterFile(QFile &f);
+    static void writeStyleSheetFile(std::ostream &t);
+    static void writeHeaderFile(std::ostream &t, const char *cssname);
+    static void writeFooterFile(std::ostream &t);
     static void writeTabData();
-    static void writeSearchInfo(FTextStream &t,const QCString &relPath);
+    static void writeSearchInfo(std::ostream &t,const QCString &relPath);
     static void writeSearchData(const char *dir);
     static void writeSearchPage();
     static void writeExternalSearchPage();
@@ -150,8 +147,8 @@ class HtmlGenerator : public OutputGenerator
     void endIndexKey();
     void startIndexValue(bool);
     void endIndexValue(const char *,bool);
-    void startItemList()  { t << "<ul>"  << endl; }
-    void endItemList()    { t << "</ul>" << endl; }
+    void startItemList()  { t << "<ul>\n"; }
+    void endItemList()    { t << "</ul>\n"; }
     void startIndexItem(const char *ref,const char *file);
     void endIndexItem(const char *ref,const char *file);
     void docify(const char *text);
@@ -215,8 +212,8 @@ class HtmlGenerator : public OutputGenerator
     void endEmphasis()   { t << "</em>"; }
     void startBold()     { t << "<b>"; }
     void endBold()       { t << "</b>"; }
-    void startDescription() { t << endl << "<dl>" << endl; }
-    void endDescription()   { t << endl << "</dl>\n" << endl; }
+    void startDescription() { t << "\n<dl>\n"; }
+    void endDescription()   { t << "\n</dl>\n\n"; }
     void startDescItem()    { t << "<dt>"; }
     void endDescItem()      { t << "</dt>"; }
     void startDescForItem() { t << "<dd>"; }
@@ -234,15 +231,15 @@ class HtmlGenerator : public OutputGenerator
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
-    void writeEndAnnoItem(const char *) { t << endl; }
+    void writeEndAnnoItem(const char *) { t << "\n"; }
     void startSubsection()    { t << "<h2>"; }
-    void endSubsection()      { t << "</h2>" << endl; }
+    void endSubsection()      { t << "</h2>\n"; }
     void startSubsubsection() { t << "<h3>"; }
-    void endSubsubsection()   { t << "</h3>" << endl; }
-    void startCenter()        { t << "<center>" << endl; }
-    void endCenter()          { t << "</center>" << endl; }
-    void startSmall()         { t << "<small>" << endl; }
-    void endSmall()           { t << "</small>" << endl; }
+    void endSubsubsection()   { t << "</h3>\n"; }
+    void startCenter()        { t << "<center>\n"; }
+    void endCenter()          { t << "</center>\n"; }
+    void startSmall()         { t << "<small>\n"; }
+    void endSmall()           { t << "</small>\n"; }
     void startExamples();
     void endExamples();
     void startParamList(ParamListTypes,const char *);
@@ -332,7 +329,7 @@ class HtmlGenerator : public OutputGenerator
     void endLabels();
 
   private:
-    static void writePageFooter(FTextStream &t,const QCString &,const QCString &,const QCString &);
+    static void writePageFooter(std::ostream &t,const QCString &,const QCString &,const QCString &);
     QCString m_lastTitle;
     QCString m_lastFile;
     QCString m_relPath;

@@ -21,15 +21,15 @@
 
 #include "docvisitor.h"
 #include <qcstring.h>
+#include <iostream>
 
-class FTextStream;
 class CodeOutputInterface;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    ManDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -148,7 +148,7 @@ class ManDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    std::ostream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

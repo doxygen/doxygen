@@ -13,8 +13,9 @@
 *
 */
 
-#include "dotgfxhierarchytable.h"
+#include <sstream>
 
+#include "dotgfxhierarchytable.h"
 #include "language.h"
 #include "util.h"
 #include "message.h"
@@ -34,9 +35,9 @@ QCString DotGfxHierarchyTable::getBaseName() const
 
 void DotGfxHierarchyTable::computeTheGraph()
 {
-  FTextStream md5stream(&m_theGraph);
+  std::stringstream md5stream;
   writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
-  md5stream << "  rankdir=\"LR\";" << endl;
+  md5stream << "  rankdir=\"LR\";\n";
   for (auto node : m_rootNodes)
   {
     if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
@@ -52,7 +53,7 @@ void DotGfxHierarchyTable::computeTheGraph()
     }
   }
   writeGraphFooter(md5stream);
-
+  m_theGraph = md5stream.str();
 }
 
 QCString DotGfxHierarchyTable::getMapLabel() const
@@ -60,7 +61,7 @@ QCString DotGfxHierarchyTable::getMapLabel() const
   return escapeCharsInString(m_rootSubgraphNode->label(),FALSE);
 }
 
-void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
+void DotGfxHierarchyTable::createGraph(DotNode *n,std::ostream &out,
   const char *path,const char *fileName,int id)
 {
   m_rootSubgraphNode = n;
@@ -70,7 +71,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
   DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
 }
 
-void DotGfxHierarchyTable::writeGraph(FTextStream &out,
+void DotGfxHierarchyTable::writeGraph(std::ostream &out,
   const char *path,const char *fileName)
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
@@ -86,7 +87,7 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
   }
 
   // put each connected subgraph of the hierarchy in a row of the HTML output
-  out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">" << endl;
+  out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">\n";
 
   int count=0;
   std::sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
@@ -95,9 +96,9 @@ void DotGfxHierarchyTable::writeGraph(FTextStream &out,
   {
     out << "<tr><td>";
     createGraph(n,out,path,fileName,count++);
-    out << "</td></tr>" << endl;
+    out << "</td></tr>\n";
   }
-  out << "</table>" << endl;
+  out << "</table>\n";
 }
 
 void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visitedClasses)

@@ -20,12 +20,11 @@
 
 #include <memory>
 #include <stack>
-
-#include <qfile.h>
+#include <iostream>
+#include <fstream>
 
 #include "index.h"
 #include "section.h"
-#include "ftextstream.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -496,11 +495,11 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endLabels() = 0;
 
   protected:
-    FTextStream t;
+    std::ostream t;
   private:
     QCString m_dir;
     QCString m_fileName;
-    QFile m_file;
+    std::ofstream m_file;
     bool m_active = true;
     std::stack<bool> m_genStack;
 };

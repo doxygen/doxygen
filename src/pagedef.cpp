@@ -57,7 +57,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
     virtual bool showLineNo() const;
     virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(FTextStream &);
+    virtual void writeTagFile(std::ostream &);
     virtual void setNestingLevel(int l);
     virtual void writePageDocumentation(OutputList &ol) const;
 
@@ -144,7 +144,7 @@ bool PageDefImpl::hasParentPage() const
          getOuterScope()->definitionType()==Definition::TypePage;
 }
 
-void PageDefImpl::writeTagFile(FTextStream &tagFile)
+void PageDefImpl::writeTagFile(std::ostream &tagFile)
 {
   bool found = name()=="citelist";
   for (RefListManager::Ptr &rl : RefListManager::instance())
@@ -157,12 +157,12 @@ void PageDefImpl::writeTagFile(FTextStream &tagFile)
   }
   if (!found) // not one of the generated related pages
   {
-    tagFile << "  <compound kind=\"page\">" << endl;
-    tagFile << "    <name>" << name() << "</name>" << endl;
-    tagFile << "    <title>" << convertToXML(title()) << "</title>" << endl;
-    tagFile << "    <filename>" << convertToXML(getOutputFileBase())<< Doxygen::htmlFileExtension << "</filename>" << endl;
+    tagFile << "  <compound kind=\"page\">\n";
+    tagFile << "    <name>" << name() << "</name>\n";
+    tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
+    tagFile << "    <filename>" << convertToXML(getOutputFileBase())<< Doxygen::htmlFileExtension << "</filename>\n";
     writeDocAnchorsToTagFile(tagFile);
-    tagFile << "  </compound>" << endl;
+    tagFile << "  </compound>\n";
   }
 }
 

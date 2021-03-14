@@ -17,7 +17,6 @@
 #define DOXYGEN_H
 
 #include "containers.h"
-#include "ftextstream.h"
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
@@ -34,7 +33,6 @@ class PageLinkedMap;
 class PageDef;
 class SearchIndexIntf;
 class ParserManager;
-class QFileInfo;
 class BufStr;
 class CiteDict;
 class MemberDef;

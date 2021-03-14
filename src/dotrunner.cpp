@@ -16,13 +16,10 @@
 #include <cassert>
 
 #include "dotrunner.h"
-
-#include "qstring.h"
 #include "util.h"
 #include "portable.h"
 #include "dot.h"
 #include "message.h"
-#include "ftextstream.h"
 #include "config.h"
 #include "dir.h"
 
@@ -75,42 +72,33 @@ static bool resetPDFSize(const int width,const int height, const char *base)
     err("Failed to rename file %s to %s!\n",patchFile.data(),tmpName.data());
     return FALSE;
   }
-  QFile fi(tmpName.c_str());
-  QFile fo(patchFile.c_str());
-  if (!fi.open(IO_ReadOnly))
+  std::ifstream fi(tmpName,std::ifstream::in);
+  std::ofstream t(patchFile,std::ofstream::out | std::ofstream::binary);
+  if (!fi.is_open())
   {
     err("problem opening file %s for patching!\n",tmpName.data());
     thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
-  if (!fo.open(IO_WriteOnly))
+  if (!t.is_open())
   {
     err("problem opening file %s for patching!\n",patchFile.data());
     thisDir.rename(tmpName,patchFile);
-    fi.close();
     return FALSE;
   }
-  FTextStream t(&fo);
-  const int maxLineLen=100*1024;
-  while (!fi.atEnd()) // foreach line
+  std::string line;
+  while (getline(fi,line)) // foreach line
   {
-    QCString line(maxLineLen);
-    int numBytes = fi.readLine(line.rawData(),maxLineLen);
-    if (numBytes<=0)
-    {
-      break;
-    }
-    line.resize(numBytes+1);
-    if (line.find("LATEX_PDF_SIZE") != -1)
+    if (line.find("LATEX_PDF_SIZE") != std::string::npos)
     {
       double scale = (width > height ? width : height)/double(MAX_LATEX_GRAPH_INCH);
-      t << "  size=\""<<width/scale << "," <<height/scale <<"\";\n";
+      t << "  size=\""<<width/scale << "," <<height/scale << "\";\n";
     }
     else
-      t << line;
+      t << line << "\n";
   }
   fi.close();
-  fo.close();
+  t.close();
   // remove temporary file
   thisDir.remove(tmpName);
   return TRUE;

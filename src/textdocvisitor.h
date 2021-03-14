@@ -22,14 +22,12 @@
 #include "docvisitor.h"
 #include "docparser.h"
 #include <qcstring.h>
-#include "ftextstream.h"
-
 
 /*! @brief Concrete visitor implementation for TEXT output. */
 class TextDocVisitor : public DocVisitor
 {
   public:
-    TextDocVisitor(FTextStream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
+    TextDocVisitor(std::ostream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -137,7 +135,7 @@ class TextDocVisitor : public DocVisitor
 
    void filter(const char *str);
 
-    FTextStream &m_t;
+    std::ostream &m_t;
 };
 
 #endif

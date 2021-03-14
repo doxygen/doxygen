@@ -20,7 +20,8 @@
 #include <stdlib.h>
 #include <stack>
 
-#include <qfile.h>
+#include <fstream>
+#include <iostream>
 
 #include "perlmodgen.h"
 #include "docparser.h"
@@ -28,7 +29,6 @@
 #include "doxygen.h"
 #include "pagedef.h"
 #include "memberlist.h"
-#include "ftextstream.h"
 #include "arguments.h"
 #include "config.h"
 #include "groupdef.h"
@@ -48,58 +48,62 @@
 
 class PerlModOutputStream
 {
-public:
+  public:
+    //QCString m_s;
+    std::ostream &m_t;
 
-  QCString m_s;
-  FTextStream *m_t;
+    PerlModOutputStream(std::ostream &t) : m_t(t) { }
 
-  PerlModOutputStream(FTextStream *t = 0) : m_t(t) { }
-
-  void add(char c);
-  void add(const char *s);
-  void add(QCString &s);
-  void add(int n);
-  void add(unsigned int n);
+    void add(char c);
+    void add(const char *s);
+    void add(QCString &s);
+    void add(int n);
+    void add(unsigned int n);
 };
 
 void PerlModOutputStream::add(char c)
 {
-  if (m_t != 0)
-    (*m_t) << c;
-  else
-    m_s += c;
+  m_t << c;
+  //if (m_t != 0)
+  //  (*m_t) << c;
+  //else
+  //  m_s += c;
 }
 
 void PerlModOutputStream::add(const char *s)
 {
-  if (m_t != 0)
-    (*m_t) << s;
-  else
-    m_s += s;
+  m_t << s;
+  //if (m_t != 0)
+  //  (*m_t) << s;
+  //else
+  //  m_s += s;
 }
 
 void PerlModOutputStream::add(QCString &s)
 {
-  if (m_t != 0)
-    (*m_t) << s;
-  else
-    m_s += s;
+  m_t << s.str();
+  //if (m_t != 0)
+  //  (*m_t) << s;
+  //else
+  //  m_s += s;
 }
 
 void PerlModOutputStream::add(int n)
 {
-  if (m_t != 0)
-    (*m_t) << n;
-  else
-    m_s += QCString().setNum(n);
+  m_t << n;
+  //if (m_t != 0)
+  //  (*m_t) << n;
+  //else
+  //  m_s += QCString().setNum(n);
 }
 
 void PerlModOutputStream::add(unsigned int n)
 {
-  if (m_t != 0)
-    (*m_t) << n;
-  else
-    m_s += QCString().setNum(n);
+  m_t << n;
+  //if (m_t != 0)
+  //  (*m_t) << n;
+  //else
+  //  m_s += QCString().setNum(n);
 }
 
 class PerlModOutput
@@ -118,8 +122,8 @@ public:
 
   inline void setPerlModOutputStream(PerlModOutputStream *os) { m_stream = os; }
 
-  inline PerlModOutput &openSave() { iopenSave(); return *this; }
-  inline PerlModOutput &closeSave(QCString &s) { icloseSave(s); return *this; }
+  //inline PerlModOutput &openSave() { iopenSave(); return *this; }
+  //inline PerlModOutput &closeSave(QCString &s) { icloseSave(s); return *this; }
 
   inline PerlModOutput &continueBlock()
   {
@@ -171,8 +175,8 @@ public:
 
 protected:
 
-  void iopenSave();
-  void icloseSave(QCString &);
+  //void iopenSave();
+  //void icloseSave(QCString &);
 
   void incIndent();
   void decIndent();
@@ -191,23 +195,23 @@ private:
   int m_indentation;
   bool m_blockstart;
 
-  std::stack<PerlModOutputStream*> m_saved;
+  //std::stack<PerlModOutputStream*> m_saved;
   char m_spaces[PERLOUTPUT_MAX_INDENTATION * 2 + 2];
 };
 
-void PerlModOutput::iopenSave()
-{
-  m_saved.push(m_stream);
-  m_stream = new PerlModOutputStream();
-}
+//void PerlModOutput::iopenSave()
+//{
+//  m_saved.push(m_stream);
+//  m_stream = new PerlModOutputStream();
+//}
 
-void PerlModOutput::icloseSave(QCString &s)
-{
-  s = m_stream->m_s;
-  delete m_stream;
-  m_stream = m_saved.top();
-  m_saved.pop();
-}
+//void PerlModOutput::icloseSave(QCString &s)
+//{
+//  s = m_stream->m_s;
+//  delete m_stream;
+//  m_stream = m_saved.top();
+//  m_saved.pop();
+//}
 
 void PerlModOutput::incIndent()
 {
@@ -414,8 +418,8 @@ private:
   void singleItem(const char *);
   void openSubBlock(const char * = 0);
   void closeSubBlock();
-  void openOther();
-  void closeOther();
+  //void openOther();
+  //void closeOther();
 
   //--------------------------------------
   // state variables
@@ -498,18 +502,18 @@ void PerlModDocVisitor::closeSubBlock()
   m_output.closeList();
 }
 
-void PerlModDocVisitor::openOther()
-{
+//void PerlModDocVisitor::openOther()
+//{
   // Using a secondary text stream will corrupt the perl file. Instead of
   // printing doc => [ data => [] ], it will print doc => [] data => [].
   /*
   leaveText();
   m_output.openSave();
   */
-}
+//}
 
-void PerlModDocVisitor::closeOther()
-{
+//void PerlModDocVisitor::closeOther()
+//{
   // Using a secondary text stream will corrupt the perl file. Instead of
   // printing doc => [ data => [] ], it will print doc => [] data => [].
   /*
@@ -518,7 +522,7 @@ void PerlModDocVisitor::closeOther()
   m_output.closeSave(other);
   m_other += other;
   */
-}
+//}
 
 void PerlModDocVisitor::visit(DocWord *w)
 {
@@ -874,14 +878,14 @@ void PerlModDocVisitor::visitPre(DocSimpleSect *s)
   }
   leaveText();
   m_output.openHash();
-  openOther();
+  //openOther();
   openSubBlock(type);
 }
 
 void PerlModDocVisitor::visitPost(DocSimpleSect *)
 {
   closeSubBlock();
-  closeOther();
+  //closeOther();
   m_output.closeHash();
 }
 
@@ -1261,14 +1265,14 @@ void PerlModDocVisitor::visitPre(DocParamSect *s)
     break;
   }
   m_output.openHash();
-  openOther();
+  //openOther();
   openSubBlock(type);
 }
 
 void PerlModDocVisitor::visitPost(DocParamSect *)
 {
   closeSubBlock();
-  closeOther();
+  //closeOther();
   m_output.closeHash();
 }
 
@@ -1518,7 +1522,7 @@ public:
   void generatePerlModForGroup(const GroupDef *gd);
   void generatePerlModForPage(PageDef *pi);
 
-  bool createOutputFile(QFile &f, const char *s);
+  bool createOutputFile(std::ofstream &f, const char *s);
   bool createOutputDir(Dir &perlModDir);
   bool generateDoxyLatexTex();
   bool generateDoxyFormatTex();
@@ -2137,12 +2141,11 @@ void PerlModGenerator::generatePerlModForPage(PageDef *pd)
 
 bool PerlModGenerator::generatePerlModOutput()
 {
-  QFile outputFile;
-  if (!createOutputFile(outputFile, pathDoxyDocsPM))
+  std::ofstream outputFileStream;
+  if (!createOutputFile(outputFileStream, pathDoxyDocsPM))
     return false;
 
-  FTextStream outputTextStream(&outputFile);
-  PerlModOutputStream outputStream(&outputTextStream);
+  PerlModOutputStream outputStream(outputFileStream);
   m_output.setPerlModOutputStream(&outputStream);
   m_output.add("$doxydocs=").openHash();
 
@@ -2188,10 +2191,10 @@ bool PerlModGenerator::generatePerlModOutput()
   return true;
 }
 
-bool PerlModGenerator::createOutputFile(QFile &f, const char *s)
+bool PerlModGenerator::createOutputFile(std::ofstream &f, const char *s)
 {
-  f.setName(s);
-  if (!f.open(IO_WriteOnly))
+  f.open(s,std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n", s);
     return false;
@@ -2213,11 +2216,10 @@ bool PerlModGenerator::createOutputDir(Dir &perlModDir)
 
 bool PerlModGenerator::generateDoxyStructurePM()
 {
-  QFile doxyModelPM;
-  if (!createOutputFile(doxyModelPM, pathDoxyStructurePM))
+  std::ofstream doxyModelPMStream;
+  if (!createOutputFile(doxyModelPMStream, pathDoxyStructurePM))
     return false;
 
-  FTextStream doxyModelPMStream(&doxyModelPM);
   doxyModelPMStream <<
     "sub memberlist($) {\n"
     "    my $prefix = $_[0];\n"
@@ -2397,14 +2399,13 @@ bool PerlModGenerator::generateDoxyStructurePM()
 
 bool PerlModGenerator::generateDoxyRules()
 {
-  QFile doxyRules;
-  if (!createOutputFile(doxyRules, pathDoxyRules))
+  std::ofstream doxyRulesStream;
+  if (!createOutputFile(doxyRulesStream, pathDoxyRules))
     return false;
 
   bool perlmodLatex = Config_getBool(PERLMOD_LATEX);
   QCString prefix = Config_getString(PERLMOD_MAKEVAR_PREFIX);
 
-  FTextStream doxyRulesStream(&doxyRules);
   doxyRulesStream <<
     prefix << "DOXY_EXEC_PATH = " << pathDoxyExec << "\n" <<
     prefix << "DOXYFILE = " << pathDoxyfile << "\n" <<
@@ -2494,14 +2495,13 @@ bool PerlModGenerator::generateDoxyRules()
 
 bool PerlModGenerator::generateMakefile()
 {
-  QFile makefile;
-  if (!createOutputFile(makefile, pathMakefile))
+  std::ofstream makefileStream;
+  if (!createOutputFile(makefileStream, pathMakefile))
     return false;
 
   bool perlmodLatex = Config_getBool(PERLMOD_LATEX);
   QCString prefix = Config_getString(PERLMOD_MAKEVAR_PREFIX);
 
-  FTextStream makefileStream(&makefile);
   makefileStream <<
     ".PHONY: default clean" << (perlmodLatex ? " pdf" : "") << "\n"
     "default: " << (perlmodLatex ? "pdf" : "clean") << "\n"
@@ -2521,11 +2521,10 @@ bool PerlModGenerator::generateMakefile()
 
 bool PerlModGenerator::generateDoxyLatexStructurePL()
 {
-  QFile doxyLatexStructurePL;
-  if (!createOutputFile(doxyLatexStructurePL, pathDoxyLatexStructurePL))
+  std::ofstream doxyLatexStructurePLStream;
+  if (!createOutputFile(doxyLatexStructurePLStream, pathDoxyLatexStructurePL))
     return false;
 
-  FTextStream doxyLatexStructurePLStream(&doxyLatexStructurePL);
   doxyLatexStructurePLStream <<
     "use DoxyStructure;\n"
     "\n"
@@ -2555,11 +2554,10 @@ bool PerlModGenerator::generateDoxyLatexStructurePL()
 
 bool PerlModGenerator::generateDoxyLatexPL()
 {
-  QFile doxyLatexPL;
-  if (!createOutputFile(doxyLatexPL, pathDoxyLatexPL))
+  std::ofstream doxyLatexPLStream;
+  if (!createOutputFile(doxyLatexPLStream, pathDoxyLatexPL))
     return false;
 
-  FTextStream doxyLatexPLStream(&doxyLatexPL);
   doxyLatexPLStream <<
     "use DoxyStructure;\n"
     "use DoxyDocs;\n"
@@ -2678,11 +2676,10 @@ bool PerlModGenerator::generateDoxyLatexPL()
 
 bool PerlModGenerator::generateDoxyFormatTex()
 {
-  QFile doxyFormatTex;
-  if (!createOutputFile(doxyFormatTex, pathDoxyFormatTex))
+  std::ofstream doxyFormatTexStream;
+  if (!createOutputFile(doxyFormatTexStream, pathDoxyFormatTex))
     return false;
 
-  FTextStream doxyFormatTexStream(&doxyFormatTex);
   doxyFormatTexStream <<
     "\\def\\Defcs#1{\\long\\expandafter\\def\\csname#1\\endcsname}\n"
     "\\Defcs{Empty}{}\n"
@@ -2841,11 +2838,10 @@ bool PerlModGenerator::generateDoxyFormatTex()
 
 bool PerlModGenerator::generateDoxyLatexTex()
 {
-  QFile doxyLatexTex;
-  if (!createOutputFile(doxyLatexTex, pathDoxyLatexTex))
+  std::ofstream doxyLatexTexStream;
+  if (!createOutputFile(doxyLatexTexStream, pathDoxyLatexTex))
     return false;
 
-  FTextStream doxyLatexTexStream(&doxyLatexTex);
   doxyLatexTexStream <<
     "\\documentclass[a4paper,12pt]{article}\n"
     "\\usepackage[latin1]{inputenc}\n"

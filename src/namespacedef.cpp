@@ -63,7 +63,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
-    virtual void writeTagFile(FTextStream &);
+    virtual void writeTagFile(std::ostream &);
     virtual void insertClass(const ClassDef *cd);
     virtual void insertNamespace(const NamespaceDef *nd);
     virtual void insertMember(MemberDef *md);
@@ -125,7 +125,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void endMemberDocumentation(OutputList &ol);
     void writeSummaryLinks(OutputList &ol) const;
     void addNamespaceAttributes(OutputList &ol);
-    void writeClassesToTagFile(FTextStream &,const ClassLinkedRefMap &d);
+    void writeClassesToTagFile(std::ostream &,const ClassLinkedRefMap &d);
 
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup=false);
@@ -533,15 +533,15 @@ bool NamespaceDefImpl::hasDetailedDescription() const
           !documentation().isEmpty());
 }
 
-void NamespaceDefImpl::writeTagFile(FTextStream &tagFile)
+void NamespaceDefImpl::writeTagFile(std::ostream &tagFile)
 {
-  tagFile << "  <compound kind=\"namespace\">" << endl;
-  tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
+  tagFile << "  <compound kind=\"namespace\">\n";
+  tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
   {
-    tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+    tagFile << "    <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
   {
@@ -553,7 +553,7 @@ void NamespaceDefImpl::writeTagFile(FTextStream &tagFile)
           {
             if (nd->isLinkableInProject())
             {
-              tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>" << endl;
+              tagFile << "    <namespace>" << convertToXML(nd->name()) << "</namespace>\n";
             }
           }
         }
@@ -601,7 +601,7 @@ void NamespaceDefImpl::writeTagFile(FTextStream &tagFile)
     }
   }
   writeDocAnchorsToTagFile(tagFile);
-  tagFile << "  </compound>" << endl;
+  tagFile << "  </compound>\n";
 }
 
 void NamespaceDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
@@ -851,14 +851,14 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
   }
 }
 
-void NamespaceDefImpl::writeClassesToTagFile(FTextStream &tagFile,const ClassLinkedRefMap &list)
+void NamespaceDefImpl::writeClassesToTagFile(std::ostream &tagFile,const ClassLinkedRefMap &list)
 {
   for (const auto &cd : list)
   {
     if (cd->isLinkableInProject())
     {
       tagFile << "    <class kind=\"" << cd->compoundTypeString()
-              << "\">" << convertToXML(cd->name()) << "</class>" << endl;
+              << "\">" << convertToXML(cd->name()) << "</class>\n";
     }
   }
 }

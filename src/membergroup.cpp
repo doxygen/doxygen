@@ -295,7 +295,7 @@ void MemberGroup::setRefItems(const RefItemVector &sli)
   m_xrefListItems.insert(m_xrefListItems.end(), sli.cbegin(), sli.cend());
 }
 
-void MemberGroup::writeTagFile(FTextStream &tagFile)
+void MemberGroup::writeTagFile(std::ostream &tagFile)
 {
   memberList->writeTagFile(tagFile);
 }

@@ -19,12 +19,12 @@
 #include <vector>
 #include <map>
 #include <deque>
+#include <iostream>
 
 #include "dotgraph.h"
 
 class ClassDef;
 class DotNode;
-class FTextStream;
 
 /** Attributes of an edge of a dot graph */
 class EdgeInfo
@@ -75,14 +75,14 @@ class DotNode
     void removeParent(DotNode *n);
     int  findParent( DotNode *n );
 
-    void write(FTextStream &t,GraphType gt,GraphOutputFormat f,
+    void write(std::ostream &t,GraphType gt,GraphOutputFormat f,
                bool topDown,bool toChildren,bool backArrows) const;
-    void writeXML(FTextStream &t,bool isClassGraph) const;
-    void writeDocbook(FTextStream &t,bool isClassGraph) const;
-    void writeDEF(FTextStream &t) const;
-    void writeBox(FTextStream &t,GraphType gt,GraphOutputFormat f,
+    void writeXML(std::ostream &t,bool isClassGraph) const;
+    void writeDocbook(std::ostream &t,bool isClassGraph) const;
+    void writeDEF(std::ostream &t) const;
+    void writeBox(std::ostream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren) const;
-    void writeArrow(FTextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
+    void writeArrow(std::ostream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
                     const EdgeInfo *ei,bool topDown, bool pointBack=TRUE) const;
 
     QCString label() const         { return m_label; }

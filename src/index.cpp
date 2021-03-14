@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -19,12 +17,11 @@
  *  @brief This file contains functions for the various index pages.
  */
 
-#include <stdlib.h>
-
+#include <cstdlib>
+#include <sstream>
 #include <array>
 
 #include <assert.h>
-#include <qdir.h>
 
 #include "message.h"
 #include "index.h"
@@ -991,12 +988,11 @@ static void writeHierarchicalIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Class);
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv->generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     ol.popGeneratorState();
     delete ftv;
   }
@@ -1098,12 +1094,11 @@ static void writeHierarchicalInterfaceIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Interface);
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv->generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     ol.popGeneratorState();
     delete ftv;
   }
@@ -1205,12 +1200,11 @@ static void writeHierarchicalExceptionIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Exception);
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv->generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     ol.popGeneratorState();
     delete ftv;
   }
@@ -1462,10 +1456,9 @@ static void writeFileIndex(OutputList &ol)
 
   FTVHelp* ftv = new FTVHelp(FALSE);
   writeDirHierarchy(ol,ftv,addToIndex);
-  QGString outStr;
-  FTextStream t(&outStr);
+  std::stringstream t;
   ftv->generateTreeViewInline(t);
-  ol.writeString(outStr);
+  ol.writeString(t.str().c_str());
   delete ftv;
 
   ol.popGeneratorState();
@@ -1870,10 +1863,9 @@ static void writeNamespaceIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeNamespaceTree(*Doxygen::namespaceLinkedMap,ftv,TRUE,addToIndex);
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv->generateTreeViewInline(t);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     delete ftv;
     if (addToIndex)
     {
@@ -2397,10 +2389,9 @@ static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContex
     FTVHelp ftv(false);
     writeClassTreeInsideNamespace(*Doxygen::namespaceLinkedMap,&ftv,TRUE,addToIndex,ctx.compoundType);
     writeClassTree(*Doxygen::classLinkedMap,&ftv,addToIndex,TRUE,ctx.compoundType);
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv.generateTreeViewInline(t);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -3607,10 +3598,9 @@ static void writePageIndex(OutputList &ol)
         writePages(pd.get(),ftv);
       }
     }
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv->generateTreeViewInline(t);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     delete ftv;
   }
 
@@ -4003,11 +3993,10 @@ static void writeGroupIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeGroupHierarchy(ol,ftv,addToIndex);
-    QGString outStr;
-    FTextStream t(&outStr);
+    std::stringstream t;
     ftv->generateTreeViewInline(t);
     ol.disableAllBut(OutputGenerator::Html);
-    ol.writeString(outStr);
+    ol.writeString(t.str().c_str());
     delete ftv;
     if (addToIndex)
     {
@@ -4783,7 +4772,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 }
 
 template<class T,std::size_t total>
-void renderMemberIndicesAsJs(FTextStream &t,
+void renderMemberIndicesAsJs(std::ostream &t,
     const int *numDocumented,
     const std::array<MemberIndexMap,total> &memberLists,
     const T *(*getInfo)(size_t hl))
@@ -4800,7 +4789,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
         t << "children:[";
         firstMember=FALSE;
       }
-      t << endl << "{text:\"" << convertToJSString(getInfo(i)->title) << "\",url:\""
+      t << "\n{text:\"" << convertToJSString(getInfo(i)->title) << "\",url:\""
         << convertToJSString(getInfo(i)->fname+Doxygen::htmlFileExtension) << "\"";
 
       // Check if we have many members, then add sub entries per letter...
@@ -4813,11 +4802,11 @@ void renderMemberIndicesAsJs(FTextStream &t,
         {
           multiPageIndex=TRUE;
         }
-        t << ",children:[" << endl;
+        t << ",children:[\n";
         bool firstLetter=TRUE;
         for (const auto &kv : memberLists[i])
         {
-          if (!firstLetter) t << "," << endl;
+          if (!firstLetter) t << ",\n";
           std::string letter = kv.first;
           QCString ci = letter;
           QCString is = letterToLabel(ci);
@@ -4843,7 +4832,7 @@ void renderMemberIndicesAsJs(FTextStream &t,
   }
 }
 
-static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
+static bool renderQuickLinksAsJs(std::ostream &t,LayoutNavEntry *root,bool first)
 {
   int count=0;
   for (const auto &entry : root->children())
@@ -4854,12 +4843,12 @@ static bool renderQuickLinksAsJs(FTextStream &t,LayoutNavEntry *root,bool first)
   {
     bool firstChild = TRUE;
     if (!first) t << ",";
-    t << "children:[" << endl;
+    t << "children:[\n";
     for (const auto &entry : root->children())
     {
       if (entry->visible() && quickLinkVisible(entry->kind()))
       {
-        if (!firstChild) t << "," << endl;
+        if (!firstChild) t << ",\n";
         firstChild=FALSE;
         QCString url = entry->url();
         t << "{text:\"" << convertToJSString(entry->title()) << "\",url:\""
@@ -4896,16 +4885,15 @@ static void writeMenuData()
 {
   if (!Config_getBool(GENERATE_HTML) || Config_getBool(DISABLE_INDEX)) return;
   QCString outputDir = Config_getBool(HTML_OUTPUT);
-  QFile f(outputDir+"/menudata.js");
   LayoutNavEntry *root = LayoutDocManager::instance().rootNavEntry();
-  if (f.open(IO_WriteOnly))
+  std::ofstream t(outputDir.str()+"/menudata.js",std::ofstream::out | std::ofstream::binary);
+  if (t.is_open())
   {
-    FTextStream t(&f);
     t << JAVASCRIPT_LICENSE_TEXT;
     t << "var menudata={";
     bool hasChildren = renderQuickLinksAsJs(t,root,TRUE);
     if (hasChildren) t << "]";
-    t << "}" << endl;
+    t << "}\n";
   }
 }
 

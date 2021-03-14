@@ -28,8 +28,6 @@
 #include <stack>
 #include <string>
 
-#include <qfile.h>
-
 #include "doctokenizer.h"
 #include "cmdmapper.h"
 #include "config.h"

@@ -28,11 +28,9 @@
 #include <ctime>
 #include <cctype>
 #include <cinttypes>
+#include <sstream>
 
 #include "md5.h"
-
-#include <qfileinfo.h>
-#include <qdir.h>
 
 #include "regex.h"
 #include "util.h"
@@ -72,6 +70,7 @@
 #include "htmlentity.h"
 #include "symbolresolver.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -1404,29 +1403,17 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
 QCString fileToString(const char *name,bool filter,bool isSourceCode)
 {
   if (name==0 || name[0]==0) return 0;
-  QFile f;
-
-  bool fileOpened=FALSE;
+  bool fileOpened=false;
   if (name[0]=='-' && name[1]==0) // read from stdin
   {
-    fileOpened=f.open(IO_ReadOnly,stdin);
-    if (fileOpened)
+    fileOpened=true;
+    std::string contents;
+    std::string line;
+    while (getline(std::cin,line))
     {
-      const int bSize=4096;
-      QCString contents(bSize+1);
-      int totalSize=0;
-      int size;
-      while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
-      {
-        totalSize+=bSize;
-        contents.resize(totalSize+bSize+1);
-      }
-      totalSize = filterCRLF(contents.rawData(),totalSize+size)+2;
-      contents.resize(totalSize);
-      contents.at(totalSize-2)='\n'; // to help the scanner
-      contents.at(totalSize-1)='\0';
-      return contents;
+      contents+=line+'\n';
     }
+    return contents;
   }
   else // read from file
   {
@@ -1436,7 +1423,7 @@ QCString fileToString(const char *name,bool filter,bool isSourceCode)
       err("file '%s' not found\n",name);
       return "";
     }
-    BufStr buf(fi.size());
+    BufStr buf((uint)fi.size());
     fileOpened=readInputFile(name,buf,filter,isSourceCode);
     if (fileOpened)
     {
@@ -4244,9 +4231,9 @@ QCString convertToPSString(const char *s)
 
 QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 {
-  QGString result;
-  FTextStream t(&result);
+  std::stringstream t;
   filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
+  QCString result = t.str();
   return result.data();
 }
 
@@ -4984,7 +4971,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
   recursivelyAddGroupListToTitle(ol,d,TRUE);
 }
 
-void filterLatexString(FTextStream &t,const char *str,
+void filterLatexString(std::ostream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
 {
   if (str==0) return;
@@ -5139,9 +5126,8 @@ void filterLatexString(FTextStream &t,const char *str,
 QCString latexEscapeLabelName(const char *s)
 {
   if (s==0) return "";
-  QGString result;
   QCString tmp(qstrlen(s)+1);
-  FTextStream t(&result);
+  std::stringstream t;
   const char *p=s;
   char c;
   int i;
@@ -5177,15 +5163,14 @@ QCString latexEscapeLabelName(const char *s)
         break;
     }
   }
-  return result.data();
+  return t.str();
 }
 
 QCString latexEscapeIndexChars(const char *s)
 {
   if (s==0) return "";
-  QGString result;
   QCString tmp(qstrlen(s)+1);
-  FTextStream t(&result);
+  std::stringstream t;
   const char *p=s;
   char c;
   int i;
@@ -5222,14 +5207,13 @@ QCString latexEscapeIndexChars(const char *s)
         break;
     }
   }
-  return result.data();
+  return t.str();
 }
 
 QCString latexEscapePDFString(const char *s)
 {
   if (s==0) return "";
-  QGString result;
-  FTextStream t(&result);
+  std::stringstream t;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5247,14 +5231,13 @@ QCString latexEscapePDFString(const char *s)
         break;
     }
   }
-  return result.data();
+  return t.str();
 }
 
 QCString latexFilterURL(const char *s)
 {
   if (s==0) return "";
-  QGString result;
-  FTextStream t(&result);
+  std::stringstream t;
   const signed char *p=(const signed char*)s;
   char c;
   while ((c=*p++))
@@ -5277,7 +5260,7 @@ QCString latexFilterURL(const char *s)
         break;
     }
   }
-  return result.data();
+  return t.str();
 }
 
 static std::mutex g_rtfFormatMutex;
@@ -5712,33 +5695,34 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const char 
     return FALSE;
 }
 
-const char *writeUtf8Char(FTextStream &t,const char *s)
+const char *writeUtf8Char(std::ostream &t,const char *s)
 {
+  const char *p = s;
   uchar c=(uchar)*s++;
-  t << (char)c;
   if (c>=0x80) // multibyte character
   {
     if (((uchar)c&0xE0)==0xC0)
     {
-      t << *s++; // 11xx.xxxx: >=2 byte character
+      s++; // 11xx.xxxx: >=2 byte character
     }
     if (((uchar)c&0xF0)==0xE0)
     {
-      t << *s++; // 111x.xxxx: >=3 byte character
+      s++; // 111x.xxxx: >=3 byte character
     }
     if (((uchar)c&0xF8)==0xF0)
     {
-      t << *s++; // 1111.xxxx: >=4 byte character
+      s++; // 1111.xxxx: >=4 byte character
     }
     if (((uchar)c&0xFC)==0xF8)
     {
-      t << *s++; // 1111.1xxx: >=5 byte character
+      s++; // 1111.1xxx: >=5 byte character
     }
     if (((uchar)c&0xFE)==0xFC)
     {
-      t << *s++; // 1111.1xxx: 6 byte character
+      s++; // 1111.1xxx: 6 byte character
     }
   }
+  t.write(p,s-p);
   return s;
 }
 
@@ -5811,10 +5795,9 @@ int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos)
 QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
     const QCString &doc,const QCString &fileName,int lineNr)
 {
-  QGString s;
-  if (doc.isEmpty()) return s.data();
+  if (doc.isEmpty()) return "";
   //printf("parseCommentAsText(%s)\n",doc.data());
-  FTextStream t(&s);
+  std::stringstream t;
   DocNode *root = validatingParseDoc(fileName,lineNr,
       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
       0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
@@ -5822,7 +5805,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   root->accept(visitor);
   delete visitor;
   delete root;
-  QCString result = convertCharEntitiesToUTF8(s.data()).stripWhiteSpace();
+  QCString result = convertCharEntitiesToUTF8(t.str().c_str()).stripWhiteSpace();
   int i=0;
   int charCnt=0;
   int l=result.length();
@@ -6235,24 +6218,23 @@ bool readInputFile(const char *fileName,BufStr &inBuf,bool filter,bool isSourceC
 {
   // try to open file
   int size=0;
-  //uint oldPos = dest.curPos();
-  //printf(".......oldPos=%d\n",oldPos);
 
   FileInfo fi(fileName);
   if (!fi.exists()) return FALSE;
   QCString filterName = getFileFilter(fileName,isSourceCode);
   if (filterName.isEmpty() || !filter)
   {
-    QFile f(fileName);
-    if (!f.open(IO_ReadOnly))
+    std::ifstream f(fileName,std::ifstream::in | std::ifstream::binary);
+    if (!f.is_open())
     {
       err("could not open file %s\n",fileName);
       return FALSE;
     }
-    size=fi.size();
+    size=(int)fi.size();
     // read the file
     inBuf.skip(size);
-    if (f.readBlock(inBuf.data()/*+oldPos*/,size)!=size)
+    f.read(inBuf.data(),size);
+    if (f.fail())
     {
       err("problems while reading file %s\n",fileName);
       return FALSE;
@@ -6384,7 +6366,9 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
           afp     = QCString(afp).lower().str();
         }
         reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
-        found = re.isValid() && (reg::match(fn,re) || reg::match(fp,re) || reg::match(afp,re));
+        found = re.isValid() && (reg::match(fn,re) ||
+                                 (fn!=fp && reg::match(fp,re)) ||
+                                 (fn!=afp && fp!=afp && reg::match(afp,re)));
         if (found) break;
         //printf("Matching '%s' against pattern '%s' found=%d\n",
         //    fi->fileName().data(),pattern.data(),found);
@@ -6393,49 +6377,6 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList)
   }
   return found;
 }
-
-bool patternMatch(const QFileInfo &fi,const StringVector &patList)
-{
-  bool caseSenseNames = Config_getBool(CASE_SENSE_NAMES);
-  bool found = FALSE;
-
-  // For platforms where the file system is non case sensitive overrule the setting
-  if (!Portable::fileSystemIsCaseSensitive())
-  {
-    caseSenseNames = FALSE;
-  }
-
-  if (!patList.empty())
-  {
-    std::string fn = fi.fileName().utf8().data();
-    std::string fp = fi.filePath().utf8().data();
-    std::string afp= fi.absFilePath().utf8().data();
-
-    for (auto pattern: patList)
-    {
-      if (!pattern.empty())
-      {
-        size_t i=pattern.find('=');
-        if (i!=std::string::npos) pattern=pattern.substr(0,i); // strip of the extension specific filter name
-
-        if (!caseSenseNames)
-        {
-          pattern = QCString(pattern).lower().str();
-          fn      = QCString(fn).lower().str();
-          fp      = QCString(fp).lower().str();
-          afp     = QCString(afp).lower().str();
-        }
-        reg::Ex re(pattern,reg::Ex::Mode::Wildcard);
-        found = re.isValid() && (reg::match(fn,re) || reg::match(fp,re) || reg::match(afp,re));
-        if (found) break;
-        //printf("Matching '%s' against pattern '%s' found=%d\n",
-        //    fi->fileName().data(),pattern.data(),found);
-      }
-    }
-  }
-  return found;
-}
-
 
 QCString externalLinkTarget(const bool parent)
 {
@@ -6486,14 +6427,9 @@ void writeColoredImgData(const char *dir,ColoredImgDataItem data[])
   {
     QCString fileName;
     fileName=(QCString)dir+"/"+data->name;
-    QFile f(fileName);
-    if (f.open(IO_WriteOnly))
-    {
-      ColoredImage img(data->width,data->height,data->content,data->alpha,
-                       sat,hue,gamma);
-      img.save(fileName);
-    }
-    else
+    ColoredImage img(data->width,data->height,data->content,data->alpha,
+                     sat,hue,gamma);
+    if (!img.save(fileName))
     {
       fprintf(stderr,"Warning: Cannot open file %s for writing\n",data->name);
     }
@@ -6561,31 +6497,12 @@ QCString replaceColorMarkers(const char *str)
  */
 bool copyFile(const QCString &src,const QCString &dest)
 {
-  QFile sf(src);
-  if (sf.open(IO_ReadOnly))
+  if (!Dir().copy(src.str(),dest.str()))
   {
-    FileInfo fi(src.str());
-    QFile df(dest);
-    if (df.open(IO_WriteOnly))
-    {
-      char *buffer = new char[fi.size()];
-      sf.readBlock(buffer,fi.size());
-      df.writeBlock(buffer,fi.size());
-      df.flush();
-      delete[] buffer;
-    }
-    else
-    {
-      err("could not write to file %s\n",dest.data());
-      return FALSE;
-    }
+    err("could not copy file %s to %s\n",src.data(),dest.data());
+    return false;
   }
-  else
-  {
-    err("could not open user specified file %s\n",src.data());
-    return FALSE;
-  }
-  return TRUE;
+  return true;
 }
 
 /** Returns the section of text, in between a pair of markers.
@@ -7237,13 +7154,14 @@ QCString getDotImageExtension()
   return i==-1 ? imgExt : imgExt.left(i);
 }
 
-bool openOutputFile(const char *outFile,QFile &f)
+bool openOutputFile(const char *outFile,std::ofstream &f)
 {
   bool fileOpened=FALSE;
   bool writeToStdout=(outFile[0]=='-' && outFile[1]=='\0');
   if (writeToStdout) // write to stdout
   {
-    fileOpened = f.open(IO_WriteOnly,stdout);
+    f.basic_ios<char>::rdbuf(std::cout.rdbuf());
+    fileOpened = true;
   }
   else // write to file
   {
@@ -7256,13 +7174,13 @@ bool openOutputFile(const char *outFile,QFile &f)
         dir.remove(backup.fileName());
       dir.rename(fi.fileName(),fi.fileName()+".bak");
     }
-    f.setName(outFile);
-    fileOpened = f.open(IO_WriteOnly|IO_Translate);
+    f.open(outFile,std::ofstream::out | std::ofstream::binary);
+    fileOpened = f.is_open();
   }
   return fileOpened;
 }
 
-void writeExtraLatexPackages(FTextStream &t)
+void writeExtraLatexPackages(std::ostream &t)
 {
   // User-specified packages
   const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
@@ -7280,7 +7198,7 @@ void writeExtraLatexPackages(FTextStream &t)
   }
 }
 
-void writeLatexSpecialFormulaChars(FTextStream &t)
+void writeLatexSpecialFormulaChars(std::ostream &t)
 {
     unsigned char minus[4]; // Superscript minus
     char *pminus = (char *)minus;

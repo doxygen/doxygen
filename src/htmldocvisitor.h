@@ -22,14 +22,13 @@
 class Definition;
 class MemberDef;
 class DocNode;
-class FTextStream;
 class CodeOutputInterface;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const Definition *ctx);
+    HtmlDocVisitor(std::ostream &t,CodeOutputInterface &ci,const Definition *ctx);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -157,7 +156,7 @@ class HtmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    std::ostream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

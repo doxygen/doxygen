@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <string>
 
+#include <qstring.h>
+
 #include <ctype.h>
 #include "md5.h"
 #include <stdio.h>
@@ -405,7 +407,7 @@ void DefinitionImpl::addSectionsToIndex()
   }
 }
 
-void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
+void DefinitionImpl::writeDocAnchorsToTagFile(std::ostream &tagFile) const
 {
   if (!m_impl->sectionRefs.empty())
   {
@@ -421,7 +423,7 @@ void DefinitionImpl::writeDocAnchorsToTagFile(FTextStream &tagFile) const
         {
           tagFile << " title=\"" << convertToXML(si->title()) << "\"";
         }
-        tagFile << ">" << si->label() << "</docanchor>" << endl;
+        tagFile << ">" << si->label() << "</docanchor>\n";
       }
     }
   }

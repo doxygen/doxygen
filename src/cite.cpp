@@ -16,7 +16,6 @@
 
 #include "cite.h"
 #include "config.h"
-#include "ftextstream.h"
 #include "language.h"
 #include "message.h"
 #include "portable.h"
@@ -26,10 +25,9 @@
 #include "fileinfo.h"
 #include "dir.h"
 
-#include <qfile.h>
-
 #include <map>
 #include <string>
+#include <fstream>
 
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";
@@ -118,71 +116,40 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
     err("bib file %s not found!\n",bibFile.data());
     return;
   }
-  QFile f(bibFile);
-  if (!f.open(IO_ReadOnly))
+  std::ifstream f(bibFile.str(), std::ifstream::in);
+  if (!f.is_open())
   {
     err("could not open file %s for reading\n",bibFile.data());
     return;
   }
 
-  // convert file to string
-  QCString doc;
-  QCString input(fi.size()+1);
-  f.readBlock(input.rawData(),fi.size());
-  f.close();
-  input.at(fi.size())='\0';
-
-  int pos=0;
-  int s;
-
-  // helper lambda function to get the next line of input and update pos accordingly
-  auto get_next_line = [&input,&pos,&s]()
-  {
-    uint prevPos = (uint)pos;
-    pos=s+1;
-    return input.mid(prevPos,(uint)(s-prevPos));
-  };
-
-  // helper lambda function to return if the end of the input has reached
-  auto end_of_input = [&s]()
-  {
-    return s==-1;
-  };
-
-  // helper lambda function to proceed to the next line in the input, and update s
-  // to point to the start of the line. Return true as long as there is a new line.
-  auto has_next_line = [&input,&pos,&s]()
-  {
-    s=input.find('\n',pos);
-    return s!=-1;
-  };
-
   // search for citation cross references
   QCString citeName;
-  while (has_next_line())
-  {
-    QCString line = get_next_line();
 
+  std::string lineStr;
+  while (getline(f,lineStr))
+  {
     int i;
+    QCString line = lineStr;
     if (line.stripWhiteSpace().startsWith("@"))
     {
       // assumption entry like: "@book { name," or "@book { name" (spaces optional)
       int j = line.find('{');
       // when no {, go hunting for it
-      while (j==-1 && has_next_line())
+      while (j==-1 && getline(f,lineStr))
       {
-        line = get_next_line();
+        line = lineStr;
         j = line.find('{');
       }
       // search for the name
       citeName = "";
-      if (!end_of_input() && j!=-1) // to prevent something like "@manual ," and no { found
+      if (!f.eof() && j!=-1) // to prevent something like "@manual ," and no { found
       {
         int k = line.find(',',j);
         j++;
         // found a line "@....{.....,...." or "@.....{....."
         //                     ^=j  ^=k               ^=j   k=-1
-        while (!end_of_input() && citeName.isEmpty())
+        while (!f.eof() && citeName.isEmpty())
         {
           if (k!=-1)
           {
@@ -194,9 +161,9 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
           }
           citeName = citeName.stripWhiteSpace();
           j = 0;
-          if (citeName.isEmpty() && has_next_line())
+          if (citeName.isEmpty() && getline(f,lineStr))
           {
-            line = get_next_line();
+            line = lineStr;
             k = line.find(',');
           }
         }
@@ -232,7 +199,6 @@ void CitationManager::generatePage()
   bool citeDebug = Debug::isFlagSet(Debug::Cite);
 
   // 0. add cross references from the bib files to the cite dictionary
-  QFile f;
   const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   for (const auto &bibdata : citeDataList)
   {
@@ -244,23 +210,24 @@ void CitationManager::generatePage()
   // 1. generate file with markers and citations to OUTPUT_DIRECTORY
   QCString outputDir = Config_getString(OUTPUT_DIRECTORY);
   QCString citeListFile = outputDir+"/citelist.doc";
-  f.setName(citeListFile);
-  if (!f.open(IO_WriteOnly))
   {
-    err("could not open file %s for writing\n",citeListFile.data());
+    std::ofstream t(citeListFile.str(),std::ofstream::out | std::ofstream::binary);
+    if (!t.is_open())
+    {
+      err("could not open file %s for writing\n",citeListFile.data());
+    }
+    t << "<!-- BEGIN CITATIONS -->\n";
+    t << "<!--\n";
+    for (const auto &it : p->entries)
+    {
+      t << "\\citation{" << it.second->label() << "}\n";
+    }
+    t << "-->\n";
+    t << "<!-- END CITATIONS -->\n";
+    t << "<!-- BEGIN BIBLIOGRAPHY -->\n";
+    t << "<!-- END BIBLIOGRAPHY -->\n";
+    t.close();
   }
-  FTextStream t(&f);
-  t << "<!-- BEGIN CITATIONS -->" << endl;
-  t << "<!--" << endl;
-  for (const auto &it : p->entries)
-  {
-    t << "\\citation{" << it.second->label() << "}" << endl;
-  }
-  t << "-->" << endl;
-  t << "<!-- END CITATIONS -->" << endl;
-  t << "<!-- BEGIN BIBLIOGRAPHY -->" << endl;
-  t << "<!-- END BIBLIOGRAPHY -->" << endl;
-  f.close();
 
   // 2. generate bib2xhtml
   QCString bib2xhtmlFile  = outputDir+"/bib2xhtml.pl";
@@ -319,26 +286,19 @@ void CitationManager::generatePage()
   // 6. read back the file
   QCString doc;
   {
-    f.setName(citeListFile);
-    if (!f.open(IO_ReadOnly))
+    std::ifstream f(citeListFile.str(),std::ifstream::in);
+    if (!f.is_open())
     {
       err("could not open file %s for reading\n",citeListFile.data());
     }
 
-    FileInfo fi(citeListFile.str());
-    QCString input(fi.size()+1);
-    f.readBlock(input.rawData(),fi.size());
-    f.close();
-    input.at(fi.size())='\0';
-
     bool insideBib=FALSE;
-    int pos=0,s;
     //printf("input=[%s]\n",input.data());
-    while ((s=input.find('\n',pos))!=-1)
+    std::string lineStr;
+    while (getline(f,lineStr))
     {
-      QCString line = input.mid((uint)pos,(uint)(s-pos));
+      QCString line = lineStr;
       //printf("pos=%d s=%d line=[%s]\n",pos,s,line.data());
-      pos=s+1;
 
       if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
       else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;

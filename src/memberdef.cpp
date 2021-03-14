@@ -315,7 +315,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const;
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const;
-    virtual void writeTagFile(FTextStream &) const;
+    virtual void writeTagFile(std::ostream &) const;
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const;
@@ -4258,7 +4258,7 @@ Specifier MemberDefImpl::virtualness(int count) const
   return v;
 }
 
-void MemberDefImpl::writeTagFile(FTextStream &tagFile) const
+void MemberDefImpl::writeTagFile(std::ostream &tagFile) const
 {
   if (!isLinkableInProject()) return;
   tagFile << "    <member kind=\"";
@@ -4298,20 +4298,20 @@ void MemberDefImpl::writeTagFile(FTextStream &tagFile) const
   {
     tagFile << "\" static=\"yes";
   }
-  tagFile << "\">" << endl;
+  tagFile << "\">\n";
   if (typeString()!=QCString("@"))
   {
-    tagFile << "      <type>" << convertToXML(typeString()) << "</type>" << endl;
+    tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
-  tagFile << "      <name>" << convertToXML(name()) << "</name>" << endl;
-  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>" << endl;
-  tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>" << endl;
+  tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
+  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>\n";
+  tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
   {
-    tagFile << "      <clangid>" << convertToXML(idStr) << "</clangid>" << endl;
+    tagFile << "      <clangid>" << convertToXML(idStr) << "</clangid>\n";
   }
-  tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>" << endl;
+  tagFile << "      <arglist>" << convertToXML(argsString()) << "</arglist>\n";
   if (isStrong())
   {
     for (const auto &fmd : m_impl->enumFields)
@@ -4325,12 +4325,12 @@ void MemberDefImpl::writeTagFile(FTextStream &tagFile) const
         {
           tagFile << "\" clangid=\"" << convertToXML(idStr);
         }
-        tagFile  << "\">" << convertToXML(fmd->name()) << "</enumvalue>" << endl;
+        tagFile  << "\">" << convertToXML(fmd->name()) << "</enumvalue>\n";
       }
     }
   }
   writeDocAnchorsToTagFile(tagFile);
-  tagFile << "    </member>" << endl;
+  tagFile << "    </member>\n";
 }
 
 void MemberDefImpl::_computeIsConstructor()

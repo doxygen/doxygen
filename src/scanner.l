@@ -35,8 +35,6 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qfile.h>
-
 #include "scanner.h"
 #include "entry.h"
 #include "message.h"

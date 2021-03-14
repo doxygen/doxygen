@@ -21,14 +21,13 @@
 #include "docvisitor.h"
 #include <qcstring.h>
 
-class FTextStream;
 class LatexCodeGenerator;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(FTextStream &t,LatexCodeGenerator &ci,
+    LatexDocVisitor(std::ostream &t,LatexCodeGenerator &ci,
                     const char *langExt,bool insideTabbing);
 
     //--------------------------------------
@@ -177,7 +176,7 @@ class LatexDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    std::ostream &m_t;
     LatexCodeGenerator &m_ci;
     bool m_insidePre;
     bool m_insideItem;

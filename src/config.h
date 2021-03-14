@@ -16,7 +16,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-class FTextStream;
+#include <ostream>
 
 // note: this header file is generated from config.xml
 #include "configvalues.h"
@@ -54,12 +54,12 @@ namespace Config
    *  is \c TRUE the description of each configuration option will
    *  be omitted.
    */
-  void writeTemplate(FTextStream &t,bool shortList,bool updateOnly=FALSE);
+  void writeTemplate(std::ostream &t,bool shortList,bool updateOnly=FALSE);
 
   /*! Writes a the differences between the current configuration and the
    *  template configuration to stream \a t.
    */
-  void compareDoxyfile(FTextStream &t);
+  void compareDoxyfile(std::ostream &t);
 
   /*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be

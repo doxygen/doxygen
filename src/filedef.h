@@ -36,7 +36,6 @@ class NamespaceDef;
 class NamespaceLinkedRefMap;
 class PackageDef;
 class DirDef;
-class FTextStream;
 class ClangTUParser;
 
 // --- Set of files
@@ -155,7 +154,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
-    virtual void writeTagFile(FTextStream &t) = 0;
+    virtual void writeTagFile(std::ostream &t) = 0;
 
     virtual void writeSourceHeader(OutputList &ol) = 0;
     virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) = 0;

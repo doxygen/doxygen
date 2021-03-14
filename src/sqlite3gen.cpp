@@ -15,12 +15,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
+
 #include "settings.h"
 #include "message.h"
 
 #if USE_SQLITE3
 
-#include "qtbc.h"
 #include "sqlite3gen.h"
 #include "doxygen.h"
 #include "xmlgen.h"
@@ -1382,9 +1383,9 @@ QCString getSQLDocBlock(const Definition *scope,
   const QCString &fileName,
   int lineNr)
 {
-  QGString s;
-  if (doc.isEmpty()) return s.data();
-  FTextStream t(&s);
+  if (doc.isEmpty()) return "";
+
+  std::stringstream t;
   DocNode *root = validatingParseDoc(
     fileName,
     lineNr,
@@ -1404,8 +1405,7 @@ QCString getSQLDocBlock(const Definition *scope,
   root->accept(visitor);
   delete visitor;
   delete root;
-  QCString result = convertCharEntitiesToUTF8(s.data());
-  return result.data();
+  return convertCharEntitiesToUTF8(t.str().c_str());
 }
 
 static void getSQLDesc(SqlStmt &s,const char *col,const char *value,const Definition *def)

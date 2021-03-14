@@ -16,6 +16,8 @@
 #ifndef DOTCLASSGRAPH_H
 #define DOTCLASSGRAPH_H
 
+#include <iostream>
+
 #include "classdef.h"
 #include "dotnode.h"
 #include "dotgraph.h"
@@ -29,13 +31,13 @@ public:
   bool isTrivial() const;
   bool isTooBig() const;
   int numNodes() const;
-  QCString writeGraph(FTextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
+  QCString writeGraph(std::ostream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
     const char *path, const char *fileName, const char *relPath,
     bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);
 
-  void writeXML(FTextStream &t);
-  void writeDocbook(FTextStream &t);
-  void writeDEF(FTextStream &t);
+  void writeXML(std::ostream &t);
+  void writeDocbook(std::ostream &t);
+  void writeDEF(std::ostream &t);
 
 protected:
   virtual QCString getBaseName() const;

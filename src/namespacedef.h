@@ -29,7 +29,6 @@ class OutputList;
 class ClassLinkedRefMap;
 class MemberDef;
 class NamespaceDef;
-class FTextStream;
 class NamespaceDef;
 class NamespaceDefMutable;
 
@@ -109,7 +108,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void writeTagFile(std::ostream &) = 0;
     virtual void insertClass(const ClassDef *cd) = 0;
     virtual void insertNamespace(const NamespaceDef *nd) = 0;
     virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it

@@ -15,6 +15,7 @@
 
 #include <cstdlib>
 #include <cassert>
+#include <sstream>
 
 #include "config.h"
 #include "dot.h"
@@ -23,7 +24,6 @@
 #include "util.h"
 #include "portable.h"
 #include "message.h"
-#include "ftextstream.h"
 #include "doxygen.h"
 #include "language.h"
 #include "index.h"
@@ -319,7 +319,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param context the scope in which this graph is found (for resolving links)
  *  \param graphId a unique id for this graph, use for dynamic sections
  */
-void writeDotImageMapFromFile(FTextStream &t,
+void writeDotImageMapFromFile(std::ostream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
                             const QCString &context,int graphId)
@@ -346,7 +346,7 @@ void writeDotImageMapFromFile(FTextStream &t,
 
   if (imgExt=="svg") // vector graphics
   {
-    QCString svgName=outDir+"/"+baseName+".svg";
+    QCString svgName = outDir+"/"+baseName+".svg";
     DotFilePatcher::writeSVGFigureLink(t,relPath,baseName,svgName);
     DotFilePatcher patcher(svgName);
     patcher.addSVGConversion("",TRUE,context,TRUE,graphId);
@@ -354,17 +354,15 @@ void writeDotImageMapFromFile(FTextStream &t,
   }
   else // bitmap graphics
   {
-    QGString result;
-    FTextStream tt(&result);
-
+    std::stringstream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
-      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>" << endl;
+      << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
     DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
-    if (!result.isEmpty())
+    if (tt.tellg()>0)
     {
       t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
-      t << result;
-      t << "</map>" << endl;
+      t << tt.str();
+      t << "</map>\n";
     }
   }
   d.remove(absOutFile.str());

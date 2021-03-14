@@ -18,8 +18,7 @@
 
 #include <qcstring.h>
 #include <vector>
-
-class FTextStream;
+#include <iostream>
 
 class TemplateListIntf;
 class TemplateStructIntf;
@@ -552,7 +551,7 @@ class Template
      *  @param[in] c The context containing data that can be used
      *  when instantiating the template.
      */
-    virtual void render(FTextStream &ts,TemplateContext *c) = 0;
+    virtual void render(std::ostream &ts,TemplateContext *c) = 0;
 };
 
 //------------------------------------------------------------------------

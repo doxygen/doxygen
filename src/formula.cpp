@@ -16,14 +16,11 @@
 #include "formula.h"
 #include "message.h"
 #include "config.h"
-#include "ftextstream.h"
 #include "util.h"
 #include "portable.h"
 #include "image.h"
 #include "fileinfo.h"
 #include "dir.h"
-
-#include <qfile.h>
 
 #include <map>
 #include <vector>
@@ -73,7 +70,7 @@ FormulaManager &FormulaManager::instance()
 
 void FormulaManager::readFormulas(const char *dir,bool doCompare)
 {
-  std::ifstream f(std::string(dir)+"/formula.repository");
+  std::ifstream f(std::string(dir)+"/formula.repository",std::ifstream::in);
   if (f.is_open())
   {
     uint formulaCount=0;
@@ -105,7 +102,7 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
         formName = formName.substr(0,ei); // keep only the '\_form#<digits>' part
         if (doCompare)
         {
-          int formId = stoi(formName.substr(hi+1));
+          int formId = std::stoi(formName.substr(hi+1));
           std::string storedFormText = FormulaManager::instance().findFormula(formId);
           if (storedFormText!=formText)
           {
@@ -154,24 +151,23 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // generate a latex file containing one formula per page.
   QCString texName="_formulas.tex";
   IntVector formulasToGenerate;
-  QFile f(texName);
-  if (f.open(IO_WriteOnly))
+  std::ofstream t(texName.str(),std::ofstream::out | std::ofstream::binary);
+  if (t.is_open())
   {
-    FTextStream t(&f);
-    if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode" << endl;
-    t << "\\documentclass{article}" << endl;
-    t << "\\usepackage{ifthen}" << endl;
-    t << "\\usepackage{epsfig}" << endl; // for those who want to include images
-    t << "\\usepackage[utf8]{inputenc}" << endl; // looks like some older distributions with newunicode package 1.1 need this option.
+    if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode\n";
+    t << "\\documentclass{article}\n";
+    t << "\\usepackage{ifthen}\n";
+    t << "\\usepackage{epsfig}\n"; // for those who want to include images
+    t << "\\usepackage[utf8]{inputenc}\n"; // looks like some older distributions with newunicode package 1.1 need this option.
     writeExtraLatexPackages(t);
     writeLatexSpecialFormulaChars(t);
     if (!macroFile.isEmpty())
     {
       copyFile(macroFile,stripMacroFile);
-      t << "\\input{" << stripMacroFile << "}" << endl;
+      t << "\\input{" << stripMacroFile << "}\n";
     }
-    t << "\\pagestyle{empty}" << endl;
-    t << "\\begin{document}" << endl;
+    t << "\\pagestyle{empty}\n";
+    t << "\\begin{document}\n";
     for (int i=0; i<(int)p->formulas.size(); i++)
     {
       QCString resultName;
@@ -181,13 +177,13 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       if (!fi.exists())
       {
         // we force a pagebreak after each formula
-        t << p->formulas[i].c_str() << endl << "\\pagebreak\n\n";
+        t << p->formulas[i].c_str() << "\n\\pagebreak\n\n";
         formulasToGenerate.push_back(i);
       }
       Doxygen::indexList->addImageFile(resultName);
     }
-    t << "\\end{document}" << endl;
-    f.close();
+    t << "\\end{document}\n";
+    t.close();
   }
   if (!formulasToGenerate.empty()) // there are new formulas
   {
@@ -352,30 +348,23 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
 
         // read back %s_tmp.eps and replace
         // bounding box values with x1,y1,x2,y2 and remove the HiResBoundingBox
-        QFile epsIn(formBase+"_tmp.eps");
-        QFile epsOut(formBase+"_tmp_corr.eps");
-        if (epsIn.open(IO_ReadOnly) && epsOut.open(IO_WriteOnly))
+        std::ifstream epsIn(formBase.str()+"_tmp.eps",std::ifstream::in);
+        std::ofstream epsOut(formBase.str()+"_tmp_corr.eps",std::ofstream::out);
+        if (epsIn.is_open() && epsOut.is_open())
         {
-          int maxLineLen=100*1024;
-          while (!epsIn.atEnd())
+          std::string line;
+          while (getline(epsIn,line))
           {
-            QCString buf(maxLineLen);
-            FTextStream t(&epsOut);
-            int numBytes = epsIn.readLine(buf.rawData(),maxLineLen);
-            if (numBytes>0)
+            if (line.rfind("%%BoundingBox",0)==0)
             {
-              buf.resize(numBytes+1);
-              if (buf.startsWith("%%BoundingBox"))
-              {
-                t << "%%BoundingBox: " << x1 << " " << y1 << " " << x2 << " " << y2 << endl;
-              }
-              else if (buf.startsWith("%%HiResBoundingBox")) // skip this one
-              {
-              }
-              else
-              {
-                t << buf;
-              }
+              epsOut << "%%BoundingBox: " << x1 << " " << y1 << " " << x2 << " " << y2 << "\n";
+            }
+            else if (line.rfind("%%HiResBoundingBox",0)==0) // skip this one
+            {
+            }
+            else
+            {
+              epsOut << line << "\n";
             }
           }
           epsIn.close();
@@ -438,10 +427,9 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
-  f.setName("formula.repository");
-  if (f.open(IO_WriteOnly))
+  t.open("formula.repository",std::ofstream::out);
+  if (t.is_open())
   {
-    FTextStream t(&f);
     for (int i=0; i<(int)p->formulas.size(); i++)
     {
       DisplaySize size = p->getDisplaySize(i);
@@ -450,9 +438,9 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       {
         t << "=" << size.width << "x" << size.height;
       }
-      t << ":" << p->formulas[i].c_str() << endl;
+      t << ":" << p->formulas[i].c_str() << "\n";
     }
-    f.close();
+    t.close();
   }
   // reset the directory to the original location.
   Dir::setCurrent(oldDir);
@@ -522,36 +510,18 @@ static int determineInkscapeVersion(Dir &thisDir)
       }
     }
     // read version file and determine major version
-    QFile inkscapeVersionIn(inkscapeVersionFile);
-    if (inkscapeVersionIn.open(IO_ReadOnly))
+    std::ifstream inkscapeVersionIn(inkscapeVersionFile.str(),std::ifstream::in);
+    if (inkscapeVersionIn.is_open())
     {
-      int maxLineLen=1024;
-      while (!inkscapeVersionIn.atEnd())
+      std::string line;
+      while (getline(inkscapeVersionIn,line))
       {
-        QCString buf(maxLineLen);
-        int numBytes = inkscapeVersionIn.readLine(buf.rawData(),maxLineLen);
-        if (numBytes>0)
+        size_t dotPos = line.find('.');
+        if (line.rfind("Inkscape ",0)==0 && dotPos>0)
         {
-          buf.resize(numBytes+1);
-          int dotPos = buf.find('.');
-          if (buf.startsWith("Inkscape ") && dotPos>0)
-          {
-            // get major version
-            bool ok;
-            int version = buf.mid(9,dotPos-9).toInt(&ok);
-            if (!ok)
-            {
-              Portable::sysTimerStop();
-              return -1;
-            }
-            inkscapeVersion = version;
-            break;
-          }
-        }
-        else
-        {
-          Portable::sysTimerStop();
-          return -1;
+          // get major version
+          inkscapeVersion = std::stoi(line.substr(9,dotPos-9));
+          break;
         }
       }
       inkscapeVersionIn.close();

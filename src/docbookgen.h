@@ -15,19 +15,20 @@
 #ifndef DOCBOOKGEN_H
 #define DOCBOOKGEN_H
 
+#include <iostream>
+
 #include "config.h"
 #include "outputgen.h"
 
 class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
-    DocbookCodeGenerator(FTextStream &t);
+    DocbookCodeGenerator(std::ostream &t);
     DocbookCodeGenerator();
     virtual ~DocbookCodeGenerator();
-    void setTextStream(FTextStream &t)
+    void setTextStream(std::ostream &t)
     {
-      m_streamSet = t.device()!=0;
-      m_t.setDevice(t.device());
+      m_t.rdbuf(t.rdbuf());
     }
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
@@ -57,8 +58,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void endCodeFragment(const char *style);
 
   private:
-    FTextStream m_t;
-    bool m_streamSet = false;
+    std::ostream m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber = -1;

@@ -19,14 +19,12 @@
 
 #include <stdlib.h>
 
-#include <qfile.h>
-
 #include "doxygen.h"
 #include "outputgen.h"
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator(const char *dir) : m_dir(dir)
+OutputGenerator::OutputGenerator(const char *dir) : t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
 }
@@ -36,12 +34,12 @@ OutputGenerator::~OutputGenerator()
   //printf("OutputGenerator::~OutputGenerator()\n");
 }
 
-OutputGenerator::OutputGenerator(const OutputGenerator &og)
+OutputGenerator::OutputGenerator(const OutputGenerator &og) : t(nullptr)
 {
   m_dir = og.m_dir;
   // we don't copy the other fields.
   // after copying startPlainFile() should be called
-  if (og.t.device()!=nullptr)
+  if (og.t.rdbuf()!=nullptr)
   {
     throw std::runtime_error("OutputGenerator copy constructor called while a file is processing");
   }
@@ -52,7 +50,7 @@ OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
   m_dir = og.m_dir;
   // we don't copy the other fields.
   // after assignment startPlainFile() should be called
-  if (og.t.device()!=nullptr)
+  if (og.t.rdbuf()!=nullptr)
   {
     throw std::runtime_error("OutputGenerator assignment operator called while a file is processing");
   }
@@ -63,17 +61,17 @@ void OutputGenerator::startPlainFile(const char *name)
 {
   //printf("startPlainFile(%s)\n",name);
   m_fileName=m_dir+"/"+name;
-  m_file.setName(m_fileName);
-  if (!m_file.open(IO_WriteOnly))
+  m_file.open(m_fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!m_file.is_open())
   {
     term("Could not open file %s for writing\n",m_fileName.data());
   }
-  t.setDevice(&m_file);
+  t.rdbuf(m_file.rdbuf());
 }
 
 void OutputGenerator::endPlainFile()
 {
-  t.unsetDevice();
+  t.rdbuf(nullptr);
   m_file.close();
   m_fileName.resize(0);
 }

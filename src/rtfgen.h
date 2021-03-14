@@ -21,8 +21,6 @@
 #include "config.h"
 #include "outputgen.h"
 
-class QFile;
-
 /** Generator for RTF output. */
 class RTFGenerator : public OutputGenerator
 {
@@ -34,8 +32,8 @@ class RTFGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
-    static void writeStyleSheetFile(QFile &f);
-    static void writeExtensionsFile(QFile &file);
+    static void writeStyleSheetFile(std::ostream &t);
+    static void writeExtensionsFile(std::ostream &t);
     OutputType type() const { return RTF; }
 
     void setRelativePath(const QCString &path);
@@ -152,7 +150,7 @@ class RTFGenerator : public OutputGenerator
     void endSubsection();
     void startSubsubsection();
     void endSubsubsection();
-    void startCenter()      { t << "{\\qc" << endl; }
+    void startCenter()      { t << "{\\qc\n"; }
     void endCenter()        { t << "}"; }
     void startSmall()       { t << "{\\sub "; }
     void endSmall()         { t << "}"; }
