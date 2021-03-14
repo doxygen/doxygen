@@ -118,7 +118,10 @@ documentation:
 \refitem cmdhideinitializer \\hideinitializer
 \refitem cmdhtmlinclude \\htmlinclude
 \refitem cmdhtmlonly \\htmlonly
+\refitem cmdidlconstants \\idlconstants
 \refitem cmdidlexcept \\idlexcept
+\refitem cmdidllibrary \\idllibrary
+\refitem cmdidlmodule \\idlmodule
 \refitem cmdif \\if
 \refitem cmdifnot \\ifnot
 \refitem cmdimage \\image
@@ -725,6 +728,44 @@ Structural indicators
   Indicates that a comment block contains documentation for a
   IDL exception with name \<name\>.
 
+  \sa sections \ref cmdidlconstants "\\idlconstants",
+    \ref cmdidllibrary "\\idllibrary" and
+    \ref cmdidlmodule "\\idlmodule".
+
+<hr>
+\section cmdidlmodule \\idlmodule <name>
+  \addindex \\idlmodule
+
+  Indicates that a comment block contains documentation for a
+  IDL module with name \<name\>.
+
+  \sa sections \ref cmdidlconstants "\\idlconstants",
+    \ref cmdidlexcept "\\idlexcept" and
+    \ref cmdidllibrary "\\idllibrary".
+
+<hr>
+\section cmdidllibrary \\idllibrary <name>
+  \addindex \\idllibrary
+
+  Indicates that a comment block contains documentation for a
+  IDL library with name \<name\>.
+
+  \sa sections \ref cmdidlconstants "\\idlconstants",
+    \ref cmdidlexcept "\\idlexcept",
+    \ref cmdidlmodule "\\idlmodule".
+
+<hr>
+\section cmdidlconstants \\idlconstants <name>
+  \addindex \\idlconstants
+
+  Indicates that a comment block contains documentation for a
+  IDL constants group with name \<name\>.
+
+  \sa sections 
+    \ref cmdidlexcept "\\idlexcept",
+    \ref cmdidllibrary "\\idllibrary" and
+    \ref cmdidlmodule "\\idlmodule".
+
 <hr>
 \section cmdimplements \\implements <name>
 
@@ -867,6 +908,10 @@ Structural indicators
   \addindex \\namespace
   Indicates that a comment block contains documentation for a
   namespace with name \<name\>.
+
+  \sa sections \ref cmdidlconstants "\\idlconstants",
+    \ref cmdidllibrary "\\idllibrary" and
+    \ref cmdidlmodule "\\idlmodule".
 
 <hr>
 \section cmdnosubgrouping \\nosubgrouping

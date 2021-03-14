@@ -535,7 +535,21 @@ bool NamespaceDefImpl::hasDetailedDescription() const
 
 void NamespaceDefImpl::writeTagFile(FTextStream &tagFile)
 {
-  tagFile << "  <compound kind=\"namespace\">" << endl;
+  switch (m_type)
+  {
+    case NAMESPACE:
+      tagFile << "  <compound kind=\"" << "namespace" << "\">" << endl;
+      break;
+    case MODULE:
+      tagFile << "  <compound kind=\"" << "module" << "\">" << endl;
+      break;
+    case CONSTANT_GROUP:
+      tagFile << "  <compound kind=\"" << "constants" << "\">" << endl;
+      break;
+    case LIBRARY:
+      tagFile << "  <compound kind=\"" << "library" << "\">" << endl;
+      break;
+  }
   tagFile << "    <name>" << convertToXML(name()) << "</name>" << endl;
   tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>" << endl;
   QCString idStr = id();

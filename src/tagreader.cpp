@@ -135,10 +135,12 @@ class TagClassInfo : public TagCompoundInfo
 class TagNamespaceInfo : public TagCompoundInfo
 {
   public:
-    TagNamespaceInfo() :TagCompoundInfo(CompoundType::Namespace) {}
+    enum class Kind { None=-1, Namespace, Module, Library, Constants };
+    TagNamespaceInfo(Kind k) :TagCompoundInfo(CompoundType::Namespace), kind(k){}
     std::string clangId;
     StringVector classList;
     StringVector namespaceList;
+    Kind kind;
     static TagNamespaceInfo *get(std::unique_ptr<TagCompoundInfo> &t)
     {
       return dynamic_cast<TagNamespaceInfo*>(t.get());
@@ -873,7 +875,10 @@ static const std::map< std::string, CompoundFactory > g_compoundFactory =
   { "service",   { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Service);   } } },
   { "singleton", { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Singleton); } } },
   { "file",      { TagFileParser::InFile,      []() { return std::make_unique<TagFileInfo>();                               } } },
-  { "namespace", { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>();                          } } },
+  { "namespace", { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>(TagNamespaceInfo::Kind::Namespace); } } },
+  { "module",    { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>(TagNamespaceInfo::Kind::Module);    } } },
+  { "library",   { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>(TagNamespaceInfo::Kind::Library);   } } },
+  { "constants", { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>(TagNamespaceInfo::Kind::Constants); } } },
   { "group",     { TagFileParser::InGroup,     []() { return std::make_unique<TagGroupInfo>();                              } } },
   { "page",      { TagFileParser::InPage,      []() { return std::make_unique<TagPageInfo>();                               } } },
   { "package",   { TagFileParser::InPackage,   []() { return std::make_unique<TagPackageInfo>();                            } } },
@@ -1351,6 +1356,20 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
 
       std::shared_ptr<Entry> ne = std::make_shared<Entry>();
       ne->section  = Entry::NAMESPACE_SEC;
+      switch (tni->kind)
+      {
+        case TagNamespaceInfo::Kind::None:      break;
+        case TagNamespaceInfo::Kind::Namespace: break;
+        case TagNamespaceInfo::Kind::Module:
+          ne->type = QCString("module");
+          break;
+        case TagNamespaceInfo::Kind::Library:
+          ne->type = QCString("library");
+          break;
+        case TagNamespaceInfo::Kind::Constants:
+          ne->type = QCString("constatnts");
+          break;
+      }
       ne->name     = tni->name;
       addDocAnchors(ne,tni->docAnchors);
       ne->tagInfoData.tagName  = m_tagName;

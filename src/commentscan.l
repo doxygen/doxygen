@@ -152,6 +152,15 @@ enum class CommandSpacing
   XRef       // command is a cross reference (todo, bug, test, xrefitem).
 };
 
+enum class NamespaceSpec
+{
+  None,
+  Namespace,
+  IDLModule,
+  IDLLibrary,
+  IDLConstants
+};
+
 struct DocCmdMap
 {
   DocCmdMap(DocCmdFunc h,CommandSpacing s) : handler(h), spacing(s) {}
@@ -211,6 +220,9 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "htmlinclude",     { 0,                       CommandSpacing::Inline    }},
   { "htmlonly",        { &handleFormatBlock,      CommandSpacing::Invisible }},
   { "idlexcept",       { &handleIdlException,     CommandSpacing::Invisible }},
+  { "idlmodule",       { &handleNamespace,        CommandSpacing::Invisible }},
+  { "idlconstants",    { &handleNamespace,        CommandSpacing::Invisible }},
+  { "idllibrary",      { &handleNamespace,        CommandSpacing::Invisible }},
   { "if",              { &handleIf,               CommandSpacing::Inline    }},
   { "ifnot",           { &handleIfNot,            CommandSpacing::Inline    }},
   { "image",           { 0,                       CommandSpacing::Block     }},
@@ -422,7 +434,7 @@ static SectionType sectionLevelToType(int level);
 static void stripTrailingWhiteSpace(QCString &s);
 
 static void initParser(yyscan_t yyscanner);
-static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s);
+static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s, NamespaceSpec spec=NamespaceSpec::None);
 static void lineCount(yyscan_t yyscanner);
 static void addXRefItem(yyscan_t yyscanner,
                         const char *listName,const char *itemTitle,
@@ -1971,10 +1983,14 @@ static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const QCStringL
   return stop;
 }
 
-static bool handleNamespace(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleNamespace(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  bool stop=makeStructuralIndicator(yyscanner,Entry::NAMESPACEDOC_SEC);
+  NamespaceSpec spec = NamespaceSpec::Namespace;
+  if (cmd == "idlmodule")         spec = NamespaceSpec::IDLModule;
+  else if (cmd == "idllibrary")   spec = NamespaceSpec::IDLLibrary;
+  else if (cmd == "idlconstants") spec = NamespaceSpec::IDLConstants;
+  bool stop=makeStructuralIndicator(yyscanner,Entry::NAMESPACEDOC_SEC,spec);
   BEGIN( NameSpaceDocArg1 );
   return stop;
 }
@@ -2787,7 +2803,7 @@ static bool getDocSectionName(int s)
 
 //-----------------------------------------------------------------------------
 
-static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s)
+static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s, NamespaceSpec spec)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("yyextra->current->section=%x\n",yyextra->current->section);
@@ -2799,6 +2815,30 @@ static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s)
   {
     yyextra->needNewEntry = TRUE;
     yyextra->current->section = s;
+    if (s == Entry::NAMESPACEDOC_SEC)
+    {
+      // some cases are for compatibility reasons not set
+      switch(spec)
+      {
+        case NamespaceSpec::None:
+          break;
+        case NamespaceSpec::Namespace:
+          if (yyextra->current->lang==SrcLangExt_IDL)
+          {
+            if (s == Entry::NAMESPACEDOC_SEC) yyextra->current->type = QCString("module");
+          }
+          break;
+        case NamespaceSpec::IDLModule:
+          yyextra->current->type = QCString("module");
+          break;
+        case NamespaceSpec::IDLLibrary:
+          yyextra->current->type = QCString("library");
+          break;
+        case NamespaceSpec::IDLConstants:
+          yyextra->current->type = QCString("constants");
+          break;
+      }
+    }
     yyextra->current->fileName = yyextra->fileName;
     yyextra->current->startLine = yyextra->lineNr;
     yyextra->current->docLine = yyextra->lineNr;
