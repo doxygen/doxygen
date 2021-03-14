@@ -1337,23 +1337,19 @@ void NamespaceDefImpl::sortMemberLists()
     if (ml->needsSorting()) { ml->sort(); ml->setNeedsSorting(FALSE); }
   }
 
-  if (Config_getBool(SORT_BRIEF_DOCS))
+  auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
   {
-    auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)
-    {
-      return Config_getBool(SORT_BY_SCOPE_NAME)     ?
-        qstricmp(c1->name(), c2->name())<0          :
-        qstricmp(c1->className(), c2->className())<0;
-    };
+    return Config_getBool(SORT_BY_SCOPE_NAME)     ?
+      qstricmp(c1->name(), c2->name())<0          :
+      qstricmp(c1->className(), c2->className())<0;
+  };
 
-    std::sort(classes.begin(),   classes.end(),   classComp);
-    std::sort(interfaces.begin(),interfaces.end(),classComp);
-    std::sort(structs.begin(),   structs.end(),   classComp);
-    std::sort(exceptions.begin(),exceptions.end(),classComp);
+  std::sort(classes.begin(),   classes.end(),   classComp);
+  std::sort(interfaces.begin(),interfaces.end(),classComp);
+  std::sort(structs.begin(),   structs.end(),   classComp);
+  std::sort(exceptions.begin(),exceptions.end(),classComp);
 
-  }
 
-  // TODO: inconsistent: should be only done when SORT_BRIEF_DOCS is enabled...
   auto namespaceComp = [](const NamespaceLinkedRefMap::Ptr &n1,const NamespaceLinkedRefMap::Ptr &n2)
   {
     return qstricmp(n1->name(),n2->name())<0;
