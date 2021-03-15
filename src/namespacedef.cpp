@@ -79,7 +79,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual QCString localName() const;
     virtual void setInline(bool isInline) { m_inline = isInline; }
     virtual bool isConstantGroup() const { return CONSTANT_GROUP == m_type; }
-    virtual bool isModule()        const { return MODULE == m_type; }
+    virtual bool isModule()        const { return NAMESPACE == m_type || MODULE == m_type; }
     virtual bool isLibrary() const { return LIBRARY == m_type; }
     virtual bool isInline() const { return m_inline; }
     virtual bool isLinkableInProject() const;
