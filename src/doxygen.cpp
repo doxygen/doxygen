@@ -1074,6 +1074,7 @@ static void addClassToContext(const Entry *root)
       cd->setHidden(root->hidden);
       cd->setArtificial(root->artificial);
       cd->setClassSpecifier(root->spec);
+      cd->setClassStatic(root->stat);
       cd->setTypeConstraints(root->typeConstr);
       //printf("new ClassDef %s tempArgList=%p specScope=%s\n",fullName.data(),root->tArgList,root->scopeSpec.data());
 
