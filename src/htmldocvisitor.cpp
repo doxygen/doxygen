@@ -1875,7 +1875,9 @@ void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
   QCString refName=addHtmlExtensionIfMissing(ref->file());
-  m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
+  m_t << "<li><a href=\"" << refName;
+  if (!ref->anchor().isEmpty()) m_t << "#" << ref->anchor();
+  m_t << "\">";
 
 }
 

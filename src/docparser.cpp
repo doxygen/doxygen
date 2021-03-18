@@ -2277,7 +2277,8 @@ void DocSecRefItem::parse()
     if (sec)
     {
       m_file   = sec->fileName();
-      m_anchor = sec->label();
+      m_anchor = "";
+      if (sec->type() != SectionType::Page) m_anchor = sec->label();
     }
     else
     {
