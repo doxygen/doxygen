@@ -136,11 +136,11 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
     }
     void toLast()
     {
-      m_index=(int)m_list.size()-1;
+      m_index=static_cast<int>(m_list.size())-1;
     }
     void toNext()
     {
-      if (m_index<static_cast<int>(m_list.size())) ++m_index;
+      if (m_index < static_cast<int>(m_list.size())) ++m_index;
     }
     void toPrev()
     {
@@ -148,7 +148,7 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
     }
     bool current(TemplateVariant &v) const
     {
-      if (m_index>=0 && m_index<static_cast<int>(m_list.size()))
+      if (m_index>=0 && m_index < static_cast<int>(m_list.size()))
       {
         v = m_list[m_index];
         return true;
