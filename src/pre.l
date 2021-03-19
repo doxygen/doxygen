@@ -288,6 +288,7 @@ struct preYY_state
   bool               insideFtn      = false;
   bool               isSource       = false;
 
+  int                javaBlock      = 0;
   yy_size_t          fenceSize      = 0;
   bool               ccomment       = false;
   QCString           delimiter;
@@ -1196,6 +1197,11 @@ WSopt [ \t\r]*
   					  outputArray(yyscanner,yytext,(int)yyleng);
   					  yyextra->yyLineNr+=QCString(yytext).contains('\n');
   					}
+<SkipCComment>[ \t]*"{@code"/[ \t\n]    {
+                                          outputArray(yyscanner,yytext,(int)yyleng);
+                                          yyextra->javaBlock=1;
+                                          BEGIN(SkipVerbatim);
+                                        }
 <SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+	{
   					  outputArray(yyscanner,yytext,(int)yyleng);
   					  yyextra->yyLineNr+=QCString(yytext).contains('\n');
@@ -1315,6 +1321,21 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
   					}
+<SkipVerbatim>[ \t]*"}"                 {
+                                          if (yyextra->javaBlock==0)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->javaBlock--;
+                                            outputArray(yyscanner,yytext,(int)yyleng);
+                                            if (yyextra->javaBlock==0)
+                                            {
+					      BEGIN(SkipCComment);
+                                            }
+                                          }
+                                        }
 <SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
   					  outputArray(yyscanner,yytext,(int)yyleng);
 					  if (yytext[1]=='f' && yyextra->blockName=="f")
