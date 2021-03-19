@@ -255,7 +255,7 @@
 #define LWG_2682_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // LWG #2395 makes crate_directory/create_directories not emit an error if there is a regular
-// file with that name, it is superceded by P1164R1, so only activate if really needed
+// file with that name, it is superseded by P1164R1, so only activate if really needed
 // #define LWG_2935_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // LWG #2936 enables new element wise (more expensive) path comparison
@@ -275,7 +275,7 @@
 // as UTF-8 encoded. With this define you can enfoce the old behavior on Windows, using
 // std::string as backend and for fs::path::native() and char for fs::path::c_str(). This
 // needs more conversions so it is (an was before v1.5) slower, bot might help keeping source
-// homogenous in a multi platform project.
+// homogeneous in a multi platform project.
 // #define GHC_WIN_DISABLE_WSTRING_STORAGE_TYPE
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Raise errors/exceptions when invalid unicode codepoints or UTF-8 sequences are found,
@@ -296,7 +296,7 @@
 #define GHC_WITH_EXCEPTIONS
 #endif
 #if !defined(GHC_WITH_EXCEPTIONS) && defined(GHC_RAISE_UNICODE_ERRORS)
-#error "Can't raise unicode errors whith exception support disabled"
+#error "Can't raise unicode errors with exception support disabled"
 #endif
 
 namespace ghc {
@@ -368,7 +368,7 @@ public:
     using path_helper_base<value_type>::preferred_separator;
 
     // 30.10.10.1 enumeration format
-    /// The path format in wich the constructor argument is given.
+    /// The path format in which the constructor argument is given.
     enum format {
         generic_format,  ///< The generic format, internally used by
                          ///< ghc::filesystem::path with slashes
