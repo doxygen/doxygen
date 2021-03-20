@@ -244,7 +244,7 @@ void CitationManager::generatePage()
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
   Dir thisDir;
-  if (!thisDir.exists(bibOutputDir.str()) && !thisDir.mkdir(bibOutputDir.str()))
+  if (!thisDir.exists(bibOutputDir.str()) && !thisDir.mkpath(bibOutputDir.str()))
   {
     err("Failed to create temporary output directory '%s', skipping citations\n",bibOutputDir.data());
     return;

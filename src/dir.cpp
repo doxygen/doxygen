@@ -238,6 +238,20 @@ bool Dir::mkdir(const std::string &path,bool acceptsAbsPath) const
   }
 }
 
+bool Dir::mkpath(const std::string &path,bool acceptsAbsPath) const
+{
+  std::error_code ec;
+  std::string result = filePath(path,acceptsAbsPath);
+  if (exists(path,acceptsAbsPath))
+  {
+    return true;
+  }
+  else
+  {
+    return fs::create_directories(result,ec);
+  }
+}
+
 bool Dir::rmdir(const std::string &path,bool acceptsAbsPath) const
 {
   return remove(path,acceptsAbsPath);

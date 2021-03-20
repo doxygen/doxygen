@@ -10166,13 +10166,13 @@ void generateTemplateFiles(const char *templateDir)
 {
   if (!templateDir) return;
   Dir thisDir;
-  if (!thisDir.exists(templateDir) && !thisDir.mkdir(templateDir))
+  if (!thisDir.exists(templateDir) && !thisDir.mkpath(templateDir))
   {
     err("Failed to create output directory '%s'\n",templateDir);
     return;
   }
   std::string outDir = std::string(templateDir)+"/html";
-  if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
+  if (!thisDir.exists(outDir) && !thisDir.mkpath(outDir))
   {
     err("Failed to create output directory '%s'\n",outDir.c_str());
     return;

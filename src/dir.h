@@ -82,6 +82,7 @@ class Dir final
     std::string filePath(const std::string &path,bool acceptsAbsPath=true) const;
     bool exists(const std::string &path,bool acceptsAbsPath=true) const;
     bool mkdir(const std::string &path,bool acceptsAbsPath=true) const;
+    bool mkpath(const std::string &path,bool acceptsAbsPath=true) const;
     bool rmdir(const std::string &path,bool acceptsAbsPath=true) const;
     bool remove(const std::string &path,bool acceptsAbsPath=true) const;
     bool rename(const std::string &orgName,const std::string &newName,

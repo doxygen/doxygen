@@ -10736,7 +10736,7 @@ static QCString createOutputDirectory(const QCString &baseDirName,
     result.prepend(baseDirName+'/');
   }
   Dir formatDir(result.str());
-  if (!formatDir.exists() && !formatDir.mkdir(result.str()))
+  if (!formatDir.exists() && !formatDir.mkpath(result.str()))
   {
     err("Could not create output directory %s\n", result.data());
     cleanUpDoxygen();
@@ -10968,7 +10968,7 @@ void parseInput()
     if (!dir.exists())
     {
       dir.setPath(Dir::currentDirPath());
-      if (!dir.mkdir(outputDirectory.str()))
+      if (!dir.mkpath(outputDirectory.str()))
       {
         err("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
             "exist and cannot be created\n",outputDirectory.data());
