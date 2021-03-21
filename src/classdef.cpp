@@ -2998,7 +2998,6 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             )
             && memberWritten)
         {
-          ol.writeString("<span class=\"mlabel\">");
           StringVector sl;
           if (lang==SrcLangExt_VHDL)
           {
@@ -3040,11 +3039,15 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             if (!firstSpan)
             {
               ol.writeString("</span><span class=\"mlabel\">");
+            }
+            else
+            {
+              ol.writeString("<span class=\"mlabel\">");
               firstSpan=false;
             }
             ol.docify(s.c_str());
           }
-          ol.writeString("</span>");
+          if (!firstSpan) ol.writeString("</span>");
         }
         if (memberWritten)
         {
