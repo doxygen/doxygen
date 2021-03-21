@@ -1313,7 +1313,6 @@ static QCString configFileToString(const char *name)
     return ret;
   };
 
-  bool fileOpened=FALSE;
   if (name[0]=='-' && name[1]==0) // read from stdin
   {
     // read contents from stdin into contents string
@@ -1324,16 +1323,11 @@ static QCString configFileToString(const char *name)
     std::ifstream f(name,std::istream::in);
     if (!f.is_open())
     {
-      config_err("file '%s' not found\n",name);
+      config_term("file '%s' not found or could not be opened\n",name);
       return "";
     }
     return stream2string(f);
   }
-  if (!fileOpened)
-  {
-    config_term("cannot open file '%s' for reading\n",name);
-  }
-  return "";
 }
 
 bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
