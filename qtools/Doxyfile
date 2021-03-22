@@ -1,4 +1,3 @@
-# Doxyfile 1.8.14
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -136,7 +135,6 @@ VERBATIM_HEADERS       = YES
 # Configuration options related to the alphabetical class index
 #---------------------------------------------------------------------------
 ALPHABETICAL_INDEX     = YES
-COLS_IN_ALPHA_INDEX    = 4
 IGNORE_PREFIX          = Q
 #---------------------------------------------------------------------------
 # Configuration options related to the HTML output
@@ -283,7 +281,6 @@ EXTERNAL_PAGES         = YES
 # Configuration options related to the dot tool
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = YES
-MSCGEN_PATH            =
 DIA_PATH               =
 HIDE_UNDOC_RELATIONS   = YES
 HAVE_DOT               = YES
