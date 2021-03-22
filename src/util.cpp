@@ -71,6 +71,7 @@
 #include "symbolresolver.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "utf8.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -3474,6 +3475,7 @@ bool hasVisibleRoot(const BaseClassList &bcl)
 
 //----------------------------------------------------------------------
 
+#if 0
 // copies the next UTF8 character from input stream into buffer ids
 // returns the size of the character in bytes (or 0 if it is invalid)
 // the character itself will be copied as a UTF-8 encoded string to ids.
@@ -3533,7 +3535,7 @@ int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modi
   }
   return inputLen;
 }
-
+#endif
 
 // note that this function is not reentrant due to the use of static growBuf!
 QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscore)
@@ -3579,20 +3581,20 @@ QCString escapeCharsInString(const char *name,bool allowDots,bool allowUnderscor
       default:
                 if (c<0)
                 {
-                  char ids[MAX_UTF8_CHAR_SIZE];
                   bool doEscape = true;
                   if (allowUnicodeNames)
                   {
-                    int charLen = getUtf8Char(p-1,ids);
+                    int charLen = getUTF8CharNumBytes(c);
                     if (charLen>0)
                     {
-                      growBuf.addStr(ids);
-                      p+=charLen-1;
+                      growBuf.addStr(p-1,charLen);
+                      p+=charLen;
                       doEscape = false;
                     }
                   }
                   if (doEscape) // not a valid unicode char or escaping needed
                   {
+                    char ids[5];
                     unsigned char id = (unsigned char)c;
                     ids[0]='_';
                     ids[1]='x';
@@ -5695,67 +5697,14 @@ bool checkIfTypedef(const Definition *scope,const FileDef *fileScope,const char 
     return FALSE;
 }
 
-const char *writeUtf8Char(std::ostream &t,const char *s)
+static int nextUTF8CharPosition(const QCString &utf8Str,uint len,uint startPos)
 {
-  const char *p = s;
-  uchar c=(uchar)*s++;
-  if (c>=0x80) // multibyte character
-  {
-    if (((uchar)c&0xE0)==0xC0)
-    {
-      s++; // 11xx.xxxx: >=2 byte character
-    }
-    if (((uchar)c&0xF0)==0xE0)
-    {
-      s++; // 111x.xxxx: >=3 byte character
-    }
-    if (((uchar)c&0xF8)==0xF0)
-    {
-      s++; // 1111.xxxx: >=4 byte character
-    }
-    if (((uchar)c&0xFC)==0xF8)
-    {
-      s++; // 1111.1xxx: >=5 byte character
-    }
-    if (((uchar)c&0xFE)==0xFC)
-    {
-      s++; // 1111.1xxx: 6 byte character
-    }
-  }
-  t.write(p,s-p);
-  return s;
-}
-
-int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos)
-{
-  int bytes=1;
   if (startPos>=len) return len;
   uchar c = (uchar)utf8Str[startPos];
-  if (c>=0x80) // multibyte utf-8 character
+  int bytes=getUTF8CharNumBytes(c);
+  if (c=='&') // skip over character entities
   {
-    if (((uchar)c&0xE0)==0xC0)
-    {
-      bytes+=1; // 11xx.xxxx: >=2 byte character
-    }
-    if (((uchar)c&0xF0)==0xE0)
-    {
-      bytes+=2; // 111x.xxxx: >=3 byte character
-    }
-    if (((uchar)c&0xF8)==0xF0)
-    {
-      bytes+=3; // 1111.xxxx: >=4 byte character
-    }
-    if (((uchar)c&0xFC)==0xF8)
-    {
-      bytes+=4; // 1111.1xxx: >=5 byte character
-    }
-    if (((uchar)c&0xFE)==0xFC)
-    {
-      bytes+=5; // 1111.1xxx: 6 byte character
-    }
-  }
-  else if (c=='&') // skip over character entities
-  {
+    bytes=1;
     int (*matcher)(int) = 0;
     c = (uchar)utf8Str[startPos+bytes];
     if (c=='#') // numerical entity?
@@ -5809,14 +5758,14 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   int i=0;
   int charCnt=0;
   int l=result.length();
-  while ((i=nextUtf8CharPosition(result,l,i))<l)
+  while ((i=nextUTF8CharPosition(result,l,i))<l)
   {
     charCnt++;
     if (charCnt>=80) break;
   }
   if (charCnt>=80) // try to truncate the string
   {
-    while ((i=nextUtf8CharPosition(result,l,i))<l && charCnt<100)
+    while ((i=nextUTF8CharPosition(result,l,i))<l && charCnt<100)
     {
       charCnt++;
       if (result.at(i)==',' ||
@@ -6783,6 +6732,7 @@ bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile)
 
 //--------------------------------------------------------------------------------------
 
+#if 0
 /*! @brief Get one unicode character as an unsigned integer from utf-8 string
  *
  * @param s utf-8 encoded string
@@ -6847,6 +6797,9 @@ uint getUtf8CodeToUpper( const QCString& s, int idx )
   const uint v = getUtf8Code( s, idx );
   return v < 0x7f ? toupper( v ) : v;
 }
+#endif
+
+
 
 //--------------------------------------------------------------------------------------
 //

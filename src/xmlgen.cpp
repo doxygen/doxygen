@@ -45,6 +45,7 @@
 #include "htmlentity.h"
 #include "resourcemgr.h"
 #include "dir.h"
+#include "utf8.h"
 
 // no debug info
 #define XML_DB(x) do {} while(0)
@@ -138,7 +139,7 @@ inline void writeXMLCodeString(std::ostream &t,const char *s, int &col)
         // encode invalid XML characters (see http://www.w3.org/TR/2000/REC-xml-20001006#NT-Char)
         t << "<sp value=\"" << int(c) << "\"/>";
         break;
-      default:   s=writeUtf8Char(t,s-1); col++; break;
+      default:   s=writeUTF8Char(t,s-1); col++; break;
     }
   }
 }

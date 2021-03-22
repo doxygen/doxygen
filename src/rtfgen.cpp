@@ -46,6 +46,7 @@
 #include "filename.h"
 #include "namespacedef.h"
 #include "dir.h"
+#include "utf8.h"
 
 
 //#define DBG_RTF(x) x;
@@ -1809,7 +1810,7 @@ void RTFGenerator::codify(const char *str)
         case '{':   t << "\\{"; m_col++;          break;
         case '}':   t << "\\}"; m_col++;          break;
         case '\\':  t << "\\\\"; m_col++;         break;
-        default:    p=(const unsigned char *)writeUtf8Char(t,(const char *)p-1); m_col++; break;
+        default:    p=(const unsigned char *)writeUTF8Char(t,(const char *)p-1); m_col++; break;
       }
     }
   }

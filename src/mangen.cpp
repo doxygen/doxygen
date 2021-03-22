@@ -30,6 +30,7 @@
 #include "mandocvisitor.h"
 #include "language.h"
 #include "dir.h"
+#include "utf8.h"
 
 static QCString getExtension()
 {
@@ -332,7 +333,7 @@ void ManGenerator::codify(const char *str)
         case '\n':  t << "\n"; m_firstCol=TRUE; m_col=0; break;
         case '\\':  t << "\\"; m_col++; break;
         case '\"':  // no break!
-        default:    p=writeUtf8Char(t,p-1); m_firstCol=FALSE; m_col++; break;
+        default:    p=writeUTF8Char(t,p-1); m_firstCol=FALSE; m_col++; break;
       }
     }
     //printf("%s",str);fflush(stdout);

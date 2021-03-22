@@ -51,6 +51,7 @@
 #include "growbuf.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "utf8.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -585,7 +586,7 @@ void HtmlCodeGenerator::codify(const char *str)
             }
             else
             {
-              p=writeUtf8Char(m_t,p-1);
+              p=writeUTF8Char(m_t,p-1);
               m_col++;
             }
           }

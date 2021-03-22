@@ -47,6 +47,7 @@
 #include "namespacedef.h"
 #include "filename.h"
 #include "tooltip.h"
+#include "utf8.h"
 
 #define MAX_ITEMS_BEFORE_MULTIPAGE_INDEX 200
 #define MAX_ITEMS_BEFORE_QUICK_INDEX 30
@@ -2052,13 +2053,12 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
       if (cd->getLanguage()==SrcLangExt_VHDL && !((VhdlDocGen::VhdlClasses)cd->protection()==VhdlDocGen::ENTITYCLASS ))// no architecture
         continue;
 
+      // get the first UTF8 character (after the part that should be ignored)
       int index = getPrefixIndex(cd->className());
-      //printf("name=%s index=%d %d\n",cd->className().data(),index,cd->protection());
-      char charStr[MAX_UTF8_CHAR_SIZE];
-      if (getUtf8Char(cd->className().data()+index,charStr,CaseModifier::ToUpper)>0)
-         // get the first UTF8 character (after the part that should be ignored)
+      std::string letter = getUTF8CharAt(cd->className().str(),index);
+      if (!letter.empty())
       {
-        indexLettersUsed.insert(charStr);
+        indexLettersUsed.insert(convertUTF8ToUpper(letter));
       }
     }
   }
@@ -2092,12 +2092,13 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
 
     if (cd->isLinkableInProject() && cd->templateMaster()==0)
     {
-      int index = getPrefixIndex(cd->className());
-      char charStr[MAX_UTF8_CHAR_SIZE];
-      if (getUtf8Char(cd->className().data()+index,charStr,CaseModifier::ToUpper)>0)
-         // get the first UTF8 character (after the part that should be ignored)
+      QCString className = cd->className();
+      int index = getPrefixIndex(className);
+      std::string letter = getUTF8CharAt(className.str(),index);
+      if (!letter.empty())
       {
-        auto it = classesByLetter.find(charStr);
+        letter = convertUTF8ToUpper(letter);
+        auto it = classesByLetter.find(letter);
         if (it!=classesByLetter.end()) // add class to the existing list
         {
           it->second.push_back(cd.get());
@@ -2105,8 +2106,7 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
         else // new entry
         {
           classesByLetter.insert(
-              std::make_pair(std::string(charStr),
-                             std::vector<const ClassDef*>({ cd.get() })));
+              std::make_pair(letter, std::vector<const ClassDef*>({ cd.get() })));
         }
       }
     }
@@ -2633,9 +2633,10 @@ void addClassMemberNameToIndex(const MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    char letter[MAX_UTF8_CHAR_SIZE];
-    if (getUtf8Char(n.data()+index,letter,CaseModifier::ToLower)>0)
+    std::string letter = getUTF8CharAt(n.str(),index);
+    if (!letter.empty())
     {
+      letter = convertUTF8ToLower(letter);
       bool isFriendToHide = hideFriendCompounds &&
         (QCString(md->typeString())=="friend class" ||
          QCString(md->typeString())=="friend struct" ||
@@ -2711,9 +2712,10 @@ void addNamespaceMemberNameToIndex(const MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    char letter[MAX_UTF8_CHAR_SIZE];
-    if (getUtf8Char(n.data()+index,letter,CaseModifier::ToLower)>0)
+    std::string letter = getUTF8CharAt(n.str(),index);
+    if (!letter.empty())
     {
+      letter = convertUTF8ToLower(letter);
       if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
       {
         MemberIndexMap_add(g_namespaceIndexLetterUsed[NMHL_All],letter,md);
@@ -2778,9 +2780,10 @@ void addFileMemberNameToIndex(const MemberDef *md)
   {
     QCString n = md->name();
     int index = getPrefixIndex(n);
-    char letter[MAX_UTF8_CHAR_SIZE];
-    if (getUtf8Char(n.data()+index,letter,CaseModifier::ToLower)>0)
+    std::string letter = getUTF8CharAt(n.str(),index);
+    if (!letter.empty())
     {
+      letter = convertUTF8ToLower(letter);
       if (!md->isEnumValue() || (md->getEnumScope() && !md->getEnumScope()->isStrong()))
       {
         MemberIndexMap_add(g_fileIndexLetterUsed[FMHL_All],letter,md);

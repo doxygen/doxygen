@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -429,19 +427,6 @@ void stripIndentation(QCString &doc,const int indentationLevel);
 QCString getDotImageExtension();
 
 bool fileVisibleInIndex(const FileDef *fd,bool &genSourceFile);
-
-const int MAX_UTF8_CHAR_LEN = 4;
-const int MAX_UTF8_CHAR_SIZE = MAX_UTF8_CHAR_LEN+1; // include 0 terminator
-enum class CaseModifier
-{
-  None,
-  ToUpper,
-  ToLower
-};
-int getUtf8Char(const char *input,char ids[MAX_UTF8_CHAR_SIZE],CaseModifier modifier=CaseModifier::None);
-uint getUtf8Code( const QCString& s, int idx );
-uint getUtf8CodeToLower( const QCString& s, int idx );
-uint getUtf8CodeToUpper( const QCString& s, int idx );
 
 QCString extractDirection(QCString &docs);
 

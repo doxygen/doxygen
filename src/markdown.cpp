@@ -50,6 +50,7 @@
 #include "portable.h"
 #include "regex.h"
 #include "fileinfo.h"
+#include "utf8.h"
 
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
@@ -2657,23 +2658,21 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
         if (c<0 && i<size) // multibyte sequence
         {
           // special handling of the UTF-8 nbsp character 0xC2 0xA0
-          if ((uchar)c == 0xC2 && (uchar)(data[i]) == 0xA0)
+          int nb = isUTF8NonBreakableSpace(data);
+          if (nb>0)
           {
             m_out.addStr(g_doxy_nsbp);
-            i++;
+            i+=nb-1;
           }
           else
           {
+            int bytes = getUTF8CharNumBytes(c);
+            for (int j=0;j<bytes-1 && c;j++)
+            {
+              m_out.addChar(c);
+              c = data[i++];
+            }
             m_out.addChar(c);
-            m_out.addChar(data[i++]); // >= 2 bytes
-            if (((uchar)c&0xE0)==0xE0 && i<size)
-            {
-              m_out.addChar(data[i++]); // 3 bytes
-            }
-              if (((uchar)c&0xF0)==0xF0 && i<size)
-            {
-              m_out.addChar(data[i++]); // 4 byres
-            }
           }
         }
         else

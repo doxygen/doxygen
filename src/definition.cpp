@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -51,7 +49,7 @@
 #include "pagedef.h"
 #include "bufstr.h"
 #include "reflist.h"
-
+#include "utf8.h"
 
 //-----------------------------------------------------------------------------------------
 
@@ -503,20 +501,6 @@ void DefinitionImpl::setDocumentation(const char *d,const char *docFile,int docL
   _setDocumentation(d,docFile,docLine,stripWhiteSpace,FALSE);
 }
 
-#define uni_isupper(c) (QChar(c).category()==QChar::Letter_Uppercase)
-
-// do a UTF-8 aware search for the last real character and return TRUE
-// if that is a multibyte one.
-static bool lastCharIsMultibyte(const QCString &s)
-{
-  uint l = s.length();
-  int p = 0;
-  int pp = -1;
-  while ((p=nextUtf8CharPosition(s,l,(uint)p))<(int)l) pp=p;
-  if (pp==-1 || ((uchar)s[pp])<0x80) return FALSE;
-  return TRUE;
-}
-
 void DefinitionImpl::_setBriefDescription(const char *b,const char *briefFile,int briefLine)
 {
   static QCString outputLanguage = Config_getEnum(OUTPUT_LANGUAGE);
@@ -536,7 +520,7 @@ void DefinitionImpl::_setBriefDescription(const char *b,const char *briefFile,in
     {
       case '.': case '!': case '?': case '>': case ':': case ')': break;
       default:
-        if (uni_isupper(brief.at(0)) && !lastCharIsMultibyte(brief)) brief+='.';
+        if (isUTF8CharUpperCase(brief.str(),0) && !lastUTF8CharIsMultibyte(brief.str())) brief+='.';
         break;
     }
   }

@@ -34,6 +34,7 @@
 #include "resourcemgr.h"
 #include "namespacedef.h"
 #include "classdef.h"
+#include "utf8.h"
 
 //---------------------------------------------------------------------------------------------
 // the following part is for the server based search engine
@@ -550,28 +551,7 @@ QCString searchName(const Definition *d)
 QCString searchId(const Definition *d)
 {
   QCString s = searchName(d);
-  int c;
-  uint i;
-  QCString result;
-  for (i=0;i<s.length();i++)
-  {
-    c=s.at(i);
-    if (c>0x7f || c<0) // part of multibyte character
-    {
-      result+=(char)c;
-    }
-    else if (isalnum(c)) // simply alpha numerical character
-    {
-      result+=(char)tolower(c);
-    }
-    else // other 'unprintable' characters
-    {
-      char val[4];
-      sprintf(val,"_%02x",(uchar)c);
-      result+=val;
-    }
-  }
-  return result;
+  return convertUTF8ToLower(s.str());
 }
 
 
@@ -642,11 +622,10 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    QCString n = md->name();
-    if (!n.isEmpty())
+    std::string n = md->name().str();
+    if (!n.empty())
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(n,letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(n,0));
       bool isFriendToHide = hideFriendCompounds &&
         (QCString(md->typeString())=="friend class" ||
          QCString(md->typeString())=="friend struct" ||
@@ -704,11 +683,10 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    QCString n = md->name();
-    if (!n.isEmpty())
+    std::string n = md->name().str();
+    if (!n.empty())
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(n,letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(n,0));
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,md);
 
       if (md->isFunction())
@@ -754,8 +732,7 @@ void createJavaScriptSearchIndex()
   // index classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    char letter[MAX_UTF8_CHAR_SIZE];
-    getUtf8Char(cd->localName(),letter,CaseModifier::ToLower);
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(cd->localName().str(),0));
     if (cd->isLinkable())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,cd.get());
@@ -788,8 +765,7 @@ void createJavaScriptSearchIndex()
   // index namespaces
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    char letter[MAX_UTF8_CHAR_SIZE];
-    getUtf8Char(nd->name(),letter,CaseModifier::ToLower);
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(nd->name().str(),0));
     if (nd->isLinkable())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,nd.get());
@@ -802,8 +778,7 @@ void createJavaScriptSearchIndex()
   {
     for (const auto &fd : *fn)
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(fd->name(),letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(fd->name().str(),0));
       if (fd->isLinkable())
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,fd.get());
@@ -843,11 +818,10 @@ void createJavaScriptSearchIndex()
   {
     if (gd->isLinkable())
     {
-      QCString title = gd->groupTitle();
-      if (!title.isEmpty()) // TODO: able searching for all word in the title
+      std::string title = gd->groupTitle();
+      if (!title.empty()) // TODO: able searching for all word in the title
       {
-        char letter[MAX_UTF8_CHAR_SIZE];
-        getUtf8Char(title,letter,CaseModifier::ToLower);
+        std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,gd.get());
         g_searchIndexInfo[SEARCH_INDEX_GROUPS].add(letter,gd.get());
       }
@@ -859,11 +833,10 @@ void createJavaScriptSearchIndex()
   {
     if (pd->isLinkable())
     {
-      QCString title = pd->title();
-      if (!title.isEmpty())
+      std::string title = pd->title().str();
+      if (!title.empty())
       {
-        char letter[MAX_UTF8_CHAR_SIZE];
-        getUtf8Char(title,letter,CaseModifier::ToLower);
+        std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,pd.get());
         g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,pd.get());
       }
@@ -871,11 +844,10 @@ void createJavaScriptSearchIndex()
   }
   if (Doxygen::mainPage)
   {
-    QCString title = Doxygen::mainPage->title();
-    if (!title.isEmpty())
+    std::string title = Doxygen::mainPage->title().str();
+    if (!title.empty())
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(title,letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,Doxygen::mainPage.get());
       g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,Doxygen::mainPage.get());
     }

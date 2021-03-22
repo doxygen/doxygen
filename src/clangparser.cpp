@@ -19,6 +19,7 @@
 #include "membername.h"
 #include "filename.h"
 #include "tooltip.h"
+#include "utf8.h"
 #endif
 
 //--------------------------------------------------------------------------
@@ -73,18 +74,14 @@ static QCString detab(const QCString &s)
         col++;
         break;
       default: // non-whitespace => update minIndent
-        out.addChar(c);
-        if (c<0 && i<size) // multibyte sequence
         {
-          out.addChar(data[i++]); // >= 2 bytes
-          if (((uchar)c&0xE0)==0xE0 && i<size)
+          int bytes = getUTF8CharNumBytes(c);
+          for (int j=0;j<bytes-1 && c!=0; j++)
           {
-            out.addChar(data[i++]); // 3 bytes
+            out.addChar(c);
+            c = data[i++];
           }
-          if (((uchar)c&0xF0)==0xF0 && i<size)
-          {
-            out.addChar(data[i++]); // 4 byres
-          }
+          out.addChar(c);
         }
         if (col<minIndent) minIndent=col;
         col++;

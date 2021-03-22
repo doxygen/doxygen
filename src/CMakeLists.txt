@@ -301,6 +301,7 @@ add_library(doxymain STATIC
     template.cpp
     textdocvisitor.cpp
     tooltip.cpp
+    utf8.cpp
     util.cpp
     vhdldocgen.cpp
     vhdljjparser.cpp

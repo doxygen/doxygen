@@ -30,6 +30,7 @@
 #include "regex.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "utf8.h"
 
 #define ENABLE_TRACING 0
 
@@ -1106,7 +1107,10 @@ class FilterAlphaIndex
     {
        TemplateVariant v = s->get(attribName);
        int index = getPrefixIndex(v.toString());
-       return getUtf8CodeToUpper(v.toString(),index);
+       return getUnicodeForUTF8CharAt(
+                 convertUTF8ToUpper(
+                   getUTF8CharAt(v.toString().str(),index)
+                 ),0);
     }
 
   public:

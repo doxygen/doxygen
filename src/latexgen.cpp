@@ -44,6 +44,7 @@
 #include "resourcemgr.h"
 #include "portable.h"
 #include "fileinfo.h"
+#include "utf8.h"
 
 static QCString g_header;
 static QCString g_footer;
@@ -117,26 +118,15 @@ void LatexCodeGenerator::codify(const char *str)
 #undef  COPYCHAR
 // helper macro to copy a single utf8 character, dealing with multibyte chars.
 #define COPYCHAR() do {                                           \
-                     if (lresult < (i + 5))                       \
+                     int bytes = getUTF8CharNumBytes(c);          \
+                     if (lresult < (i + bytes + 1))               \
                      {                                            \
                        lresult += 512;                            \
                        result = (signed char *)realloc(result, lresult); \
                      }                                            \
-                     result[i++]=c; p++;                          \
-                     if (c<0) /* multibyte utf-8 character */     \
+                     for (int j=0; j<bytes && *p; j++)            \
                      {                                            \
-                       /* 1xxx.xxxx: >=2 byte character */        \
                        result[i++]=*p++;                          \
-                       if (((uchar)c&0xE0)==0xE0)                 \
-                       {                                          \
-                         /* 111x.xxxx: >=3 byte character */      \
-                         result[i++]=*p++;                        \
-                       }                                          \
-                       if (((uchar)c&0xF0)==0xF0)                 \
-                       {                                          \
-                         /* 1111.xxxx: 4 byte character */        \
-                         result[i++]=*p++;                        \
-                       }                                          \
                      }                                            \
                      m_col++;                                     \
                    } while(0)
