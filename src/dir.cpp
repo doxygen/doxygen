@@ -218,7 +218,7 @@ std::string Dir::filePath(const std::string &path,bool acceptsAbsPath) const
   }
   else
   {
-    result = (p->path / path).string();
+    result = currentDirPath() + "/" + path;
   }
   correctPath(result);
   return result;
