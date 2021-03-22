@@ -255,9 +255,9 @@ class PropertyMapper
     void addProperty(const char *name,typename PropertyFunc::Handler handle)
     {
       auto it = m_map.find(name);
-      if (it==m_map.end())
+      if (it!=m_map.end())
       {
-        err("Error: adding property '%s' more than once",name);
+        err("adding property '%s' more than once\n",name);
       }
       else
       {
@@ -1278,7 +1278,7 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       break;
     // TODO: support other generators
     default:
-      err("context.cpp: output format not yet supported");
+      err("context.cpp: output format not yet supported\n");
       break;
   }
   QCString docs = ts.str().c_str();
@@ -1315,7 +1315,7 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
       break;
     // TODO: support other generators
     default:
-      err("context.cpp: output format not yet supported");
+      err("context.cpp: output format not yet supported\n");
       break;
   }
   QCString s = t.str();
@@ -1370,7 +1370,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
       break;
     // TODO: support other generators
     default:
-      err("context.cpp: output format not yet supported");
+      err("context.cpp: output format not yet supported\n");
       break;
   }
   QCString s = t.str();
@@ -1978,7 +1978,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -2024,7 +2024,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -2075,7 +2075,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -3080,7 +3080,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -3132,7 +3132,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -3546,7 +3546,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -4960,7 +4960,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -4976,7 +4976,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (hasReferencedByRelation().toBool())
       {
-        err("context.cpp: output format not yet supported");
+        err("context.cpp: output format not yet supported\n");
       }
       return TemplateVariant("");
     }
@@ -5032,7 +5032,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -5048,7 +5048,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (hasReferencesRelation().toBool())
       {
-         err("context.cpp: output format not yet supported");
+         err("context.cpp: output format not yet supported\n");
       }
       return TemplateVariant("");
     }
@@ -5305,7 +5305,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;

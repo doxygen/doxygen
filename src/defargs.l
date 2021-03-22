@@ -771,7 +771,7 @@ static bool nameIsActuallyPartOfType(QCString &name)
 }
 
 /*! Converts an argument string into an ArgumentList.
- *  \param[in] lang langage of the current argument list
+ *  \param[in] lang language of the current argument list
  *  \param[in] argsString the list of Arguments.
  *  \param[out] extraTypeChars point to string to which trailing characters 
  *              for complex types are written to
