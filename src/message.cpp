@@ -122,9 +122,11 @@ static void handle_warn_as_error()
 {
   if (warnBehavior == WARN_YES)
   {
-    std::unique_lock<std::mutex> lock(g_mutex);
-    QCString msgText = " (warning treated as error, aborting now)\n";
-    fwrite(msgText.data(),1,msgText.length(),warnFile);
+    {
+      std::unique_lock<std::mutex> lock(g_mutex);
+      QCString msgText = " (warning treated as error, aborting now)\n";
+      fwrite(msgText.data(),1,msgText.length(),warnFile);
+    }
     exit(1);
   }
   warnStat = true;
