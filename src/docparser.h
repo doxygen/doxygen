@@ -160,9 +160,6 @@ class DocNode
     /*! Returns TRUE iff this node is inside a preformatted section */
     bool isPreformatted() const { return m_insidePre; }
 
-    //virtual QString::Direction getTextDir()     const { return QString::DirNeutral; }
-    //virtual QString::Direction getTextBasicDir() const { return QString::DirNeutral; }
-
   protected:
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }

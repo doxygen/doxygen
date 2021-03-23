@@ -18,8 +18,6 @@
 #include <unordered_map>
 #include <string>
 
-#include <qstring.h>
-
 #include <ctype.h>
 #include "md5.h"
 #include <stdio.h>
