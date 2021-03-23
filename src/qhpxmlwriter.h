@@ -51,7 +51,7 @@ class QhpXmlWriter
                        char const * const * attributes = 0);
     void closePure(char const * elementName);
 
-    std::stringstream m_backend;
+    std::ostringstream m_backend;
     int  m_indentLevel;
     bool m_curLineIndented;
     bool m_compress;

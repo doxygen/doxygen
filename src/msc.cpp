@@ -153,7 +153,7 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
     return "";
   }
 
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   convertMapFile(t, outFile, relPath, context);
   QCString result = t.str();
 

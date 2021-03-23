@@ -989,7 +989,7 @@ static void writeHierarchicalIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Class);
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv->generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -1095,7 +1095,7 @@ static void writeHierarchicalInterfaceIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Interface);
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv->generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -1201,7 +1201,7 @@ static void writeHierarchicalExceptionIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeClassHierarchy(ol,ftv,addToIndex,ClassDef::Exception);
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv->generateTreeViewInline(t);
     ol.pushGeneratorState();
     ol.disableAllBut(OutputGenerator::Html);
@@ -1457,7 +1457,7 @@ static void writeFileIndex(OutputList &ol)
 
   FTVHelp* ftv = new FTVHelp(FALSE);
   writeDirHierarchy(ol,ftv,addToIndex);
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   ftv->generateTreeViewInline(t);
   ol.writeString(t.str().c_str());
   delete ftv;
@@ -1864,7 +1864,7 @@ static void writeNamespaceIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeNamespaceTree(*Doxygen::namespaceLinkedMap,ftv,TRUE,addToIndex);
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv->generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
     delete ftv;
@@ -2389,7 +2389,7 @@ static void writeAnnotatedIndexGeneric(OutputList &ol,const AnnotatedIndexContex
     FTVHelp ftv(false);
     writeClassTreeInsideNamespace(*Doxygen::namespaceLinkedMap,&ftv,TRUE,addToIndex,ctx.compoundType);
     writeClassTree(*Doxygen::classLinkedMap,&ftv,addToIndex,TRUE,ctx.compoundType);
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv.generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
     if (addToIndex)
@@ -3601,7 +3601,7 @@ static void writePageIndex(OutputList &ol)
         writePages(pd.get(),ftv);
       }
     }
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv->generateTreeViewInline(t);
     ol.writeString(t.str().c_str());
     delete ftv;
@@ -3996,7 +3996,7 @@ static void writeGroupIndex(OutputList &ol)
     }
     FTVHelp* ftv = new FTVHelp(FALSE);
     writeGroupHierarchy(ol,ftv,addToIndex);
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     ftv->generateTreeViewInline(t);
     ol.disableAllBut(OutputGenerator::Html);
     ol.writeString(t.str().c_str());

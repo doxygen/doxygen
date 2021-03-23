@@ -4233,7 +4233,7 @@ QCString convertToPSString(const char *s)
 
 QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 {
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
   QCString result = t.str();
   return result.data();
@@ -5129,7 +5129,7 @@ QCString latexEscapeLabelName(const char *s)
 {
   if (s==0) return "";
   QCString tmp(qstrlen(s)+1);
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   const char *p=s;
   char c;
   int i;
@@ -5172,7 +5172,7 @@ QCString latexEscapeIndexChars(const char *s)
 {
   if (s==0) return "";
   QCString tmp(qstrlen(s)+1);
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   const char *p=s;
   char c;
   int i;
@@ -5215,7 +5215,7 @@ QCString latexEscapeIndexChars(const char *s)
 QCString latexEscapePDFString(const char *s)
 {
   if (s==0) return "";
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5239,7 +5239,7 @@ QCString latexEscapePDFString(const char *s)
 QCString latexFilterURL(const char *s)
 {
   if (s==0) return "";
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   const signed char *p=(const signed char*)s;
   char c;
   while ((c=*p++))
@@ -5746,7 +5746,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 {
   if (doc.isEmpty()) return "";
   //printf("parseCommentAsText(%s)\n",doc.data());
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   DocNode *root = validatingParseDoc(fileName,lineNr,
       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
       0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
@@ -5916,24 +5916,23 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
 
 static QCString escapeCommas(const QCString &s)
 {
-  QGString result;
+  std::ostringstream result(std::ios_base::ate);
   const char *p = s.data();
   char c,pc=0;
   while ((c=*p++))
   {
     if (c==',' && pc!='\\')
     {
-      result+="\\,";
+      result << "\\,";
     }
     else
     {
-      result+=c;
+      result << c;
     }
     pc=c;
   }
-  result+='\0';
   //printf("escapeCommas: '%s'->'%s'\n",s.data(),result.data());
-  return result.data();
+  return result.str();
 }
 
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::string &s,bool allowRecursion)
@@ -6630,7 +6629,7 @@ QCString stripIndentation(const QCString &s)
   if (minIndent==0) return s;
 
   // remove minimum indentation for each line
-  QGString result;
+  std::ostringstream result(std::ios_base::ate);
   p=s.data();
   indent=0;
   while ((c=*p++))
@@ -6638,7 +6637,7 @@ QCString stripIndentation(const QCString &s)
     if (c=='\n') // start of new line
     {
       indent=0;
-      result+=c;
+      result << c;
     }
     else if (indent<minIndent) // skip until we reach minIndent
     {
@@ -6648,7 +6647,7 @@ QCString stripIndentation(const QCString &s)
         int i=newIndent;
         while (i>minIndent) // if a tab crosses the minIndent boundary fill the rest with spaces
         {
-          result+=' ';
+          result << ' ';
           i--;
         }
         indent=newIndent;
@@ -6660,12 +6659,11 @@ QCString stripIndentation(const QCString &s)
     }
     else // copy anything until the end of the line
     {
-      result+=c;
+      result << c;
     }
   }
 
-  result+='\0';
-  return result.data();
+  return result.str();
 }
 
 // strip up to \a indentationLevel spaces from each line in \a doc (excluding the first line)

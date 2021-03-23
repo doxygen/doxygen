@@ -1030,11 +1030,11 @@ private                                 {
                                             yy_pop_state(yyscanner); // end initialization
                                             if (yyextra->last_enum)
                                             {
-                                              yyextra->last_enum->initializer= yyextra->initializer;
+                                              yyextra->last_enum->initializer.str(yyextra->initializer.str());
                                             }
                                             else
                                             {
-                                              if (yyextra->vtype == V_VARIABLE) yyextra->last_entry->initializer= yyextra->initializer;
+                                              if (yyextra->vtype == V_VARIABLE) yyextra->last_entry->initializer.str(yyextra->initializer.str());
                                             }
                                           }
                                           else
@@ -1046,11 +1046,11 @@ private                                 {
                                           yy_pop_state(yyscanner); // end initialization
                                           if (yyextra->last_enum)
                                           {
-                                            yyextra->last_enum->initializer= yyextra->initializer;
+                                            yyextra->last_enum->initializer.str(yyextra->initializer.str());
                                           }
                                           else
                                           {
-                                            if (yyextra->vtype == V_VARIABLE) yyextra->last_entry->initializer= yyextra->initializer;
+                                            if (yyextra->vtype == V_VARIABLE) yyextra->last_entry->initializer.str(yyextra->initializer.str());
                                           }
                                           yyextra->colNr -= 1;
                                           unput(*yytext);
@@ -2715,7 +2715,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
 
   //debugCompounds(rt); //debug
 
-  rt->program.resize(0);
+  rt->program.str(std::string());
   //delete yyextra->current; yyextra->current=0;
   yyextra->moduleProcedures.clear();
   if (tmpBuf)

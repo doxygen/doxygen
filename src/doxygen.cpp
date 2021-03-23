@@ -2048,7 +2048,7 @@ static MemberDef *addVariableToClass(
       qPrint(args),
       root->protection,
       fromAnnScope,
-      qPrint(root->initializer)
+      qPrint(root->initializer.str())
               );
 
   QCString def;
@@ -2147,7 +2147,8 @@ static MemberDef *addVariableToClass(
   md->setFromAnonymousMember(fromAnnMemb);
   //md->setIndentDepth(indentDepth);
   md->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
-  md->setInitializer(root->initializer);
+  std::string init = root->initializer.str();
+  md->setInitializer(init.c_str());
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   md->setMemberSpecifiers(root->spec);
@@ -2382,7 +2383,8 @@ static MemberDef *addVariableToFile(
   md->addSectionsToDefinition(root->anchors);
   md->setFromAnonymousScope(fromAnnScope);
   md->setFromAnonymousMember(fromAnnMemb);
-  md->setInitializer(root->initializer);
+  std::string init = root->initializer.str();
+  md->setInitializer(init.c_str());
   md->setMaxInitLines(root->initLines);
   md->setMemberGroupId(root->mGrpId);
   md->setDefinition(def);
@@ -5018,10 +5020,11 @@ static void addMemberDocs(const Entry *root,
   //    md->initializer().data(),md->initializer().isEmpty(),
   //    root->initializer.data(),root->initializer.isEmpty()
   //   );
-  if (md->initializer().isEmpty() && !root->initializer.isEmpty())
+  std::string rootInit = root->initializer.str();
+  if (md->initializer().isEmpty() && !rootInit.empty())
   {
     //printf("setInitializer\n");
-    md->setInitializer(root->initializer);
+    md->setInitializer(rootInit.c_str());
   }
 
   md->setMaxInitLines(root->initLines);
@@ -7133,7 +7136,8 @@ static void addEnumValuesToEnums(const Entry *root)
                   fmd->setDocumentation(e->doc,e->docFile,e->docLine);
                   fmd->setBriefDescription(e->brief,e->briefFile,e->briefLine);
                   fmd->addSectionsToDefinition(e->anchors);
-                  fmd->setInitializer(e->initializer);
+                  std::string init = e->initializer.str();
+                  fmd->setInitializer(init.c_str());
                   fmd->setMaxInitLines(e->initLines);
                   fmd->setMemberGroupId(e->mGrpId);
                   fmd->setExplicitExternal(e->explicitExternal,fileName,e->startLine,e->startColumn);

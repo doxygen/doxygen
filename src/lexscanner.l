@@ -893,7 +893,7 @@ static void parseMain(yyscan_t yyscanner,
 
   lexscannerYYlex(yyscanner);
 
-  rt->program.resize(0);
+  rt->program.str(std::string());
 }
 
 //----------------------------------------------------------------------------

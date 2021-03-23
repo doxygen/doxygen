@@ -35,7 +35,7 @@ QCString DotGfxHierarchyTable::getBaseName() const
 
 void DotGfxHierarchyTable::computeTheGraph()
 {
-  std::stringstream md5stream;
+  std::ostringstream md5stream(std::ios_base::ate);
   writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
   md5stream << "  rankdir=\"LR\";\n";
   for (auto node : m_rootNodes)

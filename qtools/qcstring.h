@@ -31,8 +31,6 @@
 #include <cstdint>
 #include <ostream>
 
-class QGString;
-
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
  *****************************************************************************/
@@ -462,10 +460,6 @@ inline QCString operator+( const QCString &s1, const QCString &s2 )
 {
   return QCString(s1.str()+s2.str());
 }
-
-
-inline QCString operator+( const QCString &s1, const QGString &s2 );
-inline QCString operator+( const QGString &s1, const QCString &s2 );
 
 
 inline QCString operator+( const QCString &s1, const char *s2 )

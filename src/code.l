@@ -34,6 +34,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <sstream>
 
 #include <stdio.h>
 #include <assert.h>
@@ -74,10 +75,11 @@
 // context for an Objective-C method call
 struct ObjCCallCtx
 {
+  ObjCCallCtx() : comment(std::ios_base::ate) {}
   int id;
   QCString methodName;
   QCString objectTypeOrName;
-  QGString comment;
+  std::ostringstream comment;
   const ClassDef *objectType;
   const MemberDef *objectVar;
   const MemberDef *method;
@@ -1435,18 +1437,19 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                   }
 <ObjCCall,ObjCMName>{CCS}          {
                                     yyextra->lastObjCCallContext = YY_START;
-                                    yyextra->currentCtx->comment=yytext;
+                                    yyextra->currentCtx->comment.str(yytext);
                                     BEGIN(ObjCCallComment);
                                   }
 <ObjCCallComment>{CCE}             {
-                                    yyextra->currentCtx->comment+=yytext;
-                                    yyextra->currentCtx->format+=escapeComment(yyscanner,yyextra->currentCtx->comment);
+                                    yyextra->currentCtx->comment << yytext;
+                                    std::string commentStr = yyextra->currentCtx->comment.str();
+                                    yyextra->currentCtx->format+=escapeComment(yyscanner,commentStr.c_str());
                                     BEGIN(yyextra->lastObjCCallContext);
                                   }
-<ObjCCallComment>[^*\n]+          { yyextra->currentCtx->comment+=yytext; }
-<ObjCCallComment>{CPPC}|{CCS}        { yyextra->currentCtx->comment+=yytext; }
-<ObjCCallComment>\n               { yyextra->currentCtx->comment+=*yytext; }
-<ObjCCallComment>.                { yyextra->currentCtx->comment+=*yytext; }
+<ObjCCallComment>[^*\n]+          { yyextra->currentCtx->comment << yytext; }
+<ObjCCallComment>{CPPC}|{CCS}        { yyextra->currentCtx->comment << yytext; }
+<ObjCCallComment>\n               { yyextra->currentCtx->comment << *yytext; }
+<ObjCCallComment>.                { yyextra->currentCtx->comment << *yytext; }
 <ObjCCall>{ID}                    {
                                     yyextra->currentCtx->format+=escapeObject(yyscanner,yytext);
                                     if (yyextra->braceCount==0)

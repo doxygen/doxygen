@@ -3355,7 +3355,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
         if (nb) // block is overruled
         {
           ci->push();
-          std::stringstream ss;
+          std::ostringstream ss(std::ios_base::ate);
           // get super block of block nb
           TemplateNodeBlock *sb = ci->blockContext()->get(m_blockName);
           if (sb && sb!=nb && sb!=this) // nb and sb both overrule this block
@@ -3641,7 +3641,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
               {
                 TemplateEscapeIntf *escIntf = ci->escapeIntf();
                 ci->selectEscapeIntf(extension);
-                std::stringstream os;
+                std::ostringstream os(std::ios_base::ate);
                 createTemplate->render(os,c);
                 QCString out = os.str();
                 stripLeadingWhiteSpace(out);
@@ -3714,7 +3714,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       TemplateContext *c = ctx->templateCtx;
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return QCString(); // should not happen
-      std::stringstream ss;
+      std::ostringstream ss(std::ios_base::ate);
       c->push();
       TemplateVariant node;
       TemplateListIntf::ConstIterator *it = ctx->list->createIterator();

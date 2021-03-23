@@ -354,11 +354,11 @@ void writeDotImageMapFromFile(std::ostream &t,
   }
   else // bitmap graphics
   {
-    std::stringstream tt;
+    std::ostringstream tt(std::ios_base::ate);
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
       << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
     DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
-    if (tt.tellg()>0)
+    if (tt.tellp()>0)
     {
       t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
       t << tt.str();

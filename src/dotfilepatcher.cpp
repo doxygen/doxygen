@@ -411,12 +411,12 @@ bool DotFilePatcher::run() const
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
       if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
       {
-        std::stringstream tt;
+        std::ostringstream tt(std::ios_base::ate);
         const Map &map = m_maps.at(mapId);
         //printf("patching MAP %d in file %s with contents of %s\n",
         //   mapId,m_patchFile.data(),map.mapFile.data());
         convertMapFile(tt,map.mapFile,map.relPath,map.urlOnly,map.context);
-        if (tt.tellg()>0)
+        if (tt.tellp()>0)
         {
           t << "<map name=\"" << correctId(map.label) << "\" id=\"" << correctId(map.label) << "\">\n";
           t << tt.str();

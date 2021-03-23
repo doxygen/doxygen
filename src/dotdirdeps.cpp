@@ -199,7 +199,7 @@ QCString DotDirDeps::getBaseName() const
 void DotDirDeps::computeTheGraph()
 {
   // compute md5 checksum of the graph were are about to generate
-  std::stringstream md5stream;
+  std::ostringstream md5stream(std::ios_base::ate);
   //m_dir->writeDepGraph(md5stream);
   writeDotDirDepGraph(md5stream,m_dir,m_linkRelations);
   m_theGraph = md5stream.str();

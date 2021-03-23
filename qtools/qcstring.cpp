@@ -14,7 +14,6 @@
  */
 
 #include "qcstring.h"
-#include "qgstring.h"
 
 #include <qstring.h>
 #include <limits.h>
@@ -584,16 +583,6 @@ QDataStream &operator>>( QDataStream &s, QCString &str )
 }
 
 #endif //QT_NO_DATASTREAM
-
-inline QCString operator+( const QCString &s1, const QGString &s2 )
-{
-  return s1.str()+s2.data();
-}
-
-inline QCString operator+( const QGString &s1, const QCString &s2 )
-{
-  return s1.data()+s2.str();
-}
 
 /// substitute all occurrences of \a src in \a s by \a dst
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst)

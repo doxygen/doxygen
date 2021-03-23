@@ -18,10 +18,9 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include <qgstring.h>
-
 #include <vector>
 #include <memory>
+#include <sstream>
 
 #include "types.h"
 #include "arguments.h"
@@ -257,8 +256,8 @@ class Entry
     QCString     bitfields;   //!< member's bit fields
     ArgumentList argList;     //!< member arguments as a list
     ArgumentLists tArgLists; //!< template argument declarations
-    QGString	 program;     //!< the program text
-    QGString     initializer; //!< initial value (for variables)
+    std::ostringstream program;     //!< the program text
+    std::ostringstream initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)

@@ -25,7 +25,7 @@
 
 void DotLegendGraph::writeGraph(const char *path)
 {
-  std::stringstream ts;
+  std::ostringstream ts(std::ios_base::ate);
   DotGraph::writeGraph(ts, GOF_BITMAP, EOF_Html, path, "", "", FALSE, 0);
 
   if (getDotImageExtension()=="svg")
@@ -45,7 +45,7 @@ void DotLegendGraph::computeTheGraph()
 {
   int fontSize = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
-  std::stringstream md5stream;
+  std::ostringstream md5stream(std::ios_base::ate);
   writeGraphHeader(md5stream,theTranslator->trLegendTitle());
   md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";

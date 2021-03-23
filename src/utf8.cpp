@@ -138,7 +138,7 @@ static inline std::string caseConvert(const std::string &input,
                                       const char *(*conversionFunc)(uint32_t code))
 {
   uint32_t code;
-  std::stringstream result;
+  std::ostringstream result(std::ios_base::ate);
   size_t len;
   size_t bytesLeft = input.length();
   const char *p = input.c_str();

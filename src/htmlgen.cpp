@@ -301,7 +301,7 @@ static QCString getConvertLatexMacro()
 
 static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSearch)
 {
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   if (serverSide)
   {
     writeServerSearchBox(t, relPath, highlightSearch);
@@ -1565,9 +1565,9 @@ void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
   startSectionSummary(t,m_sectionCount);
   endSectionSummary(t);
   startSectionContent(t,m_sectionCount);
-  std::stringstream tt;
+  std::ostringstream tt(std::ios_base::ate);
   d.writeImage(tt,dir(),m_relPath,fileName);
-  if (tt.tellg()>0)
+  if (tt.tellp()>0)
   {
     t << " <div class=\"center\">\n";
     t << "  <img src=\"";

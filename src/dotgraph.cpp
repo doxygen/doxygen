@@ -82,9 +82,9 @@ static bool insertMapFile(std::ostream &out,const QCString &mapFile,
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
-    std::stringstream t;
+    std::ostringstream t(std::ios_base::ate);
     DotFilePatcher::convertMapFile(t,mapFile,relPath,false);
-    if (t.tellg()>0)
+    if (t.tellp()>0)
     {
       out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">\n";
       out << t.str();
@@ -307,7 +307,7 @@ void DotGraph::computeGraph(DotNode *root,
                             QCString &graphStr)
 {
   //printf("computeMd5Signature\n");
-  std::stringstream md5stream;
+  std::ostringstream md5stream(std::ios_base::ate);
   writeGraphHeader(md5stream,title);
   if (!rank.isEmpty())
   {

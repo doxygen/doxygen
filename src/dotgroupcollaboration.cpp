@@ -209,7 +209,7 @@ QCString DotGroupCollaboration::getBaseName() const
 
 void DotGroupCollaboration::computeTheGraph()
 {
-  std::stringstream md5stream;
+  std::ostringstream md5stream(std::ios_base::ate);
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags

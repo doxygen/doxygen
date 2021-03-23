@@ -1259,7 +1259,7 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
   TemplateVariant result;
   DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
                                      0,isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-  std::stringstream ts;
+  std::ostringstream ts(std::ios_base::ate);
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
@@ -1281,12 +1281,12 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       err("context.cpp: output format not yet supported\n");
       break;
   }
-  QCString docs = ts.str().c_str();
+  std::string docs = ts.str();
   bool isEmpty = root->isEmpty();
   if (isEmpty)
     result = "";
   else
-    result = TemplateVariant(docs,TRUE);
+    result = TemplateVariant(docs.c_str(),TRUE);
   delete root;
   return result;
 }
@@ -1296,7 +1296,7 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
 {
   auto intf = Doxygen::parserManager->getCodeParser(md->getDefFileExtension());
   intf->resetCodeParserState();
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
@@ -1327,7 +1327,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   auto intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   intf->resetCodeParserState();
-  std::stringstream t;
+  std::ostringstream t(std::ios_base::ate);
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
@@ -1949,7 +1949,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant inheritanceDiagram() const
     {
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       static bool haveDot       = Config_getBool(HAVE_DOT);
       static bool classDiagrams = Config_getBool(CLASS_DIAGRAMS);
       static bool classGraph    = Config_getBool(CLASS_GRAPH);
@@ -1990,13 +1990,13 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           case ContextOutputFormat_Html:
             {
-              std::stringstream tt;
+              std::ostringstream tt(std::ios_base::ate);
 
               QCString name = convertToHtml(m_classDef->displayName());
               d.writeImage(tt,g_globals.outputDir,
                            relPathAsString(),
                            m_classDef->getOutputFileBase());
-              if (tt.tellg()>0)
+              if (tt.tellp()>0)
               {
                 t << "<div class=\"center\">\n";
                 t << "  <img src=\"";
@@ -2049,7 +2049,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant collaborationDiagram() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       if (haveDot)
       {
         DotClassGraph *cg = getCollaborationGraph();
@@ -3054,7 +3054,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includeGraph() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       if (haveDot)
       {
         DotInclDepGraph *cg = getIncludeGraph();
@@ -3106,7 +3106,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includedByGraph() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       if (haveDot)
       {
         DotInclDepGraph *cg = getIncludedByGraph();
@@ -3512,7 +3512,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     }
     TemplateVariant dirGraph() const
     {
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       static bool haveDot  = Config_getBool(HAVE_DOT);
       static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
@@ -3896,7 +3896,7 @@ class TextGeneratorFactory
 
 TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,const QCString &text)
 {
-  std::stringstream ts;
+  std::ostringstream ts(std::ios_base::ate);
   TextGeneratorIntf *tg = TextGeneratorFactory::instance()->create(ts,relPath);
   if (tg)
   {
@@ -4937,7 +4937,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallGraph().toBool())
       {
         DotCallGraph *cg = getCallGraph();
-        std::stringstream t;
+        std::ostringstream t(std::ios_base::ate);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -5009,7 +5009,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallerGraph().toBool())
       {
         DotCallGraph *cg = getCallerGraph();
-        std::stringstream t;
+        std::ostringstream t(std::ios_base::ate);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -5273,7 +5273,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
     TemplateVariant groupGraph() const
     {
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       static bool haveDot     = Config_getBool(HAVE_DOT);
       static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
@@ -8291,7 +8291,7 @@ class InheritanceGraphContext::Private
     }
     TemplateVariant graph() const
     {
-      std::stringstream t;
+      std::ostringstream t(std::ios_base::ate);
       static bool haveDot            = Config_getBool(HAVE_DOT);
       static bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
       if (haveDot && graphicalHierarchy)
@@ -9892,7 +9892,7 @@ class LatexSpaceless : public TemplateSpacelessIntf
     void reset() { }
     QCString remove(const QCString &s)
     {
-      QGString result;
+      std::ostringstream result(std::ios_base::ate);
       const char *p = s.data();
       char c;
       while ((c=*p++))
@@ -9902,12 +9902,11 @@ class LatexSpaceless : public TemplateSpacelessIntf
           case '\t': case ' ': case '\n':
             break;
           default:
-            result+=c;
+            result << c;
             break;
         }
       }
-      result+='\0';
-      return result.data();
+      return result.str();
     }
   private:
 };
@@ -9926,7 +9925,7 @@ class HtmlSpaceless : public TemplateSpacelessIntf
     }
     QCString remove(const QCString &s)
     {
-      QGString result;
+      std::ostringstream result(std::ios_base::ate);
       const char *p = s.data();
       char c;
       while ((c=*p++))
@@ -9935,15 +9934,15 @@ class HtmlSpaceless : public TemplateSpacelessIntf
         {
           case '<': // start of a tag
             if (!m_insideString) m_insideTag=TRUE,m_removeSpaces=FALSE;
-            result+=c;
+            result << c;
             break;
           case '>': // end of a tag
             if (!m_insideString) m_insideTag=FALSE,m_removeSpaces=TRUE;
-            result+=c;
+            result << c;
             break;
           case '\\': // escaped character in a string
-            result+=c;
-            if (m_insideString && *p) result+=*p++;
+            result << c;
+            if (m_insideString && *p) result << *p++;
             break;
           case '"': case '\'':
             if (m_insideTag)
@@ -9957,7 +9956,7 @@ class HtmlSpaceless : public TemplateSpacelessIntf
                 m_insideString=c;
               }
             }
-            result+=c;
+            result << c;
             break;
           case ' ': case '\t': case '\n': // whitespace
             if (!m_insideTag) // outside tags strip consecutive whitespace
@@ -9966,20 +9965,19 @@ class HtmlSpaceless : public TemplateSpacelessIntf
             }
             else
             {
-              result+=' ';
+              result << ' ';
             }
             break;
           default:
             //if (m_removeSpaces) result+=' ';
-            result+=c;
+            result << c;
             m_removeSpaces=FALSE;
             break;
         }
       }
-      result+='\0';
       //printf("HtmlSpaceless::remove({%s})={%s} m_insideTag=%d m_insideString=%c (%d) removeSpaces=%d\n",s.data(),result.data(),
       //    m_insideTag,m_insideString,m_insideString,m_removeSpaces);
-      return result.data();
+      return result.str();
     }
   private:
     bool m_insideTag;
@@ -10117,7 +10115,7 @@ void generateOutputViaTemplate()
           HtmlSpaceless spl;
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
-          std::stringstream ts;
+          std::ostringstream ts(std::ios_base::ate);
           tpl->render(ts,ctx);
           e.unload(tpl);
         }
@@ -10142,7 +10140,7 @@ void generateOutputViaTemplate()
           LatexSpaceless spl;
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
-          std::stringstream ts;
+          std::ostringstream ts(std::ios_base::ate);
           tpl->render(ts,ctx);
           e.unload(tpl);
         }

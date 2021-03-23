@@ -613,7 +613,7 @@ static QCString substituteLatexKeywords(const QCString &str,
     style="plain";
   }
 
-  std::stringstream tg;
+  std::ostringstream tg(std::ios_base::ate);
   bool timeStamp = Config_getBool(LATEX_TIMESTAMP);
   QCString generatedBy;
   if (timeStamp)
@@ -639,11 +639,11 @@ static QCString substituteLatexKeywords(const QCString &str,
   if (latexEmojiDirectory.isEmpty()) latexEmojiDirectory = ".";
   latexEmojiDirectory = substitute(latexEmojiDirectory,"\\","/");
 
-  std::stringstream tg1;
+  std::ostringstream tg1(std::ios_base::ate);
   writeExtraLatexPackages(tg1);
   QCString extraLatexPackages = tg1.str();
 
-  std::stringstream tg2;
+  std::ostringstream tg2(std::ios_base::ate);
   writeLatexSpecialFormulaChars(tg2);
   QCString latexSpecialFormulaChars = tg2.str();
 
