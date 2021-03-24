@@ -28,7 +28,6 @@
 #include <algorithm>
 
 #include <qcstring.h>
-#include <qcstringlist.h>
 
 /* --------------------------------------------------------------- */
 
@@ -858,7 +857,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   }
   else if (ii==VhdlDocGen::ARCHITECTURE)
   {
-    QCStringList qlist=QCStringList::split("-",nn);
+    StringVector qlist=split(nn.str(),"-");
     nn=qlist[1];
     cd=VhdlDocGen::getClass(nn.data());
   }
@@ -869,7 +868,7 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
     VhdlDocGen::findAllArchitectures(ql,cd);
     for (const auto &s : ql)
     {
-      QCStringList qlist=QCStringList::split("-",s);
+      StringVector qlist=split(s.str(),"-");
       QCString s1=qlist[0];
       QCString s2=qlist[1];
       s1.stripPrefix("_");
@@ -917,8 +916,8 @@ const ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
   for (const auto &citer : *Doxygen::classLinkedMap)
   {
     QCString jj=citer->name();
-    QCStringList ql=QCStringList::split(":",jj);
-    if (ql.count()>1)
+    StringVector ql=split(jj.str(),":");
+    if (ql.size()>1)
     {
       if (ql[0]==nn )
       {
@@ -2626,12 +2625,12 @@ void VhdlDocGen::writeRecUnitDocu(
     QCString largs)
 {
 
-  QCStringList ql=QCStringList::split("#",largs);
-  uint len=ql.count();
+  StringVector ql=split(largs.str(),"#");
+  size_t len=ql.size();
   ol.startParameterList(TRUE);
   bool first=TRUE;
 
-  for(uint i=0;i<len;i++)
+  for(size_t i=0;i<len;i++)
   {
     QCString n=ql[i];
     ol.startParameterType(first,"");
@@ -3053,14 +3052,14 @@ void FlowChart::alignCommentNode(std::ostream &t,QCString com)
 {
   uint max=0;
   QCString s;
-  QCStringList ql=QCStringList::split("\n",com);
-  for (uint j=0;j<ql.count();j++)
+  StringVector ql=split(com.str(),"\n");
+  for (size_t j=0;j<ql.size();j++)
   {
-    s=(QCString)ql[j];
+    s=ql[j];
     if (max<s.length()) max=s.length();
   }
 
-  s=ql.last();
+  s=ql.back();
   int diff=max-s.length();
 
   QCString n(1);
@@ -3069,14 +3068,14 @@ void FlowChart::alignCommentNode(std::ostream &t,QCString com)
     n.fill(' ',2*diff);
     n.append(".");
     s+=n;
-    ql.remove(ql.last());
-    ql.append(s);
+    ql.pop_back();
+    ql.push_back(s.str());
   }
 
-  for (uint j=0;j<ql.count();j++)
+  for (size_t j=0;j<ql.size();j++)
   {
     s=ql[j];
-    if (j<ql.count()-1)
+    if (j<ql.size()-1)
     {
       s+="\n";
     }

@@ -1,7 +1,6 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/qtools
     ${PROJECT_SOURCE_DIR}/filesystem
     ${PROJECT_SOURCE_DIR}/libmd5
     ${PROJECT_SOURCE_DIR}/liblodepng
@@ -286,6 +285,7 @@ add_library(doxymain STATIC
     pagedef.cpp
     perlmodgen.cpp
     plantuml.cpp
+    qcstring.cpp
     qhp.cpp
     qhpxmlwriter.cpp
     reflist.cpp
@@ -352,7 +352,6 @@ endif()
 target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
-    qtools
     md5
     lodepng
     mscgen
@@ -372,7 +371,6 @@ set_project_warnings(doxycfg)
 set_project_warnings(doxymain)
 set_project_warnings(doxygen)
 
-set_project_coverage(qtools)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)

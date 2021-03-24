@@ -4428,7 +4428,7 @@ static void writeIndex(OutputList &ol)
   ol.popGeneratorState();
 }
 
-static QArray<bool> indexWritten;
+static std::vector<bool> indexWritten;
 
 static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &entries)
 {

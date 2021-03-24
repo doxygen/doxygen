@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 #include <string>
-#include <qcstringlist.h>
 
 #include "parserintf.h"
 #include <stdio.h>
@@ -16,6 +15,7 @@
 #include "entry.h"
 #include "vhdldocgen.h"
 #include "config.h"
+#include "util.h"
 
 enum  { GEN_SEC=0x1, PARAM_SEC,CONTEXT_SEC,PROTECTED_SEC } ;
 //void  parserVhdlfile(const char* inputBuffer);

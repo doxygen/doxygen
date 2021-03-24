@@ -32,11 +32,15 @@ endif()
 add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${GENERATED_SRC}/VhdlParser_adj.cc
     DEPENDS ${PROJECT_SOURCE_DIR}/vhdlparser/VhdlParser.cc ${PROJECT_SOURCE_DIR}/vhdlparser/vhdl_adj.py
-    OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc 
+    OUTPUT  ${GENERATED_SRC}/VhdlParser_adj.cc
 )
 set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERATED 1)
 
-include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/qtools ${PROJECT_SOURCE_DIR}/vhdlparser ${GENERATED_SRC})
+include_directories(
+	${PROJECT_SOURCE_DIR}/src
+	#${PROJECT_SOURCE_DIR}/qtools
+	${PROJECT_SOURCE_DIR}/vhdlparser
+	${GENERATED_SRC})
 add_library(vhdlparser STATIC
 CharStream.cc
 ParseException.cc

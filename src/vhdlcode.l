@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qcstringlist.h>
 
 #include "vhdlcode.h"
 #include "entry.h"
@@ -573,26 +572,25 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                     }
 
 <ParsePackage>[^:;]*                { //found package
-                                      QCString temp(yytext);
-                                      QCStringList strl=QCStringList::split(".",temp);
-                                      if (strl.count()>2)
+                                      StringVector strl=split(yytext,".");
+                                      if (strl.size()>2)
                                       {
-                                        QCString s1=strl[0];
-                                        QCString s2=strl[1];
-                                        QCString s3=strl[2];
+                                        std::string s1=strl[0];
+                                        std::string s2=strl[1];
+                                        std::string s3=strl[2];
                                         s1.append(".");
-                                        s3.prepend(".");
-                                        codifyLines(yyscanner,s1.data(),yyextra->currClass.data());
-                                        ClassDef *cd=VhdlDocGen::getPackageName(s2);
+                                        s3.insert(0,".");
+                                        codifyLines(yyscanner,s1.c_str(),yyextra->currClass.data());
+                                        ClassDef *cd=VhdlDocGen::getPackageName(s2.c_str());
                                         if (cd)
                                         {
-                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,s2.data());
+                                          generateClassOrGlobalLink(yyscanner,*yyextra->code,s2.c_str());
                                         }
                                         else
                                         {
-                                          codifyLines(yyscanner,s2.data());
+                                          codifyLines(yyscanner,s2.c_str());
                                         }
-                                        codifyLines(yyscanner,s3.data());
+                                        codifyLines(yyscanner,s3.c_str());
                                       }
                                       else
                                       {
@@ -677,9 +675,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 <Bases>^{B}*("package "){BN}*("body"){BN}*{FUNCNAME}  { // found package body
                                       QCString ss(yytext);
                                       QCString temp=VhdlDocGen::getIndexWord(yytext,2);
-                                      QCStringList ql=QCStringList::split(temp,ss);
-                                      QCString ll=ql[0];
-                                      codifyLines(yyscanner,ll.data(),yyextra->currClass.data());
+                                      StringVector ql=split(yytext,temp.str());
+                                      std::string ll=ql[0];
+                                      codifyLines(yyscanner,ll.c_str(),yyextra->currClass.data());
                                       temp=temp.stripWhiteSpace();
                                       temp.prepend("_");
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,temp.data());
@@ -1500,7 +1498,7 @@ static void writeFuncProto(yyscan_t yyscanner)
     codifyLines(yyscanner,yyextra->funcProto.data(),yyextra->currClass.data());
     return;
   }
-  QCStringList qlist=QCStringList::split(name,yyextra->funcProto);
+  StringVector qlist=split(yyextra->funcProto.str(),name.str());
   QCString temp=qlist[0];
   codifyLines(yyscanner,temp.data(),yyextra->currClass.data());
   yyextra->funcProto.stripPrefix(temp.data());
