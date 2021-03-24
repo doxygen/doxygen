@@ -1552,7 +1552,7 @@ void LayoutDocManager::parse(const char *fileName)
 
 void writeDefaultLayoutFile(const char *fileName)
 {
-  std::ofstream t(fileName,std::ofstream::out);
+  std::ofstream t(fileName,std::ofstream::out | std::ofstream::binary);
   bool ok = openOutputFile(fileName,t);
   if (!ok)
   {

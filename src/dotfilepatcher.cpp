@@ -466,7 +466,7 @@ bool DotFilePatcher::run() const
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
     fi.open(tmpName,std::ifstream::in);
-    t.open(orgName,std::ofstream::out);
+    t.open(orgName,std::ofstream::out | std::ofstream::binary);
     if (!fi.is_open())
     {
       err("problem opening file %s for reading!\n",tmpName.c_str());

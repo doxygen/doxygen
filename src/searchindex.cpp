@@ -16,6 +16,7 @@
 
 #include <ctype.h>
 #include <assert.h>
+#include <sstream>
 
 #include "searchindex.h"
 #include "config.h"
@@ -550,8 +551,25 @@ QCString searchName(const Definition *d)
 
 QCString searchId(const Definition *d)
 {
-  QCString s = searchName(d);
-  return convertUTF8ToLower(s.str());
+  std::string s = searchName(d).str();
+  std::ostringstream t(std::ios_base::ate);
+  for (size_t i=0;i<s.length();i++)
+  {
+    if (isId(s[i]))
+    {
+      t << s[i];
+    }
+    else // escape non-identifier characters
+    {
+      static const char *hex = "0123456789ABCDEF";
+      unsigned char uc = static_cast<unsigned char>(s[i]);
+      t << '_';
+      t << hex[uc>>4];
+      t << hex[uc&0xF];
+    }
+  }
+
+  return convertUTF8ToLower(t.str());
 }
 
 
@@ -1103,7 +1121,8 @@ void writeJavaScriptSearchIndex()
   }
 
   {
-    std::ofstream t(searchDirName.str()+"/searchdata.js",std::ofstream::out);
+    std::ofstream t(searchDirName.str()+"/searchdata.js",
+                    std::ofstream::out | std::ofstream::binary);
     if (t.is_open())
     {
       t << "var indexSectionsWithContent =\n";
@@ -1119,7 +1138,7 @@ void writeJavaScriptSearchIndex()
           for (const auto &kv : sii.symbolMap)
           {
             if ( kv.first == "\"" ) t << "\\";
-            t << kv.first.c_str();
+            t << kv.first;
           }
           t << "\"";
           j++;

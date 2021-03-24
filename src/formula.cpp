@@ -349,7 +349,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         // read back %s_tmp.eps and replace
         // bounding box values with x1,y1,x2,y2 and remove the HiResBoundingBox
         std::ifstream epsIn(formBase.str()+"_tmp.eps",std::ifstream::in);
-        std::ofstream epsOut(formBase.str()+"_tmp_corr.eps",std::ofstream::out);
+        std::ofstream epsOut(formBase.str()+"_tmp_corr.eps",std::ofstream::out | std::ofstream::binary);
         if (epsIn.is_open() && epsOut.is_open())
         {
           std::string line;
@@ -427,7 +427,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
-  t.open("formula.repository",std::ofstream::out);
+  t.open("formula.repository",std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     for (int i=0; i<(int)p->formulas.size(); i++)

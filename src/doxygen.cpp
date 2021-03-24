@@ -10656,7 +10656,7 @@ static void writeTagFile()
   QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
-  std::ofstream tagFile(generateTagFile.str(),std::ofstream::out);
+  std::ofstream tagFile(generateTagFile.str(),std::ofstream::out | std::ofstream::binary);
   if (!tagFile.is_open())
   {
     err("cannot open tag file %s for writing\n",

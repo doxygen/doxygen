@@ -2602,7 +2602,7 @@ bool RTFGenerator::preProcessFileInplace(const char *path,const char *name)
   QCString combinedName = (QCString)path+"/combined.rtf";
   QCString mainRTFName  = (QCString)path+"/"+name;
 
-  std::ofstream outt(combinedName.str(),std::ofstream::out);
+  std::ofstream outt(combinedName.str(),std::ofstream::out | std::ofstream::binary);
   if (!outt.is_open())
   {
     err("Failed to open %s for writing!\n",combinedName.data());

@@ -937,7 +937,7 @@ void HtmlGenerator::init()
   }
 
   {
-    std::ofstream t(dname+"/dynsections.js",std::ofstream::out);
+    std::ofstream t(dname+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
     if (t.is_open())
     {
       t << mgr.getAsString("dynsections.js");
@@ -1011,7 +1011,7 @@ void HtmlGenerator::writeSearchData(const char *dname)
   }
 
   QCString searchDirName = dname;
-  std::ofstream t(searchDirName.str()+"/search.css",std::ofstream::out);
+  std::ofstream t(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     QCString searchCss;
@@ -2563,7 +2563,7 @@ void HtmlGenerator::writeSearchPage()
 
   // OPENSEARCH_PROVIDER {
   QCString configFileName = htmlOutput+"/search_config.php";
-  std::ofstream t(configFileName.str(),std::ofstream::out);
+  std::ofstream t(configFileName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     t << "<?php\n\n";
@@ -2593,7 +2593,7 @@ void HtmlGenerator::writeSearchPage()
   // OPENSEARCH_PROVIDER }
 
   QCString fileName = htmlOutput+"/search.php";
-  t.open(fileName.str(),std::ofstream::out);
+  t.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     t << substituteHtmlKeywords(g_header,"Search","");
@@ -2631,7 +2631,7 @@ void HtmlGenerator::writeSearchPage()
   t.close();
 
   QCString scriptName = htmlOutput+"/search/search.js";
-  t.open(scriptName.str(),std::ofstream::out);
+  t.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     t << ResourceMgr::instance().getAsString("extsearch.js");
@@ -2647,7 +2647,7 @@ void HtmlGenerator::writeExternalSearchPage()
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString dname = Config_getString(HTML_OUTPUT);
   QCString fileName = dname+"/search"+Doxygen::htmlFileExtension;
-  std::ofstream t(fileName.str(),std::ofstream::out);
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     t << substituteHtmlKeywords(g_header,"Search","");
@@ -2698,7 +2698,7 @@ void HtmlGenerator::writeExternalSearchPage()
   t.close();
 
   QCString scriptName = dname+"/search/search.js";
-  t.open(scriptName.str(),std::ofstream::out);
+  t.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     t << "var searchResultsText=["

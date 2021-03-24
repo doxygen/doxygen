@@ -531,7 +531,7 @@ void generateDEF()
   }
 
   QCString fileName=outputDirectory+"/doxygen.def";
-  std::ofstream t(fileName.str(),std::ostream::out);
+  std::ofstream t(fileName.str(),std::ostream::out | std::ostream::binary);
   if (!t.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
