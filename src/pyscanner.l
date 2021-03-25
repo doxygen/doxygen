@@ -66,7 +66,7 @@ struct pyscannerYY_state
   pyscannerYY_state() : defVal(std::ios_base::ate) {}
   CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
-  QCString                inputString;
+  const char *            inputString = 0;
   yy_size_t               inputPosition = 0;
   Protection              protection = Public;
   std::shared_ptr<Entry>  current_root;
@@ -107,6 +107,7 @@ struct pyscannerYY_state
   QCString                argType;
   bool                    funcParamsEnd = FALSE;
   std::vector<QCString>   decorators;
+  QCString                programStr;
 };
 
 //-----------------------------------------------------------------------------
@@ -1438,8 +1439,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t c=0;
-  if (yyextra->inputString.isEmpty()) return 0;
-  const char *p = yyextra->inputString.data() + yyextra->inputPosition;
+  const char *p = yyextra->inputString + yyextra->inputPosition;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPosition+=c;
   return c;
@@ -1754,7 +1754,8 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       //fprintf(stderr,"parseCompounds: -- %s (line %d) ---------\n%s\n---------------\n",
       //  ce->name.data(), ce->bodyLine, ce->program.data());
       // init scanner state
-      yyextra->inputString = ce->program.str();
+      yyextra->programStr = ce->program.str();
+      yyextra->inputString = yyextra->programStr;
       yyextra->inputPosition = 0;
       pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
@@ -1779,6 +1780,8 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
 
       pyscannerYYlex(yyscanner) ;
       yyextra->lexInit=TRUE;
+
+      yyextra->programStr.resize(0);
       ce->program.str(std::string());
 
       yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
@@ -1850,6 +1853,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
 
   yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
 
+  yyextra->programStr.resize(0);
   yyextra->current_root->program.str(std::string());
 
   parseCompounds(yyscanner, yyextra->current_root);

@@ -63,7 +63,7 @@ struct scannerYY_state
   scannerYY_state() : docBlock(std::ios_base::ate) {}
   OutlineParserInterface *thisParser;
   CommentScanner   commentScanner;
-  QCString         inputString;
+  const char *     inputString = 0;
   int              inputPosition = 0;
   int              lastContext = 0;
   int              lastCContext = 0;
@@ -190,6 +190,7 @@ struct scannerYY_state
   uint             fencedSize = 0;
   bool             nestedComment = false;
   std::vector< std::pair<Entry*,std::shared_ptr<Entry> > > outerScopeEntries;
+  QCString         programStr;
 
   ClangTUParser * clangParser = 0;
 };
@@ -7210,7 +7211,8 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       yyextra->padCount=0;
       //depthIf = 0;
       yyextra->column=0;
-      yyextra->inputString = ce->program.str();
+      yyextra->programStr = ce->program.str();
+      yyextra->inputString = yyextra->programStr;
       yyextra->inputPosition = 0;
       if (ce->section==Entry::ENUM_SEC || (ce->spec&Entry::Enum))
         BEGIN( FindFields ) ;
@@ -7294,6 +7296,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 
       yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
 
+      yyextra->programStr.resize(0);
       ce->program.str(std::string());
 
 
@@ -7371,6 +7374,7 @@ static void parseMain(yyscan_t yyscanner,
   //forceEndGroup();
   yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
 
+  yyextra->programStr.resize(0);
   rt->program.str(std::string());
 
   parseCompounds(yyscanner,rt);
