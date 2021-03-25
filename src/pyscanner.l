@@ -1438,6 +1438,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t c=0;
+  if (yyextra->inputString.isEmpty()) return 0;
   const char *p = yyextra->inputString.data() + yyextra->inputPosition;
   while ( c < max_size && *p ) { *buf++ = *p++; c++; }
   yyextra->inputPosition+=c;
