@@ -1486,7 +1486,16 @@ static QCString extractTitleId(QCString &title, int level)
   {
     static AtomicInt autoId { 0 };
     QCString id;
-    id.sprintf("autotoc_md%d",autoId++);
+    if( Config_getBool(TOC_INCLUDE_HEADINGS_PERMALINKS))
+    {
+        id.sprintf( "autotoc_md_%s_%s",
+                    markdownFileNameToId(g_fileName).data(),
+                    title.lower().replace(QRegExp("[^a-z0-9]"), "_" ).data() );
+    }
+    else
+    {
+        id.sprintf("autotoc_md%d",autoId++);
+    }
     //printf("auto-generated id='%s' title='%s'\n",id.data(),title.data());
     return id;
   }
