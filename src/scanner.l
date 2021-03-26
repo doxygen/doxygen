@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <atomic>
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -22,6 +22,8 @@
  *  the call to all output generators.
  */
 
+#include <atomic>
+
 #include "outputlist.h"
 #include "outputgen.h"
 #include "config.h"

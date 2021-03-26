@@ -16,7 +16,9 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <stdlib.h>
+
 #include "entry.h"
 #include "util.h"
 #include "section.h"

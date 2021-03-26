@@ -35,6 +35,7 @@
 
 #include <unordered_map>
 #include <functional>
+#include <atomic>
 
 #include "markdown.h"
 #include "growbuf.h"
