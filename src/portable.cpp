@@ -1,4 +1,5 @@
 #include "portable.h"
+#include "qcstring.h"
 
 #include <stdlib.h>
 #include <stdio.h>

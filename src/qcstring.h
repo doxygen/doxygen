@@ -27,8 +27,12 @@
 #include <cstdint>
 #include <ostream>
 
+#ifndef FALSE
 #define FALSE false
+#endif
+#ifndef TRUE
 #define TRUE true
+#endif
 typedef unsigned char	uchar;
 typedef unsigned short	ushort;
 typedef unsigned	uint;
