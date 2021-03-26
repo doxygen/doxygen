@@ -858,8 +858,11 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
   else if (ii==VhdlDocGen::ARCHITECTURE)
   {
     StringVector qlist=split(nn.str(),"-");
-    nn=qlist[1];
-    cd=VhdlDocGen::getClass(nn.data());
+    if (qlist.size()>1)
+    {
+      nn=qlist[1];
+      cd=VhdlDocGen::getClass(nn.data());
+    }
   }
 
   QCString opp;
@@ -869,14 +872,17 @@ void VhdlDocGen::writeInlineClassLink(const ClassDef* cd ,OutputList& ol)
     for (const auto &s : ql)
     {
       StringVector qlist=split(s.str(),"-");
-      QCString s1=qlist[0];
-      QCString s2=qlist[1];
-      s1.stripPrefix("_");
-      if (ql.size()==1) s1.resize(0);
-      ClassDef *cc = getClass(s);
-      if (cc)
+      if (qlist.size()>2)
       {
-        VhdlDocGen::writeVhdlLink(cc,ol,type,s2,s1);
+        QCString s1=qlist[0];
+        QCString s2=qlist[1];
+        s1.stripPrefix("_");
+        if (ql.size()==1) s1.resize(0);
+        ClassDef *cc = getClass(s);
+        if (cc)
+        {
+          VhdlDocGen::writeVhdlLink(cc,ol,type,s2,s1);
+        }
       }
     }
   }
@@ -919,7 +925,7 @@ const ClassDef* VhdlDocGen::findArchitecture(const ClassDef *cd)
     StringVector ql=split(jj.str(),":");
     if (ql.size()>1)
     {
-      if (ql[0]==nn )
+      if (ql[0]==nn)
       {
         return citer.get();
       }
