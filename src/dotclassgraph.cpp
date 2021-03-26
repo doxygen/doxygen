@@ -13,6 +13,8 @@
 *
 */
 
+#include <algorithm>
+
 #include "containers.h"
 #include "dotclassgraph.h"
 #include "dotnode.h"
@@ -164,7 +166,7 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
           int oldSize=(int)childTreeWidth.size();
           if (distance>oldSize)
           {
-            childTreeWidth.resize(QMAX(childTreeWidth.size(),(uint)distance));
+            childTreeWidth.resize(std::max(childTreeWidth.size(),(size_t)distance));
             int i; for (i=oldSize;i<distance;i++) childTreeWidth[i]=0;
           }
           childTreeWidth[distance-1]+=n->label().length();
@@ -191,7 +193,7 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
           int oldSize = (int)parentTreeWidth.size();
           if (distance>oldSize)
           {
-            parentTreeWidth.resize(QMAX(parentTreeWidth.size(),(uint)distance));
+            parentTreeWidth.resize(std::max(parentTreeWidth.size(),(size_t)distance));
             int i; for (i=oldSize;i<distance;i++) parentTreeWidth[i]=0;
           }
           parentTreeWidth[distance-1]+=n->label().length();
@@ -208,7 +210,7 @@ bool DotClassGraph::determineVisibleNodes(DotNode *rootNode,
   }
   if (Config_getBool(UML_LOOK)) return FALSE; // UML graph are always top to bottom
   int maxWidth=0;
-  int maxHeight=(int)QMAX(childTreeWidth.size(),parentTreeWidth.size());
+  int maxHeight=(int)std::max(childTreeWidth.size(),parentTreeWidth.size());
   uint i;
   for (i=0;i<childTreeWidth.size();i++)
   {

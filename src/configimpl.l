@@ -1737,7 +1737,7 @@ void Config::checkAndCorrect()
   }
   else if (dotNumThreads<=0)
   {
-    dotNumThreads=QMAX(2,std::thread::hardware_concurrency()+1);
+    dotNumThreads=std::max(2u,std::thread::hardware_concurrency()+1);
   }
   Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
 

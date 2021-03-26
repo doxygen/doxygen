@@ -15,6 +15,9 @@
  * input used in their production; they are not affected by this license.
  *
  */
+
+#include <algorithm>
+
 #include "htmlattrib.h"
 #include "latexdocvisitor.h"
 #include "latexgen.h"
@@ -46,7 +49,7 @@ static const char *getSectionName(int level)
   int l = level;
   if (compactLatex) l++;
   if (Doxygen::insideMainPage) l--;
-  return secLabels[QMIN(maxLevels-1,l)];
+  return secLabels[std::min(maxLevels-1,l)];
 }
 
 static void visitPreStart(std::ostream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)

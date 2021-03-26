@@ -16,6 +16,8 @@
  *
  */
 
+#include <algorithm>
+
 #include "rtfdocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -862,7 +864,7 @@ void RTFDocVisitor::visitPre(DocSection *s)
   m_t << "{{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = QMIN(s->level()+1,4);
+  int level = std::min(s->level()+1,4);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading.str()].reference() << "\n";
@@ -1153,7 +1155,7 @@ void RTFDocVisitor::visitPre(DocHtmlHeader *header)
   m_t << "{" // start section
       << rtf_Style_Reset;
   QCString heading;
-  int level = QMIN(header->level(),5);
+  int level = std::min(header->level(),5);
   heading.sprintf("Heading%d",level);
   // set style
   m_t << rtf_Style[heading.str()].reference();

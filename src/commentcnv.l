@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stack>
+#include <algorithm>
 
 #include "bufstr.h"
 #include "debug.h"
@@ -1114,7 +1115,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yy_size_t bytesInBuf = yyextra->inBuf->curPos()-yyextra->inBufPos;
-  yy_size_t bytesToCopy = QMIN(max_size,bytesInBuf);
+  yy_size_t bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,yyextra->inBuf->data()+yyextra->inBufPos,bytesToCopy);
   yyextra->inBufPos+=bytesToCopy;
   return bytesToCopy;

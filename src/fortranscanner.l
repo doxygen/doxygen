@@ -2338,7 +2338,7 @@ static void addModule(yyscan_t yyscanner,const char *name, bool isModule)
   else
   {
     QCString fname = yyextra->fileName;
-    int index = QMAX(fname.findRev('/'), fname.findRev('\\'));
+    int index = std::max(fname.findRev('/'), fname.findRev('\\'));
     fname = fname.right(fname.length()-index-1);
     fname = fname.prepend("__").append("__");
     yyextra->current->name = fname;

@@ -388,7 +388,7 @@ bool DotFilePatcher::run() const
       int n = sscanf(line.data()+i+1,"!-- SVG %d",&mapId);
       if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
       {
-        int e = QMAX(line.find("--]"),line.find("-->"));
+        int e = std::max(line.find("--]"),line.find("-->"));
         const Map &map = m_maps.at(mapId);
         //printf("DotFilePatcher::writeSVGFigure: file=%s zoomable=%d\n",
         //  m_patchFile.data(),map.zoomable);

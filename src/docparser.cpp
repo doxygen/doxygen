@@ -2049,7 +2049,7 @@ void DocIncOperator::parse()
         m_text = g_includeFileText.mid(so,o-so);
         DBG(("DocIncOperator::parse() Line: %s\n",qPrint(m_text)));
       }
-      g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      g_includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = g_includeFileShowLineNo;
       break;
     case SkipLine:
@@ -2080,7 +2080,7 @@ void DocIncOperator::parse()
         }
         o++; // skip new line
       }
-      g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      g_includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = g_includeFileShowLineNo;
       break;
     case Skip:
@@ -2140,7 +2140,7 @@ void DocIncOperator::parse()
         }
         o++; // skip new line
       }
-      g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      g_includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = g_includeFileShowLineNo;
       break;
   }
@@ -3070,7 +3070,7 @@ int DocInternal::parse(int level)
         )
   {
     DocSection *s=new DocSection(this,
-        QMIN(level+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        std::min(level+Doxygen::subpageNestingLevel,5),g_token->sectionId);
     m_children.push_back(std::unique_ptr<DocSection>(s));
     retval = s->parse();
   }
@@ -3341,7 +3341,7 @@ uint DocHtmlCell::colSpan() const
   {
     if (attr.name.lower()=="colspan")
     {
-      return QMAX(1,attr.value.toUInt());
+      return std::max(1u,attr.value.toUInt());
     }
   }
   return 1;
@@ -6794,7 +6794,7 @@ int DocSection::parse()
       while (retval==RetVal_Subsection) // more sections follow
       {
         DocSection *s=new DocSection(this,
-            QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            std::min(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
@@ -6808,13 +6808,13 @@ int DocSection::parse()
       while (retval==RetVal_Subsubsection) // more sections follow
       {
         DocSection *s=new DocSection(this,
-            QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            std::min(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
       if (!(m_level<Doxygen::subpageNestingLevel+2 && retval == RetVal_Subsection)) break;
     }
-    else if (retval==RetVal_Paragraph && m_level<=QMIN(5,Doxygen::subpageNestingLevel+3))
+    else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
     {
       if ((m_level<=2+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",sectionLevelToName[m_level]);
@@ -6822,7 +6822,7 @@ int DocSection::parse()
       while (retval==RetVal_Paragraph) // more sections follow
       {
         DocSection *s=new DocSection(this,
-            QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            std::min(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
@@ -6995,7 +6995,7 @@ void DocRoot::parse()
           if (sec)
           {
             DocSection *s=new DocSection(this,
-                QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+                std::min(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
             m_children.push_back(std::unique_ptr<DocSection>(s));
             retval = s->parse();
           }
@@ -7024,7 +7024,7 @@ void DocRoot::parse()
           if (sec)
           {
             DocSection *s=new DocSection(this,
-                QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+                std::min(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
             m_children.push_back(std::unique_ptr<DocSection>(s));
             retval = s->parse();
           }
@@ -7055,7 +7055,7 @@ void DocRoot::parse()
           if (sec)
           {
             DocSection *s=new DocSection(this,
-                QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+                std::min(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
             m_children.push_back(std::unique_ptr<DocSection>(s));
             retval = s->parse();
           }
@@ -7095,7 +7095,7 @@ void DocRoot::parse()
       if (sec)
       {
         DocSection *s=new DocSection(this,
-            QMIN(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            std::min(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
         m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }

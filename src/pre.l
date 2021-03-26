@@ -34,6 +34,7 @@
 #include <utility>
 #include <mutex>
 #include <thread>
+#include <algorithm>
 
 #include <stdio.h>
 #include <assert.h>
@@ -1664,7 +1665,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   yy_size_t bytesInBuf = state->inputBuf->curPos()-state->inputBufPos;
-  yy_size_t bytesToCopy = QMIN(max_size,bytesInBuf);
+  yy_size_t bytesToCopy = std::min(max_size,bytesInBuf);
   memcpy(buf,state->inputBuf->data()+state->inputBufPos,bytesToCopy);
   state->inputBufPos+=bytesToCopy;
   return bytesToCopy;

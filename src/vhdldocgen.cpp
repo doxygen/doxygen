@@ -1769,7 +1769,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
   // start a new member declaration
   uint isAnonymous = (bool)(annoClassDef); // || m_impl->annMemb || m_impl->annEnumType;
   ///printf("startMemberItem for %s\n",name().data());
-  int mm=mdef->getMemberSpecifiers();
+  uint64_t mm=mdef->getMemberSpecifiers();
   if (mm==VhdlDocGen::MISCELLANEOUS)
       isAnonymous=3;
 
@@ -2046,7 +2046,7 @@ void VhdlDocGen::writePlainVHDLDeclarations(
     MemberDefMutable *md = toMemberDefMutable(imd);
     if (md)
     {
-      int mems=md->getMemberSpecifiers();
+      uint64_t mems=md->getMemberSpecifiers();
       if (md->isBriefSectionVisible() && (mems==specifier) && (mems!=VhdlDocGen::LIBRARY) )
       {
         if (first) { ol.startMemberList();first=FALSE; }

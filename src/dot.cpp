@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <sstream>
+#include <algorithm>
 
 #include "config.h"
 #include "dot.h"
@@ -163,7 +164,7 @@ bool DotManager::run() const
     }
     else
     {
-      msg("Generating dot graphs using %zu parallel threads...\n",QMIN(numDotRuns+numFilePatchers,m_workers.size()));
+      msg("Generating dot graphs using %zu parallel threads...\n",std::min(numDotRuns+numFilePatchers,m_workers.size()));
     }
   }
   size_t i=1;

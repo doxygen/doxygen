@@ -2761,7 +2761,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       {
         QCString pScope;
         ClassDefMutable *pcd=0;
-        pScope = scope.left(QMAX(si-2,0)); // scope without tag less parts
+        pScope = scope.left(std::max(si-2,0)); // scope without tag less parts
         if (!pScope.isEmpty())
           pScope.prepend(annScopePrefix);
         else if (annScopePrefix.length()>2)
@@ -10150,7 +10150,7 @@ static int computeIdealCacheParam(uint v)
   // r = log2(v)
 
   // convert to a valid cache size value
-  return QMAX(0,QMIN(r-16,9));
+  return std::max(0,std::min(r-16,9));
 }
 
 void readConfiguration(int argc, char **argv)

@@ -3311,7 +3311,7 @@ FileDef *findFileDef(const FileNameLinkedMap *fnMap,const char *n,bool &ambig)
   int slashPos;
   const FileName *fn;
   if (name.isEmpty()) goto exit;
-  slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
+  slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);
@@ -3371,7 +3371,7 @@ QCString showFileDefMatches(const FileNameLinkedMap *fnMap,const char *n)
   QCString result;
   QCString name=n;
   QCString path;
-  int slashPos=QMAX(name.findRev('/'),name.findRev('\\'));
+  int slashPos=std::max(name.findRev('/'),name.findRev('\\'));
   if (slashPos!=-1)
   {
     path=name.left(slashPos+1);

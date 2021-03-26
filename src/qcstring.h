@@ -27,16 +27,14 @@
 #include <cstdint>
 #include <ostream>
 
-const bool FALSE = false;
-const bool TRUE = true;
+#define FALSE false
+#define TRUE true
 typedef unsigned char	uchar;
 typedef unsigned short	ushort;
 typedef unsigned	uint;
 typedef unsigned long	ulong;
 typedef int64_t         int64;
 typedef uint64_t        uint64;
-#define QMAX(a,b)	((a) > (b) ? (a) : (b))
-#define QMIN(a,b)	((a) < (b) ? (a) : (b))
 #define ASSERT(x)  if ( !(x) )\
 	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)",#x,__FILE__,__LINE__)
 

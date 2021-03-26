@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
+#include <algorithm>
 
 #include "diagram.h"
 #include "image.h"
@@ -519,8 +520,8 @@ void TreeDiagram::computeExtremes(uint *maxLabelLen,uint *maxXPos)
     for (const auto &di : *dr) // for each item in a row
     {
       if (di->isInList()) done=TRUE;
-      if (maxXPos) mx=QMAX(mx,(uint)di->xPos());
-      if (maxLabelLen) ml=QMAX(ml,Image::stringLength(di->label()));
+      if (maxXPos) mx=std::max(mx,(uint)di->xPos());
+      if (maxLabelLen) ml=std::max(ml,Image::stringLength(di->label()));
     }
     if (done) break;
   }
@@ -1051,12 +1052,12 @@ void ClassDiagram::writeFigure(std::ostream &output,const char *path,
   p->base.computeExtremes(&baseMaxLabelWidth,&baseMaxX);
   p->super.computeExtremes(&superMaxLabelWidth,&superMaxX);
 
-  uint rows=QMAX(1,baseRows+superRows-1);
-  uint cols=(QMAX(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
+  uint rows=std::max(1u,baseRows+superRows-1);
+  uint cols=(std::max(baseMaxX,superMaxX)+gridWidth*2-1)/gridWidth;
 
   // Estimate the image aspect width and height in pixels.
   uint estHeight = rows*40;
-  uint estWidth  = cols*(20+QMAX(baseMaxLabelWidth,superMaxLabelWidth));
+  uint estWidth  = cols*(20+std::max(baseMaxLabelWidth,superMaxLabelWidth));
   //printf("Estimated size %d x %d\n",estWidth,estHeight);
 
   const float pageWidth = 14.0f; // estimated page width in cm.
@@ -1064,8 +1065,8 @@ void ClassDiagram::writeFigure(std::ostream &output,const char *path,
                                  // errors.
 
   // compute the image height in centimeters based on the estimates
-  float realHeight = QMIN(rows,12); // real height in cm
-  float realWidth  = realHeight * estWidth/(float)estHeight;
+  float realHeight = static_cast<float>(std::min(rows,12u)); // real height in cm
+  float realWidth  = realHeight * estWidth/static_cast<float>(estHeight);
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
@@ -1345,9 +1346,9 @@ void ClassDiagram::writeImage(std::ostream &t,const char *path,
   p->base.computeExtremes(&lb,&xb);
   p->super.computeExtremes(&ls,&xs);
 
-  uint cellWidth  = QMAX(lb,ls)+labelHorMargin*2;
-  uint maxXPos    = QMAX(xb,xs);
-  uint labelVertMargin = 6; //QMAX(6,(cellWidth-fontHeight)/6); // aspect at least 1:3
+  uint cellWidth  = std::max(lb,ls)+labelHorMargin*2;
+  uint maxXPos    = std::max(xb,xs);
+  uint labelVertMargin = 6; //std::max(6,(cellWidth-fontHeight)/6); // aspect at least 1:3
   uint cellHeight = labelVertMargin*2+fontHeight;
   uint imageWidth = (maxXPos+gridWidth)*cellWidth/gridWidth+
                     (maxXPos*labelHorSpacing)/gridWidth;
