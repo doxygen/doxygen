@@ -30,6 +30,27 @@
 namespace reg
 {
 
+static inline bool isspace(char c)
+{
+  return c==' ' || c=='\t' || c=='\n' || c=='\r';
+}
+
+static inline bool isalpha(char c)
+{
+  return c<0 || (c>='a' && c<='z') || (c>='A' && c<='Z');
+}
+
+static inline bool isdigit(char c)
+{
+  return c>='0' && c<='9';
+}
+
+static inline bool isalnum(char c)
+{
+  return isalpha(c) || isdigit(c);
+}
+
+
 /** Class representing a token in the compiled regular expression token stream.
  *  A token has a kind and an optional value whose meaning depends on the kind.
  *  It is also possible to store a (from,to) character range in a token.
@@ -417,8 +438,8 @@ void Ex::Private::dump()
 bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,const size_t pos,int level) const
 {
   DBG("%d:matchAt(tokenPos=%zu, str='%s', pos=%zu)\n",level,tokenPos,str.c_str(),pos);
-  auto isStartIdChar = [](char c) { return std::isalpha(c) || c=='_' || c<0; };
-  auto isIdChar      = [](char c) { return std::isalnum(c) || c=='_' || c<0; };
+  auto isStartIdChar = [](char c) { return isalpha(c) || c=='_'; };
+  auto isIdChar      = [](char c) { return isalnum(c) || c=='_'; };
   auto matchCharClass = [this,isStartIdChar,isIdChar](size_t tp,char c) -> bool
   {
     PToken tok = data[tp];
@@ -431,8 +452,8 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
       // first check for built-in ranges
       if ((tok.kind()==PToken::Kind::Alpha      && isStartIdChar(c)) ||
           (tok.kind()==PToken::Kind::AlphaNum   && isIdChar(c))      ||
-          (tok.kind()==PToken::Kind::WhiteSpace && std::isspace(c))  ||
-          (tok.kind()==PToken::Kind::Digit      && std::isdigit(c))
+          (tok.kind()==PToken::Kind::WhiteSpace && isspace(c))  ||
+          (tok.kind()==PToken::Kind::Digit      && isdigit(c))
          )
       {
         found=true;
@@ -481,12 +502,12 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
     }
     else if (tok.kind()==PToken::Kind::WhiteSpace) // '\s*' -> eat spaces
     {
-      while (index<=str.length() && std::isspace(str[index])) { index++; if (type==Optional) break; }
+      while (index<=str.length() && isspace(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Digit) // '\d*' -> eat digits
     {
-      while (index<=str.length() && std::isdigit(str[index])) { index++; if (type==Optional) break; }
+      while (index<=str.length() && isdigit(str[index])) { index++; if (type==Optional) break; }
       tokenPos++;
     }
     else if (tok.kind()==PToken::Kind::Any) // '.*' -> eat all
@@ -537,11 +558,11 @@ bool Ex::Private::matchAt(size_t tokenPos,const std::string &str,Match &match,co
           index++;
           break;
         case PToken::Kind::WhiteSpace:
-          if (index>=str.length() || !std::isspace(str[index])) return false;
+          if (index>=str.length() || !isspace(str[index])) return false;
           index++;
           break;
         case PToken::Kind::Digit:
-          if (index>=str.length() || !std::isdigit(str[index])) return false;
+          if (index>=str.length() || !isdigit(str[index])) return false;
           index++;
           break;
         case PToken::Kind::BeginOfLine:
