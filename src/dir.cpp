@@ -196,7 +196,7 @@ bool Dir::exists(const std::string &path,bool acceptsAbsPath) const
 
 bool Dir::exists() const
 {
-  FileInfo fi(p->path);
+  FileInfo fi(p->path.string());
   return fi.exists() && fi.isDir();
 }
 
