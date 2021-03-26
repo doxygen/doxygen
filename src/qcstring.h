@@ -17,10 +17,6 @@
 #ifndef QCSTRING_H
 #define QCSTRING_H
 
-#ifndef QT_H
-#include "qarray.h"
-#endif // QT_H
-
 #include <string>
 #include <algorithm>
 
@@ -30,6 +26,20 @@
 #include <cstdlib>
 #include <cstdint>
 #include <ostream>
+
+const bool FALSE = false;
+const bool TRUE = true;
+typedef unsigned char	uchar;
+typedef unsigned short	ushort;
+typedef unsigned	uint;
+typedef unsigned long	ulong;
+typedef int64_t         int64;
+typedef uint64_t        uint64;
+#define QMAX(a,b)	((a) > (b) ? (a) : (b))
+#define QMIN(a,b)	((a) < (b) ? (a) : (b))
+#define ASSERT(x)  if ( !(x) )\
+	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)",#x,__FILE__,__LINE__)
+
 
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
@@ -75,25 +85,6 @@ inline int qstrncmp( const char *str1, const char *str2, uint len )
 int qstricmp( const char *str1, const char *str2 );
 
 int qstrnicmp( const char *str1, const char *str2, uint len );
-
-/*****************************************************************************
-  QByteArray class
- *****************************************************************************/
-
-#if defined(Q_TEMPLATEDLL)
-template class QArray<char>;
-#endif
-typedef QArray<char> QByteArray;
-
-/*****************************************************************************
-  QByteArray stream functions
- *****************************************************************************/
-#ifndef QT_NO_DATASTREAM
-QDataStream &operator<<( QDataStream &, const QByteArray & );
-QDataStream &operator>>( QDataStream &, QByteArray & );
-#endif
-
-//class QRegExp;
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -398,14 +389,6 @@ class QCString
   private:
     std::string m_rep;
 };
-
-/*****************************************************************************
-  QCString stream functions
- *****************************************************************************/
-#ifndef QT_NO_DATASTREAM
-QDataStream &operator<<( QDataStream &, const QCString & );
-QDataStream &operator>>( QDataStream &, QCString & );
-#endif
 
 /*****************************************************************************
   QCString non-member operators

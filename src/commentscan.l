@@ -38,7 +38,6 @@
 #include <ctype.h>
 
 #include <qcstring.h>
-#include <qcstringlist.h>
 
 #include "cite.h"
 #include "commentscan.h"
@@ -60,89 +59,89 @@
 #define USE_STATE2STRING 0
 
 // forward declarations
-static bool handleBrief(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleFn(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleDef(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleOverload(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleEnum(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleNamespace(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handlePackage(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleClass(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleProtocol(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCategory(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleUnion(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleStruct(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleInterface(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleIdlException(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handlePage(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleMainpage(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleFile(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleDir(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleExample(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleDetails(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleNoop(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleName(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleTodo(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleTest(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleBug(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const QCStringList &);
-static bool handleDeprecated(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleXRefItem(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleRelated(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleRefItem(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleSection(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleAnchor(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCite(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleFormatBlock(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleIf(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleIfNot(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleEndIf(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleIngroup(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleNoSubGrouping(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleShowInitializer(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleHideInitializer(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleStatic(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handlePure(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handlePrivate(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleProtected(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handlePublic(yyscan_t yyscanner,const QCString &s, const QCStringList &);
-static bool handlePublicSection(yyscan_t yyscanner,const QCString &s, const QCStringList &);
-static bool handleToc(yyscan_t yyscanner,const QCString &s, const QCStringList &);
-static bool handleInherit(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleExtends(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleParBlock(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleParam(yyscan_t yyscanner,const QCString &, const QCStringList &);
-static bool handleRetval(yyscan_t yyscanner,const QCString &, const QCStringList &);
+static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleDef(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleOverload(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleClass(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleProtocol(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCategory(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleUnion(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleStruct(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleInterface(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIdlException(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handlePage(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleExample(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleNoop(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleTodo(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleTest(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleBug(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handleDeprecated(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleXRefItem(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRelated(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRefItem(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleSection(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleAnchor(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCite(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleFormatBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleElseIf(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleElse(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleIngroup(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleNoSubGrouping(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleShowInitializer(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideInitializer(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handlePrivate(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handlePublic(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handlePublicSection(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handleToc(yyscan_t yyscanner,const QCString &s, const StringVector &);
+static bool handleInherit(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleExtends(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &);
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
 #endif
 
-typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const QCStringList &optList);
+typedef bool (*DocCmdFunc)(yyscan_t yyscanner,const QCString &name, const StringVector &optList);
 
 enum class CommandSpacing
 {
@@ -668,7 +667,7 @@ STopt  [^\n@\\]*
                                           if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
                                           int idxEnd = fullMatch.find("}",idx+1);
                                           QCString cmdName;
-                                          QCStringList optList;
+                                          StringVector optList;
                                           if (idx == -1) // no options
                                           {
                                             cmdName = QCString(yytext).stripWhiteSpace().data()+1; // to remove {CMD}
@@ -677,7 +676,7 @@ STopt  [^\n@\\]*
                                           {
                                             cmdName = fullMatch.left(idx).stripWhiteSpace().data()+1; // to remove {CMD}
                                             QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
-                                            optList = QCStringList::split(',',optStr);
+                                            optList = split(optStr.str(),",");
                                           }
                                           auto it = docCmdMap.find(cmdName.data());
                                           //printf("lookup command '%s' found=%d\n",cmdName.data(),it!=docCmdMap.end());
@@ -1902,14 +1901,14 @@ STopt  [^\n@\\]*
 
 //----------------------------------------------------------------------------
 
-static bool handleBrief(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleBrief(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   //printf("handleBrief\n");
   setOutput(yyscanner,OutputBrief);
   return FALSE;
 }
 
-static bool handleFn(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleFn(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::MEMBERDOC_SEC);
@@ -1919,7 +1918,7 @@ static bool handleFn(yyscan_t yyscanner,const QCString &, const QCStringList &)
   return stop;
 }
 
-static bool handleDef(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleDef(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::DEFINEDOC_SEC);
@@ -1928,7 +1927,7 @@ static bool handleDef(yyscan_t yyscanner,const QCString &, const QCStringList &)
   return stop;
 }
 
-static bool handleOverload(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleOverload(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->functionProto.resize(0);
@@ -1936,7 +1935,7 @@ static bool handleOverload(yyscan_t yyscanner,const QCString &, const QCStringLi
   return FALSE;
 }
 
-static bool handleEnum(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleEnum(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::ENUMDOC_SEC);
@@ -1944,7 +1943,7 @@ static bool handleEnum(yyscan_t yyscanner,const QCString &, const QCStringList &
   return stop;
 }
 
-static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
@@ -1953,7 +1952,7 @@ static bool handleDefGroup(yyscan_t yyscanner,const QCString &, const QCStringLi
   return stop;
 }
 
-static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
@@ -1962,7 +1961,7 @@ static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const QCString
   return stop;
 }
 
-static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::GROUPDOC_SEC);
@@ -1971,7 +1970,7 @@ static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const QCStringL
   return stop;
 }
 
-static bool handleNamespace(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::NAMESPACEDOC_SEC);
@@ -1979,7 +1978,7 @@ static bool handleNamespace(yyscan_t yyscanner,const QCString &, const QCStringL
   return stop;
 }
 
-static bool handlePackage(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::PACKAGEDOC_SEC);
@@ -1987,7 +1986,7 @@ static bool handlePackage(yyscan_t yyscanner,const QCString &, const QCStringLis
   return stop;
 }
 
-static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::CLASSDOC_SEC);
@@ -1996,14 +1995,14 @@ static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const QCStringLi
   return stop;
 }
 
-static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN( ClassDocArg2 );
   return FALSE;
 }
 
-static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 { // Obj-C protocol
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::PROTOCOLDOC_SEC);
@@ -2012,7 +2011,7 @@ static bool handleProtocol(yyscan_t yyscanner,const QCString &cmd, const QCStrin
   return stop;
 }
 
-static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 { // Obj-C category
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::CATEGORYDOC_SEC);
@@ -2021,7 +2020,7 @@ static bool handleCategory(yyscan_t yyscanner,const QCString &cmd, const QCStrin
   return stop;
 }
 
-static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::UNIONDOC_SEC);
@@ -2030,7 +2029,7 @@ static bool handleUnion(yyscan_t yyscanner,const QCString &cmd, const QCStringLi
   return stop;
 }
 
-static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::STRUCTDOC_SEC);
@@ -2039,7 +2038,7 @@ static bool handleStruct(yyscan_t yyscanner,const QCString &cmd, const QCStringL
   return stop;
 }
 
-static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::INTERFACEDOC_SEC);
@@ -2048,7 +2047,7 @@ static bool handleInterface(yyscan_t yyscanner,const QCString &cmd, const QCStri
   return stop;
 }
 
-static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::EXCEPTIONDOC_SEC);
@@ -2057,7 +2056,7 @@ static bool handleIdlException(yyscan_t yyscanner,const QCString &cmd, const QCS
   return stop;
 }
 
-static bool handlePage(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::PAGEDOC_SEC);
@@ -2065,7 +2064,7 @@ static bool handlePage(yyscan_t yyscanner,const QCString &, const QCStringList &
   return stop;
 }
 
-static bool handleMainpage(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::MAINPAGEDOC_SEC);
@@ -2078,7 +2077,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const QCStringLi
   return stop;
 }
 
-static bool handleFile(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::FILEDOC_SEC);
@@ -2090,7 +2089,7 @@ static bool handleFile(yyscan_t yyscanner,const QCString &, const QCStringList &
   return stop;
 }
 
-static bool handleParam(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleParam(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   // we need process param and retval arguments to escape leading underscores in case of
@@ -2100,7 +2099,7 @@ static bool handleParam(yyscan_t yyscanner,const QCString &, const QCStringList 
   return FALSE;
 }
 
-static bool handleRetval(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleRetval(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@retval ");
@@ -2108,7 +2107,7 @@ static bool handleRetval(yyscan_t yyscanner,const QCString &, const QCStringList
   return FALSE;
 }
 
-static bool handleDir(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::DIRDOC_SEC);
@@ -2117,14 +2116,12 @@ static bool handleDir(yyscan_t yyscanner,const QCString &, const QCStringList &)
   return stop;
 }
 
-static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const QCStringList &optList)
+static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   Entry::Sections section=Entry::EXAMPLE_SEC;
-  QCStringList::ConstIterator it;
-  for ( it = optList.begin(); it != optList.end(); ++it )
+  for (const auto &opt : optList)
   {
-    QCString opt = (*it).stripWhiteSpace().lower();
     if (opt=="lineno")
     {
       section=Entry::EXAMPLE_LINENO_SEC;
@@ -2132,7 +2129,7 @@ static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const QCString
     else
     {
       warn(yyextra->fileName,yyextra->lineNr,
-          "unsupported option '%s' for command '\\%s'",qPrint(opt),qPrint(cmd));
+          "unsupported option '%s' for command '\\%s'",opt.c_str(),qPrint(cmd));
     }
   }
   bool stop=makeStructuralIndicator(yyscanner,section);
@@ -2141,7 +2138,7 @@ static bool handleExample(yyscan_t yyscanner,const QCString &cmd, const QCString
   return stop;
 }
 
-static bool handleDetails(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->inContext!=OutputBrief)
@@ -2153,14 +2150,14 @@ static bool handleDetails(yyscan_t yyscanner,const QCString &, const QCStringLis
   return FALSE;
 }
 
-static bool handleNoop(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleNoop(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN( Noop );
   return FALSE;
 }
 
-static bool handleName(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::MEMBERGRP_SEC);
@@ -2176,7 +2173,7 @@ static bool handleName(yyscan_t yyscanner,const QCString &, const QCStringList &
   return stop;
 }
 
-static bool handleTodo(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleTodo(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Todo;
@@ -2185,7 +2182,7 @@ static bool handleTodo(yyscan_t yyscanner,const QCString &, const QCStringList &
   return FALSE;
 }
 
-static bool handleTest(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleTest(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Test;
@@ -2194,7 +2191,7 @@ static bool handleTest(yyscan_t yyscanner,const QCString &, const QCStringList &
   return FALSE;
 }
 
-static bool handleBug(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleBug(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Bug;
@@ -2203,7 +2200,7 @@ static bool handleBug(yyscan_t yyscanner,const QCString &, const QCStringList &)
   return FALSE;
 }
 
-static bool handleDeprecated(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleDeprecated(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Deprecated;
@@ -2212,7 +2209,7 @@ static bool handleDeprecated(yyscan_t yyscanner,const QCString &, const QCString
   return FALSE;
 }
 
-static bool handleXRefItem(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleXRefItem(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->newXRefKind = XRef_Item;
@@ -2220,7 +2217,7 @@ static bool handleXRefItem(yyscan_t yyscanner,const QCString &, const QCStringLi
   return FALSE;
 }
 
-static bool handleParBlock(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleParBlock(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->insideParBlock)
@@ -2238,7 +2235,7 @@ static bool handleParBlock(yyscan_t yyscanner,const QCString &, const QCStringLi
   return FALSE;
 }
 
-static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->insideParBlock)
@@ -2252,7 +2249,7 @@ static bool handleEndParBlock(yyscan_t yyscanner,const QCString &, const QCStrin
   return FALSE;
 }
 
-static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
@@ -2265,7 +2262,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const QCString
   return FALSE;
 }
 
-static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
@@ -2279,7 +2276,7 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const QCSt
   return FALSE;
 }
 
-static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->current->relates.isEmpty())
@@ -2293,7 +2290,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &cmd, const QCStrin
   return FALSE;
 }
 
-static bool handleRefItem(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleRefItem(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@refitem ");
@@ -2301,7 +2298,7 @@ static bool handleRefItem(yyscan_t yyscanner,const QCString &, const QCStringLis
   return FALSE;
 }
 
-static bool handleSection(yyscan_t yyscanner,const QCString &s, const QCStringList &)
+static bool handleSection(yyscan_t yyscanner,const QCString &s, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setOutput(yyscanner,OutputDoc);
@@ -2314,7 +2311,7 @@ static bool handleSection(yyscan_t yyscanner,const QCString &s, const QCStringLi
   return FALSE;
 }
 
-static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const QCStringList &)
+static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->current->section!=Entry::EMPTY_SEC &&
@@ -2335,7 +2332,7 @@ static bool handleSubpage(yyscan_t yyscanner,const QCString &s, const QCStringLi
   return FALSE;
 }
 
-static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const QCStringList &)
+static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@"+s+" ");
@@ -2343,7 +2340,7 @@ static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const QCStringLis
   return FALSE;
 }
 
-static bool handleCite(yyscan_t yyscanner,const QCString &s, const QCStringList &)
+static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->spaceBeforeCmd.isEmpty())
@@ -2356,16 +2353,16 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const QCStringList 
   return FALSE;
 }
 
-static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const QCStringList &optList)
+static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (optList.isEmpty())
+  if (optList.empty())
   {
     addOutput(yyscanner,"@"+s+" ");
   }
   else
   {
-    addOutput(yyscanner,"@"+s+"{"+optList.join(",")+"} ");
+    addOutput(yyscanner,"@"+s+"{"+join(optList,",")+"} ");
   }
   //printf("handleFormatBlock(%s) with option(%s)\n",s.data(),opt.data());
   yyextra->blockName=s;
@@ -2374,7 +2371,7 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const QCStri
   return FALSE;
 }
 
-static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@addindex ");
@@ -2382,7 +2379,7 @@ static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const QCStringLi
   return FALSE;
 }
 
-static bool handleIf(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->enabledSectionFound=FALSE;
@@ -2392,7 +2389,7 @@ static bool handleIf(yyscan_t yyscanner,const QCString &, const QCStringList &)
   return FALSE;
 }
 
-static bool handleIfNot(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleIfNot(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->enabledSectionFound=FALSE;
@@ -2402,7 +2399,7 @@ static bool handleIfNot(yyscan_t yyscanner,const QCString &, const QCStringList 
   return FALSE;
 }
 
-static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleElseIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->guards.empty())
@@ -2419,7 +2416,7 @@ static bool handleElseIf(yyscan_t yyscanner,const QCString &, const QCStringList
   return FALSE;
 }
 
-static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleElse(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->guards.empty())
@@ -2435,7 +2432,7 @@ static bool handleElse(yyscan_t yyscanner,const QCString &, const QCStringList &
   return FALSE;
 }
 
-static bool handleEndIf(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleEndIf(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->guards.empty())
@@ -2457,7 +2454,7 @@ static bool handleEndIf(yyscan_t yyscanner,const QCString &, const QCStringList 
   return FALSE;
 }
 
-static bool handleIngroup(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleIngroup(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->inGroupParamFound=FALSE;
@@ -2465,84 +2462,84 @@ static bool handleIngroup(yyscan_t yyscanner,const QCString &, const QCStringLis
   return FALSE;
 }
 
-static bool handleNoSubGrouping(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleNoSubGrouping(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->subGrouping = FALSE;
   return FALSE;
 }
 
-static bool handleShowInitializer(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleShowInitializer(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->initLines = 100000; // ON
   return FALSE;
 }
 
-static bool handleHideInitializer(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleHideInitializer(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->initLines = 0; // OFF
   return FALSE;
 }
 
-static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callGraph = TRUE; // ON
   return FALSE;
 }
 
-static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleHideCallgraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callGraph = FALSE; // OFF
   return FALSE;
 }
 
-static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callerGraph = TRUE; // ON
   return FALSE;
 }
 
-static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleHideCallergraph(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->callerGraph = FALSE; // OFF
   return FALSE;
 }
 
-static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->referencedByRelation = TRUE; // ON
   return FALSE;
 }
 
-static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleHideReferencedByRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->referencedByRelation = FALSE; // OFF
   return FALSE;
 }
 
-static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->referencesRelation = TRUE; // ON
   return FALSE;
 }
 
-static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleHideReferencesRelation(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->referencesRelation = FALSE; // OFF
   return FALSE;
 }
 
-static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleInternal(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!Config_getBool(INTERNAL_DOCS))
@@ -2565,72 +2562,71 @@ static bool handleInternal(yyscan_t yyscanner,const QCString &, const QCStringLi
   return FALSE;
 }
 
-static bool handleStatic(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleStatic(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->stat = TRUE;
   return FALSE;
 }
 
-static bool handlePure(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePure(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->virt = Pure;
   return FALSE;
 }
 
-static bool handlePrivate(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePrivate(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = Private;
   return FALSE;
 }
 
-static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePrivateSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = yyextra->protection = Private;
   return FALSE;
 }
 
-static bool handleProtected(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleProtected(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = Protected;
   return FALSE;
 }
 
-static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleProtectedSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = yyextra->protection = Protected ;
   return FALSE;
 }
 
-static bool handlePublic(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePublic(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = Public;
   return FALSE;
 }
 
-static bool handlePublicSection(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handlePublicSection(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->current->protection = yyextra->protection = Public;
   return FALSE;
 }
 
-static bool handleToc(yyscan_t yyscanner,const QCString &, const QCStringList &optList)
+static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->current->section==Entry::PAGEDOC_SEC ||
       yyextra->current->section==Entry::MAINPAGEDOC_SEC)
   {
-    QCStringList::ConstIterator it;
-    for ( it = optList.begin(); it != optList.end(); ++it )
+    for (const auto &opt_ : optList)
     {
-      QCString opt = (*it).stripWhiteSpace().lower();
+      QCString opt = QCString(opt_).stripWhiteSpace().lower();
       char dum;
       int level = 5;
       int i = opt.find(':');
@@ -2638,7 +2634,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const QCStringList &o
       {
         if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
+          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", QCString(opt_).stripWhiteSpace().data());
           opt = "";
         }
         else
@@ -2668,7 +2664,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const QCStringList &o
         }
         else
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '%s'", (*it).stripWhiteSpace().data());
+          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '%s'", QCString(opt_).stripWhiteSpace().data());
         }
       }
     }
@@ -2682,14 +2678,14 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const QCStringList &o
   return FALSE;
 }
 
-static bool handleInherit(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleInherit(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(InheritParam);
   return FALSE;
 }
 
-static bool handleExtends(yyscan_t yyscanner,const QCString &cmd, const QCStringList &)
+static bool handleExtends(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->currentCmd = cmd;
@@ -2697,7 +2693,7 @@ static bool handleExtends(yyscan_t yyscanner,const QCString &cmd, const QCString
   return FALSE;
 }
 
-static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->current->brief.isEmpty() && yyextra->current->doc.isEmpty())
@@ -2715,7 +2711,7 @@ static bool handleCopyBrief(yyscan_t yyscanner,const QCString &, const QCStringL
   return FALSE;
 }
 
-static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setOutput(yyscanner,OutputDoc);
@@ -2728,7 +2724,7 @@ static bool handleCopyDetails(yyscan_t yyscanner,const QCString &, const QCStrin
   return FALSE;
 }
 
-static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const QCStringList &)
+static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   setOutput(yyscanner,OutputBrief);

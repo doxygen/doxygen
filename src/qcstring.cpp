@@ -15,14 +15,11 @@
 
 #include "qcstring.h"
 
-#include <qstring.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <ctype.h>
-//#include <qregexp.h>
-#include <qdatastream.h>
 
 QCString &QCString::sprintf( const char *format, ... )
 {
@@ -86,15 +83,6 @@ int QCString::find( const QCString &str, int index, bool cs ) const
   return find(str.data(),index,cs);
 }
 
-#if 0
-int QCString::find( const QRegExp &rx, int index ) const
-{
-  if ( index < 0 )
-    index += length();
-  return rx.match( data(), index );
-}
-#endif
-
 int QCString::findRev( char c, int index, bool cs) const
 {
   const char *b = data();
@@ -147,22 +135,6 @@ int QCString::findRev( const char *str, int index, bool cs) const
   return -1;
 }
 
-#if 0
-int QCString::findRev( const QRegExp &rx, int index ) const
-{
-  if ( index < 0 )			// neg index ==> start from end
-    index += length();
-  if ( (uint)index > length() )		// bad index
-    return -1;
-  while( index >= 0 ) {
-    if ( rx.match( data(), index ) == index )
-      return index;
-    index--;
-  }
-  return -1;
-}
-#endif
-
 int QCString::contains( char c, bool cs ) const
 {
   if (length()==0) return 0;
@@ -205,25 +177,6 @@ int QCString::contains( const char *str, bool cs ) const
   return count;
 }
 
-#if 0
-int QCString::contains( const QRegExp &rx ) const
-{
-  if ( isEmpty() )
-    return rx.match( data() ) < 0 ? 0 : 1;
-  int count = 0;
-  int index = -1;
-  int len = length();
-  while ( index < len-1 ) {			// count overlapping matches
-    index = rx.match( data(), index+1 );
-    if ( index < 0 )
-      break;
-    count++;
-  }
-  return count;
-}
-#endif
-
-
 QCString QCString::simplifyWhiteSpace() const
 {
   if ( isEmpty() )                            // nothing to do
@@ -257,29 +210,6 @@ QCString &QCString::replace( uint index, uint len, const char *s)
   insert( index, s );
   return *this;
 }
-
-#if 0
-QCString &QCString::replace( const QRegExp &rx, const char *str )
-{
-  if ( isEmpty() )
-    return *this;
-  int index = 0;
-  int slen  = qstrlen(str);
-  int len;
-  while ( index < (int)length() ) {
-    index = rx.match( data(), index, &len, FALSE );
-    if ( index >= 0 ) {
-      replace( index, len, str );
-      index += slen;
-      if ( !len )
-        break;	// Avoid infinite loop on 0-length matches, e.g. [a-z]*
-    }
-    else
-      break;
-  }
-  return *this;
-}
-#endif
 
 static bool ok_in_base( char c, int base )
 {
@@ -487,7 +417,6 @@ char *qstrdup( const char *str )
     if ( !str )
 	return 0;
     char *dst = new char[qstrlen(str)+1];
-    CHECK_PTR( dst );
     return strcpy( dst, str );
 }
 
@@ -531,58 +460,6 @@ int qstrnicmp( const char *str1, const char *str2, uint len )
     }
     return 0;
 }
-
-#ifndef QT_NO_DATASTREAM
-
-QDataStream &operator<<( QDataStream &s, const QByteArray &a )
-{
-    return s.writeBytes( a.data(), a.size() );
-}
-
-QDataStream &operator>>( QDataStream &s, QByteArray &a )
-{
-    Q_UINT32 len;
-    s >> len;					// read size of array
-    if ( len == 0 || s.eof() ) {		// end of file reached
-	a.resize( 0 );
-	return s;
-    }
-    if ( !a.resize( (uint)len ) ) {		// resize array
-#if defined(CHECK_NULL)
-	qWarning( "QDataStream: Not enough memory to read QByteArray" );
-#endif
-	len = 0;
-    }
-    if ( len > 0 )				// not null array
-	s.readRawBytes( a.data(), (uint)len );
-    return s;
-}
-
-QDataStream &operator<<( QDataStream &s, const QCString &str )
-{
-    return s.writeBytes( str.data(), str.size() );
-}
-
-QDataStream &operator>>( QDataStream &s, QCString &str )
-{
-    Q_UINT32 len;
-    s >> len;					// read size of string
-    if ( len == 0 || s.eof() ) {		// end of file reached
-	str.resize( 0 );
-	return s;
-    }
-    if ( !str.resize( (uint)len )) {// resize string
-#if defined(CHECK_NULL)
-	qWarning( "QDataStream: Not enough memory to read QCString" );
-#endif
-	len = 0;
-    }
-    if ( len > 0 )				// not null array
-	s.readRawBytes( str.rawData(), (uint)len );
-    return s;
-}
-
-#endif //QT_NO_DATASTREAM
 
 /// substitute all occurrences of \a src in \a s by \a dst
 QCString substitute(const QCString &s,const QCString &src,const QCString &dst)

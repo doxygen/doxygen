@@ -446,6 +446,7 @@ StringVector split(const std::string &s,const std::string &delimiter);
 StringVector split(const std::string &s,const reg::Ex &delimiter);
 int findIndex(const StringVector &sv,const std::string &s);
 int findIndex(const std::string &s,const reg::Ex &re);
+std::string join(const StringVector &s,const std::string &delimiter);
 
 bool recognizeFixedForm(const char* contents, FortranFormat format);
 FortranFormat convertFileNameFortranParserCode(QCString fn);

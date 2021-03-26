@@ -22,9 +22,9 @@
 #include "groupdef.h"
 #include "doxygen.h"
 #include "filedef.h"
+#include "util.h"
 
 #include <fstream>
-#include <qcstringlist.h>
 #include <string.h>
 
 static QCString makeFileName(const char * withoutExtension)
@@ -101,10 +101,11 @@ void Qhp::initialize()
     { "name", filterName, 0 };
     m_doc.open("customFilter", tagAttributes);
 
-    QCStringList customFilterAttributes = QCStringList::split(' ', Config_getString(QHP_CUST_FILTER_ATTRS));
-    for (int i = 0; i < (int)customFilterAttributes.count(); i++)
+    StringVector customFilterAttributes =
+        split(Config_getString(QHP_CUST_FILTER_ATTRS).str(), " ");
+    for (const auto &attr : customFilterAttributes)
     {
-      m_doc.openCloseContent("filterAttribute", customFilterAttributes[i]);
+      m_doc.openCloseContent("filterAttribute", attr.c_str());
     }
     m_doc.close("customFilter");
   }
@@ -112,15 +113,16 @@ void Qhp::initialize()
   m_doc.open("filterSection");
 
   // Add section attributes
-  QCStringList sectionFilterAttributes = QCStringList::split(' ',
-      Config_getString(QHP_SECT_FILTER_ATTRS));
-  if (!sectionFilterAttributes.contains("doxygen"))
+  StringVector sectionFilterAttributes =
+      split(Config_getString(QHP_SECT_FILTER_ATTRS).str(), " ");
+  if (std::find(sectionFilterAttributes.begin(), sectionFilterAttributes.end(), "doxygen") ==
+      sectionFilterAttributes.end())
   {
-    sectionFilterAttributes << "doxygen";
+    sectionFilterAttributes.push_back("doxygen");
   }
-  for (int i = 0; i < (int)sectionFilterAttributes.count(); i++)
+  for (const auto &attr : sectionFilterAttributes)
   {
-    m_doc.openCloseContent("filterAttribute", sectionFilterAttributes[i]);
+    m_doc.openCloseContent("filterAttribute", attr.c_str());
   }
 
   m_toc.open("toc");

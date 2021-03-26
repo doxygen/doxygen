@@ -7396,3 +7396,17 @@ int findIndex(const std::string &s,const reg::Ex &re)
   return reg::search(s,match,re) ? (int)match.position() : -1;
 }
 
+/// create a string where the string in the vector are joined by the given delimiter
+std::string join(const StringVector &sv,const std::string &delimiter)
+{
+  std::string result;
+  bool first=true;
+  for (const auto &s : sv)
+  {
+    if (!first) result+=delimiter;
+    first=false;
+    result+=s;
+  }
+  return result;
+}
+

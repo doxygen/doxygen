@@ -2313,7 +2313,7 @@ static void encodeForOutput(std::ostream &t,const char *s)
   QCString encoding;
   bool converted=FALSE;
   int l = qstrlen(s);
-  static QByteArray enc;
+  static std::vector<char> enc;
   if (l*4>(int)enc.size()) enc.resize(l*4); // worst case
   encoding.sprintf("CP%s",theTranslator->trRTFansicp().data());
   if (!encoding.isEmpty())
@@ -2325,7 +2325,7 @@ static void encodeForOutput(std::ostream &t,const char *s)
       size_t iLeft=l;
       size_t oLeft=enc.size();
       char *inputPtr = (char*)s;
-      char *outputPtr = enc.data();
+      char *outputPtr = &enc[0];
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {
         enc.resize(enc.size()-(unsigned int)oLeft);

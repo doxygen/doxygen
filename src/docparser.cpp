@@ -19,7 +19,6 @@
 
 #include <qcstring.h>
 #include <ctype.h>
-#include <qcstringlist.h>
 
 #include "regex.h"
 #include "doxygen.h"
@@ -5060,24 +5059,28 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     doctokenizerYYsetStateOptions();
     tok=doctokenizerYYlex();
     doctokenizerYYsetStatePara();
-    QCStringList optList=QCStringList::split(",",g_token->name);
-    if (t==DocInclude::Include && optList.contains("lineno"))
+    StringVector optList=split(g_token->name.str(),",");
+    auto contains = [&optList](const char *kw)
+    {
+      return std::find(optList.begin(),optList.end(),kw)!=optList.end();
+    };
+    if (t==DocInclude::Include && contains("lineno"))
     {
       t = DocInclude::IncWithLines;
     }
-    else if (t==DocInclude::Snippet && optList.contains("lineno"))
+    else if (t==DocInclude::Snippet && contains("lineno"))
     {
       t = DocInclude::SnipWithLines;
     }
-    else if (t==DocInclude::DontInclude && optList.contains("lineno"))
+    else if (t==DocInclude::DontInclude && contains("lineno"))
     {
       t = DocInclude::DontIncWithLines;
     }
-    else if (t==DocInclude::Include && optList.contains("doc"))
+    else if (t==DocInclude::Include && contains("doc"))
     {
       t = DocInclude::IncludeDoc;
     }
-    else if (t==DocInclude::Snippet && optList.contains("doc"))
+    else if (t==DocInclude::Snippet && contains("doc"))
     {
       t = DocInclude::SnippetDoc;
     }

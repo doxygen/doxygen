@@ -2602,16 +2602,20 @@ QCString VhdlParser::element_declaration() {QCString rec_name,s1,s2;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-QCString name;
-   QCStringList ql=QCStringList::split(",",rec_name);
-   for (uint j=0;j<ql.count();j++)
-   {
-    name=ql[j]+"~";
-    name+=outlineParser()->getNameID().data();;
-    outlineParser()->addVhdlType(name.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s1.data(),Public);
-   }
-   s2=rec_name+":"+s1;
-   return s2;
+auto ql = split(rec_name.str(),",");
+    for (const auto &n : ql)
+    {
+      std::string name=n+"~";
+      name+=outlineParser()->getNameID().data();
+      outlineParser()->addVhdlType(
+          name.c_str(),outlineParser()->getLine(),
+          Entry::VARIABLE_SEC,
+          VhdlDocGen::RECORD,0,
+          s1.data(),
+          Public);
+    }
+    s2=rec_name+":"+s1;
+    return s2;
 assert(false);
 }
 
@@ -9204,14 +9208,22 @@ s+=",";s+=s1;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-QCStringList ql1=QCStringList::split(",",s);
-                   for (uint j=0;j<ql1.count();j++)
+auto ql1=split(s.str(),",");
+                   for (const auto &name : ql1)
                    {
-                     QCStringList ql=QCStringList::split(".",ql1[j]);
-                     QCString it=ql[1];
-                     if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
+                     auto ql2=split(name,".");
+                     if (ql2.size()>1)
                      {
-                       outlineParser()->addVhdlType(it.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
+                       std::string it=ql2[1];
+                       if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
+                       {
+                         outlineParser()->addVhdlType(it.c_str(),
+                                                      outlineParser()->getLine(),
+                                                      Entry::VARIABLE_SEC,
+                                                      VhdlDocGen::USE,
+                                                      it.c_str(),
+                                                      "_use_",Public);
+                       }
                      }
                    }
                    s1="use "+s;

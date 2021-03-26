@@ -40,8 +40,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
-#include <qdir.h>
-#include <qcstring.h>
+#include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
 
@@ -521,12 +520,12 @@ int main(int argc,char **argv) {
     }
   }
 
-  QDir thisDir;
+  Dir thisDir;
   // remove temporary files
-  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName);
+  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName.str());
 
   // clean up after us
-  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY));
+  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY).str());
 
   startYamlDocument();
   listSymbols();

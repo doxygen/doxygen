@@ -318,12 +318,13 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   code = stripLeadingAndTrailingEmptyLines(code, iLine);
   int val = code.contains('\n');
   VhdlDocGen::prepareComment(p->strComment);
-  QCStringList ql = QCStringList::split('\n', p->strComment);
+  StringVector ql = split(p->strComment.str(),"\n");
 
   QCString co;
   QCString na;
-  for (QCString qcs : ql)
+  for (const auto &qcs_ : ql)
   {
+    QCString qcs = qcs_;
     qcs = qcs.simplifyWhiteSpace();
     if (findRe(qcs,csRe)!=-1)
     {
@@ -521,9 +522,9 @@ void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
     spec= VhdlDocGen::GENERIC;
   }
 
-  QCStringList ql=QCStringList::split(",",name);
+  StringVector ql=split(name.str(),",");
 
-  for (uint u=0;u<ql.count();u++)
+  for (size_t u=0;u<ql.size();u++)
   {
     s->current->name=ql[u];
     s->current->startLine=startLine;
@@ -583,11 +584,11 @@ void VHDLOutlineParser::createFunction(const char *imp,uint64 spec,const char *f
     VhdlDocGen::deleteAllChars(s->current->args,' ');
     if (!fname.isEmpty())
     {
-      QCStringList q1=QCStringList::split(",",fname);
-      for (uint ii=0;ii<q1.count();ii++)
+      StringVector q1=split(fname.str(),",");
+      for (const auto &name : q1)
       {
         Argument arg;
-        arg.name=q1[ii];
+        arg.name=name;
         s->current->argList.push_back(arg);
       }
     }
@@ -630,12 +631,12 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
   QCString name=s2;
-  QCStringList ql=QCStringList::split(",",name);
+  StringVector ql=split(name.str(),",");
 
-  for (uint u=0;u<ql.count();u++)
+  for (const auto &n : ql)
   {
     Argument arg;
-    arg.name=ql[u];
+    arg.name=n;
     if (s3)
     {
       arg.type=s3;

@@ -26,8 +26,7 @@
  */
 
 #include <stdlib.h>
-#include <qfile.h>
-#include <qdir.h>
+#include "dir.h"
 #include "doxygen.h"
 #include "outputgen.h"
 #include "parserintf.h"
@@ -297,7 +296,7 @@ int main(int argc,char **argv)
   }
 
   // clean up after us
-  QDir().rmdir("/tmp/doxygen");
+  Dir().rmdir("/tmp/doxygen");
 
   while (1)
   {
