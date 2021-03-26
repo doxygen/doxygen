@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "containers.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"

@@ -683,7 +683,7 @@ def main():
 		print("#ifndef CONFIGVALUES_H")
 		print("#define CONFIGVALUES_H")
 		print("")
-		print("#include <qcstring.h>")
+		print("#include \"qcstring.h\"")
 		print("#include \"containers.h\"")
 		print("#include \"settings.h\"")
 		print("")

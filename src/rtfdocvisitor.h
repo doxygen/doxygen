@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include "docvisitor.h"
-#include <qcstring.h>
+#include "qcstring.h"
 
 class CodeOutputInterface;
 

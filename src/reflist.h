@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "linkedmap.h"
 
 class Definition;

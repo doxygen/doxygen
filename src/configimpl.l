@@ -36,7 +36,6 @@
 #include "version.h"
 #include "portable.h"
 #include "message.h"
-
 #include "lang_cfg.h"
 #include "configoptions.h"
 #include "fileinfo.h"

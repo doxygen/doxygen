@@ -20,7 +20,7 @@
 #include <vector>
 #include <memory>
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 class Definition;
 class DefinitionMutable;

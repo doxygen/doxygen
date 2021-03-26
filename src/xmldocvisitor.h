@@ -19,9 +19,10 @@
 #ifndef _XMLDOCVISITOR_H
 #define _XMLDOCVISITOR_H
 
-#include "docvisitor.h"
-#include <qcstring.h>
 #include <iostream>
+
+#include "qcstring.h"
+#include "docvisitor.h"
 
 class CodeOutputInterface;
 class QCString;

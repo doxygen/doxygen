@@ -19,9 +19,9 @@
 #ifndef _TEXTDOCVISITOR_H
 #define _TEXTDOCVISITOR_H
 
+#include "qcstring.h"
 #include "docvisitor.h"
 #include "docparser.h"
-#include <qcstring.h>
 
 /*! @brief Concrete visitor implementation for TEXT output. */
 class TextDocVisitor : public DocVisitor

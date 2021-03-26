@@ -16,7 +16,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 /** @file
  *  @brief This file contains a number of basic enums and types.

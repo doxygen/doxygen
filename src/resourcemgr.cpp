@@ -14,7 +14,6 @@
  */
 
 #include <map>
-#include <qcstring.h>
 #include <string.h>
 #include <fstream>
 

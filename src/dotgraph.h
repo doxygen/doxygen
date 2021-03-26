@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "dir.h"
 
 class DotNode;

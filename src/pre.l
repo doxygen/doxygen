@@ -41,8 +41,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include <qcstring.h>
-
+#include "qcstring.h"
 #include "containers.h"
 #include "pre.h"
 #include "constexp.h"

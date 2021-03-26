@@ -18,8 +18,9 @@
 
 #include <map>
 #include <string>
+
 #include "containers.h"
-#include <qcstring.h>
+#include "qcstring.h"
 
 #define CACHE_FILENAME          "inline_umlgraph_cache_all.pu"
 #define DIVIDE_COUNT            4

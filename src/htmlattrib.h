@@ -16,7 +16,8 @@
 #define _HTMLATTRIB_H
 
 #include <vector>
-#include <qcstring.h>
+
+#include "qcstring.h"
 
 /*! \brief Class representing a HTML attribute. */
 struct HtmlAttrib

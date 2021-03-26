@@ -16,9 +16,9 @@
 #ifndef DOT_H
 #define DOT_H
 
-#include <qcstring.h>
 #include <map>
 
+#include "qcstring.h"
 #include "dotgraph.h" // only for GraphOutputFormat
 #include "dotfilepatcher.h"
 #include "dotrunner.h"

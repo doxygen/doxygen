@@ -20,7 +20,8 @@
 
 #include <memory>
 #include <string>
-#include <qcstring.h>
+
+#include "qcstring.h"
 
 /*! Manager class to handle formulas */
 class FormulaManager

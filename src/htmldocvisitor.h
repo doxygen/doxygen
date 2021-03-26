@@ -17,7 +17,7 @@
 #define _HTMLDOCVISITOR_H
 
 #include "docvisitor.h"
-#include <qcstring.h>
+#include "qcstring.h"
 
 class Definition;
 class MemberDef;

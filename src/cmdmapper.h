@@ -18,7 +18,7 @@
 
 #include <map>
 #include <string>
-#include <qcstring.h>
+#include "qcstring.h"
 
 struct CommandMap;
 

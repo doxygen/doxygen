@@ -18,7 +18,8 @@
 
 #include <map>
 #include <string>
-#include <qcstring.h>
+
+#include "qcstring.h"
 
 // used for table column width calculation
 const int rtf_pageWidth = 8748;

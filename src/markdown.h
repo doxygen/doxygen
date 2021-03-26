@@ -18,7 +18,7 @@
 
 #include <functional>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "parserintf.h"
 #include "growbuf.h"
 

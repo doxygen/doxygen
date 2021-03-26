@@ -16,9 +16,10 @@
 #ifndef TEMPLATE_H
 #define TEMPLATE_H
 
-#include <qcstring.h>
 #include <vector>
 #include <iostream>
+
+#include "qcstring.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;

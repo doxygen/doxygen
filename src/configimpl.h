@@ -26,7 +26,7 @@
 #include <iostream>
 
 #include "containers.h"
-#include <qcstring.h>
+#include "qcstring.h"
 
 
 /** Abstract base class for any configuration option.

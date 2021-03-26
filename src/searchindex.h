@@ -24,7 +24,7 @@
 #include <array>
 #include <functional>
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 class Definition;
 

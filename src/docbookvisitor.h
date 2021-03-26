@@ -16,12 +16,12 @@
 #ifndef _DOCBOOKDOCVISITOR_H
 #define _DOCBOOKDOCVISITOR_H
 
+#include <iostream>
+
 #include "containers.h"
 #include "docvisitor.h"
 #include "docparser.h"
-
-#include <qcstring.h>
-#include <iostream>
+#include "qcstring.h"
 
 class CodeOutputInterface;
 class QCString;

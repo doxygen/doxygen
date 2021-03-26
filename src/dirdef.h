@@ -16,12 +16,13 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
-#include "linkedmap.h"
-#include "definition.h"
 
 #include <vector>
 #include <map>
-#include <qcstring.h>
+
+#include "qcstring.h"
+#include "linkedmap.h"
+#include "definition.h"
 
 class FileList;
 class FileDef;

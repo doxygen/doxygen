@@ -17,6 +17,7 @@
 #define SYMBOLRESOLVER_H
 
 #include <memory>
+
 #include "qcstring.h"
 #include "classdef.h"
 

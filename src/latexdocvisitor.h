@@ -18,8 +18,8 @@
 
 #include <stack>
 
+#include "qcstring.h"
 #include "docvisitor.h"
-#include <qcstring.h>
 
 class LatexCodeGenerator;
 

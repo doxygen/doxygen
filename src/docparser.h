@@ -23,8 +23,7 @@
 #include <vector>
 #include <memory>
 
-#include <qcstring.h>
-
+#include "qcstring.h"
 #include "docvisitor.h"
 #include "htmlattrib.h"
 

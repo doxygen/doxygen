@@ -19,8 +19,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <qcstring.h>
-
+#include "qcstring.h"
 #include "linkedmap.h"
 
 class Definition;

@@ -19,9 +19,10 @@
 #ifndef _MANDOCVISITOR_H
 #define _MANDOCVISITOR_H
 
-#include "docvisitor.h"
-#include <qcstring.h>
 #include <iostream>
+
+#include "qcstring.h"
+#include "docvisitor.h"
 
 class CodeOutputInterface;
 

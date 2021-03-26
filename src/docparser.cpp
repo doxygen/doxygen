@@ -17,9 +17,9 @@
 #include <stdlib.h>
 #include <cassert>
 
-#include <qcstring.h>
 #include <ctype.h>
 
+#include "qcstring.h"
 #include "regex.h"
 #include "doxygen.h"
 #include "debug.h"

@@ -37,8 +37,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-#include <qcstring.h>
-
+#include "qcstring.h"
 #include "cite.h"
 #include "commentscan.h"
 #include "condparser.h"

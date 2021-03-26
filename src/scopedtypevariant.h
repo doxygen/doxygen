@@ -18,7 +18,8 @@
 
 #include <utility>
 #include <vector>
-#include <qcstring.h>
+
+#include "qcstring.h"
 #include "definition.h"
 
 //! Class representing a local class definition found while

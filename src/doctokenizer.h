@@ -19,9 +19,10 @@
 #ifndef _DOCTOKENIZER_H
 #define _DOCTOKENIZER_H
 
-#include <qcstring.h>
 #include <stdio.h>
+
 #include "htmlattrib.h"
+#include "qcstring.h"
 
 class Definition;
 

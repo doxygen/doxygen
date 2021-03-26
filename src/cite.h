@@ -19,7 +19,7 @@
 
 #include <memory>
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 /// Citation-related data.
 struct CiteInfo

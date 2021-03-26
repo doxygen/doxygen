@@ -27,11 +27,11 @@
 #include <map>
 #include <algorithm>
 
-#include <qcstring.h>
 
 /* --------------------------------------------------------------- */
 
 // local includes
+#include "qcstring.h"
 #include "vhdldocgen.h"
 #include "message.h"
 #include "config.h"
@@ -2035,7 +2035,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
 
 void VhdlDocGen::writePlainVHDLDeclarations(
     const MemberList* mlist,OutputList &ol,
-    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,int specifier)
+    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,uint64_t specifier)
 {
 
   StringSet pack;

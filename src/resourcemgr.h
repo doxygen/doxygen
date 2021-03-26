@@ -18,7 +18,7 @@
 #include <memory>
 #include <initializer_list>
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 /** @brief Compiled resource */
 struct Resource

@@ -21,7 +21,7 @@
  * vhdl documents
  */
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "layout.h"
 #include "arguments.h"
 #include "entry.h"
@@ -193,7 +193,7 @@ class VhdlDocGen
 
     static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        int specifier);
+        uint64_t specifier);
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
