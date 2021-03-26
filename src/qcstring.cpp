@@ -188,9 +188,9 @@ QCString QCString::simplifyWhiteSpace() const
   char *first = to;
   while ( TRUE )
   {
-    while ( *from && isspace((uchar) *from) )
+    while ( *from && qisspace(*from) )
       from++;
-    while ( *from && !isspace((uchar)*from) )
+    while ( *from && !qisspace(*from) )
       *to++ = *from++;
     if ( *from )
       *to++ = 0x20;                       // ' '
@@ -262,7 +262,7 @@ long QCString::toLong(bool *ok,int base) const
   int neg = 0;
   if ( !p )
     goto bye;
-  while ( l && isspace(*p) )			// skip leading space
+  while ( l && qisspace(*p) )			// skip leading space
     l--,p++;
   if ( l && *p == '-' ) {
     l--;
@@ -294,7 +294,7 @@ long QCString::toLong(bool *ok,int base) const
   }
   if ( neg )
     val = -val;
-  while ( l && isspace(*p) )			// skip trailing space
+  while ( l && qisspace(*p) )			// skip trailing space
     l--,p++;
   if ( !l )
     is_ok = TRUE;
@@ -313,7 +313,7 @@ ulong QCString::toULong(bool *ok,int base) const
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
-  while ( l && isspace(*p) )			// skip leading space
+  while ( l && qisspace(*p) )			// skip leading space
     l--,p++;
   if ( *p == '+' )
     l--,p++;
@@ -338,7 +338,7 @@ ulong QCString::toULong(bool *ok,int base) const
     p++;
   }
 
-  while ( l && isspace(*p) )			// skip trailing space
+  while ( l && qisspace(*p) )			// skip trailing space
     l--,p++;
   if ( !l )
     is_ok = TRUE;
@@ -357,7 +357,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
   bool is_ok = FALSE;
   if ( !p )
     goto bye;
-  while ( l && isspace(*p) )		 	   // skip leading space
+  while ( l && qisspace(*p) )		 	   // skip leading space
     l--,p++;
   if ( *p == '+' )
     l--,p++;
@@ -382,7 +382,7 @@ uint64 QCString::toUInt64(bool *ok,int base) const
     p++;
   }
 
-  while ( l && isspace(*p) )			// skip trailing space
+  while ( l && qisspace(*p) )			// skip trailing space
     l--,p++;
   if ( !l )
     is_ok = TRUE;

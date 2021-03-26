@@ -82,9 +82,13 @@ inline int qstrncmp( const char *str1, const char *str2, uint len )
 { return (str1 && str2) ? strncmp(str1,str2,len) :
 			  (int)((intptr_t)str2 - (intptr_t)str1); }
 
+inline bool qisspace(char c)
+{ return c==' ' || c=='\t' || c=='\n' || c=='\r'; }
+
 int qstricmp( const char *str1, const char *str2 );
 
 int qstrnicmp( const char *str1, const char *str2, uint len );
+
 
 /** This is an alternative implementation of QCString. It provides basically
  *  the same functions but uses std::string as the underlying string type
@@ -231,11 +235,11 @@ class QCString
     QCString stripWhiteSpace() const
     {
       int sl = (uint)m_rep.size();
-      if (sl==0 || (!std::isspace(m_rep[0]) && !std::isspace(m_rep[sl-1]))) return *this;
+      if (sl==0 || (!qisspace(m_rep[0]) && !qisspace(m_rep[sl-1]))) return *this;
       int start=0,end=sl-1;
-      while (start<sl && std::isspace(m_rep[start])) start++;
+      while (start<sl && qisspace(m_rep[start])) start++;
       if (start==sl) return QCString(); // only whitespace
-      while (end>start && std::isspace(m_rep[end])) end--;
+      while (end>start && qisspace(m_rep[end])) end--;
       return QCString(m_rep.substr(start,1+end-start));
     }
 
