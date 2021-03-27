@@ -3774,7 +3774,7 @@ make sure you add the following:
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4508">4508</a>: Added support for &lt;inheritdoc/&gt; C# XML command
        (thanks to John Werner for the patch).</li>
 <li>   id <a href="https://github.com/doxygen/doxygen/issues/4588">4588</a>, Added support for resolving environment variables of the
-       form $(PROGRAMFILES(X86)) inside the config file</li>
+       form &#36;(PROGRAMFILES(X86)) inside the config file</li>
 <li>   Doxygen now shows Objective-C properties in collaboration diagrams
        (thanks to Sven Weidauer for the patch).</li>
 <li>   Added ability to search for group or page titles.</li>
@@ -5849,7 +5849,7 @@ make sure you add the following:
 <li>   id 457857: Leading "struct" keyword is no longer stripped from the documentation of
                   functions that return a pointer to a struct.</li>
 <li>   id 458710: Expanding environment variables in the config file to a
-                  file or path name with spaces (e.g. "$(VCInstallDir)include") was
+                  file or path name with spaces (e.g. "&#36;(VCInstallDir)include") was
                   incorrectly interpreted as a list when used with for instance <code>INPUT</code>.</li>
 <li>   id 458749: Undocumented constructors/destructors inside an undocumented member group
                   were not visible in the output.</li>
@@ -7264,7 +7264,7 @@ make sure you add the following:
        now be improved significantly.</li>
 <li>   Made some cosmetic changes to the HTML output (thanks to Ben Harper).</li>
 <li>   STRIP_FROM_PATH now by default strips the path from which doxygen is
-       run (i.e. $(PWD)/ on Unix)</li>
+       run (i.e. &#36;(PWD)/ on Unix)</li>
 </ul>
 <h3>New features</h3>
 <ul>
@@ -7315,7 +7315,7 @@ make sure you add the following:
        Eoin MacDonell for the fix).</li>
 <li>   Grouped pages in the XML output did have the same id as their group.</li>
 <li>   Fixed problem handling environment variables inside a
-       quoted string in the config file (e.g. "$(HOME)/My Path/").</li>
+       quoted string in the config file (e.g. "&#36;(HOME)/My Path/").</li>
 <li>   Using "\mainpage notitle" caused the "notitle" to appear in the treeview.</li>
 <li>   Page references where wrong in the latex output when PDF_HYPERLINKS
        was disabled.</li>
@@ -9166,7 +9166,7 @@ make sure you add the following:
        (thanks to Marvin Wolfthal).</li>
 <li>   In some situations doxygen wanted to write a files containing a \n.</li>
 <li>   Environment variables can now also be used for non-string values
-       in the config file, like for example QUIET = $(QUIET_ON)</li>
+       in the config file, like for example QUIET = &#36;(QUIET_ON)</li>
 <li>   Fixed a number of typo's in the docs (thanks to Philippe Lhoste &amp;
        Jens Seidel).</li>
 <li>   Inheritance through typedefs within a namespace did not yield the
