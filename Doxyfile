@@ -274,8 +274,7 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           = qtools \
-                         libmd5 \
+INCLUDE_PATH           = libmd5 \
                          liblodepng \
                          libmscgen
 INCLUDE_FILE_PATTERNS  =
@@ -285,7 +284,7 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration options related to external references
 #---------------------------------------------------------------------------
-TAGFILES               = qtools_docs/qtools.tag=../../qtools_docs/html
+TAGFILES               =
 GENERATE_TAGFILE       = doxygen.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES

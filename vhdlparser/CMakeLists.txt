@@ -38,7 +38,6 @@ set_source_files_properties(${GENERATED_SRC}/VhdlParser_adj.cc PROPERTIES GENERA
 
 include_directories(
 	${PROJECT_SOURCE_DIR}/src
-	#${PROJECT_SOURCE_DIR}/qtools
 	${PROJECT_SOURCE_DIR}/vhdlparser
 	${GENERATED_SRC})
 add_library(vhdlparser STATIC
