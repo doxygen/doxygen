@@ -77,14 +77,16 @@ class ConfigOption
   protected:
     virtual void writeTemplate(std::ostream &t,bool sl,bool upd) = 0;
     virtual void compareDoxyfile(std::ostream &t) = 0;
+    virtual void writeXMLDoxyfile(std::ostream &t) = 0;
     virtual void convertStrToVal() {}
     virtual void emptyValueToDefault() {}
     virtual void substEnvVars() = 0;
     virtual void init() {}
+    virtual bool isDefault() {return true;}
 
-    void writeBoolValue(std::ostream &t,bool v);
-    void writeIntValue(std::ostream &t,int i);
-    void writeStringValue(std::ostream &t,const QCString &s);
+    void writeBoolValue(std::ostream &t,bool v,bool initSpace = true);
+    void writeIntValue(std::ostream &t,int i,bool initSpace = true);
+    void writeStringValue(std::ostream &t,const QCString &s,bool initSpace = true);
     void writeStringList(std::ostream &t,const StringVector &l);
 
     QCString m_spaces;
@@ -109,6 +111,7 @@ class ConfigInfo : public ConfigOption
     }
     void writeTemplate(std::ostream &t, bool sl,bool);
     void compareDoxyfile(std::ostream &){};
+    void writeXMLDoxyfile(std::ostream &) {};
     void substEnvVars() {}
 };
 
@@ -132,8 +135,10 @@ class ConfigList : public ConfigOption
     StringVector getDefault() { return m_defaultValue; }
     void writeTemplate(std::ostream &t,bool sl,bool);
     void compareDoxyfile(std::ostream &t);
+    void writeXMLDoxyfile(std::ostream &t);
     void substEnvVars();
     void init() { m_value = m_defaultValue; }
+    bool isDefault();
   private:
     StringVector m_value;
     StringVector m_defaultValue;
@@ -160,7 +165,9 @@ class ConfigEnum : public ConfigOption
     void writeTemplate(std::ostream &t,bool sl,bool);
     void convertStrToVal();
     void compareDoxyfile(std::ostream &t);
+    void writeXMLDoxyfile(std::ostream &t);
     void init() { m_value = m_defValue.copy(); }
+    bool isDefault() { return (m_value == m_defValue); }
 
   private:
     std::vector<QCString> m_valueRange;
@@ -190,9 +197,11 @@ class ConfigString : public ConfigOption
     QCString *valueRef() { return &m_value; }
     void writeTemplate(std::ostream &t,bool sl,bool);
     void compareDoxyfile(std::ostream &t);
+    void writeXMLDoxyfile(std::ostream &t);
     void substEnvVars();
     void init() { m_value = m_defValue.copy(); }
     void emptyValueToDefault() { if(m_value.isEmpty()) m_value=m_defValue; };
+    bool isDefault() { return (m_value.stripWhiteSpace() == m_defValue.stripWhiteSpace()); }
 
   private:
     QCString m_value;
@@ -223,7 +232,9 @@ class ConfigInt : public ConfigOption
     void substEnvVars();
     void writeTemplate(std::ostream &t,bool sl,bool upd);
     void compareDoxyfile(std::ostream &t);
+    void writeXMLDoxyfile(std::ostream &t);
     void init() { m_value = m_defValue; }
+    bool isDefault() { return (m_value == m_defValue); }
   private:
     int m_value;
     int m_defValue;
@@ -252,7 +263,9 @@ class ConfigBool : public ConfigOption
     void setValueString(const QCString &v) { m_valueString = v; }
     void writeTemplate(std::ostream &t,bool sl,bool upd);
     void compareDoxyfile(std::ostream &t);
+    void writeXMLDoxyfile(std::ostream &t);
     void init() { m_value = m_defValue; }
+    bool isDefault() { return (m_value == m_defValue); }
   private:
     bool m_value;
     bool m_defValue;
@@ -268,6 +281,7 @@ class ConfigObsolete : public ConfigOption
     { m_name = name; }
     void writeTemplate(std::ostream &,bool,bool);
     void compareDoxyfile(std::ostream &) {}
+    void writeXMLDoxyfile(std::ostream &) {};
     void substEnvVars() {}
 };
 
@@ -280,6 +294,7 @@ class ConfigDisabled : public ConfigOption
     { m_name = name; }
     void writeTemplate(std::ostream &,bool,bool);
     void compareDoxyfile(std::ostream &) {}
+    void writeXMLDoxyfile(std::ostream &) {};
     void substEnvVars() {}
 };
 
@@ -479,6 +494,11 @@ class ConfigImpl
      *  template configuration to stream \a t.
      */
     void compareDoxyfile(std::ostream &t);
+
+    /*! Writes a the used settings of the current configuartion as XML format
+     *  to stream \a t.
+     */
+    void writeXMLDoxyfile(std::ostream &t);
 
     void setHeader(const char *header) { m_header = header; }
 
