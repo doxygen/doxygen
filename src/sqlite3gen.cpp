@@ -1385,7 +1385,7 @@ QCString getSQLDocBlock(const Definition *scope,
 {
   if (doc.isEmpty()) return "";
 
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   DocNode *root = validatingParseDoc(
     fileName,
     lineNr,

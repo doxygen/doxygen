@@ -552,7 +552,7 @@ QCString searchName(const Definition *d)
 QCString searchId(const Definition *d)
 {
   std::string s = searchName(d).str();
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   for (size_t i=0;i<s.length();i++)
   {
     if (isId(s[i]))

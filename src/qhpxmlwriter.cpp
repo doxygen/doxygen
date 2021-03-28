@@ -18,8 +18,7 @@
 #include "util.h"
 
 QhpXmlWriter::QhpXmlWriter()
-    : m_backend(std::ios_base::ate), m_indentLevel(0),
-      m_curLineIndented(false), m_compress(false)
+    : m_indentLevel(0), m_curLineIndented(false), m_compress(false)
 {
 }
 

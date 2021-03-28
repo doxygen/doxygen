@@ -5214,7 +5214,7 @@ QCString latexEscapeIndexChars(const char *s)
 QCString latexEscapePDFString(const char *s)
 {
   if (s==0) return "";
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   const char *p=s;
   char c;
   while ((c=*p++))
@@ -5238,7 +5238,7 @@ QCString latexEscapePDFString(const char *s)
 QCString latexFilterURL(const char *s)
 {
   if (s==0) return "";
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   const signed char *p=(const signed char*)s;
   char c;
   while ((c=*p++))
@@ -5915,7 +5915,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
 
 static QCString escapeCommas(const QCString &s)
 {
-  std::ostringstream result(std::ios_base::ate);
+  TextStream result;
   const char *p = s.data();
   char c,pc=0;
   while ((c=*p++))
@@ -6628,7 +6628,7 @@ QCString stripIndentation(const QCString &s)
   if (minIndent==0) return s;
 
   // remove minimum indentation for each line
-  std::ostringstream result(std::ios_base::ate);
+  TextStream result;
   p=s.data();
   indent=0;
   while ((c=*p++))

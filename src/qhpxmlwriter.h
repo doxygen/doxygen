@@ -18,8 +18,7 @@
 #define QHPXMLWRITER_H
 
 #include <sstream>
-
-class TextStream;
+#include "textstream.h"
 
 class QhpXmlWriter
 {
@@ -52,7 +51,7 @@ class QhpXmlWriter
                        char const * const * attributes = 0);
     void closePure(char const * elementName);
 
-    std::ostringstream m_backend;
+    TextStream m_backend;
     int  m_indentLevel;
     bool m_curLineIndented;
     bool m_compress;

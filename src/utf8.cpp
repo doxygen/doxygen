@@ -139,7 +139,7 @@ static inline std::string caseConvert(const std::string &input,
                                       const char *(*conversionFunc)(uint32_t code))
 {
   uint32_t code;
-  std::ostringstream result(std::ios_base::ate);
+  TextStream result;
   int len;
   size_t bytesLeft = input.length();
   const char *p = input.c_str();
@@ -148,7 +148,7 @@ static inline std::string caseConvert(const std::string &input,
     const char *conv = conversionFunc(code);
     if (conv==nullptr) // no difference between lower and upper case
     {
-      result << std::string(p,len);
+      result.write(p,len);
     }
     else // replace the input character with the conversion result
     {
