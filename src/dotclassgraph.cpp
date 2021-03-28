@@ -18,6 +18,7 @@
 #include "containers.h"
 #include "dotclassgraph.h"
 #include "dotnode.h"
+#include "textstream.h"
 
 #include "config.h"
 #include "util.h"
@@ -443,7 +444,7 @@ QCString DotClassGraph::getImgAltText() const
   return "";
 }
 
-QCString DotClassGraph::writeGraph(std::ostream &out,
+QCString DotClassGraph::writeGraph(TextStream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
   const char *path,
@@ -458,7 +459,7 @@ QCString DotClassGraph::writeGraph(std::ostream &out,
 
 //--------------------------------------------------------------------
 
-void DotClassGraph::writeXML(std::ostream &t)
+void DotClassGraph::writeXML(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -466,7 +467,7 @@ void DotClassGraph::writeXML(std::ostream &t)
   }
 }
 
-void DotClassGraph::writeDocbook(std::ostream &t)
+void DotClassGraph::writeDocbook(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -474,7 +475,7 @@ void DotClassGraph::writeDocbook(std::ostream &t)
   }
 }
 
-void DotClassGraph::writeDEF(std::ostream &t)
+void DotClassGraph::writeDEF(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {

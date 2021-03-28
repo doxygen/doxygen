@@ -112,7 +112,7 @@ class DirDef : public DefinitionMutable, public Definition
 
     // generate output
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeTagFile(std::ostream &t) = 0;
+    virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
     virtual void sort() = 0;

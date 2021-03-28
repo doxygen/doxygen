@@ -16,6 +16,7 @@
 #include "emoji.h"
 #include "message.h"
 #include "util.h"
+#include "textstream.h"
 
 static struct emojiEntityInfo
 {
@@ -1563,7 +1564,7 @@ int EmojiEntityMapper::symbol2index(const std::string &symName) const
 /*!
  * @brief Writes the list of supported emojis to the given file.
  */
-void EmojiEntityMapper::writeEmojiFile(std::ostream &t)
+void EmojiEntityMapper::writeEmojiFile(TextStream &t)
 {
   for (int i = 0; i < g_numEmojiEntities; i++)
   {

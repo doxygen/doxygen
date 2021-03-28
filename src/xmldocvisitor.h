@@ -23,6 +23,7 @@
 
 #include "qcstring.h"
 #include "docvisitor.h"
+#include "textstream.h"
 
 class CodeOutputInterface;
 class QCString;
@@ -31,7 +32,7 @@ class QCString;
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
+    XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -154,7 +155,7 @@ class XmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    std::ostream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

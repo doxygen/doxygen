@@ -36,6 +36,7 @@ class Definition;
 class GroupDef;
 class FileDef;
 class NamespaceDef;
+class TextStream;
 struct Argument;
 
 struct VhdlConfNode
@@ -141,7 +142,7 @@ class VhdlDocGen
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
-    static void writeTagFile(MemberDefMutable *mdef,std::ostream &tagFile);
+    static void writeTagFile(MemberDefMutable *mdef,TextStream &tagFile);
 
     static bool isConstraint(const MemberDef *mdef);
     static bool isConfig(const MemberDef *mdef);
@@ -228,7 +229,7 @@ class VhdlDocGen
 
  // flowcharts
     static void createFlowChart(const MemberDef*);
-    //static void addFlowImage(const std::ostream &,const QCString &);
+    //static void addFlowImage(const TextStream &,const QCString &);
 
     static void setFlowMember( const MemberDef *flowMember);
     static const MemberDef *getFlowMember();
@@ -288,13 +289,13 @@ class FlowChart
 
     //---------- create svg -------------------------------------------------------------
     static void createSVG();
-    static void startDot(std::ostream &t);
-    static void endDot(std::ostream &t);
-    static void codify(std::ostream &t,const char *str);
-    static void writeShape(std::ostream &t,const FlowChart &fl);
-    static void writeEdge(std::ostream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
-    static void writeEdge(std::ostream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
-    static void writeFlowLinks(std::ostream &t);
+    static void startDot(TextStream &t);
+    static void endDot(TextStream &t);
+    static void codify(TextStream &t,const char *str);
+    static void writeShape(TextStream &t,const FlowChart &fl);
+    static void writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
+    static void writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
+    static void writeFlowLinks(TextStream &t);
 
     static QCString getNodeName(int n);
     static void colTextNodes();
@@ -317,8 +318,8 @@ class FlowChart
     static QCString convertNameToFileName();
     static void printNode(const FlowChart& n);
     static void printFlowTree();
-    static void buildCommentNodes(std::ostream &t);
-    static void alignCommentNode(std::ostream &t,QCString com);
+    static void buildCommentNodes(TextStream &t);
+    static void alignCommentNode(TextStream &t,QCString com);
 
     static void  printUmlTree();
     static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);

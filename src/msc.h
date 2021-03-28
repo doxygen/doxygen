@@ -16,9 +16,8 @@
 #ifndef _MSC_H
 #define _MSC_H
 
-#include <iostream>
-
 class QCString;
+class TextStream;
 
 enum MscOutputFormat { MSC_BITMAP , MSC_EPS, MSC_SVG };
 
@@ -28,7 +27,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
 QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
                                 const QCString& relPath,const QCString& context);
 
-void writeMscImageMapFromFile(std::ostream &t,const QCString &inFile,
+void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &outDir, const QCString &relPath,
                               const QCString &baseName, const QCString &context,
 			      MscOutputFormat format

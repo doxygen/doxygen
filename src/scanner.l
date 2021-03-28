@@ -61,7 +61,6 @@ static AtomicInt  anonNSCount;
 
 struct scannerYY_state
 {
-  scannerYY_state() : docBlock(std::ios_base::ate) {}
   OutlineParserInterface *thisParser;
   CommentScanner   commentScanner;
   const char *     inputString = 0;
@@ -151,13 +150,13 @@ struct scannerYY_state
   QCString *pCopyRoundString = 0;
   QCString *pCopyCurlyString = 0;
   QCString *pCopyRawString = 0;
-  std::ostringstream *pCopyCurlyGString = 0;
-  std::ostringstream *pCopyRoundGString = 0;
-  std::ostringstream *pCopySquareGString = 0;
-  std::ostringstream *pCopyQuotedGString = 0;
-  std::ostringstream *pCopyHereDocGString = 0;
-  std::ostringstream *pCopyRawGString = 0;
-  std::ostringstream *pSkipVerbString = 0;
+  TextStream *pCopyCurlyGString = 0;
+  TextStream *pCopyRoundGString = 0;
+  TextStream *pCopySquareGString = 0;
+  TextStream *pCopyQuotedGString = 0;
+  TextStream *pCopyHereDocGString = 0;
+  TextStream *pCopyRawGString = 0;
+  TextStream *pSkipVerbString = 0;
 
   bool             insideFormula = false;
   bool             insideTryBlock = false;
@@ -171,7 +170,7 @@ struct scannerYY_state
   QCString         briefBackup;
 
   int              docBlockContext = 0;
-  std::ostringstream docBlock;
+  TextStream       docBlock;
   QCString         docBlockName;
   bool             docBlockInBody = false;
   bool             docBlockAutoBrief = false;
@@ -7204,7 +7203,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
   //printf("parseCompounds(%s)\n",rt->name.data());
   for (const auto &ce : rt->children())
   {
-    if (ce->program.tellp() != std::streampos(0))
+    if (!ce->program.empty())
     {
       //printf("-- %s ---------\n%s\n---------------\n",
       //  ce->name.data(),ce->program.data());

@@ -35,7 +35,7 @@ QCString DotGfxHierarchyTable::getBaseName() const
 
 void DotGfxHierarchyTable::computeTheGraph()
 {
-  std::ostringstream md5stream(std::ios_base::ate);
+  TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
   md5stream << "  rankdir=\"LR\";\n";
   for (auto node : m_rootNodes)
@@ -61,7 +61,7 @@ QCString DotGfxHierarchyTable::getMapLabel() const
   return escapeCharsInString(m_rootSubgraphNode->label(),FALSE);
 }
 
-void DotGfxHierarchyTable::createGraph(DotNode *n,std::ostream &out,
+void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
   const char *path,const char *fileName,int id)
 {
   m_rootSubgraphNode = n;
@@ -71,7 +71,7 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,std::ostream &out,
   DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
 }
 
-void DotGfxHierarchyTable::writeGraph(std::ostream &out,
+void DotGfxHierarchyTable::writeGraph(TextStream &out,
   const char *path,const char *fileName)
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);

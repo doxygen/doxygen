@@ -71,12 +71,12 @@
 #endif
 //------------------
 
-inline void writeDocbookString(std::ostream &t,const char *s)
+inline void writeDocbookString(TextStream &t,const char *s)
 {
   t << convertToDocBook(s);
 }
 
-inline void writeDocbookCodeString(std::ostream &t,const char *s, int &col)
+inline void writeDocbookCodeString(TextStream &t,const char *s, int &col)
 {
   char c;
   while ((c=*s++))
@@ -116,7 +116,7 @@ inline void writeDocbookCodeString(std::ostream &t,const char *s, int &col)
   }
 }
 
-static void addIndexTerm(std::ostream &t, QCString prim, QCString sec = "")
+static void addIndexTerm(TextStream &t, QCString prim, QCString sec = "")
 {
   t << "<indexterm><primary>";
   t << convertToDocBook(prim);
@@ -129,7 +129,7 @@ static void addIndexTerm(std::ostream &t, QCString prim, QCString sec = "")
   }
   t << "</indexterm>\n";
 }
-void writeDocbookLink(std::ostream &t,const char * /*extRef*/,const char *compoundId,
+void writeDocbookLink(TextStream &t,const char * /*extRef*/,const char *compoundId,
     const char *anchorId,const char * text,const char * /*tooltip*/)
 {
   t << "<link linkend=\"_" << stripPath(compoundId);
@@ -140,7 +140,7 @@ void writeDocbookLink(std::ostream &t,const char * /*extRef*/,const char *compou
   t << "</link>";
 }
 
-DocbookCodeGenerator::DocbookCodeGenerator(std::ostream &t) : m_t(nullptr)
+DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(nullptr)
 {
   m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
   setTextStream(t);
@@ -324,28 +324,28 @@ DB_GEN_C
   relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".xml") fileName+=".xml";
   startPlainFile(fileName);
-  m_codeGen.setTextStream(t);
+  m_codeGen.setTextStream(m_t);
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 
-  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
-  t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
-  if (!pageName.isEmpty()) t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
-  t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
-  t << ">\n";
+  m_t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+  m_t << "<" << fileType << " xmlns=\"http://docbook.org/ns/docbook\" version=\"5.0\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"";
+  if (!pageName.isEmpty()) m_t << " xml:id=\"_" <<  stripPath(pageName) << "\"";
+  m_t << " xml:lang=\"" << theTranslator->trISOLang() << "\"";
+  m_t << ">\n";
 }
 
 void DocbookGenerator::endFile()
 {
 DB_GEN_C
-  if (m_inDetail) t << "</section>\n";
+  if (m_inDetail) m_t << "</section>\n";
   m_inDetail = FALSE;
   while (m_inLevel != -1)
   {
-    t << "</section>\n";
+    m_t << "</section>\n";
     m_inLevel--;
   }
-  if (m_inGroup) t << "</section>\n";
+  if (m_inGroup) m_t << "</section>\n";
   m_inGroup = FALSE;
 
   QCString fileType="section";
@@ -358,7 +358,7 @@ DB_GEN_C
   {
     fileType="chapter";
   }
-  t << "</" << fileType << ">\n";
+  m_t << "</" << fileType << ">\n";
   endPlainFile();
   m_codeGen.setSourceFileName("");
 }
@@ -371,16 +371,16 @@ DB_GEN_C2("IndexSections " << is)
     case isTitlePageStart:
       {
         QCString dbk_projectName = Config_getString(PROJECT_NAME);
-        t << "    <info>\n";
-        t << "    <title>" << convertToDocBook(dbk_projectName) << "</title>\n";
-        t << "    </info>\n";
+        m_t << "    <info>\n";
+        m_t << "    <title>" << convertToDocBook(dbk_projectName) << "</title>\n";
+        m_t << "    </info>\n";
       }
       break;
     case isTitlePageAuthor:
       break;
     case isMainPage:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isModuleIndex:
       //Module Index}\n"
@@ -395,7 +395,7 @@ DB_GEN_C2("IndexSections " << is)
       //Hierarchical Index}\n"
       break;
     case isCompoundIndex:
-      //t << "{"; //Class Index}\n"
+      //m_t << "{"; //Class Index}\n"
       break;
     case isFileIndex:
       //Annotated File Index}\n"
@@ -404,28 +404,28 @@ DB_GEN_C2("IndexSections " << is)
       //Annotated Page Index}\n"
       break;
     case isModuleDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isDirDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isNamespaceDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isClassDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isFileDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isExampleDocumentation:
-      t << "<chapter>\n";
-      t << "    <title>";
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
       break;
     case isPageDocumentation:
       break;
@@ -447,78 +447,78 @@ DB_GEN_C2("IndexSections " << is)
     case isTitlePageAuthor:
       break;
     case isMainPage:
-      t << "</title>\n";
-      t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-      t << "</chapter>\n";
+      m_t << "</title>\n";
+      m_t << "    <xi:include href=\"mainpage.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+      m_t << "</chapter>\n";
       break;
     case isModuleIndex:
-      //t << "</chapter>\n";
+      //m_t << "</chapter>\n";
       break;
     case isDirIndex:
-      //t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>\n";
+      //m_t << "<xi:include href=\"dirs.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
+      //m_t << "</chapter>\n";
       break;
     case isNamespaceIndex:
-      //t << "<xi:include href=\"namespaces.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>\n";
+      //m_t << "<xi:include href=\"namespaces.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
+      //m_t << "</chapter>\n";
       break;
     case isClassHierarchyIndex:
-      //t << "<xi:include href=\"hierarchy.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>\n";
+      //m_t << "<xi:include href=\"hierarchy.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
+      //m_t << "</chapter>\n";
       break;
     case isCompoundIndex:
-      //t << "</chapter>\n";
+      //m_t << "</chapter>\n";
       break;
     case isFileIndex:
-      //t << "<xi:include href=\"files.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>\n";
+      //m_t << "<xi:include href=\"files.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
+      //m_t << "</chapter>\n";
       break;
     case isPageIndex:
-      //t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
-      //t << "</chapter>\n";
+      //m_t << "<xi:include href=\"pages.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
+      //m_t << "</chapter>\n";
       break;
     case isModuleDocumentation:
       {
-        t << "</title>\n";
+        m_t << "</title>\n";
         for (const auto &gd : *Doxygen::groupLinkedMap)
         {
           if (!gd->isReference())
           {
-            t << "    <xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << gd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
-      t << "</chapter>\n";
+      m_t << "</chapter>\n";
       break;
     case isDirDocumentation:
       {
-        t << "</title>\n";
+        m_t << "</title>\n";
         for (const auto &dd : *Doxygen::dirLinkedMap)
         {
           if (dd->isLinkableInProject())
           {
-            t << "<    xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "<    xi:include href=\"" << dd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
-      t << "</chapter>\n";
+      m_t << "</chapter>\n";
       break;
     case isNamespaceDocumentation:
       {
-        t << "</title>\n";
+        m_t << "</title>\n";
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
-            t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
-      t << "</chapter>\n";
+      m_t << "</chapter>\n";
       break;
     case isClassDocumentation:
       {
-        t << "</title>\n";
+        m_t << "</title>\n";
         for (const auto &cd : *Doxygen::classLinkedMap)
         {
           if (cd->isLinkableInProject() &&
@@ -527,15 +527,15 @@ DB_GEN_C2("IndexSections " << is)
              !cd->isAlias()
              )
           {
-            t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            m_t << "    <xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }
-      t << "</chapter>\n";
+      m_t << "</chapter>\n";
       break;
     case isFileDocumentation:
       {
-        t << "</title>\n";
+        m_t << "</title>\n";
         bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
@@ -545,43 +545,43 @@ DB_GEN_C2("IndexSections " << is)
             {
               if (isFirst)
               {
-                t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
                 }
                 isFirst=FALSE;
               }
               else
               {
-                t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
                 if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
                 {
-                  t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
                 }
               }
             }
           }
         }
       }
-      t << "</chapter>\n";
+      m_t << "</chapter>\n";
       break;
     case isExampleDocumentation:
       {
-        t << "</title>\n";
+        m_t << "</title>\n";
         for (const auto &pd : *Doxygen::exampleLinkedMap)
         {
-          t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+          m_t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
         }
       }
-      t << "</chapter>\n";
+      m_t << "</chapter>\n";
       break;
     case isPageDocumentation:
       break;
     case isPageDocumentation2:
       break;
     case isEndIndex:
-      t << "<index/>\n";
+      m_t << "<index/>\n";
       break;
   }
 }
@@ -592,17 +592,17 @@ DB_GEN_C
   {
     if (!pd->getGroupDef() && !pd->isReference() && pd->name() == stripPath(name))
     {
-      t << "<chapter>\n";
+      m_t << "<chapter>\n";
       if (pd->hasTitle())
       {
-        t << "    <title>" << convertToDocBook(pd->title()) << "</title>\n";
+        m_t << "    <title>" << convertToDocBook(pd->title()) << "</title>\n";
       }
       else
       {
-        t << "    <title>" << convertToDocBook(pd->name()) << "</title>\n";
+        m_t << "    <title>" << convertToDocBook(pd->name()) << "</title>\n";
       }
-      t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-      t << "</chapter>\n";
+      m_t << "    <xi:include href=\"" << pd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+      m_t << "</chapter>\n";
     }
   }
 }
@@ -611,7 +611,7 @@ void DocbookGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef
 {
 DB_GEN_C
   DocbookDocVisitor *visitor =
-    new DocbookDocVisitor(t,*this,ctx?ctx->getDefFileExtension():QCString(""));
+    new DocbookDocVisitor(m_t,*this,ctx?ctx->getDefFileExtension():QCString(""));
   n->accept(visitor);
   delete visitor;
 }
@@ -619,118 +619,118 @@ DB_GEN_C
 void DocbookGenerator::startParagraph(const char *)
 {
 DB_GEN_C
-  t << "<para>\n";
+  m_t << "<para>\n";
 }
 
 void DocbookGenerator::endParagraph()
 {
 DB_GEN_C
-  t << "</para>\n";
+  m_t << "</para>\n";
 }
 void DocbookGenerator::writeString(const char *text)
 {
 DB_GEN_C
-  t << text;
+  m_t << text;
 }
 void DocbookGenerator::startMemberHeader(const char *,int)
 {
 DB_GEN_C
-  t << "<simplesect>\n";
+  m_t << "<simplesect>\n";
   m_inSimpleSect[m_levelListItem] = TRUE;
-  t << "    <title>";
+  m_t << "    <title>";
 }
 
 void DocbookGenerator::endMemberHeader()
 {
 DB_GEN_C
-  t << "    </title>\n";
+  m_t << "    </title>\n";
 }
 void DocbookGenerator::docify(const char *str)
 {
 DB_GEN_C
-  t << convertToDocBook(str);
+  m_t << convertToDocBook(str);
 }
 void DocbookGenerator::writeObjectLink(const char *, const char *f,
                                      const char *anchor, const char *text)
 {
 DB_GEN_C
   if (anchor)
-    if (f) t << "<link linkend=\"_" << stripPath(f) << "_1" << anchor << "\">";
-    else   t << "<link linkend=\"_" << anchor << "\">";
+    if (f) m_t << "<link linkend=\"_" << stripPath(f) << "_1" << anchor << "\">";
+    else   m_t << "<link linkend=\"_" << anchor << "\">";
   else
-    t << "<link linkend=\"_" << stripPath(f) << "\">";
+    m_t << "<link linkend=\"_" << stripPath(f) << "\">";
   docify(text);
-  t << "</link>";
+  m_t << "</link>";
 }
 void DocbookGenerator::startMemberList()
 {
 DB_GEN_C
-  t << "        <itemizedlist>\n";
+  m_t << "        <itemizedlist>\n";
   m_levelListItem++;
 }
 void DocbookGenerator::endMemberList()
 {
 DB_GEN_C
-  if (m_inListItem[m_levelListItem]) t << "</listitem>\n";
+  if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
   m_inListItem[m_levelListItem] = FALSE;
-  t << "        </itemizedlist>\n";
+  m_t << "        </itemizedlist>\n";
   m_levelListItem = (m_levelListItem> 0 ?  m_levelListItem - 1 : 0);
-  if (m_inSimpleSect[m_levelListItem]) t << "</simplesect>\n";
+  if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = FALSE;
 }
 void DocbookGenerator::startMemberItem(const char *,int,const char *)
 {
 DB_GEN_C
-  if (m_inListItem[m_levelListItem]) t << "</listitem>\n";
-  t << "            <listitem><para>";
+  if (m_inListItem[m_levelListItem]) m_t << "</listitem>\n";
+  m_t << "            <listitem><para>";
   m_inListItem[m_levelListItem] = TRUE;
 }
 void DocbookGenerator::endMemberItem()
 {
 DB_GEN_C
-  t << "</para>\n";
+  m_t << "</para>\n";
 }
 void DocbookGenerator::startBold()
 {
 DB_GEN_C
-  t << "<emphasis role=\"strong\">";
+  m_t << "<emphasis role=\"strong\">";
 }
 void DocbookGenerator::endBold()
 {
 DB_GEN_C
-  t << "</emphasis>";
+  m_t << "</emphasis>";
 }
 void DocbookGenerator::startGroupHeader(int extraIndentLevel)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
   m_firstMember = TRUE;
-  if (m_inSimpleSect[m_levelListItem]) t << "</simplesect>\n";
+  if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;
-  if (m_inLevel == extraIndentLevel) t << "</section>\n";
+  if (m_inLevel == extraIndentLevel) m_t << "</section>\n";
   m_inLevel = extraIndentLevel;
-  t << "<section>\n";
-  t << "<title>";
+  m_t << "<section>\n";
+  m_t << "<title>";
 }
 void DocbookGenerator::writeRuler()
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("m_inGroup " << m_inGroup)
-  if (m_inGroup) t << "</section>\n";
+  if (m_inGroup) m_t << "</section>\n";
   m_inGroup = FALSE;
 }
 
 void DocbookGenerator::endGroupHeader(int)
 {
 DB_GEN_C
-  t << "</title>\n";
+  m_t << "</title>\n";
 }
 
 void DocbookGenerator::startParameterList(bool openBracket)
 {
 DB_GEN_C
-  if (openBracket) t << "(";
+  if (openBracket) m_t << "(";
 }
 void DocbookGenerator::endParameterList()
 {
@@ -739,22 +739,22 @@ DB_GEN_C
 void DocbookGenerator::writeNonBreakableSpace(int n)
 {
 DB_GEN_C
-  for (int i=0;i<n;i++) t << " ";
+  for (int i=0;i<n;i++) m_t << " ";
 }
 void DocbookGenerator::lineBreak(const char *)
 {
 DB_GEN_C
-  t << "\n";
+  m_t << "\n";
 }
 void DocbookGenerator::startTypewriter()
 {
 DB_GEN_C
-  if (!m_denseText) t << "<computeroutput>";
+  if (!m_denseText) m_t << "<computeroutput>";
 }
 void DocbookGenerator::endTypewriter()
 {
 DB_GEN_C
-  if (!m_denseText) t << "</computeroutput>\n";
+  if (!m_denseText) m_t << "</computeroutput>\n";
 }
 void DocbookGenerator::startTextBlock(bool dense)
 {
@@ -762,7 +762,7 @@ DB_GEN_C
   if (dense)
   {
     m_denseText = TRUE;
-    t << "<programlisting>";
+    m_t << "<programlisting>";
   }
 }
 void DocbookGenerator::endTextBlock(bool)
@@ -771,41 +771,41 @@ DB_GEN_C
   if (m_denseText)
   {
     m_denseText = FALSE;
-    t << "</programlisting>";
+    m_t << "</programlisting>";
   }
 }
 void DocbookGenerator::startMemberDoc(const char *clname, const char *memname, const char *, const char *title,
                                       int memCount, int memTotal, bool)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
-  t << "    <section>\n";
-  t << "    <title>" << convertToDocBook(title);
+  m_t << "    <section>\n";
+  m_t << "    <title>" << convertToDocBook(title);
   if (memTotal>1)
   {
-    t << "<computeroutput>[" << memCount << "/" << memTotal << "]</computeroutput>";
+    m_t << "<computeroutput>[" << memCount << "/" << memTotal << "]</computeroutput>";
   }
-  t << "</title>\n";
+  m_t << "</title>\n";
   if (memname && memname[0]!='@')
   {
-    addIndexTerm(t,memname,clname);
-    addIndexTerm(t,clname,memname);
+    addIndexTerm(m_t,memname,clname);
+    addIndexTerm(m_t,clname,memname);
   }
 }
 void DocbookGenerator::endMemberDoc(bool)
 {
 DB_GEN_C
-  t << "</computeroutput></para>";
+  m_t << "</computeroutput></para>";
 }
 void DocbookGenerator::startTitleHead(const char *)
 {
 DB_GEN_C
-  t << "<title>";
+  m_t << "<title>";
 }
 void DocbookGenerator::endTitleHead(const char *,const char *name)
 {
 DB_GEN_C
-  t << "</title>\n";
-  if (name) addIndexTerm(t, name);
+  m_t << "</title>\n";
+  if (name) addIndexTerm(m_t, name);
 }
 void DocbookGenerator::startDoxyAnchor(const char *fName,const char *,
                                  const char *anchor,const char *,
@@ -814,12 +814,12 @@ void DocbookGenerator::startDoxyAnchor(const char *fName,const char *,
 DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable)
   {
-    if (!m_firstMember) t << "    </section>";
+    if (!m_firstMember) m_t << "    </section>";
     m_firstMember = FALSE;
   }
   if (anchor)
   {
-    t << "<anchor xml:id=\"_" << stripPath(fName) << "_1" << anchor << "\"/>";
+    m_t << "<anchor xml:id=\"_" << stripPath(fName) << "_1" << anchor << "\"/>";
   }
 }
 void DocbookGenerator::endDoxyAnchor(const char *,const char *)
@@ -829,7 +829,7 @@ DB_GEN_C
 void DocbookGenerator::startMemberDocName(bool)
 {
 DB_GEN_C
-  t << "<para><computeroutput>";
+  m_t << "<para><computeroutput>";
 }
 void DocbookGenerator::endMemberDocName()
 {
@@ -838,12 +838,12 @@ DB_GEN_C
 void DocbookGenerator::startMemberGroupHeader(bool)
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  m_t << "<simplesect><title>";
 }
 void DocbookGenerator::endMemberGroupHeader()
 {
 DB_GEN_C
-  t << "</title>\n";
+  m_t << "</title>\n";
 }
 void DocbookGenerator::startMemberGroup()
 {
@@ -852,27 +852,27 @@ DB_GEN_C
 void DocbookGenerator::endMemberGroup(bool)
 {
 DB_GEN_C
-  t << "</simplesect>\n";
+  m_t << "</simplesect>\n";
 }
 void DocbookGenerator::startClassDiagram()
 {
 DB_GEN_C
-  t << "<para>";
+  m_t << "<para>";
 }
 
 void DocbookGenerator::endClassDiagram(const ClassDiagram &d, const char *fileName,const char *)
 {
 DB_GEN_C
-  t << "    <informalfigure>\n";
-  t << "        <mediaobject>\n";
-  t << "            <imageobject>\n";
-  t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\""
+  m_t << "    <informalfigure>\n";
+  m_t << "        <mediaobject>\n";
+  m_t << "            <imageobject>\n";
+  m_t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\""
                          << relPath << fileName << ".png\">" << "</imagedata>\n";
-  t << "            </imageobject>\n";
-  d.writeImage(t,dir(),relPath,fileName,FALSE);
-  t << "        </mediaobject>\n";
-  t << "    </informalfigure>\n";
-  t << "</para>\n";
+  m_t << "            </imageobject>\n";
+  d.writeImage(m_t,dir(),relPath,fileName,FALSE);
+  m_t << "        </mediaobject>\n";
+  m_t << "    </informalfigure>\n";
+  m_t << "</para>\n";
 }
 void  DocbookGenerator::startLabels()
 {
@@ -882,8 +882,8 @@ DB_GEN_C
 void  DocbookGenerator::writeLabel(const char *l,bool isLast)
 {
 DB_GEN_C
-  t << "<computeroutput>[" << l << "]</computeroutput>";
-  if (!isLast) t << ", ";
+  m_t << "<computeroutput>[" << l << "]</computeroutput>";
+  if (!isLast) m_t << ", ";
 }
 
 void  DocbookGenerator::endLabels()
@@ -893,25 +893,25 @@ DB_GEN_C
 void DocbookGenerator::startExamples()
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  m_t << "<simplesect><title>";
   docify(theTranslator->trExamples());
-  t << "</title>";
+  m_t << "</title>";
 }
 
 void DocbookGenerator::endExamples()
 {
 DB_GEN_C
-  t << "</simplesect>\n";
+  m_t << "</simplesect>\n";
 }
 void DocbookGenerator::startSubsubsection()
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  m_t << "<simplesect><title>";
 }
 void DocbookGenerator::endSubsubsection()
 {
 DB_GEN_C
-  t << "</title></simplesect>\n";
+  m_t << "</title></simplesect>\n";
 }
 void DocbookGenerator::writeChar(char c)
 {
@@ -924,33 +924,33 @@ DB_GEN_C
 void DocbookGenerator::startMemberDocPrefixItem()
 {
 DB_GEN_C
-  t << "<computeroutput>";
+  m_t << "<computeroutput>";
 }
 void DocbookGenerator::endMemberDocPrefixItem()
 {
 DB_GEN_C
-  t << "</computeroutput>";
+  m_t << "</computeroutput>";
 }
 void DocbookGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
 DB_GEN_C
   if (prefix)
-    t << " " << prefix << "(";
+    m_t << " " << prefix << "(";
   else if (closeBracket)
-    t << ")";
-  t << " ";
+    m_t << ")";
+  m_t << " ";
 }
 void DocbookGenerator::startParameterName(bool)
 {
 DB_GEN_C
-  t << " ";
+  m_t << " ";
 }
 void DocbookGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBracket)
 {
 DB_GEN_C
   if (last)
   {
-    if (closeBracket) t << ")";
+    if (closeBracket) m_t << ")";
   }
 }
 void DocbookGenerator::startMemberTemplateParams()
@@ -961,62 +961,62 @@ DB_GEN_C
 void DocbookGenerator::endMemberTemplateParams(const char *,const char *)
 {
 DB_GEN_C
-  t << "</para>";
-  t << "<para>";
+  m_t << "</para>";
+  m_t << "<para>";
 }
 void DocbookGenerator::startSection(const char *lab,const char *,SectionType)
 {
 DB_GEN_C
-  t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
-  t << "<title>";
+  m_t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
+  m_t << "<title>";
 }
 void DocbookGenerator::endSection(const char *,SectionType)
 {
 DB_GEN_C
-  t << "</title>";
-  t << "    </section>";
+  m_t << "</title>";
+  m_t << "    </section>";
 }
 void DocbookGenerator::addIndexItem(const char *prim,const char *sec)
 {
 DB_GEN_C
-  addIndexTerm(t, prim, sec);
+  addIndexTerm(m_t, prim, sec);
 }
 
 void DocbookGenerator::startDescTable(const char *title)
 {
 DB_GEN_C
   int ncols = 2;
-  t << "<informaltable frame=\"all\">\n";
-  if (title)t << "<title>" << convertToDocBook(title) << "</title>\n";
-  t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
+  m_t << "<informaltable frame=\"all\">\n";
+  if (title)m_t << "<title>" << convertToDocBook(title) << "</title>\n";
+  m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
   for (int i = 0; i < ncols; i++)
   {
-    t << "      <colspec colname='c" << i+1 << "'/>\n";
+    m_t << "      <colspec colname='c" << i+1 << "'/>\n";
   }
-  t << "<tbody>\n";
+  m_t << "<tbody>\n";
   m_descTable = TRUE;
 }
 
 void DocbookGenerator::endDescTable()
 {
 DB_GEN_C
-  t << "    </tbody>\n";
-  t << "    </tgroup>\n";
-  t << "</informaltable>\n";
+  m_t << "    </tbody>\n";
+  m_t << "    </tgroup>\n";
+  m_t << "</informaltable>\n";
   m_descTable = FALSE;
 }
 
 void DocbookGenerator::startDescTableRow()
 {
 DB_GEN_C
-  t << "<row>";
-  t << "<entry>";
+  m_t << "<row>";
+  m_t << "<entry>";
 }
 
 void DocbookGenerator::endDescTableRow()
 {
 DB_GEN_C
-  t << "</row>";
+  m_t << "</row>";
 }
 
 void DocbookGenerator::startDescTableTitle()
@@ -1032,13 +1032,13 @@ DB_GEN_C
 void DocbookGenerator::startDescTableData()
 {
 DB_GEN_C
-  t << "</entry><entry>";
+  m_t << "</entry><entry>";
 }
 
 void DocbookGenerator::endDescTableData()
 {
 DB_GEN_C
-  t << "</entry>";
+  m_t << "</entry>";
 }
 void DocbookGenerator::startGroupCollaboration()
 {
@@ -1047,7 +1047,7 @@ DB_GEN_C
 void DocbookGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
 DB_GEN_C
-  g.writeGraph(t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
 }
 void DocbookGenerator::startDotGraph()
 {
@@ -1056,7 +1056,7 @@ DB_GEN_C
 void DocbookGenerator::endDotGraph(DotClassGraph &g)
 {
 DB_GEN_C
-  g.writeGraph(t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,TRUE,FALSE);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,TRUE,FALSE);
 }
 void DocbookGenerator::startInclDepGraph()
 {
@@ -1065,7 +1065,7 @@ DB_GEN_C
 void DocbookGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
 }
 void DocbookGenerator::startCallGraph()
 {
@@ -1074,7 +1074,7 @@ DB_GEN_C
 void DocbookGenerator::endCallGraph(DotCallGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
 }
 void DocbookGenerator::startDirDepGraph()
 {
@@ -1083,7 +1083,7 @@ DB_GEN_C
 void DocbookGenerator::endDirDepGraph(DotDirDeps &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
 }
 void DocbookGenerator::startMemberDocList()
 {
@@ -1097,14 +1097,14 @@ DB_GEN_C
 void DocbookGenerator::startConstraintList(const char *header)
 {
 DB_GEN_C
-  t << "<simplesect><title>";
+  m_t << "<simplesect><title>";
   docify(header);
-  t << "</title>\n";
+  m_t << "</title>\n";
 }
 void DocbookGenerator::startConstraintParam()
 {
 DB_GEN_C
-  t << "<para><emphasis role=\"strong\">";
+  m_t << "<para><emphasis role=\"strong\">";
 }
 void DocbookGenerator::endConstraintParam()
 {
@@ -1113,12 +1113,12 @@ DB_GEN_C
 void DocbookGenerator::startConstraintType()
 {
 DB_GEN_C
-  t << ":";
+  m_t << ":";
 }
 void DocbookGenerator::endConstraintType()
 {
 DB_GEN_C
-  t << "</emphasis></para>\n";
+  m_t << "</emphasis></para>\n";
 }
 void DocbookGenerator::startConstraintDocs()
 {
@@ -1131,5 +1131,5 @@ DB_GEN_C
 void DocbookGenerator::endConstraintList()
 {
 DB_GEN_C
-  t << "</simplesect>\n";
+  m_t << "</simplesect>\n";
 }

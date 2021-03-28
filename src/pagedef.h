@@ -55,7 +55,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual bool showLineNo() const = 0;
 
     virtual void writeDocumentation(OutputList &) = 0;
-    virtual void writeTagFile(std::ostream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual void setNestingLevel(int) = 0;
     virtual void writePageDocumentation(OutputList &) const = 0;
 

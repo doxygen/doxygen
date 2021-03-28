@@ -8981,11 +8981,12 @@ static QCString fixSlashes(QCString &s)
 static void generateConfigFile(const char *configFile,bool shortList,
                                bool updateOnly=FALSE)
 {
-  std::ofstream t;
-  bool fileOpened=openOutputFile(configFile,t);
+  std::ofstream f;
+  bool fileOpened=openOutputFile(configFile,f);
   bool writeToStdout=(configFile[0]=='-' && configFile[1]=='\0');
   if (fileOpened)
   {
+    TextStream t(&f);
     Config::writeTemplate(t,shortList,updateOnly);
     if (!writeToStdout)
     {
@@ -9020,7 +9021,8 @@ static void compareDoxyfile()
   bool fileOpened=openOutputFile(configFile,f);
   if (fileOpened)
   {
-    Config::compareDoxyfile(f);
+    TextStream t(&f);
+    Config::compareDoxyfile(t);
   }
   else
   {
@@ -9882,7 +9884,7 @@ void readAliases()
 
 //----------------------------------------------------------------------------
 
-static void dumpSymbol(std::ostream &t,Definition *d)
+static void dumpSymbol(TextStream &t,Definition *d)
 {
   QCString anchor;
   if (d->definitionType()==Definition::TypeMember)
@@ -9906,9 +9908,10 @@ static void dumpSymbol(std::ostream &t,Definition *d)
 
 static void dumpSymbolMap()
 {
-  std::ofstream t("symbols.sql",std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  std::ofstream f("symbols.sql",std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     for (const auto &kv : Doxygen::symbolMap)
     {
       dumpSymbol(t,kv.second);
@@ -10141,7 +10144,7 @@ void cleanUpDoxygen()
   DotManager::deleteInstance();
 }
 
-static int computeIdealCacheParam(uint v)
+static int computeIdealCacheParam(size_t v)
 {
   //printf("computeIdealCacheParam(v=%u)\n",v);
 
@@ -10240,7 +10243,8 @@ void readConfiguration(int argc, char **argv)
           std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
-            RTFGenerator::writeExtensionsFile(f);
+            TextStream t(&f);
+            RTFGenerator::writeExtensionsFile(t);
           }
           cleanUpDoxygen();
           exit(0);
@@ -10268,7 +10272,8 @@ void readConfiguration(int argc, char **argv)
           std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
-            EmojiEntityMapper::instance()->writeEmojiFile(f);
+            TextStream t(&f);
+            EmojiEntityMapper::instance()->writeEmojiFile(t);
           }
           cleanUpDoxygen();
           exit(0);
@@ -10296,7 +10301,8 @@ void readConfiguration(int argc, char **argv)
           std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
-            RTFGenerator::writeStyleSheetFile(f);
+            TextStream t(&f);
+            RTFGenerator::writeStyleSheetFile(t);
           }
           cleanUpDoxygen();
           exit(1);
@@ -10333,17 +10339,20 @@ void readConfiguration(int argc, char **argv)
           std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
-            HtmlGenerator::writeHeaderFile(f, argv[optind+3]);
+            TextStream t(&f);
+            HtmlGenerator::writeHeaderFile(t, argv[optind+3]);
           }
           f.close();
           if (openOutputFile(argv[optind+2],f))
           {
-            HtmlGenerator::writeFooterFile(f);
+            TextStream t(&f);
+            HtmlGenerator::writeFooterFile(t);
           }
           f.close();
           if (openOutputFile(argv[optind+3],f))
           {
-            HtmlGenerator::writeStyleSheetFile(f);
+            TextStream t(&f);
+            HtmlGenerator::writeStyleSheetFile(t);
           }
           cleanUpDoxygen();
           exit(0);
@@ -10379,17 +10388,20 @@ void readConfiguration(int argc, char **argv)
           std::ofstream f;
           if (openOutputFile(argv[optind+1],f))
           {
-            LatexGenerator::writeHeaderFile(f);
+            TextStream t(&f);
+            LatexGenerator::writeHeaderFile(t);
           }
           f.close();
           if (openOutputFile(argv[optind+2],f))
           {
-            LatexGenerator::writeFooterFile(f);
+            TextStream t(&f);
+            LatexGenerator::writeFooterFile(t);
           }
           f.close();
           if (openOutputFile(argv[optind+3],f))
           {
-            LatexGenerator::writeStyleSheetFile(f);
+            TextStream t(&f);
+            LatexGenerator::writeStyleSheetFile(t);
           }
           cleanUpDoxygen();
           exit(0);
@@ -10656,14 +10668,15 @@ static void writeTagFile()
   QCString generateTagFile = Config_getString(GENERATE_TAGFILE);
   if (generateTagFile.isEmpty()) return;
 
-  std::ofstream tagFile(generateTagFile.str(),std::ofstream::out | std::ofstream::binary);
-  if (!tagFile.is_open())
+  std::ofstream f(generateTagFile.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("cannot open tag file %s for writing\n",
         generateTagFile.data()
        );
     return;
   }
+  TextStream tagFile(&f);
   tagFile << "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>\n";
   tagFile << "<tagfile doxygen_version=\"" << getDoxygenVersion() << "\"";
   if (strlen(getGitVersion())>0)
@@ -11866,7 +11879,7 @@ void generateOutput()
       Doxygen::lookupCache->capacity(),
       Doxygen::lookupCache->hits(),
       Doxygen::lookupCache->misses());
-  cacheParam = computeIdealCacheParam(Doxygen::lookupCache->misses()*2/3); // part of the cache is flushed, hence the 2/3 correction factor
+  cacheParam = computeIdealCacheParam(static_cast<size_t>(Doxygen::lookupCache->misses()*2/3)); // part of the cache is flushed, hence the 2/3 correction factor
   if (cacheParam>Config_getInt(LOOKUP_CACHE_SIZE))
   {
     msg("Note: based on cache misses the ideal setting for LOOKUP_CACHE_SIZE is %d at the cost of higher memory usage.\n",cacheParam);

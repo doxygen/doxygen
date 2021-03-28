@@ -100,7 +100,7 @@ class MemberList
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
                const char *scopeName, const DefinitionMutable *container) const;
-    void writeTagFile(std::ostream &);
+    void writeTagFile(TextStream &);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);
     void setInGroup(bool inGroup) { m_inGroup=inGroup; }

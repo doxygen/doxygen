@@ -17,9 +17,10 @@
 
 #include <unordered_map>
 #include <string>
-#include <iostream>
 
 #include "docparser.h"
+
+class TextStream;
 
 /** @brief Singleton helper class to map html entities to other formats */
 class HtmlEntityMapper
@@ -36,7 +37,7 @@ class HtmlEntityMapper
     const char *man(DocSymbol::SymType symb) const;
     const char *rtf(DocSymbol::SymType symb) const;
     const DocSymbol::PerlSymb *perl(DocSymbol::SymType symb) const;
-    void  writeXMLSchema(std::ostream &t);
+    void  writeXMLSchema(TextStream &t);
   private:
     void  validate();
     HtmlEntityMapper();

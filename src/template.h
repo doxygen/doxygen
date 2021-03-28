@@ -17,13 +17,13 @@
 #define TEMPLATE_H
 
 #include <vector>
-#include <iostream>
 
 #include "qcstring.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;
 class TemplateEngine;
+class TextStream;
 
 /** @defgroup template_api Template API
  *
@@ -552,7 +552,7 @@ class Template
      *  @param[in] c The context containing data that can be used
      *  when instantiating the template.
      */
-    virtual void render(std::ostream &ts,TemplateContext *c) = 0;
+    virtual void render(TextStream &ts,TemplateContext *c) = 0;
 };
 
 //------------------------------------------------------------------------

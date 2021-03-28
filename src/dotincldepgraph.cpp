@@ -17,6 +17,7 @@
 #include "dotnode.h"
 #include "util.h"
 #include "config.h"
+#include "textstream.h"
 
 void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
 {
@@ -180,7 +181,7 @@ QCString DotInclDepGraph::getMapLabel() const
   }
 }
 
-QCString DotInclDepGraph::writeGraph(std::ostream &out,
+QCString DotInclDepGraph::writeGraph(TextStream &out,
                                      GraphOutputFormat graphFormat,
                                      EmbeddedOutputFormat textFormat,
                                      const char *path,
@@ -207,7 +208,7 @@ int DotInclDepGraph::numNodes() const
   return (int)m_startNode->children().size();
 }
 
-void DotInclDepGraph::writeXML(std::ostream &t)
+void DotInclDepGraph::writeXML(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -215,7 +216,7 @@ void DotInclDepGraph::writeXML(std::ostream &t)
   }
 }
 
-void DotInclDepGraph::writeDocbook(std::ostream &t)
+void DotInclDepGraph::writeDocbook(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {

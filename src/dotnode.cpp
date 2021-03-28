@@ -21,6 +21,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "util.h"
+#include "textstream.h"
 
 /** Helper struct holding the properties of a edge in a dot graph. */
 struct EdgeProperties
@@ -137,7 +138,7 @@ static QCString escapeTooltip(const QCString &tooltip)
   return result;
 }
 
-static void writeBoxMemberList(std::ostream &t,
+static void writeBoxMemberList(TextStream &t,
   char prot,const MemberList *ml,const ClassDef *scope,
   bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
@@ -360,7 +361,7 @@ void DotNode::setDistance(int distance)
 inline int DotNode::findParent( DotNode *n )
 {
   auto it = std::find(m_parents.begin(),m_parents.end(),n);
-  return it!=m_parents.end() ? it-m_parents.begin() : -1;
+  return it!=m_parents.end() ? static_cast<int>(it-m_parents.begin()) : -1;
 }
 
 /*! helper function that deletes all nodes in a connected graph, given
@@ -376,7 +377,7 @@ void DotNode::deleteNodes(DotNode *node)
   }
 }
 
-void DotNode::writeBox(std::ostream &t,
+void DotNode::writeBox(TextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren) const
@@ -501,7 +502,7 @@ void DotNode::writeBox(std::ostream &t,
   t << "];\n";
 }
 
-void DotNode::writeArrow(std::ostream &t,
+void DotNode::writeArrow(TextStream &t,
                          GraphType gt,
                          GraphOutputFormat format,
                          const DotNode *cn,
@@ -550,7 +551,7 @@ void DotNode::writeArrow(std::ostream &t,
   t << "];\n";
 }
 
-void DotNode::write(std::ostream &t,
+void DotNode::write(TextStream &t,
                     GraphType gt,
                     GraphOutputFormat format,
                     bool topDown,
@@ -584,7 +585,7 @@ void DotNode::write(std::ostream &t,
       {
         const auto &children = pn->children();
         auto child_it = std::find(children.begin(),children.end(),this);
-        int index = child_it - children.begin();
+        size_t index = child_it - children.begin();
         //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",pn->label().data());
         writeArrow(t,
           gt,
@@ -601,7 +602,7 @@ void DotNode::write(std::ostream &t,
   //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
 }
 
-void DotNode::writeXML(std::ostream &t,bool isClassGraph) const
+void DotNode::writeXML(TextStream &t,bool isClassGraph) const
 {
   t << "      <node id=\"" << m_number << "\">\n";
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
@@ -665,7 +666,7 @@ void DotNode::writeXML(std::ostream &t,bool isClassGraph) const
   t << "      </node>\n";
 }
 
-void DotNode::writeDocbook(std::ostream &t,bool isClassGraph) const
+void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
 {
   t << "      <node id=\"" << m_number << "\">\n";
   t << "        <label>" << convertToXML(m_label) << "</label>\n";
@@ -730,7 +731,7 @@ void DotNode::writeDocbook(std::ostream &t,bool isClassGraph) const
 }
 
 
-void DotNode::writeDEF(std::ostream &t) const
+void DotNode::writeDEF(TextStream &t) const
 {
   const char* nodePrefix = "        node-";
 

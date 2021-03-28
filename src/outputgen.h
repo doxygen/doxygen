@@ -25,6 +25,7 @@
 
 #include "index.h"
 #include "section.h"
+#include "textstream.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -495,7 +496,7 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endLabels() = 0;
 
   protected:
-    std::ostream t;
+    TextStream m_t;
   private:
     QCString m_dir;
     QCString m_fileName;

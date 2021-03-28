@@ -949,16 +949,16 @@ void TagFileParser::dump()
       msg("  filename '%s'\n",cd->filename.data());
       for (const BaseInfo &bi : cd->bases)
       {
-        msg( "  base: %s \n", bi.name.data() );
+        msg( "  base: %s \n", bi.name.isEmpty() ? "" : bi.name.data() );
       }
 
       for (const auto &md : cd->members)
       {
         msg("  member:\n");
-        msg("    kind: '%s'\n",md.kind.data());
-        msg("    name: '%s'\n",md.name.data());
-        msg("    anchor: '%s'\n",md.anchor.data());
-        msg("    arglist: '%s'\n",md.arglist.data());
+        msg("    kind: '%s'\n",md.kind.c_str());
+        msg("    name: '%s'\n",md.name.c_str());
+        msg("    anchor: '%s'\n",md.anchor.c_str());
+        msg("    arglist: '%s'\n",md.arglist.c_str());
       }
     }
   }

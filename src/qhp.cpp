@@ -172,7 +172,8 @@ void Qhp::finalize()
   {
     term("Could not open file %s for writing\n", fileName.data());
   }
-  m_doc.dumpTo(file);
+  TextStream t(&file);
+  m_doc.dumpTo(t);
 }
 
 void Qhp::incContentsDepth()

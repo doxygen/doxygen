@@ -82,8 +82,8 @@ class ManGenerator : public OutputGenerator
     void endTextLink() {}
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void startTypewriter() { t << "\\fC"; m_firstCol=FALSE; }
-    void endTypewriter()   { t << "\\fP"; m_firstCol=FALSE; }
+    void startTypewriter() { m_t << "\\fC"; m_firstCol=FALSE; }
+    void endTypewriter()   { m_t << "\\fP"; m_firstCol=FALSE; }
     void startGroupHeader(int);
     void endGroupHeader(int);
     void startMemberSections() {}
@@ -123,18 +123,18 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const char *,const char *) {}
     void startCodeFragment(const char *);
     void endCodeFragment(const char *);
-    void writeLineNumber(const char *,const char *,const char *,int l) { t << l << " "; m_col=0; }
+    void writeLineNumber(const char *,const char *,const char *,int l) { m_t << l << " "; m_col=0; }
     void startCodeLine(bool) {}
     void endCodeLine() { codify("\n"); m_col=0; }
-    void startEmphasis() { t << "\\fI"; m_firstCol=FALSE; }
-    void endEmphasis()   { t << "\\fP"; m_firstCol=FALSE; }
-    void startBold()     { t << "\\fB"; m_firstCol=FALSE; }
-    void endBold()       { t << "\\fP"; m_firstCol=FALSE; }
+    void startEmphasis() { m_t << "\\fI"; m_firstCol=FALSE; }
+    void endEmphasis()   { m_t << "\\fP"; m_firstCol=FALSE; }
+    void startBold()     { m_t << "\\fB"; m_firstCol=FALSE; }
+    void endBold()       { m_t << "\\fP"; m_firstCol=FALSE; }
     void startDescription() {}
     void endDescription()   {}
     void startDescItem();
     void endDescItem();
-    void lineBreak(const char *) { t << "\n.br\n"; }
+    void lineBreak(const char *) { m_t << "\n.br\n"; }
     void writeChar(char c);
     void startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool);
     void endMemberDoc(bool);
@@ -143,7 +143,7 @@ class ManGenerator : public OutputGenerator
     void writeLatexSpacing() {}
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
-    void writeEndAnnoItem(const char *) { t << "\n"; m_firstCol=TRUE; }
+    void writeEndAnnoItem(const char *) { m_t << "\n"; m_firstCol=TRUE; }
     void startSubsection();
     void endSubsection();
     void startSubsubsection();
@@ -152,8 +152,8 @@ class ManGenerator : public OutputGenerator
     void endCenter()          {}
     void startSmall()         {}
     void endSmall()           {}
-    void startMemberDescription(const char *,const char *,bool) { t << "\n.RI \""; m_firstCol=FALSE; }
-    void endMemberDescription()   { t << "\""; m_firstCol=FALSE; }
+    void startMemberDescription(const char *,const char *,bool) { m_t << "\n.RI \""; m_firstCol=FALSE; }
+    void endMemberDescription()   { m_t << "\""; m_firstCol=FALSE; }
     void startMemberDeclaration() {}
     void endMemberDeclaration(const char *,const char *) {}
     void writeInheritedSectionTitle(const char *,const char *,const char *,
@@ -186,7 +186,7 @@ class ManGenerator : public OutputGenerator
     void writeSummaryLink(const char *,const char *,const char *,bool) {}
     void startContents() {}
     void endContents() {}
-    void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) t << " "; }
+    void writeNonBreakableSpace(int n) { int i; for (i=0;i<n;i++) m_t << " "; }
 
     void startDescTable(const char *t);
     void endDescTable();
@@ -194,7 +194,7 @@ class ManGenerator : public OutputGenerator
     void endDescTableRow() {}
     void startDescTableTitle() { startItemListItem(); startBold(); startEmphasis(); endItemListItem(); }
     void endDescTableTitle() { endEmphasis(); endBold(); }
-    void startDescTableData() { t << "\n"; m_firstCol=TRUE; }
+    void startDescTableData() { m_t << "\n"; m_firstCol=TRUE; }
     void endDescTableData() {}
 
     void startDotGraph() {}

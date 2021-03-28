@@ -25,6 +25,7 @@
 #include "types.h"
 #include "arguments.h"
 #include "reflist.h"
+#include "textstream.h"
 
 class SectionInfo;
 class FileDef;
@@ -256,8 +257,8 @@ class Entry
     QCString     bitfields;   //!< member's bit fields
     ArgumentList argList;     //!< member arguments as a list
     ArgumentLists tArgLists; //!< template argument declarations
-    std::ostringstream program;     //!< the program text
-    std::ostringstream initializer; //!< initial value (for variables)
+    TextStream   program;     //!< the program text
+    TextStream   initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)

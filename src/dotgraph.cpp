@@ -76,15 +76,15 @@ static bool checkDeliverables(const QCString &file1,
   return file1Ok && file2Ok;
 }
 
-static bool insertMapFile(std::ostream &out,const QCString &mapFile,
+static bool insertMapFile(TextStream &out,const QCString &mapFile,
                           const QCString &relPath,const QCString &mapLabel)
 {
   FileInfo fi(mapFile.str());
   if (fi.exists() && fi.size()>0) // reuse existing map file
   {
-    std::ostringstream t(std::ios_base::ate);
+    TextStream t;
     DotFilePatcher::convertMapFile(t,mapFile,relPath,false);
-    if (t.tellp()>0)
+    if (!t.empty())
     {
       out << "<map name=\"" << mapLabel << "\" id=\"" << mapLabel << "\">\n";
       out << t.str();
@@ -104,7 +104,7 @@ QCString DotGraph::imgName() const
 }
 
 QCString DotGraph::writeGraph(
-        std::ostream& t,           // output stream for the code file (html, ...)
+        TextStream& t,           // output stream for the code file (html, ...)
         GraphOutputFormat gf,     // bitmap(png/svg) or ps(eps/pdf)
         EmbeddedOutputFormat ef,  // html, latex, ...
         const char* path,         // output folder
@@ -196,7 +196,7 @@ bool DotGraph::prepareDotFile()
   return TRUE;
 }
 
-void DotGraph::generateCode(std::ostream &t)
+void DotGraph::generateCode(TextStream &t)
 {
   QCString imgExt = getDotImageExtension();
   if (m_graphFormat==GOF_BITMAP && m_textFormat==EOF_DocBook)
@@ -260,7 +260,7 @@ void DotGraph::generateCode(std::ostream &t)
   }
 }
 
-void DotGraph::writeGraphHeader(std::ostream &t,const QCString &title)
+void DotGraph::writeGraphHeader(TextStream &t,const QCString &title)
 {
   int fontSize      = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
@@ -292,7 +292,7 @@ void DotGraph::writeGraphHeader(std::ostream &t,const QCString &title)
          "fontsize=\"" << fontSize << "\",shape=record];\n";
 }
 
-void DotGraph::writeGraphFooter(std::ostream &t)
+void DotGraph::writeGraphFooter(TextStream &t)
 {
   t << "}\n";
 }
@@ -307,7 +307,7 @@ void DotGraph::computeGraph(DotNode *root,
                             QCString &graphStr)
 {
   //printf("computeMd5Signature\n");
-  std::ostringstream md5stream(std::ios_base::ate);
+  TextStream md5stream;
   writeGraphHeader(md5stream,title);
   if (!rank.isEmpty())
   {
@@ -323,7 +323,7 @@ void DotGraph::computeGraph(DotNode *root,
       {
         const auto &children = pn->children();
         auto child_it = std::find(children.begin(),children.end(),root);
-        int index = child_it - children.begin();
+        size_t index = child_it - children.begin();
         root->writeArrow(md5stream,                              // stream
             gt,                                                  // graph type
             format,                                              // output format

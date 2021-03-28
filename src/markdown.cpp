@@ -2729,7 +2729,7 @@ QCString Markdown::process(const QCString &input, int &startNewlines)
   if (p>result.data())
   {
     // strip part of the input
-    result = result.mid(p-result.data());
+    result = result.mid(static_cast<int>(p-result.data()));
   }
   return result;
 }

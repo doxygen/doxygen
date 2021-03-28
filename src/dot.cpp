@@ -320,7 +320,7 @@ void writeDotGraphFromFile(const char *inFile,const char *outDir,
  *  \param context the scope in which this graph is found (for resolving links)
  *  \param graphId a unique id for this graph, use for dynamic sections
  */
-void writeDotImageMapFromFile(std::ostream &t,
+void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
                             const QCString &context,int graphId)
@@ -355,11 +355,11 @@ void writeDotImageMapFromFile(std::ostream &t,
   }
   else // bitmap graphics
   {
-    std::ostringstream tt(std::ios_base::ate);
+    TextStream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
       << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";
     DotFilePatcher::convertMapFile(tt, absOutFile, relPath ,TRUE, context);
-    if (tt.tellp()>0)
+    if (!tt.empty())
     {
       t << "<map name=\"" << mapName << "\" id=\"" << mapName << "\">";
       t << tt.str();

@@ -403,7 +403,7 @@ void DefinitionImpl::addSectionsToIndex()
   }
 }
 
-void DefinitionImpl::writeDocAnchorsToTagFile(std::ostream &tagFile) const
+void DefinitionImpl::writeDocAnchorsToTagFile(TextStream &tagFile) const
 {
   if (!m_impl->sectionRefs.empty())
   {

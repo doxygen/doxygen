@@ -22,6 +22,7 @@
 #include "dir.h"
 
 class DotNode;
+class TextStream;
 
 enum GraphOutputFormat    { GOF_BITMAP, GOF_EPS };
 enum EmbeddedOutputFormat { EOF_Html, EOF_LaTeX, EOF_Rtf, EOF_DocBook };
@@ -39,7 +40,7 @@ class DotGraph
     /** returns node numbers. The Counter is reset by the constructor */
     int getNextNodeNumber() { return ++m_curNodeNumber; }
 
-    QCString writeGraph(std::ostream &t,
+    QCString writeGraph(TextStream &t,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
                         const char *path,
@@ -49,8 +50,8 @@ class DotGraph
                         int graphId=-1
                        );
 
-    static void writeGraphHeader(std::ostream& t, const QCString& title = QCString());
-    static void writeGraphFooter(std::ostream& t);
+    static void writeGraphHeader(TextStream& t, const QCString& title = QCString());
+    static void writeGraphFooter(TextStream& t);
     static void computeGraph(DotNode* root,
                              GraphType gt,
                              GraphOutputFormat format,
@@ -97,7 +98,7 @@ class DotGraph
     DotGraph &operator=(const DotGraph &);
 
     bool prepareDotFile();
-    void generateCode(std::ostream &t);
+    void generateCode(TextStream &t);
 
     int m_curNodeNumber = 0;
 };

@@ -211,7 +211,7 @@ static QCString replaceRef(const QCString &buf,const QCString relPath,
 *                 map file was found
 *  \returns TRUE if successful.
 */
-bool DotFilePatcher::convertMapFile(std::ostream &t,const char *mapName,
+bool DotFilePatcher::convertMapFile(TextStream &t,const char *mapName,
                     const QCString relPath, bool urlOnly,
                     const QCString &context)
 {
@@ -314,19 +314,20 @@ bool DotFilePatcher::run() const
     return FALSE;
   }
   std::ifstream fi(tmpName, std::ifstream::in);
-  std::ofstream t(patchFile, std::ofstream::out | std::ofstream::binary);
+  std::ofstream fo(patchFile, std::ofstream::out | std::ofstream::binary);
   if (!fi.is_open())
   {
     err("problem opening file %s for patching!\n",tmpName.c_str());
     thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
-  if (!t.is_open())
+  if (!fo.is_open())
   {
     err("problem opening file %s for patching!\n",m_patchFile.data());
     thisDir.rename(tmpName,patchFile);
     return FALSE;
   }
+  TextStream t(&fo);
   int width,height;
   bool insideHeader=FALSE;
   bool replacedHeader=FALSE;
@@ -411,12 +412,12 @@ bool DotFilePatcher::run() const
       int n = sscanf(line.data()+i,"<!-- MAP %d",&mapId);
       if (n==1 && mapId>=0 && mapId<(int)m_maps.size())
       {
-        std::ostringstream tt(std::ios_base::ate);
+        TextStream tt;
         const Map &map = m_maps.at(mapId);
         //printf("patching MAP %d in file %s with contents of %s\n",
         //   mapId,m_patchFile.data(),map.mapFile.data());
         convertMapFile(tt,map.mapFile,map.relPath,map.urlOnly,map.context);
-        if (tt.tellp()>0)
+        if (!tt.empty())
         {
           t << "<map name=\"" << correctId(map.label) << "\" id=\"" << correctId(map.label) << "\">\n";
           t << tt.str();
@@ -462,29 +463,32 @@ bool DotFilePatcher::run() const
   {
     QCString orgName=m_patchFile.left(m_patchFile.length()-4)+"_org.svg";
     t << substitute(svgZoomFooter,"$orgname",stripPath(orgName));
-    t.close();
+    t.flush();
+    fo.close();
     // keep original SVG file so we can refer to it, we do need to replace
     // dummy link by real ones
     fi.open(tmpName,std::ifstream::in);
-    t.open(orgName,std::ofstream::out | std::ofstream::binary);
+    fo.open(orgName,std::ofstream::out | std::ofstream::binary);
     if (!fi.is_open())
     {
       err("problem opening file %s for reading!\n",tmpName.c_str());
       return FALSE;
     }
-    if (!t.is_open())
+    if (!fo.is_open())
     {
       err("problem opening file %s for writing!\n",orgName.data());
       return FALSE;
     }
+    t.setStream(&fo);
     while (getline(fi,lineStr)) // foreach line
     {
       std::string line = lineStr+'\n';
       const Map &map = m_maps.front(); // there is only one 'map' for a SVG file
       t << replaceRef(line.c_str(),map.relPath,map.urlOnly,map.context,"_top");
     }
+    t.flush();
     fi.close();
-    t.close();
+    fo.close();
   }
   // remove temporary file
   thisDir.remove(tmpName);
@@ -521,14 +525,14 @@ static bool readSVGSize(const QCString &fileName,int *width,int *height)
   return true;
 }
 
-static void writeSVGNotSupported(std::ostream &out)
+static void writeSVGNotSupported(TextStream &out)
 {
   out << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
 }
 
 /// Check if a reference to a SVG figure can be written and do so if possible.
 /// Returns FALSE if not possible (for instance because the SVG file is not yet generated).
-bool DotFilePatcher::writeSVGFigureLink(std::ostream &out,const QCString &relPath,
+bool DotFilePatcher::writeSVGFigureLink(TextStream &out,const QCString &relPath,
                         const QCString &baseName,const QCString &absImgName)
 {
   int width=600,height=600;
@@ -567,7 +571,7 @@ bool DotFilePatcher::writeSVGFigureLink(std::ostream &out,const QCString &relPat
   return TRUE;
 }
 
-bool DotFilePatcher::writeVecGfxFigure(std::ostream &out,const QCString &baseName,
+bool DotFilePatcher::writeVecGfxFigure(TextStream &out,const QCString &baseName,
                                  const QCString &figureName)
 {
   int width=400,height=550;

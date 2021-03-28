@@ -119,7 +119,7 @@ static QCString removeSpacesAroundEquals(const char *s)
     }
     *q++=c;
   }
-  if (q<p) result.resize(q-result.data()+1);
+  if (q<p) result.resize(static_cast<uint>(q-result.data())+1);
   return result;
 }
 
@@ -1664,7 +1664,7 @@ class TemplateNode
     TemplateNode(TemplateNode *parent) : m_parent(parent) {}
     virtual ~TemplateNode() {}
 
-    virtual void render(std::ostream &ts, TemplateContext *c) = 0;
+    virtual void render(TextStream &ts, TemplateContext *c) = 0;
 
     TemplateNode *parent() { return m_parent; }
 
@@ -1694,7 +1694,7 @@ using TemplateTokenStream = std::deque< TemplateTokenPtr >;
 class TemplateNodeList : public std::vector< std::unique_ptr<TemplateNode> >
 {
   public:
-    void render(std::ostream &ts,TemplateContext *c)
+    void render(TextStream &ts,TemplateContext *c)
     {
       TRACE(("{TemplateNodeList::render\n"));
       for (const auto &tn : *this)
@@ -2282,7 +2282,7 @@ class TemplateImpl : public TemplateNode, public Template
     TemplateImpl(TemplateEngine *e,const QCString &name,const QCString &data,
                  const QCString &extension);
    ~TemplateImpl();
-    void render(std::ostream &ts, TemplateContext *c);
+    void render(TextStream &ts, TemplateContext *c);
 
     TemplateEngine *engine() const { return m_engine; }
     TemplateBlockContext *blockContext() { return &m_blockContext; }
@@ -2651,7 +2651,7 @@ class TemplateNodeText : public TemplateNode
       TRACE(("TemplateNodeText('%s')\n",replace(data,'\n',' ').data()));
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -2705,7 +2705,7 @@ class TemplateNodeVariable : public TemplateNode
       delete m_var;
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -2867,7 +2867,7 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
     {
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -2930,7 +2930,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     {
       delete m_expr;
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3042,7 +3042,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       delete m_endExpr;
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3200,7 +3200,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       delete m_expr;
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3302,7 +3302,7 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       parser->removeNextToken(); // skip over endmsg
       TRACE(("}TemplateNodeMsg()\n"));
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3311,7 +3311,9 @@ class TemplateNodeMsg : public TemplateNodeCreator<TemplateNodeMsg>
       ci->setActiveEscapeIntf(0); // avoid escaping things we send to standard out
       bool enable = ci->spacelessEnabled();
       ci->enableSpaceless(FALSE);
-      m_nodes.render(std::cout,c);
+      TextStream t(&std::cout);
+      m_nodes.render(t,c);
+      t.flush();
       std::cout << "\n";
       ci->setActiveEscapeIntf(escIntf);
       ci->enableSpaceless(enable);
@@ -3342,7 +3344,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
       TRACE(("}TemplateNodeBlock(%s)\n",data.data()));
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3355,7 +3357,7 @@ class TemplateNodeBlock : public TemplateNodeCreator<TemplateNodeBlock>
         if (nb) // block is overruled
         {
           ci->push();
-          std::ostringstream ss(std::ios_base::ate);
+          TextStream ss;
           // get super block of block nb
           TemplateNodeBlock *sb = ci->blockContext()->get(m_blockName);
           if (sb && sb!=nb && sb!=this) // nb and sb both overrule this block
@@ -3423,7 +3425,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       delete m_extendExpr;
     }
 
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3500,7 +3502,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     {
       delete m_includeExpr;
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3597,7 +3599,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       delete m_templateExpr;
       delete m_fileExpr;
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3636,12 +3638,13 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
                 outputFile.prepend(ci->outputDirectory()+"/");
               }
               //printf("NoteCreate(%s)\n",outputFile.data());
-              std::ofstream ts(outputFile.str(),std::ofstream::out | std::ofstream::binary);
-              if (ts.is_open())
+              std::ofstream f(outputFile.str(),std::ofstream::out | std::ofstream::binary);
+              if (f.is_open())
               {
+                TextStream ts(&f);
                 TemplateEscapeIntf *escIntf = ci->escapeIntf();
                 ci->selectEscapeIntf(extension);
-                std::ostringstream os(std::ios_base::ate);
+                TextStream os;
                 createTemplate->render(os,c);
                 QCString out = os.str();
                 stripLeadingWhiteSpace(out);
@@ -3714,7 +3717,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       TemplateContext *c = ctx->templateCtx;
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return QCString(); // should not happen
-      std::ostringstream ss(std::ios_base::ate);
+      TextStream ss;
       c->push();
       TemplateVariant node;
       TemplateListIntf::ConstIterator *it = ctx->list->createIterator();
@@ -3758,7 +3761,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       delete it;
       return ss.str();
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       //printf("TemplateNodeTree::render()\n");
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -3830,7 +3833,7 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
       }
       TRACE(("}TemplateNodeIndexEntry(%s)\n",data.data()));
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3872,7 +3875,7 @@ class TemplateNodeOpenSubIndex : public TemplateNodeCreator<TemplateNodeOpenSubI
       }
       TRACE(("}TemplateNodeOpenSubIndex(%s)\n",data.data()));
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3908,7 +3911,7 @@ class TemplateNodeCloseSubIndex : public TemplateNodeCreator<TemplateNodeCloseSu
       }
       TRACE(("}TemplateNodeCloseSubIndex(%s)\n",data.data()));
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -3969,7 +3972,7 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     ~TemplateNodeWith()
     {
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4017,7 +4020,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       }
       TRACE(("}TemplateNodeCycle(%s)\n",data.data()));
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       ci->setLocation(m_templateName,m_line);
@@ -4091,7 +4094,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     ~TemplateNodeSet()
     {
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4121,7 +4124,7 @@ class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
       parser->removeNextToken(); // skip over endwith
       TRACE(("}TemplateNodeSpaceless()\n"));
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4168,7 +4171,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       delete m_listExpr;
       delete m_patternExpr;
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4270,7 +4273,7 @@ class TemplateNodeTabbing : public TemplateNodeCreator<TemplateNodeTabbing>
       parser->removeNextToken(); // skip over endtabbing
       TRACE(("}TemplateNodeTabbing()\n"));
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4319,7 +4322,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       delete m_resExpr;
       delete m_asExpr;
     }
-    void render(std::ostream &, TemplateContext *c)
+    void render(TextStream &, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4387,7 +4390,7 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
     {
       delete m_encExpr;
     }
-    void render(std::ostream &ts, TemplateContext *c)
+    void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
       if (ci==0) return; // should not happen
@@ -4950,7 +4953,7 @@ TemplateImpl::~TemplateImpl()
   //printf("deleting template %s\n",m_name.data());
 }
 
-void TemplateImpl::render(std::ostream &ts, TemplateContext *c)
+void TemplateImpl::render(TextStream &ts, TemplateContext *c)
 {
   TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
   if (ci==0) return; // should not happen

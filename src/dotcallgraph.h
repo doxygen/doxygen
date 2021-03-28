@@ -29,7 +29,7 @@ class DotCallGraph : public DotGraph
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
-    QCString writeGraph(std::ostream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const char *path,const char *fileName,
                         const char *relPath,bool writeImageMap=TRUE,
                         int graphId=-1);

@@ -23,7 +23,6 @@
 #include <mutex>
 #include <unordered_set>
 #include <codecvt>
-#include <iostream>
 #include <algorithm>
 #include <ctime>
 #include <cctype>
@@ -72,6 +71,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
+#include "textstream.h"
 
 #define ENABLE_TRACINGSUPPORT 0
 
@@ -4233,10 +4233,9 @@ QCString convertToPSString(const char *s)
 
 QCString convertToLaTeX(const QCString &s,bool insideTabbing,bool keepSpaces)
 {
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   filterLatexString(t,s,insideTabbing,false,false,false,keepSpaces);
-  QCString result = t.str();
-  return result.data();
+  return t.str();
 }
 
 
@@ -4973,7 +4972,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
   recursivelyAddGroupListToTitle(ol,d,TRUE);
 }
 
-void filterLatexString(std::ostream &t,const char *str,
+void filterLatexString(TextStream &t,const char *str,
     bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
 {
   if (str==0) return;
@@ -5129,7 +5128,7 @@ QCString latexEscapeLabelName(const char *s)
 {
   if (s==0) return "";
   QCString tmp(qstrlen(s)+1);
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   const char *p=s;
   char c;
   int i;
@@ -5172,7 +5171,7 @@ QCString latexEscapeIndexChars(const char *s)
 {
   if (s==0) return "";
   QCString tmp(qstrlen(s)+1);
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   const char *p=s;
   char c;
   int i;
@@ -5746,7 +5745,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 {
   if (doc.isEmpty()) return "";
   //printf("parseCommentAsText(%s)\n",doc.data());
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   DocNode *root = validatingParseDoc(fileName,lineNr,
       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
       0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
@@ -6712,7 +6711,7 @@ void stripIndentation(QCString &doc,const int indentationLevel)
         break;
     }
   }
-  doc.resize(dst-doc.data()+1);
+  doc.resize(static_cast<uint>(dst-doc.data())+1);
 }
 
 
@@ -7131,7 +7130,7 @@ bool openOutputFile(const char *outFile,std::ofstream &f)
   return fileOpened;
 }
 
-void writeExtraLatexPackages(std::ostream &t)
+void writeExtraLatexPackages(TextStream &t)
 {
   // User-specified packages
   const StringVector &extraPackages = Config_getList(EXTRA_PACKAGES);
@@ -7149,7 +7148,7 @@ void writeExtraLatexPackages(std::ostream &t)
   }
 }
 
-void writeLatexSpecialFormulaChars(std::ostream &t)
+void writeLatexSpecialFormulaChars(TextStream &t)
 {
     unsigned char minus[4]; // Superscript minus
     char *pminus = (char *)minus;

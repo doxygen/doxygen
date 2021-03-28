@@ -24,11 +24,11 @@
 #ifndef FTVHELP_H
 #define FTVHELP_H
 
-#include <iostream>
 #include <vector>
 #include "index.h"
 
 class Definition;
+class TextStream;
 struct FTVNode;
 
 /** A class that generates a dynamic tree view side panel.
@@ -55,14 +55,14 @@ class FTVHelp : public IndexIntf
     void addImageFile(const char *) {}
     void addStyleSheetFile(const char *) {}
     void generateTreeView();
-    void generateTreeViewInline(std::ostream &t);
+    void generateTreeViewInline(TextStream &t);
     static void generateTreeViewImages();
     void generateTreeViewScripts();
   private:
-    void generateTree(std::ostream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
+    void generateTree(TextStream &t,const std::vector<FTVNode*> &nl,int level,int maxLevel,int &index);
     QCString generateIndentLabel(FTVNode *n,int level);
-    void generateIndent(std::ostream &t,FTVNode *n,bool opened);
-    void generateLink(std::ostream &t,FTVNode *n);
+    void generateIndent(TextStream &t,FTVNode *n,bool opened);
+    void generateLink(TextStream &t,FTVNode *n);
     std::vector< std::vector<FTVNode*> > m_indentNodes;
     int m_indent;
     bool m_topLevelIndex;

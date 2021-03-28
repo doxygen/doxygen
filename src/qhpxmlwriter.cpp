@@ -42,7 +42,7 @@ void QhpXmlWriter::insert(QhpXmlWriter const & source)
   m_backend << source.m_backend.str();
 }
 
-void QhpXmlWriter::dumpTo(std::ostream & file)
+void QhpXmlWriter::dumpTo(TextStream & file)
 {
   file << m_backend.str();
 }

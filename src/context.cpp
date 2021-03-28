@@ -1259,7 +1259,7 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
   TemplateVariant result;
   DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
                                      0,isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-  std::ostringstream ts(std::ios_base::ate);
+  TextStream ts;
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
@@ -1281,12 +1281,11 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
       err("context.cpp: output format not yet supported\n");
       break;
   }
-  std::string docs = ts.str();
   bool isEmpty = root->isEmpty();
   if (isEmpty)
     result = "";
   else
-    result = TemplateVariant(docs.c_str(),TRUE);
+    result = TemplateVariant(ts.str().c_str(),TRUE);
   delete root;
   return result;
 }
@@ -1296,7 +1295,7 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
 {
   auto intf = Doxygen::parserManager->getCodeParser(md->getDefFileExtension());
   intf->resetCodeParserState();
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
@@ -1318,8 +1317,7 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
       err("context.cpp: output format not yet supported\n");
       break;
   }
-  QCString s = t.str();
-  return TemplateVariant(s.data(),TRUE);
+  return TemplateVariant(t.str().data(),TRUE);
 }
 
 static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
@@ -1327,7 +1325,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   auto intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   intf->resetCodeParserState();
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
@@ -1373,8 +1371,7 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
       err("context.cpp: output format not yet supported\n");
       break;
   }
-  QCString s = t.str();
-  return TemplateVariant(s.data(),TRUE);
+  return TemplateVariant(t.str().c_str(),TRUE);
 }
 
 //------------------------------------------------------------------------
@@ -1949,7 +1946,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant inheritanceDiagram() const
     {
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       static bool haveDot       = Config_getBool(HAVE_DOT);
       static bool classDiagrams = Config_getBool(CLASS_DIAGRAMS);
       static bool classGraph    = Config_getBool(CLASS_GRAPH);
@@ -1990,13 +1987,13 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         {
           case ContextOutputFormat_Html:
             {
-              std::ostringstream tt(std::ios_base::ate);
+              TextStream tt;
 
               QCString name = convertToHtml(m_classDef->displayName());
               d.writeImage(tt,g_globals.outputDir,
                            relPathAsString(),
                            m_classDef->getOutputFileBase());
-              if (tt.tellp()>0)
+              if (!tt.empty())
               {
                 t << "<div class=\"center\">\n";
                 t << "  <img src=\"";
@@ -2029,8 +2026,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     DotClassGraph *getCollaborationGraph() const
     {
@@ -2049,7 +2045,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant collaborationDiagram() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       if (haveDot)
       {
         DotClassGraph *cg = getCollaborationGraph();
@@ -2080,8 +2076,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
 
     TemplateVariant includeInfo() const
@@ -3054,7 +3049,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includeGraph() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       if (haveDot)
       {
         DotInclDepGraph *cg = getIncludeGraph();
@@ -3085,8 +3080,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     DotInclDepGraph *getIncludedByGraph() const
     {
@@ -3106,7 +3100,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includedByGraph() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       if (haveDot)
       {
         DotInclDepGraph *cg = getIncludedByGraph();
@@ -3137,8 +3131,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     TemplateVariant hasDetails() const
     {
@@ -3512,7 +3505,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     }
     TemplateVariant dirGraph() const
     {
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       static bool haveDot  = Config_getBool(HAVE_DOT);
       static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
@@ -3551,8 +3544,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
 
   private:
@@ -3729,7 +3721,7 @@ TemplateVariant PageContext::get(const char *n) const
 class TextGeneratorHtml : public TextGeneratorIntf
 {
   public:
-    TextGeneratorHtml(std::ostream &ts,const QCString &relPath)
+    TextGeneratorHtml(TextStream &ts,const QCString &relPath)
        : m_ts(ts), m_relPath(relPath) {}
     void writeString(const char *s,bool keepSpaces) const
     {
@@ -3803,7 +3795,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
     }
 
   private:
-    std::ostream &m_ts;
+    TextStream &m_ts;
     QCString m_relPath;
 };
 
@@ -3812,7 +3804,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
 class TextGeneratorLatex : public TextGeneratorIntf
 {
   public:
-    TextGeneratorLatex(std::ostream &ts) : m_ts(ts) {}
+    TextGeneratorLatex(TextStream &ts) : m_ts(ts) {}
     void writeString(const char *s,bool keepSpaces) const
     {
       if (s==0) return;
@@ -3862,7 +3854,7 @@ class TextGeneratorLatex : public TextGeneratorIntf
     }
 
   private:
-    std::ostream &m_ts;
+    TextStream &m_ts;
 };
 
 //------------------------------------------------------------------------
@@ -3876,7 +3868,7 @@ class TextGeneratorFactory
       if (instance==0) instance = new TextGeneratorFactory;
       return instance;
     }
-    TextGeneratorIntf *create(std::ostream &ts,const QCString &relPath)
+    TextGeneratorIntf *create(TextStream &ts,const QCString &relPath)
     {
       switch (g_globals.outputFormat)
       {
@@ -3896,7 +3888,7 @@ class TextGeneratorFactory
 
 TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,const QCString &text)
 {
-  std::ostringstream ts(std::ios_base::ate);
+  TextStream ts;
   TextGeneratorIntf *tg = TextGeneratorFactory::instance()->create(ts,relPath);
   if (tg)
   {
@@ -4937,7 +4929,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallGraph().toBool())
       {
         DotCallGraph *cg = getCallGraph();
-        std::ostringstream t(std::ios_base::ate);
+        TextStream t;
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -4964,8 +4956,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             break;
         }
         g_globals.dynSectionId++;
-        QCString result = t.str();
-        return TemplateVariant(result.data(),TRUE);
+        return TemplateVariant(t.str().c_str(),TRUE);
       }
       else
       {
@@ -5009,7 +5000,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallerGraph().toBool())
       {
         DotCallGraph *cg = getCallerGraph();
-        std::ostringstream t(std::ios_base::ate);
+        TextStream t;
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -5036,8 +5027,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             break;
         }
         g_globals.dynSectionId++;
-        QCString result = t.str();
-        return TemplateVariant(result.data(),TRUE);
+        return TemplateVariant(t.str().c_str(),TRUE);
       }
       else
       {
@@ -5273,7 +5263,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
     TemplateVariant groupGraph() const
     {
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       static bool haveDot     = Config_getBool(HAVE_DOT);
       static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
@@ -5310,8 +5300,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     TemplateVariant hasDetails() const
     {
@@ -8291,7 +8280,7 @@ class InheritanceGraphContext::Private
     }
     TemplateVariant graph() const
     {
-      std::ostringstream t(std::ios_base::ate);
+      TextStream t;
       static bool haveDot            = Config_getBool(HAVE_DOT);
       static bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
       if (haveDot && graphicalHierarchy)
@@ -8303,8 +8292,7 @@ class InheritanceGraphContext::Private
                           g_globals.outputDir+Portable::pathSeparator()+"inherits"+Doxygen::htmlFileExtension,
                           m_id);
       }
-      QCString result = t.str();
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
   private:
     DotGfxHierarchyTable *m_hierarchy;
@@ -9892,7 +9880,7 @@ class LatexSpaceless : public TemplateSpacelessIntf
     void reset() { }
     QCString remove(const QCString &s)
     {
-      std::ostringstream result(std::ios_base::ate);
+      TextStream result;
       const char *p = s.data();
       char c;
       while ((c=*p++))
@@ -9925,7 +9913,7 @@ class HtmlSpaceless : public TemplateSpacelessIntf
     }
     QCString remove(const QCString &s)
     {
-      std::ostringstream result(std::ios_base::ate);
+      TextStream result;
       const char *p = s.data();
       char c;
       while ((c=*p++))
@@ -10115,7 +10103,7 @@ void generateOutputViaTemplate()
           HtmlSpaceless spl;
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
-          std::ostringstream ts(std::ios_base::ate);
+          TextStream ts;
           tpl->render(ts,ctx);
           e.unload(tpl);
         }
@@ -10140,7 +10128,7 @@ void generateOutputViaTemplate()
           LatexSpaceless spl;
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
-          std::ostringstream ts(std::ios_base::ate);
+          TextStream ts;
           tpl->render(ts,ctx);
           e.unload(tpl);
         }

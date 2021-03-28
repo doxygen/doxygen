@@ -111,7 +111,7 @@ class DefinitionImpl
     void writeQuickMemberLinks(OutputList &,const MemberDef *) const;
     void writeSummaryLinks(OutputList &) const;
     QCString pathFragment() const;
-    void writeDocAnchorsToTagFile(std::ostream &) const;
+    void writeDocAnchorsToTagFile(TextStream &) const;
     void setLocalName(const QCString name);
     void addSectionsToIndex();
     void writeToc(OutputList &ol, const LocalToc &lt) const;
@@ -261,7 +261,7 @@ class DefinitionMixin : public Base
     { m_impl.writeSummaryLinks(ol); }
     virtual QCString pathFragment() const
     { return m_impl.pathFragment(); }
-    virtual void writeDocAnchorsToTagFile(std::ostream &fs) const
+    virtual void writeDocAnchorsToTagFile(TextStream &fs) const
     { m_impl.writeDocAnchorsToTagFile(fs); }
     virtual void setLocalName(const QCString name)
     { m_impl.setLocalName(name); }

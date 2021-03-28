@@ -75,11 +75,10 @@
 // context for an Objective-C method call
 struct ObjCCallCtx
 {
-  ObjCCallCtx() : comment(std::ios_base::ate) {}
   int id;
   QCString methodName;
   QCString objectTypeOrName;
-  std::ostringstream comment;
+  TextStream comment;
   const ClassDef *objectType;
   const MemberDef *objectVar;
   const MemberDef *method;

@@ -17,8 +17,9 @@
 #ifndef QHPXMLWRITER_H
 #define QHPXMLWRITER_H
 
-#include <iostream>
 #include <sstream>
+
+class TextStream;
 
 class QhpXmlWriter
 {
@@ -29,7 +30,7 @@ class QhpXmlWriter
     void setIndentLevel(int level);
     void setCompressionEnabled(bool enabled);
     void insert(QhpXmlWriter const & source);
-    void dumpTo(std::ostream & file);
+    void dumpTo(TextStream & file);
     void open(char const * elementName,
               char const * const * attributes = 0);
     void openClose(char const * elementName,

@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 
+#include "textstream.h"
 #include "xmlgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -106,12 +107,12 @@ static const char *xmlSectionMapper(MemberListType ml)
 }
 
 
-inline void writeXMLString(std::ostream &t,const char *s)
+inline void writeXMLString(TextStream &t,const char *s)
 {
   t << convertToXML(s);
 }
 
-inline void writeXMLCodeString(std::ostream &t,const char *s, int &col)
+inline void writeXMLCodeString(TextStream &t,const char *s, int &col)
 {
   char c;
   while ((c=*s++))
@@ -145,7 +146,7 @@ inline void writeXMLCodeString(std::ostream &t,const char *s, int &col)
 }
 
 
-static void writeXMLHeader(std::ostream &t)
+static void writeXMLHeader(TextStream &t)
 {
   t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
   t << "<doxygen xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
@@ -185,7 +186,7 @@ static void writeCombineScript()
 
 }
 
-void writeXMLLink(std::ostream &t,const char *extRef,const char *compoundId,
+void writeXMLLink(TextStream &t,const char *extRef,const char *compoundId,
                   const char *anchorId,const char *text,const char *tooltip)
 {
   t << "<ref refid=\"" << compoundId;
@@ -204,7 +205,7 @@ void writeXMLLink(std::ostream &t,const char *extRef,const char *compoundId,
 class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
-    TextGeneratorXMLImpl(std::ostream &t): m_t(t) {}
+    TextGeneratorXMLImpl(TextStream &t): m_t(t) {}
     void writeString(const char *s,bool /*keepSpaces*/) const
     {
       writeXMLString(m_t,s);
@@ -217,7 +218,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
       writeXMLLink(m_t,extRef,file,anchor,text,0);
     }
   private:
-    std::ostream &m_t;
+    TextStream &m_t;
 };
 
 //-------------------------------------------------------------------------------------------
@@ -347,7 +348,7 @@ void XMLCodeGenerator::endCodeFragment(const char *)
 
 //-------------------------------------------------------------------------------------------
 
-static void writeTemplateArgumentList(std::ostream &t,
+static void writeTemplateArgumentList(TextStream &t,
                                       const ArgumentList &al,
                                       const Definition *scope,
                                       const FileDef *fileScope,
@@ -390,17 +391,17 @@ static void writeTemplateArgumentList(std::ostream &t,
   }
 }
 
-static void writeMemberTemplateLists(const MemberDef *md,std::ostream &t)
+static void writeMemberTemplateLists(const MemberDef *md,TextStream &t)
 {
   writeTemplateArgumentList(t,md->templateArguments(),md->getClassDef(),md->getFileDef(),8);
 }
 
-static void writeTemplateList(const ClassDef *cd,std::ostream &t)
+static void writeTemplateList(const ClassDef *cd,TextStream &t)
 {
   writeTemplateArgumentList(t,cd->templateArguments(),cd,0,4);
 }
 
-static void writeXMLDocBlock(std::ostream &t,
+static void writeXMLDocBlock(TextStream &t,
                       const QCString &fileName,
                       int lineNr,
                       const Definition *scope,
@@ -425,7 +426,7 @@ static void writeXMLDocBlock(std::ostream &t,
 
 }
 
-void writeXMLCodeBlock(std::ostream &t,FileDef *fd)
+void writeXMLCodeBlock(TextStream &t,FileDef *fd)
 {
   auto intf=Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   SrcLangExt langExt = getLanguageFromFileName(fd->getDefFileExtension());
@@ -450,7 +451,7 @@ void writeXMLCodeBlock(std::ostream &t,FileDef *fd)
   delete xmlGen;
 }
 
-static void writeMemberReference(std::ostream &t,const Definition *def,const MemberDef *rmd,const char *tagName)
+static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const char *tagName)
 {
   QCString scope = rmd->getScopeString();
   QCString name = rmd->name();
@@ -507,7 +508,7 @@ static QCString memberOutputFileBase(const MemberDef *md)
 }
 
 
-static void generateXMLForMember(const MemberDef *md,std::ostream &ti,std::ostream &t,const Definition *def)
+static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &t,const Definition *def)
 {
 
   // + declaration/definition arg lists
@@ -1036,7 +1037,7 @@ static bool memberVisible(const Definition *d,const MemberDef *md)
            md->getNamespaceDef()==0;
 }
 
-static void generateXMLSection(const Definition *d,std::ostream &ti,std::ostream &t,
+static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
                       const MemberList *ml,const char *kind,const char *header=0,
                       const char *documentation=0)
 {
@@ -1073,7 +1074,7 @@ static void generateXMLSection(const Definition *d,std::ostream &ti,std::ostream
   t << "      </sectiondef>\n";
 }
 
-static void writeListOfAllMembers(const ClassDef *cd,std::ostream &t)
+static void writeListOfAllMembers(const ClassDef *cd,TextStream &t)
 {
   t << "    <listofallmembers>\n";
   for (auto &mni : cd->memberNameInfoLinkedMap())
@@ -1114,7 +1115,7 @@ static void writeListOfAllMembers(const ClassDef *cd,std::ostream &t)
   t << "    </listofallmembers>\n";
 }
 
-static void writeInnerClasses(const ClassLinkedRefMap &cl,std::ostream &t)
+static void writeInnerClasses(const ClassLinkedRefMap &cl,TextStream &t)
 {
   for (const auto &cd : cl)
   {
@@ -1134,7 +1135,7 @@ static void writeInnerClasses(const ClassLinkedRefMap &cl,std::ostream &t)
   }
 }
 
-static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,std::ostream &t)
+static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,TextStream &t)
 {
   for (const auto &nd : nl)
   {
@@ -1147,7 +1148,7 @@ static void writeInnerNamespaces(const NamespaceLinkedRefMap &nl,std::ostream &t
   }
 }
 
-static void writeInnerFiles(const FileList &fl,std::ostream &t)
+static void writeInnerFiles(const FileList &fl,TextStream &t)
 {
   for (const auto &fd : fl)
   {
@@ -1156,7 +1157,7 @@ static void writeInnerFiles(const FileList &fl,std::ostream &t)
   }
 }
 
-static void writeInnerPages(const PageLinkedRefMap &pl,std::ostream &t)
+static void writeInnerPages(const PageLinkedRefMap &pl,TextStream &t)
 {
   for (const auto &pd : pl)
   {
@@ -1169,7 +1170,7 @@ static void writeInnerPages(const PageLinkedRefMap &pl,std::ostream &t)
   }
 }
 
-static void writeInnerGroups(const GroupList &gl,std::ostream &t)
+static void writeInnerGroups(const GroupList &gl,TextStream &t)
 {
   for (const auto &sgd : gl)
   {
@@ -1179,7 +1180,7 @@ static void writeInnerGroups(const GroupList &gl,std::ostream &t)
   }
 }
 
-static void writeInnerDirs(const DirList *dl,std::ostream &t)
+static void writeInnerDirs(const DirList *dl,TextStream &t)
 {
   if (dl)
   {
@@ -1191,7 +1192,7 @@ static void writeInnerDirs(const DirList *dl,std::ostream &t)
   }
 }
 
-static void generateXMLForClass(const ClassDef *cd,std::ostream &ti)
+static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
 {
   // + brief description
   // + detailed description
@@ -1223,12 +1224,13 @@ static void generateXMLForClass(const ClassDef *cd,std::ostream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+ classOutputFileBase(cd)+".xml";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\""
@@ -1385,7 +1387,7 @@ static void generateXMLForClass(const ClassDef *cd,std::ostream &ti)
   ti << "  </compound>\n";
 }
 
-static void generateXMLForNamespace(const NamespaceDef *nd,std::ostream &ti)
+static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
 {
   // + contained class definitions
   // + contained namespace definitions
@@ -1404,12 +1406,13 @@ static void generateXMLForNamespace(const NamespaceDef *nd,std::ostream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+nd->getOutputFileBase()+".xml";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << nd->getOutputFileBase()
@@ -1454,7 +1457,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,std::ostream &ti)
   ti << "  </compound>\n";
 }
 
-static void generateXMLForFile(FileDef *fd,std::ostream &ti)
+static void generateXMLForFile(FileDef *fd,TextStream &ti)
 {
   // + includes files
   // + includedby files
@@ -1478,12 +1481,13 @@ static void generateXMLForFile(FileDef *fd,std::ostream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+fd->getOutputFileBase()+".xml";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << fd->getOutputFileBase()
@@ -1567,7 +1571,7 @@ static void generateXMLForFile(FileDef *fd,std::ostream &ti)
   ti << "  </compound>\n";
 }
 
-static void generateXMLForGroup(const GroupDef *gd,std::ostream &ti)
+static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
 {
   // + members
   // + member groups
@@ -1588,12 +1592,13 @@ static void generateXMLForGroup(const GroupDef *gd,std::ostream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+gd->getOutputFileBase()+".xml";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\""
@@ -1633,7 +1638,7 @@ static void generateXMLForGroup(const GroupDef *gd,std::ostream &ti)
   ti << "  </compound>\n";
 }
 
-static void generateXMLForDir(DirDef *dd,std::ostream &ti)
+static void generateXMLForDir(DirDef *dd,TextStream &ti)
 {
   if (dd->isReference()) return; // skip external references
   ti << "  <compound refid=\"" << dd->getOutputFileBase()
@@ -1642,12 +1647,13 @@ static void generateXMLForDir(DirDef *dd,std::ostream &ti)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+dd->getOutputFileBase()+".xml";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\""
@@ -1670,7 +1676,7 @@ static void generateXMLForDir(DirDef *dd,std::ostream &ti)
   ti << "  </compound>\n";
 }
 
-static void generateXMLForPage(PageDef *pd,std::ostream &ti,bool isExample)
+static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
 {
   // + name
   // + title
@@ -1694,12 +1700,13 @@ static void generateXMLForPage(PageDef *pd,std::ostream &ti,bool isExample)
 
   QCString outputDirectory = Config_getString(XML_OUTPUT);
   QCString fileName=outputDirectory+"/"+pageName+".xml";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   writeXMLHeader(t);
   t << "  <compounddef id=\"" << pageName;
@@ -1824,102 +1831,108 @@ void generateXML()
   ResourceMgr::instance().copyResource("index.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-
-  // write compound.xsd, but replace special marker with the entities
-  QCString compound_xsd = ResourceMgr::instance().getAsString("compound.xsd");
-  const char *startLine = compound_xsd.data();
-  while (*startLine)
   {
-    // find end of the line
-    const char *endLine = startLine+1;
-    while (*endLine && *(endLine-1)!='\n') endLine++; // skip to end of the line including \n
-    int len=endLine-startLine;
-    if (len>0)
+    TextStream t(&f);
+
+    // write compound.xsd, but replace special marker with the entities
+    QCString compound_xsd = ResourceMgr::instance().getAsString("compound.xsd");
+    const char *startLine = compound_xsd.data();
+    while (*startLine)
     {
-      QCString s(len+1);
-      qstrncpy(s.rawData(),startLine,len);
-      s[len]='\0';
-      if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
+      // find end of the line
+      const char *endLine = startLine+1;
+      while (*endLine && *(endLine-1)!='\n') endLine++; // skip to end of the line including \n
+      int len=static_cast<int>(endLine-startLine);
+      if (len>0)
       {
-        HtmlEntityMapper::instance()->writeXMLSchema(t);
+        QCString s(len+1);
+        qstrncpy(s.rawData(),startLine,len);
+        s[len]='\0';
+        if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
+        {
+          HtmlEntityMapper::instance()->writeXMLSchema(t);
+        }
+        else
+        {
+          t.write(startLine,len);
+        }
       }
-      else
-      {
-        t.write(startLine,len);
-      }
+      startLine=endLine;
     }
-    startLine=endLine;
   }
-  t.close();
+  f.close();
 
   fileName=outputDirectory+"/index.xml";
-  t.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
-  //t.setEncoding(std::ostream::UnicodeUTF8);
+  else
+  {
+    TextStream t(&f);
 
-  // write index header
-  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
-  t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
-  t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
-  t << "version=\"" << getDoxygenVersion() << "\" ";
-  t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
-  t << ">\n";
+    // write index header
+    t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";;
+    t << "<doxygenindex xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+    t << "xsi:noNamespaceSchemaLocation=\"index.xsd\" ";
+    t << "version=\"" << getDoxygenVersion() << "\" ";
+    t << "xml:lang=\"" << theTranslator->trISOLang() << "\"";
+    t << ">\n";
 
-  for (const auto &cd : *Doxygen::classLinkedMap)
-  {
-    generateXMLForClass(cd.get(),t);
-  }
-  for (const auto &nd : *Doxygen::namespaceLinkedMap)
-  {
-    msg("Generating XML output for namespace %s\n",nd->name().data());
-    generateXMLForNamespace(nd.get(),t);
-  }
-  for (const auto &fn : *Doxygen::inputNameLinkedMap)
-  {
-    for (const auto &fd : *fn)
+    for (const auto &cd : *Doxygen::classLinkedMap)
     {
-      msg("Generating XML output for file %s\n",fd->name().data());
-      generateXMLForFile(fd.get(),t);
+      generateXMLForClass(cd.get(),t);
     }
-  }
-  for (const auto &gd : *Doxygen::groupLinkedMap)
-  {
-    msg("Generating XML output for group %s\n",gd->name().data());
-    generateXMLForGroup(gd.get(),t);
-  }
-  for (const auto &pd : *Doxygen::pageLinkedMap)
-  {
-    msg("Generating XML output for page %s\n",pd->name().data());
-    generateXMLForPage(pd.get(),t,FALSE);
-  }
-  for (const auto &dd : *Doxygen::dirLinkedMap)
-  {
-    msg("Generate XML output for dir %s\n",dd->name().data());
-    generateXMLForDir(dd.get(),t);
-  }
-  for (const auto &pd : *Doxygen::exampleLinkedMap)
-  {
-    msg("Generating XML output for example %s\n",pd->name().data());
-    generateXMLForPage(pd.get(),t,TRUE);
-  }
-  if (Doxygen::mainPage)
-  {
-    msg("Generating XML output for the main page\n");
-    generateXMLForPage(Doxygen::mainPage.get(),t,FALSE);
-  }
+    for (const auto &nd : *Doxygen::namespaceLinkedMap)
+    {
+      msg("Generating XML output for namespace %s\n",nd->name().data());
+      generateXMLForNamespace(nd.get(),t);
+    }
+    for (const auto &fn : *Doxygen::inputNameLinkedMap)
+    {
+      for (const auto &fd : *fn)
+      {
+        msg("Generating XML output for file %s\n",fd->name().data());
+        generateXMLForFile(fd.get(),t);
+      }
+    }
+    for (const auto &gd : *Doxygen::groupLinkedMap)
+    {
+      msg("Generating XML output for group %s\n",gd->name().data());
+      generateXMLForGroup(gd.get(),t);
+    }
+    for (const auto &pd : *Doxygen::pageLinkedMap)
+    {
+      msg("Generating XML output for page %s\n",pd->name().data());
+      generateXMLForPage(pd.get(),t,FALSE);
+    }
+    for (const auto &dd : *Doxygen::dirLinkedMap)
+    {
+      msg("Generate XML output for dir %s\n",dd->name().data());
+      generateXMLForDir(dd.get(),t);
+    }
+    for (const auto &pd : *Doxygen::exampleLinkedMap)
+    {
+      msg("Generating XML output for example %s\n",pd->name().data());
+      generateXMLForPage(pd.get(),t,TRUE);
+    }
+    if (Doxygen::mainPage)
+    {
+      msg("Generating XML output for the main page\n");
+      generateXMLForPage(Doxygen::mainPage.get(),t,FALSE);
+    }
 
-  //t << "  </compoundlist>\n";
-  t << "</doxygenindex>\n";
+    //t << "  </compoundlist>\n";
+    t << "</doxygenindex>\n";
+  }
 
   writeCombineScript();
 }

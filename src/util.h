@@ -313,7 +313,7 @@ QCString unescapeCharsInString(const char *s);
 
 void addGroupListToTitle(OutputList &ol,const Definition *d);
 
-void filterLatexString(std::ostream &t,const char *str,
+void filterLatexString(TextStream &t,const char *str,
                        bool insideTabbing,
                        bool insidePre,
                        bool insideItem,
@@ -391,7 +391,6 @@ bool patternMatch(const FileInfo &fi,const StringVector &patList);
 QCString externalLinkTarget(const bool parent = false);
 QCString externalRef(const QCString &relPath,const QCString &ref,bool href);
 int nextUtf8CharPosition(const QCString &utf8Str,uint len,uint startPos);
-const char *writeUtf8Char(std::ostream &t,const char *s);
 
 void writeMarkerList(OutputList &ol,const std::string &markerText,size_t numMarkers,
                      std::function<void(size_t)> replaceFunc);
@@ -439,8 +438,8 @@ void convertProtectionLevel(
 
 bool mainPageHasTitle();
 bool openOutputFile(const char *outFile,std::ofstream &f);
-void writeExtraLatexPackages(std::ostream &t);
-void writeLatexSpecialFormulaChars(std::ostream &t);
+void writeExtraLatexPackages(TextStream &t);
+void writeLatexSpecialFormulaChars(TextStream &t);
 
 StringVector split(const std::string &s,const std::string &delimiter);
 StringVector split(const std::string &s,const reg::Ex &delimiter);

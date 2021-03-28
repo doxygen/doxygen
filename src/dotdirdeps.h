@@ -26,7 +26,7 @@ class DotDirDeps : public DotGraph
     DotDirDeps(const DirDef *dir);
     ~DotDirDeps();
     bool isTrivial() const;
-    QCString writeGraph(std::ostream &out,
+    QCString writeGraph(TextStream &out,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
                         const char *path,

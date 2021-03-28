@@ -57,7 +57,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
     virtual bool showLineNo() const;
     virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(std::ostream &);
+    virtual void writeTagFile(TextStream &);
     virtual void setNestingLevel(int l);
     virtual void writePageDocumentation(OutputList &ol) const;
 
@@ -144,7 +144,7 @@ bool PageDefImpl::hasParentPage() const
          getOuterScope()->definitionType()==Definition::TypePage;
 }
 
-void PageDefImpl::writeTagFile(std::ostream &tagFile)
+void PageDefImpl::writeTagFile(TextStream &tagFile)
 {
   bool found = name()=="citelist";
   for (RefListManager::Ptr &rl : RefListManager::instance())

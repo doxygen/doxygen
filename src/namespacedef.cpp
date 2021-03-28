@@ -63,7 +63,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
-    virtual void writeTagFile(std::ostream &);
+    virtual void writeTagFile(TextStream &);
     virtual void insertClass(const ClassDef *cd);
     virtual void insertNamespace(const NamespaceDef *nd);
     virtual void insertMember(MemberDef *md);
@@ -125,7 +125,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void endMemberDocumentation(OutputList &ol);
     void writeSummaryLinks(OutputList &ol) const;
     void addNamespaceAttributes(OutputList &ol);
-    void writeClassesToTagFile(std::ostream &,const ClassLinkedRefMap &d);
+    void writeClassesToTagFile(TextStream &,const ClassLinkedRefMap &d);
 
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup=false);
@@ -533,7 +533,7 @@ bool NamespaceDefImpl::hasDetailedDescription() const
           !documentation().isEmpty());
 }
 
-void NamespaceDefImpl::writeTagFile(std::ostream &tagFile)
+void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"namespace\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
@@ -851,7 +851,7 @@ void NamespaceDefImpl::addNamespaceAttributes(OutputList &ol)
   }
 }
 
-void NamespaceDefImpl::writeClassesToTagFile(std::ostream &tagFile,const ClassLinkedRefMap &list)
+void NamespaceDefImpl::writeClassesToTagFile(TextStream &tagFile,const ClassLinkedRefMap &list)
 {
   for (const auto &cd : list)
   {

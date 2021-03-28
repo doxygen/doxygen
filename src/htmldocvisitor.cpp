@@ -264,7 +264,7 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
 
 //-------------------------------------------------------------------------
 
-HtmlDocVisitor::HtmlDocVisitor(std::ostream &t,CodeOutputInterface &ci,
+HtmlDocVisitor::HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,
                                const Definition *ctx)
   : DocVisitor(DocVisitor_Html), m_t(t), m_ci(ci), m_insidePre(FALSE),
                                  m_hide(FALSE), m_ctx(ctx)
@@ -471,7 +471,7 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
 }
 
 
-static void visitPreCaption(std::ostream &t, DocVerbatim *s)
+static void visitPreCaption(TextStream &t, DocVerbatim *s)
 {
   if (s->hasCaption())
   {
@@ -480,7 +480,7 @@ static void visitPreCaption(std::ostream &t, DocVerbatim *s)
 }
 
 
-static void visitPostCaption(std::ostream &t, DocVerbatim *s)
+static void visitPostCaption(TextStream &t, DocVerbatim *s)
 {
   if (s->hasCaption())
   {
@@ -2378,7 +2378,7 @@ void HtmlDocVisitor::forceEndParagraph(DocNode *n)
     const DocNodeList &children = para->children();
     auto it = std::find_if(children.begin(),children.end(),[n](const auto &np) { return np.get()==n; });
     if (it==children.end()) return;
-    int nodeIndex = it - children.begin();
+    int nodeIndex = static_cast<int>(it - children.begin());
     nodeIndex--;
     if (nodeIndex<0) return; // first node in paragraph
     while (nodeIndex>=0 && isInvisibleNode(children.at(nodeIndex).get()))
@@ -2414,7 +2414,7 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     const DocNodeList &children = para->children();
     auto it = std::find_if(children.begin(),children.end(),[n](const auto &np) { return np.get()==n; });
     if (it==children.end()) return;
-    int nodeIndex = it - children.begin();
+    int nodeIndex = static_cast<int>(it - children.begin());
     int numNodes  = static_cast<int>(para->children().size());
     bool styleOutsideParagraph=insideStyleChangeThatIsOutsideParagraph(para,nodeIndex);
     if (styleOutsideParagraph) return;

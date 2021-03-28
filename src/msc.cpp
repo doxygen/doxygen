@@ -25,10 +25,11 @@
 #include "util.h"
 #include "mscgen_api.h"
 #include "dir.h"
+#include "textstream.h"
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(std::ostream &t,const char *mapName,const QCString relPath,
+static bool convertMapFile(TextStream &t,const char *mapName,const QCString relPath,
                            const QCString &context)
 {
   std::ifstream f(mapName,std::ifstream::in);
@@ -153,16 +154,15 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
     return "";
   }
 
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   convertMapFile(t, outFile, relPath, context);
-  QCString result = t.str();
 
   Dir().remove(outFile.str());
 
-  return result;
+  return t.str();
 }
 
-void writeMscImageMapFromFile(std::ostream &t,const QCString &inFile,
+void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &outDir,
                               const QCString &relPath,
                               const QCString &baseName,

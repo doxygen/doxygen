@@ -22,12 +22,13 @@
 #include "docvisitor.h"
 
 class LatexCodeGenerator;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(std::ostream &t,LatexCodeGenerator &ci,
+    LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
                     const char *langExt,bool insideTabbing);
 
     //--------------------------------------
@@ -176,7 +177,7 @@ class LatexDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    std::ostream &m_t;
+    TextStream &m_t;
     LatexCodeGenerator &m_ci;
     bool m_insidePre;
     bool m_insideItem;

@@ -28,6 +28,7 @@
 #include "portable.h"
 #include "index.h"
 #include "classlist.h"
+#include "textstream.h"
 
 //-----------------------------------------------------------------------------
 
@@ -107,13 +108,13 @@ class TreeDiagram
     uint computeRows();
     void moveChildren(DiagramItem *root,int dx);
     void computeExtremes(uint *labelWidth,uint *xpos);
-    void drawBoxes(std::ostream &t,Image *image,
+    void drawBoxes(TextStream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellHeight,
                    QCString relPath="",
                    bool generateMap=TRUE);
-    void drawConnectors(std::ostream &t,Image *image,
+    void drawConnectors(TextStream &t,Image *image,
                    bool doBase,bool bitmap,
                    uint baseRows,uint superRows,
                    uint cellWidth,uint cellheight);
@@ -232,7 +233,7 @@ static void writeBitmapBox(DiagramItem *di,Image *image,
   }
 }
 
-static void writeVectorBox(std::ostream &t,DiagramItem *di,
+static void writeVectorBox(TextStream &t,DiagramItem *di,
                            float x,float y,bool children=FALSE)
 {
   if (di->virtualness()==Virtual) t << "dashed\n";
@@ -241,7 +242,7 @@ static void writeVectorBox(std::ostream &t,DiagramItem *di,
   if (di->virtualness()==Virtual) t << "solid\n";
 }
 
-static void writeMapArea(std::ostream &t,const ClassDef *cd,QCString relPath,
+static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
                          uint x,uint y,uint w,uint h)
 {
   if (cd->isLinkable())
@@ -564,7 +565,7 @@ class DualDirIterator
     typename C::reverse_iterator m_rit;
 };
 
-void TreeDiagram::drawBoxes(std::ostream &t,Image *image,
+void TreeDiagram::drawBoxes(TextStream &t,Image *image,
                             bool doBase,bool bitmap,
                             uint baseRows,uint superRows,
                             uint cellWidth,uint cellHeight,
@@ -694,7 +695,7 @@ void TreeDiagram::drawBoxes(std::ostream &t,Image *image,
   }
 }
 
-void TreeDiagram::drawConnectors(std::ostream &t,Image *image,
+void TreeDiagram::drawConnectors(TextStream &t,Image *image,
                                  bool doBase,bool bitmap,
                                  uint baseRows,uint superRows,
                                  uint cellWidth,uint cellHeight)
@@ -1043,7 +1044,7 @@ ClassDiagram::~ClassDiagram()
 {
 }
 
-void ClassDiagram::writeFigure(std::ostream &output,const char *path,
+void ClassDiagram::writeFigure(TextStream &output,const char *path,
                                const char *fileName) const
 {
   uint baseRows=p->base.computeRows();
@@ -1086,236 +1087,241 @@ void ClassDiagram::writeFigure(std::ostream &output,const char *path,
 
   QCString epsBaseName=(QCString)path+"/"+fileName;
   QCString epsName=epsBaseName+".eps";
-  std::ofstream t(epsName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(epsName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     term("Could not open file %s for writing\n",epsName.data());
   }
-
-  //printf("writeEPS() rows=%d cols=%d\n",rows,cols);
-
-  // generate EPS header and postscript variables and procedures
-
-  t << "%!PS-Adobe-2.0 EPSF-2.0\n";
-  t << "%%Title: ClassName\n";
-  t << "%%Creator: Doxygen\n";
-  t << "%%CreationDate: Time\n";
-  t << "%%For: \n";
-  t << "%Magnification: 1.00\n";
-  t << "%%Orientation: Portrait\n";
-  t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/(float)estWidth << "\n";
-  t << "%%Pages: 0\n";
-  t << "%%BeginSetup\n";
-  t << "%%EndSetup\n";
-  t << "%%EndComments\n";
-  t << "\n";
-  t << "% ----- variables -----\n";
-  t << "\n";
-  t << "/boxwidth 0 def\n";
-  t << "/boxheight 40 def\n";
-  t << "/fontheight 24 def\n";
-  t << "/marginwidth 10 def\n";
-  t << "/distx 20 def\n";
-  t << "/disty 40 def\n";
-  t << "/boundaspect " << estWidth/(float)estHeight << " def  % aspect ratio of the BoundingBox (width/height)\n";
-  t << "/boundx 500 def\n";
-  t << "/boundy boundx boundaspect div def\n";
-  t << "/xspacing 0 def\n";
-  t << "/yspacing 0 def\n";
-  t << "/rows " << rows << " def\n";
-  t << "/cols " << cols << " def\n";
-  t << "/scalefactor 0 def\n";
-  t << "/boxfont /Times-Roman findfont fontheight scalefont def\n";
-  t << "\n";
-  t << "% ----- procedures -----\n";
-  t << "\n";
-  t << "/dotted { [1 4] 0 setdash } def\n";
-  t << "/dashed { [5] 0 setdash } def\n";
-  t << "/solid  { [] 0 setdash } def\n";
-  t << "\n";
-  t << "/max % result = MAX(arg1,arg2)\n";
-  t << "{\n";
-  t << "  /a exch def\n";
-  t << "  /b exch def\n";
-  t << "  a b gt {a} {b} ifelse\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/xoffset % result = MAX(0,(scalefactor-(boxwidth*cols+distx*(cols-1)))/2)\n";
-  t << "{\n";
-  t << "  0 scalefactor boxwidth cols mul distx cols 1 sub mul add sub 2 div max\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/cw % boxwidth = MAX(boxwidth, stringwidth(arg1))\n";
-  t << "{\n";
-  t << "  /str exch def\n";
-  t << "  /boxwidth boxwidth str stringwidth pop max def\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/box % draws a box with text 'arg1' at grid pos (arg2,arg3)\n";
-  t << "{ gsave\n";
-  t << "  2 setlinewidth\n";
-  t << "  newpath\n";
-  t << "  exch xspacing mul xoffset add\n";
-  t << "  exch yspacing mul\n";
-  t << "  moveto\n";
-  t << "  boxwidth 0 rlineto \n";
-  t << "  0 boxheight rlineto \n";
-  t << "  boxwidth neg 0 rlineto \n";
-  t << "  0 boxheight neg rlineto \n";
-  t << "  closepath\n";
-  t << "  dup stringwidth pop neg boxwidth add 2 div\n";
-  t << "  boxheight fontheight 2 div sub 2 div\n";
-  t << "  rmoveto show stroke\n";
-  t << "  grestore\n";
-  t << "} def  \n";
-  t << "\n";
-  t << "/mark\n";
-  t << "{ newpath\n";
-  t << "  exch xspacing mul xoffset add boxwidth add\n";
-  t << "  exch yspacing mul\n";
-  t << "  moveto\n";
-  t << "  0 boxheight 4 div rlineto\n";
-  t << "  boxheight neg 4 div boxheight neg 4 div rlineto\n";
-  t << "  closepath\n";
-  t << "  eofill\n";
-  t << "  stroke\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/arrow\n";
-  t << "{ newpath\n";
-  t << "  moveto\n";
-  t << "  3 -8 rlineto\n";
-  t << "  -6 0 rlineto\n";
-  t << "  3 8 rlineto\n";
-  t << "  closepath\n";
-  t << "  eofill\n";
-  t << "  stroke\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/out % draws an output connector for the block at (arg1,arg2)\n";
-  t << "{\n";
-  t << "  newpath\n";
-  t << "  exch xspacing mul xoffset add boxwidth 2 div add\n";
-  t << "  exch yspacing mul boxheight add\n";
-  t << "  /y exch def\n";
-  t << "  /x exch def\n";
-  t << "  x y moveto\n";
-  t << "  0 disty 2 div rlineto \n";
-  t << "  stroke\n";
-  t << "  1 eq { x y disty 2 div add arrow } if\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/in % draws an input connector for the block at (arg1,arg2)\n";
-  t << "{\n";
-  t << "  newpath\n";
-  t << "  exch xspacing mul xoffset add boxwidth 2 div add\n";
-  t << "  exch yspacing mul disty 2 div sub\n";
-  t << "  /y exch def\n";
-  t << "  /x exch def\n";
-  t << "  x y moveto\n";
-  t << "  0 disty 2 div rlineto\n";
-  t << "  stroke\n";
-  t << "  1 eq { x y disty 2 div add arrow } if\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/hedge\n";
-  t << "{\n";
-  t << "  exch xspacing mul xoffset add boxwidth 2 div add\n";
-  t << "  exch yspacing mul boxheight 2 div sub\n";
-  t << "  /y exch def\n";
-  t << "  /x exch def\n";
-  t << "  newpath\n";
-  t << "  x y moveto\n";
-  t << "  boxwidth 2 div distx add 0 rlineto\n";
-  t << "  stroke\n";
-  t << "  1 eq\n";
-  t << "  { newpath x boxwidth 2 div distx add add y moveto\n";
-  t << "    -8 3 rlineto\n";
-  t << "    0 -6 rlineto\n";
-  t << "    8 3 rlineto\n";
-  t << "    closepath\n";
-  t << "    eofill\n";
-  t << "    stroke\n";
-  t << "  } if\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/vedge\n";
-  t << "{\n";
-  t << "  /ye exch def\n";
-  t << "  /ys exch def\n";
-  t << "  /xs exch def\n";
-  t << "  newpath\n";
-  t << "  xs xspacing mul xoffset add boxwidth 2 div add dup\n";
-  t << "  ys yspacing mul boxheight 2 div sub\n";
-  t << "  moveto\n";
-  t << "  ye yspacing mul boxheight 2 div sub\n";
-  t << "  lineto\n";
-  t << "  stroke\n";
-  t << "} def\n";
-  t << "\n";
-  t << "/conn % connections the blocks from col 'arg1' to 'arg2' of row 'arg3'\n";
-  t << "{\n";
-  t << "  /ys exch def\n";
-  t << "  /xe exch def\n";
-  t << "  /xs exch def\n";
-  t << "  newpath\n";
-  t << "  xs xspacing mul xoffset add boxwidth 2 div add\n";
-  t << "  ys yspacing mul disty 2 div sub\n";
-  t << "  moveto\n";
-  t << "  xspacing xe xs sub mul 0\n";
-  t << "  rlineto\n";
-  t << "  stroke\n";
-  t << "} def\n";
-  t << "\n";
-  t << "% ----- main ------\n";
-  t << "\n";
-  t << "boxfont setfont\n";
-  t << "1 boundaspect scale\n";
-
-
-  for (const auto &dr : p->base)
+  else
   {
-    bool done=FALSE;
-    for (const auto &di : *dr)
+    TextStream t(&f);
+
+    //printf("writeEPS() rows=%d cols=%d\n",rows,cols);
+
+    // generate EPS header and postscript variables and procedures
+
+    t << "%!PS-Adobe-2.0 EPSF-2.0\n";
+    t << "%%Title: ClassName\n";
+    t << "%%Creator: Doxygen\n";
+    t << "%%CreationDate: Time\n";
+    t << "%%For: \n";
+    t << "%Magnification: 1.00\n";
+    t << "%%Orientation: Portrait\n";
+    t << "%%BoundingBox: 0 0 500 " << estHeight*500.0f/(float)estWidth << "\n";
+    t << "%%Pages: 0\n";
+    t << "%%BeginSetup\n";
+    t << "%%EndSetup\n";
+    t << "%%EndComments\n";
+    t << "\n";
+    t << "% ----- variables -----\n";
+    t << "\n";
+    t << "/boxwidth 0 def\n";
+    t << "/boxheight 40 def\n";
+    t << "/fontheight 24 def\n";
+    t << "/marginwidth 10 def\n";
+    t << "/distx 20 def\n";
+    t << "/disty 40 def\n";
+    t << "/boundaspect " << estWidth/(float)estHeight << " def  % aspect ratio of the BoundingBox (width/height)\n";
+    t << "/boundx 500 def\n";
+    t << "/boundy boundx boundaspect div def\n";
+    t << "/xspacing 0 def\n";
+    t << "/yspacing 0 def\n";
+    t << "/rows " << rows << " def\n";
+    t << "/cols " << cols << " def\n";
+    t << "/scalefactor 0 def\n";
+    t << "/boxfont /Times-Roman findfont fontheight scalefont def\n";
+    t << "\n";
+    t << "% ----- procedures -----\n";
+    t << "\n";
+    t << "/dotted { [1 4] 0 setdash } def\n";
+    t << "/dashed { [5] 0 setdash } def\n";
+    t << "/solid  { [] 0 setdash } def\n";
+    t << "\n";
+    t << "/max % result = MAX(arg1,arg2)\n";
+    t << "{\n";
+    t << "  /a exch def\n";
+    t << "  /b exch def\n";
+    t << "  a b gt {a} {b} ifelse\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/xoffset % result = MAX(0,(scalefactor-(boxwidth*cols+distx*(cols-1)))/2)\n";
+    t << "{\n";
+    t << "  0 scalefactor boxwidth cols mul distx cols 1 sub mul add sub 2 div max\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/cw % boxwidth = MAX(boxwidth, stringwidth(arg1))\n";
+    t << "{\n";
+    t << "  /str exch def\n";
+    t << "  /boxwidth boxwidth str stringwidth pop max def\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/box % draws a box with text 'arg1' at grid pos (arg2,arg3)\n";
+    t << "{ gsave\n";
+    t << "  2 setlinewidth\n";
+    t << "  newpath\n";
+    t << "  exch xspacing mul xoffset add\n";
+    t << "  exch yspacing mul\n";
+    t << "  moveto\n";
+    t << "  boxwidth 0 rlineto \n";
+    t << "  0 boxheight rlineto \n";
+    t << "  boxwidth neg 0 rlineto \n";
+    t << "  0 boxheight neg rlineto \n";
+    t << "  closepath\n";
+    t << "  dup stringwidth pop neg boxwidth add 2 div\n";
+    t << "  boxheight fontheight 2 div sub 2 div\n";
+    t << "  rmoveto show stroke\n";
+    t << "  grestore\n";
+    t << "} def  \n";
+    t << "\n";
+    t << "/mark\n";
+    t << "{ newpath\n";
+    t << "  exch xspacing mul xoffset add boxwidth add\n";
+    t << "  exch yspacing mul\n";
+    t << "  moveto\n";
+    t << "  0 boxheight 4 div rlineto\n";
+    t << "  boxheight neg 4 div boxheight neg 4 div rlineto\n";
+    t << "  closepath\n";
+    t << "  eofill\n";
+    t << "  stroke\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/arrow\n";
+    t << "{ newpath\n";
+    t << "  moveto\n";
+    t << "  3 -8 rlineto\n";
+    t << "  -6 0 rlineto\n";
+    t << "  3 8 rlineto\n";
+    t << "  closepath\n";
+    t << "  eofill\n";
+    t << "  stroke\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/out % draws an output connector for the block at (arg1,arg2)\n";
+    t << "{\n";
+    t << "  newpath\n";
+    t << "  exch xspacing mul xoffset add boxwidth 2 div add\n";
+    t << "  exch yspacing mul boxheight add\n";
+    t << "  /y exch def\n";
+    t << "  /x exch def\n";
+    t << "  x y moveto\n";
+    t << "  0 disty 2 div rlineto \n";
+    t << "  stroke\n";
+    t << "  1 eq { x y disty 2 div add arrow } if\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/in % draws an input connector for the block at (arg1,arg2)\n";
+    t << "{\n";
+    t << "  newpath\n";
+    t << "  exch xspacing mul xoffset add boxwidth 2 div add\n";
+    t << "  exch yspacing mul disty 2 div sub\n";
+    t << "  /y exch def\n";
+    t << "  /x exch def\n";
+    t << "  x y moveto\n";
+    t << "  0 disty 2 div rlineto\n";
+    t << "  stroke\n";
+    t << "  1 eq { x y disty 2 div add arrow } if\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/hedge\n";
+    t << "{\n";
+    t << "  exch xspacing mul xoffset add boxwidth 2 div add\n";
+    t << "  exch yspacing mul boxheight 2 div sub\n";
+    t << "  /y exch def\n";
+    t << "  /x exch def\n";
+    t << "  newpath\n";
+    t << "  x y moveto\n";
+    t << "  boxwidth 2 div distx add 0 rlineto\n";
+    t << "  stroke\n";
+    t << "  1 eq\n";
+    t << "  { newpath x boxwidth 2 div distx add add y moveto\n";
+    t << "    -8 3 rlineto\n";
+    t << "    0 -6 rlineto\n";
+    t << "    8 3 rlineto\n";
+    t << "    closepath\n";
+    t << "    eofill\n";
+    t << "    stroke\n";
+    t << "  } if\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/vedge\n";
+    t << "{\n";
+    t << "  /ye exch def\n";
+    t << "  /ys exch def\n";
+    t << "  /xs exch def\n";
+    t << "  newpath\n";
+    t << "  xs xspacing mul xoffset add boxwidth 2 div add dup\n";
+    t << "  ys yspacing mul boxheight 2 div sub\n";
+    t << "  moveto\n";
+    t << "  ye yspacing mul boxheight 2 div sub\n";
+    t << "  lineto\n";
+    t << "  stroke\n";
+    t << "} def\n";
+    t << "\n";
+    t << "/conn % connections the blocks from col 'arg1' to 'arg2' of row 'arg3'\n";
+    t << "{\n";
+    t << "  /ys exch def\n";
+    t << "  /xe exch def\n";
+    t << "  /xs exch def\n";
+    t << "  newpath\n";
+    t << "  xs xspacing mul xoffset add boxwidth 2 div add\n";
+    t << "  ys yspacing mul disty 2 div sub\n";
+    t << "  moveto\n";
+    t << "  xspacing xe xs sub mul 0\n";
+    t << "  rlineto\n";
+    t << "  stroke\n";
+    t << "} def\n";
+    t << "\n";
+    t << "% ----- main ------\n";
+    t << "\n";
+    t << "boxfont setfont\n";
+    t << "1 boundaspect scale\n";
+
+
+    for (const auto &dr : p->base)
     {
-      done=di->isInList();
-      t << "(" << convertToPSString(di->label()) << ") cw\n";
+      bool done=FALSE;
+      for (const auto &di : *dr)
+      {
+        done=di->isInList();
+        t << "(" << convertToPSString(di->label()) << ") cw\n";
+      }
+      if (done) break;
     }
-    if (done) break;
-  }
 
-  auto it = p->super.begin();
-  if (it!=p->super.end()) ++it;
-  for (;it!=p->super.end();++it)
-  {
-    const auto &dr = *it;
-    bool done=FALSE;
-    for (const auto &di : *dr)
+    auto it = p->super.begin();
+    if (it!=p->super.end()) ++it;
+    for (;it!=p->super.end();++it)
     {
-      done=di->isInList();
-      t << "(" << convertToPSString(di->label()) << ") cw\n";
+      const auto &dr = *it;
+      bool done=FALSE;
+      for (const auto &di : *dr)
+      {
+        done=di->isInList();
+        t << "(" << convertToPSString(di->label()) << ") cw\n";
+      }
+      if (done) break;
     }
-    if (done) break;
+
+    t << "/boxwidth boxwidth marginwidth 2 mul add def\n"
+      << "/xspacing boxwidth distx add def\n"
+      << "/yspacing boxheight disty add def\n"
+      << "/scalefactor \n"
+      << "  boxwidth cols mul distx cols 1 sub mul add\n"
+      << "  boxheight rows mul disty rows 1 sub mul add boundaspect mul \n"
+      << "  max def\n"
+      << "boundx scalefactor div boundy scalefactor div scale\n";
+
+    t << "\n% ----- classes -----\n\n";
+    p->base.drawBoxes(t,0,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawBoxes(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+
+    t << "\n% ----- relations -----\n\n";
+    p->base.drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
+    p->super.drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
+
   }
+  f.close();
 
-  t << "/boxwidth boxwidth marginwidth 2 mul add def\n"
-    << "/xspacing boxwidth distx add def\n"
-    << "/yspacing boxheight disty add def\n"
-    << "/scalefactor \n"
-    << "  boxwidth cols mul distx cols 1 sub mul add\n"
-    << "  boxheight rows mul disty rows 1 sub mul add boundaspect mul \n"
-    << "  max def\n"
-    << "boundx scalefactor div boundy scalefactor div scale\n";
-
-  t << "\n% ----- classes -----\n\n";
-  p->base.drawBoxes(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-  p->super.drawBoxes(t,0,FALSE,FALSE,baseRows,superRows,0,0);
-
-  t << "\n% ----- relations -----\n\n";
-  p->base.drawConnectors(t,0,TRUE,FALSE,baseRows,superRows,0,0);
-  p->super.drawConnectors(t,0,FALSE,FALSE,baseRows,superRows,0,0);
-
-  t.close();
   if (Config_getBool(USE_PDFLATEX))
   {
     QCString epstopdfArgs(4096);
@@ -1334,7 +1340,7 @@ void ClassDiagram::writeFigure(std::ostream &output,const char *path,
 }
 
 
-void ClassDiagram::writeImage(std::ostream &t,const char *path,
+void ClassDiagram::writeImage(TextStream &t,const char *path,
                               const char *relPath,const char *fileName,
                               bool generateMap) const
 {

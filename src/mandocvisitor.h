@@ -25,12 +25,13 @@
 #include "docvisitor.h"
 
 class CodeOutputInterface;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
+    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -149,7 +150,7 @@ class ManDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    std::ostream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

@@ -25,12 +25,13 @@
 
 class CodeOutputInterface;
 class QCString;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
+    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -155,19 +156,19 @@ class DocbookDocVisitor : public DocVisitor
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
-    void visitPreStart(std::ostream &t,
+    void visitPreStart(TextStream &t,
                    const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
                    bool inlineImage = FALSE);
-    void visitPostEnd(std::ostream &t, bool hasCaption, bool inlineImage = FALSE);
+    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
     void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
-    std::ostream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;

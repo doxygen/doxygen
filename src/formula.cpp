@@ -151,9 +151,10 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // generate a latex file containing one formula per page.
   QCString texName="_formulas.tex";
   IntVector formulasToGenerate;
-  std::ofstream t(texName.str(),std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  std::ofstream f(texName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode\n";
     t << "\\documentclass{article}\n";
     t << "\\usepackage{ifthen}\n";
@@ -183,7 +184,8 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       Doxygen::indexList->addImageFile(resultName);
     }
     t << "\\end{document}\n";
-    t.close();
+    t.flush();
+    f.close();
   }
   if (!formulasToGenerate.empty()) // there are new formulas
   {
@@ -427,9 +429,10 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
   // generated images represent (we use this next time to avoid regeneration
   // of the images, and to avoid forcing the user to delete all images in order
   // to let a browser refresh the images).
-  t.open("formula.repository",std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  f.open("formula.repository",std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     for (int i=0; i<(int)p->formulas.size(); i++)
     {
       DisplaySize size = p->getDisplaySize(i);
@@ -440,7 +443,6 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       }
       t << ":" << p->formulas[i].c_str() << "\n";
     }
-    t.close();
   }
   // reset the directory to the original location.
   Dir::setCurrent(oldDir);

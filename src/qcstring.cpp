@@ -46,7 +46,7 @@ int QCString::find( char c, int index, bool cs ) const
   else
   {
     pos = data()+index;
-    c = tolower((unsigned char)c);
+    c = (char)tolower((unsigned char)c);
     while (*pos && tolower((unsigned char)*pos)!=c) pos++;
     if (!*pos && c) pos=0; // not found
   }
@@ -109,7 +109,7 @@ int QCString::findRev( char c, int index, bool cs) const
   }
   else
   {
-    c = tolower((unsigned char)c);
+    c = (char)tolower((unsigned char)c);
     while ( pos>=b && tolower((unsigned char)*pos)!=c) pos--;
   }
   return pos>=b ? (int)(pos - b) : -1;
@@ -146,7 +146,7 @@ int QCString::contains( char c, bool cs ) const
   }
   else
   {
-    c = tolower((unsigned char)c);
+    c = (char)tolower((unsigned char)c);
     while (*pos)
     {
       if (tolower((unsigned char)*pos)==c) count++;
@@ -438,7 +438,7 @@ int qstricmp( const char *str1, const char *str2 )
     uchar c;
     if ( !s1 || !s2 )
 	return s1 == s2 ? 0 : (int)(s2 - s1);
-    for ( ; !(res = (c=tolower(*s1)) - tolower(*s2)); s1++, s2++ )
+    for ( ; !(res = (c=(char)tolower(*s1)) - tolower(*s2)); s1++, s2++ )
 	if ( !c )				// strings are equal
 	    break;
     return res;
@@ -453,7 +453,7 @@ int qstrnicmp( const char *str1, const char *str2, uint len )
     if ( !s1 || !s2 )
 	return (int)(s2 - s1);
     for ( ; len--; s1++, s2++ ) {
-	if ( (res = (c=tolower(*s1)) - tolower(*s2)) )
+	if ( (res = (c=(char)tolower(*s1)) - tolower(*s2)) )
 	    return res;
 	if ( !c )				// strings are equal
 	    break;

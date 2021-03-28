@@ -17,6 +17,7 @@
 
 #include "utf8.h"
 #include "caseconvert.h"
+#include "textstream.h"
 
 int getUTF8CharNumBytes(char c)
 {
@@ -64,7 +65,7 @@ static inline uint32_t decode_utf8( const char* data , int numBytes ) noexcept
   return cp;
 }
 
-static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,size_t &len)
+static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,int &len)
 {
   if (s==0 || bytesLeft==0)
   {
@@ -130,7 +131,7 @@ std::string getUTF8CharAt(const std::string &input,size_t pos)
 uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos)
 {
   std::string charS = getUTF8CharAt(input,pos);
-  size_t len;
+  int len;
   return convertUTF8CharToUnicode(charS.c_str(),charS.length(),len);
 }
 
@@ -139,7 +140,7 @@ static inline std::string caseConvert(const std::string &input,
 {
   uint32_t code;
   std::ostringstream result(std::ios_base::ate);
-  size_t len;
+  int len;
   size_t bytesLeft = input.length();
   const char *p = input.c_str();
   while ((code=convertUTF8CharToUnicode(p,bytesLeft,len)))
@@ -169,7 +170,7 @@ std::string convertUTF8ToUpper(const std::string &input)
   return caseConvert(input,convertUnicodeToUpper);
 }
 
-const char *writeUTF8Char(std::ostream &t,const char *s)
+const char *writeUTF8Char(TextStream &t,const char *s)
 {
   if (s==0) return 0;
   int len = getUTF8CharNumBytes(*s);
@@ -193,7 +194,7 @@ bool lastUTF8CharIsMultibyte(const std::string &input)
 bool isUTF8CharUpperCase(const std::string &input,size_t pos)
 {
   if (input.length()<=pos) return false;
-  size_t len;
+  int len;
   // turn the UTF8 character at position pos into a unicode value
   uint32_t code = convertUTF8CharToUnicode(input.c_str()+pos,input.length()-pos,len);
   // check if the character can be converted to lower case, if so it was an upper case character

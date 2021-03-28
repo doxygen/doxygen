@@ -36,10 +36,11 @@
 #include "filedef.h"
 #include "filename.h"
 #include "dir.h"
+#include "textstream.h"
 
 #define DEF_DB(x)
 
-static inline void writeDEFString(std::ofstream &t,const char *s)
+static inline void writeDEFString(TextStream &t,const char *s)
 {
   const char* p=s;
   char c;
@@ -55,7 +56,7 @@ static inline void writeDEFString(std::ofstream &t,const char *s)
 }
 
 static void generateDEFForMember(const MemberDef *md,
-    std::ofstream &t,
+    TextStream &t,
     const Definition *def,
     const char* Prefix)
 {
@@ -295,7 +296,7 @@ static void generateDEFForMember(const MemberDef *md,
 
 
 static void generateDEFClassSection(const ClassDef *cd,
-    std::ofstream &t,
+    TextStream &t,
     const MemberList *ml,
     const char *kind)
 {
@@ -312,7 +313,7 @@ static void generateDEFClassSection(const ClassDef *cd,
   }
 }
 
-static void generateDEFForClass(const ClassDef *cd,std::ofstream &t)
+static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 {
   // + brief description
   // + detailed description
@@ -445,7 +446,7 @@ static void generateDEFForClass(const ClassDef *cd,std::ofstream &t)
 }
 
 static void generateDEFSection(const Definition *d,
-    std::ofstream &t,
+    TextStream &t,
     const MemberList *ml,
     const char *kind)
 {
@@ -460,7 +461,7 @@ static void generateDEFSection(const Definition *d,
   }
 }
 
-static void generateDEFForNamespace(const NamespaceDef *nd,std::ofstream &t)
+static void generateDEFForNamespace(const NamespaceDef *nd,TextStream &t)
 {
   if (nd->isReference()) return; // skip external references
   t << "  namespace = {\n";
@@ -488,7 +489,7 @@ static void generateDEFForNamespace(const NamespaceDef *nd,std::ofstream &t)
   t << "  };\n";
 }
 
-static void generateDEFForFile(const FileDef *fd,std::ofstream &t)
+static void generateDEFForFile(const FileDef *fd,TextStream &t)
 {
   if (fd->isReference()) return; // skip external references
 
@@ -531,12 +532,13 @@ void generateDEF()
   }
 
   QCString fileName=outputDirectory+"/doxygen.def";
-  std::ofstream t(fileName.str(),std::ostream::out | std::ostream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ostream::out | std::ostream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing!\n",fileName.data());
     return;
   }
+  TextStream t(&f);
   t << "AutoGen Definitions dummy;\n";
 
   if (Doxygen::classLinkedMap->size()+

@@ -13,8 +13,6 @@
 *
 */
 
-#include <sstream>
-
 #include "dotgroupcollaboration.h"
 #include "classlist.h"
 #include "doxygen.h"
@@ -22,6 +20,7 @@
 #include "pagedef.h"
 #include "util.h"
 #include "config.h"
+#include "textstream.h"
 
 DotGroupCollaboration::DotGroupCollaboration(const GroupDef* gd)
 {
@@ -209,7 +208,7 @@ QCString DotGroupCollaboration::getBaseName() const
 
 void DotGroupCollaboration::computeTheGraph()
 {
-  std::ostringstream md5stream(std::ios_base::ate);
+  TextStream md5stream;
   writeGraphHeader(md5stream,m_rootNode->label());
 
   // clean write flags
@@ -240,7 +239,7 @@ QCString DotGroupCollaboration::getMapLabel() const
   return escapeCharsInString(m_baseName, FALSE);
 }
 
-QCString DotGroupCollaboration::writeGraph( std::ostream &t,
+QCString DotGroupCollaboration::writeGraph( TextStream &t,
   GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
   const char *path, const char *fileName, const char *relPath,
   bool generateImageMap,int graphId)
@@ -250,7 +249,7 @@ QCString DotGroupCollaboration::writeGraph( std::ostream &t,
   return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
 }
 
-void DotGroupCollaboration::Edge::write( std::ostream &t ) const
+void DotGroupCollaboration::Edge::write( TextStream &t ) const
 {
   const char* linkTypeColor[] = {
     "darkorchid3"
@@ -315,7 +314,7 @@ bool DotGroupCollaboration::isTrivial() const
   return m_usedNodes.size() <= 1;
 }
 
-void DotGroupCollaboration::writeGraphHeader(std::ostream &t,const QCString &title) const
+void DotGroupCollaboration::writeGraphHeader(TextStream &t,const QCString &title) const
 {
   int fontSize      = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);

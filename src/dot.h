@@ -25,6 +25,7 @@
 
 class DotRunner;
 class DotRunnerQueue;
+class TextStream;
 
 /** Singleton that manages parallel dot invocations and patching files for embedding image maps */
 class DotManager
@@ -49,7 +50,7 @@ class DotManager
 
 void writeDotGraphFromFile(const char *inFile,const char *outDir,
                            const char *outFile,GraphOutputFormat format);
-void writeDotImageMapFromFile(std::ostream &t,
+void writeDotImageMapFromFile(TextStream &t,
                               const QCString& inFile, const QCString& outDir,
                               const QCString& relPath,const QCString& baseName,
                               const QCString& context,int graphId=-1);

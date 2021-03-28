@@ -40,6 +40,7 @@
 #include "configoptions.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "textstream.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -127,18 +128,18 @@ static QCString convertToComment(const QCString &s, const QCString &u)
   return result;
 }
 
-void ConfigOption::writeBoolValue(std::ostream &t,bool v)
+void ConfigOption::writeBoolValue(TextStream &t,bool v)
 {
   t << " ";
   if (v) t << "YES"; else t << "NO";
 }
 
-void ConfigOption::writeIntValue(std::ostream &t,int i)
+void ConfigOption::writeIntValue(TextStream &t,int i)
 {
   t << " " << i;
 }
 
-void ConfigOption::writeStringValue(std::ostream &t,const QCString &s)
+void ConfigOption::writeStringValue(TextStream &t,const QCString &s)
 {
   char c;
   bool needsEscaping=FALSE;
@@ -169,7 +170,7 @@ void ConfigOption::writeStringValue(std::ostream &t,const QCString &s)
   }
 }
 
-void ConfigOption::writeStringList(std::ostream &t,const StringVector &l)
+void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 {
   bool first=TRUE;
   for (const auto &p : l)
@@ -321,7 +322,7 @@ bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
 
 /* ------------------------------------------ */
 
-void ConfigInfo::writeTemplate(std::ostream &t, bool sl,bool)
+void ConfigInfo::writeTemplate(TextStream &t, bool sl,bool)
 {
   if (!sl)
   {
@@ -332,7 +333,7 @@ void ConfigInfo::writeTemplate(std::ostream &t, bool sl,bool)
   t << "#---------------------------------------------------------------------------\n";
 }
 
-void ConfigList::writeTemplate(std::ostream &t,bool sl,bool)
+void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
   {
@@ -349,12 +350,12 @@ void ConfigList::writeTemplate(std::ostream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigList::compareDoxyfile(std::ostream &t)
+void ConfigList::compareDoxyfile(TextStream &t)
 {
   auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
-  int defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
-  int valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
+  size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
+  size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
   {
     writeTemplate(t,TRUE,TRUE);
@@ -382,7 +383,7 @@ void ConfigList::compareDoxyfile(std::ostream &t)
   }
 }
 
-void ConfigEnum::writeTemplate(std::ostream &t,bool sl,bool)
+void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
   {
@@ -399,12 +400,12 @@ void ConfigEnum::writeTemplate(std::ostream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(std::ostream &t)
+void ConfigEnum::compareDoxyfile(TextStream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigString::writeTemplate(std::ostream &t,bool sl,bool)
+void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
   {
@@ -421,12 +422,12 @@ void ConfigString::writeTemplate(std::ostream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(std::ostream &t)
+void ConfigString::compareDoxyfile(TextStream &t)
 {
   if (m_value.stripWhiteSpace() != m_defValue.stripWhiteSpace()) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigInt::writeTemplate(std::ostream &t,bool sl,bool upd)
+void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   if (!sl)
   {
@@ -450,12 +451,12 @@ void ConfigInt::writeTemplate(std::ostream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(std::ostream &t)
+void ConfigInt::compareDoxyfile(TextStream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigBool::writeTemplate(std::ostream &t,bool sl,bool upd)
+void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   if (!sl)
   {
@@ -480,13 +481,13 @@ void ConfigBool::writeTemplate(std::ostream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(std::ostream &t)
+void ConfigBool::compareDoxyfile(TextStream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigObsolete::writeTemplate(std::ostream &,bool,bool) {}
-void ConfigDisabled::writeTemplate(std::ostream &,bool,bool) {}
+void ConfigObsolete::writeTemplate(TextStream &,bool,bool) {}
+void ConfigDisabled::writeTemplate(TextStream &,bool,bool) {}
 
 /* -----------------------------------------------------------------
  *
@@ -1082,7 +1083,7 @@ static void readIncludeFile(const char *incName)
 /*@ ----------------------------------------------------------------------------
  */
 
-void ConfigImpl::writeTemplate(std::ostream &t,bool sl,bool upd)
+void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
   if (m_startComment)
@@ -1106,7 +1107,7 @@ void ConfigImpl::writeTemplate(std::ostream &t,bool sl,bool upd)
   }
 }
 
-void ConfigImpl::compareDoxyfile(std::ostream &t)
+void ConfigImpl::compareDoxyfile(TextStream &t)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
   t << "\n";
@@ -1307,7 +1308,7 @@ static QCString configFileToString(const char *name)
     std::string ret;
     char buffer[4096];
     while (in.read(buffer, sizeof(buffer))) ret.append(buffer, sizeof(buffer));
-    ret.append(buffer, in.gcount());
+    ret.append(buffer, static_cast<uint>(in.gcount()));
     if (!ret.empty() && ret[ret.length()-1]!='\n') ret+='\n'; // to help the scanner
     return ret;
   };
@@ -2062,12 +2063,12 @@ void Config::checkAndCorrect()
 
 }
 
-void Config::writeTemplate(std::ostream &t,bool shortList,bool update)
+void Config::writeTemplate(TextStream &t,bool shortList,bool update)
 {
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(std::ostream &t)
+void Config::compareDoxyfile(TextStream &t)
 {
   postProcess(FALSE, TRUE);
   ConfigImpl::instance()->compareDoxyfile(t);

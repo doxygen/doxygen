@@ -35,7 +35,7 @@ static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
   for (const auto &n : children) n->accept(parent);
 }
 
-static void visitPreStart(std::ostream &t, const char *cmd, bool doCaption,
+static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
                           XmlDocVisitor *parent, const DocNodeList &children,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
                           const QCString &height, const QCString &alt = QCString(""), bool inlineImage = FALSE)
@@ -82,12 +82,12 @@ static void visitPreStart(std::ostream &t, const char *cmd, bool doCaption,
   t << ">";
 }
 
-static void visitPostEnd(std::ostream &t, const char *cmd)
+static void visitPostEnd(TextStream &t, const char *cmd)
 {
   t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt)
+XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt)
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
     m_langExt(langExt)
 {

@@ -299,7 +299,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                               const ClassDef *inheritedFrom,const QCString &inheritId) const;
-    virtual void writeTagFile(std::ostream &);
+    virtual void writeTagFile(TextStream &);
 
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const;
     virtual int countInheritanceNodes() const;
@@ -2046,7 +2046,7 @@ void ClassDefImpl::writeSummaryLinks(OutputList &ol) const
   ol.popGeneratorState();
 }
 
-void ClassDefImpl::writeTagFile(std::ostream &tagFile)
+void ClassDefImpl::writeTagFile(TextStream &tagFile)
 {
   if (!isLinkableInProject() || isArtificial()) return;
   tagFile << "  <compound kind=\"";

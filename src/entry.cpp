@@ -30,7 +30,7 @@
 
 static AtomicInt g_num;
 
-Entry::Entry() : program(std::ios_base::ate), initializer(std::ios_base::ate)
+Entry::Entry()
 {
   //printf("Entry::Entry(%p)\n",this);
   g_num++;
@@ -45,7 +45,7 @@ Entry::Entry() : program(std::ios_base::ate), initializer(std::ios_base::ate)
   reset();
 }
 
-Entry::Entry(const Entry &e) : program(std::ios_base::ate), initializer(std::ios_base::ate)
+Entry::Entry(const Entry &e)
 {
   //printf("Entry::Entry(%p):copy\n",this);
   g_num++;
@@ -72,8 +72,8 @@ Entry::Entry(const Entry &e) : program(std::ios_base::ate), initializer(std::ios
   bitfields   = e.bitfields;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
-  program.str(e.program.str());
-  initializer.str(e.initializer.str());
+  program     = e.program;
+  initializer = e.initializer;
   includeFile = e.includeFile;
   includeName = e.includeName;
   doc         = e.doc;

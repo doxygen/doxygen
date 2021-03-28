@@ -15,11 +15,13 @@
 
 #include "outputgen.h"
 
+class TextStream;
+
 class XMLCodeGenerator : public CodeOutputInterface
 {
   public:
 
-    XMLCodeGenerator(std::ostream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
+    XMLCodeGenerator(TextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
       m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE) {}
     virtual ~XMLCodeGenerator() { }
 
@@ -45,7 +47,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void finish();
 
   private:
-    std::ostream &m_t;
+    TextStream &m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber;

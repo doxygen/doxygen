@@ -75,7 +75,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
-    virtual void writeTagFile(std::ostream &);
+    virtual void writeTagFile(TextStream &);
     virtual size_t numDocMembers() const;
     virtual bool isLinkableInProject() const;
     virtual bool isLinkable() const;
@@ -597,7 +597,7 @@ void GroupDefImpl::computeAnchors()
   m_allMemberList.setAnchors();
 }
 
-void GroupDefImpl::writeTagFile(std::ostream &tagFile)
+void GroupDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"group\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";

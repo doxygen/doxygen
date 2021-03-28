@@ -104,7 +104,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void writeMemberPages(OutputList &ol);
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeSummaryLinks(OutputList &ol) const;
-    virtual void writeTagFile(std::ostream &t);
+    virtual void writeTagFile(TextStream &t);
     virtual void writeSourceHeader(OutputList &ol);
     virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser);
     virtual void writeSourceFooter(OutputList &ol);
@@ -150,7 +150,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void endMemberDocumentation(OutputList &ol);
     void writeDetailedDescription(OutputList &ol,const QCString &title);
     void writeBriefDescription(OutputList &ol);
-    void writeClassesToTagFile(std::ostream &t,const ClassLinkedRefMap &list);
+    void writeClassesToTagFile(TextStream &t,const ClassLinkedRefMap &list);
 
     IncludeInfoMap        m_includeMap;
     IncludeInfoList       m_includeList;
@@ -307,7 +307,7 @@ bool FileDefImpl::hasDetailedDescription() const
          );
 }
 
-void FileDefImpl::writeTagFile(std::ostream &tagFile)
+void FileDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"file\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
@@ -513,7 +513,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
   ol.writeSynopsis();
 }
 
-void FileDefImpl::writeClassesToTagFile(std::ostream &tagFile, const ClassLinkedRefMap &list)
+void FileDefImpl::writeClassesToTagFile(TextStream &tagFile, const ClassLinkedRefMap &list)
 {
   for (const auto &cd : list)
   {

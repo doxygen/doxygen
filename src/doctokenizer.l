@@ -152,9 +152,9 @@ const char *tokToString(int token)
   return "ERROR";
 }
 
-static int computeIndent(const char *str,int length)
+static int computeIndent(const char *str,size_t length)
 {
-  int i;
+  size_t i;
   int indent=0;
   static int tabSize=Config_getInt(TAB_SIZE);
   for (i=0;i<length;i++)
@@ -498,7 +498,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Para>^{LISTITEM}   { /* list item */
                          lineCount(yytext,yyleng);
                          QCString text=yytext;
-                         int dashPos = text.findRev('-');
+                         size_t dashPos = static_cast<size_t>(text.findRev('-'));
                          g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
                          g_token->indent     = computeIndent(yytext,dashPos);
@@ -543,7 +543,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(yytext);
-                         int dashPos = text.findRev('-');
+                         size_t dashPos = static_cast<size_t>(text.findRev('-'));
                          g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
                          g_token->indent     = computeIndent(text,dashPos);
@@ -820,7 +820,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                          else
                          {
-                           g_token->indent=computeIndent(yytext,(int)yyleng);
+                           g_token->indent=computeIndent(yytext,yyleng);
                            int i;
                            // put back the indentation (needed for list items)
                            for (i=0;i<g_token->indent;i++)

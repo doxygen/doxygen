@@ -448,7 +448,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
-    virtual void writeTagFile(std::ostream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,

@@ -89,7 +89,7 @@ void DocbookDocVisitor::visitCaption(const DocNodeList &children)
   for (const auto &n : children) n->accept(this);
 }
 
-void DocbookDocVisitor::visitPreStart(std::ostream &t,
+void DocbookDocVisitor::visitPreStart(TextStream &t,
                    const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
@@ -132,7 +132,7 @@ void DocbookDocVisitor::visitPreStart(std::ostream &t,
   }
 }
 
-void DocbookDocVisitor::visitPostEnd(std::ostream &t, bool hasCaption, bool inlineImage)
+void DocbookDocVisitor::visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage)
 {
   t << "\n";
   if (hasCaption && !inlineImage)
@@ -150,7 +150,7 @@ void DocbookDocVisitor::visitPostEnd(std::ostream &t, bool hasCaption, bool inli
   }
 }
 
-DocbookDocVisitor::DocbookDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt)
+DocbookDocVisitor::DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt)
   : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci),m_langExt(langExt)
 {
 DB_VIS_C

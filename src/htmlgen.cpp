@@ -52,6 +52,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 #include "utf8.h"
+#include "textstream.h"
 
 //#define DBG_HTML(x) x;
 #define DBG_HTML(x)
@@ -64,7 +65,7 @@ static const char *hex="0123456789ABCDEF";
 
 // note: this is only active if DISABLE_INDEX=YES, if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
-static void writeClientSearchBox(std::ostream &t,const char *relPath)
+static void writeClientSearchBox(TextStream &t,const char *relPath)
 {
   const char *rp = relPath ? relPath : "";
   t << "        <div id=\"MSearchBox\" class=\"MSearchBoxInactive\">\n";
@@ -87,7 +88,7 @@ static void writeClientSearchBox(std::ostream &t,const char *relPath)
 
 // note: this is only active if DISABLE_INDEX=YES. if DISABLE_INDEX is disabled, this
 // part will be rendered inside menu.js
-static void writeServerSearchBox(std::ostream &t,const char *relPath,bool highlightSearch)
+static void writeServerSearchBox(TextStream &t,const char *relPath,bool highlightSearch)
 {
   const char *rp = relPath ? relPath : "";
   bool externalSearch = Config_getBool(EXTERNAL_SEARCH);
@@ -301,7 +302,7 @@ static QCString getConvertLatexMacro()
 
 static QCString getSearchBox(bool serverSide, QCString relPath, bool highlightSearch)
 {
-  std::ostringstream t(std::ios_base::ate);
+  TextStream t;
   if (serverSide)
   {
     writeServerSearchBox(t, relPath, highlightSearch);
@@ -515,15 +516,15 @@ HtmlCodeGenerator::HtmlCodeGenerator() : m_t(nullptr)
 {
 }
 
-HtmlCodeGenerator::HtmlCodeGenerator(std::ostream &t,const QCString &relPath)
+HtmlCodeGenerator::HtmlCodeGenerator(TextStream &t,const QCString &relPath)
   : m_t(nullptr), m_relPath(relPath)
 {
   setTextStream(t);
 }
 
-void HtmlCodeGenerator::setTextStream(std::ostream &t)
+void HtmlCodeGenerator::setTextStream(TextStream &t)
 {
-  m_t.rdbuf(t.rdbuf());
+  m_t = t;
   m_streamSet=true;
 }
 
@@ -937,9 +938,10 @@ void HtmlGenerator::init()
   }
 
   {
-    std::ofstream t(dname+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
-    if (t.is_open())
+    std::ofstream f(dname+"/dynsections.js",std::ofstream::out | std::ofstream::binary);
+    if (f.is_open())
     {
+      TextStream t(&f);
       t << mgr.getAsString("dynsections.js");
       if (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS))
       {
@@ -1011,9 +1013,10 @@ void HtmlGenerator::writeSearchData(const char *dname)
   }
 
   QCString searchDirName = dname;
-  std::ofstream t(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  std::ofstream f(searchDirName.str()+"/search.css",std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     QCString searchCss;
     if (Config_getBool(DISABLE_INDEX))
     {
@@ -1033,18 +1036,18 @@ void HtmlGenerator::writeSearchData(const char *dname)
   }
 }
 
-void HtmlGenerator::writeStyleSheetFile(std::ostream &t)
+void HtmlGenerator::writeStyleSheetFile(TextStream &t)
 {
   t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
 }
 
-void HtmlGenerator::writeHeaderFile(std::ostream &t, const char * /*cssname*/)
+void HtmlGenerator::writeHeaderFile(TextStream &t, const char * /*cssname*/)
 {
   t << "<!-- HTML header for doxygen " << getDoxygenVersion() << "-->\n";
   t << ResourceMgr::instance().getAsString("header.html");
 }
 
-void HtmlGenerator::writeFooterFile(std::ostream &t)
+void HtmlGenerator::writeFooterFile(TextStream &t)
 {
   t << "<!-- HTML footer for doxygen " << getDoxygenVersion() << "-->\n";
   t << ResourceMgr::instance().getAsString("footer.html");
@@ -1062,7 +1065,7 @@ void HtmlGenerator::startFile(const char *name,const char *,
 
   startPlainFile(fileName);
   m_codeGen.setId(id);
-  m_codeGen.setTextStream(t);
+  m_codeGen.setTextStream(m_t);
   m_codeGen.setRelativePath(m_relPath);
   {
     std::lock_guard<std::mutex> lock(g_indexLock);
@@ -1070,26 +1073,26 @@ void HtmlGenerator::startFile(const char *name,const char *,
   }
 
   m_lastFile = fileName;
-  t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title?title:"")),m_relPath);
+  m_t << substituteHtmlKeywords(g_header,convertToHtml(filterTitle(title?title:"")),m_relPath);
 
-  t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
-    << getDoxygenVersion() << " -->\n";
+  m_t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
+      << getDoxygenVersion() << " -->\n";
   //bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   bool searchEngine = Config_getBool(SEARCHENGINE);
   if (searchEngine /*&& !generateTreeView*/)
   {
-    t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
-		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
-		t << "/* @license-end */\n";
-    t << "</script>\n";
+    m_t << "<script type=\"text/javascript\">\n";
+    m_t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+    m_t << "var searchBox = new SearchBox(\"searchBox\", \""
+        << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+    m_t << "/* @license-end */\n";
+    m_t << "</script>\n";
   }
   //generateDynamicSections(t,relPath);
   m_sectionCount=0;
 }
 
-void HtmlGenerator::writeSearchInfo(std::ostream &t,const QCString &)
+void HtmlGenerator::writeSearchInfo(TextStream &t,const QCString &)
 {
   bool searchEngine      = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
@@ -1114,7 +1117,7 @@ void HtmlGenerator::writeSearchInfo(std::ostream &t,const QCString &)
 
 void HtmlGenerator::writeSearchInfo()
 {
-  writeSearchInfo(t,m_relPath);
+  writeSearchInfo(m_t,m_relPath);
 }
 
 
@@ -1144,10 +1147,10 @@ QCString HtmlGenerator::writeLogoAsString(const char *path)
 
 void HtmlGenerator::writeLogo()
 {
-  t << writeLogoAsString(m_relPath);
+  m_t << writeLogoAsString(m_relPath);
 }
 
-void HtmlGenerator::writePageFooter(std::ostream &t,const QCString &lastTitle,
+void HtmlGenerator::writePageFooter(TextStream &t,const QCString &lastTitle,
                               const QCString &relPath,const QCString &navPath)
 {
   t << substituteHtmlKeywords(g_footer,convertToHtml(lastTitle),relPath,navPath);
@@ -1155,7 +1158,7 @@ void HtmlGenerator::writePageFooter(std::ostream &t,const QCString &lastTitle,
 
 void HtmlGenerator::writeFooter(const char *navPath)
 {
-  writePageFooter(t,m_lastTitle,m_relPath,navPath);
+  writePageFooter(m_t,m_lastTitle,m_relPath,navPath);
 }
 
 void HtmlGenerator::endFile()
@@ -1165,12 +1168,12 @@ void HtmlGenerator::endFile()
 
 void HtmlGenerator::startProjectNumber()
 {
-  t << "<h3 class=\"version\">";
+  m_t << "<h3 class=\"version\">";
 }
 
 void HtmlGenerator::endProjectNumber()
 {
-  t << "</h3>";
+  m_t << "</h3>";
 }
 
 void HtmlGenerator::writeStyleInfo(int part)
@@ -1187,7 +1190,7 @@ void HtmlGenerator::writeStyleInfo(int part)
       //t << "H1 { text-align: center; border-width: thin none thin none;\n";
       //t << "     border-style : double; border-color : blue; padding-left : 1em; padding-right : 1em }\n";
 
-      t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
+      m_t << replaceColorMarkers(substitute(ResourceMgr::instance().getAsString("doxygen.css"),"$doxygenversion",getDoxygenVersion()));
       endPlainFile();
       Doxygen::indexList->addStyleSheetFile("doxygen.css");
     }
@@ -1205,7 +1208,7 @@ void HtmlGenerator::writeStyleInfo(int part)
         QCString fileStr = fileToString(cssname);
         // write the string into the output dir
         startPlainFile(cssfi.fileName().c_str());
-        t << fileStr;
+        m_t << fileStr;
         endPlainFile();
       }
       Doxygen::indexList->addStyleSheetFile(cssfi.fileName().c_str());
@@ -1236,7 +1239,7 @@ void HtmlGenerator::startDoxyAnchor(const char *,const char *,
                                     const char *anchor, const char *,
                                     const char *)
 {
-  t << "<a id=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const char *,const char *)
@@ -1251,29 +1254,29 @@ void HtmlGenerator::endDoxyAnchor(const char *,const char *)
 void HtmlGenerator::startParagraph(const char *classDef)
 {
   if (classDef)
-    t << "\n<p class=\"" << classDef << "\">";
+    m_t << "\n<p class=\"" << classDef << "\">";
   else
-    t << "\n<p>";
+    m_t << "\n<p>";
 }
 
 void HtmlGenerator::endParagraph()
 {
-  t << "</p>\n";
+  m_t << "</p>\n";
 }
 
 void HtmlGenerator::writeString(const char *text)
 {
-  t << text;
+  m_t << text;
 }
 
 void HtmlGenerator::startIndexListItem()
 {
-  t << "<li>";
+  m_t << "<li>";
 }
 
 void HtmlGenerator::endIndexListItem()
 {
-  t << "</li>\n";
+  m_t << "</li>\n";
 }
 
 void HtmlGenerator::startIndexItem(const char *ref,const char *f)
@@ -1283,21 +1286,21 @@ void HtmlGenerator::startIndexItem(const char *ref,const char *f)
   {
     if (ref)
     {
-      t << "<a class=\"elRef\" ";
-      t << externalLinkTarget();
+      m_t << "<a class=\"elRef\" ";
+      m_t << externalLinkTarget();
     }
     else
     {
-      t << "<a class=\"el\" ";
+      m_t << "<a class=\"el\" ";
     }
-    t << "href=\"";
-    t << externalRef(m_relPath,ref,TRUE);
-    if (f) t << addHtmlExtensionIfMissing(f);
-    t << "\">";
+    m_t << "href=\"";
+    m_t << externalRef(m_relPath,ref,TRUE);
+    if (f) m_t << addHtmlExtensionIfMissing(f);
+    m_t << "\">";
   }
   else
   {
-    t << "<b>";
+    m_t << "<b>";
   }
 }
 
@@ -1306,22 +1309,22 @@ void HtmlGenerator::endIndexItem(const char *ref,const char *f)
   //printf("HtmlGenerator::endIndexItem(%s,%s,%s)\n",ref,f,name);
   if (ref || f)
   {
-    t << "</a>";
+    m_t << "</a>";
   }
   else
   {
-    t << "</b>";
+    m_t << "</b>";
   }
 }
 
 void HtmlGenerator::writeStartAnnoItem(const char *,const char *f,
                                        const char *path,const char *name)
 {
-  t << "<li>";
+  m_t << "<li>";
   if (path) docify(path);
-  t << "<a class=\"el\" href=\"" << addHtmlExtensionIfMissing(f) << "\">";
+  m_t << "<a class=\"el\" href=\"" << addHtmlExtensionIfMissing(f) << "\">";
   docify(name);
-  t << "</a> ";
+  m_t << "</a> ";
 }
 
 void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
@@ -1329,63 +1332,63 @@ void HtmlGenerator::writeObjectLink(const char *ref,const char *f,
 {
   if (ref)
   {
-    t << "<a class=\"elRef\" ";
-    t << externalLinkTarget();
+    m_t << "<a class=\"elRef\" ";
+    m_t << externalLinkTarget();
   }
   else
   {
-    t << "<a class=\"el\" ";
+    m_t << "<a class=\"el\" ";
   }
-  t << "href=\"";
-  t << externalRef(m_relPath,ref,TRUE);
-  if (f) t << addHtmlExtensionIfMissing(f);
-  if (anchor) t << "#" << anchor;
-  t << "\">";
+  m_t << "href=\"";
+  m_t << externalRef(m_relPath,ref,TRUE);
+  if (f) m_t << addHtmlExtensionIfMissing(f);
+  if (anchor) m_t << "#" << anchor;
+  m_t << "\">";
   docify(name);
-  t << "</a>";
+  m_t << "</a>";
 }
 
 void HtmlGenerator::startTextLink(const char *f,const char *anchor)
 {
-  t << "<a href=\"";
-  if (f)   t << m_relPath << addHtmlExtensionIfMissing(f);
-  if (anchor) t << "#" << anchor;
-  t << "\">";
+  m_t << "<a href=\"";
+  if (f)   m_t << m_relPath << addHtmlExtensionIfMissing(f);
+  if (anchor) m_t << "#" << anchor;
+  m_t << "\">";
 }
 
 void HtmlGenerator::endTextLink()
 {
-  t << "</a>";
+  m_t << "</a>";
 }
 
 void HtmlGenerator::startHtmlLink(const char *url)
 {
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
-  t << "<a ";
-  if (generateTreeView) t << "target=\"top\" ";
-  t << "href=\"";
-  if (url) t << url;
-  t << "\">";
+  m_t << "<a ";
+  if (generateTreeView) m_t << "target=\"top\" ";
+  m_t << "href=\"";
+  if (url) m_t << url;
+  m_t << "\">";
 }
 
 void HtmlGenerator::endHtmlLink()
 {
-  t << "</a>";
+  m_t << "</a>";
 }
 
 void HtmlGenerator::startGroupHeader(int extraIndentLevel)
 {
   if (extraIndentLevel==2)
   {
-    t << "<h4 class=\"groupheader\">";
+    m_t << "<h4 class=\"groupheader\">";
   }
   else if (extraIndentLevel==1)
   {
-    t << "<h3 class=\"groupheader\">";
+    m_t << "<h3 class=\"groupheader\">";
   }
   else // extraIndentLevel==0
   {
-    t << "<h2 class=\"groupheader\">";
+    m_t << "<h2 class=\"groupheader\">";
   }
 }
 
@@ -1393,15 +1396,15 @@ void HtmlGenerator::endGroupHeader(int extraIndentLevel)
 {
   if (extraIndentLevel==2)
   {
-    t << "</h4>\n";
+    m_t << "</h4>\n";
   }
   else if (extraIndentLevel==1)
   {
-    t << "</h3>\n";
+    m_t << "</h3>\n";
   }
   else
   {
-    t << "</h2>\n";
+    m_t << "</h2>\n";
   }
 }
 
@@ -1409,25 +1412,25 @@ void HtmlGenerator::startSection(const char *lab,const char *,SectionType type)
 {
   switch(type)
   {
-    case SectionType::Page:          t << "\n\n<h1>"; break;
-    case SectionType::Section:       t << "\n\n<h2>"; break;
-    case SectionType::Subsection:    t << "\n\n<h3>"; break;
-    case SectionType::Subsubsection: t << "\n\n<h4>"; break;
-    case SectionType::Paragraph:     t << "\n\n<h5>"; break;
+    case SectionType::Page:          m_t << "\n\n<h1>"; break;
+    case SectionType::Section:       m_t << "\n\n<h2>"; break;
+    case SectionType::Subsection:    m_t << "\n\n<h3>"; break;
+    case SectionType::Subsubsection: m_t << "\n\n<h4>"; break;
+    case SectionType::Paragraph:     m_t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  t << "<a id=\"" << lab << "\"></a>";
+  m_t << "<a id=\"" << lab << "\"></a>";
 }
 
 void HtmlGenerator::endSection(const char *,SectionType type)
 {
   switch(type)
   {
-    case SectionType::Page:          t << "</h1>"; break;
-    case SectionType::Section:       t << "</h2>"; break;
-    case SectionType::Subsection:    t << "</h3>"; break;
-    case SectionType::Subsubsection: t << "</h4>"; break;
-    case SectionType::Paragraph:     t << "</h5>"; break;
+    case SectionType::Page:          m_t << "</h1>"; break;
+    case SectionType::Section:       m_t << "</h2>"; break;
+    case SectionType::Subsection:    m_t << "</h3>"; break;
+    case SectionType::Subsubsection: m_t << "</h4>"; break;
+    case SectionType::Paragraph:     m_t << "</h5>"; break;
     default: ASSERT(0); break;
   }
 }
@@ -1448,24 +1451,24 @@ void HtmlGenerator::docify(const char *str,bool inHtmlComment)
       c=*p++;
       switch(c)
       {
-        case '<':  t << "&lt;"; break;
-        case '>':  t << "&gt;"; break;
-        case '&':  t << "&amp;"; break;
-        case '"':  t << "&quot;"; break;
-        case '-':  if (inHtmlComment) t << "&#45;"; else t << "-"; break;
+        case '<':  m_t << "&lt;"; break;
+        case '>':  m_t << "&gt;"; break;
+        case '&':  m_t << "&amp;"; break;
+        case '"':  m_t << "&quot;"; break;
+        case '-':  if (inHtmlComment) m_t << "&#45;"; else m_t << "-"; break;
         case '\\':
                    if (*p=='<')
-                     { t << "&lt;"; p++; }
+                     { m_t << "&lt;"; p++; }
                    else if (*p=='>')
-                     { t << "&gt;"; p++; }
+                     { m_t << "&gt;"; p++; }
 		   else if (*p=='(')
-                     { t << "\\&zwj;("; p++; }
+                     { m_t << "\\&zwj;("; p++; }
                    else if (*p==')')
-                     { t << "\\&zwj;)"; p++; }
+                     { m_t << "\\&zwj;)"; p++; }
                    else
-                     t << "\\";
+                     m_t << "\\";
                    break;
-        default:   t << c;
+        default:   m_t << c;
       }
     }
   }
@@ -1481,7 +1484,7 @@ void HtmlGenerator::writeChar(char c)
 
 //--- helper function for dynamic sections -------------------------
 
-static void startSectionHeader(std::ostream &t,
+static void startSectionHeader(TextStream &t,
                                const QCString &relPath,int sectionCount)
 {
   //t << "<!-- startSectionHeader -->";
@@ -1501,13 +1504,13 @@ static void startSectionHeader(std::ostream &t,
   }
 }
 
-static void endSectionHeader(std::ostream &t)
+static void endSectionHeader(TextStream &t)
 {
   //t << "<!-- endSectionHeader -->";
   t << "</div>\n";
 }
 
-static void startSectionSummary(std::ostream &t,int sectionCount)
+static void startSectionSummary(TextStream &t,int sectionCount)
 {
   //t << "<!-- startSectionSummary -->";
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
@@ -1519,7 +1522,7 @@ static void startSectionSummary(std::ostream &t,int sectionCount)
   }
 }
 
-static void endSectionSummary(std::ostream &t)
+static void endSectionSummary(TextStream &t)
 {
   //t << "<!-- endSectionSummary -->";
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
@@ -1529,7 +1532,7 @@ static void endSectionSummary(std::ostream &t)
   }
 }
 
-static void startSectionContent(std::ostream &t,int sectionCount)
+static void startSectionContent(TextStream &t,int sectionCount)
 {
   //t << "<!-- startSectionContent -->";
   bool dynamicSections = Config_getBool(HTML_DYNAMIC_SECTIONS);
@@ -1545,7 +1548,7 @@ static void startSectionContent(std::ostream &t,int sectionCount)
   }
 }
 
-static void endSectionContent(std::ostream &t)
+static void endSectionContent(TextStream &t)
 {
   //t << "<!-- endSectionContent -->";
   t << "</div>\n";
@@ -1555,51 +1558,51 @@ static void endSectionContent(std::ostream &t)
 
 void HtmlGenerator::startClassDiagram()
 {
-  startSectionHeader(t,m_relPath,m_sectionCount);
+  startSectionHeader(m_t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endClassDiagram(const ClassDiagram &d,
                                 const char *fileName,const char *name)
 {
-  endSectionHeader(t);
-  startSectionSummary(t,m_sectionCount);
-  endSectionSummary(t);
-  startSectionContent(t,m_sectionCount);
-  std::ostringstream tt(std::ios_base::ate);
+  endSectionHeader(m_t);
+  startSectionSummary(m_t,m_sectionCount);
+  endSectionSummary(m_t);
+  startSectionContent(m_t,m_sectionCount);
+  TextStream tt;
   d.writeImage(tt,dir(),m_relPath,fileName);
-  if (tt.tellp()>0)
+  if (!tt.empty())
   {
-    t << " <div class=\"center\">\n";
-    t << "  <img src=\"";
-    t << m_relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
-    t << "_map\" alt=\"\"/>\n";
-    t << "  <map id=\"" << convertToId(name);
-    t << "_map\" name=\"" << convertToId(name);
-    t << "_map\">\n";
-    t << tt.str();
-    t << "  </map>\n";
-    t << "</div>";
+    m_t << " <div class=\"center\">\n";
+    m_t << "  <img src=\"";
+    m_t << m_relPath << fileName << ".png\" usemap=\"#" << convertToId(name);
+    m_t << "_map\" alt=\"\"/>\n";
+    m_t << "  <map id=\"" << convertToId(name);
+    m_t << "_map\" name=\"" << convertToId(name);
+    m_t << "_map\">\n";
+    m_t << tt.str();
+    m_t << "  </map>\n";
+    m_t << "</div>";
   }
   else
   {
-    t << " <div class=\"center\">\n";
-    t << "  <img src=\"";
-    t << m_relPath << fileName << ".png\" alt=\"\"/>\n";
-    t << " </div>";
+    m_t << " <div class=\"center\">\n";
+    m_t << "  <img src=\"";
+    m_t << m_relPath << fileName << ".png\" alt=\"\"/>\n";
+    m_t << " </div>";
   }
-  endSectionContent(t);
+  endSectionContent(m_t);
   m_sectionCount++;
 }
 
 
 void HtmlGenerator::startMemberList()
 {
-  DBG_HTML(t << "<!-- startMemberList -->\n")
+  DBG_HTML(m_t << "<!-- startMemberList -->\n")
 }
 
 void HtmlGenerator::endMemberList()
 {
-  DBG_HTML(t << "<!-- endMemberList -->\n")
+  DBG_HTML(m_t << "<!-- endMemberList -->\n")
 }
 
 // anonymous type:
@@ -1608,24 +1611,24 @@ void HtmlGenerator::endMemberList()
 //  2 = single column left aligned
 void HtmlGenerator::startMemberItem(const char *anchor,int annoType,const char *inheritId)
 {
-  DBG_HTML(t << "<!-- startMemberItem() -->\n")
+  DBG_HTML(m_t << "<!-- startMemberItem() -->\n")
   if (m_emptySection)
   {
-    t << "<table class=\"memberdecls\">\n";
+    m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  t << "<tr class=\"memitem:" << (anchor?anchor:"");
+  m_t << "<tr class=\"memitem:" << (anchor?anchor:"");
   if (inheritId)
   {
-    t << " inherit " << inheritId;
+    m_t << " inherit " << inheritId;
   }
-  t << "\">";
+  m_t << "\">";
   insertMemberAlignLeft(annoType, true);
 }
 
 void HtmlGenerator::endMemberItem()
 {
-  t << "</td></tr>\n";
+  m_t << "</td></tr>\n";
 }
 
 void HtmlGenerator::startMemberTemplateParams()
@@ -1634,63 +1637,63 @@ void HtmlGenerator::startMemberTemplateParams()
 
 void HtmlGenerator::endMemberTemplateParams(const char *anchor,const char *inheritId)
 {
-  t << "</td></tr>\n";
-  t << "<tr class=\"memitem:" << (anchor?anchor:"");
+  m_t << "</td></tr>\n";
+  m_t << "<tr class=\"memitem:" << (anchor?anchor:"");
   if (inheritId)
   {
-    t << " inherit " << inheritId;
+    m_t << " inherit " << inheritId;
   }
-  t << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
+  m_t << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
 }
 
 
 void HtmlGenerator::insertMemberAlign(bool templ)
 {
-  DBG_HTML(t << "<!-- insertMemberAlign -->\n")
+  DBG_HTML(m_t << "<!-- insertMemberAlign -->\n")
   QCString className = templ ? "memTemplItemRight" : "memItemRight";
-  t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
+  m_t << "&#160;</td><td class=\"" << className << "\" valign=\"bottom\">";
 }
 
 void HtmlGenerator::insertMemberAlignLeft(int annoType, bool initTag)
 {
-  if (!initTag) t << "&#160;</td>";
+  if (!initTag) m_t << "&#160;</td>";
   switch(annoType)
   {
-    case 0:  t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
-    case 1:  t << "<td class=\"memItemLeft\" >"; break;
-    case 2:  t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
-    default: t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
+    case 0:  m_t << "<td class=\"memItemLeft\" align=\"right\" valign=\"top\">"; break;
+    case 1:  m_t << "<td class=\"memItemLeft\" >"; break;
+    case 2:  m_t << "<td class=\"memItemLeft\" valign=\"top\">"; break;
+    default: m_t << "<td class=\"memTemplParams\" colspan=\"2\">"; break;
   }
 }
 
 void HtmlGenerator::startMemberDescription(const char *anchor,const char *inheritId, bool typ)
 {
-  DBG_HTML(t << "<!-- startMemberDescription -->\n")
+  DBG_HTML(m_t << "<!-- startMemberDescription -->\n")
     if (m_emptySection)
     {
-      t << "<table class=\"memberdecls\">\n";
+      m_t << "<table class=\"memberdecls\">\n";
       m_emptySection=FALSE;
     }
-  t << "<tr class=\"memdesc:" << (anchor?anchor:"");
+  m_t << "<tr class=\"memdesc:" << (anchor?anchor:"");
   if (inheritId)
   {
-    t << " inherit " << inheritId;
+    m_t << " inherit " << inheritId;
   }
-  t << "\">";
-  t << "<td class=\"mdescLeft\">&#160;</td>";
-  if (typ) t << "<td class=\"mdescLeft\">&#160;</td>";
-  t << "<td class=\"mdescRight\">";;
+  m_t << "\">";
+  m_t << "<td class=\"mdescLeft\">&#160;</td>";
+  if (typ) m_t << "<td class=\"mdescLeft\">&#160;</td>";
+  m_t << "<td class=\"mdescRight\">";;
 }
 
 void HtmlGenerator::endMemberDescription()
 {
-  DBG_HTML(t << "<!-- endMemberDescription -->\n")
-  t << "<br /></td></tr>\n";
+  DBG_HTML(m_t << "<!-- endMemberDescription -->\n")
+  m_t << "<br /></td></tr>\n";
 }
 
 void HtmlGenerator::startMemberSections()
 {
-  DBG_HTML(t << "<!-- startMemberSections -->\n")
+  DBG_HTML(m_t << "<!-- startMemberSections -->\n")
   m_emptySection=TRUE; // we postpone writing <table> until we actually
                        // write a row to prevent empty tables, which
                        // are not valid XHTML!
@@ -1698,364 +1701,364 @@ void HtmlGenerator::startMemberSections()
 
 void HtmlGenerator::endMemberSections()
 {
-  DBG_HTML(t << "<!-- endMemberSections -->\n")
+  DBG_HTML(m_t << "<!-- endMemberSections -->\n")
   if (!m_emptySection)
   {
-    t << "</table>\n";
+    m_t << "</table>\n";
   }
 }
 
 void HtmlGenerator::startMemberHeader(const char *anchor, int typ)
 {
-  DBG_HTML(t << "<!-- startMemberHeader -->\n")
+  DBG_HTML(m_t << "<!-- startMemberHeader -->\n")
   if (!m_emptySection)
   {
-    t << "</table>";
+    m_t << "</table>";
     m_emptySection=TRUE;
   }
   if (m_emptySection)
   {
-    t << "<table class=\"memberdecls\">\n";
+    m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
+  m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
   if (anchor)
   {
-    t << "<a name=\"" << anchor << "\"></a>\n";
+    m_t << "<a name=\"" << anchor << "\"></a>\n";
   }
 }
 
 void HtmlGenerator::endMemberHeader()
 {
-  DBG_HTML(t << "<!-- endMemberHeader -->\n")
-  t << "</h2></td></tr>\n";
+  DBG_HTML(m_t << "<!-- endMemberHeader -->\n")
+  m_t << "</h2></td></tr>\n";
 }
 
 void HtmlGenerator::startMemberSubtitle()
 {
-  DBG_HTML(t << "<!-- startMemberSubtitle -->\n")
-  t << "<tr><td class=\"ititle\" colspan=\"2\">";
+  DBG_HTML(m_t << "<!-- startMemberSubtitle -->\n")
+  m_t << "<tr><td class=\"ititle\" colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberSubtitle()
 {
-  DBG_HTML(t << "<!-- endMemberSubtitle -->\n")
-  t << "</td></tr>\n";
+  DBG_HTML(m_t << "<!-- endMemberSubtitle -->\n")
+  m_t << "</td></tr>\n";
 }
 
 void HtmlGenerator::startIndexList()
 {
-  t << "<table>\n";
+  m_t << "<table>\n";
 }
 
 void HtmlGenerator::endIndexList()
 {
-  t << "</table>\n";
+  m_t << "</table>\n";
 }
 
 void HtmlGenerator::startIndexKey()
 {
   // inserted 'class = ...', 02 jan 2002, jh
-  t << "  <tr><td class=\"indexkey\">";
+  m_t << "  <tr><td class=\"indexkey\">";
 }
 
 void HtmlGenerator::endIndexKey()
 {
-  t << "</td>";
+  m_t << "</td>";
 }
 
 void HtmlGenerator::startIndexValue(bool)
 {
   // inserted 'class = ...', 02 jan 2002, jh
-  t << "<td class=\"indexvalue\">";
+  m_t << "<td class=\"indexvalue\">";
 }
 
 void HtmlGenerator::endIndexValue(const char *,bool)
 {
-  t << "</td></tr>\n";
+  m_t << "</td></tr>\n";
 }
 
 void HtmlGenerator::startMemberDocList()
 {
-  DBG_HTML(t << "<!-- startMemberDocList -->\n";)
+  DBG_HTML(m_t << "<!-- startMemberDocList -->\n";)
 }
 
 void HtmlGenerator::endMemberDocList()
 {
-  DBG_HTML(t << "<!-- endMemberDocList -->\n";)
+  DBG_HTML(m_t << "<!-- endMemberDocList -->\n";)
 }
 
 void HtmlGenerator::startMemberDoc( const char *clName, const char *memName,
                                     const char *anchor, const char *title,
                                     int memCount, int memTotal, bool showInline)
 {
-  DBG_HTML(t << "<!-- startMemberDoc -->\n";)
-  t << "\n<h2 class=\"memtitle\">"
-    << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
+  DBG_HTML(m_t << "<!-- startMemberDoc -->\n";)
+  m_t << "\n<h2 class=\"memtitle\">"
+      << "<span class=\"permalink\"><a href=\"#" << anchor << "\">&#9670;&nbsp;</a></span>";
   docify(title);
   if (memTotal>1)
   {
-    t << " <span class=\"overload\">[" << memCount << "/" << memTotal <<"]</span>";
+    m_t << " <span class=\"overload\">[" << memCount << "/" << memTotal <<"]</span>";
   }
-  t << "</h2>\n";
-  t << "\n<div class=\"memitem\">\n";
-  t << "<div class=\"memproto\">\n";
+  m_t << "</h2>\n";
+  m_t << "\n<div class=\"memitem\">\n";
+  m_t << "<div class=\"memproto\">\n";
 }
 
 void HtmlGenerator::startMemberDocPrefixItem()
 {
-  DBG_HTML(t << "<!-- startMemberDocPrefixItem -->\n";)
-  t << "<div class=\"memtemplate\">\n";
+  DBG_HTML(m_t << "<!-- startMemberDocPrefixItem -->\n";)
+  m_t << "<div class=\"memtemplate\">\n";
 }
 
 void HtmlGenerator::endMemberDocPrefixItem()
 {
-  DBG_HTML(t << "<!-- endMemberDocPrefixItem -->\n";)
-  t << "</div>\n";
+  DBG_HTML(m_t << "<!-- endMemberDocPrefixItem -->\n";)
+  m_t << "</div>\n";
 }
 
 void HtmlGenerator::startMemberDocName(bool /*align*/)
 {
-  DBG_HTML(t << "<!-- startMemberDocName -->\n";)
+  DBG_HTML(m_t << "<!-- startMemberDocName -->\n";)
 
-  t << "      <table class=\"memname\">\n";
+  m_t << "      <table class=\"memname\">\n";
 
-  t << "        <tr>\n";
-  t << "          <td class=\"memname\">";
+  m_t << "        <tr>\n";
+  m_t << "          <td class=\"memname\">";
 }
 
 void HtmlGenerator::endMemberDocName()
 {
-  DBG_HTML(t << "<!-- endMemberDocName -->\n";)
-  t << "</td>\n";
+  DBG_HTML(m_t << "<!-- endMemberDocName -->\n";)
+  m_t << "</td>\n";
 }
 
 void HtmlGenerator::startParameterList(bool openBracket)
 {
-  DBG_HTML(t << "<!-- startParameterList -->\n";)
-  t << "          <td>";
-  if (openBracket) t << "(";
-  t << "</td>\n";
+  DBG_HTML(m_t << "<!-- startParameterList -->\n";)
+  m_t << "          <td>";
+  if (openBracket) m_t << "(";
+  m_t << "</td>\n";
 }
 
 void HtmlGenerator::startParameterType(bool first,const char *key)
 {
   if (first)
   {
-    DBG_HTML(t << "<!-- startFirstParameterType -->\n";)
-    t << "          <td class=\"paramtype\">";
+    DBG_HTML(m_t << "<!-- startFirstParameterType -->\n";)
+    m_t << "          <td class=\"paramtype\">";
   }
   else
   {
-    DBG_HTML(t << "<!-- startParameterType -->\n";)
-    t << "        <tr>\n";
-    t << "          <td class=\"paramkey\">";
-    if (key) t << key;
-    t << "</td>\n";
-    t << "          <td></td>\n";
-    t << "          <td class=\"paramtype\">";
+    DBG_HTML(m_t << "<!-- startParameterType -->\n";)
+    m_t << "        <tr>\n";
+    m_t << "          <td class=\"paramkey\">";
+    if (key) m_t << key;
+    m_t << "</td>\n";
+    m_t << "          <td></td>\n";
+    m_t << "          <td class=\"paramtype\">";
   }
 }
 
 void HtmlGenerator::endParameterType()
 {
-  DBG_HTML(t << "<!-- endParameterType -->\n";)
-  t << "&#160;</td>\n";
+  DBG_HTML(m_t << "<!-- endParameterType -->\n";)
+  m_t << "&#160;</td>\n";
 }
 
 void HtmlGenerator::startParameterName(bool /*oneArgOnly*/)
 {
-  DBG_HTML(t << "<!-- startParameterName -->\n";)
-  t << "          <td class=\"paramname\">";
+  DBG_HTML(m_t << "<!-- startParameterName -->\n";)
+  m_t << "          <td class=\"paramname\">";
 }
 
 void HtmlGenerator::endParameterName(bool last,bool emptyList,bool closeBracket)
 {
-  DBG_HTML(t << "<!-- endParameterName -->\n";)
+  DBG_HTML(m_t << "<!-- endParameterName -->\n";)
   if (last)
   {
     if (emptyList)
     {
-      if (closeBracket) t << "</td><td>)";
-      t << "</td>\n";
-      t << "          <td>";
+      if (closeBracket) m_t << "</td><td>)";
+      m_t << "</td>\n";
+      m_t << "          <td>";
     }
     else
     {
-      t << "&#160;</td>\n";
-      t << "        </tr>\n";
-      t << "        <tr>\n";
-      t << "          <td></td>\n";
-      t << "          <td>";
-      if (closeBracket) t << ")";
-      t << "</td>\n";
-      t << "          <td></td><td>";
+      m_t << "&#160;</td>\n";
+      m_t << "        </tr>\n";
+      m_t << "        <tr>\n";
+      m_t << "          <td></td>\n";
+      m_t << "          <td>";
+      if (closeBracket) m_t << ")";
+      m_t << "</td>\n";
+      m_t << "          <td></td><td>";
     }
   }
   else
   {
-    t << "</td>\n";
-    t << "        </tr>\n";
+    m_t << "</td>\n";
+    m_t << "        </tr>\n";
   }
 }
 
 void HtmlGenerator::endParameterList()
 {
-  DBG_HTML(t << "<!-- endParameterList -->\n";)
-  t << "</td>\n";
-  t << "        </tr>\n";
+  DBG_HTML(m_t << "<!-- endParameterList -->\n";)
+  m_t << "</td>\n";
+  m_t << "        </tr>\n";
 }
 
 void HtmlGenerator::exceptionEntry(const char* prefix,bool closeBracket)
 {
-  DBG_HTML(t << "<!-- exceptionEntry -->\n";)
-  t << "</td>\n";
-  t << "        </tr>\n";
-  t << "        <tr>\n";
-  t << "          <td align=\"right\">";
+  DBG_HTML(m_t << "<!-- exceptionEntry -->\n";)
+  m_t << "</td>\n";
+  m_t << "        </tr>\n";
+  m_t << "        <tr>\n";
+  m_t << "          <td align=\"right\">";
   // colspan 2 so it gets both parameter type and parameter name columns
   if (prefix)
-    t << prefix << "</td><td>(</td><td colspan=\"2\">";
+    m_t << prefix << "</td><td>(</td><td colspan=\"2\">";
   else if (closeBracket)
-    t << "</td><td>)</td><td></td><td>";
+    m_t << "</td><td>)</td><td></td><td>";
   else
-    t << "</td><td></td><td colspan=\"2\">";
+    m_t << "</td><td></td><td colspan=\"2\">";
 }
 
 void HtmlGenerator::endMemberDoc(bool hasArgs)
 {
-  DBG_HTML(t << "<!-- endMemberDoc -->\n";)
+  DBG_HTML(m_t << "<!-- endMemberDoc -->\n";)
   if (!hasArgs)
   {
-    t << "        </tr>\n";
+    m_t << "        </tr>\n";
   }
-  t << "      </table>\n";
- // t << "</div>\n";
+  m_t << "      </table>\n";
+ // m_t << "</div>\n";
 }
 
 void HtmlGenerator::startDotGraph()
 {
-  startSectionHeader(t,m_relPath,m_sectionCount);
+  startSectionHeader(m_t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endDotGraph(DotClassGraph &g)
 {
   bool generateLegend = Config_getBool(GENERATE_LEGEND);
   bool umlLook = Config_getBool(UML_LOOK);
-  endSectionHeader(t);
-  startSectionSummary(t,m_sectionCount);
-  endSectionSummary(t);
-  startSectionContent(t,m_sectionCount);
+  endSectionHeader(m_t);
+  startSectionSummary(m_t,m_sectionCount);
+  endSectionSummary(m_t);
+  startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,TRUE,m_sectionCount);
   if (generateLegend && !umlLook)
   {
-    t << "<center><span class=\"legend\">[";
+    m_t << "<center><span class=\"legend\">[";
     startHtmlLink(m_relPath+"graph_legend"+Doxygen::htmlFileExtension);
-    t << theTranslator->trLegend();
+    m_t << theTranslator->trLegend();
     endHtmlLink();
-    t << "]</span></center>";
+    m_t << "]</span></center>";
   }
 
-  endSectionContent(t);
+  endSectionContent(m_t);
   m_sectionCount++;
 }
 
 void HtmlGenerator::startInclDepGraph()
 {
-  startSectionHeader(t,m_relPath,m_sectionCount);
+  startSectionHeader(m_t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
-  endSectionHeader(t);
-  startSectionSummary(t,m_sectionCount);
-  endSectionSummary(t);
-  startSectionContent(t,m_sectionCount);
+  endSectionHeader(m_t);
+  startSectionSummary(m_t,m_sectionCount);
+  endSectionSummary(m_t);
+  startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
-  endSectionContent(t);
+  endSectionContent(m_t);
   m_sectionCount++;
 }
 
 void HtmlGenerator::startGroupCollaboration()
 {
-  startSectionHeader(t,m_relPath,m_sectionCount);
+  startSectionHeader(m_t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
-  endSectionHeader(t);
-  startSectionSummary(t,m_sectionCount);
-  endSectionSummary(t);
-  startSectionContent(t,m_sectionCount);
+  endSectionHeader(m_t);
+  startSectionSummary(m_t,m_sectionCount);
+  endSectionSummary(m_t);
+  startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
-  endSectionContent(t);
+  endSectionContent(m_t);
   m_sectionCount++;
 }
 
 void HtmlGenerator::startCallGraph()
 {
-  startSectionHeader(t,m_relPath,m_sectionCount);
+  startSectionHeader(m_t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endCallGraph(DotCallGraph &g)
 {
-  endSectionHeader(t);
-  startSectionSummary(t,m_sectionCount);
-  endSectionSummary(t);
-  startSectionContent(t,m_sectionCount);
+  endSectionHeader(m_t);
+  startSectionSummary(m_t,m_sectionCount);
+  endSectionSummary(m_t);
+  startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
-  endSectionContent(t);
+  endSectionContent(m_t);
   m_sectionCount++;
 }
 
 void HtmlGenerator::startDirDepGraph()
 {
-  startSectionHeader(t,m_relPath,m_sectionCount);
+  startSectionHeader(m_t,m_relPath,m_sectionCount);
 }
 
 void HtmlGenerator::endDirDepGraph(DotDirDeps &g)
 {
-  endSectionHeader(t);
-  startSectionSummary(t,m_sectionCount);
-  endSectionSummary(t);
-  startSectionContent(t,m_sectionCount);
+  endSectionHeader(m_t);
+  startSectionSummary(m_t,m_sectionCount);
+  endSectionSummary(m_t);
+  startSectionContent(m_t,m_sectionCount);
 
-  g.writeGraph(t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_Html,dir(),fileName(),m_relPath,TRUE,m_sectionCount);
 
-  endSectionContent(t);
+  endSectionContent(m_t);
   m_sectionCount++;
 }
 
 void HtmlGenerator::writeGraphicalHierarchy(DotGfxHierarchyTable &g)
 {
-  g.writeGraph(t,dir(),fileName());
+  g.writeGraph(m_t,dir(),fileName());
 }
 
 void HtmlGenerator::startMemberGroupHeader(bool)
 {
-  t << "<tr><td colspan=\"2\"><div class=\"groupHeader\">";
+  m_t << "<tr><td colspan=\"2\"><div class=\"groupHeader\">";
 }
 
 void HtmlGenerator::endMemberGroupHeader()
 {
-  t << "</div></td></tr>\n";
+  m_t << "</div></td></tr>\n";
 }
 
 void HtmlGenerator::startMemberGroupDocs()
 {
-  t << "<tr><td colspan=\"2\"><div class=\"groupText\">";
+  m_t << "<tr><td colspan=\"2\"><div class=\"groupText\">";
 }
 
 void HtmlGenerator::endMemberGroupDocs()
 {
-  t << "</div></td></tr>\n";
+  m_t << "</div></td></tr>\n";
 }
 
 void HtmlGenerator::startMemberGroup()
@@ -2068,15 +2071,15 @@ void HtmlGenerator::endMemberGroup(bool)
 
 void HtmlGenerator::startIndent()
 {
-  DBG_HTML(t << "<!-- startIndent -->\n";)
+  DBG_HTML(m_t << "<!-- startIndent -->\n";)
 
-  t << "<div class=\"memdoc\">\n";
+  m_t << "<div class=\"memdoc\">\n";
 }
 
 void HtmlGenerator::endIndent()
 {
-  DBG_HTML(t << "<!-- endIndent -->\n";)
-  t << "\n</div>\n" << "</div>\n";
+  DBG_HTML(m_t << "<!-- endIndent -->\n";)
+  m_t << "\n</div>\n" << "</div>\n";
 }
 
 void HtmlGenerator::addIndexItem(const char *,const char *)
@@ -2088,86 +2091,86 @@ void HtmlGenerator::writeNonBreakableSpace(int n)
   int i;
   for (i=0;i<n;i++)
   {
-    t << "&#160;";
+    m_t << "&#160;";
   }
 }
 
 void HtmlGenerator::startDescTable(const char *title)
 {
-  t << "<table class=\"fieldtable\">\n"
-    << "<tr><th colspan=\"2\">" << title << "</th></tr>";
+  m_t << "<table class=\"fieldtable\">\n"
+      << "<tr><th colspan=\"2\">" << title << "</th></tr>";
 }
 void HtmlGenerator::endDescTable()
 {
-  t << "</table>\n";
+  m_t << "</table>\n";
 }
 
 void HtmlGenerator::startDescTableRow()
 {
-  t << "<tr>";
+  m_t << "<tr>";
 }
 
 void HtmlGenerator::endDescTableRow()
 {
-  t << "</tr>\n";
+  m_t << "</tr>\n";
 }
 
 void HtmlGenerator::startDescTableTitle()
 {
-  t << "<td class=\"fieldname\">";
+  m_t << "<td class=\"fieldname\">";
 }
 
 void HtmlGenerator::endDescTableTitle()
 {
-  t << "&#160;</td>";
+  m_t << "&#160;</td>";
 }
 
 void HtmlGenerator::startDescTableData()
 {
-  t << "<td class=\"fielddoc\">";
+  m_t << "<td class=\"fielddoc\">";
 }
 
 void HtmlGenerator::endDescTableData()
 {
-  t << "</td>";
+  m_t << "</td>";
 }
 
 void HtmlGenerator::startExamples()
 {
-  t << "<dl class=\"section examples\"><dt>";
+  m_t << "<dl class=\"section examples\"><dt>";
   docify(theTranslator->trExamples());
-  t << "</dt>";
+  m_t << "</dt>";
 }
 
 void HtmlGenerator::endExamples()
 {
-  t << "</dl>\n";
+  m_t << "</dl>\n";
 }
 
 void HtmlGenerator::startParamList(ParamListTypes,
                                 const char *title)
 {
-  t << "<dl><dt><b>";
+  m_t << "<dl><dt><b>";
   docify(title);
-  t << "</b></dt>";
+  m_t << "</b></dt>";
 }
 
 void HtmlGenerator::endParamList()
 {
-  t << "</dl>";
+  m_t << "</dl>";
 }
 
 void HtmlGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,int id)
 {
   m_codeGen.setId(id);
-  HtmlDocVisitor *visitor = new HtmlDocVisitor(t,m_codeGen,ctx);
+  HtmlDocVisitor *visitor = new HtmlDocVisitor(m_t,m_codeGen,ctx);
   n->accept(visitor);
   delete visitor;
 }
 
 //---------------- helpers for index generation -----------------------------
 
-static void startQuickIndexList(std::ostream &t,bool compact,bool topLevel=TRUE)
+static void startQuickIndexList(TextStream &t,bool compact,bool topLevel=TRUE)
 {
   if (compact)
   {
@@ -2187,7 +2190,7 @@ static void startQuickIndexList(std::ostream &t,bool compact,bool topLevel=TRUE)
   }
 }
 
-static void endQuickIndexList(std::ostream &t,bool compact)
+static void endQuickIndexList(TextStream &t,bool compact)
 {
   if (compact)
   {
@@ -2200,7 +2203,7 @@ static void endQuickIndexList(std::ostream &t,bool compact)
   }
 }
 
-static void startQuickIndexItem(std::ostream &t,const char *l,
+static void startQuickIndexItem(TextStream &t,const char *l,
                                 bool hl,bool /*compact*/,
                                 const QCString &relPath)
 {
@@ -2214,7 +2217,7 @@ static void startQuickIndexItem(std::ostream &t,const char *l,
   t << "<span>";
 }
 
-static void endQuickIndexItem(std::ostream &t,const char *l)
+static void endQuickIndexItem(TextStream &t,const char *l)
 {
   t << "</span>";
   if (l) t << "</a>";
@@ -2262,7 +2265,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
   return FALSE;
 }
 
-static void renderQuickLinksAsTree(std::ostream &t,const QCString &relPath,LayoutNavEntry *root)
+static void renderQuickLinksAsTree(TextStream &t,const QCString &relPath,LayoutNavEntry *root)
 
 {
   int count=0;
@@ -2291,7 +2294,7 @@ static void renderQuickLinksAsTree(std::ostream &t,const QCString &relPath,Layou
 }
 
 
-static void renderQuickLinksAsTabs(std::ostream &t,const QCString &relPath,
+static void renderQuickLinksAsTabs(TextStream &t,const QCString &relPath,
                              LayoutNavEntry *hlEntry,LayoutNavEntry::Kind kind,
                              bool highlightParent,bool highlightSearch)
 {
@@ -2360,7 +2363,7 @@ static void renderQuickLinksAsTabs(std::ostream &t,const QCString &relPath,
   }
 }
 
-static void writeDefaultQuickLinks(std::ostream &t,bool compact,
+static void writeDefaultQuickLinks(TextStream &t,bool compact,
                                    HighlightedItem hli,
                                    const char *file,
                                    const QCString &relPath)
@@ -2484,7 +2487,7 @@ static void writeDefaultQuickLinks(std::ostream &t,bool compact,
 
 void HtmlGenerator::endQuickIndices()
 {
-  t << "</div><!-- top -->\n";
+  m_t << "</div><!-- top -->\n";
 }
 
 QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpath)
@@ -2495,62 +2498,62 @@ QCString HtmlGenerator::writeSplitBarAsString(const char *name,const char *relpa
   if (generateTreeView)
   {
     result = QCString(
-											"<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n"
-											"  <div id=\"nav-tree\">\n"
-											"    <div id=\"nav-tree-contents\">\n"
-											"      <div id=\"nav-sync\" class=\"sync\"></div>\n"
-											"    </div>\n"
-											"  </div>\n"
-											"  <div id=\"splitbar\" style=\"-moz-user-select:none;\" \n"
-											"       class=\"ui-resizable-handle\">\n"
-											"  </div>\n"
-											"</div>\n"
-											"<script type=\"text/javascript\">\n"
-											"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
-											"$(document).ready(function(){initNavTree('") +
-			QCString(addHtmlExtensionIfMissing(name)) +
-			QCString("','") + relpath +
-			QCString("'); initResizable(); });\n"
-							 "/* @license-end */\n"
-							 "</script>\n"
-							 "<div id=\"doc-content\">\n");
+     "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n"
+     "  <div id=\"nav-tree\">\n"
+     "    <div id=\"nav-tree-contents\">\n"
+     "      <div id=\"nav-sync\" class=\"sync\"></div>\n"
+     "    </div>\n"
+     "  </div>\n"
+     "  <div id=\"splitbar\" style=\"-moz-user-select:none;\" \n"
+     "       class=\"ui-resizable-handle\">\n"
+     "  </div>\n"
+     "</div>\n"
+     "<script type=\"text/javascript\">\n"
+     "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+     "$(document).ready(function(){initNavTree('") +
+     QCString(addHtmlExtensionIfMissing(name)) +
+     QCString("','") + relpath +
+     QCString("'); initResizable(); });\n"
+     "/* @license-end */\n"
+     "</script>\n"
+     "<div id=\"doc-content\">\n");
   }
   return result;
 }
 
 void HtmlGenerator::writeSplitBar(const char *name)
 {
-  t << writeSplitBarAsString(name,m_relPath);
+  m_t << writeSplitBarAsString(name,m_relPath);
 }
 
 void HtmlGenerator::writeNavigationPath(const char *s)
 {
-  t << substitute(s,"$relpath^",m_relPath);
+  m_t << substitute(s,"$relpath^",m_relPath);
 }
 
 void HtmlGenerator::startContents()
 {
-  t << "<div class=\"contents\">\n";
+  m_t << "<div class=\"contents\">\n";
 }
 
 void HtmlGenerator::endContents()
 {
-  t << "</div><!-- contents -->\n";
+  m_t << "</div><!-- contents -->\n";
 }
 
 void HtmlGenerator::startPageDoc(const char *pageTitle)
 {
-  t << "<div>";
+  m_t << "<div>";
 }
 
 void HtmlGenerator::endPageDoc()
 {
-  t << "</div><!-- PageDoc -->\n";
+  m_t << "</div><!-- PageDoc -->\n";
 }
 
 void HtmlGenerator::writeQuickLinks(bool compact,HighlightedItem hli,const char *file)
 {
-  writeDefaultQuickLinks(t,compact,hli,file,m_relPath);
+  writeDefaultQuickLinks(m_t,compact,hli,file,m_relPath);
 }
 
 // PHP based search script
@@ -2563,9 +2566,10 @@ void HtmlGenerator::writeSearchPage()
 
   // OPENSEARCH_PROVIDER {
   QCString configFileName = htmlOutput+"/search_config.php";
-  std::ofstream t(configFileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  std::ofstream f(configFileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     t << "<?php\n\n";
     t << "$config = array(\n";
     t << "  'PROJECT_NAME' => \"" << convertToHtml(projectName) << "\",\n";
@@ -2586,16 +2590,17 @@ void HtmlGenerator::writeSearchPage()
     t << ");\n\n";
     t << "?>\n";
   }
-  t.close();
+  f.close();
 
   ResourceMgr::instance().copyResource("search_functions.php",htmlOutput);
   ResourceMgr::instance().copyResource("search_opensearch.php",htmlOutput);
   // OPENSEARCH_PROVIDER }
 
   QCString fileName = htmlOutput+"/search.php";
-  t.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     t << substituteHtmlKeywords(g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
@@ -2628,12 +2633,13 @@ void HtmlGenerator::writeSearchPage()
 
     writePageFooter(t,"Search","","");
   }
-  t.close();
+  f.close();
 
   QCString scriptName = htmlOutput+"/search/search.js";
-  t.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  f.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     t << ResourceMgr::instance().getAsString("extsearch.js");
   }
   else
@@ -2647,9 +2653,10 @@ void HtmlGenerator::writeExternalSearchPage()
   bool generateTreeView = Config_getBool(GENERATE_TREEVIEW);
   QCString dname = Config_getString(HTML_OUTPUT);
   QCString fileName = dname+"/search"+Doxygen::htmlFileExtension;
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     t << substituteHtmlKeywords(g_header,"Search","");
 
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
@@ -2695,12 +2702,13 @@ void HtmlGenerator::writeExternalSearchPage()
     writePageFooter(t,"Search","","");
 
   }
-  t.close();
+  f.close();
 
   QCString scriptName = dname+"/search/search.js";
-  t.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
-  if (t.is_open())
+  f.open(scriptName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
+    TextStream t(&f);
     t << "var searchResultsText=["
       << "\"" << theTranslator->trSearchResults(0) << "\","
       << "\"" << theTranslator->trSearchResults(1) << "\","
@@ -2748,167 +2756,167 @@ void HtmlGenerator::writeExternalSearchPage()
 
 void HtmlGenerator::startConstraintList(const char *header)
 {
-  t << "<div class=\"typeconstraint\">\n";
-  t << "<dl><dt><b>" << header << "</b></dt><dd>\n";
-  t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">\n";
+  m_t << "<div class=\"typeconstraint\">\n";
+  m_t << "<dl><dt><b>" << header << "</b></dt><dd>\n";
+  m_t << "<table border=\"0\" cellspacing=\"2\" cellpadding=\"0\">\n";
 }
 
 void HtmlGenerator::startConstraintParam()
 {
-  t << "<tr><td valign=\"top\"><em>";
+  m_t << "<tr><td valign=\"top\"><em>";
 }
 
 void HtmlGenerator::endConstraintParam()
 {
-  t << "</em></td>";
+  m_t << "</em></td>";
 }
 
 void HtmlGenerator::startConstraintType()
 {
-  t << "<td>&#160;:</td><td valign=\"top\"><em>";
+  m_t << "<td>&#160;:</td><td valign=\"top\"><em>";
 }
 
 void HtmlGenerator::endConstraintType()
 {
-  t << "</em></td>";
+  m_t << "</em></td>";
 }
 
 void HtmlGenerator::startConstraintDocs()
 {
-  t << "<td>&#160;";
+  m_t << "<td>&#160;";
 }
 
 void HtmlGenerator::endConstraintDocs()
 {
-  t << "</td></tr>\n";
+  m_t << "</td></tr>\n";
 }
 
 void HtmlGenerator::endConstraintList()
 {
-  t << "</table>\n";
-  t << "</dd>\n";
-  t << "</dl>\n";
-  t << "</div>\n";
+  m_t << "</table>\n";
+  m_t << "</dd>\n";
+  m_t << "</dl>\n";
+  m_t << "</div>\n";
 }
 
 void HtmlGenerator::lineBreak(const char *style)
 {
   if (style)
   {
-    t << "<br class=\"" << style << "\" />\n";
+    m_t << "<br class=\"" << style << "\" />\n";
   }
   else
   {
-    t << "<br />\n";
+    m_t << "<br />\n";
   }
 }
 
 void HtmlGenerator::startHeaderSection()
 {
-  t << "<div class=\"header\">\n";
+  m_t << "<div class=\"header\">\n";
 }
 
 void HtmlGenerator::startTitleHead(const char *)
 {
-  t << "  <div class=\"headertitle\">\n";
+  m_t << "  <div class=\"headertitle\">\n";
   startTitle();
 }
 
 void HtmlGenerator::endTitleHead(const char *,const char *)
 {
   endTitle();
-  t << "  </div>\n";
+  m_t << "  </div>\n";
 }
 
 void HtmlGenerator::endHeaderSection()
 {
-  t << "</div><!--header-->\n";
+  m_t << "</div><!--header-->\n";
 }
 
 void HtmlGenerator::startInlineHeader()
 {
   if (m_emptySection)
   {
-    t << "<table class=\"memberdecls\">\n";
+    m_t << "<table class=\"memberdecls\">\n";
     m_emptySection=FALSE;
   }
-  t << "<tr><td colspan=\"2\"><h3>";
+  m_t << "<tr><td colspan=\"2\"><h3>";
 }
 
 void HtmlGenerator::endInlineHeader()
 {
-  t << "</h3></td></tr>\n";
+  m_t << "</h3></td></tr>\n";
 }
 
 void HtmlGenerator::startMemberDocSimple(bool isEnum)
 {
-  DBG_HTML(t << "<!-- startMemberDocSimple -->\n";)
-  t << "<table class=\"fieldtable\">\n";
-  t << "<tr><th colspan=\"" << (isEnum?"2":"3") << "\">";
-  t << (isEnum? theTranslator->trEnumerationValues() :
+  DBG_HTML(m_t << "<!-- startMemberDocSimple -->\n";)
+  m_t << "<table class=\"fieldtable\">\n";
+  m_t << "<tr><th colspan=\"" << (isEnum?"2":"3") << "\">";
+  m_t << (isEnum? theTranslator->trEnumerationValues() :
        theTranslator->trCompoundMembers()) << "</th></tr>\n";
 }
 
 void HtmlGenerator::endMemberDocSimple(bool)
 {
-  DBG_HTML(t << "<!-- endMemberDocSimple -->\n";)
-  t << "</table>\n";
+  DBG_HTML(m_t << "<!-- endMemberDocSimple -->\n";)
+  m_t << "</table>\n";
 }
 
 void HtmlGenerator::startInlineMemberType()
 {
-  DBG_HTML(t << "<!-- startInlineMemberType -->\n";)
-  t << "<tr><td class=\"fieldtype\">\n";
+  DBG_HTML(m_t << "<!-- startInlineMemberType -->\n";)
+  m_t << "<tr><td class=\"fieldtype\">\n";
 }
 
 void HtmlGenerator::endInlineMemberType()
 {
-  DBG_HTML(t << "<!-- endInlineMemberType -->\n";)
-  t << "</td>\n";
+  DBG_HTML(m_t << "<!-- endInlineMemberType -->\n";)
+  m_t << "</td>\n";
 }
 
 void HtmlGenerator::startInlineMemberName()
 {
-  DBG_HTML(t << "<!-- startInlineMemberName -->\n";)
-  t << "<td class=\"fieldname\">\n";
+  DBG_HTML(m_t << "<!-- startInlineMemberName -->\n";)
+  m_t << "<td class=\"fieldname\">\n";
 }
 
 void HtmlGenerator::endInlineMemberName()
 {
-  DBG_HTML(t << "<!-- endInlineMemberName -->\n";)
-  t << "</td>\n";
+  DBG_HTML(m_t << "<!-- endInlineMemberName -->\n";)
+  m_t << "</td>\n";
 }
 
 void HtmlGenerator::startInlineMemberDoc()
 {
-  DBG_HTML(t << "<!-- startInlineMemberDoc -->\n";)
-  t << "<td class=\"fielddoc\">\n";
+  DBG_HTML(m_t << "<!-- startInlineMemberDoc -->\n";)
+  m_t << "<td class=\"fielddoc\">\n";
 }
 
 void HtmlGenerator::endInlineMemberDoc()
 {
-  DBG_HTML(t << "<!-- endInlineMemberDoc -->\n";)
-  t << "</td></tr>\n";
+  DBG_HTML(m_t << "<!-- endInlineMemberDoc -->\n";)
+  m_t << "</td></tr>\n";
 }
 
 void HtmlGenerator::startLabels()
 {
-  DBG_HTML(t << "<!-- startLabels -->\n";)
-  t << "<span class=\"mlabels\">";
+  DBG_HTML(m_t << "<!-- startLabels -->\n";)
+  m_t << "<span class=\"mlabels\">";
 }
 
 void HtmlGenerator::writeLabel(const char *l,bool /*isLast*/)
 {
-  DBG_HTML(t << "<!-- writeLabel(" << l << ") -->\n";)
-  //t << "<tt>[" << l << "]</tt>";
-  //if (!isLast) t << ", ";
-  t << "<span class=\"mlabel\">" << l << "</span>";
+  DBG_HTML(m_t << "<!-- writeLabel(" << l << ") -->\n";)
+  //m_t << "<tt>[" << l << "]</tt>";
+  //if (!isLast) m_t << ", ";
+  m_t << "<span class=\"mlabel\">" << l << "</span>";
 }
 
 void HtmlGenerator::endLabels()
 {
-  DBG_HTML(t << "<!-- endLabels -->\n";)
-  t << "</span>";
+  DBG_HTML(m_t << "<!-- endLabels -->\n";)
+  m_t << "</span>";
 }
 
 void HtmlGenerator::writeInheritedSectionTitle(
@@ -2916,7 +2924,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
                   const char *file,  const char *anchor,
                   const char *title, const char *name)
 {
-  DBG_HTML(t << "<!-- writeInheritedSectionTitle -->\n";)
+  DBG_HTML(m_t << "<!-- writeInheritedSectionTitle -->\n";)
   QCString a = anchor;
   if (!a.isEmpty()) a.prepend("#");
   QCString classLink = QCString("<a class=\"el\" ");
@@ -2933,7 +2941,7 @@ void HtmlGenerator::writeInheritedSectionTitle(
   }
   classLink=classLink+addHtmlExtensionIfMissing(file)+a;
   classLink+=QCString("\">")+convertToHtml(name,FALSE)+"</a>";
-  t << "<tr class=\"inherit_header " << id << "\">"
+  m_t << "<tr class=\"inherit_header " << id << "\">"
     << "<td colspan=\"2\" onclick=\"javascript:toggleInherit('" << id << "')\">"
     << "<img src=\"" << m_relPath << "closed.png\" alt=\"-\"/>&#160;"
     << theTranslator->trInheritedFrom(convertToHtml(title,FALSE),classLink)
@@ -2944,35 +2952,35 @@ void HtmlGenerator::writeSummaryLink(const char *file,const char *anchor,const c
 {
   if (first)
   {
-    t << "  <div class=\"summary\">\n";
+    m_t << "  <div class=\"summary\">\n";
   }
   else
   {
-    t << " &#124;\n";
+    m_t << " &#124;\n";
   }
-  t << "<a href=\"";
+  m_t << "<a href=\"";
   if (file)
   {
-    t << m_relPath << addHtmlExtensionIfMissing(file);
+    m_t << m_relPath << addHtmlExtensionIfMissing(file);
   }
   else if (anchor)
   {
-    t << "#";
-    t << anchor;
+    m_t << "#";
+    m_t << anchor;
   }
-  t << "\">";
-  t << title;
-  t << "</a>";
+  m_t << "\">";
+  m_t << title;
+  m_t << "</a>";
 }
 
 void HtmlGenerator::endMemberDeclaration(const char *anchor,const char *inheritId)
 {
-  t << "<tr class=\"separator:" << (anchor?anchor:"");
+  m_t << "<tr class=\"separator:" << (anchor?anchor:"");
   if (inheritId)
   {
-    t << " inherit " << inheritId;
+    m_t << " inherit " << inheritId;
   }
-  t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
+  m_t << "\"><td class=\"memSeparator\" colspan=\"2\">&#160;</td></tr>\n";
 }
 
 void HtmlGenerator::setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile)

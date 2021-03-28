@@ -17,9 +17,10 @@
 #define DOCSETS_H
 
 #include <memory>
-#include <iostream>
 
 #include "index.h"
+
+class TextStream;
 
 class Definition;
 
@@ -54,7 +55,7 @@ class DocSets  : public IndexIntf
     void addStyleSheetFile(const char *) {}
 
   private:
-    void writeToken(std::ostream &t, const Definition *d,
+    void writeToken(TextStream &t, const Definition *d,
                     const QCString &type, const QCString &lang,
                     const char *scope=0, const char *anchor=0,
                     const char *decl=0);

@@ -315,7 +315,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeMemberDocSimple(OutputList &ol,const Definition *container) const;
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const;
-    virtual void writeTagFile(std::ostream &) const;
+    virtual void writeTagFile(TextStream &) const;
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const;
@@ -4258,7 +4258,7 @@ Specifier MemberDefImpl::virtualness(int count) const
   return v;
 }
 
-void MemberDefImpl::writeTagFile(std::ostream &tagFile) const
+void MemberDefImpl::writeTagFile(TextStream &tagFile) const
 {
   if (!isLinkableInProject()) return;
   tagFile << "    <member kind=\"";

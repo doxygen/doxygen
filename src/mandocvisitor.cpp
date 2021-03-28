@@ -28,7 +28,7 @@
 #include "emoji.h"
 #include "fileinfo.h"
 
-ManDocVisitor::ManDocVisitor(std::ostream &t,CodeOutputInterface &ci,
+ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
                              const char *langExt)
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
     m_indent(0), m_langExt(langExt)

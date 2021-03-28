@@ -61,6 +61,7 @@
 #include "VhdlParser.h"
 #include "regex.h"
 #include "plantuml.h"
+#include "textstream.h"
 //#define DEBUGFLOW
 #define theTranslator_vhdlType theTranslator->trVhdlType
 
@@ -71,15 +72,15 @@ static void addInstance(ClassDefMutable* entity, ClassDefMutable* arch, ClassDef
 
 //---------- create svg -------------------------------------------------------------
 static void createSVG();
-static void startDot(std::ostream &t);
-static void startTable(std::ostream &t,const QCString &className);
+static void startDot(TextStream &t);
+static void startTable(TextStream &t,const QCString &className);
 static std::vector<const MemberDef *> getPorts(const ClassDef *cd);
-static void writeVhdlEntityToolTip(std::ostream& t,ClassDef *cd);
-static void endDot(std::ostream &t);
-static void writeTable(const std::vector<const MemberDef*> &portList,std::ostream & t);
-static void endTable(std::ostream &t);
-static void writeClassToDot(std::ostream &t,ClassDef* cd);
-static void writeVhdlDotLink(std::ostream &t,const QCString &a,const QCString &b,const QCString &style);
+static void writeVhdlEntityToolTip(TextStream& t,ClassDef *cd);
+static void endDot(TextStream &t);
+static void writeTable(const std::vector<const MemberDef*> &portList,TextStream & t);
+static void endTable(TextStream &t);
+static void writeClassToDot(TextStream &t,ClassDef* cd);
+static void writeVhdlDotLink(TextStream &t,const QCString &a,const QCString &b,const QCString &style);
 static const MemberDef *flowMember=0;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)
@@ -95,7 +96,7 @@ void VhdlDocGen::setFlowMember( const MemberDef* mem)
 
 
 //--------------------------------------------------------------------------------------------------
-static void codify(std::ostream &t,const char *str)
+static void codify(TextStream &t,const char *str)
 {
   if (str)
   {
@@ -187,12 +188,13 @@ void VhdlDocGen::writeOverview()
 
   QCString ov =Config_getString(HTML_OUTPUT);
   QCString fileName=ov+"/vhdl_design.dot";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Warning: Cannot open file %s for writing\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   startDot(t);
 
@@ -230,13 +232,14 @@ void VhdlDocGen::writeOverview()
 
   endDot(t);
   //  writePortLinks(t);
-  t.close();
+  t.flush();
+  f.close();
   createSVG();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void startDot(std::ostream &t)
+static void startDot(TextStream &t)
 {
   t << " digraph G { \n";
   t << "rankdir=LR \n";
@@ -244,18 +247,18 @@ static void startDot(std::ostream &t)
   t << "stylesheet=\"doxygen.css\"\n";
 }
 
-static void endDot(std::ostream &t)
+static void endDot(TextStream &t)
 {
   t <<" } \n";
 }
 
-static void startTable(std::ostream &t,const QCString &className)
+static void startTable(TextStream &t,const QCString &className)
 {
   t << className <<" [ shape=none , fontname=\"arial\",  fontcolor=\"blue\" , \n";
   t << "label=<<TABLE BORDER=\"0\" CELLBORDER=\"1\" CELLSPACING=\"0\">\n";
 }
 
-static void writeVhdlDotLink(std::ostream &t,
+static void writeVhdlDotLink(TextStream &t,
     const QCString &a,const QCString &b,const QCString &style)
 {
   t << a << "->" << b;
@@ -285,7 +288,7 @@ static QCString formatBriefNote(const QCString &brief,ClassDef * cd)
   return vForm;
 }
 
-static void writeVhdlEntityToolTip(std::ostream& t,ClassDef *cd)
+static void writeVhdlEntityToolTip(TextStream& t,ClassDef *cd)
 {
 
   QCString brief=cd->briefDescription();
@@ -306,7 +309,7 @@ static void writeVhdlEntityToolTip(std::ostream& t,ClassDef *cd)
   writeVhdlDotLink(t,dotn,node,"dotted");
 }
 
-static void writeColumn(std::ostream &t,const MemberDef *md,bool start)
+static void writeColumn(TextStream &t,const MemberDef *md,bool start)
 {
   QCString toolTip;
 
@@ -389,13 +392,13 @@ static void writeColumn(std::ostream &t,const MemberDef *md,bool start)
   }
 }
 
-static void endTable(std::ostream &t)
+static void endTable(TextStream &t)
 {
   t << "</TABLE>>\n";
   t << "] \n";
 }
 
-static void writeClassToDot(std::ostream &t,ClassDef* cd)
+static void writeClassToDot(TextStream &t,ClassDef* cd)
 {
   t << "<TR><TD COLSPAN=\"2\" BGCOLOR=\"yellow\" ";
   t << "PORT=\"";
@@ -429,9 +432,9 @@ static std::vector<const MemberDef*> getPorts(const ClassDef *cd)
   return portList;
 }
 
-//writeColumn(std::ostream &t,QCString name,bool start)
+//writeColumn(TextStream &t,QCString name,bool start)
 
-static void writeTable(const std::vector<const MemberDef*> &portList,std::ostream & t)
+static void writeTable(const std::vector<const MemberDef*> &portList,TextStream & t)
 {
   std::vector<const MemberDef *> inPorts;
   std::vector<const MemberDef *> outPorts;
@@ -1694,7 +1697,7 @@ bool VhdlDocGen::writeVHDLTypeDocumentation(const MemberDef* mdef, const Definit
   return hasParams;
 }
 
-void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,std::ostream &tagFile)
+void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,TextStream &tagFile)
 {
   tagFile << "    <member kind=\"";
   if (VhdlDocGen::isGeneric(mdef))      tagFile << "generic";
@@ -3054,7 +3057,7 @@ void FlowChart::delFlowList()
   flowList.clear();
 }
 
-void FlowChart::alignCommentNode(std::ostream &t,QCString com)
+void FlowChart::alignCommentNode(TextStream &t,QCString com)
 {
   uint max=0;
   QCString s;
@@ -3090,7 +3093,7 @@ void FlowChart::alignCommentNode(std::ostream &t,QCString com)
 }
 
 
-void FlowChart::buildCommentNodes(std::ostream & t)
+void FlowChart::buildCommentNodes(TextStream & t)
 {
   size_t size=flowList.size();
   bool begin=false;
@@ -3175,7 +3178,7 @@ void FlowChart::buildCommentNodes(std::ostream & t)
   }// for;
 }
 
-void FlowChart::codify(std::ostream &t,const char *str)
+void FlowChart::codify(TextStream &t,const char *str)
 {
   if (str)
   {
@@ -3401,7 +3404,7 @@ void FlowChart::createSVG()
   }
 }
 
-void FlowChart::startDot(std::ostream &t)
+void FlowChart::startDot(TextStream &t)
 {
   t << " digraph G { \n";
   t << "rankdir=TB \n";
@@ -3409,7 +3412,7 @@ void FlowChart::startDot(std::ostream &t)
   t << "stylesheet=\"doxygen.css\"\n";
 }
 
-void FlowChart::endDot(std::ostream &t)
+void FlowChart::endDot(TextStream &t)
 {
   t << " } \n";
 }
@@ -3420,12 +3423,13 @@ void FlowChart::writeFlowChart()
 
   QCString ov = Config_getString(HTML_OUTPUT);
   QCString fileName = ov+"/flow_design.dot";
-  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!t.is_open())
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
   {
     err("Cannot open file %s for writing\n",fileName.data());
     return;
   }
+  TextStream t(&f);
 
   colTextNodes();
   //  buildCommentNodes(t);
@@ -3438,7 +3442,8 @@ void FlowChart::writeFlowChart()
   {
     printUmlTree();
     delFlowList();
-    t.close();
+    t.flush();
+    f.close();
     return;
   }
 
@@ -3452,11 +3457,12 @@ void FlowChart::writeFlowChart()
 
   FlowChart::endDot(t);
   delFlowList();
-  t.close();
+  t.flush();
+  f.close();
   FlowChart::createSVG();
 }// writeFlowChart
 
-void FlowChart::writeShape(std::ostream &t,const FlowChart &fl)
+void FlowChart::writeShape(TextStream &t,const FlowChart &fl)
 {
   if (fl.type & EEND) return;
   QCString var;
@@ -3558,7 +3564,7 @@ void FlowChart::writeShape(std::ostream &t,const FlowChart &fl)
 }
 
 
-void FlowChart::writeEdge(std::ostream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i)
+void FlowChart::writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i)
 {
   bool b=fl_from.type & STARTL;
   bool c=fl_to.type & STARTL;
@@ -3576,7 +3582,7 @@ void FlowChart::writeEdge(std::ostream &t,const FlowChart &fl_from,const FlowCha
   writeEdge(t,fl_from.id,fl_to.id,i,b,c);
 }
 
-void FlowChart::writeEdge(std::ostream &t,int fl_from,int fl_to,int i,bool bFrom,bool bTo)
+void FlowChart::writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom,bool bTo)
 {
   QCString label,col;
 
@@ -3768,7 +3774,7 @@ size_t FlowChart::getNextIfLink(const FlowChart &fl,size_t index)
   return getNextNode(endifNode,stamp);
 }
 
-void FlowChart::writeFlowLinks(std::ostream &t)
+void FlowChart::writeFlowLinks(TextStream &t)
 {
   size_t size=flowList.size();
   if (size<2) return;

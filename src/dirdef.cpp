@@ -61,7 +61,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual QCString shortTitle() const;
     virtual bool hasDetailedDescription() const;
     virtual void writeDocumentation(OutputList &ol);
-    virtual void writeTagFile(std::ostream &t);
+    virtual void writeTagFile(TextStream &t);
     virtual void setDiskName(const QCString &name) { m_diskName = name; }
     virtual void sort();
     virtual void setParent(DirDef *parent);
@@ -457,7 +457,7 @@ bool DirDefImpl::hasDetailedDescription() const
   return (!briefDescription().isEmpty() && repeatBrief) || !documentation().isEmpty();
 }
 
-void DirDefImpl::writeTagFile(std::ostream &tagFile)
+void DirDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"dir\">\n";
   tagFile << "    <name>" << convertToXML(displayName()) << "</name>\n";

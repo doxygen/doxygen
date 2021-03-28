@@ -63,7 +63,6 @@
 
 struct pyscannerYY_state
 {
-  pyscannerYY_state() : defVal(std::ios_base::ate) {}
   CommentScanner          commentScanner;
   OutlineParserInterface *thisParser = 0;
   const char *            inputString = 0;
@@ -87,7 +86,7 @@ struct pyscannerYY_state
   bool                    doubleQuote = FALSE;
   bool                    specialBlock = FALSE;
   int                     stringContext = 0;
-  std::ostringstream *    copyString = 0;
+  TextStream *            copyString = 0;
   int                     indent = 0;
   int                     curIndent = 0;
   int                     commentIndent = 0;
@@ -98,7 +97,7 @@ struct pyscannerYY_state
   int                     atomCount = 0;
   QCString                moduleScope;
   QCString                packageName;
-  std::ostringstream      defVal;
+  TextStream              defVal;
   int                     braceCount = 0;
   bool                    lexInit = FALSE;
   bool                    packageCommentAllowed = FALSE;
@@ -1749,7 +1748,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
   for (size_t i=0; i<rt->children().size(); ++i)
   {
     std::shared_ptr<Entry> ce = rt->children()[i];
-    if (ce->program.tellp() != std::streampos(0))
+    if (!ce->program.empty())
     {
       //fprintf(stderr,"parseCompounds: -- %s (line %d) ---------\n%s\n---------------\n",
       //  ce->name.data(), ce->bodyLine, ce->program.data());

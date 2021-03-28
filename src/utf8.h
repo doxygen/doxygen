@@ -18,7 +18,8 @@
 
 #include <cstdint>
 #include <string>
-#include <iostream>
+
+class TextStream;
 
 /** @file
  *  @brief Various UTF8 related helper functions.
@@ -55,7 +56,7 @@ int getUTF8CharNumBytes(char firstByte);
 /** Writes the UTF8 character pointed to by s to stream t and returns a pointer
  *  to the next character.
  */
-const char *writeUTF8Char(std::ostream &t,const char *s);
+const char *writeUTF8Char(TextStream &t,const char *s);
 
 /** Returns true iff the last character in input is a multibyte character. */
 bool lastUTF8CharIsMultibyte(const std::string &input);

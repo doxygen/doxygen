@@ -27,12 +27,15 @@
 #include "memberdef.h"
 #include "namespacedef.h"
 #include "util.h"
+#include "textstream.h"
 
 struct DocSets::Private
 {
   QCString indent();
-  std::ofstream nts;
-  std::ofstream tts;
+  std::ofstream ntf;
+  TextStream    nts;
+  std::ofstream ttf;
+  TextStream    tts;
   std::stack<bool> indentStack;
   std::set<std::string> scopes;
 };
@@ -148,11 +151,12 @@ void DocSets::initialize()
 
   // -- start Nodes.xml
   QCString notes = Config_getString(HTML_OUTPUT) + "/Nodes.xml";
-  p->nts.open(notes.str(),std::ofstream::out | std::ofstream::binary);
-  if (!p->nts.is_open())
+  p->ntf.open(notes.str(),std::ofstream::out | std::ofstream::binary);
+  if (!p->ntf.is_open())
   {
     term("Could not open file %s for writing\n",notes.data());
   }
+  p->nts.setStream(&p->ntf);
   //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
   QCString indexName="index";
   p->nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -165,11 +169,12 @@ void DocSets::initialize()
   p->indentStack.push(true);
 
   QCString tokens = Config_getString(HTML_OUTPUT) + "/Tokens.xml";
-  p->tts.open(tokens.str(),std::ofstream::out | std::ofstream::binary);
-  if (!p->tts.is_open())
+  p->ttf.open(tokens.str(),std::ofstream::out | std::ofstream::binary);
+  if (!p->ttf.is_open())
   {
     term("Could not open file %s for writing\n",tokens.data());
   }
+  p->tts.setStream(&p->ttf);
   p->tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   p->tts << "<Tokens version=\"1.0\">\n";
 }
@@ -185,10 +190,12 @@ void DocSets::finalize()
   p->nts << "    </Node>\n";
   p->nts << "  </TOC>\n";
   p->nts << "</DocSetNodes>\n";
-  p->nts.close();
+  p->nts.flush();
+  p->ntf.close();
 
   p->tts << "</Tokens>\n";
-  p->tts.close();
+  p->tts.flush();
+  p->ttf.close();
 }
 
 QCString DocSets::Private::indent()
@@ -476,7 +483,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   }
 }
 
-void DocSets::writeToken(std::ostream &t,
+void DocSets::writeToken(TextStream &t,
                          const Definition *d,
                          const QCString &type,
                          const QCString &lang,

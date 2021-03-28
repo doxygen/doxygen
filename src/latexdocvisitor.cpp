@@ -52,7 +52,7 @@ static const char *getSectionName(int level)
   return secLabels[std::min(maxLevels-1,l)];
 }
 
-static void visitPreStart(std::ostream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
+static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
 {
     if (inlineImage)
     {
@@ -122,7 +122,7 @@ static void visitPreStart(std::ostream &t, bool hasCaption, QCString name,  QCSt
 
 
 
-static void visitPostEnd(std::ostream &t, bool hasCaption, bool inlineImage = FALSE)
+static void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE)
 {
     if (inlineImage)
     {
@@ -176,7 +176,7 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 }
 
 
-LatexDocVisitor::LatexDocVisitor(std::ostream &t,LatexCodeGenerator &ci,
+LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
                                  const char *langExt,bool insideTabbing)
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
@@ -1045,7 +1045,7 @@ static bool tableIsNested(const DocNode *n)
   return isNested;
 }
 
-static void writeStartTableCommand(std::ostream &t,const DocNode *n,int cols)
+static void writeStartTableCommand(TextStream &t,const DocNode *n,int cols)
 {
   if (tableIsNested(n))
   {
@@ -1058,7 +1058,7 @@ static void writeStartTableCommand(std::ostream &t,const DocNode *n,int cols)
   //return isNested ? "TabularNC" : "TabularC";
 }
 
-static void writeEndTableCommand(std::ostream &t,const DocNode *n)
+static void writeEndTableCommand(TextStream &t,const DocNode *n)
 {
   if (tableIsNested(n))
   {

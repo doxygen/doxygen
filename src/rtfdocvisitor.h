@@ -25,12 +25,13 @@
 #include "qcstring.h"
 
 class CodeOutputInterface;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(std::ostream &t,CodeOutputInterface &ci,const char *langExt);
+    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -162,7 +163,7 @@ class RTFDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    std::ostream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

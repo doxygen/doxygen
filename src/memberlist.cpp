@@ -948,7 +948,7 @@ QCString MemberList::listTypeAsString(MemberListType type)
   return "";
 }
 
-void MemberList::writeTagFile(std::ostream &tagFile)
+void MemberList::writeTagFile(TextStream &tagFile)
 {
   for (const auto &imd : m_members)
   {

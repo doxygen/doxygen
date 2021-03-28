@@ -22,20 +22,22 @@
 #include "dotnode.h"
 #include "dotgraph.h"
 
+class TextStream;
+
 /** Representation of an include dependency graph */
 class DotInclDepGraph : public DotGraph
 {
   public:
     DotInclDepGraph(const FileDef *fd,bool inverse);
     ~DotInclDepGraph();
-    QCString writeGraph(std::ostream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
                         const char *path,const char *fileName,const char *relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
     int numNodes() const;
-    void writeXML(std::ostream &t);
-    void writeDocbook(std::ostream &t);
+    void writeXML(TextStream &t);
+    void writeDocbook(TextStream &t);
 
   protected:
     virtual QCString getBaseName() const;

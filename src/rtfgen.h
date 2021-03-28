@@ -32,8 +32,8 @@ class RTFGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
-    static void writeStyleSheetFile(std::ostream &t);
-    static void writeExtensionsFile(std::ostream &t);
+    static void writeStyleSheetFile(TextStream &t);
+    static void writeExtensionsFile(TextStream &t);
     OutputType type() const { return RTF; }
 
     void setRelativePath(const QCString &path);
@@ -89,8 +89,8 @@ class RTFGenerator : public OutputGenerator
     void endTextLink();
     void startHtmlLink(const char *url);
     void endHtmlLink();
-    void startTypewriter() { t << "{\\f2 "; }
-    void endTypewriter()   { t << "}";      }
+    void startTypewriter() { m_t << "{\\f2 "; }
+    void endTypewriter()   { m_t << "}";      }
     void startGroupHeader(int);
     void endGroupHeader(int);
     //void writeListItem();
@@ -128,10 +128,10 @@ class RTFGenerator : public OutputGenerator
     void writeLineNumber(const char *,const char *,const char *,int l);
     void startCodeLine(bool);
     void endCodeLine();
-    void startEmphasis() { t << "{\\i ";  }
-    void endEmphasis()   { t << "}"; }
-    void startBold()     { t << "{\\b "; }
-    void endBold()       { t << "}"; }
+    void startEmphasis() { m_t << "{\\i ";  }
+    void endEmphasis()   { m_t << "}"; }
+    void startBold()     { m_t << "{\\b "; }
+    void endBold()       { m_t << "}"; }
     void startDescription();
     void endDescription();
     void startDescItem();
@@ -142,7 +142,7 @@ class RTFGenerator : public OutputGenerator
     void startDoxyAnchor(const char *,const char *,const char *,const char *,const char *);
     void endDoxyAnchor(const char *,const char *);
     void writeChar(char c);
-    void writeLatexSpacing() {};//{ t << "\\hspace{0.3cm}"; }
+    void writeLatexSpacing() {};//{ m_t << "\\hspace{0.3cm}"; }
     void writeStartAnnoItem(const char *type,const char *file,
                             const char *path,const char *name);
     void writeEndAnnoItem(const char *name);
@@ -150,10 +150,10 @@ class RTFGenerator : public OutputGenerator
     void endSubsection();
     void startSubsubsection();
     void endSubsubsection();
-    void startCenter()      { t << "{\\qc\n"; }
-    void endCenter()        { t << "}"; }
-    void startSmall()       { t << "{\\sub "; }
-    void endSmall()         { t << "}"; }
+    void startCenter()      { m_t << "{\\qc\n"; }
+    void endCenter()        { m_t << "}"; }
+    void startSmall()       { m_t << "{\\sub "; }
+    void endSmall()         { m_t << "}"; }
 
     void startMemberDescription(const char *,const char *,bool);
     void endMemberDescription();

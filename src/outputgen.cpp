@@ -24,7 +24,7 @@
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator(const char *dir) : t(nullptr), m_dir(dir)
+OutputGenerator::OutputGenerator(const char *dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
 }
@@ -34,12 +34,12 @@ OutputGenerator::~OutputGenerator()
   //printf("OutputGenerator::~OutputGenerator()\n");
 }
 
-OutputGenerator::OutputGenerator(const OutputGenerator &og) : t(nullptr)
+OutputGenerator::OutputGenerator(const OutputGenerator &og) : m_t(nullptr)
 {
   m_dir = og.m_dir;
   // we don't copy the other fields.
   // after copying startPlainFile() should be called
-  if (og.t.rdbuf()!=nullptr)
+  if (og.m_t.stream()!=nullptr)
   {
     throw std::runtime_error("OutputGenerator copy constructor called while a file is processing");
   }
@@ -50,7 +50,7 @@ OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
   m_dir = og.m_dir;
   // we don't copy the other fields.
   // after assignment startPlainFile() should be called
-  if (og.t.rdbuf()!=nullptr)
+  if (og.m_t.stream()!=nullptr)
   {
     throw std::runtime_error("OutputGenerator assignment operator called while a file is processing");
   }
@@ -66,12 +66,13 @@ void OutputGenerator::startPlainFile(const char *name)
   {
     term("Could not open file %s for writing\n",m_fileName.data());
   }
-  t.rdbuf(m_file.rdbuf());
+  m_t.setStream(&m_file);
 }
 
 void OutputGenerator::endPlainFile()
 {
-  t.rdbuf(nullptr);
+  m_t.flush();
+  m_t.setStream(nullptr);
   m_file.close();
   m_fileName.resize(0);
 }
