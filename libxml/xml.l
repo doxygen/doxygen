@@ -440,12 +440,13 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
   FILE *output = 0;
   const char *enter_txt = 0;
   const char *finished_txt = 0;
-  if      (yy_flex_debug) { output=stderr; enter_txt="entering"; finished_txt="finished"; }
-  else if (debugEnabled)  { output=stdout; enter_txt="Entering"; finished_txt="Finished"; }
+  const char *pre_txt = 0;
+  if      (yy_flex_debug) { output=stderr; pre_txt="--"; enter_txt="entering"; finished_txt="finished"; }
+  else if (debugEnabled)  { output=stdout; pre_txt="";   enter_txt="Entering"; finished_txt="Finished"; }
 
   if (output)
   {
-    fprintf(output,"--%s lexical analyzer: %s (for: %s)\n",enter_txt, __FILE__, fileName);
+    fprintf(output,"%s%s lexical analyzer: %s (for: %s)\n",pre_txt,enter_txt, __FILE__, fileName);
   }
 
   BEGIN(Initial);
@@ -475,7 +476,7 @@ void XMLParser::parse(const char *fileName,const char *inputStr, bool debugEnabl
 
   if (output)
   {
-    fprintf(output,"--%s lexical analyzer: %s (for: %s)\n",finished_txt, __FILE__, fileName);
+    fprintf(output,"%s%s lexical analyzer: %s (for: %s)\n",pre_txt,finished_txt, __FILE__, fileName);
   }
 }
 
