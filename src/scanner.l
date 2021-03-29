@@ -1914,7 +1914,8 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name+='>';
                                           // *yyextra->currentTemplateSpec+='>';
-                                          if (yyextra->roundCount==0 && --yyextra->sharpCount<=0)
+                                          --yyextra->sharpCount;
+                                          if (yyextra->roundCount==0 && yyextra->sharpCount<=0)
                                           {
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -1924,6 +1925,11 @@ NONLopt [^\n]*
                                             yyextra->copyArgString = &yyextra->current->args;
                                             //printf("Found %s\n",yyextra->current->name.data());
                                             BEGIN( ReadFuncArgType ) ;
+                                          }
+                                          else if (yyextra->sharpCount<=0)
+                                          {
+                                             yyextra->current->name+="(";
+                                             yyextra->roundCount++;
                                           }
                                         }
 <EndTemplate>">"{BNopt}/"("({BN}*{ID}{BN}*"::")*({BN}*"*"{BN}*)+ { // function pointer returning a template instance
