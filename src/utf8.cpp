@@ -13,15 +13,16 @@
  *
  */
 
+#include <cstdint>
 #include <sstream>
 
 #include "utf8.h"
 #include "caseconvert.h"
 #include "textstream.h"
 
-int getUTF8CharNumBytes(char c)
+uint8_t getUTF8CharNumBytes(char c)
 {
-  int num=1;
+  uint8_t num=1;
   unsigned char uc = static_cast<unsigned char>(c);
   if (uc>=0x80u) // multibyte character
   {
@@ -173,8 +174,8 @@ std::string convertUTF8ToUpper(const std::string &input)
 const char *writeUTF8Char(TextStream &t,const char *s)
 {
   if (s==0) return 0;
-  int len = getUTF8CharNumBytes(*s);
-  for (int i=0;i<len;i++)
+  uint8_t len = getUTF8CharNumBytes(*s);
+  for (uint8_t i=0;i<len;i++)
   {
     if (s[i]==0) // detect premature end of string (due to invalid UTF8 char)
     {

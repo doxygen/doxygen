@@ -51,7 +51,7 @@ uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos);
 /** Returns the number of bytes making up a single UTF8 character given the first byte
  *  in the sequence.
  */
-int getUTF8CharNumBytes(char firstByte);
+uint8_t getUTF8CharNumBytes(char firstByte);
 
 /** Writes the UTF8 character pointed to by s to stream t and returns a pointer
  *  to the next character.

@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <stack>
 #include <string>
+#include <cassert>
 
 #include "doctokenizer.h"
 #include "cmdmapper.h"
@@ -115,12 +116,12 @@ bool doctokenizerYYpopContext()
 
 QCString extractPartAfterNewLine(const QCString &text)
 {
-  int nl1 = text.findRev('\n');
+  int nl1 = text.find('\n');
   if (nl1!=-1)
   {
     return text.mid(nl1+1);
   }
-  int nl2 = text.findRev("\\ilinebr");
+  int nl2 = text.find("\\ilinebr");
   if (nl2!=-1)
   {
     if (text.at(nl2+8)==' ') nl2++; // skip space after \\ilinebr
@@ -499,6 +500,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          lineCount(yytext,yyleng);
                          QCString text=yytext;
                          size_t dashPos = static_cast<size_t>(text.findRev('-'));
+                         assert(dashPos!=std::string::npos);
                          g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
                          g_token->indent     = computeIndent(yytext,dashPos);
@@ -517,6 +519,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t listPos = match.position();
+                           assert(listPos!=std::string::npos);
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(yytext,listPos);
@@ -534,9 +537,11 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                            static const reg::Ex re(R"(\d+)");
                            reg::Match match;
                            reg::search(text,match,re);
+                           size_t markPos = match.position();
+                           assert(markPos!=std::string::npos);
                            g_token->isEnumList = true;
                            g_token->id         = std::stoul(match.str());
-                           g_token->indent     = computeIndent(yytext,match.position());
+                           g_token->indent     = computeIndent(yytext,markPos);
                            return TK_LISTITEM;
                          }
                        }
@@ -544,6 +549,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(yytext);
                          size_t dashPos = static_cast<size_t>(text.findRev('-'));
+                         assert(dashPos!=std::string::npos);
                          g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
                          g_token->indent     = computeIndent(text,dashPos);
@@ -562,6 +568,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                            reg::Match match;
                            reg::search(text,match,re);
                            size_t markPos = match.position();
+                           assert(markPos!=std::string::npos);
                            g_token->isEnumList = FALSE;
                            g_token->id         = -1;
                            g_token->indent     = computeIndent(text.c_str(),markPos);
@@ -580,15 +587,18 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                            static const reg::Ex re(R"(\d+)");
                            reg::Match match;
                            reg::search(text,match,re);
+                           size_t markPos = match.position();
+                           assert(markPos!=std::string::npos);
                            g_token->isEnumList = true;
                            g_token->id         = std::stoul(match.str());
-                           g_token->indent     = computeIndent(text.c_str(),match.position());
+                           g_token->indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
                          }
                        }
 <St_Para>^{ENDLIST}       { /* end list */
                          lineCount(yytext,yyleng);
                          int dotPos = QCString(yytext).findRev('.');
+                         assert(dotPos!=-1);
                          g_token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
