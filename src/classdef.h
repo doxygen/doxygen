@@ -167,14 +167,14 @@ class ClassDef : public Definition
     /** Returns the list of base classes from which this class directly
      *  inherits.
      */
-    virtual BaseClassList baseClasses() const = 0;
+    virtual const BaseClassList &baseClasses() const = 0;
 
     /** Update the list of base classes to the one passed */
     virtual void updateBaseClasses(const BaseClassList &bcd) = 0;
 
     /** Returns the list of sub classes that directly derive from this class
      */
-    virtual BaseClassList subClasses() const = 0;
+    virtual const BaseClassList &subClasses() const = 0;
 
     /** Update the list of sub classes to the one passed */
     virtual void updateSubClasses(const BaseClassList &bcd) = 0;

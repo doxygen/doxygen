@@ -177,9 +177,9 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString displayName(bool includeScope=TRUE) const;
     virtual CompoundType compoundType() const;
     virtual QCString compoundTypeString() const;
-    virtual BaseClassList baseClasses() const;
+    virtual const BaseClassList &baseClasses() const;
     virtual void updateBaseClasses(const BaseClassList &bcd);
-    virtual BaseClassList subClasses() const;
+    virtual const BaseClassList &subClasses() const;
     virtual void updateSubClasses(const BaseClassList &bcd);
     virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const;
     virtual Protection protection() const;
@@ -408,9 +408,9 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->compoundType(); }
     virtual QCString compoundTypeString() const
     { return getCdAlias()->compoundTypeString(); }
-    virtual BaseClassList baseClasses() const
+    virtual const BaseClassList &baseClasses() const
     { return getCdAlias()->baseClasses(); }
-    virtual BaseClassList subClasses() const
+    virtual const BaseClassList &subClasses() const
     { return getCdAlias()->subClasses(); }
     virtual const MemberNameInfoLinkedMap &memberNameInfoLinkedMap() const
     { return getCdAlias()->memberNameInfoLinkedMap(); }
@@ -4495,7 +4495,7 @@ ClassDefImpl::CompoundType ClassDefImpl::compoundType() const
   return m_impl->compType;
 }
 
-BaseClassList ClassDefImpl::baseClasses() const
+const BaseClassList &ClassDefImpl::baseClasses() const
 {
   return m_impl->inherits;
 }
@@ -4505,7 +4505,7 @@ void ClassDefImpl::updateBaseClasses(const BaseClassList &bcd)
   m_impl->inherits = bcd;
 }
 
-BaseClassList ClassDefImpl::subClasses() const
+const BaseClassList &ClassDefImpl::subClasses() const
 {
   return m_impl->inheritedBy;
 }
