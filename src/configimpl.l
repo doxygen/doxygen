@@ -2076,7 +2076,14 @@ void Config::compareDoxyfile(TextStream &t)
 
 bool Config::parse(const char *fileName,bool update)
 {
-  return ConfigImpl::instance()->parse(fileName,update);
+  bool parseRes = ConfigImpl::instance()->parse(fileName,update);
+  if (!parseRes) return parseRes;
+
+  // Internally we use the default format UTF-8 and
+  // when updating etc. the output is in this format as well and not in the read format
+  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  option->init();
+  return parseRes;
 }
 
 void Config::postProcess(bool clearHeaderAndFooter, bool compare)
