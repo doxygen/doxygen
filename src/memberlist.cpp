@@ -774,7 +774,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
   {
     MemberDefMutable *md = toMemberDefMutable(imd);
 
-    if (md->isDetailedSectionLinkable())
+    if (md && md->isDetailedSectionLinkable())
     {
       auto it = overloadInfo.insert(std::make_pair(md->name(),OverloadInfo())).first;
       it->second.total++;
@@ -785,7 +785,7 @@ void MemberList::writeDocumentationPage(OutputList &ol,
   {
     Definition *container_d = toDefinition(const_cast<DefinitionMutable*>(container));
     MemberDefMutable *md = toMemberDefMutable(imd);
-    if (md->isDetailedSectionLinkable())
+    if (md && md->isDetailedSectionLinkable())
     {
       auto it = overloadInfo.find(md->name().str());
       uint overloadCount = it->second.total;
