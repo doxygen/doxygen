@@ -29,8 +29,7 @@ class LatexCodeGenerator : public CodeOutputInterface
 {
   public:
     LatexCodeGenerator(TextStream &t,const QCString &relPath,const QCString &sourceFile);
-    LatexCodeGenerator();
-    void setTextStream(TextStream &t);
+    LatexCodeGenerator(TextStream &t);
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
     void codify(const char *text);
@@ -67,7 +66,7 @@ class LatexCodeGenerator : public CodeOutputInterface
                         const char *tooltip);
     void docify(const char *str);
     bool m_streamSet = false;
-    TextStream m_t;
+    TextStream &m_t;
     QCString m_relPath;
     QCString m_sourceFileName;
     int m_col = 0;

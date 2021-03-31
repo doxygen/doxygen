@@ -72,8 +72,8 @@ Entry::Entry(const Entry &e)
   bitfields   = e.bitfields;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
-  program     = e.program;
-  initializer = e.initializer;
+  program.str(e.program.str());
+  initializer.str(e.initializer.str());
   includeFile = e.includeFile;
   includeName = e.includeName;
   doc         = e.doc;

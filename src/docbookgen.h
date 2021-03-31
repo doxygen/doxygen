@@ -24,12 +24,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
 {
   public:
     DocbookCodeGenerator(TextStream &t);
-    DocbookCodeGenerator();
     virtual ~DocbookCodeGenerator();
-    void setTextStream(TextStream &t)
-    {
-      m_t = t;
-    }
     void setRelativePath(const QCString &path) { m_relPath = path; }
     void setSourceFileName(const QCString &sourceFileName) { m_sourceFileName = sourceFileName; }
     QCString sourceFileName() { return m_sourceFileName; }
@@ -58,7 +53,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void endCodeFragment(const char *style);
 
   private:
-    TextStream m_t;
+    TextStream &m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber = -1;

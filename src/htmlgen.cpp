@@ -512,20 +512,13 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
 //--------------------------------------------------------------------------
 
-HtmlCodeGenerator::HtmlCodeGenerator() : m_t(nullptr)
+HtmlCodeGenerator::HtmlCodeGenerator(TextStream &t) : m_t(t)
 {
 }
 
 HtmlCodeGenerator::HtmlCodeGenerator(TextStream &t,const QCString &relPath)
-  : m_t(nullptr), m_relPath(relPath)
+  : m_t(t), m_relPath(relPath)
 {
-  setTextStream(t);
-}
-
-void HtmlCodeGenerator::setTextStream(TextStream &t)
-{
-  m_t = t;
-  m_streamSet=true;
 }
 
 void HtmlCodeGenerator::setRelativePath(const QCString &path)
@@ -536,7 +529,7 @@ void HtmlCodeGenerator::setRelativePath(const QCString &path)
 void HtmlCodeGenerator::codify(const char *str)
 {
   int tabSize = Config_getInt(TAB_SIZE);
-  if (str && m_streamSet)
+  if (str)
   {
     const char *p=str;
     char c;
@@ -601,7 +594,7 @@ void HtmlCodeGenerator::docify(const char *str)
 {
   //m_t << getHtmlDirEmbeddingChar(getTextDirByConfig(str));
 
-  if (str && m_streamSet)
+  if (str)
   {
     const char *p=str;
     char c;
@@ -647,7 +640,6 @@ void HtmlCodeGenerator::docify(const char *str)
 void HtmlCodeGenerator::writeLineNumber(const char *ref,const char *filename,
                                     const char *anchor,int l)
 {
-  if (!m_streamSet) return;
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
   char lineAnchor[maxLineNrStr];
@@ -678,7 +670,6 @@ void HtmlCodeGenerator::writeCodeLink(const char *ref,const char *f,
                                       const char *anchor, const char *name,
                                       const char *tooltip)
 {
-  if (!m_streamSet) return;
   //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
   _writeCodeLink("code",ref,f,anchor,name,tooltip);
 }
@@ -793,52 +784,46 @@ void HtmlCodeGenerator::writeTooltip(const char *id, const DocLinkInfo &docInfo,
 
 void HtmlCodeGenerator::startCodeLine(bool)
 {
-  if (m_streamSet)
+  m_col=0;
+  if (!m_lineOpen)
   {
-    m_col=0;
-    if (!m_lineOpen)
-    {
-      m_t << "<div class=\"line\">";
-      m_lineOpen = TRUE;
-    }
+    m_t << "<div class=\"line\">";
+    m_lineOpen = TRUE;
   }
 }
 
 void HtmlCodeGenerator::endCodeLine()
 {
-  if (m_streamSet)
+  if (m_col == 0)
   {
-    if (m_col == 0)
-    {
-      m_t << " ";
-      m_col++;
-    }
-    if (m_lineOpen)
-    {
-      m_t << "</div>\n";
-      m_lineOpen = FALSE;
-    }
+    m_t << " ";
+    m_col++;
+  }
+  if (m_lineOpen)
+  {
+    m_t << "</div>\n";
+    m_lineOpen = FALSE;
   }
 }
 
 void HtmlCodeGenerator::startFontClass(const char *s)
 {
-  if (m_streamSet) m_t << "<span class=\"" << s << "\">";
+  m_t << "<span class=\"" << s << "\">";
 }
 
 void HtmlCodeGenerator::endFontClass()
 {
-  if (m_streamSet) m_t << "</span>";
+  m_t << "</span>";
 }
 
 void HtmlCodeGenerator::writeCodeAnchor(const char *anchor)
 {
-  if (m_streamSet) m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a name=\"" << anchor << "\"></a>";
 }
 
 void HtmlCodeGenerator::startCodeFragment(const char *)
 {
-  if (m_streamSet) m_t << "<div class=\"fragment\">";
+  m_t << "<div class=\"fragment\">";
 }
 
 void HtmlCodeGenerator::endCodeFragment(const char *)
@@ -846,17 +831,17 @@ void HtmlCodeGenerator::endCodeFragment(const char *)
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
 
-  if (m_streamSet) m_t << "</div><!-- fragment -->";
+  m_t << "</div><!-- fragment -->";
 }
 
 
 //--------------------------------------------------------------------------
 
-HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT))
+HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT)), m_codeGen(m_t)
 {
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
 {
 }
 
@@ -1065,7 +1050,6 @@ void HtmlGenerator::startFile(const char *name,const char *,
 
   startPlainFile(fileName);
   m_codeGen.setId(id);
-  m_codeGen.setTextStream(m_t);
   m_codeGen.setRelativePath(m_relPath);
   {
     std::lock_guard<std::mutex> lock(g_indexLock);

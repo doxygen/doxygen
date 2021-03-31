@@ -22,10 +22,9 @@ class HtmlCodeGenerator : public CodeOutputInterface
 {
   public:
     HtmlCodeGenerator(TextStream &t,const QCString &relPath);
-    HtmlCodeGenerator();
+    HtmlCodeGenerator(TextStream &t);
     int id() const { return m_id; }
     void setId(int id) { m_id = id; }
-    void setTextStream(TextStream &t);
     void setRelativePath(const QCString &path);
     void codify(const char *text);
     void writeCodeLink(const char *ref,const char *file,
@@ -55,8 +54,7 @@ class HtmlCodeGenerator : public CodeOutputInterface
                         const char *anchor,const char *name,
                         const char *tooltip);
     void docify(const char *str);
-    bool m_streamSet = false;
-    TextStream m_t;
+    TextStream &m_t;
     int m_col = 0;
     QCString m_relPath;
     bool m_lineOpen = false;

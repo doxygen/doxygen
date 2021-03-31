@@ -57,6 +57,9 @@ class TextStream final
     /** Writes any data that is buffered to the attached std::ostream */
    ~TextStream() { flush(); }
 
+    TextStream(const TextStream &) = delete;
+    TextStream &operator=(const TextStream &) = delete;
+
     /** Sets or changes the std::ostream to write to.
      *  @note Any data already buffered will be flushed.
      */

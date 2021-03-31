@@ -140,14 +140,9 @@ void writeDocbookLink(TextStream &t,const char * /*extRef*/,const char *compound
   t << "</link>";
 }
 
-DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(nullptr)
+DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(t)
 {
   m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
-  setTextStream(t);
-}
-
-DocbookCodeGenerator::DocbookCodeGenerator() : m_t(nullptr)
-{
 }
 
 DocbookCodeGenerator::~DocbookCodeGenerator() {}
@@ -267,12 +262,12 @@ DB_GEN_C1(m_t)
 
 //-------------------------------------------------------------------------------
 
-DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_OUTPUT))
+DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_OUTPUT)), m_codeGen(m_t)
 {
 DB_GEN_C
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
 {
 }
 
@@ -324,7 +319,6 @@ DB_GEN_C
   relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".xml") fileName+=".xml";
   startPlainFile(fileName);
-  m_codeGen.setTextStream(m_t);
   m_codeGen.setRelativePath(relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 

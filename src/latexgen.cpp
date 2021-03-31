@@ -50,20 +50,14 @@ static QCString g_header;
 static QCString g_footer;
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream &t,const QCString &relPath,const QCString &sourceFileName)
-  : m_t(nullptr), m_relPath(relPath), m_sourceFileName(sourceFileName)
-{
-  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
-  setTextStream(t);
-}
-
-LatexCodeGenerator::LatexCodeGenerator() : m_t(nullptr)
+  : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
 {
   m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }
 
-void LatexCodeGenerator::setTextStream(TextStream &t)
+LatexCodeGenerator::LatexCodeGenerator(TextStream &t) : m_t(t)
 {
-  m_t = t;
+  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }
 
 void LatexCodeGenerator::setRelativePath(const QCString &path)
@@ -264,12 +258,12 @@ void LatexCodeGenerator::endCodeFragment(const char *style)
 
 //-------------------------------
 
-LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT))
+LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT)), m_codeGen(m_t)
 {
   //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og)
+LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
 {
 }
 
@@ -532,7 +526,6 @@ void LatexGenerator::startFile(const char *name,const char *,const char *,int)
   m_relPath = relativePathToRoot(fileName);
   if (fileName.right(4)!=".tex" && fileName.right(4)!=".sty") fileName+=".tex";
   startPlainFile(fileName);
-  m_codeGen.setTextStream(m_t);
   m_codeGen.setRelativePath(m_relPath);
   m_codeGen.setSourceFileName(stripPath(fileName));
 }
