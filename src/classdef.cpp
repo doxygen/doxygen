@@ -239,6 +239,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool subGrouping() const;
     virtual bool isSliceLocal() const;
     virtual bool hasNonReferenceSuperClass() const;
+    virtual QCString requiresClause() const;
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const;
 
@@ -309,6 +310,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                  MemberListType lt,const QCString &title,
                  const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const;
+    virtual void setRequiresClause(const char *req);
 
   private:
     void addUsedInterfaceClasses(MemberDef *md,const char *typeStr);
@@ -527,6 +529,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->isSliceLocal(); }
     virtual bool hasNonReferenceSuperClass() const
     { return getCdAlias()->hasNonReferenceSuperClass(); }
+    virtual QCString requiresClause() const
+    { return getCdAlias()->requiresClause(); }
 
     virtual int countMembersIncludingGrouped(MemberListType lt,const ClassDef *inheritedFrom,bool additional) const
     { return getCdAlias()->countMembersIncludingGrouped(lt,inheritedFrom,additional); }
@@ -704,6 +708,9 @@ class ClassDefImpl::IMPL
     uint64 spec = 0;
 
     QCString metaData;
+
+    /** C++20 requires clause */
+    QCString requiresClause;
 };
 
 void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
@@ -3182,6 +3189,16 @@ bool ClassDefImpl::hasNonReferenceSuperClass() const
     }
   }
   return found;
+}
+
+QCString ClassDefImpl::requiresClause() const
+{
+  return m_impl->requiresClause;
+}
+
+void ClassDefImpl::setRequiresClause(const char *req)
+{
+  m_impl->requiresClause = req;
 }
 
 /*! called from MemberDef::writeDeclaration() to (recursively) write the

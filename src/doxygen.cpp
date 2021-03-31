@@ -1011,6 +1011,10 @@ static void addClassToContext(const Entry *root)
         cd->setTemplateArguments(*tArgList);
       }
     }
+    if (cd->requiresClause().isEmpty() && !root->req.isEmpty())
+    {
+      cd->setRequiresClause(root->req);
+    }
 
     cd->setCompoundType(convertToCompoundType(root->section,root->spec));
 
@@ -1081,6 +1085,7 @@ static void addClassToContext(const Entry *root)
       {
         cd->setTemplateArguments(*tArgList);
       }
+      cd->setRequiresClause(root->req);
       cd->setProtection(root->protection);
       cd->setIsStatic(root->stat);
 
@@ -1365,6 +1370,7 @@ static ClassDefMutable *createTagLessInstance(const ClassDef *rootCd,const Class
         imd->setMemberSpecifiers(md->getMemberSpecifiers());
         imd->setMemberGroupId(md->getMemberGroupId());
         imd->setInitializer(md->initializer());
+        imd->setRequiresClause(md->requiresClause());
         imd->setMaxInitLines(md->initializerLines());
         imd->setBitfields(md->bitfieldString());
         imd->setLanguage(md->getLanguage());
@@ -1982,6 +1988,7 @@ static void findUsingDeclImports(const Entry *root)
                 newMd->setBodySegment(md->getDefLine(),md->getStartBodyLine(),md->getEndBodyLine());
                 newMd->setBodyDef(md->getBodyDef());
                 newMd->setInitializer(md->initializer());
+                newMd->setRequiresClause(md->requiresClause());
                 newMd->setMaxInitLines(md->initializerLines());
                 newMd->setMemberGroupId(root->mGrpId);
                 newMd->setMemberSpecifiers(md->getMemberSpecifiers());
@@ -3104,6 +3111,7 @@ static void addMethodToClass(const Entry *root,ClassDefMutable *cd,
   md->setMemberGroupId(root->mGrpId);
   md->setTypeConstraints(root->typeConstr);
   md->setLanguage(root->lang);
+  md->setRequiresClause(root->req);
   md->setId(root->id);
   md->setBodyDef(fd);
   md->setFileDef(fd);
@@ -3213,6 +3221,7 @@ static void addGlobalFunction(const Entry *root,const QCString &rname,const QCSt
   md->addSectionsToDefinition(root->anchors);
   md->setMemberSpecifiers(root->spec);
   md->setMemberGroupId(root->mGrpId);
+  md->setRequiresClause(root->req);
 
   NamespaceDefMutable *nd = 0;
   // see if the function is inside a namespace that was not part of
@@ -5025,6 +5034,10 @@ static void addMemberDocs(const Entry *root,
   {
     //printf("setInitializer\n");
     md->setInitializer(rootInit.c_str());
+  }
+  if (md->requiresClause().isEmpty() && !root->req.isEmpty())
+  {
+    md->setRequiresClause(root->req);
   }
 
   md->setMaxInitLines(root->initLines);

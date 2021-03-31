@@ -229,6 +229,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual QCString getDeclType() const;
     virtual StringVector getLabels(const Definition *container) const;
     virtual const ArgumentList &typeConstraints() const;
+    virtual QCString requiresClause() const;
     virtual QCString documentation() const;
     virtual QCString briefDescription(bool abbr=FALSE) const;
     virtual QCString fieldType() const;
@@ -304,6 +305,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine);
     virtual void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine);
     virtual void setHidden(bool b);
+    virtual void setRequiresClause(const char *req);
     virtual void incrementFlowKeyWordCount();
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
@@ -344,6 +346,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                           const QCString &cname) const;
     void _writeCategoryRelation(OutputList &ol) const;
     void _writeTagData(const DefType) const;
+    void _writeTemplatePrefix(OutputList &ol, const Definition *def,
+                              const ArgumentList &al, bool writeReqClause=true) const;
 
     static int s_indentLevel;
 
@@ -735,6 +739,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getDeclLine(); }
     virtual int getDeclColumn() const
     { return getMdAlias()->getDeclColumn(); }
+    virtual QCString requiresClause() const
+    { return getMdAlias()->requiresClause(); }
 
     virtual void warnIfUndocumented() const {}
     virtual void warnIfUndocumentedParams() const {}
@@ -1119,26 +1125,6 @@ static void writeExceptionList(OutputList &ol, const ClassDef *cd, const MemberD
   }
 }
 
-static void writeTemplatePrefix(OutputList &ol,const ArgumentList &al)
-{
-  ol.docify("template<");
-  for (auto it = al.begin(); it!=al.end();)
-  {
-    Argument a = *it;
-    ol.docify(a.type);
-    ol.docify(" ");
-    ol.docify(a.name);
-    if (a.defval.length()!=0)
-    {
-      ol.docify(" = ");
-      ol.docify(a.defval);
-    }
-    ++it;
-    if (it!=al.end()) ol.docify(", ");
-  }
-  ol.docify("> ");
-}
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -1189,6 +1175,7 @@ class MemberDefImpl::IMPL
     QCString initializer;     // initializer
     QCString extraTypeChars;  // extra type info found after the argument list
     QCString enumBaseType;    // base type of the enum (C++11)
+    QCString requiresClause;  // requires clause (C++20)
     int initLines = 0;            // number of lines in the initializer
 
     uint64  memSpec = 0;          // The specifiers present for this member
@@ -2008,6 +1995,46 @@ QCString MemberDefImpl::getDeclType() const
   return ltype;
 }
 
+void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
+                                         const ArgumentList &al, bool writeReqClause) const
+{
+  ol.docify("template<");
+  for (auto it = al.begin(); it!=al.end();)
+  {
+    Argument a = *it;
+    linkifyText(TextGeneratorOLImpl(ol), // out
+        def,                     // scope
+        getFileDef(),            // fileScope
+        this,                    // self
+        a.type,                  // text
+        FALSE                    // autoBreak
+        );
+    ol.docify(" ");
+    ol.docify(a.name);
+    if (a.defval.length()!=0)
+    {
+      ol.docify(" = ");
+      ol.docify(a.defval);
+    }
+    ++it;
+    if (it!=al.end()) ol.docify(", ");
+  }
+  ol.docify("> ");
+  if (writeReqClause && !m_impl->requiresClause.isEmpty())
+  {
+    ol.lineBreak();
+    ol.docify("requires ");
+    linkifyText(TextGeneratorOLImpl(ol), // out
+        def,                     // scope
+        getFileDef(),            // fileScope
+        this,                    // self
+        m_impl->requiresClause,  // text
+        FALSE                    // autoBreak
+        );
+  }
+}
+
+
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool inGroup, const ClassDef *inheritedFrom,const char *inheritId) const
@@ -2086,9 +2113,10 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if (m_impl->tArgList.hasParameters() && getLanguage()==SrcLangExt_Cpp)
   {
     if (!isAnonType) ol.startMemberTemplateParams();
-    writeTemplatePrefix(ol,m_impl->tArgList);
+    _writeTemplatePrefix(ol,d,m_impl->tArgList);
     if (!isAnonType) ol.endMemberTemplateParams(anchor(),inheritId);
   }
+
 
   // *** write type
   QCString ltype(m_impl->type);
@@ -3280,7 +3308,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
           {
             if (!first) ol.docify(" ");
             ol.startMemberDocPrefixItem();
-            writeTemplatePrefix(ol,tal);
+            _writeTemplatePrefix(ol,scopedContainer,tal);
             ol.endMemberDocPrefixItem();
           }
         }
@@ -3296,7 +3324,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
             {
               if (!first) ol.docify(" ");
               ol.startMemberDocPrefixItem();
-              writeTemplatePrefix(ol,tal);
+              _writeTemplatePrefix(ol,scopedContainer,tal,false);
               ol.endMemberDocPrefixItem();
             }
           }
@@ -3304,7 +3332,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
         if (m_impl->tArgList.hasParameters() && lang==SrcLangExt_Cpp) // function template prefix
         {
           ol.startMemberDocPrefixItem();
-          writeTemplatePrefix(ol,m_impl->tArgList);
+          _writeTemplatePrefix(ol,scopedContainer,m_impl->tArgList);
           ol.endMemberDocPrefixItem();
         }
       }
@@ -5604,6 +5632,15 @@ QCString MemberDefImpl::enumBaseType() const
   return m_impl->enumBaseType;
 }
 
+void MemberDefImpl::setRequiresClause(const char *req)
+{
+  m_impl->requiresClause = req;
+}
+
+QCString MemberDefImpl::requiresClause() const
+{
+  return m_impl->requiresClause;
+}
 
 void MemberDefImpl::cacheTypedefVal(const ClassDef*val, const QCString & templSpec, const QCString &resolvedType)
 {

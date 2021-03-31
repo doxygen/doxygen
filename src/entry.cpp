@@ -108,6 +108,7 @@ Entry::Entry(const Entry &e)
   id          = e.id;
   extends     = e.extends;
   groups      = e.groups;
+  req         = e.req;
   m_fileDef   = e.m_fileDef;
 
   m_parent    = e.m_parent;
@@ -242,6 +243,7 @@ void Entry::reset()
   tArgLists.clear();
   typeConstr.reset();
   sli.clear();
+  req.resize(0);
   m_fileDef = 0;
 }
 

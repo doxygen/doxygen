@@ -74,6 +74,7 @@ struct scannerYY_state
   int              lastStringContext = 0;
   int              lastCurlyContext = 0;
   int              lastRoundContext = 0;
+  int              lastSharpContext = 0;
   int              lastSquareContext = 0;
   int              lastInitializerContext = 0;
   int              lastClassTemplSpecContext = 0;
@@ -139,6 +140,7 @@ struct scannerYY_state
   int              currentArgumentContext = 0;
   int              lastCopyArgStringContext = 0;
   int              lastCopyArgContext = 0;
+  int              requiresContext = 0;
   QCString        *copyArgString = 0;
   QCString         fullArgString;
   QCString         dummyRawString;
@@ -149,6 +151,7 @@ struct scannerYY_state
   QCString *pCopyQuotedString = 0;
   QCString *pCopyRoundString = 0;
   QCString *pCopyCurlyString = 0;
+  QCString *pCopySharpString = 0;
   QCString *pCopyRawString = 0;
   TextStream *pCopyCurlyGString = 0;
   TextStream *pCopyRoundGString = 0;
@@ -383,6 +386,7 @@ NONLopt [^\n]*
 %x      CopyGString
 %x      CopyPHPGString
 %x      CopyRound
+%x      CopySharp
 %x      CopyCurly
 %x      GCopyRound
 %x      GCopySquare
@@ -437,6 +441,10 @@ NONLopt [^\n]*
 %x      DocLine
 %x      DocBlock
 %x      DocCopyBlock
+
+ /** C++20 concepts */
+
+%x      RequiresClause
 
 %%
 
@@ -2069,6 +2077,54 @@ NONLopt [^\n]*
                                           yyextra->current->name=yytext;
                                           BEGIN(FindMembers);
                                         }
+<FindMembers>"requires"                 { // C++20 requires clause
+                                          yyextra->current->req.resize(0);
+                                          yyextra->requiresContext = YY_START;
+                                          BEGIN(RequiresClause);
+                                        }
+<RequiresClause>"("                     { // requires "(A && B)"
+                                          yyextra->current->req+=yytext;
+                                          yyextra->lastRoundContext=RequiresClause;
+                                          yyextra->pCopyRoundString=&yyextra->current->req;
+                                          yyextra->roundCount=0;
+                                          BEGIN( CopyRound ) ;
+                                        }
+<RequiresClause>{ID}                    { // something like "requires true"
+                                          if (yyextra->current->req.stripWhiteSpace().isEmpty())
+                                          {
+                                            yyextra->current->req=yytext;
+                                            BEGIN(yyextra->requiresContext);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
+<RequiresClause>{SCOPENAME}{BNopt}"("   { // "requires func(x)"
+                                          yyextra->current->req+=yytext;
+                                          yyextra->lastRoundContext=RequiresClause;
+                                          yyextra->pCopyRoundString=&yyextra->current->req;
+                                          yyextra->roundCount=0;
+                                          BEGIN( CopyRound );
+                                        }
+<RequiresClause>{SCOPENAME}{BNopt}"<"   { // "requires C<S,T>"
+                                          yyextra->current->req+=yytext;
+                                          yyextra->lastSharpContext=RequiresClause;
+                                          yyextra->pCopySharpString=&yyextra->current->req;
+                                          yyextra->sharpCount=0;
+                                          BEGIN( CopySharp );
+                                        }
+<RequiresClause>"||"|"&&"             { // "requires A || B" or "requires A && B"
+                                          yyextra->current->req+=yytext;
+                                        }
+<RequiresClause>{BN}+                   {
+                                          yyextra->current->req+=' ';
+                                        }
+<RequiresClause>.                       {
+                                          unput(*yytext);
+                                          yyextra->current->req=yyextra->current->req.simplifyWhiteSpace();
+                                          BEGIN(yyextra->requiresContext);
+                                        }
 <FindMembers,FindMemberName>{SCOPENAME} {
    
                                           if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
@@ -2947,6 +3003,59 @@ NONLopt [^\n]*
 <CopyRound>.                            {
                                           *yyextra->pCopyRoundString+=*yytext;
                                         }
+
+  /* generic sharp bracket list copy rules */
+<CopySharp>\"                           {
+                                          *yyextra->pCopySharpString += *yytext;
+                                          yyextra->pCopyQuotedString=yyextra->pCopySharpString;
+                                          yyextra->lastStringContext=YY_START;
+                                          BEGIN(CopyString);
+                                        }
+<CopySharp>"<"                          {
+                                          *yyextra->pCopySharpString += *yytext;
+                                          yyextra->sharpCount++;
+                                        }
+<CopySharp>">"                          {
+                                          *yyextra->pCopySharpString += *yytext;
+                                          if (--yyextra->sharpCount<0)
+                                          {
+                                            BEGIN(yyextra->lastSharpContext);
+                                          }
+                                        }
+<CopySharp>\n                           {
+                                          lineCount(yyscanner);
+                                          *yyextra->pCopySharpString += *yytext;
+                                        }
+<CopySharp>\'                           {
+                                          if (yyextra->insidePHP)
+                                          {
+                                            yyextra->current->initializer << yytext;
+                                            yyextra->pCopyQuotedString = yyextra->pCopySharpString;
+                                            yyextra->lastStringContext=YY_START;
+                                            BEGIN(CopyPHPString);
+                                          }
+                                          else
+                                          {
+                                            *yyextra->pCopySharpString += yytext;
+                                          }
+                                        }
+<CopySharp>{CHARLIT}                    {
+                                          if (yyextra->insidePHP)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            *yyextra->pCopySharpString+=yytext;
+                                          }
+                                        }
+<CopySharp>[^"'<>\n,]+                  {
+                                          *yyextra->pCopySharpString+=yytext;
+                                        }
+<CopySharp>.                            {
+                                          *yyextra->pCopySharpString+=*yytext;
+                                        }
+
 
   /* generic round bracket list copy rules for growable strings */
 <GCopyRound>\"                          {
@@ -4627,6 +4736,11 @@ NONLopt [^\n]*
                                           unput(*yytext);
                                           BEGIN(FuncQual);
                                         }
+<TrailingReturn>"requires"{BN}+         {
+                                          yyextra->requiresContext = FuncQual;
+                                          yyextra->current->req+=' ';
+                                          BEGIN(RequiresClause);
+                                        }
 <TrailingReturn>"("                     {
                                           yyextra->roundCount++;
                                           yyextra->current->argList.setTrailingReturnType(yyextra->current->argList.trailingReturnType()+yytext);
@@ -4734,8 +4848,15 @@ NONLopt [^\n]*
                                           yyextra->current->args += *yytext;
                                           lineCount(yyscanner);
                                         }
-<FuncQual>{ID}                          { // typically a K&R style C function
-                                          if (yyextra->insideCS && qstrcmp(yytext,"where")==0)
+<FuncQual>{ID}                          {
+                                          if (yyextra->insideCpp && qstrcmp(yytext,"requires")==0)
+                                          {
+                                            // c++20 trailing requires clause
+                                            yyextra->requiresContext = YY_START;
+                                            yyextra->current->req+=' ';
+                                            BEGIN(RequiresClause);
+                                          }
+                                          else if (yyextra->insideCS && qstrcmp(yytext,"where")==0)
                                           {
                                             // type constraint for a method
                                             yyextra->current->typeConstr.clear();
@@ -4743,7 +4864,7 @@ NONLopt [^\n]*
                                             yyextra->lastCSConstraint = YY_START;
                                             BEGIN( CSConstraintName );
                                           }
-                                          else if (checkForKnRstyleC(yyscanner))
+                                          else if (checkForKnRstyleC(yyscanner)) // K&R style C function
                                           {
                                             yyextra->current->args = yytext;
                                             yyextra->oldStyleArgType.resize(0);

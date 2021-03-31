@@ -358,6 +358,8 @@ class ClassDef : public Definition
     virtual bool isSliceLocal() const = 0;
     virtual bool hasNonReferenceSuperClass() const = 0;
 
+    virtual QCString requiresClause() const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- count members ----
     //-----------------------------------------------------------------------------------
@@ -405,6 +407,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setTagLessReference(const ClassDef *cd) = 0;
     virtual void setName(const char *name) = 0;
     virtual void setMetaData(const char *md) = 0;
+    virtual void setRequiresClause(const char *req) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

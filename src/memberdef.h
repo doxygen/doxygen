@@ -261,6 +261,8 @@ class MemberDef : public Definition
 
     virtual const ArgumentList &typeConstraints() const = 0;
 
+    virtual QCString requiresClause() const = 0;
+
     // overrules
     virtual QCString documentation() const = 0;
     virtual QCString briefDescription(bool abbr=FALSE) const = 0;
@@ -392,6 +394,8 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     virtual void setInbodyDocumentation(const char *d,const char *inbodyFile,int inbodyLine) = 0;
 
     virtual void setHidden(bool b) = 0;
+
+    virtual void setRequiresClause(const char *req) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----

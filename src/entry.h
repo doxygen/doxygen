@@ -295,6 +295,7 @@ class Entry
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
+    QCString    req;          //!< C++20 requires clause
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
