@@ -3610,6 +3610,9 @@ If the \c DOT_UML_DETAILS tag is set to \c NO, doxygen will
 show attributes and methods without types and arguments in the UML graphs.
 If the \c DOT_UML_DETAILS tag is set to \c YES, doxygen will
 add type and arguments for attributes and methods in the UML graphs.
+If the \c DOT_UML_DETAILS tag is set to \c AGGREGATE, doxygen will
+show attributes and methods without types and arguments in the UML graphs
+and with overloaded entities the count for the overloaded entity.
 If the \c DOT_UML_DETAILS tag is set to \c NONE, doxygen will not generate
 fields with class member information in the UML graphs.
 The class diagrams will look similar to the default class diagrams but using
@@ -3618,6 +3621,7 @@ UML notation for the relationships.
       </docs>
       <value name="NO" />
       <value name="YES" />
+      <value name="AGGREGATE" />
       <value name="NONE" />
     </option>
     <option type='int' id='DOT_WRAP_THRESHOLD' defval='17' minval='0' maxval='1000' depends='HAVE_DOT'>
