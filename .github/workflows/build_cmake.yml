@@ -163,10 +163,10 @@ jobs:
     - name: Setting Ghostscript paths (Windows)
       shell: bash
       run: |
-        echo "C:/Program Files (x86)/gs/gs9.53.3/bin/" >> $GITHUB_PATH
-        echo "C:/Program Files/gs/gs9.53.3/bin/" >> $GITHUB_PATH
-        export PATH="/c/Program Files (x86)/gs/gs9.53.3/bin/:$PATH"
-        export PATH="/c/Program Files/gs/gs9.53.3/bin/:$PATH"
+        echo "C:/Program Files (x86)/gs/gs9.54.0/bin/" >> $GITHUB_PATH
+        echo "C:/Program Files/gs/gs9.54.0/bin/" >> $GITHUB_PATH
+        export PATH="/c/Program Files (x86)/gs/gs9.54.0/bin/:$PATH"
+        export PATH="/c/Program Files/gs/gs9.54.0/bin/:$PATH"
       if: matrix.config.os == 'windows-latest'
       
     - name: Install xmllint (Linux)
