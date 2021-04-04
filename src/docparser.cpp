@@ -79,6 +79,9 @@ static const char *sectionLevelToName[] =
   "subparagraph"
 };
 
+static const char *plantumlStart[] = {"uml", "bpm", "wire", "dot", "ditaa",
+                                      "salt", "math", "latex", "gantt", "mindmap",
+                                      "wbs", "yaml", "creole", "json", "flow" };
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -5535,8 +5538,68 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         static QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         doctokenizerYYsetStatePlantUMLOpt();
         retval = doctokenizerYYlex();
-        QCString plantFile(g_token->sectionId);
+
+        QCString fullMatch = g_token->sectionId;
+        QCString sectionId = "";
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        QCString cmdName;
+        StringVector optList;
+        QCString engine;
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             bool found = false;
+             QCString locOpt = opt;
+             locOpt = locOpt.lower();
+             for (int i = 0; i < sizeof(plantumlStart) / sizeof(*plantumlStart); i++)
+             {
+               if (locOpt == plantumlStart[i])
+               {
+                 if (!engine.isEmpty())
+                 {
+                   warn(g_fileName,getDoctokinizerLineNr(), "Multiple definition of engine for '\\startuml'");
+                 }
+                 engine = plantumlStart[i];
+                 found = true;
+                 break;
+               }
+             }
+             if (!found)
+             {
+               if (sectionId.isEmpty())
+               {
+                 sectionId = opt;
+               }
+               else
+               {
+                 warn(g_fileName,getDoctokinizerLineNr(),"Multiple use of of filename for '\\startuml'");
+               }
+             }
+           }
+        }
+        else
+        {
+          sectionId = g_token->sectionId;
+        }
+        if (engine.isEmpty()) engine = "uml";
+
+        if (sectionId.isEmpty())
+        {
+          doctokenizerYYsetStatePlantUMLOpt();
+          retval = doctokenizerYYlex();
+
+          sectionId = g_token->sectionId;
+          sectionId = sectionId.stripWhiteSpace();
+        }
+
+        QCString plantFile(sectionId);
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,plantFile);
+        dv->setEngine(engine);
         doctokenizerYYsetStatePara();
         QCString width,height;
         defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);

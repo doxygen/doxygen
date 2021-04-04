@@ -964,10 +964,8 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
-<St_PlantUMLOpt>{BLANK}*"{"[^}]*"}" { // case 1: file name is specified as {filename}
+<St_PlantUMLOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // case 1: options present
                          g_token->sectionId = QCString(yytext).stripWhiteSpace();
-                         // skip curly brackets around the optional image name
-                         g_token->sectionId = g_token->sectionId.mid(1,g_token->sectionId.length()-2).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
