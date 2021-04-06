@@ -165,7 +165,7 @@ jobs:
     - name: Setting Ghostscript paths (Windows)
       shell: bash
       run: |
-        export GSpath=`find /c/Prog* -name gswin\*c.exe | sed -e "s/gswin.*c.exe//"`
+        export GSpath=`find /c/Prog*/gs -name gswin\*c.exe | sed -e "s/gswin.*c.exe//"`
         export PATH="$GSpath:$PATH"
         export GSpath=`echo "$GSpath" | sed -e "s%/c%C:%"`
         echo "$GSpath" >> $GITHUB_PATH
