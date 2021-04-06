@@ -63,7 +63,8 @@ jobs:
             build_gen: "NMake Makefiles"
           }
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout doxygen
+      uses: actions/checkout@v1
       
     - name: Download MikTex (Windows)
       run: |
@@ -81,7 +82,8 @@ jobs:
       shell: pwsh
       if: matrix.config.os == 'windows-latest'
       
-    - uses: suisei-cn/actions-download-file@v1
+    - name: Install libiconv (Windows)
+      uses: suisei-cn/actions-download-file@v1
       with: 
         url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
         target: .  
@@ -163,10 +165,10 @@ jobs:
     - name: Setting Ghostscript paths (Windows)
       shell: bash
       run: |
-        echo "C:/Program Files (x86)/gs/gs9.54.0/bin/" >> $GITHUB_PATH
-        echo "C:/Program Files/gs/gs9.54.0/bin/" >> $GITHUB_PATH
-        export PATH="/c/Program Files (x86)/gs/gs9.54.0/bin/:$PATH"
-        export PATH="/c/Program Files/gs/gs9.54.0/bin/:$PATH"
+        export GSpath=`find /c/Prog* -name gswin\*c.exe | sed -e "s/gswin.*c.exe//"`
+        export PATH="$GSpath:$PATH"
+        export GSpath=`echo "$GSpath" | sed -e "s%/c%C:%"`
+        echo "$GSpath" >> $GITHUB_PATH
       if: matrix.config.os == 'windows-latest'
       
     - name: Install xmllint (Linux)
