@@ -81,7 +81,8 @@ static const char *sectionLevelToName[] =
 
 static const char *plantumlStart[] = {"uml", "bpm", "wire", "dot", "ditaa",
                                       "salt", "math", "latex", "gantt", "mindmap",
-                                      "wbs", "yaml", "creole", "json", "flow" };
+                                      "wbs", "yaml", "creole", "json", "flow",
+                                      "board", "git"};
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------

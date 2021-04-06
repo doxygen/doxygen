@@ -2923,8 +2923,8 @@ class Receiver
   Not all diagrams can be created with the PlantUML `@startuml` command but need another
   PlantUML `@start...` command. This wil look like `@start<engine>` where currently supported are
   the following `<engine>`'s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
-  `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json` and `flow`. By default the `<engine>` is
-  `uml`. The `<engine>` can be specified as an option.
+  `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`a, `board` and `git`.s
+  By default the `<engine>` is `uml`. The `<engine>` can be specified as an option.
   Also the file to write the resulting image to can be specified by means of an option, see the
   description of the first (optional) argument for details.
   Of course only one `<engine>` can be specified and also the filename can only be specified once.
