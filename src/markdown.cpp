@@ -2744,15 +2744,18 @@ QCString markdownFileNameToId(const QCString &fileName)
   int i = baseFn.findRev('.');
   if (i!=-1) baseFn = baseFn.left(i);
   QCString baseName = baseFn;
+  QCString result;
   char *p = baseName.rawData();
   char c;
   while ((c=*p))
   {
-    if (!isId(c)) *p='_'; // escape characters that do not yield an identifier by underscores
+    if (c == '_') result += "__";
+    else if (!isId(c)) result += '_'; // escape characters that do not yield an identifier by underscores
+    else result += c;
     p++;
   }
-  //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(baseName));
-  return "md_"+baseName;
+  //printf("markdownFileNameToId(%s)=md_%s\n",qPrint(fileName),qPrint(result));
+  return "md_"+result;
 }
 
 //---------------------------------------------------------------------------
