@@ -37,7 +37,7 @@ static inline bool isspace(char c)
 
 static inline bool isalpha(char c)
 {
-  return c<0 || (c>='a' && c<='z') || (c>='A' && c<='Z');
+  return static_cast<unsigned char>(c)>=128 || (c>='a' && c<='z') || (c>='A' && c<='Z');
 }
 
 static inline bool isdigit(char c)
