@@ -191,6 +191,10 @@ inline bool isId(int c)
 {
   return c=='_' || c>=128 || c<0 || isalnum(c);
 }
+inline bool isIdJS(int c)
+{
+  return c>=128 || c<0 || isalnum(c);
+}
 
 QCString removeRedundantWhiteSpace(const QCString &s);
 

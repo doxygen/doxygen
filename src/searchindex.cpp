@@ -555,7 +555,7 @@ QCString searchId(const Definition *d)
   TextStream t;
   for (size_t i=0;i<s.length();i++)
   {
-    if (isId(s[i]))
+    if (isIdJS(s[i]))
     {
       t << s[i];
     }
