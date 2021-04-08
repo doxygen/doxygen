@@ -719,6 +719,10 @@ void LatexGenerator::startIndexSection(IndexSections is)
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Namespace Index}\n"
       break;
+    case isConceptIndex:
+      if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+      m_t << "{"; //Concept Index}\n"
+      break;
     case isClassHierarchyIndex:
       if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
       m_t << "{"; //Hierarchical Index}\n"
@@ -769,6 +773,19 @@ void LatexGenerator::startIndexSection(IndexSections is)
           {
             if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
             m_t << "{"; // Namespace Documentation}\n":
+            break;
+          }
+        }
+      }
+      break;
+    case isConceptDocumentation:
+      {
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject() && !cd->isAlias())
+          {
+            if (compactLatex) m_t << "\\doxysection"; else m_t << "\\chapter";
+            m_t << "{"; // Concept Documentation}\n":
             break;
           }
         }
@@ -858,6 +875,9 @@ void LatexGenerator::endIndexSection(IndexSections is)
     case isNamespaceIndex:
       m_t << "}\n\\input{namespaces}\n";
       break;
+    case isConceptIndex:
+      m_t << "}\n\\input{concepts}\n";
+      break;
     case isClassHierarchyIndex:
       m_t << "}\n\\input{hierarchy}\n";
       break;
@@ -917,6 +937,23 @@ void LatexGenerator::endIndexSection(IndexSections is)
               found=true;
             }
             m_t << "\\input{" << nd->getOutputFileBase() << "}\n";
+          }
+        }
+      }
+      break;
+    case isConceptDocumentation:
+      {
+        bool found=FALSE;
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject() && !cd->isAlias())
+          {
+            if (!found)
+            {
+              m_t << "}\n";
+              found=true;
+            }
+            m_t << "\\input{" << cd->getOutputFileBase() << "}\n";
           }
         }
       }

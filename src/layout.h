@@ -45,19 +45,22 @@ struct LayoutDocEntry
               ClassCollaborationGraph, ClassAllMembersLink,
               ClassUsedFiles,
 
+              // Concept specific items
+              ConceptDefinition,
+
               // Namespace specific items
               NamespaceNestedNamespaces, NamespaceNestedConstantGroups,
-              NamespaceClasses, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
+              NamespaceClasses, NamespaceConcepts, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
               NamespaceInlineClasses,
 
               // File specific items
-              FileClasses, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
+              FileClasses, FileConcepts, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
               FileIncludes, FileIncludeGraph,
               FileIncludedByGraph, FileSourceLink,
               FileInlineClasses,
 
               // Group specific items
-              GroupClasses, GroupInlineClasses, GroupNamespaces,
+              GroupClasses, GroupConcepts, GroupInlineClasses, GroupNamespaces,
               GroupDirs, GroupNestedGroups, GroupFiles,
               GroupGraph, GroupPageDocs,
 
@@ -130,6 +133,7 @@ struct LayoutNavEntry
       Namespaces,
       NamespaceList,
       NamespaceMembers,
+      Concepts,
       Classes,
       ClassList,
       ClassIndex,
@@ -196,7 +200,7 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
-      Class, Namespace, File, Group, Directory,
+      Class, Concept, Namespace, File, Group, Directory,
       NrParts
     };
     /** Returns a reference to this singleton. */

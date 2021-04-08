@@ -385,6 +385,9 @@ DB_GEN_C2("IndexSections " << is)
     case isNamespaceIndex:
       //Namespace Index}\n"
       break;
+    case isConceptIndex:
+      //Concept Index}\n"
+      break;
     case isClassHierarchyIndex:
       //Hierarchical Index}\n"
       break;
@@ -406,6 +409,10 @@ DB_GEN_C2("IndexSections " << is)
       m_t << "    <title>";
       break;
     case isNamespaceDocumentation:
+      m_t << "<chapter>\n";
+      m_t << "    <title>";
+      break;
+    case isConceptDocumentation:
       m_t << "<chapter>\n";
       m_t << "    <title>";
       break;
@@ -454,6 +461,10 @@ DB_GEN_C2("IndexSections " << is)
       break;
     case isNamespaceIndex:
       //m_t << "<xi:include href=\"namespaces.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
+      //m_t << "</chapter>\n";
+      break;
+    case isConceptIndex:
+      //m_t << "<xi:include href=\"concepts.xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>";
       //m_t << "</chapter>\n";
       break;
     case isClassHierarchyIndex:
@@ -505,6 +516,19 @@ DB_GEN_C2("IndexSections " << is)
           if (nd->isLinkableInProject() && !nd->isAlias())
           {
             m_t << "<xi:include href=\"" << nd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+          }
+        }
+      }
+      m_t << "</chapter>\n";
+      break;
+    case isConceptDocumentation:
+      {
+        m_t << "</title>\n";
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject() && !cd->isAlias())
+          {
+            m_t << "<xi:include href=\"" << cd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
           }
         }
       }

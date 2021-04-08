@@ -104,6 +104,7 @@
 #include "regex.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "conceptdef.h"
 
 #if USE_SQLITE3
 #include <sqlite3.h>
@@ -124,6 +125,7 @@ extern void initResources();
 // globally accessible variables
 ClassLinkedMap       *Doxygen::classLinkedMap = 0;
 ClassLinkedMap       *Doxygen::hiddenClassLinkedMap = 0;
+ConceptLinkedMap     *Doxygen::conceptLinkedMap = 0;
 NamespaceLinkedMap   *Doxygen::namespaceLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::memberNameLinkedMap = 0;
 MemberNameLinkedMap  *Doxygen::functionNameLinkedMap = 0;
@@ -184,6 +186,7 @@ void clearAll()
 
   Doxygen::classLinkedMap->clear();
   Doxygen::hiddenClassLinkedMap->clear();
+  Doxygen::conceptLinkedMap->clear();
   Doxygen::namespaceLinkedMap->clear();
   Doxygen::pageLinkedMap->clear();
   Doxygen::exampleLinkedMap->clear();
@@ -531,7 +534,8 @@ static void buildFileList(const Entry *root)
   for (const auto &e : root->children()) buildFileList(e.get());
 }
 
-static void addIncludeFile(ClassDefMutable *cd,FileDef *ifd,const Entry *root)
+template<class DefMutable>
+static void addIncludeFile(DefMutable *cd,FileDef *ifd,const Entry *root)
 {
   if (
       (!root->doc.stripWhiteSpace().isEmpty() ||
@@ -1157,6 +1161,148 @@ static void buildClassDocList(const Entry *root)
   }
   for (const auto &e : root->children()) buildClassDocList(e.get());
 }
+
+//----------------------------------------------------------------------
+// build a list of all classes mentioned in the documentation
+// and all classes that have a documentation block before their definition.
+
+static void addConceptToContext(const Entry *root)
+{
+  FileDef *fd = root->fileDef();
+
+  QCString scName;
+  if (root->parent()->section&Entry::SCOPE_MASK)
+  {
+     scName=root->parent()->name;
+  }
+
+  // name with scope (if not present already)
+  QCString qualifiedName = root->name;
+  if (!scName.isEmpty() && !leftScopeMatch(qualifiedName,scName))
+  {
+    qualifiedName.prepend(scName+"::");
+  }
+
+  // see if we already found the concept before
+  ConceptDefMutable *cd = getConceptMutable(qualifiedName);
+
+  Debug::print(Debug::Classes,0, "  Found concept with name %s (qualifiedName=%s -> cd=%p)\n",
+      cd ? qPrint(cd->name()) : qPrint(root->name), qPrint(qualifiedName),cd);
+
+  if (cd)
+  {
+    qualifiedName=cd->name();
+    Debug::print(Debug::Classes,0,"  Existing concept %s!\n",qPrint(cd->name()));
+
+    cd->setDocumentation(root->doc,root->docFile,root->docLine);
+    cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+
+    addIncludeFile(cd,fd,root);
+  }
+  else // new concept
+  {
+    QCString className;
+    QCString namespaceName;
+    extractNamespaceName(qualifiedName,className,namespaceName);
+
+    //printf("New concept: fullname %s namespace '%s' name='%s' brief='%s' docs='%s'\n",
+    //    qualifiedName.data(),namespaceName.data(),className.data(),root->brief.data(),root->doc.data());
+
+    QCString tagName;
+    QCString refFileName;
+    const TagInfo *tagInfo = root->tagInfo();
+    if (tagInfo)
+    {
+      tagName     = tagInfo->tagName;
+      refFileName = tagInfo->fileName;
+      if (qualifiedName.find("::")!=-1)
+        // symbols imported via tag files may come without the parent scope,
+        // so we artificially create it here
+      {
+        buildScopeFromQualifiedName(qualifiedName,root->lang,tagInfo);
+      }
+    }
+    std::unique_ptr<ArgumentList> tArgList = getTemplateArgumentsFromName(qualifiedName,root->tArgLists);
+    // add concept to the list
+    //printf("ClassDict.insert(%s)\n",fullName.data());
+    cd = toConceptDefMutable(
+        Doxygen::conceptLinkedMap->add(qualifiedName,
+          std::unique_ptr<ConceptDef>(
+            createConceptDef(tagInfo?tagName:root->fileName,root->startLine,root->startColumn,
+               qualifiedName,tagName,refFileName))));
+    if (cd)
+    {
+      Debug::print(Debug::Classes,0,"  New concept '%s' #tArgLists=%d tagInfo=%p\n",
+          qPrint(qualifiedName),root->tArgLists.size(),tagInfo);
+      cd->setDocumentation(root->doc,root->docFile,root->docLine); // copy docs to definition
+      cd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+      cd->setLanguage(root->lang);
+      cd->setId(root->id);
+      cd->setHidden(root->hidden);
+      cd->setInitializer(root->initializer.str().c_str());
+      if (tArgList)
+      {
+        cd->setTemplateArguments(*tArgList);
+      }
+      // file definition containing the class cd
+      cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
+      cd->setBodyDef(fd);
+      addIncludeFile(cd,fd,root);
+
+      // also add namespace to the correct structural context
+      Definition *d = findScopeFromQualifiedName(Doxygen::globalScope,qualifiedName,0,tagInfo);
+      if (d && d->definitionType()==Definition::TypeNamespace)
+      {
+        DefinitionMutable *dm = toDefinitionMutable(d);
+        if (dm)
+        {
+          dm->addInnerCompound(cd);
+        }
+        cd->setOuterScope(d);
+      }
+    }
+    else
+    {
+      Debug::print(Debug::Classes,0,"  Not added concept '%s', already exists (as alias)\n", qPrint(qualifiedName));
+    }
+  }
+
+  if (cd)
+  {
+    cd->addSectionsToDefinition(root->anchors);
+    if (fd)
+    {
+      //printf(">> Inserting concept '%s' in file '%s' (root->fileName='%s')\n",
+      //    cd->name().data(),
+      //    fd->name().data(),
+      //    root->fileName.data()
+      //   );
+      cd->setFileDef(fd);
+      fd->insertConcept(cd);
+    }
+    addConceptToGroups(root,cd);
+    cd->setRefItems(root->sli);
+  }
+}
+static void buildConceptList(const Entry *root)
+{
+  if (root->section & Entry::CONCEPT_SEC)
+  {
+    addConceptToContext(root);
+  }
+  for (const auto &e : root->children()) buildConceptList(e.get());
+}
+
+static void buildConceptDocList(const Entry *root)
+{
+  if (root->section & Entry::CONCEPTDOC_SEC)
+  {
+    addConceptToContext(root);
+  }
+  for (const auto &e : root->children()) buildConceptDocList(e.get());
+}
+
+//----------------------------------------------------------------------
 
 static void resolveClassNestingRelations()
 {
@@ -3437,6 +3583,7 @@ static void buildFunctionList(const Entry *root)
               // functions have the same number of template parameters
               bool sameNumTemplateArgs = TRUE;
               bool matchingReturnTypes = TRUE;
+              bool sameRequiresClause = TRUE;
               if (!mdTempl.empty() && !root->tArgLists.empty())
               {
                 if (mdTempl.size()!=root->tArgLists.back().size())
@@ -3446,6 +3593,10 @@ static void buildFunctionList(const Entry *root)
                 if (md->typeString()!=removeRedundantWhiteSpace(root->type))
                 {
                   matchingReturnTypes = FALSE;
+                }
+                if (md->requiresClause()!=root->req)
+                {
+                  sameRequiresClause = FALSE;
                 }
               }
 
@@ -3458,6 +3609,7 @@ static void buildFunctionList(const Entry *root)
                     FALSE) &&
                   sameNumTemplateArgs &&
                   matchingReturnTypes &&
+                  sameRequiresClause &&
                   !staticsInDifferentFiles
                  )
               {
@@ -5245,13 +5397,14 @@ static bool findGlobalMember(const Entry *root,
           matching = FALSE;
         }
 
-        // for template member we also need to check the return type
+        // for template member we also need to check the return type and requires
         if (!md->templateArguments().empty() && !root->tArgLists.empty())
         {
           //printf("Comparing return types '%s'<->'%s'\n",
           //    md->typeString(),type);
           if (md->templateArguments().size()!=root->tArgLists.back().size() ||
-              qstrcmp(md->typeString(),type)!=0)
+              qstrcmp(md->typeString(),type)!=0 ||
+              md->requiresClause()!=root->req)
           {
             //printf(" ---> no matching\n");
             matching = FALSE;
@@ -7852,6 +8005,15 @@ static void addSourceReferences()
       fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
     }
   }
+  // add source references for concept definitions
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    FileDef *fd=cd->getBodyDef();
+    if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
+    {
+      fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
+    }
+  }
   // add source references for namespace definitions
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
@@ -8096,6 +8258,27 @@ static void generateClassDocs()
 
 //----------------------------------------------------------------------------
 
+static void generateConceptDocs()
+{
+  for (const auto &cdi : *Doxygen::conceptLinkedMap)
+  {
+    ConceptDefMutable *cd=toConceptDefMutable(cdi.get());
+
+    //printf("cd=%s getOuterScope=%p global=%p\n",cd->name().data(),cd->getOuterScope(),Doxygen::globalScope);
+    if (cd &&
+        (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+         cd->getOuterScope()==Doxygen::globalScope // only look at global concepts
+        ) && !cd->isHidden() && cd->isLinkableInProject()
+       )
+    {
+      msg("Generating docs for concept %s...\n",cd->name().data());
+      cd->writeDocumentation(*g_outputList);
+    }
+  }
+}
+
+//----------------------------------------------------------------------------
+
 static void inheritDocumentation()
 {
   for (const auto &mn : *Doxygen::memberNameLinkedMap)
@@ -8236,6 +8419,15 @@ static void findSectionsInDocumentation()
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
     ClassDefMutable *cdm = toClassDefMutable(cd.get());
+    if (cdm)
+    {
+      cdm->findSectionsInDocumentation();
+    }
+  }
+  // for each concept
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    ConceptDefMutable *cdm = toConceptDefMutable(cd.get());
     if (cdm)
     {
       cdm->findSectionsInDocumentation();
@@ -8934,6 +9126,20 @@ static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
   }
 }
 
+static void generateNamespaceConceptDocs(const ConceptLinkedRefMap &conceptList)
+{
+  // for each concept in the namespace...
+  for (const auto &cd : conceptList)
+  {
+    ConceptDefMutable *cdm = toConceptDefMutable(cd);
+    if ( cdm && cd->isLinkableInProject() && !cd->isHidden())
+    {
+      msg("Generating docs for concept %s...\n",cd->name().data());
+      cdm->writeDocumentation(*g_outputList);
+    }
+  }
+}
+
 static void generateNamespaceDocs()
 {
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
@@ -8960,6 +9166,7 @@ static void generateNamespaceDocs()
       generateNamespaceClassDocs(nd->getStructs());
       generateNamespaceClassDocs(nd->getExceptions());
     }
+    generateNamespaceConceptDocs(nd->getConcepts());
   }
 }
 
@@ -10096,6 +10303,7 @@ void initDoxygen()
   Doxygen::namespaceLinkedMap = new NamespaceLinkedMap;
   Doxygen::classLinkedMap = new ClassLinkedMap;
   Doxygen::hiddenClassLinkedMap = new ClassLinkedMap;
+  Doxygen::conceptLinkedMap = new ConceptLinkedMap;
   Doxygen::dirLinkedMap = new DirLinkedMap;
   Doxygen::pageLinkedMap = new PageLinkedMap;          // all doc pages
   Doxygen::exampleLinkedMap = new PageLinkedMap;       // all examples
@@ -10715,6 +10923,15 @@ static void writeTagFile()
       cdm->writeTagFile(tagFile);
     }
   }
+  // for each concept
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    ConceptDefMutable *cdm = toConceptDefMutable(cd.get());
+    if (cdm && cdm->isLinkableInProject())
+    {
+      cdm->writeTagFile(tagFile);
+    }
+  }
   // for each namespace
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
@@ -11241,6 +11458,10 @@ void parseInput()
   buildClassList(root.get());
   g_s.end();
 
+  g_s.begin("Building concept list...\n");
+  buildConceptList(root.get());
+  g_s.end();
+
   // build list of using declarations here (global list)
   buildListOfUsingDecls(root.get());
   g_s.end();
@@ -11260,6 +11481,11 @@ void parseInput()
 
   g_s.begin("Associating documentation with classes...\n");
   buildClassDocList(root.get());
+  g_s.end();
+
+  g_s.begin("Associating documentation with concepts...\n");
+  buildConceptDocList(root.get());
+  g_s.end();
 
   g_s.begin("Building example list...\n");
   buildExampleList(root.get());
@@ -11411,6 +11637,11 @@ void parseInput()
     return qstricmp(n1->name(),n2->name())<0;
   };
 
+  auto conceptComp = [](const ConceptLinkedMap::Ptr &c1,const ConceptLinkedMap::Ptr &c2)
+  {
+    return qstricmp(c1->name(),c2->name())<0;
+  };
+
   g_s.begin("Sorting lists...\n");
   std::sort(Doxygen::memberNameLinkedMap->begin(),
             Doxygen::memberNameLinkedMap->end(),
@@ -11424,6 +11655,9 @@ void parseInput()
   std::sort(Doxygen::classLinkedMap->begin(),
             Doxygen::classLinkedMap->end(),
             classComp);
+  std::sort(Doxygen::conceptLinkedMap->begin(),
+            Doxygen::conceptLinkedMap->end(),
+            conceptComp);
   std::sort(Doxygen::namespaceLinkedMap->begin(),
             Doxygen::namespaceLinkedMap->end(),
             namespaceComp);
@@ -11709,6 +11943,10 @@ void generateOutput()
 
   g_s.begin("Generating class documentation...\n");
   generateClassDocs();
+  g_s.end();
+
+  g_s.begin("Generating concept documentation...\n");
+  generateConceptDocs();
   g_s.end();
 
   g_s.begin("Generating namespace index...\n");

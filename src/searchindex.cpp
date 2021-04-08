@@ -36,6 +36,7 @@
 #include "namespacedef.h"
 #include "classdef.h"
 #include "utf8.h"
+#include "classlist.h"
 
 //---------------------------------------------------------------------------------------------
 // the following part is for the server based search engine
@@ -452,6 +453,8 @@ static QCString definitionToName(const Definition *ctx)
         return "file";
       case Definition::TypeNamespace:
         return "namespace";
+      case Definition::TypeConcept:
+        return "concept";
       case Definition::TypeGroup:
         return "group";
       case Definition::TypePackage:
@@ -593,6 +596,7 @@ QCString searchId(const Definition *d)
 #define SEARCH_INDEX_DEFINES      17
 #define SEARCH_INDEX_GROUPS       18
 #define SEARCH_INDEX_PAGES        19
+#define SEARCH_INDEX_CONCEPTS     20
 
 static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
 { {
@@ -622,7 +626,8 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
   { /* SEARCH_INDEX_RELATED */      "related"     , []() { return theTranslator->trFriends();             }, {} },
   { /* SEARCH_INDEX_DEFINES */      "defines"     , []() { return theTranslator->trDefines();             }, {} },
   { /* SEARCH_INDEX_GROUPS */       "groups"      , []() { return theTranslator->trGroup(TRUE,FALSE);     }, {} },
-  { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(TRUE,FALSE);      }, {} }
+  { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(TRUE,FALSE);      }, {} },
+  { /* SEARCH_INDEX_CONCEPTS */     "concepts"    , []() { return theTranslator->trConcept(true,false);   }, {} }
 } };
 
 static void addMemberToSearchIndex(const MemberDef *md)
@@ -788,6 +793,17 @@ void createJavaScriptSearchIndex()
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,nd.get());
       g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].add(letter,nd.get());
+    }
+  }
+
+  // index concepts
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(cd->name().str(),0));
+    if (cd->isLinkable())
+    {
+      g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,cd.get());
+      g_searchIndexInfo[SEARCH_INDEX_CONCEPTS].add(letter,cd.get());
     }
   }
 

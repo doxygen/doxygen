@@ -1434,6 +1434,11 @@ static void addTemplateList(const ClassDef *cd,PerlModOutput &output)
   addTemplateArgumentList(cd->templateArguments(),output,cd->name());
 }
 
+static void addTemplateList(const ConceptDef *cd,PerlModOutput &output)
+{
+  addTemplateArgumentList(cd->getTemplateParameterList(),output,cd->name());
+}
+
 static void addPerlModDocBlock(PerlModOutput &output,
 			    const char *name,
 			    const QCString &fileName,
@@ -1516,7 +1521,9 @@ public:
   void generatePerlModSection(const Definition *d, MemberList *ml,
 			      const char *name, const char *header=0);
   void addListOfAllMembers(const ClassDef *cd);
+  void addIncludeInfo(const IncludeInfo *ii);
   void generatePerlModForClass(const ClassDef *cd);
+  void generatePerlModForConcept(const ConceptDef *cd);
   void generatePerlModForNamespace(const NamespaceDef *nd);
   void generatePerlModForFile(const FileDef *fd);
   void generatePerlModForGroup(const GroupDef *gd);
@@ -1780,6 +1787,22 @@ void PerlModGenerator::generatePerlUserDefinedSection(const Definition *d, const
   }
 }
 
+void PerlModGenerator::addIncludeInfo(const IncludeInfo *ii)
+{
+  if (ii)
+  {
+    QCString nm = ii->includeName;
+    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
+    if (!nm.isEmpty())
+    {
+      m_output.openHash("includes");
+      m_output.addFieldBoolean("local", ii->local)
+	.addFieldQuotedString("name", nm)
+	.closeHash();
+    }
+  }
+}
+
 void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
 {
   // + brief description
@@ -1844,23 +1867,7 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
     m_output.closeList();
   }
 
-  const IncludeInfo *ii=cd->includeInfo();
-  if (ii)
-  {
-    QCString nm = ii->includeName;
-    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
-    if (!nm.isEmpty())
-    {
-      m_output.openHash("includes");
-#if 0
-      if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
-        t << " id=\"" << ii->fileDef->getOutputFileBase() << "\"";
-#endif
-      m_output.addFieldBoolean("local", ii->local)
-	.addFieldQuotedString("name", nm)
-	.closeHash();
-    }
-  }
+  addIncludeInfo(cd->includeInfo());
 
   addTemplateList(cd,m_output);
   addListOfAllMembers(cd);
@@ -1918,6 +1925,22 @@ void PerlModGenerator::generatePerlModForClass(const ClassDef *cd)
     }
   t << "/>" << endl;
 #endif
+
+  m_output.closeHash();
+}
+
+void PerlModGenerator::generatePerlModForConcept(const ConceptDef *cd)
+{
+  if (cd->isReference()) return; // skip external references
+
+  m_output.openHash()
+    .addFieldQuotedString("name", cd->name());
+
+  addIncludeInfo(cd->includeInfo());
+  addTemplateList(cd,m_output);
+  m_output.addFieldQuotedString("initializer", cd->initializer());
+  addPerlModDocBlock(m_output,"brief",cd->getDefFileName(),cd->getDefLine(),0,0,cd->briefDescription());
+  addPerlModDocBlock(m_output,"detailed",cd->getDefFileName(),cd->getDefLine(),0,0,cd->documentation());
 
   m_output.closeHash();
 }
@@ -2152,6 +2175,11 @@ bool PerlModGenerator::generatePerlModOutput()
   m_output.openList("classes");
   for (const auto &cd : *Doxygen::classLinkedMap)
     generatePerlModForClass(cd.get());
+  m_output.closeList();
+
+  m_output.openList("concepts");
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+    generatePerlModForConcept(cd.get());
   m_output.closeList();
 
   m_output.openList("namespaces");

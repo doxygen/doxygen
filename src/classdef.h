@@ -211,7 +211,7 @@ class ClassDef : public Definition
     /** Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
      */
-    virtual NamespaceDef *getNamespaceDef() const = 0;
+    //virtual NamespaceDef *getNamespaceDef() const = 0;
 
     /** Returns the file in which this compound's definition can be found.
      *  Should not return 0 (but it might be a good idea to check anyway).
@@ -389,7 +389,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     //-----------------------------------------------------------------------------------
 
     virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force) = 0;
-    virtual void setNamespace(NamespaceDef *nd) = 0;
+    //virtual void setNamespace(NamespaceDef *nd) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
     virtual void setSubGrouping(bool enabled) = 0;
     virtual void setProtection(Protection p) = 0;

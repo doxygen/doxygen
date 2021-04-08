@@ -224,6 +224,7 @@ add_library(doxymain STATIC
     classdef.cpp
     classlist.cpp
     cmdmapper.cpp
+    conceptdef.cpp
     condparser.cpp
     context.cpp
     cppvalue.cpp

@@ -479,6 +479,10 @@ void FTVHelp::generateTree(TextStream &t, const std::vector<FTVNode*> &nl,int le
         char icon=compoundIcon(toClassDef(n->def));
         t << "<span class=\"icona\"><span class=\"icon\">" << icon << "</span></span>";
       }
+      else if (n->def && n->def->definitionType()==Definition::TypeConcept)
+      {
+        t << "<span class=\"icona\"><span class=\"icon\">R</span></span>";
+      }
       else if (n->def && n->def->definitionType()==Definition::TypeDir)
       {
         t << "<span class=\"iconfclosed\"></span>";

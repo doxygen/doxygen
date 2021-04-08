@@ -4074,6 +4074,10 @@ void MemberDefImpl::setAnchor()
     buf[19]='\0';
     memAnchor.prepend(buf);
   }
+  if (!m_impl->requiresClause.isEmpty())
+  {
+    memAnchor+=" "+m_impl->requiresClause;
+  }
 
   // convert to md5 hash
   uchar md5_sig[16];

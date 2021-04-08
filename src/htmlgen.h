@@ -185,6 +185,8 @@ class HtmlGenerator : public OutputGenerator
     void endMemberItem();
     void startMemberTemplateParams();
     void endMemberTemplateParams(const char *anchor,const char *inheritId);
+    void startCompoundTemplateParams();
+    void endCompoundTemplateParams();
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();

@@ -404,6 +404,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberItem() = 0;
     virtual void startMemberTemplateParams() = 0;
     virtual void endMemberTemplateParams(const char *,const char *) = 0;
+    virtual void startCompoundTemplateParams() = 0;
+    virtual void endCompoundTemplateParams() = 0;
     virtual void startMemberGroupHeader(bool) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;

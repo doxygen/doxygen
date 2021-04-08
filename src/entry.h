@@ -66,6 +66,7 @@ class Entry
     enum Sections {
       CLASS_SEC        = 0x00000001,
       NAMESPACE_SEC    = 0x00000010,
+      CONCEPT_SEC      = 0x00000020,
       COMPOUND_MASK    = CLASS_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
 
@@ -79,6 +80,7 @@ class Entry
       CATEGORYDOC_SEC  = 0x00040000,
       SERVICEDOC_SEC   = 0x00080000,
       SINGLETONDOC_SEC = 0x00100000,
+      CONCEPTDOC_SEC   = 0x00200000,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC |
                          INTERFACEDOC_SEC | EXCEPTIONDOC_SEC | PROTOCOLDOC_SEC |
                          CATEGORYDOC_SEC | SERVICEDOC_SEC | SINGLETONDOC_SEC,
@@ -256,7 +258,7 @@ class Entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
     ArgumentList argList;     //!< member arguments as a list
-    ArgumentLists tArgLists; //!< template argument declarations
+    ArgumentLists tArgLists;  //!< template argument declarations
     TextStream   program;     //!< the program text
     TextStream   initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)

@@ -36,6 +36,7 @@
 #include "outputgen.h"
 #include "regex.h"
 #include "dir.h"
+#include "conceptdef.h"
 
 //--------------------------------------------------------------------
 
@@ -173,6 +174,12 @@ inline ClassDefMutable *getClassMutable(const char *key)
 {
   return toClassDefMutable(getClass(key));
 }
+ConceptDef *getConcept(const char *key);
+inline ConceptDefMutable *getConceptMutable(const char *key)
+{
+  return toConceptDefMutable(getConcept(key));
+}
+ConceptDef *getResolvedConcept(const Definition *scope,const char *name);
 
 NamespaceDef *getResolvedNamespace(const char *key);
 inline NamespaceDefMutable *getResolvedNamespaceMutable(const char *key)
@@ -228,6 +235,7 @@ QCString replaceAnonymousScopes(const char *s,const char *replacement=0);
 bool hasVisibleRoot(const BaseClassList &bcl);
 bool classHasVisibleChildren(const ClassDef *cd);
 bool namespaceHasNestedNamespace(const NamespaceDef *nd);
+bool namespaceHasNestedConcept(const NamespaceDef *nd);
 bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct);
 bool classVisibleInIndex(const ClassDef *cd);
 

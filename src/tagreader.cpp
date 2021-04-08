@@ -96,7 +96,7 @@ class TagMemberInfo
 class TagCompoundInfo
 {
   public:
-    enum class CompoundType { Class, Namespace, Package, File, Group, Page, Dir };
+    enum class CompoundType { Class, Concept, Namespace, Package, File, Group, Page, Dir };
     explicit TagCompoundInfo(CompoundType type) : m_type(type) {}
     virtual ~TagCompoundInfo() {}
     CompoundType compoundType() const { return m_type; }
@@ -131,6 +131,22 @@ class TagClassInfo : public TagCompoundInfo
     }
 };
 
+/** Container for concept specific info that can be read from a tagfile */
+class TagConceptInfo : public TagCompoundInfo
+{
+  public:
+    TagConceptInfo() :TagCompoundInfo(CompoundType::Concept) {}
+    std::string clangId;
+    static TagConceptInfo *get(std::unique_ptr<TagCompoundInfo> &t)
+    {
+      return dynamic_cast<TagConceptInfo*>(t.get());
+    }
+    static const TagConceptInfo *get(const std::unique_ptr<TagCompoundInfo> &t)
+    {
+      return dynamic_cast<const TagConceptInfo*>(t.get());
+    }
+};
+
 /** Container for namespace specific info that can be read from a tagfile */
 class TagNamespaceInfo : public TagCompoundInfo
 {
@@ -138,6 +154,7 @@ class TagNamespaceInfo : public TagCompoundInfo
     TagNamespaceInfo() :TagCompoundInfo(CompoundType::Namespace) {}
     std::string clangId;
     StringVector classList;
+    StringVector conceptList;
     StringVector namespaceList;
     static TagNamespaceInfo *get(std::unique_ptr<TagCompoundInfo> &t)
     {
@@ -172,6 +189,7 @@ class TagFileInfo : public TagCompoundInfo
     TagFileInfo() : TagCompoundInfo(CompoundType::File) { }
     std::string path;
     StringVector classList;
+    StringVector conceptList;
     StringVector namespaceList;
     std::vector<TagIncludeInfo> includes;
     static TagFileInfo *get(std::unique_ptr<TagCompoundInfo> &t)
@@ -192,6 +210,7 @@ class TagGroupInfo : public TagCompoundInfo
     std::string title;
     StringVector subgroupList;
     StringVector classList;
+    StringVector conceptList;
     StringVector namespaceList;
     StringVector fileList;
     StringVector pageList;
@@ -279,6 +298,7 @@ class TagFileParser
       switch (m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -379,6 +399,7 @@ class TagFileParser
       switch(m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -395,6 +416,7 @@ class TagFileParser
       switch(m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -431,6 +453,25 @@ class TagFileParser
           break;
         default:
           warn("Unexpected tag 'class' found");
+          break;
+      }
+    }
+
+    void endConcept()
+    {
+      switch(m_state)
+      {
+        case InNamespace:
+          TagNamespaceInfo::get(m_curCompound)->conceptList.push_back(m_curString);
+          break;
+        case InFile:
+          TagFileInfo::get(m_curCompound)->conceptList.push_back(m_curString);
+          break;
+        case InGroup:
+          TagGroupInfo::get(m_curCompound)->conceptList.push_back(m_curString);
+          break;
+        default:
+          warn("Unexpected tag 'concept' found");
           break;
       }
     }
@@ -525,6 +566,7 @@ class TagFileParser
       switch (m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -623,6 +665,7 @@ class TagFileParser
       switch (m_state)
       {
         case InClass:
+        case InConcept:
         case InNamespace:
         case InFile:
         case InGroup:
@@ -757,6 +800,7 @@ class TagFileParser
 
     enum State { Invalid,
                  InClass,
+                 InConcept,
                  InFile,
                  InNamespace,
                  InGroup,
@@ -839,6 +883,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
   { "title",       { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endTitle        ) } },
   { "subgroup",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endSubgroup     ) } },
   { "class",       { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endClass        ) } },
+  { "concept",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endConcept      ) } },
   { "namespace",   { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endNamespace    ) } },
   { "file",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endFile         ) } },
   { "dir",         { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endDir          ) } },
@@ -874,6 +919,7 @@ static const std::map< std::string, CompoundFactory > g_compoundFactory =
   { "singleton", { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Singleton); } } },
   { "file",      { TagFileParser::InFile,      []() { return std::make_unique<TagFileInfo>();                               } } },
   { "namespace", { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>();                          } } },
+  { "concept",   { TagFileParser::InConcept,   []() { return std::make_unique<TagConceptInfo>();                            } } },
   { "group",     { TagFileParser::InGroup,     []() { return std::make_unique<TagGroupInfo>();                              } } },
   { "page",      { TagFileParser::InPage,      []() { return std::make_unique<TagPageInfo>();                               } } },
   { "package",   { TagFileParser::InPackage,   []() { return std::make_unique<TagPackageInfo>();                            } } },
@@ -960,6 +1006,17 @@ void TagFileParser::dump()
         msg("    anchor: '%s'\n",md.anchor.c_str());
         msg("    arglist: '%s'\n",md.arglist.c_str());
       }
+    }
+  }
+  //============== CONCEPTS
+  for (const auto &comp : m_tagFileCompounds)
+  {
+    if (comp->compoundType()==TagCompoundInfo::CompoundType::Concept)
+    {
+      const TagConceptInfo *cd = TagConceptInfo::get(comp);
+
+      msg("concept '%s'\n",cd->name.data());
+      msg("  filename '%s'\n",cd->filename.data());
     }
   }
   //============== NAMESPACES
@@ -1339,6 +1396,26 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       }
       buildMemberList(fe,tfi->members);
       root->moveToSubEntryAndKeep(fe);
+    }
+  }
+
+  // build concept list
+  for (const auto &comp : m_tagFileCompounds)
+  {
+    if (comp->compoundType()==TagCompoundInfo::CompoundType::Concept)
+    {
+      const TagConceptInfo *tci = TagConceptInfo::get(comp);
+
+      std::shared_ptr<Entry> ce = std::make_shared<Entry>();
+      ce->section  = Entry::CONCEPT_SEC;
+      ce->name     = tci->name;
+      addDocAnchors(ce,tci->docAnchors);
+      ce->tagInfoData.tagName  = m_tagName;
+      ce->tagInfoData.fileName = tci->filename;
+      ce->hasTagInfo  = TRUE;
+      ce->id       = tci->clangId;
+
+      root->moveToSubEntryAndKeep(ce);
     }
   }
 

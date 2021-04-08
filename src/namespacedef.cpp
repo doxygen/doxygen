@@ -32,6 +32,7 @@
 #include "config.h"
 #include "definitionimpl.h"
 #include "membername.h"
+#include "conceptdef.h"
 
 //------------------------------------------------------------------
 static QCString makeDisplayName(const NamespaceDef *nd,bool includeScope)
@@ -65,6 +66,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const;
     virtual void writeTagFile(TextStream &);
     virtual void insertClass(const ClassDef *cd);
+    virtual void insertConcept(const ConceptDef *cd);
     virtual void insertNamespace(const NamespaceDef *nd);
     virtual void insertMember(MemberDef *md);
     virtual void computeAnchors();
@@ -103,6 +105,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     virtual ClassLinkedRefMap getStructs() const { return structs; }
     virtual ClassLinkedRefMap getExceptions() const { return exceptions; }
     virtual NamespaceLinkedRefMap getNamespaces() const { return namespaces; }
+    virtual ConceptLinkedRefMap getConcepts() const { return m_concepts; }
 
     virtual QCString title() const;
     virtual QCString compoundTypeString() const;
@@ -118,6 +121,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
     void writeClassDeclarations(OutputList &ol,const QCString &title,const ClassLinkedRefMap &d);
+    void writeConcepts(OutputList &ol,const QCString &title);
     void writeInlineClasses(OutputList &ol);
     void writeMemberGroups(OutputList &ol);
     void writeAuthorSection(OutputList &ol);
@@ -126,6 +130,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     void writeSummaryLinks(OutputList &ol) const;
     void addNamespaceAttributes(OutputList &ol);
     void writeClassesToTagFile(TextStream &,const ClassLinkedRefMap &d);
+    void writeConceptsToTagFile(TextStream &);
 
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup=false);
@@ -144,6 +149,7 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
     ClassLinkedRefMap     interfaces;
     ClassLinkedRefMap     structs;
     ClassLinkedRefMap     exceptions;
+    ConceptLinkedRefMap   m_concepts;
     NamespaceLinkedRefMap namespaces;
     bool                  m_subGrouping = false;
     enum { NAMESPACE, MODULE, CONSTANT_GROUP, LIBRARY } m_type;
@@ -223,6 +229,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     { return getNSAlias()->getExceptions(); }
     virtual NamespaceLinkedRefMap getNamespaces() const
     { return getNSAlias()->getNamespaces(); }
+    virtual ConceptLinkedRefMap getConcepts() const
+    { return getNSAlias()->getConcepts(); }
     virtual QCString title() const
     { return getNSAlias()->title(); }
     virtual QCString compoundTypeString() const
@@ -345,6 +353,10 @@ void NamespaceDefImpl::addInnerCompound(const Definition *d)
   {
     insertClass(toClassDef(d));
   }
+  else if (d->definitionType()==Definition::TypeConcept)
+  {
+    insertConcept(toConceptDef(d));
+  }
 }
 
 void NamespaceDefImpl::insertClass(const ClassDef *cd)
@@ -368,6 +380,11 @@ void NamespaceDefImpl::insertClass(const ClassDef *cd)
   }
 
   d.add(cd->name(),cd);
+}
+
+void NamespaceDefImpl::insertConcept(const ConceptDef *cd)
+{
+  m_concepts.add(cd->name(),cd);
 }
 
 void NamespaceDefImpl::insertNamespace(const NamespaceDef *nd)
@@ -578,6 +595,11 @@ void NamespaceDefImpl::writeTagFile(TextStream &tagFile)
           writeClassesToTagFile(tagFile, exceptions);
         }
         break;
+      case LayoutDocEntry::NamespaceConcepts:
+        {
+          writeConceptsToTagFile(tagFile);
+        }
+        break;
       case LayoutDocEntry::MemberDecl:
         {
           const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
@@ -740,6 +762,11 @@ void NamespaceDefImpl::writeClassDeclarations(OutputList &ol,const QCString &tit
   d.writeDeclaration(ol,0,title,TRUE);
 }
 
+void NamespaceDefImpl::writeConcepts(OutputList &ol,const QCString &title)
+{
+  m_concepts.writeDeclaration(ol,title,TRUE);
+}
+
 void NamespaceDefImpl::writeInlineClasses(OutputList &ol)
 {
   classes.writeDocumentation(ol,this);
@@ -819,6 +846,13 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
       ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
+    else if (lde->kind()==LayoutDocEntry::NamespaceConcepts && m_concepts.declVisible())
+    {
+      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      QCString label = "concepts";
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
+      first=FALSE;
+    }
     else if (lde->kind()== LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
@@ -859,6 +893,17 @@ void NamespaceDefImpl::writeClassesToTagFile(TextStream &tagFile,const ClassLink
     {
       tagFile << "    <class kind=\"" << cd->compoundTypeString()
               << "\">" << convertToXML(cd->name()) << "</class>\n";
+    }
+  }
+}
+
+void NamespaceDefImpl::writeConceptsToTagFile(TextStream &tagFile)
+{
+  for (const auto &cd : m_concepts)
+  {
+    if (cd->isLinkableInProject())
+    {
+      tagFile << "    <concept>" << convertToXML(cd->name()) << "</concept>\n";
     }
   }
 }
@@ -933,6 +978,12 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
           writeClassDeclarations(ol,ls->title(lang),exceptions);
         }
         break;
+      case LayoutDocEntry::NamespaceConcepts:
+        {
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          writeConcepts(ol,ls->title(lang));
+        }
+        break;
       case LayoutDocEntry::NamespaceNestedNamespaces:
         {
           const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
@@ -988,7 +1039,9 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::ClassAllMembersLink:
       case LayoutDocEntry::ClassUsedFiles:
       case LayoutDocEntry::ClassInlineClasses:
+      case LayoutDocEntry::ConceptDefinition:
       case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
       case LayoutDocEntry::FileExceptions:
@@ -1000,6 +1053,7 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::FileSourceLink:
       case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses:
+      case LayoutDocEntry::GroupConcepts:
       case LayoutDocEntry::GroupInlineClasses:
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs:
@@ -1449,7 +1503,7 @@ QCString NamespaceDefImpl::compoundTypeString() const
   }
   else if(lang==SrcLangExt_CSharp)
   {
-	return "namespace";
+    return "namespace";
   }
   else if (lang==SrcLangExt_Fortran)
   {
@@ -1474,7 +1528,7 @@ QCString NamespaceDefImpl::compoundTypeString() const
       err_full(getDefFileName(),getDefLine(),"Internal inconsistency: namespace in IDL not module, library or constant group");
     }
   }
-  return "";
+  return "namespace";
 }
 
 void NamespaceDefImpl::setMetaData(const QCString &m)

@@ -109,7 +109,7 @@ class SearchIndexExternal : public SearchIndexIntf
 
 //------- client side search index ----------------------
 
-#define NUM_SEARCH_INDICES 20
+#define NUM_SEARCH_INDICES 21
 
 QCString searchId(const Definition *d);
 QCString searchName(const Definition *d);

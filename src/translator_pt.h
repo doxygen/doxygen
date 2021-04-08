@@ -27,7 +27,7 @@
  * ---------------
  * History:
  * 20200112:
- * 	- Updated to 1.9.1; 
+ * 	- Updated to 1.9.1;
  * 20190203:
  *	- Slice methods added;
  * 20180612:
@@ -63,7 +63,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public Translator
+class TranslatorPortuguese : public TranslatorAdapter_1_9_2
 {
   public:
 
@@ -2279,11 +2279,11 @@ class TranslatorPortuguese : public Translator
     //////////////////////////////////////////////////////////////////////////
     // new since 1.8.19
     //////////////////////////////////////////////////////////////////////////
-    
+
     /** VHDL design unit documentation */
 	virtual QCString trDesignUnitDocumentation()
-	{ 
-	    return "Documentação da Unidade de Projeto"; 
+	{
+	    return "Documentação da Unidade de Projeto";
     }
 };
 

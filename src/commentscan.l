@@ -68,6 +68,7 @@ static bool handleAddToGroup(yyscan_t yyscanner,const QCString &, const StringVe
 static bool handleWeakGroup(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleNamespace(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handlePackage(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleConcept(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleClass(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleProtocol(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -176,6 +177,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "cite",            { &handleCite,             CommandSpacing::Inline    }},
   { "class",           { &handleClass,            CommandSpacing::Invisible }},
   { "code",            { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "concept",         { &handleConcept,          CommandSpacing::Invisible }},
   { "copybrief",       { &handleCopyBrief,        CommandSpacing::Invisible }},
   { "copydetails",     { &handleCopyDetails,      CommandSpacing::Block     }},
   { "copydoc",         { &handleCopyDoc,          CommandSpacing::Block     }},
@@ -518,6 +520,7 @@ STopt  [^\n@\\]*
 %x      EnumDocArg1
 %x      NameSpaceDocArg1
 %x      PackageDocArg1
+%x      ConceptDocArg1
 %x      GroupDocArg1
 %x      GroupDocArg2
 %x      SectionLabel
@@ -1023,6 +1026,28 @@ STopt  [^\n@\\]*
                                         }
 <PackageDocArg1>.                       { // ignore other stuff
                                         }
+
+  /* ------------ handle argument of concept command --------------- */
+
+<ConceptDocArg1>{SCOPEID}               { // handle argument
+                                          yyextra->current->name = yytext;
+                                          BEGIN( Comment );
+                                        }
+<ConceptDocArg1>{LC}                    { // line continuation
+                                          yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                        }
+<ConceptDocArg1>{DOCNL}                 { // missing argument
+                                          warn(yyextra->fileName,yyextra->lineNr,
+                                               "missing argument after "
+                                               "\\concept."
+                                              );
+                                          unput_string(yytext,yyleng);
+                                          BEGIN( Comment );
+                                        }
+<ConceptDocArg1>.                       { // ignore other stuff
+                                        }
+
 
   /* ------ handle argument of class/struct/union command --------------- */
 
@@ -1994,6 +2019,15 @@ static bool handleClass(yyscan_t yyscanner,const QCString &cmd, const StringVect
   return stop;
 }
 
+static bool handleConcept(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  bool stop=makeStructuralIndicator(yyscanner,Entry::CONCEPTDOC_SEC);
+  yyextra->currentCmd = cmd;
+  BEGIN( ConceptDocArg1 );
+  return stop;
+}
+
 static bool handleHeaderFile(yyscan_t yyscanner,const QCString &, const StringVector &)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -2774,6 +2808,7 @@ static bool getDocSectionName(int s)
     case Entry::DIRDOC_SEC:
     case Entry::EXAMPLE_SEC:
     case Entry::MEMBERGRP_SEC:
+    case Entry::CONCEPTDOC_SEC:
       return TRUE;
     default:
       return FALSE;

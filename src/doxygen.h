@@ -41,6 +41,7 @@ class GroupLinkedMap;
 class FileDef;
 class ClassDef;
 class ClassLinkedMap;
+class ConceptLinkedMap;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceLinkedMap;
@@ -76,6 +77,7 @@ class Doxygen
   public:
     static ClassLinkedMap           *classLinkedMap;
     static ClassLinkedMap           *hiddenClassLinkedMap;
+    static ConceptLinkedMap         *conceptLinkedMap;
     static PageLinkedMap            *exampleLinkedMap;
     static PageLinkedMap            *pageLinkedMap;
     static std::unique_ptr<PageDef>  mainPage;

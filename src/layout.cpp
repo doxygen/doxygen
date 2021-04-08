@@ -319,6 +319,13 @@ class LayoutParser
           fortranOpt || sliceOpt ? theTranslator->trModulesMemberDescription(extractAll) : theTranslator->trNamespaceMemberDescription(extractAll),
           "namespacemembers"
         },
+        { "concepts",
+          LayoutNavEntry::Concepts,
+          theTranslator->trConcept(true,false),
+          theTranslator->trConceptList(),
+          theTranslator->trConceptListDescription(extractAll),
+          "concepts"
+        },
         { "classindex",
           LayoutNavEntry::ClassIndex,
           fortranOpt ? theTranslator->trDataTypes() : vhdlOpt ? theTranslator->trDesignUnits() : theTranslator->trCompoundIndex(),
@@ -580,6 +587,19 @@ class LayoutParser
     }
 
     void endNamespace()
+    {
+      m_scope="";
+      m_part = -1;
+    }
+
+    void startConcept(const XMLHandlers::Attributes &)
+    {
+      LayoutDocManager::instance().clear(LayoutDocManager::Concept);
+      m_scope="concept/";
+      m_part = (int)LayoutDocManager::Concept;
+    }
+
+    void endConcept()
     {
       m_scope="";
       m_part = -1;
@@ -973,6 +993,31 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                     endCb()
                                                   } },
 
+  // concept layout handlers
+  { "concept",                                    { startCb(&LayoutParser::startConcept),
+                                                    endCb(&LayoutParser::endConcept)
+                                                  } },
+
+  { "concept/briefdescription",                   { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::BriefDesc),
+                                                    endCb()
+                                                  } },
+  { "concept/definition",                         { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::ConceptDefinition,
+                                                            []() { return compileOptions(theTranslator->trConceptDefinition()); }),
+                                                    endCb()
+                                                  } },
+  { "concept/includes",                           { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::ClassIncludes),
+                                                    endCb()
+                                                  } },
+  { "concept/sourcelink",                         { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::FileSourceLink),
+                                                    endCb()
+                                                  } },
+  { "concept/detaileddescription",                { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::DetailedDesc,
+                                                            []() { return compileOptions(theTranslator->trDetailedDescription()); }),
+                                                    endCb()
+                                                  } },
+  { "concept/authorsection",                      { startCb(&LayoutParser::startSimpleEntry, LayoutDocEntry::AuthorSection),
+                                                    endCb()
+                                                  } },
   // namespace layout handlers
   { "namespace",                                  { startCb(&LayoutParser::startNamespace),
                                                     endCb(&LayoutParser::endNamespace)
@@ -1014,6 +1059,10 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
                                                                            SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                                                            SrcLangExt_Fortran,theTranslator->trDataTypes()); }),
+                                                    endCb()
+                                                  } },
+  { "namespace/memberdecl/concepts",              { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::NamespaceConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); }),
                                                     endCb()
                                                   } },
   { "namespace/memberdecl/structs",               { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::NamespaceStructs,
@@ -1133,6 +1182,10 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(/* default */      theTranslator->trCompounds(),
                                                                                          SrcLangExt_VHDL,   theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                                                                          SrcLangExt_Fortran,theTranslator->trDataTypes()); }),
+                                                    endCb()
+                                                  } },
+  { "file/memberdecl/concepts",                   { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::FileConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); }),
                                                     endCb()
                                                   } },
   { "file/memberdecl/structs",                    { startCb(&LayoutParser::startSectionEntry,LayoutDocEntry::FileStructs,
@@ -1255,6 +1308,10 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
                                                             []() { return compileOptions(/* default */       theTranslator->trCompounds(),
                                                                                          SrcLangExt_VHDL,    theTranslator->trVhdlType(VhdlDocGen::ENTITY,FALSE),
                                                                                          SrcLangExt_Fortran, theTranslator->trDataTypes()); }),
+                                                    endCb()
+                                                  } },
+  { "group/memberdecl/concepts",                  { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupConcepts,
+                                                            []() { return compileOptions(theTranslator->trConcept(true,false)); }),
                                                    endCb()
                                                   } },
   { "group/memberdecl/namespaces",                { startCb(&LayoutParser::startSectionEntry, LayoutDocEntry::GroupNamespaces,

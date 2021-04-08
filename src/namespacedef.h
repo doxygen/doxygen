@@ -25,8 +25,10 @@
 
 class MemberList;
 class ClassDef;
+class ConceptDef;
 class OutputList;
 class ClassLinkedRefMap;
+class ConceptLinkedRefMap;
 class MemberDef;
 class NamespaceDef;
 class NamespaceDef;
@@ -94,6 +96,9 @@ class NamespaceDef : public Definition
     /*! Returns the namespaces contained in this namespace */
     virtual NamespaceLinkedRefMap getNamespaces() const = 0;
 
+    /*! Returns the concepts contained in this namespace */
+    virtual ConceptLinkedRefMap getConcepts() const = 0;
+
     virtual QCString title() const = 0;
     virtual QCString compoundTypeString() const = 0;
 };
@@ -110,6 +115,7 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertConcept(const ConceptDef *cd) = 0;
     virtual void insertNamespace(const NamespaceDef *nd) = 0;
     virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it
     virtual void computeAnchors() = 0;

@@ -213,6 +213,10 @@ class OutputList : public OutputDocInterface
     { forall(&OutputGenerator::startMemberTemplateParams); }
     void endMemberTemplateParams(const char *anchor,const char *inheritId)
     { forall(&OutputGenerator::endMemberTemplateParams,anchor,inheritId); }
+    void startCompoundTemplateParams()
+    { forall(&OutputGenerator::startCompoundTemplateParams); }
+    void endCompoundTemplateParams()
+    { forall(&OutputGenerator::endCompoundTemplateParams); }
     void startMemberGroupHeader(bool b)
     { forall(&OutputGenerator::startMemberGroupHeader,b); }
     void endMemberGroupHeader()

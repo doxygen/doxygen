@@ -67,6 +67,7 @@ int hierarchyExceptions;
 int documentedFiles;
 int documentedGroups;
 int documentedNamespaces;
+int documentedConcepts;
 int indexedPages;
 int documentedClassMembers[CMHL_Total];
 int documentedFileMembers[FMHL_Total];
@@ -80,6 +81,7 @@ static void countFiles(int &htmlFiles,int &files);
 static int countGroups();
 static int countDirs();
 static int countNamespaces();
+static int countConcepts();
 static int countAnnotatedClasses(int *cp,ClassDef::CompoundType ct);
 static void countRelatedPages(int &docPages,int &indexPages);
 
@@ -102,6 +104,7 @@ void countDataStructures()
   countRelatedPages(documentedPages,indexedPages);        // "pages"
   documentedGroups           = countGroups();             // "modules"
   documentedNamespaces       = countNamespaces();         // "namespaces"
+  documentedConcepts         = countConcepts();           // "concepts"
   documentedDirs             = countDirs();               // "dirs"
   // "globals"
   // "namespacemembers"
@@ -347,7 +350,9 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
 template<class T>
 void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
                        const QCString &name,const QCString &anchor,
-                       bool addToIndex=TRUE,bool preventSeparateIndex=FALSE)
+                       bool addToIndex=TRUE,bool preventSeparateIndex=FALSE,
+                       const ConceptLinkedRefMap *concepts = nullptr)
+
 {
   bool hasMembers = !def->getMemberLists().empty() || !def->getMemberGroups().empty();
   Doxygen::indexList->addContentsItem(hasMembers,name,
@@ -360,13 +365,22 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
   {
     if (cd->isLinkable()) numClasses++;
   }
+  int numConcepts=0;
+  if (concepts)
+  {
+    for (const auto &cd : *concepts)
+    {
+      if (cd->isLinkable()) numConcepts++;
+    }
+  }
   //printf("addMembersToIndex(def=%s hasMembers=%d numClasses=%d)\n",def->name().data(),hasMembers,numClasses);
-  if (hasMembers || numClasses>0)
+  if (hasMembers || numClasses>0 || numConcepts>0)
   {
     Doxygen::indexList->incContentsDepth();
     for (const auto &lde : LayoutDocManager::instance().docEntries(part))
     {
-      if (lde->kind()==LayoutDocEntry::MemberDef)
+      auto kind = lde->kind();
+      if (kind==LayoutDocEntry::MemberDef)
       {
         const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
         MemberList *ml = def->getMemberList(lmd->type);
@@ -381,9 +395,9 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           }
         }
       }
-      else if (lde->kind()==LayoutDocEntry::NamespaceClasses ||
-               lde->kind()==LayoutDocEntry::FileClasses ||
-               lde->kind()==LayoutDocEntry::ClassNestedClasses
+      else if (kind==LayoutDocEntry::NamespaceClasses ||
+               kind==LayoutDocEntry::FileClasses ||
+               kind==LayoutDocEntry::ClassNestedClasses
               )
       {
         for (const auto &cd : def->getClasses())
@@ -392,9 +406,23 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           {
             static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
             bool isNestedClass = def->definitionType()==Definition::TypeClass;
-            addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),
+            addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(lde->kind()==LayoutDocEntry::FileClasses),cd->anchor(),
                               addToIndex && (isNestedClass || (cd->isSimple() && inlineSimpleStructs)),
                               preventSeparateIndex || cd->isEmbeddedInOuterScope());
+          }
+        }
+      }
+      else if (kind==LayoutDocEntry::FileConcepts && concepts)
+      {
+        for (const auto &cd : *concepts)
+        {
+          if (cd->isLinkable() && (cd->partOfGroups().empty() || def->definitionType()==Definition::TypeGroup))
+          {
+            Doxygen::indexList->addContentsItem(false,cd->displayName(),
+                                     cd->getReference(),cd->getOutputFileBase(),0,
+                                     false,
+                                     false,
+                                     cd);
           }
         }
       }
@@ -675,7 +703,8 @@ static void writeDirTreeNode(OutputList &ol, const DirDef *dd, int level, FTVHel
         doc = fileVisibleInIndex(fd,src);
         if (doc)
         {
-          addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),TRUE);
+          addMembersToIndex(fd,LayoutDocManager::File,fd->displayName(),QCString(),
+                            TRUE,FALSE,&fd->getConcepts());
         }
         else if (src)
         {
@@ -743,7 +772,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
           {
             if (doc)
             {
-              addMembersToIndex(fd.get(),LayoutDocManager::File,fd->displayName(),QCString(),TRUE);
+              addMembersToIndex(fd.get(),LayoutDocManager::File,fd->displayName(),QCString(),TRUE,FALSE,&fd->getConcepts());
             }
             else if (src)
             {
@@ -1486,6 +1515,18 @@ static int countNamespaces()
 }
 
 //----------------------------------------------------------------------------
+static int countConcepts()
+{
+  int count=0;
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->isLinkableInProject()) count++;
+  }
+  return count;
+}
+
+
+//----------------------------------------------------------------------------
 template<typename Ptr> const ClassDef *get_pointer(const Ptr &p);
 template<>             const ClassDef *get_pointer(const ClassLinkedMap::Ptr &p) { return p.get(); }
 template<>             const ClassDef *get_pointer(const ClassLinkedRefMap::Ptr &p) { return p; }
@@ -1603,6 +1644,7 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
   }
 }
 
+static void writeConceptList(const ConceptLinkedRefMap &concepts, FTVHelp *ftv,bool addToIndex);
 static void writeNamespaceTree(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp *ftv,
                                bool rootOnly,bool addToIndex);
 
@@ -1614,7 +1656,8 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
   {
 
     bool hasChildren = namespaceHasNestedNamespace(nd) ||
-      namespaceHasNestedClass(nd,false,ClassDef::Class);
+      namespaceHasNestedClass(nd,false,ClassDef::Class) ||
+      namespaceHasNestedConcept(nd);
     bool isLinkable  = nd->isLinkableInProject();
     int visibleMembers = countVisibleMembers(nd);
 
@@ -1647,13 +1690,12 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
         Doxygen::indexList->incContentsDepth();
       }
 
-      //printf("*** writeNamespaceTree count=%d addToIndex=%d false=%d classCount=%d\n",
-      //    count,addToIndex,false,classCount);
       if (isDir)
       {
         ftv->incContentsDepth();
         writeNamespaceTree(nd->getNamespaces(),ftv,FALSE,addToIndex);
         writeClassTree(nd->getClasses(),ftv,FALSE,FALSE,ClassDef::Class);
+        writeConceptList(nd->getConcepts(),ftv,FALSE);
         writeNamespaceMembers(nd,addToIndex);
         ftv->decContentsDepth();
       }
@@ -3736,6 +3778,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
       numSubItems += gd->getNamespaces().size();
       numSubItems += gd->getClasses().size();
       numSubItems += gd->getFiles().size();
+      numSubItems += gd->getConcepts().size();
       numSubItems += gd->getDirs().size();
       numSubItems += gd->getPages().size();
     }
@@ -3819,7 +3862,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
             //if (cd->isEmbeddedInOuterScope())
             //{
               //printf("add class & members %d\n",addToIndex);
-              addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(FALSE),cd->anchor(),addToIndex,TRUE);
+              addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(),cd->anchor(),addToIndex,TRUE);
             //}
             //else // only index the class, not its members
             //{
@@ -3838,8 +3881,20 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           if (nd->isVisible())
           {
             Doxygen::indexList->addContentsItem(FALSE,
-                nd->localName(),nd->getReference(),
+                nd->displayName(),nd->getReference(),
                 nd->getOutputFileBase(),0,FALSE,FALSE);
+          }
+        }
+      }
+      else if (lde->kind()==LayoutDocEntry::GroupConcepts && addToIndex)
+      {
+        for (const auto &cd : gd->getConcepts())
+        {
+          if (cd->isVisible())
+          {
+            Doxygen::indexList->addContentsItem(FALSE,
+                cd->displayName(),cd->getReference(),
+                cd->getOutputFileBase(),0,FALSE,FALSE);
           }
         }
       }
@@ -4001,6 +4056,211 @@ static void writeGroupIndex(OutputList &ol)
     ol.disableAllBut(OutputGenerator::Html);
     ol.writeString(t.str().c_str());
     delete ftv;
+    if (addToIndex)
+    {
+      Doxygen::indexList->decContentsDepth();
+    }
+  }
+  ol.popGeneratorState();
+  // 2.}
+
+  endFile(ol);
+  ol.popGeneratorState();
+  // 1.}
+}
+
+//----------------------------------------------------------------------------
+
+static void writeConceptList(const ConceptLinkedRefMap &concepts, FTVHelp *ftv,bool addToIndex)
+{
+  for (const auto &cd : concepts)
+  {
+    ftv->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
+         cd->getOutputFileBase(),0,false,true,cd);
+    if (addToIndex)
+    {
+      Doxygen::indexList->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
+         cd->getOutputFileBase(),0,false,true);
+    }
+  }
+}
+
+static void writeConceptTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp *ftv,
+                                            bool rootOnly, bool addToIndex);
+
+static void writeConceptTreeInsideNamespace(const NamespaceLinkedRefMap &nsLinkedMap,FTVHelp *ftv,
+                                            bool rootOnly, bool addToIndex)
+{
+  for (const auto &nd : nsLinkedMap)
+  {
+    writeConceptTreeInsideNamespaceElement(nd,ftv,rootOnly,addToIndex);
+  }
+}
+
+
+static void writeConceptTreeInsideNamespaceElement(const NamespaceDef *nd,FTVHelp *ftv,
+                                            bool rootOnly, bool addToIndex)
+{
+  if (!nd->isAnonymous() &&
+      (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
+  {
+    bool isDir = namespaceHasNestedConcept(nd);
+    bool isLinkable  = nd->isLinkableInProject();
+
+    //printf("namespace %s isDir=%d\n",nd->name().data(),isDir);
+
+    QCString ref;
+    QCString file;
+    if (isLinkable)
+    {
+      ref  = nd->getReference();
+      file = nd->getOutputFileBase();
+    }
+
+    if (isDir)
+    {
+      ftv->addContentsItem(isDir,nd->localName(),ref,file,0,FALSE,TRUE,nd);
+
+      if (addToIndex)
+      {
+        // the namespace entry is already shown under the namespace list so don't
+        // add it to the nav index and don't create a separate index file for it otherwise
+        // it will overwrite the one written for the namespace list.
+        Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
+            false, // separateIndex
+            false  // addToNavIndex
+            );
+      }
+      if (addToIndex)
+      {
+        Doxygen::indexList->incContentsDepth();
+      }
+
+      ftv->incContentsDepth();
+      writeConceptTreeInsideNamespace(nd->getNamespaces(),ftv,FALSE,addToIndex);
+      writeConceptList(nd->getConcepts(),ftv,addToIndex);
+      ftv->decContentsDepth();
+
+      if (addToIndex)
+      {
+        Doxygen::indexList->decContentsDepth();
+      }
+    }
+  }
+}
+
+static void writeConceptRootList(FTVHelp *ftv,bool addToIndex)
+{
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->getOuterScope()==0 ||
+        cd->getOuterScope()==Doxygen::globalScope)
+    {
+      //printf("*** adding %s hasSubPages=%d hasSections=%d\n",pageTitle.data(),hasSubPages,hasSections);
+      ftv->addContentsItem(
+          false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
+          0,false,true,cd.get());
+      if (addToIndex)
+      {
+        Doxygen::indexList->addContentsItem(
+            false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
+            0,false,true);
+      }
+    }
+  }
+}
+
+static void writeConceptIndex(OutputList &ol)
+{
+  if (documentedConcepts==0) return;
+  ol.pushGeneratorState();
+  // 1.{
+  ol.disable(OutputGenerator::Man);
+  ol.disable(OutputGenerator::Docbook);
+  LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Concepts);
+  QCString title = lne ? lne->title() : theTranslator->trConceptList();
+  bool addToIndex = lne==0 || lne->visible();
+
+  startFile(ol,"concepts",0,title,HLI_Concepts);
+  startTitle(ol,0);
+  ol.parseText(title);
+  endTitle(ol,0,0);
+  ol.startContents();
+  ol.startTextBlock();
+  ol.parseText(lne ? lne->intro() : theTranslator->trConceptListDescription(Config_getBool(EXTRACT_ALL)));
+  ol.endTextBlock();
+
+  // ---------------
+  // Normal group index for Latex/RTF
+  // ---------------
+  // 2.{
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Html);
+
+  bool first=TRUE;
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->isLinkableInProject())
+    {
+      if (first)
+      {
+        ol.startIndexList();
+        first=FALSE;
+      }
+      //ol.writeStartAnnoItem("namespace",nd->getOutputFileBase(),0,nd->name());
+      ol.startIndexKey();
+      ol.writeObjectLink(0,cd->getOutputFileBase(),0,cd->displayName());
+      ol.endIndexKey();
+
+      bool hasBrief = !cd->briefDescription().isEmpty();
+      ol.startIndexValue(hasBrief);
+      if (hasBrief)
+      {
+        //ol.docify(" (");
+        ol.generateDoc(
+                 cd->briefFile(),cd->briefLine(),
+                 cd.get(),0,
+                 cd->briefDescription(TRUE),
+                 FALSE, // index words
+                 FALSE, // isExample
+                 0,     // example name
+                 TRUE,  // single line
+                 TRUE,  // link from index
+                 Config_getBool(MARKDOWN_SUPPORT)
+                );
+        //ol.docify(")");
+      }
+      ol.endIndexValue(cd->getOutputFileBase(),hasBrief);
+
+    }
+  }
+  if (!first) ol.endIndexList();
+
+  ol.popGeneratorState();
+  // 2.}
+
+  // ---------------
+  // interactive group index for HTML
+  // ---------------
+  // 2.{
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+
+  {
+    if (addToIndex)
+    {
+      Doxygen::indexList->addContentsItem(TRUE,title,0,"concepts",0,TRUE,TRUE);
+      Doxygen::indexList->incContentsDepth();
+    }
+    FTVHelp ftv(false);
+    for (const auto &nd : *Doxygen::namespaceLinkedMap)
+    {
+      writeConceptTreeInsideNamespaceElement(nd.get(),&ftv,true,addToIndex);
+    }
+    writeConceptRootList(&ftv,addToIndex);
+    TextStream t;
+    ftv.generateTreeViewInline(t);
+    ol.writeString(t.str().c_str());
     if (addToIndex)
     {
       Doxygen::indexList->decContentsDepth();
@@ -4298,6 +4558,12 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModulesIndex():theTranslator->trNamespaceIndex()));
       ol.endIndexSection(isNamespaceIndex);
     }
+    if (documentedConcepts>0)
+    {
+      ol.startIndexSection(isConceptIndex);
+      ol.parseText(/*projPrefix+*/theTranslator->trConceptIndex());
+      ol.endIndexSection(isConceptIndex);
+    }
     if (hierarchyInterfaces>0)
     {
       ol.startIndexSection(isClassHierarchyIndex);
@@ -4368,6 +4634,12 @@ static void writeIndex(OutputList &ol)
     ol.startIndexSection(isNamespaceDocumentation);
     ol.parseText(/*projPrefix+*/(fortranOpt?theTranslator->trModuleDocumentation():theTranslator->trNamespaceDocumentation()));
     ol.endIndexSection(isNamespaceDocumentation);
+  }
+  if (documentedConcepts>0)
+  {
+    ol.startIndexSection(isConceptDocumentation);
+    ol.parseText(/*projPrefix+*/theTranslator->trConceptDocumentation());
+    ol.endIndexSection(isConceptDocumentation);
   }
   if (annotatedInterfacesPrinted>0)
   {
@@ -4509,6 +4781,10 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             msg("Generating annotated compound index...\n");
             writeAnnotatedIndex(ol);
           }
+          break;
+        case LayoutNavEntry::Concepts:
+          msg("Generating concept index...\n");
+          writeConceptIndex(ol);
           break;
         case LayoutNavEntry::ClassList:
           msg("Generating annotated compound index...\n");
@@ -4747,6 +5023,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::Namespaces:         return documentedNamespaces>0 && showNamespaces;
     case LayoutNavEntry::NamespaceList:      return documentedNamespaces>0 && showNamespaces;
     case LayoutNavEntry::NamespaceMembers:   return documentedNamespaceMembers[NMHL_All]>0;
+    case LayoutNavEntry::Concepts:           return documentedConcepts>0;
     case LayoutNavEntry::Classes:            return annotatedClasses>0;
     case LayoutNavEntry::ClassList:          return annotatedClasses>0;
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;

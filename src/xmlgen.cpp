@@ -398,7 +398,12 @@ static void writeMemberTemplateLists(const MemberDef *md,TextStream &t)
 
 static void writeTemplateList(const ClassDef *cd,TextStream &t)
 {
-  writeTemplateArgumentList(t,cd->templateArguments(),cd,0,4);
+  writeTemplateArgumentList(t,cd->templateArguments(),cd,cd->getFileDef(),4);
+}
+
+static void writeTemplateList(const ConceptDef *cd,TextStream &t)
+{
+  writeTemplateArgumentList(t,cd->getTemplateParameterList(),cd,cd->getFileDef(),4);
 }
 
 static void writeXMLDocBlock(TextStream &t,
@@ -928,6 +933,12 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       }
     }
   }
+  if (!md->requiresClause().isEmpty())
+  {
+    t << "    <requiresclause>";
+    linkifyText(TextGeneratorXMLImpl(t),md,md->getFileDef(),md,md->requiresClause());
+    t << "    </requiresclause>\n";
+  }
 
   if (md->hasOneLineInitializer() || md->hasMultiLineInitializer())
   {
@@ -1192,6 +1203,26 @@ static void writeInnerDirs(const DirList *dl,TextStream &t)
   }
 }
 
+static void writeIncludeInfo(const IncludeInfo *ii,TextStream &t)
+{
+  if (ii)
+  {
+    QCString nm = ii->includeName;
+    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
+    if (!nm.isEmpty())
+    {
+      t << "    <includes";
+      if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
+      {
+        t << " refid=\"" << ii->fileDef->getOutputFileBase() << "\"";
+      }
+      t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
+      t << nm;
+      t << "</includes>\n";
+    }
+  }
+}
+
 static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
 {
   // + brief description
@@ -1310,23 +1341,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
       << "</derivedcompoundref>\n";
   }
 
-  const IncludeInfo *ii=cd->includeInfo();
-  if (ii)
-  {
-    QCString nm = ii->includeName;
-    if (nm.isEmpty() && ii->fileDef) nm = ii->fileDef->docName();
-    if (!nm.isEmpty())
-    {
-      t << "    <includes";
-      if (ii->fileDef && !ii->fileDef->isReference()) // TODO: support external references
-      {
-        t << " refid=\"" << ii->fileDef->getOutputFileBase() << "\"";
-      }
-      t << " local=\"" << (ii->local ? "yes" : "no") << "\">";
-      t << nm;
-      t << "</includes>\n";
-    }
-  }
+  writeIncludeInfo(cd->includeInfo(),t);
 
   writeInnerClasses(cd->getClasses(),t);
 
@@ -1343,6 +1358,13 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     {
       generateXMLSection(cd,ti,t,ml.get(),xmlSectionMapper(ml->listType()));
     }
+  }
+
+  if (!cd->requiresClause().isEmpty())
+  {
+    t << "    <requiresclause>";
+    linkifyText(TextGeneratorXMLImpl(t),cd,cd->getFileDef(),0,cd->requiresClause());
+    t << "    </requiresclause>\n";
   }
 
   t << "    <briefdescription>\n";
@@ -1381,6 +1403,50 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     }
   t << "/>\n";
   writeListOfAllMembers(cd,t);
+  t << "  </compounddef>\n";
+  t << "</doxygen>\n";
+
+  ti << "  </compound>\n";
+}
+
+static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
+{
+  if (cd->isReference() || cd->isHidden()) return; // skip external references.
+
+  ti << "  <compound refid=\"" << cd->getOutputFileBase()
+     << "\" kind=\"concept\"" << "><name>"
+     << convertToXML(cd->name()) << "</name>\n";
+
+  QCString outputDirectory = Config_getString(XML_OUTPUT);
+  QCString fileName=outputDirectory+"/"+cd->getOutputFileBase()+".xml";
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
+  {
+    err("Cannot open file %s for writing!\n",fileName.data());
+    return;
+  }
+  TextStream t(&f);
+  writeXMLHeader(t);
+  t << "  <compounddef id=\"" << cd->getOutputFileBase()
+    << "\" kind=\"concept\">\n";
+  t << "    <compoundname>";
+  writeXMLString(t,cd->name());
+  t << "</compoundname>\n";
+  writeIncludeInfo(cd->includeInfo(),t);
+  writeTemplateList(cd,t);
+  t << "    <initializer>";
+  linkifyText(TextGeneratorXMLImpl(t),cd,cd->getFileDef(),0,cd->initializer());
+  t << "    </initializer>\n";
+  t << "    <briefdescription>\n";
+  writeXMLDocBlock(t,cd->briefFile(),cd->briefLine(),cd,0,cd->briefDescription());
+  t << "    </briefdescription>\n";
+  t << "    <detaileddescription>\n";
+  writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
+  t << "    </detaileddescription>\n";
+  t << "    <location file=\""
+    << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
+    << cd->getDefLine() << "\"" << " column=\""
+    << cd->getDefColumn() << "\"/>\n" ;
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
 
@@ -1817,6 +1883,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
 void generateXML()
 {
   // + classes
+  // + concepts
   // + namespaces
   // + files
   // + groups
@@ -1890,6 +1957,11 @@ void generateXML()
     for (const auto &cd : *Doxygen::classLinkedMap)
     {
       generateXMLForClass(cd.get(),t);
+    }
+    for (const auto &cd : *Doxygen::conceptLinkedMap)
+    {
+      msg("Generating XML output for concept %s\n",cd->name().data());
+      generateXMLForConcept(cd.get(),t);
     }
     for (const auto &nd : *Doxygen::namespaceLinkedMap)
     {

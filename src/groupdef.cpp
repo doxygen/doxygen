@@ -64,6 +64,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual bool hasGroupTitle( ) const { return m_titleSet; }
     virtual void addFile(const FileDef *def);
     virtual bool addClass(const ClassDef *def);
+    virtual bool addConcept(const ConceptDef *def);
     virtual bool addNamespace(const NamespaceDef *def);
     virtual void addGroup(const GroupDef *def);
     virtual void addPage(const PageDef *def);
@@ -102,6 +103,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
 
     virtual const FileList &getFiles() const                    { return m_fileList; }
     virtual const ClassLinkedRefMap &getClasses() const         { return m_classes; }
+    virtual const ConceptLinkedRefMap &getConcepts() const      { return m_concepts; }
     virtual const NamespaceLinkedRefMap &getNamespaces() const  { return m_namespaces; }
     virtual const GroupList &getSubGroups() const               { return m_groups; }
     virtual const PageLinkedRefMap &getPages() const            { return m_pages; }
@@ -122,6 +124,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     void writeNestedGroups(OutputList &ol,const QCString &title);
     void writeDirs(OutputList &ol,const QCString &title);
     void writeClasses(OutputList &ol,const QCString &title);
+    void writeConcepts(OutputList &ol,const QCString &title);
     void writeInlineClasses(OutputList &ol);
     void writePageDocumentation(OutputList &ol);
     void writeDetailedDescription(OutputList &ol,const QCString &title);
@@ -140,6 +143,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     QCString             m_fileName;            // base name of the generated file
     FileList             m_fileList;            // list of files in the group
     ClassLinkedRefMap    m_classes;             // list of classes in the group
+    ConceptLinkedRefMap  m_concepts;            // list of concepts in the group
     NamespaceLinkedRefMap m_namespaces;         // list of namespaces in the group
     GroupList            m_groups;              // list of sub groups.
     PageLinkedRefMap     m_pages;               // list of pages in the group
@@ -251,6 +255,18 @@ bool GroupDefImpl::addClass(const ClassDef *cd)
   if (m_classes.find(qn)==0)
   {
     m_classes.add(qn,cd);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+bool GroupDefImpl::addConcept(const ConceptDef *cd)
+{
+  if (cd->isHidden()) return FALSE;
+  QCString qn = cd->name();
+  if (m_concepts.find(qn)==0)
+  {
+    m_concepts.add(qn,cd);
     return TRUE;
   }
   return FALSE;
@@ -619,6 +635,18 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
           }
         }
         break;
+      case LayoutDocEntry::GroupConcepts:
+        {
+          for (const auto &cd : m_concepts)
+          {
+            if (cd->isLinkableInProject())
+            {
+              tagFile << "    <concept>" << convertToXML(cd->name())
+                      << "</concept>\n";
+            }
+          }
+        }
+        break;
       case LayoutDocEntry::GroupNamespaces:
         {
           for (const auto &nd : m_namespaces)
@@ -936,6 +964,12 @@ void GroupDefImpl::writeClasses(OutputList &ol,const QCString &title)
   m_classes.writeDeclaration(ol,0,title,FALSE);
 }
 
+void GroupDefImpl::writeConcepts(OutputList &ol,const QCString &title)
+{
+  // write list of concepts
+  m_concepts.writeDeclaration(ol,title,FALSE);
+}
+
 void GroupDefImpl::writeInlineClasses(OutputList &ol)
 {
   m_classes.writeDocumentation(ol);
@@ -1023,15 +1057,17 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
   SrcLangExt lang = getLanguage();
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
-    if ((lde->kind()==LayoutDocEntry::GroupClasses && m_classes.declVisible()) ||
-        (lde->kind()==LayoutDocEntry::GroupNamespaces && m_namespaces.declVisible()) ||
-        (lde->kind()==LayoutDocEntry::GroupFiles && !m_fileList.empty()) ||
+    if ((lde->kind()==LayoutDocEntry::GroupClasses      &&  m_classes.declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupConcepts     &&  m_concepts.declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupNamespaces   &&  m_namespaces.declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupFiles        && !m_fileList.empty()) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && !m_groups.empty()) ||
-        (lde->kind()==LayoutDocEntry::GroupDirs && !m_dirList.empty())
+        (lde->kind()==LayoutDocEntry::GroupDirs         && !m_dirList.empty())
        )
     {
       const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
       QCString label = lde->kind()==LayoutDocEntry::GroupClasses      ? "nested-classes" :
+                       lde->kind()==LayoutDocEntry::GroupConcepts     ? "concepts"       :
                        lde->kind()==LayoutDocEntry::GroupNamespaces   ? "namespaces"     :
                        lde->kind()==LayoutDocEntry::GroupFiles        ? "files"          :
                        lde->kind()==LayoutDocEntry::GroupNestedGroups ? "groups"         :
@@ -1123,6 +1159,12 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
           writeClasses(ol,ls->title(lang));
         }
         break;
+      case LayoutDocEntry::GroupConcepts:
+        {
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          writeConcepts(ol,ls->title(lang));
+        }
+        break;
       case LayoutDocEntry::GroupInlineClasses:
         {
           writeInlineClasses(ol);
@@ -1201,11 +1243,14 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
+      case LayoutDocEntry::ConceptDefinition:
       case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
       case LayoutDocEntry::FileExceptions:
@@ -1311,6 +1356,24 @@ void addClassToGroups(const Entry *root,ClassDef *cd)
     }
   }
 }
+
+void addConceptToGroups(const Entry *root,ConceptDef *cd)
+{
+  for (const Grouping &g : root->groups)
+  {
+    GroupDef *gd = Doxygen::groupLinkedMap->find(g.groupname);
+    if (gd && gd->addConcept(cd))
+    {
+      ConceptDefMutable *cdm = toConceptDefMutable(cd);
+      if (cdm)
+      {
+        cdm->makePartOfGroup(gd);
+      }
+      //printf("Compound %s: in group %s\n",cd->name().data(),gd->groupTitle());
+    }
+  }
+}
+
 
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd)
 {

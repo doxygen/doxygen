@@ -30,9 +30,11 @@ class MemberList;
 class MemberLists;
 class FileList;
 class ClassLinkedRefMap;
+class ConceptLinkedRefMap;
 class NamespaceLinkedRefMap;
 class FileDef;
 class ClassDef;
+class ConceptDef;
 class NamespaceDef;
 class GroupList;
 class OutputList;
@@ -58,6 +60,7 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(const FileDef *def) = 0;
     virtual bool addClass(const ClassDef *def) = 0;
+    virtual bool addConcept(const ConceptDef *def) = 0;
     virtual bool addNamespace(const NamespaceDef *def) = 0;
     virtual void addGroup(const GroupDef *def) = 0;
     virtual void addPage(const PageDef *def) = 0;
@@ -96,6 +99,7 @@ class GroupDef : public DefinitionMutable, public Definition
 
     virtual const FileList &getFiles() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
+    virtual const ConceptLinkedRefMap &getConcepts() const = 0;
     virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
     virtual const GroupList &getSubGroups() const = 0;
     virtual const PageLinkedRefMap &getPages() const = 0;
@@ -125,6 +129,7 @@ class GroupList : public std::vector<const GroupDef *>
 };
 
 void addClassToGroups    (const Entry *root,ClassDef *cd);
+void addConceptToGroups  (const Entry *root,ConceptDef *cd);
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd);
 void addGroupToGroups    (const Entry *root,GroupDef *subGroup);
 void addMemberToGroups   (const Entry *root,MemberDef *md);

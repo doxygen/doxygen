@@ -52,7 +52,7 @@
 #ifndef TRANSLATOR_BR_H
 #define TRANSLATOR_BR_H
 
-class TranslatorBrazilian : public Translator
+class TranslatorBrazilian : public TranslatorAdapter_1_9_2
 {
   public:
 
@@ -2341,13 +2341,13 @@ class TranslatorBrazilian : public Translator
     //////////////////////////////////////////////////////////////////////////
     // new since 1.8.19
     //////////////////////////////////////////////////////////////////////////
-    
+
     /** VHDL design unit documentation */
 	virtual QCString trDesignUnitDocumentation()
-	{ 
-	    return "Documentação da Unidade de Projeto"; 
+	{
+	    return "Documentação da Unidade de Projeto";
     }
-    
+
 };
 
 #endif

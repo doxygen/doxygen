@@ -445,6 +445,8 @@ NONLopt [^\n]*
  /** C++20 concepts */
 
 %x      RequiresClause
+%x      RequiresExpression
+%x      ConceptName
 
 %%
 
@@ -1622,6 +1624,19 @@ NONLopt [^\n]*
                                           if (yytext[yyleng-1]=='{') unput('{');
                                           BEGIN( CompoundName ) ;
                                         }
+<FindMembers>{B}*"concept"{BN}+         { // C++20 concept
+                                          yyextra->isTypedef=FALSE;
+                                          yyextra->current->section = Entry::CONCEPT_SEC;
+                                          addType(yyscanner);
+                                          yyextra->current->type += " concept";
+                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->startLine = yyextra->yyLineNr;
+                                          yyextra->current->startColumn = yyextra->yyColNr;
+                                          yyextra->current->bodyLine  = yyextra->yyLineNr;
+                                          yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          lineCount(yyscanner) ;
+                                          BEGIN( ConceptName ) ;
+                                        }
 <Operator>"("{BN}*")"({BN}*"<"[^>]*">"){BNopt}/"("  {  // A::operator()<int>(int arg)
                                           lineCount(yyscanner);
                                           yyextra->current->name += "()";
@@ -2075,12 +2090,35 @@ NONLopt [^\n]*
                                         }
 <FindMembers>"friend"{BN}+("class"|"union"|"struct"){BN}+ {
                                           yyextra->current->name=yytext;
+                                          lineCount(yyscanner) ;
                                           BEGIN(FindMembers);
                                         }
 <FindMembers>"requires"                 { // C++20 requires clause
                                           yyextra->current->req.resize(0);
                                           yyextra->requiresContext = YY_START;
                                           BEGIN(RequiresClause);
+                                        }
+<RequiresClause>"requires"{BN}*"("      { // requires requires(T x) { ... }
+                                          lineCount(yyscanner) ;
+                                          yyextra->current->req+=yytext;
+                                          yyextra->lastRoundContext=RequiresExpression;
+                                          yyextra->pCopyRoundString=&yyextra->current->req;
+                                          yyextra->roundCount=0;
+                                          BEGIN( CopyRound ) ;
+                                        }
+<RequiresExpression>"{"                 {
+                                          yyextra->current->req+=yytext;
+                                          yyextra->lastCurlyContext=RequiresClause;
+                                          yyextra->pCopyCurlyString=&yyextra->current->req;
+                                          yyextra->curlyCount=0;
+                                          BEGIN( CopyCurly ) ;
+                                        }
+<RequiresExpression>\n                  {
+                                          yyextra->current->req+=' ';
+                                          lineCount(yyextra);
+                                        }
+<RequiresExpression>.                   {
+                                          yyextra->current->req+=yytext;
                                         }
 <RequiresClause>"("                     { // requires "(A && B)"
                                           yyextra->current->req+=yytext;
@@ -2119,6 +2157,7 @@ NONLopt [^\n]*
                                         }
 <RequiresClause>{BN}+                   {
                                           yyextra->current->req+=' ';
+                                          lineCount(yyscanner) ;
                                         }
 <RequiresClause>.                       {
                                           unput(*yytext);
@@ -2126,7 +2165,6 @@ NONLopt [^\n]*
                                           BEGIN(yyextra->requiresContext);
                                         }
 <FindMembers,FindMemberName>{SCOPENAME} {
-   
                                           if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
                                             yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
@@ -3314,7 +3352,12 @@ NONLopt [^\n]*
                                             yyextra->current->type.prepend("typedef ");
                                           }
                                           bool stat = yyextra->current->stat;
-                                          if (!yyextra->current->name.isEmpty() && yyextra->current->section!=Entry::ENUM_SEC)
+                                          if (yyextra->current->section==Entry::CONCEPT_SEC) // C++20 concept
+                                          {
+                                            yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
+                                            initEntry(yyscanner);
+                                          }
+                                          else if (!yyextra->current->name.isEmpty() && yyextra->current->section!=Entry::ENUM_SEC)
                                           {
                                             yyextra->current->type=yyextra->current->type.simplifyWhiteSpace();
                                             yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
@@ -5514,6 +5557,17 @@ NONLopt [^\n]*
                                         }
 <AlignAsEnd>\n                          { lineCount(yyscanner); }
 <AlignAsEnd>.
+<ConceptName>{ID}                       {
+                                          yyextra->current->name = yytext ;
+                                        }
+<ConceptName>"="                        {
+                                          yyextra->current->bodyLine = yyextra->yyLineNr;
+                                          yyextra->current->bodyColumn = yyextra->yyColNr;
+                                          yyextra->current->initializer.str(std::string());
+                                          yyextra->lastInitializerContext = FindMembers;
+                                          yyextra->initBracketCount=0;
+                                          BEGIN(ReadInitializer);
+                                        }
 <CompoundName>{SCOPENAME}/{BN}*","      {  // multiple forward declarations on one line
                                            // e.g. @protocol A,B;
                                           yyextra->current->reset();

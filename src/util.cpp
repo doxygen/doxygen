@@ -491,6 +491,26 @@ ClassDef *getClass(const char *n)
   return Doxygen::classLinkedMap->find(n);
 }
 
+
+ConceptDef *getConcept(const char *n)
+{
+  if (n==0 || n[0]=='\0') return 0;
+  return Doxygen::conceptLinkedMap->find(n);
+}
+
+ConceptDef *getResolvedConcept(const Definition *d,const char *name)
+{
+  ConceptDef *cd=0;
+  while (d && d!=Doxygen::globalScope)
+  {
+    cd = getConcept(d->name()+"::"+name);
+    if (cd) return cd;
+    d = d->getOuterScope();
+  }
+  cd = getConcept(name);
+  return cd;
+}
+
 NamespaceDef *getResolvedNamespace(const char *name)
 {
   if (name==0 || name[0]=='\0') return 0;
@@ -973,6 +993,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
       const FileDef      *fd=0;
       const NamespaceDef *nd=0;
       const GroupDef     *gd=0;
+      const ConceptDef   *cnd=0;
       //printf("** Match word '%s'\n",matchWord.data());
 
       SymbolResolver resolver(fileScope);
@@ -1018,18 +1039,18 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
           }
         }
       }
-//      else if ((cd=getClass(matchWord+"-g"))) // C# generic as well
-//      {
-//        // add link to the result
-//        if (external ? cd->isLinkable() : cd->isLinkableInProject())
-//        {
-//          if (cd!=self)
-//          {
-//            out.writeLink(cd->getReference(),cd->getOutputFileBase(),cd->anchor(),word);
-//            found=TRUE;
-//          }
-//        }
-//      }
+      else if ((cnd=getConcept(matchWord)))
+      {
+        // add link to the result
+        if (external ? cnd->isLinkable() : cnd->isLinkableInProject())
+        {
+          if (cnd!=self)
+          {
+            out.writeLink(cnd->getReference(),cnd->getOutputFileBase(),cnd->anchor(),word.c_str());
+            found=TRUE;
+          }
+        }
+      }
       else
       {
         //printf("   -> nothing\n");
@@ -2932,6 +2953,7 @@ bool resolveRef(/* in */  const char *scName,
   const FileDef      *fd = 0;
   const NamespaceDef *nd = 0;
   const GroupDef     *gd = 0;
+  const ConceptDef   *cnd = 0;
 
   // check if nameStr is a member or global.
   //printf("getDefs(scope=%s,name=%s,args=%s checkScope=%d)\n",
@@ -2972,6 +2994,11 @@ bool resolveRef(/* in */  const char *scName,
   else if (inSeeBlock && !nameStr.isEmpty() && (gd=Doxygen::groupLinkedMap->find(nameStr)))
   { // group link
     *resContext=gd;
+    return TRUE;
+  }
+  else if ((cnd=Doxygen::conceptLinkedMap->find(nameStr)))
+  {
+    *resContext=cnd;
     return TRUE;
   }
   else if (tsName.find('.')!=-1) // maybe a link to a file
@@ -3113,6 +3140,7 @@ bool resolveLink(/* in */ const char *scName,
   const PageDef  *pd;
   const ClassDef *cd;
   const DirDef   *dir;
+  const ConceptDef *cnd;
   const NamespaceDef *nd;
   const SectionInfo *si=0;
   bool ambig;
@@ -3175,12 +3203,12 @@ bool resolveLink(/* in */ const char *scName,
     resAnchor=cd->anchor();
     return TRUE;
   }
-//  else if ((cd=getClass(linkRef+"-g"))) // C# generic link
-//  {
-//    *resContext=cd;
-//    resAnchor=cd->anchor();
-//    return TRUE;
-//  }
+  else if ((cnd=getConcept(linkRef))) // C++20 concept definition
+  {
+    *resContext=cnd;
+    resAnchor=cnd->anchor();
+    return TRUE;
+  }
   else if ((nd=Doxygen::namespaceLinkedMap->find(linkRef)))
   {
     *resContext=nd;
@@ -6805,6 +6833,26 @@ bool namespaceHasNestedNamespace(const NamespaceDef *nd)
   for (const auto &cnd : nd->getNamespaces())
   {
     if (cnd->isLinkableInProject() && !cnd->isAnonymous())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool namespaceHasNestedConcept(const NamespaceDef *nd)
+{
+  for (const auto &cnd : nd->getNamespaces())
+  {
+    if (namespaceHasNestedConcept(cnd))
+    {
+      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",nd->name().data(),includeClasses);
+      return true;
+    }
+  }
+  for (const auto &cnd : nd->getConcepts())
+  {
+    if (cnd->isLinkableInProject())
     {
       return true;
     }

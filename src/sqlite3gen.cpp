@@ -1372,9 +1372,15 @@ static void writeMemberTemplateLists(const MemberDef *md)
 {
   writeTemplateArgumentList(md->templateArguments(),md->getClassDef(),md->getFileDef());
 }
+
 static void writeTemplateList(const ClassDef *cd)
 {
-  writeTemplateArgumentList(cd->templateArguments(),cd,0);
+  writeTemplateArgumentList(cd->templateArguments(),cd,cd->getFileDef());
+}
+
+static void writeTemplateList(const ConceptDef *cd)
+{
+  writeTemplateArgumentList(cd->getTemplateParameterList(),cd,cd->getFileDef());
 }
 
 QCString getSQLDocBlock(const Definition *scope,
@@ -2003,6 +2009,30 @@ static void generateSqlite3ForClass(const ClassDef *cd)
   associateAllClassMembers(cd, refid);
 }
 
+static void generateSqlite3ForConcept(const ConceptDef *cd)
+{
+  if (cd->isReference() || cd->isHidden()) return; // skip external references
+
+  struct Refid refid = insertRefid(cd->getOutputFileBase());
+  if(!refid.created && compounddefExists(refid)){return;}
+  bindIntParameter(compounddef_insert,":rowid", refid.rowid);
+  bindTextParameter(compounddef_insert,":name",cd->name());
+  bindTextParameter(compounddef_insert,":kind","concept");
+
+  int file_id = insertPath(cd->getDefFileName());
+  bindIntParameter(compounddef_insert,":file_id",file_id);
+  bindIntParameter(compounddef_insert,":line",cd->getDefLine());
+  bindIntParameter(compounddef_insert,":column",cd->getDefColumn());
+
+  getSQLDesc(compounddef_insert,":briefdescription",cd->briefDescription(),cd);
+  getSQLDesc(compounddef_insert,":detaileddescription",cd->documentation(),cd);
+
+  step(compounddef_insert);
+
+  // + template argument list(s)
+  writeTemplateList(cd);
+}
+
 // kinds: constants library module namespace package
 static void generateSqlite3ForNamespace(const NamespaceDef *nd)
 {
@@ -2475,6 +2505,13 @@ void generateSqlite3()
   {
     msg("Generating Sqlite3 output for class %s\n",cd->name().data());
     generateSqlite3ForClass(cd.get());
+  }
+
+  // + concepts
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    msg("Generating Sqlite3 output for concept %s\n",cd->name().data());
+    generateSqlite3ForConcept(cd.get());
   }
 
   // + namespaces

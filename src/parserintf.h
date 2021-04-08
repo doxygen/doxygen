@@ -88,9 +88,9 @@ class CodeParserInterface
     /** Parses a source file or fragment with the goal to produce
      *  highlighted and cross-referenced output.
      *  @param[in] codeOutIntf Abstract interface for writing the result.
-     *  @param[in] lang The programming language of the code fragment.
      *  @param[in] scopeName Name of scope to which the code belongs.
      *  @param[in] input Actual code in the form of a string
+     *  @param[in] lang The programming language of the code fragment.
      *  @param[in] isExampleBlock TRUE iff the code is part of an example.
      *  @param[in] exampleName Name of the example.
      *  @param[in] fileDef File definition to which the code

@@ -45,6 +45,7 @@
 #include "clangparser.h"
 #include "settings.h"
 #include "definitionimpl.h"
+#include "conceptdef.h"
 
 //---------------------------------------------------------------------------
 
@@ -90,8 +91,9 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual MemberList *getMemberList(MemberListType lt) const;
     virtual const MemberLists &getMemberLists() const { return m_memberLists; }
     virtual const MemberGroupList &getMemberGroups() const  { return m_memberGroups; }
-    virtual NamespaceLinkedRefMap getNamespaces() const     { return m_namespaces; }
-    virtual ClassLinkedRefMap getClasses() const   { return m_classes; }
+    virtual const NamespaceLinkedRefMap &getNamespaces() const    { return m_namespaces; }
+    virtual const ConceptLinkedRefMap &getConcepts() const        { return m_concepts; }
+    virtual const ClassLinkedRefMap &getClasses() const           { return m_classes; }
     virtual QCString title() const;
     virtual bool hasDetailedDescription() const;
     virtual QCString fileVersion() const;
@@ -112,6 +114,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual void setDiskName(const QCString &name);
     virtual void insertMember(MemberDef *md);
     virtual void insertClass(const ClassDef *cd);
+    virtual void insertConcept(const ConceptDef *cd);
     virtual void insertNamespace(const NamespaceDef *nd);
     virtual void computeAnchors();
     virtual void setPackageDef(PackageDef *pd) { m_package=pd; }
@@ -143,6 +146,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     void writeNamespaceDeclarations(OutputList &ol,const QCString &title,
             bool isConstantGroup);
     void writeClassDeclarations(OutputList &ol,const QCString &title,const ClassLinkedRefMap &list);
+    void writeConcepts(OutputList &ol,const QCString &title);
     void writeInlineClasses(OutputList &ol);
     void startMemberDeclarations(OutputList &ol);
     void endMemberDeclarations(OutputList &ol);
@@ -178,6 +182,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     ClassLinkedRefMap     m_interfaces;
     ClassLinkedRefMap     m_structs;
     ClassLinkedRefMap     m_exceptions;
+    ConceptLinkedRefMap   m_concepts;
     bool                  m_subGrouping;
 };
 
@@ -354,6 +359,17 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
       case LayoutDocEntry::FileExceptions:
         {
           writeClassesToTagFile(tagFile, m_exceptions);
+        }
+        break;
+      case LayoutDocEntry::FileConcepts:
+        {
+          for (const auto *nd : m_concepts)
+          {
+            if (nd->isLinkableInProject())
+            {
+              tagFile << "    <concept>" << convertToXML(nd->name()) << "</concept>\n";
+            }
+          }
         }
         break;
       case LayoutDocEntry::FileNamespaces:
@@ -668,6 +684,12 @@ void FileDefImpl::writeClassDeclarations(OutputList &ol,const QCString &title,co
   list.writeDeclaration(ol,0,title,FALSE);
 }
 
+void FileDefImpl::writeConcepts(OutputList &ol,const QCString &title)
+{
+  // write list of classes
+  m_concepts.writeDeclaration(ol,title,FALSE);
+}
+
 void FileDefImpl::writeInlineClasses(OutputList &ol)
 {
   // temporarily undo the disabling could be done by startMemberDocumentation()
@@ -774,6 +796,13 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
     {
       const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
       QCString label = "namespaces";
+      ol.writeSummaryLink(0,label,ls->title(lang),first);
+      first=FALSE;
+    }
+    else if (lde->kind()==LayoutDocEntry::FileConcepts && m_concepts.declVisible())
+    {
+      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      QCString label = "concepts";
       ol.writeSummaryLink(0,label,ls->title(lang),first);
       first=FALSE;
     }
@@ -919,6 +948,12 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
           writeClassDeclarations(ol,ls->title(lang),m_exceptions);
         }
         break;
+      case LayoutDocEntry::FileConcepts:
+        {
+          const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+          writeConcepts(ol,ls->title(lang));
+        }
+        break;
       case LayoutDocEntry::FileNamespaces:
         {
           const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
@@ -977,11 +1012,14 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
+      case LayoutDocEntry::ConceptDefinition:
       case LayoutDocEntry::GroupClasses:
+      case LayoutDocEntry::GroupConcepts:
       case LayoutDocEntry::GroupInlineClasses:
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs:
@@ -1317,6 +1355,12 @@ void FileDefImpl::insertClass(const ClassDef *cd)
   }
 
   list.add(cd->name(),cd);
+}
+
+void FileDefImpl::insertConcept(const ConceptDef *cd)
+{
+  if (cd->isHidden()) return;
+  m_concepts.add(cd->name(),cd);
 }
 
 /*! Adds namespace definition \a nd to the list of all compounds of this file */

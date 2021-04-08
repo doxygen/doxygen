@@ -2262,6 +2262,51 @@ class TranslatorEnglish : public Translator
     virtual QCString trDesignUnitDocumentation()
     { return "Design Unit Documentation"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Concept" : "concept"));
+      if (!singular) result+="s";
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const char *conceptName)
+    {
+      QCString result=conceptName;
+      result+=" Concept Reference";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Concept List"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Concept Index"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Concept Documentation"; }
+
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Here is a list of all ";
+      if (!extractAll) result+="documented ";
+      result+="concepts with brief descriptions:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Concept definition";
+    }
 };
 
 #endif

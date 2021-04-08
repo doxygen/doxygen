@@ -1630,6 +1630,15 @@ void HtmlGenerator::endMemberTemplateParams(const char *anchor,const char *inher
   m_t << "\"><td class=\"memTemplItemLeft\" align=\"right\" valign=\"top\">";
 }
 
+void HtmlGenerator::startCompoundTemplateParams()
+{
+  m_t << "<div class=\"compoundTemplParams\">";
+}
+
+void HtmlGenerator::endCompoundTemplateParams()
+{
+  m_t << "</div>";
+}
 
 void HtmlGenerator::insertMemberAlign(bool templ)
 {
@@ -2222,6 +2231,7 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::Namespaces:         return documentedNamespaces>0 && showNamespaces;
     case LayoutNavEntry::NamespaceList:      return documentedNamespaces>0 && showNamespaces;
     case LayoutNavEntry::NamespaceMembers:   return documentedNamespaceMembers[NMHL_All]>0;
+    case LayoutNavEntry::Concepts:           return documentedConcepts>0;
     case LayoutNavEntry::Classes:            return annotatedClasses>0;
     case LayoutNavEntry::ClassList:          return annotatedClasses>0;
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
@@ -2369,6 +2379,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     case HLI_InterfaceHierarchy: kind = LayoutNavEntry::InterfaceHierarchy;   break;
     case HLI_ExceptionHierarchy: kind = LayoutNavEntry::ExceptionHierarchy;   break;
     case HLI_Classes:          kind = LayoutNavEntry::ClassIndex;       altKind = LayoutNavEntry::Classes;     break;
+    case HLI_Concepts:         kind = LayoutNavEntry::Concepts;         break;
     case HLI_Interfaces:       kind = LayoutNavEntry::InterfaceIndex;   altKind = LayoutNavEntry::Interfaces;  break;
     case HLI_Structs:          kind = LayoutNavEntry::StructIndex;      altKind = LayoutNavEntry::Structs;     break;
     case HLI_Exceptions:       kind = LayoutNavEntry::ExceptionIndex;   altKind = LayoutNavEntry::Exceptions;  break;
@@ -2384,6 +2395,8 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     case HLI_Examples:         kind = LayoutNavEntry::Examples;         break;
     case HLI_UserGroup:        kind = LayoutNavEntry::UserGroup;        break;
     case HLI_ClassVisible:     kind = LayoutNavEntry::ClassList;        altKind = LayoutNavEntry::Classes;
+                               highlightParent = TRUE; break;
+    case HLI_ConceptVisible:   kind = LayoutNavEntry::Concepts;
                                highlightParent = TRUE; break;
     case HLI_InterfaceVisible: kind = LayoutNavEntry::InterfaceList;    altKind = LayoutNavEntry::Interfaces;
                                highlightParent = TRUE; break;

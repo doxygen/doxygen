@@ -188,7 +188,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual bool isVisibleInHierarchy() const;
     virtual bool visibleInParentsDeclList() const;
     virtual const ArgumentList &templateArguments() const;
-    virtual NamespaceDef *getNamespaceDef() const;
+    //virtual NamespaceDef *getNamespaceDef() const;
     virtual FileDef *getFileDef() const;
     virtual const MemberDef *getMemberByName(const QCString &) const;
     virtual bool isBaseClass(const ClassDef *bcd,bool followInstances,int level=0) const;
@@ -250,7 +250,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void insertUsedFile(const FileDef *);
     virtual bool addExample(const char *anchor,const char *name, const char *file);
     virtual void mergeCategory(ClassDef *category);
-    virtual void setNamespace(NamespaceDef *nd);
+    //virtual void setNamespace(NamespaceDef *nd);
     virtual void setFileDef(FileDef *fd);
     virtual void setSubGrouping(bool enabled);
     virtual void setProtection(Protection p);
@@ -355,6 +355,8 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                QCString &title,QCString &subtitle) const;
     QCString includeStatement() const;
     void addTypeConstraint(const QCString &typeConstraint,const QCString &type);
+    void writeTemplateSpec(OutputList &ol,const Definition *d,
+            const QCString &type,SrcLangExt lang) const;
 
     // PIMPL idiom
     class IMPL;
@@ -428,8 +430,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return getCdAlias()->visibleInParentsDeclList(); }
     virtual const ArgumentList &templateArguments() const
     { return getCdAlias()->templateArguments(); }
-    virtual NamespaceDef *getNamespaceDef() const
-    { return getCdAlias()->getNamespaceDef(); }
+    //virtual NamespaceDef *getNamespaceDef() const
+    //{ return getCdAlias()->getNamespaceDef(); }
     virtual FileDef *getFileDef() const
     { return getCdAlias()->getFileDef(); }
     virtual const MemberDef *getMemberByName(const QCString &s) const
@@ -551,8 +553,6 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     virtual void updateSubClasses(const BaseClassList &) {}
 };
 
-
-
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd)
 {
   ClassDef *acd = new ClassDefAliasImpl(newScope,cd);
@@ -605,7 +605,7 @@ class ClassDefImpl::IMPL
     /*! Namespace this class is part of
      *  (this is the inner most namespace in case of nested namespaces)
      */
-    NamespaceDef  *nspace = 0;
+    //NamespaceDef  *nspace = 0;
 
     /*! File this class is defined in */
     FileDef *fileDef = 0;
@@ -725,7 +725,7 @@ void ClassDefImpl::IMPL::init(const char *defFileName, const char *name,
     fileName=ctStr+name;
   }
   prot=Public;
-  nspace=0;
+  //nspace=0;
   fileDef=0;
   subGrouping=Config_getBool(SUBGROUPING);
   templateMaster =0;
@@ -1296,15 +1296,15 @@ static void searchTemplateSpecs(/*in*/  const Definition *d,
   }
 }
 
-static void writeTemplateSpec(OutputList &ol,const Definition *d,
-            const QCString &type,SrcLangExt lang)
+void ClassDefImpl::writeTemplateSpec(OutputList &ol,const Definition *d,
+            const QCString &type,SrcLangExt lang) const
 {
   ArgumentLists specs;
   QCString name;
   searchTemplateSpecs(d,specs,name,lang);
   if (!specs.empty()) // class has template scope specifiers
   {
-    ol.startSubsubsection();
+    ol.startCompoundTemplateParams();
     for (const ArgumentList &al : specs)
     {
       ol.docify("template<");
@@ -1312,7 +1312,13 @@ static void writeTemplateSpec(OutputList &ol,const Definition *d,
       while (it!=al.end())
       {
         Argument a = *it;
-        ol.docify(a.type);
+        linkifyText(TextGeneratorOLImpl(ol), // out
+          d,                       // scope
+          getFileDef(),            // fileScope
+          this,                    // self
+          a.type,                  // text
+          FALSE                    // autoBreak
+          );
         if (!a.name.isEmpty())
         {
           ol.docify(" ");
@@ -1329,9 +1335,20 @@ static void writeTemplateSpec(OutputList &ol,const Definition *d,
       ol.docify(">");
       ol.lineBreak();
     }
+    if (!m_impl->requiresClause.isEmpty())
+    {
+      ol.docify("requires ");
+      linkifyText(TextGeneratorOLImpl(ol), // out
+          d,                       // scope
+          getFileDef(),            // fileScope
+          this,                    // self
+          m_impl->requiresClause,  // text
+          FALSE                    // autoBreak
+          );
+      ol.lineBreak();
+    }
     ol.docify(type.lower()+" "+name);
-    ol.endSubsubsection();
-    ol.writeString("\n");
+    ol.endCompoundTemplateParams();
   }
 }
 
@@ -2557,11 +2574,14 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::NamespaceNestedNamespaces:
       case LayoutDocEntry::NamespaceNestedConstantGroups:
       case LayoutDocEntry::NamespaceClasses:
+      case LayoutDocEntry::NamespaceConcepts:
       case LayoutDocEntry::NamespaceInterfaces:
       case LayoutDocEntry::NamespaceStructs:
       case LayoutDocEntry::NamespaceExceptions:
       case LayoutDocEntry::NamespaceInlineClasses:
+      case LayoutDocEntry::ConceptDefinition:
       case LayoutDocEntry::FileClasses:
+      case LayoutDocEntry::FileConcepts:
       case LayoutDocEntry::FileInterfaces:
       case LayoutDocEntry::FileStructs:
       case LayoutDocEntry::FileExceptions:
@@ -2573,6 +2593,7 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
       case LayoutDocEntry::FileSourceLink:
       case LayoutDocEntry::FileInlineClasses:
       case LayoutDocEntry::GroupClasses:
+      case LayoutDocEntry::GroupConcepts:
       case LayoutDocEntry::GroupInlineClasses:
       case LayoutDocEntry::GroupNamespaces:
       case LayoutDocEntry::GroupDirs:
@@ -4557,10 +4578,10 @@ const ArgumentList &ClassDefImpl::templateArguments() const
   return m_impl->tempArgs;
 }
 
-NamespaceDef *ClassDefImpl::getNamespaceDef() const
-{
-  return m_impl->nspace;
-}
+//NamespaceDef *ClassDefImpl::getNamespaceDef() const
+//{
+//  return m_impl->nspace;
+//}
 
 FileDef *ClassDefImpl::getFileDef() const
 {
@@ -4667,10 +4688,10 @@ const MemberGroupList &ClassDefImpl::getMemberGroups() const
   return m_impl->memberGroups;
 }
 
-void ClassDefImpl::setNamespace(NamespaceDef *nd)
-{
-  m_impl->nspace = nd;
-}
+//void ClassDefImpl::setNamespace(NamespaceDef *nd)
+//{
+//  m_impl->nspace = nd;
+//}
 
 void ClassDefImpl::setFileDef(FileDef *fd)
 {

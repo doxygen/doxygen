@@ -24,16 +24,18 @@
 #include "definition.h"
 #include "memberlist.h"
 #include "containers.h"
-#include "classlist.h"
 
 class MemberList;
 class FileDef;
 class FileList;
 class ClassDef;
+class ConceptDef;
 class MemberDef;
 class OutputList;
 class NamespaceDef;
 class NamespaceLinkedRefMap;
+class ConceptLinkedRefMap;
+class ClassLinkedRefMap;
 class PackageDef;
 class DirDef;
 class ClangTUParser;
@@ -133,8 +135,9 @@ class FileDef : public DefinitionMutable, public Definition
 
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;
-    virtual NamespaceLinkedRefMap getNamespaces() const = 0;
-    virtual ClassLinkedRefMap getClasses() const = 0;
+    virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
+    virtual const ConceptLinkedRefMap &getConcepts() const = 0;
+    virtual const ClassLinkedRefMap &getClasses() const = 0;
 
     virtual QCString title() const = 0;
     virtual bool hasDetailedDescription() const = 0;
@@ -164,6 +167,7 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual void insertMember(MemberDef *md) = 0;
     virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertConcept(const ConceptDef *cd) = 0;
     virtual void insertNamespace(const NamespaceDef *nd) = 0;
     virtual void computeAnchors() = 0;
 

@@ -90,7 +90,8 @@ class Definition
       TypeGroup      = 4,
       TypePackage    = 5,
       TypePage       = 6,
-      TypeDir        = 7
+      TypeDir        = 7,
+      TypeConcept    = 8
     };
 
 

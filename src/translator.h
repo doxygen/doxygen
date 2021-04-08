@@ -657,6 +657,18 @@ class Translator
 //////////////////////////////////////////////////////////////////////////
 
     virtual QCString trDesignUnitDocumentation() = 0;
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    virtual QCString trConcept(bool first_capital, bool singular) = 0;
+    virtual QCString trConceptReference(const char *conceptName) = 0;
+    virtual QCString trConceptList() = 0;
+    virtual QCString trConceptIndex() = 0;
+    virtual QCString trConceptDocumentation() = 0;
+    virtual QCString trConceptListDescription(bool extractAll) = 0;
+    virtual QCString trConceptDefinition() = 0;
 };
 
 #endif

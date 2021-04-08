@@ -111,6 +111,8 @@ class ManGenerator : public OutputGenerator
     void endMemberItem();
     void startMemberTemplateParams() {}
     void endMemberTemplateParams(const char *,const char *) {}
+    void startCompoundTemplateParams() { startSubsubsection(); }
+    void endCompoundTemplateParams() { endSubsubsection(); }
 
     void startMemberGroupHeader(bool);
     void endMemberGroupHeader();

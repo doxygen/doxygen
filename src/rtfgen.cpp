@@ -447,6 +447,10 @@ void RTFGenerator::startIndexSection(IndexSections is)
       //Namespace Index
       beginRTFChapter();
       break;
+    case isConceptIndex:
+      //Concept Index
+      beginRTFChapter();
+      break;
     case isClassHierarchyIndex:
       //Hierarchical Index
       DBG_RTF(m_t << "{\\comment start classhierarchy}\n")
@@ -496,6 +500,19 @@ void RTFGenerator::startIndexSection(IndexSections is)
         for (const auto &nd : *Doxygen::namespaceLinkedMap)
         {
           if (nd->isLinkableInProject())
+          {
+            beginRTFChapter();
+            break;
+          }
+        }
+      }
+      break;
+    case isConceptDocumentation:
+      {
+        // Concept Documentation
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject())
           {
             beginRTFChapter();
             break;
@@ -700,6 +717,11 @@ void RTFGenerator::endIndexSection(IndexSections is)
 
       m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"namespaces.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
       break;
+    case isConceptIndex:
+      m_t << "\\par " << rtf_Style_Reset << "\n";
+      m_t << "{\\tc \\v " << theTranslator->trConceptIndex() << "}\n";
+      m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"concepts.rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+      break;
     case isClassHierarchyIndex:
       m_t << "\\par " << rtf_Style_Reset << "\n";
       m_t << "{\\tc \\v " << theTranslator->trHierarchicalIndex() << "}\n";
@@ -788,6 +810,26 @@ void RTFGenerator::endIndexSection(IndexSections is)
             first=false;
             m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
             m_t << nd->getOutputFileBase();
+            m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+          }
+        }
+      }
+      break;
+    case isConceptDocumentation:
+      {
+        bool first=true;
+        for (const auto &cd : *Doxygen::conceptLinkedMap)
+        {
+          if (cd->isLinkableInProject() && !cd->isAlias())
+          {
+            m_t << "\\par " << rtf_Style_Reset << "\n";
+            if (!first)
+            {
+              beginRTFSection();
+            }
+            first=false;
+            m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+            m_t << cd->getOutputFileBase();
             m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
           }
         }

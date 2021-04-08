@@ -1796,6 +1796,46 @@ class TranslatorDutch : public Translator
 //////////////////////////////////////////////////////////////////////////
     virtual QCString trDesignUnitDocumentation()
     { return "Ontwerp Eenheid Documentatie"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Concept" : "concept"));
+      if (!singular) result+="en";
+      return result;
+    }
+
+    virtual QCString trConceptReference(const char *conceptName)
+    {
+      QCString result=conceptName;
+      result+=" Concept Referentie";
+      return result;
+    }
+
+    virtual QCString trConceptList()
+    { return "Concept Lijst"; }
+
+    virtual QCString trConceptIndex()
+    { return "Concept Index"; }
+
+    virtual QCString trConceptDocumentation()
+    { return "Concept Documentatie"; }
+
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Hieronder volgt de lijst met alle ";
+      if (!extractAll) result+="gedocumenteerde ";
+      result+="concepten, elk met een korte beschrijving:";
+      return result;
+    }
+
+    virtual QCString trConceptDefinition()
+    {
+      return "Concept definitie";
+    }
+
 };
 
 #endif

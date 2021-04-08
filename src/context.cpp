@@ -1552,6 +1552,7 @@ class DefinitionContext
         case Definition::TypePackage:   result="package";   break;
         case Definition::TypePage:      result="page";      break;
         case Definition::TypeDir:       result="dir";       break;
+        case Definition::TypeConcept:   result="concept";   break;
         case Definition::TypeMember:                        break;
       }
       return result;
@@ -6393,7 +6394,9 @@ class NestingContext::Private : public GenericNodeListContext
       if (!nd->isAnonymous() &&
           (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
-        bool hasChildren = namespaceHasNestedNamespace(nd);
+        bool hasChildren = namespaceHasNestedNamespace(nd) ||
+                           namespaceHasNestedClass(nd,false,ClassDef::Class) ||
+                           namespaceHasNestedConcept(nd);
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable || hasChildren)
         {

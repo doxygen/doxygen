@@ -119,6 +119,7 @@ enum IndexSections
   isModuleIndex,
   isDirIndex,
   isNamespaceIndex,
+  isConceptIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
@@ -127,6 +128,7 @@ enum IndexSections
   isDirDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
+  isConceptDocumentation,
   isFileDocumentation,
   isExampleDocumentation,
   isPageDocumentation,
@@ -145,6 +147,7 @@ enum HighlightedItem
   HLI_InterfaceHierarchy,
   HLI_ExceptionHierarchy,
   HLI_Classes,
+  HLI_Concepts,
   HLI_Interfaces,
   HLI_Structs,
   HLI_Exceptions,
@@ -162,6 +165,7 @@ enum HighlightedItem
   HLI_UserGroup,
 
   HLI_ClassVisible,
+  HLI_ConceptVisible,
   HLI_InterfaceVisible,
   HLI_StructVisible,
   HLI_ExceptionVisible,
@@ -238,6 +242,7 @@ extern int hierarchyExceptions;
 extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
+extern int documentedConcepts;
 extern int indexedPages;
 extern int documentedClassMembers[CMHL_Total];
 extern int documentedFileMembers[FMHL_Total];
