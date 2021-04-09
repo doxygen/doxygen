@@ -117,11 +117,11 @@ bool doctokenizerYYpopContext()
 QCString extractPartAfterNewLine(const QCString &text)
 {
   int nl1 = text.find('\n');
-  if (nl1!=-1)
+  int nl2 = text.find("\\ilinebr");
+  if (nl1!=-1 && nl1<nl2)
   {
     return text.mid(nl1+1);
   }
-  int nl2 = text.find("\\ilinebr");
   if (nl2!=-1)
   {
     if (text.at(nl2+8)==' ') nl2++; // skip space after \\ilinebr
@@ -155,6 +155,7 @@ const char *tokToString(int token)
 
 static int computeIndent(const char *str,size_t length)
 {
+  if (length==std::string::npos) return 0;
   size_t i;
   int indent=0;
   static int tabSize=Config_getInt(TAB_SIZE);
