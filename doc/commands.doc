@@ -2142,7 +2142,7 @@ Make sure you have first read \ref intro "the introduction".
 
   \warning This command only works inside related page documentation and
            \e not in other documentation blocks and only has effect in the
-           the specified output!
+           specified output!
 
 <hr>
 \section cmdsection \\section <section-name> (section title)
@@ -2568,7 +2568,7 @@ Commands for displaying examples
 \section cmdxmlinclude \\xmlinclude <file-name>
 
   \addindex \\xmlinclude
-  This command includes contents of the the file \<file-name\> as is in the XML documentation.
+  This command includes contents of the file \<file-name\> as is in the XML documentation.
   The command is equivalent to pasting the contents of the file in the documentation and
   placing \ref cmdxmlonly "\\xmlonly" and \ref cmdendxmlonly "\\endxmlonly"
   commands around it.
