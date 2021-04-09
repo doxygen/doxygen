@@ -2142,7 +2142,7 @@ Make sure you have first read \ref intro "the introduction".
 
   \warning This command only works inside related page documentation and
            \e not in other documentation blocks and only has effect in the
-           the specified output!
+           specified output!
 
 <hr>
 \section cmdsection \\section <section-name> (section title)
