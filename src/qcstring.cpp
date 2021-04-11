@@ -472,7 +472,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   if (srcLen!=dstLen)
   {
     int count;
-    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen) count++;
     resLen = s.length()+count*(dstLen-srcLen);
   }
   else // result has same size as s
@@ -481,13 +481,13 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst)
   }
   QCString result(resLen+1);
   char *r;
-  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
   {
     int l = (int)(q-p);
     memcpy(r,p,l);
     r+=l;
 
-    if (dst) memcpy(r,dst,dstLen);
+    if (dstLen>0) memcpy(r,dst.data(),dstLen);
     r+=dstLen;
   }
   if (r)
@@ -513,7 +513,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   if (srcLen!=dstLen)
   {
     int count;
-    for (count=0, p=s.data(); (q=strstr(p,src))!=0; p=q+srcLen) count++;
+    for (count=0, p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen) count++;
     resLen = s.length()+count*(dstLen-srcLen);
   }
   else // result has same size as s
@@ -522,13 +522,13 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
   }
   QCString result(resLen+1);
   char *r;
-  for (r=result.rawData(), p=s; (q=strstr(p,src))!=0; p=q+srcLen)
+  for (r=result.rawData(), p=s.data(); (q=strstr(p,src.data()))!=0; p=q+srcLen)
   {
     // search a consecutive sequence of src
     int seq = 0, skip = 0;
     if (skip_seq)
     {
-      for (const char *n=q+srcLen; qstrncmp(n,src,srcLen)==0; seq=1+skip, n+=srcLen)
+      for (const char *n=q+srcLen; qstrncmp(n,src.data(),srcLen)==0; seq=1+skip, n+=srcLen)
         ++skip; // number of consecutive src after the current one
 
       // verify the allowed number of consecutive src to skip
@@ -549,7 +549,7 @@ QCString substitute(const QCString &s,const QCString &src,const QCString &dst,in
       continue;
     }
 
-    if (dst) memcpy(r,dst,dstLen);
+    if (dstLen>0) memcpy(r,dst.data(),dstLen);
     r+=dstLen;
   }
   qstrcpy(r,p);

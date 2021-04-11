@@ -56,16 +56,15 @@ static QCString align(DocHtmlCell *cell)
 }
 
 RTFDocVisitor::RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,
-                             const char *langExt)
+                             const QCString &langExt)
   : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_insidePre(FALSE),
     m_hide(FALSE), m_indentLevel(0), m_lastIsPara(FALSE), m_langExt(langExt)
 {
 }
 
-QCString RTFDocVisitor::getStyle(const char *name)
+QCString RTFDocVisitor::getStyle(const QCString &name)
 {
-  QCString n;
-  n.sprintf("%s%d",name,m_indentLevel);
+  QCString n = name + QCString().setNum(m_indentLevel);
   StyleData &sd = rtf_Style[n.str()];
   return sd.reference();
 }
@@ -329,14 +328,14 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         QCString fileName(4096);
 
         fileName.sprintf("%s%d%s",
-            (Config_getString(RTF_OUTPUT)+"/inline_dotgraph_").data(),
+            qPrint(Config_getString(RTF_OUTPUT)+"/inline_dotgraph_"),
             dotindex++,
             ".dot"
            );
         std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.data());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         else
         {
@@ -358,14 +357,14 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         QCString baseName(4096);
 
         baseName.sprintf("%s%d%s",
-            (Config_getString(RTF_OUTPUT)+"/inline_mscgraph_").data(),
+            qPrint(Config_getString(RTF_OUTPUT)+"/inline_mscgraph_"),
             mscindex++,
             ".msc"
            );
         std::ofstream file(baseName.str(),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",baseName.data());
+          err("Could not open file %s for writing\n",qPrint(baseName));
         }
         QCString text = "msc {";
         text+=s->text();
@@ -532,7 +531,7 @@ void RTFDocVisitor::visit(DocInclude *inc)
 void RTFDocVisitor::visit(DocIncOperator *op)
 {
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   DBG_RTF("{\\comment RTFDocVisitor::visit(DocIncOperator)}\n");
   QCString locLangExt = getFileNameExtension(op->includeFileName());
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
@@ -1179,7 +1178,7 @@ void RTFDocVisitor::visitPre(DocImage *img)
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocImage)}\n");
   includePicturePreRTF(img->name(), img->type()==DocImage::Rtf, img->hasCaption(), img->isInlineImage());
 }
-void RTFDocVisitor::includePicturePreRTF(const QCString name, bool isTypeRTF, bool hasCaption, bool inlineImage)
+void RTFDocVisitor::includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage)
 {
   if (isTypeRTF)
   {
@@ -1307,7 +1306,7 @@ void RTFDocVisitor::visitPre(DocRef *ref)
   // ref->anchor() for LaTeX/RTF
   if (ref->isSubPage())
   {
-    startLink(ref->ref(),0,ref->anchor());
+    startLink(ref->ref(),QCString(),ref->anchor());
   }
   else
   {
@@ -1710,11 +1709,11 @@ void RTFDocVisitor::visitPost(DocParBlock *)
 //    return s;
 //}
 
-void RTFDocVisitor::filter(const char *str,bool verbatim)
+void RTFDocVisitor::filter(const QCString &str,bool verbatim)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const unsigned char *p=(const unsigned char *)str;
+    const unsigned char *p=(const unsigned char *)str.data();
     unsigned char c;
     //unsigned char pc='\0';
     while (*p)
@@ -1765,11 +1764,11 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
     {
       refName+=file;
     }
-    if (!file.isEmpty() && anchor)
+    if (!file.isEmpty() && !anchor.isEmpty())
     {
       refName+='_';
     }
-    if (anchor)
+    if (!anchor.isEmpty())
     {
       refName+=anchor;
     }

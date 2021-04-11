@@ -124,7 +124,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
 
   // add nodes for other used directories
   {
-    //printf("*** For dir %s\n",shortName().data());
+    //printf("*** For dir %s\n",qPrint(shortName()));
     for (const auto &usedDir : usedDirsNotDrawn)
       // for each used dir (=directly used or a parent of a directly used dir)
     {
@@ -132,10 +132,10 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
       while (dir)
       {
         //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
-        //    dir->shortName().data(),usedDir->shortName().data(),
+        //    qPrint(dir->shortName()),qPrint(usedDir->shortName()),
         //    dir->parent()==usedDir->parent(),
-        //    usedDir->shortName().data(),
-        //    shortName().data(),
+        //    qPrint(usedDir->shortName()),
+        //    qPrint(shortName()),
         //    !usedDir->isParentOf(this)
         //    );
         if (dir!=usedDir && dir->parent()==usedDir->parent())
@@ -217,9 +217,9 @@ QCString DotDirDeps::getImgAltText() const
 QCString DotDirDeps::writeGraph(TextStream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
-  const char *path,
-  const char *fileName,
-  const char *relPath,
+  const QCString &path,
+  const QCString &fileName,
+  const QCString &relPath,
   bool generateImageMap,
   int graphId,
   bool linkRelations)

@@ -39,10 +39,10 @@ static double  g_sysElapsedTime;
 static std::chrono::steady_clock::time_point g_startTime;
 
 
-int Portable::system(const char *command,const char *args,bool commandHasConsole)
+int Portable::system(const QCString &command,const QCString &args,bool commandHasConsole)
 {
 
-  if (command==0) return 1;
+  if (command.isEmpty()) return 1;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
   QCString commandCorrectedPath = substitute(command,'/','\\');
@@ -136,7 +136,7 @@ int Portable::system(const char *command,const char *args,bool commandHasConsole
 #else // Win32 specific
   if (commandHasConsole)
   {
-    return ::system(fullCmd);
+    return ::system(fullCmd.data());
   }
   else
   {
@@ -243,56 +243,56 @@ void loadEnvironment()
 }
 #endif
 
-void Portable::setenv(const char *name,const char *value)
+void Portable::setenv(const QCString &name,const QCString &value)
 {
-    if (value==0) value="";
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    SetEnvironmentVariable(name,value);
+    SetEnvironmentVariable(name.data(),!value.isEmpty() ? value.data() : "");
 #else
     if(!environmentLoaded) // if the environment variables are not loaded already...
     {                                 // ...call loadEnvironment to store them in class
       loadEnvironment();
     }
 
-    proc_env[name] = std::string(value); // create or replace existing value
+    proc_env[name.str()] = value.str(); // create or replace existing value
 #endif
 }
 
-void Portable::unsetenv(const char *variable)
+void Portable::unsetenv(const QCString &variable)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    SetEnvironmentVariable(variable,0);
+    SetEnvironmentVariable(variable.data(),0);
 #else
     /* Some systems don't have unsetenv(), so we do it ourselves */
-    if (variable == NULL || *variable == '\0' || strchr (variable, '=') != NULL)
+    if (variable.isEmpty() || variable.find('=')!=-1)
     {
       return; // not properly formatted
     }
 
-    if(proc_env.find(variable) != proc_env.end())
+    auto it = proc_env.find(variable.str());
+    if (it != proc_env.end())
     {
-      proc_env[variable].erase();
+      proc_env.erase(it);
     }
 #endif
 }
 
-const char *Portable::getenv(const char *variable)
+QCString Portable::getenv(const QCString &variable)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    return ::getenv(variable);
+    return ::getenv(variable.data());
 #else
     if(!environmentLoaded) // if the environment variables are not loaded already...
-    {                                 // ...call loadEnvironment to store them in class
+    {                      // ...call loadEnvironment to store them in class
       loadEnvironment();
     }
 
-    if(proc_env.find(variable) != proc_env.end())
+    if (proc_env.find(variable.str()) != proc_env.end())
     {
-      return proc_env[variable].c_str();
+      return QCString(proc_env[variable.str()]);
     }
     else
     {
-      return NULL;
+      return QCString();
     }
 #endif
 }
@@ -319,7 +319,7 @@ portable_off_t Portable::ftell(FILE *f)
 #endif
 }
 
-FILE *Portable::fopen(const char *fileName,const char *mode)
+FILE *Portable::fopen(const QCString &fileName,const QCString &mode)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   uint16_t *fn = 0;
@@ -335,37 +335,36 @@ FILE *Portable::fopen(const char *fileName,const char *mode)
   delete[] m;
   return result;
 #else
-  return ::fopen(fileName,mode);
+  return ::fopen(fileName.data(),mode.data());
 #endif
 }
 
-char  Portable::pathSeparator()
+QCString Portable::pathSeparator()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  return '\\';
+  return "\\";
 #else
-  return '/';
+  return "/";
 #endif
 }
 
-char  Portable::pathListSeparator()
+QCString Portable::pathListSeparator()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  return ';';
+  return ";";
 #else
-  return ':';
+  return ":";
 #endif
 }
 
-static bool ExistsOnPath(const char *fileName)
+static bool ExistsOnPath(const QCString &fileName)
 {
-  FileInfo fi1(fileName);
+  FileInfo fi1(fileName.str());
   if (fi1.exists()) return true;
 
-  const char *p = Portable::getenv("PATH");
-  char listSep = Portable::pathListSeparator();
-  char pathSep = Portable::pathSeparator();
-  QCString paths(p);
+  QCString paths = Portable::getenv("PATH");
+  char listSep = Portable::pathListSeparator()[0];
+  char pathSep = Portable::pathSeparator()[0];
   int strt = 0;
   int idx;
   while ((idx = paths.find(listSep,strt)) != -1)
@@ -389,13 +388,13 @@ static bool ExistsOnPath(const char *fileName)
   return false;
 }
 
-bool Portable::checkForExecutable(const char *fileName)
+bool Portable::checkForExecutable(const QCString &fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
   char *extensions[] = {".bat",".com",".exe"};
   for (int i = 0; i < sizeof(extensions) / sizeof(*extensions); i++)
   {
-    if (ExistsOnPath(QCString(fileName) + extensions[i])) return true;
+    if (ExistsOnPath(fileName + extensions[i])) return true;
   }
   return false;
 #else
@@ -445,12 +444,12 @@ bool Portable::fileSystemIsCaseSensitive()
 #endif
 }
 
-FILE * Portable::popen(const char *name,const char *type)
+FILE * Portable::popen(const QCString &name,const QCString &type)
 {
   #if defined(_MSC_VER) || defined(__BORLANDC__)
-  return ::_popen(name,type);
+  return ::_popen(name.data(),type.data());
   #else
-  return ::popen(name,type);
+  return ::popen(name.data(),type.data());
   #endif
 }
 
@@ -489,19 +488,16 @@ void Portable::sleep(int ms)
 #endif
 }
 
-bool Portable::isAbsolutePath(const char *fileName)
+bool Portable::isAbsolutePath(const QCString &fileName)
 {
+  const char *fn = fileName.data();
 # ifdef _WIN32
-  if (isalpha (fileName [0]) && fileName[1] == ':')
-    fileName += 2;
+  if (fileName.length()>1 && isalpha(fileName[0]) && fileName[1]==':') fn+=2;
 # endif
-  char const fst = fileName [0];
-  if (fst == '/')  {
-    return true;
-  }
+  char const fst = fn[0];
+  if (fst == '/') return true;
 # ifdef _WIN32
-  if (fst == '\\')
-    return true;
+  if (fst == '\\') return true;
 # endif
   return false;
 }
@@ -514,19 +510,19 @@ bool Portable::isAbsolutePath(const char *fileName)
 void Portable::correct_path()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  const char *p = Portable::getenv("PATH");
-  if (!p) return; // no path nothing to correct
-  QCString result = substitute(p,'/','\\');
+  QCString p = Portable::getenv("PATH");
+  if (p.isEmpty()) return; // no path nothing to correct
+  QCString result = substitute(p,"/","\\");
   if (result!=p) Portable::setenv("PATH",result.data());
 #endif
 }
 
-void Portable::unlink(const char *fileName)
+void Portable::unlink(const QCString &fileName)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  _unlink(fileName);
+  _unlink(fileName.data());
 #else
-  ::unlink(fileName);
+  ::unlink(fileName.data());
 #endif
 }
 
@@ -600,17 +596,18 @@ const char *Portable::devNull()
 #endif
 }
 
-size_t Portable::recodeUtf8StringToW(const char *inputStr,uint16_t **outBuf)
+size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
 {
-  if (inputStr==0 || outBuf==0) return 0; // empty input or invalid output
+  if (inputStr.isEmpty() || outBuf==0) return 0; // empty input or invalid output
   void *handle = portable_iconv_open("UTF-16LE","UTF-8");
   if (handle==(void *)(-1)) return 0; // invalid encoding
-  size_t len = strlen(inputStr);
+  size_t len = inputStr.length();
   uint16_t *buf = new uint16_t[len+1];
   *outBuf = buf;
   size_t inRemains  = len;
   size_t outRemains = len*sizeof(uint16_t)+2; // chars + \0
-  portable_iconv(handle,(char**)&inputStr,&inRemains,(char**)&buf,&outRemains);
+  const char *p = inputStr.data();
+  portable_iconv(handle,(char**)&p,&inRemains,(char**)&buf,&outRemains);
   *buf=0;
   portable_iconv_close(handle);
   return len;

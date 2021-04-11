@@ -22,8 +22,8 @@ class QCString;
 
 enum DiaOutputFormat { DIA_BITMAP , DIA_EPS };
 
-void writeDiaGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,DiaOutputFormat format);
+void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,DiaOutputFormat format);
 
 #endif
 

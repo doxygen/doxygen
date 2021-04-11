@@ -23,7 +23,7 @@
 #include "language.h"
 #include "dotfilepatcher.h"
 
-void DotLegendGraph::writeGraph(const char *path)
+void DotLegendGraph::writeGraph(const QCString &path)
 {
   TextStream ts;
   DotGraph::writeGraph(ts, GOF_BITMAP, EOF_Html, path, "", "", FALSE, 0);
@@ -31,7 +31,7 @@ void DotLegendGraph::writeGraph(const char *path)
   if (getDotImageExtension()=="svg")
   {
     DotManager::instance()->
-      createFilePatcher((absBaseName()+Config_getString(HTML_FILE_EXTENSION)).data())->
+      createFilePatcher(absBaseName()+Config_getString(HTML_FILE_EXTENSION))->
       addSVGObject("graph_legend", absImgName(),QCString());
   }
 }

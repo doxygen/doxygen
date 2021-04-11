@@ -425,14 +425,15 @@ static void initParser(yyscan_t yyscanner);
 static bool makeStructuralIndicator(yyscan_t yyscanner,Entry::Sections s);
 static void lineCount(yyscan_t yyscanner);
 static void addXRefItem(yyscan_t yyscanner,
-                        const char *listName,const char *itemTitle,
-                        const char *listTitle,bool append);
+                        const QCString &listName,const QCString &itemTitle,
+                        const QCString &listTitle,bool append);
 static QCString addFormula(yyscan_t yyscanner);
 static void checkFormula(yyscan_t yyscanner);
 static void addSection(yyscan_t yyscanner);
 static inline void setOutput(yyscan_t yyscanner,OutputContext ctx);
-static void addAnchor(yyscan_t yyscanner,const char *anchor);
+static void addAnchor(yyscan_t yyscanner,const QCString &anchor);
 static inline void addOutput(yyscan_t yyscanner,const char *s);
+static inline void addOutput(yyscan_t yyscanner,const QCString &s);
 static inline void addOutput(yyscan_t yyscanner,char c);
 static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
@@ -614,7 +615,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>"<"{CAPTION}{ATTR}">"          {
-                                          QCString tag=yytext;
+                                          QCString tag(yytext);
                                           int s=tag.find("id=");
                                           if (s!=-1) // command has id attribute
                                           {
@@ -672,16 +673,16 @@ STopt  [^\n@\\]*
                                           StringVector optList;
                                           if (idx == -1) // no options
                                           {
-                                            cmdName = QCString(yytext).stripWhiteSpace().data()+1; // to remove {CMD}
+                                            cmdName = QCString(yytext).stripWhiteSpace().mid(1); // to remove {CMD}
                                           }
                                           else // options present
                                           {
-                                            cmdName = fullMatch.left(idx).stripWhiteSpace().data()+1; // to remove {CMD}
+                                            cmdName = fullMatch.left(idx).stripWhiteSpace().mid(1); // to remove {CMD}
                                             QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
                                             optList = split(optStr.str(),",");
                                           }
-                                          auto it = docCmdMap.find(cmdName.data());
-                                          //printf("lookup command '%s' found=%d\n",cmdName.data(),it!=docCmdMap.end());
+                                          auto it = docCmdMap.find(cmdName.str());
+                                          //printf("lookup command '%s' found=%d\n",qPrint(cmdName),it!=docCmdMap.end());
                                           if (it!=docCmdMap.end()) // special action is required
                                           {
                                             int i=0;
@@ -728,9 +729,9 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*        { // language switch command
-                                          QCString langId = QCString(yytext).stripWhiteSpace().data()+2;
+                                          QCString langId = QCString(yytext).stripWhiteSpace().mid(2);
                                           if (!langId.isEmpty() &&
-                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)!=0)
+                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE).data(),langId.data())!=0)
                                           { // enable language specific section
                                             BEGIN(SkipLang);
                                           }
@@ -738,7 +739,7 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}"f{"[^}\n]+"}"("{"?)  { // start of a formula with custom environment
                                           setOutput(yyscanner,OutputDoc);
                                           yyextra->formulaText="\\begin";
-                                          yyextra->formulaEnv=QCString(yytext).stripWhiteSpace().data()+2;
+                                          yyextra->formulaEnv=QCString(yytext).stripWhiteSpace().mid(2);
                                           if (yyextra->formulaEnv.at(yyextra->formulaEnv.length()-1)=='{')
                                           {
                                             // remove trailing open brace
@@ -984,7 +985,7 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
-                                          yyextra->current->name = substitute(yytext,".","::");
+                                          yyextra->current->name = substitute(QCString(yytext),QCString("."),QCString("::"));
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1052,11 +1053,11 @@ STopt  [^\n@\\]*
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
-                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(yytext),".","::");
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
-                                          yyextra->current->name = substitute(yytext,".","::");
+                                          yyextra->current->name = substitute(QCString(yytext),".","::");
                                           if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
                                           {
                                             yyextra->current->name+="-p";
@@ -1065,7 +1066,7 @@ STopt  [^\n@\\]*
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
-                                          yyextra->current->name = substitute(yytext,".","::");
+                                          yyextra->current->name = substitute(QCString(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1,CategoryDocArg1>{LC}      { // line continuation
@@ -1075,7 +1076,7 @@ STopt  [^\n@\\]*
 <ClassDocArg1,CategoryDocArg1>{DOCNL}   {
                                           warn(yyextra->fileName,yyextra->lineNr,
                                                "missing argument after "
-                                               "'\\%s'.",yyextra->currentCmd.data()
+                                               "'\\%s'.",qPrint(yyextra->currentCmd)
                                               );
                                           //addOutput(yyscanner,'\n');
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1163,7 +1164,7 @@ STopt  [^\n@\\]*
                                           {
                                               warn(yyextra->fileName,yyextra->lineNr,
                                                  "missing title after "
-                                                 "\\defgroup %s", yyextra->current->name.data()
+                                                 "\\defgroup %s", qPrint(yyextra->current->name)
                                                 );
                                           }
                                           unput_string(yytext,yyleng);
@@ -1206,7 +1207,7 @@ STopt  [^\n@\\]*
                                         }
 <PageDocArg2>{CMD}[<>]                  {
                                           // bug 748927
-                                          QCString tmp = yytext;
+                                          QCString tmp(yytext);
                                           tmp = substitute(substitute(tmp,"@<","&lt;"),"@>","&gt;");
                                           tmp = substitute(substitute(tmp,"\\<","&lt;"),"\\>","&gt;");
                                           yyextra->current->args += tmp;
@@ -1329,7 +1330,7 @@ STopt  [^\n@\\]*
                                         }
 <RelatesParam1>{DOCNL}                  { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "Missing argument of '\\%s' command",yyextra->currentCmd.data()
+                                              "Missing argument of '\\%s' command",qPrint(yyextra->currentCmd)
                                               );
                                           unput_string(yytext,yyleng);
                                           //if (*yytext=='\n') yyextra->lineNr++;
@@ -1415,7 +1416,7 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                           // we add subpage labels as a kind of "inheritance" relation to prevent
                                           // needing to add another list to the Entry class.
-                                          yyextra->current->extends.push_back(BaseInfo(yytext,Public,Normal));
+                                          yyextra->current->extends.push_back(BaseInfo(QCString(yytext),Public,Normal));
                                           BEGIN(SubpageTitle);
                                         }
 <SubpageLabel>{DOCNL}                   { // missing argument
@@ -1442,7 +1443,7 @@ STopt  [^\n@\\]*
   /* ----- handle arguments of the anchor command ------- */
 
 <AnchorLabel>{LABELID}                  { // found argument
-                                          addAnchor(yyscanner,yytext);
+                                          addAnchor(yyscanner,QCString(yytext));
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
                                         }
@@ -1497,7 +1498,7 @@ STopt  [^\n@\\]*
                                             if (yyextra->commentCount<0)
                                             {
                                               warn(yyextra->fileName,yyextra->lineNr,
-                                                 "found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",yyextra->blockName.data(),yyextra->blockName.data());
+                                                 "found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",qPrint(yyextra->blockName),qPrint(yyextra->blockName));
                                             }
                                           }
                                         }
@@ -1509,7 +1510,7 @@ STopt  [^\n@\\]*
                                           if (yyextra->blockName=="startuml") endTag="enduml";
                                           warn(yyextra->fileName,yyextra->lineNr,
                                             "reached end of comment while inside a \\%s block; check for missing \\%s tag!",
-                                            yyextra->blockName.data(),endTag.data()
+                                            qPrint(yyextra->blockName),qPrint(endTag)
                                           );
                                           yyterminate();
                                         }
@@ -1538,12 +1539,12 @@ STopt  [^\n@\\]*
                                         }
 <GuardExpr>\n                           {
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                                "invalid expression '%s' for yyextra->guards",yyextra->guardExpr.data());
+                                                "invalid expression '%s' for yyextra->guards",qPrint(yyextra->guardExpr));
                                           unput(*yytext);
                                           BEGIN(GuardParam);
                                         }
 <GuardParam>{B}*[a-z_A-Z0-9.\-]+        { // parameter of if/ifnot yyextra->guards
-                                          handleGuard(yyscanner,yytext);
+                                          handleGuard(yyscanner,QCString(yytext));
                                         }
 <GuardParam>{DOCNL}                     { // end of argument
                                           if (*yytext=='\n') yyextra->lineNr++;
@@ -1734,7 +1735,7 @@ STopt  [^\n@\\]*
 
 <InGroupParam>{LABELID}                 { // group id
                                           yyextra->current->groups.push_back(
-                                             Grouping(yytext, Grouping::GROUPING_INGROUP)
+                                             Grouping(QCString(yytext), Grouping::GROUPING_INGROUP)
                                           );
                                           yyextra->inGroupParamFound=TRUE;
                                         }
@@ -1819,7 +1820,7 @@ STopt  [^\n@\\]*
 
 <InheritParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
                                           );
                                           BEGIN( Comment );
                                         }
@@ -1842,13 +1843,13 @@ STopt  [^\n@\\]*
 
 <ExtendsParam>({ID}("::"|"."))*{ID}     { // found argument
                                           yyextra->current->extends.push_back(
-                                            BaseInfo(removeRedundantWhiteSpace(yytext),Public,Normal)
+                                            BaseInfo(removeRedundantWhiteSpace(QCString(yytext)),Public,Normal)
                                           );
                                           BEGIN( Comment );
                                         }
 <ExtendsParam>{DOCNL}                   { // missing argument
                                           warn(yyextra->fileName,yyextra->lineNr,
-                                              "'\\%s' command has no argument",yyextra->currentCmd.data()
+                                              "'\\%s' command has no argument",qPrint(yyextra->currentCmd)
                                               );
                                           //if (*yytext=='\n') yyextra->lineNr++;
                                           //addOutput(yyscanner,'\n');
@@ -1861,9 +1862,9 @@ STopt  [^\n@\\]*
   /* ----- handle language specific sections ------- */
 
 <SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
-                                          QCString langId = &yytext[2];
+                                          QCString langId(&yytext[2]);
                                           if (langId.isEmpty() ||
-                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE),langId)==0)
+                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE).data(),langId.data())==0)
                                           { // enable language specific section
                                             BEGIN(Comment);
                                           }
@@ -2395,9 +2396,9 @@ static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const String
   }
   else
   {
-    addOutput(yyscanner,"@"+s+"{"+join(optList,",")+"} ");
+    addOutput(yyscanner,"@"+s+"{"+QCString(join(optList,","))+"} ");
   }
-  //printf("handleFormatBlock(%s) with option(%s)\n",s.data(),opt.data());
+  //printf("handleFormatBlock(%s) with option(%s)\n",qPrint(s),qPrint(opt));
   yyextra->blockName=s;
   yyextra->commentCount=0;
   BEGIN(FormatBlock);
@@ -2667,7 +2668,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
       {
         if (sscanf(opt.right(opt.length() - i - 1).data(),"%d%c",&level,&dum) != 1)
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", QCString(opt_).stripWhiteSpace().data());
+          warn(yyextra->fileName,yyextra->lineNr,"Unknown option:level specified with \\tableofcontents: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
           opt = "";
         }
         else
@@ -2697,7 +2698,7 @@ static bool handleToc(yyscan_t yyscanner,const QCString &, const StringVector &o
         }
         else
         {
-          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '%s'", QCString(opt_).stripWhiteSpace().data());
+          warn(yyextra->fileName,yyextra->lineNr,"Unknown option specified with \\tableofcontents: '%s'", qPrint(QCString(opt_).stripWhiteSpace()));
         }
       }
     }
@@ -2862,11 +2863,11 @@ static QCString stripQuotes(const char *s)
 //-----------------------------------------------------------------
 
 static void addXRefItem(yyscan_t yyscanner,
-                        const char *listName,const char *itemTitle,
-                        const char *listTitle,bool append)
+                        const QCString &listName,const QCString &itemTitle,
+                        const QCString &listTitle,bool append)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (listName==0) return;
+  if (listName.isEmpty()) return;
   //printf("addXRefItem(%s,%s,%s,%d)\n",listName,itemTitle,listTitle,append);
 
   std::unique_lock<std::mutex> lock(g_sectionMutex);
@@ -2876,9 +2877,9 @@ static void addXRefItem(yyscan_t yyscanner,
   for (auto it = yyextra->current->sli.rbegin(); it != yyextra->current->sli.rend(); ++it)
   {
     RefItem *i = *it;
-    if (i && qstrcmp(i->list()->listName(),listName)==0)
+    if (i && i->list()->listName()==listName)
     {
-      //printf("found %s lii->type=%s\n",listName,i->list()->listName().data());
+      //printf("found %s lii->type=%s\n",listName,qPrint(i->list()->listName()));
       item = i;
       break;
     }
@@ -2887,7 +2888,7 @@ static void addXRefItem(yyscan_t yyscanner,
   {
     //printf("listName=%s item id = %d existing\n",listName,item->id());
     item->setText(item->text() + " <p>" + yyextra->outputXRef);
-    //printf("%s: text +=%s\n",listName,item->text.data());
+    //printf("%s: text +=%s\n",listName,qPrint(item->text));
   }
   else // new item
   {
@@ -2897,12 +2898,12 @@ static void addXRefItem(yyscan_t yyscanner,
     item = refList->add();
     //printf("listName=%s item id = %d new yyextra->current=%p\n",listName,item->id(),yyextra->current);
     QCString anchorLabel;
-    anchorLabel.sprintf("_%s%06d",listName,item->id());
+    anchorLabel.sprintf("_%s%06d",listName.data(),item->id());
     item->setText(yyextra->outputXRef);
     item->setAnchor(anchorLabel);
     yyextra->current->sli.push_back(item);
     QCString cmdString;
-    cmdString.sprintf(" \\xrefitem %s %d.",listName,item->id());
+    cmdString.sprintf(" \\xrefitem %s %d.",qPrint(listName),item->id());
     if (yyextra->inBody)
     {
       yyextra->current->inbodyDocs += cmdString;
@@ -2919,11 +2920,11 @@ static void addXRefItem(yyscan_t yyscanner,
       {
         if (si->lineNr() != -1)
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",anchorLabel.data(),si->fileName().data(),si->lineNr());
+          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(anchorLabel),qPrint(si->fileName()),si->lineNr());
         }
         else
         {
-          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",anchorLabel.data(),si->fileName().data());
+          warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s)",qPrint(anchorLabel),qPrint(si->fileName()));
         }
       }
       else
@@ -2974,11 +2975,11 @@ static void addSection(yyscan_t yyscanner)
   {
     if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",yyextra->sectionLabel.data(),si->fileName().data(),si->lineNr());
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",qPrint(yyextra->sectionLabel),qPrint(si->fileName()),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",yyextra->sectionLabel.data(),si->fileName().data());
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s)",qPrint(yyextra->sectionLabel),qPrint(si->fileName()));
     }
   }
   else
@@ -3001,13 +3002,13 @@ static void addCite(yyscan_t yyscanner)
 {
   std::unique_lock<std::mutex> lock(g_citeMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  QCString name=yytext;
+  QCString name(yytext);
   if (yytext[0] =='"')
   {
     name=yytext+1;
     name=name.left((int)yyleng-2);
   }
-  CitationManager::instance().insert(name.data());
+  CitationManager::instance().insert(name);
 }
 
 //-----------------------------------------------------------------------------
@@ -3034,7 +3035,7 @@ static void stripTrailingWhiteSpace(QCString &s)
       break;
     }
   }
-  //printf("stripTrailingWhitespace(%s) i=%d len=%d\n",s.data(),i,len);
+  //printf("stripTrailingWhitespace(%s) i=%d len=%d\n",qPrint(s),i,len);
   if (i!=(int)len-1)
   {
     s.resize(i+2); // string up to and including char at pos i and \0 terminator
@@ -3070,28 +3071,28 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
     switch(yyextra->xrefKind)
     {
       case XRef_Todo:
-        addXRefItem(yyscanner,"todo",
+        addXRefItem(yyscanner,QCString("todo"),
             theTranslator->trTodo(),
             theTranslator->trTodoList(),
             xrefAppendToPrev
             );
         break;
       case XRef_Test:
-        addXRefItem(yyscanner,"test",
+        addXRefItem(yyscanner,QCString("test"),
             theTranslator->trTest(),
             theTranslator->trTestList(),
             xrefAppendToPrev
             );
         break;
       case XRef_Bug:
-        addXRefItem(yyscanner,"bug",
+        addXRefItem(yyscanner,QCString("bug"),
             theTranslator->trBug(),
             theTranslator->trBugList(),
             xrefAppendToPrev
             );
         break;
       case XRef_Deprecated:
-        addXRefItem(yyscanner,"deprecated",
+        addXRefItem(yyscanner,QCString("deprecated"),
             theTranslator->trDeprecated(),
             theTranslator->trDeprecatedList(),
             xrefAppendToPrev
@@ -3165,7 +3166,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
 }
 
 
-static void addAnchor(yyscan_t yyscanner,const char *anchor)
+static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
 {
   std::unique_lock<std::mutex> lock(g_sectionMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -3175,22 +3176,33 @@ static void addAnchor(yyscan_t yyscanner,const char *anchor)
   {
     if (si->lineNr() != -1)
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",anchor,si->fileName().data(),si->lineNr());
+      warn(yyextra->fileName,yyextra->lineNr,
+          "multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",
+          qPrint(anchor),qPrint(si->fileName()),si->lineNr());
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",anchor,si->fileName().data());
+      warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding anchor, (first occurrence: %s)",
+          qPrint(anchor),qPrint(si->fileName()));
     }
   }
   else
   {
-    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,nullptr,SectionType::Anchor,0);
+    si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
     yyextra->current->anchors.push_back(si);
   }
 }
 
 // add a string to the output
 static inline void addOutput(yyscan_t yyscanner,const char *s)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("addOutput(yyscanner,%s)\n",s);
+  *yyextra->pOutputString+=s;
+}
+
+// add a string to the output
+static inline void addOutput(yyscan_t yyscanner,const QCString &s)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("addOutput(yyscanner,%s)\n",s);
@@ -3312,7 +3324,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   yyextra->spaceBeforeCmd.resize(0);
   yyextra->spaceBeforeIf.resize(0);
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName ? fileName.data(): NULL);
+  printlex(yy_flex_debug, TRUE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   if (!yyextra->current->inbodyDocs.isEmpty() && isInbody) // separate in body fragments
   {
     yyextra->current->inbodyDocs+="\n\n";
@@ -3383,7 +3395,7 @@ bool CommentScanner::parseCommentBlock(/* in */     OutlineParserInterface *pars
   //printf("position=%d yyextra->parseMore=%d newEntryNeeded=%d\n",
   //  position,yyextra->parseMore,newEntryNeeded);
 
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName ? fileName.data(): NULL);
+  printlex(yy_flex_debug, FALSE, __FILE__, !fileName.isEmpty() ? qPrint(fileName): NULL);
   return yyextra->parseMore;
 }
 
@@ -3427,37 +3439,37 @@ void CommentScanner::initGroupInfo(Entry *entry)
   yyextra->docGroup.initGroupInfo(entry);
 }
 
-void CommentScanner::enterFile(const char *fileName,int lineNr)
+void CommentScanner::enterFile(const QCString &fileName,int lineNr)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->docGroup.enterFile(fileName,lineNr);
 }
 
-void CommentScanner::leaveFile(const char *fileName,int lineNr)
+void CommentScanner::leaveFile(const QCString &fileName,int lineNr)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->docGroup.leaveFile(fileName,lineNr);
 }
 
-void CommentScanner::enterCompound(const char *fileName,int lineNr,const char *name)
+void CommentScanner::enterCompound(const QCString &fileName,int lineNr,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->docGroup.enterCompound(fileName,lineNr,name);
 }
 
-void CommentScanner::leaveCompound(const char *fileName,int lineNr,const char *name)
+void CommentScanner::leaveCompound(const QCString &fileName,int lineNr,const QCString &name)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->docGroup.leaveCompound(fileName,lineNr,name);
 }
 
-void CommentScanner::open(Entry *e,const char *fileName,int lineNr,bool implicit)
+void CommentScanner::open(Entry *e,const QCString &fileName,int lineNr,bool implicit)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->docGroup.open(e,fileName,lineNr,implicit);
 }
 
-void CommentScanner::close(Entry *e,const char *fileName,int lineNr,bool foundInline,bool implicit)
+void CommentScanner::close(Entry *e,const QCString &fileName,int lineNr,bool foundInline,bool implicit)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->docGroup.close(e,fileName,lineNr,foundInline,implicit);

@@ -107,13 +107,15 @@ static const char *xmlSectionMapper(MemberListType ml)
 }
 
 
-inline void writeXMLString(TextStream &t,const char *s)
+inline void writeXMLString(TextStream &t,const QCString &s)
 {
   t << convertToXML(s);
 }
 
-inline void writeXMLCodeString(TextStream &t,const char *s, int &col)
+inline void writeXMLCodeString(TextStream &t,const QCString &str, int &col)
 {
+  if (str.isEmpty()) return;
+  const char *s = str.data();
   char c;
   while ((c=*s++))
   {
@@ -163,7 +165,7 @@ static void writeCombineScript()
   std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!t.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
 
@@ -186,16 +188,16 @@ static void writeCombineScript()
 
 }
 
-void writeXMLLink(TextStream &t,const char *extRef,const char *compoundId,
-                  const char *anchorId,const char *text,const char *tooltip)
+void writeXMLLink(TextStream &t,const QCString &extRef,const QCString &compoundId,
+                  const QCString &anchorId,const QCString &text,const QCString &tooltip)
 {
   t << "<ref refid=\"" << compoundId;
-  if (anchorId) t << "_1" << anchorId;
+  if (!anchorId.isEmpty()) t << "_1" << anchorId;
   t << "\" kindref=\"";
-  if (anchorId) t << "member"; else t << "compound";
+  if (!anchorId.isEmpty()) t << "member"; else t << "compound";
   t << "\"";
-  if (extRef) t << " external=\"" << extRef << "\"";
-  if (tooltip) t << " tooltip=\"" << convertToXML(tooltip) << "\"";
+  if (!extRef.isEmpty()) t << " external=\"" << extRef << "\"";
+  if (!tooltip.isEmpty()) t << " tooltip=\"" << convertToXML(tooltip) << "\"";
   t << ">";
   writeXMLString(t,text);
   t << "</ref>";
@@ -206,16 +208,16 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 {
   public:
     TextGeneratorXMLImpl(TextStream &t): m_t(t) {}
-    void writeString(const char *s,bool /*keepSpaces*/) const
+    void writeString(const QCString &s,bool /*keepSpaces*/) const
     {
       writeXMLString(m_t,s);
     }
     void writeBreak(int) const {}
-    void writeLink(const char *extRef,const char *file,
-                   const char *anchor,const char *text
+    void writeLink(const QCString &extRef,const QCString &file,
+                   const QCString &anchor,const QCString &text
                   ) const
     {
-      writeXMLLink(m_t,extRef,file,anchor,text,0);
+      writeXMLLink(m_t,extRef,file,anchor,text,QCString());
     }
   private:
     TextStream &m_t;
@@ -224,7 +226,7 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 //-------------------------------------------------------------------------------------------
 
 /** Generator for producing XML formatted source code. */
-void XMLCodeGenerator::codify(const char *text)
+void XMLCodeGenerator::codify(const QCString &text)
 {
   XML_DB(("(codify \"%s\")\n",text));
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
@@ -234,9 +236,9 @@ void XMLCodeGenerator::codify(const char *text)
   }
   writeXMLCodeString(m_t,text,m_col);
 }
-void XMLCodeGenerator::writeCodeLink(const char *ref,const char *file,
-                   const char *anchor,const char *name,
-                   const char *tooltip)
+void XMLCodeGenerator::writeCodeLink(const QCString &ref,const QCString &file,
+                   const QCString &anchor,const QCString &name,
+                   const QCString &tooltip)
 {
   XML_DB(("(writeCodeLink)\n"));
   if (m_insideCodeLine && !m_insideSpecialHL && m_normalHLNeedStartTag)
@@ -245,10 +247,10 @@ void XMLCodeGenerator::writeCodeLink(const char *ref,const char *file,
     m_normalHLNeedStartTag=FALSE;
   }
   writeXMLLink(m_t,ref,file,anchor,name,tooltip);
-  m_col+=qstrlen(name);
+  m_col+=name.length();
 }
-void XMLCodeGenerator::writeTooltip(const char *, const DocLinkInfo &, const char *,
-                  const char *, const SourceLinkInfo &, const SourceLinkInfo &
+void XMLCodeGenerator::writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
+                  const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                  )
 {
   XML_DB(("(writeToolTip)\n"));
@@ -295,7 +297,7 @@ void XMLCodeGenerator::endCodeLine()
   m_external.resize(0);
   m_insideCodeLine=FALSE;
 }
-void XMLCodeGenerator::startFontClass(const char *colorClass)
+void XMLCodeGenerator::startFontClass(const QCString &colorClass)
 {
   XML_DB(("(startFontClass)\n"));
   if (m_insideCodeLine && !m_insideSpecialHL && !m_normalHLNeedStartTag)
@@ -312,23 +314,23 @@ void XMLCodeGenerator::endFontClass()
   m_t << "</highlight>"; // non DocBook
   m_insideSpecialHL=FALSE;
 }
-void XMLCodeGenerator::writeCodeAnchor(const char *)
+void XMLCodeGenerator::writeCodeAnchor(const QCString &)
 {
   XML_DB(("(writeCodeAnchor)\n"));
 }
-void XMLCodeGenerator::writeLineNumber(const char *extRef,const char *compId,
-                     const char *anchorId,int l)
+void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &compId,
+                     const QCString &anchorId,int l)
 {
   XML_DB(("(writeLineNumber)\n"));
   // we remember the information provided here to use it
   // at the <codeline> start tag.
   m_lineNumber = l;
-  if (compId)
+  if (!compId.isEmpty())
   {
     m_refId=compId;
-    if (anchorId) m_refId+=(QCString)"_1"+anchorId;
+    if (!anchorId.isEmpty()) m_refId+=(QCString)"_1"+anchorId;
     m_isMemberRef = anchorId!=0;
-    if (extRef) m_external=extRef;
+    if (!extRef.isEmpty()) m_external=extRef;
   }
 }
 void XMLCodeGenerator::finish()
@@ -336,12 +338,12 @@ void XMLCodeGenerator::finish()
   if (m_insideCodeLine) endCodeLine();
 }
 
-void XMLCodeGenerator::startCodeFragment(const char *)
+void XMLCodeGenerator::startCodeFragment(const QCString &)
 {
   m_t << "    <programlisting>\n";
 }
 
-void XMLCodeGenerator::endCodeFragment(const char *)
+void XMLCodeGenerator::endCodeFragment(const QCString &)
 {
   m_t << "    </programlisting>\n";
 }
@@ -417,7 +419,7 @@ static void writeXMLDocBlock(TextStream &t,
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
   DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text,FALSE,FALSE,
-                                     0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
   // create a code generator
   XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
   // create a parse tree visitor for XML
@@ -439,11 +441,11 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
   XMLCodeGenerator *xmlGen = new XMLCodeGenerator(t);
   xmlGen->startCodeFragment("DoxyCode");
   intf->parseCode(*xmlGen,    // codeOutIntf
-                0,           // scopeName
+                QCString(),           // scopeName
                 fileToString(fd->absFilePath(),Config_getBool(FILTER_SOURCE_FILES)),
                 langExt,     // lang
                 FALSE,       // isExampleBlock
-                0,           // exampleName
+                QCString(),           // exampleName
                 fd,          // fileDef
                 -1,          // startLine
                 -1,          // endLine
@@ -456,7 +458,7 @@ void writeXMLCodeBlock(TextStream &t,FileDef *fd)
   delete xmlGen;
 }
 
-static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const char *tagName)
+static void writeMemberReference(TextStream &t,const Definition *def,const MemberDef *rmd,const QCString &tagName)
 {
   QCString scope = rmd->getScopeString();
   QCString name = rmd->name();
@@ -824,7 +826,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       t << "        <write>" << convertToXML(md->getWriteAccessor()) << "</write>\n";
   }
 
-  if (md->memberType()==MemberType_Variable && md->bitfieldString())
+  if (md->memberType()==MemberType_Variable && !md->bitfieldString().isEmpty())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
@@ -918,7 +920,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     }
   }
   else if (md->memberType()==MemberType_Define &&
-          md->argsString()) // define
+          !md->argsString().isEmpty()) // define
   {
     if (md->argumentList().empty())     // special case for "foo()" to
                                         // distinguish it from "foo".
@@ -947,7 +949,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</initializer>\n";
   }
 
-  if (md->excpString())
+  if (!md->excpString().isEmpty())
   {
     t << "        <exceptions>";
     linkifyText(TextGeneratorXMLImpl(t),def,md->getBodyDef(),md,md->excpString());
@@ -1049,8 +1051,8 @@ static bool memberVisible(const Definition *d,const MemberDef *md)
 }
 
 static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
-                      const MemberList *ml,const char *kind,const char *header=0,
-                      const char *documentation=0)
+                      const MemberList *ml,const QCString &kind,const QCString &header=QCString(),
+                      const QCString &documentation=QCString())
 {
   if (ml==0) return;
   int count=0;
@@ -1065,11 +1067,11 @@ static void generateXMLSection(const Definition *d,TextStream &ti,TextStream &t,
   if (count==0) return; // empty list
 
   t << "      <sectiondef kind=\"" << kind << "\">\n";
-  if (header)
+  if (!header.isEmpty())
   {
     t << "      <header>" << convertToXML(header) << "</header>\n";
   }
-  if (documentation)
+  if (!documentation.isEmpty())
   {
     t << "      <description>";
     writeXMLDocBlock(t,d->docFile(),d->docLine(),d,0,documentation);
@@ -1247,7 +1249,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   if (cd->templateMaster()!=0)  return; // skip generated template instances.
   if (cd->isArtificial())       return; // skip artificially created classes
 
-  msg("Generating XML output for class %s\n",cd->name().data());
+  msg("Generating XML output for class %s\n",qPrint(cd->name()));
 
   ti << "  <compound refid=\"" << classOutputFileBase(cd)
      << "\" kind=\"" << cd->compoundTypeString()
@@ -1258,7 +1260,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1422,7 +1424,7 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1475,7 +1477,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1550,7 +1552,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1661,7 +1663,7 @@ static void generateXMLForGroup(const GroupDef *gd,TextStream &ti)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1716,7 +1718,7 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1769,7 +1771,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);
@@ -1815,7 +1817,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
     {
       if (isSection(si->type()))
       {
-        //printf("  level=%d title=%s\n",level,si->title.data());
+        //printf("  level=%d title=%s\n",level,qPrint(si->title));
         int nextLevel = (int)si->type();
         if (nextLevel>level)
         {
@@ -1901,7 +1903,7 @@ void generateXML()
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   {
@@ -1939,7 +1941,7 @@ void generateXML()
   f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   else
@@ -1960,40 +1962,40 @@ void generateXML()
     }
     for (const auto &cd : *Doxygen::conceptLinkedMap)
     {
-      msg("Generating XML output for concept %s\n",cd->name().data());
+      msg("Generating XML output for concept %s\n",qPrint(cd->name()));
       generateXMLForConcept(cd.get(),t);
     }
     for (const auto &nd : *Doxygen::namespaceLinkedMap)
     {
-      msg("Generating XML output for namespace %s\n",nd->name().data());
+      msg("Generating XML output for namespace %s\n",qPrint(nd->name()));
       generateXMLForNamespace(nd.get(),t);
     }
     for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
       for (const auto &fd : *fn)
       {
-        msg("Generating XML output for file %s\n",fd->name().data());
+        msg("Generating XML output for file %s\n",qPrint(fd->name()));
         generateXMLForFile(fd.get(),t);
       }
     }
     for (const auto &gd : *Doxygen::groupLinkedMap)
     {
-      msg("Generating XML output for group %s\n",gd->name().data());
+      msg("Generating XML output for group %s\n",qPrint(gd->name()));
       generateXMLForGroup(gd.get(),t);
     }
     for (const auto &pd : *Doxygen::pageLinkedMap)
     {
-      msg("Generating XML output for page %s\n",pd->name().data());
+      msg("Generating XML output for page %s\n",qPrint(pd->name()));
       generateXMLForPage(pd.get(),t,FALSE);
     }
     for (const auto &dd : *Doxygen::dirLinkedMap)
     {
-      msg("Generate XML output for dir %s\n",dd->name().data());
+      msg("Generate XML output for dir %s\n",qPrint(dd->name()));
       generateXMLForDir(dd.get(),t);
     }
     for (const auto &pd : *Doxygen::exampleLinkedMap)
     {
-      msg("Generating XML output for example %s\n",pd->name().data());
+      msg("Generating XML output for example %s\n",qPrint(pd->name()));
       generateXMLForPage(pd.get(),t,TRUE);
     }
     if (Doxygen::mainPage)

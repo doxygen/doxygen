@@ -38,9 +38,9 @@ DocVisitor::~DocVisitor()
 {
 }
 
-CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
+CodeParserInterface &DocVisitor::getCodeParser(const QCString &extension)
 {
-  std::string ext(extension?extension:"");
+  std::string ext = extension.str();
   // for each extension we create a code parser once per visitor, so that
   // the context of the same parser object is reused throughout multiple passes for instance
   // for code fragments shown via dontinclude.

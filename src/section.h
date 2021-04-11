@@ -49,8 +49,8 @@ inline constexpr bool isSection(SectionType type)
 class SectionInfo
 {
   public:
-    SectionInfo(const char *label, const char *fileName, int lineNr,
-                const char *title, SectionType type, int level,const char *ref) :
+    SectionInfo(const QCString &label, const QCString &fileName, int lineNr,
+                const QCString &title, SectionType type, int level,const QCString &ref) :
         m_label(label), m_title(title), m_type(type), m_ref(ref),
         m_lineNr(lineNr), m_fileName(fileName), m_level(level)
     {
@@ -73,10 +73,10 @@ class SectionInfo
     Definition *definition() const { return m_definition; }
 
     // setters
-    void setFileName(const char *fn)  { m_fileName   = fn; }
-    void setType(SectionType t)       { m_type       = t;  }
-    void setGenerated(bool b)         { m_generated  = b;  }
-    void setDefinition(Definition *d) { m_definition = d;  }
+    void setFileName(const QCString &fn) { m_fileName   = fn; }
+    void setType(SectionType t)          { m_type       = t;  }
+    void setGenerated(bool b)            { m_generated  = b;  }
+    void setDefinition(Definition *d)    { m_definition = d;  }
 
   private:
     QCString    m_label;
@@ -99,9 +99,9 @@ class SectionRefs
 
     //! Returns a constant pointer to the section info given a section label or nullptr
     //! if no section with the given label can be found.
-    const SectionInfo *find(const char *label) const
+    const SectionInfo *find(const QCString &label) const
     {
-      auto it = m_lookup.find(label);
+      auto it = m_lookup.find(label.str());
       return it!=m_lookup.end() ? it->second : nullptr;
     }
 
@@ -130,15 +130,16 @@ class SectionManager : public LinkedMap<SectionInfo>
     //! Returns a non-owning pointer to the newly added section.
     SectionInfo *add(const SectionInfo &si)
     {
-      return LinkedMap<SectionInfo>::add(si.label(),si.fileName(),si.lineNr(),si.title(),si.type(),si.level(),si.ref());
+      return LinkedMap<SectionInfo>::add(si.label(),si.fileName(),
+                      si.lineNr(),si.title(),si.type(),si.level(),si.ref());
     }
 
     //! Add a new section
     //! Return a non-owning pointer to the newly added section
-    SectionInfo *add(const char *label, const char *fileName, int lineNr,
-                     const char *title, SectionType type, int level,const char *ref=0)
+    SectionInfo *add(const QCString &label, const QCString &fileName, int lineNr,
+                     const QCString &title, SectionType type, int level,const QCString &ref=QCString())
     {
-      return LinkedMap<SectionInfo>::add(label,fileName,lineNr,title,type,level,ref);
+      return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
     }
 
     //! returns a reference to the singleton

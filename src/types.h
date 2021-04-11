@@ -91,7 +91,7 @@ struct Grouping
     return "???";
   }
 
-  Grouping( const char *gn, GroupPri_t p ) : groupname(gn), pri(p) {}
+  Grouping( const QCString &gn, GroupPri_t p ) : groupname(gn), pri(p) {}
   QCString groupname;   //!< name of the group
   GroupPri_t pri;       //!< priority of this definition
 

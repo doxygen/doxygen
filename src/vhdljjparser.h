@@ -29,13 +29,13 @@ class VHDLOutlineParser : public OutlineParserInterface
   public:
     VHDLOutlineParser();
     virtual ~VHDLOutlineParser();
-    void parseInput(const char * fileName,
+    void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser);
 
     bool needsPreprocessing(const QCString &) const { return TRUE; }
-    void parsePrototype(const char *text);
+    void parsePrototype(const QCString &text);
 
 
     // interface for generated parser code
@@ -50,7 +50,7 @@ class VHDLOutlineParser : public OutlineParserInterface
     void createFunction(const char *impure,uint64 spec,const char *fname);
     void addVhdlType(const char *n,int startLine,int section, uint64 spec,const char* args,const char* type,Protection prot);
     void addCompInst(const char *n, const char* instName, const char* comp,int iLine);
-    void handleCommentBlock(const char* doc,bool brief);
+    void handleCommentBlock(const QCString &doc,bool brief);
     void handleFlowComment(const char*);
     void initEntry(Entry *e);
     void newEntry();

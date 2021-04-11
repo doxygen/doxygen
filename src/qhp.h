@@ -3,8 +3,8 @@
  * Copyright (C) 2008 Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -31,15 +31,15 @@ class Qhp : public IndexIntf
     void finalize();
     void incContentsDepth();
     void decContentsDepth();
-    void addContentsItem(bool isDir, const char * name, const char * ref,
-                         const char * file, const char * anchor,
+    void addContentsItem(bool isDir, const QCString & name, const QCString & ref,
+                         const QCString & file, const QCString & anchor,
                          bool separateIndex,bool addToNavIndex,
                          const Definition *def);
     void addIndexItem(const Definition *context, const MemberDef *md,
-                      const char *sectionAnchor, const char *title);
-    void addIndexFile(const char * name);
-    void addImageFile(const char * name);
-    void addStyleSheetFile(const char * name);
+                      const QCString &sectionAnchor, const QCString &title);
+    void addIndexFile(const QCString & name);
+    void addImageFile(const QCString & name);
+    void addStyleSheetFile(const QCString & name);
     // END IndexIntf
 
     static QCString getQhpFileName();
@@ -47,8 +47,8 @@ class Qhp : public IndexIntf
   private:
     void handlePrevSection();
     void clearPrevSection();
-    void setPrevSection(const char * title, const char * basename, const char * anchor, int level);
-    void addFile(const char * fileName);
+    void setPrevSection(const QCString & title, const QCString & basename, const QCString & anchor, int level);
+    void addFile(const QCString & fileName);
 
     static QCString getFullProjectName();
 

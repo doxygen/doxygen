@@ -45,7 +45,7 @@ void initWarningFormat()
 
   if (!Config_getString(WARN_LOGFILE).isEmpty())
   {
-    warnFile = Portable::fopen(Config_getString(WARN_LOGFILE),"w");
+    warnFile = Portable::fopen(Config_getString(WARN_LOGFILE).data(),"w");
   }
   if (!warnFile) // point it to something valid, because warn() relies on it
   {
@@ -79,9 +79,9 @@ void msg(const char *fmt, ...)
   }
 }
 
-static void format_warn(const char *file,int line,const char *text)
+static void format_warn(const QCString &file,int line,const QCString &text)
 {
-  QCString fileSubst = file==0 ? "<unknown>" : file;
+  QCString fileSubst = file.isEmpty() ? "<unknown>" : file;
   QCString lineSubst; lineSubst.setNum(line);
   QCString textSubst = text;
   QCString versionSubst;
@@ -132,7 +132,7 @@ static void handle_warn_as_error()
   warnStat = true;
 }
 
-static void do_warn(bool enabled, const char *file, int line, const char *prefix, const char *fmt, va_list args)
+static void do_warn(bool enabled, const QCString &file, int line, const char *prefix, const char *fmt, va_list args)
 {
   if (!enabled) return; // warning type disabled
 
@@ -149,18 +149,17 @@ static void do_warn(bool enabled, const char *file, int line, const char *prefix
   // prefix
   // 1 position for `\0`
   int bufSize = vsnprintf(NULL, 0, fmt, args) + l + 1;
-  char *text = (char *)malloc(sizeof(char) * bufSize);
+  QCString text(bufSize);
   if (prefix)
   {
-    qstrncpy(text,prefix,bufSize);
+    qstrncpy(text.rawData(),prefix,bufSize);
   }
-  vsnprintf(text+l, bufSize-l, fmt, argsCopy);
+  vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
   text[bufSize-1]='\0';
   format_warn(file,line,text);
-  free(text);
 }
 
-void warn(const char *file,int line,const char *fmt, ...)
+void warn(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -168,18 +167,18 @@ void warn(const char *file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void va_warn(const char *file,int line,const char *fmt,va_list args)
+void va_warn(const QCString &file,int line,const char *fmt,va_list args)
 {
   do_warn(Config_getBool(WARNINGS), file, line, warning_str, fmt, args);
 }
 
-void warn_simple(const char *file,int line,const char *text)
+void warn_simple(const QCString &file,int line,const char *text)
 {
   if (!Config_getBool(WARNINGS)) return; // warning type disabled
   format_warn(file,line,QCString(warning_str) + text);
 }
 
-void warn_undoc(const char *file,int line,const char *fmt, ...)
+void warn_undoc(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -187,7 +186,7 @@ void warn_undoc(const char *file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void warn_incomplete_doc(const char *file,int line,const char *fmt, ...)
+void warn_incomplete_doc(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -195,7 +194,7 @@ void warn_incomplete_doc(const char *file,int line,const char *fmt, ...)
   va_end(args);
 }
 
-void warn_doc_error(const char *file,int line,const char *fmt, ...)
+void warn_doc_error(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
@@ -221,7 +220,7 @@ void err(const char *fmt, ...)
   handle_warn_as_error();
 }
 
-extern void err_full(const char *file,int line,const char *fmt, ...)
+extern void err_full(const QCString &file,int line,const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);

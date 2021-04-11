@@ -134,7 +134,7 @@ class TextDocVisitor : public DocVisitor
 
   private:
 
-   void filter(const char *str);
+    void filter(const QCString &str);
 
     TextStream &m_t;
 };

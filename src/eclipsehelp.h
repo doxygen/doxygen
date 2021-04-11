@@ -48,14 +48,14 @@ class EclipseHelp : public IndexIntf
     virtual void finalize();
     virtual void incContentsDepth();
     virtual void decContentsDepth();
-    virtual void addContentsItem(bool isDir, const char *name, const char *ref,
-                                 const char *file, const char *anchor,bool separateIndex,bool addToNavIndex,
+    virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                                 const QCString &file, const QCString &anchor,bool separateIndex,bool addToNavIndex,
                                  const Definition *def);
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                              const char *sectionAnchor,const char *title);
-    virtual void addIndexFile(const char *name);
-    virtual void addImageFile(const char *name);
-    virtual void addStyleSheetFile(const char *name);
+                              const QCString &sectionAnchor,const QCString &title);
+    virtual void addIndexFile(const QCString &name);
+    virtual void addImageFile(const QCString &name);
+    virtual void addStyleSheetFile(const QCString &name);
 
   private:
     int m_depth;

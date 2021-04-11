@@ -31,7 +31,7 @@ class TextStream;
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -139,7 +139,7 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();

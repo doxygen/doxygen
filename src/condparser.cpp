@@ -33,15 +33,16 @@
  * - On error, an error message is returned.
  * - On success, the result of the expression is either "1" or "0".
  */
-bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
+bool CondParser::parse(const QCString &fileName,int lineNr,const QCString &expr)
 {
+  if (expr.isEmpty()) return false;
   m_expr      = expr;
   m_tokenType = NOTHING;
 
   // initialize all variables
-  m_e = m_expr;    // let m_e point to the start of the expression
+  m_e = m_expr.data();    // let m_e point to the start of the expression
 
-  bool answer=FALSE;
+  bool answer=false;
   getToken();
   if (m_tokenType==DELIMITER && m_token.isEmpty())
   {
@@ -50,35 +51,11 @@ bool CondParser::parse(const char *fileName,int lineNr,const char *expr)
   else if (m_err.isEmpty())
   {
     answer = parseLevel1();
-
-#if 0
-    // check for garbage at the end of the expression
-    // an expression ends with a character '\0' and token_type = delimiter
-    if (m_tokenType!=DELIMITER || !m_token.isEmpty())
-    {
-      if (m_tokenType == DELIMITER)
-      {
-        if (m_token=="(" || m_token==")")
-        {
-          m_err=QCString("Unexpected parenthesis ")+m_token+"'";
-        }
-        else
-        {
-          // user entered a not existing operator like "//"
-          m_err=QCString("Unexpected operator ")+m_token+"'";
-        }
-      }
-      else
-      {
-        m_err=QCString("Unexpected part '")+m_token+"'";
-      }
-    }
-#endif
   }
-  if (m_err)
+  if (!m_err.isEmpty())
   {
     warn(fileName,lineNr,"problem evaluating expression '%s': %s",
-        expr,m_err.data());
+        qPrint(expr),qPrint(m_err));
   }
   //printf("expr='%s' answer=%d\n",expr,answer);
   return answer;
@@ -303,9 +280,9 @@ bool CondParser::evalOperator(int opId, bool lhs, bool rhs)
 /**
  * evaluate a variable
  */
-bool CondParser::evalVariable(const char *varName)
+bool CondParser::evalVariable(const QCString &varName)
 {
   const StringVector &list = Config_getList(ENABLED_SECTIONS);
-  return std::find(list.begin(),list.end(),varName)!=list.end();
+  return std::find(list.begin(),list.end(),varName.str())!=list.end();
 }
 

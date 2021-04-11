@@ -29,7 +29,7 @@
 #include "fileinfo.h"
 
 ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
-                             const char *langExt)
+                             const QCString &langExt)
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
     m_indent(0), m_langExt(langExt)
 {
@@ -371,7 +371,7 @@ void ManDocVisitor::visit(DocIncOperator *op)
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     if (!m_hide)
@@ -1049,11 +1049,11 @@ void ManDocVisitor::visitPost(DocParBlock *)
 }
 
 
-void ManDocVisitor::filter(const char *str)
+void ManDocVisitor::filter(const QCString &str)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const char *p=str;
+    const char *p=str.data();
     char c=0;
     while ((c=*p++))
     {

@@ -147,7 +147,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
   constexpYYrestart( yyin, p->yyscanner );
 
   printlex(yy_flex_debug, true, __FILE__, fileName);
-  //printf("Expression: '%s'\n",s.data());
+  //printf("Expression: '%s'\n",qPrint(s));
 
   constexpYYparse(p->yyscanner);
 

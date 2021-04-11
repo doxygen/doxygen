@@ -48,12 +48,12 @@
 #define DB_VIS_C2a(x,y)
 #endif
 
-static QCString filterId(const char *s)
+static QCString filterId(const QCString &s)
 {
+  if (s.isEmpty()) return s;
   static GrowBuf growBuf;
   growBuf.clear();
-  if (s==0) return "";
-  const char *p=s;
+  const char *p=s.data();
   char c;
   while ((c=*p++))
   {
@@ -150,7 +150,7 @@ void DocbookDocVisitor::visitPostEnd(TextStream &t, bool hasCaption, bool inline
   }
 }
 
-DocbookDocVisitor::DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt)
+DocbookDocVisitor::DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
   : DocVisitor(DocVisitor_Docbook), m_t(t), m_ci(ci),m_langExt(langExt)
 {
 DB_VIS_C
@@ -348,7 +348,7 @@ DB_VIS_C
         m_t << "<para>\n";
         name.sprintf("%s%d", "dot_inline_dotgraph_", dotindex);
         baseName.sprintf("%s%d",
-            (Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_").data(),
+            qPrint(Config_getString(DOCBOOK_OUTPUT)+"/inline_dotgraph_"),
             dotindex++
             );
         std::string fileName = baseName.str()+".dot";
@@ -1229,7 +1229,7 @@ DB_VIS_C
     {
       m_file=fd->absFilePath();
     }
-    copyFile(m_file,Config_getString(DOCBOOK_OUTPUT)+"/"+baseName.data());
+    copyFile(m_file,Config_getString(DOCBOOK_OUTPUT)+"/"+baseName);
   }
   else
   {
@@ -1298,7 +1298,7 @@ DB_VIS_C
   if (m_hide) return;
   if (ref->isSubPage())
   {
-    startLink(0,ref->anchor());
+    startLink(QCString(),ref->anchor());
   }
   else
   {
@@ -1572,7 +1572,7 @@ DB_VIS_C
 }
 
 
-void DocbookDocVisitor::filter(const char *str)
+void DocbookDocVisitor::filter(const QCString &str)
 {
 DB_VIS_C
   m_t << convertToDocBook(str);
@@ -1584,7 +1584,7 @@ DB_VIS_C
   m_t << "<link linkend=\"_" << stripPath(file);
   if (!anchor.isEmpty())
   {
-    if (file) m_t << "_1";
+    if (!file.isEmpty()) m_t << "_1";
     m_t << anchor;
   }
   m_t << "\">";

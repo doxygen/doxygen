@@ -29,9 +29,9 @@ class DotDirDeps : public DotGraph
     QCString writeGraph(TextStream &out,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const char *path,
-                        const char *fileName,
-                        const char *relPath,
+                        const QCString &path,
+                        const QCString &fileName,
+                        const QCString &relPath,
                         bool writeImageMap=TRUE,
                         int graphId=-1,
                         bool linkRelations=TRUE);

@@ -85,7 +85,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   return baseName;
 }
 
-void PlantumlManager::generatePlantUMLOutput(const char *baseName,const char *outDir,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format)
 {
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
@@ -239,7 +239,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       Debug::print(Debug::Plantuml,0,"*** %s Running Plantuml arguments:%s\n","PlantumlManager::runPlantumlContent",qPrint(pumlArguments));
 
       Portable::sysTimerStart();
-      if ((exitCode=Portable::system(pumlExe,pumlArguments,TRUE))!=0)
+      if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
         err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
@@ -264,7 +264,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",
                 pumlOutDir.data(),str.c_str(), pumlOutDir.data(),str.c_str());
             Portable::sysTimerStart();
-            if ((exitCode=Portable::system("epstopdf",epstopdfArgs))!=0)
+            if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)
             {
               err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
             }

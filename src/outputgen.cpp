@@ -24,7 +24,7 @@
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator(const char *dir) : m_t(nullptr), m_dir(dir)
+OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
 }
@@ -57,7 +57,7 @@ OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
   return *this;
 }
 
-void OutputGenerator::startPlainFile(const char *name)
+void OutputGenerator::startPlainFile(const QCString &name)
 {
   //printf("startPlainFile(%s)\n",name);
   m_fileName=m_dir+"/"+name;

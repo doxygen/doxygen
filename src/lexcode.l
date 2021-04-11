@@ -93,7 +93,7 @@ static void startCodeLine(yyscan_t yyscanner);
 static void endFontClass(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
-static void codifyLines(yyscan_t yyscanner,const char *text);
+static void codifyLines(yyscan_t yyscanner,const QCString &text);
 static void startFontClass(yyscan_t yyscanner,const char *s);
 static int countLines(yyscan_t yyscanner);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
@@ -393,7 +393,7 @@ NONLopt [^\n]*
                            if (!yyextra->rulesPatternBuffer.isEmpty())
                            {
                              startFontClass(yyscanner,"stringliteral");
-                             codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
+                             codifyLines(yyscanner,yyextra->rulesPatternBuffer);
                              yyextra->rulesPatternBuffer.resize(0);
                              endFontClass(yyscanner);
                            }
@@ -413,7 +413,7 @@ NONLopt [^\n]*
                            if (!yyextra->rulesPatternBuffer.isEmpty())
                            {
                              startFontClass(yyscanner,"stringliteral");
-                             codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
+                             codifyLines(yyscanner,yyextra->rulesPatternBuffer);
                              yyextra->rulesPatternBuffer.resize(0);
                              endFontClass(yyscanner);
                            }
@@ -428,7 +428,7 @@ NONLopt [^\n]*
                            if (!yyextra->rulesPatternBuffer.isEmpty())
                            {
                              startFontClass(yyscanner,"stringliteral");
-                             codifyLines(yyscanner,yyextra->rulesPatternBuffer.data());
+                             codifyLines(yyscanner,yyextra->rulesPatternBuffer);
                              yyextra->rulesPatternBuffer.resize(0);
                              endFontClass(yyscanner);
                            }
@@ -500,7 +500,7 @@ NONLopt [^\n]*
                           }
 <SkipCurly>{B}*{RAWBEGIN} {
                             QCString raw=QCString(yytext).stripWhiteSpace();
-                            yyextra->delimiter = raw.data()+2;
+                            yyextra->delimiter = raw.mid(2);
                             yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
                             yyextra->lastRawStringContext = YY_START;
                             yyextra->CCodeBuffer += yytext;
@@ -930,7 +930,7 @@ static void startCodeLine(yyscan_t yyscanner)
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
-      yyextra->classScope = d->name().copy();
+      yyextra->classScope = d->name();
       QCString lineAnchor;
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
@@ -944,13 +944,13 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(d->getReference(),
                             d->getOutputFileBase(),
-                            0,yyextra->yyLineNr);
+                            QCString(),yyextra->yyLineNr);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(0,0,0,yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
     }
   }
 
@@ -991,10 +991,11 @@ static void nextCodeLine(yyscan_t yyscanner)
   }
 }
 
-static void codifyLines(yyscan_t yyscanner,const char *text)
+static void codifyLines(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  const char *p=text,*sp=p;
+  if (text.isEmpty()) return;
+  const char *p=text.data(),*sp=p;
   char c;
   bool done=false;
   while (!done)
@@ -1148,11 +1149,11 @@ void LexCodeParser::resetCodeParserState()
 }
 
 void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *scopeName,
+               const QCString &scopeName,
                const QCString &input,
                SrcLangExt,
                bool isExampleBlock,
-               const char *exampleName,
+               const QCString &exampleName,
                FileDef *fileDef,
                int startLine,
                int endLine,
@@ -1168,10 +1169,10 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
+  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 
   yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input;
+  yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
   yyextra->needsTermination = false;
@@ -1202,7 +1203,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef("",(exampleName?exampleName:"generated"));
+    yyextra->sourceFileDef = createFileDef(QCString(),!exampleName.isEmpty() ? exampleName : QCString("generated"));
     cleanupSourceDef = true;
   }
 
@@ -1230,7 +1231,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     yyextra->sourceFileDef=0;
   }
 
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
+  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 //---------------------------------------------------------------------------------

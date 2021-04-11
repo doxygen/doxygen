@@ -52,24 +52,21 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
-    void codify(const char *) {}
-    void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
-    void startCodeLine() {}
-    void endCodeLine() {}
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
-    void startFontClass(const char *) {}
-    void endFontClass() {}
-    void writeCodeAnchor(const char *) {}
-    void writeLineNumber(const char *,const char *,const char *,int) {}
-    virtual void writeTooltip(const char *,const DocLinkInfo &,
-                              const char *,const char *,const SourceLinkInfo &,
-                              const SourceLinkInfo &) {}
-    void startCodeLine(bool) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
-    void startCodeFragment(const char *) {}
-    void endCodeFragment(const char *) {}
+    void codify(const QCString &) override {}
+    void writeCodeLink(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
+    void startCodeLine(bool) override {}
+    void endCodeLine() override {}
+    void writeCodeAnchor(const QCString &) override {}
+    void startFontClass(const QCString &) override {}
+    void endFontClass() override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    virtual void writeTooltip(const QCString &,const DocLinkInfo &,
+                              const QCString &,const QCString &,const SourceLinkInfo &,
+                              const SourceLinkInfo &) override {}
+    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
+    void addWord(const QCString &,bool) override {}
+    void startCodeFragment(const QCString &) override {}
+    void endCodeFragment(const QCString &) override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -378,7 +375,7 @@ static bool checkLanguage(std::string& filename, std::string extension) {
  * about whether it is a C project or not. */
 static void detectProgrammingLanguage(FileNameLinkedMap &fnli) {
   for (const auto &fn : fnli) {
-    std::string filename = fn->fileName();
+    std::string filename = fn->fileName().str();
     if (
         checkLanguage(filename, ".cc") ||
         checkLanguage(filename, ".cxx") ||
@@ -454,9 +451,9 @@ int main(int argc,char **argv) {
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
   unsigned int pid = Portable::pid();
-  if (Portable::getenv("TMP"))
+  if (!Portable::getenv("TMP").isEmpty())
     tmpdir << Portable::getenv("TMP") << "/doxyparse-" << pid;
-  else if (Portable::getenv("TEMP"))
+  else if (!Portable::getenv("TEMP").isEmpty())
     tmpdir << Portable::getenv("TEMP") << "/doxyparse-" << pid;
   else
     tmpdir << "doxyparse-" << pid;

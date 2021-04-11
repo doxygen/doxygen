@@ -108,10 +108,10 @@ static inline int computeIndent(const char *s);
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len);
 static inline void copyToOutput(yyscan_t yyscanner,const char *s,int len);
-static void startCondSection(yyscan_t yyscanner,const char *sectId);
+static void startCondSection(yyscan_t yyscanner,const QCString &sectId);
 static void endCondSection(yyscan_t yyscanner);
 static void handleCondSectionId(yyscan_t yyscanner,const char *expression);
-static void replaceAliases(yyscan_t yyscanner,const char *s);
+static void replaceAliases(yyscan_t yyscanner,const QCString &s);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void replaceComment(yyscan_t yyscanner,int offset);
 static void clearCommentStack(yyscan_t yyscanner);
@@ -306,7 +306,7 @@ SLASHopt [/]*
 				       }
 				       yyextra->blockHeadCol=yyextra->col;
 				       copyToOutput(yyscanner,"/**",3); 
-				       replaceAliases(yyscanner,yytext+i);
+				       replaceAliases(yyscanner,QCString(yytext+i));
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment); 
 				       yyextra->readLineCtx=SComment;
@@ -318,7 +318,7 @@ SLASHopt [/]*
                                      int i=17; //=strlen("//##Documentation");
 				     yyextra->blockHeadCol=yyextra->col;
 				     copyToOutput(yyscanner,"/**",3);
-				     replaceAliases(yyscanner,yytext+i);
+				     replaceAliases(yyscanner,QCString(yytext+i));
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
@@ -873,7 +873,7 @@ SLASHopt [/]*
 				     if (*yytext=='\n') yyextra->lineNr++;
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
-				     replaceAliases(yyscanner,yytext);
+				     replaceAliases(yyscanner,QCString(yytext));
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*"{" { // expand alias with arguments
                                      yyextra->lastBlockContext=YY_START;
@@ -891,7 +891,7 @@ SLASHopt [/]*
 				     }
 				     else // abort the alias, restart scanning
 				     {
-				       copyToOutput(yyscanner,yyextra->aliasString,yyextra->aliasString.length());
+				       copyToOutput(yyscanner,yyextra->aliasString.data(),yyextra->aliasString.length());
 				       copyToOutput(yyscanner,yytext,(int)yyleng);
 				       BEGIN(Scan);
 				     }
@@ -1043,7 +1043,7 @@ static void clearCommentStack(yyscan_t yyscanner)
   while (!yyextra->commentStack.empty()) yyextra->commentStack.pop();
 }
 
-static void startCondSection(yyscan_t yyscanner,const char *sectId)
+static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
@@ -1077,7 +1077,7 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool oldSkip=yyextra->skip;
-  startCondSection(yyscanner,expression);
+  startCondSection(yyscanner,QCString(expression));
   if ((yyextra->condCtx==CComment || yyextra->readLineCtx==SComment) && 
       !oldSkip && yyextra->skip) 
   {
@@ -1103,11 +1103,11 @@ static void handleCondSectionId(yyscan_t yyscanner,const char *expression)
 /** copies string \a s with length \a len to the output, while 
  *  replacing any alias commands found in the string.
  */
-static void replaceAliases(yyscan_t yyscanner,const char *s)
+static void replaceAliases(yyscan_t yyscanner,const QCString &s)
 {
   QCString result = resolveAliasCmd(s);
   //printf("replaceAliases(%s)->'%s'\n",s,result.data());
-  copyToOutput(yyscanner,result,result.length());
+  copyToOutput(yyscanner,result.data(),result.length());
 }
 
 
@@ -1152,7 +1152,7 @@ static void replaceComment(yyscan_t yyscanner,int offset)
  *  -# It replaces aliases with their definition (see ALIASES)
  *  -# It handles conditional sections (cond...endcond blocks)
  */
-void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
+void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
 {
   yyscan_t yyscanner;
   commentcnvYY_state extra;
@@ -1176,12 +1176,12 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   clearCommentStack(yyscanner);
   yyextra->vhdl = FALSE;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
   yyextra->isFixedForm = FALSE;
   if (yyextra->lang==SrcLangExt_Fortran)
   {
     FortranFormat fmt = convertFileNameFortranParserCode(fileName);
-    yyextra->isFixedForm = recognizeFixedForm(inBuf->data(),fmt);
+    yyextra->isFixedForm = recognizeFixedForm(QCString(inBuf->data()),fmt);
   }
 
   if (yyextra->lang==SrcLangExt_Markdown)
@@ -1198,7 +1198,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   while (!yyextra->condStack.empty())
   {
     const CondCtx &ctx = yyextra->condStack.top();
-    QCString sectionInfo = " ";
+    QCString sectionInfo(" ");
     if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
     warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "
 	"a corresponding \\endcond command within this file.",sectionInfo.data());
@@ -1206,7 +1206,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   }
   if (yyextra->nestingCount>0 && yyextra->lang!=SrcLangExt_Markdown && yyextra->lang!=SrcLangExt_Fortran)
   {
-    QCString tmp= "(probable line reference: ";
+    QCString tmp("(probable line reference: ");
     bool first = TRUE;
     while (!yyextra->commentStack.empty())
     {
@@ -1225,10 +1225,10 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const char *fileName)
   {
     yyextra->outBuf->at(yyextra->outBuf->curPos())='\0';
     Debug::print(Debug::CommentCnv,0,"-----------\nCommentCnv: %s\n"
-                 "output=[\n%s]\n-----------\n",fileName,yyextra->outBuf->data()
+                 "output=[\n%s]\n-----------\n",qPrint(fileName),yyextra->outBuf->data()
                 );
   }
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
+  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
   commentcnvYYlex_destroy(yyscanner);
 }
 

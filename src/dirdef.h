@@ -66,7 +66,7 @@ class UsedDir
     UsedDir(const DirDef *dir,bool inherited);
     virtual ~UsedDir();
     void addFileDep(const FileDef *srcFd,const FileDef *dstFd);
-    FilePair *findFilePair(const char *name);
+    FilePair *findFilePair(const QCString &name);
     const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
@@ -164,6 +164,5 @@ class DirRelationLinkedMap : public LinkedMap<DirRelation>
 void buildDirectories();
 void generateDirDocs(OutputList &ol);
 void computeDirDependencies();
-void writeDirDependencyGraph(const char *file);
 
 #endif

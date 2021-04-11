@@ -233,10 +233,10 @@ CommandMap htmlTagMap[] =
 Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,true);
 Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,false);
 
-int Mapper::map(const char *n)
+int Mapper::map(const QCString &n)
 {
-  QCString name=n;
-  if (name.isEmpty()) return 0;
+  if (n.isEmpty()) return 0;
+  QCString name = n;
   if (!m_cs) name=name.lower();
   auto it = m_map.find(name.str());
   return it!=m_map.end() ? it->second : 0;

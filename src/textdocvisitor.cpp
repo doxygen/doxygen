@@ -50,11 +50,11 @@ void TextDocVisitor::visit(DocEmoji *s)
   }
 }
 
-void TextDocVisitor::filter(const char *str)
+void TextDocVisitor::filter(const QCString &str)
 {
-  if (str==0) return;
+  if (str.isEmpty()) return;
   //printf("TextDocVisitor::filter(%s)\n",str);
-  const char *p=str;
+  const char *p=str.data();
   char c;
   while (*p)
   {

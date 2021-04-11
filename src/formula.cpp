@@ -68,9 +68,9 @@ FormulaManager &FormulaManager::instance()
   return fm;
 }
 
-void FormulaManager::readFormulas(const char *dir,bool doCompare)
+void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
 {
-  std::ifstream f(std::string(dir)+"/formula.repository",std::ifstream::in);
+  std::ifstream f(dir.str()+"/formula.repository",std::ifstream::in);
   if (f.is_open())
   {
     uint formulaCount=0;
@@ -85,7 +85,7 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
       size_t se=line.find(':'); // find name and text separator.
       if (ei==std::string::npos || hi==std::string::npos || se==std::string::npos || hi>se || ei<hi || ei>se)
       {
-        warn_uncond("%s/formula.repository is corrupted at line %d!\n",dir,lineNr);
+        warn_uncond("%s/formula.repository is corrupted at line %d!\n",qPrint(dir),lineNr);
         break;
       }
       else
@@ -127,13 +127,13 @@ void FormulaManager::readFormulas(const char *dir,bool doCompare)
   }
 }
 
-void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) const
+void FormulaManager::generateImages(const QCString &path,Format format,HighDPI hd) const
 {
-  Dir d(path);
+  Dir d(path.str());
   // store the original directory
   if (!d.exists())
   {
-    term("Output directory '%s' does not exist!\n",path);
+    term("Output directory '%s' does not exist!\n",qPrint(path));
   }
   std::string oldDir = Dir::currentDirPath();
   QCString macroFile = Config_getString(FORMULA_MACROFILE);
@@ -214,7 +214,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       // run dvips to convert the page with number pageIndex to an
       // postscript file.
       sprintf(args,"-q -D 600 -n 1 -p %d -o %s_tmp.ps _formulas.dvi",
-          pageIndex,formBase.data());
+          pageIndex,qPrint(formBase));
       Portable::sysTimerStart();
       if (Portable::system("dvips",args)!=0)
       {
@@ -227,7 +227,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
 
       // extract the bounding box for the postscript file
       sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=bbox %s_tmp.ps 2>%s_tmp.epsi",
-          formBase.data(),formBase.data());
+          qPrint(formBase),qPrint(formBase));
       Portable::sysTimerStart();
       if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
       {
@@ -251,7 +251,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         }
         else
         {
-          err("Couldn't extract bounding box from %s_tmp.epsi",formBase.data());
+          err("Couldn't extract bounding box from %s_tmp.epsi",qPrint(formBase));
         }
       }
       //printf("Bounding box [%d %d %d %d]\n",x1,y1,x2,y2);
@@ -271,7 +271,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         // crop the image to its bounding box
         sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=pdfwrite"
                      " -o %s_tmp.pdf -c \"[/CropBox [%d %d %d %d] /PAGES pdfmark\" -f %s_tmp.ps",
-                     formBase.data(),x1,y1,x2,y2,formBase.data());
+                     qPrint(formBase),x1,y1,x2,y2,qPrint(formBase));
         Portable::sysTimerStart();
         if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
         {
@@ -285,7 +285,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         // if we have pdf2svg available use it to create a SVG image
         if (Portable::checkForExecutable("pdf2svg"))
         {
-          sprintf(args,"%s_tmp.pdf form_%d.svg",formBase.data(),pageNum);
+          sprintf(args,"%s_tmp.pdf form_%d.svg",qPrint(formBase),pageNum);
           Portable::sysTimerStart();
           if (Portable::system("pdf2svg",args)!=0)
           {
@@ -307,11 +307,11 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
           }
           else if (inkscapeVersion == 0)
           {
-            sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+            sprintf(args,"-l form_%d.svg -z %s_tmp.pdf 2>%s",pageNum,qPrint(formBase),Portable::devNull());
           }
           else // inkscapeVersion >= 1
           {
-            sprintf(args,"--export-type=svg --export-filename=form_%d.svg %s_tmp.pdf 2>%s",pageNum,formBase.data(),Portable::devNull());
+            sprintf(args,"--export-type=svg --export-filename=form_%d.svg %s_tmp.pdf 2>%s",pageNum,qPrint(formBase),Portable::devNull());
           }
           Portable::sysTimerStart();
           if (Portable::system("inkscape",args)!=0)
@@ -338,7 +338,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
       {
         // crop the image to its bounding box
         sprintf(args,"-q -dBATCH -dNOPAUSE -P- -dNOSAFER -sDEVICE=eps2write"
-                     " -o %s_tmp.eps -f %s_tmp.ps",formBase.data(),formBase.data());
+                     " -o %s_tmp.eps -f %s_tmp.ps",qPrint(formBase),qPrint(formBase));
         Portable::sysTimerStart();
         if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
         {
@@ -375,7 +375,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
         else
         {
           err("Problems correcting the eps files from %s_tmp.eps to %s_tmp_corr.eps\n",
-              formBase.data(),formBase.data());
+              qPrint(formBase),qPrint(formBase));
           Dir::setCurrent(oldDir);
           return;
         }
@@ -388,7 +388,7 @@ void FormulaManager::generateImages(const char *path,Format format,HighDPI hd) c
 
         Portable::sysTimerStop();
         sprintf(args,"-q -dNOSAFER -dBATCH -dNOPAUSE -dEPSCrop -sDEVICE=pnggray -dGraphicsAlphaBits=4 -dTextAlphaBits=4 "
-            "-r%d -sOutputFile=form_%d.png %s_tmp_corr.eps",(int)(scaleFactor*72),pageNum,formBase.data());
+            "-r%d -sOutputFile=form_%d.png %s_tmp_corr.eps",(int)(scaleFactor*72),pageNum,qPrint(formBase));
         Portable::sysTimerStart();
         if (Portable::system(Portable::ghostScriptCommand(),args)!=0)
         {
