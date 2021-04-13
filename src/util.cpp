@@ -19,6 +19,7 @@
 #include <math.h>
 #include <limits.h>
 #include <string.h>
+#include <assert.h>
 
 #include <mutex>
 #include <unordered_set>
@@ -7154,6 +7155,7 @@ QCString getDotImageExtension()
 
 bool openOutputFile(const char *outFile,std::ofstream &f)
 {
+  assert(!f.is_open());
   bool fileOpened=FALSE;
   bool writeToStdout=(outFile[0]=='-' && outFile[1]=='\0');
   if (writeToStdout) // write to stdout

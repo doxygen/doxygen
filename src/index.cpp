@@ -310,12 +310,12 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
   if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
   {
     Doxygen::indexList->addContentsItem(isDir,
-        md->name(),md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,addToIndex);
+        md->name(),md->getReference(),md->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
   }
   else // inherited member
   {
     Doxygen::indexList->addContentsItem(isDir,
-        md->name(),def->getReference(),def->getOutputFileBase(),md->anchor(),FALSE,addToIndex);
+        md->name(),def->getReference(),def->getOutputFileBase(),md->anchor(),FALSE,addToIndex && md->getGroupDef()==nullptr);
   }
   if (isDir)
   {
@@ -420,7 +420,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
           {
             Doxygen::indexList->addContentsItem(false,cd->displayName(),
                                      cd->getReference(),cd->getOutputFileBase(),0,
-                                     false,
+                                     addToIndex,
                                      false,
                                      cd);
           }
@@ -1678,12 +1678,12 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
     bool isDir = hasChildren || visibleMembers>0;
     if ((isLinkable) || isDir)
     {
-      ftv->addContentsItem(hasChildren,nd->localName(),ref,file,0,FALSE,TRUE,nd);
+      ftv->addContentsItem(hasChildren,nd->localName(),ref,file,0,FALSE,nd->partOfGroups().empty(),nd);
 
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(isDir,nd->localName(),ref,file,QCString(),
-            hasChildren && !file.isEmpty(),addToIndex);
+            hasChildren && !file.isEmpty(),nd->partOfGroups().empty());
       }
       if (addToIndex && isDir)
       {
@@ -3829,7 +3829,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
             if (md->isVisible() && !md->isAnonymous())
             {
               Doxygen::indexList->addContentsItem(isDir,
-                  md->name(),md->getReference(),
+                  md->qualifiedName(),md->getReference(),
                   md->getOutputFileBase(),md->anchor(),FALSE,addToIndex);
             }
             if (isDir)
@@ -3840,7 +3840,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
                 if (emd->isVisible())
                 {
                   Doxygen::indexList->addContentsItem(FALSE,
-                      emd->name(),emd->getReference(),emd->getOutputFileBase(),
+                      emd->qualifiedName(),emd->getReference(),emd->getOutputFileBase(),
                       emd->anchor(),FALSE,addToIndex);
                 }
               }
@@ -3859,18 +3859,12 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           //printf("===== GroupClasses: %s visible=%d nestedClassInSameGroup=%d\n",cd->name().data(),cd->isVisible(),nestedClassInSameGroup);
           if (cd->isVisible() /*&& !nestedClassInSameGroup*/)
           {
-            //if (cd->isEmbeddedInOuterScope())
-            //{
-              //printf("add class & members %d\n",addToIndex);
-              addMembersToIndex(cd,LayoutDocManager::Class,cd->displayName(),cd->anchor(),addToIndex,TRUE);
-            //}
-            //else // only index the class, not its members
-            //{
-            //  printf("%s: add class only\n",cd->name().data());
-            //  Doxygen::indexList->addContentsItem(FALSE,
-            //    cd->displayName(TRUE),cd->getReference(),
-            //    cd->getOutputFileBase(),cd->anchor(),addToIndex,TRUE);
-            //}
+            addMembersToIndex(cd,
+                              LayoutDocManager::Class,
+                              cd->displayName(),
+                              cd->anchor(),
+                              addToIndex,
+                              TRUE);
           }
         }
       }
@@ -3882,7 +3876,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 nd->displayName(),nd->getReference(),
-                nd->getOutputFileBase(),0,FALSE,FALSE);
+                nd->getOutputFileBase(),0,FALSE,addToIndex);
           }
         }
       }
@@ -3894,7 +3888,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
           {
             Doxygen::indexList->addContentsItem(FALSE,
                 cd->displayName(),cd->getReference(),
-                cd->getOutputFileBase(),0,FALSE,FALSE);
+                cd->getOutputFileBase(),0,FALSE,addToIndex);
           }
         }
       }
@@ -4076,11 +4070,11 @@ static void writeConceptList(const ConceptLinkedRefMap &concepts, FTVHelp *ftv,b
   for (const auto &cd : concepts)
   {
     ftv->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
-         cd->getOutputFileBase(),0,false,true,cd);
+         cd->getOutputFileBase(),0,false,cd->partOfGroups().empty(),cd);
     if (addToIndex)
     {
       Doxygen::indexList->addContentsItem(false,cd->displayName(FALSE),cd->getReference(),
-         cd->getOutputFileBase(),0,false,true);
+         cd->getOutputFileBase(),0,false,cd->partOfGroups().empty());
     }
   }
 }

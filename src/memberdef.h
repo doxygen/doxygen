@@ -93,6 +93,7 @@ class MemberDef : public Definition
     virtual const char *getGroupFileName() const = 0;
     virtual int getGroupStartLine() const = 0;
     virtual bool getGroupHasDocs() const = 0;
+
     virtual QCString qualifiedName() const = 0;
     virtual QCString objCMethodName(bool localLink,bool showStatic) const = 0;
 
