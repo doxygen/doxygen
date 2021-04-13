@@ -1609,15 +1609,19 @@ void LayoutDocManager::parse(const char *fileName)
 
 void writeDefaultLayoutFile(const char *fileName)
 {
-  std::ofstream t(fileName,std::ofstream::out | std::ofstream::binary);
-  bool ok = openOutputFile(fileName,t);
-  if (!ok)
+  std::ofstream f;
+  if (openOutputFile(fileName,f))
+  {
+    TextStream t(&f);
+    QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
+    t << substitute(layout_default,"$doxygenversion",getDoxygenVersion());
+  }
+  else
   {
     err("Failed to open file %s for writing!\n",fileName);
     return;
-  }
-  QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  t << substitute(layout_default,"$doxygenversion",getDoxygenVersion());
+  } 
+    f.close();
 }
 
 //----------------------------------------------------------------------------------
