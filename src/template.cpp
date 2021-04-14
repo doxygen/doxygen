@@ -4023,6 +4023,7 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
     void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
       ci->setLocation(m_templateName,m_line);
       if (m_index<m_args.size())
       {
