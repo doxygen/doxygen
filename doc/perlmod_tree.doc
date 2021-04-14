@@ -1,7 +1,5 @@
-/*! \page perlmod_tree Perl Module Tree Nodes
-
-<h2>Nodes in the documentation tree of the Perl Module output
-format.</h2>
+<h3>Nodes in the documentation tree of the Perl Module output
+format.</h3>
 
 This is a description of the structure of the documentation tree in
 <b>DoxyDocs.pm</b>.  Each item in the list below describes a node in
@@ -373,11 +371,3 @@ The meaning of each node in the documentation tree is as follows:
 </ul>
 </ul>
 </ul>
-
-
-\htmlonly
-Go to the <a href="arch.html">next</a> section or return to the
- <a href="index.html">index</a>.
-\endhtmlonly
-
-*/
