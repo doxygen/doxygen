@@ -52,6 +52,7 @@ class CPPValue
 extern CPPValue parseOctal(const std::string& token);
 extern CPPValue parseDecimal(const std::string& token);
 extern CPPValue parseHexadecimal(const std::string& token);
+extern CPPValue parseBinary(const std::string& token);
 extern CPPValue parseCharacter(const std::string& token);
 extern CPPValue parseFloat(const std::string& token);
 
