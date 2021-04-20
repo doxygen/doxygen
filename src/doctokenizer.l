@@ -610,7 +610,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          g_token->indent = computeIndent(text,dotPos);
                          return TK_ENDLIST;
                        }
-<St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
+<St_Para>"{"{BLANK}*"@link"/{WS}+ {
                          g_token->name = "javalink";
                          return TK_COMMAND_AT;
                        }
