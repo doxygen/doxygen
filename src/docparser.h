@@ -634,7 +634,7 @@ class DocFormula : public DocNode
     QCString relPath() const    { return m_relPath; }
     int id() const             { return m_id; }
     void accept(DocVisitor *v) { v->visit(this); }
-    bool isInline()            { return m_text.length()>0 ? m_text.at(0)!='\\' : TRUE; }
+    bool isInline()            { return m_text.length()>1 ? !(m_text.at(0)=='\\' && (m_text.at(1)=='{' || m_text.at(1)=='[')): TRUE; }
 
   private:
     QCString  m_name;

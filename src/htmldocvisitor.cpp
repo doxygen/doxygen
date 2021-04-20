@@ -853,6 +853,11 @@ void HtmlDocVisitor::visit(DocFormula *f)
       text = text.mid(1,text.length()-2);
       m_t << "\\(";
     }
+    else if (!bDisplay && !text.isEmpty())
+    {
+      closeInline=TRUE;
+      m_t << "\\(";
+    }
     m_t << convertToHtml(text);
     if (closeInline)
     {

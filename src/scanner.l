@@ -4521,7 +4521,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgCommentLine>{CMD}("f$"|"f["|"f{")               {
+<CopyArgCommentLine>{CMD}("f$"|"f["|"f{"|"f(")               {
                                           yyextra->docBlockName=&yytext[1];
                                           if (yyextra->docBlockName.at(1)=='[')
                                           {
@@ -4531,10 +4531,14 @@ NONLopt [^\n]*
                                           {
                                             yyextra->docBlockName.at(1)='}';
                                           }
+                                          if (yyextra->docBlockName.at(1)=='(')
+                                          {
+                                            yyextra->docBlockName.at(1)=')';
+                                          }
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode"|"f$"|"f]"|"f}")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
                                           if (yytext[1]=='f') // end of formula
                                           {
@@ -6531,7 +6535,7 @@ NONLopt [^\n]*
 <DocBlock>({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
                                           yyextra->docBlock << yytext;
                                         }
-<DocBlock>{CMD}("f$"|"f["|"f{")         {
+<DocBlock>{CMD}("f$"|"f["|"f{"|"f(")         {
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           if (yyextra->docBlockName.at(1)=='{')
@@ -6613,7 +6617,7 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}")     {
+<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)")     {
                                           yyextra->docBlock << yytext;
                                           BEGIN(DocBlock);
                                         }

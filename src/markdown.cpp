@@ -305,6 +305,7 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \code .. \endcode
 // \msc .. \endmsc
 // \f$..\f$
+// \f(..\f)
 // \f[..\f]
 // \f{..\f}
 // \verbatim..\endverbatim
@@ -352,6 +353,10 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
     if (data[end]=='$')
     {
       return "f$";
+    }
+    else if (data[end]=='(')
+    {
+      return "f)";
     }
     else if (data[end]=='[')
     {
