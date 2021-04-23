@@ -76,19 +76,22 @@ char * qstrncpy(char *dst,const char *src, uint len);
 inline int cstrcmp( const char *str1, const char *str2 )
 { return strcmp(str1,str2); }
 
+inline bool qisempty( const char *s)
+{ return s==0 || *s==0; }
+
 inline int qstrcmp( const char *str1, const char *str2 )
-{ return (str1 && str2) ? strcmp(str1,str2) :
-         (!str1 && !str2) ? 0 : // both empty
-         str1 ? -1 : 1;
+{ return (str1 && str2) ? strcmp(str1,str2) :     // both non-empty
+         (qisempty(str1) && qisempty(str2)) ? 0 : // both empty
+         qisempty(str1) ? -1 : 1;                 // one empty, other non-empty
 }
 
 inline int cstrncmp( const char *str1, const char *str2, uint len )
 { return strncmp(str1,str2,len); }
 
 inline int qstrncmp( const char *str1, const char *str2, uint len )
-{ return (str1 && str2) ? strncmp(str1,str2,len) :
-         (!str1 && !str2) ? 0 : // both empty
-         str1 ? -1 : 1;
+{ return (str1 && str2) ? strncmp(str1,str2,len) :  // both non-empty
+         (qisempty(str1) && qisempty(str2)) ? 0 :   // both empty
+         qisempty(str1) ? -1 : 1;                   // one empty other non-empty
 }
 
 inline bool qisspace(char c)

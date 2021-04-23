@@ -110,7 +110,7 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     // root in case an entry is in the tree twice
     result = entry->find(kind,file);
     if (result) return result;
-    if (entry->kind()==kind && (file==0 || entry->baseFile()==file))
+    if (entry->kind()==kind && (file==QCString() || entry->baseFile()==file))
     {
       return entry.get();
     }
@@ -1559,7 +1559,7 @@ void LayoutDocManager::init()
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",qPrint(layout_default),Debug::isFlagSet(Debug::Lex));
+  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
 }
 
 LayoutDocManager::~LayoutDocManager()
