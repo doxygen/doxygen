@@ -117,8 +117,6 @@ static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,i
         return uc;
       }
   }
-  len=0;
-  return 0;
 }
 
 std::string getUTF8CharAt(const std::string &input,size_t pos)

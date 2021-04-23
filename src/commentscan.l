@@ -1222,6 +1222,10 @@ STopt  [^\n@\\]*
 <ParamArg1>","                          {
                                           addOutput(yyscanner," , ");
                                         }
+<ParamArg1>{DOCNL}                      {
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          addOutput(yyscanner," ");
+                                        }
 <ParamArg1>{ID}                         {
                                           addOutput(yyscanner,yytext);
                                           BEGIN( Comment );
@@ -1921,6 +1925,10 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,yytext);
                                         }
 
+ /*
+<*>.  { fprintf(stderr,"Lex scanner %s %sdefault rule for state %s: #%s#\n", __FILE__,yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START),yytext);}
+<*>\n  { fprintf(stderr,"Lex scanner %s %sdefault rule newline for state %s.\n", __FILE__, yyextra->fileName ? ("(" + yyextra->fileName +") ").data(): "",stateToString(YY_START));}
+  */
 
 %%
 
