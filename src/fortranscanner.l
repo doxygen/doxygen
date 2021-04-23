@@ -378,6 +378,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                             if (YY_START != Prepass)
                                             {
                                               yyextra->comments.clear();
+                                              yyextra->inputStringPrepass=QCString();
                                               yy_push_state(Prepass,yyscanner);
                                             }
 
