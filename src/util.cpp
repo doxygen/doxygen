@@ -1389,7 +1389,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   int inputSize=input.length();
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  void *cd = portable_iconv_open(outputEncoding,inputEncoding.data());
   if (cd==(void *)(-1))
   {
     err("unsupported character conversion: '%s'->'%s'\n",
@@ -6161,7 +6161,7 @@ static int transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,int 
 {
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty()) return size;
   if (qstricmp(inputEncoding,outputEncoding)==0) return size;
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==(void *)(-1))
   {
     term("unsupported character conversion: '%s'->'%s': %s\n"

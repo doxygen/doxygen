@@ -554,7 +554,7 @@ static QCString configStringRecode(
   int inputSize=str.length();
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==(void *)(-1))
   {
     config_term("Error: unsupported character conversion: '%s'->'%s'\n",

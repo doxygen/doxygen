@@ -51,7 +51,7 @@ class HtmlHelpRecoder
     {
       QCString str = Config_getString(CHM_INDEX_ENCODING);
       if (str.isEmpty()) str = "CP1250"; // use safe and likely default
-      m_fromUtf8 = portable_iconv_open(str,"UTF-8");
+      m_fromUtf8 = portable_iconv_open(str.data(),"UTF-8");
       if (m_fromUtf8==m_iconv_null)
       {
         term("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", qPrint(str));
