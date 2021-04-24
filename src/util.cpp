@@ -5814,7 +5814,7 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
 //--------------------------------------------------------------------------------------
 
 static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,
-                               const std::string &s,bool allowRecursion=FALSE);
+                               const QCString &s,bool allowRecursion=FALSE);
 
 struct Marker
 {
@@ -5926,7 +5926,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
     //printf("part before marker %d: '%s'\n",i,qPrint(aliasValue.mid(p,m->pos-p)));
     if (m.number>0 && m.number<=(int)args.size()) // valid number
     {
-      result+=expandAliasRec(aliasesProcessed,args.at(m.number-1).str(),TRUE);
+      result+=expandAliasRec(aliasesProcessed,args.at(m.number-1),TRUE);
       //printf("marker index=%d pos=%d number=%d size=%d replacement %s\n",i,m->pos,m->number,m->size,
       //    qPrint(args.at(m->number-1)));
     }
@@ -5938,7 +5938,7 @@ static QCString replaceAliasArguments(StringUnorderedSet &aliasesProcessed,
   // expand the result again
   result = substitute(result,"\\{","{");
   result = substitute(result,"\\}","}");
-  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",",").str());
+  result = expandAliasRec(aliasesProcessed,substitute(result,"\\,",","));
 
   return result;
 }
@@ -5965,21 +5965,20 @@ static QCString escapeCommas(const QCString &s)
   return result.str();
 }
 
-static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::string &s,bool allowRecursion)
+static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const QCString &s,bool allowRecursion)
 {
-  std::string result;
+  QCString result;
   static const reg::Ex re(R"([\\@](\a\w*))");
-  reg::Iterator re_it(s,re);
-  reg::Iterator end;
-
-  int p = 0;
-  for ( ; re_it!=end ; ++re_it)
+  std::string str = s.str();
+  reg::Match match;
+  size_t p = 0;
+  while (search(str,match,re,p))
   {
-    const auto &match = *re_it;
-    int i = (int)match.position();
-    int l = (int)match.length();
-    if (i>p) result+=s.substr(p,i-p);
-    QCString args = extractAliasArgs(QCString(s),i+l);
+    size_t i = match.position();
+    size_t l = match.length();
+    if (i>p) result+=s.mid(p,i-p);
+
+    QCString args = extractAliasArgs(s,i+l);
     bool hasArgs = !args.isEmpty();            // found directly after command
     int argsLen = args.length();
     QCString cmd = match[1].str();
@@ -5991,7 +5990,6 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
       cmd += QCString().sprintf("{%d}",numArgs);  // alias name + {n}
     }
     auto it = Doxygen::aliasMap.find(cmd.str());
-
     if (numArgs>1 && it==Doxygen::aliasMap.end())
     { // in case there is no command with numArgs parameters, but there is a command with 1 parameter,
       // we also accept all text as the argument of that command (so you don't have to escape commas)
@@ -6003,7 +6001,7 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
       }
     }
     //printf("Found command s='%s' cmd='%s' numArgs=%d args='%s' aliasText=%s\n",
-    //    qPrint(s),qPrint(cmd),numArgs,qPrint(args),it!=Doxygen::aliasMap.end()?it->second.c_str():"<none>");
+    //    s.data(),cmd.data(),numArgs,args.data(),aliasText?aliasText->data():"<none>");
     if ((allowRecursion || aliasesProcessed.find(cmd.str())==aliasesProcessed.end()) &&
         it!=Doxygen::aliasMap.end()) // expand the alias
     {
@@ -6014,9 +6012,9 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
       {
         val = replaceAliasArguments(aliasesProcessed,val,args);
         //printf("replace '%s'->'%s' args='%s'\n",
-        //       qPrint(aliasText),qPrint(val),qPrint(args));
+        //       aliasText->data(),val.data(),args.data());
       }
-      result+=expandAliasRec(aliasesProcessed,val.str()).str();
+      result+=expandAliasRec(aliasesProcessed,val);
       if (!allowRecursion) aliasesProcessed.erase(cmd.str());
       p=i+l;
       if (hasArgs) p+=argsLen+2;
@@ -6028,9 +6026,9 @@ static QCString expandAliasRec(StringUnorderedSet &aliasesProcessed,const std::s
       p=i+l;
     }
   }
-  result+=s.substr(p);
+  result+=s.right(s.length()-p);
 
-  //printf("expandAliases '%s'->'%s'\n",qPrint(s),qPrint(result));
+  //printf("expandAliases '%s'->'%s'\n",s.data(),result.data());
   return result;
 }
 
@@ -6089,7 +6087,7 @@ QCString resolveAliasCmd(const QCString &aliasCmd)
   QCString result;
   StringUnorderedSet aliasesProcessed;
   //printf("Expanding: '%s'\n",qPrint(aliasCmd));
-  result = expandAliasRec(aliasesProcessed,aliasCmd.str());
+  result = expandAliasRec(aliasesProcessed,aliasCmd);
   //printf("Expanding result: '%s'->'%s'\n",qPrint(aliasCmd),qPrint(result));
   return result;
 }
