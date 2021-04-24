@@ -1576,7 +1576,8 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
       {
         ftv->addContentsItem(count>0,cd->displayName(FALSE),cd->getReference(),
             cd->getOutputFileBase(),cd->anchor(),FALSE,TRUE,cd);
-        if ((cd->getOuterScope()==0 ||
+        if (addToIndex &&
+            (cd->getOuterScope()==0 ||
              cd->getOuterScope()->definitionType()!=Definition::TypeClass
             )
            )
@@ -1584,7 +1585,7 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
           addMembersToIndex(cd,LayoutDocManager::Class,
                             cd->displayName(FALSE),
                             cd->anchor(),
-                            addToIndex && cd->partOfGroups().empty() && !cd->isSimple());
+                            cd->partOfGroups().empty() && !cd->isSimple());
         }
         if (count>0)
         {
@@ -1694,8 +1695,8 @@ static void writeNamespaceTreeElement(const NamespaceDef *nd,FTVHelp *ftv,
       {
         ftv->incContentsDepth();
         writeNamespaceTree(nd->getNamespaces(),ftv,FALSE,addToIndex);
-        writeClassTree(nd->getClasses(),ftv,FALSE,FALSE,ClassDef::Class);
-        writeConceptList(nd->getConcepts(),ftv,FALSE);
+        writeClassTree(nd->getClasses(),ftv,addToIndex,FALSE,ClassDef::Class);
+        writeConceptList(nd->getConcepts(),ftv,addToIndex);
         writeNamespaceMembers(nd,addToIndex);
         ftv->decContentsDepth();
       }
