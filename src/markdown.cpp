@@ -265,9 +265,7 @@ static void convertStringFragment(QCString &result,const char *data,int size)
 {
   TRACE(result);
   if (size<0) size=0;
-  result.resize(size+1);
-  memcpy(result.rawData(),data,size);
-  result.at(size)='\0';
+  result = QCString(data,(uint)size);
 }
 
 /** helper function to convert presence of left and/or right alignment markers

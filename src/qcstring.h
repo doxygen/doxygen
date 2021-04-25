@@ -132,8 +132,6 @@ class QCString
     /** creates a string from \a str and copies over the first \a maxlen characters. */
     QCString( const char *str, uint maxlen ) : m_rep(str?str:"") { m_rep.resize(maxlen); }
 
-    /** replaces the contents by that of string \a s. */
-
     /** replaces the contents by that of C string \a str. */
     QCString &operator=( const char *str) { m_rep = str?str:""; return *this; }
 
