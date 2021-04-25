@@ -172,7 +172,7 @@ NONEMPTYEXP       [^ \t\n:]
 PARAMNONEMPTY     [^ \t\n():]
 IDENTIFIER        ({LETTER}|"_")({LETTER}|{DIGIT}|"_")*
 SCOPE             {IDENTIFIER}("."{IDENTIFIER})*
-CALLANY           "("[^)]*")"
+CALLANY           "("[^)\n]*")"
 BORDER            ([^A-Za-z0-9])
 
 POUNDCOMMENT      "##"
