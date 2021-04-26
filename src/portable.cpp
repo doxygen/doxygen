@@ -607,7 +607,7 @@ size_t Portable::recodeUtf8StringToW(const QCString &inputStr,uint16_t **outBuf)
   size_t inRemains  = len;
   size_t outRemains = len*sizeof(uint16_t)+2; // chars + \0
   const char *p = inputStr.data();
-  portable_iconv(handle,(char**)&p,&inRemains,(char**)&buf,&outRemains);
+  portable_iconv(handle,&p,&inRemains,(char**)&buf,&outRemains);
   *buf=0;
   portable_iconv_close(handle);
   return len;

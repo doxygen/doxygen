@@ -178,9 +178,9 @@ static QCString encodeDirName(const QCString &anchor)
 {
   // convert to md5 hash
   uchar md5_sig[16];
-  QCString sigStr(33);
+  char sigStr[33];
   MD5Buffer((const unsigned char *)anchor.data(),anchor.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
+  MD5SigToString(md5_sig,sigStr);
   return sigStr;
 
   // old algorithm

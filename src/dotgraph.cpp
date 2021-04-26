@@ -45,8 +45,8 @@ static bool checkMd5Signature(const QCString &baseName,
   if (f.is_open())
   {
     // read checksum
-    QCString md5stored(33);
-    f.read(md5stored.rawData(),32);
+    char md5stored[33];
+    f.read(md5stored,32);
     md5stored[32]='\0';
     // compare checksum
     if (!f.fail() && md5==md5stored)
@@ -142,12 +142,12 @@ bool DotGraph::prepareDotFile()
     term("Output dir %s does not exist!\n", m_dir.path().c_str());
   }
 
-  QCString sigStr(33);
+  char sigStr[33];
   uchar md5_sig[16];
   // calculate md5
   MD5Buffer((const unsigned char*)m_theGraph.data(), m_theGraph.length(), md5_sig);
   // convert result to a string
-  MD5SigToString(md5_sig, sigStr.rawData(), 33);
+  MD5SigToString(md5_sig, sigStr);
 
   // already queued files are processed again in case the output format has changed
 

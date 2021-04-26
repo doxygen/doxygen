@@ -262,12 +262,12 @@ void MemberGroup::setInGroup(bool b)
 QCString MemberGroup::anchor() const
 {
   uchar md5_sig[16];
-  QCString sigStr(33);
+  char sigStr[33];
   QCString locHeader = grpHeader;
   if (locHeader.isEmpty()) locHeader="[NOHEADER]";
   MD5Buffer((const unsigned char *)locHeader.data(),locHeader.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  return "amgrp"+sigStr;
+  MD5SigToString(md5_sig,sigStr);
+  return QCString("amgrp")+sigStr;
 }
 
 void MemberGroup::addListReferences(Definition *def)

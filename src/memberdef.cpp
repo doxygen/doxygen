@@ -4081,10 +4081,10 @@ void MemberDefImpl::setAnchor()
 
   // convert to md5 hash
   uchar md5_sig[16];
-  QCString sigStr(33);
+  char sigStr[33];
   MD5Buffer((const unsigned char *)memAnchor.data(),memAnchor.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  m_impl->anc = "a"+sigStr;
+  MD5SigToString(md5_sig,sigStr);
+  m_impl->anc = QCString("a")+sigStr;
 }
 
 void MemberDefImpl::setGroupDef(const GroupDef *gd,Grouping::GroupPri_t pri,

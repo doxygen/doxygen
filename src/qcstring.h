@@ -154,7 +154,7 @@ class QCString
 
     /** Returns a writable pointer to the data.
      */
-    char *rawData() const { return m_rep.empty() ? 0 : const_cast<char*>(&m_rep[0]); }
+    char *rawData() { return &m_rep[0]; }
 
     /** Resizes the string to hold \a newlen characters
      *  (this value should also count the 0-terminator).
@@ -436,15 +436,25 @@ class QCString
 #endif
 
     /** Returns a reference to the character at index \a i. */
-    char &at( uint i) const
+    char &at( uint i)
     {
-      return const_cast<char&>(m_rep[i]);
+      return m_rep[i];
+    }
+
+    const char &at( uint i) const
+    {
+      return m_rep[i];
     }
 
     /** Indexing operator. Equivalent to at(). */
-    char &operator[]( int i ) const
+    char &operator[]( int i )
     {
-      return const_cast<char&>(m_rep[i]);
+      return m_rep[i];
+    }
+
+    const char &operator[]( int i ) const
+    {
+      return m_rep[i];
     }
 
   private:

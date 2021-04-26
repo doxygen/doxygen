@@ -53,7 +53,7 @@ namespace Portable
 
 extern "C" {
   void *         portable_iconv_open(const char *tocode, const char *fromcode);
-  size_t         portable_iconv (void *cd, char** inbuf, size_t *inbytesleft,
+  size_t         portable_iconv (void *cd, const char** inbuf, size_t *inbytesleft,
                                  char* * outbuf, size_t *outbytesleft);
   int            portable_iconv_close (void *cd);
 }

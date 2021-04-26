@@ -609,15 +609,13 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
       t << "/>\n";
     }
@@ -673,15 +671,13 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
       t << "/>\n";
     }
@@ -742,18 +738,15 @@ void DotNode::writeDEF(TextStream &t) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
       t << nodePrefix << "link = {\n" << "  "
-        << nodePrefix << "link-id = '" << urlPtr << "';\n";
-
-      if (*refPtr!='\0')
+        << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";
+      if (dollarPos>0)
       {
         t << "  " << nodePrefix << "link-external = '"
-          << refPtr << "';\n";
+          << url.left(dollarPos) << "';\n";
       }
       t << "        };\n";
     }

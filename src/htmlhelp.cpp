@@ -73,7 +73,7 @@ class HtmlHelpRecoder
       QCString output(oSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
-      char *iPtr       = s.rawData();
+      const char *iPtr = s.data();
       char *oPtr       = output.rawData();
       if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
       {

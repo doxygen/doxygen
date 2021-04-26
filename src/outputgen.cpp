@@ -59,12 +59,12 @@ OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
 
 void OutputGenerator::startPlainFile(const QCString &name)
 {
-  //printf("startPlainFile(%s)\n",name);
+  //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
   m_file.open(m_fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!m_file.is_open())
   {
-    term("Could not open file %s for writing\n",m_fileName.data());
+    term("Could not open file %s for writing\n",qPrint(m_fileName));
   }
   m_t.setStream(&m_file);
 }

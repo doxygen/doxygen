@@ -2480,18 +2480,17 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
     tooltip = d->briefDescriptionAsTooltip();
   }
   bool done=FALSE;
-  char *p=text.rawData();
+  const char *p=text.data();
   while (!done)
   {
-    char *sp=p;
+    const char *sp=p;
     char c;
     while ((c=*p++) && c!='\n') { }
     if (c=='\n')
     {
       yyextra->yyLineNr++;
-      *(p-1)='\0';
-      DBG_CTX((stderr,"writeCodeLink(%s,%s,%s,%s)\n",qPrint(ref),qPrint(file),qPrint(anchor),sp));
-      ol.writeCodeLink(ref,file,anchor,QCString(sp),tooltip);
+      DBG_CTX((stderr,"writeCodeLink(%s,%s,%s,%s)\n",qPrint(ref),qPrint(file),qPrint(anchor),qPrint(QCString(sp,p-sp-1))));
+      ol.writeCodeLink(ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       nextCodeLine(yyscanner);
     }
     else

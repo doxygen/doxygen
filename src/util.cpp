@@ -615,7 +615,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
   }
   if (growBuf==0) return s; // should not happen, only we run out of memory
 
-  char *src=s.rawData();
+  const char *src=s.data();
   char *dst=growBuf;
 
   uint i=0;
@@ -1400,7 +1400,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input)
   {
     size_t iLeft=inputSize;
     size_t oLeft=outputSize;
-    char *inputPtr = input.rawData();
+    const char *inputPtr = input.data();
     char *outputPtr = output.rawData();
     if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
     {
@@ -3760,9 +3760,9 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
     {
       // third algorithm based on MD5 hash
       uchar md5_sig[16];
-      QCString sigStr(33);
+      char sigStr[33];
       MD5Buffer((const unsigned char *)result.data(),resultLen,md5_sig);
-      MD5SigToString(md5_sig,sigStr.rawData(),33);
+      MD5SigToString(md5_sig,sigStr);
       result=result.left(128-32)+sigStr;
     }
   }
@@ -6170,7 +6170,7 @@ static int transcodeCharacterBuffer(const QCString &fileName,BufStr &srcBuf,int 
   BufStr tmpBuf(tmpBufSize);
   size_t iLeft=size;
   size_t oLeft=tmpBufSize;
-  char *srcPtr = srcBuf.data();
+  const char *srcPtr = srcBuf.data();
   char *dstPtr = tmpBuf.data();
   uint newSize=0;
   if (!portable_iconv(cd, &srcPtr, &iLeft, &dstPtr, &oLeft))

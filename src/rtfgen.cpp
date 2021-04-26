@@ -2371,7 +2371,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
     {
       size_t iLeft=l;
       size_t oLeft=enc.size();
-      char *inputPtr = (char*)s.data();
+      const char *inputPtr = s.data();
       char *outputPtr = &enc[0];
       if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
       {

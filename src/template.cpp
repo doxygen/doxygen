@@ -2356,7 +2356,7 @@ QCString TemplateContextImpl::recode(const QCString &s)
   QCString output(oSize);
   size_t iLeft     = iSize;
   size_t oLeft     = oSize;
-  char *iPtr       = s.rawData();
+  const char *iPtr = s.data();
   char *oPtr       = output.rawData();
   if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
   {
@@ -3557,6 +3557,7 @@ static void stripLeadingWhiteSpace(QCString &s)
       else { *dst++=c; skipSpaces=FALSE; }
     }
     *dst='\0';
+    s.resize( (int)(dst - src) + 1 );
   }
 }
 

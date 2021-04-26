@@ -562,7 +562,7 @@ static QCString configStringRecode(
   }
   size_t iLeft=(size_t)inputSize;
   size_t oLeft=(size_t)outputSize;
-  char *inputPtr  = str.rawData();
+  const char *inputPtr  = str.data();
   char *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {

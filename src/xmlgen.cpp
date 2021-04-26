@@ -1920,9 +1920,7 @@ void generateXML()
       int len=static_cast<int>(endLine-startLine);
       if (len>0)
       {
-        QCString s(len+1);
-        qstrncpy(s.rawData(),startLine,len);
-        s[len]='\0';
+        QCString s(startLine,len);
         if (s.find("<!-- Automatically insert here the HTML entities -->")!=-1)
         {
           HtmlEntityMapper::instance()->writeXMLSchema(t);
