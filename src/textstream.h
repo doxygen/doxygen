@@ -69,12 +69,23 @@ class TextStream final
       m_s = s;
     }
 
+    void setFile(FILE *f)
+    {
+      flush();
+      m_f = f;
+    }
+
     /** Returns the attached std::ostream object.
      *  @see setStream()
      */
     std::ostream *stream() const
     {
       return m_s;
+    }
+
+    FILE *file() const
+    {
+      return m_f;
     }
 
     /** Adds a character to the stream */
@@ -165,6 +176,10 @@ class TextStream final
       {
         m_s->write(m_buffer.c_str(),m_buffer.length());
       }
+      else if (m_f)
+      {
+        fwrite(m_buffer.c_str(),1,m_buffer.length(),m_f);
+      }
       m_buffer.clear();
     }
 
@@ -230,6 +245,7 @@ class TextStream final
     }
     std::string m_buffer;
     std::ostream *m_s = nullptr;
+    FILE *m_f = nullptr;
 };
 
 #endif

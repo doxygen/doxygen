@@ -339,6 +339,11 @@ FILE *Portable::fopen(const QCString &fileName,const QCString &mode)
 #endif
 }
 
+int Portable::fclose(FILE *f)
+{
+  return ::fclose(f);
+}
+
 QCString Portable::pathSeparator()
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)

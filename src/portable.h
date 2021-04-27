@@ -29,6 +29,7 @@ namespace Portable
   portable_off_t fseek(FILE *f,portable_off_t offset, int whence);
   portable_off_t ftell(FILE *f);
   FILE *         fopen(const QCString &fileName,const QCString &mode);
+  int            fclose(FILE *f);
   void           unlink(const QCString &fileName);
   QCString       pathSeparator();
   QCString       pathListSeparator();

@@ -502,7 +502,7 @@ class OutputGenerator : public BaseOutputDocInterface
   private:
     QCString m_dir;
     QCString m_fileName;
-    std::ofstream m_file;
+    FILE *m_file;
     bool m_active = true;
     std::stack<bool> m_genStack;
 };
