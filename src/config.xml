@@ -819,7 +819,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  to get more control over the balance between CPU load and processing speed.
  At this moment only the input processing can be done using multiple threads.
  Since this is still an experimental feature the default is set to 1,
- which efficively disables parallel processing. Please report any issues you
+ which effectively disables parallel processing. Please report any issues you
  encounter.
  Generating dot graphs in parallel is controlled by the \c DOT_NUM_THREADS setting.
 ]]>
@@ -2048,7 +2048,7 @@ hr.footer {
 <![CDATA[
  The \c HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
  Doxygen will adjust the colors in the style sheet and background images
- according to this color. Hue is specified as an angle on a colorwheel,
+ according to this color. Hue is specified as an angle on a color-wheel,
  see https://en.wikipedia.org/wiki/Hue for more information.
  For instance the value 0 represents red, 60 is yellow, 120 is green,
  180 is cyan, 240 is blue, 300 purple, and 360 is red again.
@@ -2060,7 +2060,7 @@ hr.footer {
 <![CDATA[
  The \c HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of
  the colors in the HTML output. For a value of 0 the output will use
- grayscales only. A value of 255 will produce the most vivid colors.
+ gray-scales only. A value of 255 will produce the most vivid colors.
 ]]>
       </docs>
     </option>
@@ -2184,7 +2184,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  project file that can be read by Microsoft's HTML Help Workshop
  on Windows.
   In the beginning of 2021 Microsoft took the original page, with a.o. the download links,
-  offline the HTML help workshop was already many years in maintenance mode). 
+  offline the HTML help workshop was already many years in maintenance mode).
   You can download the HTML help workshop from the web archives at
   <a href="http://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">Installation executable</a>.
 <br>
