@@ -1547,6 +1547,23 @@ void Config::checkAndCorrect()
   // Test to see if MathJax code file is valid
   if (Config_getBool(USE_MATHJAX))
   {
+    QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
+    QCString mathjaxVersion = Config_getEnum(MATHJAX_VERSION);
+    if (!mathJaxFormat.isEmpty())
+    {
+      if (mathjaxVersion == "MathJax_2")
+      {
+        if (mathJaxFormat=="chtml") Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
+      }
+      else
+      {
+        if (mathJaxFormat=="HTML-CSS" || mathJaxFormat=="NativeMML")
+        {
+          Config_updateEnum(MATHJAX_FORMAT,"chtml");
+        }
+      }
+    }
+
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
     if (!mathJaxCodefile.isEmpty())
     {
@@ -1558,7 +1575,19 @@ void Config::checkAndCorrect()
       }
     }
     QCString path = Config_getString(MATHJAX_RELPATH);
-    if (!path.isEmpty() && path.at(path.length()-1)!='/')
+    if (path.isEmpty())
+    {
+      if (mathjaxVersion == "MathJax_2")
+      {
+        path = "https://cdn.jsdelivr.net/npm/mathjax@2";
+      }
+      else
+      {
+        path = "https://cdn.jsdelivr.net/npm/mathjax@3";
+      }
+    }
+
+    if (path.at(path.length()-1)!='/')
     {
       path+="/";
     }
@@ -1972,15 +2001,6 @@ void Config::checkAndCorrect()
     gamma=240;
   }
   Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
-
-  //------------------------
-  QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
-  if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
-       mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
-  {
-    err("Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
-    Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
-  }
 
   //------------------------
   // add default words if needed

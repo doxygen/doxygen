@@ -2475,20 +2475,33 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='enum' id='MATHJAX_VERSION' defval='MathJax_2' depends='USE_MATHJAX'>
+      <docs>
+<![CDATA[
+ With \c MATHJAX_VERSION it is possible to specify the MathJax version to be used.
+ Note that the different versions of MathJax have different requirements with regards to
+ the different settings, so it is possible that also other MathJax settings have to be changed
+ when switching between the different MathJax versions. 
+]]>
+      </docs>
+      <value name="MathJax_2"/>
+      <value name="MathJax_3"/>
+    </option>
     <option type='enum' id='MATHJAX_FORMAT' defval='HTML-CSS' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you can set the default output format to be used for
  the MathJax output.
- See <a href="http://docs.mathjax.org/en/v2.7-latest/output.html">the MathJax site</a>
- for more details.
+ For more details about the output format see <a href="http://docs.mathjax.org/en/v2.7-latest/output.html">MathJax version 2</a>
+ and <a href="http://docs.mathjax.org/en/latest/web/components/output.html">MathJax version 3</a>.
 ]]>
       </docs>
-      <value name="HTML-CSS" desc="(which is slower, but has the best compatibility)"/>
-      <value name="NativeMML" desc="(i.e. MathML)"/>
+      <value name="HTML-CSS" desc="(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)"/>
+      <value name="NativeMML" desc="(i.e. MathML. Only supported for NathJax 2. For MathJax version 3 \c chtml will be used instead.)"/>
+      <value name="chtml" desc="(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)"/>
       <value name="SVG"/>
     </option>
-    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdn.jsdelivr.net/npm/mathjax@2' depends='USE_MATHJAX'>
+    <option type='string' id='MATHJAX_RELPATH' format='string' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you need to specify the location relative to the
@@ -2499,6 +2512,10 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  the MathJax Content Delivery Network so you can quickly see the result without
  installing MathJax.  However, it is strongly recommended to install a local
  copy of MathJax from https://www.mathjax.org before deployment.
+
+ The default value is:
+ - in case of  MathJax version 2: https://cdn.jsdelivr.net/npm/mathjax@2
+ - in case of  MathJax version 3: https://cdn.jsdelivr.net/npm/mathjax@3
 ]]>
       </docs>
     </option>
@@ -2506,9 +2523,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
  The \c MATHJAX_EXTENSIONS tag can be used to specify one or more MathJax extension
- names that should be enabled during MathJax rendering. For example
+ names that should be enabled during MathJax rendering. For example for MathJax version 2
+ (see https://docs.mathjax.org/en/v2.7-latest/tex.html#tex-and-latex-extensions):
 \verbatim
 MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
+\endverbatim
+For example for MathJax version 3 (see http://docs.mathjax.org/en/latest/input/tex/extensions/index.html):
+\verbatim
+MATHJAX_EXTENSIONS     = ams
 \endverbatim
 ]]>
       </docs>
