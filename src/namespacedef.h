@@ -25,11 +25,12 @@
 
 class MemberList;
 class ClassDef;
+class ConceptDef;
 class OutputList;
 class ClassLinkedRefMap;
+class ConceptLinkedRefMap;
 class MemberDef;
 class NamespaceDef;
-class FTextStream;
 class NamespaceDef;
 class NamespaceDefMutable;
 
@@ -44,7 +45,7 @@ class NamespaceLinkedMap : public LinkedMap<NamespaceDef>
 class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
 {
   public:
-    void writeDeclaration(OutputList &ol,const char *title,
+    void writeDeclaration(OutputList &ol,const QCString &title,
             bool isConstantGroup=false, bool localName=FALSE);
     bool declVisible() const;
 };
@@ -71,7 +72,7 @@ class NamespaceDef : public Definition
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual bool hasDetailedDescription() const = 0;
-    virtual const Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual bool subGrouping() const = 0;
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
     virtual const MemberLists &getMemberLists() const = 0;
@@ -95,6 +96,9 @@ class NamespaceDef : public Definition
     /*! Returns the namespaces contained in this namespace */
     virtual NamespaceLinkedRefMap getNamespaces() const = 0;
 
+    /*! Returns the concepts contained in this namespace */
+    virtual ConceptLinkedRefMap getConcepts() const = 0;
+
     virtual QCString title() const = 0;
     virtual QCString compoundTypeString() const = 0;
 };
@@ -109,8 +113,9 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertConcept(const ConceptDef *cd) = 0;
     virtual void insertNamespace(const NamespaceDef *nd) = 0;
     virtual void insertMember(MemberDef *md) = 0; // md cannot be const, since setSectionList is called on it
     virtual void computeAnchors() = 0;
@@ -129,9 +134,9 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 };
 
 /** Factory method to create new NamespaceDef instance */
-NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
-                 const char *name,const char *ref=0,
-                 const char *refFile=0,const char*type=0,
+NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
+                 const QCString &name,const QCString &ref=QCString(),
+                 const QCString &refFile=QCString(),const QCString &type=QCString(),
                  bool isPublished=false);
 
 /** Factory method to create an alias of an existing namespace. Used for inline namespaces. */

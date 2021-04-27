@@ -17,9 +17,8 @@
 #ifndef QHPXMLWRITER_H
 #define QHPXMLWRITER_H
 
-#include "ftextstream.h"
-
-class QFile;
+#include <sstream>
+#include "textstream.h"
 
 class QhpXmlWriter
 {
@@ -30,30 +29,27 @@ class QhpXmlWriter
     void setIndentLevel(int level);
     void setCompressionEnabled(bool enabled);
     void insert(QhpXmlWriter const & source);
-    void dumpTo(QFile & file);
-    void open(char const * elementName,
-              char const * const * attributes = 0);
-    void openClose(char const * elementName,
-                   char const * const * attributes = 0);
-    void openCloseContent(char const * elementName, char const * content);
-    void close(char const * elementName);
-    void declaration(char const * version, char const * encoding);
-
-    static char * dupEscaped(const char * source);
+    void dumpTo(TextStream & file);
+    void open(const QCString &elementName,
+              const char * const attributes[] = 0);
+    void openClose(const QCString &elementName,
+                   const char * const attributes[] = 0);
+    void openCloseContent(const QCString &elementName, const QCString &content);
+    void close(const QCString &elementName);
+    void declaration(const QCString &version, const QCString &encoding);
 
   private:
     void indent();
     void newLine();
-    void openPureHelper(char const * elementName,
-                        char const * const * attributes, bool close);
-    void openPure(char const * elementName,
-                  char const * const * attributes = 0);
-    void openClosePure(char const * elementName,
-                       char const * const * attributes = 0);
-    void closePure(char const * elementName);
+    void openPureHelper(const QCString &elementName,
+                        const char * const attributes[], bool close);
+    void openPure(const QCString &elementName,
+                  const char * const attributes[] = 0);
+    void openClosePure(const QCString &elementName,
+                       const char * const attributes[] = 0);
+    void closePure(const QCString &elementName);
 
-    QGString m_backend;
-    FTextStream m_out;
+    TextStream m_backend;
     int  m_indentLevel;
     bool m_curLineIndented;
     bool m_compress;

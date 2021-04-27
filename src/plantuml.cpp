@@ -20,8 +20,7 @@
 #include "doxygen.h"
 #include "message.h"
 #include "debug.h"
-
-#include <qfileinfo.h>
+#include "fileinfo.h"
 
 QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format)
 {
@@ -86,7 +85,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   return baseName;
 }
 
-void PlantumlManager::generatePlantUMLOutput(const char *baseName,const char *outDir,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format)
 {
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
@@ -128,7 +127,7 @@ PlantumlManager &PlantumlManager::instance()
 PlantumlManager::PlantumlManager()
 {
   QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
-  QFileInfo fi(outputFilename);
+  FileInfo fi(outputFilename.str());
   if (fi.exists())
   {
     m_cachedPlantumlAllContent = fileToString(outputFilename);
@@ -230,17 +229,17 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       pumlArguments+=puFileName;
       pumlArguments+="\" ";
 
-      QFile file(puFileName);
-      if (!file.open(IO_WriteOnly))
+      std::ofstream file(puFileName.str(),std::ofstream::out | std::ofstream::binary);
+      if (!file.is_open())
       {
         err("Could not open file %s for writing\n",puFileName.data());
       }
-      file.writeBlock( nb.content, nb.content.length() );
+      file.write( nb.content.data(), nb.content.length() );
       file.close();
       Debug::print(Debug::Plantuml,0,"*** %s Running Plantuml arguments:%s\n","PlantumlManager::runPlantumlContent",qPrint(pumlArguments));
 
       Portable::sysTimerStart();
-      if ((exitCode=Portable::system(pumlExe,pumlArguments,TRUE))!=0)
+      if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
         err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
@@ -248,7 +247,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       else if (Config_getBool(DOT_CLEANUP))
       {
         Debug::print(Debug::Plantuml,0,"*** %s Remove %s file\n","PlantumlManager::runPlantumlContent",qPrint(puFileName));
-        file.remove();
+        Dir().remove(puFileName.str());
       }
       Portable::sysTimerStop();
 
@@ -265,7 +264,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             epstopdfArgs.sprintf("\"%s%s.eps\" --outfile=\"%s%s.pdf\"",
                 pumlOutDir.data(),str.c_str(), pumlOutDir.data(),str.c_str());
             Portable::sysTimerStart();
-            if ((exitCode=Portable::system("epstopdf",epstopdfArgs))!=0)
+            if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)
             {
               err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
             }
@@ -285,12 +284,12 @@ void PlantumlManager::run()
   runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, PUML_SVG);
   runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, PUML_EPS);
   QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
-  QFile file(outputFilename);
-  if (!file.open(IO_WriteOnly))
+  std::ofstream file(outputFilename.str(),std::ofstream::out | std::ofstream::binary);
+  if (!file.is_open())
   {
     err("Could not open file %s for writing\n",CACHE_FILENAME);
   }
-  file.writeBlock( m_currentPlantumlAllContent, m_currentPlantumlAllContent.length() );
+  file.write( m_currentPlantumlAllContent.data(), m_currentPlantumlAllContent.length() );
   file.close();
 }
 

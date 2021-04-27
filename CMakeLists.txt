@@ -174,7 +174,6 @@ add_subdirectory(liblodepng)
 add_subdirectory(libmscgen)
 add_subdirectory(libversion)
 add_subdirectory(libxml)
-add_subdirectory(qtools)
 add_subdirectory(vhdlparser)
 add_subdirectory(src)
 

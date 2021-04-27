@@ -18,18 +18,18 @@
 
 #include <stack>
 
+#include "qcstring.h"
 #include "docvisitor.h"
-#include <qcstring.h>
 
-class FTextStream;
 class LatexCodeGenerator;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
-    LatexDocVisitor(FTextStream &t,LatexCodeGenerator &ci,
-                    const char *langExt,bool insideTabbing);
+    LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
+                    const QCString &langExt,bool insideTabbing);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -152,7 +152,7 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,
@@ -177,7 +177,7 @@ class LatexDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     LatexCodeGenerator &m_ci;
     bool m_insidePre;
     bool m_insideItem;

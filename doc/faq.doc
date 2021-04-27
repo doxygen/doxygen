@@ -184,13 +184,11 @@ in the HEAD section of the HTML page.
 
 \section faq_use_qt Why does doxygen use Qt?
 
-The most important reason is to have a platform abstraction for most
-Unices and Windows by means of the QFile, QFileInfo, QDir, QDate,
-QTime and QIODevice classes.
-Another reason is for the nice and bug free utility classes, like QList,
-QDict, QString, QArray, QTextStream, QRegExp, QXML etc.
+In the past (prior to version 1.9.2) doxygen used a part of Qt 2.x for various
+utility classes. These have been replaced by STL container classes in the meantime.
 
-The GUI front-end doxywizard uses Qt for... well... the GUI!
+The GUI front-end called Doxywizard is based on a modern version of Qt.
+Doxygen itself can also be used without the GUI.
 
 \section faq_excl_dir How can I exclude all test directories from my directory tree?
 

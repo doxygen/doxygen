@@ -20,6 +20,8 @@
 #include "dotnode.h"
 #include "dotgraph.h"
 
+class TextStream;
+
 /** Representation of a class inheritance or dependency graph */
 class DotClassGraph : public DotGraph
 {
@@ -29,13 +31,13 @@ public:
   bool isTrivial() const;
   bool isTooBig() const;
   int numNodes() const;
-  QCString writeGraph(FTextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
-    const char *path, const char *fileName, const char *relPath,
+  QCString writeGraph(TextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
+    const QCString &path, const QCString &fileName, const QCString &relPath,
     bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);
 
-  void writeXML(FTextStream &t);
-  void writeDocbook(FTextStream &t);
-  void writeDEF(FTextStream &t);
+  void writeXML(TextStream &t);
+  void writeDocbook(TextStream &t);
+  void writeDEF(TextStream &t);
 
 protected:
   virtual QCString getBaseName() const;
@@ -47,8 +49,8 @@ private:
   void buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance);
   bool determineVisibleNodes(DotNode *rootNode,int maxNodes,bool includeParents);
   void determineTruncatedNodes(DotNodeDeque &queue,bool includeParents);
-  void addClass(const ClassDef *cd,DotNode *n,int prot,const char *label,
-    const char *usedName,const char *templSpec,
+  void addClass(const ClassDef *cd,DotNode *n,int prot,const QCString &label,
+    const QCString &usedName,const QCString &templSpec,
     bool base,int distance);
 
   DotNode        *   m_startNode;

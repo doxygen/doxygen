@@ -20,9 +20,9 @@
 
 #include "index.h"
 
-class QFile;
+class TextStream;
+
 class Definition;
-class FTextStream;
 
 /** A class that generates docset files.
  *
@@ -40,25 +40,25 @@ class DocSets  : public IndexIntf
     void incContentsDepth();
     void decContentsDepth();
     void addContentsItem(bool isDir,
-                         const char *name,
-                         const char *ref,
-                         const char *file,
-                         const char *anchor,
+                         const QCString &name,
+                         const QCString &ref,
+                         const QCString &file,
+                         const QCString &anchor,
                          bool separateIndex,
                          bool addToNavIndex,
                          const Definition *def
                         );
     void addIndexItem(const Definition *context,const MemberDef *md,
-                      const char *sectionAnchor,const char *title);
-    void addIndexFile(const char *name);
-    void addImageFile(const char *) {}
-    void addStyleSheetFile(const char *) {}
+                      const QCString &sectionAnchor,const QCString &title);
+    void addIndexFile(const QCString &name);
+    void addImageFile(const QCString &) {}
+    void addStyleSheetFile(const QCString &) {}
 
   private:
-    void writeToken(FTextStream &t, const Definition *d,
+    void writeToken(TextStream &t, const Definition *d,
                     const QCString &type, const QCString &lang,
-                    const char *scope=0, const char *anchor=0,
-                    const char *decl=0);
+                    const QCString &scope=QCString(), const QCString &anchor=QCString(),
+                    const QCString &decl=QCString());
     struct Private;
     std::unique_ptr<Private> p;
 

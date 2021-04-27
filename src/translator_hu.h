@@ -167,9 +167,9 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Ezt a dokumentációt a Doxygen készítette ";
-      if (s) result+=(QCString)" a" + zed(s[0])+s+(QCString)" projekthez";
+      if (!s.isEmpty()) result+=(QCString)" a" + zed(s[0])+s+(QCString)" projekthez";
       result+=" a forráskódból.";
       return result;
     }
@@ -530,16 +530,16 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"";
-      if (projName) result+=(QCString)"Projekt: "+projName;
+      if (!projName.isEmpty()) result+=(QCString)"Projekt: "+projName;
       result+=(QCString)" Készült: "+date+" Készítette: ";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"A"+zed(clName[0])+clName+" osztály származási diagramja:";
     }
@@ -618,7 +618,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -640,7 +640,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" fájlreferencia";
@@ -648,7 +648,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" névtér-referencia";
@@ -845,12 +845,12 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"A"+zed(clName[0])+clName+" osztály együttműködési diagramja:";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"A"+zed(fName[0])+fName+" definíciós fájl függési gráfja:";
     }
@@ -1131,7 +1131,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return name+(QCString)" csomag";
     }
@@ -1526,7 +1526,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" könyvtárreferencia"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1653,7 +1653,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1674,7 +1674,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" modul hivatkozás";
@@ -1777,7 +1777,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return QCString(name)+" kapcsolat";
     }
@@ -1814,7 +1814,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
       return (QCString)"Fájl a(z) "+name+" könyvtárban";
     }
@@ -1823,7 +1823,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
       return (QCString)"Tartalmazott fájl a(z) "+name+" könyvtárban";
     }
@@ -1868,7 +1868,7 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     { return "Szerzői jog"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Könyvtár függőségi gráf a(z) ")+name+"-könyvtárhoz:"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1896,11 +1896,11 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return QCString(name)+" felsoroló referencia"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+" a(z) "+what+" osztályból származnak"; }
 
     /*! Header of the sections with inherited members specific for the
@@ -1981,21 +1981,21 @@ class TranslatorHungarian : public TranslatorAdapter_1_8_15
     { return "Konstans csoportok"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" konstans csoport referencia";
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const char *sName)
+    virtual QCString trServiceReference(const QCString &sName)
     {
       QCString result=(QCString)sName;
       result+=" szolgáltatás referencia";
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const char *sName)
+    virtual QCString trSingletonReference(const QCString &sName)
     {
       QCString result=(QCString)sName;
       result+=" egyke példány referencia";

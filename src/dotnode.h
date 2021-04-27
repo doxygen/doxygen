@@ -19,12 +19,13 @@
 #include <vector>
 #include <map>
 #include <deque>
+#include <iostream>
 
 #include "dotgraph.h"
 
 class ClassDef;
 class DotNode;
-class FTextStream;
+class TextStream;
 
 /** Attributes of an edge of a dot graph */
 class EdgeInfo
@@ -57,7 +58,7 @@ class DotNode
   public:
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& l);
-    DotNode(int n,const char *lab,const char *tip,const char *url,
+    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=0);
     ~DotNode();
 
@@ -66,8 +67,8 @@ class DotNode
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
                   int edgeStyle=EdgeInfo::Solid,
-                  const char *edgeLab=0,
-                  const char *edgeURL=0,
+                  const QCString &edgeLab=QCString(),
+                  const QCString &edgeURL=QCString(),
                   int edgeLabCol=-1);
     void addParent(DotNode *n);
     void deleteNode(DotNodeRefVector &deletedList);
@@ -75,14 +76,14 @@ class DotNode
     void removeParent(DotNode *n);
     int  findParent( DotNode *n );
 
-    void write(FTextStream &t,GraphType gt,GraphOutputFormat f,
+    void write(TextStream &t,GraphType gt,GraphOutputFormat f,
                bool topDown,bool toChildren,bool backArrows) const;
-    void writeXML(FTextStream &t,bool isClassGraph) const;
-    void writeDocbook(FTextStream &t,bool isClassGraph) const;
-    void writeDEF(FTextStream &t) const;
-    void writeBox(FTextStream &t,GraphType gt,GraphOutputFormat f,
+    void writeXML(TextStream &t,bool isClassGraph) const;
+    void writeDocbook(TextStream &t,bool isClassGraph) const;
+    void writeDEF(TextStream &t) const;
+    void writeBox(TextStream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren) const;
-    void writeArrow(FTextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
+    void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
                     const EdgeInfo *ei,bool topDown, bool pointBack=TRUE) const;
 
     QCString label() const         { return m_label; }

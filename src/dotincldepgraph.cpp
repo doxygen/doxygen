@@ -17,6 +17,7 @@
 #include "dotnode.h"
 #include "util.h"
 #include "config.h"
+#include "textstream.h"
 
 void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
 {
@@ -25,7 +26,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
   {
     const FileDef *bfd = ii.fileDef;
     QCString in = ii.includeName;
-    //printf(">>>> in='%s' bfd=%p\n",ii->includeName.data(),bfd);
+    //printf(">>>> in='%s' bfd=%p\n",qPrint(ii->includeName),bfd);
     bool doc=TRUE,src=FALSE;
     if (bfd)
     {
@@ -36,7 +37,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
     if (doc || src || !Config_getBool(HIDE_UNDOC_RELATIONS))
     {
       QCString url="";
-      if (bfd) url=bfd->getOutputFileBase().copy();
+      if (bfd) url=bfd->getOutputFileBase();
       if (!doc && src)
       {
         url=bfd->getSourceFileBase();
@@ -45,7 +46,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0,0);
+        n->addChild(bn,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -64,7 +65,7 @@ void DotInclDepGraph::buildGraph(DotNode *n,const FileDef *fd,int distance)
                          tmp_url,           // url
                          FALSE,             // rootNode
                          0);                // cd
-        n->addChild(bn,0,0,0);
+        n->addChild(bn,0,0);
         bn->addParent(n);
         m_usedNodes.insert(std::make_pair(in.str(),bn));
         bn->setDistance(distance);
@@ -130,7 +131,7 @@ DotInclDepGraph::DotInclDepGraph(const FileDef *fd,bool inverse)
   m_startNode = new DotNode(getNextNodeNumber(),
                             fd->docName(),
                             tooltip,
-                            tmp_url.data(),
+                            tmp_url,
                             TRUE);    // root node
   m_startNode->setDistance(0);
   m_usedNodes.insert(std::make_pair(fd->absFilePath().str(),m_startNode));
@@ -180,12 +181,12 @@ QCString DotInclDepGraph::getMapLabel() const
   }
 }
 
-QCString DotInclDepGraph::writeGraph(FTextStream &out,
+QCString DotInclDepGraph::writeGraph(TextStream &out,
                                      GraphOutputFormat graphFormat,
                                      EmbeddedOutputFormat textFormat,
-                                     const char *path,
-                                     const char *fileName,
-                                     const char *relPath,
+                                     const QCString &path,
+                                     const QCString &fileName,
+                                     const QCString &relPath,
                                      bool generateImageMap,
                                      int graphId)
 {
@@ -207,7 +208,7 @@ int DotInclDepGraph::numNodes() const
   return (int)m_startNode->children().size();
 }
 
-void DotInclDepGraph::writeXML(FTextStream &t)
+void DotInclDepGraph::writeXML(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {
@@ -215,7 +216,7 @@ void DotInclDepGraph::writeXML(FTextStream &t)
   }
 }
 
-void DotInclDepGraph::writeDocbook(FTextStream &t)
+void DotInclDepGraph::writeDocbook(TextStream &t)
 {
   for (const auto &kv : m_usedNodes)
   {

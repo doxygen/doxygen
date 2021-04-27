@@ -18,7 +18,7 @@
 
 #include <map>
 #include <string>
-#include <qcstring.h>
+#include "qcstring.h"
 
 struct CommandMap;
 
@@ -218,7 +218,7 @@ enum HtmlTagType
 class Mapper
 {
   public:
-    int map(const char *n);
+    int map(const QCString &n);
     QCString find(const int n);
     Mapper(const CommandMap *cm,bool caseSensitive);
   private:

@@ -13,8 +13,6 @@
  *
  */
 
-#include <qfileinfo.h>
-
 #include "xmldocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -30,13 +28,14 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "filedef.h"
+#include "fileinfo.h"
 
 static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
 {
   for (const auto &n : children) n->accept(parent);
 }
 
-static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
+static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
                           XmlDocVisitor *parent, const DocNodeList &children,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
                           const QCString &height, const QCString &alt = QCString(""), bool inlineImage = FALSE)
@@ -83,12 +82,12 @@ static void visitPreStart(FTextStream &t, const char *cmd, bool doCaption,
   t << ">";
 }
 
-static void visitPostEnd(FTextStream &t, const char *cmd)
+static void visitPostEnd(TextStream &t, const char *cmd)
 {
-  t << "</" << cmd << ">" << endl;
+  t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt)
+XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
     m_langExt(langExt)
 {
@@ -332,8 +331,8 @@ void XmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::IncWithLines:
       {
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
@@ -423,8 +422,8 @@ void XmlDocVisitor::visit(DocInclude *inc)
     case DocInclude::SnipWithLines:
       {
          m_t << "<programlisting filename=\"" << inc->file() << "\">";
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
@@ -453,7 +452,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
 void XmlDocVisitor::visit(DocIncOperator *op)
 {
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     if (!m_hide)
@@ -474,8 +473,8 @@ void XmlDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),
@@ -500,7 +499,7 @@ void XmlDocVisitor::visit(DocIncOperator *op)
   }
   else
   {
-    if (!m_hide) m_t << endl;
+    if (!m_hide) m_t << "\n";
   }
 }
 
@@ -591,7 +590,7 @@ void XmlDocVisitor::visitPre(DocPara *)
 void XmlDocVisitor::visitPost(DocPara *)
 {
   if (m_hide) return;
-  m_t << "</para>" << endl;
+  m_t << "</para>\n";
 }
 
 void XmlDocVisitor::visitPre(DocRoot *)
@@ -696,10 +695,10 @@ void XmlDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   m_t << "<sect" << s->level() << " id=\"" << s->file();
   if (!s->anchor().isEmpty()) m_t << "_1" << s->anchor();
-  m_t << "\">" << endl;
+  m_t << "\">\n";
   m_t << "<title>";
   filter(convertCharEntitiesToUTF8(s->title()));
-  m_t << "</title>" << endl;
+  m_t << "</title>\n";
 }
 
 void XmlDocVisitor::visitPost(DocSection *s)
@@ -884,7 +883,7 @@ void XmlDocVisitor::visitPre(DocInternal *)
 void XmlDocVisitor::visitPost(DocInternal *)
 {
   if (m_hide) return;
-  m_t << "</internal>" << endl;
+  m_t << "</internal>\n";
 }
 
 void XmlDocVisitor::visitPre(DocHRef *href)
@@ -938,19 +937,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   bool ambig;
   if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img->name(),ambig)))
   {
-    QFile inImage(fd->absFilePath());
-    QFile outImage(Config_getString(XML_OUTPUT)+"/"+baseName.data());
-    if (inImage.open(IO_ReadOnly))
-    {
-      if (outImage.open(IO_WriteOnly))
-      {
-        char *buffer = new char[inImage.size()];
-        inImage.readBlock(buffer,inImage.size());
-        outImage.writeBlock(buffer,inImage.size());
-        outImage.flush();
-        delete[] buffer;
-      }
-    }
+    copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+baseName);
   }
 }
 
@@ -1034,19 +1021,19 @@ void XmlDocVisitor::visitPre(DocSecRefItem *ref)
 void XmlDocVisitor::visitPost(DocSecRefItem *)
 {
   if (m_hide) return;
-  m_t << "</tocitem>" << endl;
+  m_t << "</tocitem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocSecRefList *)
 {
   if (m_hide) return;
-  m_t << "<toclist>" << endl;
+  m_t << "<toclist>\n";
 }
 
 void XmlDocVisitor::visitPost(DocSecRefList *)
 {
   if (m_hide) return;
-  m_t << "</toclist>" << endl;
+  m_t << "</toclist>\n";
 }
 
 //void XmlDocVisitor::visitPre(DocLanguage *l)
@@ -1058,7 +1045,7 @@ void XmlDocVisitor::visitPost(DocSecRefList *)
 //void XmlDocVisitor::visitPost(DocLanguage *)
 //{
 //  if (m_hide) return;
-//  m_t << "</language>" << endl;
+//  m_t << "</language>\n";
 //}
 
 void XmlDocVisitor::visitPre(DocParamSect *s)
@@ -1084,14 +1071,14 @@ void XmlDocVisitor::visitPre(DocParamSect *s)
 void XmlDocVisitor::visitPost(DocParamSect *)
 {
   if (m_hide) return;
-  m_t << "</parameterlist>" << endl;
+  m_t << "</parameterlist>\n";
 }
 
 void XmlDocVisitor::visitPre(DocParamList *pl)
 {
   if (m_hide) return;
-  m_t << "<parameteritem>" << endl;
-  m_t << "<parameternamelist>" << endl;
+  m_t << "<parameteritem>\n";
+  m_t << "<parameternamelist>\n";
   for (const auto &param : pl->parameters())
   {
     if (!pl->paramTypes().empty())
@@ -1109,11 +1096,11 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
         }
         else if (type->kind()==DocNode::Kind_Sep)
         {
-          m_t << "</parametertype>" << endl;
+          m_t << "</parametertype>\n";
           m_t << "<parametertype>";
         }
       }
-      m_t << "</parametertype>" << endl;
+      m_t << "</parametertype>\n";
     }
     m_t << "<parametername";
     if (pl->direction()!=DocParamSect::Unspecified)
@@ -1142,17 +1129,17 @@ void XmlDocVisitor::visitPre(DocParamList *pl)
     {
       visit((DocLinkedWord*)param.get());
     }
-    m_t << "</parametername>" << endl;
+    m_t << "</parametername>\n";
   }
-  m_t << "</parameternamelist>" << endl;
-  m_t << "<parameterdescription>" << endl;
+  m_t << "</parameternamelist>\n";
+  m_t << "<parameterdescription>\n";
 }
 
 void XmlDocVisitor::visitPost(DocParamList *)
 {
   if (m_hide) return;
-  m_t << "</parameterdescription>" << endl;
-  m_t << "</parameteritem>" << endl;
+  m_t << "</parameterdescription>\n";
+  m_t << "</parameteritem>\n";
 }
 
 void XmlDocVisitor::visitPre(DocXRefItem *x)
@@ -1179,7 +1166,7 @@ void XmlDocVisitor::visitPost(DocXRefItem *x)
 void XmlDocVisitor::visitPre(DocInternalRef *ref)
 {
   if (m_hide) return;
-  startLink(0,ref->file(),ref->anchor());
+  startLink(QCString(),ref->file(),ref->anchor());
 }
 
 void XmlDocVisitor::visitPost(DocInternalRef *)
@@ -1230,14 +1217,14 @@ void XmlDocVisitor::visitPost(DocParBlock *)
 }
 
 
-void XmlDocVisitor::filter(const char *str)
+void XmlDocVisitor::filter(const QCString &str)
 {
   m_t << convertToXML(str);
 }
 
 void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
-  //printf("XmlDocVisitor: file=%s anchor=%s\n",file.data(),anchor.data());
+  //printf("XmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   m_t << "<ref refid=\"" << file;
   if (!anchor.isEmpty()) m_t << "_1" << anchor;
   m_t << "\" kindref=\"";

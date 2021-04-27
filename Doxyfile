@@ -1,4 +1,3 @@
-# Doxyfile 1.8.16
 
 #---------------------------------------------------------------------------
 # Project related configuration options
@@ -12,7 +11,6 @@ OUTPUT_DIRECTORY       = doxygen_docs
 CREATE_SUBDIRS         = YES
 ALLOW_UNICODE_NAMES    = NO
 OUTPUT_LANGUAGE        = English
-OUTPUT_TEXT_DIRECTION  = None
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ABBREVIATE_BRIEF       =
@@ -110,6 +108,7 @@ INPUT                  = src \
                          libxml
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.h \
+                         *.hpp \
                          *.cpp \
                          *.l \
                          *.md
@@ -131,7 +130,7 @@ USE_MDFILE_AS_MAINPAGE =
 # Configuration options related to source browsing
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
-INLINE_SOURCES         = NO
+INLINE_SOURCES         = YES
 STRIP_CODE_COMMENTS    = NO
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
@@ -275,8 +274,7 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           = qtools \
-                         libmd5 \
+INCLUDE_PATH           = libmd5 \
                          liblodepng \
                          libmscgen
 INCLUDE_FILE_PATTERNS  =
@@ -286,7 +284,7 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 # Configuration options related to external references
 #---------------------------------------------------------------------------
-TAGFILES               = qtools_docs/qtools.tag=../../qtools_docs/html
+TAGFILES               =
 GENERATE_TAGFILE       = doxygen.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES

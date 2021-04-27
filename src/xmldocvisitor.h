@@ -19,10 +19,12 @@
 #ifndef _XMLDOCVISITOR_H
 #define _XMLDOCVISITOR_H
 
-#include "docvisitor.h"
-#include <qcstring.h>
+#include <iostream>
 
-class FTextStream;
+#include "qcstring.h"
+#include "docvisitor.h"
+#include "textstream.h"
+
 class CodeOutputInterface;
 class QCString;
 
@@ -30,7 +32,7 @@ class QCString;
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -144,7 +146,7 @@ class XmlDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink();
@@ -153,7 +155,7 @@ class XmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

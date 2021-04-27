@@ -21,7 +21,7 @@
  * vhdl documents
  */
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "layout.h"
 #include "arguments.h"
 #include "entry.h"
@@ -31,17 +31,17 @@ class ClassDef;
 class MemberList;
 class MemberDef;
 class MemberDefMutable;
-class FTextStream;
 class OutputList;
 class Definition;
 class GroupDef;
 class FileDef;
 class NamespaceDef;
+class TextStream;
 struct Argument;
 
 struct VhdlConfNode
 {
-  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf)
+  VhdlConfNode(const QCString &a,const QCString &b,const QCString &config,const QCString &cs,bool leaf)
   {
     arch=a;              // architecture  e.g. for iobuffer
     arch=arch.lower();
@@ -116,10 +116,10 @@ class VhdlDocGen
 
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
 
-    static QCString getIndexWord(const char* ,int index);
+    static QCString getIndexWord(const QCString &,int index);
     static bool     deleteCharRev(QCString &s,char c);
     static void     deleteAllChars(QCString &s,char c);
-    static void     parseFuncProto(const char* text,
+    static void     parseFuncProto(const QCString &text,
                                    QCString& name,
                                    QCString& ret,
                                    bool doc=false);
@@ -136,13 +136,13 @@ class VhdlDocGen
     static const MemberDef* findMemberDef(ClassDef* cd,
                                 const QCString& key,
                                 MemberListType type);
-    static ClassDef *getClass(const char *name);
+    static ClassDef *getClass(const QCString &name);
     static const MemberDef* findFunction(const QCString& name,
                                    const QCString& package);
     static QCString getClassTitle(const ClassDef*);
     static void writeInlineClassLink(const ClassDef*,
                                      OutputList &ol);
-    static void writeTagFile(MemberDefMutable *mdef,FTextStream &tagFile);
+    static void writeTagFile(MemberDefMutable *mdef,TextStream &tagFile);
 
     static bool isConstraint(const MemberDef *mdef);
     static bool isConfig(const MemberDef *mdef);
@@ -194,11 +194,11 @@ class VhdlDocGen
 
     static void writePlainVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        int specifier);
+        uint64_t specifier);
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        const char *title,const char *subtitle,bool showEnumValues,int type);
+        const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
@@ -210,10 +210,9 @@ class VhdlDocGen
     static bool isNumber(const std::string& s);
     static QCString getProtectionName(int prot);
 
-    static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
+    static void parseUCF(const char*  input,Entry* entity,const QCString &f,bool vendor);
 
     static const ClassDef*  findArchitecture(const ClassDef *cd);
-    //static const ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
     static void correctMemberProperties(MemberDefMutable *md);
 
@@ -222,14 +221,14 @@ class VhdlDocGen
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
-    static ClassDef* findVhdlClass(const char *className );
+    static ClassDef* findVhdlClass(const QCString &className );
 
     static void writeOverview(OutputList &ol);
     static void writeOverview();
 
  // flowcharts
     static void createFlowChart(const MemberDef*);
-    //static void addFlowImage(const FTextStream &,const QCString &);
+    //static void addFlowImage(const TextStream &,const QCString &);
 
     static void setFlowMember( const MemberDef *flowMember);
     static const MemberDef *getFlowMember();
@@ -289,13 +288,13 @@ class FlowChart
 
     //---------- create svg -------------------------------------------------------------
     static void createSVG();
-    static void startDot(FTextStream &t);
-    static void endDot(FTextStream &t);
-    static void codify(FTextStream &t,const char *str);
-    static void writeShape(FTextStream &t,const FlowChart &fl);
-    static void writeEdge(FTextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
-    static void writeEdge(FTextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
-    static void writeFlowLinks(FTextStream &t);
+    static void startDot(TextStream &t);
+    static void endDot(TextStream &t);
+    static void codify(TextStream &t,const QCString &str);
+    static void writeShape(TextStream &t,const FlowChart &fl);
+    static void writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
+    static void writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
+    static void writeFlowLinks(TextStream &t);
 
     static QCString getNodeName(int n);
     static void colTextNodes();
@@ -310,7 +309,7 @@ class FlowChart
     static void delFlowList();
     static const char* getNodeType(int c);
 
-    static void addFlowChart(int type,const char* text,const char* exp,const char * label=0);
+    static void addFlowChart(int type,const QCString &text,const QCString &exp,const QCString &label=QCString());
     static void moveToPrevLevel();
     static int getTimeStamp();
     static void writeFlowChart();
@@ -318,13 +317,13 @@ class FlowChart
     static QCString convertNameToFileName();
     static void printNode(const FlowChart& n);
     static void printFlowTree();
-    static void buildCommentNodes(FTextStream &t);
-    static void alignCommentNode(FTextStream &t,QCString com);
+    static void buildCommentNodes(TextStream &t);
+    static void alignCommentNode(TextStream &t,QCString com);
 
     static void  printUmlTree();
     static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);
 
-    FlowChart(int typ,const char*  t,const char* ex,const char* label=0);
+    FlowChart(int typ,const QCString &t,const QCString &ex,const QCString &label=QCString());
     ~FlowChart();
 
 private:

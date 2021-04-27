@@ -18,8 +18,9 @@
 
 #include <map>
 #include <string>
+
 #include "containers.h"
-#include <qcstring.h>
+#include "qcstring.h"
 
 #define CACHE_FILENAME          "inline_umlgraph_cache_all.pu"
 #define DIVIDE_COUNT            4
@@ -28,14 +29,10 @@
 class QCString;
 struct PlantumlContent
 {
-  QCString outDir;
+  PlantumlContent(const QCString &content_, const QCString &outDir_)
+     : content(content_), outDir(outDir_) {}
   QCString content;
-  PlantumlContent(const QCString Content, const QCString OutDir)
-  {
-    outDir = OutDir;
-    content = Content;
-  };
-  ~PlantumlContent(){};
+  QCString outDir;
 };
 
 /** Singleton that manages plantuml relation actions */
@@ -64,7 +61,7 @@ class PlantumlManager
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
      */
-    void generatePlantUMLOutput(const char *baseName,const char *outDir,OutputFormat format);
+    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
 
     using FilesMap   = std::map< std::string, StringVector    >;
     using ContentMap = std::map< std::string, PlantumlContent >;

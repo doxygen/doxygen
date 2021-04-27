@@ -1,7 +1,7 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/qtools
+    ${PROJECT_SOURCE_DIR}/filesystem
     ${PROJECT_SOURCE_DIR}/libmd5
     ${PROJECT_SOURCE_DIR}/liblodepng
     ${PROJECT_SOURCE_DIR}/libmscgen
@@ -166,7 +166,6 @@ add_library(doxycfg STATIC
     ${GENERATED_SRC}/settings.h
     portable.cpp
     portable_c.c
-    ftextstream.cpp
     message.cpp
     debug.cpp
 )
@@ -225,6 +224,7 @@ add_library(doxymain STATIC
     classdef.cpp
     classlist.cpp
     cmdmapper.cpp
+    conceptdef.cpp
     condparser.cpp
     context.cpp
     cppvalue.cpp
@@ -232,6 +232,7 @@ add_library(doxymain STATIC
     definition.cpp
     dia.cpp
     diagram.cpp
+    dir.cpp
     dirdef.cpp
     docbookgen.cpp
     docbookvisitor.cpp
@@ -256,6 +257,7 @@ add_library(doxymain STATIC
     emoji.cpp
     entry.cpp
     filedef.cpp
+    fileinfo.cpp
     fileparser.cpp
     formula.cpp
     ftvhelp.cpp
@@ -284,6 +286,7 @@ add_library(doxymain STATIC
     pagedef.cpp
     perlmodgen.cpp
     plantuml.cpp
+    qcstring.cpp
     qhp.cpp
     qhpxmlwriter.cpp
     reflist.cpp
@@ -300,6 +303,7 @@ add_library(doxymain STATIC
     template.cpp
     textdocvisitor.cpp
     tooltip.cpp
+    utf8.cpp
     util.cpp
     vhdldocgen.cpp
     vhdljjparser.cpp
@@ -349,7 +353,6 @@ endif()
 target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
-    qtools
     md5
     lodepng
     mscgen
@@ -369,7 +372,6 @@ set_project_warnings(doxycfg)
 set_project_warnings(doxymain)
 set_project_warnings(doxygen)
 
-set_project_coverage(qtools)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)

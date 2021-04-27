@@ -56,7 +56,6 @@
 //#include <iostream.h>
 #include <assert.h>
 #include <ctype.h>
-#include <qcstringlist.h>
 
 #include "defargs.h"
 #include "entry.h"
@@ -166,7 +165,7 @@ CPPC  "/\/"
 <ReadFuncArgDef>"'"\\."'"		{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>"'"."'"			{ yyextra->curArgDefValue+=yytext; }
 <ReadFuncArgDef>{RAWBEGIN}              { yyextra->curArgDefValue+=yytext; 
-                                          QCString text=yytext;
+                                          QCString text(yytext);
                                           int i=text.find('"');
                                           yyextra->delimiter = yytext+i+1;
                                           yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
@@ -330,7 +329,7 @@ CPPC  "/\/"
   					}
 <CopyRawString>{RAWEND}                 {
 					  yyextra->curArgDefValue+=yytext;
-                                          QCString delimiter = yytext+1;
+                                          QCString delimiter(yytext+1);
                                           delimiter=delimiter.left(delimiter.length()-1);
                                           if (delimiter==yyextra->delimiter)
                                           {
@@ -347,7 +346,7 @@ CPPC  "/\/"
 <ReadFuncArgType,ReadFuncArgDef>[,)>]{B}*({CCS}[*!]|{CPPC}[/!])"<" {
 					  yyextra->lastDocContext=YY_START;
 					  yyextra->lastDocChar=*yytext;  
-					  QCString text=yytext;
+					  QCString text(yytext);
 					  if (text.find("//")!=-1)
 					    BEGIN( ReadDocLine );
 					  else
@@ -363,7 +362,7 @@ CPPC  "/\/"
 					  {
 					    yyextra->curArgTypeName=removeRedundantWhiteSpace(yyextra->curArgTypeName);
 					    yyextra->curArgDefValue=yyextra->curArgDefValue.stripWhiteSpace();
-					    //printf("curArgType='%s' curArgDefVal='%s'\n",yyextra->curArgTypeName.data(),yyextra->curArgDefValue.data());
+					    //printf("curArgType='%s' curArgDefVal='%s'\n",qPrint(yyextra->curArgTypeName),qPrint(yyextra->curArgDefValue));
 					    int l=yyextra->curArgTypeName.length();
 					    if (l>0)
 					    {
@@ -371,10 +370,10 @@ CPPC  "/\/"
 					      while (i>=0 && (isspace((uchar)yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='.')) i--;
 					      while (i>=0 && (isId(yyextra->curArgTypeName.at(i)) || yyextra->curArgTypeName.at(i)=='$')) i--;
 					      Argument a;
-					      a.attrib  = yyextra->curArgAttrib.copy();
+					      a.attrib  = yyextra->curArgAttrib;
                                               a.typeConstraint = yyextra->curTypeConstraint.stripWhiteSpace();
 					      //printf("a->type=%s a->name=%s i=%d l=%d\n",
-					      //        a->type.data(),a->name.data(),i,l);
+					      //        qPrint(a->type),qPrint(a->name),i,l);
 					      a.array.resize(0);
 					      if (i==l-1 && yyextra->curArgTypeName.at(i)==')') // function argument
 					      {
@@ -415,7 +414,7 @@ CPPC  "/\/"
 						  a.type = a.type + " " + a.name;
 						  a.name.resize(0);
 						}
-						//printf(" --> a->type='%s' a->name='%s'\n",a->type.data(),a->name.data());
+						//printf(" --> a->type='%s' a->name='%s'\n",qPrint(a->type),qPrint(a->name));
 					      }
 					      else // assume only the type was specified, try to determine name later 
 					      {
@@ -427,7 +426,7 @@ CPPC  "/\/"
                                                 a.type = "";
                                               }
 					      a.array  += removeRedundantWhiteSpace(yyextra->curArgArray);
-					      //printf("array=%s\n",a->array.data());
+					      //printf("array=%s\n",qPrint(a->array));
 					      int alen = a.array.length();
 					      if (alen>2 && a.array.at(0)=='(' && 
 						            a.array.at(alen-1)==')') // fix-up for int *(a[10])
@@ -440,10 +439,10 @@ CPPC  "/\/"
 						  a.array = a.array.mid(i);
 						}
 					      }
-					      a.defval = yyextra->curArgDefValue.copy();
-					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",a->type.data(),a->name.data(),a->defval.data());
+					      a.defval = yyextra->curArgDefValue;
+					      //printf("a->type=%s a->name=%s a->defval=\"%s\"\n",qPrint(a->type),qPrint(a->name),qPrint(a->defval));
 					      a.docs   = yyextra->curArgDocs.stripWhiteSpace();
-					      //printf("Argument '%s' '%s' adding docs='%s'\n",a->type.data(),a->name.data(),a->docs.data());
+					      //printf("Argument '%s' '%s' adding docs='%s'\n",qPrint(a->type),qPrint(a->name),qPrint(a->docs));
 					      yyextra->argList->push_back(a);
 					    }
 					    yyextra->curArgAttrib.resize(0);
@@ -476,13 +475,13 @@ CPPC  "/\/"
                                            }
                                         }
 <ReadFuncArgType,ReadFuncArgPtr>"$"?{ID} { 
-  					  QCString name=yytext; //resolveDefines(yytext);
+  					  QCString name(yytext);
 					  if (YY_START==ReadFuncArgType && yyextra->curArgArray=="[]") // Java style array
 					  {
 					    yyextra->curArgTypeName+=" []";
 					    yyextra->curArgArray.resize(0);
 					  }
-					  //printf("resolveName '%s'->'%s'\n",yytext,name.data());
+					  //printf("resolveName '%s'->'%s'\n",yytext,qPrint(name));
   					  yyextra->curArgTypeName+=name;
 					}
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 
@@ -496,8 +495,7 @@ CPPC  "/\/"
 					  yyextra->curArgDefValue+=*yytext;
   					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
-  					  QCString name=yytext; //resolveDefines(yytext);
-					  *yyextra->copyArgValue+=name;
+					  *yyextra->copyArgValue+=yytext;
 					}
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
 					  *yyextra->copyArgValue += *yytext;
@@ -531,7 +529,7 @@ CPPC  "/\/"
                                           BEGIN(FuncQual);
 					}
 <FuncQual>"->"                          { // C++11 trailing return type
-                                          yyextra->argList->setTrailingReturnType(" -> ");
+                                          yyextra->argList->setTrailingReturnType(QCString(" -> "));
                                           BEGIN(TrailingReturn);
                                         }
 <TrailingReturn>{B}/("final"|"override"){B}*  {
@@ -771,19 +769,19 @@ static bool nameIsActuallyPartOfType(QCString &name)
 }
 
 /*! Converts an argument string into an ArgumentList.
- *  \param[in] lang langage of the current argument list
+ *  \param[in] lang language of the current argument list
  *  \param[in] argsString the list of Arguments.
  *  \param[out] extraTypeChars point to string to which trailing characters 
  *              for complex types are written to
  */
  
-std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const char *argsString,QCString *extraTypeChars)
+std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const QCString &argsString,QCString *extraTypeChars)
 {
   std::unique_ptr<ArgumentList> al = std::make_unique<ArgumentList>();
-  if (argsString==0) return al;
+  if (argsString.isEmpty()) return al;
 
   yyscan_t yyscanner;
-  defargsYY_state extra(argsString,al,lang);
+  defargsYY_state extra(argsString.data(),al,lang);
   defargsYYlex_init_extra(&extra,&yyscanner);
 #ifdef FLEX_DEBUG
   defargsYYset_debug(1,yyscanner);
@@ -799,7 +797,7 @@ std::unique_ptr<ArgumentList> stringToArgumentList(SrcLangExt lang, const char *
     yyextra->argList->setNoParameters(TRUE);
   }
   if (extraTypeChars) *extraTypeChars=yyextra->extraTypeChars;
-  //printf("stringToArgumentList(%s) result=%s\n",argsString,argListToString(*al).data());
+  //printf("stringToArgumentList(%s) result=%s\n",argsString,qPrint(argListToString(*al)));
   printlex(yy_flex_debug, FALSE, __FILE__, NULL);
   defargsYYlex_destroy(yyscanner);
   return al;

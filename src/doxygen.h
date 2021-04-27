@@ -17,7 +17,6 @@
 #define DOXYGEN_H
 
 #include "containers.h"
-#include "ftextstream.h"
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
@@ -34,7 +33,6 @@ class PageLinkedMap;
 class PageDef;
 class SearchIndexIntf;
 class ParserManager;
-class QFileInfo;
 class BufStr;
 class CiteDict;
 class MemberDef;
@@ -43,6 +41,7 @@ class GroupLinkedMap;
 class FileDef;
 class ClassDef;
 class ClassLinkedMap;
+class ConceptLinkedMap;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceLinkedMap;
@@ -78,6 +77,7 @@ class Doxygen
   public:
     static ClassLinkedMap           *classLinkedMap;
     static ClassLinkedMap           *hiddenClassLinkedMap;
+    static ConceptLinkedMap         *conceptLinkedMap;
     static PageLinkedMap            *exampleLinkedMap;
     static PageLinkedMap            *pageLinkedMap;
     static std::unique_ptr<PageDef>  mainPage;
@@ -130,7 +130,7 @@ void generateOutput();
 void readAliases();
 void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
-int readFileOrDirectory(const char *s,
+void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,
                         StringUnorderedSet *exclSet,
                         const StringVector *patList,

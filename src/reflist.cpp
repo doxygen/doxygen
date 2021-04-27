@@ -14,15 +14,14 @@
  */
 
 #include <algorithm>
-
 #include <stdio.h>
+
 #include "reflist.h"
 #include "util.h"
-#include "ftextstream.h"
 #include "definition.h"
 #include "config.h"
 
-RefList::RefList(const char *listName, const char *pageTitle, const char *secTitle) :
+RefList::RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
        m_pageTitle(pageTitle), m_secTitle(secTitle)
 {
@@ -68,7 +67,7 @@ void RefList::generatePage()
   bool first=true;
   for (const std::unique_ptr<RefItem> &item : m_entries)
   {
-    if (!item->name()) continue;
+    if (item->name().isEmpty()) continue;
     cnt++;
     bool startNewGroup = item->group()!=lastGroup;
     if (startNewGroup)

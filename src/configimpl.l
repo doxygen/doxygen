@@ -26,21 +26,21 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <errno.h>
-
-#include <qfileinfo.h>
-#include <qdir.h>
-
 #include <thread>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 
 #include "regex.h"
 #include "configimpl.h"
 #include "version.h"
 #include "portable.h"
 #include "message.h"
-
 #include "lang_cfg.h"
 #include "configoptions.h"
+#include "fileinfo.h"
+#include "dir.h"
+#include "textstream.h"
 
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
@@ -58,14 +58,14 @@ void config_err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
+  vfprintf(stderr, qPrint(QCString(error_str) + fmt), args);
   va_end(args);
 }
 void config_term(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
+  vfprintf(stderr, qPrint(QCString(error_str) + fmt), args);
   va_end(args);
   fprintf(stderr, "%s\n", "Exiting...");
   exit(1);
@@ -75,14 +75,14 @@ void config_warn(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, (QCString(warning_str) + fmt).data(), args);
+  vfprintf(stderr, qPrint(QCString(warning_str) + fmt), args);
   va_end(args);
 }
 
 static QCString configStringRecode(
     const QCString &str,
-    const char *fromEncoding,
-    const char *toEncoding);
+    const QCString &fromEncoding,
+    const QCString &toEncoding);
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
@@ -91,7 +91,7 @@ static QCString configStringRecode(
  */
 static QCString convertToComment(const QCString &s, const QCString &u)
 {
-  //printf("convertToComment(%s)=%s\n",s.data(),u.data());
+  //printf("convertToComment(%s)=%s\n",qPrint(s),qPrint(u));
   QCString result;
   if (!s.isEmpty())
   {
@@ -128,23 +128,24 @@ static QCString convertToComment(const QCString &s, const QCString &u)
   return result;
 }
 
-void ConfigOption::writeBoolValue(FTextStream &t,bool v)
+void ConfigOption::writeBoolValue(TextStream &t,bool v)
 {
   t << " ";
   if (v) t << "YES"; else t << "NO";
 }
 
-void ConfigOption::writeIntValue(FTextStream &t,int i)
+void ConfigOption::writeIntValue(TextStream &t,int i)
 {
   t << " " << i;
 }
 
-void ConfigOption::writeStringValue(FTextStream &t,const QCString &s)
+void ConfigOption::writeStringValue(TextStream &t,const QCString &s)
 {
   char c;
   bool needsEscaping=FALSE;
   // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
+  if (se.isEmpty()) return;
   const char *p=se.data();
   if (p)
   {
@@ -170,12 +171,12 @@ void ConfigOption::writeStringValue(FTextStream &t,const QCString &s)
   }
 }
 
-void ConfigOption::writeStringList(FTextStream &t,const StringVector &l)
+void ConfigOption::writeStringList(TextStream &t,const StringVector &l)
 {
   bool first=TRUE;
   for (const auto &p : l)
   {
-    if (!first) t << " \\" << endl;
+    if (!first) t << " \\\n";
     QCString s=p.c_str();
     if (!first)
       t << "                        ";
@@ -198,7 +199,7 @@ void ConfigInt::convertStrToVal()
     if (!ok || val<m_minVal || val>m_maxVal)
     {
       config_warn("argument '%s' for option %s is not a valid number in the range [%d..%d]!\n"
-                "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
+                "Using the default: %d!\n",qPrint(m_valueString),qPrint(m_name),m_minVal,m_maxVal,m_value);
     }
     else
     {
@@ -223,7 +224,7 @@ void ConfigBool::convertStrToVal()
     else
     {
       config_warn("argument '%s' for option %s is not a valid boolean value\n"
-                "Using the default: %s!\n",m_valueString.data(),m_name.data(),m_value?"YES":"NO");
+                "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
     }
   }
 }
@@ -246,7 +247,7 @@ void ConfigEnum::convertStrToVal()
   }
 
   config_warn("argument '%s' for option %s is not a valid enum value\n"
-              "Using the default: %s!\n",m_value.data(),m_name.data(),m_defValue.data());
+              "Using the default: %s!\n",qPrint(m_value),qPrint(m_name),qPrint(m_defValue));
   m_value = m_defValue;
 }
 
@@ -322,24 +323,24 @@ bool &ConfigImpl::getBool(const char *fileName,int num,const char *name) const
 
 /* ------------------------------------------ */
 
-void ConfigInfo::writeTemplate(FTextStream &t, bool sl,bool)
+void ConfigInfo::writeTemplate(TextStream &t, bool sl,bool)
 {
   if (!sl)
   {
     t << "\n";
   }
   t << "#---------------------------------------------------------------------------\n";
-  t << "# " << m_doc << endl;
+  t << "# " << m_doc << "\n";
   t << "#---------------------------------------------------------------------------\n";
 }
 
-void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
+void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -350,12 +351,12 @@ void ConfigList::writeTemplate(FTextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigList::compareDoxyfile(FTextStream &t)
+void ConfigList::compareDoxyfile(TextStream &t)
 {
   auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
-  int defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
-  int valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
+  size_t defCnt = std::count_if(       m_value.begin(),       m_value.end(),is_not_empty);
+  size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
   {
     writeTemplate(t,TRUE,TRUE);
@@ -383,13 +384,13 @@ void ConfigList::compareDoxyfile(FTextStream &t)
   }
 }
 
-void ConfigEnum::writeTemplate(FTextStream &t,bool sl,bool)
+void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -400,18 +401,18 @@ void ConfigEnum::writeTemplate(FTextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigEnum::compareDoxyfile(FTextStream &t)
+void ConfigEnum::compareDoxyfile(TextStream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigString::writeTemplate(FTextStream &t,bool sl,bool)
+void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -422,18 +423,18 @@ void ConfigString::writeTemplate(FTextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigString::compareDoxyfile(FTextStream &t)
+void ConfigString::compareDoxyfile(TextStream &t)
 {
   if (m_value.stripWhiteSpace() != m_defValue.stripWhiteSpace()) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
@@ -451,24 +452,25 @@ void ConfigInt::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigInt::compareDoxyfile(FTextStream &t)
+void ConfigInt::compareDoxyfile(TextStream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   if (!sl)
   {
-    t << endl;
+    t << "\n";
     t << convertToComment(m_doc, m_userComment);
-    t << endl;
+    t << "\n";
   }
   else if (!m_userComment.isEmpty())
   {
     t << convertToComment("", m_userComment);
   }
-  t << m_name << m_spaces.left(MAX_OPTION_LENGTH-m_name.length()) << "=";
+  QCString spaces = m_spaces.left(MAX_OPTION_LENGTH-m_name.length());
+  t << m_name << spaces << "=";
   if (upd && !m_valueString.isEmpty())
   {
     writeStringValue(t,m_valueString);
@@ -480,13 +482,13 @@ void ConfigBool::writeTemplate(FTextStream &t,bool sl,bool upd)
   t << "\n";
 }
 
-void ConfigBool::compareDoxyfile(FTextStream &t)
+void ConfigBool::compareDoxyfile(TextStream &t)
 {
   if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
 }
 
-void ConfigObsolete::writeTemplate(FTextStream &,bool,bool) {}
-void ConfigDisabled::writeTemplate(FTextStream &,bool,bool) {}
+void ConfigObsolete::writeTemplate(TextStream &,bool,bool) {}
+void ConfigDisabled::writeTemplate(TextStream &,bool,bool) {}
 
 /* -----------------------------------------------------------------
  *
@@ -545,36 +547,34 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
 
 static QCString configStringRecode(
     const QCString &str,
-    const char *fromEncoding,
-    const char *toEncoding)
+    const QCString &inputEncoding,
+    const QCString &outputEncoding)
 {
-  QCString inputEncoding = fromEncoding;
-  QCString outputEncoding = toEncoding;
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
   int inputSize=str.length();
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==(void *)(-1))
   {
     config_term("Error: unsupported character conversion: '%s'->'%s'\n",
-        inputEncoding.data(),outputEncoding.data());
+        qPrint(inputEncoding),qPrint(outputEncoding));
   }
   size_t iLeft=(size_t)inputSize;
   size_t oLeft=(size_t)outputSize;
-  char *inputPtr  = str.rawData();
+  const char *inputPtr  = str.data();
   char *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=(int)oLeft;
     output.resize(outputSize+1);
     output.at(outputSize)='\0';
-    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
   else
   {
     config_term("Error: failed to translate characters from %s to %s: %s\n",
-        inputEncoding.data(),outputEncoding.data(),strerror(errno));
+        qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
   }
   portable_iconv_close(cd);
   return output;
@@ -655,7 +655,7 @@ static void processString()
       if (!warned)
       {
         config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
-                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_string->stripWhiteSpace().data());
+                    qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_string->stripWhiteSpace()));
       }
       warned=true;
     }
@@ -671,14 +671,14 @@ static void processString()
   // update encoding
   checkEncoding();
 
-  //printf("Processed string '%s'\n",g_string->data());
+  //printf("Processed string '%s'\n",qPrint(g_string));
 }
 
 static void processList()
 {
   bool allowCommaAsSeparator = g_cmd!="PREDEFINED";
 
-  const QCString s = stripComment(g_listStr.stripWhiteSpace());
+  QCString s = stripComment(g_listStr.stripWhiteSpace());
   int l = s.length();
 
   QCString elemStr;
@@ -689,7 +689,7 @@ static void processList()
     if (!elemStr.isEmpty())
     {
       QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
-      //printf("Processed list element '%s'\n",e.data());
+      //printf("Processed list element '%s'\n",qPrint(e));
       g_list->push_back(e.str());
       elemStr="";
     }
@@ -741,7 +741,7 @@ static void processList()
         if (!warned)
         {
           config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
-                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.stripWhiteSpace().data(),allowCommaAsSeparator?"or comma ":"");
+                    qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_listStr.stripWhiteSpace()),allowCommaAsSeparator?"or comma ":"");
           warned=true;
         }
         needsSeparator=false;
@@ -759,18 +759,18 @@ static void processList()
   if (insideQuote)
   {
     config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
-                g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.stripWhiteSpace().data());
+                qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_listStr.stripWhiteSpace()));
   }
 }
 
-static FILE *tryPath(const char *path,const char *fileName)
+static FILE *tryPath(const QCString &path,const QCString &fileName)
 {
-  QCString absName=(path ? (QCString)path+"/"+fileName : (QCString)fileName);
-  QFileInfo fi(absName);
+  QCString absName=(!path.isEmpty() ? path+"/"+fileName : fileName);
+  FileInfo fi(absName.str());
   if (fi.exists() && fi.isFile())
   {
     FILE *f=Portable::fopen(absName,"r");
-    if (!f) config_err("could not open file %s for reading\n",absName.data());
+    if (!f) config_err("could not open file %s for reading\n",qPrint(absName));
     return f;
   }
   return 0;
@@ -779,15 +779,15 @@ static FILE *tryPath(const char *path,const char *fileName)
 static void substEnvVarsInStrList(StringVector &sl);
 static void substEnvVarsInString(QCString &s);
 
-static FILE *findFile(const char *fileName)
+static FILE *findFile(const QCString &fileName)
 {
-  if (fileName==0)
+  if (fileName.isEmpty())
   {
     return 0;
   }
   if (Portable::isAbsolutePath(fileName))
   {
-    return tryPath(NULL, fileName);
+    return tryPath(QCString(), fileName);
   }
   substEnvVarsInStrList(g_includePathList);
   for (const auto &s : g_includePathList)
@@ -799,11 +799,11 @@ static FILE *findFile(const char *fileName)
   return tryPath(".",fileName);
 }
 
-static void readIncludeFile(const char *incName)
+static void readIncludeFile(const QCString &incName)
 {
   if (g_includeStack.size()==MAX_INCLUDE_DEPTH) {
     config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
-        MAX_INCLUDE_DEPTH,incName);
+        MAX_INCLUDE_DEPTH,qPrint(incName));
   }
 
   QCString inc = incName;
@@ -822,7 +822,7 @@ static void readIncludeFile(const char *incName)
     // For debugging
 #if SHOW_INCLUDES
     for (size_t i=0;i<g_includeStack.size();i++) msg("  ");
-    msg("@INCLUDE = %s: parsing...\n",inc.data());
+    msg("@INCLUDE = %s: parsing...\n",qPrint(inc));
 #endif
 
     // store the state of the old file
@@ -840,7 +840,7 @@ static void readIncludeFile(const char *incName)
   }
   else
   {
-    config_term("@INCLUDE = %s: not found!\n",inc.data());
+    config_term("@INCLUDE = %s: not found!\n",qPrint(inc));
   }
 }
 
@@ -878,7 +878,7 @@ static void readIncludeFile(const char *incName)
                                            if (option==0) // oops not known
                                            {
                                              config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-                                                 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                 qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                              BEGIN(SkipInvalid);
                                            }
                                            else // known tag
@@ -921,13 +921,13 @@ static void readIncludeFile(const char *incName)
                                                  if (g_configUpdate)
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
-                                                              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                              "         This tag has been removed.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  else
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
                                                               "         To avoid this warning please remove this line from your configuration "
-                                                              "file or upgrade it using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                              "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  BEGIN(SkipInvalid);
                                                  break;
@@ -935,13 +935,13 @@ static void readIncludeFile(const char *incName)
                                                  if (g_configUpdate)
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
-                                                              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                              "         This tag has been removed.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  else
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
                                                               "         To avoid this warning please remove this line from your configuration "
-                                                            "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                            "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  BEGIN(SkipInvalid);
                                                  break;
@@ -954,7 +954,7 @@ static void readIncludeFile(const char *incName)
                                           if (option==0) // oops not known
                                           {
                                             config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-                                                g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                             BEGIN(SkipInvalid);
                                           }
                                           else // known tag
@@ -976,19 +976,19 @@ static void readIncludeFile(const char *incName)
                                               case ConfigOption::O_Int:
                                               case ConfigOption::O_Bool:
                                                 config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
-                                                    yytext,g_yyLineNr,g_yyFileName.data());
+                                                    yytext,g_yyLineNr,qPrint(g_yyFileName));
                                                 BEGIN(SkipInvalid);
                                                 break;
                                                case ConfigOption::O_Obsolete:
                                                  config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
-                                                            "file using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                            "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  BEGIN(SkipInvalid);
                                                  break;
                                                case ConfigOption::O_Disabled:
                                                  config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
                                                             "To avoid this warning please remove this line from your configuration "
-                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  BEGIN(SkipInvalid);
                                                  break;
                                              }
@@ -1025,7 +1025,7 @@ static void readIncludeFile(const char *incName)
                                           }
                                         }
 
-<Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
+<Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,qPrint(g_yyFileName)); }
    /*-------------- GetString ---------------*/
 
 <GetString>\n                           { processString();
@@ -1075,21 +1075,21 @@ static void readIncludeFile(const char *incName)
 <*>\\[ \r\t]*\n                         { g_yyLineNr++; }
 <*>[ \t\r]
 <*>\n                                   { g_yyLineNr++ ; }
-<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,g_yyFileName.data()); }
+<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,qPrint(g_yyFileName)); }
 
 %%
 
 /*@ ----------------------------------------------------------------------------
  */
 
-void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
+void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
-  if (m_startComment)
+  if (!m_startComment.isEmpty())
   {
-    t << takeStartComment() << endl;
+    t << takeStartComment() << "\n";
   }
-  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
+  t << "# Doxyfile " << getDoxygenVersion() << "\n\n";
   if (!sl)
   {
     t << convertToComment(m_header,"");
@@ -1099,17 +1099,17 @@ void ConfigImpl::writeTemplate(FTextStream &t,bool sl,bool upd)
     option->writeTemplate(t,sl,upd);
   }
   /* print last lines of user comment that were at the end of the file */
-  if (m_userComment)
+  if (!m_userComment.isEmpty())
   {
     t << "\n";
     t << takeUserComment();
   }
 }
 
-void ConfigImpl::compareDoxyfile(FTextStream &t)
+void ConfigImpl::compareDoxyfile(TextStream &t)
 {
   t << "# Difference with default Doxyfile " << getFullVersion();
-  t << endl;
+  t << "\n";
   for (const auto &option : m_options)
   {
     option->m_userComment = "";
@@ -1173,7 +1173,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     // here we strip the quote again
     substEnvVarsInString(result);
 
-    //printf("Result %s was quoted=%d\n",result.data(),wasQuoted);
+    //printf("Result %s was quoted=%d\n",qPrint(result),wasQuoted);
 
     if (!wasQuoted) /* as a result of the expansion, a single string
                        may have expanded into a list, which we'll
@@ -1285,7 +1285,7 @@ void ConfigImpl::init()
       if (opt==0)
       {
         config_term("Config option '%s' has invalid depends relation on unknown option '%s'\n",
-            option->name().data(),depName.data());
+            qPrint(option->name()),qPrint(depName));
       }
     }
   }
@@ -1298,68 +1298,41 @@ void ConfigImpl::create()
   addConfigOptions(this);
 }
 
-static QCString configFileToString(const char *name)
+static QCString configFileToString(const QCString &name)
 {
-  if (name==0 || name[0]==0) return 0;
-  QFile f;
+  if (name.isEmpty()) return QCString();
 
-  bool fileOpened=FALSE;
-  if (name[0]=='-' && name[1]==0) // read from stdin
+  auto stream2string = [](std::istream &in) -> std::string
   {
-    fileOpened=f.open(IO_ReadOnly,stdin);
-    if (fileOpened)
-    {
-      const int bSize=4096;
-      QCString contents(bSize+1);
-      int totalSize=0;
-      int size;
-      while ((size=f.readBlock(contents.rawData()+totalSize,bSize))==bSize)
-      {
-        totalSize+=bSize;
-        contents.resize(totalSize+bSize+1);
-      }
-      totalSize+=size+2;
-      contents.resize(totalSize);
-      contents.at(totalSize-2)='\n'; // to help the scanner
-      contents.at(totalSize-1)='\0';
-      return contents;
-    }
+    std::string ret;
+    char buffer[4096];
+    while (in.read(buffer, sizeof(buffer))) ret.append(buffer, sizeof(buffer));
+    ret.append(buffer, static_cast<uint>(in.gcount()));
+    if (!ret.empty() && ret[ret.length()-1]!='\n') ret+='\n'; // to help the scanner
+    return ret;
+  };
+
+  if (name=="-") // read from stdin
+  {
+    // read contents from stdin into contents string
+    return stream2string(std::cin);
   }
   else // read from file
   {
-    QFileInfo fi(name);
-    if (!fi.exists() || !fi.isFile())
+    std::ifstream f(name.str(),std::istream::in);
+    if (!f.is_open())
     {
-      config_err("file '%s' not found\n",name);
+      config_term("file '%s' not found or could not be opened\n",qPrint(name));
       return "";
     }
-    f.setName(name);
-    fileOpened=f.open(IO_ReadOnly);
-    if (fileOpened)
-    {
-      int fsize=f.size();
-      QCString contents(fsize+2);
-      f.readBlock(contents.rawData(),fsize);
-      f.close();
-      if (fsize==0 || contents[fsize-1]=='\n')
-        contents[fsize]='\0';
-      else
-        contents[fsize]='\n'; // to help the scanner
-      contents[fsize+1]='\0';
-      return contents;
-    }
+    return stream2string(f);
   }
-  if (!fileOpened)
-  {
-    config_term("cannot open file '%s' for reading\n",name);
-  }
-  return "";
 }
 
-bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
+bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 {
   g_config = ConfigImpl::instance();
-  g_inputString   = str;
+  g_inputString   = str.data();
   g_inputPosition = 0;
   g_yyFileName    = fn;
   g_yyLineNr      = 1;
@@ -1373,13 +1346,13 @@ bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
   return TRUE;
 }
 
-bool ConfigImpl::parse(const char *fn,bool update)
+bool ConfigImpl::parse(const QCString &fn,bool update)
 {
   int retval;
   g_encoding = "UTF-8";
-  printlex(yy_flex_debug, TRUE, __FILE__, fn);
+  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fn));
   retval =  parseString(fn,configFileToString(fn), update);
-  printlex(yy_flex_debug, FALSE, __FILE__, fn);
+  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fn));
   return retval;
 }
 
@@ -1393,10 +1366,10 @@ static void cleanUpPaths(StringVector &str)
     std::replace(path.begin(),path.end(),'\\','/');
     if ((path[0]!='/' && (path.size()<=2 || path[1]!=':')) || path[path.size()-1]!='/')
     {
-      QFileInfo fi(path.c_str());
+      FileInfo fi(path);
       if (fi.exists() && fi.isDir())
       {
-        path = fi.absFilePath().utf8().str();
+        path = fi.absFilePath();
         if (path[path.size()-1]!='/') path+='/';
       }
     }
@@ -1410,7 +1383,7 @@ static bool checkFileName(const QCString &s,const char *optionName)
   if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
       (val=="no"  || val=="false" || val=="0" || val=="none"))
   {
-    err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
+    err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,qPrint(s));
     return false;
   }
   return true;
@@ -1432,21 +1405,21 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
     int i=item.find('=');
     if (i==-1 && equalRequired)
     {
-      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,item.data());
+      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,qPrint(item));
     }
     if (i!=-1)
     {
       QCString myName=item.left(i).stripWhiteSpace();
       if (myName.isEmpty())
       {
-        err("Illegal format for option %s, no name specified for item '%s'\n",name,item.data());
+        err("Illegal format for option %s, no name specified for item '%s'\n",name,qPrint(item));
       }
       else if (valueRequired)
       {
         QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
         if (myValue.isEmpty())
         {
-          err("Illegal format for option %s, no value specified for item '%s'\n",name,item.data());
+          err("Illegal format for option %s, no value specified for item '%s'\n",name,qPrint(item));
         }
       }
     }
@@ -1529,10 +1502,8 @@ void Config::checkAndCorrect()
   StringVector stripFromPath = Config_getList(STRIP_FROM_PATH);
   if (stripFromPath.empty()) // by default use the current path
   {
-    QString p = QDir::currentDirPath();
-    if (p.at(p.length()-1)!='/')
-        p.append('/');
-    stripFromPath.push_back(p.utf8().str());
+    std::string p = Dir::currentDirPath()+"/";
+    stripFromPath.push_back(p);
   }
   else
   {
@@ -1551,11 +1522,11 @@ void Config::checkAndCorrect()
   QCString headerFile = Config_getString(HTML_HEADER);
   if (!headerFile.isEmpty())
   {
-    QFileInfo fi(headerFile);
+    FileInfo fi(headerFile.str());
     if (!fi.exists())
     {
       config_term("tag HTML_HEADER: header file '%s' "
-          "does not exist\n",headerFile.data());
+          "does not exist\n",qPrint(headerFile));
     }
   }
 
@@ -1564,11 +1535,11 @@ void Config::checkAndCorrect()
   QCString footerFile = Config_getString(HTML_FOOTER);
   if (!footerFile.isEmpty())
   {
-    QFileInfo fi(footerFile);
+    FileInfo fi(footerFile.str());
     if (!fi.exists())
     {
       config_term("tag HTML_FOOTER: footer file '%s' "
-          "does not exist\n",footerFile.data());
+          "does not exist\n",qPrint(footerFile));
     }
   }
 
@@ -1576,18 +1547,47 @@ void Config::checkAndCorrect()
   // Test to see if MathJax code file is valid
   if (Config_getBool(USE_MATHJAX))
   {
+    QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
+    QCString mathjaxVersion = Config_getEnum(MATHJAX_VERSION);
+    if (!mathJaxFormat.isEmpty())
+    {
+      if (mathjaxVersion == "MathJax_2")
+      {
+        if (mathJaxFormat=="chtml") Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
+      }
+      else
+      {
+        if (mathJaxFormat=="HTML-CSS" || mathJaxFormat=="NativeMML")
+        {
+          Config_updateEnum(MATHJAX_FORMAT,"chtml");
+        }
+      }
+    }
+
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
     if (!mathJaxCodefile.isEmpty())
     {
-      QFileInfo fi(mathJaxCodefile);
+      FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
       {
         config_term("tag MATHJAX_CODEFILE file '%s' "
-            "does not exist\n",mathJaxCodefile.data());
+            "does not exist\n",qPrint(mathJaxCodefile));
       }
     }
     QCString path = Config_getString(MATHJAX_RELPATH);
-    if (!path.isEmpty() && path.at(path.length()-1)!='/')
+    if (path.isEmpty())
+    {
+      if (mathjaxVersion == "MathJax_2")
+      {
+        path = "https://cdn.jsdelivr.net/npm/mathjax@2";
+      }
+      else
+      {
+        path = "https://cdn.jsdelivr.net/npm/mathjax@3";
+      }
+    }
+
+    if (path.at(path.length()-1)!='/')
     {
       path+="/";
     }
@@ -1599,11 +1599,11 @@ void Config::checkAndCorrect()
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
   if (!latexHeaderFile.isEmpty())
   {
-    QFileInfo fi(latexHeaderFile);
+    FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
     {
       config_term("tag LATEX_HEADER: header file '%s' "
-          "does not exist\n",latexHeaderFile.data());
+          "does not exist\n",qPrint(latexHeaderFile));
     }
   }
 
@@ -1612,11 +1612,11 @@ void Config::checkAndCorrect()
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
   if (!latexFooterFile.isEmpty())
   {
-    QFileInfo fi(latexFooterFile);
+    FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
     {
       config_term("tag LATEX_FOOTER: footer file '%s' "
-          "does not exist\n",latexFooterFile.data());
+          "does not exist\n",qPrint(latexFooterFile));
     }
   }
 
@@ -1625,7 +1625,7 @@ void Config::checkAndCorrect()
   const StringVector &includePath = Config_getList(INCLUDE_PATH);
   for (const auto &s : includePath)
   {
-    QFileInfo fi(s.c_str());
+    FileInfo fi(s);
     if (!fi.exists()) warn_uncond("tag INCLUDE_PATH: include path '%s' "
                           "does not exist\n",s.c_str());
   }
@@ -1643,7 +1643,7 @@ void Config::checkAndCorrect()
       int i_obrace=predef.find('(');
       if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && predef.at(i_equals-1)==':'))
       {
-        err("Illegal PREDEFINED format '%s', no define name specified\n",predef.data());
+        err("Illegal PREDEFINED format '%s', no define name specified\n",qPrint(predef));
       }
     }
   }
@@ -1654,8 +1654,8 @@ void Config::checkAndCorrect()
   for (const auto &alias : aliasList)
   {
     // match aliases of the form re1='name=' and re2='name{2} ='
-    static const reg::Ex re1(R"(\a\w*\s*=)");
-    static const reg::Ex re2(R"(\a\w*{\d+}\s*=)");
+    static const reg::Ex re1(R"(^\a\w*\s*=)");
+    static const reg::Ex re2(R"(^\a\w*{\d+}\s*=)");
     if (!reg::search(alias,re1) && !reg::search(alias,re2))
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
@@ -1765,7 +1765,7 @@ void Config::checkAndCorrect()
   }
   else if (dotNumThreads<=0)
   {
-    dotNumThreads=QMAX(2,std::thread::hardware_concurrency()+1);
+    dotNumThreads=std::max(2u,std::thread::hardware_concurrency()+1);
   }
   Config_updateInt(DOT_NUM_THREADS,dotNumThreads);
 
@@ -1774,22 +1774,23 @@ void Config::checkAndCorrect()
   QCString dotPath = Config_getString(DOT_PATH);
   if (!dotPath.isEmpty())
   {
-    QFileInfo fi(dotPath);
+    FileInfo fi(dotPath.str());
     if (fi.exists() && fi.isFile()) // user specified path + exec
     {
-      dotPath=fi.dirPath(TRUE).utf8()+"/";
+      dotPath=fi.dirPath(TRUE)+"/";
     }
     else
     {
-      QFileInfo dp(dotPath+"/dot"+Portable::commandExtension());
+      QCString dotExe = dotPath+"/dot"+Portable::commandExtension();
+      FileInfo dp(dotExe.str());
       if (!dp.exists() || !dp.isFile())
       {
-        warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
+        warn_uncond("the dot tool could not be found at %s\n",qPrint(dotPath));
         dotPath="";
       }
       else
       {
-        dotPath=dp.dirPath(TRUE).utf8()+"/";
+        dotPath=dp.dirPath(TRUE)+"/";
       }
     }
 #if defined(_WIN32) // convert slashes
@@ -1808,29 +1809,30 @@ void Config::checkAndCorrect()
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   if (!plantumlJarPath.isEmpty())
   {
-    QFileInfo pu(plantumlJarPath);
+    FileInfo pu(plantumlJarPath.str());
     if (pu.exists() && pu.isDir()) // PLANTUML_JAR_PATH is directory
     {
-      QFileInfo jar(plantumlJarPath+Portable::pathSeparator()+"plantuml.jar");
+      QCString plantumlJar = plantumlJarPath+Portable::pathSeparator()+"plantuml.jar";
+      FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE).utf8()+Portable::pathSeparator();
+        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
       }
       else
       {
         err("Jar file plantuml.jar not found at location "
-                   "specified via PLANTUML_JAR_PATH: '%s'\n",plantumlJarPath.data());
+                   "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
     else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE).utf8()+Portable::pathSeparator();
+      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
     }
     else
     {
       err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
-                 plantumlJarPath.data());
+                 qPrint(plantumlJarPath));
       plantumlJarPath="";
     }
   }
@@ -1841,15 +1843,16 @@ void Config::checkAndCorrect()
   QCString diaPath = Config_getString(DIA_PATH);
   if (!diaPath.isEmpty())
   {
-    QFileInfo dp(diaPath+"/dia"+Portable::commandExtension());
+    QCString diaExe = diaPath+"/dia"+Portable::commandExtension();
+    FileInfo dp(diaExe.str());
     if (!dp.exists() || !dp.isFile())
     {
-      warn_uncond("dia could not be found at %s\n",diaPath.data());
+      warn_uncond("dia could not be found at %s\n",qPrint(diaPath));
       diaPath="";
     }
     else
     {
-      diaPath=dp.dirPath(TRUE).utf8()+"/";
+      diaPath=dp.dirPath(TRUE)+"/";
 #if defined(_WIN32) // convert slashes
       uint i=0,l=diaPath.length();
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
@@ -1868,13 +1871,13 @@ void Config::checkAndCorrect()
   if (inputSources.empty())
   {
     // use current dir as the default
-    inputSources.push_back(QDir::currentDirPath().utf8().str());
+    inputSources.push_back(Dir::currentDirPath());
   }
   else
   {
     for (const auto &s : inputSources)
     {
-      QFileInfo fi(s.c_str());
+      FileInfo fi(s.c_str());
       if (!fi.exists())
       {
         warn_uncond("tag INPUT: input source '%s' does not exist\n",s.c_str());
@@ -2000,15 +2003,6 @@ void Config::checkAndCorrect()
   Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
 
   //------------------------
-  QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
-  if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
-       mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
-  {
-    err("Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
-    Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
-  }
-
-  //------------------------
   // add default words if needed
   const StringVector &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
   if (annotationFromBrief.empty())
@@ -2077,7 +2071,7 @@ void Config::checkAndCorrect()
       {
         if (option->kind()==ConfigOption::O_Bool)
         {
-          printf("disabling option %s\n",option->name().data());
+          printf("disabling option %s\n",qPrint(option->name()));
           ConfigImpl_getBool("option->name("))=FALSE; // also disable this option
         }
       }
@@ -2088,20 +2082,27 @@ void Config::checkAndCorrect()
 
 }
 
-void Config::writeTemplate(FTextStream &t,bool shortList,bool update)
+void Config::writeTemplate(TextStream &t,bool shortList,bool update)
 {
   ConfigImpl::instance()->writeTemplate(t,shortList,update);
 }
 
-void Config::compareDoxyfile(FTextStream &t)
+void Config::compareDoxyfile(TextStream &t)
 {
   postProcess(FALSE, TRUE);
   ConfigImpl::instance()->compareDoxyfile(t);
 }
 
-bool Config::parse(const char *fileName,bool update)
+bool Config::parse(const QCString &fileName,bool update)
 {
-  return ConfigImpl::instance()->parse(fileName,update);
+  bool parseRes = ConfigImpl::instance()->parse(fileName,update);
+  if (!parseRes) return parseRes;
+
+  // Internally we use the default format UTF-8 and
+  // when updating etc. the output is in this format as well and not in the read format
+  ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
+  option->init();
+  return parseRes;
 }
 
 void Config::postProcess(bool clearHeaderAndFooter, bool compare)

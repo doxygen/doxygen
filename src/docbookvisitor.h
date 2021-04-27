@@ -16,20 +16,22 @@
 #ifndef _DOCBOOKDOCVISITOR_H
 #define _DOCBOOKDOCVISITOR_H
 
+#include <iostream>
+
 #include "containers.h"
 #include "docvisitor.h"
-#include <qcstring.h>
-#include <docparser.h>
+#include "docparser.h"
+#include "qcstring.h"
 
-class FTextStream;
 class CodeOutputInterface;
 class QCString;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -137,7 +139,7 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();
@@ -154,19 +156,19 @@ class DocbookDocVisitor : public DocVisitor
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
-    void visitPreStart(FTextStream &t,
+    void visitPreStart(TextStream &t,
                    const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
                    bool inlineImage = FALSE);
-    void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
+    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
     void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;

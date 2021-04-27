@@ -19,17 +19,19 @@
 #ifndef _MANDOCVISITOR_H
 #define _MANDOCVISITOR_H
 
-#include "docvisitor.h"
-#include <qcstring.h>
+#include <iostream>
 
-class FTextStream;
+#include "qcstring.h"
+#include "docvisitor.h"
+
 class CodeOutputInterface;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
+    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -142,13 +144,13 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
 
     //--------------------------------------
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

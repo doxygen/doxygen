@@ -43,7 +43,6 @@ class PackageDef;
 class GroupDef;
 struct IncludeInfo;
 class ClassDefImpl;
-class FTextStream;
 class ClassDef;
 class ClassDefMutable;
 class UsesClassList;
@@ -54,7 +53,7 @@ class MemberGroupList;
  */
 struct BaseClassDef
 {
-  BaseClassDef(ClassDef *cd,const char *n,Protection p, Specifier v,const char *t) :
+  BaseClassDef(ClassDef *cd,const QCString &n,Protection p, Specifier v,const QCString &t) :
         classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
 
   /** Class definition that this relation inherits from. */
@@ -168,14 +167,14 @@ class ClassDef : public Definition
     /** Returns the list of base classes from which this class directly
      *  inherits.
      */
-    virtual BaseClassList baseClasses() const = 0;
+    virtual const BaseClassList &baseClasses() const = 0;
 
     /** Update the list of base classes to the one passed */
     virtual void updateBaseClasses(const BaseClassList &bcd) = 0;
 
     /** Returns the list of sub classes that directly derive from this class
      */
-    virtual BaseClassList subClasses() const = 0;
+    virtual const BaseClassList &subClasses() const = 0;
 
     /** Update the list of sub classes to the one passed */
     virtual void updateSubClasses(const BaseClassList &bcd) = 0;
@@ -212,7 +211,7 @@ class ClassDef : public Definition
     /** Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
      */
-    virtual NamespaceDef *getNamespaceDef() const = 0;
+    //virtual NamespaceDef *getNamespaceDef() const = 0;
 
     /** Returns the file in which this compound's definition can be found.
      *  Should not return 0 (but it might be a good idea to check anyway).
@@ -267,7 +266,7 @@ class ClassDef : public Definition
      *  available, or 0 otherwise.
      *  @param name The name of the nested compound
      */
-    virtual const Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
 
     /** Returns the template parameter lists that form the template
      *  declaration of this class.
@@ -362,6 +361,8 @@ class ClassDef : public Definition
     virtual bool isSliceLocal() const = 0;
     virtual bool hasNonReferenceSuperClass() const = 0;
 
+    virtual QCString requiresClause() const = 0;
+
     //-----------------------------------------------------------------------------------
     // --- count members ----
     //-----------------------------------------------------------------------------------
@@ -379,7 +380,7 @@ class ClassDef : public Definition
     virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
                                 const QCString &templSpec,bool &freshInstance) const = 0;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                 const char *header,bool localNames) const = 0;
+                 const QCString &header,bool localNames) const = 0;
 
 };
 
@@ -390,15 +391,14 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     // --- setters ----
     //-----------------------------------------------------------------------------------
 
-    virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force) = 0;
-    virtual void setNamespace(NamespaceDef *nd) = 0;
+    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
     virtual void setSubGrouping(bool enabled) = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) = 0;
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
-    virtual void setClassName(const char *name) = 0;
+    virtual void setClassName(const QCString &name) = 0;
     virtual void setClassSpecifier(uint64 spec) = 0;
     virtual void setClassStatic(bool stat) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
@@ -408,22 +408,23 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
     virtual void setTagLessReference(const ClassDef *cd) = 0;
-    virtual void setName(const char *name) = 0;
-    virtual void setMetaData(const char *md) = 0;
+    virtual void setName(const QCString &name) = 0;
+    virtual void setMetaData(const QCString &md) = 0;
+    virtual void setRequiresClause(const QCString &req) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0) = 0;
-    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0) = 0;
+    virtual void insertBaseClass(ClassDef *,const QCString &name,Protection p,Specifier s,const QCString &t=QCString()) = 0;
+    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const QCString &t=QCString()) = 0;
     virtual void insertMember(MemberDef *) = 0;
     virtual void insertUsedFile(const FileDef *) = 0;
-    virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const char *templSpec) = 0;
+    virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) = 0;
     virtual void addInnerCompound(const Definition *d) = 0;
-    virtual bool addExample(const char *anchor,const char *name, const char *file) = 0;
-    virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
-    virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
+    virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) = 0;
+    virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
+    virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
     virtual void makeTemplateArgument(bool b=TRUE) = 0;
     virtual void mergeCategory(ClassDef *category) = 0;
     virtual void findSectionsInDocumentation() = 0;
@@ -449,14 +450,15 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void writeMemberPages(OutputList &ol) const = 0;
     virtual void writeMemberList(OutputList &ol) const = 0;
     virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
-                 const ClassDef *inheritedFrom,const char *inheritId) const = 0;
+                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
                  MemberListType lt,const QCString &title,
-                 const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 const QCString &subTitle=QCString(),
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
                  int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
@@ -466,9 +468,9 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
 
 /** Factory method to create a new ClassDef object */
 ClassDefMutable *createClassDef(
-             const char *fileName,int startLine,int startColumn,
-             const char *name,ClassDef::CompoundType ct,
-             const char *ref=0,const char *fName=0,
+             const QCString &fileName,int startLine,int startColumn,
+             const QCString &name,ClassDef::CompoundType ct,
+             const QCString &ref=QCString(),const QCString &fName=QCString(),
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
@@ -493,11 +495,11 @@ struct UsesClassDef
  ~UsesClassDef()
   {
   }
-  void addAccessor(const char *s)
+  void addAccessor(const QCString &s)
   {
-    if (accessors.find(s)==accessors.end())
+    if (accessors.find(s.str())==accessors.end())
     {
-      accessors.insert(s);
+      accessors.insert(s.str());
     }
   }
   /** Class definition that this relation uses. */
@@ -530,11 +532,11 @@ struct ConstraintClassDef
  ~ConstraintClassDef()
   {
   }
-  void addAccessor(const char *s)
+  void addAccessor(const QCString &s)
   {
-    if (accessors.find(s)==accessors.end())
+    if (accessors.find(s.str())==accessors.end())
     {
-      accessors.insert(s);
+      accessors.insert(s.str());
     }
   }
   /** Class definition that this relation uses. */

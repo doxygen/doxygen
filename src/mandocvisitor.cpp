@@ -13,8 +13,6 @@
  *
  */
 
-#include <qfileinfo.h>
-
 #include "mandocvisitor.h"
 #include "docparser.h"
 #include "language.h"
@@ -28,9 +26,10 @@
 #include "filedef.h"
 #include "htmlentity.h"
 #include "emoji.h"
+#include "fileinfo.h"
 
-ManDocVisitor::ManDocVisitor(FTextStream &t,CodeOutputInterface &ci,
-                             const char *langExt)
+ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
+                             const QCString &langExt)
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
     m_indent(0), m_langExt(langExt)
 {
@@ -112,15 +111,15 @@ void ManDocVisitor::visit(DocURL *u)
 void ManDocVisitor::visit(DocLineBreak *)
 {
   if (m_hide) return;
-  m_t << endl << ".br" << endl;
+  m_t << "\n.br\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visit(DocHorRuler *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -168,17 +167,17 @@ void ManDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
-        if (!m_firstCol) m_t << endl;
-        m_t << ".PP" << endl;
-        m_t << ".nf" << endl;
+        if (!m_firstCol) m_t << "\n";
+        m_t << ".PP\n";
+        m_t << ".nf\n";
         m_insidePre=TRUE;
       }
       else
       {
         m_insidePre=FALSE;
-        if (!m_firstCol) m_t << endl;
-        m_t << ".fi" << endl;
-        m_t << ".PP" << endl;
+        if (!m_firstCol) m_t << "\n";
+        m_t << ".fi\n";
+        m_t << ".PP\n";
         m_firstCol=TRUE;
       }
       break;
@@ -199,25 +198,25 @@ void ManDocVisitor::visit(DocVerbatim *s)
   switch (s->type())
   {
     case DocVerbatim::Code: // fall though
-      if (!m_firstCol) m_t << endl;
-      m_t << ".PP" << endl;
-      m_t << ".nf" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".PP\n";
+      m_t << ".nf\n";
       getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),
                                         langExt,
                                         s->isExample(),s->exampleFile());
-      if (!m_firstCol) m_t << endl;
-      m_t << ".fi" << endl;
-      m_t << ".PP" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".fi\n";
+      m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
     case DocVerbatim::Verbatim:
-      if (!m_firstCol) m_t << endl;
-      m_t << ".PP" << endl;
-      m_t << ".nf" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".PP\n";
+      m_t << ".nf\n";
       m_t << s->text();
-      if (!m_firstCol) m_t << endl;
-      m_t << ".fi" << endl;
-      m_t << ".PP" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".fi\n";
+      m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
     case DocVerbatim::ManOnly:
@@ -249,11 +248,11 @@ void ManDocVisitor::visit(DocInclude *inc)
   {
     case DocInclude::IncWithLines:
       {
-         if (!m_firstCol) m_t << endl;
-         m_t << ".PP" << endl;
-         m_t << ".nf" << endl;
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         if (!m_firstCol) m_t << "\n";
+         m_t << ".PP\n";
+         m_t << ".nf\n";
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                            inc->text(),
                                            langExt,
@@ -267,16 +266,16 @@ void ManDocVisitor::visit(DocInclude *inc)
                                            TRUE
 					   );
          delete fd;
-         if (!m_firstCol) m_t << endl;
-         m_t << ".fi" << endl;
-         m_t << ".PP" << endl;
+         if (!m_firstCol) m_t << "\n";
+         m_t << ".fi\n";
+         m_t << ".PP\n";
          m_firstCol=TRUE;
       }
       break;
     case DocInclude::Include:
-      if (!m_firstCol) m_t << endl;
-      m_t << ".PP" << endl;
-      m_t << ".nf" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".PP\n";
+      m_t << ".nf\n";
       getCodeParser(inc->extension()).parseCode(m_ci,inc->context(),
                                         inc->text(),
                                         langExt,
@@ -289,9 +288,9 @@ void ManDocVisitor::visit(DocInclude *inc)
                                         0,     // memberDef
                                         FALSE
 				       );
-      if (!m_firstCol) m_t << endl;
-      m_t << ".fi" << endl;
-      m_t << ".PP" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".fi\n";
+      m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
     case DocInclude::DontInclude:
@@ -306,19 +305,19 @@ void ManDocVisitor::visit(DocInclude *inc)
       m_t << inc->text();
       break;
     case DocInclude::VerbInclude:
-      if (!m_firstCol) m_t << endl;
-      m_t << ".PP" << endl;
-      m_t << ".nf" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".PP\n";
+      m_t << ".nf\n";
       m_t << inc->text();
-      if (!m_firstCol) m_t << endl;
-      m_t << ".fi" << endl;
-      m_t << ".PP" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".fi\n";
+      m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
     case DocInclude::Snippet:
-      if (!m_firstCol) m_t << endl;
-      m_t << ".PP" << endl;
-      m_t << ".nf" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".PP\n";
+      m_t << ".nf\n";
       getCodeParser(inc->extension()).parseCode(m_ci,
                                         inc->context(),
                                         extractBlock(inc->text(),inc->blockId()),
@@ -326,18 +325,18 @@ void ManDocVisitor::visit(DocInclude *inc)
                                         inc->isExample(),
                                         inc->exampleFile()
                                        );
-      if (!m_firstCol) m_t << endl;
-      m_t << ".fi" << endl;
-      m_t << ".PP" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".fi\n";
+      m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
     case DocInclude::SnipWithLines:
       {
-         if (!m_firstCol) m_t << endl;
-         m_t << ".PP" << endl;
-         m_t << ".nf" << endl;
-         QFileInfo cfi( inc->file() );
-         FileDef *fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+         if (!m_firstCol) m_t << "\n";
+         m_t << ".PP\n";
+         m_t << ".nf\n";
+         FileInfo cfi( inc->file().str() );
+         FileDef *fd = createFileDef( cfi.dirPath(), cfi.fileName() );
          getCodeParser(inc->extension()).parseCode(m_ci,
                                            inc->context(),
                                            extractBlock(inc->text(),inc->blockId()),
@@ -352,9 +351,9 @@ void ManDocVisitor::visit(DocInclude *inc)
                                            TRUE   // show line number
                                           );
          delete fd;
-         if (!m_firstCol) m_t << endl;
-         m_t << ".fi" << endl;
-         m_t << ".PP" << endl;
+         if (!m_firstCol) m_t << "\n";
+         m_t << ".fi\n";
+         m_t << ".PP\n";
          m_firstCol=TRUE;
       }
       break;
@@ -372,14 +371,14 @@ void ManDocVisitor::visit(DocIncOperator *op)
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     if (!m_hide)
     {
-      if (!m_firstCol) m_t << endl;
-      m_t << ".PP" << endl;
-      m_t << ".nf" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".PP\n";
+      m_t << ".nf\n";
     }
     pushHidden(m_hide);
     m_hide = TRUE;
@@ -392,8 +391,8 @@ void ManDocVisitor::visit(DocIncOperator *op)
       FileDef *fd = 0;
       if (!op->includeFileName().isEmpty())
       {
-        QFileInfo cfi( op->includeFileName() );
-        fd = createFileDef( cfi.dirPath().utf8(), cfi.fileName().utf8() );
+        FileInfo cfi( op->includeFileName().str() );
+        fd = createFileDef( cfi.dirPath(), cfi.fileName() );
       }
 
       getCodeParser(locLangExt).parseCode(m_ci,op->context(),op->text(),langExt,
@@ -415,15 +414,15 @@ void ManDocVisitor::visit(DocIncOperator *op)
     m_hide = popHidden();
     if (!m_hide)
     {
-      if (!m_firstCol) m_t << endl;
-      m_t << ".fi" << endl;
-      m_t << ".PP" << endl;
+      if (!m_firstCol) m_t << "\n";
+      m_t << ".fi\n";
+      m_t << ".PP\n";
       m_firstCol=TRUE;
     }
   }
   else
   {
-    if (!m_hide) m_t << endl;
+    if (!m_hide) m_t << "\n";
   }
 }
 
@@ -466,7 +465,7 @@ void ManDocVisitor::visitPost(DocAutoList *)
 {
   if (m_hide) return;
   m_indent-=2;
-  m_t << ".PP" << endl;
+  m_t << ".PP\n";
 }
 
 void ManDocVisitor::visitPre(DocAutoListItem *li)
@@ -474,7 +473,7 @@ void ManDocVisitor::visitPre(DocAutoListItem *li)
   if (m_hide) return;
   QCString ws;
   ws.fill(' ',m_indent-2);
-  if (!m_firstCol) m_t << endl;
+  if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
   if (((DocAutoList *)li->parent())->isEnumList())
   {
@@ -484,14 +483,14 @@ void ManDocVisitor::visitPre(DocAutoListItem *li)
   {
     m_t << "\\(bu\" " << m_indent;
   }
-  m_t << endl;
+  m_t << "\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocAutoListItem *)
 {
   if (m_hide) return;
-  m_t << endl;
+  m_t << "\n";
   m_firstCol=TRUE;
 }
 
@@ -508,8 +507,8 @@ void ManDocVisitor::visitPost(DocPara *p)
        )
      )
   {
-    if (!m_firstCol) m_t << endl;
-    m_t << ".PP" << endl;
+    if (!m_firstCol) m_t << "\n";
+    m_t << ".PP\n";
     m_firstCol=TRUE;
   }
 }
@@ -527,8 +526,8 @@ void ManDocVisitor::visitPre(DocSimpleSect *s)
   if (m_hide) return;
   if (!m_firstCol)
   {
-    m_t << endl;
-    m_t << ".PP" << endl;
+    m_t << "\n";
+    m_t << ".PP\n";
   }
   m_t << "\\fB";
   switch(s->type())
@@ -571,17 +570,17 @@ void ManDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
-    m_t << "\\fP" << endl;
-    m_t << ".RS 4" << endl;
+    m_t << "\\fP\n";
+    m_t << ".RS 4\n";
   }
 }
 
 void ManDocVisitor::visitPost(DocSimpleSect *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".RE" << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".RE\n";
+  m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -592,23 +591,23 @@ void ManDocVisitor::visitPre(DocTitle *)
 void ManDocVisitor::visitPost(DocTitle *)
 {
   if (m_hide) return;
-  m_t << "\\fP" << endl;
-  m_t << ".RS 4" << endl;
+  m_t << "\\fP\n";
+  m_t << ".RS 4\n";
 }
 
 void ManDocVisitor::visitPre(DocSimpleList *)
 {
   if (m_hide) return;
   m_indent+=2;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PD 0" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".PD 0\n";
 }
 
 void ManDocVisitor::visitPost(DocSimpleList *)
 {
   if (m_hide) return;
   m_indent-=2;
-  m_t << ".PP" << endl;
+  m_t << ".PP\n";
 }
 
 void ManDocVisitor::visitPre(DocSimpleListItem *)
@@ -616,27 +615,27 @@ void ManDocVisitor::visitPre(DocSimpleListItem *)
   if (m_hide) return;
   QCString ws;
   ws.fill(' ',m_indent-2);
-  if (!m_firstCol) m_t << endl;
-  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << "\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocSimpleListItem *)
 {
   if (m_hide) return;
-  m_t << endl;
+  m_t << "\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocSection *s)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
+  if (!m_firstCol) m_t << "\n";
   if (s->level()==1) m_t << ".SH"; else m_t << ".SS";
   m_t << " \"";
   filter(s->title());
-  m_t << "\"" << endl;
-  if (s->level()==1) m_t << ".PP" << endl;
+  m_t << "\"\n";
+  if (s->level()==1) m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -648,16 +647,16 @@ void ManDocVisitor::visitPre(DocHtmlList *)
 {
   if (m_hide) return;
   m_indent+=2;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PD 0" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".PD 0\n";
 }
 
 void ManDocVisitor::visitPost(DocHtmlList *)
 {
   if (m_hide) return;
   m_indent-=2;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".PP\n";
 }
 
 void ManDocVisitor::visitPre(DocHtmlListItem *li)
@@ -665,7 +664,7 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   if (m_hide) return;
   QCString ws;
   ws.fill(' ',m_indent-2);
-  if (!m_firstCol) m_t << endl;
+  if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"" << ws;
   if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
   {
@@ -675,31 +674,31 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   {
     m_t << "\\(bu\" " << m_indent;
   }
-  m_t << endl;
+  m_t << "\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocHtmlListItem *)
 {
   if (m_hide) return;
-  m_t << endl;
+  m_t << "\n";
   m_firstCol=TRUE;
 }
 
 //void ManDocVisitor::visitPre(DocHtmlPre *)
 //{
-//  if (!m_firstCol) m_t << endl;
-//  m_t << ".PP" << endl;
-//  m_t << ".nf" << endl;
+//  if (!m_firstCol) m_t << "\n";
+//  m_t << ".PP\n";
+//  m_t << ".nf\n";
 //  m_insidePre=TRUE;
 //}
 //
 //void ManDocVisitor::visitPost(DocHtmlPre *)
 //{
 //  m_insidePre=FALSE;
-//  if (!m_firstCol) m_t << endl;
-//  m_t << ".fi" << endl;
-//  m_t << ".PP" << endl;
+//  if (!m_firstCol) m_t << "\n";
+//  m_t << ".fi\n";
+//  m_t << ".PP\n";
 //  m_firstCol=TRUE;
 //}
 
@@ -710,15 +709,15 @@ void ManDocVisitor::visitPre(DocHtmlDescList *)
 void ManDocVisitor::visitPost(DocHtmlDescList *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPre(DocHtmlDescTitle *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
+  if (!m_firstCol) m_t << "\n";
   m_t << ".IP \"\\fB";
   m_firstCol=FALSE;
 }
@@ -726,7 +725,7 @@ void ManDocVisitor::visitPre(DocHtmlDescTitle *)
 void ManDocVisitor::visitPost(DocHtmlDescTitle *)
 {
   if (m_hide) return;
-  m_t << "\\fP\" 1c" << endl;
+  m_t << "\\fP\" 1c\n";
   m_firstCol=TRUE;
 }
 
@@ -773,18 +772,18 @@ void ManDocVisitor::visitPost(DocHtmlCell *)
 void ManDocVisitor::visitPre(DocInternal *)
 {
   if (m_hide) return;
-  //if (!m_firstCol) m_t << endl;
-  //m_t << ".PP" << endl;
-  //m_t << "\\fB" << theTranslator->trForInternalUseOnly() << "\\fP" << endl;
-  //m_t << ".RS 4" << endl;
+  //if (!m_firstCol) m_t << "\n";
+  //m_t << ".PP\n";
+  //m_t << "\\fB" << theTranslator->trForInternalUseOnly() << "\\fP\n";
+  //m_t << ".RS 4\n";
 }
 
 void ManDocVisitor::visitPost(DocInternal *)
 {
   if (m_hide) return;
-  //if (!m_firstCol) m_t << endl;
-  //m_t << ".RE" << endl;
-  //m_t << ".PP" << endl;
+  //if (!m_firstCol) m_t << "\n";
+  //m_t << ".RE\n";
+  //m_t << ".PP\n";
   //m_firstCol=TRUE;
 }
 
@@ -803,7 +802,7 @@ void ManDocVisitor::visitPost(DocHRef *)
 void ManDocVisitor::visitPre(DocHtmlHeader *header)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
+  if (!m_firstCol) m_t << "\n";
   if (header->level()==1) m_t << ".SH"; else m_t << ".SS";
   m_t << " \"";
 }
@@ -811,8 +810,8 @@ void ManDocVisitor::visitPre(DocHtmlHeader *header)
 void ManDocVisitor::visitPost(DocHtmlHeader *header)
 {
   if (m_hide) return;
-  m_t << "\"" << endl;
-  if (header->level()==1) m_t << ".PP" << endl;
+  m_t << "\"\n";
+  if (header->level()==1) m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -877,15 +876,15 @@ void ManDocVisitor::visitPre(DocSecRefItem *)
   if (m_hide) return;
   QCString ws;
   ws.fill(' ',m_indent-2);
-  if (!m_firstCol) m_t << endl;
-  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".IP \"" << ws << "\\(bu\" " << m_indent << "\n";
   m_firstCol=TRUE;
 }
 
 void ManDocVisitor::visitPost(DocSecRefItem *)
 {
   if (m_hide) return;
-  m_t << endl;
+  m_t << "\n";
   m_firstCol=TRUE;
 }
 
@@ -899,8 +898,8 @@ void ManDocVisitor::visitPost(DocSecRefList *)
 {
   if (m_hide) return;
   m_indent-=2;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".PP\n";
 }
 
 void ManDocVisitor::visitPre(DocParamSect *s)
@@ -908,8 +907,8 @@ void ManDocVisitor::visitPre(DocParamSect *s)
   if (m_hide) return;
   if (!m_firstCol)
   {
-    m_t << endl;
-    m_t << ".PP" << endl;
+    m_t << "\n";
+    m_t << ".PP\n";
   }
   m_t << "\\fB";
   switch(s->type())
@@ -925,16 +924,16 @@ void ManDocVisitor::visitPre(DocParamSect *s)
     default:
       ASSERT(0);
   }
-  m_t << "\\fP" << endl;
-  m_t << ".RS 4" << endl;
+  m_t << "\\fP\n";
+  m_t << ".RS 4\n";
 }
 
 void ManDocVisitor::visitPost(DocParamSect *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".RE" << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".RE\n";
+  m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -963,8 +962,8 @@ void ManDocVisitor::visitPost(DocParamList *pl)
   if (m_hide) return;
   if (!pl->isLast())
   {
-    if (!m_firstCol) m_t << endl;
-    m_t << ".br" << endl;
+    if (!m_firstCol) m_t << "\n";
+    m_t << ".br\n";
   }
 }
 
@@ -974,22 +973,22 @@ void ManDocVisitor::visitPre(DocXRefItem *x)
   if (x->title().isEmpty()) return;
   if (!m_firstCol)
   {
-    m_t << endl;
-    m_t << ".PP" << endl;
+    m_t << "\n";
+    m_t << ".PP\n";
   }
   m_t << "\\fB";
   filter(x->title());
-  m_t << "\\fP" << endl;
-  m_t << ".RS 4" << endl;
+  m_t << "\\fP\n";
+  m_t << ".RS 4\n";
 }
 
 void ManDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
   if (x->title().isEmpty()) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".RE" << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".RE\n";
+  m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -1018,18 +1017,18 @@ void ManDocVisitor::visitPre(DocHtmlBlockQuote *)
   if (m_hide) return;
   if (!m_firstCol)
   {
-    m_t << endl;
-    m_t << ".PP" << endl;
+    m_t << "\n";
+    m_t << ".PP\n";
   }
-  m_t << ".RS 4" << endl; // TODO: add support for nested block quotes
+  m_t << ".RS 4\n"; // TODO: add support for nested block quotes
 }
 
 void ManDocVisitor::visitPost(DocHtmlBlockQuote *)
 {
   if (m_hide) return;
-  if (!m_firstCol) m_t << endl;
-  m_t << ".RE" << endl;
-  m_t << ".PP" << endl;
+  if (!m_firstCol) m_t << "\n";
+  m_t << ".RE\n";
+  m_t << ".PP\n";
   m_firstCol=TRUE;
 }
 
@@ -1050,11 +1049,11 @@ void ManDocVisitor::visitPost(DocParBlock *)
 }
 
 
-void ManDocVisitor::filter(const char *str)
+void ManDocVisitor::filter(const QCString &str)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const char *p=str;
+    const char *p=str.data();
     char c=0;
     while ((c=*p++))
     {

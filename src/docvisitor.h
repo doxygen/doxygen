@@ -18,6 +18,8 @@
 
 #include <memory>
 
+#include "qcstring.h"
+
 // ids
 const int DocVisitor_Html  = 0;
 const int DocVisitor_Latex = 1;
@@ -95,7 +97,7 @@ class DocVisitor
     DocVisitor(int id);
     virtual ~DocVisitor();
     int id() const;
-    CodeParserInterface &getCodeParser(const char *langExt);
+    CodeParserInterface &getCodeParser(const QCString &langExt);
     void pushHidden(bool hide);
     bool popHidden();
 

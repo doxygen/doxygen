@@ -17,19 +17,19 @@
 #define _HTMLDOCVISITOR_H
 
 #include "docvisitor.h"
-#include <qcstring.h>
+#include "qcstring.h"
 
 class Definition;
 class MemberDef;
 class DocNode;
-class FTextStream;
 class CodeOutputInterface;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const Definition *ctx);
+    HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const Definition *ctx);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -139,8 +139,8 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const char *str);
-    void filterQuotedCdataAttr(const char* str);
+    void filter(const QCString &str);
+    void filterQuotedCdataAttr(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &relPath,const QCString &anchor,
                    const QCString &tooltip = "");
@@ -157,7 +157,7 @@ class HtmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;

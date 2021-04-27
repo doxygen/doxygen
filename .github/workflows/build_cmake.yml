@@ -63,7 +63,8 @@ jobs:
             build_gen: "NMake Makefiles"
           }
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout doxygen
+      uses: actions/checkout@v1
       
     - name: Download MikTex (Windows)
       run: |
@@ -81,7 +82,8 @@ jobs:
       shell: pwsh
       if: matrix.config.os == 'windows-latest'
       
-    - uses: suisei-cn/actions-download-file@v1
+    - name: Install libiconv (Windows)
+      uses: suisei-cn/actions-download-file@v1
       with: 
         url: "https://github.com/pffang/libiconv-for-Windows/releases/download/v1.16/libiconv-for-Windows_1.16.7z"
         target: .  
@@ -101,7 +103,7 @@ jobs:
       run: |
         sudo apt remove llvm-8 clang-8 libclang-common-8-dev clang-format-8 libllvm8
         sudo apt remove llvm-9 llvm-9-dev llvm-9-tools llvm-9-runtime clang-9 libclang-common-9-dev clang-format-9 libllvm9
-        #sudo apt remove llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-cpp10 libclang1-10 libllvm10  
+        sudo apt remove llvm-11 llvm-11-dev llvm-11-tools llvm-11-runtime clang-11 clang-format-11 libclang-common-11-dev libclang-cpp11 libclang1-11 libllvm11  
         sudo apt-get autoremove
         sudo apt-get clean
         #sudo apt install libclang-9-dev libclang-common-9-dev
@@ -163,10 +165,10 @@ jobs:
     - name: Setting Ghostscript paths (Windows)
       shell: bash
       run: |
-        echo "C:/Program Files (x86)/gs/gs9.53.3/bin/" >> $GITHUB_PATH
-        echo "C:/Program Files/gs/gs9.53.3/bin/" >> $GITHUB_PATH
-        export PATH="/c/Program Files (x86)/gs/gs9.53.3/bin/:$PATH"
-        export PATH="/c/Program Files/gs/gs9.53.3/bin/:$PATH"
+        export GSpath=`find /c/Prog*/gs -name gswin\*c.exe | sed -e "s/gswin.*c.exe//"`
+        export PATH="$GSpath:$PATH"
+        export GSpath=`echo "$GSpath" | sed -e "s%/c%C:%"`
+        echo "$GSpath" >> $GITHUB_PATH
       if: matrix.config.os == 'windows-latest'
       
     - name: Install xmllint (Linux)

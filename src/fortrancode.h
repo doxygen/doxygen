@@ -32,11 +32,11 @@ class FortranCodeParser : public CodeParserInterface
     FortranCodeParser(FortranFormat format=FortranFormat_Unknown);
     virtual ~FortranCodeParser();
     void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
+                   const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
                    bool isExampleBlock,
-                   const char *exampleName=0,
+                   const QCString &exampleName=QCString(),
                    FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,

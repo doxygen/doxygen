@@ -31,8 +31,8 @@ class MemberName
     using reverse_iterator = typename Vec::reverse_iterator;
     using const_reverse_iterator = typename Vec::const_reverse_iterator;
 
-    MemberName(const char *name) : m_name(name) {}
-    const char *memberName() const { return m_name; }
+    MemberName(const QCString &name) : m_name(name) {}
+    QCString memberName() const { return m_name; }
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }
@@ -103,8 +103,8 @@ class MemberNameInfo
     using iterator = typename Vec::iterator;
     using const_iterator = typename Vec::const_iterator;
 
-    MemberNameInfo(const char *name) : m_name(name) {}
-    const char *memberName() const { return m_name; }
+    MemberNameInfo(const QCString &name) : m_name(name) {}
+    QCString memberName() const { return m_name; }
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }

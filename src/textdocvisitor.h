@@ -19,17 +19,16 @@
 #ifndef _TEXTDOCVISITOR_H
 #define _TEXTDOCVISITOR_H
 
+#include "qcstring.h"
 #include "docvisitor.h"
 #include "docparser.h"
-#include <qcstring.h>
-#include "ftextstream.h"
-
+#include "textstream.h"
 
 /*! @brief Concrete visitor implementation for TEXT output. */
 class TextDocVisitor : public DocVisitor
 {
   public:
-    TextDocVisitor(FTextStream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
+    TextDocVisitor(TextStream &t) : DocVisitor(DocVisitor_Text), m_t(t) {}
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -135,9 +134,9 @@ class TextDocVisitor : public DocVisitor
 
   private:
 
-   void filter(const char *str);
+    void filter(const QCString &str);
 
-    FTextStream &m_t;
+    TextStream &m_t;
 };
 
 #endif

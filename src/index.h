@@ -20,13 +20,12 @@
 #include <vector>
 #include <memory>
 
-#include <qcstring.h>
+#include "qcstring.h"
 
 class Definition;
 class DefinitionMutable;
 class MemberDef;
 class OutputList;
-class FTextStream;
 
 /** \brief Abstract interface for index generators. */
 class IndexIntf
@@ -37,14 +36,14 @@ class IndexIntf
     virtual void finalize() = 0;
     virtual void incContentsDepth() = 0;
     virtual void decContentsDepth() = 0;
-    virtual void addContentsItem(bool isDir, const char *name, const char *ref,
-                                 const char *file, const char *anchor, bool separateIndex,
+    virtual void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                                 const QCString &file, const QCString &anchor, bool separateIndex,
                                  bool addToNavIndex,const Definition *def) = 0;
     virtual void addIndexItem(const Definition *context,const MemberDef *md,
-                              const char *sectionAnchor,const char *title) = 0;
-    virtual void addIndexFile(const char *name) = 0;
-    virtual void addImageFile(const char *name) = 0;
-    virtual void addStyleSheetFile(const char *name) = 0;
+                              const QCString &sectionAnchor,const QCString &title) = 0;
+    virtual void addIndexFile(const QCString &name) = 0;
+    virtual void addImageFile(const QCString &name) = 0;
+    virtual void addStyleSheetFile(const QCString &name) = 0;
 };
 
 /** \brief A list of index interfaces.
@@ -94,17 +93,17 @@ class IndexList : public IndexIntf
     { if (m_enabled) foreach(&IndexIntf::incContentsDepth); }
     void decContentsDepth()
     { if (m_enabled) foreach(&IndexIntf::decContentsDepth); }
-    void addContentsItem(bool isDir, const char *name, const char *ref,
-                         const char *file, const char *anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
+    void addContentsItem(bool isDir, const QCString &name, const QCString &ref,
+                         const QCString &file, const QCString &anchor,bool separateIndex=FALSE,bool addToNavIndex=FALSE,
                          const Definition *def=0)
     { if (m_enabled) foreach(&IndexIntf::addContentsItem,isDir,name,ref,file,anchor,separateIndex,addToNavIndex,def); }
-    void addIndexItem(const Definition *context,const MemberDef *md,const char *sectionAnchor=0,const char *title=0)
+    void addIndexItem(const Definition *context,const MemberDef *md,const QCString &sectionAnchor=QCString(),const QCString &title=QCString())
     { if (m_enabled) foreach(&IndexIntf::addIndexItem,context,md,sectionAnchor,title); }
-    void addIndexFile(const char *name)
+    void addIndexFile(const QCString &name)
     { if (m_enabled) foreach(&IndexIntf::addIndexFile,name); }
-    void addImageFile(const char *name)
+    void addImageFile(const QCString &name)
     { if (m_enabled) foreach(&IndexIntf::addImageFile,name); }
-    void addStyleSheetFile(const char *name)
+    void addStyleSheetFile(const QCString &name)
     { if (m_enabled) foreach(&IndexIntf::addStyleSheetFile,name); }
 
   private:
@@ -120,6 +119,7 @@ enum IndexSections
   isModuleIndex,
   isDirIndex,
   isNamespaceIndex,
+  isConceptIndex,
   isClassHierarchyIndex,
   isCompoundIndex,
   isFileIndex,
@@ -128,6 +128,7 @@ enum IndexSections
   isDirDocumentation,
   isNamespaceDocumentation,
   isClassDocumentation,
+  isConceptDocumentation,
   isFileDocumentation,
   isExampleDocumentation,
   isPageDocumentation,
@@ -146,6 +147,7 @@ enum HighlightedItem
   HLI_InterfaceHierarchy,
   HLI_ExceptionHierarchy,
   HLI_Classes,
+  HLI_Concepts,
   HLI_Interfaces,
   HLI_Structs,
   HLI_Exceptions,
@@ -163,6 +165,7 @@ enum HighlightedItem
   HLI_UserGroup,
 
   HLI_ClassVisible,
+  HLI_ConceptVisible,
   HLI_InterfaceVisible,
   HLI_StructVisible,
   HLI_ExceptionVisible,
@@ -239,6 +242,7 @@ extern int hierarchyExceptions;
 extern int documentedFiles;
 extern int documentedGroups;
 extern int documentedNamespaces;
+extern int documentedConcepts;
 extern int indexedPages;
 extern int documentedClassMembers[CMHL_Total];
 extern int documentedFileMembers[FMHL_Total];
@@ -247,11 +251,11 @@ extern int documentedDirs;
 extern int documentedHtmlFiles;
 extern int documentedPages;
 
-void startTitle(OutputList &ol,const char *fileName,const DefinitionMutable *def=0);
-void endTitle(OutputList &ol,const char *fileName,const char *name);
-void startFile(OutputList &ol,const char *name,const char *manName,
-               const char *title,HighlightedItem hli=HLI_None,
-               bool additionalIndices=FALSE,const char *altSidebarName=0);
+void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
+void endTitle(OutputList &ol,const QCString &fileName,const QCString &name);
+void startFile(OutputList &ol,const QCString &name,const QCString &manName,
+               const QCString &title,HighlightedItem hli=HLI_None,
+               bool additionalIndices=FALSE,const QCString &altSidebarName=QCString());
 void endFile(OutputList &ol,bool skipNavIndex=FALSE,bool skipEndContents=FALSE,
              const QCString &navPath=QCString());
 void endFileWithNavPath(const Definition *d,OutputList &ol);

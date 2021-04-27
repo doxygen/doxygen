@@ -36,16 +36,16 @@ class GroupDef;
 class OutputList;
 class Definition;
 class DefinitionMutable;
-class FTextStream;
 class RefItem;
+class TextStream;
 
 /** A class representing a group of members. */
 class MemberGroup
 {
   public:
     //MemberGroup();
-    MemberGroup(const Definition *container,int id,const char *header,
-                const char *docs,const char *docFile,int docLine);
+    MemberGroup(const Definition *container,int id,const QCString &header,
+                const QCString &docs,const QCString &docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
@@ -53,15 +53,15 @@ class MemberGroup
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               const ClassDef *inheritedFrom,const char *inheritId) const;
+               const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool showInline=FALSE) const;
-    void writeDocumentation(OutputList &ol,const char *scopeName,
+    void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
-    void writeDocumentationPage(OutputList &ol,const char *scopeName,
+    void writeDocumentationPage(OutputList &ol,const QCString &scopeName,
                const DefinitionMutable *container) const;
-    void writeTagFile(FTextStream &);
+    void writeTagFile(TextStream &);
     void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
                const ClassDef *inheritedFrom,const QCString &inheritId) const;

@@ -40,7 +40,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
       if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
         DotNode *bn = it->second;
-        n->addChild(bn,0,0,0);
+        n->addChild(bn,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
       }
@@ -64,7 +64,7 @@ void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
             uniqueId,
             0 //distance
             );
-        n->addChild(bn,0,0,0);
+        n->addChild(bn,0,0);
         bn->addParent(n);
         bn->setDistance(distance);
         m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
@@ -134,7 +134,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_startNode = new DotNode(getNextNodeNumber(),
     linkToText(md->getLanguage(),name,FALSE),
     tooltip,
-    uniqueId.data(),
+    uniqueId,
     TRUE     // root node
   );
   m_startNode->setDistance(0);
@@ -179,12 +179,12 @@ QCString DotCallGraph::getMapLabel() const
 }
 
 QCString DotCallGraph::writeGraph(
-        FTextStream &out,
+        TextStream &out,
         GraphOutputFormat graphFormat,
         EmbeddedOutputFormat textFormat,
-        const char *path,
-        const char *fileName,
-        const char *relPath,bool generateImageMap,
+        const QCString &path,
+        const QCString &fileName,
+        const QCString &relPath,bool generateImageMap,
         int graphId)
 {
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);

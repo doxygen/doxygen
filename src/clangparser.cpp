@@ -19,6 +19,7 @@
 #include "membername.h"
 #include "filename.h"
 #include "tooltip.h"
+#include "utf8.h"
 #endif
 
 //--------------------------------------------------------------------------
@@ -73,18 +74,14 @@ static QCString detab(const QCString &s)
         col++;
         break;
       default: // non-whitespace => update minIndent
-        out.addChar(c);
-        if (c<0 && i<size) // multibyte sequence
         {
-          out.addChar(data[i++]); // >= 2 bytes
-          if (((uchar)c&0xE0)==0xE0 && i<size)
+          int bytes = getUTF8CharNumBytes(c);
+          for (int j=0;j<bytes-1 && c!=0; j++)
           {
-            out.addChar(data[i++]); // 3 bytes
+            out.addChar(c);
+            c = data[i++];
           }
-          if (((uchar)c&0xF0)==0xF0 && i<size)
-          {
-            out.addChar(data[i++]); // 4 byres
-          }
+          out.addChar(c);
         }
         if (col<minIndent) minIndent=col;
         col++;
@@ -95,7 +92,7 @@ static QCString detab(const QCString &s)
   return out.get();
 }
 
-static QCString keywordToType(const char *keyword)
+static const char * keywordToType(const char *keyword)
 {
   static const StringUnorderedSet flowKeywords({
     "break", "case", "catch", "continue", "default", "do",
@@ -266,7 +263,7 @@ void ClangTUParser::parse()
 
     // provide the input and and its dependencies as unsaved files so we can
     // pass the filtered versions
-    argv[argc++]=qstrdup(fileName);
+    argv[argc++]=qstrdup(fileName.data());
   }
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());
@@ -275,7 +272,7 @@ void ClangTUParser::parse()
   p->sources.resize(numUnsavedFiles);
   p->ufs.resize(numUnsavedFiles);
   p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE));
-  p->ufs[0].Filename = qstrdup(fileName);
+  p->ufs[0].Filename = qstrdup(fileName.data());
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
   p->fileMapping.insert({fileName.data(),0});
@@ -358,7 +355,7 @@ void ClangTUParser::switchToFile(const FileDef *fd)
     p->tokens    = 0;
     p->numTokens = 0;
 
-    CXFile f = clang_getFile(p->tu, fd->absFilePath());
+    CXFile f = clang_getFile(p->tu, fd->absFilePath().data());
     auto it = p->fileMapping.find(fd->absFilePath().data());
     if (it!=p->fileMapping.end() && it->second < p->numFiles)
     {
@@ -520,7 +517,7 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
   }
   else // no link
   {
-    ol.writeLineNumber(0,0,0,line);
+    ol.writeLineNumber(QCString(),QCString(),QCString(),line);
   }
 
   // set search page target
@@ -637,7 +634,7 @@ void ClangTUParser::linkInclude(CodeOutputInterface &ol,const FileDef *fd,
   }
   if (ifd)
   {
-    ol.writeCodeLink(ifd->getReference(),ifd->getOutputFileBase(),0,text,ifd->briefDescriptionAsTooltip());
+    ol.writeCodeLink(ifd->getReference(),ifd->getOutputFileBase(),QCString(),text,ifd->briefDescriptionAsTooltip());
   }
   else
   {

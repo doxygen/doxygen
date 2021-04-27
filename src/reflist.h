@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "linkedmap.h"
 
 class Definition;
@@ -32,13 +32,13 @@ class RefItem
   public:
     RefItem(int id,RefList *list) : m_id(id), m_list(list) {}
 
-    void setText  (const char *text)   { m_text   = text;   }
-    void setAnchor(const char *anchor) { m_anchor = anchor; }
-    void setPrefix(const char *prefix) { m_prefix = prefix; }
-    void setName  (const char *name)   { m_name   = name;   }
-    void setTitle (const char *title)  { m_title  = title;  }
-    void setArgs  (const char *args)   { m_args   = args;   }
-    void setGroup (const char *group)  { m_group  = group;  }
+    void setText  (const QCString &text)   { m_text   = text;   }
+    void setAnchor(const QCString &anchor) { m_anchor = anchor; }
+    void setPrefix(const QCString &prefix) { m_prefix = prefix; }
+    void setName  (const QCString &name)   { m_name   = name;   }
+    void setTitle (const QCString &title)  { m_title  = title;  }
+    void setArgs  (const QCString &args)   { m_args   = args;   }
+    void setGroup (const QCString &group)  { m_group  = group;  }
     void setScope (const Definition *scope) { m_scope  = scope;  }
 
     QCString text()     const { return m_text;   }
@@ -83,7 +83,7 @@ class RefList
      *  @param pageTitle String representing the title of the list page.
      *  @param secTitle String representing the title of the section.
      */
-    RefList(const char *listName, const char *pageTitle, const char *secTitle);
+    RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle);
     bool isEnabled() const;
 
     /*! Adds a new item to the list.

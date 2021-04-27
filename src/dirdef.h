@@ -16,19 +16,18 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
-#include "linkedmap.h"
-#include "definition.h"
 
 #include <vector>
 #include <map>
-#include <qcstring.h>
+
+#include "qcstring.h"
+#include "linkedmap.h"
+#include "definition.h"
 
 class FileList;
-class QStrList;
 class FileDef;
 class OutputList;
 class UsedDir;
-class FTextStream;
 class FilePair;
 class FilePairDict;
 class DirDef;
@@ -67,7 +66,7 @@ class UsedDir
     UsedDir(const DirDef *dir,bool inherited);
     virtual ~UsedDir();
     void addFileDep(const FileDef *srcFd,const FileDef *dstFd);
-    FilePair *findFilePair(const char *name);
+    FilePair *findFilePair(const QCString &name);
     const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
@@ -113,7 +112,7 @@ class DirDef : public DefinitionMutable, public Definition
 
     // generate output
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeTagFile(FTextStream &t) = 0;
+    virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
     virtual void sort() = 0;
@@ -165,6 +164,5 @@ class DirRelationLinkedMap : public LinkedMap<DirRelation>
 void buildDirectories();
 void generateDirDocs(OutputList &ol);
 void computeDirDependencies();
-void writeDirDependencyGraph(const char *file);
 
 #endif
