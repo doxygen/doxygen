@@ -331,6 +331,7 @@ STARTDOCSYMS      "##"
        			yyextra->stat=TRUE;
       		      }
     "@"{SCOPE}{CALL}? { // decorator
+                        lineCount(yyscanner);
                       }
     {SCRIPTCOMMENT}   { // Unix type script comment
                         if (yyextra->yyLineNr != 1) REJECT;
