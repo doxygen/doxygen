@@ -51,6 +51,16 @@ CPPValue parseHexadecimal(const std::string& token)
   return CPPValue(val);
 }
 
+CPPValue parseBinary(const std::string& token)
+{
+  long val = 0;
+  for (const char *p = token.c_str(); *p != 0; p++)
+  {
+    if (*p >= '0' && *p <= '1') val = val * 2 + *p - '0';
+  }
+  return CPPValue(val);
+}
+
 CPPValue parseCharacter(const std::string& token) // does not work for '\n' and the alike
 {
   if (token[1]=='\\')
