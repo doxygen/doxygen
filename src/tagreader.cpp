@@ -90,6 +90,7 @@ class TagMemberInfo
     Specifier virt = Normal;
     bool isStatic = false;
     std::vector<TagEnumValueInfo> enumValues;
+    int lineNr;
 };
 
 /** Base class for all compound types */
@@ -104,6 +105,7 @@ class TagCompoundInfo
     QCString name;
     QCString filename;
     std::vector<TagAnchorInfo> docAnchors;
+    int lineNr;
   private:
     CompoundType m_type;
 };
@@ -316,10 +318,11 @@ class TagFileParser
     void startMember( const XMLHandlers::Attributes& attrib)
     {
       m_curMember = TagMemberInfo();
-      m_curMember.kind      = XMLHandlers::value(attrib,"kind");
+      m_curMember.kind   = XMLHandlers::value(attrib,"kind");
       QCString protStr   = XMLHandlers::value(attrib,"protection");
       QCString virtStr   = XMLHandlers::value(attrib,"virtualness");
       QCString staticStr = XMLHandlers::value(attrib,"static");
+      m_curMember.lineNr = m_locator->lineNr();
       if (protStr=="protected")
       {
         m_curMember.prot = Protected;
@@ -967,6 +970,7 @@ void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
   {
     m_curCompound = it->second.make_instance();
     m_state       = it->second.state;
+    m_curCompound->lineNr = m_locator->lineNr();
   }
   else
   {
@@ -1207,6 +1211,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->stat       = tmi.isStatic;
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
+    me->startLine  = tmi.lineNr;
     if (ce->section == Entry::GROUPDOC_SEC)
     {
       me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
@@ -1326,9 +1331,10 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->tagInfoData.tagName  = m_tagName;
       ce->tagInfoData.anchor   = tci->anchor;
       ce->tagInfoData.fileName = tci->filename;
-      ce->hasTagInfo  = TRUE;
-      ce->id       = tci->clangId;
-      ce->lang     = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
+      ce->startLine            = tci->lineNr;
+      ce->hasTagInfo           = TRUE;
+      ce->id                   = tci->clangId;
+      ce->lang                 = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
       // transfer base class list
       ce->extends  = tci->bases;
       if (!tci->templateArguments.empty())
@@ -1365,7 +1371,8 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       fe->hasTagInfo = TRUE;
 
       QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
-      fe->fileName = fullName;
+      fe->fileName  = fullName;
+      fe->startLine = tfi->lineNr;
       //printf("createFileDef() filename=%s\n",qPrint(tfi->filename));
       QCString tagid = m_tagName+":"+tfi->path;
       std::unique_ptr<FileDef> fd { createFileDef(tagid,
@@ -1399,6 +1406,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ce,tci->docAnchors);
       ce->tagInfoData.tagName  = m_tagName;
       ce->tagInfoData.fileName = tci->filename;
+      ce->startLine   = tci->lineNr;
       ce->hasTagInfo  = TRUE;
       ce->id       = tci->clangId;
 
@@ -1419,6 +1427,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ne,tni->docAnchors);
       ne->tagInfoData.tagName  = m_tagName;
       ne->tagInfoData.fileName = tni->filename;
+      ne->startLine   = tni->lineNr;
       ne->hasTagInfo  = TRUE;
       ne->id       = tni->clangId;
 
@@ -1440,6 +1449,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(pe,tpgi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpgi->filename;
+      pe->startLine   = tpgi->lineNr;
       pe->hasTagInfo  = TRUE;
 
       buildMemberList(pe,tpgi->members);
@@ -1461,6 +1471,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ge,tgi->docAnchors);
       ge->tagInfoData.tagName  = m_tagName;
       ge->tagInfoData.fileName = tgi->filename;
+      ge->startLine   = tgi->lineNr;
       ge->hasTagInfo  = TRUE;
 
       buildMemberList(ge,tgi->members);
@@ -1503,6 +1514,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpi->filename;
+      pe->startLine   = tpi->lineNr;
       pe->hasTagInfo  = TRUE;
       root->moveToSubEntryAndKeep(pe);
     }
