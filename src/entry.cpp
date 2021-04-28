@@ -124,7 +124,7 @@ Entry::~Entry()
 {
   //printf("Entry::~Entry(%p) num=%d\n",this,g_num);
   //printf("Deleting entry %d name %s type %x children %d\n",
-  //       num,name.data(),section,sublist->count());
+  //       num,qPrint(name),section,sublist->count());
 
   g_num--;
 }

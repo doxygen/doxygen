@@ -122,9 +122,9 @@ static UmlDetailLevel getUmlDetailLevelFromConfig()
 
 static QCString escapeTooltip(const QCString &tooltip)
 {
+  if (tooltip.isEmpty()) return tooltip;
   QCString result;
   const char *p=tooltip.data();
-  if (p==0) return result;
   char c;
   while ((c=*p++))
   {
@@ -286,7 +286,7 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
+DotNode::DotNode(int n,const QCString &lab,const QCString &tip, const QCString &url,
   bool isRoot,const ClassDef *cd)
   : m_number(n)
   , m_label(lab)
@@ -304,8 +304,8 @@ DotNode::~DotNode()
 void DotNode::addChild(DotNode *n,
   int edgeColor,
   int edgeStyle,
-  const char *edgeLab,
-  const char *edgeURL,
+  const QCString &edgeLab,
+  const QCString &edgeURL,
   int edgeLabCol
 )
 {
@@ -411,7 +411,7 @@ void DotNode::writeBox(TextStream &t,
       }
     }
 
-    //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
+    //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "{" << convertLabel(m_label) << "\\n";
     if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
     {
@@ -558,7 +558,7 @@ void DotNode::write(TextStream &t,
                     bool toChildren,
                     bool backArrows) const
 {
-  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,m_label.data(),this,m_written,m_visible);
+  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,qPrint(m_label),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated);
@@ -570,7 +570,7 @@ void DotNode::write(TextStream &t,
     {
       if (cn->isVisible())
       {
-        //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
+        //printf("write arrow %s%s%s\n",qPrint(label()),backArrows?"<-":"->",qPrint(cn->label()));
         writeArrow(t,gt,format,cn,&(*it),topDown,backArrows);
       }
       cn->write(t,gt,format,topDown,toChildren,backArrows);
@@ -586,7 +586,7 @@ void DotNode::write(TextStream &t,
         const auto &children = pn->children();
         auto child_it = std::find(children.begin(),children.end(),this);
         size_t index = child_it - children.begin();
-        //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",pn->label().data());
+        //printf("write arrow %s%s%s\n",qPrint(label()),backArrows?"<-":"->",qPrint(pn->label()));
         writeArrow(t,
           gt,
           format,
@@ -599,7 +599,7 @@ void DotNode::write(TextStream &t,
       pn->write(t,gt,format,TRUE,FALSE,backArrows);
     }
   }
-  //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
+  //printf("end DotNode::write(%d) name=%s\n",distance,qPrint(m_label));
 }
 
 void DotNode::writeXML(TextStream &t,bool isClassGraph) const
@@ -609,15 +609,13 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
       t << "/>\n";
     }
@@ -673,15 +671,13 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
       t << "/>\n";
     }
@@ -742,18 +738,15 @@ void DotNode::writeDEF(TextStream &t) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
       t << nodePrefix << "link = {\n" << "  "
-        << nodePrefix << "link-id = '" << urlPtr << "';\n";
-
-      if (*refPtr!='\0')
+        << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";
+      if (dollarPos>0)
       {
         t << "  " << nodePrefix << "link-external = '"
-          << refPtr << "';\n";
+          << url.left(dollarPos) << "';\n";
       }
       t << "        };\n";
     }
@@ -807,7 +800,7 @@ void DotNode::colorConnectedNodes(int curColor)
       cn->setSubgraphId(curColor);
       cn->markAsVisible();
       cn->colorConnectedNodes(curColor);
-      //printf("coloring node %s (%p): %d\n",cn->label().data(),cn,cn->subgraphId());
+      //printf("coloring node %s (%p): %d\n",qPrint(cn->label()),cn,cn->subgraphId());
     }
   }
 
@@ -818,7 +811,7 @@ void DotNode::colorConnectedNodes(int curColor)
       pn->setSubgraphId(curColor);
       pn->markAsVisible();
       pn->colorConnectedNodes(curColor);
-      //printf("coloring node %s (%p): %d\n",pn->label().data(),pn,pn->subgraphId());
+      //printf("coloring node %s (%p): %d\n",qPrint(pn->label()),pn,pn->subgraphId());
     }
   }
 }
@@ -839,7 +832,7 @@ void DotNode::renumberNodes(int &number)
 const DotNode *DotNode::findDocNode() const
 {
   if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",m_label.data());
+  //printf("findDocNode(): '%s'\n",qPrint(m_label));
   for (const auto &pn : m_parents)
   {
     if (!pn->hasDocumentation())

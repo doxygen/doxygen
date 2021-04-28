@@ -56,15 +56,10 @@ TooltipManager::~TooltipManager()
 {
 }
 
-static QCString escapeId(const char *s)
+static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  char *p=res.rawData();
-  while (*p)
-  {
-    if (!isId(*p)) *p='_';
-    p++;
-  }
+  for (uint i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 

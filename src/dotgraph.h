@@ -43,9 +43,9 @@ class DotGraph
     QCString writeGraph(TextStream &t,
                         GraphOutputFormat gf,
                         EmbeddedOutputFormat ef,
-                        const char *path,
-                        const char *fileName,
-                        const char *relPath,
+                        const QCString &path,
+                        const QCString &fileName,
+                        const QCString &relPath,
                         bool writeImageMap=TRUE,
                         int graphId=-1
                        );

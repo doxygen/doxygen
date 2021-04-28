@@ -82,7 +82,7 @@ SearchIndex::SearchIndex() : SearchIndexIntf(Internal)
   m_index.resize(numIndexEntries);
 }
 
-void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile)
+void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
   if (ctx==0) return;
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
@@ -90,7 +90,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
   QCString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);
   QCString baseUrl = url;
-  if (anchor) url+=QCString("#")+anchor;
+  if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   if (!isSourceFile) baseUrl=url;
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
@@ -148,7 +148,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
       case Definition::TypeGroup:
         {
           const GroupDef *gd = toGroupDef(ctx);
-          if (gd->groupTitle())
+          if (!gd->groupTitle().isEmpty())
           {
             name = theTranslator->trGroup(TRUE,TRUE)+" "+gd->groupTitle();
           }
@@ -176,9 +176,9 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
   }
 }
 
-static int charsToIndex(const char *word)
+static int charsToIndex(const QCString &word)
 {
-  if (word==0) return -1;
+  if (word.length()<2) return -1;
 
   // Fast string hashing algorithm
   //register ushort h=0;
@@ -191,18 +191,16 @@ static int charsToIndex(const char *word)
   //return h;
 
   // Simple hashing that allows for substring searching
-  uint c1=((uchar *)word)[0];
-  if (c1==0) return -1;
-  uint c2=((uchar *)word)[1];
-  if (c2==0) return -1;
+  uint c1=(uchar)word[0];
+  uint c2=(uchar)word[1];
   return c1*256+c2;
 }
 
-void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
+void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
 {
-  if (word==0 || word[0]=='\0') return;
+  if (word.isEmpty()) return;
   QCString wStr = QCString(word).lower();
-  //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,wStr.data());
+  //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,qPrint(wStr));
   int idx=charsToIndex(wStr);
   if (idx<0 || idx>=static_cast<int>(m_index.size())) return;
   auto it = m_words.find(wStr.str());
@@ -220,7 +218,7 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
     i=getPrefixIndex(word);
     if (i>0)
     {
-      addWord(word+i,hiPriority,TRUE);
+      addWord(word.data()+i,hiPriority,TRUE);
       found=TRUE;
     }
   }
@@ -235,12 +233,12 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
     }
     if (word[i]!=0 && i>=1)
     {
-      addWord(word+i+1,hiPriority,TRUE);
+      addWord(word.data()+i+1,hiPriority,TRUE);
     }
   }
 }
 
-void SearchIndex::addWord(const char *word,bool hiPriority)
+void SearchIndex::addWord(const QCString &word,bool hiPriority)
 {
   addWord(word,hiPriority,FALSE);
 }
@@ -253,14 +251,14 @@ static void writeInt(std::ostream &f,size_t index)
   f.put(static_cast<int>(index&0xff));
 }
 
-static void writeString(std::ostream &f,const char *s)
+static void writeString(std::ostream &f,const QCString &s)
 {
-  const char *p = s;
-  while (*p) f.put(*p++);
+  uint l = s.length();
+  for (uint i=0;i<l;i++) f.put(s[i]);
   f.put(0);
 }
 
-void SearchIndex::write(const char *fileName)
+void SearchIndex::write(const QCString &fileName)
 {
   size_t i;
   size_t size=4; // for the header
@@ -333,7 +331,7 @@ void SearchIndex::write(const char *fileName)
   }
 
   //printf("Total size %x bytes (word=%x stats=%x urls=%x)\n",size,wordsOffset,statsOffset,urlsOffset);
-  std::ofstream f(fileName,std::ofstream::out | std::ofstream::binary);
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (f.is_open())
   {
     // write header
@@ -470,12 +468,12 @@ static QCString definitionToName(const Definition *ctx)
   return "unknown";
 }
 
-void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile)
+void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
   static QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = baseName + Doxygen::htmlFileExtension;
-  if (anchor) url+=QCString("#")+anchor;
+  if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
 
   auto it = p->docEntries.find(key.str());
@@ -491,23 +489,23 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const char *anchor
     e.extId = extId;
     e.url  = url;
     it = p->docEntries.insert({key.str(),e}).first;
-    //printf("searchIndexExt %s : %s\n",e->name.data(),e->url.data());
+    //printf("searchIndexExt %s : %s\n",qPrint(e->name),qPrint(e->url));
   }
   p->current = &it->second;
 }
 
-void SearchIndexExternal::addWord(const char *word,bool hiPriority)
+void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
-  if (word==0 || !isId(*word) || p->current==0) return;
+  if (word.isEmpty() || !isId(word[0]) || p->current==0) return;
   GrowBuf *pText = hiPriority ? &p->current->importantText : &p->current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');
   pText->addStr(word);
   //printf("addWord %s\n",word);
 }
 
-void SearchIndexExternal::write(const char *fileName)
+void SearchIndexExternal::write(const QCString &fileName)
 {
-  std::ofstream t(fileName,std::ofstream::out | std::ofstream::binary);
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (t.is_open())
   {
     t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -537,7 +535,7 @@ void SearchIndexExternal::write(const char *fileName)
   }
   else
   {
-    err("Failed to open file %s for writing!\n",fileName);
+    err("Failed to open file %s for writing!\n",qPrint(fileName));
   }
 }
 
@@ -852,7 +850,7 @@ void createJavaScriptSearchIndex()
   {
     if (gd->isLinkable())
     {
-      std::string title = gd->groupTitle();
+      std::string title = gd->groupTitle().str();
       if (!title.empty()) // TODO: able searching for all word in the title
       {
         std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
@@ -1130,7 +1128,7 @@ void writeJavaScriptSearchIndex()
       }
       else
       {
-        err("Failed to open file '%s' for writing...\n",fileName.data());
+        err("Failed to open file '%s' for writing...\n",qPrint(fileName));
       }
       p++;
     }
@@ -1221,7 +1219,7 @@ void writeJavaScriptSearchIndex()
 
 void SearchIndexInfo::add(const std::string &letter,const Definition *def)
 {
-  //printf("%p: %s->%s (full=%s)\n",this,letter.data(),searchName(def).data(),def->name().data());
+  //printf("%p: %s->%s (full=%s)\n",this,qPrint(letter),qPrint(searchName(def)),qPrint(def->name()));
   auto it = symbolMap.find(letter);
   if (it!=symbolMap.end())
   {

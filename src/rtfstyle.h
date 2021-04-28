@@ -80,7 +80,7 @@ using StyleDataMap = std::map<std::string,StyleData>;
 
 extern StyleDataMap rtf_Style;
 
-void loadExtensions(const char *name);
-void loadStylesheet(const char *name, StyleDataMap& map);
+void loadExtensions(const QCString &name);
+void loadStylesheet(const QCString &name, StyleDataMap& map);
 
 #endif

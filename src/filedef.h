@@ -181,8 +181,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(const FileDef *fd,const char *incName,bool local,bool imported) = 0;
-    virtual void addIncludedByDependency(const FileDef *fd,const char *incName,bool local,bool imported) = 0;
+    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
+    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
@@ -192,7 +192,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addListReferences() = 0;
 };
 
-FileDef *createFileDef(const std::string &p,const std::string &n,const char *ref=0,const char *dn=0);
+FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
 
 
 // --- Cast functions

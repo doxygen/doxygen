@@ -829,22 +829,22 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 {
   public:
     TextGeneratorSqlite3Impl(StringVector &l) : m_list(l) { }
-    void writeString(const char * /*s*/,bool /*keepSpaces*/) const
+    void writeString(const QCString & /*s*/,bool /*keepSpaces*/) const
     {
     }
     void writeBreak(int) const
     {
       DBG_CTX(("writeBreak\n"));
     }
-    void writeLink(const char * /*extRef*/,const char *file,
-                   const char *anchor,const char * /*text*/
+    void writeLink(const QCString & /*extRef*/,const QCString &file,
+                   const QCString &anchor,const QCString & /*text*/
                   ) const
     {
-      std::string rs = file;
-      if (anchor)
+      std::string rs = file.str();
+      if (!anchor.isEmpty())
       {
         rs+="_1";
-        rs+=anchor;
+        rs+=anchor.str();
       }
       m_list.push_back(rs);
     }
@@ -854,14 +854,14 @@ class TextGeneratorSqlite3Impl : public TextGeneratorIntf
 };
 
 
-static bool bindTextParameter(SqlStmt &s,const char *name,const char *value, bool _static=FALSE)
+static bool bindTextParameter(SqlStmt &s,const char *name,const QCString &value, bool _static=FALSE)
 {
   int idx = sqlite3_bind_parameter_index(s.stmt, name);
   if (idx==0) {
     err("sqlite3_bind_parameter_index(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
   }
-  int rv = sqlite3_bind_text(s.stmt, idx, value, -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
+  int rv = sqlite3_bind_text(s.stmt, idx, value.data(), -1, _static==TRUE?SQLITE_STATIC:SQLITE_TRANSIENT);
   if (rv!=SQLITE_OK) {
     err("sqlite3_bind_text(%s)[%s] failed: %s\n", name, s.query, sqlite3_errmsg(s.db));
     return false;
@@ -936,17 +936,17 @@ static void recordMetadata()
 
 struct Refid {
   int rowid;
-  const char *refid;
+  QCString refid;
   bool created;
 };
 
-struct Refid insertRefid(const char *refid)
+struct Refid insertRefid(const QCString &refid)
 {
-  struct Refid ret;
+  Refid ret;
   ret.rowid=-1;
   ret.refid=refid;
   ret.created = FALSE;
-  if (refid==0) return ret;
+  if (refid.isEmpty()) return ret;
 
   bindTextParameter(refid_select,":refid",refid);
   ret.rowid=step(refid_select,TRUE,TRUE);
@@ -1407,14 +1407,15 @@ QCString getSQLDocBlock(const Definition *scope,
   );
   XMLCodeGenerator codeGen(t);
   // create a parse tree visitor for XML
-  XmlDocVisitor *visitor = new XmlDocVisitor(t,codeGen,scope?scope->getDefFileExtension():QCString(""));
+  XmlDocVisitor *visitor = new XmlDocVisitor(t,codeGen,
+                      scope ? scope->getDefFileExtension() : QCString(""));
   root->accept(visitor);
   delete visitor;
   delete root;
   return convertCharEntitiesToUTF8(t.str().c_str());
 }
 
-static void getSQLDesc(SqlStmt &s,const char *col,const char *value,const Definition *def)
+static void getSQLDesc(SqlStmt &s,const char *col,const QCString &value,const Definition *def)
 {
   bindTextParameter(
     s,
@@ -1657,7 +1658,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     bindIntParameter(memberdef_insert,":maybevoid",md->isMaybeVoid());
     bindIntParameter(memberdef_insert,":maybedefault",md->isMaybeDefault());
     bindIntParameter(memberdef_insert,":maybeambiguous",md->isMaybeAmbiguous());
-    if (md->bitfieldString())
+    if (!md->bitfieldString().isEmpty())
     {
       QCString bitfield = md->bitfieldString();
       if (bitfield.at(0)==':') bitfield=bitfield.mid(1);
@@ -1722,17 +1723,17 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     stripQualifiers(typeStr);
     StringVector list;
     linkifyText(TextGeneratorSqlite3Impl(list), def, md->getBodyDef(),md,typeStr);
-    if (typeStr)
+    if (!typeStr.isEmpty())
     {
       bindTextParameter(memberdef_insert,":type",typeStr);
     }
 
-    if (md->definition())
+    if (!md->definition().isEmpty())
     {
       bindTextParameter(memberdef_insert,":definition",md->definition());
     }
 
-    if (md->argsString())
+    if (!md->argsString().isEmpty())
     {
       bindTextParameter(memberdef_insert,":argsstring",md->argsString());
     }
@@ -1752,9 +1753,9 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
       if (md->getBodyDef())
       {
         DBG_CTX(("initializer:%s %s %s %d\n",
-              md->anchor().data(),
+              qPrint(md->anchor()),
               s.c_str(),
-              md->getBodyDef()->getDefFileName().data(),
+              qPrint(md->getBodyDef()->getDefFileName()),
               md->getStartBodyLine()));
         QCString qsrc_refid = md->getOutputFileBase() + "_1" + md->anchor();
         struct Refid src_refid = insertRefid(qsrc_refid);
@@ -1764,7 +1765,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     }
   }
 
-  if ( md->getScopeString() )
+  if ( !md->getScopeString().isEmpty() )
   {
     bindTextParameter(memberdef_insert,":scope",md->getScopeString());
   }
@@ -1809,7 +1810,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
     insertMemberFunctionParams(memberdef_id,md,def);
   }
   else if (md->memberType()==MemberType_Define &&
-          md->argsString())
+          !md->argsString().isEmpty())
   {
     insertMemberDefineParams(memberdef_id,md,def);
   }
@@ -1832,8 +1833,8 @@ static void generateSqlite3Section( const Definition *d,
                       const MemberList *ml,
                       struct Refid scope_refid,
                       const char * /*kind*/,
-                      const char * /*header*/=0,
-                      const char * /*documentation*/=0)
+                      const QCString & /*header*/=QCString(),
+                      const QCString & /*documentation*/=QCString())
 {
   if (ml==0) return;
   for (const auto &md : *ml)
@@ -1940,10 +1941,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
       {
         insertPath(ii->fileDef->absFilePath(),!ii->fileDef->isReference());
       }
-      DBG_CTX(("-----> ClassDef includeInfo for %s\n", nm.data()));
+      DBG_CTX(("-----> ClassDef includeInfo for %s\n", qPrint(nm)));
       DBG_CTX(("       local    : %d\n", ii->local));
       DBG_CTX(("       imported : %d\n", ii->imported));
-      DBG_CTX(("header: %s\n", ii->fileDef->absFilePath().data()));
+      DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
       DBG_CTX(("       file_id  : %d\n", file_id));
       DBG_CTX(("       header_id: %d\n", header_id));
 
@@ -2137,7 +2138,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
       {
         // strip tagfile from path
         QCString tagfile = ii.fileDef->getReference();
-        dst_path = ii.fileDef->absFilePath().copy();
+        dst_path = ii.fileDef->absFilePath();
         dst_path.stripPrefix(tagfile+":");
       }
       else
@@ -2151,12 +2152,12 @@ static void generateSqlite3ForFile(const FileDef *fd)
       dst_id = insertPath(ii.includeName,ii.local,FALSE);
     }
 
-    DBG_CTX(("-----> FileDef includeInfo for %s\n", ii.includeName.data()));
+    DBG_CTX(("-----> FileDef includeInfo for %s\n", qPrint(ii.includeName)));
     DBG_CTX(("       local:    %d\n", ii.local));
     DBG_CTX(("       imported: %d\n", ii.imported));
     if(ii.fileDef)
     {
-      DBG_CTX(("include: %s\n", ii.fileDef->absFilePath().data()));
+      DBG_CTX(("include: %s\n", qPrint(ii.fileDef->absFilePath())));
     }
     DBG_CTX(("       src_id  : %d\n", src_id));
     DBG_CTX(("       dst_id: %d\n", dst_id));
@@ -2185,7 +2186,7 @@ static void generateSqlite3ForFile(const FileDef *fd)
       {
         // strip tagfile from path
         QCString tagfile = ii.fileDef->getReference();
-        src_path = ii.fileDef->absFilePath().copy();
+        src_path = ii.fileDef->absFilePath();
         src_path.stripPrefix(tagfile+":");
       }
       else
@@ -2379,7 +2380,7 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
   {
     if (mainPageHasTitle())
     {
-      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()).str());
+      title = filterTitle(convertCharEntitiesToUTF8(Doxygen::mainPage->title()));
     }
     else
     {
@@ -2393,8 +2394,10 @@ static void generateSqlite3ForPage(const PageDef *pd,bool isExample)
     {
       title = si->title();
     }
-
-    if(!title){title = pd->title();}
+    if (title.isEmpty())
+    {
+      title = pd->title();
+    }
   }
 
   // + title
@@ -2503,21 +2506,21 @@ void generateSqlite3()
   // + classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    msg("Generating Sqlite3 output for class %s\n",cd->name().data());
+    msg("Generating Sqlite3 output for class %s\n",qPrint(cd->name()));
     generateSqlite3ForClass(cd.get());
   }
 
   // + concepts
   for (const auto &cd : *Doxygen::conceptLinkedMap)
   {
-    msg("Generating Sqlite3 output for concept %s\n",cd->name().data());
+    msg("Generating Sqlite3 output for concept %s\n",qPrint(cd->name()));
     generateSqlite3ForConcept(cd.get());
   }
 
   // + namespaces
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    msg("Generating Sqlite3 output for namespace %s\n",nd->name().data());
+    msg("Generating Sqlite3 output for namespace %s\n",qPrint(nd->name()));
     generateSqlite3ForNamespace(nd.get());
   }
 
@@ -2526,7 +2529,7 @@ void generateSqlite3()
   {
     for (const auto &fd : *fn)
     {
-      msg("Generating Sqlite3 output for file %s\n",fd->name().data());
+      msg("Generating Sqlite3 output for file %s\n",qPrint(fd->name()));
       generateSqlite3ForFile(fd.get());
     }
   }
@@ -2534,28 +2537,28 @@ void generateSqlite3()
   // + groups
   for (const auto &gd : *Doxygen::groupLinkedMap)
   {
-    msg("Generating Sqlite3 output for group %s\n",gd->name().data());
+    msg("Generating Sqlite3 output for group %s\n",qPrint(gd->name()));
     generateSqlite3ForGroup(gd.get());
   }
 
   // + page
   for (const auto &pd : *Doxygen::pageLinkedMap)
   {
-    msg("Generating Sqlite3 output for page %s\n",pd->name().data());
+    msg("Generating Sqlite3 output for page %s\n",qPrint(pd->name()));
     generateSqlite3ForPage(pd.get(),FALSE);
   }
 
   // + dirs
   for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    msg("Generating Sqlite3 output for dir %s\n",dd->name().data());
+    msg("Generating Sqlite3 output for dir %s\n",qPrint(dd->name()));
     generateSqlite3ForDir(dd.get());
   }
 
   // + examples
   for (const auto &pd : *Doxygen::exampleLinkedMap)
   {
-    msg("Generating Sqlite3 output for example %s\n",pd->name().data());
+    msg("Generating Sqlite3 output for example %s\n",qPrint(pd->name()));
     generateSqlite3ForPage(pd.get(),TRUE);
   }
 

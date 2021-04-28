@@ -161,7 +161,7 @@ class ConfigEnum : public ConfigOption
     void writeTemplate(TextStream &t,bool sl,bool);
     void convertStrToVal();
     void compareDoxyfile(TextStream &t);
-    void init() { m_value = m_defValue.copy(); }
+    void init() { m_value = m_defValue; }
 
   private:
     std::vector<QCString> m_valueRange;
@@ -192,7 +192,7 @@ class ConfigString : public ConfigOption
     void writeTemplate(TextStream &t,bool sl,bool);
     void compareDoxyfile(TextStream &t);
     void substEnvVars();
-    void init() { m_value = m_defValue.copy(); }
+    void init() { m_value = m_defValue; }
     void emptyValueToDefault() { if(m_value.isEmpty()) m_value=m_defValue; };
 
   private:
@@ -364,9 +364,9 @@ class ConfigImpl
     /*! Returns the ConfigOption corresponding with \a name or 0 if
      *  the option is not supported.
      */
-    ConfigOption *get(const char *name) const
+    ConfigOption *get(const QCString &name) const
     {
-      auto it = m_dict.find(name);
+      auto it = m_dict.find(name.str());
       return it!=m_dict.end() ? it->second : nullptr;
     }
     /* @} */
@@ -508,14 +508,13 @@ class ConfigImpl
      *  \returns TRUE if successful, or FALSE if the string could not be
      *  parsed.
      */
-    //bool parseString(const char *fn,const char *str);
-    bool parseString(const char *fn,const char *str,bool upd = FALSE);
+    bool parseString(const QCString &fn,const QCString &str,bool upd = FALSE);
 
     /*! Parse a configuration file with name \a fn.
      *  \returns TRUE if successful, FALSE if the file could not be
      *  opened or read.
      */
-    bool parse(const char *fn,bool upd = FALSE);
+    bool parse(const QCString &fn,bool upd = FALSE);
 
     /*! Called from the constructor, will add doxygen's default options
      *  to the configuration object

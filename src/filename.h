@@ -28,10 +28,10 @@ class FileDef;
 class FileName : public std::vector< std::unique_ptr<FileDef> >
 {
   public:
-    FileName(const char *nm,const char *fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
-    const char *fileName() const { return m_name; }
-    const char *fullName() const { return m_fName; }
-    const char *path() const { return m_pathName; }
+    FileName(const QCString &nm,const QCString &fn) : m_name(nm), m_fName(fn), m_pathName("tmp") {}
+    QCString fileName() const { return m_name; }
+    QCString fullName() const { return m_fName; }
+    QCString path() const { return m_pathName; }
 
   private:
     QCString m_name;

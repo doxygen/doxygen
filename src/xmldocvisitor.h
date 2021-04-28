@@ -32,7 +32,7 @@ class QCString;
 class XmlDocVisitor : public DocVisitor
 {
   public:
-    XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -146,7 +146,7 @@ class XmlDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink();

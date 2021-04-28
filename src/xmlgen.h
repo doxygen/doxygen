@@ -25,24 +25,24 @@ class XMLCodeGenerator : public CodeOutputInterface
       m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE) {}
     virtual ~XMLCodeGenerator() { }
 
-    void codify(const char *text);
-    void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
-                     );
-    void startCodeLine(bool);
-    void endCodeLine();
-    void startFontClass(const char *colorClass);
-    void endFontClass();
-    void writeCodeAnchor(const char *);
-    void writeLineNumber(const char *extRef,const char *compId,
-                         const char *anchorId,int l);
-    void setCurrentDoc(const Definition *,const char *,bool){}
-    void addWord(const char *,bool){}
-    void startCodeFragment(const char *);
-    void endCodeFragment(const char *);
+    void codify(const QCString &text) override;
+    void writeCodeLink(const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) override;
+    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
+                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
+                     ) override;
+    void startCodeLine(bool) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &colorClass) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override;
+    void writeLineNumber(const QCString &extRef,const QCString &compId,
+                         const QCString &anchorId,int l) override;
+    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
+    void addWord(const QCString &,bool) override {}
+    void startCodeFragment(const QCString &) override;
+    void endCodeFragment(const QCString &) override;
 
     void finish();
 

@@ -29,7 +29,7 @@ class LatexDocVisitor : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                    const char *langExt,bool insideTabbing);
+                    const QCString &langExt,bool insideTabbing);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -152,7 +152,7 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,

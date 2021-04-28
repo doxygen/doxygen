@@ -297,12 +297,13 @@ void Image::writeChar(uint x,uint y,char c,uchar fg)
   }
 }
 
-void Image::writeString(uint x,uint y,const char *s,uchar fg)
+void Image::writeString(uint x,uint y,const QCString &s,uchar fg)
 {
-  if (s)
+  if (!s.isEmpty())
   {
+    const char *p = s.data();
     char c;
-    while ((c=*s++))
+    while ((c=*p++))
     {
       writeChar(x,y,c,fg);
       x+=charWidth[c-' '];
@@ -310,13 +311,14 @@ void Image::writeString(uint x,uint y,const char *s,uchar fg)
   }
 }
 
-uint Image::stringLength(const char *s)
+uint Image::stringLength(const QCString &s)
 {
   uint w=0;
-  if (s)
+  if (!s.isEmpty())
   {
+    const char *p = s.data();
     char c;
-    while ((c=*s++)) w+=charWidth[c-' '];
+    while ((c=*p++)) w+=charWidth[c-' '];
   }
   return w;
 }
@@ -379,7 +381,7 @@ void Image::fillRect(uint x,uint y,uint width,uint height,uchar colIndex,uint ma
         setPixel(xp,yp,colIndex);
 }
 
-bool Image::save(const char *fileName,int mode)
+bool Image::save(const QCString &fileName,int mode)
 {
   static bool useTransparency = Config_getBool(FORMULA_TRANSPARENT);
   uchar* buffer;
@@ -399,7 +401,7 @@ bool Image::save(const char *fileName,int mode)
   encoder.infoPng.color.colorType = 3;
   encoder.infoRaw.color.colorType = 3;
   LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
-  LodePNG_saveFile(buffer, bufferSize, fileName);
+  LodePNG_saveFile(buffer, bufferSize, fileName.data());
   free(buffer);
   LodePNG_Encoder_cleanup(&encoder);
   return TRUE;
@@ -504,7 +506,7 @@ ColoredImage::~ColoredImage()
   free(m_data);
 }
 
-bool ColoredImage::save(const char *fileName)
+bool ColoredImage::save(const QCString &fileName)
 {
   uchar *buffer;
   size_t bufferSize;
@@ -513,7 +515,7 @@ bool ColoredImage::save(const char *fileName)
   encoder.infoPng.color.colorType = m_hasAlpha ? 6 : 2; // 2=RGB 24 bit, 6=RGBA 32 bit
   encoder.infoRaw.color.colorType = 6; // 6=RGBA 32 bit
   LodePNG_encode(&encoder, &buffer, &bufferSize, m_data, m_width, m_height);
-  LodePNG_saveFile(buffer, bufferSize, fileName);
+  LodePNG_saveFile(buffer, bufferSize, fileName.data());
   LodePNG_Encoder_cleanup(&encoder);
   free(buffer);
   return TRUE;

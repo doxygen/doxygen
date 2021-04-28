@@ -30,10 +30,10 @@
 class PageDefImpl : public DefinitionMixin<PageDef>
 {
   public:
-    PageDefImpl(const char *f,int l,const char *n,const char *d,const char *t);
+    PageDefImpl(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
     virtual ~PageDefImpl();
 
-    virtual void setFileName(const char *name);
+    virtual void setFileName(const QCString &name);
     virtual void setLocalToc(const LocalToc &tl);
     virtual void setShowLineNo(bool);
     virtual DefType definitionType() const { return TypePage; }
@@ -71,16 +71,16 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     bool m_showLineNo;
 };
 
-PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t)
+PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t)
 {
   return new PageDefImpl(f,l,n,d,t);
 }
 
 //------------------------------------------------------------------------------------------
 
-PageDefImpl::PageDefImpl(const char *f,int l,const char *n,
-                 const char *d,const char *t)
- : DefinitionMixin(f,l,1,n), m_title(t?t:n)
+PageDefImpl::PageDefImpl(const QCString &f,int l,const QCString &n,
+                 const QCString &d,const QCString &t)
+ : DefinitionMixin(f,l,1,n), m_title(!t.isEmpty() ? t : n)
 {
   setDocumentation(d,f,l);
   m_pageScope = 0;
@@ -112,7 +112,7 @@ QCString PageDefImpl::getOutputFileBase() const
     return m_fileName;
 }
 
-void PageDefImpl::setFileName(const char *name)
+void PageDefImpl::setFileName(const QCString &name)
 {
   m_fileName = name;
 }
@@ -232,7 +232,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     if (si->title() != manPageName)
     {
       ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                     0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                     QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
       ol.endSection(si->label(),si->type());
     }
   }
@@ -252,7 +252,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
     //ol.startSection(si->label,si->title,si->type);
     startTitle(ol,getOutputFileBase(),this);
     ol.generateDoc(docFile(),getStartBodyLine(),this,0,si->title(),TRUE,FALSE,
-                   0,TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                   QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     //stringToSearchIndex(getOutputFileBase(),
     //                    theTranslator->trPage(TRUE,TRUE)+" "+si->title,
     //                    si->title);
@@ -286,7 +286,7 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
   ol.popGeneratorState();
   //1.}
 
-  Doxygen::indexList->addIndexItem(this,0,0,filterTitle(title().str()));
+  Doxygen::indexList->addIndexItem(this,0,QCString(),filterTitle(title().str()));
 }
 
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
@@ -308,7 +308,7 @@ void PageDefImpl::writePageDocumentation(OutputList &ol) const
       docStr,              // docStr
       TRUE,                // index words
       FALSE,               // not an example
-      0,                   // exampleName
+      QCString(),                   // exampleName
       FALSE,               // singleLine
       FALSE,               // linkFromIndex
       TRUE                 // markdown support

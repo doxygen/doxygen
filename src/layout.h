@@ -177,7 +177,7 @@ struct LayoutNavEntry
     void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
     void prependChild(LayoutNavEntry *e) { m_children.insert(m_children.begin(),std::unique_ptr<LayoutNavEntry>(e)); }
     const LayoutNavEntryList &children() const { return m_children; }
-    LayoutNavEntry *find(LayoutNavEntry::Kind k,const char *file=0) const;
+    LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
   private:
     LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
@@ -213,7 +213,7 @@ class LayoutDocManager
     LayoutNavEntry *rootNavEntry() const;
 
     /** Parses a user provided layout */
-    void parse(const char *fileName);
+    void parse(const QCString &fileName);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);
@@ -224,7 +224,7 @@ class LayoutDocManager
     friend class LayoutParser;
 };
 
-void writeDefaultLayoutFile(const char *fileName);
+void writeDefaultLayoutFile(const QCString &fileName);
 
 #endif
 

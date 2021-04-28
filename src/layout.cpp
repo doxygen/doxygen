@@ -92,7 +92,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     else if (!opt)
     {
       err("found unsupported value %s for visible attribute in layout file\n",
-          visible.data());
+          qPrint(visible));
     }
   }
   return visible!="no" && visible!="0";
@@ -101,7 +101,7 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
 //---------------------------------------------------------------------------------
 
 LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
-    const char *file) const
+    const QCString &file) const
 {
   LayoutNavEntry *result=0;
   for (const auto &entry : m_children)
@@ -110,7 +110,7 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
     // root in case an entry is in the tree twice
     result = entry->find(kind,file);
     if (result) return result;
-    if (entry->kind()==kind && (file==0 || entry->baseFile()==file))
+    if (entry->kind()==kind && (file==QCString() || entry->baseFile()==file))
     {
       return entry.get();
     }
@@ -133,7 +133,7 @@ QCString LayoutNavEntry::url() const
     const Definition *d = 0;
     QCString anchor;
     bool found=FALSE;
-    if (resolveLink(0,url.mid(5).stripWhiteSpace(),TRUE,&d,anchor))
+    if (resolveLink(QCString(),url.mid(5).stripWhiteSpace(),TRUE,&d,anchor))
     {
       if (d && d->isLinkable())
       {
@@ -150,7 +150,7 @@ QCString LayoutNavEntry::url() const
       msg("explicit link request to '%s' in layout file '%s' could not be resolved\n",qPrint(url.mid(5)),qPrint(Config_getString(LAYOUT_FILE)));
     }
   }
-  //printf("LayoutNavEntry::url()=%s\n",url.data());
+  //printf("LayoutNavEntry::url()=%s\n",qPrint(url));
   return url;
 }
 
@@ -195,7 +195,7 @@ class LayoutParser
       bool isVisible = elemIsVisible(attrib);
       QCString userTitle = XMLHandlers::value(attrib,"title");
       //printf("startSectionEntry: title='%s' userTitle='%s'\n",
-      //    title.data(),userTitle.data());
+      //    qPrint(title),qPrint(userTitle));
       if (userTitle.isEmpty())  userTitle = title;
       if (m_part!=-1 && isVisible)
       {
@@ -214,7 +214,7 @@ class LayoutParser
       QCString userSubscript = XMLHandlers::value(attrib,"subtitle");
       if (userTitle.isEmpty())     userTitle     = title;
       if (userSubscript.isEmpty()) userSubscript = subscript;
-      //printf("memberdecl: %s\n",userTitle.data());
+      //printf("memberdecl: %s\n",qPrint(userTitle));
       if (m_part!=-1 /*&& isVisible*/)
       {
         LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
@@ -227,7 +227,7 @@ class LayoutParser
     {
       QCString userTitle = XMLHandlers::value(attrib,"title");
       if (userTitle.isEmpty()) userTitle = title;
-      //printf("memberdef: %s\n",userTitle.data());
+      //printf("memberdef: %s\n",qPrint(userTitle));
       if (m_part!=-1 /*&& isVisible*/)
       {
         LayoutDocManager::instance().addEntry((LayoutDocManager::LayoutPart)m_part,
@@ -517,7 +517,7 @@ class LayoutParser
         }
         else
         {
-          ::warn(fileName.c_str(),m_locator->lineNr(),"the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n",type.data());
+          ::warn(fileName.c_str(),m_locator->lineNr(),"the type '%s' is not supported for the entry tag within a navindex! Check your layout file!\n",qPrint(type));
         }
         m_invalidEntry=TRUE;
         return;
@@ -1497,7 +1497,7 @@ static const std::map< std::string, ElementCallbacks > g_elementHandlers =
 
 void LayoutParser::startElement( const std::string &name, const XMLHandlers::Attributes& attrib )
 {
-  //printf("startElement [%s]::[%s]\n",m_scope.data(),name.data());
+  //printf("startElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it = g_elementHandlers.find(m_scope.str()+name);
   if (it!=g_elementHandlers.end())
   {
@@ -1507,13 +1507,13 @@ void LayoutParser::startElement( const std::string &name, const XMLHandlers::Att
   {
     std::string fileName = m_locator->fileName();
     ::warn(fileName.c_str(),m_locator->lineNr(),"Unexpected start tag '%s' found in scope='%s'!\n",
-        name.data(),m_scope.data());
+        qPrint(name),qPrint(m_scope));
   }
 }
 
 void LayoutParser::endElement( const std::string &name )
 {
-  //printf("endElement [%s]::[%s]\n",m_scope.data(),name.data());
+  //printf("endElement [%s]::[%s]\n",qPrint(m_scope),qPrint(name));
   auto it=g_elementHandlers.end();
 
   if (!m_scope.isEmpty() && m_scope.right(static_cast<uint>(name.length())+1)==name+"/")
@@ -1559,7 +1559,7 @@ void LayoutDocManager::init()
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
-  parser.parse("layout_default.xml",layout_default,Debug::isFlagSet(Debug::Lex));
+  parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1593,7 +1593,7 @@ void LayoutDocManager::clear(LayoutDocManager::LayoutPart p)
   d->docEntries[(int)p].clear();
 }
 
-void LayoutDocManager::parse(const char *fileName)
+void LayoutDocManager::parse(const QCString &fileName)
 {
   LayoutParser &layoutParser = LayoutParser::instance();
   XMLHandlers handlers;
@@ -1602,12 +1602,12 @@ void LayoutDocManager::parse(const char *fileName)
   handlers.error        = [&layoutParser](const std::string &fn,int lineNr,const std::string &msg) { layoutParser.error(fn,lineNr,msg); };
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
-  parser.parse(fileName,fileToString(fileName),Debug::isFlagSet(Debug::Lex));
+  parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
 }
 
 //---------------------------------------------------------------------------------
 
-void writeDefaultLayoutFile(const char *fileName)
+void writeDefaultLayoutFile(const QCString &fileName)
 {
   std::ofstream f;
   if (openOutputFile(fileName,f))
@@ -1618,10 +1618,10 @@ void writeDefaultLayoutFile(const char *fileName)
   }
   else
   {
-    err("Failed to open file %s for writing!\n",fileName);
+    err("Failed to open file %s for writing!\n",qPrint(fileName));
     return;
-  } 
-    f.close();
+  }
+  f.close();
 }
 
 //----------------------------------------------------------------------------------

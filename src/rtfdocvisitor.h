@@ -31,7 +31,7 @@ class TextStream;
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -142,15 +142,15 @@ class RTFDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str,bool verbatim=FALSE);
+    void filter(const QCString &str,bool verbatim=FALSE);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink(const QCString &ref);
-    QCString getStyle(const char *name);
+    QCString getStyle(const QCString &name);
     void incIndentLevel();
     void decIndentLevel();
 
-    void includePicturePreRTF(const QCString name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void writeDotFile(const QCString &fileName, bool hasCaption);
     void writeDotFile(DocDotFile *);

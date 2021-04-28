@@ -147,9 +147,9 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automātiski ģenerēts izmantojot Doxygen";
-      if (s) result+=(QCString)" priekš "+s;
+      if (!s.isEmpty()) result+=(QCString)" priekš "+s;
       result+=" no pirmkoda.";
       return result;
     }
@@ -509,16 +509,16 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"Ģenerēts "+date;
-      if (projName) result+=(QCString)" projektam "+projName;
+      if (!projName.isEmpty()) result+=(QCString)" projektam "+projName;
       result+=(QCString)" ar";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"Mantojamības diagramma klasei "+clName+":";
     }
@@ -597,7 +597,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -619,7 +619,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" faila apraksts";
@@ -627,7 +627,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" nosaukumvietas apraksts";
@@ -823,12 +823,12 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"Sadarbības diagramma klasei "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"Include dependency graph for "+fName+":";
     }
@@ -1111,7 +1111,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"Pakotne "+name;
     }
@@ -1505,7 +1505,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result="Direktorijas "; result+=dirName; result+=" atsauce"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1633,7 +1633,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1654,7 +1654,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" moduļu atsauce";
@@ -1756,7 +1756,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return QCString(name)+" relācija";
     }
@@ -1793,7 +1793,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
       return (QCString)"File in "+name;
     }
@@ -1802,7 +1802,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
       return (QCString)"Includes file in "+name;
     }
@@ -1847,7 +1847,7 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     { return "Autortiesības"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Atkarību grafs direktorijai ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1877,11 +1877,11 @@ class TranslatorLatvian : public TranslatorAdapter_1_8_4
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return QCString(name)+" uzskaitījumliterāļa atsauce"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+" manto no "+what; }
 
     /*! Header of the sections with inherited members specific for the

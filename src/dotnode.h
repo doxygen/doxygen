@@ -58,7 +58,7 @@ class DotNode
   public:
     static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& l);
-    DotNode(int n,const char *lab,const char *tip,const char *url,
+    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=0);
     ~DotNode();
 
@@ -67,8 +67,8 @@ class DotNode
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
                   int edgeStyle=EdgeInfo::Solid,
-                  const char *edgeLab=0,
-                  const char *edgeURL=0,
+                  const QCString &edgeLab=QCString(),
+                  const QCString &edgeURL=QCString(),
                   int edgeLabCol=-1);
     void addParent(DotNode *n);
     void deleteNode(DotNodeRefVector &deletedList);

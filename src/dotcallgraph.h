@@ -30,8 +30,8 @@ class DotCallGraph : public DotGraph
     bool isTooBig() const;
     int numNodes() const;
     QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
-                        const char *path,const char *fileName,
-                        const char *relPath,bool writeImageMap=TRUE,
+                        const QCString &path,const QCString &fileName,
+                        const QCString &relPath,bool writeImageMap=TRUE,
                         int graphId=-1);
 
   protected:

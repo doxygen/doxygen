@@ -56,22 +56,22 @@ class MemberGroup;
  *  @returns         Root node of the abstract syntax tree. Ownership of the
  *                   pointer is handed over to the caller.
  */
-DocRoot *validatingParseDoc(const char *fileName,int startLine,
+DocRoot *validatingParseDoc(const QCString &fileName,int startLine,
                             const Definition *context, const MemberDef *md,
-                            const char *input,bool indexWords,
-                            bool isExample,const char *exampleName,
+                            const QCString &input,bool indexWords,
+                            bool isExample,const QCString &exampleName,
                             bool singleLine,bool linkFromIndex,
                             bool markdownSupport);
 
 /*! Main entry point for parsing simple text fragments. These
  *  fragments are limited to words, whitespace and symbols.
  */
-DocText *validatingParseText(const char *input);
+DocText *validatingParseText(const QCString &input);
 
 /*! Searches for section and anchor commands in the input */
-void docFindSections(const char *input,
+void docFindSections(const QCString &input,
                      const Definition *d,
-                     const char *fileName);
+                     const QCString &fileName);
 
 //---------------------------------------------------------------------------
 
@@ -536,9 +536,9 @@ class DocInclude : public DocNode
 	      IncWithLines, Snippet , IncludeDoc, SnippetDoc, SnipWithLines,
 	      DontIncWithLines, RtfInclude, ManInclude, DocbookInclude, XmlInclude};
     DocInclude(DocNode *parent,const QCString &file,
-               const QCString context, Type t,
-               bool isExample,const QCString exampleFile,
-               const QCString blockId, bool isBlock) :
+               const QCString &context, Type t,
+               bool isExample,const QCString &exampleFile,
+               const QCString &blockId, bool isBlock) :
       m_file(file), m_context(context), m_type(t),
       m_isExample(isExample), m_isBlock(isBlock),
       m_exampleFile(exampleFile), m_blockId(blockId) { m_parent = parent; }
@@ -548,7 +548,7 @@ class DocInclude : public DocNode
                                    if (i!=-1)
                                      return m_file.right(m_file.length()-(uint)i);
                                    else
-                                     return "";
+                                     return QCString();
                                  }
     Type type() const            { return m_type; }
     QCString text() const        { return m_text; }
@@ -714,7 +714,7 @@ class DocTitle : public CompAccept<DocTitle>
 class DocXRefItem : public CompAccept<DocXRefItem>
 {
   public:
-    DocXRefItem(DocNode *parent,int id,const char *key);
+    DocXRefItem(DocNode *parent,int id,const QCString &key);
     Kind kind() const          { return Kind_XRefItem; }
     QCString file() const       { return m_file; }
     QCString anchor() const     { return m_anchor; }

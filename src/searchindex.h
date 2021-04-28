@@ -70,9 +70,9 @@ class SearchIndexIntf
     enum Kind { Internal, External };
     SearchIndexIntf(Kind k) : m_kind(k) {}
     virtual ~SearchIndexIntf() {}
-    virtual void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) = 0;
-    virtual void addWord(const char *word,bool hiPriority) = 0;
-    virtual void write(const char *file) = 0;
+    virtual void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile) = 0;
+    virtual void addWord(const QCString &word,bool hiPriority) = 0;
+    virtual void write(const QCString &file) = 0;
     Kind kind() const { return m_kind; }
   private:
     Kind m_kind;
@@ -82,11 +82,11 @@ class SearchIndex : public SearchIndexIntf
 {
   public:
     SearchIndex();
-    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile) override;
-    void addWord(const char *word,bool hiPriority) override;
-    void write(const char *file) override;
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile) override;
+    void addWord(const QCString &word,bool hiPriority) override;
+    void write(const QCString &file) override;
   private:
-    void addWord(const char *word,bool hiPrio,bool recurse);
+    void addWord(const QCString &word,bool hiPrio,bool recurse);
     std::unordered_map<std::string,int> m_words;
     std::vector< std::vector< IndexWord> > m_index;
     std::unordered_map<std::string,int> m_url2IdMap;
@@ -100,9 +100,9 @@ class SearchIndexExternal : public SearchIndexIntf
     struct Private;
   public:
     SearchIndexExternal();
-    void setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile);
-    void addWord(const char *word,bool hiPriority);
-    void write(const char *file);
+    void setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile);
+    void addWord(const QCString &word,bool hiPriority);
+    void write(const QCString &file);
   private:
     std::unique_ptr<Private> p;
 };

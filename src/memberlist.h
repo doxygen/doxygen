@@ -88,18 +88,18 @@ class MemberList
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,
-               const ClassDef *inheritedFrom,const char *inheritId) const;
+               const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               const char *title,const char *subtitle,
+               const QCString &title,const QCString &subtitle,
                bool showEnumValues=FALSE,bool showInline=FALSE,
                const ClassDef *inheritedFrom=0,MemberListType lt=MemberListType_pubMethods) const;
-    void writeDocumentation(OutputList &ol,const char *scopeName,
-               const Definition *container,const char *title,
+    void writeDocumentation(OutputList &ol,const QCString &scopeName,
+               const Definition *container,const QCString &title,
                bool showEnumValues=FALSE,bool showInline=FALSE) const;
     void writeSimpleDocumentation(OutputList &ol,const Definition *container) const;
     void writeDocumentationPage(OutputList &ol,
-               const char *scopeName, const DefinitionMutable *container) const;
+               const QCString &scopeName, const DefinitionMutable *container) const;
     void writeTagFile(TextStream &);
     bool declVisible() const;
     void addMemberGroup(MemberGroup *mg);

@@ -49,12 +49,12 @@ class HtmlHelpRecoder
 
     void initialize()
     {
-      const char *str = Config_getString(CHM_INDEX_ENCODING);
-      if (!str) str = "CP1250"; // use safe and likely default
-      m_fromUtf8 = portable_iconv_open(str,"UTF-8");
+      QCString str = Config_getString(CHM_INDEX_ENCODING);
+      if (str.isEmpty()) str = "CP1250"; // use safe and likely default
+      m_fromUtf8 = portable_iconv_open(str.data(),"UTF-8");
       if (m_fromUtf8==m_iconv_null)
       {
-        term("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", str);
+        term("unsupported character conversion for CHM_INDEX_ENCODING: '%s'->'UTF-8'\n", qPrint(str));
       }
     }
     void finalize()
@@ -73,7 +73,7 @@ class HtmlHelpRecoder
       QCString output(oSize);
       size_t iLeft     = iSize;
       size_t oLeft     = oSize;
-      char *iPtr       = s.rawData();
+      const char *iPtr = s.data();
       char *oPtr       = output.rawData();
       if (!portable_iconv(m_fromUtf8,&iPtr,&iLeft,&oPtr,&oLeft))
       {
@@ -98,7 +98,7 @@ class HtmlHelpRecoder
 /** Class representing a field in the HTML help index. */
 struct IndexField
 {
-  IndexField(const char *k,const char *n,const char *u,const char *a,bool l,bool r) :
+  IndexField(const QCString &k,const QCString &n,const QCString &u,const QCString &a,bool l,bool r) :
     key(k), name(n), url(u), anchor(a), link(l), reversed(r) {}
   QCString key;
   QCString name;
@@ -116,8 +116,8 @@ class HtmlHelpIndex
   public:
     HtmlHelpIndex(HtmlHelpRecoder &recoder);
    ~HtmlHelpIndex();
-    void addItem(const char *first,const char *second,
-                 const char *url, const char *anchor,
+    void addItem(const QCString &first,const QCString &second,
+                 const QCString &url, const QCString &anchor,
                  bool hasLink,bool reversed);
     void writeFields(std::ostream &t);
     size_t size() const { return m_map.size(); }
@@ -149,21 +149,21 @@ HtmlHelpIndex::~HtmlHelpIndex()
  *  \param reversed TRUE if level1 is the member name and level2 the compound
  *         name.
  */
-void HtmlHelpIndex::addItem(const char *level1,const char *level2,
-                       const char *url,const char *anchor,bool hasLink,
+void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
+                       const QCString &url,const QCString &anchor,bool hasLink,
                        bool reversed)
 {
   static const reg::Ex re(R"(@\d+)");
-  std::string key = level1;
-  if (level2) key+= std::string("?") + level2;
+  std::string key = level1.str();
+  if (!level2.isEmpty()) key+= std::string("?") + level2.str();
   if (reg::search(key,re)) // skip anonymous stuff
   {
     return;
   }
   std::string key_anchor;
-  if (anchor)
+  if (!anchor.isEmpty())
   {
-    key_anchor = key+anchor;
+    key_anchor = key+anchor.str();
   }
   else
   {
@@ -447,7 +447,7 @@ void HtmlHelp::initialize()
   p->cts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (!p->cts.is_open())
   {
-    term("Could not open file %s for writing\n",fName.data());
+    term("Could not open file %s for writing\n",qPrint(fName));
   }
   /* Write the header of the contents file */
   p->cts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
@@ -462,7 +462,7 @@ void HtmlHelp::initialize()
   p->kts.open(fName.str(),std::ofstream::out | std::ofstream::binary);
   if (!p->kts.is_open())
   {
-    term("Could not open file %s for writing\n",fName.data());
+    term("Could not open file %s for writing\n",qPrint(fName));
   }
   /* Write the header of the contents file */
   p->kts << "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">\n"
@@ -482,7 +482,7 @@ QCString HtmlHelp::getLanguageString()
     auto it = s_languageDict.find(theTranslator->idLanguage().str());
     if (it!=s_languageDict.end())
     {
-      return it->second;
+      return QCString(it->second);
     }
   }
   // default language
@@ -559,13 +559,13 @@ void HtmlHelp::Private::createProjectFile()
   }
   else
   {
-    err("Could not open file %s for writing\n",fName.data());
+    err("Could not open file %s for writing\n",qPrint(fName));
   }
 }
 
-void HtmlHelp::addIndexFile(const char *s)
+void HtmlHelp::addIndexFile(const QCString &s)
 {
-  p->indexFiles.insert(s);
+  p->indexFiles.insert(s.str());
 }
 
 /*! Finalizes the HTML help. This will finish and close the
@@ -626,10 +626,10 @@ void HtmlHelp::decContentsDepth()
  *  \param def not used.
  */
 void HtmlHelp::addContentsItem(bool isDir,
-                               const char *name,
-                               const char * /*ref*/,
-                               const char *file,
-                               const char *anchor,
+                               const QCString &name,
+                               const QCString & /*ref*/,
+                               const QCString &file,
+                               const QCString &anchor,
                                bool /* separateIndex */,
                                bool /* addToNavIndex */,
                                const Definition * /* def */)
@@ -647,9 +647,9 @@ void HtmlHelp::addContentsItem(bool isDir,
   int i; for (i=0;i<p->dc;i++) p->cts << "  ";
   p->cts << "<LI><OBJECT type=\"text/sitemap\">";
   p->cts << "<param name=\"Name\" value=\"" << convertToHtml(p->recoder.recode(name),TRUE) << "\">";
-  if (file)      // made file optional param - KPW
+  if (!file.isEmpty())      // made file optional param - KPW
   {
-    if (file && (file[0]=='!' || file[0]=='^')) // special markers for user defined URLs
+    if (file[0]=='!' || file[0]=='^') // special markers for user defined URLs
     {
       p->cts << "<param name=\"";
       if (file[0]=='^') p->cts << "URL"; else p->cts << "Local";
@@ -660,7 +660,7 @@ void HtmlHelp::addContentsItem(bool isDir,
     {
       p->cts << "<param name=\"Local\" value=\"";
       p->cts << file << Doxygen::htmlFileExtension;
-      if (anchor) p->cts << "#" << anchor;
+      if (!anchor.isEmpty()) p->cts << "#" << anchor;
     }
     p->cts << "\">";
   }
@@ -679,7 +679,7 @@ void HtmlHelp::addContentsItem(bool isDir,
 
 
 void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
-                            const char *sectionAnchor,const char *word)
+                            const QCString &sectionAnchor,const QCString &word)
 {
   if (md)
   {
@@ -699,19 +699,19 @@ void HtmlHelp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString level2  = md->name();
     QCString contRef = separateMemberPages ? cfname : cfiname;
     QCString memRef  = cfname;
-    QCString anchor  = sectionAnchor ? QCString(sectionAnchor) : md->anchor();
+    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
     p->index.addItem(level1,level2,contRef,anchor,TRUE,FALSE);
     p->index.addItem(level2,level1,memRef,anchor,TRUE,TRUE);
   }
   else if (context)
   {
-    QCString level1  = word ? QCString(word) : context->name();
-    p->index.addItem(level1,0,context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
+    QCString level1  = !word.isEmpty() ? word : context->name();
+    p->index.addItem(level1,QCString(),context->getOutputFileBase(),sectionAnchor,TRUE,FALSE);
   }
 }
 
-void HtmlHelp::addImageFile(const char *fileName)
+void HtmlHelp::addImageFile(const QCString &fileName)
 {
-  p->imageFiles.insert(fileName);
+  p->imageFiles.insert(fileName.str());
 }
 

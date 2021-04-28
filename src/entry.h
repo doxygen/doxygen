@@ -35,7 +35,7 @@ class FileDef;
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) :
+  BaseInfo(const QCString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type

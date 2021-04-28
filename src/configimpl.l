@@ -58,14 +58,14 @@ void config_err(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
+  vfprintf(stderr, qPrint(QCString(error_str) + fmt), args);
   va_end(args);
 }
 void config_term(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, (QCString(error_str) + fmt).data(), args);
+  vfprintf(stderr, qPrint(QCString(error_str) + fmt), args);
   va_end(args);
   fprintf(stderr, "%s\n", "Exiting...");
   exit(1);
@@ -75,14 +75,14 @@ void config_warn(const char *fmt, ...)
 {
   va_list args;
   va_start(args, fmt);
-  vfprintf(stderr, (QCString(warning_str) + fmt).data(), args);
+  vfprintf(stderr, qPrint(QCString(warning_str) + fmt), args);
   va_end(args);
 }
 
 static QCString configStringRecode(
     const QCString &str,
-    const char *fromEncoding,
-    const char *toEncoding);
+    const QCString &fromEncoding,
+    const QCString &toEncoding);
 
 #define MAX_INCLUDE_DEPTH 10
 #define YY_NEVER_INTERACTIVE 1
@@ -91,7 +91,7 @@ static QCString configStringRecode(
  */
 static QCString convertToComment(const QCString &s, const QCString &u)
 {
-  //printf("convertToComment(%s)=%s\n",s.data(),u.data());
+  //printf("convertToComment(%s)=%s\n",qPrint(s),qPrint(u));
   QCString result;
   if (!s.isEmpty())
   {
@@ -145,6 +145,7 @@ void ConfigOption::writeStringValue(TextStream &t,const QCString &s)
   bool needsEscaping=FALSE;
   // convert the string back to it original g_encoding
   QCString se = configStringRecode(s,"UTF-8",m_encoding);
+  if (se.isEmpty()) return;
   const char *p=se.data();
   if (p)
   {
@@ -198,7 +199,7 @@ void ConfigInt::convertStrToVal()
     if (!ok || val<m_minVal || val>m_maxVal)
     {
       config_warn("argument '%s' for option %s is not a valid number in the range [%d..%d]!\n"
-                "Using the default: %d!\n",m_valueString.data(),m_name.data(),m_minVal,m_maxVal,m_value);
+                "Using the default: %d!\n",qPrint(m_valueString),qPrint(m_name),m_minVal,m_maxVal,m_value);
     }
     else
     {
@@ -223,7 +224,7 @@ void ConfigBool::convertStrToVal()
     else
     {
       config_warn("argument '%s' for option %s is not a valid boolean value\n"
-                "Using the default: %s!\n",m_valueString.data(),m_name.data(),m_value?"YES":"NO");
+                "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
     }
   }
 }
@@ -246,7 +247,7 @@ void ConfigEnum::convertStrToVal()
   }
 
   config_warn("argument '%s' for option %s is not a valid enum value\n"
-              "Using the default: %s!\n",m_value.data(),m_name.data(),m_defValue.data());
+              "Using the default: %s!\n",qPrint(m_value),qPrint(m_name),qPrint(m_defValue));
   m_value = m_defValue;
 }
 
@@ -546,36 +547,34 @@ static yy_size_t yyread(char *buf,yy_size_t max_size)
 
 static QCString configStringRecode(
     const QCString &str,
-    const char *fromEncoding,
-    const char *toEncoding)
+    const QCString &inputEncoding,
+    const QCString &outputEncoding)
 {
-  QCString inputEncoding = fromEncoding;
-  QCString outputEncoding = toEncoding;
   if (inputEncoding.isEmpty() || outputEncoding.isEmpty() || inputEncoding==outputEncoding) return str;
   int inputSize=str.length();
   int outputSize=inputSize*4+1;
   QCString output(outputSize);
-  void *cd = portable_iconv_open(outputEncoding,inputEncoding);
+  void *cd = portable_iconv_open(outputEncoding.data(),inputEncoding.data());
   if (cd==(void *)(-1))
   {
     config_term("Error: unsupported character conversion: '%s'->'%s'\n",
-        inputEncoding.data(),outputEncoding.data());
+        qPrint(inputEncoding),qPrint(outputEncoding));
   }
   size_t iLeft=(size_t)inputSize;
   size_t oLeft=(size_t)outputSize;
-  char *inputPtr  = str.rawData();
+  const char *inputPtr  = str.data();
   char *outputPtr = output.rawData();
   if (!portable_iconv(cd, &inputPtr, &iLeft, &outputPtr, &oLeft))
   {
     outputSize-=(int)oLeft;
     output.resize(outputSize+1);
     output.at(outputSize)='\0';
-    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,srcBuf.data());
+    //printf("iconv: input size=%d output size=%d\n[%s]\n",size,newSize,qPrint(srcBuf));
   }
   else
   {
     config_term("Error: failed to translate characters from %s to %s: %s\n",
-        inputEncoding.data(),outputEncoding.data(),strerror(errno));
+        qPrint(inputEncoding),qPrint(outputEncoding),strerror(errno));
   }
   portable_iconv_close(cd);
   return output;
@@ -656,7 +655,7 @@ static void processString()
       if (!warned)
       {
         config_warn("Invalid value for '%s' tag at line %d, file %s: Value '%s' is not properly quoted\n",
-                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_string->stripWhiteSpace().data());
+                    qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_string->stripWhiteSpace()));
       }
       warned=true;
     }
@@ -672,14 +671,14 @@ static void processString()
   // update encoding
   checkEncoding();
 
-  //printf("Processed string '%s'\n",g_string->data());
+  //printf("Processed string '%s'\n",qPrint(g_string));
 }
 
 static void processList()
 {
   bool allowCommaAsSeparator = g_cmd!="PREDEFINED";
 
-  const QCString s = stripComment(g_listStr.stripWhiteSpace());
+  QCString s = stripComment(g_listStr.stripWhiteSpace());
   int l = s.length();
 
   QCString elemStr;
@@ -690,7 +689,7 @@ static void processList()
     if (!elemStr.isEmpty())
     {
       QCString e = configStringRecode(elemStr,g_encoding,"UTF-8");
-      //printf("Processed list element '%s'\n",e.data());
+      //printf("Processed list element '%s'\n",qPrint(e));
       g_list->push_back(e.str());
       elemStr="";
     }
@@ -742,7 +741,7 @@ static void processList()
         if (!warned)
         {
           config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly space %sseparated\n",
-                    g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.stripWhiteSpace().data(),allowCommaAsSeparator?"or comma ":"");
+                    qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_listStr.stripWhiteSpace()),allowCommaAsSeparator?"or comma ":"");
           warned=true;
         }
         needsSeparator=false;
@@ -760,18 +759,18 @@ static void processList()
   if (insideQuote)
   {
     config_warn("Invalid value for '%s' tag at line %d, file %s: Values in list '%s' are not properly quoted\n",
-                g_cmd.data(),g_yyLineNr,g_yyFileName.data(),g_listStr.stripWhiteSpace().data());
+                qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName),qPrint(g_listStr.stripWhiteSpace()));
   }
 }
 
-static FILE *tryPath(const char *path,const char *fileName)
+static FILE *tryPath(const QCString &path,const QCString &fileName)
 {
-  QCString absName=(path ? (QCString)path+"/"+fileName : (QCString)fileName);
+  QCString absName=(!path.isEmpty() ? path+"/"+fileName : fileName);
   FileInfo fi(absName.str());
   if (fi.exists() && fi.isFile())
   {
     FILE *f=Portable::fopen(absName,"r");
-    if (!f) config_err("could not open file %s for reading\n",absName.data());
+    if (!f) config_err("could not open file %s for reading\n",qPrint(absName));
     return f;
   }
   return 0;
@@ -780,15 +779,15 @@ static FILE *tryPath(const char *path,const char *fileName)
 static void substEnvVarsInStrList(StringVector &sl);
 static void substEnvVarsInString(QCString &s);
 
-static FILE *findFile(const char *fileName)
+static FILE *findFile(const QCString &fileName)
 {
-  if (fileName==0)
+  if (fileName.isEmpty())
   {
     return 0;
   }
   if (Portable::isAbsolutePath(fileName))
   {
-    return tryPath(NULL, fileName);
+    return tryPath(QCString(), fileName);
   }
   substEnvVarsInStrList(g_includePathList);
   for (const auto &s : g_includePathList)
@@ -800,11 +799,11 @@ static FILE *findFile(const char *fileName)
   return tryPath(".",fileName);
 }
 
-static void readIncludeFile(const char *incName)
+static void readIncludeFile(const QCString &incName)
 {
   if (g_includeStack.size()==MAX_INCLUDE_DEPTH) {
     config_term("maximum include depth (%d) reached, %s is not included. Aborting...\n",
-        MAX_INCLUDE_DEPTH,incName);
+        MAX_INCLUDE_DEPTH,qPrint(incName));
   }
 
   QCString inc = incName;
@@ -823,7 +822,7 @@ static void readIncludeFile(const char *incName)
     // For debugging
 #if SHOW_INCLUDES
     for (size_t i=0;i<g_includeStack.size();i++) msg("  ");
-    msg("@INCLUDE = %s: parsing...\n",inc.data());
+    msg("@INCLUDE = %s: parsing...\n",qPrint(inc));
 #endif
 
     // store the state of the old file
@@ -841,7 +840,7 @@ static void readIncludeFile(const char *incName)
   }
   else
   {
-    config_term("@INCLUDE = %s: not found!\n",inc.data());
+    config_term("@INCLUDE = %s: not found!\n",qPrint(inc));
   }
 }
 
@@ -879,7 +878,7 @@ static void readIncludeFile(const char *incName)
                                            if (option==0) // oops not known
                                            {
                                              config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-                                                 g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                 qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                              BEGIN(SkipInvalid);
                                            }
                                            else // known tag
@@ -922,13 +921,13 @@ static void readIncludeFile(const char *incName)
                                                  if (g_configUpdate)
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
-                                                              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                              "         This tag has been removed.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  else
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' has become obsolete.\n"
                                                               "         To avoid this warning please remove this line from your configuration "
-                                                              "file or upgrade it using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                              "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  BEGIN(SkipInvalid);
                                                  break;
@@ -936,13 +935,13 @@ static void readIncludeFile(const char *incName)
                                                  if (g_configUpdate)
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
-                                                              "         This tag has been removed.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                              "         This tag has been removed.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  else
                                                  {
                                                    config_warn("Tag '%s' at line %d of file '%s' belongs to an option that was not enabled at compile time.\n"
                                                               "         To avoid this warning please remove this line from your configuration "
-                                                            "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                            "file or upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
                                                  BEGIN(SkipInvalid);
                                                  break;
@@ -955,7 +954,7 @@ static void readIncludeFile(const char *incName)
                                           if (option==0) // oops not known
                                           {
                                             config_warn("ignoring unsupported tag '%s' at line %d, file %s\n",
-                                                g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                             BEGIN(SkipInvalid);
                                           }
                                           else // known tag
@@ -977,19 +976,19 @@ static void readIncludeFile(const char *incName)
                                               case ConfigOption::O_Int:
                                               case ConfigOption::O_Bool:
                                                 config_warn("operator += not supported for '%s'. Ignoring line at line %d, file %s\n",
-                                                    yytext,g_yyLineNr,g_yyFileName.data());
+                                                    yytext,g_yyLineNr,qPrint(g_yyFileName));
                                                 BEGIN(SkipInvalid);
                                                 break;
                                                case ConfigOption::O_Obsolete:
                                                  config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
-                                                            "file using \"doxygen -u\"\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                            "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  BEGIN(SkipInvalid);
                                                  break;
                                                case ConfigOption::O_Disabled:
                                                  config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
                                                             "To avoid this warning please remove this line from your configuration "
-                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", g_cmd.data(),g_yyLineNr,g_yyFileName.data());
+                                                            "file, upgrade it using \"doxygen -u\", or recompile doxygen with this feature enabled.\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  BEGIN(SkipInvalid);
                                                  break;
                                              }
@@ -1026,7 +1025,7 @@ static void readIncludeFile(const char *incName)
                                           }
                                         }
 
-<Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,g_yyFileName.data()); }
+<Start>[a-z_A-Z0-9]+                    { config_warn("ignoring unknown tag '%s' at line %d, file %s\n",yytext,g_yyLineNr,qPrint(g_yyFileName)); }
    /*-------------- GetString ---------------*/
 
 <GetString>\n                           { processString();
@@ -1076,7 +1075,7 @@ static void readIncludeFile(const char *incName)
 <*>\\[ \r\t]*\n                         { g_yyLineNr++; }
 <*>[ \t\r]
 <*>\n                                   { g_yyLineNr++ ; }
-<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,g_yyFileName.data()); }
+<*>.                                    { config_warn("ignoring unknown character '%c' at line %d, file %s\n",yytext[0],g_yyLineNr,qPrint(g_yyFileName)); }
 
 %%
 
@@ -1086,7 +1085,7 @@ static void readIncludeFile(const char *incName)
 void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
 {
   /* print first lines of user comment that were at the beginning of the file, might have special meaning for editors */
-  if (m_startComment)
+  if (!m_startComment.isEmpty())
   {
     t << takeStartComment() << "\n";
   }
@@ -1100,7 +1099,7 @@ void ConfigImpl::writeTemplate(TextStream &t,bool sl,bool upd)
     option->writeTemplate(t,sl,upd);
   }
   /* print last lines of user comment that were at the end of the file */
-  if (m_userComment)
+  if (!m_userComment.isEmpty())
   {
     t << "\n";
     t << takeUserComment();
@@ -1174,7 +1173,7 @@ static void substEnvVarsInStrList(StringVector &sl)
     // here we strip the quote again
     substEnvVarsInString(result);
 
-    //printf("Result %s was quoted=%d\n",result.data(),wasQuoted);
+    //printf("Result %s was quoted=%d\n",qPrint(result),wasQuoted);
 
     if (!wasQuoted) /* as a result of the expansion, a single string
                        may have expanded into a list, which we'll
@@ -1286,7 +1285,7 @@ void ConfigImpl::init()
       if (opt==0)
       {
         config_term("Config option '%s' has invalid depends relation on unknown option '%s'\n",
-            option->name().data(),depName.data());
+            qPrint(option->name()),qPrint(depName));
       }
     }
   }
@@ -1299,9 +1298,9 @@ void ConfigImpl::create()
   addConfigOptions(this);
 }
 
-static QCString configFileToString(const char *name)
+static QCString configFileToString(const QCString &name)
 {
-  if (name==0 || name[0]==0) return 0;
+  if (name.isEmpty()) return QCString();
 
   auto stream2string = [](std::istream &in) -> std::string
   {
@@ -1313,27 +1312,27 @@ static QCString configFileToString(const char *name)
     return ret;
   };
 
-  if (name[0]=='-' && name[1]==0) // read from stdin
+  if (name=="-") // read from stdin
   {
     // read contents from stdin into contents string
     return stream2string(std::cin);
   }
   else // read from file
   {
-    std::ifstream f(name,std::istream::in);
+    std::ifstream f(name.str(),std::istream::in);
     if (!f.is_open())
     {
-      config_term("file '%s' not found or could not be opened\n",name);
+      config_term("file '%s' not found or could not be opened\n",qPrint(name));
       return "";
     }
     return stream2string(f);
   }
 }
 
-bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
+bool ConfigImpl::parseString(const QCString &fn,const QCString &str,bool update)
 {
   g_config = ConfigImpl::instance();
-  g_inputString   = str;
+  g_inputString   = str.data();
   g_inputPosition = 0;
   g_yyFileName    = fn;
   g_yyLineNr      = 1;
@@ -1347,13 +1346,13 @@ bool ConfigImpl::parseString(const char *fn,const char *str,bool update)
   return TRUE;
 }
 
-bool ConfigImpl::parse(const char *fn,bool update)
+bool ConfigImpl::parse(const QCString &fn,bool update)
 {
   int retval;
   g_encoding = "UTF-8";
-  printlex(yy_flex_debug, TRUE, __FILE__, fn);
+  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fn));
   retval =  parseString(fn,configFileToString(fn), update);
-  printlex(yy_flex_debug, FALSE, __FILE__, fn);
+  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fn));
   return retval;
 }
 
@@ -1384,7 +1383,7 @@ static bool checkFileName(const QCString &s,const char *optionName)
   if ((val=="yes" || val=="true"  || val=="1" || val=="all") ||
       (val=="no"  || val=="false" || val=="0" || val=="none"))
   {
-    err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,s.data());
+    err("file name expected for option %s, got %s instead. Ignoring...\n",optionName,qPrint(s));
     return false;
   }
   return true;
@@ -1406,21 +1405,21 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
     int i=item.find('=');
     if (i==-1 && equalRequired)
     {
-      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,item.data());
+      err("Illegal format for option %s, no equal sign ('=') specified for item '%s'\n",name,qPrint(item));
     }
     if (i!=-1)
     {
       QCString myName=item.left(i).stripWhiteSpace();
       if (myName.isEmpty())
       {
-        err("Illegal format for option %s, no name specified for item '%s'\n",name,item.data());
+        err("Illegal format for option %s, no name specified for item '%s'\n",name,qPrint(item));
       }
       else if (valueRequired)
       {
         QCString myValue=item.right(item.length()-i-1).stripWhiteSpace();
         if (myValue.isEmpty())
         {
-          err("Illegal format for option %s, no value specified for item '%s'\n",name,item.data());
+          err("Illegal format for option %s, no value specified for item '%s'\n",name,qPrint(item));
         }
       }
     }
@@ -1527,7 +1526,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag HTML_HEADER: header file '%s' "
-          "does not exist\n",headerFile.data());
+          "does not exist\n",qPrint(headerFile));
     }
   }
 
@@ -1540,7 +1539,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag HTML_FOOTER: footer file '%s' "
-          "does not exist\n",footerFile.data());
+          "does not exist\n",qPrint(footerFile));
     }
   }
 
@@ -1548,6 +1547,23 @@ void Config::checkAndCorrect()
   // Test to see if MathJax code file is valid
   if (Config_getBool(USE_MATHJAX))
   {
+    QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
+    QCString mathjaxVersion = Config_getEnum(MATHJAX_VERSION);
+    if (!mathJaxFormat.isEmpty())
+    {
+      if (mathjaxVersion == "MathJax_2")
+      {
+        if (mathJaxFormat=="chtml") Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
+      }
+      else
+      {
+        if (mathJaxFormat=="HTML-CSS" || mathJaxFormat=="NativeMML")
+        {
+          Config_updateEnum(MATHJAX_FORMAT,"chtml");
+        }
+      }
+    }
+
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
     if (!mathJaxCodefile.isEmpty())
     {
@@ -1555,11 +1571,23 @@ void Config::checkAndCorrect()
       if (!fi.exists())
       {
         config_term("tag MATHJAX_CODEFILE file '%s' "
-            "does not exist\n",mathJaxCodefile.data());
+            "does not exist\n",qPrint(mathJaxCodefile));
       }
     }
     QCString path = Config_getString(MATHJAX_RELPATH);
-    if (!path.isEmpty() && path.at(path.length()-1)!='/')
+    if (path.isEmpty())
+    {
+      if (mathjaxVersion == "MathJax_2")
+      {
+        path = "https://cdn.jsdelivr.net/npm/mathjax@2";
+      }
+      else
+      {
+        path = "https://cdn.jsdelivr.net/npm/mathjax@3";
+      }
+    }
+
+    if (path.at(path.length()-1)!='/')
     {
       path+="/";
     }
@@ -1575,7 +1603,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag LATEX_HEADER: header file '%s' "
-          "does not exist\n",latexHeaderFile.data());
+          "does not exist\n",qPrint(latexHeaderFile));
     }
   }
 
@@ -1588,7 +1616,7 @@ void Config::checkAndCorrect()
     if (!fi.exists())
     {
       config_term("tag LATEX_FOOTER: footer file '%s' "
-          "does not exist\n",latexFooterFile.data());
+          "does not exist\n",qPrint(latexFooterFile));
     }
   }
 
@@ -1615,7 +1643,7 @@ void Config::checkAndCorrect()
       int i_obrace=predef.find('(');
       if ((i_obrace==0) || (i_equals==0) || (i_equals==1 && predef.at(i_equals-1)==':'))
       {
-        err("Illegal PREDEFINED format '%s', no define name specified\n",predef.data());
+        err("Illegal PREDEFINED format '%s', no define name specified\n",qPrint(predef));
       }
     }
   }
@@ -1626,8 +1654,8 @@ void Config::checkAndCorrect()
   for (const auto &alias : aliasList)
   {
     // match aliases of the form re1='name=' and re2='name{2} ='
-    static const reg::Ex re1(R"(\a\w*\s*=)");
-    static const reg::Ex re2(R"(\a\w*{\d+}\s*=)");
+    static const reg::Ex re1(R"(^\a\w*\s*=)");
+    static const reg::Ex re2(R"(^\a\w*{\d+}\s*=)");
     if (!reg::search(alias,re1) && !reg::search(alias,re2))
     {
       err("Illegal ALIASES format '%s'. Use \"name=value\" or \"name{n}=value\", where n is the number of arguments\n",
@@ -1757,7 +1785,7 @@ void Config::checkAndCorrect()
       FileInfo dp(dotExe.str());
       if (!dp.exists() || !dp.isFile())
       {
-        warn_uncond("the dot tool could not be found at %s\n",dotPath.data());
+        warn_uncond("the dot tool could not be found at %s\n",qPrint(dotPath));
         dotPath="";
       }
       else
@@ -1793,7 +1821,7 @@ void Config::checkAndCorrect()
       else
       {
         err("Jar file plantuml.jar not found at location "
-                   "specified via PLANTUML_JAR_PATH: '%s'\n",plantumlJarPath.data());
+                   "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
@@ -1804,7 +1832,7 @@ void Config::checkAndCorrect()
     else
     {
       err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
-                 plantumlJarPath.data());
+                 qPrint(plantumlJarPath));
       plantumlJarPath="";
     }
   }
@@ -1819,7 +1847,7 @@ void Config::checkAndCorrect()
     FileInfo dp(diaExe.str());
     if (!dp.exists() || !dp.isFile())
     {
-      warn_uncond("dia could not be found at %s\n",diaPath.data());
+      warn_uncond("dia could not be found at %s\n",qPrint(diaPath));
       diaPath="";
     }
     else
@@ -1975,15 +2003,6 @@ void Config::checkAndCorrect()
   Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
 
   //------------------------
-  QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
-  if (!mathJaxFormat.isEmpty() && mathJaxFormat!="HTML-CSS" &&
-       mathJaxFormat!="NativeMML" && mathJaxFormat!="SVG")
-  {
-    err("Unsupported value for MATHJAX_FORMAT: Should be one of HTML-CSS, NativeMML, or SVG\n");
-    Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
-  }
-
-  //------------------------
   // add default words if needed
   const StringVector &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
   if (annotationFromBrief.empty())
@@ -2052,7 +2071,7 @@ void Config::checkAndCorrect()
       {
         if (option->kind()==ConfigOption::O_Bool)
         {
-          printf("disabling option %s\n",option->name().data());
+          printf("disabling option %s\n",qPrint(option->name()));
           ConfigImpl_getBool("option->name("))=FALSE; // also disable this option
         }
       }
@@ -2074,7 +2093,7 @@ void Config::compareDoxyfile(TextStream &t)
   ConfigImpl::instance()->compareDoxyfile(t);
 }
 
-bool Config::parse(const char *fileName,bool update)
+bool Config::parse(const QCString &fileName,bool update)
 {
   bool parseRes = ConfigImpl::instance()->parse(fileName,update);
   if (!parseRes) return parseRes;

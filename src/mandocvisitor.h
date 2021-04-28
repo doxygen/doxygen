@@ -31,7 +31,7 @@ class TextStream;
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -144,7 +144,7 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
 
     //--------------------------------------
     // state variables

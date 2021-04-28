@@ -24,7 +24,7 @@
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator(const char *dir) : m_t(nullptr), m_dir(dir)
+OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
 }
@@ -57,23 +57,23 @@ OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
   return *this;
 }
 
-void OutputGenerator::startPlainFile(const char *name)
+void OutputGenerator::startPlainFile(const QCString &name)
 {
-  //printf("startPlainFile(%s)\n",name);
+  //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
-  m_file.open(m_fileName.str(),std::ofstream::out | std::ofstream::binary);
-  if (!m_file.is_open())
+  m_file = Portable::fopen(m_fileName.data(),"wb");
+  if (m_file==0)
   {
-    term("Could not open file %s for writing\n",m_fileName.data());
+    term("Could not open file %s for writing\n",qPrint(m_fileName));
   }
-  m_t.setStream(&m_file);
+  m_t.setFile(m_file);
 }
 
 void OutputGenerator::endPlainFile()
 {
   m_t.flush();
   m_t.setStream(nullptr);
-  m_file.close();
+  Portable::fclose(m_file);
   m_fileName.resize(0);
 }
 

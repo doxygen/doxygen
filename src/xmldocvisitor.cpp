@@ -87,7 +87,7 @@ static void visitPostEnd(TextStream &t, const char *cmd)
   t << "</" << cmd << ">\n";
 }
 
-XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt)
+XmlDocVisitor::XmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt)
   : DocVisitor(DocVisitor_XML), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE),
     m_langExt(langExt)
 {
@@ -452,7 +452,7 @@ void XmlDocVisitor::visit(DocInclude *inc)
 void XmlDocVisitor::visit(DocIncOperator *op)
 {
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     if (!m_hide)
@@ -937,7 +937,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
   bool ambig;
   if (url.isEmpty() && (fd=findFileDef(Doxygen::imageNameLinkedMap,img->name(),ambig)))
   {
-    copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+baseName.data());
+    copyFile(fd->absFilePath(),Config_getString(XML_OUTPUT)+"/"+baseName);
   }
 }
 
@@ -1166,7 +1166,7 @@ void XmlDocVisitor::visitPost(DocXRefItem *x)
 void XmlDocVisitor::visitPre(DocInternalRef *ref)
 {
   if (m_hide) return;
-  startLink(0,ref->file(),ref->anchor());
+  startLink(QCString(),ref->file(),ref->anchor());
 }
 
 void XmlDocVisitor::visitPost(DocInternalRef *)
@@ -1217,14 +1217,14 @@ void XmlDocVisitor::visitPost(DocParBlock *)
 }
 
 
-void XmlDocVisitor::filter(const char *str)
+void XmlDocVisitor::filter(const QCString &str)
 {
   m_t << convertToXML(str);
 }
 
 void XmlDocVisitor::startLink(const QCString &ref,const QCString &file,const QCString &anchor)
 {
-  //printf("XmlDocVisitor: file=%s anchor=%s\n",file.data(),anchor.data());
+  //printf("XmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   m_t << "<ref refid=\"" << file;
   if (!anchor.isEmpty()) m_t << "_1" << anchor;
   m_t << "\" kindref=\"";

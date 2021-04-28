@@ -720,7 +720,7 @@ def main():
 		print("        StringVector ConfigValues::*l;");
 		print("      } value;");
 		print("    };");
-		print("    const Info *get(const char *tag) const;");
+		print("    const Info *get(const QCString &tag) const;");
 		print("  private:")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
@@ -738,7 +738,7 @@ def main():
 		print("#include \"configimpl.h\"")
 		print("#include <unordered_map>")
 		print("")
-		print("const ConfigValues::Info *ConfigValues::get(const char *tag) const");
+		print("const ConfigValues::Info *ConfigValues::get(const QCString &tag) const");
 		print("{");
 		print("  static const std::unordered_map< std::string, Info > configMap =");
 		print("  {");
@@ -747,7 +747,7 @@ def main():
 				if (n.nodeName == "group"):
 					parseGroupMapInit(n)
 		print("  };");
-		print("  auto it = configMap.find(tag);");
+		print("  auto it = configMap.find(tag.str());");
 		print("  return it!=configMap.end() ? &it->second : nullptr;");
 		print("}");
 		print("")

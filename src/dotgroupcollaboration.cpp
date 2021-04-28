@@ -241,7 +241,7 @@ QCString DotGroupCollaboration::getMapLabel() const
 
 QCString DotGroupCollaboration::writeGraph( TextStream &t,
   GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-  const char *path, const char *fileName, const char *relPath,
+  const QCString &path, const QCString &fileName, const QCString &relPath,
   bool generateImageMap,int graphId)
 {
   m_doNotAddImageToIndex = TRUE;

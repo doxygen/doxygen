@@ -177,7 +177,7 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 
 
 LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                                 const char *langExt,bool insideTabbing)
+                                 const QCString &langExt,bool insideTabbing)
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
     m_langExt(langExt)
@@ -378,14 +378,14 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         QCString fileName(4096);
 
         fileName.sprintf("%s%d%s",
-            (Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_").data(),
+            qPrint(Config_getString(LATEX_OUTPUT)+"/inline_dotgraph_"),
             dotindex++,
             ".dot"
            );
         std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.data());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         else
         {
@@ -406,7 +406,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         QCString baseName(4096);
 
         baseName.sprintf("%s%d",
-            (Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_").data(),
+            qPrint(Config_getString(LATEX_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
            );
         std::string fileName = baseName.str()+".msc";
@@ -556,7 +556,7 @@ void LatexDocVisitor::visit(DocInclude *inc)
 void LatexDocVisitor::visit(DocIncOperator *op)
 {
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     if (!m_hide) m_ci.startCodeFragment("DoxyCodeInclude");
@@ -904,7 +904,7 @@ void LatexDocVisitor::visitPre(DocSection *s)
     m_t << "\\hypertarget{" << stripPath(s->file()) << "_" << s->anchor() << "}{}";
   }
   m_t << "\\" << getSectionName(s->level()) << "{";
-  filter(convertCharEntitiesToUTF8(s->title().data()));
+  filter(convertCharEntitiesToUTF8(s->title()));
   m_t << "}\\label{" << stripPath(s->file()) << "_" << s->anchor() << "}\n";
 }
 
@@ -1450,7 +1450,7 @@ void LatexDocVisitor::visitPre(DocRef *ref)
   // ref->anchor() for LaTeX/RTF
   if (ref->isSubPage())
   {
-    startLink(ref->ref(),0,ref->anchor());
+    startLink(ref->ref(),QCString(),ref->anchor());
   }
   else
   {
@@ -1464,7 +1464,7 @@ void LatexDocVisitor::visitPost(DocRef *ref)
   if (m_hide) return;
   if (ref->isSubPage())
   {
-    endLink(ref->ref(),0,ref->anchor());
+    endLink(ref->ref(),QCString(),ref->anchor());
   }
   else
   {
@@ -1708,13 +1708,13 @@ void LatexDocVisitor::visitPost(DocXRefItem *x)
 void LatexDocVisitor::visitPre(DocInternalRef *ref)
 {
   if (m_hide) return;
-  startLink(0,ref->file(),ref->anchor());
+  startLink(QCString(),ref->file(),ref->anchor());
 }
 
 void LatexDocVisitor::visitPost(DocInternalRef *ref)
 {
   if (m_hide) return;
-  endLink(0,ref->file(),ref->anchor());
+  endLink(QCString(),ref->file(),ref->anchor());
 }
 
 void LatexDocVisitor::visitPre(DocText *)
@@ -1757,7 +1757,7 @@ void LatexDocVisitor::visitPost(DocParBlock *)
   if (m_hide) return;
 }
 
-void LatexDocVisitor::filter(const char *str)
+void LatexDocVisitor::filter(const QCString &str)
 {
   filterLatexString(m_t,str,
                     m_insideTabbing,

@@ -90,6 +90,9 @@ CONSTSUFFIX ([uU][lL]?[lL]?)|([lL][lL]?[uU]?)
 (0x|0X)[0-9a-fA-F]+{CONSTSUFFIX}?  { yyextra->strToken=yytext+2; 
                                      return TOK_HEXADECIMALINT; 
                                    }
+(0b|0B)[01]+{CONSTSUFFIX}?         { yyextra->strToken=yytext+2; 
+                                     return TOK_BINARYINT; 
+                                   }
 (([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+))([eE]([\-\+])?[0-9]+)?([fFlL])? { 
                                      yyextra->strToken=yytext; return TOK_FLOAT; 
                                    }
@@ -147,7 +150,7 @@ bool ConstExpressionParser::parse(const char *fileName,int lineNr,const std::str
   constexpYYrestart( yyin, p->yyscanner );
 
   printlex(yy_flex_debug, true, __FILE__, fileName);
-  //printf("Expression: '%s'\n",s.data());
+  //printf("Expression: '%s'\n",qPrint(s));
 
   constexpYYparse(p->yyscanner);
 

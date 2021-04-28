@@ -155,7 +155,7 @@ const char *tokToString(int token)
 
 static int computeIndent(const char *str,size_t length)
 {
-  if (length==std::string::npos) return 0;
+  if (str==0 || length==std::string::npos) return 0;
   size_t i;
   int indent=0;
   static int tabSize=Config_getInt(TAB_SIZE);
@@ -181,7 +181,7 @@ static int computeIndent(const char *str,size_t length)
 
 static void processSection()
 {
-  //printf("%s: found section/anchor with name '%s'\n",g_fileName.data(),g_secLabel.data());
+  //printf("%s: found section/anchor with name '%s'\n",qPrint(g_fileName),qPrint(g_secLabel));
   QCString file;
   if (g_definition)
   {
@@ -189,7 +189,7 @@ static void processSection()
   }
   else
   {
-    warn(g_fileName,g_yyLineNr,"Found section/anchor %s without context\n",g_secLabel.data());
+    warn(g_fileName,g_yyLineNr,"Found section/anchor %s without context\n",qPrint(g_secLabel));
   }
   SectionInfo *si = SectionManager::instance().find(g_secLabel);
   if (si)
@@ -201,7 +201,7 @@ static void processSection()
 
 static void handleHtmlTag()
 {
-  QCString tagText=yytext;
+  QCString tagText(yytext);
   g_token->attribs.clear();
   g_token->endTag = FALSE;
   g_token->emptyTag = FALSE;
@@ -293,7 +293,7 @@ static void handleHtmlTag()
     {
     }
     //printf("=====> Adding option name=<%s> value=<%s>\n",
-    //    opt.name.data(),opt.value.data());
+    //    qPrint(opt.name),qPrint(opt.value));
     g_token->attribs.push_back(opt);
   }
   g_token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
@@ -499,7 +499,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Para>\r            /* skip carriage return */
 <St_Para>^{LISTITEM}   { /* list item */
                          lineCount(yytext,yyleng);
-                         QCString text=yytext;
+                         QCString text(yytext);
                          size_t dashPos = static_cast<size_t>(text.findRev('-'));
                          assert(dashPos!=std::string::npos);
                          g_token->isEnumList = text.at(dashPos+1)=='#';
@@ -515,7 +515,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=yytext;
+                           std::string text(yytext);
                            static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
                            reg::Match match;
                            reg::search(text,match,re);
@@ -534,7 +534,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          }
                          else
                          {
-                           std::string text=yytext;
+                           std::string text(yytext);
                            static const reg::Ex re(R"(\d+)");
                            reg::Match match;
                            reg::search(text,match,re);
@@ -548,12 +548,12 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          lineCount(yytext,yyleng);
-                         QCString text=extractPartAfterNewLine(yytext);
+                         QCString text=extractPartAfterNewLine(QCString(yytext));
                          size_t dashPos = static_cast<size_t>(text.findRev('-'));
                          assert(dashPos!=std::string::npos);
                          g_token->isEnumList = text.at(dashPos+1)=='#';
                          g_token->id         = -1;
-                         g_token->indent     = computeIndent(text,dashPos);
+                         g_token->indent     = computeIndent(text.data(),dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
@@ -564,7 +564,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=extractPartAfterNewLine(yytext).str();
+                           std::string text=extractPartAfterNewLine(QCString(yytext)).str();
                            static const reg::Ex re(R"([*+][^*+]*$)"); // find last + or *
                            reg::Match match;
                            reg::search(text,match,re);
@@ -584,7 +584,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          else
                          {
                            lineCount(yytext,yyleng);
-                           std::string text=extractPartAfterNewLine(yytext).str();
+                           std::string text=extractPartAfterNewLine(QCString(yytext)).str();
                            static const reg::Ex re(R"(\d+)");
                            reg::Match match;
                            reg::search(text,match,re);
@@ -605,9 +605,9 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          lineCount(yytext,yyleng);
-                         QCString text=extractPartAfterNewLine(yytext);
+                         QCString text=extractPartAfterNewLine(QCString(yytext));
                          int dotPos = text.findRev('.');
-                         g_token->indent = computeIndent(text,dotPos);
+                         g_token->indent = computeIndent(text.data(),dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>"{"{BLANK}*"@link"/{BLANK}+ {
@@ -723,7 +723,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}"("{ID}"))"   { /* environment variable */
-                         QCString name = &yytext[2];
+                         QCString name(&yytext[2]);
                          name = name.left(name.length()-1);
                          QCString value = Portable::getenv(name);
                          for (int i=value.length()-1;i>=0;i--) unput(value.at(i));
@@ -1239,7 +1239,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          BEGIN(St_XRefItem2);
                        }
 <St_XRefItem2>[0-9]+"." {
-                         QCString numStr=yytext;
+                         QCString numStr(yytext);
                          numStr=numStr.left((int)yyleng-1);
                          g_token->id=numStr.toInt();
                          return RetVal_OK;
@@ -1255,7 +1255,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                        }
 <St_Param>({PHPTYPE}{BLANK}*("["{BLANK}*"]")*{BLANK}*"|"{BLANK}*)*{PHPTYPE}{BLANK}*("["{BLANK}*"]")*{WS}+("&")?"$"{LABELID} {
                          lineCount(yytext,yyleng);
-                         QCString params = yytext;
+                         QCString params(yytext);
                          int j = params.find('&');
                          int i = params.find('$');
                          if (j<i && j!=-1) i=j;
@@ -1306,7 +1306,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_WORD;
                        }
 <St_File>"\""[^\n\"]+"\"" {
-                         QCString text=yytext;
+                         QCString text(yytext);
                          g_token->name = text.mid(1,text.length()-2);
                          return TK_WORD;
                        }
@@ -1349,7 +1349,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Sections>{CMD}("<"|{CMD})
 <St_Sections>"<"{CAPTION}({WS}+{ATTRIB})*">" {
                                       lineCount(yytext,yyleng);
-                                      QCString tag=yytext;
+                                      QCString tag(yytext);
                                       int s=tag.find("id=");
                                       if (s!=-1) // command has id attribute
                                       {
@@ -1435,13 +1435,13 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                                       BEGIN(St_SecSkip);
                                     }
 <St_SecSkip>{CMD}{ID}               {
-                                      if (qstrcmp(yytext+1,g_endMarker)==0)
+                                      if (g_endMarker==yytext+1)
                                       {
                                         BEGIN(St_Sections);
                                       }
                                     }
 <St_SecSkip>"-->"                   {
-                                      if (qstrcmp(yytext,g_endMarker)==0)
+                                      if (g_endMarker==yytext)
                                       {
                                         BEGIN(St_Sections);
                                       }
@@ -1510,12 +1510,12 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 
 //--------------------------------------------------------------------------
 
-void doctokenizerYYFindSections(const char *input,const Definition *d,
-                                const char *fileName)
+void doctokenizerYYFindSections(const QCString &input,const Definition *d,
+                                const QCString &fileName)
 {
-  if (input==0) return;
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
-  g_inputString = input;
+  if (input.isEmpty()) return;
+  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
+  g_inputString = input.data();
   //printf("parsing --->'%s'<---\n",input);
   g_inputPos    = 0;
   g_definition  = d;
@@ -1523,10 +1523,10 @@ void doctokenizerYYFindSections(const char *input,const Definition *d,
   BEGIN(St_Sections);
   g_yyLineNr = 1;
   doctokenizerYYlex();
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
+  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
-void doctokenizerYYinit(const char *input,const char *fileName,bool markdownSupport)
+void doctokenizerYYinit(const char *input,const QCString &fileName,bool markdownSupport)
 {
   g_autoListLevel = 0;
   g_inputString = input;
@@ -1729,7 +1729,7 @@ void doctokenizerYYsetInsidePre(bool b)
   g_insidePre = b;
 }
 
-void doctokenizerYYpushBackHtmlTag(const char *tag)
+void doctokenizerYYpushBackHtmlTag(const QCString &tag)
 {
   QCString tagName = tag;
   int i,l = tagName.length();

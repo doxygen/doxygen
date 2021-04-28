@@ -55,8 +55,8 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
-    virtual const char *groupTitle() const = 0;
-    virtual void setGroupTitle( const char *newtitle ) = 0;
+    virtual QCString groupTitle() const = 0;
+    virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(const FileDef *def) = 0;
     virtual bool addClass(const ClassDef *def) = 0;
@@ -110,8 +110,8 @@ class GroupDef : public DefinitionMutable, public Definition
 
 };
 
-GroupDef *createGroupDef(const char *fileName,int line,const char *name,
-                                const char *title,const char *refFileName=0);
+GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
+                                const QCString &title,const QCString &refFileName=QCString());
 
 // --- Cast functions
 

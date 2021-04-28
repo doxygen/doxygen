@@ -70,11 +70,11 @@ void LatexCodeGenerator::setSourceFileName(const QCString &name)
   m_sourceFileName = name;
 }
 
-void LatexCodeGenerator::codify(const char *str)
+void LatexCodeGenerator::codify(const QCString &str)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const signed char *p=(const signed char*)str;
+    const signed char *p=(const signed char*)str.data();
     signed char c;
     //char cs[5];
     int spacesToNextTabStop;
@@ -148,19 +148,19 @@ void LatexCodeGenerator::codify(const char *str)
 }
 
 
-void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
-                                   const char *anchor,const char *name,
-                                   const char *)
+void LatexCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+                                   const QCString &anchor,const QCString &name,
+                                   const QCString &)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  int l = qstrlen(name);
-  if (!ref && usePDFLatex && pdfHyperlinks)
+  uint l = name.length();
+  if (ref.isEmpty() && usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";
-    if (f) m_t << stripPath(f);
-    if (f && anchor) m_t << "_";
-    if (anchor) m_t << anchor;
+    if (!f.isEmpty()) m_t << stripPath(f);
+    if (!f.isEmpty() && !anchor.isEmpty()) m_t << "_";
+    if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
     codify(name);
     m_t << "}}";
@@ -172,7 +172,7 @@ void LatexCodeGenerator::writeCodeLink(const char *ref,const char *f,
   m_col+=l;
 }
 
-void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,const char *anchor,int l)
+void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l)
 {
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -186,7 +186,7 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
     QCString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    if (fileName && !m_sourceFileName.isEmpty())
+    if (!fileName.isEmpty() && !m_sourceFileName.isEmpty())
     {
       QCString lineAnchor;
       lineAnchor.sprintf("_l%05d",l);
@@ -196,7 +196,7 @@ void LatexCodeGenerator::writeLineNumber(const char *ref,const char *fileName,co
       {
         m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
       }
-      writeCodeLink(ref,fileName,anchor,lineNumber,0);
+      writeCodeLink(ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {
@@ -232,7 +232,7 @@ void LatexCodeGenerator::endCodeLine()
   codify("\n");
 }
 
-void LatexCodeGenerator::startFontClass(const char *name)
+void LatexCodeGenerator::startFontClass(const QCString &name)
 {
   m_t << "\\textcolor{" << name << "}{";
 }
@@ -242,12 +242,12 @@ void LatexCodeGenerator::endFontClass()
   m_t << "}";
 }
 
-void LatexCodeGenerator::startCodeFragment(const char *style)
+void LatexCodeGenerator::startCodeFragment(const QCString &style)
 {
   m_t << "\n\\begin{" << style << "}{" << m_usedTableLevel << "}\n";
 }
 
-void LatexCodeGenerator::endCodeFragment(const char *style)
+void LatexCodeGenerator::endCodeFragment(const QCString &style)
 {
   //endCodeLine checks is there is still an open code line, if so closes it.
   endCodeLine();
@@ -289,7 +289,7 @@ static void writeLatexMakefile()
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    term("Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",qPrint(fileName));
   }
   TextStream t(&f);
   // inserted by KONNO Akihisa <konno@researchers.jp> 2002-03-05
@@ -387,7 +387,7 @@ static void writeMakeBat()
   std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
   if (!t.is_open())
   {
-    term("Could not open file %s for writing\n",fileName.data());
+    term("Could not open file %s for writing\n",qPrint(fileName));
   }
   t << "set Dir_Old=%cd%\r\n";
   t << "cd /D %~dp0\r\n\r\n";
@@ -466,13 +466,13 @@ void LatexGenerator::init()
   Dir d(dname.str());
   if (!d.exists() && !d.mkdir(dname.str()))
   {
-    term("Could not create output directory %s\n",dname.data());
+    term("Could not create output directory %s\n",qPrint(dname));
   }
 
   if (!Config_getString(LATEX_HEADER).isEmpty())
   {
     g_header=fileToString(Config_getString(LATEX_HEADER));
-    //printf("g_header='%s'\n",g_header.data());
+    //printf("g_header='%s'\n",qPrint(g_header));
   }
   else
   {
@@ -481,7 +481,7 @@ void LatexGenerator::init()
   if (!Config_getString(LATEX_FOOTER).isEmpty())
   {
     g_footer=fileToString(Config_getString(LATEX_FOOTER));
-    //printf("g_footer='%s'\n",g_footer.data());
+    //printf("g_footer='%s'\n",qPrint(g_footer));
   }
   else
   {
@@ -517,7 +517,7 @@ void LatexGenerator::writeStyleSheetFile(TextStream &t)
   writeDefaultStyleSheet(t);
 }
 
-void LatexGenerator::startFile(const char *name,const char *,const char *,int)
+void LatexGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
 {
 #if 0
   setEncoding(Config_getString(LATEX_OUTPUT_ENCODING));
@@ -583,7 +583,7 @@ static QCString makeIndex()
     if (latex_mkidx_command[0] == '\\')
       result += latex_mkidx_command;
     else
-      result += '\\'+latex_mkidx_command;
+      result += "\\"+latex_mkidx_command;
   }
   else
   {
@@ -612,7 +612,8 @@ static QCString substituteLatexKeywords(const QCString &str,
   QCString generatedBy;
   if (timeStamp)
   {
-    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE), Config_getString(PROJECT_NAME));
+    generatedBy = theTranslator->trGeneratedAt(dateToString(TRUE).data(),
+                                               Config_getString(PROJECT_NAME).data());
   }
   else
   {
@@ -646,7 +647,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   {
     FileInfo fi(formulaMacrofile.str());
     formulaMacrofile=fi.absFilePath();
-    QCString stripMacroFile = fi.fileName().data();
+    QCString stripMacroFile = fi.fileName();
     copyFile(formulaMacrofile,Config_getString(LATEX_OUTPUT) + "/" + stripMacroFile);
   }
 
@@ -1042,7 +1043,7 @@ void LatexGenerator::endIndexSection(IndexSections is)
   }
 }
 
-void LatexGenerator::writePageLink(const char *name, bool /*first*/)
+void LatexGenerator::writePageLink(const QCString &name, bool /*first*/)
 {
   //bool &compactLatex = Config_getBool(COMPACT_LATEX);
   // next is remove for bug615957
@@ -1076,7 +1077,7 @@ void LatexGenerator::newParagraph()
   m_t << "\n" << "\n";
 }
 
-void LatexGenerator::startParagraph(const char *)
+void LatexGenerator::startParagraph(const QCString &)
 {
   m_t << "\n" << "\n";
 }
@@ -1086,29 +1087,29 @@ void LatexGenerator::endParagraph()
   m_t << "\n" << "\n";
 }
 
-void LatexGenerator::writeString(const char *text)
+void LatexGenerator::writeString(const QCString &text)
 {
   m_t << text;
 }
 
-void LatexGenerator::startIndexItem(const char *ref,const char *fn)
+void LatexGenerator::startIndexItem(const QCString &ref,const QCString &fn)
 {
   m_t << "\\item ";
-  if (!ref && fn)
+  if (ref.isEmpty() && !fn.isEmpty())
   {
     m_t << "\\contentsline{section}{";
   }
 }
 
-void LatexGenerator::endIndexItem(const char *ref,const char *fn)
+void LatexGenerator::endIndexItem(const QCString &ref,const QCString &fn)
 {
-  if (!ref && fn)
+  if (ref.isEmpty() && !fn.isEmpty())
   {
     m_t << "}{\\pageref{" << stripPath(fn) << "}}{}\n";
   }
 }
 
-//void LatexGenerator::writeIndexFileItem(const char *,const char *text)
+//void LatexGenerator::writeIndexFileItem(const QCString &,const QCString &text)
 //{
 //  m_t << "\\item\\contentsline{section}{";
 //  docify(text);
@@ -1116,7 +1117,7 @@ void LatexGenerator::endIndexItem(const char *ref,const char *fn)
 //}
 
 
-void LatexGenerator::startHtmlLink(const char *url)
+void LatexGenerator::startHtmlLink(const QCString &url)
 {
   if (Config_getBool(PDF_HYPERLINKS))
   {
@@ -1132,7 +1133,7 @@ void LatexGenerator::endHtmlLink()
   m_t << "}}";
 }
 
-//void LatexGenerator::writeMailLink(const char *url)
+//void LatexGenerator::writeMailLink(const QCString &url)
 //{
 //  if (Config_getBool(PDF_HYPERLINKS))
 //  {
@@ -1145,16 +1146,16 @@ void LatexGenerator::endHtmlLink()
 //  m_t << "}";
 //}
 
-void LatexGenerator::writeStartAnnoItem(const char *,const char *,
-                                        const char *path,const char *name)
+void LatexGenerator::writeStartAnnoItem(const QCString &,const QCString &,
+                                        const QCString &path,const QCString &name)
 {
   m_t << "\\item\\contentsline{section}\\textbf{ ";
-  if (path) docify(path);
+  if (!path.isEmpty()) docify(path);
   docify(name);
   m_t << "} ";
 }
 
-void LatexGenerator::writeEndAnnoItem(const char *name)
+void LatexGenerator::writeEndAnnoItem(const QCString &name)
 {
   m_t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
@@ -1174,28 +1175,28 @@ void LatexGenerator::startIndexValue(bool hasBrief)
   if (hasBrief) m_t << "\\\\*";
 }
 
-void LatexGenerator::endIndexValue(const char *name,bool /*hasBrief*/)
+void LatexGenerator::endIndexValue(const QCString &name,bool /*hasBrief*/)
 {
   //if (hasBrief) m_t << ")";
   m_t << "}{\\pageref{" << stripPath(name) << "}}{}\n";
 }
 
-//void LatexGenerator::writeClassLink(const char *,const char *,
-//                                    const char *,const char *name)
+//void LatexGenerator::writeClassLink(const QCString &,const QCString &,
+//                                    const QCString &,const QCString &name)
 //{
 //  m_t << "\\textbf{ ";
 //  docify(name);
 //  m_t << "}";
 //}
 
-void LatexGenerator::startTextLink(const char *f,const char *anchor)
+void LatexGenerator::startTextLink(const QCString &f,const QCString &anchor)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (!m_disableLinks && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";
-    if (f) m_t << stripPath(f);
-    if (anchor) m_t << "_" << anchor;
+    if (!f.isEmpty()) m_t << stripPath(f);
+    if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "}{";
   }
   else
@@ -1214,16 +1215,16 @@ void LatexGenerator::endTextLink()
   m_t << "}";
 }
 
-void LatexGenerator::writeObjectLink(const char *ref, const char *f,
-                                     const char *anchor, const char *text)
+void LatexGenerator::writeObjectLink(const QCString &ref, const QCString &f,
+                                     const QCString &anchor, const QCString &text)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (!m_disableLinks && !ref && pdfHyperlinks)
+  if (!m_disableLinks && ref.isEmpty() && pdfHyperlinks)
   {
     m_t << "\\mbox{\\hyperlink{";
-    if (f) m_t << stripPath(f);
-    if (f && anchor) m_t << "_";
-    if (anchor) m_t << anchor;
+    if (!f.isEmpty()) m_t << stripPath(f);
+    if (!f.isEmpty() && !anchor.isEmpty()) m_t << "_";
+    if (!anchor.isEmpty()) m_t << anchor;
     m_t << "}{";
     docify(text);
     m_t << "}}";
@@ -1241,20 +1242,20 @@ void LatexGenerator::startPageRef()
   m_t << " \\doxyref{}{";
 }
 
-void LatexGenerator::endPageRef(const char *clname, const char *anchor)
+void LatexGenerator::endPageRef(const QCString &clname, const QCString &anchor)
 {
   m_t << "}{";
-  if (clname) m_t << clname;
-  if (anchor) m_t << "_" << anchor;
+  if (!clname.isEmpty()) m_t << clname;
+  if (!anchor.isEmpty()) m_t << "_" << anchor;
   m_t << "}";
 }
 
 
-void LatexGenerator::startTitleHead(const char *fileName)
+void LatexGenerator::startTitleHead(const QCString &fileName)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
-  if (usePDFLatex && pdfHyperlinks && fileName)
+  if (usePDFLatex && pdfHyperlinks && !fileName.isEmpty())
   {
     m_t << "\\hypertarget{" << stripPath(fileName) << "}{}";
   }
@@ -1268,10 +1269,10 @@ void LatexGenerator::startTitleHead(const char *fileName)
   }
 }
 
-void LatexGenerator::endTitleHead(const char *fileName,const char *name)
+void LatexGenerator::endTitleHead(const QCString &fileName,const QCString &name)
 {
   m_t << "}\n";
-  if (name)
+  if (!name.isEmpty())
   {
     m_t << "\\label{" << stripPath(fileName) << "}\\index{";
     m_t << latexEscapeLabelName(name);
@@ -1325,7 +1326,7 @@ void LatexGenerator::endGroupHeader(int)
   m_t << "}\n";
 }
 
-void LatexGenerator::startMemberHeader(const char *,int)
+void LatexGenerator::startMemberHeader(const QCString &,int)
 {
   if (Config_getBool(COMPACT_LATEX))
   {
@@ -1344,18 +1345,18 @@ void LatexGenerator::endMemberHeader()
   m_t << "}\n";
 }
 
-void LatexGenerator::startMemberDoc(const char *clname,
-                                    const char *memname,
-                                    const char *,
-                                    const char *title,
+void LatexGenerator::startMemberDoc(const QCString &clname,
+                                    const QCString &memname,
+                                    const QCString &,
+                                    const QCString &title,
                                     int memCount,
                                     int memTotal,
                                     bool showInline)
 {
-  if (memname && memname[0]!='@')
+  if (!memname.isEmpty() && memname[0]!='@')
   {
     m_t << "\\index{";
-    if (clname)
+    if (!clname.isEmpty())
     {
       m_t << latexEscapeLabelName(clname);
       m_t << "@{";
@@ -1372,7 +1373,7 @@ void LatexGenerator::startMemberDoc(const char *clname,
     m_t << "@{";
     m_t << latexEscapeIndexChars(memname);
     m_t << "}";
-    if (clname)
+    if (!clname.isEmpty())
     {
       m_t << "!";
       m_t << latexEscapeLabelName(clname);
@@ -1416,9 +1417,9 @@ void LatexGenerator::endMemberDoc(bool)
   //if (Config_getBool(COMPACT_LATEX)) m_t << "\\hfill";
 }
 
-void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
-                                     const char *anchor, const char *,
-                                     const char *)
+void LatexGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
+                                     const QCString &anchor, const QCString &,
+                                     const QCString &)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
@@ -1426,21 +1427,21 @@ void LatexGenerator::startDoxyAnchor(const char *fName,const char *,
   if (usePDFLatex && pdfHyperlinks)
   {
     m_t << "\\Hypertarget{";
-    if (fName) m_t << stripPath(fName);
-    if (anchor) m_t << "_" << anchor;
+    if (!fName.isEmpty()) m_t << stripPath(fName);
+    if (!anchor.isEmpty()) m_t << "_" << anchor;
     m_t << "}";
   }
   m_t << "\\label{";
-  if (fName) m_t << stripPath(fName);
-  if (anchor) m_t << "_" << anchor;
+  if (!fName.isEmpty()) m_t << stripPath(fName);
+  if (!anchor.isEmpty()) m_t << "_" << anchor;
   m_t << "}} \n";
 }
 
-void LatexGenerator::endDoxyAnchor(const char *fName,const char *anchor)
+void LatexGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
 {
 }
 
-void LatexGenerator::writeAnchor(const char *fName,const char *name)
+void LatexGenerator::writeAnchor(const QCString &fName,const QCString &name)
 {
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
   m_t << "\\label{" << stripPath(name) << "}\n";
@@ -1448,7 +1449,7 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
-    if (fName)
+    if (!fName.isEmpty())
     {
       m_t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}\n";
     }
@@ -1460,21 +1461,21 @@ void LatexGenerator::writeAnchor(const char *fName,const char *name)
 }
 
 
-//void LatexGenerator::writeLatexLabel(const char *clName,const char *anchor)
+//void LatexGenerator::writeLatexLabel(const QCString &clName,const QCString &anchor)
 //{
 //  writeDoxyAnchor(0,clName,anchor,0);
 //}
 
-void LatexGenerator::addIndexItem(const char *s1,const char *s2)
+void LatexGenerator::addIndexItem(const QCString &s1,const QCString &s2)
 {
-  if (s1)
+  if (!s1.isEmpty())
   {
     m_t << "\\index{";
     m_t << latexEscapeLabelName(s1);
     m_t << "@{";
     m_t << latexEscapeIndexChars(s1);
     m_t << "}";
-    if (s2)
+    if (!s2.isEmpty())
     {
       m_t << "!";
       m_t << latexEscapeLabelName(s2);
@@ -1487,7 +1488,7 @@ void LatexGenerator::addIndexItem(const char *s1,const char *s2)
 }
 
 
-void LatexGenerator::startSection(const char *lab,const char *,SectionType type)
+void LatexGenerator::startSection(const QCString &lab,const QCString &,SectionType type)
 {
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
@@ -1524,13 +1525,13 @@ void LatexGenerator::startSection(const char *lab,const char *,SectionType type)
   }
 }
 
-void LatexGenerator::endSection(const char *lab,SectionType)
+void LatexGenerator::endSection(const QCString &lab,SectionType)
 {
   m_t << "}\\label{" << lab << "}\n";
 }
 
 
-void LatexGenerator::docify(const char *str)
+void LatexGenerator::docify(const QCString &str)
 {
   filterLatexString(m_t,str,
                     m_insideTabbing, // insideTabbing
@@ -1556,7 +1557,7 @@ void LatexGenerator::startClassDiagram()
 }
 
 void LatexGenerator::endClassDiagram(const ClassDiagram &d,
-                                       const char *fileName,const char *)
+                                       const QCString &fileName,const QCString &)
 {
   d.writeFigure(m_t,dir(),fileName);
 }
@@ -1591,7 +1592,7 @@ void LatexGenerator::startMemberTemplateParams()
   }
 }
 
-void LatexGenerator::endMemberTemplateParams(const char *,const char *)
+void LatexGenerator::endMemberTemplateParams(const QCString &,const QCString &)
 {
   if (templateMemberItem)
   {
@@ -1599,7 +1600,7 @@ void LatexGenerator::endMemberTemplateParams(const char *,const char *)
   }
 }
 
-void LatexGenerator::startMemberItem(const char *,int annoType,const char *)
+void LatexGenerator::startMemberItem(const QCString &,int annoType,const QCString &)
 {
   //printf("LatexGenerator::startMemberItem(%d)\n",annType);
   if (!m_insideTabbing)
@@ -1619,7 +1620,7 @@ void LatexGenerator::endMemberItem()
   m_t << "\n";
 }
 
-void LatexGenerator::startMemberDescription(const char *,const char *,bool)
+void LatexGenerator::startMemberDescription(const QCString &,const QCString &,bool)
 {
   if (!m_insideTabbing)
   {
@@ -1673,7 +1674,7 @@ void LatexGenerator::writeNonBreakableSpace(int)
 // - endDescTableRow()
 // endDescTable()
 
-void LatexGenerator::startDescTable(const char *title)
+void LatexGenerator::startDescTable(const QCString &title)
 {
   m_codeGen.incUsedTableLevel();
   m_t << "\\begin{DoxyEnumFields}{" << title << "}\n";
@@ -1868,7 +1869,7 @@ void LatexGenerator::endExamples()
   m_t << "\\end{Desc}\n";
 }
 
-void LatexGenerator::startParamList(ParamListTypes,const char *title)
+void LatexGenerator::startParamList(ParamListTypes,const QCString &title)
 {
   m_t << "\\begin{Desc}\n\\item[";
   docify(title);
@@ -1891,10 +1892,10 @@ void LatexGenerator::endParameterList()
 {
 }
 
-void LatexGenerator::startParameterType(bool first,const char *key)
+void LatexGenerator::startParameterType(bool first,const QCString &key)
 {
   m_t << "\\item[{";
-  if (!first && key) docify(key);
+  if (!first && !key.isEmpty()) docify(key);
 }
 
 void LatexGenerator::endParameterType()
@@ -1917,12 +1918,16 @@ void LatexGenerator::endParameterName(bool last,bool /*emptyList*/,bool closeBra
   }
 }
 
-void LatexGenerator::exceptionEntry(const char* prefix,bool closeBracket)
+void LatexGenerator::exceptionEntry(const QCString &prefix,bool closeBracket)
 {
-  if (prefix)
-      m_t << " " << prefix << "(";
+  if (!prefix.isEmpty())
+  {
+    m_t << " " << prefix << "(";
+  }
   else if (closeBracket)
-      m_t << ")";
+  {
+    m_t << ")";
+  }
   m_t << " ";
 }
 
@@ -1934,7 +1939,7 @@ void LatexGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *
   delete visitor;
 }
 
-void LatexGenerator::startConstraintList(const char *header)
+void LatexGenerator::startConstraintList(const QCString &header)
 {
   m_t << "\\begin{Desc}\n\\item[";
   docify(header);
@@ -1992,7 +1997,7 @@ void LatexGenerator::endInlineHeader()
   m_t << "}\n";
 }
 
-void LatexGenerator::lineBreak(const char *)
+void LatexGenerator::lineBreak(const QCString &)
 {
   if (m_insideTabbing)
   {
@@ -2069,7 +2074,7 @@ void LatexGenerator::startLabels()
   m_t << "\\hspace{0.3cm}";
 }
 
-void LatexGenerator::writeLabel(const char *l,bool isLast)
+void LatexGenerator::writeLabel(const QCString &l,bool isLast)
 {
   m_t << "{\\ttfamily [" << l << "]}";
   if (!isLast) m_t << ", ";

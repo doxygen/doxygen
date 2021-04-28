@@ -57,7 +57,7 @@ static EntryList g_instFiles;
 
 struct VHDLOutlineParser::Private
 {
-  void parseVhdlfile(const char *fileName,const char* inputBuffer,bool inLine);
+  void parseVhdlfile(const QCString &fileName,const char* inputBuffer,bool inLine);
 
   VHDLOutlineParser      *thisParser = 0;
   VhdlParser             *vhdlParser = 0;
@@ -86,20 +86,20 @@ struct VHDLOutlineParser::Private
 
 };
 
-void VHDLOutlineParser::Private::parseVhdlfile(const char *fileName,
+void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
                                                const char* inputBuffer,bool inLine)
 {
   JAVACC_STRING_TYPE s =inputBuffer;
   CharStream *stream = new CharStream(s.c_str(), (int)s.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
-  VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName);
+  VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName.data());
   vhdlParser=new VhdlParser(tokenManager);
   vhdlParser->setOutlineParser(thisParser);
   vhdlParser->setSharedState(&shared);
   tokenManager->setLexParser(vhdlParser);
   tokenManager->ReInit(stream,0);
   tokenManager->setErrorHandler(tokErrHandler);
-  VhdlErrorHandler *parserErrHandler=new VhdlErrorHandler(fileName);
+  VhdlErrorHandler *parserErrHandler=new VhdlErrorHandler(fileName.data());
   vhdlParser->setErrorHandler(parserErrHandler);
   try
   {
@@ -129,7 +129,7 @@ VHDLOutlineParser::~VHDLOutlineParser()
 {
 }
 
-void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
+void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
                                    const std::shared_ptr<Entry> &root, ClangTUParser *)
 {
   VhdlParser::SharedState *s = &p->shared;
@@ -138,7 +138,7 @@ void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
 
  // fprintf(stderr,"\n ============= %s\n ==========\n",fileBuf);
 
-  bool inLine = (fileName==0 || strlen(fileName)==0);
+  bool inLine = fileName.isEmpty();
 
   p->yyFileName=fileName;
 
@@ -266,7 +266,7 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
     QCString qcs(doc);
     qcs=qcs.stripWhiteSpace();
     qcs.stripPrefix("--#");
-    FlowChart::addFlowChart(FlowChart::COMMENT_NO,0,0,qcs.data());
+    FlowChart::addFlowChart(FlowChart::COMMENT_NO,QCString(),QCString(),qcs);
   }
 }
 
@@ -324,7 +324,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   QCString na;
   for (const auto &qcs_ : ql)
   {
-    QCString qcs = qcs_;
+    QCString qcs(qcs_);
     qcs = qcs.simplifyWhiteSpace();
     if (findRe(qcs,csRe)!=-1)
     {
@@ -380,7 +380,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   return 1;
 }
 
-void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
+void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 {
   int position = 0;
   bool needsEntry = FALSE;
@@ -462,7 +462,7 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
   p->strComment.resize(0);
 }
 
-void VHDLOutlineParser::parsePrototype(const char *text)
+void VHDLOutlineParser::parsePrototype(const QCString &text)
 {
   p->varName=text;
   p->varr=TRUE;
@@ -618,7 +618,7 @@ void VHDLOutlineParser::pushLabel( QCString &label,QCString & val)
 QCString VHDLOutlineParser::popLabel(QCString & q)
 {
   int i=q.findRev("|");
-  if (i<0) return "";
+  if (i<0) return QCString();
   q = q.left(i);
   return q;
 }
@@ -764,9 +764,9 @@ void VHDLOutlineParser::createFlow()
     q+=")";
   }
 
-  q.prepend(VhdlDocGen::getFlowMember()->name().data());
+  q.prepend(VhdlDocGen::getFlowMember()->name());
 
-  FlowChart::addFlowChart(FlowChart::START_NO,q,0);
+  FlowChart::addFlowChart(FlowChart::START_NO,q,QCString());
 
   if (s->currP==VhdlDocGen::FUNCTION)
   {
@@ -781,7 +781,7 @@ void VHDLOutlineParser::createFlow()
     ret="end process ";
   }
 
-  FlowChart::addFlowChart(FlowChart::END_NO,ret,0);
+  FlowChart::addFlowChart(FlowChart::END_NO,ret,QCString());
   //  FlowChart::printFlowList();
   FlowChart::writeFlowChart();
   s->currP=0;
@@ -849,7 +849,7 @@ void VHDLOutlineParser::error_skipto(int kind)
     p->vhdlParser->getNextToken();  // step to next token
     op=p->vhdlParser->getToken(1);  // get first token
     if (op==0) break;
-    //fprintf(stderr,"\n %s",t->image.data());
+    //fprintf(stderr,"\n %s",qPrint(t->image));
   } while (op->kind != kind);
   p->vhdlParser->clearError();
   // The above loop consumes tokens all the way up to a token of

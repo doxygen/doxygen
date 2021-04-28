@@ -412,7 +412,7 @@ class TemplateStructIntf
     /** Gets the value for a field name.
      *  @param[in] name The name of the field.
      */
-    virtual TemplateVariant get(const char *name) const = 0;
+    virtual TemplateVariant get(const QCString &name) const = 0;
 
     /** Increase object's reference count */
     virtual int addRef() = 0;
@@ -427,7 +427,7 @@ class TemplateStruct : public TemplateStructIntf
 {
   public:
     // TemplateStructIntf methods
-    virtual TemplateVariant get(const char *name) const;
+    virtual TemplateVariant get(const QCString &name) const;
     virtual int addRef();
     virtual int release();
 
@@ -438,7 +438,7 @@ class TemplateStruct : public TemplateStructIntf
      *  @param[in] name The name of the field.
      *  @param[in] v The value to set.
      */
-    virtual void set(const char *name,const TemplateVariant &v);
+    virtual void set(const QCString &name,const TemplateVariant &v);
 
 
   private:
@@ -505,7 +505,7 @@ class TemplateContext
      *  @note When a given key is already present,
      *  its value will be replaced by \a v
      */
-    virtual void set(const char *name,const TemplateVariant &v) = 0;
+    virtual void set(const QCString &name,const TemplateVariant &v) = 0;
 
     /** Gets the value for a given key
      *  @param[in] name The name of key.
@@ -590,10 +590,10 @@ class TemplateEngine
     void unload(Template *t);
 
     /** Prints the current template file include stack */
-    void printIncludeContext(const char *fileName,int line) const;
+    void printIncludeContext(const QCString &fileName,int line) const;
 
     /** Sets the search directory where to look for template files */
-    void setTemplateDir(const char *dirName);
+    void setTemplateDir(const QCString &dirName);
 
   private:
     friend class TemplateNodeBlock;
@@ -605,7 +605,7 @@ class TemplateEngine
     /** Sets the extension of the output file. This is used to control the
      *  format of 'special' tags in the template
      */
-    void setOutputExtension(const char *extension);
+    void setOutputExtension(const QCString &extension);
 
     /** Returns the output extension, set via setOutputExtension() */
     QCString outputExtension() const;

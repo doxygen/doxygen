@@ -29,15 +29,15 @@
 
 static const int maxCmdLine = 40960;
 
-static bool convertMapFile(TextStream &t,const char *mapName,const QCString relPath,
+static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString &relPath,
                            const QCString &context)
 {
-  std::ifstream f(mapName,std::ifstream::in);
+  std::ifstream f(mapName.str(),std::ifstream::in);
   if (!f.is_open())
   {
     err("failed to open map file %s for inclusion in the docs!\n"
         "If you installed Graphviz/dot after a previous failing run, \n"
-        "try deleting the output directory and rerun doxygen.\n",mapName);
+        "try deleting the output directory and rerun doxygen.\n",qPrint(mapName));
     return false;
   }
   const int maxLineLen=1024;
@@ -88,8 +88,8 @@ static bool convertMapFile(TextStream &t,const char *mapName,const QCString relP
   return true;
 }
 
-void writeMscGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,MscOutputFormat format)
+void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,MscOutputFormat format)
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -115,10 +115,10 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
       return;
   }
   int code;
-  if ((code=mscgen_generate(inFile,imgName,msc_format))!=0)
+  if ((code=mscgen_generate(inFile.data(),imgName.data(),msc_format))!=0)
   {
     err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),inFile);
+        mscgen_error2str(code),qPrint(inFile));
     return;
   }
 
@@ -126,7 +126,7 @@ void writeMscGraphFromFile(const char *inFile,const char *outDir,
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         absOutFile.data(),absOutFile.data());
+                         qPrint(absOutFile),qPrint(absOutFile));
     Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
@@ -146,11 +146,11 @@ static QCString getMscImageMapFromFile(const QCString& inFile, const QCString& o
   QCString outFile = inFile + ".map";
 
   int code;
-  if ((code=mscgen_generate(inFile,outFile,
+  if ((code=mscgen_generate(inFile.data(),outFile.data(),
                             writeSVGMap ? mscgen_format_svgmap : mscgen_format_pngmap))!=0)
   {
     err("Problems generating msc output (error=%s). Look for typos in you msc file %s\n",
-        mscgen_error2str(code),inFile.data());
+        mscgen_error2str(code),qPrint(inFile));
     return "";
   }
 

@@ -24,11 +24,11 @@
 #include "util.h"
 
 void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
-  const char *label,const char *usedName,const char *templSpec,bool base,int distance)
+  const QCString &label,const QCString &usedName,const QCString &templSpec,bool base,int distance)
 {
   if (Config_getBool(HIDE_UNDOC_CLASSES) && !cd->isLinkable()) return;
 
-  int edgeStyle = (label || prot==EdgeInfo::Orange || prot==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
+  int edgeStyle = (!label.isEmpty() || prot==EdgeInfo::Orange || prot==EdgeInfo::Orange2) ? EdgeInfo::Dashed : EdgeInfo::Solid;
   QCString className;
   QCString fullName;
   if (cd->isAnonymous())
@@ -37,12 +37,12 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     className+=label;
     fullName = className;
   }
-  else if (usedName) // name is a typedef
+  else if (!usedName.isEmpty()) // name is a typedef
   {
     className=usedName;
     fullName = className;
   }
-  else if (templSpec) // name has a template part
+  else if (!templSpec.isEmpty()) // name has a template part
   {
     className=insertTemplateSpecifierInScope(cd->displayName(),templSpec);
     fullName =insertTemplateSpecifierInScope(cd->name(),templSpec);
@@ -53,7 +53,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     fullName = cd->name();
   }
   //printf("DotClassGraph::addClass(class='%s',parent=%s,prot=%d,label=%s,dist=%d,usedName=%s,templSpec=%s,base=%d)\n",
-  //                                 className.data(),n->label().data(),prot,label,distance,usedName,templSpec,base);
+  //                                 qPrint(className),qPrint(n->label()),prot,label,distance,usedName,templSpec,base);
   auto it = m_usedNodes.find(fullName.str());
   if (it!=m_usedNodes.end()) // class already inserted
   {
@@ -69,7 +69,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
       n->addParent(bn);
     }
     bn->setDistance(distance);
-    //printf(" add exiting node %s of %s\n",bn->label().data(),n->label().data());
+    //printf(" add exiting node %s of %s\n",qPrint(bn->label()),qPrint(n->label()));
   }
   else // new class
   {
@@ -88,7 +88,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     DotNode *bn = new DotNode(getNextNodeNumber(),
       displayName,
       tooltip,
-      tmp_url.data(),
+      tmp_url,
       FALSE,        // rootNode
       cd
     );
@@ -105,7 +105,7 @@ void DotClassGraph::addClass(const ClassDef *cd,DotNode *n,int prot,
     bn->setDistance(distance);
     m_usedNodes.insert(std::make_pair(fullName.str(),bn));
     //printf(" add new child node '%s' to %s hidden=%d url=%s\n",
-    //    className.data(),n->label().data(),cd->isHidden(),tmp_url.data());
+    //    qPrint(className),qPrint(n->label()),cd->isHidden(),qPrint(tmp_url));
 
     buildGraph(cd,bn,base,distance+1);
   }
@@ -250,7 +250,7 @@ static QCString joinLabels(const StringSet &ss)
 void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int distance)
 {
   //printf("DocClassGraph::buildGraph(%s,distance=%d,base=%d)\n",
-  //    cd->name().data(),distance,base);
+  //    qPrint(cd->name()),distance,base);
   // ---- Add inheritance relations
 
   if (m_graphType == Inheritance || m_graphType==Collaboration)
@@ -258,8 +258,8 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
     for (const auto &bcd : base ? cd->baseClasses() : cd->subClasses())
     {
       //printf("-------- inheritance relation %s->%s templ='%s'\n",
-      //            cd->name().data(),bcd->classDef->name().data(),bcd->templSpecifiers.data());
-      addClass(bcd.classDef,n,bcd.prot,0,bcd.usedName,bcd.templSpecifiers,base,distance);
+      //            qPrint(cd->name()),qPrint(bcd->classDef->name()),qPrint(bcd->templSpecifiers));
+      addClass(bcd.classDef,n,bcd.prot,QCString(),bcd.usedName,bcd.templSpecifiers,base,distance);
     }
   }
   if (m_graphType == Collaboration)
@@ -270,8 +270,8 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
                                        cd->usedByImplementationClasses() ;
     for (const auto &ucd : list)
     {
-      //printf("addClass: %s templSpec=%s\n",ucd.classDef->name().data(),ucd.templSpecifiers.data());
-      addClass(ucd.classDef,n,EdgeInfo::Purple,joinLabels(ucd.accessors),0,
+      //printf("addClass: %s templSpec=%s\n",qPrint(ucd.classDef->name()),qPrint(ucd.templSpecifiers));
+      addClass(ucd.classDef,n,EdgeInfo::Purple,joinLabels(ucd.accessors),QCString(),
           ucd.templSpecifiers,base,distance);
     }
   }
@@ -279,9 +279,9 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
   {
     for (const auto &ccd : cd->templateTypeConstraints())
     {
-      //printf("addClass: %s\n",ccd.classDef->name().data());
-      addClass(ccd.classDef,n,EdgeInfo::Orange2,joinLabels(ccd.accessors),0,
-        0,TRUE,distance);
+      //printf("addClass: %s\n",qPrint(ccd.classDef->name()));
+      addClass(ccd.classDef,n,EdgeInfo::Orange2,joinLabels(ccd.accessors),QCString(),
+        QCString(),TRUE,distance);
     }
   }
 
@@ -297,7 +297,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
         for (const auto &ti : templMaster->getTemplateInstances())
         if (ti.classDef==cd)
         {
-          addClass(templMaster,n,EdgeInfo::Orange,ti.templSpec,0,0,TRUE,distance);
+          addClass(templMaster,n,EdgeInfo::Orange,ti.templSpec,QCString(),QCString(),TRUE,distance);
         }
       }
     }
@@ -305,7 +305,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
     {
       for (const auto &ti : cd->getTemplateInstances())
       {
-        addClass(ti.classDef,n,EdgeInfo::Orange,ti.templSpec,0,0,FALSE,distance);
+        addClass(ti.classDef,n,EdgeInfo::Orange,ti.templSpec,QCString(),QCString(),FALSE,distance);
       }
     }
   }
@@ -313,7 +313,7 @@ void DotClassGraph::buildGraph(const ClassDef *cd,DotNode *n,bool base,int dista
 
 DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
 {
-  //printf("--------------- DotClassGraph::DotClassGraph '%s'\n",cd->displayName().data());
+  //printf("--------------- DotClassGraph::DotClassGraph '%s'\n",qPrint(cd->displayName()));
   m_graphType = t;
   QCString tmp_url="";
   if (cd->isLinkable() && !cd->isHidden())
@@ -329,7 +329,7 @@ DotClassGraph::DotClassGraph(const ClassDef *cd,GraphType t)
   m_startNode = new DotNode(getNextNodeNumber(),
     className,
     tooltip,
-    tmp_url.data(),
+    tmp_url,
     TRUE,                      // is a root node
     cd
   );
@@ -447,9 +447,9 @@ QCString DotClassGraph::getImgAltText() const
 QCString DotClassGraph::writeGraph(TextStream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
-  const char *path,
-  const char *fileName,
-  const char *relPath,
+  const QCString &path,
+  const QCString &fileName,
+  const QCString &relPath,
   bool /*isTBRank*/,
   bool generateImageMap,
   int graphId)
