@@ -64,6 +64,7 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 %token TOK_OCTALINT
 %token TOK_DECIMALINT
 %token TOK_HEXADECIMALINT
+%token TOK_BINARYINT
 %token TOK_CHARACTER
 %token TOK_FLOAT
 
@@ -275,6 +276,11 @@ constant: TOK_OCTALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
 	    $$ = parseHexadecimal(yyextra->strToken);
+	  }
+	| TOK_BINARYINT
+	  {
+	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
+	    $$ = parseBinary(yyextra->strToken);
 	  }
 	| TOK_CHARACTER
 	  {

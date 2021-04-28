@@ -42,7 +42,7 @@ typedef unsigned long	ulong;
 typedef int64_t         int64;
 typedef uint64_t        uint64;
 #define ASSERT(x)  if ( !(x) )\
-	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)",#x,__FILE__,__LINE__)
+	fprintf(stderr,"ASSERT: \"%s\" in %s (%d)\n",#x,__FILE__,__LINE__)
 
 
 /*****************************************************************************
