@@ -39,6 +39,7 @@ struct RTFListItemInfo
 {
   bool isEnum;
   int number;
+  char type;
 };
 
 const int rtf_maxIndentLevels = 13;

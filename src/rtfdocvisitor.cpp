@@ -891,6 +891,20 @@ void RTFDocVisitor::visitPre(DocHtmlList *l)
   m_t << "{\n";
   rtf_listItemInfo[m_indentLevel].isEnum = l->type()==DocHtmlList::Ordered;
   rtf_listItemInfo[m_indentLevel].number = 1;
+  rtf_listItemInfo[m_indentLevel].type   = '1';
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="type")
+    {
+      rtf_listItemInfo[m_indentLevel].type = opt.value[0];
+    }
+    if (opt.name=="start")
+    {
+      bool ok;
+      int val = opt.value.toInt(&ok);
+      if (ok) rtf_listItemInfo[m_indentLevel].number = val;
+    }
+  }
   m_lastIsPara=FALSE;
 }
 
@@ -911,7 +925,28 @@ void RTFDocVisitor::visitPre(DocHtmlListItem *)
   if (rtf_listItemInfo[m_indentLevel].isEnum)
   {
     m_t << getStyle("ListEnum") << "\n";
-    m_t << rtf_listItemInfo[m_indentLevel].number << ".\\tab ";
+    switch (rtf_listItemInfo[m_indentLevel].type)
+    {
+      case '1':
+        m_t << rtf_listItemInfo[m_indentLevel].number;
+        break;
+      case 'a':
+        m_t << integerToAlpha(rtf_listItemInfo[m_indentLevel].number,false);
+        break;
+      case 'A':
+        m_t << integerToAlpha(rtf_listItemInfo[m_indentLevel].number);
+        break;
+      case 'i':
+        m_t << integerToRoman(rtf_listItemInfo[m_indentLevel].number,false);
+        break;
+      case 'I':
+        m_t << integerToRoman(rtf_listItemInfo[m_indentLevel].number);
+        break;
+      default:
+        m_t << rtf_listItemInfo[m_indentLevel].number;
+        break;
+    }
+    m_t << ".\\tab ";
     rtf_listItemInfo[m_indentLevel].number++;
   }
   else

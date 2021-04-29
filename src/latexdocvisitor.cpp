@@ -916,7 +916,53 @@ void LatexDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered)
+  {
+    bool first = true;
     m_t << "\n\\begin{DoxyEnumerate}";
+    for (const auto &opt : s->attribs())
+    {
+      if (opt.name=="type")
+      {
+        if (opt.value=="1")
+        {
+          m_t << (first ?  "[": ",");
+          m_t << "label=\\arabic*";
+          first = false;
+        }
+        else if (opt.value=="a")
+        {
+          m_t << (first ?  "[": ",");
+          m_t << "label=\\enumalphalphcnt*";
+          first = false;
+        }
+        else if (opt.value=="A")
+        {
+          m_t << (first ?  "[": ",");
+          m_t << "label=\\enumAlphAlphcnt*";
+          first = false;
+        }
+        else if (opt.value=="i")
+        {
+          m_t << (first ?  "[": ",");
+          m_t << "label=\\roman*";
+          first = false;
+        }
+        else if (opt.value=="I")
+        {
+          m_t << (first ?  "[": ",");
+          m_t << "label=\\Roman*";
+          first = false;
+        }
+      }
+      else if (opt.name=="start")
+      {
+        m_t << (first ?  "[": ",");
+        m_t << "start=" << opt.value;
+        first = false;
+      }
+    }
+    if (!first) m_t << "]\n";
+  }
   else
     m_t << "\n\\begin{DoxyItemize}";
 }

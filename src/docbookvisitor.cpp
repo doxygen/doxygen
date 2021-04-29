@@ -932,7 +932,30 @@ void DocbookDocVisitor::visitPre(DocHtmlList *s)
 DB_VIS_C
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered)
-    m_t << "<orderedlist>\n";
+  {
+    m_t << "<orderedlist";
+    for (const auto &opt : s->attribs())
+    {
+      if (opt.name=="type")
+      {
+        if (opt.value=="1")
+          m_t << " numeration=\"arabic\"";
+        else if (opt.value=="a")
+          m_t << " numeration=\"loweralpha\"";
+        else if (opt.value=="A")
+          m_t << " numeration=\"upperalpha\"";
+        else if (opt.value=="i")
+          m_t << " numeration=\"lowerroman\"";
+        else if (opt.value=="I")
+          m_t << " numeration=\"upperroman\"";
+      }
+      else if (opt.name=="start")
+      {
+        m_t << " startingnumber=\"" << opt.value << "\"";
+      }
+    }
+    m_t << ">\n";
+  }
   else
     m_t << "<itemizedlist>\n";
 }

@@ -159,4 +159,13 @@ class ManDocVisitor : public DocVisitor
     QCString m_langExt;
 };
 
+struct ManListItemInfo
+{
+  int number;
+  char type;
+};
+
+const int man_maxIndentLevels = 13;
+
+extern ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 #endif

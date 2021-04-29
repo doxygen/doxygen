@@ -710,7 +710,14 @@ void XmlDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
   if (s->type()==DocHtmlList::Ordered)
-    m_t << "<orderedlist>\n";
+  {
+    m_t << "<orderedlist";
+    for (const auto &opt : s->attribs())
+    {
+      m_t << " " << opt.name << "=\"" << opt.value << "\"";
+    }
+    m_t << ">\n";
+  }
   else
     m_t << "<itemizedlist>\n";
 }

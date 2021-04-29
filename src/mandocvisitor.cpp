@@ -28,6 +28,8 @@
 #include "emoji.h"
 #include "fileinfo.h"
 
+ManListItemInfo man_listItemInfo[man_maxIndentLevels];
+
 ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
                              const QCString &langExt)
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
@@ -643,12 +645,27 @@ void ManDocVisitor::visitPost(DocSection *)
 {
 }
 
-void ManDocVisitor::visitPre(DocHtmlList *)
+void ManDocVisitor::visitPre(DocHtmlList *l)
 {
   if (m_hide) return;
   m_indent+=2;
   if (!m_firstCol) m_t << "\n";
   m_t << ".PD 0\n";
+  man_listItemInfo[m_indent].number = 1;
+  man_listItemInfo[m_indent].type   = '1';
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="type")
+    {
+      man_listItemInfo[m_indent].type = opt.value[0];
+    }
+    if (opt.name=="start")
+    {
+      bool ok;
+      int val = opt.value.toInt(&ok);
+      if (ok) man_listItemInfo[m_indent].number = val;
+    }
+  }
 }
 
 void ManDocVisitor::visitPost(DocHtmlList *)
@@ -668,7 +685,29 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   m_t << ".IP \"" << ws;
   if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
   {
-    m_t << li->itemNumber() << ".\" " << m_indent+2;
+    switch (man_listItemInfo[m_indent].type)
+    {
+      case '1':
+        m_t << man_listItemInfo[m_indent].number;
+        break;
+      case 'a':
+        m_t << integerToAlpha(man_listItemInfo[m_indent].number,false);
+        break;
+      case 'A':
+        m_t << integerToAlpha(man_listItemInfo[m_indent].number);
+        break;
+      case 'i':
+        m_t << integerToRoman(man_listItemInfo[m_indent].number,false);
+        break;
+      case 'I':
+        m_t << integerToRoman(man_listItemInfo[m_indent].number);
+        break;
+      default:
+        m_t << man_listItemInfo[m_indent].number;
+        break;
+    }
+    m_t << ".\" " << m_indent+2;
+    man_listItemInfo[m_indent].number++;
   }
   else // bullet list
   {

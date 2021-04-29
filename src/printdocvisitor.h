@@ -385,7 +385,17 @@ class PrintDocVisitor : public DocVisitor
     void visitPre(DocHtmlList *s)
     {
       indent_pre();
-      if (s->type()==DocHtmlList::Ordered) printf("<ol>\n"); else printf("<ul>\n");
+      if (s->type()==DocHtmlList::Ordered)
+      {
+        printf("<ol");
+        for (const auto &opt : s->attribs())
+        {
+          printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+        }
+        printf(">\n");
+      }
+      else printf("<ul>\n");
+ 
     }
     void visitPost(DocHtmlList *s)
     {

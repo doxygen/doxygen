@@ -930,6 +930,17 @@ void PerlModDocVisitor::visitPre(DocHtmlList *l)
 {
   openItem("list");
   m_output.addFieldQuotedString("style", (l->type() == DocHtmlList::Ordered) ? "ordered" : "itemized");
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="type")
+    {
+      m_output.addFieldQuotedString("list_type", qPrint(opt.value));
+    }
+    if (opt.name=="start")
+    {
+      m_output.addFieldQuotedString("start", qPrint(opt.value));
+    }
+  }
   openSubBlock("content");
 }
 
