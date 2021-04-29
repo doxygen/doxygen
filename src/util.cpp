@@ -7461,3 +7461,39 @@ std::string join(const StringVector &sv,const std::string &delimiter)
   return result;
 }
 
+std::string intergerToAlpha(const int n, const bool upper)
+{
+  std::string result = "";
+  int residual = n;
+
+  char modVal[2];
+  modVal[1] = 0;
+  while (residual > 0)
+  {
+    modVal[0] = (upper ? 'A': 'a') + (residual-1)%26;
+    result = modVal + result;
+    residual = (residual-1) / 26;
+  }
+  return result;
+}
+
+std::string integerToRoman(const int n, const bool upper)
+{
+  static std::string str_romans_upper[] = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+  static std::string str_romans_lower[] = {"m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i"};
+  static int values[] = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+  std::string result = "";
+  int residual = n;
+
+  for (int i = 0; i < 13; ++i)
+  {
+    while(residual - values[i] >= 0)
+    {
+      result += (upper ? str_romans_upper[i] : str_romans_lower[i]);
+      residual -= values[i];
+    }
+  }
+
+  return result;
+}

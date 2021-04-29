@@ -512,6 +512,8 @@
     <xsd:sequence>
       <xsd:element name="listitem" type="docListItemType" maxOccurs="unbounded" />
     </xsd:sequence>
+    <xsd:attribute name="type" type="DoxOlType" />
+    <xsd:attribute name="start" type="xsd:integer" />
   </xsd:complexType>
 
   <xsd:complexType name="docListItemType">
@@ -964,6 +966,16 @@
       <xsd:enumeration value="bottom"/>
       <xsd:enumeration value="top"/>
       <xsd:enumeration value="middle"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxOlType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="1" />
+      <xsd:enumeration value="a" />
+      <xsd:enumeration value="A" />
+      <xsd:enumeration value="i" />
+      <xsd:enumeration value="I" />
     </xsd:restriction>
   </xsd:simpleType>
 
