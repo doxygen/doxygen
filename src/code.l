@@ -1135,12 +1135,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name+=yytext;
                                         }
 <Body>{SCOPENAME}/{BN}*[:;,)\]]         { // "int var;" or "var, var2" or "debug(f) macro" , or int var : 5;
+                                          if (QCString(yytext).startsWith("typedef")) REJECT;
                                           addType(yyscanner);
                                           // changed this to generateFunctionLink, see bug 624514
                                           generateFunctionLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
                                         }
 <Body>{SCOPENAME}/{B}*                  { // p->func()
+                                          if (QCString(yytext).startsWith("typedef")) REJECT;
                                           addType(yyscanner);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
