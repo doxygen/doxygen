@@ -254,7 +254,17 @@ STARTDOCSYMS      "##"
 			  searchFoundDef(yyscanner);
 			  BEGIN( FunctionDec );
       			}
+    ^{B}"async"{BB}"def"{BB} { // start of an async function/method definition with indent
+      			  DBG_CTX((stderr,"Found async def at %d\n",yyextra->yyLineNr));
+      			  yyextra->indent=computeIndent(yytext);
+			  searchFoundDef(yyscanner);
+			  BEGIN( FunctionDec );
+      			}
     "def"{BB}           { // start of a function/method definition
+			  searchFoundDef(yyscanner);
+			  BEGIN( FunctionDec );
+                        }
+    "async"{BB}"def"{BB} { // start of a function/method definition
 			  searchFoundDef(yyscanner);
 			  BEGIN( FunctionDec );
                         }
