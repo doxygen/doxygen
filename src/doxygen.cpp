@@ -152,7 +152,6 @@ bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
 SymbolMap<Definition> Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = 0;
-bool                  Doxygen::outputToWizard=FALSE;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
 DirRelationLinkedMap  Doxygen::dirRelations;
@@ -10137,7 +10136,7 @@ static void devUsage()
 {
   msg("Developer parameters:\n");
   msg("  -m          dump symbol map\n");
-  msg("  -b          output to wizard\n");
+  msg("  -b          making messages output unbuffered\n");
   msg("  -T          activates output generation via Django like template\n");
   msg("  -d <level>  enable a debug level, such as (multiple invocations of -d are possible):\n");
   Debug::printFlags();
@@ -10668,7 +10667,6 @@ void readConfiguration(int argc, char **argv)
         break;
       case 'b':
         setvbuf(stdout,NULL,_IONBF,0);
-        Doxygen::outputToWizard=TRUE;
         break;
       case 'T':
         msg("Warning: this option activates output generation via Django like template files. "
