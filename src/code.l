@@ -249,6 +249,7 @@ static QCString escapeComment(yyscan_t yyscanner,const char *s);
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *kw);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name);
+static bool startsWithKeyword(const QCString &str,const QCString &kw);
 
 //-------------------------------------------------------------------
 
@@ -1135,14 +1136,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->name+=yytext;
                                         }
 <Body>{SCOPENAME}/{BN}*[:;,)\]]         { // "int var;" or "var, var2" or "debug(f) macro" , or int var : 5;
-                                          if (QCString(yytext).startsWith("typedef")) REJECT;
+                                          if (startsWithKeyword(yytext,"typedef")) REJECT;
                                           addType(yyscanner);
                                           // changed this to generateFunctionLink, see bug 624514
                                           generateFunctionLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
                                         }
 <Body>{SCOPENAME}/{B}*                  { // p->func()
-                                          if (QCString(yytext).startsWith("typedef")) REJECT;
+                                          if (startsWithKeyword(yytext,"typedef")) REJECT;
                                           addType(yyscanner);
                                           generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
                                           yyextra->name+=yytext;
@@ -2169,6 +2170,13 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 
 /*@ ----------------------------------------------------------------------------
  */
+
+static bool startsWithKeyword(const QCString &str,const QCString &kw)
+{
+  if (str.length()<kw.length()) return false;                // string too short to match
+  return str==kw ||                                          // exact match
+         (str.startsWith(kw) && !isId(str.at(kw.length()))); // match that is not a substring
+}
 
 static void addVariable(yyscan_t yyscanner,QCString type,QCString name)
 {

@@ -392,6 +392,12 @@ class QCString
       return m_rep.rfind(s,0)==0; // looking "backward" starting and ending at index 0
     }
 
+    bool startsWith( const QCString &s ) const
+    {
+      if (m_rep.empty() || s.isEmpty()) return s.isEmpty();
+      return m_rep.rfind(s.str(),0)==0; // looking "backward" starting and ending at index 0
+    }
+
 #define HAS_IMPLICIT_CAST_TO_PLAIN_C_STRING 0
 #if HAS_IMPLICIT_CAST_TO_PLAIN_C_STRING
     /** Converts the string to a plain C string */
