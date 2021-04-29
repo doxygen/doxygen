@@ -82,7 +82,6 @@ set(DOC_FILES
         infoflow.fig
         infoflow.png
         install.doc
-        install_prefix
         lists.doc
         markdown.doc
         output.doc

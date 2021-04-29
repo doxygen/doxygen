@@ -13,12 +13,14 @@
 *
 */
 
-#include "dotdirdeps.h"
+#include <sstream>
 
-#include "ftextstream.h"
+#include "dotdirdeps.h"
 #include "util.h"
 #include "doxygen.h"
 #include "config.h"
+
+using DirDefMap = std::map<std::string,const DirDef *>;
 
 /**
  * Puts DOT code for drawing directory to stream and adds it to the list.
@@ -27,8 +29,8 @@
  * @param[in] fillBackground if the node shall be explicitly filled
  * @param[in,out] directoriesInGraph lists the directories which have been written to the output stream
  */
-static void drawDirectory(FTextStream &outStream, const DirDef *const directory, const bool fillBackground,
-    QDict<DirDef> &directoriesInGraph)
+static void drawDirectory(TextStream &outStream, const DirDef *const directory, const bool fillBackground,
+    DirDefMap &directoriesInGraph)
 {
   outStream << "  " << directory->getOutputFileBase() << " [shape=box "
       "label=\"" << directory->shortName() << "\" ";
@@ -41,10 +43,10 @@ static void drawDirectory(FTextStream &outStream, const DirDef *const directory,
     outStream << "color=\"red\" ";
   }
   outStream << "URL=\"" << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\"];\n";
-  directoriesInGraph.insert(directory->getOutputFileBase(), directory);
+  directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
 }
 
-void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
+void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
 {
   int fontSize = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
@@ -57,9 +59,9 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   t << "  node [ fontsize=\"" << fontSize << "\", fontname=\"" << fontName << "\"];\n";
   t << "  edge [ labelfontsize=\"" << fontSize << "\", labelfontname=\"" << fontName << "\"];\n";
 
-  QDict<DirDef> dirsInGraph(257);
+  DirDefMap dirsInGraph;
 
-  dirsInGraph.insert(dd->getOutputFileBase(),dd);
+  dirsInGraph.insert(std::make_pair(dd->getOutputFileBase().str(),dd));
 
   std::vector<const DirDef *> usedDirsNotDrawn;
   for(const auto& usedDir : dd->usedDirs())
@@ -122,7 +124,7 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
 
   // add nodes for other used directories
   {
-    //printf("*** For dir %s\n",shortName().data());
+    //printf("*** For dir %s\n",qPrint(shortName()));
     for (const auto &usedDir : usedDirsNotDrawn)
       // for each used dir (=directly used or a parent of a directly used dir)
     {
@@ -130,10 +132,10 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
       while (dir)
       {
         //printf("*** check relation %s->%s same_parent=%d !%s->isParentOf(%s)=%d\n",
-        //    dir->shortName().data(),usedDir->shortName().data(),
+        //    qPrint(dir->shortName()),qPrint(usedDir->shortName()),
         //    dir->parent()==usedDir->parent(),
-        //    usedDir->shortName().data(),
-        //    shortName().data(),
+        //    qPrint(usedDir->shortName()),
+        //    qPrint(shortName()),
         //    !usedDir->isParentOf(this)
         //    );
         if (dir!=usedDir && dir->parent()==usedDir->parent())
@@ -148,27 +150,26 @@ void writeDotDirDepGraph(FTextStream &t,const DirDef *dd,bool linkRelations)
   }
 
   // add relations between all selected directories
-  const DirDef *dir;
-  QDictIterator<DirDef> di(dirsInGraph);
-  for (;(dir=di.current());++di) // foreach dir in the graph
+  for (const auto &kv : dirsInGraph) // foreach dir in the graph
   {
+    const DirDef *dir = kv.second;
     for (const auto &udir : dir->usedDirs())
     {
       const DirDef *usedDir=udir->dir();
       if ((dir!=dd || !udir->inherited()) &&     // only show direct dependencies for this dir
         (usedDir!=dd || !udir->inherited()) && // only show direct dependencies for this dir
         !usedDir->isParentOf(dir) &&             // don't point to own parent
-        dirsInGraph.find(usedDir->getOutputFileBase())) // only point to nodes that are in the graph
+        dirsInGraph.find(usedDir->getOutputFileBase().str())!=dirsInGraph.end()) // only point to nodes that are in the graph
       {
         QCString relationName;
         relationName.sprintf("dir_%06d_%06d",dir->dirCount(),usedDir->dirCount());
         Doxygen::dirRelations.add(relationName,
             std::make_unique<DirRelation>(
                relationName,dir,udir.get()));
-        int nrefs = udir->filePairs().count();
+        size_t nrefs = udir->filePairs().size();
         t << "  " << dir->getOutputFileBase() << "->"
           << usedDir->getOutputFileBase();
-        t << " [headlabel=\"" << nrefs << "\", labeldistance=1.5";
+        t << " [headlabel=\"" << (uint)nrefs << "\", labeldistance=1.5";
         if (linkRelations)
         {
           t << " headhref=\"" << relationName << Doxygen::htmlFileExtension << "\"";
@@ -198,9 +199,9 @@ QCString DotDirDeps::getBaseName() const
 void DotDirDeps::computeTheGraph()
 {
   // compute md5 checksum of the graph were are about to generate
-  FTextStream md5stream(&m_theGraph);
-  //m_dir->writeDepGraph(md5stream);
+  TextStream md5stream;
   writeDotDirDepGraph(md5stream,m_dir,m_linkRelations);
+  m_theGraph = md5stream.str();
 }
 
 QCString DotDirDeps::getMapLabel() const
@@ -213,12 +214,12 @@ QCString DotDirDeps::getImgAltText() const
   return convertToXML(m_dir->displayName());
 }
 
-QCString DotDirDeps::writeGraph(FTextStream &out,
+QCString DotDirDeps::writeGraph(TextStream &out,
   GraphOutputFormat graphFormat,
   EmbeddedOutputFormat textFormat,
-  const char *path,
-  const char *fileName,
-  const char *relPath,
+  const QCString &path,
+  const QCString &fileName,
+  const QCString &relPath,
   bool generateImageMap,
   int graphId,
   bool linkRelations)

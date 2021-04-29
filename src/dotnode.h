@@ -16,13 +16,16 @@
 #ifndef DOTNODE_H
 #define DOTNODE_H
 
-#include "sortdict.h"
+#include <vector>
+#include <map>
+#include <deque>
+#include <iostream>
 
 #include "dotgraph.h"
 
 class ClassDef;
-class DotNodeList;
-class FTextStream;
+class DotNode;
+class TextStream;
 
 /** Attributes of an edge of a dot graph */
 class EdgeInfo
@@ -30,7 +33,7 @@ class EdgeInfo
   public:
     enum Colors { Blue=0, Green=1, Red=2, Purple=3, Grey=4, Orange=5, Orange2=6 };
     enum Styles { Solid=0, Dashed=1 };
-    EdgeInfo(int color,int style,const QCString &lab,const QCString &url,int labColor) 
+    EdgeInfo(int color,int style,const QCString &lab,const QCString &url,int labColor)
         : m_color(color), m_style(style), m_label(lab), m_url(url), m_labColor(labColor) {}
     ~EdgeInfo() {}
     int color() const      { return m_color; }
@@ -46,13 +49,16 @@ class EdgeInfo
     int m_labColor;
 };
 
+using DotNodeRefVector = std::vector<DotNode*>;
+using EdgeInfoVector = std::vector<EdgeInfo>;
+
 /** A node in a dot graph */
 class DotNode
 {
   public:
-    static void deleteNodes(DotNode* node, SDict<DotNode>* skipNodes = 0);
+    static void deleteNodes(DotNode* node);
     static QCString convertLabel(const QCString& l);
-    DotNode(int n,const char *lab,const char *tip,const char *url,
+    DotNode(int n,const QCString &lab,const QCString &tip,const QCString &url,
         bool rootNode=FALSE,const ClassDef *cd=0);
     ~DotNode();
 
@@ -61,23 +67,23 @@ class DotNode
     void addChild(DotNode *n,
                   int edgeColor=EdgeInfo::Purple,
                   int edgeStyle=EdgeInfo::Solid,
-                  const char *edgeLab=0,
-                  const char *edgeURL=0,
+                  const QCString &edgeLab=QCString(),
+                  const QCString &edgeURL=QCString(),
                   int edgeLabCol=-1);
     void addParent(DotNode *n);
-    void deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes=0);
+    void deleteNode(DotNodeRefVector &deletedList);
     void removeChild(DotNode *n);
     void removeParent(DotNode *n);
     int  findParent( DotNode *n );
 
-    void write(FTextStream &t,GraphType gt,GraphOutputFormat f,
+    void write(TextStream &t,GraphType gt,GraphOutputFormat f,
                bool topDown,bool toChildren,bool backArrows) const;
-    void writeXML(FTextStream &t,bool isClassGraph) const;
-    void writeDocbook(FTextStream &t,bool isClassGraph) const;
-    void writeDEF(FTextStream &t) const;
-    void writeBox(FTextStream &t,GraphType gt,GraphOutputFormat f,
+    void writeXML(TextStream &t,bool isClassGraph) const;
+    void writeDocbook(TextStream &t,bool isClassGraph) const;
+    void writeDEF(TextStream &t) const;
+    void writeBox(TextStream &t,GraphType gt,GraphOutputFormat f,
                   bool hasNonReachableChildren) const;
-    void writeArrow(FTextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
+    void writeArrow(TextStream &t,GraphType gt,GraphOutputFormat f,const DotNode *cn,
                     const EdgeInfo *ei,bool topDown, bool pointBack=TRUE) const;
 
     QCString label() const         { return m_label; }
@@ -101,18 +107,18 @@ class DotNode
     const DotNode *findDocNode() const; // only works for acyclic graphs!
     void markAsVisible(bool b=TRUE) { m_visible=b; }
     void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
-    const QList<DotNode> *children() const { return m_children; }
-    const QList<DotNode> *parents() const { return m_parents; }
-    const QList<EdgeInfo> *edgeInfo() const { return m_edgeInfo; }
+    const DotNodeRefVector &children() const { return m_children; }
+    const DotNodeRefVector &parents() const { return m_parents; }
+    const EdgeInfoVector &edgeInfo() const { return m_edgeInfo; }
 
   private:
     int              m_number;
     QCString         m_label;                //!< label text
     QCString         m_tooltip;              //!< node's tooltip
     QCString         m_url;                  //!< url of the node (format: remote$local)
-    QList<DotNode>  *m_parents    = 0;       //!< list of parent nodes (incoming arrows)
-    QList<DotNode>  *m_children   = 0;       //!< list of child nodes (outgoing arrows)
-    QList<EdgeInfo> *m_edgeInfo   = 0;       //!< edge info for each child
+    DotNodeRefVector m_parents;              //!< list of parent nodes (incoming arrows)
+    DotNodeRefVector m_children;             //!< list of child nodes (outgoing arrows)
+    EdgeInfoVector   m_edgeInfo;             //!< edge info for each child
     bool             m_deleted    = false;   //!< used to mark a node as deleted
     mutable bool     m_written    = false;   //!< used to mark a node as written
     bool             m_hasDoc     = false;   //!< used to mark a node as documented
@@ -125,14 +131,12 @@ class DotNode
     int              m_subgraphId = -1;
 };
 
-/** Class representing a list of DotNode objects. */
-class DotNodeList : public QList<DotNode>
+class DotNodeMap : public std::map<std::string,DotNode*>
 {
-  public:
-    DotNodeList() : QList<DotNode>() {}
-    ~DotNodeList() {}
-  private:
-    int compareValues(const DotNode *n1,const DotNode *n2) const;
+};
+
+class DotNodeDeque : public std::deque<DotNode*>
+{
 };
 
 #endif

@@ -439,6 +439,12 @@ img.footer {
 	vertical-align: middle;
 }
 
+.compoundTemplParams {
+	color: ##60;
+	font-size: 80%;
+	line-height: 120%;
+}
+
 /* @group Code Colorization */
 
 span.keyword {

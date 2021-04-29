@@ -1,10 +1,10 @@
 #ifndef CLANGPARSER_H
 #define CLANGPARSER_H
 
-#include <qcstring.h>
-#include <qstrlist.h>
 #include "containers.h"
+#include "types.h"
 #include <memory>
+#include <string>
 
 class CodeOutputInterface;
 class FileDef;
@@ -40,7 +40,7 @@ class ClangTUParser
     /** Looks for \a symbol which should be found at \a line.
      *  returns a clang unique reference to the symbol.
      */
-    QCString lookup(uint line,const char *symbol);
+    std::string lookup(uint line,const char *symbol);
 
     /** writes the syntax highlighted source code for a file
      *  @param[out] ol The output generator list to write to.

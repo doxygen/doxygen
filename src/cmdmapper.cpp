@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -233,34 +230,34 @@ CommandMap htmlTagMap[] =
 
 //----------------------------------------------------------------------------
 
-Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,TRUE);
-Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,FALSE);
+Mapper *Mappers::cmdMapper     = new Mapper(cmdMap,true);
+Mapper *Mappers::htmlTagMapper = new Mapper(htmlTagMap,false);
 
-int Mapper::map(const char *n)
+int Mapper::map(const QCString &n)
 {
-  QCString name=n;
+  if (n.isEmpty()) return 0;
+  QCString name = n;
   if (!m_cs) name=name.lower();
-  int *result;
-  return !name.isEmpty() && (result=m_map.find(name)) ? *result: 0;
+  auto it = m_map.find(name.str());
+  return it!=m_map.end() ? it->second : 0;
 }
 
 QCString Mapper::find(const int n)
 {
-  QDictIterator<int> mapIterator(m_map);
-  for (int *curVal = mapIterator.toFirst();(curVal = mapIterator.current());++mapIterator)
+  for (const auto &kv : m_map)
   {
-    if (*curVal == n || (*curVal == (n | SIMPLESECT_BIT))) return mapIterator.currentKey();
+    int curVal = kv.second;
+    if (curVal == n || (curVal == (n | SIMPLESECT_BIT))) return kv.first.c_str();
   }
   return QCString();
 }
 
-Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_map(89), m_cs(caseSensitive)
+Mapper::Mapper(const CommandMap *cm,bool caseSensitive) : m_cs(caseSensitive)
 {
-  m_map.setAutoDelete(TRUE);
   const CommandMap *p = cm;
   while (p->cmdName)
   {
-    m_map.insert(p->cmdName,new int(p->cmdId));
+    m_map.insert(std::make_pair(p->cmdName,p->cmdId));
     p++;
   }
 }

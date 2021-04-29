@@ -20,12 +20,12 @@
 #define LAYOUT_H
 
 #include <memory>
-#include <qlist.h>
+#include <vector>
 #include "types.h"
 
 class LayoutParser;
+struct LayoutNavEntry;
 class MemberList;
-class QTextStream;
 
 /** @brief Base class representing a piece of a documentation page */
 struct LayoutDocEntry
@@ -45,19 +45,22 @@ struct LayoutDocEntry
               ClassCollaborationGraph, ClassAllMembersLink,
               ClassUsedFiles,
 
+              // Concept specific items
+              ConceptDefinition,
+
               // Namespace specific items
               NamespaceNestedNamespaces, NamespaceNestedConstantGroups,
-              NamespaceClasses, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
+              NamespaceClasses, NamespaceConcepts, NamespaceInterfaces, NamespaceStructs, NamespaceExceptions,
               NamespaceInlineClasses,
 
               // File specific items
-              FileClasses, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
+              FileClasses, FileConcepts, FileInterfaces, FileStructs, FileExceptions, FileConstantGroups, FileNamespaces,
               FileIncludes, FileIncludeGraph,
               FileIncludedByGraph, FileSourceLink,
               FileInlineClasses,
 
               // Group specific items
-              GroupClasses, GroupInlineClasses, GroupNamespaces,
+              GroupClasses, GroupConcepts, GroupInlineClasses, GroupNamespaces,
               GroupDirs, GroupNestedGroups, GroupFiles,
               GroupGraph, GroupPageDocs,
 
@@ -116,6 +119,8 @@ private:
   QCString m_title;
 };
 
+using LayoutNavEntryList = std::vector< std::unique_ptr<LayoutNavEntry> >;
+
 /** @brief Base class for the layout of a navigation item at the top of the HTML pages. */
 struct LayoutNavEntry
 {
@@ -128,6 +133,7 @@ struct LayoutNavEntry
       Namespaces,
       NamespaceList,
       NamespaceMembers,
+      Concepts,
       Classes,
       ClassList,
       ClassIndex,
@@ -152,10 +158,13 @@ struct LayoutNavEntry
       UserGroup
     };
     LayoutNavEntry(LayoutNavEntry *parent,Kind k,bool vs,const QCString &bf,
-                   const QCString &tl,const QCString &intro,bool prepend=FALSE)
+                   const QCString &tl,const QCString &intro,bool prepend=false)
       : m_parent(parent), m_kind(k), m_visible(vs), m_baseFile(bf), m_title(tl), m_intro(intro)
-    { m_children.setAutoDelete(TRUE);
-      if (parent) { if (prepend) parent->prependChild(this); else parent->addChild(this); }
+    {
+      if (parent)
+      {
+        if (prepend) parent->prependChild(this); else parent->addChild(this);
+      }
     }
     LayoutNavEntry *parent() const   { return m_parent; }
     Kind kind() const                { return m_kind; }
@@ -165,10 +174,10 @@ struct LayoutNavEntry
     QCString url() const;
     bool visible()                   { return m_visible; }
     void clear()                     { m_children.clear(); }
-    void addChild(LayoutNavEntry *e) { m_children.append(e); }
-    void prependChild(LayoutNavEntry *e) { m_children.prepend(e); }
-    const QList<LayoutNavEntry> &children() const { return m_children; }
-    LayoutNavEntry *find(LayoutNavEntry::Kind k,const char *file=0) const;
+    void addChild(LayoutNavEntry *e) { m_children.push_back(std::unique_ptr<LayoutNavEntry>(e)); }
+    void prependChild(LayoutNavEntry *e) { m_children.insert(m_children.begin(),std::unique_ptr<LayoutNavEntry>(e)); }
+    const LayoutNavEntryList &children() const { return m_children; }
+    LayoutNavEntry *find(LayoutNavEntry::Kind k,const QCString &file=QCString()) const;
 
   private:
     LayoutNavEntry() : m_parent(0), m_kind(None), m_visible(FALSE) {}
@@ -178,9 +187,11 @@ struct LayoutNavEntry
     QCString m_baseFile;
     QCString m_title;
     QCString m_intro;
-    QList<LayoutNavEntry> m_children;
+    LayoutNavEntryList m_children;
     friend class LayoutDocManager;
 };
+
+using LayoutDocEntryList = std::vector< std::unique_ptr<LayoutDocEntry> >;
 
 /** @brief Singleton providing access to the (user configurable) layout of the documentation */
 class LayoutDocManager
@@ -189,20 +200,20 @@ class LayoutDocManager
   public:
     enum LayoutPart
     {
-      Class, Namespace, File, Group, Directory,
+      Class, Concept, Namespace, File, Group, Directory,
       NrParts
     };
     /** Returns a reference to this singleton. */
     static LayoutDocManager &instance();
 
     /** Returns the list of LayoutDocEntry's in representation order for a given page identified by @a part. */
-    const QList<LayoutDocEntry> &docEntries(LayoutPart part) const;
+    const LayoutDocEntryList &docEntries(LayoutPart part) const;
 
     /** returns the (invisible) root of the navigation tree. */
     LayoutNavEntry *rootNavEntry() const;
 
     /** Parses a user provided layout */
-    void parse(const char *fileName);
+    void parse(const QCString &fileName);
     void init();
   private:
     void addEntry(LayoutPart p,LayoutDocEntry*e);
@@ -213,7 +224,7 @@ class LayoutDocManager
     friend class LayoutParser;
 };
 
-void writeDefaultLayoutFile(const char *fileName);
+void writeDefaultLayoutFile(const QCString &fileName);
 
 #endif
 

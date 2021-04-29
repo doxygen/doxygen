@@ -22,6 +22,8 @@
  *  the call to all output generators.
  */
 
+#include <atomic>
+
 #include "outputlist.h"
 #include "outputgen.h"
 #include "config.h"
@@ -137,10 +139,10 @@ void OutputList::popGeneratorState()
   }
 }
 
-void OutputList::generateDoc(const char *fileName,int startLine,
+void OutputList::generateDoc(const QCString &fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,bool indexWords,
-                  bool isExample,const char *exampleName,
+                  bool isExample,const QCString &exampleName,
                   bool singleLine,bool linkFromIndex,
                   bool markdownSupport)
 {
@@ -169,7 +171,7 @@ void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *m
   for (const auto &og : m_outputs)
   {
     //printf("og->printDoc(extension=%s)\n",
-    //    ctx?ctx->getDefFileExtension().data():"<null>");
+    //    ctx?qPrint(ctx->getDefFileExtension()):"<null>");
     if (og->isEnabled()) og->writeDoc(root,ctx,md,m_id);
   }
   VhdlDocGen::setFlowMember(0);

@@ -16,20 +16,18 @@
 
 #include "cite.h"
 #include "config.h"
-#include "ftextstream.h"
 #include "language.h"
 #include "message.h"
 #include "portable.h"
 #include "resourcemgr.h"
 #include "util.h"
 #include "debug.h"
-
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qdir.h>
+#include "fileinfo.h"
+#include "dir.h"
 
 #include <map>
 #include <string>
+#include <fstream>
 
 const char *bibTmpFile = "bibTmpFile_";
 const char *bibTmpDir  = "bibTmpDir/";
@@ -37,13 +35,13 @@ const char *bibTmpDir  = "bibTmpDir/";
 class CiteInfoImpl : public CiteInfo
 {
   public:
-    CiteInfoImpl(const char *label, const char *text=0)
+    CiteInfoImpl(const QCString &label, const QCString &text=QCString())
     : m_label(label), m_text(text) { }
 
     virtual QCString label()    const { return m_label;    }
     virtual QCString text()     const { return m_text;     }
 
-    void setText(const char *s) { m_text = s; }
+    void setText(const QCString &s) { m_text = s; }
 
   private:
     QCString m_label;
@@ -65,18 +63,18 @@ CitationManager::CitationManager() : p(new Private)
 {
 }
 
-void CitationManager::insert(const char *label)
+void CitationManager::insert(const QCString &label)
 {
   p->entries.insert(
       std::make_pair(
-        std::string(label),
+        label.str(),
         std::make_unique<CiteInfoImpl>(label)
       ));
 }
 
-const CiteInfo *CitationManager::find(const char *label) const
+const CiteInfo *CitationManager::find(const QCString &label) const
 {
-  auto it = p->entries.find(label);
+  auto it = p->entries.find(label.str());
   if (it!=p->entries.end())
   {
     return it->second.get();
@@ -95,12 +93,12 @@ bool CitationManager::isEmpty() const
   return (numFiles==0 || p->entries.empty());
 }
 
-const char *CitationManager::fileName() const
+QCString CitationManager::fileName() const
 {
   return "citelist";
 }
 
-const char *CitationManager::anchorPrefix() const
+QCString CitationManager::anchorPrefix() const
 {
   return "CITEREF_";
 }
@@ -112,77 +110,46 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
   {
     return;
   }
-  QFileInfo fi(bibFile);
+  FileInfo fi(bibFile.str());
   if (!fi.exists())
   {
-    err("bib file %s not found!\n",bibFile.data());
+    err("bib file %s not found!\n",qPrint(bibFile));
     return;
   }
-  QFile f(bibFile);
-  if (!f.open(IO_ReadOnly))
+  std::ifstream f(bibFile.str(), std::ifstream::in);
+  if (!f.is_open())
   {
-    err("could not open file %s for reading\n",bibFile.data());
+    err("could not open file %s for reading\n",qPrint(bibFile));
     return;
   }
-
-  // convert file to string
-  QCString doc;
-  QCString input(fi.size()+1);
-  f.readBlock(input.rawData(),fi.size());
-  f.close();
-  input.at(fi.size())='\0';
-
-  int pos=0;
-  int s;
-
-  // helper lambda function to get the next line of input and update pos accordingly
-  auto get_next_line = [&input,&pos,&s]()
-  {
-    uint prevPos = (uint)pos;
-    pos=s+1;
-    return input.mid(prevPos,(uint)(s-prevPos));
-  };
-
-  // helper lambda function to return if the end of the input has reached
-  auto end_of_input = [&s]()
-  {
-    return s==-1;
-  };
-
-  // helper lambda function to proceed to the next line in the input, and update s
-  // to point to the start of the line. Return true as long as there is a new line.
-  auto has_next_line = [&input,&pos,&s]()
-  {
-    s=input.find('\n',pos);
-    return s!=-1;
-  };
 
   // search for citation cross references
   QCString citeName;
-  while (has_next_line())
-  {
-    QCString line = get_next_line();
 
+  std::string lineStr;
+  while (getline(f,lineStr))
+  {
     int i;
+    QCString line(lineStr);
     if (line.stripWhiteSpace().startsWith("@"))
     {
       // assumption entry like: "@book { name," or "@book { name" (spaces optional)
       int j = line.find('{');
       // when no {, go hunting for it
-      while (j==-1 && has_next_line())
+      while (j==-1 && getline(f,lineStr))
       {
-        line = get_next_line();
+        line = lineStr;
         j = line.find('{');
       }
       // search for the name
       citeName = "";
-      if (!end_of_input() && j!=-1) // to prevent something like "@manual ," and no { found
+      if (!f.eof() && j!=-1) // to prevent something like "@manual ," and no { found
       {
         int k = line.find(',',j);
         j++;
         // found a line "@....{.....,...." or "@.....{....."
         //                     ^=j  ^=k               ^=j   k=-1
-        while (!end_of_input() && citeName.isEmpty())
+        while (!f.eof() && citeName.isEmpty())
         {
           if (k!=-1)
           {
@@ -194,14 +161,14 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
           }
           citeName = citeName.stripWhiteSpace();
           j = 0;
-          if (citeName.isEmpty() && has_next_line())
+          if (citeName.isEmpty() && getline(f,lineStr))
           {
-            line = get_next_line();
+            line = lineStr;
             k = line.find(',');
           }
         }
       }
-      //printf("citeName = #%s#\n",citeName.data());
+      //printf("citeName = #%s#\n",qPrint(citeName));
     }
     else if ((i=line.find("crossref"))!=-1 && !citeName.isEmpty()) /* assumption cross reference is on one line and the only item */
     {
@@ -212,8 +179,8 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
         QCString crossrefName = line.mid((uint)(j+1),(uint)(k-j-1));
         // check if the reference with the cross reference is used
         // insert cross reference when cross reference has not yet been added.
-        if ((p->entries.find(citeName.data())!=p->entries.end()) &&
-            (p->entries.find(crossrefName.data())==p->entries.end())) // not found yet
+        if ((p->entries.find(citeName.str())!=p->entries.end()) &&
+            (p->entries.find(crossrefName.str())==p->entries.end())) // not found yet
         {
           insert(crossrefName);
         }
@@ -232,7 +199,6 @@ void CitationManager::generatePage()
   bool citeDebug = Debug::isFlagSet(Debug::Cite);
 
   // 0. add cross references from the bib files to the cite dictionary
-  QFile f;
   const StringVector &citeDataList = Config_getList(CITE_BIB_FILES);
   for (const auto &bibdata : citeDataList)
   {
@@ -244,23 +210,24 @@ void CitationManager::generatePage()
   // 1. generate file with markers and citations to OUTPUT_DIRECTORY
   QCString outputDir = Config_getString(OUTPUT_DIRECTORY);
   QCString citeListFile = outputDir+"/citelist.doc";
-  f.setName(citeListFile);
-  if (!f.open(IO_WriteOnly))
   {
-    err("could not open file %s for writing\n",citeListFile.data());
+    std::ofstream t(citeListFile.str(),std::ofstream::out | std::ofstream::binary);
+    if (!t.is_open())
+    {
+      err("could not open file %s for writing\n",qPrint(citeListFile));
+    }
+    t << "<!-- BEGIN CITATIONS -->\n";
+    t << "<!--\n";
+    for (const auto &it : p->entries)
+    {
+      t << "\\citation{" << it.second->label() << "}\n";
+    }
+    t << "-->\n";
+    t << "<!-- END CITATIONS -->\n";
+    t << "<!-- BEGIN BIBLIOGRAPHY -->\n";
+    t << "<!-- END BIBLIOGRAPHY -->\n";
+    t.close();
   }
-  FTextStream t(&f);
-  t << "<!-- BEGIN CITATIONS -->" << endl;
-  t << "<!--" << endl;
-  for (const auto &it : p->entries)
-  {
-    t << "\\citation{" << it.second->label() << "}" << endl;
-  }
-  t << "-->" << endl;
-  t << "<!-- END CITATIONS -->" << endl;
-  t << "<!-- BEGIN BIBLIOGRAPHY -->" << endl;
-  t << "<!-- END BIBLIOGRAPHY -->" << endl;
-  f.close();
 
   // 2. generate bib2xhtml
   QCString bib2xhtmlFile  = outputDir+"/bib2xhtml.pl";
@@ -276,10 +243,10 @@ void CitationManager::generatePage()
   //    Strictly not required when only latex is generated
   QCString bibOutputDir = outputDir+"/"+bibTmpDir;
   QCString bibOutputFiles = "";
-  QDir thisDir;
-  if (!thisDir.exists(bibOutputDir) && !thisDir.mkdir(bibOutputDir))
+  Dir thisDir;
+  if (!thisDir.exists(bibOutputDir.str()) && !thisDir.mkdir(bibOutputDir.str()))
   {
-    err("Failed to create temporary output directory '%s', skipping citations\n",bibOutputDir.data());
+    err("Failed to create temporary output directory '%s', skipping citations\n",qPrint(bibOutputDir));
     return;
   }
   int i = 0;
@@ -287,7 +254,7 @@ void CitationManager::generatePage()
   {
     QCString bibFile = bibdata.c_str();
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
+    FileInfo fi(bibFile.str());
     if (fi.exists())
     {
       if (!bibFile.isEmpty())
@@ -299,73 +266,69 @@ void CitationManager::generatePage()
     }
   }
 
-  QString oldDir = QDir::currentDirPath();
-  QDir::setCurrent(outputDir);
+  std::string oldDir = Dir::currentDirPath();
+  Dir::setCurrent(outputDir.str());
 
   // 5. run bib2xhtml perl script on the generated file which will insert the
   //    bibliography in citelist.doc
   int exitCode;
   Portable::sysTimerStop();
-  if ((exitCode=Portable::system("perl","\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+
-                         citeListFile+"\"" + (citeDebug ? " -d" : ""))) != 0)
+  QCString perlArgs = "\""+bib2xhtmlFile+"\" "+bibOutputFiles+" \""+ citeListFile+"\"";
+  if (citeDebug) perlArgs+=" -d";
+  if ((exitCode=Portable::system("perl",perlArgs)) != 0)
   {
     err("Problems running bibtex. Verify that the command 'perl --version' works from the command line. Exit code: %d\n",
         exitCode);
   }
   Portable::sysTimerStop();
 
-  QDir::setCurrent(oldDir);
+  Dir::setCurrent(oldDir);
 
   // 6. read back the file
-  f.setName(citeListFile);
-  if (!f.open(IO_ReadOnly))
-  {
-    err("could not open file %s for reading\n",citeListFile.data());
-  }
-
   QCString doc;
-  QFileInfo fi(citeListFile);
-  QCString input(fi.size()+1);
-  f.readBlock(input.rawData(),fi.size());
-  f.close();
-  input.at(fi.size())='\0';
-
-  bool insideBib=FALSE;
-  int pos=0,s;
-  //printf("input=[%s]\n",input.data());
-  while ((s=input.find('\n',pos))!=-1)
   {
-    QCString line = input.mid((uint)pos,(uint)(s-pos));
-    //printf("pos=%d s=%d line=[%s]\n",pos,s,line.data());
-    pos=s+1;
-
-    if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
-    else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
-    // determine text to use at the location of the @cite command
-    if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
+    std::ifstream f(citeListFile.str(),std::ifstream::in);
+    if (!f.is_open())
     {
-      int j=line.find("\">[");
-      int k=line.find("]</a>");
-      if (j!=-1 && k!=-1)
+      err("could not open file %s for reading\n",qPrint(citeListFile));
+    }
+
+    bool insideBib=FALSE;
+    //printf("input=[%s]\n",qPrint(input));
+    std::string lineStr;
+    while (getline(f,lineStr))
+    {
+      QCString line(lineStr);
+      //printf("pos=%d s=%d line=[%s]\n",pos,s,qPrint(line));
+
+      if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
+      else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
+      // determine text to use at the location of the @cite command
+      if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
       {
-        uint ui=(uint)i;
-        uint uj=(uint)j;
-        uint uk=(uint)k;
-        QCString label = line.mid(ui+14,uj-ui-14);
-        QCString number = line.mid(uj+2,uk-uj-1);
-        label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
-        line = line.left(ui+14) + label + line.right(line.length()-uj);
-        auto it = p->entries.find(label.data());
-        //printf("label='%s' number='%s' => %p\n",label.data(),number.data(),it->second.get());
-        if (it!=p->entries.end())
+        int j=line.find("\">[");
+        int k=line.find("]</a>");
+        if (j!=-1 && k!=-1)
         {
-          it->second->setText(number);
+          uint ui=(uint)i;
+          uint uj=(uint)j;
+          uint uk=(uint)k;
+          QCString label = line.mid(ui+14,uj-ui-14);
+          QCString number = line.mid(uj+2,uk-uj-1);
+          label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
+          line = line.left(ui+14) + label + line.right(line.length()-uj);
+          auto it = p->entries.find(label.str());
+          //printf("label='%s' number='%s' => %p\n",qPrint(label),qPrint(number),it->second.get());
+          if (it!=p->entries.end())
+          {
+            it->second->setText(number);
+          }
         }
       }
+      if (insideBib) doc+=line+"\n";
     }
-    if (insideBib) doc+=line+"\n";
+    //printf("doc=[%s]\n",qPrint(doc));
   }
-  //printf("doc=[%s]\n",doc.data());
 
   // 7. add it as a page
   addRelatedPage(fileName(),theTranslator->trCiteReferences(),doc,fileName(),1,1);
@@ -382,7 +345,7 @@ void CitationManager::generatePage()
       QCString bibFile = bibdata.c_str();
       // Note: file can now have multiple dots
       if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-      fi.setFile(bibFile);
+      FileInfo fi(bibFile.str());
       if (fi.exists())
       {
         if (!bibFile.isEmpty())
@@ -395,7 +358,7 @@ void CitationManager::generatePage()
       }
       else
       {
-        err("bib file %s not found!\n",bibFile.data());
+        err("bib file %s not found!\n",qPrint(bibFile));
       }
     }
   }
@@ -403,17 +366,18 @@ void CitationManager::generatePage()
   // 9. Remove temporary files
   if (!citeDebug)
   {
-    thisDir.remove(citeListFile);
-    thisDir.remove(doxygenBstFile);
-    thisDir.remove(bib2xhtmlFile);
+    thisDir.remove(citeListFile.str());
+    thisDir.remove(doxygenBstFile.str());
+    thisDir.remove(bib2xhtmlFile.str());
     // we might try to remove too many files as empty files didn't get a corresponding new file
     // but the remove function does not emit an error for it and we don't catch the error return
     // so no problem.
     for (size_t j = 1; j <= citeDataList.size(); j++)
     {
-      thisDir.remove(bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib");
+      QCString bibFile = bibOutputDir + bibTmpFile + QCString().setNum(static_cast<ulong>(j)) + ".bib";
+      thisDir.remove(bibFile.str());
     }
-    thisDir.rmdir(bibOutputDir);
+    thisDir.rmdir(bibOutputDir.str());
   }
 }
 
@@ -427,7 +391,7 @@ QCString CitationManager::latexBibFiles()
     QCString bibFile = bibdata.c_str();
     // Note: file can now have multiple dots
     if (!bibFile.isEmpty() && bibFile.right(4)!=".bib") bibFile+=".bib";
-    QFileInfo fi(bibFile);
+    FileInfo fi(bibFile.str());
     if (fi.exists())
     {
       if (!bibFile.isEmpty())

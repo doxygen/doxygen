@@ -15,10 +15,12 @@
 #ifndef HTMLENTITY_H
 #define HTMLENTITY_H
 
-#include <qdict.h>
+#include <unordered_map>
+#include <string>
+
 #include "docparser.h"
 
-class FTextStream;
+class TextStream;
 
 /** @brief Singleton helper class to map html entities to other formats */
 class HtmlEntityMapper
@@ -35,13 +37,13 @@ class HtmlEntityMapper
     const char *man(DocSymbol::SymType symb) const;
     const char *rtf(DocSymbol::SymType symb) const;
     const DocSymbol::PerlSymb *perl(DocSymbol::SymType symb) const;
-    void  writeXMLSchema(FTextStream &t);
+    void  writeXMLSchema(TextStream &t);
   private:
     void  validate();
     HtmlEntityMapper();
    ~HtmlEntityMapper();
     static HtmlEntityMapper *s_instance;
-    QDict<int> *m_name2sym;
+    std::unordered_map<std::string,DocSymbol::SymType> m_name2sym;
 };
 
 #endif

@@ -760,13 +760,13 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
 {
   if (!brief)
   {
-    t << endl;
+    t << "\n";
   }
   if (!condensed)
   {
-    t << "#---------------------------------------------------------------------------" << endl;
-    t << "# " << elem.attribute(SA("docs")) << endl;
-    t << "#---------------------------------------------------------------------------" << endl;
+    t << "#---------------------------------------------------------------------------\n";
+    t << "# " << elem.attribute(SA("docs")) << "\n";
+    t << "#---------------------------------------------------------------------------\n";
   }
   // write options...
   QDomElement childElem = elem.firstChildElement();
@@ -783,9 +783,9 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
         Input *option = i.value();
         if (option && !brief)
         {
-          t << endl;
+          t << "\n";
           t << convertToComment(option->templateDocs());
-          t << endl;
+          t << "\n";
         }
         bool toPrint = true;
         if (option && condensed) toPrint = !option->isDefault();
@@ -797,7 +797,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
             t << " ";
             option->writeValue(t,codec);
           }
-          t << endl;
+          t << "\n";
         }
       }
     }
@@ -808,7 +808,7 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
 bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
 {
   // write global header
-  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
+  t << "# Doxyfile " << getDoxygenVersion() << "\n\n";
   if (!brief && !condensed)
   {
     t << convertToComment(m_header);

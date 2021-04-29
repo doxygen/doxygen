@@ -149,7 +149,7 @@ static void addSTLMember(const std::shared_ptr<Entry> &root,const char *type,con
   root->moveToSubEntryAndKeep(memEntry);
 }
 
-static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const char *name)
+static void addSTLIterator(const std::shared_ptr<Entry> &classEntry,const QCString &name)
 {
   std::shared_ptr<Entry> iteratorClassEntry = std::make_shared<Entry>();
   iteratorClassEntry->fileName  = "[STL]";

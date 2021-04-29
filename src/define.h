@@ -21,7 +21,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "containers.h"
 
 class FileDef;

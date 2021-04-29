@@ -31,7 +31,6 @@ endif()
 include_directories(
   .
   ${PROJECT_SOURCE_DIR}/libversion
-  ${PROJECT_SOURCE_DIR}/qtools
   ${GENERATED_SRC}
 )
 

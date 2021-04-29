@@ -21,26 +21,23 @@
 #include <set>
 
 #include "index.h"
-#include <qlist.h>
-#include <qintdict.h>
-#include <qdict.h>
 #include "definition.h"
-#include "sortdict.h"
 #include "memberlist.h"
 #include "containers.h"
-#include "classlist.h"
 
 class MemberList;
 class FileDef;
 class FileList;
 class ClassDef;
+class ConceptDef;
 class MemberDef;
 class OutputList;
 class NamespaceDef;
 class NamespaceLinkedRefMap;
+class ConceptLinkedRefMap;
+class ClassLinkedRefMap;
 class PackageDef;
 class DirDef;
-class FTextStream;
 class ClangTUParser;
 
 // --- Set of files
@@ -50,13 +47,20 @@ using FileDefSet = std::set<const FileDef*>;
 /** Class representing the data associated with a \#include statement. */
 struct IncludeInfo
 {
-  IncludeInfo() : fileDef(0), local(FALSE), imported(FALSE) {}
-  ~IncludeInfo() {}
-  FileDef *fileDef;
+  IncludeInfo() {}
+  IncludeInfo(const FileDef *fd,const QCString &in,bool loc,bool imp)
+    : fileDef(fd), includeName(in), local(loc), imported(imp) {}
+  const FileDef *fileDef = 0;
   QCString includeName;
-  bool local;
-  bool imported;
+  bool local = false;
+  bool imported = false;
 };
+
+class IncludeInfoList : public std::vector<IncludeInfo>
+{
+};
+
+bool compareFileDefs(const FileDef *fd1, const FileDef *fd2);
 
 /** A model of a file symbol.
  *
@@ -122,8 +126,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual DirDef *getDirDef() const = 0;
     virtual LinkedRefMap<const NamespaceDef> getUsedNamespaces() const = 0;
     virtual LinkedRefMap<const ClassDef> getUsedClasses() const = 0;
-    virtual QList<IncludeInfo> *includeFileList() const = 0;
-    virtual QList<IncludeInfo> *includedByFileList() const = 0;
+    virtual const IncludeInfoList &includeFileList() const = 0;
+    virtual const IncludeInfoList &includedByFileList() const = 0;
     virtual void getAllIncludeFilesRecursively(StringVector &incFiles) const = 0;
 
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
@@ -131,8 +135,9 @@ class FileDef : public DefinitionMutable, public Definition
 
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;
-    virtual NamespaceLinkedRefMap getNamespaces() const = 0;
-    virtual ClassLinkedRefMap getClasses() const = 0;
+    virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
+    virtual const ConceptLinkedRefMap &getConcepts() const = 0;
+    virtual const ClassLinkedRefMap &getClasses() const = 0;
 
     virtual QCString title() const = 0;
     virtual bool hasDetailedDescription() const = 0;
@@ -152,7 +157,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
-    virtual void writeTagFile(FTextStream &t) = 0;
+    virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void writeSourceHeader(OutputList &ol) = 0;
     virtual void writeSourceBody(OutputList &ol,ClangTUParser *clangParser) = 0;
@@ -162,6 +167,7 @@ class FileDef : public DefinitionMutable, public Definition
 
     virtual void insertMember(MemberDef *md) = 0;
     virtual void insertClass(const ClassDef *cd) = 0;
+    virtual void insertConcept(const ConceptDef *cd) = 0;
     virtual void insertNamespace(const NamespaceDef *nd) = 0;
     virtual void computeAnchors() = 0;
 
@@ -175,8 +181,8 @@ class FileDef : public DefinitionMutable, public Definition
     virtual bool generateSourceFile() const = 0;
     virtual void sortMemberLists() = 0;
 
-    virtual void addIncludeDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
-    virtual void addIncludedByDependency(FileDef *fd,const char *incName,bool local,bool imported) = 0;
+    virtual void addIncludeDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
+    virtual void addIncludedByDependency(const FileDef *fd,const QCString &incName,bool local,bool imported) = 0;
 
     virtual void addMembersToMemberGroup() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
@@ -186,7 +192,7 @@ class FileDef : public DefinitionMutable, public Definition
     virtual void addListReferences() = 0;
 };
 
-FileDef *createFileDef(const char *p,const char *n,const char *ref=0,const char *dn=0);
+FileDef *createFileDef(const QCString &p,const QCString &n,const QCString &ref=QCString(),const QCString &dn=QCString());
 
 
 // --- Cast functions
@@ -196,91 +202,16 @@ const FileDef      *toFileDef(const Definition *d);
 
 // ------------------
 
-/** Class representing a list of FileDef objects. */
-class FileList : public QList<FileDef>
+class FileList : public std::vector<const FileDef *>
 {
-  public:
-    FileList() : m_pathName("tmp") {}
-    FileList(const char *path) : QList<FileDef>(), m_pathName(path) {}
-   ~FileList() {}
-    QCString path() const { return m_pathName; }
-  private:
-    int compareValues(const FileDef *md1,const FileDef *md2) const
-    {
-      return qstricmp(md1->name(),md2->name());
-    }
-    QCString m_pathName;
 };
 
-class OutputNameList : public QList<FileList>
+struct FilesInDir
 {
-  public:
-    OutputNameList() : QList<FileList>() {}
-   ~OutputNameList() {}
- private:
-    int compareValues(const FileList *fl1,const FileList *fl2) const
-    {
-      return qstricmp(fl1->path(),fl2->path());
-    }
+  FilesInDir(const QCString &p) : path(p) {}
+  QCString path;
+  std::vector<const FileDef *> files;
 };
-
-class OutputNameDict : public QDict<FileList>
-{
-  public:
-    OutputNameDict(uint size) : QDict<FileList>(size) {}
-   ~OutputNameDict() {}
-};
-
-class Directory;
-
-/** Class representing an entry (file or sub directory) in a directory */
-class DirEntry
-{
-  public:
-    enum EntryKind { Dir, File };
-    DirEntry(DirEntry *parent,FileDef *fd)
-       : m_parent(parent), m_name(fd->name()), m_kind(File), m_fd(fd),
-         m_isLast(FALSE) { }
-    DirEntry(DirEntry *parent,QCString name)
-       : m_parent(parent), m_name(name), m_kind(Dir),
-         m_fd(0), m_isLast(FALSE) { }
-    virtual ~DirEntry() { }
-    EntryKind kind() const { return m_kind; }
-    FileDef *file()  const { return m_fd; }
-    bool isLast() const    { return m_isLast; }
-    void setLast(bool b)   { m_isLast=b; }
-    DirEntry *parent() const { return m_parent; }
-    QCString name() const  { return m_name; }
-    QCString path() const  { return parent() ? parent()->path()+"/"+name() : name(); }
-
-  protected:
-    DirEntry *m_parent;
-    QCString m_name;
-
-  private:
-    EntryKind m_kind;
-    FileDef   *m_fd;
-    bool m_isLast;
-};
-
-/** Class representing a directory tree of DirEntry objects. */
-class Directory : public DirEntry
-{
-  public:
-    Directory(Directory *parent,const QCString &name)
-       : DirEntry(parent,name)
-    { m_children.setAutoDelete(TRUE); }
-    virtual ~Directory()              {}
-    void addChild(DirEntry *d)        { m_children.append(d); d->setLast(TRUE); }
-    QList<DirEntry> &children()       { return m_children; }
-    void rename(const QCString &name) { m_name=name; }
-    void reParent(Directory *parent)  { m_parent=parent; }
-
-  private:
-    QList<DirEntry> m_children;
-};
-
-void generateFileTree();
 
 #endif
 

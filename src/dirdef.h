@@ -16,22 +16,18 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
-#include "linkedmap.h"
-#include "sortdict.h"
-#include "definition.h"
 
 #include <vector>
 #include <map>
-#include <qglobal.h>
-#include <qcstring.h>
 
+#include "qcstring.h"
+#include "linkedmap.h"
+#include "definition.h"
 
 class FileList;
-class QStrList;
 class FileDef;
 class OutputList;
 class UsedDir;
-class FTextStream;
 class FilePair;
 class FilePairDict;
 class DirDef;
@@ -45,23 +41,20 @@ bool compareDirDefs(const DirDef *item1, const DirDef *item2);
 class FilePair
 {
   public:
-    FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
+    FilePair(const FileDef *src,const FileDef *dst) : m_src(src), m_dst(dst) {}
     const FileDef *source() const { return m_src; }
     const FileDef *destination() const { return m_dst; }
+    static QCString key(const FileDef *srcFd,const FileDef *dstFd);
   private:
-    FileDef *m_src;
-    FileDef *m_dst;
+    const FileDef *m_src;
+    const FileDef *m_dst;
 };
 
 // ------------------
 
-/** A sorted dictionary of FilePair objects. */
-class FilePairDict : public SDict<FilePair>
+/** A linked map of file pairs */
+class FilePairLinkedMap : public LinkedMap<FilePair>
 {
-  public:
-    FilePairDict(uint size) : SDict<FilePair>(size) {}
-  private:
-    int compareValues(const FilePair *item1,const FilePair *item2) const;
 };
 
 // ------------------
@@ -72,16 +65,16 @@ class UsedDir
   public:
     UsedDir(const DirDef *dir,bool inherited);
     virtual ~UsedDir();
-    void addFileDep(FileDef *srcFd,FileDef *dstFd);
-    FilePair *findFilePair(const char *name);
-    const FilePairDict &filePairs() const { return m_filePairs; }
+    void addFileDep(const FileDef *srcFd,const FileDef *dstFd);
+    FilePair *findFilePair(const QCString &name);
+    const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
     bool inherited() const { return m_inherited; }
     void sort();
 
   private:
     const DirDef *m_dir;
-    FilePairDict m_filePairs;
+    FilePairLinkedMap m_filePairs;
     bool m_inherited;
 };
 
@@ -104,8 +97,8 @@ class DirDef : public DefinitionMutable, public Definition
     virtual QCString displayName(bool=TRUE) const = 0;
     virtual const QCString &shortName() const = 0;
     virtual void addSubDir(DirDef *subdir) = 0;
-    virtual FileList *   getFiles() const = 0;
-    virtual void addFile(FileDef *fd) = 0;
+    virtual const FileList &getFiles() const = 0;
+    virtual void addFile(const FileDef *fd) = 0;
     virtual const DirList &subDirs() const = 0;
     virtual bool isCluster() const = 0;
     virtual int level() const = 0;
@@ -119,14 +112,14 @@ class DirDef : public DefinitionMutable, public Definition
 
     // generate output
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeTagFile(FTextStream &t) = 0;
+    virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
-    virtual void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
-                           FileDef *dstFd,bool inherited) = 0;
+    virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
+                                   const FileDef *dstFd,bool inherited) = 0;
     virtual void computeDependencies() = 0;
 };
 
@@ -171,6 +164,5 @@ class DirRelationLinkedMap : public LinkedMap<DirRelation>
 void buildDirectories();
 void generateDirDocs(OutputList &ol);
 void computeDirDependencies();
-void writeDirDependencyGraph(const char *file);
 
 #endif

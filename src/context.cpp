@@ -14,7 +14,7 @@
  */
 
 #include <assert.h>
-#include <qdir.h>
+#include <sstream>
 
 #include "context.h"
 #include "config.h"
@@ -54,6 +54,7 @@
 #include "groupdef.h"
 #include "searchindex.h"
 #include "resourcemgr.h"
+#include "dir.h"
 
 // TODO: pass the current file to Dot*::writeGraph, so the user can put dot graphs in other
 //       files as well
@@ -128,40 +129,40 @@ template<class T> class SharedPtr
 class GenericConstIterator : public TemplateListIntf::ConstIterator
 {
   public:
-    GenericConstIterator(const QList<TemplateVariant> &list)
-      : m_it(list) { }
+    GenericConstIterator(const std::vector<TemplateVariant> &list) : m_list(list) {}
     virtual ~GenericConstIterator() {}
     void toFirst()
     {
-      m_it.toFirst();
+      m_index=0;
     }
     void toLast()
     {
-      m_it.toLast();
+      m_index=static_cast<int>(m_list.size())-1;
     }
     void toNext()
     {
-      if (m_it.current()) ++m_it;
+      if (m_index < static_cast<int>(m_list.size())) ++m_index;
     }
     void toPrev()
     {
-      if (m_it.current()) --m_it;
+      if (m_index>=0) --m_index;
     }
     bool current(TemplateVariant &v) const
     {
-      if (m_it.current())
+      if (m_index>=0 && m_index < static_cast<int>(m_list.size()))
       {
-        v = *m_it.current();
-        return TRUE;
+        v = m_list[m_index];
+        return true;
       }
       else
       {
         v = TemplateVariant();
-        return FALSE;
+        return false;
       }
     }
   private:
-    QListIterator<TemplateVariant> m_it;
+    const std::vector<TemplateVariant> &m_list;
+    int m_index=0;
 };
 
 //------------------------------------------------------------------------
@@ -172,7 +173,6 @@ class GenericNodeListContext : public TemplateListIntf
   public:
     GenericNodeListContext() : m_refCount(0)
     {
-      m_children.setAutoDelete(TRUE);
     }
     static GenericNodeListContext *alloc()
     {
@@ -182,14 +182,14 @@ class GenericNodeListContext : public TemplateListIntf
     // TemplateListIntf methods
     uint count() const
     {
-      return m_children.count();
+      return static_cast<uint>(m_children.size());
     }
     TemplateVariant at(uint index) const
     {
       TemplateVariant result;
       if (index<count())
       {
-        result = *m_children.at(index);
+        result = m_children[index];
       }
       return result;
     }
@@ -200,11 +200,11 @@ class GenericNodeListContext : public TemplateListIntf
 
     void append(const TemplateVariant &ctn)
     {
-      m_children.append(new TemplateVariant(ctn));
+      m_children.emplace_back(ctn);
     }
     bool isEmpty() const
     {
-      return m_children.isEmpty();
+      return m_children.empty();
     }
     int addRef()
     {
@@ -220,7 +220,7 @@ class GenericNodeListContext : public TemplateListIntf
       return count;
     }
   private:
-    mutable QList<TemplateVariant> m_children;
+    std::vector< TemplateVariant > m_children;
     int m_refCount;
 };
 
@@ -248,21 +248,20 @@ class PropertyMapper
     };
 
   public:
-    PropertyMapper() : m_map(63) { m_map.setAutoDelete(TRUE); }
-
     /** Add a property to the map
      *  @param[in] name   The name of the property to add.
      *  @param[in] handle The method to call when the property is accessed.
      */
     void addProperty(const char *name,typename PropertyFunc::Handler handle)
     {
-      if (m_map.find(name))
+      auto it = m_map.find(name);
+      if (it!=m_map.end())
       {
-        err("Error: adding property '%s' more than once",name);
+        err("adding property '%s' more than once\n",name);
       }
       else
       {
-        m_map.insert(name,new PropertyFunc(handle));
+        m_map.insert(std::make_pair(name,std::make_unique<PropertyFunc>(handle)));
       }
     }
 
@@ -272,20 +271,16 @@ class PropertyMapper
      *  @returns A variant representing the properties value or an
      *  invalid variant if it was not found.
      */
-    TemplateVariant get(const T *obj,const char *name) const
+    TemplateVariant get(const T *obj,const QCString &name) const
     {
       //printf("PropertyMapper::get(%s)\n",name);
       TemplateVariant result;
-      PropertyFuncIntf *func = m_map.find(name);
-      if (func)
-      {
-        result = (*func)(obj);
-      }
-      return result;
+      auto it = m_map.find(name.str());
+      return it!=m_map.end() ? (*it->second)(obj) : TemplateVariant();
     }
 
   private:
-    QDict<PropertyFuncIntf> m_map;
+    std::unordered_map<std::string,std::unique_ptr<PropertyFuncIntf>> m_map;
 };
 
 
@@ -296,15 +291,15 @@ class PropertyMapper
 class ConfigContext::Private
 {
   public:
-    Private() { m_cachedLists.setAutoDelete(TRUE); }
+    Private() { }
     virtual ~Private() { }
     TemplateVariant fetchList(const QCString &name,const StringVector &list)
     {
-      TemplateVariant *v = m_cachedLists.find(name);
-      if (v==0)
+      auto it = m_cachedLists.find(name.str());
+      if (it==m_cachedLists.end())
       {
         TemplateList *tlist = TemplateList::alloc();
-        m_cachedLists.insert(name,new TemplateVariant(tlist));
+        m_cachedLists.insert(std::make_pair(name.str(),TemplateVariant(tlist)));
         for (const auto &s : list)
         {
           tlist->append(s.c_str());
@@ -313,11 +308,11 @@ class ConfigContext::Private
       }
       else
       {
-        return *v;
+        return it->second;
       }
     }
   private:
-    QDict<TemplateVariant> m_cachedLists;
+    std::unordered_map<std::string,TemplateVariant> m_cachedLists;
 };
 //%% }
 
@@ -331,10 +326,10 @@ ConfigContext::~ConfigContext()
   delete p;
 }
 
-TemplateVariant ConfigContext::get(const char *name) const
+TemplateVariant ConfigContext::get(const QCString &name) const
 {
   TemplateVariant result;
-  if (name)
+  if (!name.isEmpty())
   {
     const ConfigValues::Info *option = ConfigValues::instance().get(name);
     if (option)
@@ -402,7 +397,7 @@ class DoxygenContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -430,7 +425,7 @@ DoxygenContext::~DoxygenContext()
   delete p;
 }
 
-TemplateVariant DoxygenContext::get(const char *n) const
+TemplateVariant DoxygenContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -1228,7 +1223,7 @@ class TranslateContext::Private
       m_vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       m_sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -1253,7 +1248,7 @@ TranslateContext::~TranslateContext()
   delete p;
 }
 
-TemplateVariant TranslateContext::get(const char *n) const
+TemplateVariant TranslateContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -1263,37 +1258,34 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
 {
   TemplateVariant result;
   DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
-                                     0,isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-  QGString docs;
+                                     QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+  TextStream ts;
+  switch (g_globals.outputFormat)
   {
-    FTextStream ts(&docs);
-    switch (g_globals.outputFormat)
-    {
-      case ContextOutputFormat_Html:
-        {
-          HtmlCodeGenerator codeGen(ts,relPath);
-          HtmlDocVisitor visitor(ts,codeGen,def);
-          root->accept(&visitor);
-        }
-        break;
-      case ContextOutputFormat_Latex:
-        {
-          LatexCodeGenerator codeGen(ts,relPath,file);
-          LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
-          root->accept(&visitor);
-        }
-        break;
-      // TODO: support other generators
-      default:
-        err("context.cpp: output format not yet supported");
-        break;
-    }
+    case ContextOutputFormat_Html:
+      {
+        HtmlCodeGenerator codeGen(ts,relPath);
+        HtmlDocVisitor visitor(ts,codeGen,def);
+        root->accept(&visitor);
+      }
+      break;
+    case ContextOutputFormat_Latex:
+      {
+        LatexCodeGenerator codeGen(ts,relPath,file);
+        LatexDocVisitor visitor(ts,codeGen,def->getDefFileExtension(),FALSE);
+        root->accept(&visitor);
+      }
+      break;
+    // TODO: support other generators
+    default:
+      err("context.cpp: output format not yet supported\n");
+      break;
   }
   bool isEmpty = root->isEmpty();
   if (isEmpty)
     result = "";
   else
-    result = TemplateVariant(docs,TRUE);
+    result = TemplateVariant(ts.str().c_str(),TRUE);
   delete root;
   return result;
 }
@@ -1303,30 +1295,29 @@ static TemplateVariant parseCode(MemberDef *md,const QCString &scopeName,const Q
 {
   auto intf = Doxygen::parserManager->getCodeParser(md->getDefFileExtension());
   intf->resetCodeParserState();
-  QGString s;
-  FTextStream t(&s);
+  TextStream t;
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        intf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+        intf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,QCString(),md->getBodyDef(),
             startLine,endLine,TRUE,md,showLineNumbers,md);
       }
       break;
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,md->docFile());
-        intf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,0,md->getBodyDef(),
+        intf->parseCode(codeGen,scopeName,code,md->getLanguage(),FALSE,QCString(),md->getBodyDef(),
             startLine,endLine,TRUE,md,showLineNumbers,md);
       }
       break;
     // TODO: support other generators
     default:
-      err("context.cpp: output format not yet supported");
+      err("context.cpp: output format not yet supported\n");
       break;
   }
-  return TemplateVariant(s.data(),TRUE);
+  return TemplateVariant(t.str(),TRUE);
 }
 
 static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
@@ -1334,18 +1325,17 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
   static bool filterSourceFiles = Config_getBool(FILTER_SOURCE_FILES);
   auto intf = Doxygen::parserManager->getCodeParser(fd->getDefFileExtension());
   intf->resetCodeParserState();
-  QGString s;
-  FTextStream t(&s);
+  TextStream t;
   switch (g_globals.outputFormat)
   {
     case ContextOutputFormat_Html:
       {
         HtmlCodeGenerator codeGen(t,relPath);
-        intf->parseCode(codeGen,0,
+        intf->parseCode(codeGen,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
-              0,                  // exampleName
+              QCString(),         // exampleName
               const_cast<FileDef*>(fd),  // fileDef, TODO: should be const
               -1,                 // startLine
               -1,                 // endLine
@@ -1360,11 +1350,11 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
     case ContextOutputFormat_Latex:
       {
         LatexCodeGenerator codeGen(t,relPath,fd->docFile());
-        intf->parseCode(codeGen,0,
+        intf->parseCode(codeGen,QCString(),
               fileToString(fd->absFilePath(),filterSourceFiles,TRUE), // the sources
               fd->getLanguage(),  // lang
               FALSE,              // isExampleBlock
-              0,                  // exampleName
+              QCString(),         // exampleName
               const_cast<FileDef*>(fd),  // fileDef, TODO: should be const
               -1,                 // startLine
               -1,                 // endLine
@@ -1378,10 +1368,10 @@ static TemplateVariant parseCode(const FileDef *fd,const QCString &relPath)
       break;
     // TODO: support other generators
     default:
-      err("context.cpp: output format not yet supported");
+      err("context.cpp: output format not yet supported\n");
       break;
   }
-  return TemplateVariant(s.data(),TRUE);
+  return TemplateVariant(t.str().c_str(),TRUE);
 }
 
 //------------------------------------------------------------------------
@@ -1546,6 +1536,7 @@ class DefinitionContext
         case SrcLangExt_SQL:      result="sql";      break;
         case SrcLangExt_Markdown: result="markdown"; break;
         case SrcLangExt_Slice:    result="slice";    break;
+        case SrcLangExt_Lex:      result="lex";      break;
       }
       return result;
     }
@@ -1561,6 +1552,7 @@ class DefinitionContext
         case Definition::TypePackage:   result="package";   break;
         case Definition::TypePage:      result="page";      break;
         case Definition::TypeDir:       result="dir";       break;
+        case Definition::TypeConcept:   result="concept";   break;
         case Definition::TypeMember:                        break;
       }
       return result;
@@ -1702,7 +1694,7 @@ class IncludeInfoContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -1753,7 +1745,7 @@ IncludeInfoContext::~IncludeInfoContext()
   delete p;
 }
 
-TemplateVariant IncludeInfoContext::get(const char *n) const
+TemplateVariant IncludeInfoContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -1765,18 +1757,16 @@ TemplateVariant IncludeInfoContext::get(const char *n) const
 class IncludeInfoListContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const QList<IncludeInfo> &list,SrcLangExt lang)
+    Private(const IncludeInfoList &list,SrcLangExt lang)
     {
-      QListIterator<IncludeInfo> li(list);
-      IncludeInfo *ii;
-      for (li.toFirst();(ii=li.current());++li)
+      for (const auto &ii : list)
       {
-        append(IncludeInfoContext::alloc(ii,lang));
+        append(IncludeInfoContext::alloc(&ii,lang));
       }
     }
 };
 
-IncludeInfoListContext::IncludeInfoListContext(const QList<IncludeInfo> &list,SrcLangExt lang) : RefCountedContext("IncludeListContext")
+IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang) : RefCountedContext("IncludeListContext")
 {
   p = new Private(list,lang);
 }
@@ -1887,7 +1877,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       if (!cd->cookie()) { cd->setCookie(new ClassContext::Private::Cachable(cd)); }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -1957,14 +1947,13 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     TemplateVariant inheritanceDiagram() const
     {
-      QGString result;
+      TextStream t;
       static bool haveDot       = Config_getBool(HAVE_DOT);
       static bool classDiagrams = Config_getBool(CLASS_DIAGRAMS);
       static bool classGraph    = Config_getBool(CLASS_GRAPH);
       if (haveDot && (classDiagrams || classGraph))
       {
         DotClassGraph *cg = getClassGraph();
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -1987,7 +1976,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
@@ -1995,34 +1984,33 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       else if (classDiagrams)
       {
         ClassDiagram d(m_classDef);
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
             {
-              FTextStream tt(&result);
+              TextStream tt;
 
               QCString name = convertToHtml(m_classDef->displayName());
               d.writeImage(tt,g_globals.outputDir,
                            relPathAsString(),
                            m_classDef->getOutputFileBase());
-              if (!result.isEmpty())
+              if (!tt.empty())
               {
-                t << "<div class=\"center\">" << endl;
+                t << "<div class=\"center\">\n";
                 t << "  <img src=\"";
                 t << relPathAsString() << m_classDef->getOutputFileBase();
-                t << ".png\" usemap=\"#" << convertToId(name) << "_map\" alt=\"\"/>" << endl;
-                t << "  <map id=\"" << convertToId(name) << "_map\" name=\"" << convertToId(name) << "_map\">" << endl;
-	        t << result;
-	        t << "  </map>" << endl;
+                t << ".png\" usemap=\"#" << convertToId(name) << "_map\" alt=\"\"/>\n";
+                t << "  <map id=\"" << convertToId(name) << "_map\" name=\"" << convertToId(name) << "_map\">\n";
+	        t << tt.str();
+	        t << "  </map>\n";
                 t << "</div>";
               }
               else
               {
-                t << "<div class=\"center\">" << endl;
+                t << "<div class=\"center\">\n";
                 t << "  <img src=\"";
                 t << relPathAsString() << m_classDef->getOutputFileBase();
-                t << ".png\" alt=\"\"/>" << endl;
+                t << ".png\" alt=\"\"/>\n";
                 t << "</div>";
               }
             }
@@ -2034,12 +2022,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     DotClassGraph *getCollaborationGraph() const
     {
@@ -2058,11 +2046,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant collaborationDiagram() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      QGString result;
+      TextStream t;
       if (haveDot)
       {
         DotClassGraph *cg = getCollaborationGraph();
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -2085,12 +2072,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
 
     TemplateVariant includeInfo() const
@@ -2128,11 +2115,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       return cache.inheritedByList.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool=FALSE) const
+                                  MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
       {
-        MemberList *ml = m_classDef->getMemberList(type);
+        const MemberList *ml = m_classDef->getMemberList(type);
         if (ml)
         {
           list.reset(MemberListInfoContext::alloc(m_classDef,relPathAsString(),ml,title,""));
@@ -2426,17 +2413,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     }
     void addMembers(const ClassDef *cd,MemberListType lt) const
     {
-      MemberList *ml = cd->getMemberList(lt);
+      const MemberList *ml = cd->getMemberList(lt);
       if (ml)
       {
         Cachable &cache = getCache();
-        MemberListIterator li(*ml);
-        const MemberDef *md;
-        for (li.toFirst();(md=li.current());++li)
+        for (const auto &md : *ml)
         {
           if (md->isBriefSectionVisible())
           {
-            cache.allMembers.append(md);
+            cache.allMembers.push_back(md);
           }
         }
       }
@@ -2653,7 +2638,7 @@ PropertyMapper<ClassContext::Private> ClassContext::Private::s_inst;
 
 ClassContext::ClassContext(const ClassDef *cd) : RefCountedContext("ClassContext")
 {
-  //printf("ClassContext::ClassContext(%s)\n",cd?cd->name().data():"<none>");
+  //printf("ClassContext::ClassContext(%s)\n",cd?qPrint(cd->name()):"<none>");
   p = new Private(cd);
 }
 
@@ -2662,7 +2647,7 @@ ClassContext::~ClassContext()
   delete p;
 }
 
-TemplateVariant ClassContext::get(const char *n) const
+TemplateVariant ClassContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -2709,7 +2694,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       if (!nd->cookie()) { nd->setCookie(new NamespaceContext::Private::Cachable(nd)); }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -2792,11 +2777,11 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       return cache.constantgroups.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool=FALSE) const
+                                  MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
       {
-        MemberList *ml = m_namespaceDef->getMemberList(type);
+        const MemberList *ml = m_namespaceDef->getMemberList(type);
         if (ml)
         {
           list.reset(MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,""));
@@ -2953,7 +2938,7 @@ NamespaceContext::~NamespaceContext()
   delete p;
 }
 
-TemplateVariant NamespaceContext::get(const char *n) const
+TemplateVariant NamespaceContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -3010,7 +2995,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       if (!fd->cookie()) { fd->setCookie(new FileContext::Private::Cachable(fd)); }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -3033,10 +3018,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includeList() const
     {
       Cachable &cache = getCache();
-      if (!cache.includeInfoList && m_fileDef->includeFileList())
+      if (!cache.includeInfoList && !m_fileDef->includeFileList().empty())
       {
         cache.includeInfoList.reset(IncludeInfoListContext::alloc(
-              *m_fileDef->includeFileList(),m_fileDef->getLanguage()));
+              m_fileDef->includeFileList(),m_fileDef->getLanguage()));
       }
       if (cache.includeInfoList)
       {
@@ -3065,11 +3050,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includeGraph() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      QGString result;
+      TextStream t;
       if (haveDot)
       {
         DotInclDepGraph *cg = getIncludeGraph();
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -3092,12 +3076,12 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     DotInclDepGraph *getIncludedByGraph() const
     {
@@ -3117,11 +3101,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant includedByGraph() const
     {
       static bool haveDot = Config_getBool(HAVE_DOT);
-      QGString result;
+      TextStream t;
       if (haveDot)
       {
         DotInclDepGraph *cg = getIncludedByGraph();
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -3144,12 +3127,12 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     TemplateVariant hasDetails() const
     {
@@ -3231,11 +3214,11 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       return cache.constantgroups.get();
     }
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool=FALSE) const
+                                  MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
       {
-        MemberList *ml = m_fileDef->getMemberList(type);
+        const MemberList *ml = m_fileDef->getMemberList(type);
         if (ml)
         {
           list.reset(MemberListInfoContext::alloc(m_fileDef,relPathAsString(),ml,title,""));
@@ -3407,7 +3390,7 @@ FileContext::~FileContext()
   delete p;
 }
 
-TemplateVariant FileContext::get(const char *n) const
+TemplateVariant FileContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -3440,7 +3423,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (!dd->cookie()) { dd->setCookie(new DirContext::Private::Cachable(dd)); }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -3480,16 +3463,10 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       if (!cache.files)
       {
         cache.files.reset(TemplateList::alloc());
-        FileList *files = m_dirDef->getFiles();
-        if (files)
+        for (const auto &fd : m_dirDef->getFiles())
         {
-          QListIterator<FileDef> it(*files);
-          const FileDef *fd;
-          for (it.toFirst();(fd=it.current());++it)
-          {
-            FileContext *fc = FileContext::alloc(fd);
-            cache.files->append(fc);
-          }
+          FileContext *fc = FileContext::alloc(fd);
+          cache.files->append(fc);
         }
       }
       return cache.files.get();
@@ -3529,13 +3506,12 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     }
     TemplateVariant dirGraph() const
     {
-      QGString result;
+      TextStream t;
       static bool haveDot  = Config_getBool(HAVE_DOT);
       static bool dirGraph = Config_getBool(DIRECTORY_GRAPH);
       if (haveDot && dirGraph)
       {
         DotDirDeps *graph = getDirDepsGraph();
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -3564,12 +3540,12 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
 
   private:
@@ -3603,7 +3579,7 @@ DirContext::~DirContext()
   delete p;
 }
 
-TemplateVariant DirContext::get(const char *n) const
+TemplateVariant DirContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -3632,7 +3608,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
       if (!pd->cookie()) { pd->setCookie(new PageContext::Private::Cachable(pd)); }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -3736,7 +3712,7 @@ PageContext::~PageContext()
   delete p;
 }
 
-TemplateVariant PageContext::get(const char *n) const
+TemplateVariant PageContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -3746,15 +3722,15 @@ TemplateVariant PageContext::get(const char *n) const
 class TextGeneratorHtml : public TextGeneratorIntf
 {
   public:
-    TextGeneratorHtml(FTextStream &ts,const QCString &relPath)
+    TextGeneratorHtml(TextStream &ts,const QCString &relPath)
        : m_ts(ts), m_relPath(relPath) {}
-    void writeString(const char *s,bool keepSpaces) const
+    void writeString(const QCString &s,bool keepSpaces) const
     {
       static const char *hex="0123456789ABCDEF";
-      if (s==0) return;
+      if (s.isEmpty()) return;
       if (keepSpaces)
       {
-        const char *p=s;
+        const char *p=s.data();
         char c;
         while ((c=*p++))
         {
@@ -3797,11 +3773,11 @@ class TextGeneratorHtml : public TextGeneratorIntf
       }
     }
 
-    void writeLink(const char *ref,const char *f,
-                   const char *anchor,const char *name
+    void writeLink(const QCString &ref,const QCString &f,
+                   const QCString &anchor,const QCString &name
                   ) const
     {
-      if (ref)
+      if (!ref.isEmpty())
       {
         m_ts << "<a class=\"elRef\" ";
         m_ts << externalLinkTarget();
@@ -3812,15 +3788,15 @@ class TextGeneratorHtml : public TextGeneratorIntf
       }
       m_ts << "href=\"";
       m_ts << externalRef(m_relPath,ref,TRUE);
-      if (f) m_ts << f << Doxygen::htmlFileExtension;
-      if (anchor) m_ts << "#" << anchor;
+      if (!f.isEmpty()) m_ts << f << Doxygen::htmlFileExtension;
+      if (!anchor.isEmpty()) m_ts << "#" << anchor;
       m_ts << "\">";
       m_ts << convertToHtml(name);
       m_ts << "</a>";
     }
 
   private:
-    FTextStream &m_ts;
+    TextStream &m_ts;
     QCString m_relPath;
 };
 
@@ -3829,8 +3805,8 @@ class TextGeneratorHtml : public TextGeneratorIntf
 class TextGeneratorLatex : public TextGeneratorIntf
 {
   public:
-    TextGeneratorLatex(FTextStream &ts) : m_ts(ts) {}
-    void writeString(const char *s,bool keepSpaces) const
+    TextGeneratorLatex(TextStream &ts) : m_ts(ts) {}
+    void writeString(const QCString &s,bool keepSpaces) const
     {
       if (s==0) return;
       m_ts << convertToLaTeX(s,FALSE,keepSpaces);
@@ -3843,17 +3819,17 @@ class TextGeneratorLatex : public TextGeneratorIntf
         m_ts << "~";
       }
     }
-    void writeLink(const char *ref,const char *f,
-                   const char *anchor,const char *text
+    void writeLink(const QCString &ref,const QCString &f,
+                   const QCString &anchor,const QCString &text
                   ) const
     {
       static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-      if (!ref && pdfHyperlinks)
+      if (ref.isEmpty() && pdfHyperlinks)
       {
         m_ts << "\\mbox{\\hyperlink{";
-        if (f) m_ts << stripPath(f);
-        if (f && anchor) m_ts << "_";
-        if (anchor) m_ts << anchor;
+        if (!f.isEmpty()) m_ts << stripPath(f);
+        if (!f.isEmpty() && !anchor.isEmpty()) m_ts << "_";
+        if (!anchor.isEmpty()) m_ts << anchor;
         m_ts << "}{";
         filterLatexString(m_ts,text,
                           false, // insideTabbing
@@ -3879,7 +3855,7 @@ class TextGeneratorLatex : public TextGeneratorIntf
     }
 
   private:
-    FTextStream &m_ts;
+    TextStream &m_ts;
 };
 
 //------------------------------------------------------------------------
@@ -3893,7 +3869,7 @@ class TextGeneratorFactory
       if (instance==0) instance = new TextGeneratorFactory;
       return instance;
     }
-    TextGeneratorIntf *create(FTextStream &ts,const QCString &relPath)
+    TextGeneratorIntf *create(TextStream &ts,const QCString &relPath)
     {
       switch (g_globals.outputFormat)
       {
@@ -3913,14 +3889,13 @@ class TextGeneratorFactory
 
 TemplateVariant createLinkedText(const Definition *def,const QCString &relPath,const QCString &text)
 {
-  QGString s;
-  FTextStream ts(&s);
+  TextStream ts;
   TextGeneratorIntf *tg = TextGeneratorFactory::instance()->create(ts,relPath);
   if (tg)
   {
     linkifyText(*tg,def->getOuterScope(),def->getBodyDef(),def,text);
     delete tg;
-    return TemplateVariant(s.data(),TRUE);
+    return TemplateVariant(ts.str().c_str(),true);
   }
   else
   {
@@ -4062,11 +4037,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("nameWithContextFor",  &Private::nameWithContextFor);
         init=TRUE;
       }
-      if (md && !md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
+      if (!md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
 
       Cachable &cache = getCache();
       cache.propertyAttrs.reset(TemplateList::alloc());
-      if (md && md->isProperty())
+      if (md->isProperty())
       {
         if (md->isGettable())           cache.propertyAttrs->append("get");
         if (md->isPrivateGettable())    cache.propertyAttrs->append("private get");
@@ -4076,7 +4051,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         if (md->isProtectedSettable())  cache.propertyAttrs->append("protected set");
       }
       cache.eventAttrs.reset(TemplateList::alloc());
-      if (md && md->isEvent())
+      if (md->isEvent())
       {
         if (md->isAddable())   cache.eventAttrs->append("add");
         if (md->isRemovable()) cache.eventAttrs->append("remove");
@@ -4084,7 +4059,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -4470,15 +4445,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.enumValues)
       {
-        const MemberList *ml = m_memberDef->enumFieldList();
-        if (ml)
-        {
-          cache.enumValues.reset(MemberListContext::alloc(ml));
-        }
-        else
-        {
-          cache.enumValues.reset(MemberListContext::alloc());
-        }
+        cache.enumValues.reset(MemberListContext::alloc(&m_memberDef->enumFieldList()));
       }
       return cache.enumValues.get();
     }
@@ -4710,16 +4677,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.labels)
       {
-        QStrList sl;
-        m_memberDef->getLabels(sl,m_memberDef->getOuterScope());
+        StringVector sl = m_memberDef->getLabels(m_memberDef->getOuterScope());
         TemplateList *tl = TemplateList::alloc();
-        if (sl.count()>0)
+        for (const auto &s : sl)
         {
-          QStrListIterator it(sl);
-          for (;it.current();++it)
-          {
-            tl->append(*it);
-          }
+          tl->append(s.c_str());
         }
         cache.labels.reset(tl);
       }
@@ -4758,11 +4720,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.implements)
       {
-        MemberDef *md = m_memberDef->reimplements();
+        const MemberDef *md = m_memberDef->reimplements();
         cache.implements.reset(TemplateList::alloc());
         if (md)
         {
           const ClassDef *cd = md->getClassDef();
+          // filter on pure virtual/interface methods
           if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
           {
             MemberContext *mc = MemberContext::alloc(md);
@@ -4777,11 +4740,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.reimplements)
       {
-        MemberDef *md = m_memberDef->reimplements();
+        const MemberDef *md = m_memberDef->reimplements();
         cache.reimplements.reset(TemplateList::alloc());
         if (md)
         {
           const ClassDef *cd = md->getClassDef();
+          // filter on non-pure virtual & non interface methods
           if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
             MemberContext *mc = MemberContext::alloc(md);
@@ -4796,20 +4760,15 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.implementedBy)
       {
-        MemberList *ml = m_memberDef->reimplementedBy();
         cache.implementedBy.reset(TemplateList::alloc());
-        if (ml)
+        for (const auto &md : m_memberDef->reimplementedBy())
         {
-          MemberListIterator mli(*ml);
-          MemberDef *md=0;
-          for (mli.toFirst();(md=mli.current());++mli)
+          const ClassDef *cd = md->getClassDef();
+          // filter on pure virtual/interface methods
+          if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
           {
-            const ClassDef *cd = md->getClassDef();
-            if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
-            {
-              MemberContext *mc = new MemberContext(md);
-              cache.implementedBy->append(mc);
-            }
+            MemberContext *mc = new MemberContext(md);
+            cache.implementedBy->append(mc);
           }
         }
       }
@@ -4821,19 +4780,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!cache.reimplementedBy)
       {
         cache.reimplementedBy.reset(TemplateList::alloc());
-        MemberList *ml = m_memberDef->reimplementedBy();
-        if (ml)
+        for (const auto &md : m_memberDef->reimplementedBy())
         {
-          MemberListIterator mli(*ml);
-          MemberDef *md=0;
-          for (mli.toFirst();(md=mli.current());++mli)
+          const ClassDef *cd = md->getClassDef();
+          // filter on non-pure virtual & non interface methods
+          if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
-            const ClassDef *cd = md->getClassDef();
-            if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
-            {
-              MemberContext *mc = new MemberContext(md);
-              cache.reimplementedBy->append(mc);
-            }
+            MemberContext *mc = new MemberContext(md);
+            cache.reimplementedBy->append(mc);
           }
         }
       }
@@ -4976,8 +4930,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallGraph().toBool())
       {
         DotCallGraph *cg = getCallGraph();
-        QGString result;
-        FTextStream t(&result);
+        TextStream t;
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -5000,11 +4953,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
-        return TemplateVariant(result.data(),TRUE);
+        return TemplateVariant(t.str().c_str(),TRUE);
       }
       else
       {
@@ -5015,7 +4968,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (hasReferencedByRelation().toBool())
       {
-        err("context.cpp: output format not yet supported");
+        err("context.cpp: output format not yet supported\n");
       }
       return TemplateVariant("");
     }
@@ -5048,8 +5001,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (hasCallerGraph().toBool())
       {
         DotCallGraph *cg = getCallerGraph();
-        QGString result;
-        FTextStream t(&result);
+        TextStream t;
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -5072,11 +5024,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
-        return TemplateVariant(result.data(),TRUE);
+        return TemplateVariant(t.str().c_str(),TRUE);
       }
       else
       {
@@ -5087,7 +5039,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (hasReferencesRelation().toBool())
       {
-         err("context.cpp: output format not yet supported");
+         err("context.cpp: output format not yet supported\n");
       }
       return TemplateVariant("");
     }
@@ -5207,7 +5159,7 @@ MemberContext::~MemberContext()
   delete p;
 }
 
-TemplateVariant MemberContext::get(const char *n) const
+TemplateVariant MemberContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -5273,7 +5225,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!gd->cookie()) { gd->setCookie(new ModuleContext::Private::Cachable(gd)); }
     }
     virtual ~Private() {}
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -5312,13 +5264,12 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
     TemplateVariant groupGraph() const
     {
-      QGString result;
+      TextStream t;
       static bool haveDot     = Config_getBool(HAVE_DOT);
       static bool groupGraphs = Config_getBool(GROUP_GRAPHS);
       if (haveDot && groupGraphs)
       {
         DotGroupCollaboration *graph = getGroupGraph();
-        FTextStream t(&result);
         switch (g_globals.outputFormat)
         {
           case ContextOutputFormat_Html:
@@ -5345,12 +5296,12 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             break;
             // TODO: support other generators
           default:
-            err("context.cpp: output format not yet supported");
+            err("context.cpp: output format not yet supported\n");
             break;
         }
         g_globals.dynSectionId++;
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
     TemplateVariant hasDetails() const
     {
@@ -5421,14 +5372,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       if (!cache.files)
       {
         TemplateList *fileList = TemplateList::alloc();
-        if (m_groupDef->getFiles())
+        for (const auto &fd : m_groupDef->getFiles())
         {
-          QListIterator<FileDef> it(*m_groupDef->getFiles());
-          const FileDef *fd;
-          for (it.toFirst();(fd=it.current());++it)
-          {
-            fileList->append(FileContext::alloc(fd));
-          }
+          fileList->append(FileContext::alloc(fd));
         }
         cache.files.reset(fileList);
       }
@@ -5487,7 +5433,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     }
 
     TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
-                                  MemberListType type,const char *title,bool=FALSE) const
+                                  MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
       {
@@ -5724,7 +5670,7 @@ ModuleContext::~ModuleContext()
   delete p;
 }
 
-TemplateVariant ModuleContext::get(const char *n) const
+TemplateVariant ModuleContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -5803,7 +5749,7 @@ class ClassIndexContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -5889,7 +5835,7 @@ ClassIndexContext::~ClassIndexContext()
 }
 
 // TemplateStructIntf
-TemplateVariant ClassIndexContext::get(const char *n) const
+TemplateVariant ClassIndexContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -5995,7 +5941,7 @@ class ClassHierarchyContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -6102,7 +6048,7 @@ ClassHierarchyContext::~ClassHierarchyContext()
   delete p;
 }
 
-TemplateVariant ClassHierarchyContext::get(const char *name) const
+TemplateVariant ClassHierarchyContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -6162,7 +6108,7 @@ class NestingNodeContext::Private
       addPages(visitedClasses);
       addModules(visitedClasses);
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -6369,10 +6315,7 @@ class NestingNodeContext::Private
       if (dd)
       {
         m_children->addDirs(dd->subDirs(),visitedClasses);
-        if (dd && dd->getFiles())
-        {
-          m_children->addFiles(*dd->getFiles(),visitedClasses);
-        }
+        m_children->addFiles(dd->getFiles(),visitedClasses);
       }
     }
     void addPages(ClassDefSet &visitedClasses)
@@ -6427,7 +6370,7 @@ NestingNodeContext::~NestingNodeContext()
   delete p;
 }
 
-TemplateVariant NestingNodeContext::get(const char *n) const
+TemplateVariant NestingNodeContext::get(const QCString &n) const
 {
   return p->get(n);
 }
@@ -6451,7 +6394,9 @@ class NestingContext::Private : public GenericNodeListContext
       if (!nd->isAnonymous() &&
           (!rootOnly || nd->getOuterScope()==Doxygen::globalScope))
       {
-        bool hasChildren = namespaceHasNestedNamespace(nd);
+        bool hasChildren = namespaceHasNestedNamespace(nd) ||
+                           namespaceHasNestedClass(nd,false,ClassDef::Class) ||
+                           namespaceHasNestedConcept(nd);
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable || hasChildren)
         {
@@ -6548,9 +6493,7 @@ class NestingContext::Private : public GenericNodeListContext
     }
     void addFiles(const FileList &fList,ClassDefSet &visitedClasses)
     {
-      QListIterator<FileDef> li(fList);
-      const FileDef *fd;
-      for (li.toFirst();(fd=li.current());++li)
+      for (const auto &fd : fList)
       {
         append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
@@ -6793,7 +6736,7 @@ class ClassTreeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -6880,7 +6823,7 @@ ClassTreeContext::~ClassTreeContext()
   delete p;
 }
 
-TemplateVariant ClassTreeContext::get(const char *name) const
+TemplateVariant ClassTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -6957,7 +6900,7 @@ class NamespaceTreeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -7046,7 +6989,7 @@ NamespaceTreeContext::~NamespaceTreeContext()
   delete p;
 }
 
-TemplateVariant NamespaceTreeContext::get(const char *name) const
+TemplateVariant NamespaceTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -7162,9 +7105,7 @@ UsedFilesContext::UsedFilesContext(const ClassDef *cd) : RefCountedContext("Used
   p = new Private;
   if (cd)
   {
-    QListIterator<FileDef> li(cd->usedFiles());
-    const FileDef *fd;
-    for (li.toFirst();(fd=li.current());++li)
+    for (const auto &fd : cd->usedFiles())
     {
       p->addFile(fd);
     }
@@ -7229,7 +7170,7 @@ class FileTreeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -7303,7 +7244,7 @@ FileTreeContext::~FileTreeContext()
   delete p;
 }
 
-TemplateVariant FileTreeContext::get(const char *name) const
+TemplateVariant FileTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -7337,7 +7278,7 @@ class PageTreeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -7411,7 +7352,7 @@ PageTreeContext::~PageTreeContext()
   delete p;
 }
 
-TemplateVariant PageTreeContext::get(const char *name) const
+TemplateVariant PageTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -7579,7 +7520,7 @@ class ModuleTreeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -7653,7 +7594,7 @@ ModuleTreeContext::~ModuleTreeContext()
   delete p;
 }
 
-TemplateVariant ModuleTreeContext::get(const char *name) const
+TemplateVariant ModuleTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -7679,7 +7620,7 @@ class NavPathElemContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -7747,7 +7688,7 @@ NavPathElemContext::~NavPathElemContext()
   delete p;
 }
 
-TemplateVariant NavPathElemContext::get(const char *name) const
+TemplateVariant NavPathElemContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -7781,7 +7722,7 @@ class ExampleTreeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -7855,7 +7796,7 @@ ExampleTreeContext::~ExampleTreeContext()
   delete p;
 }
 
-TemplateVariant ExampleTreeContext::get(const char *name) const
+TemplateVariant ExampleTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -7890,7 +7831,7 @@ class GlobalsIndexContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8008,7 +7949,7 @@ GlobalsIndexContext::~GlobalsIndexContext()
   delete p;
 }
 
-TemplateVariant GlobalsIndexContext::get(const char *name) const
+TemplateVariant GlobalsIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8043,7 +7984,7 @@ class ClassMembersIndexContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8163,7 +8104,7 @@ ClassMembersIndexContext::~ClassMembersIndexContext()
   delete p;
 }
 
-TemplateVariant ClassMembersIndexContext::get(const char *name) const
+TemplateVariant ClassMembersIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8198,7 +8139,7 @@ class NamespaceMembersIndexContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8315,7 +8256,7 @@ NamespaceMembersIndexContext::~NamespaceMembersIndexContext()
   delete p;
 }
 
-TemplateVariant NamespaceMembersIndexContext::get(const char *name) const
+TemplateVariant NamespaceMembersIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8336,18 +8277,17 @@ class InheritanceGraphContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
     TemplateVariant graph() const
     {
-      QGString result;
+      TextStream t;
       static bool haveDot            = Config_getBool(HAVE_DOT);
       static bool graphicalHierarchy = Config_getBool(GRAPHICAL_HIERARCHY);
       if (haveDot && graphicalHierarchy)
       {
-        FTextStream t(&result);
         m_hierarchy->createGraph(m_node,t,
                           /*GOF_BITMAP,
                           EOF_Html,*/
@@ -8355,7 +8295,7 @@ class InheritanceGraphContext::Private
                           g_globals.outputDir+Portable::pathSeparator()+"inherits"+Doxygen::htmlFileExtension,
                           m_id);
       }
-      return TemplateVariant(result.data(),TRUE);
+      return TemplateVariant(t.str().c_str(),TRUE);
     }
   private:
     DotGfxHierarchyTable *m_hierarchy;
@@ -8377,7 +8317,7 @@ InheritanceGraphContext::~InheritanceGraphContext()
   delete p;
 }
 
-TemplateVariant InheritanceGraphContext::get(const char *name) const
+TemplateVariant InheritanceGraphContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8400,7 +8340,7 @@ class InheritanceNodeContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8436,7 +8376,7 @@ InheritanceNodeContext::~InheritanceNodeContext()
   delete p;
 }
 
-TemplateVariant InheritanceNodeContext::get(const char *name) const
+TemplateVariant InheritanceNodeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8469,7 +8409,7 @@ InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool b
     {
       name = cd->displayName();
     }
-    //printf("InheritanceListContext: adding %s baseClass=%d\n",name.data(),baseClasses);
+    //printf("InheritanceListContext: adding %s baseClass=%d\n",qPrint(name),baseClasses);
     p->addClass(cd,name);
   }
 }
@@ -8518,9 +8458,7 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
   if (list)
   {
     bool details = list->listType()&MemberListType_detailedLists;
-    MemberListIterator mli(*list);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *list)
     {
       if ((md->isBriefSectionVisible() && !details) ||
           (md->isDetailedSectionLinkable() && details)
@@ -8586,7 +8524,7 @@ class MemberInfoContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8649,7 +8587,7 @@ MemberInfoContext::~MemberInfoContext()
   delete p;
 }
 
-TemplateVariant MemberInfoContext::get(const char *name) const
+TemplateVariant MemberInfoContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8738,7 +8676,7 @@ class MemberGroupInfoContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8746,7 +8684,7 @@ class MemberGroupInfoContext::Private
     {
       if (!m_cache.memberListContext)
       {
-        m_cache.memberListContext.reset(MemberListContext::alloc(m_memberGroup->members()));
+        m_cache.memberListContext.reset(MemberListContext::alloc(&m_memberGroup->members()));
       }
       return m_cache.memberListContext.get();
     }
@@ -8821,7 +8759,7 @@ MemberGroupInfoContext::~MemberGroupInfoContext()
   delete p;
 }
 
-TemplateVariant MemberGroupInfoContext::get(const char *name) const
+TemplateVariant MemberGroupInfoContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -8912,7 +8850,7 @@ class MemberListInfoContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -8993,7 +8931,7 @@ MemberListInfoContext::~MemberListInfoContext()
   delete p;
 }
 
-TemplateVariant MemberListInfoContext::get(const char *name) const
+TemplateVariant MemberListInfoContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9005,7 +8943,7 @@ TemplateVariant MemberListInfoContext::get(const char *name) const
 class InheritedMemberInfoContext::Private
 {
   public:
-    Private(const ClassDef *cd,MemberList *ml,const QCString &title)
+    Private(const ClassDef *cd,const MemberList *ml,const QCString &title)
       : m_class(cd), m_memberList(ml), m_title(title)
     {
       static bool init=FALSE;
@@ -9019,7 +8957,7 @@ class InheritedMemberInfoContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -9065,7 +9003,7 @@ class InheritedMemberInfoContext::Private
 
   private:
     const ClassDef *  m_class;
-    MemberList *m_memberList;
+    const MemberList *m_memberList;
     QCString    m_title;
     mutable SharedPtr<ClassContext> m_classCtx;
     mutable SharedPtr<MemberListContext> m_memberListCtx;
@@ -9076,7 +9014,7 @@ class InheritedMemberInfoContext::Private
 
 PropertyMapper<InheritedMemberInfoContext::Private> InheritedMemberInfoContext::Private::s_inst;
 
-InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,MemberList *ml,
+InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,
                                                        const QCString &title) : RefCountedContext("InheritedMemberInfoContext")
 {
   p = new Private(cd,ml,title);
@@ -9087,7 +9025,7 @@ InheritedMemberInfoContext::~InheritedMemberInfoContext()
   delete p;
 }
 
-TemplateVariant InheritedMemberInfoContext::get(const char *name) const
+TemplateVariant InheritedMemberInfoContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9098,26 +9036,21 @@ TemplateVariant InheritedMemberInfoContext::get(const char *name) const
 class InheritedMemberInfoListContext::Private : public GenericNodeListContext
 {
   public:
-    void addMemberList(const ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    void addMemberList(const ClassDef *inheritedFrom,const MemberList &ml,MemberList *combinedList)
     {
-      if (ml)
+      for (const auto &md : ml)
       {
-        MemberListIterator li(*ml);
-        MemberDef *md;
-        for (li.toFirst();(md=li.current());++li)
+        if (md->isBriefSectionVisible() && !md->isReimplementedBy(inheritedFrom))
         {
-          if (md->isBriefSectionVisible() && !md->isReimplementedBy(inheritedFrom))
-          {
-            combinedList->append(md);
-          }
+          combinedList->push_back(md);
         }
       }
     }
-    void addMemberListIncludingGrouped(const ClassDef *inheritedFrom,MemberList *ml,MemberList *combinedList)
+    void addMemberListIncludingGrouped(const ClassDef *inheritedFrom,const MemberList *ml,MemberList *combinedList)
     {
       if (ml)
       {
-        addMemberList(inheritedFrom,ml,combinedList);
+        addMemberList(inheritedFrom,*ml,combinedList);
         for (const auto *mg : ml->getMemberGroupList())
         {
           addMemberList(inheritedFrom,mg->members(),combinedList);
@@ -9131,17 +9064,15 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       // addMemberGroupsOfGroup?
       for (const auto &mg: cd->getMemberGroups())
       {
-        if (mg->members() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
+        if (!mg->members().empty() && (!mg->allMembersInSameSection() || !cd->subGrouping())) // group is in its own section
         {
-          MemberListIterator li(*mg->members());
-          MemberDef *md;
-          for (li.toFirst();(md=li.current());++li)
+          for (const auto &md : mg->members())
           {
             if (lt==md->getSectionList(mg->container())->listType() &&
                 !md->isReimplementedBy(inheritedFrom) &&
                 md->isBriefSectionVisible())
             {
-              combinedList->append(md);
+              combinedList->push_back(md);
             }
           }
         }
@@ -9154,8 +9085,8 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       if (lt2!=-1) count += cd->countMembersIncludingGrouped((MemberListType)lt2,inheritedFrom,additionalList);
       if (count>0)
       {
-        MemberList *ml  = cd->getMemberList(lt1);
-        MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
+        const MemberList *ml  = cd->getMemberList(lt1);
+        const MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
         MemberList *combinedList = new MemberList(lt);
         addMemberListIncludingGrouped(inheritedFrom,ml,combinedList);
         addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList);
@@ -9166,7 +9097,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
     }
     void findInheritedMembers(const ClassDef *inheritedFrom,const ClassDef *cd,MemberListType lt,
                               int lt2, const QCString &title,bool additionalList,
-                              QPtrDict<void> *visitedClasses)
+                              ClassDefSet &visitedClasses)
     {
       for (const auto &ibcd : cd->baseClasses())
       {
@@ -9179,9 +9110,9 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
           {
             lt2=lt3;
           }
-          if (visitedClasses->find(icd)==0)
+          if (visitedClasses.find(icd)==visitedClasses.end())
           {
-            visitedClasses->insert(icd,icd); // guard for multiple virtual inheritance
+            visitedClasses.insert(icd); // guard for multiple virtual inheritance
             if (lt1!=-1)
             {
               // add member info for members of cd with list type lt
@@ -9203,14 +9134,14 @@ InheritedMemberInfoListContext::InheritedMemberInfoListContext() : RefCountedCon
 void InheritedMemberInfoListContext::addMemberList(
     const ClassDef *cd,MemberListType lt,const QCString &title,bool additionalList)
 {
-  QPtrDict<void> visited(17);
+  ClassDefSet visited;
   bool memberInSection = cd->countMembersIncludingGrouped(lt,cd,FALSE)>0;
   bool show = (additionalList && !memberInSection) || // inherited member to show in the additional inherited members list
               (!additionalList && memberInSection);   // inherited member to show in a member list of the class
-  //printf("%s:%s show=%d\n",cd->name().data(),MemberList::listTypeAsString(lt).data(),show);
+  //printf("%s:%s show=%d\n",qPrint(cd->name()),qPrint(MemberList::listTypeAsString(lt)),show);
   if (show)
   {
-    p->findInheritedMembers(cd,cd,lt,-1,title,additionalList,&visited);
+    p->findInheritedMembers(cd,cd,lt,-1,title,additionalList,visited);
   }
 }
 
@@ -9258,7 +9189,7 @@ class ArgumentContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -9335,7 +9266,7 @@ ArgumentContext::~ArgumentContext()
   delete p;
 }
 
-TemplateVariant ArgumentContext::get(const char *name) const
+TemplateVariant ArgumentContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9425,7 +9356,7 @@ class SymbolContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -9529,7 +9460,7 @@ SymbolContext::~SymbolContext()
   delete p;
 }
 
-TemplateVariant SymbolContext::get(const char *name) const
+TemplateVariant SymbolContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9602,7 +9533,7 @@ class SymbolGroupContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -9648,7 +9579,7 @@ SymbolGroupContext::~SymbolGroupContext()
   delete p;
 }
 
-TemplateVariant SymbolGroupContext::get(const char *name) const
+TemplateVariant SymbolGroupContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9729,7 +9660,7 @@ class SymbolIndexContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -9775,7 +9706,7 @@ SymbolIndexContext::~SymbolIndexContext()
   delete p;
 }
 
-TemplateVariant SymbolIndexContext::get(const char *name) const
+TemplateVariant SymbolIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9840,7 +9771,7 @@ class SearchIndexContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const char *n) const
+    TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
     }
@@ -9884,7 +9815,7 @@ SearchIndexContext::~SearchIndexContext()
   delete p;
 }
 
-TemplateVariant SearchIndexContext::get(const char *name) const
+TemplateVariant SearchIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
@@ -9952,7 +9883,8 @@ class LatexSpaceless : public TemplateSpacelessIntf
     void reset() { }
     QCString remove(const QCString &s)
     {
-      QGString result;
+      if (s.isEmpty()) return s;
+      TextStream result;
       const char *p = s.data();
       char c;
       while ((c=*p++))
@@ -9962,12 +9894,11 @@ class LatexSpaceless : public TemplateSpacelessIntf
           case '\t': case ' ': case '\n':
             break;
           default:
-            result+=c;
+            result << c;
             break;
         }
       }
-      result+='\0';
-      return result.data();
+      return result.str();
     }
   private:
 };
@@ -9986,7 +9917,8 @@ class HtmlSpaceless : public TemplateSpacelessIntf
     }
     QCString remove(const QCString &s)
     {
-      QGString result;
+      if (s.isEmpty()) return s;
+      TextStream result;
       const char *p = s.data();
       char c;
       while ((c=*p++))
@@ -9995,15 +9927,15 @@ class HtmlSpaceless : public TemplateSpacelessIntf
         {
           case '<': // start of a tag
             if (!m_insideString) m_insideTag=TRUE,m_removeSpaces=FALSE;
-            result+=c;
+            result << c;
             break;
           case '>': // end of a tag
             if (!m_insideString) m_insideTag=FALSE,m_removeSpaces=TRUE;
-            result+=c;
+            result << c;
             break;
           case '\\': // escaped character in a string
-            result+=c;
-            if (m_insideString && *p) result+=*p++;
+            result << c;
+            if (m_insideString && *p) result << *p++;
             break;
           case '"': case '\'':
             if (m_insideTag)
@@ -10017,7 +9949,7 @@ class HtmlSpaceless : public TemplateSpacelessIntf
                 m_insideString=c;
               }
             }
-            result+=c;
+            result << c;
             break;
           case ' ': case '\t': case '\n': // whitespace
             if (!m_insideTag) // outside tags strip consecutive whitespace
@@ -10026,20 +9958,19 @@ class HtmlSpaceless : public TemplateSpacelessIntf
             }
             else
             {
-              result+=' ';
+              result << ' ';
             }
             break;
           default:
             //if (m_removeSpaces) result+=' ';
-            result+=c;
+            result << c;
             m_removeSpaces=FALSE;
             break;
         }
       }
-      result+='\0';
-      //printf("HtmlSpaceless::remove({%s})={%s} m_insideTag=%d m_insideString=%c (%d) removeSpaces=%d\n",s.data(),result.data(),
+      //printf("HtmlSpaceless::remove({%s})={%s} m_insideTag=%d m_insideString=%c (%d) removeSpaces=%d\n",qPrint(s),qPrint(result),
       //    m_insideTag,m_insideString,m_insideString,m_removeSpaces);
-      return result.data();
+      return result.str();
     }
   private:
     bool m_insideTag;
@@ -10170,14 +10101,14 @@ void generateOutputViaTemplate()
           g_globals.outputFormat = ContextOutputFormat_Html;
           g_globals.dynSectionId = 0;
           g_globals.outputDir    = Config_getString(HTML_OUTPUT);
-          QDir dir(g_globals.outputDir);
+          Dir dir(g_globals.outputDir.str());
           createSubDirs(dir);
           HtmlEscaper htmlEsc;
           ctx->setEscapeIntf(Config_getString(HTML_FILE_EXTENSION),&htmlEsc);
           HtmlSpaceless spl;
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
-          FTextStream ts;
+          TextStream ts;
           tpl->render(ts,ctx);
           e.unload(tpl);
         }
@@ -10195,14 +10126,14 @@ void generateOutputViaTemplate()
           g_globals.outputFormat = ContextOutputFormat_Latex;
           g_globals.dynSectionId = 0;
           g_globals.outputDir    = Config_getString(LATEX_OUTPUT);
-          QDir dir(g_globals.outputDir);
+          Dir dir(g_globals.outputDir.str());
           createSubDirs(dir);
           LatexEscaper latexEsc;
           ctx->setEscapeIntf(".tex",&latexEsc);
           LatexSpaceless spl;
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
-          FTextStream ts;
+          TextStream ts;
           tpl->render(ts,ctx);
           e.unload(tpl);
         }
@@ -10222,20 +10153,20 @@ void generateOutputViaTemplate()
 #endif
 }
 
-void generateTemplateFiles(const char *templateDir)
+void generateTemplateFiles(const QCString &templateDir)
 {
-  if (!templateDir) return;
-  QDir thisDir;
-  if (!thisDir.exists(templateDir) && !thisDir.mkdir(templateDir))
+  if (templateDir.isEmpty()) return;
+  Dir thisDir;
+  if (!thisDir.exists(templateDir.str()) && !thisDir.mkdir(templateDir.str()))
   {
-    err("Failed to create output directory '%s'\n",templateDir);
+    err("Failed to create output directory '%s'\n",qPrint(templateDir));
     return;
   }
-  QCString outDir = QCString(templateDir)+"/html";
+  std::string outDir = templateDir.str()+"/html";
   if (!thisDir.exists(outDir) && !thisDir.mkdir(outDir))
   {
-    err("Failed to create output directory '%s'\n",outDir.data());
+    err("Failed to create output directory '%s'\n",outDir.c_str());
     return;
   }
-  ResourceMgr::instance().writeCategory("html",outDir);
+  ResourceMgr::instance().writeCategory("html",outDir.c_str());
 }

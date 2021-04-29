@@ -18,17 +18,16 @@
 #ifndef ENTRY_H
 #define ENTRY_H
 
-#include <qgstring.h>
-
 #include <vector>
 #include <memory>
+#include <sstream>
 
 #include "types.h"
 #include "arguments.h"
 #include "reflist.h"
+#include "textstream.h"
 
 class SectionInfo;
-class QFile;
 class FileDef;
 
 /** This class stores information about an inheritance relation
@@ -36,7 +35,7 @@ class FileDef;
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) :
+  BaseInfo(const QCString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type
@@ -67,6 +66,7 @@ class Entry
     enum Sections {
       CLASS_SEC        = 0x00000001,
       NAMESPACE_SEC    = 0x00000010,
+      CONCEPT_SEC      = 0x00000020,
       COMPOUND_MASK    = CLASS_SEC,
       SCOPE_MASK       = COMPOUND_MASK | NAMESPACE_SEC,
 
@@ -80,6 +80,7 @@ class Entry
       CATEGORYDOC_SEC  = 0x00040000,
       SERVICEDOC_SEC   = 0x00080000,
       SINGLETONDOC_SEC = 0x00100000,
+      CONCEPTDOC_SEC   = 0x00200000,
       COMPOUNDDOC_MASK = CLASSDOC_SEC | STRUCTDOC_SEC | UNIONDOC_SEC |
                          INTERFACEDOC_SEC | EXCEPTIONDOC_SEC | PROTOCOLDOC_SEC |
                          CATEGORYDOC_SEC | SERVICEDOC_SEC | SINGLETONDOC_SEC,
@@ -257,9 +258,9 @@ class Entry
     QCString     args;        //!< member argument string
     QCString     bitfields;   //!< member's bit fields
     ArgumentList argList;     //!< member arguments as a list
-    ArgumentLists tArgLists; //!< template argument declarations
-    QGString	 program;     //!< the program text
-    QGString     initializer; //!< initial value (for variables)
+    ArgumentLists tArgLists;  //!< template argument declarations
+    TextStream   program;     //!< the program text
+    TextStream   initializer; //!< initial value (for variables)
     QCString     includeFile; //!< include file (2 arg of \\class, must be unique)
     QCString     includeName; //!< include name (3 arg of \\class)
     QCString     doc;         //!< documentation block (partly parsed)
@@ -296,6 +297,7 @@ class Entry
     QCString    id;           //!< libclang id
     LocalToc    localToc;
     QCString    metaData;     //!< Slice metadata
+    QCString    req;          //!< C++20 requires clause
 
     /// return the command name used to define GROUPDOC_SEC
     const char *groupDocCmd() const
