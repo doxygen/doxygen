@@ -1287,14 +1287,14 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           {
                                             if (!generateClassMemberLink(yyscanner,*yyextra->code,yyextra->theCallContext.getScope().globalDef(),yytext))
                                             {
-                                              yyextra->code->codify(yytext);
+                                              codifyLines(yyscanner,yytext);
                                               addToSearchIndex(yyscanner,yytext);
                                             }
                                             yyextra->name.resize(0);
                                           }
                                           else
                                           {
-                                            yyextra->code->codify(yytext);
+                                              codifyLines(yyscanner,yytext);
                                             addToSearchIndex(yyscanner,yytext);
                                             yyextra->name.resize(0);
                                           }
@@ -1314,7 +1314,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             DBG_CTX((stderr,"yyextra->theCallContext.getClass()=%p\n",(void*)yyextra->theCallContext.getScope().globalDef()));
                                             if (!generateClassMemberLink(yyscanner,*yyextra->code,yyextra->theCallContext.getScope().globalDef(),yytext))
                                             {
-                                              yyextra->code->codify(yytext);
+                                              codifyLines(yyscanner,yytext);
                                               addToSearchIndex(yyscanner,yytext);
                                             }
                                             yyextra->name.resize(0);
@@ -1322,7 +1322,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           else
                                           {
                                             DBG_CTX((stderr,"no class context!\n"));
-                                            yyextra->code->codify(yytext);
+                                            codifyLines(yyscanner,yytext);
                                             addToSearchIndex(yyscanner,yytext);
                                             yyextra->name.resize(0);
                                           }
