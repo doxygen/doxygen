@@ -37,6 +37,7 @@
 #include "portable.h"
 #include "message.h"
 #include "lang_cfg.h"
+#include "language.h"
 #include "configoptions.h"
 #include "fileinfo.h"
 #include "dir.h"
@@ -128,18 +129,19 @@ static QCString convertToComment(const QCString &s, const QCString &u)
   return result;
 }
 
-void ConfigOption::writeBoolValue(TextStream &t,bool v)
+void ConfigOption::writeBoolValue(TextStream &t,bool v,bool initSpace)
 {
-  t << " ";
+  if (initSpace) t << " ";
   if (v) t << "YES"; else t << "NO";
 }
 
-void ConfigOption::writeIntValue(TextStream &t,int i)
+void ConfigOption::writeIntValue(TextStream &t,int i,bool initSpace)
 {
-  t << " " << i;
+  if (initSpace) t << " ";
+  t << i;
 }
 
-void ConfigOption::writeStringValue(TextStream &t,const QCString &s)
+void ConfigOption::writeStringValue(TextStream &t,const QCString &s,bool initSpace)
 {
   char c;
   bool needsEscaping=FALSE;
@@ -149,7 +151,7 @@ void ConfigOption::writeStringValue(TextStream &t,const QCString &s)
   const char *p=se.data();
   if (p)
   {
-    t << " ";
+    if (initSpace) t << " ";
     while ((c=*p++)!=0 && !needsEscaping)
       needsEscaping = (c==' ' || c== ',' || c=='\n' || c=='\t' || c=='"' || c=='#');
     if (needsEscaping)
@@ -351,7 +353,7 @@ void ConfigList::writeTemplate(TextStream &t,bool sl,bool)
   t << "\n";
 }
 
-void ConfigList::compareDoxyfile(TextStream &t)
+bool ConfigList::isDefault()
 {
   auto get_stripped = [](std::string s)             { return QCString(s.c_str()).stripWhiteSpace(); };
   auto is_not_empty = [get_stripped](std::string s) { return !get_stripped(s).isEmpty();            };
@@ -359,8 +361,7 @@ void ConfigList::compareDoxyfile(TextStream &t)
   size_t valCnt = std::count_if(m_defaultValue.begin(),m_defaultValue.end(),is_not_empty);
   if ( valCnt != defCnt)
   {
-    writeTemplate(t,TRUE,TRUE);
-    return;
+    return false;
   }
   auto it1 = m_value.begin();
   auto it2 = m_defaultValue.begin();
@@ -375,13 +376,37 @@ void ConfigList::compareDoxyfile(TextStream &t)
     {
       if (get_stripped(*it1) != get_stripped(*it2)) // not the default, write as difference
       {
-        writeTemplate(t,TRUE,TRUE);
-        return;
+        return false;
       }
       ++it1;
       ++it2;
     }
   }
+  return true;
+}
+
+void ConfigList::compareDoxyfile(TextStream &t)
+{
+  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+}
+
+void ConfigList::writeXMLDoxyfile(TextStream &t)
+{
+  t << "  <option  id='" << m_name << "'";
+  t << " default='" << (isDefault() ? "yes" : "no") << "'";
+  t << " type='stringlist'";
+  t << ">";
+  t << "\n";
+  for (const auto &p : m_value)
+  {
+    QCString s=p.c_str();
+    t << "    <value>";
+    t << "<![CDATA[";
+    writeStringValue(t,s,false);
+    t << "]]>";
+    t << "</value>\n";
+  }
+  t << "  </option>\n";
 }
 
 void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
@@ -403,7 +428,19 @@ void ConfigEnum::writeTemplate(TextStream &t,bool sl,bool)
 
 void ConfigEnum::compareDoxyfile(TextStream &t)
 {
-  if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+}
+
+void ConfigEnum::writeXMLDoxyfile(TextStream &t)
+{
+  t << "  <option  id='" << m_name << "'";
+  t << " default='" << (isDefault() ? "yes" : "no") << "'";
+  t << " type='string'";
+  t << ">";
+  t << "<value>";
+  writeStringValue(t,m_value,false);
+  t << "</value>";
+  t << "</option>\n";
 }
 
 void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
@@ -425,7 +462,21 @@ void ConfigString::writeTemplate(TextStream &t,bool sl,bool)
 
 void ConfigString::compareDoxyfile(TextStream &t)
 {
-  if (m_value.stripWhiteSpace() != m_defValue.stripWhiteSpace()) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+}
+
+void ConfigString::writeXMLDoxyfile(TextStream &t)
+{
+  t << "  <option  id='" << m_name << "'";
+  t << " default='" << (isDefault() ? "yes" : "no") << "'";
+  t << " type='string'";
+  t << ">";
+  t << "<value>";
+  t << "<![CDATA[";
+  writeStringValue(t,m_value,false);
+  t << "]]>";
+  t << "</value>";
+  t << "</option>\n";
 }
 
 void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
@@ -454,7 +505,19 @@ void ConfigInt::writeTemplate(TextStream &t,bool sl,bool upd)
 
 void ConfigInt::compareDoxyfile(TextStream &t)
 {
-  if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+}
+
+void ConfigInt::writeXMLDoxyfile(TextStream &t)
+{
+  t << "  <option  id='" << m_name << "'";
+  t << " default='" << (isDefault() ? "yes" : "no") << "'";
+  t << " type='int'";
+  t << ">";
+  t << "<value>";
+  writeIntValue(t,m_value,false);
+  t << "</value>";
+  t << "</option>\n";
 }
 
 void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
@@ -484,7 +547,19 @@ void ConfigBool::writeTemplate(TextStream &t,bool sl,bool upd)
 
 void ConfigBool::compareDoxyfile(TextStream &t)
 {
-  if (m_value != m_defValue) writeTemplate(t,TRUE,TRUE);
+  if (!isDefault()) writeTemplate(t,TRUE,TRUE);
+}
+
+void ConfigBool::writeXMLDoxyfile(TextStream &t)
+{
+  t << "  <option  id='" << m_name << "'";
+  t << " default='" << (isDefault() ? "yes" : "no") << "'";
+  t << " type='bool'";
+  t << ">";
+  t << "<value>";
+  writeBoolValue(t,m_value,false);
+  t << "</value>";
+  t << "</option>\n";
 }
 
 void ConfigObsolete::writeTemplate(TextStream &,bool,bool) {}
@@ -1115,6 +1190,17 @@ void ConfigImpl::compareDoxyfile(TextStream &t)
     option->m_userComment = "";
     option->compareDoxyfile(t);
   }
+}
+
+void ConfigImpl::writeXMLDoxyfile(TextStream &t)
+{
+  t << "<?xml version='1.0' encoding='UTF-8' standalone='no'?>\n";
+  t << "<doxyfile xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"doxyfile.xsd\" version=\"" << getDoxygenVersion() << "\" xml:lang=\"" <<  theTranslator->trISOLang() << "\">\n";
+  for (const auto &option : m_options)
+  {
+    option->writeXMLDoxyfile(t);
+  }
+  t << "</doxyfile>\n";
 }
 
 void ConfigImpl::convertStrToVal()
@@ -2091,6 +2177,11 @@ void Config::compareDoxyfile(TextStream &t)
 {
   postProcess(FALSE, TRUE);
   ConfigImpl::instance()->compareDoxyfile(t);
+}
+
+void Config::writeXMLDoxyfile(TextStream &t)
+{
+  ConfigImpl::instance()->writeXMLDoxyfile(t);
 }
 
 bool Config::parse(const QCString &fileName,bool update)
