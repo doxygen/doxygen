@@ -1666,6 +1666,9 @@ void FileDefImpl::sortMemberLists()
     if (mlg.needsSorting()) { mlg.sort(); mlg.setNeedsSorting(FALSE); }
   }
 
+  std::sort(m_includedByList.begin(),m_includedByList.end(),
+      [](const auto &fi1,const auto &fi2) { return fi1.includeName < fi2.includeName; });
+
   if (Config_getBool(SORT_BRIEF_DOCS))
   {
     auto classComp = [](const ClassLinkedRefMap::Ptr &c1,const ClassLinkedRefMap::Ptr &c2)

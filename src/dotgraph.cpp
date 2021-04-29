@@ -38,31 +38,36 @@
 *  are compared with \a md5. If equal FALSE is returned.
 *  The .md5 is created or updated after successful creation of the output file.
 */
-static bool checkMd5Signature(const QCString &baseName,
-                              const QCString &md5)
+static bool sameMd5Signature(const QCString &baseName,
+                             const QCString &md5)
 {
+  bool same = false;
+  char md5stored[33];
+  md5stored[0]=0;
   std::ifstream f(baseName.str()+".md5",std::ifstream::in | std::ifstream::binary);
   if (f.is_open())
   {
     // read checksum
-    char md5stored[33];
     f.read(md5stored,32);
     md5stored[32]='\0';
     // compare checksum
     if (!f.fail() && md5==md5stored)
     {
-      // bail out if equal
-      return false;
+      same = true;
     }
+    //printf("sameSignature(%s,%s==%s)=%d\n",qPrint(baseName),md5stored,qPrint(md5),same);
   }
-  return true;
+  else
+  {
+    //printf("sameSignature(%s) not found\n",qPrint(baseName));
+  }
+  return same;
 }
 
-static bool checkDeliverables(const QCString &file1,
-                              const QCString &file2=QCString())
+static bool deliverablesPresent(const QCString &file1,const QCString &file2)
 {
-  bool file1Ok = TRUE;
-  bool file2Ok = TRUE;
+  bool file1Ok = true;
+  bool file2Ok = true;
   if (!file1.isEmpty())
   {
     FileInfo fi(file1.str());
@@ -151,10 +156,10 @@ bool DotGraph::prepareDotFile()
 
   // already queued files are processed again in case the output format has changed
 
-  if (!checkMd5Signature(absBaseName(), sigStr) &&
-      checkDeliverables(absImgName(),
-                        m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
-                       )
+  if (sameMd5Signature(absBaseName(), sigStr) &&
+      deliverablesPresent(absImgName(),
+                          m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
+                         )
      )
   {
     // all needed files are there
