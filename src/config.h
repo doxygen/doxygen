@@ -61,6 +61,11 @@ namespace Config
    */
   void compareDoxyfile(TextStream &t);
 
+  /*! Writes a the used settings of the current configuartion as XML format
+   *  to stream \a t.
+   */
+  void writeXMLDoxyfile(TextStream &t);
+
   /*! Parses a configuration file with name \a fn.
    *  \returns TRUE if successful, FALSE if the file could not be
    *  opened or read.

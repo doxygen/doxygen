@@ -1898,6 +1898,7 @@ void generateXML()
 
   ResourceMgr::instance().copyResource("xml.xsd",outputDirectory);
   ResourceMgr::instance().copyResource("index.xsd",outputDirectory);
+  ResourceMgr::instance().copyResource("doxyfile.xsd",outputDirectory);
 
   QCString fileName=outputDirectory+"/compound.xsd";
   std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
@@ -1932,6 +1933,20 @@ void generateXML()
       }
       startLine=endLine;
     }
+  }
+  f.close();
+
+  fileName=outputDirectory+"/Doxyfile.xml";
+  f.open(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (!f.is_open())
+  {
+    err("Cannot open file %s for writing\n",fileName.data());
+    return;
+  }
+  else
+  {
+    TextStream t(&f);
+    Config::writeXMLDoxyfile(t);
   }
   f.close();
 

@@ -305,12 +305,39 @@ class Tester:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
 				#
+				doxyfile_xml = []
+				doxyfile_xml.append(glob.glob('%s/Doxyfile.xml' % (xmlxsd_output)))
+				doxyfile_xml.append(glob.glob('%s/*/*/Doxyfile.xml' % (xmlxsd_output)))
+				doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+				doxyfile_xsd = []
+				doxyfile_xsd.append(glob.glob('%s/doxyfile.xsd' % (xmlxsd_output)))
+				doxyfile_xsd.append(glob.glob('%s/*/*/doxyfile.xsd' % (xmlxsd_output)))
+				doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+				exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
+
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+				if xmllint_out:
+					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
+				else:
+					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml),)
+					failed_xmlxsd=True
+				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_xmlxsd=True
+				#
 				compound_xml = []
 				compound_xml.append(glob.glob('%s/*.xml' % (xmlxsd_output)))
 				compound_xml.append(glob.glob('%s/*/*/*.xml' % (xmlxsd_output)))
 				compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
 				compound_xml = re.sub(r' [^ ]*/index.xml','',compound_xml)
 				compound_xml = re.sub(r'[^ ]*/index.xml ','',compound_xml)
+				compound_xml = re.sub(r' [^ ]*/Doxyfile.xml','',compound_xml)
+				compound_xml = re.sub(r'[^ ]*/Doxyfile.xml ','',compound_xml)
 
 				compound_xsd = []
 				compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
