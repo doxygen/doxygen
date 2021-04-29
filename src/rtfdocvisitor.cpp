@@ -931,10 +931,10 @@ void RTFDocVisitor::visitPre(DocHtmlListItem *)
         m_t << rtf_listItemInfo[m_indentLevel].number;
         break;
       case 'a':
-        m_t << intergerToAlpha(rtf_listItemInfo[m_indentLevel].number,false);
+        m_t << integerToAlpha(rtf_listItemInfo[m_indentLevel].number,false);
         break;
       case 'A':
-        m_t << intergerToAlpha(rtf_listItemInfo[m_indentLevel].number);
+        m_t << integerToAlpha(rtf_listItemInfo[m_indentLevel].number);
         break;
       case 'i':
         m_t << integerToRoman(rtf_listItemInfo[m_indentLevel].number,false);

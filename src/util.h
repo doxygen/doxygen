@@ -460,6 +460,7 @@ std::string join(const StringVector &s,const std::string &delimiter);
 bool recognizeFixedForm(const QCString &contents, FortranFormat format);
 FortranFormat convertFileNameFortranParserCode(QCString fn);
 
-std::string intergerToAlpha(const int n, const bool upper=true);
-std::string integerToRoman(const int n, const bool upper=true);
+QCString integerToAlpha(int n, bool upper=true);
+QCString integerToRoman(int n, bool upper=true);
+
 #endif

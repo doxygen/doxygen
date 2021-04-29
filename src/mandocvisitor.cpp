@@ -691,10 +691,10 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
         m_t << man_listItemInfo[m_indent].number;
         break;
       case 'a':
-        m_t << intergerToAlpha(man_listItemInfo[m_indent].number,false);
+        m_t << integerToAlpha(man_listItemInfo[m_indent].number,false);
         break;
       case 'A':
-        m_t << intergerToAlpha(man_listItemInfo[m_indent].number);
+        m_t << integerToAlpha(man_listItemInfo[m_indent].number);
         break;
       case 'i':
         m_t << integerToRoman(man_listItemInfo[m_indent].number,false);
