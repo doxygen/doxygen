@@ -10200,7 +10200,7 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("    HTML:       %s -w html headerFile footerFile styleSheetFile [configFile]\n",qPrint(name));
   msg("    LaTeX:      %s -w latex headerFile footerFile styleSheetFile [configFile]\n\n",qPrint(name));
   msg("6) Use doxygen to generate a rtf extensions file\n");
-  msg("    RTF:   %s -e rtf extensionsFile\n\n",qPrint(name));
+  msg("    %s -e rtf extensionsFile\n\n",qPrint(name));
   msg("    If - is used for extensionsFile doxygen will write to standard output.\n\n");
   msg("7) Use doxygen to compare the used configuration file with the template configuration file\n");
   msg("    %s -x [configFile]\n\n",qPrint(name));

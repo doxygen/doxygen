@@ -61,7 +61,7 @@ namespace Config
    */
   void compareDoxyfile(TextStream &t);
 
-  /*! Writes a the used settings of the current configuartion as XML format
+  /*! Writes a the used settings of the current configuration as XML format
    *  to stream \a t.
    */
   void writeXMLDoxyfile(TextStream &t);
