@@ -56,7 +56,10 @@ def transformDocs(doc):
 	doc = re.sub('\\\\ref +doxygen_usage', '"Doxygen usage"', doc)
 	doc = re.sub('\\\\ref +extsearch', '"External Indexing and Searching"',
 				 doc)
+	doc = re.sub('\\\\ref +layout', '"Changing the layout of pages"', doc)
 	doc = re.sub('\\\\ref +external', '"Linking to external documentation"',
+				 doc)
+	doc = re.sub('\\\\ref +doxygen_finetune', '"Fine-tuning the output"',
 				 doc)
 	doc = re.sub('\\\\ref +formulas', '"Including formulas"', doc)
 	# fallback for not handled

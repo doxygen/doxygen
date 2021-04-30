@@ -2502,7 +2502,13 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
-  \sa section \ref cmdhtmlonly "\\htmlonly".
+  \sa section \ref cmdhtmlonly "\\htmlonly",
+  \ref cmdlatexinclude "\\latexinclude",
+  \ref cmdrtfinclude "\\rtfinclude",
+  \ref cmdmaninclude "\\maninclude",
+  \ref cmddocbookinclude "\\docbookinclude" and
+  \ref cmdxmlinclude "\\xmlinclude".
+
 <hr>
 
 \section cmdlatexinclude \\latexinclude <file-name>
@@ -2517,7 +2523,13 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
-  \sa section \ref cmdlatexonly "\\latexonly".
+  \sa section \ref cmdlatexonly "\\latexonly",
+  \ref cmdhtmlinclude "\\htmlinclude",
+  \ref cmdrtfinclude "\\rtfinclude",
+  \ref cmdmaninclude "\\maninclude",
+  \ref cmddocbookinclude "\\docbookinclude" and
+  \ref cmdxmlinclude "\\xmlinclude".
+
 <hr>
 
 \section cmdrtfinclude \\rtfinclude <file-name>
@@ -2532,7 +2544,13 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
-  \sa section \ref cmdrtfonly "\\rtfonly".
+  \sa section \ref cmdrtfonly "\\rtfonly",
+  \ref cmdhtmlinclude "\\htmlinclude",
+  \ref cmdlatexinclude "\\latexinclude",
+  \ref cmdmaninclude "\\maninclude",
+  \ref cmddocbookinclude "\\docbookinclude" and
+  \ref cmdxmlinclude "\\xmlinclude".
+
 <hr>
 
 \section cmdmaninclude \\maninclude <file-name>
@@ -2547,7 +2565,13 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
-  \sa section \ref cmdmanonly "\\manonly".
+  \sa section \ref cmdmanonly "\\manonly",
+  \ref cmdhtmlinclude "\\htmlinclude",
+  \ref cmdlatexinclude "\\latexinclude",
+  \ref cmdrtfinclude "\\rtfinclude",
+  \ref cmddocbookinclude "\\docbookinclude" and
+  \ref cmdxmlinclude "\\xmlinclude".
+
 <hr>
 
 \section cmddocbookinclude \\docbookinclude <file-name>
@@ -2562,7 +2586,13 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
-  \sa section \ref cmddocbookonly "\\docbookonly".
+  \sa section \ref cmddocbookonly "\\docbookonly",
+  \ref cmdhtmlinclude "\\htmlinclude",
+  \ref cmdlatexinclude "\\latexinclude",
+  \ref cmdrtfinclude "\\rtfinclude",
+  \ref cmdmaninclude "\\maninclude" and
+  \ref cmdxmlinclude "\\xmlinclude".
+
 <hr>
 
 \section cmdxmlinclude \\xmlinclude <file-name>
@@ -2576,7 +2606,13 @@ Commands for displaying examples
   Files or directories that doxygen should look for can be specified using the
   \ref cfg_example_path "EXAMPLE_PATH" tag of doxygen's configuration file.
 
-  \sa section \ref cmdxmlonly "\\xmlonly".
+  \sa section \ref cmdxmlonly "\\xmlonly",
+  \ref cmdhtmlinclude "\\htmlinclude",
+  \ref cmdlatexinclude "\\latexinclude",
+  \ref cmdrtfinclude "\\rtfinclude",
+  \ref cmdmaninclude "\\maninclude" and
+  \ref cmddocbookinclude "\\docbookinclude".
+
 <hr>
 
 \htmlonly</p><center><p>\endhtmlonly
@@ -2784,8 +2820,9 @@ only copy the detailed documentation, not the brief description.
   \sa section \ref cmdmanonly "\\manonly",
               \ref cmdlatexonly "\\latexonly",
               \ref cmdrtfonly "\\rtfonly",
-              \ref cmdxmlonly "\\xmlonly", and
-              \ref cmdhtmlonly "\\htmlonly".
+              \ref cmdxmlonly "\\xmlonly",
+              \ref cmdhtmlonly "\\htmlonly" and
+              \ref cmddocbookinclude "\\docbookinclude".
 
 <hr>
 \section cmddot \\dot ["caption"] [<sizeindication>=<size>]
@@ -3363,8 +3400,9 @@ class Receiver
   \sa sections \ref cmdhtmlonly "\\htmlonly",
                \ref cmdxmlonly "\\xmlonly",
                \ref cmdrtfonly "\\rtfonly",
-               \ref cmdlatexonly "\\latexonly", and
-               \ref cmddocbookonly "\\docbookonly".
+               \ref cmdlatexonly "\\latexonly",
+               \ref cmddocbookonly "\\docbookonly" and
+               \ref cmdmaninclude "\\maninclude".
 
 <hr>
 \section cmdli \\li { item-description }
@@ -3442,8 +3480,9 @@ class Receiver
   \sa sections \ref cmdmanonly "\\manonly",
                \ref cmdxmlonly "\\xmlonly",
                \ref cmdlatexonly "\\latexonly",
-               \ref cmdhtmlonly "\\htmlonly", and
-               \ref cmddocbookonly "\\docbookonly".
+               \ref cmdhtmlonly "\\htmlonly",
+               \ref cmddocbookonly "\\docbookonly" and
+               \ref cmdrtfinclude "\\rtfinclude".
 
 <hr>
 \section cmdverbatim \\verbatim
