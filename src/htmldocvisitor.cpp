@@ -628,7 +628,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         {
           format = PlantumlManager::PUML_SVG;
         }
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
+        QCString baseName = PlantumlManager::instance().writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format,s->engine());
         m_t << "<div class=\"plantumlgraph\">\n";
         writePlantUMLFile(baseName,s->relPath(),s->context());
         visitPreCaption(m_t, s);

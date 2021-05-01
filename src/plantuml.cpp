@@ -23,7 +23,7 @@
 #include "fileinfo.h"
 #include "dir.h"
 
-QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format)
+QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format, const QCString &engine)
 {
   QCString baseName;
   QCString puName;
@@ -72,9 +72,9 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   Debug::print(Debug::Plantuml,0,"*** %s puName: %s\n","writePlantUMLSource",qPrint(puName));
   Debug::print(Debug::Plantuml,0,"*** %s imgName: %s\n","writePlantUMLSource",qPrint(imgName));
 
-  QCString text = "@startuml "+imgName+"\n";
+  QCString text = "@start"+engine+" "+imgName+"\n";
   text+=content;
-  text+="\n@enduml\n";
+  text+="\n@end"+engine+"\n";
 
   QCString qcOutDir(outDir);
   uint pos = qcOutDir.findRev("/");

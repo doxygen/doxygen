@@ -69,7 +69,7 @@
 
 //---------------------------------------------------------------------------
 
-static const char *sectionLevelToName[] =
+static const char *g_sectionLevelToName[] =
 {
   "page",
   "section",
@@ -77,6 +77,13 @@ static const char *sectionLevelToName[] =
   "subsubsection",
   "paragraph",
   "subparagraph"
+};
+
+static std::set<QCString> g_plantumlEngine {
+  "uml", "bpm", "wire", "dot", "ditaa",
+  "salt", "math", "latex", "gantt", "mindmap",
+  "wbs", "yaml", "creole", "json", "flow",
+  "board", "git"
 };
 
 //---------------------------------------------------------------------------
@@ -5534,8 +5541,63 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         static QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         doctokenizerYYsetStatePlantUMLOpt();
         retval = doctokenizerYYlex();
-        QCString plantFile(g_token->sectionId);
+
+        QCString fullMatch = g_token->sectionId;
+        QCString sectionId = "";
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        StringVector optList;
+        QCString engine;
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             bool found = false;
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (g_plantumlEngine.find(locOpt)!=g_plantumlEngine.end())
+             {
+               if (!engine.isEmpty())
+               {
+                 warn(g_fileName,getDoctokinizerLineNr(), "Multiple definition of engine for '\\startuml'");
+               }
+               engine = locOpt;
+               found = true;
+             }
+             if (!found)
+             {
+               if (sectionId.isEmpty())
+               {
+                 sectionId = opt;
+               }
+               else
+               {
+                 warn(g_fileName,getDoctokinizerLineNr(),"Multiple use of of filename for '\\startuml'");
+               }
+             }
+           }
+        }
+        else
+        {
+          sectionId = g_token->sectionId;
+        }
+        if (engine.isEmpty()) engine = "uml";
+
+        if (sectionId.isEmpty())
+        {
+          doctokenizerYYsetStatePlantUMLOpt();
+          retval = doctokenizerYYlex();
+
+          sectionId = g_token->sectionId;
+          sectionId = sectionId.stripWhiteSpace();
+        }
+
+        QCString plantFile(sectionId);
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,plantFile);
+        dv->setEngine(engine);
         doctokenizerYYsetStatePara();
         QCString width,height;
         defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
@@ -6802,7 +6864,7 @@ int DocSection::parse()
     else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
       if ((m_level<=1+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
-          warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected subsubsection command found inside %s!",sectionLevelToName[m_level]);
+          warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected subsubsection command found inside %s!",g_sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
       {
@@ -6816,7 +6878,7 @@ int DocSection::parse()
     else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
     {
       if ((m_level<=2+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
-        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",sectionLevelToName[m_level]);
+        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",g_sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
       {
