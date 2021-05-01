@@ -69,7 +69,7 @@
 
 //---------------------------------------------------------------------------
 
-static const char *sectionLevelToName[] =
+static const char *g_sectionLevelToName[] =
 {
   "page",
   "section",
@@ -79,10 +79,13 @@ static const char *sectionLevelToName[] =
   "subparagraph"
 };
 
-static const char *plantumlStart[] = {"uml", "bpm", "wire", "dot", "ditaa",
-                                      "salt", "math", "latex", "gantt", "mindmap",
-                                      "wbs", "yaml", "creole", "json", "flow",
-                                      "board", "git"};
+static std::set<QCString> g_plantumlEngine {
+  "uml", "bpm", "wire", "dot", "ditaa",
+  "salt", "math", "latex", "gantt", "mindmap",
+  "wbs", "yaml", "creole", "json", "flow",
+  "board", "git"
+};
+
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -5543,7 +5546,6 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         QCString sectionId = "";
         int idx = fullMatch.find('{');
         int idxEnd = fullMatch.find("}",idx+1);
-        QCString cmdName;
         StringVector optList;
         QCString engine;
         if (idx != -1) // options present
@@ -5554,20 +5556,16 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
            {
              if (opt.empty()) continue;
              bool found = false;
-             QCString locOpt = opt;
-             locOpt = locOpt.lower();
-             for (int i = 0; i < sizeof(plantumlStart) / sizeof(*plantumlStart); i++)
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (g_plantumlEngine.find(locOpt)!=g_plantumlEngine.end())
              {
-               if (locOpt == plantumlStart[i])
+               if (!engine.isEmpty())
                {
-                 if (!engine.isEmpty())
-                 {
-                   warn(g_fileName,getDoctokinizerLineNr(), "Multiple definition of engine for '\\startuml'");
-                 }
-                 engine = plantumlStart[i];
-                 found = true;
-                 break;
+                 warn(g_fileName,getDoctokinizerLineNr(), "Multiple definition of engine for '\\startuml'");
                }
+               engine = locOpt;
+               found = true;
              }
              if (!found)
              {
@@ -6866,7 +6864,7 @@ int DocSection::parse()
     else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
       if ((m_level<=1+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
-          warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected subsubsection command found inside %s!",sectionLevelToName[m_level]);
+          warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected subsubsection command found inside %s!",g_sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
       {
@@ -6880,7 +6878,7 @@ int DocSection::parse()
     else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
     {
       if ((m_level<=2+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
-        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",sectionLevelToName[m_level]);
+        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",g_sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
       {
