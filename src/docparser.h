@@ -507,11 +507,13 @@ class DocVerbatim : public DocNode
     bool hasCaption() const      { return !m_children.empty(); }
     QCString width() const       { return m_width; }
     QCString height() const      { return m_height; }
+    QCString engine() const      { return m_engine; }
     const DocNodeList &children() const { return m_children; }
     DocNodeList &children()      { return m_children; }
     void setText(const QCString &t)   { m_text=t;   }
     void setWidth(const QCString &w)  { m_width=w;  }
     void setHeight(const QCString &h) { m_height=h; }
+    void setEngine(const QCString &e) { m_engine=e; }
 
   private:
     QCString  m_context;
@@ -524,6 +526,7 @@ class DocVerbatim : public DocNode
     bool      m_isBlock = false;
     QCString  m_width;
     QCString  m_height;
+    QCString  m_engine;
     DocNodeList m_children;
 };
 
