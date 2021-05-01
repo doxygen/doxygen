@@ -1596,3 +1596,107 @@ NamespaceDefMutable *toNamespaceDefMutable(const Definition *d)
   }
 }
 
+// --- Helpers
+
+
+NamespaceDef *getResolvedNamespace(const QCString &name)
+{
+  if (name.isEmpty()) return 0;
+  auto it = Doxygen::namespaceAliasMap.find(name.str());
+  if (it!=Doxygen::namespaceAliasMap.end())
+  {
+    int count=0; // recursion detection guard
+    StringUnorderedMap::iterator it2;
+    while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
+           count<10)
+    {
+      it=it2;
+      count++;
+    }
+    if (count==10)
+    {
+      warn_uncond("possible recursive namespace alias detected for %s!\n",qPrint(name));
+    }
+    return Doxygen::namespaceLinkedMap->find(it->second);
+  }
+  else
+  {
+    return Doxygen::namespaceLinkedMap->find(name);
+  }
+}
+
+//--------------------------------------------------------------------------------------
+//
+bool namespaceHasNestedNamespace(const NamespaceDef *nd)
+{
+  for (const auto &cnd : nd->getNamespaces())
+  {
+    if (cnd->isLinkableInProject() && !cnd->isAnonymous())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool namespaceHasNestedConcept(const NamespaceDef *nd)
+{
+  for (const auto &cnd : nd->getNamespaces())
+  {
+    if (namespaceHasNestedConcept(cnd))
+    {
+      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
+      return true;
+    }
+  }
+  for (const auto &cnd : nd->getConcepts())
+  {
+    if (cnd->isLinkableInProject())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct)
+{
+  //printf(">namespaceHasVisibleChild(%s,includeClasses=%d)\n",qPrint(nd->name()),includeClasses);
+  for (const auto &cnd : nd->getNamespaces())
+  {
+    if (namespaceHasNestedClass(cnd,filterClasses,ct))
+    {
+      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
+      return TRUE;
+    }
+  }
+
+  ClassLinkedRefMap list = nd->getClasses();
+  if (filterClasses)
+  {
+    if (ct == ClassDef::Interface)
+    {
+      list = nd->getInterfaces();
+    }
+    else if (ct == ClassDef::Struct)
+    {
+      list = nd->getStructs();
+    }
+    else if (ct == ClassDef::Exception)
+    {
+      list = nd->getExceptions();
+    }
+  }
+
+  for (const auto &cd : list)
+  {
+    if (cd->isLinkableInProject() && cd->templateMaster()==0)
+    {
+      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",qPrint(nd->name()),includeClasses);
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+

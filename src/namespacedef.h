@@ -151,6 +151,17 @@ const NamespaceDef      *toNamespaceDef(const Definition *d);
 NamespaceDefMutable     *toNamespaceDefMutable(Definition *d);
 NamespaceDefMutable     *toNamespaceDefMutable(const Definition *d);
 
+// --- Helpers
+
+NamespaceDef *getResolvedNamespace(const QCString &key);
+inline NamespaceDefMutable *getResolvedNamespaceMutable(const QCString &key)
+{
+  return toNamespaceDefMutable(getResolvedNamespace(key));
+}
+bool namespaceHasNestedNamespace(const NamespaceDef *nd);
+bool namespaceHasNestedConcept(const NamespaceDef *nd);
+bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct);
+
 //------------------------------------------------------------------------
 
 #endif

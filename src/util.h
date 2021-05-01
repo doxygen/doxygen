@@ -29,13 +29,9 @@
 #include <ctype.h>
 #include "types.h"
 #include "docparser.h"
-#include "classdef.h"
-#include "arguments.h"
 #include "containers.h"
-#include "namespacedef.h"
 #include "outputgen.h"
 #include "regex.h"
-#include "dir.h"
 #include "conceptdef.h"
 
 //--------------------------------------------------------------------
@@ -56,6 +52,7 @@ class SectionInfo;
 class Definition;
 class BufStr;
 class FileInfo;
+class Dir;
 
 //--------------------------------------------------------------------
 
@@ -140,9 +137,6 @@ bool resolveLink(/* in */  const QCString &scName,
                  /* out */ QCString &resAnchor
                 );
 
-//bool generateRef(OutputDocInterface &od,const char *,
-//                        const char *,bool inSeeBlock,const char * =0);
-
 bool generateLink(OutputDocInterface &od,const QCString &,
                          const QCString &,bool inSeeBlock,const QCString &);
 
@@ -167,23 +161,6 @@ QCString clearBlock(const char *s,const char *begin,const char *end);
 QCString selectBlock(const QCString& s,const QCString &name,bool enable, OutputGenerator::OutputType o);
 QCString removeEmptyLines(const QCString &s);
 
-ClassDef *getClass(const QCString &key);
-inline ClassDefMutable *getClassMutable(const QCString &key)
-{
-  return toClassDefMutable(getClass(key));
-}
-ConceptDef *getConcept(const QCString &key);
-inline ConceptDefMutable *getConceptMutable(const QCString &key)
-{
-  return toConceptDefMutable(getConcept(key));
-}
-ConceptDef *getResolvedConcept(const Definition *scope,const QCString &name);
-
-NamespaceDef *getResolvedNamespace(const QCString &key);
-inline NamespaceDefMutable *getResolvedNamespaceMutable(const QCString &key)
-{
-  return toNamespaceDefMutable(getResolvedNamespace(key));
-}
 
 FileDef *findFileDef(const FileNameLinkedMap *fnMap,const QCString &n,
                 bool &ambig);
@@ -229,16 +206,6 @@ int getPrefixIndex(const QCString &name);
 QCString removeAnonymousScopes(const QCString &s);
 
 QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement=QCString());
-
-bool hasVisibleRoot(const BaseClassList &bcl);
-bool classHasVisibleChildren(const ClassDef *cd);
-bool namespaceHasNestedNamespace(const NamespaceDef *nd);
-bool namespaceHasNestedConcept(const NamespaceDef *nd);
-bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct);
-bool classVisibleInIndex(const ClassDef *cd);
-
-int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
-Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Public,int level=0);
 
 QCString convertNameToFile(const QCString &name,bool allowDots=FALSE,bool allowUnderscore=FALSE);
 
@@ -295,8 +262,6 @@ QCString mergeScopes(const QCString &leftScope,const QCString &rightScope);
 
 int getScopeFragment(const QCString &s,int p,int *l);
 
-int filterCRLF(char *buf,int len);
-
 void addRefItem(const RefItemVector &sli,
                 const QCString &key,
                 const QCString &prefix,
@@ -339,7 +304,7 @@ QCString rtfFormatBmkStr(const QCString &name);
 
 QCString linkToText(SrcLangExt lang,const QCString &link,bool isFileName);
 
-bool checkExtension(const char *fName, const char *ext);
+bool checkExtension(const QCString &fName, const QCString &ext);
 
 QCString addHtmlExtensionIfMissing(const QCString &fName);
 

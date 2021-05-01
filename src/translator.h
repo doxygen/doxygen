@@ -20,7 +20,6 @@
 
 #include "classdef.h"
 #include "config.h"
-#include "vhdldocgen.h"
 
 /** Abstract base class for all translatable text fragments. */
 class Translator

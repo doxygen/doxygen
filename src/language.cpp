@@ -20,6 +20,7 @@
 #include "util.h"
 #include "language.h"
 #include "lang_cfg.h"
+#include "vhdldocgen.h"
 #include "translator.h"
 #include "translator_en.h"
 #if !defined(ENGLISH_ONLY)

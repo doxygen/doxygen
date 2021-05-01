@@ -21,6 +21,7 @@
 #include "message.h"
 #include "debug.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format)
 {

@@ -24,6 +24,7 @@
 #include "config.h"
 #include "portable.h"
 #include "fileinfo.h"
+#include "dir.h"
 
 bool Htags::useHtags = FALSE;
 

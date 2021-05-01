@@ -483,62 +483,6 @@ QCString resolveTypeDef(const Definition *context,const QCString &qualifiedName,
 
 }
 
-
-/*! Get a class definition given its name.
- *  Returns 0 if the class is not found.
- */
-ClassDef *getClass(const QCString &n)
-{
-  if (n.isEmpty()) return 0;
-  return Doxygen::classLinkedMap->find(n);
-}
-
-
-ConceptDef *getConcept(const QCString &n)
-{
-  if (n.isEmpty()) return 0;
-  return Doxygen::conceptLinkedMap->find(n);
-}
-
-ConceptDef *getResolvedConcept(const Definition *d,const QCString &name)
-{
-  ConceptDef *cd=0;
-  while (d && d!=Doxygen::globalScope)
-  {
-    cd = getConcept(d->name()+"::"+name);
-    if (cd) return cd;
-    d = d->getOuterScope();
-  }
-  cd = getConcept(name);
-  return cd;
-}
-
-NamespaceDef *getResolvedNamespace(const QCString &name)
-{
-  if (name.isEmpty()) return 0;
-  auto it = Doxygen::namespaceAliasMap.find(name.str());
-  if (it!=Doxygen::namespaceAliasMap.end())
-  {
-    int count=0; // recursion detection guard
-    StringUnorderedMap::iterator it2;
-    while ((it2=Doxygen::namespaceAliasMap.find(it->second))!=Doxygen::namespaceAliasMap.end() &&
-           count<10)
-    {
-      it=it2;
-      count++;
-    }
-    if (count==10)
-    {
-      warn_uncond("possible recursive namespace alias detected for %s!\n",qPrint(name));
-    }
-    return Doxygen::namespaceLinkedMap->find(it->second);
-  }
-  else
-  {
-    return Doxygen::namespaceLinkedMap->find(name);
-  }
-}
-
 int computeQualifiedIndex(const QCString &name)
 {
   int i = name.find('<');
@@ -1280,7 +1224,7 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
  * converted content (i.e. the same as \a len (Unix, MAC) or
  * smaller (DOS).
  */
-int filterCRLF(char *buf,int len)
+static int filterCRLF(char *buf,int len)
 {
   int src = 0;    // source index
   int dest = 0;   // destination index
@@ -1517,64 +1461,6 @@ QCString yearToString()
 {
   auto current = getCurrentDateTime();
   return QCString().setNum(current.tm_year+1900);
-}
-
-//----------------------------------------------------------------------
-// recursive function that returns the number of branches in the
-// inheritance tree that the base class 'bcd' is below the class 'cd'
-
-int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
-{
-  if (bcd->categoryOf()) // use class that is being extended in case of
-    // an Objective-C category
-  {
-    bcd=bcd->categoryOf();
-  }
-  if (cd==bcd) return level;
-  if (level==256)
-  {
-    warn_uncond("class %s seem to have a recursive "
-        "inheritance relation!\n",qPrint(cd->name()));
-    return -1;
-  }
-  int m=maxInheritanceDepth;
-  for (const auto &bcdi : cd->baseClasses())
-  {
-    int mc=minClassDistance(bcdi.classDef,bcd,level+1);
-    if (mc<m) m=mc;
-    if (m<0) break;
-  }
-  return m;
-}
-
-Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot,int level)
-{
-  if (bcd->categoryOf()) // use class that is being extended in case of
-    // an Objective-C category
-  {
-    bcd=bcd->categoryOf();
-  }
-  if (cd==bcd)
-  {
-    goto exit;
-  }
-  if (level==256)
-  {
-    err("Internal inconsistency: found class %s seem to have a recursive "
-        "inheritance relation! Please send a bug report to doxygen@gmail.com\n",qPrint(cd->name()));
-  }
-  else if (prot!=Private)
-  {
-    for (const auto &bcdi : cd->baseClasses())
-    {
-      Protection baseProt = classInheritedProtectionLevel(bcdi.classDef,bcd,bcdi.prot,level+1);
-      if (baseProt==Private)        prot=Private;
-      else if (baseProt==Protected) prot=Protected;
-    }
-  }
-exit:
-  //printf("classInheritedProtectionLevel(%s,%s)=%d\n",qPrint(cd->name()),qPrint(bcd->name()),prot);
-  return prot;
 }
 
 void trimBaseClassScope(const BaseClassList &bcl,QCString &s,int level=0)
@@ -3465,44 +3351,6 @@ int getPrefixIndex(const QCString &name)
 
 //----------------------------------------------------------------------------
 
-bool classHasVisibleChildren(const ClassDef *cd)
-{
-  BaseClassList bcl;
-
-  if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
-  {
-    if (cd->baseClasses().empty()) return FALSE;
-    bcl=cd->baseClasses();
-  }
-  else
-  {
-    if (cd->subClasses().empty()) return FALSE;
-    bcl=cd->subClasses();
-  }
-
-  for (const auto &bcd : bcl)
-  {
-    if (bcd.classDef->isVisibleInHierarchy())
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-//----------------------------------------------------------------------------
-
-bool hasVisibleRoot(const BaseClassList &bcl)
-{
-  for (const auto &bcd : bcl)
-  {
-    const ClassDef *cd=bcd.classDef;
-    if (cd->isVisibleInHierarchy()) return true;
-    if (hasVisibleRoot(cd->baseClasses())) return true;
-  }
-  return false;
-}
-
 //----------------------------------------------------------------------
 
 #if 0
@@ -5333,9 +5181,9 @@ QCString rtfFormatBmkStr(const QCString &name)
   return tag;
 }
 
-bool checkExtension(const char *fName, const char *ext)
+bool checkExtension(const QCString &fName, const QCString &ext)
 {
-  return (QCString(fName).right(QCString(ext).length())==ext);
+  return fName.right(ext.length())==ext;
 }
 
 QCString addHtmlExtensionIfMissing(const QCString &fName)
@@ -6826,88 +6674,6 @@ uint getUtf8CodeToUpper( const QCString& s, int idx )
 #endif
 
 
-
-//--------------------------------------------------------------------------------------
-//
-bool namespaceHasNestedNamespace(const NamespaceDef *nd)
-{
-  for (const auto &cnd : nd->getNamespaces())
-  {
-    if (cnd->isLinkableInProject() && !cnd->isAnonymous())
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool namespaceHasNestedConcept(const NamespaceDef *nd)
-{
-  for (const auto &cnd : nd->getNamespaces())
-  {
-    if (namespaceHasNestedConcept(cnd))
-    {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
-      return true;
-    }
-  }
-  for (const auto &cnd : nd->getConcepts())
-  {
-    if (cnd->isLinkableInProject())
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct)
-{
-  //printf(">namespaceHasVisibleChild(%s,includeClasses=%d)\n",qPrint(nd->name()),includeClasses);
-  for (const auto &cnd : nd->getNamespaces())
-  {
-    if (namespaceHasNestedClass(cnd,filterClasses,ct))
-    {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case2\n",qPrint(nd->name()),includeClasses);
-      return TRUE;
-    }
-  }
-
-  ClassLinkedRefMap list = nd->getClasses();
-  if (filterClasses)
-  {
-    if (ct == ClassDef::Interface)
-    {
-      list = nd->getInterfaces();
-    }
-    else if (ct == ClassDef::Struct)
-    {
-      list = nd->getStructs();
-    }
-    else if (ct == ClassDef::Exception)
-    {
-      list = nd->getExceptions();
-    }
-  }
-
-  for (const auto &cd : list)
-  {
-    if (cd->isLinkableInProject() && cd->templateMaster()==0)
-    {
-      //printf("<namespaceHasVisibleChild(%s,includeClasses=%d): case3\n",qPrint(nd->name()),includeClasses);
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-//----------------------------------------------------------------------------
-
-bool classVisibleInIndex(const ClassDef *cd)
-{
-  static bool allExternals = Config_getBool(ALLEXTERNALS);
-  return (allExternals && cd->isLinkable()) || cd->isLinkableInProject();
-}
 
 //----------------------------------------------------------------------------
 

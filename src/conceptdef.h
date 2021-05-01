@@ -79,4 +79,14 @@ const ConceptDef  *toConceptDef(const Definition *d);
 ConceptDefMutable *toConceptDefMutable(Definition *d);
 ConceptDefMutable *toConceptDefMutable(const Definition *d);
 
+// --- Helpers
+
+ConceptDef *getConcept(const QCString &key);
+inline ConceptDefMutable *getConceptMutable(const QCString &key)
+{
+  return toConceptDefMutable(getConcept(key));
+}
+ConceptDef *getResolvedConcept(const Definition *scope,const QCString &name);
+
+
 #endif

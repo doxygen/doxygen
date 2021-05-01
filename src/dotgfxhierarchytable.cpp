@@ -22,6 +22,7 @@
 #include "doxygen.h"
 #include "classlist.h"
 #include "dir.h"
+#include "vhdldocgen.h"
 
 QCString DotGfxHierarchyTable::getBaseName() const
 {

@@ -4950,3 +4950,116 @@ ClassDefMutable *toClassDefMutable(const Definition *d)
 }
 
 
+// --- Helpers
+
+/*! Get a class definition given its name.
+ *  Returns 0 if the class is not found.
+ */
+ClassDef *getClass(const QCString &n)
+{
+  if (n.isEmpty()) return 0;
+  return Doxygen::classLinkedMap->find(n);
+}
+
+bool hasVisibleRoot(const BaseClassList &bcl)
+{
+  for (const auto &bcd : bcl)
+  {
+    const ClassDef *cd=bcd.classDef;
+    if (cd->isVisibleInHierarchy()) return true;
+    if (hasVisibleRoot(cd->baseClasses())) return true;
+  }
+  return false;
+}
+
+bool classHasVisibleChildren(const ClassDef *cd)
+{
+  BaseClassList bcl;
+
+  if (cd->getLanguage()==SrcLangExt_VHDL) // reverse baseClass/subClass relation
+  {
+    if (cd->baseClasses().empty()) return FALSE;
+    bcl=cd->baseClasses();
+  }
+  else
+  {
+    if (cd->subClasses().empty()) return FALSE;
+    bcl=cd->subClasses();
+  }
+
+  for (const auto &bcd : bcl)
+  {
+    if (bcd.classDef->isVisibleInHierarchy())
+    {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+bool classVisibleInIndex(const ClassDef *cd)
+{
+  bool allExternals = Config_getBool(ALLEXTERNALS);
+  return (allExternals && cd->isLinkable()) || cd->isLinkableInProject();
+}
+
+//----------------------------------------------------------------------
+// recursive function that returns the number of branches in the
+// inheritance tree that the base class 'bcd' is below the class 'cd'
+
+int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level)
+{
+  const int maxInheritanceDepth = 100000;
+  if (bcd->categoryOf()) // use class that is being extended in case of
+    // an Objective-C category
+  {
+    bcd=bcd->categoryOf();
+  }
+  if (cd==bcd) return level;
+  if (level==256)
+  {
+    warn_uncond("class %s seem to have a recursive "
+        "inheritance relation!\n",qPrint(cd->name()));
+    return -1;
+  }
+  int m=maxInheritanceDepth;
+  for (const auto &bcdi : cd->baseClasses())
+  {
+    int mc=minClassDistance(bcdi.classDef,bcd,level+1);
+    if (mc<m) m=mc;
+    if (m<0) break;
+  }
+  return m;
+}
+
+Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot,int level)
+{
+  if (bcd->categoryOf()) // use class that is being extended in case of
+    // an Objective-C category
+  {
+    bcd=bcd->categoryOf();
+  }
+  if (cd==bcd)
+  {
+    goto exit;
+  }
+  if (level==256)
+  {
+    err("Internal inconsistency: found class %s seem to have a recursive "
+        "inheritance relation! Please send a bug report to doxygen@gmail.com\n",qPrint(cd->name()));
+  }
+  else if (prot!=Private)
+  {
+    for (const auto &bcdi : cd->baseClasses())
+    {
+      Protection baseProt = classInheritedProtectionLevel(bcdi.classDef,bcd,bcdi.prot,level+1);
+      if (baseProt==Private)        prot=Private;
+      else if (baseProt==Protected) prot=Protected;
+    }
+  }
+exit:
+  //printf("classInheritedProtectionLevel(%s,%s)=%d\n",qPrint(cd->name()),qPrint(bcd->name()),prot);
+  return prot;
+}
+
+

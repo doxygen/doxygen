@@ -479,6 +479,19 @@ const ClassDef      *toClassDef(const Definition *d);
 ClassDefMutable     *toClassDefMutable(Definition *d);
 ClassDefMutable     *toClassDefMutable(const Definition *d);
 
+// --- Helpers
+//
+ClassDef *getClass(const QCString &key);
+inline ClassDefMutable *getClassMutable(const QCString &key)
+{
+  return toClassDefMutable(getClass(key));
+}
+bool hasVisibleRoot(const BaseClassList &bcl);
+bool classHasVisibleChildren(const ClassDef *cd);
+bool classVisibleInIndex(const ClassDef *cd);
+int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
+Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Public,int level=0);
+
 //------------------------------------------------------------------------
 
 /** Class that contains information about a usage relation.

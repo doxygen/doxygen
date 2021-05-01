@@ -23,6 +23,8 @@
 #include "searchindex.h"
 #include "message.h"
 #include "parserintf.h"
+#include "layout.h"
+#include "namespacedef.h"
 
 //------------------------------------------------------------------------------------
 
@@ -729,5 +731,25 @@ ConceptDefMutable *toConceptDefMutable(const Definition *d)
   }
 }
 
+// -- helpers
+
+ConceptDef *getConcept(const QCString &n)
+{
+  if (n.isEmpty()) return 0;
+  return Doxygen::conceptLinkedMap->find(n);
+}
+
+ConceptDef *getResolvedConcept(const Definition *d,const QCString &name)
+{
+  ConceptDef *cd=0;
+  while (d && d!=Doxygen::globalScope)
+  {
+    cd = getConcept(d->name()+"::"+name);
+    if (cd) return cd;
+    d = d->getOuterScope();
+  }
+  cd = getConcept(name);
+  return cd;
+}
 
 
