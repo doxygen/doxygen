@@ -104,6 +104,8 @@ documentation:
 \refitem cmdexample \\example
 \refitem cmdexception \\exception
 \refitem cmdextends \\extends
+\refitem cmdfrndopen \\f(
+\refitem cmdfrndclose \\f)
 \refitem cmdfdollar \\f\$
 \refitem cmdfbropen \\f[
 \refitem cmdfbrclose \\f]
@@ -3238,6 +3240,23 @@ class Receiver
 
   Marks the start and end of an in-text formula.
   \sa section \ref formulas "formulas" for an example.
+
+<hr>
+\section cmdfrndopen \\f(
+
+  \addindex \\f(
+
+  Marks the start of an in-text formula, but contrary to \ref cmdfdollar "\\f$" it will
+  not explicitly open the math-mode in \LaTeX.
+  \sa section \ref cmdfrndclose "\\f)" and section \ref formulas "formulas".
+
+<hr>
+\section cmdfrndclose \\f)
+
+  \addindex \\f)
+
+  Marks the end of an in-text formula started with \ref cmdfrndopen "\\f(".
+  \sa section \ref cmdfrndopen "\\f(" and section \ref formulas "formulas".
 
 <hr>
 \section cmdfbropen \\f[

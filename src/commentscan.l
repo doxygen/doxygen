@@ -541,6 +541,7 @@ STopt  [^\n@\\]*
 %x      InheritParam
 %x      ExtendsParam
 %x      ReadFormulaShort
+%x      ReadFormulaRound
 %x      ReadFormulaLong
 %x      AnchorLabel
 %x      HtmlComment
@@ -556,7 +557,7 @@ STopt  [^\n@\\]*
   /* What can happen in while parsing a comment block:
    *   commands (e.g. @page, or \page)
    *   escaped commands (e.g. @@page or \\page).
-   *   formulas (e.g. \f$...\f$ \f[...\f] \f{...\f})
+   *   formulas (e.g. \f$...\f$ \f[...\f] \f{...\f} \f(...\f) )
    *   directories (e.g. \doxygen\src\)
    *   autolist end. (e.g. a dot on an otherwise empty line)
    *   newlines.
@@ -754,6 +755,11 @@ STopt  [^\n@\\]*
                                           yyextra->formulaNewLines=0;
                                           BEGIN(ReadFormulaShort);
                                         }
+<Comment>{B}*{CMD}"f("                  { // start of a inline formula
+                                          yyextra->formulaText="";
+                                          yyextra->formulaNewLines=0;
+                                          BEGIN(ReadFormulaRound);
+                                        }
 <Comment>{B}*{CMD}"f["                  { // start of a block formula
                                           setOutput(yyscanner,OutputDoc);
                                           yyextra->formulaText="\\[";
@@ -937,6 +943,10 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
                                         }
+<ReadFormulaRound>{CMD}"f)"             { // end of inline formula
+                                          addOutput(yyscanner," "+addFormula(yyscanner));
+                                          BEGIN(Comment);
+                                        }
 <ReadFormulaLong>{CMD}"f]"              { // end of block formula
                                           yyextra->formulaText+="\\]";
                                           addOutput(yyscanner," "+addFormula(yyscanner));
@@ -948,15 +958,15 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner," "+addFormula(yyscanner));
                                           BEGIN(Comment);
                                         }
-<ReadFormulaLong,ReadFormulaShort>[^\\@\n]+ { // any non-special character
+<ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>[^\\@\n]+ { // any non-special character
                                           yyextra->formulaText+=yytext;
                                         }
-<ReadFormulaLong,ReadFormulaShort>\n    { // new line
+<ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>\n    { // new line
                                           yyextra->formulaNewLines++;
                                           yyextra->formulaText+=*yytext;
                                           yyextra->lineNr++;
                                         }
-<ReadFormulaLong,ReadFormulaShort>.     { // any other character
+<ReadFormulaLong,ReadFormulaShort,ReadFormulaRound>.     { // any other character
                                           yyextra->formulaText+=*yytext;
                                         }
 
@@ -3255,7 +3265,7 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
 static void checkFormula(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (YY_START==ReadFormulaShort || YY_START==ReadFormulaLong)
+  if (YY_START==ReadFormulaShort || YY_START==ReadFormulaRound || YY_START==ReadFormulaLong)
   {
     warn(yyextra->fileName,yyextra->lineNr,"End of comment block while inside formula.");
   }

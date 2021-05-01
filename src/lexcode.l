@@ -724,7 +724,7 @@ NONLopt [^\n]*
 <DocBlock>({CMD}{CMD}){ID}/[^a-z_A-Z0-9] { // escaped command
                             yyextra->CCodeBuffer += yytext;
                           }
-<DocBlock>{CMD}("f$"|"f["|"f{") {
+<DocBlock>{CMD}("f$"|"f["|"f{"|"f(") {
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             if (yyextra->docBlockName.at(1)=='{')
@@ -794,7 +794,7 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("f$"|"f]"|"f}") {
+<DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)") {
                             yyextra->CCodeBuffer += yytext;
                             BEGIN(DocBlock);
                           }

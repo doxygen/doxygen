@@ -1164,7 +1164,7 @@ WSopt [ \t\r]*
   					  outputChar(yyscanner,'/');outputChar(yyscanner,'*');
 					  //yyextra->commentCount++;
   					}
-<SkipCComment>[\\@][\\@]("f{"|"f$"|"f[") {
+<SkipCComment>[\\@][\\@]("f{"|"f$"|"f[""f(") {
   					  outputArray(yyscanner,yytext,yyleng);
   					}
 <SkipCComment>^({B}*"*"+)?{B}{0,3}"~~~"[~]*   {
@@ -1316,7 +1316,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
   					}
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
   					  outputArray(yyscanner,yytext,yyleng);
 					  if (yytext[1]=='f' && yyextra->blockName=="f")
 					  {

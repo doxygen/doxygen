@@ -438,7 +438,7 @@ SLASHopt [/]*
                                      }
                                      BEGIN(VerbatimCode);
   				   }
-<CComment,ReadLine>[\\@]("f$"|"f["|"f{") {
+<CComment,ReadLine>[\\@]("f$"|"f["|"f{"|"f(") {
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->blockName=&yytext[1];
 				     if (yyextra->blockName.at(1)=='[')
@@ -448,6 +448,10 @@ SLASHopt [/]*
 				     else if (yyextra->blockName.at(1)=='{')
 				     {
 				       yyextra->blockName.at(1)='}';
+				     }
+				     else if (yyextra->blockName.at(1)=='(')
+				     {
+				       yyextra->blockName.at(1)=')';
 				     }
 				     yyextra->lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
@@ -467,7 +471,7 @@ SLASHopt [/]*
 <Scan>.                            { /* any other character */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     if (&yytext[1]==yyextra->blockName) // end of formula
 				     {
