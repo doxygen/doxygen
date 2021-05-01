@@ -43,6 +43,7 @@
 #include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
+#include "dir.h"
 
 class Doxyparse : public CodeOutputInterface
 {
