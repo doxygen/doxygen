@@ -2968,7 +2968,7 @@ class Receiver
   \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
 
   Not all diagrams can be created with the PlantUML `@startuml` command but need another
-  PlantUML `@start...` command. This wil look like `@start<engine>` where currently supported are
+  PlantUML `@start...` command. This will look like `@start<engine>` where currently supported are
   the following `<engine>`'s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
   `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`a, `board` and `git`.s
   By default the `<engine>` is `uml`. The `<engine>` can be specified as an option.
