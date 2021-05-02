@@ -37,7 +37,7 @@ tries to be complete):
 \section step0 Step 0: Check if doxygen supports your programming language
 
 First, assure that your programming language has a reasonable chance of being
-recognized by doxygen. These languages are supported by default: C, C++, C#,
+recognized by doxygen. These languages are supported by default: C, C++, Lex, C#,
 Objective-C, IDL, Java, VHDL, PHP, Python, Fortran and D. It
 is possible to configure certain file type extensions to use certain parsers:
 see the \ref cfg_extension_mapping "Configuration/ExtensionMappings" for details.
@@ -120,7 +120,7 @@ Extension | Language | Extension | Language     | Extension | Language
 .ixx      |C / C++   | .php5     |PHP           | .vhdl     |VHDL
 .ipp      |C / C++   | .inc      |PHP           | .ucf      |VHDL
 .i++      |C / C++   | .phtml    |PHP           | .qsf      |VHDL
-.inl      |C / C++   | .m        |Objective-C   | &nbsp;    |&nbsp;
+.inl      |C / C++   | .m        |Objective-C   | .l        |Lex
 .h        |C / C++   | .M        |Objective-C   | .md       |Markdown
 .H        |C / C++   | .py       |Python        | .markdown |Markdown
 .hh       |C / C++   | .pyw      |Python        | .ice      |Slice
@@ -249,7 +249,8 @@ files and can be used for validation or to steer XSLT scripts.
 
 In the `addon/doxmlparser` directory you can find a parser library for reading
 the XML output produced by doxygen in an incremental way
-(see `addon/doxmlparser/include/doxmlintf.h` for the interface of the library)
+(see `addon/doxmlparser/doxmparser/index.py` and `addon/doxmlparser/doxmlparser/compound.py`
+for the interface of the library)
 
 \subsection man_out Man page output
 \addindex man

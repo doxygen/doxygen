@@ -63,6 +63,16 @@
       <para>Base object class. </para>
     </detaileddescription>
     <inheritancegraph>
+      <node id="3">
+        <label>Car</label>
+        <link refid="struct_car"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
       <node id="4">
         <label>Truck</label>
         <link refid="struct_truck"/>
@@ -73,16 +83,6 @@
         <label>Vehicle</label>
         <link refid="struct_vehicle"/>
         <childnode refid="1" relation="public-inheritance">
-        </childnode>
-      </node>
-      <node id="1">
-        <label>Object</label>
-        <link refid="struct_object"/>
-      </node>
-      <node id="3">
-        <label>Car</label>
-        <link refid="struct_car"/>
-        <childnode refid="2" relation="public-inheritance">
         </childnode>
       </node>
     </inheritancegraph>

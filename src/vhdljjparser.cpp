@@ -10,9 +10,9 @@
  *
  */
 
-#include <qcstring.h>
-#include <qfileinfo.h>
-#include <qcstringlist.h>
+#include <string>
+
+#include "qcstring.h"
 #include "containers.h"
 #include "vhdljjparser.h"
 #include "vhdldocgen.h"
@@ -32,6 +32,7 @@
 #include "markdown.h"
 #include "VhdlParserTokenManager.h"
 #include "VhdlParserErrorHandler.hpp"
+#include "regex.h"
 
 using namespace vhdl::parser;
 
@@ -56,7 +57,7 @@ static EntryList g_instFiles;
 
 struct VHDLOutlineParser::Private
 {
-  void parseVhdlfile(const char *fileName,const char* inputBuffer,bool inLine);
+  void parseVhdlfile(const QCString &fileName,const char* inputBuffer,bool inLine);
 
   VHDLOutlineParser      *thisParser = 0;
   VhdlParser             *vhdlParser = 0;
@@ -85,20 +86,20 @@ struct VHDLOutlineParser::Private
 
 };
 
-void VHDLOutlineParser::Private::parseVhdlfile(const char *fileName,
+void VHDLOutlineParser::Private::parseVhdlfile(const QCString &fileName,
                                                const char* inputBuffer,bool inLine)
 {
   JAVACC_STRING_TYPE s =inputBuffer;
   CharStream *stream = new CharStream(s.c_str(), (int)s.size(), 1, 1);
   VhdlParserTokenManager *tokenManager = new VhdlParserTokenManager(stream);
-  VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName);
+  VhdlTokenManagerErrorHandler *tokErrHandler=new VhdlTokenManagerErrorHandler(fileName.data());
   vhdlParser=new VhdlParser(tokenManager);
   vhdlParser->setOutlineParser(thisParser);
   vhdlParser->setSharedState(&shared);
   tokenManager->setLexParser(vhdlParser);
   tokenManager->ReInit(stream,0);
   tokenManager->setErrorHandler(tokErrHandler);
-  VhdlErrorHandler *parserErrHandler=new VhdlErrorHandler(fileName);
+  VhdlErrorHandler *parserErrHandler=new VhdlErrorHandler(fileName.data());
   vhdlParser->setErrorHandler(parserErrHandler);
   try
   {
@@ -128,7 +129,7 @@ VHDLOutlineParser::~VHDLOutlineParser()
 {
 }
 
-void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
+void VHDLOutlineParser::parseInput(const QCString &fileName,const char *fileBuf,
                                    const std::shared_ptr<Entry> &root, ClangTUParser *)
 {
   VhdlParser::SharedState *s = &p->shared;
@@ -137,7 +138,7 @@ void VHDLOutlineParser::parseInput(const char *fileName,const char *fileBuf,
 
  // fprintf(stderr,"\n ============= %s\n ==========\n",fileBuf);
 
-  bool inLine = (fileName==0 || strlen(fileName)==0);
+  bool inLine = fileName.isEmpty();
 
   p->yyFileName=fileName;
 
@@ -251,8 +252,9 @@ static int idCounter;
 *	end;
 */
 
-QString VHDLOutlineParser::getNameID(){
- return QString::number(idCounter++,10);
+QCString VHDLOutlineParser::getNameID()
+{
+  return QCString().setNum(idCounter++);
 }
 
 void VHDLOutlineParser::handleFlowComment(const char* doc)
@@ -264,18 +266,39 @@ void VHDLOutlineParser::handleFlowComment(const char* doc)
     QCString qcs(doc);
     qcs=qcs.stripWhiteSpace();
     qcs.stripPrefix("--#");
-    FlowChart::addFlowChart(FlowChart::COMMENT_NO,0,0,qcs.data());
+    FlowChart::addFlowChart(FlowChart::COMMENT_NO,QCString(),QCString(),qcs);
   }
 }
 
 int VHDLOutlineParser::checkInlineCode(QCString &doc)
 {
-  QRegExp cs("[\\\\@]code");
-  QRegExp cend("[\\s ]*[\\\\@]endcode");
-  QRegExp cbrief("[\\\\@]brief");
-  int index = doc.find(cs);
+  static const reg::Ex csRe(R"([\\@]code)");
+  static const reg::Ex cendRe(R"(\s*[\\@]endcode)");
+  static const reg::Ex cbriefRe(R"([\\@]brief)");
 
-  if (doc.contains(cend) > 0)
+  // helper to simulate behavior of QString.find(const QRegExp &re,int pos)
+  auto findRe = [](const QCString &str,const reg::Ex &re,int pos=0) -> int
+  {
+    if ((int)str.length()<pos) return -1;
+    reg::Match match;
+    const std::string s = str.str();
+    if (reg::search(s,match,re,pos)) // match found
+    {
+      return (int)match.position();
+    }
+    else // not found
+    {
+      return -1;
+    }
+  };
+  auto replaceRe = [](const QCString &str,const reg::Ex &re,const QCString &replacement) -> QCString
+  {
+    return reg::replace(str.str(), re, replacement.str());
+  };
+
+  int index = findRe(doc,csRe);
+
+  if (findRe(doc,cendRe)!=-1)
     return 1;
 
   if (index < 0)
@@ -283,9 +306,9 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
 
   VhdlParser::SharedState *s = &p->shared;
   p->strComment += doc;
-  p->code = p->inputString.find(cs, p->code + 1);
+  p->code = findRe(p->inputString,csRe, p->code + 1);
   int com = p->inputString.find(p->strComment.data());
-  int ref = p->inputString.find(cend, p->code + 1);
+  int ref = findRe(p->inputString,cendRe, p->code + 1);
   int len = p->strComment.size();
 
   int ll = com + len;
@@ -295,26 +318,27 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   code = stripLeadingAndTrailingEmptyLines(code, iLine);
   int val = code.contains('\n');
   VhdlDocGen::prepareComment(p->strComment);
-  QCStringList ql = QCStringList::split('\n', p->strComment);
+  StringVector ql = split(p->strComment.str(),"\n");
 
-   QCString co;
-   QCString na;
-   for (QCString qcs : ql)
-   {
-     qcs = qcs.simplifyWhiteSpace();
-     if (qcs.contains(cs))
-     {
-       int i = qcs.find('{');
-       int j = qcs.find('}');
-       if (i > 0 && j > 0 && j > i)
-       {
-         na = qcs.mid(i + 1, (j - i - 1));
-       }
-       continue;
-     }
-     qcs = qcs.replace(cbrief, "");
-     co += qcs;
-     co += '\n';
+  QCString co;
+  QCString na;
+  for (const auto &qcs_ : ql)
+  {
+    QCString qcs(qcs_);
+    qcs = qcs.simplifyWhiteSpace();
+    if (findRe(qcs,csRe)!=-1)
+    {
+      int i = qcs.find('{');
+      int j = qcs.find('}');
+      if (i > 0 && j > 0 && j > i)
+      {
+        na = qcs.mid(i + 1, (j - i - 1));
+      }
+      continue;
+    }
+    qcs = replaceRe(qcs,cbriefRe, "");
+    co += qcs;
+    co += '\n';
   }
 
   VhdlDocGen::prepareComment(co);
@@ -356,7 +380,7 @@ int VHDLOutlineParser::checkInlineCode(QCString &doc)
   return 1;
 }
 
-void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
+void VHDLOutlineParser::handleCommentBlock(const QCString &doc1, bool brief)
 {
   int position = 0;
   bool needsEntry = FALSE;
@@ -438,7 +462,7 @@ void VHDLOutlineParser::handleCommentBlock(const char *doc1, bool brief)
   p->strComment.resize(0);
 }
 
-void VHDLOutlineParser::parsePrototype(const char *text)
+void VHDLOutlineParser::parsePrototype(const QCString &text)
 {
   p->varName=text;
   p->varr=TRUE;
@@ -498,9 +522,9 @@ void VHDLOutlineParser::addVhdlType(const char *n,int startLine,int section,
     spec= VhdlDocGen::GENERIC;
   }
 
-  QCStringList ql=QCStringList::split(",",name);
+  StringVector ql=split(name.str(),",");
 
-  for (uint u=0;u<ql.count();u++)
+  for (size_t u=0;u<ql.size();u++)
   {
     s->current->name=ql[u];
     s->current->startLine=startLine;
@@ -560,11 +584,11 @@ void VHDLOutlineParser::createFunction(const char *imp,uint64 spec,const char *f
     VhdlDocGen::deleteAllChars(s->current->args,' ');
     if (!fname.isEmpty())
     {
-      QCStringList q1=QCStringList::split(",",fname);
-      for (uint ii=0;ii<q1.count();ii++)
+      StringVector q1=split(fname.str(),",");
+      for (const auto &name : q1)
       {
         Argument arg;
-        arg.name=q1[ii];
+        arg.name=name;
         s->current->argList.push_back(arg);
       }
     }
@@ -594,7 +618,7 @@ void VHDLOutlineParser::pushLabel( QCString &label,QCString & val)
 QCString VHDLOutlineParser::popLabel(QCString & q)
 {
   int i=q.findRev("|");
-  if (i<0) return "";
+  if (i<0) return QCString();
   q = q.left(i);
   return q;
 }
@@ -607,12 +631,12 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
   VhdlParser::SharedState *s = &p->shared;
   (void)s5; // avoid unused warning
   QCString name=s2;
-  QCStringList ql=QCStringList::split(",",name);
+  StringVector ql=split(name.str(),",");
 
-  for (uint u=0;u<ql.count();u++)
+  for (const auto &n : ql)
   {
     Argument arg;
-    arg.name=ql[u];
+    arg.name=n;
     if (s3)
     {
       arg.type=s3;
@@ -656,10 +680,6 @@ void VHDLOutlineParser::addProto(const char *s1,const char *s2,const char *s3,
  */
 void VHDLOutlineParser::mapLibPackage( Entry* root)
 {
-  //QList<Entry> epp=libUse;
-  //EntryListIterator eli(epp);
-  //Entry *rt;
-  //for (;(rt=eli.current());++eli)
   for (const auto &rt : p->libUse)
   {
     if (addLibUseClause(rt->name))
@@ -744,9 +764,9 @@ void VHDLOutlineParser::createFlow()
     q+=")";
   }
 
-  q.prepend(VhdlDocGen::getFlowMember()->name().data());
+  q.prepend(VhdlDocGen::getFlowMember()->name());
 
-  FlowChart::addFlowChart(FlowChart::START_NO,q,0);
+  FlowChart::addFlowChart(FlowChart::START_NO,q,QCString());
 
   if (s->currP==VhdlDocGen::FUNCTION)
   {
@@ -761,7 +781,7 @@ void VHDLOutlineParser::createFlow()
     ret="end process ";
   }
 
-  FlowChart::addFlowChart(FlowChart::END_NO,ret,0);
+  FlowChart::addFlowChart(FlowChart::END_NO,ret,QCString());
   //  FlowChart::printFlowList();
   FlowChart::writeFlowChart();
   s->currP=0;
@@ -829,7 +849,7 @@ void VHDLOutlineParser::error_skipto(int kind)
     p->vhdlParser->getNextToken();  // step to next token
     op=p->vhdlParser->getToken(1);  // get first token
     if (op==0) break;
-    //fprintf(stderr,"\n %s",t->image.data());
+    //fprintf(stderr,"\n %s",qPrint(t->image));
   } while (op->kind != kind);
   p->vhdlParser->clearError();
   // The above loop consumes tokens all the way up to a token of

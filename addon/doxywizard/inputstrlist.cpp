@@ -250,7 +250,7 @@ void InputStrList::writeValue(QTextStream &t,QTextCodec *codec)
   {
     if (!first)
     {
-      t << " \\" << endl;
+      t << " \\\n";
       t << "                         ";
     }
     first=false;
@@ -276,8 +276,8 @@ bool InputStrList::isDefault()
   if (it1==m_strList.end() && it2==m_default.end()) return true;
 
   // one list is empty but the other is not
-  if (it1==m_default.end()) return false;
-  if (it2==m_strList.end()) return false;
+  if (it1==m_strList.end()) return false;
+  if (it2==m_default.end()) return false;
 
   it1 = m_strList.begin();
   it2 = m_default.begin();

@@ -16,14 +16,7 @@
 #ifndef DOXYGEN_H
 #define DOXYGEN_H
 
-#include <qdatetime.h>
-#include <qstrlist.h>
-#include <qdict.h>
-#include <qintdict.h>
-
 #include "containers.h"
-#include "ftextstream.h"
-#include "sortdict.h"
 #include "membergroup.h"
 #include "dirdef.h"
 #include "memberlist.h"
@@ -40,7 +33,6 @@ class PageLinkedMap;
 class PageDef;
 class SearchIndexIntf;
 class ParserManager;
-class QFileInfo;
 class BufStr;
 class CiteDict;
 class MemberDef;
@@ -49,6 +41,7 @@ class GroupLinkedMap;
 class FileDef;
 class ClassDef;
 class ClassLinkedMap;
+class ConceptLinkedMap;
 class MemberNameLinkedMap;
 class FileNameLinkedMap;
 class NamespaceLinkedMap;
@@ -61,16 +54,6 @@ class FormulaNameDict;
 class Preprocessor;
 struct MemberGroupInfo;
 class NamespaceDefMutable;
-
-typedef QList<QCString>    StringList;
-typedef QListIterator<QCString>    StringListIterator;
-
-class StringDict : public QDict<QCString>
-{
-  public:
-    StringDict(uint size=17) : QDict<QCString>(size) {}
-    virtual ~StringDict() {}
-};
 
 struct LookupInfo
 {
@@ -94,6 +77,7 @@ class Doxygen
   public:
     static ClassLinkedMap           *classLinkedMap;
     static ClassLinkedMap           *hiddenClassLinkedMap;
+    static ConceptLinkedMap         *conceptLinkedMap;
     static PageLinkedMap            *exampleLinkedMap;
     static PageLinkedMap            *pageLinkedMap;
     static std::unique_ptr<PageDef>  mainPage;
@@ -111,8 +95,8 @@ class Doxygen
     static StringUnorderedMap        namespaceAliasMap;
     static GroupLinkedMap           *groupLinkedMap;
     static NamespaceLinkedMap       *namespaceLinkedMap;
-    static StringDict                tagDestinationDict;
-    static StringDict                aliasDict;
+    static StringMap                 tagDestinationMap;
+    static StringMap                 aliasMap;
     static MemberGroupInfoMap        memberGroupInfoMap;
     static StringUnorderedSet        expandAsDefinedSet;
     static NamespaceDefMutable      *globalScope;
@@ -121,7 +105,6 @@ class Doxygen
     static SearchIndexIntf          *searchIndex;
     static SymbolMap<Definition>     symbolMap;
     static ClangUsrMap              *clangUsrMap;
-    static bool                      outputToWizard;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;
     static DirRelationLinkedMap      dirRelations;
@@ -146,7 +129,7 @@ void generateOutput();
 void readAliases();
 void readFormulaRepository(QCString dir, bool cmp = FALSE);
 void cleanUpDoxygen();
-int readFileOrDirectory(const char *s,
+void readFileOrDirectory(const QCString &s,
                         FileNameLinkedMap *fnDict,
                         StringUnorderedSet *exclSet,
                         const StringVector *patList,

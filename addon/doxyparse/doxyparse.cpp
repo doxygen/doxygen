@@ -40,11 +40,10 @@
 #include <cstdlib>
 #include <sstream>
 #include <map>
-#include <qdir.h>
-#include <qcstring.h>
-#include <qregexp.h>
+#include "qcstring.h"
 #include "namespacedef.h"
 #include "portable.h"
+#include "dir.h"
 
 class Doxyparse : public CodeOutputInterface
 {
@@ -54,24 +53,21 @@ class Doxyparse : public CodeOutputInterface
 
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
-    void codify(const char *) {}
-    void writeCodeLink(const char *,const char *,const char *,const char *,const char *)  {}
-    void startCodeLine() {}
-    void endCodeLine() {}
-    void startCodeAnchor(const char *) {}
-    void endCodeAnchor() {}
-    void startFontClass(const char *) {}
-    void endFontClass() {}
-    void writeCodeAnchor(const char *) {}
-    void writeLineNumber(const char *,const char *,const char *,int) {}
-    virtual void writeTooltip(const char *,const DocLinkInfo &,
-                              const char *,const char *,const SourceLinkInfo &,
-                              const SourceLinkInfo &) {}
-    void startCodeLine(bool) {}
-    void setCurrentDoc(const Definition *,const char *,bool) {}
-    void addWord(const char *,bool) {}
-    void startCodeFragment(const char *) {}
-    void endCodeFragment(const char *) {}
+    void codify(const QCString &) override {}
+    void writeCodeLink(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &)  override {}
+    void startCodeLine(bool) override {}
+    void endCodeLine() override {}
+    void writeCodeAnchor(const QCString &) override {}
+    void startFontClass(const QCString &) override {}
+    void endFontClass() override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    virtual void writeTooltip(const QCString &,const DocLinkInfo &,
+                              const QCString &,const QCString &,const SourceLinkInfo &,
+                              const SourceLinkInfo &) override {}
+    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
+    void addWord(const QCString &,bool) override {}
+    void startCodeFragment(const QCString &) override {}
+    void endCodeFragment(const QCString &) override {}
 
     void linkableSymbol(int l, const char *sym, Definition *symDef, Definition *context)
     {
@@ -184,8 +180,8 @@ static int isPartOfCStruct(const MemberDef * md) {
 
 std::string sanitizeString(std::string data) {
   QCString new_data = QCString(data.c_str());
-  new_data.replace(QRegExp("\""), "");
-  new_data.replace(QRegExp("\\"), ""); // https://github.com/analizo/analizo/issues/138
+  new_data = substitute(new_data,"\"", "");
+  new_data = substitute(new_data,"\'", ""); // https://github.com/analizo/analizo/issues/138
   return !new_data.isEmpty() ? new_data.data() : "";
 }
 
@@ -258,13 +254,11 @@ void cModule(const ClassDef* cd) {
   if (ml) {
     const FileDef *fd = cd->getFileDef();
     const MemberList *fd_ml = fd->getMemberList(MemberListType_allMembersList);
-    if (!fd_ml || fd_ml->count() == 0) {
+    if (!fd_ml || fd_ml->size() == 0) {
       printModule(fd->getOutputFileBase().data());
       printDefines();
     }
-    MemberListIterator mli(*ml);
-    const MemberDef* md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
+    for (const auto &md : *ml) {
       printDefinition("variable", cd->name().data() + std::string("::") + md->name().data(), md->getDefLine());
       protectionInformation(md->protection());
     }
@@ -336,9 +330,7 @@ static void lookupSymbol(const Definition *d) {
 
 void listMembers(const MemberList *ml) {
   if (ml) {
-    MemberListIterator mli(*ml);
-    const MemberDef *md;
-    for (mli.toFirst(); (md=mli.current()); ++mli) {
+    for (const auto &md : *ml) {
       lookupSymbol((Definition*) md);
     }
   }
@@ -384,7 +376,7 @@ static bool checkLanguage(std::string& filename, std::string extension) {
  * about whether it is a C project or not. */
 static void detectProgrammingLanguage(FileNameLinkedMap &fnli) {
   for (const auto &fn : fnli) {
-    std::string filename = fn->fileName();
+    std::string filename = fn->fileName().str();
     if (
         checkLanguage(filename, ".cc") ||
         checkLanguage(filename, ".cxx") ||
@@ -407,7 +399,7 @@ static void listSymbols() {
     for (const auto &fd : *fn) {
       printFile(fd->absFilePath().data());
       MemberList *ml = fd->getMemberList(MemberListType_allMembersList);
-      if (ml && ml->count() > 0) {
+      if (ml && ml->size() > 0) {
         printModule(fd->getOutputFileBase().data());
         printDefines();
         listMembers(ml);
@@ -460,9 +452,9 @@ int main(int argc,char **argv) {
   // we need a place to put intermediate files
   std::ostringstream tmpdir;
   unsigned int pid = Portable::pid();
-  if (Portable::getenv("TMP"))
+  if (!Portable::getenv("TMP").isEmpty())
     tmpdir << Portable::getenv("TMP") << "/doxyparse-" << pid;
-  else if (Portable::getenv("TEMP"))
+  else if (!Portable::getenv("TEMP").isEmpty())
     tmpdir << Portable::getenv("TEMP") << "/doxyparse-" << pid;
   else
     tmpdir << "doxyparse-" << pid;
@@ -526,12 +518,12 @@ int main(int argc,char **argv) {
     }
   }
 
-  QDir thisDir;
+  Dir thisDir;
   // remove temporary files
-  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName);
+  if (!Doxygen::filterDBFileName.isEmpty()) thisDir.remove(Doxygen::filterDBFileName.str());
 
   // clean up after us
-  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY));
+  thisDir.rmdir(Config_getString(OUTPUT_DIRECTORY).str());
 
   startYamlDocument();
   listSymbols();

@@ -1,11 +1,12 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/qtools
+    ${PROJECT_SOURCE_DIR}/filesystem
     ${PROJECT_SOURCE_DIR}/libmd5
     ${PROJECT_SOURCE_DIR}/liblodepng
     ${PROJECT_SOURCE_DIR}/libmscgen
     ${PROJECT_SOURCE_DIR}/libversion
+    ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
@@ -114,9 +115,10 @@ set(LEX_FILES scanner
     commentcnv
     commentscan
     constexp
-    xml
     xmlcode
     sqlcode
+    lexcode
+    lexscanner
     configimpl)
 
 # unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
@@ -164,7 +166,6 @@ add_library(doxycfg STATIC
     ${GENERATED_SRC}/settings.h
     portable.cpp
     portable_c.c
-    ftextstream.cpp
     message.cpp
     debug.cpp
 )
@@ -184,13 +185,14 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/doctokenizer.l.h
     ${GENERATED_SRC}/fortrancode.l.h
     ${GENERATED_SRC}/fortranscanner.l.h
+    ${GENERATED_SRC}/lexcode.l.h
+    ${GENERATED_SRC}/lexscanner.l.h
     ${GENERATED_SRC}/pre.l.h
     ${GENERATED_SRC}/pycode.l.h
     ${GENERATED_SRC}/pyscanner.l.h
     ${GENERATED_SRC}/scanner.l.h
     ${GENERATED_SRC}/sqlcode.l.h
     ${GENERATED_SRC}/vhdlcode.l.h
-    ${GENERATED_SRC}/xml.l.h
     ${GENERATED_SRC}/xmlcode.l.h
     ${GENERATED_SRC}/code.cpp
     ${GENERATED_SRC}/commentcnv.cpp
@@ -200,13 +202,14 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/doctokenizer.cpp
     ${GENERATED_SRC}/fortrancode.cpp
     ${GENERATED_SRC}/fortranscanner.cpp
+    ${GENERATED_SRC}/lexcode.cpp
+    ${GENERATED_SRC}/lexscanner.cpp
     ${GENERATED_SRC}/pre.cpp
     ${GENERATED_SRC}/pycode.cpp
     ${GENERATED_SRC}/pyscanner.cpp
     ${GENERATED_SRC}/scanner.cpp
     ${GENERATED_SRC}/sqlcode.cpp
     ${GENERATED_SRC}/vhdlcode.cpp
-    ${GENERATED_SRC}/xml.cpp
     ${GENERATED_SRC}/xmlcode.cpp
     #
     ${GENERATED_SRC}/ce_parse.cpp
@@ -221,6 +224,7 @@ add_library(doxymain STATIC
     classdef.cpp
     classlist.cpp
     cmdmapper.cpp
+    conceptdef.cpp
     condparser.cpp
     context.cpp
     cppvalue.cpp
@@ -228,6 +232,7 @@ add_library(doxymain STATIC
     definition.cpp
     dia.cpp
     diagram.cpp
+    dir.cpp
     dirdef.cpp
     docbookgen.cpp
     docbookvisitor.cpp
@@ -252,6 +257,7 @@ add_library(doxymain STATIC
     emoji.cpp
     entry.cpp
     filedef.cpp
+    fileinfo.cpp
     fileparser.cpp
     formula.cpp
     ftvhelp.cpp
@@ -280,9 +286,11 @@ add_library(doxymain STATIC
     pagedef.cpp
     perlmodgen.cpp
     plantuml.cpp
+    qcstring.cpp
     qhp.cpp
     qhpxmlwriter.cpp
     reflist.cpp
+    regex.cpp
     resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
@@ -295,6 +303,7 @@ add_library(doxymain STATIC
     template.cpp
     textdocvisitor.cpp
     tooltip.cpp
+    utf8.cpp
     util.cpp
     vhdldocgen.cpp
     vhdljjparser.cpp
@@ -344,10 +353,10 @@ endif()
 target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
-    qtools
     md5
     lodepng
     mscgen
+    xml
     doxygen_version
     vhdlparser
     ${SQLITE3_LIBRARIES}
@@ -363,7 +372,6 @@ set_project_warnings(doxycfg)
 set_project_warnings(doxymain)
 set_project_warnings(doxygen)
 
-set_project_coverage(qtools)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)

@@ -7,7 +7,7 @@ endif()
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/libversion
-        ${PROJECT_SOURCE_DIR}/qtools
+        ${PROJECT_SOURCE_DIR}/libxml
         ${XAPIAN_INCLUDE_DIR}
         ${ZLIB_INCLUDE_DIRS}
 )
@@ -20,7 +20,7 @@ target_link_libraries(doxyindexer
                       ${WIN_EXTRA_LIBS}
                       ${COVERAGE_LINKER_FLAGS}
                       doxygen_version
-                      qtools
+		      xml
 )
 
 add_executable(doxysearch.cgi

@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -19,23 +19,24 @@
 #ifndef _RTFDOCVISITOR_H
 #define _RTFDOCVISITOR_H
 
-#include "docvisitor.h"
-#include <qstack.h>
-#include <qcstring.h>
+#include <iostream>
 
-class FTextStream;
+#include "docvisitor.h"
+#include "qcstring.h"
+
 class CodeOutputInterface;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for RTF output. */
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(FTextStream &t,CodeOutputInterface &ci,const char *langExt);
-    
+    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
+
     void visit(DocWord *);
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
@@ -57,7 +58,7 @@ class RTFDocVisitor : public DocVisitor
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
+
     void visitPre(DocAutoList *);
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
@@ -138,20 +139,18 @@ class RTFDocVisitor : public DocVisitor
   private:
 
     //--------------------------------------
-    // helper functions 
+    // helper functions
     //--------------------------------------
-    
-    void filter(const char *str,bool verbatim=FALSE);
+
+    void filter(const QCString &str,bool verbatim=FALSE);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink(const QCString &ref);
-    QCString getStyle(const char *name);
+    QCString getStyle(const QCString &name);
     void incIndentLevel();
     void decIndentLevel();
 
-    void pushEnabled();
-    void popEnabled();
-    void includePicturePreRTF(const QCString name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void writeDotFile(const QCString &fileName, bool hasCaption);
     void writeDotFile(DocDotFile *);
@@ -164,12 +163,11 @@ class RTFDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
     int m_indentLevel;
-    QStack<bool> m_enabled;
     bool m_lastIsPara;
     QCString m_langExt;
 };

@@ -135,10 +135,10 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result;
       result = "由" CN_SPC "Doyxgen" CN_SPC "通过分析" CN_SPC;
-      if (s) result += ((QCString)s+CN_SPC "的" CN_SPC);
+      if (!s.isEmpty()) result += ((QCString)s+CN_SPC "的" CN_SPC);
       result+= "源代码自动生成.";
       return result;
     }
@@ -391,14 +391,14 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
       }
     }
 
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     { QCString result=(QCString)"生成于" CN_SPC+date;
-      if (projName) result+=(QCString)CN_SPC ", 为" CN_SPC+projName;
+      if (!projName.isEmpty()) result+=(QCString)CN_SPC ", 为" CN_SPC+projName;
       result+=(QCString)"使用" CN_SPC;
       return result;
     }
 
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"类" CN_SPC+clName+CN_SPC "继承关系图:";
     }
@@ -459,7 +459,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-     virtual QCString trCompoundReference(const char *clName,
+     virtual QCString trCompoundReference(const QCString &clName,
                                  ClassDef::CompoundType compType,
                                  bool isTemplate)
       // used as the title of the HTML page of a class/struct/union
@@ -482,7 +482,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=CN_SPC "文件参考";
@@ -490,7 +490,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     { QCString result=namespaceName;
       result+=CN_SPC "命名空间参考";
       return result;
@@ -697,13 +697,13 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)clName+CN_SPC "的协作图:";
     }
 
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)fName+CN_SPC "的引用(Include)关系图:";
     }
@@ -1005,7 +1005,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     }
 
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"包" CN_SPC+name;
     }
@@ -1441,7 +1441,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     {
       QCString result=dirName;
       result+=CN_SPC "目录参考";
@@ -1574,7 +1574,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1596,7 +1596,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     }
 
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result += CN_SPC "模块参考手册";
@@ -1696,7 +1696,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
 //////////////////////////////////////////////////////////////////////////
 // new since 1.6.0
 //////////////////////////////////////////////////////////////////////////
-  virtual QCString trDirRelation(const char *name)
+  virtual QCString trDirRelation(const QCString &name)
   {
     // return QCString(name)+" Relation";
     // unsure
@@ -1727,12 +1727,12 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
 // new since 1.6.3
 //////////////////////////////////////////////////////////////////////////
 
-  virtual QCString trFileIn(const char *name)
+  virtual QCString trFileIn(const QCString &name)
   {
     return (QCString)"文件在"+CN_SPC+name;
   }
 
-  virtual QCString trIncludesFileIn(const char *name)
+  virtual QCString trIncludesFileIn(const QCString &name)
   {
     return (QCString)"在" CN_SPC+name+CN_SPC "中引用";
   }
@@ -1770,7 +1770,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     { return "版权所有"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     {
       return QCString(name)+CN_SPC "的目录依赖关系图";
     }
@@ -1796,11 +1796,11 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     { return "枚举说明文档从下列文件生成:"; }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return QCString(name)+CN_SPC "枚举类型参考"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+CN_SPC "继承自" CN_SPC+what; }
 
     /*! Header of the sections with inherited members specific for the
@@ -1883,21 +1883,21 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     { return "常量组"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+= CN_SPC "常量组参考";
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const char *sName)
+    virtual QCString trServiceReference(const QCString &sName)
     {
       QCString result=(QCString)sName;
       result+= CN_SPC "服务参考";
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const char *sName)
+    virtual QCString trSingletonReference(const QCString &sName)
     {
       QCString result=(QCString)sName;
       result+= CN_SPC "单例参考";

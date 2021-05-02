@@ -19,10 +19,10 @@
 #ifndef _DOCTOKENIZER_H
 #define _DOCTOKENIZER_H
 
-#include <qcstring.h>
-#include <qlist.h>
 #include <stdio.h>
+
 #include "htmlattrib.h"
+#include "qcstring.h"
 
 class Definition;
 
@@ -124,9 +124,9 @@ void setDoctokinizerLineNr(int lineno);
 int getDoctokinizerLineNr(void);
 
 // operations on the scanner
-void doctokenizerYYFindSections(const char *input,const Definition *d,
-                                const char *fileName);
-void doctokenizerYYinit(const char *input,const char *fileName,bool markdownSupport);
+void doctokenizerYYFindSections(const QCString &input,const Definition *d,
+                                const QCString &fileName);
+void doctokenizerYYinit(const char *input,const QCString &fileName,bool markdownSupport);
 void doctokenizerYYcleanup();
 void doctokenizerYYpushContext();
 bool doctokenizerYYpopContext();
@@ -157,7 +157,7 @@ void doctokenizerYYsetStateText();
 void doctokenizerYYsetStateSkipTitle();
 void doctokenizerYYsetStateAnchor();
 void doctokenizerYYsetInsidePre(bool b);
-void doctokenizerYYpushBackHtmlTag(const char *tag);
+void doctokenizerYYpushBackHtmlTag(const QCString &tag);
 void doctokenizerYYsetStateSnippet();
 void doctokenizerYYstartAutoList();
 void doctokenizerYYendAutoList();

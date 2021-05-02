@@ -59,25 +59,25 @@
       <para>An interface </para>
     </detaileddescription>
     <inheritancegraph>
-      <node id="2">
-        <label>Object</label>
-      </node>
       <node id="1">
         <label>Integer</label>
         <link refid="interface_integer"/>
         <childnode refid="2" relation="public-inheritance">
         </childnode>
+      </node>
+      <node id="2">
+        <label>Object</label>
       </node>
     </inheritancegraph>
     <collaborationgraph>
-      <node id="2">
-        <label>Object</label>
-      </node>
       <node id="1">
         <label>Integer</label>
         <link refid="interface_integer"/>
         <childnode refid="2" relation="public-inheritance">
         </childnode>
+      </node>
+      <node id="2">
+        <label>Object</label>
       </node>
     </collaborationgraph>
     <location file="011_category.m" line="6" column="12" bodyfile="011_category.m" bodystart="6" bodyend="-1"/>

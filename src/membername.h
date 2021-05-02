@@ -18,9 +18,7 @@
 #ifndef MEMBERNAME_H
 #define MEMBERNAME_H
 
-#include <qlist.h>
 #include "memberdef.h"
-#include "sortdict.h"
 #include "linkedmap.h"
 
 class MemberName
@@ -33,8 +31,8 @@ class MemberName
     using reverse_iterator = typename Vec::reverse_iterator;
     using const_reverse_iterator = typename Vec::const_reverse_iterator;
 
-    MemberName(const char *name) : m_name(name) {}
-    const char *memberName() const { return m_name; }
+    MemberName(const QCString &name) : m_name(name) {}
+    QCString memberName() const { return m_name; }
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }
@@ -68,12 +66,12 @@ class MemberNameLinkedMap : public LinkedMap<MemberName>
 class MemberInfo
 {
   public:
-    MemberInfo(MemberDef *md,Protection p,Specifier v,bool inh) :
+    MemberInfo(const MemberDef *md,Protection p,Specifier v,bool inh) :
           m_memberDef(md), m_prot(p), m_virt(v), m_inherited(inh) {}
    ~MemberInfo() {}
 
     // getters
-    MemberDef *memberDef()                      { return m_memberDef; }
+    const MemberDef *memberDef()                { return m_memberDef; }
     const MemberDef *memberDef() const          { return m_memberDef; }
     Protection prot() const                     { return m_prot;      }
     Specifier  virt() const                     { return m_virt;      }
@@ -88,7 +86,7 @@ class MemberInfo
     void setAmbigClass(const ClassDef *cd)              { m_ambigClass = cd; }
 
   private:
-    MemberDef     *m_memberDef;
+    const MemberDef *m_memberDef;
     Protection     m_prot;
     Specifier      m_virt;
     bool           m_inherited;
@@ -105,8 +103,8 @@ class MemberNameInfo
     using iterator = typename Vec::iterator;
     using const_iterator = typename Vec::const_iterator;
 
-    MemberNameInfo(const char *name) : m_name(name) {}
-    const char *memberName() const { return m_name; }
+    MemberNameInfo(const QCString &name) : m_name(name) {}
+    QCString memberName() const { return m_name; }
 
     iterator begin()                       { return m_members.begin();   }
     iterator end()                         { return m_members.end();     }

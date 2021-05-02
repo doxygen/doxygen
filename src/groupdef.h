@@ -20,7 +20,6 @@
 
 #include <memory>
 
-#include "sortdict.h"
 #include "definition.h"
 #include "dirdef.h"
 #include "layout.h"
@@ -31,20 +30,20 @@ class MemberList;
 class MemberLists;
 class FileList;
 class ClassLinkedRefMap;
+class ConceptLinkedRefMap;
 class NamespaceLinkedRefMap;
 class FileDef;
 class ClassDef;
+class ConceptDef;
 class NamespaceDef;
 class GroupList;
 class OutputList;
-class NamespaceSDict;
 class PageLinkedRefMap;
 class PageDef;
 class DirDef;
 class FTVHelp;
 class Entry;
 class MemberDef;
-class FTextStream;
 
 /** A model of a group of symbols. */
 class GroupDef : public DefinitionMutable, public Definition
@@ -56,23 +55,24 @@ class GroupDef : public DefinitionMutable, public Definition
     virtual QCString getOutputFileBase() const = 0;
     virtual QCString anchor() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
-    virtual const char *groupTitle() const = 0;
-    virtual void setGroupTitle( const char *newtitle ) = 0;
+    virtual QCString groupTitle() const = 0;
+    virtual void setGroupTitle( const QCString &newtitle ) = 0;
     virtual bool hasGroupTitle( ) const = 0;
     virtual void addFile(const FileDef *def) = 0;
     virtual bool addClass(const ClassDef *def) = 0;
+    virtual bool addConcept(const ConceptDef *def) = 0;
     virtual bool addNamespace(const NamespaceDef *def) = 0;
     virtual void addGroup(const GroupDef *def) = 0;
     virtual void addPage(const PageDef *def) = 0;
     virtual void addExample(const PageDef *def) = 0;
     virtual void addDir(DirDef *dd) = 0;
-    virtual bool insertMember(MemberDef *def,bool docOnly=FALSE) = 0;
+    virtual bool insertMember(const MemberDef *def,bool docOnly=FALSE) = 0;
     virtual void removeMember(MemberDef *md) = 0;
     virtual bool findGroup(const GroupDef *def) const = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
     virtual void writeMemberPages(OutputList &ol) = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *currentMd) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual size_t numDocMembers() const = 0;
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
@@ -97,8 +97,9 @@ class GroupDef : public DefinitionMutable, public Definition
     /* user defined member groups */
     virtual const MemberGroupList &getMemberGroups() const = 0;
 
-    virtual FileList *      getFiles() const = 0;
+    virtual const FileList &getFiles() const = 0;
     virtual const ClassLinkedRefMap &getClasses() const = 0;
+    virtual const ConceptLinkedRefMap &getConcepts() const = 0;
     virtual const NamespaceLinkedRefMap &getNamespaces() const = 0;
     virtual const GroupList &getSubGroups() const = 0;
     virtual const PageLinkedRefMap &getPages() const = 0;
@@ -109,8 +110,8 @@ class GroupDef : public DefinitionMutable, public Definition
 
 };
 
-GroupDef *createGroupDef(const char *fileName,int line,const char *name,
-                                const char *title,const char *refFileName=0);
+GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
+                                const QCString &title,const QCString &refFileName=QCString());
 
 // --- Cast functions
 
@@ -128,6 +129,7 @@ class GroupList : public std::vector<const GroupDef *>
 };
 
 void addClassToGroups    (const Entry *root,ClassDef *cd);
+void addConceptToGroups  (const Entry *root,ConceptDef *cd);
 void addNamespaceToGroups(const Entry *root,NamespaceDef *nd);
 void addGroupToGroups    (const Entry *root,GroupDef *subGroup);
 void addMemberToGroups   (const Entry *root,MemberDef *md);

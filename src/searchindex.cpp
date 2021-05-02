@@ -16,9 +16,7 @@
 
 #include <ctype.h>
 #include <assert.h>
-
-#include <qfile.h>
-#include <qregexp.h>
+#include <sstream>
 
 #include "searchindex.h"
 #include "config.h"
@@ -37,6 +35,8 @@
 #include "resourcemgr.h"
 #include "namespacedef.h"
 #include "classdef.h"
+#include "utf8.h"
+#include "classlist.h"
 
 //---------------------------------------------------------------------------------------------
 // the following part is for the server based search engine
@@ -82,7 +82,7 @@ SearchIndex::SearchIndex() : SearchIndexIntf(Internal)
   m_index.resize(numIndexEntries);
 }
 
-void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile)
+void SearchIndex::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
   if (ctx==0) return;
   assert(!isSourceFile || ctx->definitionType()==Definition::TypeFile);
@@ -90,7 +90,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
   QCString url=isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   url+=Config_getString(HTML_FILE_EXTENSION);
   QCString baseUrl = url;
-  if (anchor) url+=QCString("#")+anchor;
+  if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   if (!isSourceFile) baseUrl=url;
   QCString name=ctx->qualifiedName();
   if (ctx->definitionType()==Definition::TypeMember)
@@ -148,7 +148,7 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
       case Definition::TypeGroup:
         {
           const GroupDef *gd = toGroupDef(ctx);
-          if (gd->groupTitle())
+          if (!gd->groupTitle().isEmpty())
           {
             name = theTranslator->trGroup(TRUE,TRUE)+" "+gd->groupTitle();
           }
@@ -176,9 +176,9 @@ void SearchIndex::setCurrentDoc(const Definition *ctx,const char *anchor,bool is
   }
 }
 
-static int charsToIndex(const char *word)
+static int charsToIndex(const QCString &word)
 {
-  if (word==0) return -1;
+  if (word.length()<2) return -1;
 
   // Fast string hashing algorithm
   //register ushort h=0;
@@ -191,19 +191,16 @@ static int charsToIndex(const char *word)
   //return h;
 
   // Simple hashing that allows for substring searching
-  uint c1=((uchar *)word)[0];
-  if (c1==0) return -1;
-  uint c2=((uchar *)word)[1];
-  if (c2==0) return -1;
+  uint c1=(uchar)word[0];
+  uint c2=(uchar)word[1];
   return c1*256+c2;
 }
 
-void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
+void SearchIndex::addWord(const QCString &word,bool hiPriority,bool recurse)
 {
-  static QRegExp nextPart("[_a-z:][A-Z]");
-  if (word==0 || word[0]=='\0') return;
+  if (word.isEmpty()) return;
   QCString wStr = QCString(word).lower();
-  //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,wStr.data());
+  //printf("SearchIndex::addWord(%s,%d) wStr=%s\n",word,hiPriority,qPrint(wStr));
   int idx=charsToIndex(wStr);
   if (idx<0 || idx>=static_cast<int>(m_index.size())) return;
   auto it = m_words.find(wStr.str());
@@ -221,40 +218,47 @@ void SearchIndex::addWord(const char *word,bool hiPriority,bool recurse)
     i=getPrefixIndex(word);
     if (i>0)
     {
-      addWord(word+i,hiPriority,TRUE);
+      addWord(word.data()+i,hiPriority,TRUE);
       found=TRUE;
     }
   }
   if (!found) // no prefix stripped
   {
-    if ((i=nextPart.match(word))>=1)
+    i=0;
+    while (word[i]!=0 &&
+           !((word[i]=='_' || word[i]==':' || (word[i]>='a' && word[i]<='z')) &&  // [_a-z:]
+             (word[i+1]>='A' && word[i+1]<='Z')))                                 // [A-Z]
     {
-      addWord(word+i+1,hiPriority,TRUE);
+      i++;
+    }
+    if (word[i]!=0 && i>=1)
+    {
+      addWord(word.data()+i+1,hiPriority,TRUE);
     }
   }
 }
 
-void SearchIndex::addWord(const char *word,bool hiPriority)
+void SearchIndex::addWord(const QCString &word,bool hiPriority)
 {
   addWord(word,hiPriority,FALSE);
 }
 
-static void writeInt(QFile &f,size_t index)
+static void writeInt(std::ostream &f,size_t index)
 {
-  f.putch(static_cast<int>(index>>24));
-  f.putch(static_cast<int>((index>>16)&0xff));
-  f.putch(static_cast<int>((index>>8)&0xff));
-  f.putch(static_cast<int>(index&0xff));
+  f.put(static_cast<int>(index>>24));
+  f.put(static_cast<int>((index>>16)&0xff));
+  f.put(static_cast<int>((index>>8)&0xff));
+  f.put(static_cast<int>(index&0xff));
 }
 
-static void writeString(QFile &f,const char *s)
+static void writeString(std::ostream &f,const QCString &s)
 {
-  const char *p = s;
-  while (*p) f.putch(*p++);
-  f.putch(0);
+  uint l = s.length();
+  for (uint i=0;i<l;i++) f.put(s[i]);
+  f.put(0);
 }
 
-void SearchIndex::write(const char *fileName)
+void SearchIndex::write(const QCString &fileName)
 {
   size_t i;
   size_t size=4; // for the header
@@ -327,11 +331,11 @@ void SearchIndex::write(const char *fileName)
   }
 
   //printf("Total size %x bytes (word=%x stats=%x urls=%x)\n",size,wordsOffset,statsOffset,urlsOffset);
-  QFile f(fileName);
-  if (f.open(IO_WriteOnly))
+  std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (f.is_open())
   {
     // write header
-    f.putch('D'); f.putch('O'); f.putch('X'); f.putch('S');
+    f.put('D'); f.put('O'); f.put('X'); f.put('S');
     // write index
     for (i=0;i<numIndexEntries;i++)
     {
@@ -349,11 +353,11 @@ void SearchIndex::write(const char *fileName)
           writeString(f,iw.word());
           writeInt(f,wordStatOffsets[count++]);
         }
-        f.putch(0);
+        f.put(0);
       }
     }
     // write extra padding bytes
-    for (i=0;i<padding;i++) f.putch(0);
+    for (i=0;i<padding;i++) f.put(0);
     // write word statistics
     for (i=0;i<numIndexEntries;i++)
     {
@@ -447,6 +451,8 @@ static QCString definitionToName(const Definition *ctx)
         return "file";
       case Definition::TypeNamespace:
         return "namespace";
+      case Definition::TypeConcept:
+        return "concept";
       case Definition::TypeGroup:
         return "group";
       case Definition::TypePackage:
@@ -462,12 +468,12 @@ static QCString definitionToName(const Definition *ctx)
   return "unknown";
 }
 
-void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const char *anchor,bool isSourceFile)
+void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &anchor,bool isSourceFile)
 {
   static QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
   QCString url = baseName + Doxygen::htmlFileExtension;
-  if (anchor) url+=QCString("#")+anchor;
+  if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
 
   auto it = p->docEntries.find(key.str());
@@ -483,54 +489,53 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const char *anchor
     e.extId = extId;
     e.url  = url;
     it = p->docEntries.insert({key.str(),e}).first;
-    //printf("searchIndexExt %s : %s\n",e->name.data(),e->url.data());
+    //printf("searchIndexExt %s : %s\n",qPrint(e->name),qPrint(e->url));
   }
   p->current = &it->second;
 }
 
-void SearchIndexExternal::addWord(const char *word,bool hiPriority)
+void SearchIndexExternal::addWord(const QCString &word,bool hiPriority)
 {
-  if (word==0 || !isId(*word) || p->current==0) return;
+  if (word.isEmpty() || !isId(word[0]) || p->current==0) return;
   GrowBuf *pText = hiPriority ? &p->current->importantText : &p->current->normalText;
   if (pText->getPos()>0) pText->addChar(' ');
   pText->addStr(word);
   //printf("addWord %s\n",word);
 }
 
-void SearchIndexExternal::write(const char *fileName)
+void SearchIndexExternal::write(const QCString &fileName)
 {
-  QFile f(fileName);
-  if (f.open(IO_WriteOnly))
+  std::ofstream t(fileName.str(),std::ofstream::out | std::ofstream::binary);
+  if (t.is_open())
   {
-    FTextStream t(&f);
-    t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-    t << "<add>" << endl;
+    t << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    t << "<add>\n";
     for (auto &kv : p->docEntries)
     {
       SearchDocEntry &doc = kv.second;
       doc.normalText.addChar(0);    // make sure buffer ends with a 0 terminator
       doc.importantText.addChar(0); // make sure buffer ends with a 0 terminator
-      t << "  <doc>" << endl;
-      t << "    <field name=\"type\">"     << doc.type << "</field>" << endl;
-      t << "    <field name=\"name\">"     << convertToXML(doc.name) << "</field>" << endl;
+      t << "  <doc>\n";
+      t << "    <field name=\"type\">"     << doc.type << "</field>\n";
+      t << "    <field name=\"name\">"     << convertToXML(doc.name) << "</field>\n";
       if (!doc.args.isEmpty())
       {
-        t << "    <field name=\"args\">"     << convertToXML(doc.args) << "</field>" << endl;
+        t << "    <field name=\"args\">"     << convertToXML(doc.args) << "</field>\n";
       }
       if (!doc.extId.isEmpty())
       {
-        t << "    <field name=\"tag\">"      << convertToXML(doc.extId)  << "</field>" << endl;
+        t << "    <field name=\"tag\">"      << convertToXML(doc.extId)  << "</field>\n";
       }
-      t << "    <field name=\"url\">"      << convertToXML(doc.url)  << "</field>" << endl;
-      t << "    <field name=\"keywords\">" << convertToXML(doc.importantText.get())  << "</field>" << endl;
-      t << "    <field name=\"text\">"     << convertToXML(doc.normalText.get())     << "</field>" << endl;
-      t << "  </doc>" << endl;
+      t << "    <field name=\"url\">"      << convertToXML(doc.url)  << "</field>\n";
+      t << "    <field name=\"keywords\">" << convertToXML(doc.importantText.get())  << "</field>\n";
+      t << "    <field name=\"text\">"     << convertToXML(doc.normalText.get())     << "</field>\n";
+      t << "  </doc>\n";
     }
-    t << "</add>" << endl;
+    t << "</add>\n";
   }
   else
   {
-    err("Failed to open file %s for writing!\n",fileName);
+    err("Failed to open file %s for writing!\n",qPrint(fileName));
   }
 }
 
@@ -547,29 +552,25 @@ QCString searchName(const Definition *d)
 
 QCString searchId(const Definition *d)
 {
-  QCString s = searchName(d);
-  int c;
-  uint i;
-  QCString result;
-  for (i=0;i<s.length();i++)
+  std::string s = searchName(d).str();
+  TextStream t;
+  for (size_t i=0;i<s.length();i++)
   {
-    c=s.at(i);
-    if (c>0x7f || c<0) // part of multibyte character
+    if (isIdJS(s[i]))
     {
-      result+=(char)c;
+      t << s[i];
     }
-    else if (isalnum(c)) // simply alpha numerical character
+    else // escape non-identifier characters
     {
-      result+=(char)tolower(c);
-    }
-    else // other 'unprintable' characters
-    {
-      char val[4];
-      sprintf(val,"_%02x",(uchar)c);
-      result+=val;
+      static const char *hex = "0123456789ABCDEF";
+      unsigned char uc = static_cast<unsigned char>(s[i]);
+      t << '_';
+      t << hex[uc>>4];
+      t << hex[uc&0xF];
     }
   }
-  return result;
+
+  return convertUTF8ToLower(t.str());
 }
 
 
@@ -593,6 +594,7 @@ QCString searchId(const Definition *d)
 #define SEARCH_INDEX_DEFINES      17
 #define SEARCH_INDEX_GROUPS       18
 #define SEARCH_INDEX_PAGES        19
+#define SEARCH_INDEX_CONCEPTS     20
 
 static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
 { {
@@ -622,7 +624,8 @@ static std::array<SearchIndexInfo,NUM_SEARCH_INDICES> g_searchIndexInfo =
   { /* SEARCH_INDEX_RELATED */      "related"     , []() { return theTranslator->trFriends();             }, {} },
   { /* SEARCH_INDEX_DEFINES */      "defines"     , []() { return theTranslator->trDefines();             }, {} },
   { /* SEARCH_INDEX_GROUPS */       "groups"      , []() { return theTranslator->trGroup(TRUE,FALSE);     }, {} },
-  { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(TRUE,FALSE);      }, {} }
+  { /* SEARCH_INDEX_PAGES */        "pages"       , []() { return theTranslator->trPage(TRUE,FALSE);      }, {} },
+  { /* SEARCH_INDEX_CONCEPTS */     "concepts"    , []() { return theTranslator->trConcept(true,false);   }, {} }
 } };
 
 static void addMemberToSearchIndex(const MemberDef *md)
@@ -640,11 +643,10 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    QCString n = md->name();
-    if (!n.isEmpty())
+    std::string n = md->name().str();
+    if (!n.empty())
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(n,letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(n,0));
       bool isFriendToHide = hideFriendCompounds &&
         (QCString(md->typeString())=="friend class" ||
          QCString(md->typeString())=="friend struct" ||
@@ -702,11 +704,10 @@ static void addMemberToSearchIndex(const MemberDef *md)
       )
      )
   {
-    QCString n = md->name();
-    if (!n.isEmpty())
+    std::string n = md->name().str();
+    if (!n.empty())
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(n,letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(n,0));
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,md);
 
       if (md->isFunction())
@@ -752,8 +753,7 @@ void createJavaScriptSearchIndex()
   // index classes
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    char letter[MAX_UTF8_CHAR_SIZE];
-    getUtf8Char(cd->localName(),letter,CaseModifier::ToLower);
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(cd->localName().str(),0));
     if (cd->isLinkable())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,cd.get());
@@ -786,12 +786,22 @@ void createJavaScriptSearchIndex()
   // index namespaces
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    char letter[MAX_UTF8_CHAR_SIZE];
-    getUtf8Char(nd->name(),letter,CaseModifier::ToLower);
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(nd->name().str(),0));
     if (nd->isLinkable())
     {
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,nd.get());
       g_searchIndexInfo[SEARCH_INDEX_NAMESPACES].add(letter,nd.get());
+    }
+  }
+
+  // index concepts
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    std::string letter = convertUTF8ToLower(getUTF8CharAt(cd->name().str(),0));
+    if (cd->isLinkable())
+    {
+      g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,cd.get());
+      g_searchIndexInfo[SEARCH_INDEX_CONCEPTS].add(letter,cd.get());
     }
   }
 
@@ -800,8 +810,7 @@ void createJavaScriptSearchIndex()
   {
     for (const auto &fd : *fn)
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(fd->name(),letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(fd->name().str(),0));
       if (fd->isLinkable())
       {
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,fd.get());
@@ -841,11 +850,10 @@ void createJavaScriptSearchIndex()
   {
     if (gd->isLinkable())
     {
-      QCString title = gd->groupTitle();
-      if (!title.isEmpty()) // TODO: able searching for all word in the title
+      std::string title = gd->groupTitle().str();
+      if (!title.empty()) // TODO: able searching for all word in the title
       {
-        char letter[MAX_UTF8_CHAR_SIZE];
-        getUtf8Char(title,letter,CaseModifier::ToLower);
+        std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,gd.get());
         g_searchIndexInfo[SEARCH_INDEX_GROUPS].add(letter,gd.get());
       }
@@ -857,11 +865,10 @@ void createJavaScriptSearchIndex()
   {
     if (pd->isLinkable())
     {
-      QCString title = pd->title();
-      if (!title.isEmpty())
+      std::string title = pd->title().str();
+      if (!title.empty())
       {
-        char letter[MAX_UTF8_CHAR_SIZE];
-        getUtf8Char(title,letter,CaseModifier::ToLower);
+        std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
         g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,pd.get());
         g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,pd.get());
       }
@@ -869,11 +876,10 @@ void createJavaScriptSearchIndex()
   }
   if (Doxygen::mainPage)
   {
-    QCString title = Doxygen::mainPage->title();
-    if (!title.isEmpty())
+    std::string title = Doxygen::mainPage->title().str();
+    if (!title.empty())
     {
-      char letter[MAX_UTF8_CHAR_SIZE];
-      getUtf8Char(title,letter,CaseModifier::ToLower);
+      std::string letter = convertUTF8ToLower(getUTF8CharAt(title,0));
       g_searchIndexInfo[SEARCH_INDEX_ALL].add(letter,Doxygen::mainPage.get());
       g_searchIndexInfo[SEARCH_INDEX_PAGES].add(letter,Doxygen::mainPage.get());
     }
@@ -913,58 +919,55 @@ void writeJavaScriptSearchIndex()
       QCString fileName = searchDirName + "/"+baseName+Doxygen::htmlFileExtension;
       QCString dataFileName = searchDirName + "/"+baseName+".js";
 
-      QFile outFile(fileName);
-      QFile dataOutFile(dataFileName);
-      if (outFile.open(IO_WriteOnly) && dataOutFile.open(IO_WriteOnly))
+      std::ofstream t(fileName.str(), std::ofstream::out | std::ofstream::binary);
+      std::ofstream ti(dataFileName.str(), std::ofstream::out | std::ofstream::binary);
+      if (t.is_open() && ti.is_open())
       {
         {
-          FTextStream t(&outFile);
-
           t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-            " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
-          t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">" << endl;
-          t << "<head><title></title>" << endl;
-          t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
-          t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>" << endl;
-          t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
-          t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>" << endl;
-          t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
-          t << "</head>" << endl;
-          t << "<body class=\"SRPage\">" << endl;
-          t << "<div id=\"SRIndex\">" << endl;
-          t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>" << endl;
-          t << "<div id=\"SRResults\"></div>" << endl; // here the results will be inserted
-          t << "<script type=\"text/javascript\">" << endl;
+            " \"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+          t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
+          t << "<head><title></title>\n";
+          t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+          t << "<meta name=\"generator\" content=\"Doxygen " << getDoxygenVersion() << "\"/>\n";
+          t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>\n";
+          t << "<script type=\"text/javascript\" src=\"" << baseName << ".js\"></script>\n";
+          t << "<script type=\"text/javascript\" src=\"search.js\"></script>\n";
+          t << "</head>\n";
+          t << "<body class=\"SRPage\">\n";
+          t << "<div id=\"SRIndex\">\n";
+          t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>\n";
+          t << "<div id=\"SRResults\"></div>\n"; // here the results will be inserted
+          t << "<script type=\"text/javascript\">\n";
           t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
-          t << "createResults();" << endl; // this function will insert the results
+          t << "createResults();\n"; // this function will insert the results
           t << "/* @license-end */\n";
-          t << "</script>" << endl;
+          t << "</script>\n";
           t << "<div class=\"SRStatus\" id=\"Searching\">"
-            << theTranslator->trSearching() << "</div>" << endl;
+            << theTranslator->trSearching() << "</div>\n";
           t << "<div class=\"SRStatus\" id=\"NoMatches\">"
-            << theTranslator->trNoMatches() << "</div>" << endl;
+            << theTranslator->trNoMatches() << "</div>\n";
 
-          t << "<script type=\"text/javascript\">" << endl;
+          t << "<script type=\"text/javascript\">\n";
           t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
-          t << "document.getElementById(\"Loading\").style.display=\"none\";" << endl;
-          t << "document.getElementById(\"NoMatches\").style.display=\"none\";" << endl;
-          t << "var searchResults = new SearchResults(\"searchResults\");" << endl;
-          t << "searchResults.Search();" << endl;
-          t << "window.addEventListener(\"message\", function(event) {" << endl;
-          t << "  if (event.data == \"take_focus\") {" << endl;
-          t << "    var elem = searchResults.NavNext(0);" << endl;
-          t << "    if (elem) elem.focus();" << endl;
-          t << "  }" << endl;
-          t << "});" << endl;
+          t << "document.getElementById(\"Loading\").style.display=\"none\";\n";
+          t << "document.getElementById(\"NoMatches\").style.display=\"none\";\n";
+          t << "var searchResults = new SearchResults(\"searchResults\");\n";
+          t << "searchResults.Search();\n";
+          t << "window.addEventListener(\"message\", function(event) {\n";
+          t << "  if (event.data == \"take_focus\") {\n";
+          t << "    var elem = searchResults.NavNext(0);\n";
+          t << "    if (elem) elem.focus();\n";
+          t << "  }\n";
+          t << "});\n";
           t << "/* @license-end */\n";
-          t << "</script>" << endl;
-          t << "</div>" << endl; // SRIndex
-          t << "</body>" << endl;
-          t << "</html>" << endl;
+          t << "</script>\n";
+          t << "</div>\n"; // SRIndex
+          t << "</body>\n";
+          t << "</html>\n";
         }
-        FTextStream ti(&dataOutFile);
 
-        ti << "var searchData=" << endl;
+        ti << "var searchData=\n";
         // format
         // searchData[] = array of items
         // searchData[x][0] = id
@@ -975,7 +978,7 @@ void writeJavaScriptSearchIndex()
         // searchData[x][1][y+1][1] = 1 => target="_parent"
         // searchData[x][1][y+1][2] = scope
 
-        ti << "[" << endl;
+        ti << "[\n";
         bool firstEntry=TRUE;
 
         int childCount=0;
@@ -992,7 +995,7 @@ void writeJavaScriptSearchIndex()
             if (!firstEntry)
             {
               ti << "]]]";
-              ti << "," << endl;
+              ti << ",\n";
             }
             firstEntry=FALSE;
 
@@ -1119,96 +1122,96 @@ void writeJavaScriptSearchIndex()
         }
         if (!firstEntry)
         {
-          ti << "]]]" << endl;
+          ti << "]]]\n";
         }
-        ti << "];" << endl;
+        ti << "];\n";
       }
       else
       {
-        err("Failed to open file '%s' for writing...\n",fileName.data());
+        err("Failed to open file '%s' for writing...\n",qPrint(fileName));
       }
       p++;
     }
   }
 
   {
-    QFile f(searchDirName+"/searchdata.js");
-    if (f.open(IO_WriteOnly))
+    std::ofstream t(searchDirName.str()+"/searchdata.js",
+                    std::ofstream::out | std::ofstream::binary);
+    if (t.is_open())
     {
-      FTextStream t(&f);
-      t << "var indexSectionsWithContent =" << endl;
-      t << "{" << endl;
+      t << "var indexSectionsWithContent =\n";
+      t << "{\n";
       int j=0;
       for (const auto &sii : g_searchIndexInfo)
       {
         if (!sii.symbolMap.empty())
         {
-          if (j>0) t << "," << endl;
+          if (j>0) t << ",\n";
           t << "  " << j << ": \"";
 
           for (const auto &kv : sii.symbolMap)
           {
             if ( kv.first == "\"" ) t << "\\";
-            t << kv.first.c_str();
+            t << kv.first;
           }
           t << "\"";
           j++;
         }
       }
       if (j>0) t << "\n";
-      t << "};" << endl << endl;
-      t << "var indexSectionNames =" << endl;
-      t << "{" << endl;
+      t << "};\n\n";
+      t << "var indexSectionNames =\n";
+      t << "{\n";
       j=0;
       for (const auto &sii : g_searchIndexInfo)
       {
         if (!sii.symbolMap.empty())
         {
-          if (j>0) t << "," << endl;
+          if (j>0) t << ",\n";
           t << "  " << j << ": \"" << sii.name << "\"";
           j++;
         }
       }
       if (j>0) t << "\n";
-      t << "};" << endl << endl;
-      t << "var indexSectionLabels =" << endl;
-      t << "{" << endl;
+      t << "};\n\n";
+      t << "var indexSectionLabels =\n";
+      t << "{\n";
       j=0;
       for (const auto &sii : g_searchIndexInfo)
       {
         if (!sii.symbolMap.empty())
         {
-          if (j>0) t << "," << endl;
+          if (j>0) t << ",\n";
           t << "  " << j << ": \"" << convertToXML(sii.getText()) << "\"";
           j++;
         }
       }
       if (j>0) t << "\n";
-      t << "};" << endl << endl;
+      t << "};\n\n";
     }
     ResourceMgr::instance().copyResource("search.js",searchDirName);
   }
 
   {
-    QFile f(searchDirName+"/nomatches"+Doxygen::htmlFileExtension);
-    if (f.open(IO_WriteOnly))
+    QCString noMatchesFileName =searchDirName+"/nomatches"+Doxygen::htmlFileExtension;
+    std::ofstream t(noMatchesFileName.str(), std::ofstream::out | std::ofstream::binary);
+    if (t.is_open())
     {
-      FTextStream t(&f);
       t << "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" "
-           "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">" << endl;
-      t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">" << endl;
-      t << "<head><title></title>" << endl;
-      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>" << endl;
-      t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>" << endl;
-      t << "<script type=\"text/javascript\" src=\"search.js\"></script>" << endl;
-      t << "</head>" << endl;
-      t << "<body class=\"SRPage\">" << endl;
-      t << "<div id=\"SRIndex\">" << endl;
+           "\"https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+      t << "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
+      t << "<head><title></title>\n";
+      t << "<meta http-equiv=\"Content-Type\" content=\"text/xhtml;charset=UTF-8\"/>\n";
+      t << "<link rel=\"stylesheet\" type=\"text/css\" href=\"search.css\"/>\n";
+      t << "<script type=\"text/javascript\" src=\"search.js\"></script>\n";
+      t << "</head>\n";
+      t << "<body class=\"SRPage\">\n";
+      t << "<div id=\"SRIndex\">\n";
       t << "<div class=\"SRStatus\" id=\"NoMatches\">"
-        << theTranslator->trNoMatches() << "</div>" << endl;
-      t << "</div>" << endl;
-      t << "</body>" << endl;
-      t << "</html>" << endl;
+        << theTranslator->trNoMatches() << "</div>\n";
+      t << "</div>\n";
+      t << "</body>\n";
+      t << "</html>\n";
     }
   }
   Doxygen::indexList->addStyleSheetFile("search/search.js");
@@ -1216,7 +1219,7 @@ void writeJavaScriptSearchIndex()
 
 void SearchIndexInfo::add(const std::string &letter,const Definition *def)
 {
-  //printf("%p: %s->%s (full=%s)\n",this,letter.data(),searchName(def).data(),def->name().data());
+  //printf("%p: %s->%s (full=%s)\n",this,qPrint(letter),qPrint(searchName(def)),qPrint(def->name()));
   auto it = symbolMap.find(letter);
   if (it!=symbolMap.end())
   {

@@ -15,8 +15,8 @@
 
 #include "emoji.h"
 #include "message.h"
-#include "ftextstream.h"
 #include "util.h"
+#include "textstream.h"
 
 static struct emojiEntityInfo
 {
@@ -1521,18 +1521,15 @@ EmojiEntityMapper *EmojiEntityMapper::s_instance = 0;
 
 EmojiEntityMapper::EmojiEntityMapper()
 {
-  m_name2symGh = new QDict<int>(1009);
-  m_name2symGh->setAutoDelete(TRUE);
   // 2 loops to be able to give precedence to the unicodeName (CLDR)
   for (int i = 0; i < g_numEmojiEntities; i++)
   {
-    m_name2symGh->insert(g_emojiEntities[i].name, new int(i));
+    m_name2symGh.insert(std::make_pair(g_emojiEntities[i].name, i));
   }
 }
 
 EmojiEntityMapper::~EmojiEntityMapper()
 {
-  delete m_name2symGh;
 }
 
 /** Returns the one and only instance of the Emoji entity mapper */
@@ -1558,21 +1555,20 @@ void EmojiEntityMapper::deleteInstance()
  * @return the code for the requested Emoji entity name,
  *         in case the requested Emoji item does not exist `-1` is returned.
  */
-int EmojiEntityMapper::symbol2index(const QCString &symName) const
+int EmojiEntityMapper::symbol2index(const std::string &symName) const
 {
-  int *val = m_name2symGh->find(symName);
-  return val ? *val : -1;
+  auto it = m_name2symGh.find(symName);
+  return it!=m_name2symGh.end() ? it->second : -1;
 }
 
 /*!
  * @brief Writes the list of supported emojis to the given file.
  */
-void EmojiEntityMapper::writeEmojiFile(QFile &file)
+void EmojiEntityMapper::writeEmojiFile(TextStream &t)
 {
-  FTextStream t(&file);
   for (int i = 0; i < g_numEmojiEntities; i++)
   {
-    t << g_emojiEntities[i].name << endl;
+    t << g_emojiEntities[i].name << "\n";
   }
 }
 
