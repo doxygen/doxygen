@@ -622,6 +622,9 @@ WSopt [ \t\r]*
 <CopyLine,LexCopyLine>"\\"\r?/\n	{ // strip line continuation characters
                                           if (getLanguageFromFileName(yyextra->yyFileName)==SrcLangExt_Fortran) outputChar(yyscanner,*yytext);
   					}
+<CopyLine,LexCopyLine>\\.		{
+  					  outputArray(yyscanner,yytext,(int)yyleng);
+  					}
 <CopyLine,LexCopyLine>.			{
   					  outputChar(yyscanner,*yytext);
   					}
