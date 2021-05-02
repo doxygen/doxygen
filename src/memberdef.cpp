@@ -138,6 +138,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isRetain() const;
     virtual bool isWeak() const;
     virtual bool isStrong() const;
+    virtual bool isEnumStruct() const;
     virtual bool isUnretained() const;
     virtual bool isNew() const;
     virtual bool isSealed() const;
@@ -547,6 +548,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isWeak(); }
     virtual bool isStrong() const
     { return getMdAlias()->isStrong(); }
+    virtual bool isEnumStruct() const
+    { return getMdAlias()->isEnumStruct(); }
     virtual bool isUnretained() const
     { return getMdAlias()->isUnretained(); }
     virtual bool isNew() const
@@ -3201,6 +3204,8 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
+      if (isEnumStruct()) ldef.prepend("struct ");
+      else if (isStrong()) ldef.prepend("class ");
       ldef.prepend("enum ");
       if (isSliceLocal())
       {
@@ -5063,6 +5068,11 @@ bool MemberDefImpl::isWeak() const
 bool MemberDefImpl::isStrong() const
 {
   return (m_impl->memSpec&Entry::Strong)!=0;
+}
+
+bool MemberDefImpl::isEnumStruct() const
+{
+  return (m_impl->memSpec&Entry::EnumStruct)!=0;
 }
 
 bool MemberDefImpl::isStrongEnumValue() const

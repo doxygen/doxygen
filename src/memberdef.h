@@ -148,6 +148,7 @@ class MemberDef : public Definition
     virtual bool isRetain() const = 0;
     virtual bool isWeak() const = 0;
     virtual bool isStrong() const = 0;
+    virtual bool isEnumStruct() const = 0;
     virtual bool isUnretained() const = 0;
     virtual bool isNew() const = 0;
     virtual bool isSealed() const = 0;
