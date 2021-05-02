@@ -1288,6 +1288,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
     friend class DocHtmlTable;
   public:
     enum Alignment { Left, Right, Center };
+    enum Valignment {Top, Middle, Bottom};
     DocHtmlCell(DocNode *parent,const HtmlAttribList &attribs,bool isHeading) :
        m_isHeading(isHeading), m_attribs(attribs) { m_parent = parent; }
     bool isHeading() const      { return m_isHeading; }
@@ -1304,6 +1305,7 @@ class DocHtmlCell : public CompAccept<DocHtmlCell>
     uint rowSpan() const;
     uint colSpan() const;
     Alignment alignment() const;
+    Valignment valignment() const;
 
   private:
     void setRowIndex(uint idx)    { m_rowIdx = idx; }

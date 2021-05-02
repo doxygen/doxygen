@@ -3403,6 +3403,23 @@ DocHtmlCell::Alignment DocHtmlCell::alignment() const
   return Left;
 }
 
+DocHtmlCell::Valignment DocHtmlCell::valignment() const
+{
+  for (const auto &attr : attribs())
+  {
+    if (attr.name.lower()=="valign")
+    {
+      if (attr.value.lower()=="top")
+        return Top;
+      else if (attr.value.lower()=="bottom")
+        return Bottom;
+      else if (attr.value.lower()=="middle")
+        return Middle;
+      else return Middle;
+    }
+  }
+  return Middle;
+}
 
 //---------------------------------------------------------------------------
 
