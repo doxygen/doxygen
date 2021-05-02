@@ -5376,7 +5376,7 @@ g_lang2extMap[] =
   { "xml",         "xml",           SrcLangExt_XML,      ".xml" },
   { "sql",         "sql",           SrcLangExt_SQL,      ".sql" },
   { "md",          "md",            SrcLangExt_Markdown, ".md"  },
-  { "lex",         "lex",           SrcLangExt_Lex       ".l"   },
+  { "lex",         "lex",           SrcLangExt_Lex,      ".l"   },
   { 0,             0,              (SrcLangExt)0,        0      }
 };
 
@@ -5532,7 +5532,7 @@ SrcLangExt getLanguageFromCodeLang(QCString &fileName)
   return lang;
 }
 
-QCString getFileNameExtension(QCString fn)
+QCString getFileNameExtension(const QCString &fn)
 {
   if (fn.isEmpty()) return "";
   int lastDot = fn.findRev('.');
