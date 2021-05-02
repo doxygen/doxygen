@@ -5353,30 +5353,31 @@ static struct Lang2ExtMap
   const char *langName;
   const char *parserName;
   SrcLangExt parserId;
+  const char *defExt;
 }
 g_lang2extMap[] =
 {
 //  language       parser           parser option
-  { "idl",         "c",             SrcLangExt_IDL      },
-  { "java",        "c",             SrcLangExt_Java     },
-  { "javascript",  "c",             SrcLangExt_JS       },
-  { "csharp",      "c",             SrcLangExt_CSharp   },
-  { "d",           "c",             SrcLangExt_D        },
-  { "php",         "c",             SrcLangExt_PHP      },
-  { "objective-c", "c",             SrcLangExt_ObjC     },
-  { "c",           "c",             SrcLangExt_Cpp      },
-  { "c++",         "c",             SrcLangExt_Cpp      },
-  { "slice",       "c",             SrcLangExt_Slice    },
-  { "python",      "python",        SrcLangExt_Python   },
-  { "fortran",     "fortran",       SrcLangExt_Fortran  },
-  { "fortranfree", "fortranfree",   SrcLangExt_Fortran  },
-  { "fortranfixed", "fortranfixed", SrcLangExt_Fortran  },
-  { "vhdl",        "vhdl",          SrcLangExt_VHDL     },
-  { "xml",         "xml",           SrcLangExt_XML      },
-  { "sql",         "sql",           SrcLangExt_SQL      },
-  { "md",          "md",            SrcLangExt_Markdown },
-  { "lex",         "lex",           SrcLangExt_Lex      },
-  { 0,             0,              (SrcLangExt)0        }
+  { "idl",         "c",             SrcLangExt_IDL,      ".idl" },
+  { "java",        "c",             SrcLangExt_Java,     ".java"},
+  { "javascript",  "c",             SrcLangExt_JS,       ".js"  },
+  { "csharp",      "c",             SrcLangExt_CSharp,   ".cs"  },
+  { "d",           "c",             SrcLangExt_D,        ".d"   },
+  { "php",         "c",             SrcLangExt_PHP,      ".php" },
+  { "objective-c", "c",             SrcLangExt_ObjC,     ".m"   },
+  { "c",           "c",             SrcLangExt_Cpp,      ".c"   },
+  { "c++",         "c",             SrcLangExt_Cpp,      ".cpp" },
+  { "slice",       "c",             SrcLangExt_Slice,    ".ice" },
+  { "python",      "python",        SrcLangExt_Python,   ".py"  },
+  { "fortran",     "fortran",       SrcLangExt_Fortran,  ".f"   },
+  { "fortranfree", "fortranfree",   SrcLangExt_Fortran,  ".f90" },
+  { "fortranfixed", "fortranfixed", SrcLangExt_Fortran,  ".f"   },
+  { "vhdl",        "vhdl",          SrcLangExt_VHDL,     ".vhdl"},
+  { "xml",         "xml",           SrcLangExt_XML,      ".xml" },
+  { "sql",         "sql",           SrcLangExt_SQL,      ".sql" },
+  { "md",          "md",            SrcLangExt_Markdown, ".md"  },
+  { "lex",         "lex",           SrcLangExt_Lex,      ".l"   },
+  { 0,             0,              (SrcLangExt)0,        0      }
 };
 
 bool updateLanguageMapping(const QCString &extension,const QCString &language)
@@ -5484,7 +5485,7 @@ void addCodeOnlyMappings()
   updateLanguageMapping(".sql",   "sql");
 }
 
-SrcLangExt getLanguageFromFileName(const QCString& fileName)
+SrcLangExt getLanguageFromFileName(const QCString& fileName, SrcLangExt defLang)
 {
   FileInfo fi(fileName.str());
   // we need only the part after the last ".", newer implementations of FileInfo have 'suffix()' for this.
@@ -5498,10 +5499,40 @@ SrcLangExt getLanguageFromFileName(const QCString& fileName)
     return (SrcLangExt)it->second;
   }
   //printf("getLanguageFromFileName(%s) not found!\n",qPrint(fileName));
-  return SrcLangExt_Cpp; // not listed => assume C-ish language.
+  return defLang; // not listed => assume C-ish language.
 }
 
-QCString getFileNameExtension(QCString fn)
+/// Routine to handle the language attribute of the `\code` command
+SrcLangExt getLanguageFromCodeLang(QCString &fileName)
+{
+  // try the extension
+  SrcLangExt lang = getLanguageFromFileName(fileName, SrcLangExt_Unknown);
+  if (lang == SrcLangExt_Unknown)
+  {
+    // try the language names
+    const Lang2ExtMap *p = g_lang2extMap;
+    QCString langName = fileName.lower();
+    if (langName.at(0)=='.') langName = langName.mid(1);
+    while (p->langName)
+    {
+      if (langName==p->langName)
+      {
+        // found the language
+        lang     = p->parserId;
+        fileName = p->defExt;
+        break;
+      }
+      p++;
+    }
+    if (!p->langName)
+    {
+      return SrcLangExt_Cpp;
+    }
+  }
+  return lang;
+}
+
+QCString getFileNameExtension(const QCString &fn)
 {
   if (fn.isEmpty()) return "";
   int lastDot = fn.findRev('.');

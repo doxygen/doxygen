@@ -245,10 +245,10 @@ void XmlDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
-  SrcLangExt langExt = getLanguageFromFileName(lang);
+  SrcLangExt langExt = getLanguageFromCodeLang(lang);
   switch(s->type())
   {
-    case DocVerbatim::Code: // fall though
+    case DocVerbatim::Code:
       m_t << "<programlisting";
       if (!s->language().isEmpty())
           m_t << " filename=\"" << lang << "\">";

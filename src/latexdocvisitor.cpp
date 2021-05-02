@@ -346,7 +346,7 @@ void LatexDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
-  SrcLangExt langExt = getLanguageFromFileName(lang);
+  SrcLangExt langExt = getLanguageFromCodeLang(lang);
   switch(s->type())
   {
     case DocVerbatim::Code:
