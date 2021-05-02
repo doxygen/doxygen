@@ -1373,6 +1373,7 @@ WSopt [ \t\r]*
   					  yyextra->yyLineNr++;
 					  yyextra->defLitText+=yytext;
 					  yyextra->defText+=' ';
+  					  outputChar(yyscanner,'\n');
   					}
 <RemoveCComment>{CCE}{B}*"#"	        { // see bug 594021 for a usecase for this rule
                                           if (yyextra->lastCContext==SkipCPPBlock)
