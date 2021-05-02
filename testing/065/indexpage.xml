@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>これは日本語(en)です. Output for all languages. </para>
     </detaileddescription>
+    <location file="065_tilde.dox"/>
   </compounddef>
 </doxygen>

@@ -16,22 +16,22 @@
 #ifndef _DOCBOOKDOCVISITOR_H
 #define _DOCBOOKDOCVISITOR_H
 
+#include <iostream>
+
 #include "containers.h"
 #include "docvisitor.h"
-#include <qstack.h>
-#include <qlist.h>
-#include <qcstring.h>
-#include <docparser.h>
+#include "docparser.h"
+#include "qcstring.h"
 
-class FTextStream;
 class CodeOutputInterface;
 class QCString;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci);
+    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -139,38 +139,36 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();
-    void pushEnabled();
-    void popEnabled();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+    const QCString &height, bool hasCaption,const DocNodeList &children);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+    const QCString &height, bool hasCaption,const DocNodeList &children);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
-    void visitPreStart(FTextStream &t,
-                   const QList<DocNode> &children,
+    void visitPreStart(TextStream &t,
+                   const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
                    bool inlineImage = FALSE);
-    void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
-    void visitCaption(const QList<DocNode> &children);
+    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
+    void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre = false;
     bool m_hide = false;

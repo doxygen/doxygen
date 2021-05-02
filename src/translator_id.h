@@ -125,9 +125,9 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Dibangkitkan secara otomatis oleh Doxygen";
-      if (s) result+=(QCString)" untuk "+s;
+      if (!s.isEmpty()) result+=(QCString)" untuk "+s;
       result+=" dari kode sumber.";
       return result;
     }
@@ -486,16 +486,16 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"Dibangkitkan pada tanggal "+date;
-      if (projName) result+=(QCString)" untuk "+projName;
+      if (!projName.isEmpty()) result+=(QCString)" untuk "+projName;
       result+=(QCString)" oleh";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"Diagram hierarki kelas untuk "+clName+":";
     }
@@ -574,7 +574,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
         ClassDef::CompoundType compType,
         bool isTemplate)
     {
@@ -596,7 +596,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result="Referensi File ";
       result+=fileName;
@@ -604,7 +604,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result="Referensi Namespace ";
       result+=namespaceName;
@@ -802,12 +802,12 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"Diagram kolaborasi untuk "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"Bagan kebergantungan pemuatan untuk "+fName+":";
     }
@@ -1086,7 +1086,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"Paket "+name;
     }
@@ -1479,7 +1479,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result="Referensi Direktori "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1606,7 +1606,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1627,7 +1627,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result="Referensi Modul ";
       result+=namespaceName;
@@ -1727,7 +1727,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return "Relasi "+QCString(name);
     }
@@ -1764,7 +1764,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
       return (QCString)"File dimuat dalam "+name;
     }
@@ -1773,7 +1773,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
       return (QCString)"Memuat file dalam "+name;
     }
@@ -1818,7 +1818,7 @@ class TranslatorIndonesian : public TranslatorAdapter_1_8_0
     { return "Hak Cipta"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Bagan dependensi directori untuk ")+name+":"; }
 
 };

@@ -31,7 +31,6 @@ endif()
 include_directories(
   .
   ${PROJECT_SOURCE_DIR}/libversion
-  ${PROJECT_SOURCE_DIR}/qtools
   ${GENERATED_SRC}
 )
 
@@ -98,6 +97,7 @@ wizard.h
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
 add_executable(doxywizard WIN32
+config_msg.cpp
 doxywizard.cpp
 expert.cpp
 wizard.cpp

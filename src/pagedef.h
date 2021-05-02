@@ -17,11 +17,9 @@
 #define PAGEDEF_H
 
 #include "definition.h"
-#include "sortdict.h"
 
-class PageSDict;
+class PageLinkedRefMap;
 class OutputList;
-class FTextStream;
 
 /** @brief A model of a page symbol. */
 class PageDef : public DefinitionMutable, public Definition
@@ -30,7 +28,7 @@ class PageDef : public DefinitionMutable, public Definition
     virtual ~PageDef() {}
 
     // setters
-    virtual void setFileName(const char *name) = 0;
+    virtual void setFileName(const QCString &name) = 0;
     virtual void setLocalToc(const LocalToc &tl) = 0;
     virtual void setShowLineNo(bool) = 0;
 
@@ -42,8 +40,8 @@ class PageDef : public DefinitionMutable, public Definition
     virtual QCString anchor() const = 0;
     virtual void findSectionsInDocumentation() = 0;
     virtual QCString title() const = 0;
-    virtual GroupDef *  getGroupDef() const = 0;
-    virtual PageSDict * getSubPages() const = 0;
+    virtual const GroupDef *getGroupDef() const = 0;
+    virtual const PageLinkedRefMap &getSubPages() const = 0;
     virtual void addInnerCompound(const Definition *) = 0;
     virtual bool visibleInIndex() const = 0;
     virtual bool documentedPage() const = 0;
@@ -57,13 +55,13 @@ class PageDef : public DefinitionMutable, public Definition
     virtual bool showLineNo() const = 0;
 
     virtual void writeDocumentation(OutputList &) = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
+    virtual void writeTagFile(TextStream &) = 0;
     virtual void setNestingLevel(int) = 0;
-    virtual void writePageDocumentation(OutputList &) = 0;
+    virtual void writePageDocumentation(OutputList &) const = 0;
 
 };
 
-PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t);
+PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
 
 // --- Cast functions
 
@@ -72,16 +70,12 @@ const PageDef      *toPageDef(const Definition *d);
 
 // ------------------
 
-class PageSDict : public SDict<PageDef>
+class PageLinkedMap : public LinkedMap<PageDef>
 {
-  public:
-    PageSDict(uint size) : SDict<PageDef>(size) {}
-    virtual ~PageSDict() {}
-  private:
-    int compareValues(const PageDef *i1,const PageDef *i2) const
-    {
-      return qstricmp(i1->name(),i2->name());
-    }
+};
+
+class PageLinkedRefMap : public LinkedRefMap<const PageDef>
+{
 };
 
 #endif

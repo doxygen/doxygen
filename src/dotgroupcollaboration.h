@@ -16,9 +16,11 @@
 #ifndef DOTGROUPCOLLABORATION_H
 #define DOTGROUPCOLLABORATION_H
 
+#include "dotnode.h"
 #include "dotgraph.h"
-#include "qlist.h"
 #include "groupdef.h"
+
+class TextStream;
 
 /** Representation of a group collaboration graph */
 class DotGroupCollaboration : public DotGraph
@@ -26,8 +28,8 @@ class DotGroupCollaboration : public DotGraph
   public :
     DotGroupCollaboration(const GroupDef* gd);
    ~DotGroupCollaboration();
-    QCString writeGraph(FTextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
-                        const char *path,const char *fileName,const char *relPath,
+    QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
+                        const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
 
@@ -50,7 +52,7 @@ class DotGroupCollaboration : public DotGraph
 
     struct Link
     {
-      Link(const QCString lab,const QCString &u) : label(lab), url(u) {}
+      Link(const QCString &lab,const QCString &u) : label(lab), url(u) {}
       QCString label;
       QCString url;
     };
@@ -58,28 +60,27 @@ class DotGroupCollaboration : public DotGraph
     struct Edge
     {
       Edge(DotNode *start,DotNode *end,EdgeType type)
-        : pNStart(start), pNEnd(end), eType(type)
-      { links.setAutoDelete(TRUE); }
+        : pNStart(start), pNEnd(end), eType(type) {}
 
       DotNode* pNStart;
       DotNode* pNEnd;
       EdgeType eType;
 
-      QList<Link> links;
-      void write( FTextStream &t ) const;
+      std::vector<Link> links;
+      void write( TextStream &t ) const;
     };
 
     void buildGraph(const GroupDef* gd);
     void addCollaborationMember(const Definition* def, QCString& url, EdgeType eType );
     void addMemberList( class MemberList* ml );
-    void writeGraphHeader(FTextStream &t,const QCString &title) const;
+    void writeGraphHeader(TextStream &t,const QCString &title) const;
     Edge* addEdge( DotNode* _pNStart, DotNode* _pNEnd, EdgeType _eType,
         const QCString& _label, const QCString& _url );
 
     DotNode        *m_rootNode;
-    QDict<DotNode> *m_usedNodes;
+    DotNodeMap      m_usedNodes;
     QCString        m_diskName;
-    QList<Edge>     m_edges;
+    std::vector< std::unique_ptr<Edge> >     m_edges;
 };
 
 #endif

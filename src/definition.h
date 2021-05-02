@@ -19,8 +19,6 @@
 #define DEFINITION_H
 
 #include <vector>
-#include <qlist.h>
-#include <qdict.h>
 
 #include "types.h"
 #include "reflist.h"
@@ -34,7 +32,6 @@
 class FileDef;
 class OutputList;
 class SectionRefs;
-class MemberSDict;
 class MemberDef;
 class GroupDef;
 class GroupList;
@@ -42,13 +39,13 @@ class SectionInfo;
 class Definition;
 class DefinitionMutable;
 class DefinitionImpl;
-class FTextStream;
+class TextStream;
 
 /** Data associated with a detailed description. */
 struct DocInfo
 {
     QCString doc;
-    int      line;
+    int      line = -1;
     QCString file;
 };
 
@@ -57,17 +54,17 @@ struct BriefInfo
 {
     QCString doc;
     QCString tooltip;
-    int      line;
+    int      line = -1;
     QCString file;
 };
 
 /** Data associated with description found in the body. */
 struct BodyInfo
 {
-    int      defLine;     //!< line number of the start of the definition
-    int      startLine;   //!< line number of the start of the definition's body
-    int      endLine;     //!< line number of the end of the definition's body
-    FileDef *fileDef;     //!< file definition containing the function body
+    int      defLine = -1;     //!< line number of the start of the definition
+    int      startLine = -1;   //!< line number of the start of the definition's body
+    int      endLine = -1;     //!< line number of the end of the definition's body
+    FileDef *fileDef = 0;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.
@@ -93,7 +90,8 @@ class Definition
       TypeGroup      = 4,
       TypePackage    = 5,
       TypePage       = 6,
-      TypeDir        = 7
+      TypeDir        = 7,
+      TypeConcept    = 8
     };
 
 
@@ -261,12 +259,12 @@ class Definition
     /** Returns the programming language this definition was written in. */
     virtual SrcLangExt getLanguage() const = 0;
 
-    virtual GroupList *partOfGroups() const = 0;
+    virtual const GroupList &partOfGroups() const = 0;
     virtual bool isLinkableViaGroup() const = 0;
 
     virtual const RefItemVector &xrefListItems() const = 0;
 
-    virtual const Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
     virtual std::vector<const MemberDef *> getReferencesMembers() const = 0;
@@ -319,30 +317,30 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
 
     /*! Sets a new \a name for the definition */
-    virtual void setName(const char *name) = 0;
+    virtual void setName(const QCString &name) = 0;
 
     /*! Sets a unique id for the symbol. Used for libclang integration. */
-    virtual void setId(const char *name) = 0;
+    virtual void setId(const QCString &name) = 0;
 
     /*! Set a new file name and position */
     virtual void setDefFile(const QCString& df,int defLine,int defColumn) = 0;
 
     /*! Sets the documentation of this definition to \a d. */
-    virtual void setDocumentation(const char *d,const char *docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
+    virtual void setDocumentation(const QCString &d,const QCString &docFile,int docLine,bool stripWhiteSpace=TRUE) = 0;
 
     /*! Sets the brief description of this definition to \a b.
      *  A dot is added to the sentence if not available.
      */
-    virtual void setBriefDescription(const char *b,const char *briefFile,int briefLine) = 0;
+    virtual void setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine) = 0;
 
     /*! Set the documentation that was found inside the body of an item.
      *  If there was already some documentation set, the new documentation
      *  will be appended.
      */
-    virtual void setInbodyDocumentation(const char *d,const char *docFile,int docLine) = 0;
+    virtual void setInbodyDocumentation(const QCString &d,const QCString &docFile,int docLine) = 0;
 
     /*! Sets the tag file id via which this definition was imported. */
-    virtual void setReference(const char *r) = 0;
+    virtual void setReference(const QCString &r) = 0;
 
     // source references
     virtual void setBodySegment(int defLine, int bls,int ble) = 0;
@@ -355,13 +353,13 @@ class DefinitionMutable
 
     virtual void setArtificial(bool b) = 0;
     virtual void setLanguage(SrcLangExt lang) = 0;
-    virtual void setLocalName(const QCString name) = 0;
+    virtual void setLocalName(const QCString &name) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void makePartOfGroup(GroupDef *gd) = 0;
+    virtual void makePartOfGroup(const GroupDef *gd) = 0;
 
     /*! Add the list of anchors that mark the sections that are found in the
      * documentation.
@@ -379,14 +377,14 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
     // --- writing output ----
     //-----------------------------------------------------------------------------------
-    virtual void writeSourceDef(OutputList &ol,const char *scopeName) const = 0;
-    virtual void writeInlineCode(OutputList &ol,const char *scopeName) const = 0;
-    virtual void writeSourceRefs(OutputList &ol,const char *scopeName) const = 0;
-    virtual void writeSourceReffedBy(OutputList &ol,const char *scopeName) const = 0;
+    virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeNavigationPath(OutputList &ol) const = 0;
     virtual void writeQuickMemberLinks(OutputList &,const MemberDef *) const = 0;
     virtual void writeSummaryLinks(OutputList &) const = 0;
-    virtual void writeDocAnchorsToTagFile(FTextStream &) const = 0;
+    virtual void writeDocAnchorsToTagFile(TextStream &) const = 0;
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const = 0;
 
     // ---------------------------------
@@ -406,7 +404,7 @@ DefinitionMutable   *toDefinitionMutable(const Definition *d);
  *  via \a result. The function returns TRUE if successful and FALSE
  *  in case of an error.
  */
-bool readCodeFragment(const char *fileName,
+bool readCodeFragment(const QCString &fileName,
                       int &startLine,int &endLine,
                       QCString &result);
 #endif

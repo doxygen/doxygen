@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2019 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -275,7 +275,7 @@ void MainWindow::about()
               QString::fromLatin1(qVersion());
        }
   t << QString::fromLatin1(")</center><p><br>"
-       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2019</center><p>"
+       "<center>Written by<br> Dimitri van Heesch<br>&copy; 2000-2021</center><p>"
        "</qt>");
   QMessageBox::about(this,tr("Doxygen GUI"),msg);
 }
@@ -388,7 +388,7 @@ void MainWindow::clearRecent()
     m_recentFiles.clear();
     for (int i=0;i<MAX_RECENT_FILES;i++)
     {
-      m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i++),QString::fromLatin1(""));
+      m_settings.setValue(QString::fromLatin1("recent/config%1").arg(i),QString::fromLatin1(""));
     }
     m_clearRecent->setEnabled(false);
     m_recentMenu->setEnabled(false);
@@ -553,7 +553,11 @@ void MainWindow::runDoxygen()
     m_runProcess->setEnvironment(env);
 
     QStringList args;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),Qt::SkipEmptyParts);
+#else
     QStringList runOptions = m_runOptions->text().split(QLatin1Char(' '),QString::SkipEmptyParts);
+#endif
 
     args << runOptions;
     args << QString::fromLatin1("-b"); // make stdout unbuffered
@@ -753,14 +757,21 @@ bool MainWindow::discardUnsavedChanges(bool saveOption)
 
 void MainWindow::outputLogStart()
 {
+  m_outputLogTextCount = 0;
   m_outputLog->clear();
 }
 void MainWindow::outputLogText(QString text)
 {
+  m_outputLogTextCount++;
   m_outputLog->append(APPQT(text));
 }
 void MainWindow::outputLogFinish()
 {
+  if (m_outputLogTextCount > 0)
+  {
+    selectRunTab();
+  }
+
   m_outputLog->ensureCursorVisible();
   m_saveLog->setEnabled(true);
 }

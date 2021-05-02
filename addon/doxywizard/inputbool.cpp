@@ -12,6 +12,7 @@
 
 #include "inputbool.h"
 #include "helplabel.h"
+#include "config_msg.h"
 
 #include <QCheckBox>
 #include <QTextStream>
@@ -75,7 +76,7 @@ void InputBool::updateDefault()
 {
   if (m_state==m_default || !m_lab->isEnabled())
   {
-    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
+    m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
   }
   else
   {
@@ -91,16 +92,20 @@ QVariant &InputBool::value()
 void InputBool::update()
 {
   QString v = m_value.toString().toLower();
-  if (v==QString::fromLatin1("yes")  || v==QString::fromLatin1("true")  || v==QString::fromLatin1("1"))
+  if (v==QString::fromLatin1("yes") || v==QString::fromLatin1("true") ||
+      v==QString::fromLatin1("1")   || v==QString::fromLatin1("all"))
   {
     m_state = true;
   }
-  else if (v==QString::fromLatin1("no")   || v==QString::fromLatin1("false") || v==QString::fromLatin1("0"))
+  else if (v==QString::fromLatin1("no") || v==QString::fromLatin1("false") ||
+           v==QString::fromLatin1("0")  || v==QString::fromLatin1("none"))
   {
     m_state = false;
   }
   else
   {
+    config_warn("argument '%s' for option %s is not a valid boolean value."
+                " Using the default: %s!",qPrintable(m_value.toString()),qPrintable(m_id),m_default?"YES":"NO");
     m_state = m_default;
   }
   m_cb->setChecked( m_state );

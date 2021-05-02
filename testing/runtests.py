@@ -35,6 +35,26 @@ def xpopen(cmd, cmd1="",encoding='utf-8-sig', getStderr=False):
 			proc = subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding=encoding) # Python 3 with encoding
 			return proc.stdout.read()
 
+def clean_header(errmsg):
+	# messages (due to the usage of more) have a contents like:
+	# ::::::::::::
+	# <file name>
+	# ::::::::::::
+	# we want to skip these
+	msg = errmsg.split('\n')
+	rtnmsg = ""
+	cnt = -1
+	for o in msg:
+		if (o):
+			if (cnt == -1):
+				if o.startswith(":::::::"):
+					cnt = 3
+			if (cnt > 0):
+				cnt-=1
+			else:
+				rtnmsg+=o
+	return rtnmsg
+ 
 class Tester:
 	def __init__(self,args,test):
 		self.args      = args
@@ -280,6 +300,33 @@ class Tester:
 					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,index_xsd,index_xml),)
 					failed_xmlxsd=True
 				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
+					msg += (xmllint_out,)
+					failed_xmlxsd=True
+				#
+				doxyfile_xml = []
+				doxyfile_xml.append(glob.glob('%s/Doxyfile.xml' % (xmlxsd_output)))
+				doxyfile_xml.append(glob.glob('%s/*/*/Doxyfile.xml' % (xmlxsd_output)))
+				doxyfile_xml = ' '.join(list(itertools.chain.from_iterable(doxyfile_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
+				doxyfile_xsd = []
+				doxyfile_xsd.append(glob.glob('%s/doxyfile.xsd' % (xmlxsd_output)))
+				doxyfile_xsd.append(glob.glob('%s/*/*/doxyfile.xsd' % (xmlxsd_output)))
+				doxyfile_xsd = ' '.join(list(itertools.chain.from_iterable(doxyfile_xsd))).replace(self.args.outputdir +'/','').replace('\\','/')
+				exe_string = '%s --noout --schema %s %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml)
+				exe_string1 = exe_string
+				exe_string += ' %s' % (redirx)
+				exe_string += ' %s more "%s/temp"' % (separ,xmlxsd_output)
+
+				xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
+				if xmllint_out:
+					xmllint_out = re.sub(r'.*validates','',xmllint_out).rstrip('\n')
+				else:
+					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,doxyfile_xsd,doxyfile_xml),)
+					failed_xmlxsd=True
+				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
+				if xmllint_out:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
 				#
@@ -289,6 +336,8 @@ class Tester:
 				compound_xml = ' '.join(list(itertools.chain.from_iterable(compound_xml))).replace(self.args.outputdir +'/','').replace('\\','/')
 				compound_xml = re.sub(r' [^ ]*/index.xml','',compound_xml)
 				compound_xml = re.sub(r'[^ ]*/index.xml ','',compound_xml)
+				compound_xml = re.sub(r' [^ ]*/Doxyfile.xml','',compound_xml)
+				compound_xml = re.sub(r'[^ ]*/Doxyfile.xml ','',compound_xml)
 
 				compound_xsd = []
 				compound_xsd.append(glob.glob('%s/compound.xsd' % (xmlxsd_output)))
@@ -305,6 +354,8 @@ class Tester:
 				else:
 					msg += ('Failed to run %s with schema %s for files: %s' % (self.args.xmllint,compound_xsd,compound_xml),)
 					failed_xmlxsd=True
+				if xmllint_out:
+					xmllint_out  = clean_header(xmllint_out)
 				if xmllint_out:
 					msg += (xmllint_out,)
 					failed_xmlxsd=True
@@ -338,6 +389,8 @@ class Tester:
 			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint_docbook(xmllint_out)
 			if xmllint_out:
+				xmllint_out  = clean_header(xmllint_out)
+			if xmllint_out:
 				msg += (xmllint_out,)
 				failed_docbook=True
 			elif not self.args.keep:
@@ -360,6 +413,8 @@ class Tester:
 			failed_html=False
 			xmllint_out = xpopen(exe_string,exe_string1,getStderr=True)
 			xmllint_out = self.cleanup_xmllint(xmllint_out)
+			if xmllint_out:
+				xmllint_out  = clean_header(xmllint_out)
 			if xmllint_out:
 				msg += (xmllint_out,)
 				failed_html=True
@@ -481,6 +536,7 @@ class TestManager:
 			shutil.copytree(self.args.inputdir+"/dtd", "dtd")
 
 def split_and_keep(s,sep):
+    s = s.replace('"','')             # add token separator
     s = s.replace(sep,'\0'+sep)             # add token separator
     s = s.split('\0')                       # split by null delimiter
     s = [x.strip() for x in filter(None,s)] # strip and remove empty elements

@@ -22,6 +22,7 @@
 
 #include "debug.h"
 #include "message.h"
+#include "qcstring.h"
 
 //------------------------------------------------------------------------
 
@@ -31,6 +32,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "functions",         Debug::Functions         },
   { "variables",         Debug::Variables         },
   { "preprocessor",      Debug::Preprocessor      },
+  { "nolineno",          Debug::NoLineNo          },
   { "classes",           Debug::Classes           },
   { "commentcnv",        Debug::CommentCnv        },
   { "commentscan",       Debug::CommentScan       },
@@ -68,22 +70,22 @@ static char asciiToLower(char in) {
     return in;
 }
 
-static int labelToEnumValue(const char *l)
+static int labelToEnumValue(const QCString &l)
 {
-  std::string s = l;
+  std::string s = l.str();
   std::transform(s.begin(),s.end(),s.begin(),asciiToLower);
   auto it = s_labels.find(s);
   return (it!=s_labels.end()) ? it->second : 0;
 }
 
-int Debug::setFlag(const char *lab)
+int Debug::setFlag(const QCString &lab)
 {
   int retVal = labelToEnumValue(lab);
-  curMask = (DebugMask)(curMask | labelToEnumValue(lab));
+  curMask = (DebugMask)(curMask | retVal);
   return retVal;
 }
 
-void Debug::clearFlag(const char *lab)
+void Debug::clearFlag(const QCString &lab)
 {
   curMask = (DebugMask)(curMask & ~labelToEnumValue(lab));
 }
@@ -118,8 +120,8 @@ class Timer
     double elapsedTimeS()
     {
       return (std::chrono::duration_cast<
-                  std::chrono::milliseconds>(
-                  std::chrono::system_clock::now() - m_startTime).count()) / 1000.0;
+                  std::chrono::microseconds>(
+                  std::chrono::system_clock::now() - m_startTime).count()) / 1000000.0;
     }
   private:
     std::chrono::time_point<std::chrono::system_clock> m_startTime;

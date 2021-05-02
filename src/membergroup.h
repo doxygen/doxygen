@@ -19,9 +19,9 @@
 #define MEMBERGROUP_H
 
 #include <vector>
+#include <map>
+#include <memory>
 
-#include <qlist.h>
-#include "sortdict.h"
 #include "types.h"
 #include "reflist.h"
 
@@ -36,32 +36,32 @@ class GroupDef;
 class OutputList;
 class Definition;
 class DefinitionMutable;
-class FTextStream;
 class RefItem;
+class TextStream;
 
 /** A class representing a group of members. */
 class MemberGroup
 {
   public:
     //MemberGroup();
-    MemberGroup(const Definition *container,int id,const char *header,
-                const char *docs,const char *docFile,int docLine);
+    MemberGroup(const Definition *container,int id,const QCString &header,
+                const QCString &docs,const QCString &docFile,int docLine);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
-    void insertMember(MemberDef *md);
+    void insertMember(const MemberDef *md);
     void setAnchors();
     void writePlainDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               const ClassDef *inheritedFrom,const char *inheritId) const;
+               const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool showInline=FALSE) const;
-    void writeDocumentation(OutputList &ol,const char *scopeName,
+    void writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const;
-    void writeDocumentationPage(OutputList &ol,const char *scopeName,
+    void writeDocumentationPage(OutputList &ol,const QCString &scopeName,
                const DefinitionMutable *container) const;
-    void writeTagFile(FTextStream &);
+    void writeTagFile(TextStream &);
     void addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
                MemberListType lt,
                const ClassDef *inheritedFrom,const QCString &inheritId) const;
@@ -85,7 +85,7 @@ class MemberGroup
     void setInGroup(bool b);
     void addListReferences(Definition *d);
     void setRefItems(const RefItemVector &sli);
-    MemberList *members() const { return memberList; }
+    const MemberList &members() const { return *memberList.get(); }
     QCString anchor() const;
 
     QCString docFile() const { return m_docFile; }
@@ -93,7 +93,7 @@ class MemberGroup
 
   private:
     const Definition *m_container;
-    MemberList *memberList = 0;      // list of all members in the group
+    std::unique_ptr<MemberList> memberList;      // list of all members in the group
     MemberList *inDeclSection = 0;
     int grpId = 0;
     QCString grpHeader;
@@ -105,30 +105,12 @@ class MemberGroup
     RefItemVector m_xrefListItems;
 };
 
-/** A list of MemberGroup objects. */
-class MemberGroupList : public QList<MemberGroup>
+class MemberGroupRefList : public std::vector<MemberGroup *>
 {
 };
 
-/** An iterator for MemberGroup objects in a MemberGroupList. */
-class MemberGroupListIterator : public QListIterator<MemberGroup>
+class MemberGroupList : public std::vector< std::unique_ptr<MemberGroup> >
 {
-  public:
-    MemberGroupListIterator(const MemberGroupList &l) :
-      QListIterator<MemberGroup>(l) {}
-};
-
-/** A sorted dictionary of MemberGroup objects. */
-class MemberGroupSDict : public SIntDict<MemberGroup>
-{
-  public:
-    MemberGroupSDict(int size=17) : SIntDict<MemberGroup>(size) {}
-   ~MemberGroupSDict() {}
- private:
-    int compareValues(const MemberGroup *item1,const MemberGroup *item2) const
-    {
-      return item1->groupId() - item2->groupId();
-    }
 };
 
 /** Data collected for a member group */
@@ -142,5 +124,7 @@ struct MemberGroupInfo
   QCString compoundName;
   RefItemVector m_sli;
 };
+
+using MemberGroupInfoMap = std::unordered_map< int,std::unique_ptr<MemberGroupInfo> >;
 
 #endif

@@ -21,17 +21,13 @@
 #include <map>
 #include <functional>
 #include <utility>
+#include <algorithm>
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <algorithm>
 
-
-#include <qxml.h>
-#include <qfileinfo.h>
-#include <qstring.h>
-
+#include "xml.h"
 #include "entry.h"
 #include "doxygen.h"
 #include "util.h"
@@ -42,6 +38,7 @@
 #include "filename.h"
 #include "section.h"
 #include "containers.h"
+#include "debug.h"
 
 /** Information about an linkable anchor */
 class TagAnchorInfo
@@ -93,13 +90,14 @@ class TagMemberInfo
     Specifier virt = Normal;
     bool isStatic = false;
     std::vector<TagEnumValueInfo> enumValues;
+    int lineNr;
 };
 
 /** Base class for all compound types */
 class TagCompoundInfo
 {
   public:
-    enum class CompoundType { Class, Namespace, Package, File, Group, Page, Dir };
+    enum class CompoundType { Class, Concept, Namespace, Package, File, Group, Page, Dir };
     explicit TagCompoundInfo(CompoundType type) : m_type(type) {}
     virtual ~TagCompoundInfo() {}
     CompoundType compoundType() const { return m_type; }
@@ -107,6 +105,7 @@ class TagCompoundInfo
     QCString name;
     QCString filename;
     std::vector<TagAnchorInfo> docAnchors;
+    int lineNr;
   private:
     CompoundType m_type;
 };
@@ -134,6 +133,22 @@ class TagClassInfo : public TagCompoundInfo
     }
 };
 
+/** Container for concept specific info that can be read from a tagfile */
+class TagConceptInfo : public TagCompoundInfo
+{
+  public:
+    TagConceptInfo() :TagCompoundInfo(CompoundType::Concept) {}
+    QCString clangId;
+    static TagConceptInfo *get(std::unique_ptr<TagCompoundInfo> &t)
+    {
+      return dynamic_cast<TagConceptInfo*>(t.get());
+    }
+    static const TagConceptInfo *get(const std::unique_ptr<TagCompoundInfo> &t)
+    {
+      return dynamic_cast<const TagConceptInfo*>(t.get());
+    }
+};
+
 /** Container for namespace specific info that can be read from a tagfile */
 class TagNamespaceInfo : public TagCompoundInfo
 {
@@ -141,6 +156,7 @@ class TagNamespaceInfo : public TagCompoundInfo
     TagNamespaceInfo() :TagCompoundInfo(CompoundType::Namespace) {}
     QCString clangId;
     StringVector classList;
+    StringVector conceptList;
     StringVector namespaceList;
     static TagNamespaceInfo *get(std::unique_ptr<TagCompoundInfo> &t)
     {
@@ -175,6 +191,7 @@ class TagFileInfo : public TagCompoundInfo
     TagFileInfo() : TagCompoundInfo(CompoundType::File) { }
     QCString path;
     StringVector classList;
+    StringVector conceptList;
     StringVector namespaceList;
     std::vector<TagIncludeInfo> includes;
     static TagFileInfo *get(std::unique_ptr<TagCompoundInfo> &t)
@@ -195,6 +212,7 @@ class TagGroupInfo : public TagCompoundInfo
     QCString title;
     StringVector subgroupList;
     StringVector classList;
+    StringVector conceptList;
     StringVector namespaceList;
     StringVector fileList;
     StringVector pageList;
@@ -249,81 +267,40 @@ class TagDirInfo : public TagCompoundInfo
  *  memory. The method buildLists() is used to transfer/translate
  *  the structures to the doxygen engine.
  */
-class TagFileParser : public QXmlDefaultHandler
+class TagFileParser
 {
-    enum State { Invalid,
-                 InClass,
-                 InFile,
-                 InNamespace,
-                 InGroup,
-                 InPage,
-                 InMember,
-                 InEnumValue,
-                 InPackage,
-                 InDir,
-                 InTempArgList
-               };
-
-    struct CompoundFactory
-    {
-      using CreateFunc = std::function<std::unique_ptr<TagCompoundInfo>()>;
-      CompoundFactory(State s,CreateFunc f) : state(s), make_instance(f) {}
-      State state;
-      CreateFunc make_instance;
-    };
   public:
     TagFileParser(const char *tagName) : m_tagName(tagName) {}
 
-    void setDocumentLocator ( QXmlLocator * locator )
+    void setDocumentLocator ( const XMLLocator * locator )
     {
       m_locator = locator;
     }
 
-    void setFileName( const QString &fileName )
+    void startDocument()
     {
-      m_inputFileName = fileName.utf8();
+      m_state = Invalid;
     }
 
-    void warn(const char *fmt)
+    void startElement( const QCString &name, const XMLHandlers::Attributes& attrib );
+    void endElement( const QCString &name );
+    void characters ( const QCString & ch ) { m_curString+=ch; }
+    void error( const QCString &fileName,int lineNr,const QCString &msg)
     {
-      ::warn(m_inputFileName,m_locator->lineNumber(),"%s", fmt);
+      ::warn(fileName,lineNr,"%s",qPrint(msg));
     }
 
-    void warn(const char *fmt,const char *s)
-    {
-      ::warn(m_inputFileName,m_locator->lineNumber(),fmt,s);
-    }
-
-    void startCompound( const QXmlAttributes& attrib )
-    {
-      m_curString = "";
-      QString kind = attrib.value("kind");
-      QString isObjC = attrib.value("objc");
-
-      auto it = m_compoundFactory.find(kind.utf8().str());
-      if (it!=m_compoundFactory.end())
-      {
-        m_curCompound = it->second.make_instance();
-        m_state       = it->second.state;
-      }
-      else
-      {
-        warn("Unknown compound attribute '%s' found!",kind.data());
-        m_state = Invalid;
-      }
-
-      if (isObjC=="yes" && m_curCompound &&
-          m_curCompound->compoundType()==TagCompoundInfo::CompoundType::Class)
-      {
-        TagClassInfo::get(m_curCompound)->isObjC = TRUE;
-      }
-    }
+    void dump();
+    void buildLists(const std::shared_ptr<Entry> &root);
+    void addIncludes();
+    void startCompound( const XMLHandlers::Attributes& attrib );
 
     void endCompound()
     {
       switch (m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -338,13 +315,14 @@ class TagFileParser : public QXmlDefaultHandler
       }
     }
 
-    void startMember( const QXmlAttributes& attrib)
+    void startMember( const XMLHandlers::Attributes& attrib)
     {
       m_curMember = TagMemberInfo();
-      m_curMember.kind = attrib.value("kind").utf8();
-      QCString protStr   = attrib.value("protection").utf8();
-      QCString virtStr   = attrib.value("virtualness").utf8();
-      QCString staticStr = attrib.value("static").utf8();
+      m_curMember.kind   = XMLHandlers::value(attrib,"kind");
+      QCString protStr   = XMLHandlers::value(attrib,"protection");
+      QCString virtStr   = XMLHandlers::value(attrib,"virtualness");
+      QCString staticStr = XMLHandlers::value(attrib,"static");
+      m_curMember.lineNr = m_locator->lineNr();
       if (protStr=="protected")
       {
         m_curMember.prot = Protected;
@@ -388,15 +366,15 @@ class TagFileParser : public QXmlDefaultHandler
       }
     }
 
-    void startEnumValue( const QXmlAttributes& attrib)
+    void startEnumValue( const XMLHandlers::Attributes& attrib)
     {
       if (m_state==InMember)
       {
         m_curString = "";
         m_curEnumValue = TagEnumValueInfo();
-        m_curEnumValue.file = attrib.value("file").utf8();
-        m_curEnumValue.anchor = attrib.value("anchor").utf8();
-        m_curEnumValue.clangid = attrib.value("clangid").utf8();
+        m_curEnumValue.file    = XMLHandlers::value(attrib,"file");
+        m_curEnumValue.anchor  = XMLHandlers::value(attrib,"anchor");
+        m_curEnumValue.clangid = XMLHandlers::value(attrib,"clangid");
         m_stateStack.push(m_state);
         m_state = InEnumValue;
       }
@@ -408,7 +386,7 @@ class TagFileParser : public QXmlDefaultHandler
 
     void endEnumValue()
     {
-      m_curEnumValue.name = QCString(m_curString).stripWhiteSpace();
+      m_curEnumValue.name = QCString(m_curString).stripWhiteSpace().str();
       m_state = m_stateStack.top();
       m_stateStack.pop();
       if (m_state==InMember)
@@ -424,6 +402,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -431,7 +410,7 @@ class TagFileParser : public QXmlDefaultHandler
         case InMember:
         case InPackage:
         case InDir:
-          if (QString(m_curString).startsWith("autotoc_md")) return;
+          if (m_curString.right(10)=="autotoc_md") return;
           break;
         default:
           warn("Unexpected tag 'docanchor' found");
@@ -440,6 +419,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -460,22 +440,41 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InClass:
-          TagClassInfo::get(m_curCompound)->classList.push_back(m_curString);
+          TagClassInfo::get(m_curCompound)->classList.push_back(m_curString.str());
           break;
         case InFile:
-          TagFileInfo::get(m_curCompound)->classList.push_back(m_curString);
+          TagFileInfo::get(m_curCompound)->classList.push_back(m_curString.str());
           break;
         case InNamespace:
-          TagNamespaceInfo::get(m_curCompound)->classList.push_back(m_curString);
+          TagNamespaceInfo::get(m_curCompound)->classList.push_back(m_curString.str());
           break;
         case InGroup:
-          TagGroupInfo::get(m_curCompound)->classList.push_back(m_curString);
+          TagGroupInfo::get(m_curCompound)->classList.push_back(m_curString.str());
           break;
         case InPackage:
-          TagPackageInfo::get(m_curCompound)->classList.push_back(m_curString);
+          TagPackageInfo::get(m_curCompound)->classList.push_back(m_curString.str());
           break;
         default:
           warn("Unexpected tag 'class' found");
+          break;
+      }
+    }
+
+    void endConcept()
+    {
+      switch(m_state)
+      {
+        case InNamespace:
+          TagNamespaceInfo::get(m_curCompound)->conceptList.push_back(m_curString.str());
+          break;
+        case InFile:
+          TagFileInfo::get(m_curCompound)->conceptList.push_back(m_curString.str());
+          break;
+        case InGroup:
+          TagGroupInfo::get(m_curCompound)->conceptList.push_back(m_curString.str());
+          break;
+        default:
+          warn("Unexpected tag 'concept' found");
           break;
       }
     }
@@ -485,13 +484,13 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InNamespace:
-          TagNamespaceInfo::get(m_curCompound)->namespaceList.push_back(m_curString);
+          TagNamespaceInfo::get(m_curCompound)->namespaceList.push_back(m_curString.str());
           break;
         case InFile:
-          TagFileInfo::get(m_curCompound)->namespaceList.push_back(m_curString);
+          TagFileInfo::get(m_curCompound)->namespaceList.push_back(m_curString.str());
           break;
         case InGroup:
-          TagGroupInfo::get(m_curCompound)->namespaceList.push_back(m_curString);
+          TagGroupInfo::get(m_curCompound)->namespaceList.push_back(m_curString.str());
           break;
         default:
           warn("Unexpected tag 'namespace' found");
@@ -504,10 +503,10 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InGroup:
-          TagGroupInfo::get(m_curCompound)->fileList.push_back(m_curString);
+          TagGroupInfo::get(m_curCompound)->fileList.push_back(m_curString.str());
           break;
         case InDir:
-          TagDirInfo::get(m_curCompound)->fileList.push_back(m_curString);
+          TagDirInfo::get(m_curCompound)->fileList.push_back(m_curString.str());
           break;
         default:
           warn("Unexpected tag 'file' found");
@@ -520,7 +519,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InGroup:
-          TagGroupInfo::get(m_curCompound)->fileList.push_back(m_curString);
+          TagGroupInfo::get(m_curCompound)->fileList.push_back(m_curString.str());
           break;
         default:
           warn("Unexpected tag 'page' found");
@@ -533,7 +532,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch(m_state)
       {
         case InDir:
-          TagDirInfo::get(m_curCompound)->subdirList.push_back(m_curString);
+          TagDirInfo::get(m_curCompound)->subdirList.push_back(m_curString.str());
           break;
         default:
           warn("Unexpected tag 'dir' found");
@@ -541,15 +540,15 @@ class TagFileParser : public QXmlDefaultHandler
       }
     }
 
-    void startStringValue(const QXmlAttributes& )
+    void startStringValue(const XMLHandlers::Attributes& )
     {
       m_curString = "";
     }
 
-    void startDocAnchor(const QXmlAttributes& attrib )
+    void startDocAnchor(const XMLHandlers::Attributes& attrib )
     {
-      m_fileName = attrib.value("file").utf8();
-      m_title = attrib.value("title").utf8();
+      m_fileName  = XMLHandlers::value(attrib,"file");
+      m_title     = XMLHandlers::value(attrib,"title");
       m_curString = "";
     }
 
@@ -570,6 +569,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch (m_state)
       {
         case InClass:
+        case InConcept:
         case InFile:
         case InNamespace:
         case InGroup:
@@ -587,13 +587,13 @@ class TagFileParser : public QXmlDefaultHandler
       }
     }
 
-    void startBase(const QXmlAttributes& attrib )
+    void startBase(const XMLHandlers::Attributes& attrib )
     {
       m_curString="";
       if (m_state==InClass && m_curCompound)
       {
-        QString protStr = attrib.value("protection");
-        QString virtStr = attrib.value("virtualness");
+        QCString protStr = XMLHandlers::value(attrib,"protection");
+        QCString virtStr = XMLHandlers::value(attrib,"virtualness");
         Protection prot = Public;
         Specifier  virt = Normal;
         if (protStr=="protected")
@@ -608,7 +608,7 @@ class TagFileParser : public QXmlDefaultHandler
         {
           virt = Virtual;
         }
-        TagClassInfo::get(m_curCompound)->bases.push_back(BaseInfo(m_curString.c_str(),prot,virt));
+        TagClassInfo::get(m_curCompound)->bases.push_back(BaseInfo(m_curString,prot,virt));
       }
       else
       {
@@ -628,13 +628,13 @@ class TagFileParser : public QXmlDefaultHandler
       }
     }
 
-    void startIncludes(const QXmlAttributes& attrib )
+    void startIncludes(const XMLHandlers::Attributes& attrib )
     {
       m_curIncludes = TagIncludeInfo();
-      m_curIncludes.id = attrib.value("id").utf8();
-      m_curIncludes.name = attrib.value("name").utf8();
-      m_curIncludes.isLocal = attrib.value("local").utf8()=="yes" ? TRUE : FALSE;
-      m_curIncludes.isImported = attrib.value("imported").utf8()=="yes" ? TRUE : FALSE;
+      m_curIncludes.id         = XMLHandlers::value(attrib,"id");
+      m_curIncludes.name       = XMLHandlers::value(attrib,"name");
+      m_curIncludes.isLocal    = XMLHandlers::value(attrib,"local")=="yes";
+      m_curIncludes.isImported = XMLHandlers::value(attrib,"imported")=="yes";
       m_curString="";
     }
 
@@ -655,7 +655,7 @@ class TagFileParser : public QXmlDefaultHandler
     {
       if (m_state==InClass && m_curCompound)
       {
-        TagClassInfo::get(m_curCompound)->templateArguments.push_back(m_curString);
+        TagClassInfo::get(m_curCompound)->templateArguments.push_back(m_curString.str());
       }
       else
       {
@@ -668,6 +668,7 @@ class TagFileParser : public QXmlDefaultHandler
       switch (m_state)
       {
         case InClass:
+        case InConcept:
         case InNamespace:
         case InFile:
         case InGroup:
@@ -780,7 +781,7 @@ class TagFileParser : public QXmlDefaultHandler
     {
       if (m_state==InGroup)
       {
-        TagGroupInfo::get(m_curCompound)->subgroupList.push_back(m_curString);
+        TagGroupInfo::get(m_curCompound)->subgroupList.push_back(m_curString.str());
       }
       else
       {
@@ -788,7 +789,7 @@ class TagFileParser : public QXmlDefaultHandler
       }
     }
 
-    void startIgnoreElement(const QXmlAttributes& )
+    void startIgnoreElement(const XMLHandlers::Attributes& )
     {
     }
 
@@ -796,178 +797,193 @@ class TagFileParser : public QXmlDefaultHandler
     {
     }
 
-    bool startDocument()
-    {
-      m_state = Invalid;
-
-      m_startElementHandlers.insert({
-      { "compound",    std::bind(&TagFileParser::startCompound,     this, std::placeholders::_1) },
-      { "member",      std::bind(&TagFileParser::startMember,       this, std::placeholders::_1) },
-      { "enumvalue",   std::bind(&TagFileParser::startEnumValue,    this, std::placeholders::_1) },
-      { "name",        std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "base",        std::bind(&TagFileParser::startBase,         this, std::placeholders::_1) },
-      { "filename",    std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "includes",    std::bind(&TagFileParser::startIncludes,     this, std::placeholders::_1) },
-      { "path",        std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "anchorfile",  std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "anchor",      std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "clangid",     std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "arglist",     std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "title",       std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "subgroup",    std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "class",       std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "namespace",   std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "file",        std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "dir",         std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "page",        std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "docanchor",   std::bind(&TagFileParser::startDocAnchor,    this, std::placeholders::_1) },
-      { "tagfile",     std::bind(&TagFileParser::startIgnoreElement,this, std::placeholders::_1) },
-      { "templarg",    std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) },
-      { "type",        std::bind(&TagFileParser::startStringValue,  this, std::placeholders::_1) }
-      });
-
-      m_endElementHandlers.insert({
-      { "compound",    std::bind(&TagFileParser::endCompound,     this) },
-      { "member",      std::bind(&TagFileParser::endMember,       this) },
-      { "enumvalue",   std::bind(&TagFileParser::endEnumValue,    this) },
-      { "name",        std::bind(&TagFileParser::endName,         this) },
-      { "base",        std::bind(&TagFileParser::endBase,         this) },
-      { "filename",    std::bind(&TagFileParser::endFilename,     this) },
-      { "includes",    std::bind(&TagFileParser::endIncludes,     this) },
-      { "path",        std::bind(&TagFileParser::endPath,         this) },
-      { "anchorfile",  std::bind(&TagFileParser::endAnchorFile,   this) },
-      { "anchor",      std::bind(&TagFileParser::endAnchor,       this) },
-      { "clangid",     std::bind(&TagFileParser::endClangId,      this) },
-      { "arglist",     std::bind(&TagFileParser::endArglist,      this) },
-      { "title",       std::bind(&TagFileParser::endTitle,        this) },
-      { "subgroup",    std::bind(&TagFileParser::endSubgroup,     this) },
-      { "class"   ,    std::bind(&TagFileParser::endClass,        this) },
-      { "namespace",   std::bind(&TagFileParser::endNamespace,    this) },
-      { "file",        std::bind(&TagFileParser::endFile,         this) },
-      { "dir",         std::bind(&TagFileParser::endDir,          this) },
-      { "page",        std::bind(&TagFileParser::endPage,         this) },
-      { "docanchor",   std::bind(&TagFileParser::endDocAnchor,    this) },
-      { "tagfile",     std::bind(&TagFileParser::endIgnoreElement,this) },
-      { "templarg",    std::bind(&TagFileParser::endTemplateArg,  this) },
-      { "type",        std::bind(&TagFileParser::endType,         this) }
-      });
-
-      return TRUE;
-    }
-
-    bool startElement( const QString&, const QString&,
-                       const QString&name, const QXmlAttributes& attrib )
-    {
-      //printf("startElement '%s'\n",name.data());
-      auto it = m_startElementHandlers.find(name.utf8().str());
-      if (it!=std::end(m_startElementHandlers))
-      {
-        it->second(attrib);
-      }
-      else
-      {
-        warn("Unknown tag '%s' found!",name.data());
-      }
-      return TRUE;
-    }
-
-    bool endElement( const QString&, const QString&, const QString& name )
-    {
-      //printf("endElement '%s'\n",name.data());
-      auto it = m_endElementHandlers.find(name.utf8().str());
-      if (it!=std::end(m_endElementHandlers))
-      {
-        it->second();
-      }
-      else
-      {
-        warn("Unknown tag '%s' found!",name.data());
-      }
-      return TRUE;
-    }
-
-    bool characters ( const QString & ch )
-    {
-      m_curString+=ch.utf8();
-      return TRUE;
-    }
-
-    void dump();
-    void buildLists(const std::shared_ptr<Entry> &root);
-    void addIncludes();
-
-  private:
     void buildMemberList(const std::shared_ptr<Entry> &ce,const std::vector<TagMemberInfo> &members);
     void addDocAnchors(const std::shared_ptr<Entry> &e,const std::vector<TagAnchorInfo> &l);
-    std::vector< std::unique_ptr<TagCompoundInfo> >     m_tagFileCompounds;
 
-    std::map< std::string, std::function<void(const QXmlAttributes&)> > m_startElementHandlers;
-    std::map< std::string, std::function<void()> >                      m_endElementHandlers;
-    std::map< std::string, CompoundFactory >                            m_compoundFactory =
-      {
-        // kind tag      state        creation function
-        { "class",     { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Class);     } } },
-        { "struct",    { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Struct);    } } },
-        { "union",     { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Union);     } } },
-        { "interface", { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Interface); } } },
-        { "enum",      { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Enum);      } } },
-        { "exception", { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Exception); } } },
-        { "protocol",  { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Protocol);  } } },
-        { "category",  { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Category);  } } },
-        { "service",   { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Service);   } } },
-        { "singleton", { InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Singleton); } } },
-        { "file",      { InFile,      []() { return std::make_unique<TagFileInfo>();                               } } },
-        { "namespace", { InNamespace, []() { return std::make_unique<TagNamespaceInfo>();                          } } },
-        { "group",     { InGroup,     []() { return std::make_unique<TagGroupInfo>();                              } } },
-        { "page",      { InPage,      []() { return std::make_unique<TagPageInfo>();                               } } },
-        { "package",   { InPackage,   []() { return std::make_unique<TagPackageInfo>();                            } } },
-        { "dir",       { InDir,       []() { return std::make_unique<TagDirInfo>();                                } } }
-      };
 
+    enum State { Invalid,
+                 InClass,
+                 InConcept,
+                 InFile,
+                 InNamespace,
+                 InGroup,
+                 InPage,
+                 InMember,
+                 InEnumValue,
+                 InPackage,
+                 InDir,
+                 InTempArgList
+               };
+  private:
+
+    void warn(const char *fmt)
+    {
+      QCString fileName = m_locator->fileName();
+      ::warn(fileName,m_locator->lineNr(),"%s", fmt);
+    }
+
+    void warn(const char *fmt,const char *s)
+    {
+      QCString fileName = m_locator->fileName();
+      ::warn(fileName,m_locator->lineNr(),fmt,s);
+    }
+
+
+    //------------------------------------
+
+    std::vector< std::unique_ptr<TagCompoundInfo> > m_tagFileCompounds;
     std::unique_ptr<TagCompoundInfo> m_curCompound;
 
     TagMemberInfo              m_curMember;
     TagEnumValueInfo           m_curEnumValue;
     TagIncludeInfo             m_curIncludes;
 
-    std::string                m_curString;
-    QCString                   m_tagName;
-    QCString                   m_fileName;
-    QCString                   m_title;
+    QCString                m_curString;
+    QCString                m_tagName;
+    QCString                m_fileName;
+    QCString                m_title;
     State                      m_state = Invalid;
     std::stack<State>          m_stateStack;
-    QXmlLocator               *m_locator = nullptr;
-    QCString                   m_inputFileName;
+    const XMLLocator          *m_locator = nullptr;
 };
 
-/** Error handler for the XML tag file parser.
- *
- *  Basically dumps all fatal error to stderr using err().
- */
-class TagFileErrorHandler : public QXmlErrorHandler
+//---------------------------------------------------------------------------------------------------------------
+
+struct ElementCallbacks
 {
-  public:
-    virtual ~TagFileErrorHandler() {}
-    bool warning( const QXmlParseException & )
-    {
-      return FALSE;
-    }
-    bool error( const QXmlParseException & )
-    {
-      return FALSE;
-    }
-    bool fatalError( const QXmlParseException &exception )
-    {
-      err("Fatal error at line %d column %d: %s\n",
-          exception.lineNumber(),exception.columnNumber(),
-          exception.message().data());
-      return FALSE;
-    }
-    QString errorString() { return ""; }
+  using StartCallback = std::function<void(TagFileParser&,const XMLHandlers::Attributes&)>;
+  using EndCallback   = std::function<void(TagFileParser&)>;
 
-  private:
-    QString errorMsg;
+  StartCallback startCb;
+  EndCallback   endCb;
 };
+
+ElementCallbacks::StartCallback startCb(void (TagFileParser::*fn)(const XMLHandlers::Attributes &))
+{
+  return [fn](TagFileParser &parser,const XMLHandlers::Attributes &attr) { (parser.*fn)(attr); };
+}
+
+ElementCallbacks::EndCallback endCb(void (TagFileParser::*fn)())
+{
+  return [fn](TagFileParser &parser) { (parser.*fn)(); };
+}
+
+static const std::map< std::string, ElementCallbacks > g_elementHandlers =
+{
+  // name,         start element callback,                      end element callback
+  { "compound",    { startCb(&TagFileParser::startCompound     ), endCb(&TagFileParser::endCompound     ) } },
+  { "member",      { startCb(&TagFileParser::startMember       ), endCb(&TagFileParser::endMember       ) } },
+  { "enumvalue",   { startCb(&TagFileParser::startEnumValue    ), endCb(&TagFileParser::endEnumValue    ) } },
+  { "name",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endName         ) } },
+  { "base",        { startCb(&TagFileParser::startBase         ), endCb(&TagFileParser::endBase         ) } },
+  { "filename",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endFilename     ) } },
+  { "includes",    { startCb(&TagFileParser::startIncludes     ), endCb(&TagFileParser::endIncludes     ) } },
+  { "path",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endPath         ) } },
+  { "anchorfile",  { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endAnchorFile   ) } },
+  { "anchor",      { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endAnchor       ) } },
+  { "clangid",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endClangId      ) } },
+  { "arglist",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endArglist      ) } },
+  { "title",       { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endTitle        ) } },
+  { "subgroup",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endSubgroup     ) } },
+  { "class",       { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endClass        ) } },
+  { "concept",     { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endConcept      ) } },
+  { "namespace",   { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endNamespace    ) } },
+  { "file",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endFile         ) } },
+  { "dir",         { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endDir          ) } },
+  { "page",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endPage         ) } },
+  { "docanchor",   { startCb(&TagFileParser::startDocAnchor    ), endCb(&TagFileParser::endDocAnchor    ) } },
+  { "tagfile",     { startCb(&TagFileParser::startIgnoreElement), endCb(&TagFileParser::endIgnoreElement) } },
+  { "templarg",    { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endTemplateArg  ) } },
+  { "type",        { startCb(&TagFileParser::startStringValue  ), endCb(&TagFileParser::endType         ) } }
+};
+
+//---------------------------------------------------------------------------------------------------------------
+
+struct CompoundFactory
+{
+  using CreateFunc = std::function<std::unique_ptr<TagCompoundInfo>()>;
+  CompoundFactory(TagFileParser::State s,CreateFunc f) : state(s), make_instance(f) {}
+  TagFileParser::State state;
+  CreateFunc make_instance;
+};
+
+static const std::map< std::string, CompoundFactory > g_compoundFactory =
+{
+  // kind tag      state        creation function
+  { "class",     { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Class);     } } },
+  { "struct",    { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Struct);    } } },
+  { "union",     { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Union);     } } },
+  { "interface", { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Interface); } } },
+  { "enum",      { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Enum);      } } },
+  { "exception", { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Exception); } } },
+  { "protocol",  { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Protocol);  } } },
+  { "category",  { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Category);  } } },
+  { "service",   { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Service);   } } },
+  { "singleton", { TagFileParser::InClass,     []() { return std::make_unique<TagClassInfo>(TagClassInfo::Kind::Singleton); } } },
+  { "file",      { TagFileParser::InFile,      []() { return std::make_unique<TagFileInfo>();                               } } },
+  { "namespace", { TagFileParser::InNamespace, []() { return std::make_unique<TagNamespaceInfo>();                          } } },
+  { "concept",   { TagFileParser::InConcept,   []() { return std::make_unique<TagConceptInfo>();                            } } },
+  { "group",     { TagFileParser::InGroup,     []() { return std::make_unique<TagGroupInfo>();                              } } },
+  { "page",      { TagFileParser::InPage,      []() { return std::make_unique<TagPageInfo>();                               } } },
+  { "package",   { TagFileParser::InPackage,   []() { return std::make_unique<TagPackageInfo>();                            } } },
+  { "dir",       { TagFileParser::InDir,       []() { return std::make_unique<TagDirInfo>();                                } } }
+};
+
+//---------------------------------------------------------------------------------------------------------------
+
+void TagFileParser::startElement( const QCString &name, const XMLHandlers::Attributes& attrib )
+{
+  //printf("startElement '%s'\n",qPrint(name));
+  auto it = g_elementHandlers.find(name.str());
+  if (it!=std::end(g_elementHandlers))
+  {
+    it->second.startCb(*this,attrib);
+  }
+  else
+  {
+    warn("Unknown start tag '%s' found!",qPrint(name));
+  }
+}
+
+void TagFileParser::endElement( const QCString &name )
+{
+  //printf("endElement '%s'\n",qPrint(name));
+  auto it = g_elementHandlers.find(name.str());
+  if (it!=std::end(g_elementHandlers))
+  {
+    it->second.endCb(*this);
+  }
+  else
+  {
+    warn("Unknown end tag '%s' found!",qPrint(name));
+  }
+}
+
+void TagFileParser::startCompound( const XMLHandlers::Attributes& attrib )
+{
+  m_curString = "";
+  std::string kind   = XMLHandlers::value(attrib,"kind");
+  std::string isObjC = XMLHandlers::value(attrib,"objc");
+
+  auto it = g_compoundFactory.find(kind);
+  if (it!=g_compoundFactory.end())
+  {
+    m_curCompound = it->second.make_instance();
+    m_state       = it->second.state;
+    m_curCompound->lineNr = m_locator->lineNr();
+  }
+  else
+  {
+    warn("Unknown compound attribute '%s' found!",kind.c_str());
+    m_state = Invalid;
+  }
+
+  if (isObjC=="yes" && m_curCompound &&
+      m_curCompound->compoundType()==TagCompoundInfo::CompoundType::Class)
+  {
+    TagClassInfo::get(m_curCompound)->isObjC = TRUE;
+  }
+}
 
 /*! Dumps the internal structures. For debugging only! */
 void TagFileParser::dump()
@@ -979,21 +995,32 @@ void TagFileParser::dump()
     if (comp->compoundType()==TagCompoundInfo::CompoundType::Class)
     {
       const TagClassInfo *cd = TagClassInfo::get(comp);
-      msg("class '%s'\n",cd->name.data());
-      msg("  filename '%s'\n",cd->filename.data());
+      msg("class '%s'\n",qPrint(cd->name));
+      msg("  filename '%s'\n",qPrint(cd->filename));
       for (const BaseInfo &bi : cd->bases)
       {
-        msg( "  base: %s \n", bi.name.data() );
+        msg( "  base: %s \n", bi.name.isEmpty() ? "" : qPrint(bi.name) );
       }
 
       for (const auto &md : cd->members)
       {
         msg("  member:\n");
-        msg("    kind: '%s'\n",md.kind.data());
-        msg("    name: '%s'\n",md.name.data());
-        msg("    anchor: '%s'\n",md.anchor.data());
-        msg("    arglist: '%s'\n",md.arglist.data());
+        msg("    kind: '%s'\n",qPrint(md.kind));
+        msg("    name: '%s'\n",qPrint(md.name));
+        msg("    anchor: '%s'\n",qPrint(md.anchor));
+        msg("    arglist: '%s'\n",qPrint(md.arglist));
       }
+    }
+  }
+  //============== CONCEPTS
+  for (const auto &comp : m_tagFileCompounds)
+  {
+    if (comp->compoundType()==TagCompoundInfo::CompoundType::Concept)
+    {
+      const TagConceptInfo *cd = TagConceptInfo::get(comp);
+
+      msg("concept '%s'\n",qPrint(cd->name));
+      msg("  filename '%s'\n",qPrint(cd->filename));
     }
   }
   //============== NAMESPACES
@@ -1003,8 +1030,8 @@ void TagFileParser::dump()
     {
       const TagNamespaceInfo *nd = TagNamespaceInfo::get(comp);
 
-      msg("namespace '%s'\n",nd->name.data());
-      msg("  filename '%s'\n",nd->filename.data());
+      msg("namespace '%s'\n",qPrint(nd->name));
+      msg("  filename '%s'\n",qPrint(nd->filename));
       for (const auto &cls : nd->classList)
       {
         msg( "  class: %s \n", cls.c_str() );
@@ -1013,10 +1040,10 @@ void TagFileParser::dump()
       for (const auto &md : nd->members)
       {
         msg("  member:\n");
-        msg("    kind: '%s'\n",md.kind.data());
-        msg("    name: '%s'\n",md.name.data());
-        msg("    anchor: '%s'\n",md.anchor.data());
-        msg("    arglist: '%s'\n",md.arglist.data());
+        msg("    kind: '%s'\n",qPrint(md.kind));
+        msg("    name: '%s'\n",qPrint(md.name));
+        msg("    anchor: '%s'\n",qPrint(md.anchor));
+        msg("    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
@@ -1028,8 +1055,8 @@ void TagFileParser::dump()
     {
       const TagFileInfo *fd = TagFileInfo::get(comp);
 
-      msg("file '%s'\n",fd->name.data());
-      msg("  filename '%s'\n",fd->filename.data());
+      msg("file '%s'\n",qPrint(fd->name));
+      msg("  filename '%s'\n",qPrint(fd->filename));
       for (const auto &ns : fd->namespaceList)
       {
         msg( "  namespace: %s \n", ns.c_str() );
@@ -1042,15 +1069,15 @@ void TagFileParser::dump()
       for (const auto &md : fd->members)
       {
         msg("  member:\n");
-        msg("    kind: '%s'\n",md.kind.data());
-        msg("    name: '%s'\n",md.name.data());
-        msg("    anchor: '%s'\n",md.anchor.data());
-        msg("    arglist: '%s'\n",md.arglist.data());
+        msg("    kind: '%s'\n",qPrint(md.kind));
+        msg("    name: '%s'\n",qPrint(md.name));
+        msg("    anchor: '%s'\n",qPrint(md.anchor));
+        msg("    arglist: '%s'\n",qPrint(md.arglist));
       }
 
       for (const auto &ii : fd->includes)
       {
-        msg("  includes id: %s name: %s\n",ii.id.data(),ii.name.data());
+        msg("  includes id: %s name: %s\n",qPrint(ii.id),qPrint(ii.name));
       }
     }
   }
@@ -1061,8 +1088,8 @@ void TagFileParser::dump()
     if (comp->compoundType()==TagCompoundInfo::CompoundType::Group)
     {
       const TagGroupInfo *gd = TagGroupInfo::get(comp);
-      msg("group '%s'\n",gd->name.data());
-      msg("  filename '%s'\n",gd->filename.data());
+      msg("group '%s'\n",qPrint(gd->name));
+      msg("  filename '%s'\n",qPrint(gd->filename));
 
       for (const auto &ns : gd->namespaceList)
       {
@@ -1088,10 +1115,10 @@ void TagFileParser::dump()
       for (const auto &md : gd->members)
       {
         msg("  member:\n");
-        msg("    kind: '%s'\n",md.kind.data());
-        msg("    name: '%s'\n",md.name.data());
-        msg("    anchor: '%s'\n",md.anchor.data());
-        msg("    arglist: '%s'\n",md.arglist.data());
+        msg("    kind: '%s'\n",qPrint(md.kind));
+        msg("    name: '%s'\n",qPrint(md.name));
+        msg("    anchor: '%s'\n",qPrint(md.anchor));
+        msg("    arglist: '%s'\n",qPrint(md.arglist));
       }
     }
   }
@@ -1102,9 +1129,9 @@ void TagFileParser::dump()
     if (comp->compoundType()==TagCompoundInfo::CompoundType::Page)
     {
       const TagPageInfo *pd = TagPageInfo::get(comp);
-      msg("page '%s'\n",pd->name.data());
-      msg("  title '%s'\n",pd->title.data());
-      msg("  filename '%s'\n",pd->filename.data());
+      msg("page '%s'\n",qPrint(pd->name));
+      msg("  title '%s'\n",qPrint(pd->title));
+      msg("  filename '%s'\n",qPrint(pd->filename));
     }
   }
 
@@ -1115,8 +1142,8 @@ void TagFileParser::dump()
     {
       const TagDirInfo *dd = TagDirInfo::get(comp);
       {
-        msg("dir '%s'\n",dd->name.data());
-        msg("  path '%s'\n",dd->path.data());
+        msg("dir '%s'\n",qPrint(dd->name));
+        msg("  path '%s'\n",qPrint(dd->path));
         for (const auto &fi : dd->fileList)
         {
           msg( "  file: %s \n", fi.c_str() );
@@ -1134,10 +1161,10 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
 {
   for (const auto &ta : l)
   {
-    if (SectionManager::instance().find(ta.label)==0)
+    if (SectionManager::instance().find(QCString(ta.label))==0)
     {
       //printf("New sectionInfo file=%s anchor=%s\n",
-      //    ta->fileName.data(),ta->label.data());
+      //    qPrint(ta->fileName),qPrint(ta->label));
       SectionInfo *si=SectionManager::instance().add(
           ta.label,ta.fileName,-1,ta.title,
           SectionType::Anchor,0,m_tagName);
@@ -1145,7 +1172,7 @@ void TagFileParser::addDocAnchors(const std::shared_ptr<Entry> &e,const std::vec
     }
     else
     {
-      warn("Duplicate anchor %s found",ta.label.data());
+      warn("Duplicate anchor %s found",qPrint(ta.label));
     }
   }
 }
@@ -1184,6 +1211,7 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
     me->stat       = tmi.isStatic;
     me->fileName   = ce->fileName;
     me->id         = tmi.clangId;
+    me->startLine  = tmi.lineNr;
     if (ce->section == Entry::GROUPDOC_SEC)
     {
       me->groups.push_back(Grouping(ce->name,Grouping::GROUPING_INGROUP));
@@ -1264,19 +1292,6 @@ void TagFileParser::buildMemberList(const std::shared_ptr<Entry> &ce,const std::
   }
 }
 
-static QCString stripPath(const QCString &s)
-{
-  int i=s.findRev('/');
-  if (i!=-1)
-  {
-    return s.right(s.length()-i-1);
-  }
-  else
-  {
-    return s;
-  }
-}
-
 /*! Injects the info gathered by the XML parser into the Entry tree.
  *  This tree contains the information extracted from the input in a
  *  "unrelated" form.
@@ -1316,9 +1331,10 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       ce->tagInfoData.tagName  = m_tagName;
       ce->tagInfoData.anchor   = tci->anchor;
       ce->tagInfoData.fileName = tci->filename;
-      ce->hasTagInfo  = TRUE;
-      ce->id       = tci->clangId;
-      ce->lang     = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
+      ce->startLine            = tci->lineNr;
+      ce->hasTagInfo           = TRUE;
+      ce->id                   = tci->clangId;
+      ce->lang                 = tci->isObjC ? SrcLangExt_ObjC : SrcLangExt_Unknown;
       // transfer base class list
       ce->extends  = tci->bases;
       if (!tci->templateArguments.empty())
@@ -1355,9 +1371,11 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       fe->hasTagInfo = TRUE;
 
       QCString fullName = m_tagName+":"+tfi->path+stripPath(tfi->name);
-      fe->fileName = fullName;
-      //printf("createFileDef() filename=%s\n",tfi->filename.data());
-      std::unique_ptr<FileDef> fd { createFileDef(m_tagName+":"+tfi->path,
+      fe->fileName  = fullName;
+      fe->startLine = tfi->lineNr;
+      //printf("createFileDef() filename=%s\n",qPrint(tfi->filename));
+      QCString tagid = m_tagName+":"+tfi->path;
+      std::unique_ptr<FileDef> fd { createFileDef(tagid,
           tfi->name,m_tagName,
           tfi->filename) };
       FileName *mn;
@@ -1375,6 +1393,27 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
     }
   }
 
+  // build concept list
+  for (const auto &comp : m_tagFileCompounds)
+  {
+    if (comp->compoundType()==TagCompoundInfo::CompoundType::Concept)
+    {
+      const TagConceptInfo *tci = TagConceptInfo::get(comp);
+
+      std::shared_ptr<Entry> ce = std::make_shared<Entry>();
+      ce->section  = Entry::CONCEPT_SEC;
+      ce->name     = tci->name;
+      addDocAnchors(ce,tci->docAnchors);
+      ce->tagInfoData.tagName  = m_tagName;
+      ce->tagInfoData.fileName = tci->filename;
+      ce->startLine   = tci->lineNr;
+      ce->hasTagInfo  = TRUE;
+      ce->id       = tci->clangId;
+
+      root->moveToSubEntryAndKeep(ce);
+    }
+  }
+
   // build namespace list
   for (const auto &comp : m_tagFileCompounds)
   {
@@ -1388,6 +1427,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ne,tni->docAnchors);
       ne->tagInfoData.tagName  = m_tagName;
       ne->tagInfoData.fileName = tni->filename;
+      ne->startLine   = tni->lineNr;
       ne->hasTagInfo  = TRUE;
       ne->id       = tni->clangId;
 
@@ -1409,6 +1449,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(pe,tpgi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpgi->filename;
+      pe->startLine   = tpgi->lineNr;
       pe->hasTagInfo  = TRUE;
 
       buildMemberList(pe,tpgi->members);
@@ -1430,6 +1471,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(ge,tgi->docAnchors);
       ge->tagInfoData.tagName  = m_tagName;
       ge->tagInfoData.fileName = tgi->filename;
+      ge->startLine   = tgi->lineNr;
       ge->hasTagInfo  = TRUE;
 
       buildMemberList(ge,tgi->members);
@@ -1472,6 +1514,7 @@ void TagFileParser::buildLists(const std::shared_ptr<Entry> &root)
       addDocAnchors(pe,tpi->docAnchors);
       pe->tagInfoData.tagName  = m_tagName;
       pe->tagInfoData.fileName = tpi->filename;
+      pe->startLine   = tpi->lineNr;
       pe->hasTagInfo  = TRUE;
       root->moveToSubEntryAndKeep(pe);
     }
@@ -1485,19 +1528,19 @@ void TagFileParser::addIncludes()
     if (comp->compoundType()==TagCompoundInfo::CompoundType::File)
     {
       const TagFileInfo *tfi = TagFileInfo::get(comp);
-      //printf("tag file tagName=%s path=%s name=%s\n",m_tagName.data(),tfi->path.data(),tfi->name.data());
+      //printf("tag file tagName=%s path=%s name=%s\n",qPrint(m_tagName),qPrint(tfi->path),qPrint(tfi->name));
       FileName *fn = Doxygen::inputNameLinkedMap->find(tfi->name);
       if (fn)
       {
         for (const auto &fd : *fn)
         {
-          //printf("input file path=%s name=%s\n",fd->getPath().data(),fd->name().data());
+          //printf("input file path=%s name=%s\n",qPrint(fd->getPath()),qPrint(fd->name()));
           if (fd->getPath()==QCString(m_tagName+":"+tfi->path))
           {
             //printf("found\n");
             for (const auto &ii : tfi->includes)
             {
-              //printf("ii->name='%s'\n",ii->name.data());
+              //printf("ii->name='%s'\n",qPrint(ii->name));
               FileName *ifn = Doxygen::inputNameLinkedMap->find(ii.name);
               ASSERT(ifn!=0);
               if (ifn)
@@ -1505,7 +1548,7 @@ void TagFileParser::addIncludes()
                 for (const auto &ifd : *ifn)
                 {
                   //printf("ifd->getOutputFileBase()=%s ii->id=%s\n",
-                  //        ifd->getOutputFileBase().data(),ii->id.data());
+                  //        qPrint(ifd->getOutputFileBase()),qPrint(ii->id));
                   if (ifd->getOutputFileBase()==QCString(ii.id))
                   {
                     fd->addIncludeDependency(ifd.get(),ii.text,ii.isLocal,ii.isImported);
@@ -1522,18 +1565,19 @@ void TagFileParser::addIncludes()
 
 void parseTagFile(const std::shared_ptr<Entry> &root,const char *fullName)
 {
-  QFileInfo fi(fullName);
-  if (!fi.exists()) return;
-  TagFileParser handler( fullName ); // tagName
-  handler.setFileName(fullName);
-  TagFileErrorHandler errorHandler;
-  QFile xmlFile( fullName );
-  QXmlInputSource source( xmlFile );
-  QXmlSimpleReader reader;
-  reader.setContentHandler( &handler );
-  reader.setErrorHandler( &errorHandler );
-  reader.parse( source );
-  handler.buildLists(root);
-  handler.addIncludes();
-  //handler.dump();
+  TagFileParser tagFileParser(fullName);
+  QCString inputStr = fileToString(fullName);
+  XMLHandlers handlers;
+  // connect the generic events handlers of the XML parser to the specific handlers of the tagFileParser object
+  handlers.startDocument = [&tagFileParser]()                                                              { tagFileParser.startDocument(); };
+  handlers.startElement  = [&tagFileParser](const std::string &name,const XMLHandlers::Attributes &attrs)  { tagFileParser.startElement(QCString(name),attrs); };
+  handlers.endElement    = [&tagFileParser](const std::string &name)                                       { tagFileParser.endElement(QCString(name)); };
+  handlers.characters    = [&tagFileParser](const std::string &chars)                                      { tagFileParser.characters(QCString(chars)); };
+  handlers.error         = [&tagFileParser](const std::string &fileName,int lineNr,const std::string &msg) { tagFileParser.error(QCString(fileName),lineNr,QCString(msg)); };
+  XMLParser parser(handlers);
+  tagFileParser.setDocumentLocator(&parser);
+  parser.parse(fullName,inputStr.data(),Debug::isFlagSet(Debug::Lex));
+  tagFileParser.buildLists(root);
+  tagFileParser.addIncludes();
+  //tagFileParser.dump();
 }

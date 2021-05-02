@@ -1,9 +1,6 @@
 /******************************************************************************
  *
- *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -18,16 +15,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cassert>
 
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qcstring.h>
-#include <qstack.h>
-#include <qdict.h>
-#include <qregexp.h>
 #include <ctype.h>
-#include <qcstringlist.h>
 
+#include "qcstring.h"
+#include "regex.h"
 #include "doxygen.h"
 #include "debug.h"
 #include "util.h"
@@ -56,8 +49,10 @@
 #include "markdown.h"
 #include "htmlentity.h"
 #include "emoji.h"
+#include "fileinfo.h"
+#include "dir.h"
 
-#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? '@' : '\\')
+#define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? "@" : "\\")
 
 // debug off
 #define DBG(x) do {} while(0)
@@ -74,7 +69,7 @@
 
 //---------------------------------------------------------------------------
 
-static const char *sectionLevelToName[] =
+static const char *g_sectionLevelToName[] =
 {
   "page",
   "section",
@@ -84,7 +79,20 @@ static const char *sectionLevelToName[] =
   "subparagraph"
 };
 
+static std::set<QCString> g_plantumlEngine {
+  "uml", "bpm", "wire", "dot", "ditaa",
+  "salt", "math", "latex", "gantt", "mindmap",
+  "wbs", "yaml", "creole", "json", "flow",
+  "board", "git"
+};
+
 //---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+
+using DefinitionStack = std::vector<const Definition *>;
+using DocNodeStack = std::stack<const DocNode *>;
+using DocStyleChangeStack = std::stack<const DocStyleChange *>;
 
 // Parser state: global variables during a call to validatingParseDoc
 static const Definition *     g_scope;
@@ -92,17 +100,17 @@ static QCString               g_context;
 static bool                   g_inSeeBlock;
 static bool                   g_xmlComment;
 static bool                   g_insideHtmlLink;
-static QStack<DocNode>        g_nodeStack;
-static QStack<DocStyleChange> g_styleStack;
-static QStack<DocStyleChange> g_initialStyleStack;
-static QList<Definition>      g_copyStack;
+static DocNodeStack           g_nodeStack;
+static DocStyleChangeStack    g_styleStack;
+static DocStyleChangeStack    g_initialStyleStack;
+static DefinitionStack        g_copyStack;
 static QCString               g_fileName;
 static QCString               g_relPath;
 
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
-static QDict<void>            g_retvalsFound;
-static QDict<void>            g_paramsFound;
+static StringSet              g_retvalsFound;
+static StringSet              g_paramsFound;
 static const MemberDef *      g_memberDef;
 static bool                   g_isExample;
 static QCString               g_exampleName;
@@ -126,10 +134,10 @@ struct DocParserContext
   bool inSeeBlock;
   bool xmlComment;
   bool insideHtmlLink;
-  QStack<DocNode> nodeStack;
-  QStack<DocStyleChange> styleStack;
-  QStack<DocStyleChange> initialStyleStack;
-  QList<Definition> copyStack;
+  DocNodeStack nodeStack;
+  DocStyleChangeStack styleStack;
+  DocStyleChangeStack initialStyleStack;
+  DefinitionStack copyStack;
   QCString fileName;
   int lineNo;
   QCString relPath;
@@ -137,8 +145,8 @@ struct DocParserContext
   bool         hasParamCommand;
   bool         hasReturnCommand;
   const MemberDef *  memberDef;
-  QDict<void>  retvalsFound;
-  QDict<void>  paramsFound;
+  StringSet    retvalsFound;
+  StringSet    paramsFound;
   bool         isExample;
   QCString     exampleName;
   QCString     searchUrl;
@@ -152,20 +160,41 @@ struct DocParserContext
   TokenInfo *token;
 };
 
-static QStack<DocParserContext> g_parserStack;
+static std::stack< std::unique_ptr<DocParserContext> > g_parserStack;
 
 //---------------------------------------------------------------------------
-static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribList &tagHtmlAttribs);
+
+class AutoNodeStack
+{
+  public:
+    AutoNodeStack(const DocNode* node) : m_node(node) { g_nodeStack.push(node); }
+   ~AutoNodeStack() {
+#if defined(NDEBUG)
+     (void)m_node;
+     if (!g_nodeStack.empty()) g_nodeStack.pop(); // robust version that does not assert
+#else
+     assert(g_nodeStack.top()==m_node); g_nodeStack.pop(); // error checking version
+#endif
+   }
+
+  private:
+   const DocNode *m_node;
+};
+
+//---------------------------------------------------------------------------
+static void handleImg(DocNode *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs);
 
 //---------------------------------------------------------------------------
 static void docParserPushContext(bool saveParamInfo=TRUE)
 {
   //QCString indent;
   //indent.fill(' ',g_parserStack.count()*2+2);
-  //printf("%sdocParserPushContext() count=%d\n",indent.data(),g_nodeStack.count());
+  //printf("%sdocParserPushContext() count=%d\n",qPrint(indent),g_nodeStack.count());
 
   doctokenizerYYpushContext();
-  DocParserContext *ctx   = new DocParserContext;
+
+  g_parserStack.push(std::make_unique<DocParserContext>());
+  auto &ctx = g_parserStack.top();
   ctx->scope              = g_scope;
   ctx->context            = g_context;
   ctx->inSeeBlock         = g_inSeeBlock;
@@ -200,13 +229,11 @@ static void docParserPushContext(bool saveParamInfo=TRUE)
 
   ctx->token              = g_token;
   g_token = new TokenInfo;
-
-  g_parserStack.push(ctx);
 }
 
 static void docParserPopContext(bool keepParamInfo=FALSE)
 {
-  DocParserContext *ctx = g_parserStack.pop();
+  auto &ctx = g_parserStack.top();
   g_scope               = ctx->scope;
   g_context             = ctx->context;
   g_inSeeBlock          = ctx->inSeeBlock;
@@ -241,12 +268,12 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
   delete g_token;
   g_token               = ctx->token;
 
-  delete ctx;
+  g_parserStack.pop();
   doctokenizerYYpopContext();
 
   //QCString indent;
   //indent.fill(' ',g_parserStack.count()*2+2);
-  //printf("%sdocParserPopContext() count=%d\n",indent.data(),g_nodeStack.count());
+  //printf("%sdocParserPopContext() count=%d\n",qPrint(indent),g_nodeStack.count());
 }
 
 //---------------------------------------------------------------------------
@@ -255,21 +282,21 @@ static void docParserPopContext(bool keepParamInfo=FALSE)
 // replaces &gt; with < and &gt; with > within string s
 static void unescapeCRef(QCString &s)
 {
-  QCString tmp(s);
-  char *p = tmp.rawData();
+  QCString result;
+  const char *p = s.data();
   if (p)
   {
     char c;
-    while ((c=*p))
+    while ((c=*p++))
     {
       if (c=='{') c='<'; else if (c=='}') c='>';
-      *p++=c;
+      result+=c;
     }
   }
 
-  tmp=substitute(tmp,"&lt;","<");
-  tmp=substitute(tmp,"&gt;",">");
-  s = tmp;
+  result=substitute(result,"&lt;","<");
+  result=substitute(result,"&gt;",">");
+  s = result;
 }
 
 //---------------------------------------------------------------------------
@@ -278,7 +305,7 @@ static void unescapeCRef(QCString &s)
  * copies the image to the output directory (which depends on the \a type
  * parameter).
  */
-static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool dowarn = true)
+static QCString findAndCopyImage(const QCString &fileName,DocImage::Type type, bool dowarn = true)
 {
   QCString result;
   bool ambig;
@@ -292,12 +319,12 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       text.sprintf("image file name %s is ambiguous.\n",qPrint(fileName));
       text+="Possible candidates:\n";
       text+=showFileDefMatches(Doxygen::imageNameLinkedMap,fileName);
-      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"%s", text.data());
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"%s", qPrint(text));
     }
 
     QCString inputFile = fd->absFilePath();
-    QFile inImage(inputFile);
-    if (inImage.open(IO_ReadOnly))
+    FileInfo infi(inputFile.str());
+    if (infi.exists())
     {
       result = fileName;
       int i;
@@ -305,7 +332,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       {
 	result = result.right((int)result.length()-i-1);
       }
-      //printf("fileName=%s result=%s\n",fileName,result.data());
+      //printf("fileName=%s result=%s\n",fileName,qPrint(result));
       QCString outputDir;
       switch(type)
       {
@@ -327,37 +354,21 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
 	  break;
       }
       QCString outputFile = outputDir+"/"+result;
-      QFileInfo outfi(outputFile);
+      FileInfo outfi(outputFile.str());
       if (outfi.isSymLink())
       {
-        QFile::remove(outputFile);
+        Dir().remove(outputFile.str());
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),
             "destination of image %s is a symlink, replacing with image",
             qPrint(outputFile));
       }
       if (outputFile!=inputFile) // prevent copying to ourself
       {
-        QFile outImage(outputFile.data());
-        if (outImage.open(IO_WriteOnly)) // copy the image
+        if (copyFile(inputFile,outputFile) && type==DocImage::Html)
         {
-          char *buffer = new char[inImage.size()];
-          inImage.readBlock(buffer,inImage.size());
-          outImage.writeBlock(buffer,inImage.size());
-          outImage.flush();
-          delete[] buffer;
-          if (type==DocImage::Html) Doxygen::indexList->addImageFile(result);
-        }
-        else
-        {
-          warn_doc_error(g_fileName,getDoctokinizerLineNr(),
-              "could not write output image %s",qPrint(outputFile));
+          Doxygen::indexList->addImageFile(result);
         }
       }
-      //else
-      //{
-      //  warn(g_fileName,getDoctokinizerLineNr(),
-      //       "Prevented to copy file %s onto itself!\n",qPrint(inputFile));
-      //}
     }
     else
     {
@@ -373,8 +384,8 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
       QCString baseName  = fd->name().left(fd->name().length()-4);
       QCString epstopdfArgs(4096);
       epstopdfArgs.sprintf("\"%s/%s.eps\" --outfile=\"%s/%s.pdf\"",
-                           outputDir.data(), baseName.data(),
-			   outputDir.data(), baseName.data());
+                           qPrint(outputDir), qPrint(baseName),
+			   qPrint(outputDir), qPrint(baseName));
       Portable::sysTimerStart();
       if (Portable::system("epstopdf",epstopdfArgs)!=0)
       {
@@ -404,7 +415,7 @@ static QCString findAndCopyImage(const char *fileName,DocImage::Type type, bool 
  *  member g_memberDef, then a warning is raised (unless warnings
  *  are disabled altogether).
  */
-static void checkArgumentName(const QCString &name)
+static void checkArgumentName(const std::string &name)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0) return; // not a member
@@ -415,24 +426,26 @@ static void checkArgumentName(const QCString &name)
   //printf("isDocsForDefinition()=%d\n",g_memberDef->isDocsForDefinition());
   if (al.empty()) return; // no argument list
 
-  static QRegExp re("$?[a-zA-Z0-9_\\x80-\\xFF]+\\.*");
-  int p=0,i=0,l;
-  while ((i=re.match(name,p,&l))!=-1) // to handle @param x,y
+  static const reg::Ex re(R"(\$?\w+\.*)");
+  reg::Iterator it(name,re);
+  reg::Iterator end;
+  for (; it!=end ; ++it)
   {
-    QCString aName=name.mid(i,l);
+    const auto &match = *it;
+    QCString aName=match.str();
     if (lang==SrcLangExt_Fortran) aName=aName.lower();
-    //printf("aName='%s'\n",aName.data());
+    //printf("aName='%s'\n",qPrint(aName));
     bool found=FALSE;
     for (const Argument &a : al)
     {
       QCString argName = g_memberDef->isDefine() ? a.type : a.name;
       if (lang==SrcLangExt_Fortran) argName=argName.lower();
       argName=argName.stripWhiteSpace();
-      //printf("argName='%s' aName=%s\n",argName.data(),aName.data());
+      //printf("argName='%s' aName=%s\n",qPrint(argName),qPrint(aName));
       if (argName.right(3)=="...") argName=argName.left(argName.length()-3);
       if (aName==argName)
       {
-	g_paramsFound.insert(aName,(void *)(0x8));
+	g_paramsFound.insert(aName.str());
 	found=TRUE;
 	break;
       }
@@ -445,7 +458,7 @@ static void checkArgumentName(const QCString &name)
       QCString inheritedFrom = "";
       QCString docFile = g_memberDef->docFile();
       int docLine = g_memberDef->docLine();
-      MemberDef *inheritedMd = g_memberDef->inheritsDocsFrom();
+      const MemberDef *inheritedMd = g_memberDef->inheritsDocsFrom();
       if (inheritedMd) // documentation was inherited
       {
         inheritedFrom.sprintf(" inherited from member %s at line "
@@ -461,7 +474,6 @@ static void checkArgumentName(const QCString &name)
 	  qPrint(aName), qPrint(scope), qPrint(g_memberDef->name()),
 	  qPrint(alStr), qPrint(inheritedFrom));
     }
-    p=i+l;
   }
 }
 /*! Collects the return values found with \@retval command
@@ -471,16 +483,16 @@ static void checkRetvalName(const QCString &name)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0 || name.isEmpty()) return; // not a member or no valid name
-  if (g_retvalsFound.find(name))
+  if (g_retvalsFound.find(name.str())!=g_retvalsFound.end())
   {
      warn_doc_error(g_memberDef->getDefFileName(),
                     g_memberDef->getDefLine(),
                     "%s",
-                    ("return value '" + name + "' of " +
+                    qPrint("return value '" + name + "' of " +
                     QCString(g_memberDef->qualifiedName()) +
-                    " has multiple documentation sections").data());
+                    " has multiple documentation sections"));
   }
-  g_retvalsFound.insert(name,(void *)(0x8));
+  g_retvalsFound.insert(name.str());
 }
 
 /*! Checks if the parameters that have been specified using \@param are
@@ -491,7 +503,7 @@ static void checkRetvalName(const QCString &name)
  */
 static void checkUnOrMultipleDocumentedParams()
 {
-  if (g_memberDef && g_hasParamCommand && Config_getBool(WARN_IF_DOC_ERROR))
+  if (g_memberDef && g_hasParamCommand)
   {
     const ArgumentList &al=g_memberDef->isDocsForDefinition() ?
       g_memberDef->argumentList() :
@@ -512,31 +524,29 @@ static void checkUnOrMultipleDocumentedParams()
         {
           // allow undocumented self / cls parameter for Python
         }
-        else if (!argName.isEmpty() && g_paramsFound.find(argName)==0 && a.docs.isEmpty())
+        else if (!argName.isEmpty() && g_paramsFound.find(argName.str())==g_paramsFound.end() && a.docs.isEmpty())
         {
           notArgCnt++;
         }
         else
         {
-          QDictIterator<void> it1(g_paramsFound);
-          void *item1;
-          for (;(item1=it1.current());++it1)
+          for (const auto &par : g_paramsFound)
           {
-            if (argName == it1.currentKey()) count++;
+            if (argName == QCString(par)) count++;
           }
         }
-        if (count > 1)
+        if ((count > 1) &&  Config_getBool(WARN_IF_DOC_ERROR))
         {
           warn_doc_error(g_memberDef->getDefFileName(),
                          g_memberDef->getDefLine(),
                          "%s",
-                         ("argument '" + aName +
+                         qPrint("argument '" + aName +
                          "' from the argument list of " +
                          QCString(g_memberDef->qualifiedName()) +
-                         " has multiple @param documentation sections").data());
+                         " has multiple @param documentation sections"));
         }
       }
-      if (notArgCnt>0)
+      if ((notArgCnt>0) && Config_getBool(WARN_IF_INCOMPLETE_DOC))
       {
         bool first=TRUE;
         QCString errMsg=
@@ -555,7 +565,7 @@ static void checkUnOrMultipleDocumentedParams()
           {
             // allow undocumented self / cls parameter for Python
           }
-          else if (!argName.isEmpty() && g_paramsFound.find(argName)==0)
+          else if (!argName.isEmpty() && g_paramsFound.find(argName.str())==g_paramsFound.end())
           {
             if (!first)
             {
@@ -568,10 +578,10 @@ static void checkUnOrMultipleDocumentedParams()
             errMsg+="  parameter '"+argName+"'";
           }
         }
-        warn_doc_error(g_memberDef->getDefFileName(),
-                       g_memberDef->getDefLine(),
-                       "%s",
-                       substitute(errMsg,"%","%%").data());
+        warn_incomplete_doc(g_memberDef->getDefFileName(),
+                            g_memberDef->getDefLine(),
+                            "%s",
+                            qPrint(substitute(errMsg,"%","%%")));
       }
     }
   }
@@ -580,7 +590,7 @@ static void checkUnOrMultipleDocumentedParams()
 //---------------------------------------------------------------------------
 
 /*! Strips known html and tex extensions from \a text. */
-static QCString stripKnownExtensions(const char *text)
+static QCString stripKnownExtensions(const QCString &text)
 {
   QCString result=text;
   if (result.right(4)==".tex")
@@ -670,10 +680,10 @@ static bool insideTable(DocNode *n)
  *  @retval TRUE if name was found.
  *  @retval FALSE if name was not found.
  */
-static bool findDocsForMemberOrCompound(const char *commandName,
-                                 QCString *pDoc,
-                                 QCString *pBrief,
-                                 const Definition **pDef)
+static bool findDocsForMemberOrCompound(const QCString &commandName,
+                                        QCString *pDoc,
+                                        QCString *pBrief,
+                                        const Definition **pDef)
 {
   //printf("findDocsForMemberOrCompound(%s)\n",commandName);
   *pDoc="";
@@ -685,7 +695,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   const FileDef      *fd=0;
   const GroupDef     *gd=0;
   const PageDef      *pd=0;
-  gd = Doxygen::groupSDict->find(cmdArg);
+  gd = Doxygen::groupLinkedMap->find(cmdArg);
   if (gd) // group
   {
     *pDoc=gd->documentation();
@@ -693,7 +703,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     *pDef=gd;
     return TRUE;
   }
-  pd = Doxygen::pageSDict->find(cmdArg);
+  pd = Doxygen::pageLinkedMap->find(cmdArg);
   if (pd) // page
   {
     *pDoc=pd->documentation();
@@ -714,7 +724,21 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   // for symbols we need to normalize the separator, so A#B, or A\B, or A.B becomes A::B
   cmdArg = substitute(cmdArg,"#","::");
   cmdArg = substitute(cmdArg,"\\","::");
-  cmdArg = substitute(cmdArg,".","::");
+  static bool extractAnonNs = Config_getBool(EXTRACT_ANON_NSPACES);
+  if (extractAnonNs &&
+      cmdArg.startsWith("anonymous_namespace{")
+      )
+  {
+    int rightBracePos = cmdArg.find("}", std::strlen("anonymous_namespace{"));
+    QCString leftPart = cmdArg.left(rightBracePos + 1);
+    QCString rightPart = cmdArg.right(cmdArg.size() - rightBracePos - 1);
+    rightPart = substitute(rightPart, ".", "::");
+    cmdArg = leftPart + rightPart;
+  }
+  else
+  {
+    cmdArg = substitute(cmdArg,".","::");
+  }
 
   int l=(int)cmdArg.length();
 
@@ -745,11 +769,11 @@ static bool findDocsForMemberOrCompound(const char *commandName,
   const ClassDef     *cd=0;
   const NamespaceDef *nd=0;
   bool found = getDefs(
-      g_context.find('.')==-1?g_context.data():"", // find('.') is a hack to detect files
+      g_context.find('.')==-1?g_context:QCString(), // find('.') is a hack to detect files
       name,
-      args.isEmpty()?0:args.data(),
+      args.isEmpty() ? QCString() : args,
       md,cd,fd,nd,gd,FALSE,0,TRUE);
-  //printf("found=%d context=%s name=%s\n",found,g_context.data(),name.data());
+  //printf("found=%d context=%s name=%s\n",found,qPrint(g_context),qPrint(name));
   if (found && md)
   {
     *pDoc=md->documentation();
@@ -767,10 +791,10 @@ static bool findDocsForMemberOrCompound(const char *commandName,
     {
       fullName.prepend(g_context.left(scopeOffset)+"::");
     }
-    //printf("Trying fullName='%s'\n",fullName.data());
+    //printf("Trying fullName='%s'\n",qPrint(fullName));
 
     // try class, namespace, group, page, file reference
-    cd = Doxygen::classSDict->find(fullName);
+    cd = Doxygen::classLinkedMap->find(fullName);
     if (cd) // class
     {
       *pDoc=cd->documentation();
@@ -778,7 +802,7 @@ static bool findDocsForMemberOrCompound(const char *commandName,
       *pDef=cd;
       return TRUE;
     }
-    nd = Doxygen::namespaceSDict->find(fullName);
+    nd = Doxygen::namespaceLinkedMap->find(fullName);
     if (nd) // namespace
     {
       *pDoc=nd->documentation();
@@ -803,26 +827,27 @@ static bool findDocsForMemberOrCompound(const char *commandName,
 
 //---------------------------------------------------------------------------
 inline void errorHandleDefaultToken(DocNode *parent,int tok,
-                               QList<DocNode> &children,const char *txt)
+                               DocNodeList &children,const QCString &txt)
 {
   const char *cmd_start = "\\";
   switch (tok)
   {
     case TK_COMMAND_AT:
       cmd_start = "@";
+      // fall through
     case TK_COMMAND_BS:
-      children.append(new DocWord(parent,TK_COMMAND_CHAR(tok) + g_token->name));
+      children.push_back(std::make_unique<DocWord>(parent,TK_COMMAND_CHAR(tok) + g_token->name));
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Illegal command %s as part of a %s",
-       qPrint(cmd_start + g_token->name),txt);
+       qPrint(cmd_start + g_token->name),qPrint(txt));
       break;
     case TK_SYMBOL:
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unsupported symbol %s found found as part of a %s",
-           qPrint(g_token->name), txt);
+           qPrint(g_token->name), qPrint(txt));
       break;
     default:
-      children.append(new DocWord(parent,g_token->name));
+      children.push_back(std::make_unique<DocWord>(parent,g_token->name));
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected token %s found as part of a %s",
-        tokToString(tok), txt);
+        tokToString(tok), qPrint(txt));
       break;
   }
 }
@@ -830,10 +855,10 @@ inline void errorHandleDefaultToken(DocNode *parent,int tok,
 //---------------------------------------------------------------------------
 // forward declaration
 static bool defaultHandleToken(DocNode *parent,int tok,
-                               QList<DocNode> &children,bool
+                               DocNodeList &children,bool
                                handleWord=TRUE);
 
-static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
+static int handleStyleArgument(DocNode *parent,DocNodeList &children,
                                const QCString &cmdName)
 {
   DBG(("handleStyleArgument(%s)\n",qPrint(cmdName)));
@@ -852,9 +877,9 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
           tok!=TK_ENDLIST
         )
   {
-    static QRegExp specialChar("[.,|()\\[\\]:;\\?]");
+    static const reg::Ex specialChar(R"([.,|()\[\]:;?])");
     if (tok==TK_WORD && g_token->name.length()==1 &&
-        g_token->name.find(specialChar)!=-1)
+        reg::match(g_token->name.str(),specialChar))
     {
       // special character that ends the markup command
       return tok;
@@ -885,30 +910,30 @@ static int handleStyleArgument(DocNode *parent,QList<DocNode> &children,
 /*! Called when a style change starts. For instance a \<b\> command is
  *  encountered.
  */
-static void handleStyleEnter(DocNode *parent,QList<DocNode> &children,
+static void handleStyleEnter(DocNode *parent,DocNodeList &children,
           DocStyleChange::Style s,const QCString &tagName,const HtmlAttribList *attribs)
 {
   DBG(("HandleStyleEnter\n"));
-  DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,tagName,TRUE,attribs);
-  children.append(sc);
+  DocStyleChange *sc= new DocStyleChange(parent,(uint)g_nodeStack.size(),s,tagName,TRUE,attribs);
+  children.push_back(std::unique_ptr<DocStyleChange>(sc));
   g_styleStack.push(sc);
 }
 
 /*! Called when a style change ends. For instance a \</b\> command is
  *  encountered.
  */
-static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
-         DocStyleChange::Style s,const char *tagName)
+static void handleStyleLeave(DocNode *parent,DocNodeList &children,
+         DocStyleChange::Style s,const QCString &tagName)
 {
   DBG(("HandleStyleLeave\n"));
   QCString tagNameLower = QCString(tagName).lower();
-  if (g_styleStack.isEmpty() ||                           // no style change
-      g_styleStack.top()->style()!=s ||                   // wrong style change
-      g_styleStack.top()->tagName()!=tagNameLower ||      // wrong style change
-      g_styleStack.top()->position()!=g_nodeStack.count() // wrong position
+  if (g_styleStack.empty() ||                            // no style change
+      g_styleStack.top()->style()!=s ||                  // wrong style change
+      g_styleStack.top()->tagName()!=tagNameLower ||     // wrong style change
+      g_styleStack.top()->position()!=g_nodeStack.size() // wrong position
      )
   {
-    if (g_styleStack.isEmpty())
+    if (g_styleStack.empty())
     {
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"found </%s> tag without matching <%s>",
           qPrint(tagName),qPrint(tagName));
@@ -925,14 +950,15 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
     }
     else
     {
-      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"found </%s> at different nesting level (%d) than expected (%d)",
-          qPrint(tagName),g_nodeStack.count(),g_styleStack.top()->position());
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"found </%s> at different nesting level (%zu) than expected (%d)",
+          qPrint(tagName),g_nodeStack.size(),g_styleStack.top()->position());
     }
   }
   else // end the section
   {
-    DocStyleChange *sc= new DocStyleChange(parent,g_nodeStack.count(),s,g_styleStack.top()->tagName(),FALSE);
-    children.append(sc);
+    children.push_back(
+        std::make_unique<DocStyleChange>(
+          parent,(uint)g_nodeStack.size(),s,g_styleStack.top()->tagName(),FALSE));
     g_styleStack.pop();
   }
 }
@@ -941,49 +967,42 @@ static void handleStyleLeave(DocNode *parent,QList<DocNode> &children,
  *  (e.g. a <b> without a </b>). The closed styles are pushed onto a stack
  *  and entered again at the start of a new paragraph.
  */
-static void handlePendingStyleCommands(DocNode *parent,QList<DocNode> &children)
+static void handlePendingStyleCommands(DocNode *parent,DocNodeList &children)
 {
-  if (!g_styleStack.isEmpty())
+  if (!g_styleStack.empty())
   {
-    DocStyleChange *sc = g_styleStack.top();
-    while (sc && sc->position()>=g_nodeStack.count())
+    const DocStyleChange *sc = g_styleStack.top();
+    while (sc && sc->position()>=g_nodeStack.size())
     { // there are unclosed style modifiers in the paragraph
-      children.append(new DocStyleChange(parent,g_nodeStack.count(),sc->style(),sc->tagName(),FALSE));
+      children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),sc->style(),sc->tagName(),FALSE));
       g_initialStyleStack.push(sc);
       g_styleStack.pop();
-      sc = g_styleStack.top();
+      sc = !g_styleStack.empty() ? g_styleStack.top() : 0;
     }
   }
 }
 
-static void handleInitialStyleCommands(DocPara *parent,QList<DocNode> &children)
+static void handleInitialStyleCommands(DocPara *parent,DocNodeList &children)
 {
-  DocStyleChange *sc;
-  while ((sc=g_initialStyleStack.pop()))
+  while (!g_initialStyleStack.empty())
   {
+    const DocStyleChange *sc = g_initialStyleStack.top();
     handleStyleEnter(parent,children,sc->style(),sc->tagName(),&sc->attribs());
+    g_initialStyleStack.pop();
   }
 }
 
-static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttribList &tagHtmlAttribs)
+static int handleAHref(DocNode *parent,DocNodeList &children,const HtmlAttribList &tagHtmlAttribs)
 {
-  HtmlAttribListIterator li(tagHtmlAttribs);
-  HtmlAttrib *opt;
   uint index=0;
   int retval = RetVal_OK;
-  for (li.toFirst();(opt=li.current());++li,++index)
+  for (const auto &opt : tagHtmlAttribs)
   {
-    if (opt->name=="name" || opt->name=="id") // <a name=label> or <a id=label> tag
+    if (opt.name=="name" || opt.name=="id") // <a name=label> or <a id=label> tag
     {
-      if (!opt->value.isEmpty())
+      if (!opt.value.isEmpty())
       {
-        // copy attributes
-        HtmlAttribList attrList = tagHtmlAttribs;
-        // and remove the href attribute
-        bool result = attrList.remove(index);
-        ASSERT(result);
-        DocAnchor *anc = new DocAnchor(parent,opt->value,TRUE);
-        children.append(anc);
+        children.push_back(std::make_unique<DocAnchor>(parent,opt.value,TRUE));
         break; // stop looking for other tag attribs
       }
       else
@@ -991,15 +1010,14 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),"found <a> tag with name option but without value!");
       }
     }
-    else if (opt->name=="href") // <a href=url>..</a> tag
+    else if (opt.name=="href") // <a href=url>..</a> tag
     {
       // copy attributes
       HtmlAttribList attrList = tagHtmlAttribs;
       // and remove the href attribute
-      bool result = attrList.remove(index);
-      ASSERT(result);
-      DocHRef *href = new DocHRef(parent,attrList,opt->value,g_relPath);
-      children.append(href);
+      attrList.erase(attrList.begin()+index);
+      DocHRef *href = new DocHRef(parent,attrList,opt.value,g_relPath);
+      children.push_back(std::unique_ptr<DocHRef>(href));
       g_insideHtmlLink=TRUE;
       retval = href->parse();
       g_insideHtmlLink=FALSE;
@@ -1008,6 +1026,7 @@ static int handleAHref(DocNode *parent,QList<DocNode> &children,const HtmlAttrib
     else // unsupported option for tag a
     {
     }
+    ++index;
   }
   return retval;
 }
@@ -1037,9 +1056,9 @@ const char *DocStyleChange::styleString() const
 
 static void handleUnclosedStyleCommands()
 {
-  if (!g_initialStyleStack.isEmpty())
+  if (!g_initialStyleStack.empty())
   {
-    DocStyleChange *sc = g_initialStyleStack.top();
+    const DocStyleChange *sc = g_initialStyleStack.top();
     g_initialStyleStack.pop();
     handleUnclosedStyleCommands();
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),
@@ -1048,13 +1067,13 @@ static void handleUnclosedStyleCommands()
   }
 }
 
-static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignoreAutoLinkFlag=FALSE)
+static void handleLinkedWord(DocNode *parent,DocNodeList &children,bool ignoreAutoLinkFlag=FALSE)
 {
   QCString name = linkToText(SrcLangExt_Unknown,g_token->name,TRUE);
   static bool autolinkSupport = Config_getBool(AUTOLINK_SUPPORT);
   if (!autolinkSupport && !ignoreAutoLinkFlag) // no autolinking -> add as normal word
   {
-    children.append(new DocWord(parent,name));
+    children.push_back(std::make_unique<DocWord>(parent,name));
     return;
   }
 
@@ -1066,7 +1085,7 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
   ClassDef *cd=0;
   bool ambig;
   FileDef *fd = findFileDef(Doxygen::inputNameLinkedMap,g_fileName,ambig);
-  //printf("handleLinkedWord(%s) g_context=%s\n",g_token->name.data(),g_context.data());
+  //printf("handleLinkedWord(%s) g_context=%s\n",qPrint(g_token->name),qPrint(g_context));
   if (!g_insideHtmlLink &&
       (resolveRef(g_context,g_token->name,g_inSeeBlock,&compound,&member,TRUE,fd,TRUE)
        || (!g_context.isEmpty() &&  // also try with global scope
@@ -1082,14 +1101,13 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
         bool localLink = g_memberDef ? member->getClassDef()==g_memberDef->getClassDef() : FALSE;
         name = member->objCMethodName(localLink,g_inSeeBlock);
       }
-      children.append(new
-          DocLinkedWord(parent,name,
+      children.push_back(
+         std::make_unique<DocLinkedWord>(
+            parent,name,
             member->getReference(),
             member->getOutputFileBase(),
             member->anchor(),
-            member->briefDescriptionAsTooltip()
-                       )
-                     );
+            member->briefDescriptionAsTooltip()));
     }
     else if (compound->isLinkable()) // compound link
     {
@@ -1100,33 +1118,31 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
       }
       else if (compound->definitionType()==Definition::TypeGroup)
       {
-        name=(toGroupDef(compound))->groupTitle();
+        name=toGroupDef(compound)->groupTitle();
       }
-      children.append(new
-          DocLinkedWord(parent,name,
-                        compound->getReference(),
-                        compound->getOutputFileBase(),
-                        anchor,
-                        compound->briefDescriptionAsTooltip()
-                       )
-                     );
+      children.push_back(
+          std::make_unique<DocLinkedWord>(
+            parent,name,
+            compound->getReference(),
+            compound->getOutputFileBase(),
+            anchor,
+            compound->briefDescriptionAsTooltip()));
     }
     else if (compound->definitionType()==Definition::TypeFile &&
              (toFileDef(compound))->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
-      children.append(new
-          DocLinkedWord(parent,g_token->name,
-                         compound->getReference(),
-                         compound->getSourceFileBase(),
-                         "",
-                         compound->briefDescriptionAsTooltip()
-                       )
-                     );
+      children.push_back(
+          std::make_unique<DocLinkedWord>(
+             parent,g_token->name,
+             compound->getReference(),
+             compound->getSourceFileBase(),
+             "",
+             compound->briefDescriptionAsTooltip()));
     }
     else // not linkable
     {
-      children.append(new DocWord(parent,name));
+      children.push_back(std::make_unique<DocWord>(parent,name));
     }
   }
   else if (!g_insideHtmlLink && len>1 && g_token->name.at(len-1)==':')
@@ -1135,47 +1151,35 @@ static void handleLinkedWord(DocNode *parent,QList<DocNode> &children,bool ignor
     // but Foo itself might be linkable.
     g_token->name=g_token->name.left(len-1);
     handleLinkedWord(parent,children,ignoreAutoLinkFlag);
-    children.append(new DocWord(parent,":"));
+    children.push_back(std::make_unique<DocWord>(parent,":"));
   }
   else if (!g_insideHtmlLink && (cd=getClass(g_token->name+"-p")))
   {
     // special case 2, where the token name is not a class, but could
     // be a Obj-C protocol
-    children.append(new
-        DocLinkedWord(parent,name,
+    children.push_back(
+        std::make_unique<DocLinkedWord>(
+          parent,name,
           cd->getReference(),
           cd->getOutputFileBase(),
           cd->anchor(),
-          cd->briefDescriptionAsTooltip()
-          ));
+          cd->briefDescriptionAsTooltip()));
   }
-//  else if (!g_insideHtmlLink && (cd=getClass(g_token->name+"-g")))
-//  {
-//    // special case 3, where the token name is not a class, but could
-//    // be a C# generic
-//    children.append(new
-//        DocLinkedWord(parent,name,
-//          cd->getReference(),
-//          cd->getOutputFileBase(),
-//          cd->anchor(),
-//          cd->briefDescriptionAsTooltip()
-//          ));
-//  }
   else // normal non-linkable word
   {
     if (g_token->name.left(1)=="#" || g_token->name.left(2)=="::")
     {
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"explicit link request to '%s' could not be resolved",qPrint(name));
-      children.append(new DocWord(parent,g_token->name));
+      children.push_back(std::make_unique<DocWord>(parent,g_token->name));
     }
     else
     {
-      children.append(new DocWord(parent,name));
+      children.push_back(std::make_unique<DocWord>(parent,name));
     }
   }
 }
 
-static void handleParameterType(DocNode *parent,QList<DocNode> &children,const QCString &paramTypes)
+static void handleParameterType(DocNode *parent,DocNodeList &children,const QCString &paramTypes)
 {
   QCString name = g_token->name; // save token name
   QCString name1;
@@ -1186,15 +1190,15 @@ static void handleParameterType(DocNode *parent,QList<DocNode> &children,const Q
     ii=name1.find('[');
     g_token->name=ii!=-1 ? name1.mid(0,ii) : name1; // take part without []
     handleLinkedWord(parent,children);
-    if (ii!=-1) children.append(new DocWord(parent,name1.mid(ii))); // add [] part
+    if (ii!=-1) children.push_back(std::make_unique<DocWord>(parent,name1.mid(ii))); // add [] part
     p=i+1;
-    children.append(new DocSeparator(parent,"|"));
+    children.push_back(std::make_unique<DocSeparator>(parent,"|"));
   }
   name1 = paramTypes.mid(p);
   ii=name1.find('[');
   g_token->name=ii!=-1 ? name1.mid(0,ii) : name1;
   handleLinkedWord(parent,children);
-  if (ii!=-1) children.append(new DocWord(parent,name1.mid(ii)));
+  if (ii!=-1) children.push_back(std::make_unique<DocWord>(parent,name1.mid(ii)));
   g_token->name = name; // restore original token name
 }
 
@@ -1257,9 +1261,9 @@ static DocAnchor *handleAnchor(DocNode *parent)
  * @param[out] width     the extracted width specifier
  * @param[out] height    the extracted height specifier
  */
-static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocNode> &children, QCString &width,QCString &height)
+static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, DocNodeList &children, QCString &width,QCString &height)
 {
-  g_nodeStack.push(parent);
+  auto ns = AutoNodeStack(parent);
 
   // parse title
   doctokenizerYYsetStateTitle();
@@ -1273,7 +1277,7 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
     }
     if (!defaultHandleToken(parent,tok,children))
     {
-      errorHandleDefaultToken(parent,tok,children,Mappers::cmdMapper->find(cmd).data());
+      errorHandleDefaultToken(parent,tok,children,Mappers::cmdMapper->find(cmd));
     }
   }
   // parse size attributes
@@ -1302,7 +1306,7 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
       else
       {
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unknown option '%s' after \\%s command, expected 'width' or 'height'",
-                       qPrint(g_token->name), Mappers::cmdMapper->find(cmd).data());
+                       qPrint(g_token->name), qPrint(Mappers::cmdMapper->find(cmd)));
         break;
       }
     }
@@ -1312,8 +1316,6 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
   doctokenizerYYsetStatePara();
 
   handlePendingStyleCommands(parent,children);
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==parent);
 }
 
 /* Helper function that deals with the most common tokens allowed in
@@ -1327,7 +1329,7 @@ static void defaultHandleTitleAndSize(const int cmd, DocNode *parent, QList<DocN
  * @retval TRUE      The token was handled.
  * @retval FALSE     The token was not handled.
  */
-static bool defaultHandleToken(DocNode *parent,int tok, QList<DocNode> &children,bool
+static bool defaultHandleToken(DocNode *parent,int tok, DocNodeList &children,bool
     handleWord)
 {
   DBG(("token %s at %d",tokToString(tok),getDoctokinizerLineNr()));
@@ -1348,62 +1350,62 @@ reparsetoken:
       switch (Mappers::cmdMapper->map(tokenName))
       {
         case CMD_BSLASH:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_BSlash));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_BSlash));
           break;
         case CMD_AT:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_At));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_At));
           break;
         case CMD_LESS:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Less));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Less));
           break;
         case CMD_GREATER:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Greater));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Greater));
           break;
         case CMD_AMP:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Amp));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Amp));
           break;
         case CMD_DOLLAR:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Dollar));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Dollar));
           break;
         case CMD_HASH:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Hash));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Hash));
           break;
         case CMD_DCOLON:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_DoubleColon));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_DoubleColon));
           break;
         case CMD_PERCENT:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Percent));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Percent));
           break;
         case CMD_NDASH:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Minus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Minus));
           break;
         case CMD_MDASH:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Minus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Minus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Minus));
           break;
         case CMD_QUOTE:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Quot));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Quot));
           break;
         case CMD_PUNT:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Dot));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Dot));
           break;
         case CMD_PLUS:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Plus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Plus));
           break;
         case CMD_MINUS:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Minus));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Minus));
           break;
         case CMD_EQUAL:
-          children.append(new DocSymbol(parent,DocSymbol::Sym_Equal));
+          children.push_back(std::make_unique<DocSymbol>(parent,DocSymbol::Sym_Equal));
           break;
         case CMD_EMPHASIS:
           {
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Italic,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Italic,tokenName,FALSE));
-            if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Italic,tokenName,FALSE));
+            if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
             {
@@ -1414,10 +1416,10 @@ reparsetoken:
           break;
         case CMD_BOLD:
           {
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Bold,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Bold,tokenName,FALSE));
-            if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Bold,tokenName,FALSE));
+            if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
             {
@@ -1428,10 +1430,10 @@ reparsetoken:
           break;
         case CMD_CODE:
           {
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,tokenName,TRUE));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Code,tokenName,TRUE));
             tok=handleStyleArgument(parent,children,tokenName);
-            children.append(new DocStyleChange(parent,g_nodeStack.count(),DocStyleChange::Code,tokenName,FALSE));
-            if (tok!=TK_WORD) children.append(new DocWhiteSpace(parent," "));
+            children.push_back(std::make_unique<DocStyleChange>(parent,(uint)g_nodeStack.size(),DocStyleChange::Code,tokenName,FALSE));
+            if (tok!=TK_WORD) children.push_back(std::make_unique<DocWhiteSpace>(parent," "));
             if (tok==TK_NEWPARA) goto handlepara;
             else if (tok==TK_WORD || tok==TK_HTMLTAG)
             {
@@ -1444,7 +1446,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateHtmlOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName,g_token->name=="block"));
+            children.push_back(std::make_unique<DocVerbatim>(parent,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName,g_token->name=="block"));
             if (tok==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"htmlonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -1453,7 +1455,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateManOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::ManOnly,g_isExample,g_exampleName));
+            children.push_back(std::make_unique<DocVerbatim>(parent,g_context,g_token->verb,DocVerbatim::ManOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"manonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -1462,7 +1464,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateRtfOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::RtfOnly,g_isExample,g_exampleName));
+            children.push_back(std::make_unique<DocVerbatim>(parent,g_context,g_token->verb,DocVerbatim::RtfOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"rtfonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -1471,7 +1473,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateLatexOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_exampleName));
+            children.push_back(std::make_unique<DocVerbatim>(parent,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"latexonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -1480,7 +1482,7 @@ reparsetoken:
           {
             doctokenizerYYsetStateXmlOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
+            children.push_back(std::make_unique<DocVerbatim>(parent,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"xmlonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
@@ -1489,15 +1491,14 @@ reparsetoken:
           {
             doctokenizerYYsetStateDbOnly();
             tok = doctokenizerYYlex();
-            children.append(new DocVerbatim(parent,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
+            children.push_back(std::make_unique<DocVerbatim>(parent,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
             if (tok==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"docbookonly section ended without end marker");
             doctokenizerYYsetStatePara();
           }
           break;
         case CMD_FORMULA:
           {
-            DocFormula *form=new DocFormula(parent,g_token->id);
-            children.append(form);
+            children.push_back(std::make_unique<DocFormula>(parent,g_token->id));
           }
           break;
         case CMD_ANCHOR:
@@ -1505,7 +1506,7 @@ reparsetoken:
             DocAnchor *anchor = handleAnchor(parent);
             if (anchor)
             {
-              children.append(anchor);
+              children.push_back(std::unique_ptr<DocAnchor>(anchor));
             }
           }
           break;
@@ -1514,7 +1515,7 @@ reparsetoken:
             DocInternalRef *ref = handleInternalRef(parent);
             if (ref)
             {
-              children.append(ref);
+              children.push_back(std::unique_ptr<DocInternalRef>(ref));
               ref->parse();
             }
             doctokenizerYYsetStatePara();
@@ -1524,10 +1525,10 @@ reparsetoken:
           {
             QCString scope;
             doctokenizerYYsetStateSetScope();
-            doctokenizerYYlex();
+            (void)doctokenizerYYlex();
             scope = g_token->name;
             g_context = scope;
-            //printf("Found scope='%s'\n",scope.data());
+            //printf("Found scope='%s'\n",qPrint(scope));
             doctokenizerYYsetStatePara();
           }
           break;
@@ -1684,7 +1685,7 @@ reparsetoken:
         DocSymbol::SymType s = DocSymbol::decodeSymbol(tokenName);
         if (s!=DocSymbol::Sym_Unknown)
         {
-          children.append(new DocSymbol(parent,s));
+          children.push_back(std::make_unique<DocSymbol>(parent,s));
         }
         else
         {
@@ -1695,9 +1696,9 @@ reparsetoken:
     case TK_WHITESPACE:
     case TK_NEWPARA:
 handlepara:
-      if (insidePRE(parent) || !children.isEmpty())
+      if (insidePRE(parent) || !children.empty())
       {
-        children.append(new DocWhiteSpace(parent,g_token->chars));
+        children.push_back(std::make_unique<DocWhiteSpace>(parent,g_token->chars));
       }
       break;
     case TK_LNKWORD:
@@ -1711,7 +1712,7 @@ handlepara:
     case TK_WORD:
       if (handleWord)
       {
-        children.append(new DocWord(parent,g_token->name));
+        children.push_back(std::make_unique<DocWord>(parent,g_token->name));
       }
       else
         return FALSE;
@@ -1719,11 +1720,11 @@ handlepara:
     case TK_URL:
       if (g_insideHtmlLink)
       {
-        children.append(new DocWord(parent,g_token->name));
+        children.push_back(std::make_unique<DocWord>(parent,g_token->name));
       }
       else
       {
-        children.append(new DocURL(parent,g_token->name,g_token->isEMailAddr));
+        children.push_back(std::make_unique<DocURL>(parent,g_token->name,g_token->isEMailAddr));
       }
       break;
     default:
@@ -1734,27 +1735,26 @@ handlepara:
 
 //---------------------------------------------------------------------------
 
-static void handleImg(DocNode *parent,QList<DocNode> &children,const HtmlAttribList &tagHtmlAttribs)
+static void handleImg(DocNode *parent, DocNodeList &children,const HtmlAttribList &tagHtmlAttribs)
 {
-  HtmlAttribListIterator li(tagHtmlAttribs);
-  HtmlAttrib *opt;
   bool found=FALSE;
   uint index=0;
-  for (li.toFirst();(opt=li.current());++li,++index)
+  for (const auto &opt : tagHtmlAttribs)
   {
-    //printf("option name=%s value=%s\n",opt->name.data(),opt->value.data());
-    if (opt->name=="src" && !opt->value.isEmpty())
+    //printf("option name=%s value=%s\n",qPrint(opt.name),qPrint(opt.value));
+    if (opt.name=="src" && !opt.value.isEmpty())
     {
       // copy attributes
       HtmlAttribList attrList = tagHtmlAttribs;
       // and remove the src attribute
-      bool result = attrList.remove(index);
-      ASSERT(result);
+      attrList.erase(attrList.begin()+index);
       DocImage::Type t = DocImage::Html;
-      DocImage *img = new DocImage(parent,attrList,findAndCopyImage(opt->value,t,false),t,opt->value);
-      children.append(img);
+      children.push_back(
+          std::make_unique<DocImage>(
+            parent,attrList,findAndCopyImage(opt.value,t,false),t,opt.value));
       found = TRUE;
     }
+    ++index;
   }
   if (!found)
   {
@@ -1784,7 +1784,7 @@ DocEmoji::DocEmoji(DocNode *parent,const QCString &symName) :
     if (locSymName.at(0)!=':')     locSymName.prepend(":");
   }
   m_symName = locSymName;
-  m_index = EmojiEntityMapper::instance()->symbol2index(m_symName);
+  m_index = EmojiEntityMapper::instance()->symbol2index(m_symName.str());
   if (m_index==-1)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Found unsupported emoji symbol '%s'\n",qPrint(m_symName));
@@ -1793,21 +1793,21 @@ DocEmoji::DocEmoji(DocNode *parent,const QCString &symName) :
 
 //---------------------------------------------------------------------------
 
-static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
+static int internalValidatingParseDoc(DocNode *parent,DocNodeList &children,
                                     const QCString &doc)
 {
   int retval = RetVal_OK;
 
   if (doc.isEmpty()) return retval;
 
-  doctokenizerYYinit(doc,g_fileName,g_markdownSupport);
+  doctokenizerYYinit(doc.data(),g_fileName,g_markdownSupport);
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
   DocPara *lastPar=0;
-  if (!children.isEmpty() && children.getLast()->kind()==DocNode::Kind_Para)
+  if (!children.empty() && children.back()->kind()==DocNode::Kind_Para)
   { // last child item was a paragraph
-    lastPar = (DocPara*)children.getLast();
+    lastPar = (DocPara*)children.back().get();
     isFirst=FALSE;
   }
   do
@@ -1817,7 +1817,7 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
     retval=par->parse();
     if (!par->isEmpty())
     {
-      children.append(par);
+      children.push_back(std::unique_ptr<DocNode>(par));
       if (lastPar) lastPar->markLast(FALSE);
       lastPar=par;
     }
@@ -1838,9 +1838,9 @@ static int internalValidatingParseDoc(DocNode *parent,QList<DocNode> &children,
 
 static void readTextFileByName(const QCString &file,QCString &text)
 {
-  if (Portable::isAbsolutePath(file.data()))
+  if (Portable::isAbsolutePath(file))
   {
-    QFileInfo fi(file);
+    FileInfo fi(file.str());
     if (fi.exists())
     {
       text = fileToString(file,Config_getBool(FILTER_SOURCE_FILES));
@@ -1850,11 +1850,11 @@ static void readTextFileByName(const QCString &file,QCString &text)
   const StringVector &examplePathList = Config_getList(EXAMPLE_PATH);
   for (const auto &s : examplePathList)
   {
-    QCString absFileName = QCString(s.c_str())+Portable::pathSeparator()+file;
-    QFileInfo fi(absFileName);
+    std::string absFileName = s+(Portable::pathSeparator()+file).str();
+    FileInfo fi(absFileName);
     if (fi.exists())
     {
-      text = fileToString(absFileName,Config_getBool(FILTER_SOURCE_FILES));
+      text = fileToString(QCString(absFileName),Config_getBool(FILTER_SOURCE_FILES));
       return;
     }
   }
@@ -1886,7 +1886,7 @@ DocWord::DocWord(DocNode *parent,const QCString &word) :
       m_word(word)
 {
   m_parent = parent;
-  //printf("new word %s url=%s\n",word.data(),g_searchUrl.data());
+  //printf("new word %s url=%s\n",qPrint(word),qPrint(g_searchUrl));
   if (Doxygen::searchIndex && !g_searchUrl.isEmpty())
   {
     Doxygen::searchIndex->addWord(word,FALSE);
@@ -1904,7 +1904,7 @@ DocLinkedWord::DocLinkedWord(DocNode *parent,const QCString &word,
 {
   m_parent = parent;
   //printf("DocLinkedWord: new word %s url=%s tooltip='%s'\n",
-  //    word.data(),g_searchUrl.data(),tooltip.data());
+  //    qPrint(word),qPrint(g_searchUrl),qPrint(tooltip));
   if (Doxygen::searchIndex && !g_searchUrl.isEmpty())
   {
     Doxygen::searchIndex->addWord(word,FALSE);
@@ -1948,7 +1948,7 @@ DocAnchor::DocAnchor(DocNode *parent,const QCString &id,bool newAnchor)
     const SectionInfo *sec = SectionManager::instance().find(id);
     if (sec)
     {
-      //printf("Found anchor %s\n",id.data());
+      //printf("Found anchor %s\n",qPrint(id));
       m_file   = sec->fileName();
       m_anchor = sec->label();
     }
@@ -1995,7 +1995,7 @@ void DocInclude::parse()
       g_includeFileLength = m_text.length();
       g_includeFileLine   = 0;
       g_includeFileShowLineNo = (m_type == DontIncWithLines || m_type == IncWithLines);
-      //printf("g_includeFile=<<%s>>\n",g_includeFileText.data());
+      //printf("g_includeFile=<<%s>>\n",qPrint(g_includeFileText));
       break;
     case VerbInclude:
       // fall through
@@ -2016,7 +2016,7 @@ void DocInclude::parse()
       if (!m_blockId.isEmpty() && (count=m_text.contains(m_blockId.data()))!=2)
       {
         warn_doc_error(g_fileName,getDoctokinizerLineNr(),"block marked with %s for \\snippet should appear twice in file %s, found it %d times\n",
-            m_blockId.data(),m_file.data(),count);
+            qPrint(m_blockId),qPrint(m_file),count);
       }
       break;
     case DocInclude::SnippetDoc:
@@ -2039,11 +2039,11 @@ void DocIncOperator::parse()
   }
 
   m_includeFileName = g_includeFileName;
-  const char *p = g_includeFileText;
+  const char *p = g_includeFileText.data();
   uint l = g_includeFileLength;
   uint o = g_includeFileOffset;
   int il = g_includeFileLine;
-  DBG(("DocIncOperator::parse() text=%s off=%d len=%d\n",qPrint(p),o,l));
+  DBG(("DocIncOperator::parse() text=%s off=%d len=%d\n",p,o,l));
   uint so = o,bo;
   bool nonEmpty = FALSE;
   switch(type())
@@ -2070,7 +2070,7 @@ void DocIncOperator::parse()
         m_text = g_includeFileText.mid(so,o-so);
         DBG(("DocIncOperator::parse() Line: %s\n",qPrint(m_text)));
       }
-      g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      g_includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = g_includeFileShowLineNo;
       break;
     case SkipLine:
@@ -2101,7 +2101,7 @@ void DocIncOperator::parse()
         }
         o++; // skip new line
       }
-      g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      g_includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = g_includeFileShowLineNo;
       break;
     case Skip:
@@ -2161,7 +2161,7 @@ void DocIncOperator::parse()
         }
         o++; // skip new line
       }
-      g_includeFileOffset = QMIN(l,o+1); // set pointer to start of new line
+      g_includeFileOffset = std::min(l,o+1); // set pointer to start of new line
       m_showLineNo = g_includeFileShowLineNo;
       break;
   }
@@ -2169,7 +2169,7 @@ void DocIncOperator::parse()
 
 //---------------------------------------------------------------------------
 
-DocXRefItem::DocXRefItem(DocNode *parent,int id,const char *key) :
+DocXRefItem::DocXRefItem(DocNode *parent,int id,const QCString &key) :
    m_id(id), m_key(key), m_relPath(g_relPath)
 {
    m_parent = parent;
@@ -2196,7 +2196,7 @@ bool DocXRefItem::parse()
       }
       m_title  = refList->sectionTitle();
       //printf("DocXRefItem: file=%s anchor=%s title=%s\n",
-      //    m_file.data(),m_anchor.data(),m_title.data());
+      //    qPrint(m_file),qPrint(m_anchor),qPrint(m_title));
 
       if (!item->text().isEmpty())
       {
@@ -2236,7 +2236,7 @@ DocFormula::DocFormula(DocNode *parent,int id) :
 //{
 //  int retval;
 //  DBG(("DocLanguage::parse() start\n"));
-//  g_nodeStack.push(this);
+//  auto ns = AutoNodeStack(this);
 //
 //  // parse one or more paragraphs
 //  bool isFirst=TRUE;
@@ -2245,15 +2245,13 @@ DocFormula::DocFormula(DocNode *parent,int id) :
 //  {
 //    par = new DocPara(this);
 //    if (isFirst) { par->markFirst(); isFirst=FALSE; }
-//    m_children.append(par);
+//    m_children.push_back(std::unique_ptr<DocPara>(par));
 //    retval=par->parse();
 //  }
 //  while (retval==TK_NEWPARA);
 //  if (par) par->markLast();
 //
 //  DBG(("DocLanguage::parse() end\n"));
-//  DocNode *n = g_nodeStack.pop();
-//  ASSERT(n==this);
 //  return retval;
 //}
 
@@ -2262,7 +2260,7 @@ DocFormula::DocFormula(DocNode *parent,int id) :
 void DocSecRefItem::parse()
 {
   DBG(("DocSecRefItem::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   doctokenizerYYsetStateTitle();
   int tok;
@@ -2297,8 +2295,6 @@ void DocSecRefItem::parse()
   }
 
   DBG(("DocSecRefItem::parse() end\n"));
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
 }
 
 //---------------------------------------------------------------------------
@@ -2306,7 +2302,7 @@ void DocSecRefItem::parse()
 void DocSecRefList::parse()
 {
   DBG(("DocSecRefList::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   int tok=doctokenizerYYlex();
   // skip white space
@@ -2336,7 +2332,7 @@ void DocSecRefList::parse()
             }
 
             DocSecRefItem *item = new DocSecRefItem(this,g_token->name);
-            m_children.append(item);
+            m_children.push_back(std::unique_ptr<DocSecRefItem>(item));
             item->parse();
           }
           break;
@@ -2363,8 +2359,6 @@ void DocSecRefList::parse()
 
 endsecreflist:
   DBG(("DocSecRefList::parse() end\n"));
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
 }
 
 //---------------------------------------------------------------------------
@@ -2387,7 +2381,7 @@ DocInternalRef::DocInternalRef(DocNode *parent,const QCString &ref)
 
 void DocInternalRef::parse()
 {
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocInternalRef::parse() start\n"));
 
   int tok;
@@ -2401,8 +2395,6 @@ void DocInternalRef::parse()
 
   handlePendingStyleCommands(this,m_children);
   DBG(("DocInternalRef::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
 }
 
 //---------------------------------------------------------------------------
@@ -2413,7 +2405,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
   m_parent = parent;
   const Definition  *compound = 0;
   QCString     anchor;
-  //printf("DocRef::DocRef(target=%s,context=%s)\n",target.data(),context.data());
+  //printf("DocRef::DocRef(target=%s,context=%s)\n",qPrint(target),qPrint(context));
   ASSERT(!target.isEmpty());
   SrcLangExt lang = getLanguageFromFileName(target);
   m_relPath = g_relPath;
@@ -2427,7 +2419,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     PageDef *pd = 0;
     if (sec->type()==SectionType::Page)
     {
-      pd = Doxygen::pageSDict->find(target);
+      pd = Doxygen::pageLinkedMap->find(target);
     }
     m_text         = sec->title();
     if (m_text.isEmpty()) m_text = sec->label();
@@ -2449,7 +2441,7 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     m_isSubPage    = pd && pd->hasParentPage();
     if (sec->type()!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
     //printf("m_text=%s,m_ref=%s,m_file=%s,type=%d\n",
-    //    m_text.data(),m_ref.data(),m_file.data(),m_refType);
+    //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),m_refType);
     return;
   }
   else if (resolveLink(context,target,TRUE,&compound,anchor))
@@ -2464,13 +2456,13 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
     {
       if (anchor.isEmpty() &&                                  /* compound link */
           compound->definitionType()==Definition::TypeGroup && /* is group */
-          (toGroupDef(compound))->groupTitle()                 /* with title */
+          !toGroupDef(compound)->groupTitle().isEmpty()        /* with title */
          )
       {
         m_text=(toGroupDef(compound))->groupTitle(); // use group's title as link
       }
       else if (compound->definitionType()==Definition::TypeMember &&
-          (toMemberDef(compound))->isObjCMethod())
+          toMemberDef(compound)->isObjCMethod())
       {
         // Objective C Method
         const MemberDef *member = toMemberDef(compound);
@@ -2480,12 +2472,12 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
 
       m_file = compound->getOutputFileBase();
       m_ref  = compound->getReference();
-      //printf("isFile=%d compound=%s (%d)\n",isFile,compound->name().data(),
+      //printf("isFile=%d compound=%s (%d)\n",isFile,qPrint(compound->name()),
       //    compound->definitionType());
       return;
     }
     else if (compound && compound->definitionType()==Definition::TypeFile &&
-             (toFileDef(compound))->generateSourceFile()
+             toFileDef(compound)->generateSourceFile()
             ) // undocumented file that has source code we can link to
     {
       m_file = compound->getSourceFileBase();
@@ -2498,38 +2490,36 @@ DocRef::DocRef(DocNode *parent,const QCString &target,const QCString &context) :
            qPrint(target));
 }
 
-static void flattenParagraphs(DocNode *root,QList<DocNode> &children)
+static void flattenParagraphs(DocNode *root,DocNodeList &children)
 {
-  QListIterator<DocNode> li(children);
-  QList<DocNode> newChildren;
-  DocNode *dn;
-  for (li.toFirst();(dn=li.current());++li)
+  DocNodeList newChildren;
+  for (const auto &dn : children)
   {
     if (dn->kind()==DocNode::Kind_Para)
     {
-      DocPara *para = (DocPara*)dn;
-      QList<DocNode> &paraChildren = para->children();
-      paraChildren.setAutoDelete(FALSE); // unlink children from paragraph node
-      QListIterator<DocNode> li2(paraChildren);
-      DocNode *dn2;
-      for (li2.toFirst();(dn2=li2.current());++li2)
-      {
-        newChildren.append(dn2); // add them to new node
-      }
+      DocPara *para = (DocPara*)dn.get();
+      // move the children of the paragraph to the end of the newChildren list
+      newChildren.insert(newChildren.end(),
+                         std::make_move_iterator(para->children().begin()),
+                         std::make_move_iterator(para->children().end()));
     }
   }
+
+  // replace the children list by the newChildren list
   children.clear();
-  QListIterator<DocNode> li3(newChildren);
-  for (li3.toFirst();(dn=li3.current());++li3)
+  children.insert(children.end(),
+                  std::make_move_iterator(newChildren.begin()),
+                  std::make_move_iterator(newChildren.end()));
+  // reparent the children
+  for (const auto &cn : children)
   {
-    children.append(dn);
-    dn->setParent(root);
+    cn->setParent(root);
   }
 }
 
 void DocRef::parse()
 {
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocRef::parse() start\n"));
 
   int tok;
@@ -2548,7 +2538,7 @@ void DocRef::parse()
     }
   }
 
-  if (m_children.isEmpty() && !m_text.isEmpty())
+  if (m_children.empty() && !m_text.isEmpty())
   {
     g_insideHtmlLink=TRUE;
     docParserPushContext();
@@ -2559,9 +2549,6 @@ void DocRef::parse()
   }
 
   handlePendingStyleCommands(this,m_children);
-
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
 }
 
 //---------------------------------------------------------------------------
@@ -2570,12 +2557,12 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
 {
   size_t numBibFiles = Config_getList(CITE_BIB_FILES).size();
   m_parent = parent;
-  //printf("DocCite::DocCite(target=%s)\n",target.data());
+  //printf("DocCite::DocCite(target=%s)\n",qPrint(target));
   ASSERT(!target.isEmpty());
   m_relPath = g_relPath;
   const CitationManager &ct = CitationManager::instance();
   const CiteInfo *cite = ct.find(target);
-  //printf("cite=%p text='%s' numBibFiles=%d\n",cite,cite?cite->text.data():"<null>",numBibFiles);
+  //printf("cite=%p text='%s' numBibFiles=%d\n",cite,cite?qPrint(cite->text):"<null>",numBibFiles);
   if (numBibFiles>0 && cite && !cite->text().isEmpty()) // ref to citation
   {
     m_text         = cite->text();
@@ -2583,7 +2570,7 @@ DocCite::DocCite(DocNode *parent,const QCString &target,const QCString &) //cont
     m_anchor       = ct.anchorPrefix()+cite->label();
     m_file         = convertNameToFile(ct.fileName(),FALSE,TRUE);
     //printf("CITE ==> m_text=%s,m_ref=%s,m_file=%s,m_anchor=%s\n",
-    //    m_text.data(),m_ref.data(),m_file.data(),m_anchor.data());
+    //    qPrint(m_text),qPrint(m_ref),qPrint(m_file),qPrint(m_anchor));
     return;
   }
   m_text = target;
@@ -2616,8 +2603,7 @@ DocLink::DocLink(DocNode *parent,const QCString &target)
   {
     m_refText = m_refText.right(m_refText.length()-1);
   }
-  if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,
-                  &compound,anchor))
+  if (resolveLink(g_context,stripKnownExtensions(target),g_inSeeBlock,&compound,anchor))
   {
     m_anchor = anchor;
     if (compound && compound->isLinkable())
@@ -2644,7 +2630,7 @@ DocLink::DocLink(DocNode *parent,const QCString &target)
 QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
 {
   QCString result;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocLink::parse() start\n"));
 
   int tok;
@@ -2697,7 +2683,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
             else if ((p=w.find('}'))!=-1)
             {
               uint l=w.length();
-              m_children.append(new DocWord(this,w.left(p)));
+              m_children.push_back(std::make_unique<DocWord>(this,w.left(p)));
               if ((uint)p<l-1) // something left after the } (for instance a .)
               {
                 result=w.right((int)l-p-1);
@@ -2705,7 +2691,7 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
               goto endlink;
             }
           }
-          m_children.append(new DocWord(this,g_token->name));
+          m_children.push_back(std::make_unique<DocWord>(this,g_token->name));
           break;
         default:
           warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected token %s",
@@ -2721,15 +2707,13 @@ QCString DocLink::parse(bool isJavaLink,bool isXmlLink)
   }
 endlink:
 
-  if (m_children.isEmpty()) // no link text
+  if (m_children.empty()) // no link text
   {
-    m_children.append(new DocWord(this,m_refText));
+    m_children.push_back(std::make_unique<DocWord>(this,m_refText));
   }
 
   handlePendingStyleCommands(this,m_children);
   DBG(("DocLink::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return result;
 }
 
@@ -2858,7 +2842,7 @@ DocVhdlFlow::DocVhdlFlow(DocNode *parent)
 
 void DocVhdlFlow::parse()
 {
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocVhdlFlow::parse() start\n"));
 
   doctokenizerYYsetStateTitle();
@@ -2876,8 +2860,6 @@ void DocVhdlFlow::parse()
   handlePendingStyleCommands(this,m_children);
 
   DBG(("DocVhdlFlow::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   VhdlDocGen::createFlowChart(g_memberDef);
 }
 
@@ -2913,7 +2895,7 @@ void DocImage::parse()
 int DocHtmlHeader::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlHeader::parse() start\n"));
 
   int tok;
@@ -2989,8 +2971,7 @@ int DocHtmlHeader::parse()
             }
             else if (tagId==HTML_BR)
             {
-              DocLineBreak *lb = new DocLineBreak(this,g_token->attribs);
-              m_children.append(lb);
+              m_children.push_back(std::make_unique<DocLineBreak>(this,g_token->attribs));
             }
             else
             {
@@ -3014,8 +2995,6 @@ int DocHtmlHeader::parse()
 endheader:
   handlePendingStyleCommands(this,m_children);
   DBG(("DocHtmlHeader::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3024,7 +3003,7 @@ endheader:
 int DocHRef::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHRef::parse() start\n"));
 
   int tok;
@@ -3062,8 +3041,6 @@ int DocHRef::parse()
 endhref:
   handlePendingStyleCommands(this,m_children);
   DBG(("DocHRef::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3072,7 +3049,7 @@ endhref:
 int DocInternal::parse(int level)
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocInternal::parse() start\n"));
 
   // first parse any number of paragraphs
@@ -3085,7 +3062,7 @@ int DocInternal::parse(int level)
     retval=par->parse();
     if (!par->isEmpty())
     {
-      m_children.append(par);
+      m_children.push_back(std::unique_ptr<DocPara>(par));
       lastPar=par;
     }
     else
@@ -3113,8 +3090,8 @@ int DocInternal::parse(int level)
         )
   {
     DocSection *s=new DocSection(this,
-        QMIN(level+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-    m_children.append(s);
+        std::min(level+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+    m_children.push_back(std::unique_ptr<DocSection>(s));
     retval = s->parse();
   }
 
@@ -3124,8 +3101,6 @@ int DocInternal::parse(int level)
   }
 
   DBG(("DocInternal::parse() end: retval=%x\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3134,7 +3109,7 @@ int DocInternal::parse(int level)
 int DocIndexEntry::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocIndexEntry::parse() start\n"));
   int tok=doctokenizerYYlex();
   if (tok!=TK_WHITESPACE)
@@ -3219,8 +3194,6 @@ int DocIndexEntry::parse()
   m_entry = m_entry.stripWhiteSpace();
 endindexentry:
   DBG(("DocIndexEntry::parse() end retval=%x\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3229,28 +3202,26 @@ endindexentry:
 DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
 {
   m_hasCaptionId = FALSE;
-  HtmlAttribListIterator li(attribs);
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : attribs)
   {
-    if (opt->name=="id" && !opt->value.isEmpty()) // interpret id attribute as an anchor
+    if (opt.name=="id" && !opt.value.isEmpty()) // interpret id attribute as an anchor
     {
-      const SectionInfo *sec = SectionManager::instance().find(opt->value);
+      const SectionInfo *sec = SectionManager::instance().find(opt.value);
       if (sec)
       {
-        //printf("Found anchor %s\n",id.data());
+        //printf("Found anchor %s\n",qPrint(id));
         m_file   = sec->fileName();
         m_anchor = sec->label();
         m_hasCaptionId = TRUE;
       }
       else
       {
-        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Invalid caption id '%s'",qPrint(opt->value));
+        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Invalid caption id '%s'",qPrint(opt.value));
       }
     }
     else // copy attribute
     {
-      m_attribs.append(new HtmlAttrib(*opt));
+      m_attribs.push_back(opt);
     }
   }
   m_parent = parent;
@@ -3259,7 +3230,7 @@ DocHtmlCaption::DocHtmlCaption(DocNode *parent,const HtmlAttribList &attribs)
 int DocHtmlCaption::parse()
 {
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlCaption::parse() start\n"));
   int tok;
   while ((tok=doctokenizerYYlex()))
@@ -3297,8 +3268,6 @@ int DocHtmlCaption::parse()
 endcaption:
   handlePendingStyleCommands(this,m_children);
   DBG(("DocHtmlCaption::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3307,7 +3276,7 @@ endcaption:
 int DocHtmlCell::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlCell::parse() start\n"));
 
   // parse one or more paragraphs
@@ -3317,7 +3286,7 @@ int DocHtmlCell::parse()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
     if (retval==TK_HTMLTAG)
     {
@@ -3336,15 +3305,13 @@ int DocHtmlCell::parse()
   if (par) par->markLast();
 
   DBG(("DocHtmlCell::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
 int DocHtmlCell::parseXml()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlCell::parseXml() start\n"));
 
   // parse one or more paragraphs
@@ -3354,7 +3321,7 @@ int DocHtmlCell::parseXml()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
     if (retval==TK_HTMLTAG)
     {
@@ -3373,74 +3340,62 @@ int DocHtmlCell::parseXml()
   if (par) par->markLast();
 
   DBG(("DocHtmlCell::parseXml() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
 uint DocHtmlCell::rowSpan() const
 {
-  uint retval = 0;
-  HtmlAttribList attrs = attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : attribs())
   {
-    if (attrs.at(i)->name.lower()=="rowspan")
+    if (attr.name.lower()=="rowspan")
     {
-      retval = attrs.at(i)->value.toUInt();
-      break;
+      return attr.value.toUInt();
     }
   }
-  return retval;
+  return 0;
 }
 
 uint DocHtmlCell::colSpan() const
 {
-  uint retval = 1;
-  HtmlAttribList attrs = attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : attribs())
   {
-    if (attrs.at(i)->name.lower()=="colspan")
+    if (attr.name.lower()=="colspan")
     {
-      retval = QMAX(1,attrs.at(i)->value.toUInt());
-      break;
+      return std::max(1u,attr.value.toUInt());
     }
   }
-  return retval;
+  return 1;
 }
 
 DocHtmlCell::Alignment DocHtmlCell::alignment() const
 {
-  HtmlAttribList attrs = attribs();
-  uint i;
-  for (i=0; i<attrs.count(); ++i)
+  for (const auto &attr : attribs())
   {
-    if (attrs.at(i)->name.lower()=="align")
+    if (attr.name.lower()=="align")
     {
-      if (attrs.at(i)->value.lower()=="center")
+      if (attr.value.lower()=="center")
         return Center;
-      else if (attrs.at(i)->value.lower()=="right")
+      else if (attr.value.lower()=="right")
         return Right;
       else return Left;
     }
-    else if (attrs.at(i)->name.lower()=="class")
+    else if (attr.name.lower()=="class")
     {
-      if (attrs.at(i)->value.lower()=="markdowntableheadcenter")
+      if (attr.value.lower()=="markdowntableheadcenter")
         return Center;
-      else if (attrs.at(i)->value.lower()=="markdowntableheadright")
+      else if (attr.value.lower()=="markdowntableheadright")
         return Right;
-      else if (attrs.at(i)->value.lower()=="markdowntableheadleft")
+      else if (attr.value.lower()=="markdowntableheadleft")
         return Left;
-      else if (attrs.at(i)->value.lower()=="markdowntableheadnone")
+      else if (attr.value.lower()=="markdowntableheadnone")
         return Center;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodycenter")
+      else if (attr.value.lower()=="markdowntablebodycenter")
         return Center;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodyright")
+      else if (attr.value.lower()=="markdowntablebodyright")
         return Right;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodyleft")
+      else if (attr.value.lower()=="markdowntablebodyleft")
         return Left;
-      else if (attrs.at(i)->value.lower()=="markdowntablebodynone")
+      else if (attr.value.lower()=="markdowntablebodynone")
         return Left;
       else return Left;
     }
@@ -3454,7 +3409,7 @@ DocHtmlCell::Alignment DocHtmlCell::alignment() const
 int DocHtmlRow::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlRow::parse() start\n"));
 
   bool isHeading=FALSE;
@@ -3503,7 +3458,7 @@ int DocHtmlRow::parse()
     cell=new DocHtmlCell(this,g_token->attribs,isHeading);
     cell->markFirst(isFirst);
     isFirst=FALSE;
-    m_children.append(cell);
+    m_children.push_back(std::unique_ptr<DocHtmlCell>(cell));
     retval=cell->parse();
     isHeading = retval==RetVal_TableHCell;
   }
@@ -3512,15 +3467,13 @@ int DocHtmlRow::parse()
 
 endrow:
   DBG(("DocHtmlRow::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
 int DocHtmlRow::parseXml(bool isHeading)
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlRow::parseXml() start\n"));
 
   bool isFirst=TRUE;
@@ -3566,7 +3519,7 @@ int DocHtmlRow::parseXml(bool isHeading)
     cell=new DocHtmlCell(this,g_token->attribs,isHeading);
     cell->markFirst(isFirst);
     isFirst=FALSE;
-    m_children.append(cell);
+    m_children.push_back(std::unique_ptr<DocHtmlCell>(cell));
     retval=cell->parseXml();
   }
   while (retval==RetVal_TableCell || retval==RetVal_TableHCell);
@@ -3574,8 +3527,6 @@ int DocHtmlRow::parseXml(bool isHeading)
 
 endrow:
   DBG(("DocHtmlRow::parseXml() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3584,7 +3535,7 @@ endrow:
 int DocHtmlTable::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlTable::parse() start\n"));
 
 getrow:
@@ -3639,22 +3590,20 @@ getrow:
   while (retval==RetVal_TableRow)
   {
     DocHtmlRow *tr=new DocHtmlRow(this,g_token->attribs);
-    m_children.append(tr);
+    m_children.push_back(std::unique_ptr<DocHtmlRow>(tr));
     retval=tr->parse();
   }
 
   computeTableGrid();
 
   DBG(("DocHtmlTable::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval==RetVal_EndTable ? RetVal_OK : retval;
 }
 
 int DocHtmlTable::parseXml()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlTable::parseXml() start\n"));
 
   // get next token
@@ -3682,7 +3631,7 @@ int DocHtmlTable::parseXml()
   while (retval==RetVal_TableRow)
   {
     DocHtmlRow *tr=new DocHtmlRow(this,g_token->attribs);
-    m_children.append(tr);
+    m_children.push_back(std::unique_ptr<DocHtmlRow>(tr));
     retval=tr->parseXml(isHeader);
     isHeader=FALSE;
   }
@@ -3690,8 +3639,6 @@ int DocHtmlTable::parseXml()
   computeTableGrid();
 
   DBG(("DocHtmlTable::parseXml() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   tagId=Mappers::htmlTagMapper->map(g_token->name);
   return tagId==XML_LIST && g_token->endTag ? RetVal_OK : retval;
 }
@@ -3705,7 +3652,7 @@ struct ActiveRowSpan
 };
 
 /** List of ActiveRowSpan classes. */
-typedef QList<ActiveRowSpan> RowSpanList;
+typedef std::vector<ActiveRowSpan> RowSpanList;
 
 /** determines the location of all cells in a grid, resolving row and
     column spans. For each the total number of visible cells is computed,
@@ -3715,39 +3662,34 @@ void DocHtmlTable::computeTableGrid()
 {
   //printf("computeTableGrid()\n");
   RowSpanList rowSpans;
-  rowSpans.setAutoDelete(TRUE);
   uint maxCols=0;
   uint rowIdx=1;
-  QListIterator<DocNode> li(children());
-  DocNode *rowNode;
-  for (li.toFirst();(rowNode=li.current());++li)
+  for (const auto &rowNode : children())
   {
     uint colIdx=1;
     uint cells=0;
     if (rowNode->kind()==DocNode::Kind_HtmlRow)
     {
-      uint i;
-      DocHtmlRow *row = (DocHtmlRow*)rowNode;
-      QListIterator<DocNode> rli(row->children());
-      DocNode *cellNode;
-      for (rli.toFirst();(cellNode=rli.current());++rli)
+      size_t i;
+      DocHtmlRow *row = (DocHtmlRow*)rowNode.get();
+      for (const auto &cellNode : row->children())
       {
         if (cellNode->kind()==DocNode::Kind_HtmlCell)
         {
-          DocHtmlCell *cell = (DocHtmlCell*)cellNode;
+          DocHtmlCell *cell = (DocHtmlCell*)cellNode.get();
           uint rs = cell->rowSpan();
           uint cs = cell->colSpan();
 
-          for (i=0;i<rowSpans.count();i++)
+          for (i=0;i<rowSpans.size();i++)
           {
-            if (rowSpans.at(i)->rowsLeft>0 &&
-                rowSpans.at(i)->column==colIdx)
+            if (rowSpans[i].rowsLeft>0 &&
+                rowSpans[i].column==colIdx)
             {
-              colIdx=rowSpans.at(i)->column+1;
+              colIdx=rowSpans[i].column+1;
               cells++;
             }
           }
-          if (rs>0) rowSpans.append(new ActiveRowSpan(rs,colIdx));
+          if (rs>0) rowSpans.emplace_back(rs,colIdx);
           //printf("found cell at (%d,%d)\n",rowIdx,colIdx);
           cell->setRowIndex(rowIdx);
           cell->setColumnIndex(colIdx);
@@ -3755,9 +3697,9 @@ void DocHtmlTable::computeTableGrid()
           cells++;
         }
       }
-      for (i=0;i<rowSpans.count();i++)
+      for (i=0;i<rowSpans.size();i++)
       {
-        if (rowSpans.at(i)->rowsLeft>0) rowSpans.at(i)->rowsLeft--;
+        if (rowSpans[i].rowsLeft>0) rowSpans[i].rowsLeft--;
       }
       row->setVisibleCells(cells);
       row->setRowIndex(rowIdx);
@@ -3775,9 +3717,7 @@ void DocHtmlTable::accept(DocVisitor *v)
   //if (m_caption && v->id()==DocVisitor_Html) m_caption->accept(v);
   // doxygen 1.8.11: always put the caption first
   if (m_caption) m_caption->accept(v);
-  QListIterator<DocNode> cli(m_children);
-  DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
+  for (const auto &n : m_children) n->accept(v);
   // for other output formats we put the caption last
   //if (m_caption && v->id()!=DocVisitor_Html) m_caption->accept(v);
   v->visitPost(this);
@@ -3788,7 +3728,7 @@ void DocHtmlTable::accept(DocVisitor *v)
 int DocHtmlDescTitle::parse()
 {
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlDescTitle::parse() start\n"));
 
   int tok;
@@ -3828,7 +3768,7 @@ int DocHtmlDescTitle::parse()
                     else
                     {
                       DocRef *ref = new DocRef(this,g_token->name,g_context);
-                      m_children.append(ref);
+                      m_children.push_back(std::unique_ptr<DocRef>(ref));
                       ref->parse();
                     }
                     doctokenizerYYsetStatePara();
@@ -3859,11 +3799,11 @@ int DocHtmlDescTitle::parse()
                     {
                       doctokenizerYYsetStatePara();
                       DocLink *lnk = new DocLink(this,g_token->name);
-                      m_children.append(lnk);
+                      m_children.push_back(std::unique_ptr<DocLink>(lnk));
                       QCString leftOver = lnk->parse(isJavaLink);
                       if (!leftOver.isEmpty())
                       {
-                        m_children.append(new DocWord(this,leftOver));
+                        m_children.push_back(std::make_unique<DocWord>(this,leftOver));
                       }
                     }
                   }
@@ -3932,8 +3872,6 @@ int DocHtmlDescTitle::parse()
 endtitle:
   handlePendingStyleCommands(this,m_children);
   DBG(("DocHtmlDescTitle::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3943,7 +3881,7 @@ int DocHtmlDescData::parse()
 {
   m_attribs = g_token->attribs;
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlDescData::parse() start\n"));
 
   bool isFirst=TRUE;
@@ -3952,15 +3890,13 @@ int DocHtmlDescData::parse()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
   DBG(("DocHtmlDescData::parse() end\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -3969,7 +3905,7 @@ int DocHtmlDescData::parse()
 int DocHtmlDescList::parse()
 {
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DBG(("DocHtmlDescList::parse() start\n"));
 
   // get next token
@@ -4008,9 +3944,9 @@ int DocHtmlDescList::parse()
   do
   {
     DocHtmlDescTitle *dt=new DocHtmlDescTitle(this,g_token->attribs);
-    m_children.append(dt);
+    m_children.push_back(std::unique_ptr<DocHtmlDescTitle>(dt));
     DocHtmlDescData *dd=new DocHtmlDescData(this);
-    m_children.append(dd);
+    m_children.push_back(std::unique_ptr<DocHtmlDescData>(dd));
     retval=dt->parse();
     if (retval==RetVal_DescData)
     {
@@ -4030,8 +3966,6 @@ int DocHtmlDescList::parse()
 
 enddesclist:
 
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocHtmlDescList::parse() end\n"));
   return retval==RetVal_EndDesc ? RetVal_OK : retval;
 }
@@ -4042,7 +3976,7 @@ int DocHtmlListItem::parse()
 {
   DBG(("DocHtmlListItem::parse() start\n"));
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
@@ -4051,14 +3985,12 @@ int DocHtmlListItem::parse()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocHtmlListItem::parse() end retval=%x\n",retval));
   return retval;
 }
@@ -4067,7 +3999,7 @@ int DocHtmlListItem::parseXml()
 {
   DBG(("DocHtmlListItem::parseXml() start\n"));
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
@@ -4076,7 +4008,7 @@ int DocHtmlListItem::parseXml()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
     if (retval==0) break;
 
@@ -4091,8 +4023,6 @@ int DocHtmlListItem::parseXml()
 
   if (par) par->markLast();
 
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocHtmlListItem::parseXml() end retval=%x\n",retval));
   return retval;
 }
@@ -4104,7 +4034,7 @@ int DocHtmlList::parse()
   DBG(("DocHtmlList::parse() start\n"));
   int retval=RetVal_OK;
   int num=1;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // get next token
   int tok=doctokenizerYYlex();
@@ -4124,7 +4054,7 @@ int DocHtmlList::parse()
             ) // found empty list
     {
       // add dummy item to obtain valid HTML
-      m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
+      m_children.push_back(std::make_unique<DocHtmlListItem>(this,HtmlAttribList(),1));
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"empty list!");
       retval = RetVal_EndList;
       goto endlist;
@@ -4132,7 +4062,7 @@ int DocHtmlList::parse()
     else // found some other tag
     {
       // add dummy item to obtain valid HTML
-      m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
+      m_children.push_back(std::make_unique<DocHtmlListItem>(this,HtmlAttribList(),1));
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"expected <li> tag but "
           "found <%s%s> instead!",g_token->endTag?"/":"",qPrint(g_token->name));
       doctokenizerYYpushBackHtmlTag(g_token->name);
@@ -4142,7 +4072,7 @@ int DocHtmlList::parse()
   else if (tok==0) // premature end of comment
   {
     // add dummy item to obtain valid HTML
-    m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
+    m_children.push_back(std::make_unique<DocHtmlListItem>(this,HtmlAttribList(),1));
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected end of comment while looking"
         " for a html list item");
     goto endlist;
@@ -4150,7 +4080,7 @@ int DocHtmlList::parse()
   else // token other than html token
   {
     // add dummy item to obtain valid HTML
-    m_children.append(new DocHtmlListItem(this,HtmlAttribList(),1));
+    m_children.push_back(std::make_unique<DocHtmlListItem>(this,HtmlAttribList(),1));
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"expected <li> tag but found %s token instead!",
         tokToString(tok));
     goto endlist;
@@ -4159,7 +4089,7 @@ int DocHtmlList::parse()
   do
   {
     DocHtmlListItem *li=new DocHtmlListItem(this,g_token->attribs,num++);
-    m_children.append(li);
+    m_children.push_back(std::unique_ptr<DocHtmlListItem>(li));
     retval=li->parse();
   } while (retval==RetVal_ListItem);
 
@@ -4171,8 +4101,6 @@ int DocHtmlList::parse()
 
 endlist:
   DBG(("DocHtmlList::parse() end retval=%x\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval==RetVal_EndList ? RetVal_OK : retval;
 }
 
@@ -4181,7 +4109,7 @@ int DocHtmlList::parseXml()
   DBG(("DocHtmlList::parseXml() start\n"));
   int retval=RetVal_OK;
   int num=1;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // get next token
   int tok=doctokenizerYYlex();
@@ -4220,7 +4148,7 @@ int DocHtmlList::parseXml()
   do
   {
     DocHtmlListItem *li=new DocHtmlListItem(this,g_token->attribs,num++);
-    m_children.append(li);
+    m_children.push_back(std::unique_ptr<DocHtmlListItem>(li));
     retval=li->parseXml();
     if (retval==0) break;
     //printf("retval=%x g_token->name=%s\n",retval,qPrint(g_token->name));
@@ -4234,8 +4162,6 @@ int DocHtmlList::parseXml()
 
 endlist:
   DBG(("DocHtmlList::parseXml() end retval=%x\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval==RetVal_EndList ||
          (retval==RetVal_CloseXml || g_token->name=="list") ?
          RetVal_OK : retval;
@@ -4247,7 +4173,7 @@ int DocHtmlBlockQuote::parse()
 {
   DBG(("DocHtmlBlockQuote::parse() start\n"));
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
@@ -4256,14 +4182,12 @@ int DocHtmlBlockQuote::parse()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocHtmlBlockQuote::parse() end retval=%x\n",retval));
   return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
 }
@@ -4274,7 +4198,7 @@ int DocParBlock::parse()
 {
   DBG(("DocParBlock::parse() start\n"));
   int retval=0;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // parse one or more paragraphs
   bool isFirst=TRUE;
@@ -4283,14 +4207,12 @@ int DocParBlock::parse()
   {
     par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
     retval=par->parse();
   }
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocParBlock::parse() end retval=%x\n",retval));
   return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
 }
@@ -4299,12 +4221,10 @@ int DocParBlock::parse()
 
 int DocSimpleListItem::parse()
 {
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   int rv=m_paragraph->parse();
   m_paragraph->markFirst();
   m_paragraph->markLast();
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return rv;
 }
 
@@ -4312,16 +4232,14 @@ int DocSimpleListItem::parse()
 
 int DocSimpleList::parse()
 {
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   int rv;
   do
   {
     DocSimpleListItem *li=new DocSimpleListItem(this);
-    m_children.append(li);
+    m_children.push_back(std::unique_ptr<DocSimpleListItem>(li));
     rv=li->parse();
   } while (rv==RetVal_ListItem);
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
 }
 
@@ -4336,7 +4254,7 @@ DocAutoListItem::DocAutoListItem(DocNode *parent,int indent,int num)
 int DocAutoListItem::parse()
 {
   int retval = RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
@@ -4348,7 +4266,7 @@ int DocAutoListItem::parse()
     retval=par->parse();
     if (!par->isEmpty())
     {
-      m_children.append(par);
+      m_children.push_back(std::unique_ptr<DocPara>(par));
       if (lastPar) lastPar->markLast(FALSE);
       lastPar=par;
     }
@@ -4361,8 +4279,6 @@ int DocAutoListItem::parse()
   } while (retval==TK_NEWPARA && g_token->indent>m_indent);
   if (lastPar) lastPar->markLast();
 
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   //printf("DocAutoListItem: retval=%d indent=%d\n",retval,g_token->indent);
   return retval;
 }
@@ -4381,7 +4297,7 @@ int DocAutoList::parse()
 {
   int retval = RetVal_OK;
   int num=1;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   doctokenizerYYstartAutoList();
 	  // first item or sub list => create new list
   do
@@ -4391,12 +4307,12 @@ int DocAutoList::parse()
       num=g_token->id;  // override num with real number given
     }
     DocAutoListItem *li = new DocAutoListItem(this,m_indent,num++);
-    m_children.append(li);
+    m_children.push_back(std::unique_ptr<DocAutoListItem>(li));
     retval=li->parse();
     //printf("DocAutoList::parse(): retval=0x%x g_token->indent=%d m_indent=%d "
     //       "m_isEnumList=%d g_token->isEnumList=%d g_token->name=%s\n",
     //       retval,g_token->indent,m_indent,m_isEnumList,g_token->isEnumList,
-    //       g_token->name.data());
+    //       qPrint(g_token->name));
     //printf("num=%d g_token->id=%d\n",num,g_token->id);
   }
   while (retval==TK_LISTITEM &&                // new list item
@@ -4406,8 +4322,6 @@ int DocAutoList::parse()
         );
 
   doctokenizerYYendAutoList();
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -4416,7 +4330,7 @@ int DocAutoList::parse()
 void DocTitle::parse()
 {
   DBG(("DocTitle::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   doctokenizerYYsetStateTitle();
   int tok;
   while ((tok=doctokenizerYYlex()))
@@ -4429,13 +4343,11 @@ void DocTitle::parse()
   doctokenizerYYsetStatePara();
   handlePendingStyleCommands(this,m_children);
   DBG(("DocTitle::parse() end\n"));
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
 }
 
 void DocTitle::parseFromString(const QCString &text)
 {
-  m_children.append(new DocWord(this,text));
+  m_children.push_back(std::make_unique<DocWord>(this,text));
 }
 
 //--------------------------------------------------------------------------
@@ -4456,16 +4368,14 @@ void DocSimpleSect::accept(DocVisitor *v)
 {
   v->visitPre(this);
   if (m_title) m_title->accept(v);
-  QListIterator<DocNode> cli(m_children);
-  DocNode *n;
-  for (cli.toFirst();(n=cli.current());++cli) n->accept(v);
+  for (const auto &n : m_children) n->accept(v);
   v->visitPost(this);
 }
 
 int DocSimpleSect::parse(bool userTitle,bool needsSeparator)
 {
   DBG(("DocSimpleSect::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   // handle case for user defined title
   if (userTitle)
@@ -4476,32 +4386,30 @@ int DocSimpleSect::parse(bool userTitle,bool needsSeparator)
 
   // add new paragraph as child
   DocPara *par = new DocPara(this);
-  if (m_children.isEmpty())
+  if (m_children.empty())
   {
     par->markFirst();
   }
   else
   {
-    ASSERT(m_children.getLast()->kind()==DocNode::Kind_Para);
-    ((DocPara *)m_children.getLast())->markLast(FALSE);
+    ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
+    ((DocPara *)m_children.back().get())->markLast(FALSE);
   }
   par->markLast();
-  if (needsSeparator) m_children.append(new DocSimpleSectSep(this));
-  m_children.append(par);
+  if (needsSeparator) m_children.push_back(std::make_unique<DocSimpleSectSep>(this));
+  m_children.push_back(std::unique_ptr<DocPara>(par));
 
   // parse the contents of the paragraph
   int retval = par->parse();
 
   DBG(("DocSimpleSect::parse() end retval=%d\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval; // 0==EOF, TK_NEWPARA, TK_LISTITEM, TK_ENDLIST, RetVal_SimpleSec
 }
 
 int DocSimpleSect::parseRcs()
 {
   DBG(("DocSimpleSect::parseRcs() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   m_title = new DocTitle(this);
   m_title->parseFromString(g_token->name);
@@ -4512,32 +4420,30 @@ int DocSimpleSect::parseRcs()
   docParserPopContext(); // this will restore the old g_token
 
   DBG(("DocSimpleSect::parseRcs()\n"));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return RetVal_OK;
 }
 
 int DocSimpleSect::parseXml()
 {
   DBG(("DocSimpleSect::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   int retval = RetVal_OK;
   for (;;)
   {
     // add new paragraph as child
     DocPara *par = new DocPara(this);
-    if (m_children.isEmpty())
+    if (m_children.empty())
     {
       par->markFirst();
     }
     else
     {
-      ASSERT(m_children.getLast()->kind()==DocNode::Kind_Para);
-      ((DocPara *)m_children.getLast())->markLast(FALSE);
+      ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
+      ((DocPara *)m_children.back().get())->markLast(FALSE);
     }
     par->markLast();
-    m_children.append(par);
+    m_children.push_back(std::unique_ptr<DocPara>(par));
 
     // parse the contents of the paragraph
     retval = par->parse();
@@ -4550,22 +4456,20 @@ int DocSimpleSect::parseXml()
   }
 
   DBG(("DocSimpleSect::parseXml() end retval=%d\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
 void DocSimpleSect::appendLinkWord(const QCString &word)
 {
   DocPara *p;
-  if (m_children.isEmpty() || m_children.getLast()->kind()!=DocNode::Kind_Para)
+  if (m_children.empty() || m_children.back()->kind()!=DocNode::Kind_Para)
   {
     p = new DocPara(this);
-    m_children.append(p);
+    m_children.push_back(std::unique_ptr<DocPara>(p));
   }
   else
   {
-    p = (DocPara *)m_children.getLast();
+    p = (DocPara *)m_children.back().get();
 
     // Comma-separate <seealso> links.
     p->injectToken(TK_WORD,",");
@@ -4609,7 +4513,7 @@ int DocParamList::parse(const QCString &cmdName)
 {
   int retval=RetVal_OK;
   DBG(("DocParamList::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   DocPara *par=0;
   QCString saveCmdName = cmdName;
 
@@ -4618,7 +4522,7 @@ int DocParamList::parse(const QCString &cmdName)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"expected whitespace after \\%s command",
         qPrint(saveCmdName));
-    retval=0;
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
   doctokenizerYYsetStateParam();
@@ -4633,13 +4537,13 @@ int DocParamList::parse(const QCString &cmdName)
         handleParameterType(this,m_paramTypes,g_token->name.left(typeSeparator));
         g_token->name = g_token->name.mid(typeSeparator+1);
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name.str());
         ((DocParamSect*)parent())->m_hasTypeSpecifier=TRUE;
       }
       else
       {
         g_hasParamCommand=TRUE;
-        checkArgumentName(g_token->name);
+        checkArgumentName(g_token->name.str());
       }
     }
     else if (m_type==DocParamSect::RetVal)
@@ -4656,27 +4560,28 @@ int DocParamList::parse(const QCString &cmdName)
   {
     warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected end of comment block while parsing the "
         "argument of command %s",qPrint(saveCmdName));
-    retval=0;
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
   if (tok!=TK_WHITESPACE) /* premature end of comment block */
   {
-    warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected token in comment block while parsing the "
-        "argument of command %s",qPrint(saveCmdName));
-    retval=0;
+    if (tok!=TK_NEWPARA) /* empty param description */
+    {
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected token in comment block while parsing the "
+          "argument of command %s",qPrint(saveCmdName));
+    }
+    retval=RetVal_EndParBlock;
     goto endparamlist;
   }
 
   par = new DocPara(this);
-  m_paragraphs.append(par);
+  m_paragraphs.push_back(std::unique_ptr<DocPara>(par));
   retval = par->parse();
   par->markFirst();
   par->markLast();
 
 endparamlist:
   DBG(("DocParamList::parse() end retval=%d\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -4684,13 +4589,13 @@ int DocParamList::parseXml(const QCString &paramName)
 {
   int retval=RetVal_OK;
   DBG(("DocParamList::parseXml() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   g_token->name = paramName;
   if (m_type==DocParamSect::Param)
   {
     g_hasParamCommand=TRUE;
-    checkArgumentName(g_token->name);
+    checkArgumentName(g_token->name.str());
   }
   else if (m_type==DocParamSect::RetVal)
   {
@@ -4712,16 +4617,16 @@ int DocParamList::parseXml(const QCString &paramName)
     }
     else // append the paragraph to the list
     {
-      if (m_paragraphs.isEmpty())
+      if (m_paragraphs.empty())
       {
         par->markFirst();
       }
       else
       {
-        m_paragraphs.getLast()->markLast(FALSE);
+        m_paragraphs.back()->markLast(FALSE);
       }
       par->markLast();
-      m_paragraphs.append(par);
+      m_paragraphs.push_back(std::unique_ptr<DocPara>(par));
     }
 
     if (retval == 0) break;
@@ -4743,8 +4648,6 @@ int DocParamList::parseXml(const QCString &paramName)
 
 
   DBG(("DocParamList::parse() end retval=%d\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -4754,7 +4657,7 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
 {
   int retval=RetVal_OK;
   DBG(("DocParamSect::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   if (d!=Unspecified)
   {
@@ -4762,18 +4665,18 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   }
 
   DocParamList *pl = new DocParamList(this,m_type,d);
-  if (m_children.isEmpty())
+  if (m_children.empty())
   {
     pl->markFirst();
     pl->markLast();
   }
   else
   {
-    ASSERT(m_children.getLast()->kind()==DocNode::Kind_ParamList);
-    ((DocParamList *)m_children.getLast())->markLast(FALSE);
+    ASSERT(m_children.back()->kind()==DocNode::Kind_ParamList);
+    ((DocParamList *)m_children.back().get())->markLast(FALSE);
     pl->markLast();
   }
-  m_children.append(pl);
+  m_children.push_back(std::unique_ptr<DocParamList>(pl));
   if (xmlContext)
   {
     retval = pl->parseXml(cmdName);
@@ -4788,8 +4691,6 @@ int DocParamSect::parse(const QCString &cmdName,bool xmlContext, Direction d)
   }
 
   DBG(("DocParamSect::parse() end retval=%d\n",retval));
-  DocNode *n=g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -4799,19 +4700,19 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
 {
   DocSimpleSect *ss=0;
   bool needsSeparator = FALSE;
-  if (!m_children.isEmpty() &&                           // previous element
-      m_children.getLast()->kind()==Kind_SimpleSect &&      // was a simple sect
-      ((DocSimpleSect *)m_children.getLast())->type()==t && // of same type
+  if (!m_children.empty() &&                           // previous element
+      m_children.back()->kind()==Kind_SimpleSect &&      // was a simple sect
+      ((DocSimpleSect *)m_children.back().get())->type()==t && // of same type
       t!=DocSimpleSect::User)                            // but not user defined
   {
     // append to previous section
-    ss=(DocSimpleSect *)m_children.getLast();
+    ss=(DocSimpleSect *)m_children.back().get();
     needsSeparator = TRUE;
   }
   else // start new section
   {
     ss=new DocSimpleSect(this,t);
-    m_children.append(ss);
+    m_children.push_back(std::unique_ptr<DocSimpleSect>(ss));
   }
   int rv = RetVal_OK;
   if (xmlContext)
@@ -4831,17 +4732,17 @@ int DocPara::handleParamSection(const QCString &cmdName,
                                 int direction=DocParamSect::Unspecified)
 {
   DocParamSect *ps=0;
-  if (!m_children.isEmpty() &&                        // previous element
-      m_children.getLast()->kind()==Kind_ParamSect &&    // was a param sect
-      ((DocParamSect *)m_children.getLast())->type()==t) // of same type
+  if (!m_children.empty() &&                        // previous element
+      m_children.back()->kind()==Kind_ParamSect &&    // was a param sect
+      ((DocParamSect *)m_children.back().get())->type()==t) // of same type
   {
     // append to previous section
-    ps=(DocParamSect *)m_children.getLast();
+    ps=(DocParamSect *)m_children.back().get();
   }
   else // start new section
   {
     ps=new DocParamSect(this,t);
-    m_children.append(ps);
+    m_children.push_back(std::unique_ptr<DocParamSect>(ps));
   }
   int rv=ps->parse(cmdName,xmlContext,(DocParamSect::Direction)direction);
   return (rv!=TK_NEWPARA) ? rv : RetVal_OK;
@@ -4872,9 +4773,9 @@ void DocPara::handleCite()
     return;
   }
   g_token->sectionId = g_token->name;
-  DocCite *cite = new DocCite(this,g_token->name,g_context);
-  m_children.append(cite);
-  //cite->parse();
+  m_children.push_back(
+      std::make_unique<DocCite>(
+        this,g_token->name,g_context));
 
   doctokenizerYYsetStatePara();
 }
@@ -4903,8 +4804,9 @@ void DocPara::handleEmoji()
         tokToString(tok),qPrint("emoji"));
     return;
   }
-  DocEmoji *emoji = new DocEmoji(this,g_token->name);
-  m_children.append(emoji);
+  m_children.push_back(
+      std::make_unique<DocEmoji>(
+         this,g_token->name));
   doctokenizerYYsetStatePara();
 }
 
@@ -4919,7 +4821,7 @@ int DocPara::handleXRefItem()
     DocXRefItem *ref = new DocXRefItem(this,g_token->id,g_token->name);
     if (ref->parse())
     {
-      m_children.append(ref);
+      m_children.push_back(std::unique_ptr<DocXRefItem>(ref));
     }
     else
     {
@@ -4957,10 +4859,8 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
     return;
   }
   DocIncOperator *op = new DocIncOperator(this,t,g_token->name,g_context,g_isExample,g_exampleName);
-  QListIterator<DocNode> it(m_children);
-  DocNode *n1 = it.toLast();
-  --it;
-  DocNode *n2 = n1!=0 ? it.current() : 0;
+  DocNode *n1 = m_children.size()>=1 ? m_children.at(m_children.size()-1).get() : 0;
+  DocNode *n2 = m_children.size()>=2 ? m_children.at(m_children.size()-2).get() : 0;
   bool isFirst = n1==0 || // no last node
                  (n1->kind()!=DocNode::Kind_IncOperator &&
                   n1->kind()!=DocNode::Kind_WhiteSpace
@@ -4980,7 +4880,7 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
   {
     ((DocIncOperator *)n2)->markLast(FALSE);
   }
-  m_children.append(op);
+  m_children.push_back(std::unique_ptr<DocIncOperator>(op));
   op->parse();
 }
 
@@ -5070,7 +4970,7 @@ void DocPara::handleImage(const QCString &cmdName)
   }
   HtmlAttribList attrList;
   DocImage *img = new DocImage(this,attrList,findAndCopyImage(g_token->name,t),t,"",inlineImage);
-  m_children.append(img);
+  m_children.push_back(std::unique_ptr<DocImage>(img));
   img->parse();
 }
 
@@ -5098,7 +4998,7 @@ void DocPara::handleFile(const QCString &cmdName)
   T *df = new T(this,name,g_context);
   if (df->parse())
   {
-    m_children.append(df);
+    m_children.push_back(std::unique_ptr<T>(df));
   }
   else
   {
@@ -5109,7 +5009,7 @@ void DocPara::handleFile(const QCString &cmdName)
 void DocPara::handleVhdlFlow()
 {
   DocVhdlFlow *vf = new DocVhdlFlow(this);
-  m_children.append(vf);
+  m_children.push_back(std::unique_ptr<DocVhdlFlow>(vf));
   vf->parse();
 }
 
@@ -5133,11 +5033,11 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
   }
   doctokenizerYYsetStatePara();
   DocLink *lnk = new DocLink(this,g_token->name);
-  m_children.append(lnk);
+  m_children.push_back(std::unique_ptr<DocLink>(lnk));
   QCString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {
-    m_children.append(new DocWord(this,leftOver));
+    m_children.push_back(std::make_unique<DocWord>(this,leftOver));
   }
 }
 
@@ -5162,7 +5062,7 @@ void DocPara::handleRef(const QCString &cmdName)
     goto endref;
   }
   ref = new DocRef(this,g_token->name,g_context);
-  m_children.append(ref);
+  m_children.push_back(std::unique_ptr<DocRef>(ref));
   ref->parse();
 endref:
   doctokenizerYYsetStatePara();
@@ -5179,24 +5079,28 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
     doctokenizerYYsetStateOptions();
     tok=doctokenizerYYlex();
     doctokenizerYYsetStatePara();
-    QCStringList optList=QCStringList::split(",",g_token->name);
-    if (t==DocInclude::Include && optList.contains("lineno"))
+    StringVector optList=split(g_token->name.str(),",");
+    auto contains = [&optList](const char *kw)
+    {
+      return std::find(optList.begin(),optList.end(),kw)!=optList.end();
+    };
+    if (t==DocInclude::Include && contains("lineno"))
     {
       t = DocInclude::IncWithLines;
     }
-    else if (t==DocInclude::Snippet && optList.contains("lineno"))
+    else if (t==DocInclude::Snippet && contains("lineno"))
     {
       t = DocInclude::SnipWithLines;
     }
-    else if (t==DocInclude::DontInclude && optList.contains("lineno"))
+    else if (t==DocInclude::DontInclude && contains("lineno"))
     {
       t = DocInclude::DontIncWithLines;
     }
-    else if (t==DocInclude::Include && optList.contains("doc"))
+    else if (t==DocInclude::Include && contains("doc"))
     {
       t = DocInclude::IncludeDoc;
     }
-    else if (t==DocInclude::Snippet && optList.contains("doc"))
+    else if (t==DocInclude::Snippet && contains("doc"))
     {
       t = DocInclude::SnippetDoc;
     }
@@ -5260,16 +5164,21 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
        inc_line = lineBlock(inc_text, blockId);
        inc_text = extractBlock(inc_text, blockId);
      }
+
+     Markdown markdown(fileName,inc_line);
+     QCString strippedDoc = stripIndentation(inc_text);
+     QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,inc_line) : strippedDoc;
+
      docParserPushContext();
      g_fileName = fileName;
      setDoctokinizerLineNr(inc_line);
-     internalValidatingParseDoc(this,m_children,inc_text);
+     internalValidatingParseDoc(this,m_children,processedDoc);
      docParserPopContext();
   }
   else
   {
     DocInclude *inc = new DocInclude(this,fileName,g_context,t,g_isExample,g_exampleName,blockId,isBlock);
-    m_children.append(inc);
+    m_children.push_back(std::unique_ptr<DocInclude>(inc));
     inc->parse();
   }
 }
@@ -5307,7 +5216,7 @@ void DocPara::handleSection(const QCString &cmdName)
 int DocPara::handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level)
 {
   DocHtmlHeader *header = new DocHtmlHeader(this,tagHtmlAttribs,level);
-  m_children.append(header);
+  m_children.push_back(std::unique_ptr<DocHtmlHeader>(header));
   int retval = header->parse();
   return (retval==RetVal_OK) ? TK_NEWPARA : retval;
 }
@@ -5340,7 +5249,7 @@ int DocPara::handleStartCode()
     if (g_token->verb.at(i)=='\n') li=i+1;
     i++;
   }
-  m_children.append(new DocVerbatim(this,g_context,stripIndentation(g_token->verb.mid(li)),DocVerbatim::Code,g_isExample,g_exampleName,FALSE,lang));
+  m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,stripIndentation(g_token->verb.mid(li)),DocVerbatim::Code,g_isExample,g_exampleName,FALSE,lang));
   if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"code section ended without end marker");
   doctokenizerYYsetStatePara();
   return retval;
@@ -5350,11 +5259,11 @@ void DocPara::handleInheritDoc()
 {
   if (g_memberDef) // inheriting docs from a member
   {
-    MemberDef *reMd = g_memberDef->reimplements();
+    const MemberDef *reMd = g_memberDef->reimplements();
     if (reMd) // member from which was inherited.
     {
       const MemberDef *thisMd = g_memberDef;
-      //printf("{InheritDocs:%s=>%s}\n",g_memberDef->qualifiedName().data(),reMd->qualifiedName().data());
+      //printf("{InheritDocs:%s=>%s}\n",qPrint(g_memberDef->qualifiedName()),qPrint(reMd->qualifiedName()));
       docParserPushContext();
       g_scope=reMd->getOuterScope();
       if (g_scope!=Doxygen::globalScope)
@@ -5362,12 +5271,12 @@ void DocPara::handleInheritDoc()
         g_context=g_scope->name();
       }
       g_memberDef=reMd;
-      g_styleStack.clear();
-      g_nodeStack.clear();
-      g_copyStack.append(reMd);
+      while (!g_styleStack.empty()) g_styleStack.pop();
+      while (!g_nodeStack.empty()) g_nodeStack.pop();
+      g_copyStack.push_back(reMd);
       internalValidatingParseDoc(this,m_children,reMd->briefDescription());
       internalValidatingParseDoc(this,m_children,reMd->documentation());
-      g_copyStack.remove(reMd);
+      g_copyStack.pop_back();
       docParserPopContext(TRUE);
       g_memberDef = thisMd;
     }
@@ -5383,80 +5292,80 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
   switch (cmdId)
   {
     case CMD_UNKNOWN:
-      m_children.append(new DocWord(this,TK_COMMAND_CHAR(tok) + cmdName));
-      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Found unknown command '%c%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
+      m_children.push_back(std::make_unique<DocWord>(this,TK_COMMAND_CHAR(tok) + cmdName));
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Found unknown command '%s%s'",TK_COMMAND_CHAR(tok),qPrint(cmdName));
       break;
     case CMD_EMPHASIS:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName);
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,cmdName,FALSE));
-      if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,cmdName,FALSE));
+      if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
       break;
     case CMD_BOLD:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName);
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,cmdName,FALSE));
-      if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,cmdName,FALSE));
+      if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
       break;
     case CMD_CODE:
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,cmdName,TRUE));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
       retval=handleStyleArgument(this,m_children,cmdName);
-      m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,cmdName,FALSE));
-      if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
+      m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
+      if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
       break;
     case CMD_BSLASH:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_BSlash));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_BSlash));
       break;
     case CMD_AT:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_At));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_At));
       break;
     case CMD_LESS:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Less));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Less));
       break;
     case CMD_GREATER:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Greater));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Greater));
       break;
     case CMD_AMP:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Amp));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Amp));
       break;
     case CMD_DOLLAR:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Dollar));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Dollar));
       break;
     case CMD_HASH:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Hash));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Hash));
       break;
     case CMD_PIPE:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Pipe));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Pipe));
       break;
     case CMD_DCOLON:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_DoubleColon));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_DoubleColon));
       break;
     case CMD_PERCENT:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Percent));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Percent));
       break;
     case CMD_NDASH:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
       break;
     case CMD_MDASH:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
       break;
     case CMD_QUOTE:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Quot));
       break;
     case CMD_PUNT:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Dot));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Dot));
       break;
     case CMD_PLUS:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Plus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Plus));
       break;
     case CMD_MINUS:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
       break;
     case CMD_EQUAL:
-      m_children.append(new DocSymbol(this,DocSymbol::Sym_Equal));
+      m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Equal));
       break;
     case CMD_SA:
       g_inSeeBlock=TRUE;
@@ -5512,7 +5421,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_LI:
       {
         DocSimpleList *sl=new DocSimpleList(this);
-        m_children.append(sl);
+        m_children.push_back(std::unique_ptr<DocSimpleList>(sl));
         retval = sl->parse();
       }
       break;
@@ -5550,7 +5459,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateHtmlOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName,g_token->name=="block"));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::HtmlOnly,g_isExample,g_exampleName,g_token->name=="block"));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"htmlonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5559,7 +5468,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateManOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::ManOnly,g_isExample,g_exampleName));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::ManOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"manonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5568,7 +5477,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateRtfOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::RtfOnly,g_isExample,g_exampleName));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::RtfOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"rtfonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5577,7 +5486,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateLatexOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_exampleName));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::LatexOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"latexonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5586,7 +5495,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateXmlOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::XmlOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"xmlonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5595,7 +5504,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateDbOnly();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::DocbookOnly,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"docbookonly section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5604,7 +5513,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       {
         doctokenizerYYsetStateVerbatim();
         retval = doctokenizerYYlex();
-        m_children.append(new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Verbatim,g_isExample,g_exampleName));
+        m_children.push_back(std::make_unique<DocVerbatim>(this,g_context,g_token->verb,DocVerbatim::Verbatim,g_isExample,g_exampleName));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"verbatim section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5620,7 +5529,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         dv->setText(g_token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
-        m_children.append(dv);
+        m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"dot section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5636,7 +5545,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         dv->setText(g_token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
-        m_children.append(dv);
+        m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"msc section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5646,8 +5555,63 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         static QCString jarPath = Config_getString(PLANTUML_JAR_PATH);
         doctokenizerYYsetStatePlantUMLOpt();
         retval = doctokenizerYYlex();
-        QCString plantFile(g_token->sectionId);
+
+        QCString fullMatch = g_token->sectionId;
+        QCString sectionId = "";
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        StringVector optList;
+        QCString engine;
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             bool found = false;
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (g_plantumlEngine.find(locOpt)!=g_plantumlEngine.end())
+             {
+               if (!engine.isEmpty())
+               {
+                 warn(g_fileName,getDoctokinizerLineNr(), "Multiple definition of engine for '\\startuml'");
+               }
+               engine = locOpt;
+               found = true;
+             }
+             if (!found)
+             {
+               if (sectionId.isEmpty())
+               {
+                 sectionId = opt;
+               }
+               else
+               {
+                 warn(g_fileName,getDoctokinizerLineNr(),"Multiple use of of filename for '\\startuml'");
+               }
+             }
+           }
+        }
+        else
+        {
+          sectionId = g_token->sectionId;
+        }
+        if (engine.isEmpty()) engine = "uml";
+
+        if (sectionId.isEmpty())
+        {
+          doctokenizerYYsetStatePlantUMLOpt();
+          retval = doctokenizerYYlex();
+
+          sectionId = g_token->sectionId;
+          sectionId = sectionId.stripWhiteSpace();
+        }
+
+        QCString plantFile(sectionId);
         DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::PlantUML,FALSE,plantFile);
+        dv->setEngine(engine);
         doctokenizerYYsetStatePara();
         QCString width,height;
         defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
@@ -5664,7 +5628,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         }
         else
         {
-          m_children.append(dv);
+          m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
         }
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"startuml section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5704,8 +5668,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_LINEBREAK:
       {
-        DocLineBreak *lb = new DocLineBreak(this);
-        m_children.append(lb);
+        m_children.push_back(std::make_unique<DocLineBreak>(this));
       }
       break;
     case CMD_ANCHOR:
@@ -5713,7 +5676,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         DocAnchor *anchor = handleAnchor(this);
         if (anchor)
         {
-          m_children.append(anchor);
+          m_children.push_back(std::unique_ptr<DocAnchor>(anchor));
         }
       }
       break;
@@ -5722,7 +5685,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         DocIndexEntry *ie = new DocIndexEntry(this,
                      g_scope!=Doxygen::globalScope?g_scope:0,
                      g_memberDef);
-        m_children.append(ie);
+        m_children.push_back(std::unique_ptr<DocIndexEntry>(ie));
         retval = ie->parse();
       }
       break;
@@ -5735,7 +5698,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_PARBLOCK:
       {
         DocParBlock *block = new DocParBlock(this);
-        m_children.append(block);
+        m_children.push_back(std::unique_ptr<DocParBlock>(block));
         retval = block->parse();
       }
       break;
@@ -5833,7 +5796,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_SECREFLIST:
       {
         DocSecRefList *list = new DocSecRefList(this);
-        m_children.append(list);
+        m_children.push_back(std::unique_ptr<DocSecRefList>(list));
         list->parse();
       }
       break;
@@ -5845,8 +5808,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_FORMULA:
       {
-        DocFormula *form=new DocFormula(this,g_token->id);
-        m_children.append(form);
+        m_children.push_back(
+            std::make_unique<DocFormula>(
+              this,g_token->id));
       }
       break;
     //case CMD_LANGSWITCH:
@@ -5858,7 +5822,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         DocInternalRef *ref = handleInternalRef(this);
         if (ref)
         {
-          m_children.append(ref);
+          m_children.push_back(std::unique_ptr<DocInternalRef>(ref));
           ref->parse();
         }
         doctokenizerYYsetStatePara();
@@ -5887,13 +5851,11 @@ static bool findAttribute(const HtmlAttribList &tagHtmlAttribs,
                           QCString *result)
 {
 
-  HtmlAttribListIterator li(tagHtmlAttribs);
-  HtmlAttrib *opt;
-  for (li.toFirst();(opt=li.current());++li)
+  for (const auto &opt : tagHtmlAttribs)
   {
-    if (opt->name==attrName)
+    if (opt.name==attrName)
     {
-      *result = opt->value;
+      *result = opt.value;
       return TRUE;
     }
   }
@@ -5909,7 +5871,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       tagId!=HTML_UNKNOWN && tagId!=HTML_IMG && tagId!=HTML_BR && tagId!=HTML_HR && tagId!=HTML_P)
   {
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"HTML tag ('<%s/>') may not use the 'empty tag' XHTML syntax.",
-                     tagName.data());
+                     qPrint(tagName));
   }
   switch (tagId)
   {
@@ -5917,7 +5879,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       if (!g_token->emptyTag)
       {
         DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,DocHtmlList::Unordered);
-        m_children.append(list);
+        m_children.push_back(std::unique_ptr<DocHtmlList>(list));
         retval=list->parse();
       }
       break;
@@ -5925,7 +5887,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       if (!g_token->emptyTag)
       {
         DocHtmlList *list = new DocHtmlList(this,tagHtmlAttribs,DocHtmlList::Ordered);
-        m_children.append(list);
+        m_children.push_back(std::unique_ptr<DocHtmlList>(list));
         retval=list->parse();
       }
       break;
@@ -6006,7 +5968,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       if (!g_token->emptyTag)
       {
         DocHtmlDescList *list = new DocHtmlDescList(this,tagHtmlAttribs);
-        m_children.append(list);
+        m_children.push_back(std::unique_ptr<DocHtmlDescList>(list));
         retval=list->parse();
       }
       break;
@@ -6020,7 +5982,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       if (!g_token->emptyTag)
       {
         DocHtmlTable *table = new DocHtmlTable(this,tagHtmlAttribs);
-        m_children.append(table);
+        m_children.push_back(std::unique_ptr<DocHtmlTable>(table));
         retval=table->parse();
       }
       break;
@@ -6038,14 +6000,12 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_BR:
       {
-        DocLineBreak *lb = new DocLineBreak(this,tagHtmlAttribs);
-        m_children.append(lb);
+        m_children.push_back(std::make_unique<DocLineBreak>(this,tagHtmlAttribs));
       }
       break;
     case HTML_HR:
       {
-        DocHorRuler *hr = new DocHorRuler(this,tagHtmlAttribs);
-        m_children.append(hr);
+        m_children.push_back(std::make_unique<DocHorRuler>(this,tagHtmlAttribs));
       }
       break;
     case HTML_A:
@@ -6078,7 +6038,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       if (!g_token->emptyTag)
       {
         DocHtmlBlockQuote *block = new DocHtmlBlockQuote(this,tagHtmlAttribs);
-        m_children.append(block);
+        m_children.push_back(std::unique_ptr<DocHtmlBlockQuote>(block));
         retval = block->parse();
       }
       break;
@@ -6090,7 +6050,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       // fall through
     case XML_VALUE:
     case XML_PARA:
-      if (!m_children.isEmpty())
+      if (!m_children.empty())
       {
         retval = TK_NEWPARA;
       }
@@ -6137,11 +6097,11 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         QCString paramName;
         if (findAttribute(tagHtmlAttribs,"name",&paramName))
         {
-          //printf("paramName=%s\n",paramName.data());
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,tagName,TRUE));
-          m_children.append(new DocWord(this,paramName));
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Italic,tagName,FALSE));
-          if (retval!=TK_WORD) m_children.append(new DocWhiteSpace(this," "));
+          //printf("paramName=%s\n",qPrint(paramName));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,tagName,TRUE));
+          m_children.push_back(std::make_unique<DocWord>(this,paramName));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Italic,tagName,FALSE));
+          if (retval!=TK_WORD) m_children.push_back(std::make_unique<DocWhiteSpace>(this," "));
         }
         else
         {
@@ -6185,7 +6145,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       g_hasReturnCommand=TRUE;
       break;
     case XML_TERM:
-      //m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,TRUE));
+      //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,TRUE));
       if (insideTable(this))
       {
         retval=RetVal_TableCell;
@@ -6217,11 +6177,11 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
             //ref->parse();
             doctokenizerYYsetStatePara();
             DocLink *lnk = new DocLink(this,cref);
-            m_children.append(lnk);
+            m_children.push_back(std::unique_ptr<DocLink>(lnk));
             QCString leftOver = lnk->parse(FALSE,TRUE);
             if (!leftOver.isEmpty())
             {
-              m_children.append(new DocWord(this,leftOver));
+              m_children.push_back(std::make_unique<DocWord>(this,leftOver));
             }
           }
         }
@@ -6230,9 +6190,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           bool inSeeBlock = g_inSeeBlock;
           g_token->name = cref;
           g_inSeeBlock = TRUE;
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,tagName,TRUE));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,tagName,TRUE));
           handleLinkedWord(this,m_children,TRUE);
-          m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Code,tagName,FALSE));
+          m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Code,tagName,FALSE));
           g_inSeeBlock = inSeeBlock;
         }
         else
@@ -6250,20 +6210,18 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           unescapeCRef(cref);
           // Look for an existing "see" section
           DocSimpleSect *ss=0;
-          QListIterator<DocNode> cli(m_children);
-          DocNode *n;
-          for (cli.toFirst();(n=cli.current());++cli)
+          for (const auto &n : m_children)
           {
-            if (n->kind()==Kind_SimpleSect && ((DocSimpleSect *)n)->type()==DocSimpleSect::See)
+            if (n->kind()==Kind_SimpleSect && ((DocSimpleSect *)n.get())->type()==DocSimpleSect::See)
             {
-              ss = (DocSimpleSect *)n;
+              ss = (DocSimpleSect *)n.get();
             }
           }
 
           if (!ss)  // start new section
           {
             ss=new DocSimpleSect(this,DocSimpleSect::See);
-            m_children.append(ss);
+            m_children.push_back(std::unique_ptr<DocSimpleSect>(ss));
           }
 
           ss->appendLinkWord(cref);
@@ -6288,13 +6246,13 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
         if (type=="table")
         {
           DocHtmlTable *table = new DocHtmlTable(this,emptyList);
-          m_children.append(table);
+          m_children.push_back(std::unique_ptr<DocHtmlTable>(table));
           retval=table->parseXml();
         }
         else
         {
           DocHtmlList *list = new DocHtmlList(this,emptyList,listType);
-          m_children.append(list);
+          m_children.push_back(std::unique_ptr<DocHtmlList>(list));
           retval=list->parseXml();
         }
       }
@@ -6306,7 +6264,7 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unsupported xml/html tag <%s> found", qPrint(tagName));
-      m_children.append(new DocWord(this, "<"+tagName+g_token->attribsStr+">"));
+      m_children.push_back(std::make_unique<DocWord>(this, "<"+tagName+g_token->attribsStr+">"));
       break;
   case XML_INHERITDOC:
       handleInheritDoc();
@@ -6476,7 +6434,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
 
     case XML_TERM:
-      //m_children.append(new DocStyleChange(this,g_nodeStack.count(),DocStyleChange::Bold,FALSE));
+      //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)g_nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
     case XML_REMARKS:
@@ -6507,7 +6465,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_UNKNOWN:
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unsupported xml/html tag </%s> found", qPrint(tagName));
-      m_children.append(new DocWord(this,"</"+tagName+">"));
+      m_children.push_back(std::make_unique<DocWord>(this,"</"+tagName+">"));
       break;
     default:
       // we should not get here!
@@ -6521,7 +6479,7 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
 int DocPara::parse()
 {
   DBG(("DocPara::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   // handle style commands "inherited" from the previous paragraph
   handleInitialStyleCommands(this,m_children);
   int tok;
@@ -6540,13 +6498,13 @@ reparsetoken:
     switch(tok)
     {
       case TK_WORD:
-        m_children.append(new DocWord(this,g_token->name));
+        m_children.push_back(std::make_unique<DocWord>(this,g_token->name));
         break;
       case TK_LNKWORD:
         handleLinkedWord(this,m_children);
         break;
       case TK_URL:
-        m_children.append(new DocURL(this,g_token->name,g_token->isEMailAddr));
+        m_children.push_back(std::make_unique<DocURL>(this,g_token->name,g_token->isEMailAddr));
         break;
       case TK_WHITESPACE:
         {
@@ -6555,9 +6513,9 @@ reparsetoken:
           if (insidePRE(this) || // all whitespace is relevant
               (
                // remove leading whitespace
-               !m_children.isEmpty()  &&
+               !m_children.empty()  &&
                // and whitespace after certain constructs
-               (k=m_children.getLast()->kind())!=DocNode::Kind_HtmlDescList &&
+               (k=m_children.back()->kind())!=DocNode::Kind_HtmlDescList &&
                k!=DocNode::Kind_HtmlTable &&
                k!=DocNode::Kind_HtmlList &&
                k!=DocNode::Kind_SimpleSect &&
@@ -6571,7 +6529,7 @@ reparsetoken:
               )
              )
           {
-            m_children.append(new DocWhiteSpace(this,g_token->chars));
+            m_children.push_back(std::make_unique<DocWhiteSpace>(this,g_token->chars));
           }
         }
         break;
@@ -6608,7 +6566,7 @@ reparsetoken:
           {
             al = new DocAutoList(this,g_token->indent,
                                  g_token->isEnumList,depth);
-            m_children.append(al);
+            m_children.push_back(std::unique_ptr<DocAutoList>(al));
             retval = al->parse();
           } while (retval==TK_LISTITEM &&         // new list
               al->indent()==g_token->indent  // at same indent level
@@ -6694,7 +6652,7 @@ reparsetoken:
             {
               // simple section cannot start in this paragraph, need
               // to unwind the stack and remember the command.
-              g_token->simpleSectName = g_token->name.copy();
+              g_token->simpleSectName = g_token->name;
               retval=RetVal_SimpleSec;
               goto endparagraph;
             }
@@ -6779,7 +6737,7 @@ reparsetoken:
           DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name);
           if (s!=DocSymbol::Sym_Unknown)
           {
-            m_children.append(new DocSymbol(this,s));
+            m_children.push_back(std::make_unique<DocSymbol>(this,s));
           }
           else
           {
@@ -6813,7 +6771,7 @@ reparsetoken:
 
           // see if we are in a simple list
           DocSimpleSect *ss=new DocSimpleSect(this,DocSimpleSect::Rcs);
-          m_children.append(ss);
+          m_children.push_back(std::unique_ptr<DocSimpleSect>(ss));
           ss->parseRcs();
         }
         break;
@@ -6826,9 +6784,8 @@ reparsetoken:
   retval=0;
 endparagraph:
   handlePendingStyleCommands(this,m_children);
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocPara::parse() end retval=%x\n",retval));
+  const DocNode *n = g_nodeStack.top();
   if (!g_token->endTag && n->kind()==DocNode::Kind_Para &&
       retval==TK_NEWPARA && g_token->name.lower() == "p")
   {
@@ -6847,7 +6804,7 @@ int DocSection::parse()
 {
   DBG(("DocSection::parse() start %s level=%d\n",qPrint(g_token->sectionId),m_level));
   int retval=RetVal_OK;
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
 
   if (!m_id.isEmpty())
   {
@@ -6871,7 +6828,7 @@ int DocSection::parse()
     retval=par->parse();
     if (!par->isEmpty())
     {
-      m_children.append(par);
+      m_children.push_back(std::unique_ptr<DocPara>(par));
       lastPar=par;
     }
     else
@@ -6885,7 +6842,7 @@ int DocSection::parse()
     if (retval==RetVal_Internal)
     {
       DocInternal *in = new DocInternal(this);
-      m_children.append(in);
+      m_children.push_back(std::unique_ptr<DocInternal>(in));
       retval = in->parse(m_level+1);
       if (retval==RetVal_EndInternal)
       {
@@ -6912,8 +6869,8 @@ int DocSection::parse()
       while (retval==RetVal_Subsection) // more sections follow
       {
         DocSection *s=new DocSection(this,
-            QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-        m_children.append(s);
+            std::min(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
       break;
@@ -6921,27 +6878,27 @@ int DocSection::parse()
     else if (retval==RetVal_Subsubsection && m_level<=Doxygen::subpageNestingLevel+2)
     {
       if ((m_level<=1+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
-          warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected subsubsection command found inside %s!",sectionLevelToName[m_level]);
+          warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected subsubsection command found inside %s!",g_sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Subsubsection) // more sections follow
       {
         DocSection *s=new DocSection(this,
-            QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-        m_children.append(s);
+            std::min(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
       if (!(m_level<Doxygen::subpageNestingLevel+2 && retval == RetVal_Subsection)) break;
     }
-    else if (retval==RetVal_Paragraph && m_level<=QMIN(5,Doxygen::subpageNestingLevel+3))
+    else if (retval==RetVal_Paragraph && m_level<=std::min(5,Doxygen::subpageNestingLevel+3))
     {
       if ((m_level<=2+Doxygen::subpageNestingLevel) && !g_token->sectionId.startsWith("autotoc_md"))
-        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",sectionLevelToName[m_level]);
+        warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected paragraph command found inside %s!",g_sectionLevelToName[m_level]);
       // then parse any number of nested sections
       while (retval==RetVal_Paragraph) // more sections follow
       {
         DocSection *s=new DocSection(this,
-            QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-        m_children.append(s);
+            std::min(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
       if (!(m_level<Doxygen::subpageNestingLevel+3 && (retval == RetVal_Subsection || retval == RetVal_Subsubsection))) break;
@@ -6962,8 +6919,6 @@ int DocSection::parse()
                  );
 
   DBG(("DocSection::parse() end: retval=%x\n",retval));
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
   return retval;
 }
 
@@ -6972,7 +6927,7 @@ int DocSection::parse()
 void DocText::parse()
 {
   DBG(("DocText::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   doctokenizerYYsetStateText();
 
   int tok;
@@ -6981,17 +6936,17 @@ void DocText::parse()
     switch(tok)
     {
       case TK_WORD:
-	m_children.append(new DocWord(this,g_token->name));
+	m_children.push_back(std::make_unique<DocWord>(this,g_token->name));
 	break;
       case TK_WHITESPACE:
-        m_children.append(new DocWhiteSpace(this,g_token->chars));
+        m_children.push_back(std::make_unique<DocWhiteSpace>(this,g_token->chars));
 	break;
       case TK_SYMBOL:
         {
           DocSymbol::SymType s = DocSymbol::decodeSymbol(g_token->name);
           if (s!=DocSymbol::Sym_Unknown)
           {
-            m_children.append(new DocSymbol(this,s));
+            m_children.push_back(std::make_unique<DocSymbol>(this,s));
           }
           else
           {
@@ -7006,55 +6961,55 @@ void DocText::parse()
         switch (Mappers::cmdMapper->map(g_token->name))
         {
           case CMD_BSLASH:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_BSlash));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_BSlash));
             break;
           case CMD_AT:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_At));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_At));
             break;
           case CMD_LESS:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Less));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Less));
             break;
           case CMD_GREATER:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Greater));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Greater));
             break;
           case CMD_AMP:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Amp));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Amp));
             break;
           case CMD_DOLLAR:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Dollar));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Dollar));
             break;
           case CMD_HASH:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Hash));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Hash));
             break;
           case CMD_DCOLON:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_DoubleColon));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_DoubleColon));
             break;
           case CMD_PERCENT:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Percent));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Percent));
             break;
           case CMD_NDASH:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
             break;
           case CMD_MDASH:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
             break;
           case CMD_QUOTE:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Quot));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Quot));
             break;
           case CMD_PUNT:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Dot));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Dot));
             break;
           case CMD_PLUS:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Plus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Plus));
             break;
           case CMD_MINUS:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Minus));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Minus));
             break;
           case CMD_EQUAL:
-            m_children.append(new DocSymbol(this,DocSymbol::Sym_Equal));
+            m_children.push_back(std::make_unique<DocSymbol>(this,DocSymbol::Sym_Equal));
             break;
           default:
             warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unexpected command '%s' found",
@@ -7071,8 +7026,6 @@ void DocText::parse()
 
   handleUnclosedStyleCommands();
 
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocText::parse() end\n"));
 }
 
@@ -7082,7 +7035,7 @@ void DocText::parse()
 void DocRoot::parse()
 {
   DBG(("DocRoot::parse() start\n"));
-  g_nodeStack.push(this);
+  auto ns = AutoNodeStack(this);
   doctokenizerYYsetStatePara();
   int retval=0;
 
@@ -7094,9 +7047,9 @@ void DocRoot::parse()
     DocPara *par = new DocPara(this);
     if (isFirst) { par->markFirst(); isFirst=FALSE; }
     retval=par->parse();
-    if (!par->isEmpty() || par->attribs().count()>0)
+    if (!par->isEmpty() || !par->attribs().empty())
     {
-      m_children.append(par);
+      m_children.push_back(std::unique_ptr<DocPara>(par));
       lastPar=par;
     }
     else
@@ -7117,8 +7070,8 @@ void DocRoot::parse()
           if (sec)
           {
             DocSection *s=new DocSection(this,
-                QMIN(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-            m_children.append(s);
+                std::min(4+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            m_children.push_back(std::unique_ptr<DocSection>(s));
             retval = s->parse();
           }
           else
@@ -7146,8 +7099,8 @@ void DocRoot::parse()
           if (sec)
           {
             DocSection *s=new DocSection(this,
-                QMIN(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-            m_children.append(s);
+                std::min(3+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            m_children.push_back(std::unique_ptr<DocSection>(s));
             retval = s->parse();
           }
           else
@@ -7177,8 +7130,8 @@ void DocRoot::parse()
           if (sec)
           {
             DocSection *s=new DocSection(this,
-                QMIN(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-            m_children.append(s);
+                std::min(2+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+            m_children.push_back(std::unique_ptr<DocSection>(s));
             retval = s->parse();
           }
           else
@@ -7201,7 +7154,7 @@ void DocRoot::parse()
     if (retval==RetVal_Internal)
     {
       DocInternal *in = new DocInternal(this);
-      m_children.append(in);
+      m_children.push_back(std::unique_ptr<DocInternal>(in));
       retval = in->parse(1);
     }
   } while (retval!=0 && retval!=RetVal_Section);
@@ -7217,8 +7170,8 @@ void DocRoot::parse()
       if (sec)
       {
         DocSection *s=new DocSection(this,
-            QMIN(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
-        m_children.append(s);
+            std::min(1+Doxygen::subpageNestingLevel,5),g_token->sectionId);
+        m_children.push_back(std::unique_ptr<DocSection>(s));
         retval = s->parse();
       }
       else
@@ -7236,8 +7189,6 @@ void DocRoot::parse()
 
   handleUnclosedStyleCommands();
 
-  DocNode *n = g_nodeStack.pop();
-  ASSERT(n==this);
   DBG(("DocRoot::parse() end\n"));
 }
 
@@ -7291,10 +7242,8 @@ static QCString extractCopyDocId(const char *data, uint &j, uint len)
     j+=9;
   }
   e=j;
-  QCString id(e-s+1);
-  if (e>s) memcpy(id.rawData(),data+s,e-s);
-  id.at(e-s)='\0';
-  //printf("extractCopyDocId='%s' input='%s'\n",id.data(),&data[s]);
+  QCString id(data+s,e-s);
+  //printf("extractCopyDocId='%s' input='%s'\n",qPrint(id),&data[s]);
   return id;
 }
 
@@ -7334,7 +7283,7 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
     CHECK_FOR_COMMAND("docbookonly",endMarker="enddocbookonly");
     CHECK_FOR_COMMAND("startuml",endMarker="enduml");
   }
-  //printf("isVerbatimSection(%s)=%d)\n",QCString(&data[i]).left(10).data(),j);
+  //printf("isVerbatimSection(%s)=%d)\n",qPrint(QCString(&data[i]).left(10)),j);
   return j;
 }
 
@@ -7345,7 +7294,7 @@ static uint skipToEndMarker(const char *data,uint i,uint len,const QCString &end
     if ((data[i]=='@' || data[i]=='\\') &&  // start of command character
         (i==0 || (data[i-1]!='@' && data[i-1]!='\\'))) // that is not escaped
     {
-      if (i+endMarker.length()+1<=len && qstrncmp(data+i+1,endMarker,endMarker.length())==0)
+      if (i+endMarker.length()+1<=len && qstrncmp(data+i+1,endMarker.data(),endMarker.length())==0)
       {
         return i+endMarker.length()+1;
       }
@@ -7376,37 +7325,38 @@ static QCString processCopyDoc(const char *data,uint &len)
         QCString id = extractCopyDocId(data,j,len);
         const Definition *def = 0;
         QCString doc,brief;
-        //printf("resolving docs='%s'\n",id.data());
+        //printf("resolving docs='%s'\n",qPrint(id));
         if (findDocsForMemberOrCompound(id,&doc,&brief,&def))
         {
-          //printf("found it def=%p brief='%s' doc='%s' isBrief=%d\n",def,brief.data(),doc.data(),isBrief);
-          if (g_copyStack.findRef(def)==-1) // definition not parsed earlier
+          //printf("found it def=%p brief='%s' doc='%s' isBrief=%d\n",def,qPrint(brief),qPrint(doc),isBrief);
+          auto it = std::find(g_copyStack.begin(),g_copyStack.end(),def);
+          if (it==g_copyStack.end()) // definition not parsed earlier
           {
-            g_copyStack.append(def);
+            g_copyStack.push_back(def);
             if (isBrief)
             {
               uint l=brief.length();
-              buf.addStr(processCopyDoc(brief,l));
+              buf.addStr(processCopyDoc(brief.data(),l));
             }
             else
             {
               uint l=doc.length();
-              buf.addStr(processCopyDoc(doc,l));
+              buf.addStr(processCopyDoc(doc.data(),l));
             }
-            g_copyStack.remove(def);
+            g_copyStack.pop_back();
           }
           else
           {
             warn_doc_error(g_fileName,getDoctokinizerLineNr(),
 	         "Found recursive @copy%s or @copydoc relation for argument '%s'.\n",
-                 isBrief?"brief":"details",id.data());
+                 isBrief?"brief":"details",qPrint(id));
           }
         }
         else
         {
           warn_doc_error(g_fileName,getDoctokinizerLineNr(),
                "@copy%s or @copydoc target '%s' not found", isBrief?"brief":"details",
-               id.data());
+               qPrint(id));
         }
         // skip over command
         i=j;
@@ -7438,139 +7388,18 @@ static QCString processCopyDoc(const char *data,uint &len)
   buf.addChar(0);
   return buf.get();
 }
-//---------------------------------------------------------------------------
-QString::Direction getTextDirByConfig(const QString &text)
-{
-  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
-  if (configDir == "None")
-    return QString::DirNeutral;
-  if (configDir == "Context")
-    return text.basicDirection();
-  if (configDir == "LTR")
-  {
-    QString::Direction textDir = text.direction();
-    if (textDir == QString::DirMixed)
-      return QString::DirLTR;
-    return textDir;
-  }
-  if (configDir == "RTL")
-  {
-    QString::Direction textDir = text.direction();
-    if (textDir == QString::DirMixed)
-      return QString::DirRTL;
-    return textDir;
-  }
-  return QString::DirNeutral;
-}
 
-QString::Direction getTextDirByConfig(const DocNode *node)
-{
-  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
-  if (configDir == "None")
-    return QString::DirNeutral;
-  if (configDir == "Context")
-    return node->getTextBasicDir();
-  if (configDir == "LTR")
-  {
-    QString::Direction textDir = node->getTextDir();
-    if (textDir == QString::DirMixed)
-      return QString::DirLTR;
-    return textDir;
-  }
-  if (configDir == "RTL")
-  {
-    QString::Direction textDir = node->getTextDir();
-    if (textDir == QString::DirMixed)
-      return QString::DirRTL;
-    return textDir;
-  }
-  return QString::DirNeutral;
-}
-
-QString::Direction getTextDirByConfig(const DocPara *para, int nodeIndex)
-{
-  QCString configDir = Config_getEnum(OUTPUT_TEXT_DIRECTION);
-  if (configDir == "None")
-    return QString::DirNeutral;
-  if (configDir == "Context")
-    return para->getTextBasicDir(nodeIndex);
-  if (configDir == "LTR")
-  {
-    QString::Direction textDir = para->getTextDir(nodeIndex);
-    if (textDir == QString::DirMixed)
-      return QString::DirLTR;
-    return textDir;
-  }
-  if (configDir == "RTL")
-  {
-    QString::Direction textDir = para->getTextDir(nodeIndex);
-    if (textDir == QString::DirMixed)
-      return QString::DirRTL;
-    return textDir;
-  }
-  return QString::DirNeutral;
-}
-
-QCString getDirHtmlClassOfNode(QString::Direction textDir, const QCString &initValue)
-{
-  QCString classFromDir;
-  if (textDir == QString::DirLTR)
-    classFromDir = "DocNodeLTR";
-  else if (textDir == QString::DirRTL)
-    classFromDir = "DocNodeRTL";
-  else
-    classFromDir = "";
-
-  if (initValue && !classFromDir.isEmpty())
-    return QCString(" class=\"") + initValue + " " + classFromDir + "\"";
-  if (initValue)
-    return QCString(" class=\"") + initValue + "\"";
-  if (!classFromDir.isEmpty())
-    return QCString(" class=\"") + classFromDir + "\"";
-  return "";
-}
-
-QCString getDirHtmlClassOfPage(QCString pageTitle)
-{
-  QCString result = "";
-  result += " class=\"PageDoc";
-  QString::Direction titleDir = getTextDirByConfig(pageTitle);
-  if (titleDir == QString::DirLTR)
-    result += " PageDocLTR-title";
-  else if (titleDir == QString::DirRTL)
-    result += " PageDocRTL-title";
-  result += "\"";
-  return result;
-}
-
-QCString getHtmlDirEmbeddingChar(QString::Direction textDir)
-{
-  if (textDir == QString::DirLTR)
-    return "&#x202A;";
-  if (textDir == QString::DirRTL)
-    return "&#x202B;";
-  return "";
-}
-
-QCString getJsDirEmbeddingChar(QString::Direction textDir)
-{
-  if (textDir == QString::DirLTR)
-    return "\\u202A";
-  if (textDir == QString::DirRTL)
-    return "\\u202B";
-  return "";
-}
 //---------------------------------------------------------------------------
 
-DocRoot *validatingParseDoc(const char *fileName,int startLine,
+DocRoot *validatingParseDoc(const QCString &fileName,int startLine,
                             const Definition *ctx,const MemberDef *md,
-                            const char *input,bool indexWords,
-                            bool isExample, const char *exampleName,
+                            const QCString &input,bool indexWords,
+                            bool isExample, const QCString &exampleName,
                             bool singleLine, bool linkFromIndex,
                             bool markdownSupport)
 {
-  //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?ctx->name().data():"<none>",
-  //                                     md?md->name().data():"<none>",
+  //printf("validatingParseDoc(%s,%s)=[%s]\n",ctx?qPrint(ctx->name()):"<none>",
+  //                                     md?qPrint(md->name()):"<none>",
   //                                     input);
   //printf("========== validating %s at line %d\n",fileName,startLine);
   //printf("---------------- input --------------------\n%s\n----------- end input -------------------\n",input);
@@ -7705,11 +7534,11 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   g_relPath = (!linkFromIndex && ctx) ?
                QCString(relativePathToRoot(ctx->getOutputFileBase())) :
                QCString("");
-  //printf("ctx->name=%s relPath=%s\n",ctx->name().data(),g_relPath.data());
+  //printf("ctx->name=%s relPath=%s\n",qPrint(ctx->name()),qPrint(g_relPath));
   g_memberDef = md;
-  g_nodeStack.clear();
-  g_styleStack.clear();
-  g_initialStyleStack.clear();
+  while (!g_nodeStack.empty()) g_nodeStack.pop();
+  while (!g_styleStack.empty()) g_styleStack.pop();
+  while (!g_initialStyleStack.empty()) g_initialStyleStack.pop();
   g_inSeeBlock = FALSE;
   g_xmlComment = FALSE;
   g_insideHtmlLink = FALSE;
@@ -7720,22 +7549,20 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   g_exampleName = exampleName;
   g_hasParamCommand = FALSE;
   g_hasReturnCommand = FALSE;
-  g_retvalsFound.setAutoDelete(FALSE);
   g_retvalsFound.clear();
-  g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
   g_markdownSupport = markdownSupport;
 
-  //printf("Starting comment block at %s:%d\n",g_fileName.data(),startLine);
+  //printf("Starting comment block at %s:%d\n",qPrint(g_fileName),startLine);
   setDoctokinizerLineNr(startLine);
-  uint inpLen=qstrlen(input);
-  QCString inpStr = processCopyDoc(input,inpLen);
+  uint ioLen = input.length();
+  QCString inpStr = processCopyDoc(input.data(),ioLen);
   if (inpStr.isEmpty() || inpStr.at(inpStr.length()-1)!='\n')
   {
     inpStr+='\n';
   }
-  //printf("processCopyDoc(in='%s' out='%s')\n",input,inpStr.data());
-  doctokenizerYYinit(inpStr,g_fileName,markdownSupport);
+  //printf("processCopyDoc(in='%s' out='%s')\n",input,qPrint(inpStr));
+  doctokenizerYYinit(inpStr.data(),g_fileName,markdownSupport);
 
   // build abstract syntax tree
   DocRoot *root = new DocRoot(md!=0,singleLine);
@@ -7761,13 +7588,13 @@ DocRoot *validatingParseDoc(const char *fileName,int startLine,
   // restore original parser state
   docParserPopContext();
 
-  //printf(">>>>>> end validatingParseDoc(%s,%s)\n",ctx?ctx->name().data():"<none>",
-  //                                     md?md->name().data():"<none>");
+  //printf(">>>>>> end validatingParseDoc(%s,%s)\n",ctx?qPrint(ctx->name()):"<none>",
+  //                                     md?qPrint(md->name()):"<none>");
 
   return root;
 }
 
-DocText *validatingParseText(const char *input)
+DocText *validatingParseText(const QCString &input)
 {
   // store parser state so we can re-enter this function if needed
   docParserPushContext();
@@ -7779,9 +7606,9 @@ DocText *validatingParseText(const char *input)
   g_fileName = "<parseText>";
   g_relPath = "";
   g_memberDef = 0;
-  g_nodeStack.clear();
-  g_styleStack.clear();
-  g_initialStyleStack.clear();
+  while (!g_nodeStack.empty()) g_nodeStack.pop();
+  while (!g_styleStack.empty()) g_styleStack.pop();
+  while (!g_initialStyleStack.empty()) g_initialStyleStack.pop();
   g_inSeeBlock = FALSE;
   g_xmlComment = FALSE;
   g_insideHtmlLink = FALSE;
@@ -7792,18 +7619,16 @@ DocText *validatingParseText(const char *input)
   g_exampleName = "";
   g_hasParamCommand = FALSE;
   g_hasReturnCommand = FALSE;
-  g_retvalsFound.setAutoDelete(FALSE);
   g_retvalsFound.clear();
-  g_paramsFound.setAutoDelete(FALSE);
   g_paramsFound.clear();
   g_searchUrl="";
 
   DocText *txt = new DocText;
 
-  if (input)
+  if (!input.isEmpty())
   {
     setDoctokinizerLineNr(1);
-    doctokenizerYYinit(input,g_fileName,Config_getBool(MARKDOWN_SUPPORT));
+    doctokenizerYYinit(input.data(),g_fileName,Config_getBool(MARKDOWN_SUPPORT));
 
     // build abstract syntax tree
     txt->parse();
@@ -7822,9 +7647,9 @@ DocText *validatingParseText(const char *input)
   return txt;
 }
 
-void docFindSections(const char *input,
+void docFindSections(const QCString &input,
                      const Definition *d,
-                     const char *fileName)
+                     const QCString &fileName)
 {
   doctokenizerYYFindSections(input,d,fileName);
 }

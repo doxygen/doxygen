@@ -17,6 +17,7 @@
 #define SYMBOLRESOLVER_H
 
 #include <memory>
+
 #include "qcstring.h"
 #include "classdef.h"
 
@@ -44,7 +45,7 @@ class SymbolResolver
      *  getTemplateSpec(), and getResolvedType() are set as well.
      */
     const ClassDef *resolveClass(const Definition *scope,
-                                 const char *name,
+                                 const QCString &name,
                                  bool maybeUnlinkable=false,
                                  bool mayBeHidden=false);
 
@@ -52,7 +53,7 @@ class SymbolResolver
      *  the class object or a nullptr if the symbol is immutable.
      */
     ClassDefMutable *resolveClassMutable(const Definition *scope,
-                                         const char *name,
+                                         const QCString &name,
                                          bool mayBeUnlinkable=false,
                                          bool mayBeHidden=false)
     {

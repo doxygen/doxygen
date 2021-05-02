@@ -151,7 +151,7 @@ English:
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public Translator
+class TranslatorSwedish : public TranslatorAdapter_1_9_2
 {
   public:
 
@@ -244,9 +244,9 @@ class TranslatorSwedish : public Translator
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Automatiskt skapad av Doxygen";
-      if (s) result+=(QCString)" för "+s;
+      if (!s.isEmpty()) result+=(QCString)" för "+s;
       result+=" från källkoden.";
       return result;
     }
@@ -607,16 +607,16 @@ class TranslatorSwedish : public Translator
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"Skapad "+date;
-      if (projName) result+=(QCString)" för "+projName;
+      if (!projName.isEmpty()) result+=(QCString)" för "+projName;
       result+=(QCString)" av";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"Klassdiagram för "+clName;
     }
@@ -692,7 +692,7 @@ class TranslatorSwedish : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -714,7 +714,7 @@ class TranslatorSwedish : public Translator
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" filreferens";
@@ -722,7 +722,7 @@ class TranslatorSwedish : public Translator
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" namnrymdreferens";
@@ -929,12 +929,12 @@ class TranslatorSwedish : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"Samarbetsdiagram för "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"Include-beroendediagram för "+fName+":";
     }
@@ -1217,7 +1217,7 @@ class TranslatorSwedish : public Translator
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"Paket "+name;
     }
@@ -1599,7 +1599,7 @@ class TranslatorSwedish : public Translator
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" Katalogreferens"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1728,7 +1728,7 @@ class TranslatorSwedish : public Translator
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1749,7 +1749,7 @@ class TranslatorSwedish : public Translator
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Modulreferens";
@@ -1850,7 +1850,7 @@ class TranslatorSwedish : public Translator
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return QCString(name)+" Relation";
     }
@@ -1887,7 +1887,7 @@ class TranslatorSwedish : public Translator
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
       return (QCString)"Fil i "+name;
     }
@@ -1896,7 +1896,7 @@ class TranslatorSwedish : public Translator
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
       return (QCString)"Inkluderar fil i "+name;
     }
@@ -1941,7 +1941,7 @@ class TranslatorSwedish : public Translator
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Katalogberoendegraf för ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1969,11 +1969,11 @@ class TranslatorSwedish : public Translator
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { return QCString(name)+" Enum-referens"; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+" ärvd ifrån "+what; }
 
     /*! Header of the sections with inherited members specific for the
@@ -2054,21 +2054,21 @@ class TranslatorSwedish : public Translator
     { return "Konstantgrupper"; }
 
     /** UNO IDL constant groups */
-    virtual QCString trConstantGroupReference(const char *namespaceName)
+    virtual QCString trConstantGroupReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Referens till konstantgrupp";
       return result;
     }
     /** UNO IDL service page title */
-    virtual QCString trServiceReference(const char *sName)
+    virtual QCString trServiceReference(const QCString &sName)
     {
       QCString result=(QCString)sName;
       result+=" Tjänstereferens";
       return result;
     }
     /** UNO IDL singleton page title */
-    virtual QCString trSingletonReference(const char *sName)
+    virtual QCString trSingletonReference(const QCString &sName)
     {
       QCString result=(QCString)sName;
       result+=" Singleton-referens";
@@ -2206,7 +2206,7 @@ class TranslatorSwedish : public Translator
           return "Klass";
       }
     }
-    virtual QCString trCustomReference(const char *name)
+    virtual QCString trCustomReference(const QCString &name)
     { return QCString(name)+"referens"; }
 
     /* Slice */
@@ -2311,7 +2311,7 @@ class TranslatorSwedish : public Translator
     {
         return "Undantagsdokumentation";
     }
-    virtual QCString trCompoundReferenceSlice(const char *clName, ClassDef::CompoundType compType, bool isLocal)
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
     {
       QCString result=(QCString)clName;
       if (isLocal) result+=" Lokal";

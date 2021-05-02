@@ -441,12 +441,12 @@ function SearchResults(name)
 
       while (element && element!=parentElement)
       {
-        if (element.nodeName == 'DIV' && element.className == 'SRChildren')
+        if (element.nodeName.toLowerCase() == 'div' && element.className == 'SRChildren')
         {
           return element;
         }
 
-        if (element.nodeName == 'DIV' && element.hasChildNodes())
+        if (element.nodeName.toLowerCase() == 'div' && element.hasChildNodes())
         {
            element = element.firstChild;
         }

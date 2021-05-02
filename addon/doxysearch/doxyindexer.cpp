@@ -20,15 +20,17 @@
 #include <string>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
+#include <iterator>
+#include <regex>
 
-// Qtools includes
-#include <qregexp.h>
-#include <qxml.h>
-#include <qfile.h>
-#include <qfileinfo.h>
+#include <sys/stat.h>
 
 // Xapian include
 #include <xapian.h>
+
+#include "version.h"
+#include "xml.h"
 
 #define MAX_TERM_LENGTH 245
 
@@ -104,13 +106,14 @@ static void addWords(const std::string &s,Xapian::Document &doc,int wfd)
 /** Adds all identifiers in \a s to document \a doc with weight \a wfd */
 static void addIdentifiers(const std::string &s,Xapian::Document &doc,int wfd)
 {
-  QRegExp re("[A-Z_a-z][A-Z_a-z0-9]*");
-  int i,l,p=0;
-  QCString qs = s.c_str();
-  while ((i=re.match(qs,p,&l))!=-1)
+  std::regex id_re("[A-Z_a-z][A-Z_a-z0-9]*");
+  auto id_begin = std::sregex_iterator(s.begin(), s.end(), id_re);
+  auto id_end   = std::sregex_iterator();
+
+  for (auto i = id_begin; i!=id_end; ++i)
   {
-    safeAddTerm(qs.mid(p,i-p).data(),doc,wfd);
-    p=i+l;
+    std::smatch match = *i;
+    safeAddTerm(match.str(),doc,wfd);
   }
 }
 
@@ -140,12 +143,12 @@ static std::string unescapeXmlEntities(const std::string &s)
 /** This class is a wrapper around SAX style XML parser, which
  *  parses the file without first building a DOM tree in memory.
  */
-class XMLContentHandler : public QXmlDefaultHandler
+class XMLContentHandler
 {
   public:
     /** Handler for parsing XML data */
-    XMLContentHandler(const QString &path)
-      : m_db((path+"doxysearch.db").utf8().data(),Xapian::DB_CREATE_OR_OVERWRITE),
+    XMLContentHandler(const std::string &path)
+      : m_db(path+"doxysearch.db",Xapian::DB_CREATE_OR_OVERWRITE),
         m_stemmer("english")
     {
       m_curFieldName = UnknownField;
@@ -159,7 +162,6 @@ class XMLContentHandler : public QXmlDefaultHandler
       m_db.commit();
     }
 
-  private:
     enum FieldNames
     {
       UnknownField = 0,
@@ -173,13 +175,12 @@ class XMLContentHandler : public QXmlDefaultHandler
     };
 
     /** Handler for a start tag. Called for <doc> and <field> tags */
-    bool startElement(const QString &, const QString &,
-        const QString &name, const QXmlAttributes &attrib)
+    void startElement(const std::string &name, const XMLHandlers::Attributes &attrib)
     {
       m_data="";
       if (name=="field")
       {
-        QString fieldName = attrib.value("name");
+        std::string fieldName = XMLHandlers::value(attrib,"name");
         if      (fieldName=="type")     m_curFieldName=TypeField;
         else if (fieldName=="name")     m_curFieldName=NameField;
         else if (fieldName=="args")     m_curFieldName=ArgsField;
@@ -189,11 +190,10 @@ class XMLContentHandler : public QXmlDefaultHandler
         else if (fieldName=="text")     m_curFieldName=TextField;
         else m_curFieldName=UnknownField;
       }
-      return TRUE;
     }
 
     /** Handler for an end tag. Called for </doc> and </field> tags */
-    bool endElement(const QString &, const QString &, const QString &name)
+    void endElement(const std::string &name)
     {
       if (name=="doc") // </doc>
       {
@@ -258,15 +258,20 @@ class XMLContentHandler : public QXmlDefaultHandler
         m_curFieldName=UnknownField;
       }
       // reset m_data
-      return TRUE;
     }
 
     /** Handler for inline text */
-    bool characters(const QString& ch)
+    void characters(const std::string& ch)
     {
-      m_data += std::string(ch.utf8());
-      return TRUE;
+      m_data += ch;
     }
+
+    void error(const std::string &fileName,int lineNr,const std::string &msg)
+    {
+      std::cerr << "Fatal error at " << fileName << ":" << lineNr << ": " << msg << std::endl;
+    }
+
+  private:
 
     // internal state
     Xapian::WritableDatabase m_db;
@@ -277,36 +282,29 @@ class XMLContentHandler : public QXmlDefaultHandler
     FieldNames m_curFieldName;
 };
 
-/** Class for handling error during XML parsing */
-class XMLErrorHandler : public QXmlErrorHandler
-{
-  public:
-    virtual ~XMLErrorHandler() {}
-    bool warning( const QXmlParseException & )
-    {
-      return FALSE;
-    }
-    bool error( const QXmlParseException & )
-    {
-      return FALSE;
-    }
-    bool fatalError( const QXmlParseException &exception )
-    {
-      std::cerr << "Fatal error at line " << exception.lineNumber()
-                << " column " << exception.columnNumber() << ": "
-                << exception.message().utf8() << std::endl;
-      return FALSE;
-    }
-    QString errorString() { return ""; }
-
-  private:
-    QString errorMsg;
-};
-
-static void usage(const char *name)
+static void usage(const char *name, int exitVal = 1)
 {
   std::cerr << "Usage: " << name << " [-o output_dir] searchdata.xml [searchdata2.xml ...]" << std::endl;
-  exit(1);
+  exit(exitVal);
+}
+
+// return the contents of a file as a string
+inline std::string fileToString(const std::string &fileName)
+{
+  std::ifstream t(fileName);
+  std::string result;
+  t.seekg(0, std::ios::end);
+  result.reserve(t.tellg());
+  t.seekg(0, std::ios::beg);
+  result.assign(std::istreambuf_iterator<char>(t),
+                std::istreambuf_iterator<char>());
+  return result;
+}
+
+bool dirExists(const char *path)
+{
+  struct stat info = {};
+  return stat(path,&info)==0 && (info.st_mode&S_IFDIR);
 }
 
 /** main function to index data */
@@ -316,7 +314,7 @@ int main(int argc,const char **argv)
   {
     usage(argv[0]);
   }
-  QString outputDir;
+  std::string outputDir;
   for (int i=1;i<argc;i++)
   {
     if (std::string(argv[i])=="-o")
@@ -330,8 +328,7 @@ int main(int argc,const char **argv)
       {
         i++;
         outputDir=argv[i];
-        QFileInfo fi(outputDir);
-        if (!fi.exists() || !fi.isDir())
+        if (!dirExists(outputDir.c_str()))
         {
           std::cerr << "Error: specified output directory does not exist!" << std::endl;
           usage(argv[0]);
@@ -340,18 +337,27 @@ int main(int argc,const char **argv)
     }
     else if (std::string(argv[i])=="-h" || std::string(argv[i])=="--help")
     {
-      usage(argv[0]);
+      usage(argv[0],0);
+    }
+    else if (std::string(argv[i])=="-v" || std::string(argv[i])=="--version")
+    {
+      std::cerr << argv[0] << " version: " << getFullVersion() << std::endl;
+      exit(0);
     }
   }
 
   try
   {
-    if (!outputDir.isEmpty() && outputDir.at(outputDir.length()-1)!=pathSep)
+    if (!outputDir.empty() && outputDir.at(outputDir.length()-1)!=pathSep)
     {
       outputDir+=pathSep;
     }
-    XMLContentHandler handler(outputDir);
-    XMLErrorHandler errorHandler;
+    XMLContentHandler contentHandler(outputDir);
+    XMLHandlers handlers;
+    handlers.startElement = [&contentHandler](const std::string &name,const XMLHandlers::Attributes &attrs)  { contentHandler.startElement(name,attrs);   };
+    handlers.endElement   = [&contentHandler](const std::string &name)                                       { contentHandler.endElement(name);           };
+    handlers.characters   = [&contentHandler](const std::string &chars)                                      { contentHandler.characters(chars);          };
+    handlers.error        = [&contentHandler](const std::string &fileName,int lineNr,const std::string &msg) { contentHandler.error(fileName,lineNr,msg); };
     for (int i=1;i<argc;i++)
     {
       if (std::string(argv[i])=="-o")
@@ -360,14 +366,10 @@ int main(int argc,const char **argv)
       }
       else
       {
-        QString xmlFileName = argv[i];
-        std::cout << "Processing " << xmlFileName.utf8() << "..." << std::endl;
-        QFile xmlFile(xmlFileName);
-        QXmlInputSource source(xmlFile);
-        QXmlSimpleReader reader;
-        reader.setContentHandler(&handler);
-        reader.setErrorHandler(&errorHandler);
-        reader.parse(source);
+        std::cout << "Processing " << argv[i] << "..." << std::endl;
+        std::string inputStr = fileToString(argv[i]);
+        XMLParser parser(handlers);
+        parser.parse(argv[i],inputStr.c_str(),false);
       }
     }
   }

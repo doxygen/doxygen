@@ -9,5 +9,6 @@
       <para>Some text. <htmlonly block="yes">&lt;h1&gt;Hello world&lt;/h1&gt;
 </htmlonly> More text. </para>
     </detaileddescription>
+    <location file="030_htmlinclude.dox"/>
   </compounddef>
 </doxygen>

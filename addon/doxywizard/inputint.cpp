@@ -12,6 +12,7 @@
 
 #include "inputint.h"
 #include "helplabel.h"
+#include "config_msg.h"
 
 #include <QSpinBox>
 #include <QGridLayout>
@@ -59,12 +60,19 @@ void InputInt::help()
 
 void InputInt::setValue(int val)
 {
-  val = qMax(m_minVal,val);
-  val = qMin(m_maxVal,val);
-  if (val!=m_val)
+  int newVal = val;
+  newVal = qMax(m_minVal,newVal);
+  newVal = qMin(m_maxVal,newVal);
+  if (val != newVal)
   {
-    m_val = val;
-    m_sp->setValue(val);
+    config_warn("argument '%d' for option %s is not a valid number in the range [%d..%d]!"
+                " Using the default: %d!\n",val,qPrintable(m_id),m_minVal,m_maxVal,m_default);
+    newVal = m_default;
+  }
+  if (newVal!=m_val)
+  {
+    m_val = newVal;
+    m_sp->setValue(newVal);
     m_value = m_val;
     updateDefault();
   }
@@ -75,7 +83,7 @@ void InputInt::updateDefault()
   {
     if (m_val==m_default || !m_lab->isEnabled())
     {
-      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt"));
+      m_lab->setText(QString::fromLatin1("<qt>")+m_id+QString::fromLatin1("</qt>"));
     }
     else
     {
@@ -101,7 +109,12 @@ void InputInt::update()
 {
   bool ok;
   int newVal = m_value.toInt(&ok);
-  if (!ok) newVal = m_default;
+  if (!ok)
+  {
+    config_warn("argument '%s' for option %s is not a valid number in the range [%d..%d]!"
+                " Using the default: %d!\n",qPrintable(m_value.toString()),qPrintable(m_id),m_minVal,m_maxVal,m_default);
+    newVal = m_default;
+  }
   setValue(newVal);
 }
 

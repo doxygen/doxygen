@@ -20,6 +20,7 @@
 #include "util.h"
 #include "language.h"
 #include "lang_cfg.h"
+#include "vhdldocgen.h"
 #include "translator.h"
 #include "translator_en.h"
 #if !defined(ENGLISH_ONLY)
@@ -152,11 +153,11 @@
 #endif
 #endif // !ENGLISH_ONLY
 
-#define L_EQUAL(a) !qstricmp(langName,a)
+#define L_EQUAL(a) !qstricmp(langName.data(),a)
 
 Translator *theTranslator=0;
 
-bool setTranslator(const char *langName)
+bool setTranslator(const QCString &langName)
 {
   if (L_EQUAL("english"))
   {
@@ -417,6 +418,6 @@ bool setTranslator(const char *langName)
   }
 
   QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) warn_uncond("%s", msg.data());
+  if (!msg.isEmpty()) warn_uncond("%s", qPrint(msg));
   return TRUE;
 }

@@ -28,7 +28,7 @@
     output even from undocumented code.
 <li>Generates structured XML output for parsed sources, which can be 
     used by external tools.
-<li>Supports C/C++, Java, (Corba and Microsoft) Java, Python, VHDL, PHP
+<li>Supports C/C++, Lex, Java, (Corba and Microsoft) Java, Python, VHDL, PHP
     IDL, C#, Fortran, Objective-C 2.0, and to some extent D sources.
 <li>Supports documentation of files, namespaces, packages, classes, 
     structs, unions, templates, variables, functions, typedefs, enums and 

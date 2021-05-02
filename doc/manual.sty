@@ -11,12 +11,6 @@
 \newcommand{\clearemptydoublepage}{%
   \newpage{\pagestyle{empty}\cleardoublepage}%
 }
-\renewcommand{\chaptermark}[1]{%
-  \markboth{#1}{}%
-}
-\renewcommand{\sectionmark}[1]{%
-  \markright{\thesection\ #1}%
-}
 % Used by @image
 % (only if inline is specified)
 \newlength{\DoxyInlineHeightChar}
@@ -44,6 +38,12 @@
 \renewcommand{\headrulewidth}{0pt}}
 %
 \pagestyle{fancyplain}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
 %
 \usepackage{xpatch}
 \xpatchcmd{\part}{plain}{empty}{}{}

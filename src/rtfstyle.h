@@ -16,8 +16,10 @@
 #ifndef RTFSTYLE_H
 #define RTFSTYLE_H
 
-#include <qregexp.h>
-#include <qdict.h>
+#include <map>
+#include <string>
+
+#include "qcstring.h"
 
 // used for table column width calculation
 const int rtf_pageWidth = 8748;
@@ -37,6 +39,7 @@ struct RTFListItemInfo
 {
   bool isEnum;
   int number;
+  char type;
 };
 
 const int rtf_maxIndentLevels = 13;
@@ -61,22 +64,24 @@ struct StyleData
   // to use a tag in the body of the document only reference is required
 
   public:
-    StyleData(const char* reference, const char* definition);
-    ~StyleData();
-    bool setStyle(const char* s, const char* styleName);
+    StyleData() = default;
+    StyleData(const std::string &reference, const std::string &definition);
+    bool setStyle(const std::string &command, const std::string &styleName);
     const char *reference() const { return m_reference.c_str(); }
     const char *definition() const { return m_definition.c_str(); }
     uint index() const { return m_index; }
 
   private:
-    uint m_index; // index in style-sheet, i.e. number in s-clause
+    uint m_index = 0; // index in style-sheet, i.e. number in s-clause
     std::string m_reference;    // everything required to apply the style
     std::string m_definition;   // additional tags like \snext and style name
 };
 
-extern QDict<StyleData> rtf_Style;
+using StyleDataMap = std::map<std::string,StyleData>;
 
-void loadExtensions(const char *name);
-void loadStylesheet(const char *name, QDict<StyleData>& dict);
+extern StyleDataMap rtf_Style;
+
+void loadExtensions(const QCString &name);
+void loadStylesheet(const QCString &name, StyleDataMap& map);
 
 #endif

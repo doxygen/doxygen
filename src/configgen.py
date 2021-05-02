@@ -56,7 +56,10 @@ def transformDocs(doc):
 	doc = re.sub('\\\\ref +doxygen_usage', '"Doxygen usage"', doc)
 	doc = re.sub('\\\\ref +extsearch', '"External Indexing and Searching"',
 				 doc)
+	doc = re.sub('\\\\ref +layout', '"Changing the layout of pages"', doc)
 	doc = re.sub('\\\\ref +external', '"Linking to external documentation"',
+				 doc)
+	doc = re.sub('\\\\ref +doxygen_finetune', '"Fine-tuning the output"',
 				 doc)
 	doc = re.sub('\\\\ref +formulas', '"Including formulas"', doc)
 	# fallback for not handled
@@ -683,9 +686,7 @@ def main():
 		print("#ifndef CONFIGVALUES_H")
 		print("#define CONFIGVALUES_H")
 		print("")
-		print("#include <qdict.h>")
-		print("#include <qstrlist.h>")
-		print("#include <qcstring.h>")
+		print("#include \"qcstring.h\"")
 		print("#include \"containers.h\"")
 		print("#include \"settings.h\"")
 		print("")
@@ -722,7 +723,7 @@ def main():
 		print("        StringVector ConfigValues::*l;");
 		print("      } value;");
 		print("    };");
-		print("    const Info *get(const char *tag) const;");
+		print("    const Info *get(const QCString &tag) const;");
 		print("  private:")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
@@ -740,7 +741,7 @@ def main():
 		print("#include \"configimpl.h\"")
 		print("#include <unordered_map>")
 		print("")
-		print("const ConfigValues::Info *ConfigValues::get(const char *tag) const");
+		print("const ConfigValues::Info *ConfigValues::get(const QCString &tag) const");
 		print("{");
 		print("  static const std::unordered_map< std::string, Info > configMap =");
 		print("  {");
@@ -749,7 +750,7 @@ def main():
 				if (n.nodeName == "group"):
 					parseGroupMapInit(n)
 		print("  };");
-		print("  auto it = configMap.find(tag);");
+		print("  auto it = configMap.find(tag.str());");
 		print("  return it!=configMap.end() ? &it->second : nullptr;");
 		print("}");
 		print("")

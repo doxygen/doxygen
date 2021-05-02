@@ -15,7 +15,7 @@
 
 #include "htmlentity.h"
 #include "message.h"
-#include "ftextstream.h"
+#include "textstream.h"
 
 //! Number of doxygen commands mapped as if it were HTML entities
 static const int g_numberHtmlMappedCmds = 11;
@@ -325,18 +325,16 @@ HtmlEntityMapper *HtmlEntityMapper::s_instance = 0;
 
 HtmlEntityMapper::HtmlEntityMapper()
 {
-  m_name2sym = new QDict<int>(1009);
-  m_name2sym->setAutoDelete(TRUE);
+
   for (int i = 0; i < g_numHtmlEntities; i++)
   {
-    m_name2sym->insert(g_htmlEntities[i].item,new int(g_htmlEntities[i].symb));
+    m_name2sym.insert(std::make_pair(g_htmlEntities[i].item,g_htmlEntities[i].symb));
   }
   validate();
 }
 
 HtmlEntityMapper::~HtmlEntityMapper()
 {
-  delete m_name2sym;
 }
 
 /** Returns the one and only instance of the HTML entity mapper */
@@ -472,11 +470,11 @@ const DocSymbol::PerlSymb *HtmlEntityMapper::perl(DocSymbol::SymType symb) const
  */
 DocSymbol::SymType HtmlEntityMapper::name2sym(const QCString &symName) const
 {
-  int *pSymb = m_name2sym->find(symName);
-  return pSymb ? ((DocSymbol::SymType)*pSymb) : DocSymbol::Sym_Unknown;
+  auto it = m_name2sym.find(symName.str());
+  return it!=m_name2sym.end() ? it->second : DocSymbol::Sym_Unknown;
 }
 
-void HtmlEntityMapper::writeXMLSchema(FTextStream &t)
+void HtmlEntityMapper::writeXMLSchema(TextStream &t)
 {
   for (int i=0;i<g_numHtmlEntities - g_numberHtmlMappedCmds;i++)
   {

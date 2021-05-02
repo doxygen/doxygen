@@ -104,7 +104,7 @@ struct SymbolResolver::Private
 
     const ClassDef *getResolvedClassRec(
                            const Definition *scope,    // in
-                           const char *n,              // in
+                           const QCString &n,              // in
                            const MemberDef **pTypeDef, // out
                            QCString *pTemplSpec,       // out
                            QCString *pResolvedType);   // out
@@ -164,14 +164,14 @@ struct SymbolResolver::Private
 
 const ClassDef *SymbolResolver::Private::getResolvedClassRec(
            const Definition *scope,
-           const char *n,
+           const QCString &n,
            const MemberDef **pTypeDef,
            QCString *pTemplSpec,
            QCString *pResolvedType)
 {
-  if (n==0 || *n=='\0') return 0;
+  if (n.isEmpty()) return 0;
   //static int level=0;
-  //fprintf(stderr,"%d [getResolvedClassRec(%s,%s)\n",level++,scope?scope->name().data():"<global>",n);
+  //fprintf(stderr,"%d [getResolvedClassRec(%s,%s)\n",level++,scope?qPrint(scope->name()):"<global>",n);
   QCString name;
   QCString explicitScopePart;
   QCString strippedTemplateParams;
@@ -185,7 +185,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   }
 
   int qualifierIndex = computeQualifiedIndex(name);
-  //printf("name=%s qualifierIndex=%d\n",name.data(),qualifierIndex);
+  //printf("name=%s qualifierIndex=%d\n",qPrint(name),qualifierIndex);
   if (qualifierIndex!=-1) // qualified name
   {
     // split off the explicit scope part
@@ -201,7 +201,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
     return 0; // empty name
   }
 
-  //printf("Looking for symbol %s\n",name.data());
+  //printf("Looking for symbol %s\n",qPrint(name));
   auto range = Doxygen::symbolMap.find(name);
   // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
@@ -236,11 +236,11 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   // QCString key=scope->name()+"+"+name+"+"+explicitScopePart;
   QCString key(scopeNameLen+nameLen+explicitPartLen+fileScopeLen+1);
   char *pk=key.rawData();
-  qstrcpy(pk,scope->name()); *(pk+scopeNameLen-1)='+';
+  qstrcpy(pk,scope->name().data()); *(pk+scopeNameLen-1)='+';
   pk+=scopeNameLen;
-  qstrcpy(pk,name); *(pk+nameLen-1)='+';
+  qstrcpy(pk,name.data()); *(pk+nameLen-1)='+';
   pk+=nameLen;
-  qstrcpy(pk,explicitScopePart);
+  qstrcpy(pk,explicitScopePart.data());
   pk+=explicitPartLen;
 
   // if a file scope is given and it contains using statements we should
@@ -252,7 +252,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
     // below is a more efficient coding of
     // key+="+"+m_fileScope->name();
     *pk++='+';
-    qstrcpy(pk,m_fileScope->absFilePath());
+    qstrcpy(pk,m_fileScope->absFilePath().data());
     pk+=fileScopeLen-1;
   }
   *pk='\0';
@@ -261,17 +261,17 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   {
     std::lock_guard<std::mutex> lock(g_cacheMutex);
     pval=Doxygen::lookupCache->find(key.str());
-    //printf("Searching for %s result=%p\n",key.data(),pval);
+    //printf("Searching for %s result=%p\n",qPrint(key),pval);
     if (pval)
     {
       //printf("LookupInfo %p %p '%s' %p\n",
-      //    pval->classDef, pval->typeDef, pval->templSpec.data(),
-      //    pval->resolvedType.data());
+      //    pval->classDef, pval->typeDef, qPrint(pval->templSpec),
+      //    qPrint(pval->resolvedType));
       if (pTemplSpec)    *pTemplSpec=pval->templSpec;
       if (pTypeDef)      *pTypeDef=pval->typeDef;
       if (pResolvedType) *pResolvedType=pval->resolvedType;
       //fprintf(stderr,"%d ] cachedMatch=%s\n",--level,
-      //    pval->classDef?pval->classDef->name().data():"<none>");
+      //    pval->classDef?qPrint(pval->classDef->name()):"<none>");
       //if (pTemplSpec)
       //  printf("templSpec=%s\n",pTemplSpec->data());
       return pval->classDef;
@@ -310,7 +310,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   }
 
   //printf("getResolvedClassRec: bestMatch=%p pval->resolvedType=%s\n",
-  //    bestMatch,bestResolvedType.data());
+  //    bestMatch,qPrint(bestResolvedType));
 
   if (pval)
   {
@@ -321,7 +321,7 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
     pval->resolvedType = bestResolvedType;
   }
   //fprintf(stderr,"%d ] bestMatch=%s distance=%d\n",--level,
-  //    bestMatch?bestMatch->name().data():"<none>",minDistance);
+  //    bestMatch?qPrint(bestMatch->name()):"<none>",minDistance);
   //if (pTemplSpec)
   //  printf("templSpec=%s\n",pTemplSpec->data());
   return bestMatch;
@@ -339,7 +339,7 @@ void SymbolResolver::Private::getResolvedSymbol(
                          QCString &bestResolvedType                           // out
                       )
 {
-  //fprintf(stderr,"getResolvedSymbol(%s,%s)\n",scope->name().data(),d->qualifiedName().data());
+  //fprintf(stderr,"getResolvedSymbol(%s,%s)\n",qPrint(scope->name()),qPrint(d->qualifiedName()));
   // only look at classes and members that are enums or typedefs
   if (d->definitionType()==Definition::TypeClass ||
       (d->definitionType()==Definition::TypeMember &&
@@ -352,14 +352,14 @@ void SymbolResolver::Private::getResolvedSymbol(
     AccessStack accessStack;
     // test accessibility of definition within scope.
     int distance = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,d,explicitScopePart);
-    //fprintf(stderr,"  %s; distance %s (%p) is %d\n",scope->name().data(),d->name().data(),d,distance);
+    //fprintf(stderr,"  %s; distance %s (%p) is %d\n",qPrint(scope->name()),qPrint(d->name()),d,distance);
     if (distance!=-1) // definition is accessible
     {
       // see if we are dealing with a class or a typedef
       if (d->definitionType()==Definition::TypeClass) // d is a class
       {
         const ClassDef *cd = toClassDef(d);
-        //printf("cd=%s\n",cd->name().data());
+        //printf("cd=%s\n",qPrint(cd->name()));
         if (!cd->isTemplateArgument()) // skip classes that
           // are only there to
           // represent a template
@@ -425,7 +425,7 @@ void SymbolResolver::Private::getResolvedSymbol(
               const ClassDef *cd = newResolveTypedef(scope,md,&enumType,&spec,&type,actTemplParams);
               if (cd)  // type resolves to a class
               {
-                //printf("      bestTypeDef=%p spec=%s type=%s\n",md,spec.data(),type.data());
+                //printf("      bestTypeDef=%p spec=%s type=%s\n",md,qPrint(spec),qPrint(type));
                 bestMatch = cd;
                 bestTypedef = md;
                 bestTemplSpec = spec;
@@ -483,7 +483,7 @@ void SymbolResolver::Private::getResolvedSymbol(
       //printf("  Not accessible!\n");
     }
   } // if definition is a class or member
-  //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,bestResolvedType.data());
+  //printf("  bestMatch=%p bestResolvedType=%s\n",bestMatch,qPrint(bestResolvedType));
 }
 
 const ClassDef *SymbolResolver::Private::newResolveTypedef(
@@ -499,9 +499,9 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   if (isCached)
   {
     //printf("Already cached %s->%s [%s]\n",
-    //    md->name().data(),
-    //    md->getCachedTypedefVal()?md->getCachedTypedefVal()->name().data():"<none>",
-    //    md->getCachedResolvedTypedef()?md->getCachedResolvedTypedef().data():"<none>");
+    //    qPrint(md->name()),
+    //    md->getCachedTypedefVal()?qPrint(md->getCachedTypedefVal()->name()):"<none>",
+    //    md->getCachedResolvedTypedef()?qPrint(md->getCachedResolvedTypedef()):"<none>");
 
     if (pTemplSpec)    *pTemplSpec    = md->getCachedTypedefTemplSpec();
     if (pResolvedType) *pResolvedType = md->getCachedResolvedTypedef();
@@ -533,6 +533,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   }
   type=type.left(ip+1);
   type.stripPrefix("const ");  // strip leading "const"
+  type.stripPrefix("volatile ");  // strip leading "volatile"
   type.stripPrefix("struct "); // strip leading "struct"
   type.stripPrefix("union ");  // strip leading "union"
   int sp=0;
@@ -552,7 +553,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
     *pMemType = memTypeDef;
   }
 
-  //printf("type=%s result=%p\n",type.data(),result);
+  //printf("type=%s result=%p\n",qPrint(type),result);
   if (result==0)
   {
     // try unspecialized version if type is template
@@ -605,7 +606,7 @@ done:
     // introduced while parsing code fragments are being cached here.
   {
     //printf("setting cached typedef %p in result %p\n",md,result);
-    //printf("==> %s (%s,%d)\n",result->name().data(),result->getDefFileName().data(),result->getDefLine());
+    //printf("==> %s (%s,%d)\n",qPrint(result->name()),qPrint(result->getDefFileName()),result->getDefLine());
     //printf("*pResolvedType=%s\n",pResolvedType?pResolvedType->data():"<none>");
     MemberDefMutable *mdm = toMemberDefMutable(md);
     if (mdm)
@@ -642,19 +643,19 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   accessStack.push(scope,m_fileScope,item,explicitScopePart);
 
 
-  //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?scope->name().data():"<global>",
-  //                                      item?item->name().data():"<none>",
-  //                                      explicitScopePart.data());
+  //printf("  <isAccessibleFromWithExpScope(%s,%s,%s)\n",scope?qPrint(scope->name()):"<global>",
+  //                                      item?qPrint(item->name()):"<none>",
+  //                                      qPrint(explicitScopePart));
   int result=0; // assume we found it
   const Definition *newScope = followPath(scope,explicitScopePart);
   if (newScope)  // explicitScope is inside scope => newScope is the result
   {
     Definition *itemScope = item->getOuterScope();
-    //printf("    scope traversal successful %s<->%s!\n",itemScope->name().data(),newScope->name().data());
+    //printf("    scope traversal successful %s<->%s!\n",qPrint(itemScope->name()),qPrint(newScope->name()));
     //if (newScope && newScope->definitionType()==Definition::TypeClass)
     //{
     //  ClassDef *cd = (ClassDef *)newScope;
-    //  printf("---> Class %s: bases=%p\n",cd->name().data(),cd->baseClasses());
+    //  printf("---> Class %s: bases=%p\n",qPrint(cd->name()),cd->baseClasses());
     //}
     if (itemScope==newScope)  // exact match of scopes => distance==0
     {
@@ -676,7 +677,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
       result=1;
 
       //printf("scope(%s) is base class of newScope(%s)\n",
-      //    scope->name().data(),newScope->name().data());
+      //    qPrint(scope->name()),qPrint(newScope->name()));
     }
     else
     {
@@ -687,11 +688,11 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         // this part deals with the case where item is a class
         // A::B::C but is explicit referenced as A::C, where B is imported
         // in A via a using directive.
-        //printf("newScope is a namespace: %s!\n",newScope->name().data());
+        //printf("newScope is a namespace: %s!\n",qPrint(newScope->name()));
         const NamespaceDef *nscope = toNamespaceDef(newScope);
         for (const auto &cd : nscope->getUsedClasses())
         {
-          //printf("Trying for class %s\n",cd->name().data());
+          //printf("Trying for class %s\n",qPrint(cd->name()));
           if (cd==item)
           {
             goto done;
@@ -701,7 +702,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
         {
           if (visitedNamespaces.find(nd->name().str())==visitedNamespaces.end())
           {
-            //printf("Trying for namespace %s\n",nd->name().data());
+            //printf("Trying for namespace %s\n",qPrint(nd->name()));
             i = isAccessibleFromWithExpScope(visitedNamespaces,accessStack,scope,item,nd->name());
             if (i!=-1)
             {
@@ -722,7 +723,7 @@ int SymbolResolver::Private::isAccessibleFromWithExpScope(
   }
   else // failed to resolve explicitScope
   {
-    //printf("    failed to resolve: scope=%s\n",scope->name().data());
+    //printf("    failed to resolve: scope=%s\n",qPrint(scope->name()));
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       const NamespaceDef *nscope = toNamespaceDef(scope);
@@ -767,28 +768,28 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
   int l;
   const Definition *current=start;
   ps=0;
-  //printf("followPath: start='%s' path='%s'\n",start?start->name().data():"<none>",path.data());
+  //printf("followPath: start='%s' path='%s'\n",start?qPrint(start->name()):"<none>",qPrint(path));
   // for each part of the explicit scope
   while ((is=getScopeFragment(path,ps,&l))!=-1)
   {
     // try to resolve the part if it is a typedef
     const MemberDef *memTypeDef=0;
     QCString qualScopePart = substTypedef(current,path.mid(is,l),&memTypeDef);
-    //printf("      qualScopePart=%s\n",qualScopePart.data());
+    //printf("      qualScopePart=%s\n",qPrint(qualScopePart));
     if (memTypeDef)
     {
       const ClassDef *type = newResolveTypedef(m_fileScope,memTypeDef,0,0,0);
       if (type)
       {
-        //printf("Found type %s\n",type->name().data());
+        //printf("Found type %s\n",qPrint(type->name()));
         return type;
       }
     }
     const Definition *next = current->findInnerCompound(qualScopePart);
     //printf("++ Looking for %s inside %s result %s\n",
-    //     qualScopePart.data(),
-    //     current->name().data(),
-    //     next?next->name().data():"<null>");
+    //     qPrint(qualScopePart),
+    //     qPrint(current->name()),
+    //     next?qPrint(next->name()):"<null>");
     if (next==0) // failed to follow the path
     {
       //printf("==> next==0!\n");
@@ -813,7 +814,7 @@ const Definition *SymbolResolver::Private::followPath(const Definition *start,co
     ps=is+l;
   }
   //printf("followPath(start=%s,path=%s) result=%s\n",
-  //    start->name().data(),path.data(),current?current->name().data():"<null>");
+  //    qPrint(start->name()),qPrint(path),current?qPrint(current->name()):"<null>");
   return current; // path could be followed
 }
 
@@ -836,7 +837,7 @@ bool SymbolResolver::Private::accessibleViaUsingNamespace(StringUnorderedSet &vi
 {
   for (const auto &und : nl) // check used namespaces for the class
   {
-    //printf("[Trying via used namespace %s: count=%d/%d\n",und->name().data(),
+    //printf("[Trying via used namespace %s: count=%d/%d\n",qPrint(und->name()),
     //    count,nl->count());
     const Definition *sc = explicitScopePart.isEmpty() ? und : followPath(und,explicitScopePart);
     if (sc && item->getOuterScope()==sc)
@@ -872,7 +873,7 @@ bool SymbolResolver::Private::accessibleViaUsingClass(const LinkedRefMap<const C
 {
   for (const auto &ucd : cl)
   {
-    //printf("Trying via used class %s\n",ucd->name().data());
+    //printf("Trying via used class %s\n",qPrint(ucd->name()));
     const Definition *sc = explicitScopePart.isEmpty() ? ucd : followPath(ucd,explicitScopePart);
     if (sc && sc==item) return true;
     //printf("Try via used class done\n");
@@ -885,7 +886,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
                                               const Definition *item)
 {
   //printf("<isAccessibleFrom(scope=%s,item=%s itemScope=%s)\n",
-  //    scope->name().data(),item->name().data(),item->getOuterScope()->name().data());
+  //    qPrint(scope->name()),qPrint(item->name()),qPrint(item->getOuterScope()->name()));
 
   if (accessStack.find(scope,m_fileScope,item))
   {
@@ -942,7 +943,7 @@ int SymbolResolver::Private::isAccessibleFrom(AccessStack &accessStack,
     if (scope->definitionType()==Definition::TypeNamespace)
     {
       const NamespaceDef *nscope = toNamespaceDef(scope);
-      //printf("  %s is namespace with %d used classes\n",nscope->name().data(),nscope->getUsedClasses());
+      //printf("  %s is namespace with %d used classes\n",qPrint(nscope->name()),nscope->getUsedClasses());
       if (accessibleViaUsingClass(nscope->getUsedClasses(),item))
       {
         //printf("> found via used class\n");
@@ -1009,8 +1010,8 @@ QCString SymbolResolver::Private::substTypedef(
     if (pTypeDef) *pTypeDef=bestMatch;
   }
 
-  //printf("substTypedef(%s,%s)=%s\n",scope?scope->name().data():"<global>",
-  //                                  name.data(),result.data());
+  //printf("substTypedef(%s,%s)=%s\n",scope?qPrint(scope->name()):"<global>",
+  //                                  qPrint(name),qPrint(result));
   return result;
 }
 
@@ -1028,7 +1029,7 @@ SymbolResolver::~SymbolResolver()
 
 
 const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
-                                             const char *name,
+                                             const QCString &name,
                                              bool mayBeUnlinkable,
                                              bool mayBeHidden)
 {
@@ -1044,7 +1045,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
     scope=Doxygen::globalScope;
   }
   //fprintf(stderr,"------------ resolveClass(scope=%s,name=%s,mayUnlinkable=%d)\n",
-  //    scope?scope->name().data():"<global>",
+  //    scope?qPrint(scope->name()):"<global>",
   //    name,
   //    mayBeUnlinkable
   //   );
@@ -1067,12 +1068,12 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   {
     if (!mayBeHidden || !result->isHidden())
     {
-      //printf("result was %s\n",result?result->name().data():"<none>");
+      //printf("result was %s\n",result?qPrint(result->name()):"<none>");
       result=0; // don't link to artificial/hidden classes unless explicitly allowed
     }
   }
-  //fprintf(stderr,"ResolvedClass(%s,%s)=%s\n",scope?scope->name().data():"<global>",
-  //                                  name,result?result->name().data():"<none>");
+  //fprintf(stderr,"ResolvedClass(%s,%s)=%s\n",scope?qPrint(scope->name()):"<global>",
+  //                                  name,result?qPrint(result->name()):"<none>");
   return result;
 }
 

@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,11 +16,10 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <string.h>
-#include <qcstring.h>
+#include "qcstring.h"
 
 /** @file
- *  @brief This file contains a number of basic enums and types. 
+ *  @brief This file contains a number of basic enums and types.
  */
 
 /** Protection level of members */
@@ -57,18 +56,19 @@ enum SrcLangExt
   //SrcLangExt_Tcl      = 0x08000, // no longer supported
   SrcLangExt_Markdown = 0x10000,
   SrcLangExt_SQL      = 0x20000,
-  SrcLangExt_Slice    = 0x40000
+  SrcLangExt_Slice    = 0x40000,
+  SrcLangExt_Lex      = 0x80000
 };
 
 /** Grouping info */
-struct Grouping 
+struct Grouping
 {
   /** Grouping priority */
-  enum GroupPri_t 
+  enum GroupPri_t
   {
     GROUPING_LOWEST,
-    GROUPING_AUTO_WEAK = GROUPING_LOWEST,     //!< membership in group was defined via \@weakgroup 
-    GROUPING_AUTO_ADD,     //!< membership in group was defined via \@add[to]group 
+    GROUPING_AUTO_WEAK = GROUPING_LOWEST,     //!< membership in group was defined via \@weakgroup
+    GROUPING_AUTO_ADD,     //!< membership in group was defined via \@add[to]group
     GROUPING_AUTO_DEF,     //!< membership in group was defined via \@defgroup
     GROUPING_AUTO_HIGHEST = GROUPING_AUTO_DEF,
     GROUPING_INGROUP,      //!< membership in group was defined by \@ingroup
@@ -87,11 +87,11 @@ struct Grouping
         return "@defgroup";
       case GROUPING_INGROUP:
         return "@ingroup";
-    }	    
+    }
     return "???";
   }
 
-  Grouping( const char *gn, GroupPri_t p ) : groupname(gn), pri(p) {}
+  Grouping( const QCString &gn, GroupPri_t p ) : groupname(gn), pri(p) {}
   QCString groupname;   //!< name of the group
   GroupPri_t pri;       //!< priority of this definition
 
@@ -147,7 +147,7 @@ enum MemberListType
   MemberListType_allMembersList          = 38,
 
   MemberListType_decDefineMembers        = 39 + MemberListType_declarationLists,
-  MemberListType_decProtoMembers         = 40 + MemberListType_declarationLists, 
+  MemberListType_decProtoMembers         = 40 + MemberListType_declarationLists,
   MemberListType_decTypedefMembers       = 41 + MemberListType_declarationLists,
   MemberListType_decEnumMembers          = 42 + MemberListType_declarationLists,
   MemberListType_decFuncMembers          = 43 + MemberListType_declarationLists,

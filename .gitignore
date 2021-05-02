@@ -14,5 +14,9 @@
 /doxygen_docs
 /doxygen.tag
 /build*
+/qtools_docs
+/warnings.log
+
+tags
 
 .idea
