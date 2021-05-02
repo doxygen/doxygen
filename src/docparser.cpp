@@ -3371,31 +3371,33 @@ DocHtmlCell::Alignment DocHtmlCell::alignment() const
 {
   for (const auto &attr : attribs())
   {
-    if (attr.name.lower()=="align")
+    QCString attrName  = attr.name.lower();
+    QCString attrValue = attr.value.lower();
+    if (attrName=="align")
     {
-      if (attr.value.lower()=="center")
+      if (attrValue=="center")
         return Center;
-      else if (attr.value.lower()=="right")
+      else if (attrValue=="right")
         return Right;
       else return Left;
     }
-    else if (attr.name.lower()=="class")
+    else if (attrName=="class" && attrValue.startsWith("markdowntable"))
     {
-      if (attr.value.lower()=="markdowntableheadcenter")
+      if (attrValue=="markdowntableheadcenter")
         return Center;
-      else if (attr.value.lower()=="markdowntableheadright")
+      else if (attrValue=="markdowntableheadright")
         return Right;
-      else if (attr.value.lower()=="markdowntableheadleft")
+      else if (attrValue=="markdowntableheadleft")
         return Left;
-      else if (attr.value.lower()=="markdowntableheadnone")
+      else if (attrValue=="markdowntableheadnone")
         return Center;
-      else if (attr.value.lower()=="markdowntablebodycenter")
+      else if (attrValue=="markdowntablebodycenter")
         return Center;
-      else if (attr.value.lower()=="markdowntablebodyright")
+      else if (attrValue=="markdowntablebodyright")
         return Right;
-      else if (attr.value.lower()=="markdowntablebodyleft")
+      else if (attrValue=="markdowntablebodyleft")
         return Left;
-      else if (attr.value.lower()=="markdowntablebodynone")
+      else if (attrValue=="markdowntablebodynone")
         return Left;
       else return Left;
     }
@@ -3407,13 +3409,15 @@ DocHtmlCell::Valignment DocHtmlCell::valignment() const
 {
   for (const auto &attr : attribs())
   {
-    if (attr.name.lower()=="valign")
+    QCString attrName  = attr.name.lower();
+    QCString attrValue = attr.value.lower();
+    if (attrName=="valign")
     {
-      if (attr.value.lower()=="top")
+      if (attrValue=="top")
         return Top;
-      else if (attr.value.lower()=="bottom")
+      else if (attrValue=="bottom")
         return Bottom;
-      else if (attr.value.lower()=="middle")
+      else if (attrValue=="middle")
         return Middle;
       else return Middle;
     }
