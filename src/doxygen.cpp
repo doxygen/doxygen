@@ -2729,10 +2729,12 @@ static bool isVarWithConstructor(const Entry *root)
       if (reg::search(resType,match,idChars) && match.position()==0) // resType starts with identifier
       {
         resType=match.str();
-        //printf("resType=%s\n",qPrint(resType));
-        if (resType=="int"    || resType=="long" || resType=="float" ||
-            resType=="double" || resType=="char" || resType=="signed" ||
-            resType=="const"  || resType=="unsigned" || resType=="void")
+        //printf("resType=%s\n",resType.data());
+        if (resType=="int"    || resType=="long"     ||
+            resType=="float"  || resType=="double"   ||
+            resType=="char"   || resType=="void"     ||
+            resType=="signed" || resType=="unsigned" ||
+            resType=="const"  || resType=="volatile" )
         {
           result=FALSE; // type keyword -> function prototype
           goto done;

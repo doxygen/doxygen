@@ -533,6 +533,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
   }
   type=type.left(ip+1);
   type.stripPrefix("const ");  // strip leading "const"
+  type.stripPrefix("volatile ");  // strip leading "volatile"
   type.stripPrefix("struct "); // strip leading "struct"
   type.stripPrefix("union ");  // strip leading "union"
   int sp=0;

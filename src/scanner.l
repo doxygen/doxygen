@@ -2317,6 +2317,18 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(6);
                                               }
+                                              else if (yyextra->current->name.left(9)=="volatile ")
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="volatile";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="volatile ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(9);
+                                              }
                                             }
                                             QCString tmp=yytext;
                                             if (nameIsOperator(tmp))

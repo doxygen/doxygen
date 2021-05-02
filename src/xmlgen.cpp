@@ -489,7 +489,6 @@ static void stripQualifiers(QCString &typeStr)
   {
     if (typeStr.stripPrefix("static "));
     else if (typeStr.stripPrefix("virtual "));
-    else if (typeStr.stripPrefix("volatile "));
     else if (typeStr=="virtual") typeStr="";
     else done=TRUE;
   }
