@@ -344,7 +344,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
           file.close();
         }
 
-        writeDotFile(fileName, s->hasCaption());
+        writeDotFile(fileName, s->hasCaption(), s->srcFile(), s->srcLine());
         visitCaption(this, s->children());
         includePicturePostRTF(true, s->hasCaption());
 
@@ -372,7 +372,7 @@ void RTFDocVisitor::visit(DocVerbatim *s)
         file.write( text.data(), text.length() );
         file.close();
 
-        writeMscFile(baseName, s->hasCaption());
+        writeMscFile(baseName, s->hasCaption(), s->srcFile(), s->srcLine());
         visitCaption(this, s->children());
         includePicturePostRTF(true, s->hasCaption());
 
@@ -382,7 +382,9 @@ void RTFDocVisitor::visit(DocVerbatim *s)
     case DocVerbatim::PlantUML:
       {
         static QCString rtfOutput = Config_getString(RTF_OUTPUT);
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(rtfOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,s->engine());
+        QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+                       rtfOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,
+                       s->engine(),s->srcFile(),s->srcLine());
 
         writePlantUMLFile(baseName, s->hasCaption());
         visitCaption(this, s->children());
@@ -1835,9 +1837,10 @@ void RTFDocVisitor::endLink(const QCString &ref)
 
 void RTFDocVisitor::writeDotFile(DocDotFile *df)
 {
-  writeDotFile(df->file(), df->hasCaption());
+  writeDotFile(df->file(), df->hasCaption(), df->srcFile(), df->srcLine());
 }
-void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption)
+void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
+                                 const QCString &srcFile, int srcLine)
 {
   QCString baseName=filename;
   int i;
@@ -1846,16 +1849,17 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption)
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP);
+  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
 
 void RTFDocVisitor::writeMscFile(DocMscFile *df)
 {
-  writeMscFile(df->file(), df->hasCaption());
+  writeMscFile(df->file(), df->hasCaption(), df->srcFile(), df->srcLine());
 }
-void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption)
+void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
+                                 const QCString &srcFile, int srcLine)
 {
   QCString baseName=fileName;
   int i;
@@ -1864,7 +1868,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption)
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
@@ -1877,7 +1881,7 @@ void RTFDocVisitor::writeDiaFile(DocDiaFile *df)
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDiaGraphFromFile(df->file(),outDir,baseName,DIA_BITMAP);
+  writeDiaGraphFromFile(df->file(),outDir,baseName,DIA_BITMAP,df->srcFile(),df->srcLine());
   includePicturePreRTF(baseName + ".png", true, df->hasCaption());
 }
 

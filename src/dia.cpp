@@ -24,7 +24,8 @@
 static const int maxCmdLine = 40960;
 
 void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,DiaOutputFormat format)
+                           const QCString &outFile,DiaOutputFormat format,
+                           const QCString &srcFile,int srcLine)
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -63,7 +64,7 @@ void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
   Portable::sysTimerStart();
   if ((exitCode=Portable::system(diaExe,diaArgs,FALSE))!=0)
   {
-    err("Problems running %s. Check your installation or look typos in you dia file %s\n",
+    err_full(srcFile,srcLine,"Problems running %s. Check your installation or look typos in you dia file %s\n",
         qPrint(diaExe),qPrint(inFile));
     Portable::sysTimerStop();
     goto error;

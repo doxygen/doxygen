@@ -23,7 +23,9 @@
 #include "fileinfo.h"
 #include "dir.h"
 
-QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,const QCString &content,OutputFormat format, const QCString &engine)
+QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QCString &fileName,
+                                              const QCString &content,OutputFormat format, const QCString &engine,
+                                              const QCString &srcFile,int srcLine)
 {
   QCString baseName;
   QCString puName;
@@ -80,7 +82,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   uint pos = qcOutDir.findRev("/");
   QCString generateType(qcOutDir.right(qcOutDir.length() - (pos + 1)) );
   Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
-  PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text);
+  PlantumlManager::instance().insert(generateType.str(),puName.str(),outDir,format,text,srcFile,srcLine);
   Debug::print(Debug::Plantuml,0,"*** %s generateType: %s\n","writePlantUMLSource",qPrint(generateType));
 
   return baseName;
@@ -233,7 +235,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       std::ofstream file(puFileName.str(),std::ofstream::out | std::ofstream::binary);
       if (!file.is_open())
       {
-        err("Could not open file %s for writing\n",puFileName.data());
+        err_full(nb.srcFile,nb.srcLine,"Could not open file %s for writing\n",puFileName.data());
       }
       file.write( nb.content.data(), nb.content.length() );
       file.close();
@@ -242,7 +244,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       Portable::sysTimerStart();
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
-        err("Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
       }
       else if (Config_getBool(DOT_CLEANUP))
@@ -267,7 +269,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
             Portable::sysTimerStart();
             if ((exitCode=Portable::system("epstopdf",epstopdfArgs.data()))!=0)
             {
-              err("Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
+              err_full(nb.srcFile,nb.srcLine,"Problems running epstopdf. Check your TeX installation! Exit code: %d\n",exitCode);
             }
             Portable::sysTimerStop();
           }
@@ -333,18 +335,20 @@ static void addPlantumlFiles(PlantumlManager::FilesMap &plantumlFiles,
 }
 
 static void addPlantumlContent(PlantumlManager::ContentMap &plantumlContent,
-                               const std::string &key, const QCString &outDir, const QCString &puContent)
+                               const std::string &key, const QCString &outDir, const QCString &puContent,
+                               const QCString &srcFile,int srcLine)
 {
   auto kv = plantumlContent.find(key);
   if (kv==plantumlContent.end())
   {
-    kv = plantumlContent.insert(std::make_pair(key,PlantumlContent("",outDir))).first;
+    kv = plantumlContent.insert(std::make_pair(key,PlantumlContent("",outDir,srcFile,srcLine))).first;
   }
   kv->second.content+=puContent;
 }
 
 void PlantumlManager::insert(const std::string &key, const std::string &value,
-                             const QCString &outDir,OutputFormat format,const QCString &puContent)
+                             const QCString &outDir,OutputFormat format,const QCString &puContent,
+                             const QCString &srcFile,int srcLine)
 {
   int find;
 
@@ -364,19 +368,19 @@ void PlantumlManager::insert(const std::string &key, const std::string &value,
     case PUML_BITMAP:
       addPlantumlFiles(m_pngPlantumlFiles,key,value);
       print(m_pngPlantumlFiles);
-      addPlantumlContent(m_pngPlantumlContent,key,outDir,puContent);
+      addPlantumlContent(m_pngPlantumlContent,key,outDir,puContent,srcFile,srcLine);
       print(m_pngPlantumlContent);
       break;
     case PUML_EPS:
       addPlantumlFiles(m_epsPlantumlFiles,key,value);
       print(m_epsPlantumlFiles);
-      addPlantumlContent(m_epsPlantumlContent,key,outDir,puContent);
+      addPlantumlContent(m_epsPlantumlContent,key,outDir,puContent,srcFile,srcLine);
       print(m_epsPlantumlContent);
       break;
     case PUML_SVG:
       addPlantumlFiles(m_svgPlantumlFiles,key,value);
       print(m_svgPlantumlFiles);
-      addPlantumlContent(m_svgPlantumlContent,key,outDir,puContent);
+      addPlantumlContent(m_svgPlantumlContent,key,outDir,puContent,srcFile,srcLine);
       print(m_svgPlantumlContent);
       break;
   }

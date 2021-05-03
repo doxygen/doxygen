@@ -29,10 +29,12 @@
 class QCString;
 struct PlantumlContent
 {
-  PlantumlContent(const QCString &content_, const QCString &outDir_)
-     : content(content_), outDir(outDir_) {}
+  PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_)
+     : content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
   QCString content;
   QCString outDir;
+  QCString srcFile;
+  int srcLine;
 };
 
 /** Singleton that manages plantuml relation actions */
@@ -52,9 +54,15 @@ class PlantumlManager
      *  @param[in] fileName the name of the file. If empty a name will be chosen automatically.
      *  @param[in] content  the contents of the PlantUML file.
      *  @param[in] format   the image format to generate.
+     *  @param[in] engine   the plantuml engine to use.
+     *  @param[in] srcFile  the source file resulting in the write command.
+     *  @param[in] srcLine  the line number resulting in the write command.
      *  @returns The name of the generated file.
      */
-    QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,const QCString &content, OutputFormat format, const QCString &engine);
+    QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,
+                                 const QCString &content, OutputFormat format,
+                                 const QCString &engine,const QCString &srcFile,
+                                 int srcLine);
 
     /** Convert a PlantUML file to an image.
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
@@ -72,7 +80,9 @@ class PlantumlManager
                 const std::string &value,
                 const QCString &outDir,
                 OutputFormat format,
-                const QCString &puContent);
+                const QCString &puContent,
+                const QCString &srcFile,
+                int srcLine);
 
     FilesMap   m_pngPlantumlFiles;
     FilesMap   m_svgPlantumlFiles;

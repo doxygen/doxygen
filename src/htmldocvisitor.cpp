@@ -570,7 +570,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           file.close();
 
           m_t << "<div class=\"dotgraph\">\n";
-          writeDotFile(fileName,s->relPath(),s->context());
+          writeDotFile(fileName,s->relPath(),s->context(),s->srcFile(),s->srcLine());
           visitPreCaption(m_t, s);
           visitCaption(this, s->children());
           visitPostCaption(m_t, s);
@@ -607,7 +607,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           file.close();
 
           m_t << "<div class=\"mscgraph\">\n";
-          writeMscFile(baseName+".msc",s->relPath(),s->context());
+          writeMscFile(baseName+".msc",s->relPath(),s->context(),s->srcFile(),s->srcLine());
           visitPreCaption(m_t, s);
           visitCaption(this, s->children());
           visitPostCaption(m_t, s);
@@ -628,9 +628,11 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         {
           format = PlantumlManager::PUML_SVG;
         }
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format,s->engine());
+        QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+                                    htmlOutput,s->exampleFile(),
+                                    s->text(),format,s->engine(),s->srcFile(),s->srcLine());
         m_t << "<div class=\"plantumlgraph\">\n";
-        writePlantUMLFile(baseName,s->relPath(),s->context());
+        writePlantUMLFile(baseName,s->relPath(),s->context(),s->srcFile(),s->srcLine());
         visitPreCaption(m_t, s);
         visitCaption(this, s->children());
         visitPostCaption(m_t, s);
@@ -1789,7 +1791,7 @@ void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"dotgraph\">\n";
-  writeDotFile(df->file(),df->relPath(),df->context());
+  writeDotFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1810,7 +1812,7 @@ void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"mscgraph\">\n";
-  writeMscFile(df->file(),df->relPath(),df->context());
+  writeMscFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1830,7 +1832,7 @@ void HtmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"diagraph\">\n";
-  writeDiaFile(df->file(),df->relPath(),df->context());
+  writeDiaFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -2240,7 +2242,7 @@ void HtmlDocVisitor::endLink()
 }
 
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
-                                  const QCString &context)
+                                  const QCString &context,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fn;
   int i;
@@ -2254,13 +2256,12 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   }
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP);
-  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context);
+  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
 }
 
-void HtmlDocVisitor::writeMscFile(const QCString &fileName,
-                                  const QCString &relPath,
-                                  const QCString &context)
+void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
+                                  const QCString &context,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fileName;
   int i;
@@ -2278,13 +2279,12 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
   MscOutputFormat mscFormat = MSC_BITMAP;
   if ("svg" == imgExt)
     mscFormat = MSC_SVG;
-  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat);
-  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat);
+  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
+  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
 }
 
-void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
-                                  const QCString &relPath,
-                                  const QCString &)
+void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relPath,
+                                  const QCString &,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fileName;
   int i;
@@ -2298,14 +2298,13 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
   }
   baseName.prepend("dia_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
 
   m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
 }
 
-void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
-                                       const QCString &relPath,
-                                       const QCString &)
+void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString &relPath,
+                                       const QCString &,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fileName;
   int i;

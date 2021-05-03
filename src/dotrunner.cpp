@@ -147,7 +147,8 @@ DotRunner::DotRunner(const QCString& absDotName, const QCString& md5Hash)
 }
 
 
-void DotRunner::addJob(const QCString &format, const QCString &output)
+void DotRunner::addJob(const QCString &format, const QCString &output,
+                      const QCString &srcFile,int srcLine)
 {
 
   for (auto& s: m_jobs)
@@ -158,7 +159,7 @@ void DotRunner::addJob(const QCString &format, const QCString &output)
     return;
   }
   auto args = QCString("-T") + format + " -o \"" + output + "\"";
-  m_jobs.emplace_back(format.str(), output, args);
+  m_jobs.emplace_back(format.str(), output, args, srcFile, srcLine);
 }
 
 QCString getBaseNameOfOutput(const QCString &output)
@@ -174,6 +175,9 @@ bool DotRunner::run()
 
   QCString dotArgs;
 
+  QCString srcFile;
+  int srcLine=-1;
+
   // create output
   if (Config_getBool(DOT_MULTI_TARGETS))
   {
@@ -183,12 +187,19 @@ bool DotRunner::run()
       dotArgs+=' ';
       dotArgs+=s.args;
     }
+    if (!m_jobs.empty())
+    {
+      srcFile = m_jobs.front().srcFile;
+      srcLine = m_jobs.front().srcLine;
+    }
     if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
   }
   else
   {
     for (auto& s : m_jobs)
     {
+      srcFile = s.srcFile;
+      srcLine = s.srcLine;
       dotArgs=QCString("\"")+m_file+"\" "+s.args;
       if ((exitCode=Portable::system(m_dotExe,dotArgs,FALSE))!=0) goto error;
     }
@@ -236,7 +247,7 @@ bool DotRunner::run()
   }
   return TRUE;
 error:
-  err("Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
+  err_full(srcFile,srcLine,"Problems running dot: exit code=%d, command='%s', arguments='%s'\n",
     exitCode,qPrint(m_dotExe),qPrint(dotArgs));
   return FALSE;
 }

@@ -159,16 +159,19 @@ class LatexDocVisitor : public DocVisitor
                  const QCString &anchor,bool refToTable=FALSE);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
     void endDotFile(bool hasCaption);
 
     void startMscFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
 
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);

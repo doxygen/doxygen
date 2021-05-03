@@ -2720,9 +2720,11 @@ endlink:
 
 //---------------------------------------------------------------------------
 
-DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &context) :
-      m_name(name), m_relPath(g_relPath), m_context(context)
+DocDotFile::DocDotFile(DocNode *parent,const QCString &name,const QCString &context,
+                       const QCString &srcFile,int srcLine) :
+  DocDiagramFileBase(name,context,srcFile,srcLine)
 {
+  m_relPath = g_relPath;
   m_parent = parent;
 }
 
@@ -2757,9 +2759,11 @@ bool DocDotFile::parse()
   return ok;
 }
 
-DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &context) :
-      m_name(name), m_relPath(g_relPath), m_context(context)
+DocMscFile::DocMscFile(DocNode *parent,const QCString &name,const QCString &context,
+                       const QCString &srcFile, int srcLine) :
+  DocDiagramFileBase(name,context,srcFile,srcLine)
 {
+  m_relPath = g_relPath;
   m_parent = parent;
 }
 
@@ -2796,9 +2800,11 @@ bool DocMscFile::parse()
 
 //---------------------------------------------------------------------------
 
-DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &context) :
-      m_name(name), m_relPath(g_relPath), m_context(context)
+DocDiaFile::DocDiaFile(DocNode *parent,const QCString &name,const QCString &context,
+                       const QCString &srcFile,int srcLine) :
+  DocDiagramFileBase(name,context,srcFile,srcLine)
 {
+  m_relPath = g_relPath;
   m_parent = parent;
 }
 
@@ -5016,7 +5022,7 @@ void DocPara::handleFile(const QCString &cmdName)
     return;
   }
   QCString name = g_token->name;
-  T *df = new T(this,name,g_context);
+  T *df = new T(this,name,g_context,g_fileName,getDoctokinizerLineNr());
   if (df->parse())
   {
     m_children.push_back(std::unique_ptr<T>(df));
@@ -5550,6 +5556,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         dv->setText(g_token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
+        dv->setLocation(g_fileName,getDoctokinizerLineNr());
         m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"dot section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5566,6 +5573,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         dv->setText(g_token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
+        dv->setLocation(g_fileName,getDoctokinizerLineNr());
         m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
         if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"msc section ended without end marker");
         doctokenizerYYsetStatePara();
@@ -5642,6 +5650,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         dv->setText(stripLeadingAndTrailingEmptyLines(g_token->verb,line));
         dv->setWidth(width);
         dv->setHeight(height);
+        dv->setLocation(g_fileName,getDoctokinizerLineNr());
         if (jarPath.isEmpty())
         {
           warn_doc_error(g_fileName,getDoctokinizerLineNr(),"ignoring \\startuml command because PLANTUML_JAR_PATH is not set");

@@ -400,7 +400,7 @@ DB_VIS_C
     case DocVerbatim::PlantUML:
       {
         static QCString docbookOutput = Config_getString(DOCBOOK_OUTPUT);
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(docbookOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,s->engine());
+        QCString baseName = PlantumlManager::instance().writePlantUMLSource(docbookOutput,s->exampleFile(),s->text(),PlantumlManager::PUML_BITMAP,s->engine(),s->srcFile(),s->srcLine());
         QCString shortName = baseName;
         int i;
         if ((i=shortName.findRev('/'))!=-1)
@@ -1269,7 +1269,7 @@ void DocbookDocVisitor::visitPre(DocDotFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
+  startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
 void DocbookDocVisitor::visitPost(DocDotFile *df)
@@ -1283,7 +1283,7 @@ void DocbookDocVisitor::visitPre(DocMscFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
+  startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
 void DocbookDocVisitor::visitPost(DocMscFile *df)
@@ -1296,7 +1296,7 @@ void DocbookDocVisitor::visitPre(DocDiaFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
-  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children());
+  startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
 void DocbookDocVisitor::visitPost(DocDiaFile *df)
@@ -1634,7 +1634,7 @@ DB_VIS_C
     shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP);
+  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_BITMAP,s->srcFile(),s->srcLine());
   visitPreStart(m_t, s->children(), s->hasCaption(), s->relPath() + shortName + ".png", s->width(), s->height());
   visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
@@ -1660,7 +1660,9 @@ void DocbookDocVisitor::startMscFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    const DocNodeList &children
+    const DocNodeList &children,
+    const QCString &srcFile,
+    int srcLine
     )
 {
 DB_VIS_C
@@ -1676,7 +1678,7 @@ DB_VIS_C
   }
   baseName.prepend("msc_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP);
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, baseName + ".png",  width,  height);
 }
@@ -1699,7 +1701,7 @@ DB_VIS_C
     shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP);
+  writeDiaGraphFromFile(baseName+".dia",outDir,shortName,DIA_BITMAP,s->srcFile(),s->srcLine());
   visitPreStart(m_t, s->children(), s->hasCaption(), shortName, s->width(),s->height());
   visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
@@ -1709,7 +1711,9 @@ void DocbookDocVisitor::startDiaFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    const DocNodeList &children
+    const DocNodeList &children,
+    const QCString &srcFile,
+    int srcLine
     )
 {
 DB_VIS_C
@@ -1725,7 +1729,7 @@ DB_VIS_C
   }
   baseName.prepend("dia_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, baseName + ".png",  width,  height);
 }
@@ -1748,7 +1752,7 @@ DB_VIS_C
     shortName=shortName.right((int)shortName.length()-i-1);
   }
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
-  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP);
+  writeDotGraphFromFile(baseName+".dot",outDir,shortName,GOF_BITMAP,s->srcFile(),s->srcLine());
   visitPreStart(m_t, s->children(), s->hasCaption(), s->relPath() + shortName + "." + getDotImageExtension(), s->width(),s->height());
   visitCaption(s->children());
   visitPostEnd(m_t, s->hasCaption());
@@ -1758,7 +1762,9 @@ void DocbookDocVisitor::startDotFile(const QCString &fileName,
     const QCString &width,
     const QCString &height,
     bool hasCaption,
-    const DocNodeList &children
+    const DocNodeList &children,
+    const QCString &srcFile,
+    int srcLine
     )
 {
 DB_VIS_C
@@ -1775,7 +1781,7 @@ DB_VIS_C
   baseName.prepend("dot_");
   QCString outDir = Config_getString(DOCBOOK_OUTPUT);
   QCString imgExt = getDotImageExtension();
-  writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP);
+  writeDotGraphFromFile(fileName,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
   m_t << "<para>\n";
   visitPreStart(m_t, children, hasCaption, baseName + "." + imgExt,  width,  height);
 }

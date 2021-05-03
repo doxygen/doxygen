@@ -22,15 +22,18 @@ class TextStream;
 enum MscOutputFormat { MSC_BITMAP , MSC_EPS, MSC_SVG };
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,MscOutputFormat format);
+                           const QCString &outFile,MscOutputFormat format,
+                           const QCString &srcFile,int srcLine);
 
-QCString getMscImageMapFromFile(const QCString& inFile, const QCString& outDir,
-                                const QCString& relPath,const QCString& context);
+QCString getMscImageMapFromFile(const QCString &inFile, const QCString &outDir,
+                                const QCString &relPath,const QCString &context,
+                                const QCString &srcFile,int srcLine);
 
 void writeMscImageMapFromFile(TextStream &t,const QCString &inFile,
                               const QCString &outDir, const QCString &relPath,
                               const QCString &baseName, const QCString &context,
-			      MscOutputFormat format
+			      MscOutputFormat format,
+                              const QCString &srcFile,int srcLine
  			    );
 
 #endif

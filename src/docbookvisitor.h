@@ -144,15 +144,18 @@ class DocbookDocVisitor : public DocVisitor
     const QCString &anchor);
     void endLink();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const DocNodeList &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const DocNodeList &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);

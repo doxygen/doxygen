@@ -270,7 +270,8 @@ bool DotManager::run() const
 //--------------------------------------------------------------------
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
-                           const QCString &outFile,GraphOutputFormat format)
+                           const QCString &outFile,GraphOutputFormat format,
+                           const QCString &srcFile,int srcLine)
 {
   Dir d(outDir.str());
   if (!d.exists())
@@ -286,17 +287,17 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
-    dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName);
+    dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun.addJob("pdf",absOutFile+".pdf");
+      dotRun.addJob("pdf",absOutFile+".pdf",srcFile,srcLine);
     }
     else
     {
-      dotRun.addJob("ps",absOutFile+".eps");
+      dotRun.addJob("ps",absOutFile+".eps",srcFile,srcLine);
     }
   }
 
@@ -322,7 +323,8 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,
                             const QCString &relPath, const QCString &baseName,
-                            const QCString &context,int graphId)
+                            const QCString &context,int graphId,
+                            const QCString &srcFile,int srcLine)
 {
 
   Dir d(outDir.str());
@@ -337,7 +339,7 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString absOutFile = QCString(d.absPath())+"/"+mapName;
 
   DotRunner dotRun(inFile);
-  dotRun.addJob(MAP_CMD,absOutFile);
+  dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
   dotRun.preventCleanUp();
   if (!dotRun.run())
   {

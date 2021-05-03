@@ -182,8 +182,8 @@ bool DotGraph::prepareDotFile()
   {
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
-    dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName());
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName());
+    dotRun->addJob(Config_getEnum(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
+    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
   else if (m_graphFormat == GOF_EPS)
   {
@@ -191,11 +191,11 @@ bool DotGraph::prepareDotFile()
     DotRunner *dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     if (Config_getBool(USE_PDFLATEX))
     {
-      dotRun->addJob("pdf",absImgName());
+      dotRun->addJob("pdf",absImgName(),absDotName(),1);
     }
     else
     {
-      dotRun->addJob("ps",absImgName());
+      dotRun->addJob("ps",absImgName(),absDotName(),1);
     }
   }
   return TRUE;

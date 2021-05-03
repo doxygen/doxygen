@@ -152,9 +152,9 @@ class RTFDocVisitor : public DocVisitor
 
     void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void writeDotFile(const QCString &fileName, bool hasCaption);
+    void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
     void writeDotFile(DocDotFile *);
-    void writeMscFile(const QCString &fileName, bool hasCaption);
+    void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
     void writeMscFile(DocMscFile *);
     void writeDiaFile(DocDiaFile *);
     void writePlantUMLFile(const QCString &fileName, bool hasCaption);
