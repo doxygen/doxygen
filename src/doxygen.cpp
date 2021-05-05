@@ -1049,9 +1049,18 @@ static void addClassToContext(const Entry *root)
       }
     }
     std::unique_ptr<ArgumentList> tArgList;
-    if ((root->lang==SrcLangExt_CSharp || root->lang==SrcLangExt_Java) && (i=fullName.find('<'))!=-1)
+    if (root->lang==SrcLangExt_Java && (i=fullName.find('<'))!=-1)
     {
-      // a Java/C# generic class looks like a C++ specialization, so we need to split the
+      // a Java generic class looks like a C++ specialization, so we need to split the
+      // name and template arguments here
+      // for Java we determine i using find (rather than findRev) because < and > can occur
+      // in type constraints in nested fashion, see github.com/doxygen/doxygen/issues/8495
+      tArgList = stringToArgumentList(root->lang,fullName.mid(i));
+      fullName=fullName.left(i);
+    }
+    else if (root->lang==SrcLangExt_CSharp && (i=fullName.findRev('<'))!=-1)
+    {
+      // a C# generic class looks like a C++ specialization, so we need to split the
       // name and template arguments here
       tArgList = stringToArgumentList(root->lang,fullName.mid(i));
       fullName=fullName.left(i);

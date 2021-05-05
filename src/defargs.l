@@ -95,6 +95,7 @@ struct defargsYY_state
   int              lastDocContext = 0;
   int              lastDocChar = 0;
   int              lastExtendsContext = 0;
+  int              readAnnotationContext = 0;
   QCString         delimiter;
 };
 
@@ -140,6 +141,9 @@ CPPC  "/\/"
 %x	FuncQual
 %x	ReadDocBlock
 %x	ReadDocLine
+%x  ReadAnnotation
+%x  ReadStringLiteral
+%x  ReadEscape
 %x      ReadTypeConstraint
 %x      TrailingReturn
 
@@ -471,7 +475,7 @@ CPPC  "/\/"
                                            {
                                              yyextra->curTypeConstraint.resize(0);
                                              yyextra->lastExtendsContext=YY_START;
-                                             assert(yyextra->argSharpCount == 0);
+                                             yyextra->argSharpCount=0;
                                              BEGIN(ReadTypeConstraint);
                                            }
                                         }
@@ -485,6 +489,18 @@ CPPC  "/\/"
 					  //printf("resolveName '%s'->'%s'\n",yytext,qPrint(name));
   					  yyextra->curArgTypeName+=name;
 					}
+<ReadFuncArgType>"@"  {
+                      if (yyextra->lang==SrcLangExt_Java)
+                      {
+                        yyextra->argRoundCount = 0;
+                        yyextra->readAnnotationContext = ReadFuncArgType;
+                        BEGIN(ReadAnnotation);
+                      }
+                      else
+                      {
+                        yyextra->curArgTypeName+=*yytext;
+                      }
+                    }
 <ReadFuncArgType,ReadFuncArgPtr>.	{ 
   					  yyextra->curArgTypeName+=*yytext;
 					}
@@ -501,9 +517,54 @@ CPPC  "/\/"
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
 					  *yyextra->copyArgValue += *yytext;
 					}
-<ReadTypeConstraint>[,)]               {
-                                          unput(*yytext);
-                                          BEGIN(yyextra->lastExtendsContext);
+<ReadAnnotation>"("                    {
+                                          ++yyextra->argRoundCount;
+                                       }
+<ReadAnnotation>")"                    {
+                                          if (--yyextra->argRoundCount == 0)
+                                          {
+                                            BEGIN(yyextra->readAnnotationContext);
+                                          }
+                                       }
+<ReadAnnotation>{B}+                   {
+                                          if (yyextra->argRoundCount == 0)
+                                          {
+                                            BEGIN(yyextra->readAnnotationContext);
+                                          }
+                                       }
+<ReadAnnotation>"\""                   {
+                                          BEGIN(ReadStringLiteral);
+                                       }
+<ReadAnnotation>.                      {
+                                          // skip it for now
+                                       }
+<ReadStringLiteral>"\\"                {
+                                          BEGIN(ReadEscape);
+                                       }
+<ReadStringLiteral>"\""                {
+                                          BEGIN(ReadAnnotation);
+                                       }
+<ReadStringLiteral>.                   {
+                                          // skip it for now
+                                       }
+<ReadEscape>.                          {
+                                          BEGIN(ReadStringLiteral);
+                                       }
+<ReadTypeConstraint>"@"                {
+                                          yyextra->argRoundCount = 0;
+                                          yyextra->readAnnotationContext = ReadTypeConstraint;
+                                          BEGIN(ReadAnnotation);
+                                       }
+<ReadTypeConstraint>","                {
+                                          if (yyextra->argSharpCount > 0)
+                                          {
+                                            yyextra->curTypeConstraint+=yytext;
+                                          }
+                                          else
+                                          {
+                                            unput(*yytext);
+                                            BEGIN(yyextra->lastExtendsContext);
+                                          }
                                        }
 <ReadTypeConstraint>">"                {
                                           if (yyextra->argSharpCount > 0)
@@ -527,6 +588,23 @@ CPPC  "/\/"
 <ReadTypeConstraint>\n                  {
                                           yyextra->curTypeConstraint+=' ';
                                         }
+<ReadAnnotation,ReadStringLiteral,ReadEscape><<EOF>>  {
+                                          // handle syntax issues gently
+                                          fprintf(stderr, "Warning: Invalid generic declaration: '%s'\n",
+                                              yyextra->inputString);
+                                          yyextra->argRoundCount = 0;
+                                          yyextra->argSharpCount = 0;
+                                          unput('>');
+                                          BEGIN(yyextra->readAnnotationContext);
+                                       }
+<ReadTypeConstraint><<EOF>>  {
+                                          // handle syntax issues gently
+                                          fprintf(stderr, "Warning: Invalid type constraint: '%s'\n",
+                                              yyextra->inputString);
+                                          yyextra->argRoundCount = 0;
+                                          yyextra->argSharpCount = 0;
+                                          unput('>');
+                                       }
 <FuncQual>"const"		       	{
 					  yyextra->argList->setConstSpecifier(TRUE);
 					}
