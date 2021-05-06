@@ -131,19 +131,19 @@ CPPC  "/\/"
 %x      Start
 %x      CopyArgString
 %x      CopyRawString
-%x	CopyArgRound
-%x	CopyArgRound2
-%x	CopyArgSharp
-%x	CopyArgCurly
-%x	ReadFuncArgType
-%x	ReadFuncArgDef
-%x	ReadFuncArgPtr
-%x	FuncQual
-%x	ReadDocBlock
-%x	ReadDocLine
-%x  ReadAnnotation
-%x  ReadStringLiteral
-%x  ReadEscape
+%x      CopyArgRound
+%x      CopyArgRound2
+%x      CopyArgSharp
+%x      CopyArgCurly
+%x      ReadFuncArgType
+%x      ReadFuncArgDef
+%x      ReadFuncArgPtr
+%x      FuncQual
+%x      ReadDocBlock
+%x      ReadDocLine
+%x      ReadAnnotation
+%x      ReadStringLiteral
+%x      ReadEscape
 %x      ReadTypeConstraint
 %x      TrailingReturn
 
@@ -517,45 +517,45 @@ CPPC  "/\/"
 <CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
 					  *yyextra->copyArgValue += *yytext;
 					}
-<ReadAnnotation>"("                    {
+<ReadAnnotation>"("                     {
                                           ++yyextra->argRoundCount;
-                                       }
-<ReadAnnotation>")"                    {
+                                        }
+<ReadAnnotation>")"                     {
                                           if (--yyextra->argRoundCount == 0)
                                           {
                                             BEGIN(yyextra->readAnnotationContext);
                                           }
-                                       }
-<ReadAnnotation>{B}+                   {
+                                        }
+<ReadAnnotation>{B}+                    {
                                           if (yyextra->argRoundCount == 0)
                                           {
                                             BEGIN(yyextra->readAnnotationContext);
                                           }
-                                       }
-<ReadAnnotation>"\""                   {
+                                        }
+<ReadAnnotation>"\""                    {
                                           BEGIN(ReadStringLiteral);
-                                       }
-<ReadAnnotation>.                      {
+                                        }
+<ReadAnnotation>.                       {
                                           // skip it for now
-                                       }
-<ReadStringLiteral>"\\"                {
+                                        }
+<ReadStringLiteral>"\\"                 {
                                           BEGIN(ReadEscape);
-                                       }
-<ReadStringLiteral>"\""                {
+                                        }
+<ReadStringLiteral>"\""                 {
                                           BEGIN(ReadAnnotation);
-                                       }
-<ReadStringLiteral>.                   {
+                                        }
+<ReadStringLiteral>.                    {
                                           // skip it for now
-                                       }
-<ReadEscape>.                          {
+                                        }
+<ReadEscape>.                           {
                                           BEGIN(ReadStringLiteral);
-                                       }
-<ReadTypeConstraint>"@"                {
+                                        }
+<ReadTypeConstraint>"@"                 {
                                           yyextra->argRoundCount = 0;
                                           yyextra->readAnnotationContext = ReadTypeConstraint;
                                           BEGIN(ReadAnnotation);
-                                       }
-<ReadTypeConstraint>","                {
+                                        }
+<ReadTypeConstraint>","                 {
                                           if (yyextra->argSharpCount > 0)
                                           {
                                             yyextra->curTypeConstraint+=yytext;
@@ -565,8 +565,8 @@ CPPC  "/\/"
                                             unput(*yytext);
                                             BEGIN(yyextra->lastExtendsContext);
                                           }
-                                       }
-<ReadTypeConstraint>">"                {
+                                        }
+<ReadTypeConstraint>">"                 {
                                           if (yyextra->argSharpCount > 0)
                                           {
                                             yyextra->curTypeConstraint+=yytext;
@@ -588,7 +588,7 @@ CPPC  "/\/"
 <ReadTypeConstraint>\n                  {
                                           yyextra->curTypeConstraint+=' ';
                                         }
-<ReadAnnotation,ReadStringLiteral,ReadEscape><<EOF>>  {
+<ReadAnnotation,ReadStringLiteral,ReadEscape><<EOF>> {
                                           // handle syntax issues gently
                                           fprintf(stderr, "Warning: Invalid generic declaration: '%s'\n",
                                               yyextra->inputString);
@@ -596,15 +596,15 @@ CPPC  "/\/"
                                           yyextra->argSharpCount = 0;
                                           unput('>');
                                           BEGIN(yyextra->readAnnotationContext);
-                                       }
-<ReadTypeConstraint><<EOF>>  {
+                                        }
+<ReadTypeConstraint><<EOF>>             {
                                           // handle syntax issues gently
                                           fprintf(stderr, "Warning: Invalid type constraint: '%s'\n",
                                               yyextra->inputString);
                                           yyextra->argRoundCount = 0;
                                           yyextra->argSharpCount = 0;
                                           unput('>');
-                                       }
+                                        }
 <FuncQual>"const"		       	{
 					  yyextra->argList->setConstSpecifier(TRUE);
 					}
