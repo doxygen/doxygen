@@ -143,7 +143,6 @@ CPPC  "/\/"
 %x      ReadDocLine
 %x      ReadAnnotation
 %x      ReadStringLiteral
-%x      ReadEscape
 %x      ReadTypeConstraint
 %x      TrailingReturn
 
@@ -538,17 +537,15 @@ CPPC  "/\/"
 <ReadAnnotation>.                       {
                                           // skip it for now
                                         }
-<ReadStringLiteral>"\\"                 {
-                                          BEGIN(ReadEscape);
+<ReadStringLiteral>"\\\""               {
+                                          // Handling this particular escape sequence to avoid
+                                          // premature cancellation of the string literal
                                         }
 <ReadStringLiteral>"\""                 {
                                           BEGIN(ReadAnnotation);
                                         }
 <ReadStringLiteral>.                    {
                                           // skip it for now
-                                        }
-<ReadEscape>.                           {
-                                          BEGIN(ReadStringLiteral);
                                         }
 <ReadTypeConstraint>"@"                 {
                                           yyextra->argRoundCount = 0;
@@ -588,7 +585,7 @@ CPPC  "/\/"
 <ReadTypeConstraint>\n                  {
                                           yyextra->curTypeConstraint+=' ';
                                         }
-<ReadAnnotation,ReadStringLiteral,ReadEscape><<EOF>> {
+<ReadAnnotation,ReadStringLiteral><<EOF>> {
                                           // handle syntax issues gently
                                           fprintf(stderr, "Warning: Invalid generic declaration: '%s'\n",
                                               yyextra->inputString);
