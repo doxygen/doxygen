@@ -534,8 +534,11 @@ CPPC  "/\/"
 <ReadAnnotation>"\""                    {
                                           BEGIN(ReadStringLiteral);
                                         }
+<ReadAnnotation>"'"[()\"]"'"|"'\\\"'"   {
+                                          // Protect from character literals triggering state changes.
+                                        }
 <ReadAnnotation>.                       {
-                                          // skip it for now
+                                          // For now we just strip annotations away.
                                         }
 <ReadStringLiteral>"\\\""               {
                                           // Handling this particular escape sequence to avoid
