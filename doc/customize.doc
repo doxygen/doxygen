@@ -52,15 +52,24 @@ corresponding with the following settings:
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
 
+\image html layout_index_and_notreeview.png
+\image latex layout_index_and_notreeview.png width=8cm
+
 you can switch to an interactive navigation tree as sidebar using
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c YES
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
 
+\image html layout_noindex_and_treeview.png
+\image latex layout_noindex_and_treeview.png width=8cm
+
 or even have both forms of navigation:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+
+\image html layout_index_and_treeview.png
+\image latex layout_index_and_treeview.png width=8cm
 
 if you already use an external index (i.e. have one of the following
 options enabled
@@ -72,6 +81,9 @@ then you can also disable all indices, like so:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c YES
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
+
+\image html layout_noindex_and_notreeview.png
+\image latex layout_noindex_and_notreeview.png width=8cm
 
 \subsection minor_tweaks_dynsection Dynamic Content
 

@@ -385,6 +385,9 @@ static QCString substituteHtmlKeywords(const QCString &str,
   if (treeView)
   {
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
+                        "<script type=\"text/javascript\">var page_layout=";
+    treeViewCssJs += Config_getBool(DISABLE_INDEX) ? "1" : "0";
+    treeViewCssJs += ";</script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
@@ -2556,8 +2559,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   // write split bar
   if (generateTreeView)
   {
-    result = QCString(
-     "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n"
+    if (!Config_getBool(DISABLE_INDEX))
+    {
+      result += QCString(
+       "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
+    }
+    result+= QCString(
      "  <div id=\"nav-tree\">\n"
      "    <div id=\"nav-tree-contents\">\n"
      "      <div id=\"nav-sync\" class=\"sync\"></div>\n"
