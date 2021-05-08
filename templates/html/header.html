@@ -17,6 +17,11 @@ $mathjax
 $extrastylesheet
 </head>
 <body>
+<!--BEGIN DISABLE_INDEX-->
+<!--BEGIN GENERATE_TREEVIEW-->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+<!--END GENERATE_TREEVIEW-->
+<!--END DISABLE_INDEX-->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 
 <!--BEGIN TITLEAREA-->
@@ -29,8 +34,7 @@ $extrastylesheet
   <!--END PROJECT_LOGO-->
   <!--BEGIN PROJECT_NAME-->
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">$projectname
-   <!--BEGIN PROJECT_NUMBER-->&#160;<span id="projectnumber">$projectnumber</span><!--END PROJECT_NUMBER-->
+   <div id="projectname">$projectname<!--BEGIN PROJECT_NUMBER--><span id="projectnumber">&#160;$projectnumber</span><!--END PROJECT_NUMBER-->
    </div>
    <!--BEGIN PROJECT_BRIEF--><div id="projectbrief">$projectbrief</div><!--END PROJECT_BRIEF-->
   </td>
@@ -42,13 +46,13 @@ $extrastylesheet
     </td>
    <!--END PROJECT_BRIEF-->
   <!--END !PROJECT_NAME-->
-  <!--BEGIN DISABLE_INDEX-->
-   <!--BEGIN SEARCHENGINE-->
-   <td>$searchbox</td>
-   <!--END SEARCHENGINE-->
-  <!--END DISABLE_INDEX-->
  </tr>
  </tbody>
+<!--BEGIN DISABLE_INDEX-->
+ <!--BEGIN SEARCHENGINE-->
+ <td colspan="2" style="padding-top: 4px;">$searchbox</td>
+ <!--END SEARCHENGINE-->
+<!--END DISABLE_INDEX-->
 </table>
 </div>
 <!--END TITLEAREA-->
