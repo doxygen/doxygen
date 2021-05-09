@@ -53,7 +53,7 @@ function initResizable()
       date.setTime(date.getTime()+(10*365*24*60*60*1000)); // default expiration is one week
       expiration = date.toGMTString();
     }
-    document.cookie = cookie_namespace + "_" + cookie + "=" + val + "; expires=" + expiration+"; path=/";
+    document.cookie = cookie_namespace + "_" + cookie + "=" + val + "; SameSite=Lax; expires=" + expiration+"; path=/";
   }
 
   function resizeWidth()
@@ -77,7 +77,7 @@ function initResizable()
     var footerHeight = footer.outerHeight();
     var windowHeight = $(window).height();
     var contentHeight,navtreeHeight,sideNavHeight;
-    if (page_layout==0) { /* DISABLE_INDEX=NO */
+    if (typeof page_output==='undefined' || page_layout==0) { /* DISABLE_INDEX=NO */
       contentHeight = windowHeight - headerHeight - footerHeight;
       navtreeHeight = contentHeight;
       sideNavHeight = contentHeight;

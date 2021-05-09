@@ -326,7 +326,7 @@ function selectAndHighlight(hash,n)
     $(n.itemDiv).attr('id','selected');
   }
   var topOffset=5;
-  if (page_layout==1) {
+  if (typeof page_layout!=='undefined' && page_layout==1) {
     topOffset+=$('#top').outerHeight();
   }
   if ($('#nav-tree-contents .item:first').hasClass('selected')) {
