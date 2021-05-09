@@ -338,6 +338,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool hasProjectNumber = !Config_getString(PROJECT_NUMBER).isEmpty();
   bool hasProjectBrief = !Config_getString(PROJECT_BRIEF).isEmpty();
   bool hasProjectLogo = !Config_getString(PROJECT_LOGO).isEmpty();
+  bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && disableIndex && treeView;
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
 
   cssFile = Config_getString(HTML_STYLESHEET);
@@ -563,6 +564,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   result = substitute(result,"$relpath^",relPath); //<-- must be last
 
   // additional HTML only conditional blocks
+  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputGenerator::Html);
   result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputGenerator::Html);
   result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputGenerator::Html);
   result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputGenerator::Html);
@@ -1072,7 +1074,14 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     QCString searchCss;
     if (Config_getBool(DISABLE_INDEX))
     {
-      searchCss = mgr.getAsString("search_nomenu.css");
+      if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
+      {
+        searchCss = mgr.getAsString("search_sidebar.css");
+      }
+      else
+      {
+        searchCss = mgr.getAsString("search_nomenu.css");
+      }
     }
     else if (!Config_getBool(HTML_DYNAMIC_MENUS))
     {
@@ -1082,6 +1091,7 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     {
       searchCss = mgr.getAsString("search.css");
     }
+    searchCss += mgr.getAsString("search_common.css");
     searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",getDoxygenVersion());
     t << searchCss;
     Doxygen::indexList->addStyleSheetFile("search/search.css");
@@ -2559,11 +2569,11 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   // write split bar
   if (generateTreeView)
   {
-    //if (!Config_getBool(DISABLE_INDEX))
-    //{
-    result += QCString(
-     "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
-    //}
+    if (!Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
+    {
+      result += QCString(
+        "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
+    }
     result+= QCString(
      "  <div id=\"nav-tree\">\n"
      "    <div id=\"nav-tree-contents\">\n"

@@ -6,14 +6,11 @@
 
 #MSearchBox {
     white-space : nowrap;
-    position: absolute;
     float: none;
-    display: inline;
-    margin-top: 8px;
-    right: 0px;
-    width: 170px;
+    margin-top: 0px;
+    width: 161px;
+    height: 24px;
     z-index: 102;
-    background-color: white;
 }
 
 #MSearchBox .left
@@ -54,6 +51,7 @@
     color: #909090;
     outline: none;
     font: 9pt Arial, Verdana, sans-serif;
+    -webkit-border-radius: 0px;
 }
 
 #FSearchBox #MSearchField {
@@ -63,8 +61,7 @@
 #MSearchBox .right {
     display:block;
     position:absolute;
-    right:10px;
-    top:0px;
+    left:141px;
     width:20px;
     height:19px;
     background:url('search_r.png') no-repeat;

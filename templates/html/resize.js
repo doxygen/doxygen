@@ -77,7 +77,7 @@ function initResizable()
     var footerHeight = footer.outerHeight();
     var windowHeight = $(window).height();
     var contentHeight,navtreeHeight,sideNavHeight;
-    if (typeof page_output==='undefined' || page_layout==0) { /* DISABLE_INDEX=NO */
+    if (typeof page_layout==='undefined' || page_layout==0) { /* DISABLE_INDEX=NO */
       contentHeight = windowHeight - headerHeight - footerHeight;
       navtreeHeight = contentHeight;
       sideNavHeight = contentHeight;

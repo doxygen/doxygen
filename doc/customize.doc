@@ -59,9 +59,19 @@ you can switch to an interactive navigation tree as sidebar using
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c YES
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_generate_treeview "FULL_SIDEBAR" = \c NO
 
 \image html layout_noindex_and_treeview.png
 \image latex layout_noindex_and_treeview.png width=8cm
+
+you can also make the content span the title area of the screen using
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_generate_treeview "FULL_SIDEBAR" = \c YES
+
+\image html layout_noindex_and_sidebar.png
+\image latex layout_noindex_and_sidebar.png width=8cm
 
 or even have both forms of navigation:
 
