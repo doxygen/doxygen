@@ -3241,10 +3241,17 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
        ) // predefined function macro definition
     {
       static const reg::Ex reId(R"(\a\w*)");
+      static const reg::Ex reVaArgs(R"(, *\.\.\. *$)");
       reg::Iterator end;
       bool varArgs = false;
       int count = 0;
       std::map<std::string,int> argMap;
+      reg::Iterator it1(ds.substr(i_obrace+1,i_cbrace-i_obrace-1),reVaArgs,0);
+      if (it1 != end)
+      {
+        i_cbrace -= it1->length();
+
+      }
       if (ds.substr(i_obrace+1,i_cbrace-i_obrace-1)=="...")
       {
         varArgs = true;
@@ -3273,6 +3280,12 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
             i++;
           }
           ++it;
+        }
+        if (it1!=end)
+        {
+          varArgs = true;
+          argMap.emplace("__VA_ARGS__",count);
+          count++;
         }
       }
       // strip definition part
