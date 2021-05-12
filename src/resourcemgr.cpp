@@ -76,9 +76,11 @@ bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &tar
   return TRUE;
 }
 
-bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName) const
+bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName,bool append) const
 {
   std::string pathName = targetDir.str()+"/"+targetName.str();
+  std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
+  if (append) mode |= std::ofstream::app;
   const Resource *res = get(name);
   if (res)
   {
@@ -86,7 +88,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
     {
       case Resource::Verbatim:
         {
-          std::ofstream f(pathName,std::ofstream::out | std::ofstream::binary);
+          std::ofstream f(pathName,mode);
           bool ok=false;
           if (f.is_open())
           {
@@ -137,7 +139,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         break;
       case Resource::CSS:
         {
-          std::ofstream t(pathName,std::ofstream::out | std::ofstream::binary);
+          std::ofstream t(pathName,mode);
           if (t.is_open())
           {
             QCString buf(res->size+1);
@@ -157,7 +159,7 @@ bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,
         break;
       case Resource::SVG:
         {
-          std::ofstream t(pathName,std::ostream::out | std::ofstream::binary);
+          std::ofstream t(pathName,mode);
           if (t.is_open())
           {
             QCString buf(res->size+1);

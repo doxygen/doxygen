@@ -50,7 +50,7 @@
   </ul>
   </li>
 {% endif %}
-{% if exampleList.items %}
+{% if exampleList %}
   <li><a href="{{ page.relPath }}examples{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.examples }}</span></a>
 {% endif %}
 </ul>

@@ -9377,61 +9377,82 @@ class SymbolContext::Private
       const Definition *prevScope = prev ? prev->getOuterScope() : 0;
       const MemberDef  *md        = toMemberDef(m_def);
       bool isFunctionLike   = md && (md->isFunction() || md->isSlot() || md->isSignal());
-      bool overloadedFunction = isFunctionLike &&
-                                ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope));
-      QCString prefix;
-      if (md) prefix=md->localName();
-      if (overloadedFunction) // overloaded member function
-      {
-        prefix+=md->argsString();
-        // show argument list to disambiguate overloaded functions
-      }
-      else if (md && isFunctionLike) // unique member function
-      {
-        prefix+="()"; // only to show it is a function
-      }
-      bool found=FALSE;
+      bool overloadedFunction = ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope)) &&
+                                md && (md->isFunction() || md->isSlot());
+
       QCString name;
-      if (m_def->definitionType()==Definition::TypeClass)
+      if (prev==0 && next==0) // unique name
       {
-        name = m_def->displayName();
-        found = TRUE;
-      }
-      else if (m_def->definitionType()==Definition::TypeNamespace)
-      {
-        name = m_def->displayName();
-        found = TRUE;
-      }
-      else if (scope==0 || scope==Doxygen::globalScope) // in global scope
-      {
-        if (md)
+        if (scope!=Doxygen::globalScope)
+        {
+          name = scope->name();
+        }
+        else if (md)
         {
           const FileDef *fd = md->getBodyDef();
           if (fd==0) fd = md->getFileDef();
           if (fd)
           {
-            if (!prefix.isEmpty()) prefix+=": ";
-            name = prefix + convertToXML(fd->localName());
-            found = TRUE;
+            name = fd->localName();
           }
         }
       }
-      else if (md && (md->getClassDef() || md->getNamespaceDef()))
-        // member in class or namespace scope
+      else
       {
-        SrcLangExt lang = md->getLanguage();
-        name = m_def->getOuterScope()->qualifiedName()
-          + getLanguageSpecificSeparator(lang) + prefix;
-        found = TRUE;
-      }
-      else if (scope) // some thing else? -> show scope
-      {
-        name = prefix + convertToXML(scope->name());
-        found = TRUE;
-      }
-      if (!found) // fallback
-      {
-        name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+
+        QCString prefix;
+        if (md) prefix=md->localName();
+        if (overloadedFunction) // overloaded member function
+        {
+          prefix+=md->argsString();
+          // show argument list to disambiguate overloaded functions
+        }
+        else if (md && isFunctionLike) // unique member function
+        {
+          prefix+="()"; // only to show it is a function
+        }
+        bool found=FALSE;
+        if (m_def->definitionType()==Definition::TypeClass)
+        {
+          name = m_def->displayName();
+          found = TRUE;
+        }
+        else if (m_def->definitionType()==Definition::TypeNamespace)
+        {
+          name = m_def->displayName();
+          found = TRUE;
+        }
+        else if (scope==0 || scope==Doxygen::globalScope) // in global scope
+        {
+          if (md)
+          {
+            const FileDef *fd = md->getBodyDef();
+            if (fd==0) fd = md->getFileDef();
+            if (fd)
+            {
+              if (!prefix.isEmpty()) prefix+=": ";
+              name = prefix + convertToXML(fd->localName());
+              found = TRUE;
+            }
+          }
+        }
+        else if (md && (md->resolveAlias()->getClassDef() || md->resolveAlias()->getNamespaceDef()))
+          // member in class or namespace scope
+        {
+          SrcLangExt lang = md->getLanguage();
+          name = m_def->getOuterScope()->qualifiedName()
+            + getLanguageSpecificSeparator(lang) + prefix;
+          found = TRUE;
+        }
+        else if (scope) // some thing else? -> show scope
+        {
+          name = prefix + convertToXML(scope->name());
+          found = TRUE;
+        }
+        if (!found) // fallback
+        {
+          name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+        }
       }
       return name;
     }
@@ -9600,7 +9621,10 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
         QCString name = searchName(*it);
         if (name!=lastName)
         {
-          append(SymbolGroupContext::alloc(it_begin,it));
+          if (it!=it_begin)
+          {
+            append(SymbolGroupContext::alloc(it_begin,it));
+          }
           it_begin = it;
           lastName = name;
         }

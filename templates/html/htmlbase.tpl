@@ -6,8 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen {{ doxygen.version }}"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>{{ config.PROJECT_NAME }}: {{ page.title }}</title>
+<title>{% if config.PROJECT_NAME %}{{ config.PROJECT_NAME }}: {% endif %}{{ page.title }}</title>
 <link href="{{ page.relPath }}tabs.css" rel="stylesheet" type="text/css"/>
+{% if config.DISABLE_INDEX and config.FULL_SIDEBAR %}
+<script type="text/javascript">var page_layout=1;</script>
+{% endif %}
 <script type="text/javascript" src="{{ page.relPath }}jquery.js"></script>
 <script type="text/javascript" src="{{ page.relPath }}dynsections.js"></script>
 {% if config.GENERATE_TREEVIEW %}
@@ -15,22 +18,6 @@
 <script type="text/javascript" src="{{ page.relPath }}resize.js"></script>
 <script type="text/javascript" src="{{ page.relPath }}navtreedata.js"></script>
 <script type="text/javascript" src="{{ page.relPath }}navtree.js"></script>
-<script type="text/javascript">
-  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
-  $(document).ready(initResizable);
-	/* @license-end */
-</script>
-{% endif %}
-{% if not config.DISABLE_INDEX %}
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
-$(function() {
-  initMenu('',{% if config.SEARCHENGINE %}true{% else %}false{% endif %},'{{ tr.search }}');
-});
-/* @license-end */
-</script>
 {% endif %}
 {% if config.SEARCHENGINE %}
 <link href="{{ page.relPath }}search/search.css" rel="stylesheet" type="text/css"/>
@@ -40,18 +27,18 @@ $(function() {
 <script type="text/javascript" src="{{ page.relPath }}search/search.js"></script>
   {% if config.SERVER_BASED_SEARCH %}
 <script type="text/javascript">
-  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(function() {
     if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
   });
-	/* @license-end */
+  /* @license-end */
 </script>
 <link rel="search" href="{{ page.relPath }}search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="{{ config.PROJECT_NAME }}"/>
-  {% else %}
+  {% elif config.DISABLE_INDEX or not config.HTML_DYNAMIC_MENUS %}
 <script type="text/javascript">
-  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
+  /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
   $(document).ready(function() { init_search(); });
-	/* @license-end */
+  /* @license-end */
 </script>
   {% endif %}
 {% endif %}
@@ -72,6 +59,9 @@ $(function() {
 </head>
 <body>
 {% endblock %}
+{% if config.DISABLE_INDEX and config.FULL_SIDEBAR %}
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
+{% endif %}
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 {% block titlearea %}
 {% if config.PROJECT_NAME or config.PROJECT_BRIEF or config.PROJECT_LOGO or config.DISABLE_INDEX and config.SEARCHENGINE %}
@@ -82,7 +72,7 @@ $(function() {
  {% if config.PROJECT_LOGO %}
   <td id="projectlogo"><img alt="Logo" src="{{ page.relPath }}{{ config.PROJECT_LOGO|stripPath }}"/></td>
  {% endif %}
-  <td style="padding-left: 0.5em;">
+  <td id="projectalign" style="padding-left: 0.5em;">
  {% if config.PROJECT_NAME %}
    <div id="projectname">{{ config.PROJECT_NAME }}
   {% if config.PROJECT_NUMBER %}
@@ -95,7 +85,13 @@ $(function() {
  {% endif %}
   </td>
  {% if config.DISABLE_INDEX and config.SEARCHENGINE %}{# search box is part of title area #}
+  {% if config.GENERATE_TREEVIEW and config.FULL_SIDEBAR %}{# search box separate row #}
+ </tr>
+ <tr>
+  <td colspan="2">
+  {% else %}
   <td>
+  {% endif %}
   {% if config.SERVER_BASED_SEARCH %}
    <div id="MSearchBox" class="MSearchBoxInactive">
     <div class="left">
@@ -139,27 +135,45 @@ $(function() {
 {% block search %}
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
-var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}');
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
 /* @license-end */
 </script>
 {% endif %}
 {% endblock %}
 
 {% block tabs %}
-{% if not config.DISABLE_INDEX %}
+{% if config.HTML_DYNAMIC_MENUS %}
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+ initMenu('{{ page.relPath }}',{% if config.SEARCHENGINE %}true{% else %}false{% endif %},{% if config.SERVER_BASED_SEARCH %}true{% else %}false{% endif %},{% if config.EXTERNAL_SEARCH %}'search{{ config.HTML_FILE_EXTENSION }}'{% else %}'search.php'{% endif %},'{{ tr.search }}');
+ {% if config.SEARCHENGINE %}
+ $(document).ready(function() { {% if not config.SERVER_BASED_SEARCH %}init_search();{% else %}if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); } {% endif %}});
+ {% endif %}
+});
+/* @license-end */
+</script>
 <div id="main-nav"></div>
 {% endif %}
+
+{% if not config.DISABLE_INDEX and not config.HTML_DYNAMIC_MENUS %}
+{% include 'htmltabs.tpl' %}
+{% endif %}
+</div><!-- top -->
+
 {% endblock %}
 
 {% block navpath %}
 {% endblock %}
 
-
-</div><!-- top -->
 {% block splitbar %}
 {% if config.GENERATE_TREEVIEW %}
+{% if not config.DISABLE_INDEX or not config.FULL_SIDEBAR %}
 <div id="side-nav" class="ui-resizable side-nav-resizable">
+{% endif %}
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -170,8 +184,8 @@ var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ 
   </div>
 </div>
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix %}{{ page_postfix }}{% endif %}{{ config.HTML_FILE_EXTENSION }}','{{ page.relPath }}');});
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix %}{{ page_postfix }}{% endif %}{{ config.HTML_FILE_EXTENSION }}','{{ page.relPath }}'); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -181,13 +195,15 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% block searchInfo %}
 {% if config.SEARCHENGINE and not config.SERVER_BASED_SEARCH %}
 <!-- window showing the filter options -->
-<div id="MSearchSelectWindow" onmouseover="return searchBox.OnSearchSelectShow()"
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
 </div>
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" name="MSearchResults" id="MSearchResults">
+<iframe src="javascript:void(0)" frameborder="0"
+	name="MSearchResults" id="MSearchResults">
 </iframe>
 </div>
 {% endif %}
@@ -195,20 +211,22 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 
 <div class="header">
 {% block title %}
-  <div class="headertitle"><div class="title">{{ page.title }}</div></div>
+<div class="headertitle">
+<div class="title">{{ page.title }}</div></div>
 {% endblock %}
-</div>
+</div><!-- header -->
 
 {% block content %}
 {% endblock %}
 
 {% block endsplitbar %}
 {% if config.GENERATE_TREEVIEW %}
-</div><!-- content -->
+</div><!-- doc-content -->
 {% endif %}
 {% endblock %}
 
 {% block footer %}
+<!-- start footer part -->
 {% if config.GENERATE_TREEVIEW %}
 <div id="nav-path" class="navpath">{# id is needed for treeview function! #}
   <ul>
@@ -233,14 +251,8 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 </div>
 {% else %}
   <hr class="footer"/><address class="footer"><small>
-{% if config.HTML_TIMESTAMP %}
-{{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}
-{% else %}
-{{ tr.generatedBy }}
-{% endif %}
-&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a>
-  {{ doxygen.version }}
-  </small></address>
+{% if config.HTML_TIMESTAMP %}{{ tr.generatedAt:doxygen.date,config.PROJECT_NAME }}{% else %}{{ tr.generatedBy }}{% endif %}&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="{{ page.relPath }}doxygen.svg" width="104" height="31" alt="doxygen"/></a> {{ doxygen.version }}
+</small></address>
 {% endif %}
 </body>
 </html>

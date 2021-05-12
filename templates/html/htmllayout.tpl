@@ -3,9 +3,16 @@
 {# ---- copy fixed resources to the output ----- #}
 
 {% resource 'doxygen.css' %}
-{% resource 'tabs.css' %}
+{% if config.HTML_DYNAMIC_MENUS %}
+  {% resource 'tabs.css' %}
+{% else %}
+  {% resource 'fixed_tabs.css' as 'tabs.css' %}
+{% endif %}
 {% resource 'jquery.js' %}
-{% resource 'dynsections.js %}
+{% resource 'dynsections.js' %}
+{% if config.SOURCE_BROWSER and config.SOURCE_TOOLTIPS %}
+{% resource 'dynsections_tooltips.js' append 'dynsections.js' %}
+{% endif %}
 {% resource 'tab_a.lum' %}
 {% resource 'tab_b.lum' %}
 {% resource 'tab_h.lum' %}
@@ -37,10 +44,19 @@
 {% resource 'search_m.png' as 'search/search_m.png' %}
 {% resource 'search_r.png' as 'search/search_r.png' %}
 {% if config.DISABLE_INDEX %}
-  {% resource 'search_noidx.css' as 'search/search.css'   %}
+  {% if config.GENERATE_TREEVIEW and config.FULL_SIDEBAR %}
+  {% resource 'search_sidebar.css'   as 'search/search.css'   %}
+  {% else %}
+  {% resource 'search_nomenu.css'    as 'search/search.css'   %}
+  {% endif %}
 {% else %}
-  {% resource 'search.css'       as 'search/search.css'   %}
+  {% if not config.HTML_DYNAMIC_MENUS %}
+  {% resource 'search_fixedtabs.css' as 'search/search.css'   %}
+  {% else %}
+  {% resource 'search.css'           as 'search/search.css'   %}
+  {% endif %}
 {% endif %}
+{% resource 'search_common.css'      append 'search/search.css' %}
 
 {% if config.SERVER_BASED_SEARCH %}
   {# server side search resources #}
@@ -56,7 +72,9 @@
 {% endif %}
 
 {# interactive SVGs #}
-{% resource 'svgpan.js' %}
+{% if config.INTERACTIVE_SVG %}
+  {% resource 'svgpan.js' %}
+{% endif %}
 
 {# -------------------------------------------------- #}
 
@@ -68,7 +86,11 @@
 {% set page_postfix='' %}
 
 {# open the global navigation index #}
-{% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False %}
+{% if config.PROJECT_NAME %}
+  {% indexentry nav name=config.PROJECT_NAME file='index' anchor='' isReference=False %}
+{% else %}
+  {% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False %}
+{% endif %}
 {% opensubindex nav %}
 
 {# ----------- HTML DOCUMENTATION PAGES ------------ #}
@@ -180,7 +202,7 @@
 
 {# --- classes --- #}
 {% if classList %}
-  {% indexentry nav name=tr.classes file='' anchor='' isReference=False %}
+  {% indexentry nav name=tr.classes file='annotated'|append:config.HTML_FILE_EXTENSION anchor='' isReference=False %}
   {% opensubindex nav %}
 
   {# write the annotated class list #}
@@ -256,6 +278,7 @@
 {# write search data #}
 {% if config.SEARCHENGINE and not config.SERVER_BASED_SEARCH %}
   {% create 'search/searchdata.js' from 'htmljssearchdata.tpl' %}
+  {% set symbolCount=0 %}
   {% for idx in searchIndices %}
     {% for si in idx.symbolIndices %}
       {% with baseName=si.name|append:'_'|append:forloop.counter0 %}

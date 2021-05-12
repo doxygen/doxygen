@@ -98,30 +98,33 @@ static std::vector<QCString> split(const QCString &str,const QCString &sep,
 /** Strips spaces surrounding `=` from string \a in, so
  *  `foo = 10 bar=5 baz= 'hello'` will become `foo=10 bar=5 baz='hello'`
  */
-static QCString removeSpacesAroundEquals(const QCString &s)
+static void removeSpacesAroundEquals(QCString &s)
 {
-  if (s.isEmpty()) return s;
-  QCString result(s);
-  const char *p=s.data();
-  char *q = result.rawData();
-  char c;
-  while ((c=*p++))
+  //printf(">removeSpacesAroundEquals(%s)\n",qPrint(s));
+  uint i=0, dstIdx=0, l=s.length();
+  while (i<l)
   {
-    if (c==' ') // found a space, see if there is a = as well
+    char c = s[i++];
+    if (c==' ')
     {
-      const char *t = p;
-      bool found=FALSE;
-      while (*t==' ' || *t=='=') { if (*t++=='=') found=TRUE; }
-      if (found)
+      bool found=false;
+      // look ahead for space or '='
+      uint j=i;
+      while (j<l && (s[j]==' '|| s[j]=='='))
       {
-        c='=';
-        p=t; // move p to end of '\s*=\s*' sequence
+        if (s[j]=='=') found=true;
+        j++;
+      }
+      if (found) // found a '=', write it without spaces
+      {
+        c = '=';
+        i=j;
       }
     }
-    *q++=c;
+    s[dstIdx++]=c;
   }
-  if (q<p) result.resize(static_cast<uint>(q-result.data())+1);
-  return result;
+  s.resize(dstIdx+1);
+  //printf("<removeSpacesAroundEquals(%s)\n",qPrint(s));
 }
 
 //----------------------------------------------------------------------------
@@ -130,9 +133,9 @@ static QCString removeSpacesAroundEquals(const QCString &s)
 static QCString replace(const QCString &s,char csrc,char cdst)
 {
   QCString result = s;
-  for (char *p=result.data();*p;p++)
+  for (uint i=0;i<result.length();i++)
   {
-    if (*p==csrc) *p=cdst;
+    if (result[i]==csrc) result[i]=cdst;
   }
   return result;
 }
@@ -514,6 +517,7 @@ class TemplateContextImpl : public TemplateContext
     void push();
     void pop();
     void set(const QCString &name,const TemplateVariant &v);
+    void update(const QCString &name,const TemplateVariant &v);
     TemplateVariant get(const QCString &name) const;
     const TemplateVariant *getRef(const QCString &name) const;
     void setOutputDirectory(const QCString &dir)
@@ -1078,14 +1082,14 @@ class FilterAlphaIndex
   private:
     struct ListElem
     {
-      ListElem(uint k,const TemplateVariant &v) : key(k), value(v) {}
-      QCString key;
+      ListElem(std::string k,const TemplateVariant &v) : key(k), value(v) {}
+      std::string key;
       TemplateVariant value;
     };
-    static QCString keyToLabel(const QCString &startLetter)
+    static QCString keyToLabel(const char *startLetter)
     {
-      if (startLetter.isEmpty()) return startLetter;
-      const char *p = startLetter.data();
+      //printf(">keyToLabel(%s)\n",qPrint(startLetter));
+      const char *p = startLetter;
       char c = *p;
       QCString result;
       if (c<127 && c>31) // printable ASCII character
@@ -1102,16 +1106,14 @@ class FilterAlphaIndex
           result+=hex[((unsigned char)c)&0xf];
         }
       }
+      //printf("<keyToLabel(%s)\n",qPrint(result));
       return result;
     }
-    static uint determineSortKey(TemplateStructIntf *s,const QCString &attribName)
+    static std::string determineSortKey(TemplateStructIntf *s,const QCString &attribName)
     {
        TemplateVariant v = s->get(attribName);
        int index = getPrefixIndex(v.toString());
-       return getUnicodeForUTF8CharAt(
-                 convertUTF8ToUpper(
-                   getUTF8CharAt(v.toString().str(),index)
-                 ),0);
+       return convertUTF8ToUpper(getUTF8CharAt(v.toString().str(),index));
     }
 
   public:
@@ -1134,7 +1136,7 @@ class FilterAlphaIndex
           TemplateStructIntf *s = item.toStruct();
           if (s)
           {
-            uint sortKey = determineSortKey(s,args.toString());
+            std::string sortKey = determineSortKey(s,args.toString());
             sortList.emplace_back(sortKey,item);
             //printf("sortKey=%s\n",qPrint(sortKey));
           }
@@ -1147,7 +1149,7 @@ class FilterAlphaIndex
                   [](const auto &lhs,const auto &rhs) { return lhs.key < rhs.key; });
 
         // create an index from the sorted list
-        QCString letter;
+        std::string letter;
         TemplateStruct *indexNode = 0;
         TemplateList *indexList = 0;
         for (const auto &elem : sortList)
@@ -1158,7 +1160,7 @@ class FilterAlphaIndex
             indexNode = TemplateStruct::alloc();
             indexList = TemplateList::alloc();
             indexNode->set("letter", elem.key);
-            indexNode->set("label",  keyToLabel(elem.key));
+            indexNode->set("label",  keyToLabel(elem.key.c_str()));
             indexNode->set("items",indexList);
             result->append(indexNode);
             letter=elem.key;
@@ -1282,6 +1284,55 @@ class FilterIsAbsoluteURL
 
 //--------------------------------------------------------------------
 
+/** @brief The implementation of the "lower" filter */
+class FilterLower
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String)
+      {
+        return v.toString().lower();
+      }
+      return v;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "upper" filter */
+class FilterUpper
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String)
+      {
+        return v.toString().upper();
+      }
+      return v;
+    }
+};
+
+//--------------------------------------------------------------------
+
+/** @brief The implementation of the "e" filter */
+class FilterHtmlEscape
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::String)
+      {
+        return convertToHtml(v.toString());
+      }
+      return v;
+    }
+};
+
+
+//--------------------------------------------------------------------
+
 /** @brief The implementation of the "decodeURL" filter
  *  The leading character is removed from the value in case it is a ^ or !.
  *  - ^ is used to encode a absolute URL
@@ -1359,7 +1410,10 @@ static TemplateFilterFactory::AutoRegister<FilterAdd>                fAdd("add")
 static TemplateFilterFactory::AutoRegister<FilterGet>                fGet("get");
 static TemplateFilterFactory::AutoRegister<FilterRaw>                fRaw("raw");
 static TemplateFilterFactory::AutoRegister<FilterList>               fList("list");
+static TemplateFilterFactory::AutoRegister<FilterLower>              fLower("lower");
+static TemplateFilterFactory::AutoRegister<FilterUpper>              fUpper("upper");
 static TemplateFilterFactory::AutoRegister<FilterAppend>             fAppend("append");
+static TemplateFilterFactory::AutoRegister<FilterHtmlEscape>         fEscape("e");
 static TemplateFilterFactory::AutoRegister<FilterLength>             fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>             fNoWrap("nowrap");
 static TemplateFilterFactory::AutoRegister<FilterFlatten>            fFlatten("flatten");
@@ -1409,7 +1463,7 @@ class ExprAstVariable : public ExprAst
 {
   public:
     ExprAstVariable(const QCString &name) : m_name(name)
-    { TRACE(("ExprAstVariable(%s)\n",name)); }
+    { TRACE(("ExprAstVariable(%s)\n",name.data())); }
     const QCString &name() const { return m_name; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
@@ -1461,7 +1515,7 @@ class ExprAstFilter : public ExprAst
 {
   public:
     ExprAstFilter(const QCString &name,ExprAst *arg) : m_name(name), m_arg(arg)
-    { TRACE(("ExprAstFilter(%s)\n",name)); }
+    { TRACE(("ExprAstFilter(%s)\n",name.data())); }
    ~ExprAstFilter() { delete m_arg; }
     const QCString &name() const { return m_name; }
     TemplateVariant apply(const TemplateVariant &v,TemplateContext *c)
@@ -1506,7 +1560,7 @@ class ExprAstLiteral : public ExprAst
 {
   public:
     ExprAstLiteral(const QCString &lit) : m_literal(lit)
-    { TRACE(("ExprAstLiteral(%s)\n",lit)); }
+    { TRACE(("ExprAstLiteral(%s)\n",lit.data())); }
     const QCString &literal() const { return m_literal; }
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(m_literal); }
   private:
@@ -1969,6 +2023,7 @@ class ExpressionParser
           {
             warn(m_parser->templateName(),m_line,"unexpected operator '%s' in expression",
                 Operator::toString(m_curToken.op));
+            abort();
           }
           break;
         default:
@@ -2261,8 +2316,8 @@ class ExpressionParser
         m_curToken.id = s;
         p++;
       }
-      //TRACE(("token type=%d op=%d num=%d id=%s\n",
-      //    m_curToken.type,m_curToken.op,m_curToken.num,qPrint(m_curToken.id)));
+      TRACE(("token type=%d op=%d num=%d id=%s\n",
+          m_curToken.type,m_curToken.op,m_curToken.num,qPrint(m_curToken.id)));
 
       m_tokenStream = p;
       return TRUE;
@@ -2380,6 +2435,23 @@ void TemplateContextImpl::set(const QCString &name,const TemplateVariant &v)
     ctx.erase(it);
   }
   ctx.insert(std::make_pair(name.str(),v));
+}
+
+void TemplateContextImpl::update(const QCString &name,const TemplateVariant &v)
+{
+  int depth=0;
+  for (auto &ctx : m_contextStack)
+  {
+    auto it = ctx.find(name.str());
+    if (it!=ctx.end())
+    {
+      ctx.erase(it);
+      ctx.insert(std::make_pair(name.str(),v));
+      return;
+    }
+    depth++;
+  }
+  warn(m_templateName,m_line,"requesting update for non-existing variable '%s'",qPrint(name));
 }
 
 TemplateVariant TemplateContextImpl::get(const QCString &name) const
@@ -3544,21 +3616,16 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
 
 static void stripLeadingWhiteSpace(QCString &s)
 {
-  const char *src = s.data();
-  if (src)
+  uint i=0, dstIdx=0, l=s.length();
+  bool skipSpaces=true;
+  while (i<l)
   {
-    char *dst = s.rawData();
-    char c;
-    bool skipSpaces=TRUE;
-    while ((c=*src++))
-    {
-      if (c=='\n') { *dst++=c; skipSpaces=TRUE; }
-      else if (c==' ' && skipSpaces) {}
-      else { *dst++=c; skipSpaces=FALSE; }
-    }
-    *dst='\0';
-    s.resize( (int)(dst - src) + 1 );
+    char c = s[i++];
+    if (c=='\n') { s[dstIdx++]=c; skipSpaces=true; }
+    else if (c==' ' && skipSpaces) {}
+    else { s[dstIdx++] = c; skipSpaces=false; }
   }
+  s.resize(dstIdx+1);
 }
 
 /** @brief Class representing an 'create' tag in a template */
@@ -3945,7 +4012,8 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
     {
       TRACE(("{TemplateNodeWith(%s)\n",qPrint(data)));
       ExpressionParser expParser(parser,line);
-      QCString filteredData = removeSpacesAroundEquals(data);
+      QCString filteredData = data;
+      removeSpacesAroundEquals(filteredData);
       std::vector<QCString> args = split(filteredData," ");
       auto it = args.begin();
       while (it!=args.end())
@@ -4111,6 +4179,52 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
   private:
     std::unique_ptr<Mapping> m_mapping;
 };
+
+//----------------------------------------------------------
+
+/** @brief Class representing an 'update' tag in a template */
+class TemplateNodeUpdate : public TemplateNodeCreator<TemplateNodeUpdate>
+{
+    struct Mapping
+    {
+      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
+     ~Mapping() { }
+      QCString name;
+      ExprAst *value = 0;
+    };
+  public:
+    TemplateNodeUpdate(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
+      : TemplateNodeCreator<TemplateNodeUpdate>(parser,parent,line)
+    {
+      TRACE(("{TemplateNodeUpdate(%s)\n",qPrint(data)));
+      ExpressionParser expParser(parser,line);
+      // data format: name=expression
+      int j=data.find('=');
+      ExprAst *expr = 0;
+      if (j>0 && (expr = expParser.parse(data.mid(j+1))))
+      {
+        m_mapping = std::make_unique<Mapping>(data.left(j),expr);
+      }
+      TRACE(("}TemplateNodeUpdate(%s)\n",qPrint(data)));
+    }
+    ~TemplateNodeUpdate()
+    {
+    }
+    void render(TextStream &, TemplateContext *c)
+    {
+      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
+      if (ci==0) return; // should not happen
+      ci->setLocation(m_templateName,m_line);
+      if (m_mapping)
+      {
+        TemplateVariant value = m_mapping->value->resolve(c);
+        ci->update(m_mapping->name,value);
+      }
+    }
+  private:
+    std::unique_ptr<Mapping> m_mapping;
+};
+
 
 //----------------------------------------------------------
 
@@ -4313,6 +4427,12 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
         m_resExpr = ep.parse(data.left(i));  // part before as
         m_asExpr  = ep.parse(data.mid(i+4)); // part after as
       }
+      else if ((i=data.find(" append "))!=-1) // resource a appends to b
+      {
+        m_resExpr = ep.parse(data.left(i));  // part before append
+        m_asExpr  = ep.parse(data.mid(i+8)); // part after append
+        m_append = true;
+      }
       else // resource a
       {
         m_resExpr = ep.parse(data);
@@ -4345,11 +4465,12 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
             QCString targetFile = m_asExpr->resolve(c).toString();
             mkpath(ci,targetFile.str());
             if (targetFile.isEmpty())
-            { ci->warn(m_templateName,m_line,"invalid parameter at right side of 'as' for resource command\n");
+            {
+              ci->warn(m_templateName,m_line,"invalid parameter at right side of '%s' for resource command\n", m_append ? "append" : "as");
             }
             else
             {
-              ResourceMgr::instance().copyResourceAs(resourceFile,outputDirectory,targetFile);
+              ResourceMgr::instance().copyResourceAs(resourceFile,outputDirectory,targetFile,m_append);
             }
           }
           else
@@ -4362,6 +4483,7 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
   private:
     ExprAst *m_resExpr = 0;
     ExprAst *m_asExpr = 0;
+    bool m_append = false;
 };
 
 //----------------------------------------------------------
@@ -4477,6 +4599,7 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeRange>         autoRefRange
 static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>        autoRefExtend("extend");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>        autoRefCreate("create");
 static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>        autoRefRepeat("repeat");
+static TemplateNodeFactory::AutoRegister<TemplateNodeUpdate>        autoRefUpdate("update");
 static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>       autoRefInclude("include");
 static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>       autoRefMarkers("markers");
 static TemplateNodeFactory::AutoRegister<TemplateNodeTabbing>       autoRefTabbing("tabbing");
@@ -4797,7 +4920,7 @@ void TemplateLexer::addToken(TemplateTokenStream &tokens,
 {
   if (startPos<endPos)
   {
-    int len = endPos-startPos+1;
+    int len = endPos-startPos;
     QCString text = data.mid(startPos,len);
     if (type!=TemplateToken::Text) text = text.stripWhiteSpace();
     tokens.push_back(std::make_unique<TemplateToken>(type,text,line));
@@ -4822,8 +4945,8 @@ void TemplateParser::parse(
   while (hasNextToken())
   {
     auto tok = takeNextToken();
-    //printf("%p:Token type=%d data='%s' line=%d\n",
-    //       parent,tok->type,qPrint(tok->data),tok->line);
+    TRACE(("%p:Token type=%d data='%s' line=%d\n",
+           (void*)parent,tok->type,qPrint(tok->data),tok->line));
     switch(tok->type)
     {
       case TemplateToken::Text:

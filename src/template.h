@@ -28,7 +28,7 @@ class TextStream;
 /** @defgroup template_api Template API
  *
  *  This is the API for a
- *  <a href="https://docs.djangoproject.com/en/1.6/topics/templates/">Django</a>
+ *  <a href="https://www.djangoproject.com/">Django</a>
  *  compatible template system written in C++.
  *  It is somewhat inspired by Stephen Kelly's
  *  <a href="http://www.gitorious.org/grantlee/pages/Home">Grantlee</a>.
@@ -174,6 +174,9 @@ class TemplateVariant
 
     /** Constructs a new variant with a string value \a s. */
     TemplateVariant(const QCString &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+
+    /** Constructs a new variant with a string value \a s. */
+    TemplateVariant(const std::string &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
 
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a reference to the object.
