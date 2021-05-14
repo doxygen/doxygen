@@ -1317,7 +1317,7 @@ class FilterUpper
 //--------------------------------------------------------------------
 
 /** @brief The implementation of the "e" filter */
-class FilterHtmlEscape
+class FilterEscape
 {
   public:
     static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
@@ -1413,7 +1413,7 @@ static TemplateFilterFactory::AutoRegister<FilterList>               fList("list
 static TemplateFilterFactory::AutoRegister<FilterLower>              fLower("lower");
 static TemplateFilterFactory::AutoRegister<FilterUpper>              fUpper("upper");
 static TemplateFilterFactory::AutoRegister<FilterAppend>             fAppend("append");
-static TemplateFilterFactory::AutoRegister<FilterHtmlEscape>         fEscape("e");
+static TemplateFilterFactory::AutoRegister<FilterEscape>             fEscape("escape");
 static TemplateFilterFactory::AutoRegister<FilterLength>             fLength("length");
 static TemplateFilterFactory::AutoRegister<FilterNoWrap>             fNoWrap("nowrap");
 static TemplateFilterFactory::AutoRegister<FilterFlatten>            fFlatten("flatten");
