@@ -576,6 +576,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   if (md->getGroupDef() && def->definitionType()==Definition::TypeGroup)
   {
     t << md->getGroupDef()->getOutputFileBase();
+    t << "_" << md->anchor();
   }
   else
   {
