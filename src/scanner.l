@@ -4543,7 +4543,7 @@ NONLopt [^\n]*
                                           yyextra->docBlockName=&yytext[1];
                                           if (yyextra->docBlockName.at(1)=='[')
                                           {
-                                            yyextra->docBlockName.at(1)='}';
+                                            yyextra->docBlockName.at(1)=']';
                                           }
                                           if (yyextra->docBlockName.at(1)=='{')
                                           {
@@ -4558,7 +4558,7 @@ NONLopt [^\n]*
                                         }
 <CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
-                                          if (yytext[1]=='f') // end of formula
+					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
                                           {
                                             BEGIN(CopyArgCommentLine);
                                           }
@@ -6556,9 +6556,17 @@ NONLopt [^\n]*
 <DocBlock>{CMD}("f$"|"f["|"f{"|"f(")         {
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
+                                          if (yyextra->docBlockName.at(1)=='[')
+                                          {
+                                            yyextra->docBlockName.at(1)=']';
+                                          }
                                           if (yyextra->docBlockName.at(1)=='{')
                                           {
                                             yyextra->docBlockName.at(1)='}';
+                                          }
+                                          if (yyextra->docBlockName.at(1)=='(')
+                                          {
+                                            yyextra->docBlockName.at(1)=')';
                                           }
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=FALSE;
@@ -6637,7 +6645,10 @@ NONLopt [^\n]*
                                         }
 <DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)")     {
                                           yyextra->docBlock << yytext;
-                                          BEGIN(DocBlock);
+                                          if (yyextra->docBlockName==&yytext[1])
+                                          {
+                                            BEGIN(DocBlock);
+                                          }
                                         }
 <DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                                           yyextra->docBlock << yytext;
