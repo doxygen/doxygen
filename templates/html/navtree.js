@@ -205,7 +205,7 @@ function newNode(o, po, text, link, childrenData, lastNode)
     } else {
       url = node.relpath+link;
     }
-    a.className = stripPath(link.replace('#',':'));
+    a.className = stripPath(link.replace('#',':')) + " link";
     if (link.indexOf('#')!=-1) {
       var aname = '#'+link.split('#')[1];
       var srcPage = stripPath(pathName());
