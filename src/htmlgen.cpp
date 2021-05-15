@@ -449,6 +449,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
     if (mathJaxVersion == "MathJax_3")
     {
+       mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"; 
        mathJaxJs += "<script>\n"
                     "  window.MathJax = {\n"
                     "    options: {\n"
@@ -459,7 +460,8 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
       {
         mathJaxJs+= "    tex: {\n"
-                    "      packages: ['base'";
+                    "      macros: {},\n"
+                    "      packages: ['base','configmacros'";
         if (!g_latex_macro.isEmpty())
         {
           mathJaxJs+= ",'newcommand'";
@@ -469,9 +471,6 @@ static QCString substituteHtmlKeywords(const QCString &str,
           mathJaxJs+= ",'"+QCString(s.c_str())+"'";
         }
         mathJaxJs += "]\n"
-                      "    },\n"
-                      "    tex: {\n"
-                      "      macros: {}\n"
                       "    }\n";
       }
       mathJaxJs += "  };\n";
