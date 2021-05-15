@@ -4534,7 +4534,12 @@ NONLopt [^\n]*
                                             unput(yyextra->lastCopyArgChar);
                                           BEGIN( yyextra->lastCommentInArgContext );
                                         }
-<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
+<CopyArgCommentLine>{CMD}"startuml"/[^a-z_A-Z0-9\-]   { // verbatim type command (which could contain nested comments!)
+                                          yyextra->docBlockName="uml";
+                                          yyextra->fullArgString+=yytext;
+                                          BEGIN(CopyArgVerbatim);
+                                        }
+<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
@@ -4556,7 +4561,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"ebdmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
 					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
                                           {
@@ -6579,7 +6584,14 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+                                          yyextra->docBlock << yytext;
+                                          yyextra->docBlockName="uml";
+                                          yyextra->fencedSize=0;
+                                          yyextra->nestedComment=FALSE;
+                                          BEGIN(DocCopyBlock);
+                                        }
+<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
@@ -6650,7 +6662,7 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                                           yyextra->docBlock << yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
