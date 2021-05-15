@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "qcstring.h"
+#include "containers.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;
@@ -231,6 +232,9 @@ class TemplateVariant
       }
     }
 
+    QCString listToString() const;
+    QCString structToString() const;
+
     /** Returns the variant as a string. */
     QCString toString() const
     {
@@ -240,8 +244,8 @@ class TemplateVariant
         case Bool:     return m_boolVal ? "true" : "false";
         case Integer:  return QCString().setNum(m_intVal);
         case String:   return m_strVal;
-        case Struct:   return "[struct]";
-        case List:     return "[list]";
+        case Struct:   return structToString();
+        case List:     return listToString();
         case Function: return "[function]";
       }
       return QCString();
@@ -417,6 +421,9 @@ class TemplateStructIntf
      */
     virtual TemplateVariant get(const QCString &name) const = 0;
 
+    /** Return the list of fields. */
+    virtual StringVector fields() const = 0;
+
     /** Increase object's reference count */
     virtual int addRef() = 0;
 
@@ -431,6 +438,7 @@ class TemplateStruct : public TemplateStructIntf
   public:
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef();
     virtual int release();
 

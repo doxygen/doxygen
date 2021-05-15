@@ -135,6 +135,7 @@ class ConfigContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -154,6 +155,7 @@ class DoxygenContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -173,6 +175,7 @@ class TranslateContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -217,6 +220,7 @@ class IncludeInfoContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -259,6 +263,7 @@ class ClassContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -278,6 +283,7 @@ class NamespaceContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -297,6 +303,7 @@ class FileContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -315,6 +322,7 @@ class DirContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -335,6 +343,7 @@ class PageContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -354,6 +363,7 @@ class MemberContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -374,6 +384,7 @@ class ModuleContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -414,6 +425,7 @@ class ClassIndexContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -434,6 +446,7 @@ class InheritanceGraphContext : public RefCountedContext, public TemplateStructI
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -454,6 +467,7 @@ class ClassInheritanceNodeContext : public RefCountedContext, public TemplateStr
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -496,6 +510,7 @@ class ClassHierarchyContext : public RefCountedContext, public TemplateStructInt
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -520,6 +535,7 @@ class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -579,6 +595,7 @@ class ClassTreeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -619,6 +636,7 @@ class NamespaceTreeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -680,6 +698,7 @@ class FileTreeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -722,6 +741,7 @@ class PageTreeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -741,6 +761,7 @@ class ModuleNodeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -784,6 +805,7 @@ class ModuleTreeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -825,6 +847,7 @@ class ExampleTreeContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -844,6 +867,7 @@ class GlobalsIndexContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -863,6 +887,7 @@ class ClassMembersIndexContext : public RefCountedContext, public TemplateStruct
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -882,6 +907,7 @@ class NamespaceMembersIndexContext : public RefCountedContext, public TemplateSt
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -901,6 +927,7 @@ class NavPathElemContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -922,6 +949,7 @@ class InheritanceNodeContext : public RefCountedContext, public TemplateStructIn
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -992,6 +1020,7 @@ class MemberGroupInfoContext : public RefCountedContext, public TemplateStructIn
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1043,6 +1072,7 @@ class MemberListInfoContext : public RefCountedContext, public TemplateStructInt
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1064,6 +1094,7 @@ class MemberInfoContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1084,6 +1115,7 @@ class InheritedMemberInfoContext : public RefCountedContext, public TemplateStru
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1148,6 +1180,7 @@ class ArgumentContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1192,6 +1225,7 @@ class SymbolContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1237,6 +1271,7 @@ class SymbolGroupContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1281,6 +1316,7 @@ class SymbolIndexContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 
@@ -1323,6 +1359,7 @@ class SearchIndexContext : public RefCountedContext, public TemplateStructIntf
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef()  { return RefCountedContext::addRef(); }
     virtual int release() { return RefCountedContext::release(); }
 

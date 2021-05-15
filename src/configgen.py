@@ -696,34 +696,35 @@ def main():
 		print("    static ConfigValues &instance() { static ConfigValues theInstance; return theInstance; }")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
-				if (n.nodeName == "group"):
+				if n.nodeName == "group":
 					parseGroupMapGetter(n)
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
-				if (n.nodeName == "group"):
+				if n.nodeName == "group":
 					parseGroupMapSetter(n)
 		print("    void init();")
-		print("    struct Info");
-		print("    {");
-		print("      enum Type { Bool, Int, String, List, Unknown };");
-		print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}");
-		print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}");
-		print("      Info(Type t,QCString     ConfigValues::*s) : type(t), value(s) {}");
-		print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}");
-		print("      Type type;");
-		print("      union Item");
-		print("      {");
-		print("        Item(bool         ConfigValues::*v) : b(v) {}");
-		print("        Item(int          ConfigValues::*v) : i(v) {}");
-		print("        Item(QCString     ConfigValues::*v) : s(v) {}");
-		print("        Item(StringVector ConfigValues::*v) : l(v) {}");
-		print("        bool         ConfigValues::*b;");
-		print("        int          ConfigValues::*i;");
-		print("        QCString     ConfigValues::*s;");
-		print("        StringVector ConfigValues::*l;");
-		print("      } value;");
-		print("    };");
-		print("    const Info *get(const QCString &tag) const;");
+		print("    StringVector fields() const;")
+		print("    struct Info")
+		print("    {")
+		print("      enum Type { Bool, Int, String, List, Unknown };")
+		print("      Info(Type t,bool         ConfigValues::*b) : type(t), value(b) {}")
+		print("      Info(Type t,int          ConfigValues::*i) : type(t), value(i) {}")
+		print("      Info(Type t,QCString     ConfigValues::*s) : type(t), value(s) {}")
+		print("      Info(Type t,StringVector ConfigValues::*l) : type(t), value(l) {}")
+		print("      Type type;")
+		print("      union Item")
+		print("      {")
+		print("        Item(bool         ConfigValues::*v) : b(v) {}")
+		print("        Item(int          ConfigValues::*v) : i(v) {}")
+		print("        Item(QCString     ConfigValues::*v) : s(v) {}")
+		print("        Item(StringVector ConfigValues::*v) : l(v) {}")
+		print("        bool         ConfigValues::*b;")
+		print("        int          ConfigValues::*i;")
+		print("        QCString     ConfigValues::*s;")
+		print("        StringVector ConfigValues::*l;")
+		print("      } value;")
+		print("    };")
+		print("    const Info *get(const QCString &tag) const;")
 		print("  private:")
 		for n in elem.childNodes:
 			if n.nodeType == Node.ELEMENT_NODE:
@@ -764,6 +765,26 @@ def main():
 			if n.nodeType == Node.ELEMENT_NODE:
 				if (n.nodeName == "group"):
 					parseGroupInit(n)
+		print("}")
+		print("")
+		print("StringVector ConfigValues::fields() const")
+		print("{")
+		print("  return {");
+		first=True
+		for n in elem.childNodes:
+			if n.nodeType == Node.ELEMENT_NODE:
+				if (n.nodeName == "group"):
+					for c in n.childNodes:
+						if c.nodeType == Node.ELEMENT_NODE:
+							name = c.getAttribute('id')
+							type = c.getAttribute('type')
+							if type!='obsolete':
+								if not first:
+									print(",")
+								first=False
+								sys.stdout.write('    "'+name+'"')
+		print("")
+		print("  };")
 		print("}")
 	elif (sys.argv[1] == "-cpp"):
 		print("/* WARNING: This file is generated!")

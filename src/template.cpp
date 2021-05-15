@@ -291,6 +291,17 @@ TemplateVariant TemplateStruct::get(const QCString &name) const
   return it!=p->fields.end() ? it->second : TemplateVariant();
 }
 
+StringVector TemplateStruct::fields() const
+{
+  StringVector result;
+  for (const auto &kv : p->fields)
+  {
+    result.push_back(kv.first);
+  }
+  std::sort(result.begin(),result.end());
+  return result;
+}
+
 TemplateStruct *TemplateStruct::alloc()
 {
   return new TemplateStruct;
@@ -2360,6 +2371,7 @@ class TemplateStructWeakRef : public TemplateStructIntf
   public:
     TemplateStructWeakRef(TemplateStructIntf *ref) : m_ref(ref), m_refCount(0) {}
     virtual TemplateVariant get(const QCString &name) const { return m_ref->get(name); }
+    virtual StringVector fields() const { return m_ref->fields(); }
     virtual int addRef() { return ++m_refCount; }
     virtual int release() { int count=--m_refCount; if (count<=0) { delete this; } return count; }
   private:
@@ -5301,4 +5313,50 @@ void TemplateEngine::setTemplateDir(const QCString &dirName)
   p->setTemplateDir(dirName);
 }
 
+//-----------------------------------------------------------------------------------------
+
+QCString TemplateVariant::listToString() const
+{
+  QCString result="[";
+  TemplateListIntf *list = toList();
+  if (list)
+  {
+    bool first=true;
+    TemplateVariant ve;
+    TemplateListIntf::ConstIterator *it = list->createIterator();
+    for (it->toFirst();it->current(ve);it->toNext())
+    {
+      if (!first) result+=",\n";
+      result+="'"+ve.toString()+"'";
+      first=false;
+    }
+    delete it;
+  }
+  result+="]";
+  return result;
+}
+
+QCString TemplateVariant::structToString() const
+{
+  QCString result="{";
+  TemplateStructIntf *strukt = toStruct();
+  if (strukt)
+  {
+    bool first=true;
+    for (const auto &s : strukt->fields())
+    {
+      if (!first) result+=",";
+      result+=s;
+      if (dynamic_cast<TemplateStructWeakRef*>(strukt)==0) // avoid endless recursion
+      {
+        result+=":'";
+        result+=strukt->get(QCString(s)).toString();
+        result+="'";
+      }
+      first=false;
+    }
+  }
+  result+="}";
+  return result;
+}
 

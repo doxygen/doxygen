@@ -180,7 +180,7 @@
 
 {# --- namespaces --- #}
 {% if namespaceList %}
-  {% indexentry nav name=tr.namespaces file='' anchor='' isReference=False %}
+  {% indexentry nav name=tr.namespaces file='namespaces' anchor='' isReference=False %}
   {% opensubindex nav %}
 
   {% if namespaceTree.tree %}
@@ -244,7 +244,7 @@
 
 {# --- files --- #}
 {% if fileList %}
-  {% indexentry nav name=tr.files file='' anchor='' isReference=False %}
+  {% indexentry nav name=tr.files file='files' anchor='' isReference=False %}
   {% opensubindex nav %}
 
   {# write the directory/file hierarchy #}

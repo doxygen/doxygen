@@ -279,6 +279,17 @@ class PropertyMapper
       return it!=m_map.end() ? (*it->second)(obj) : TemplateVariant();
     }
 
+    StringVector fields() const
+    {
+      StringVector result;
+      for (const auto &kv : m_map)
+      {
+        result.push_back(kv.first);
+      }
+      std::sort(result.begin(),result.end());
+      return result;
+    }
+
   private:
     std::unordered_map<std::string,std::unique_ptr<PropertyFuncIntf>> m_map;
 };
@@ -364,6 +375,11 @@ TemplateVariant ConfigContext::get(const QCString &name) const
   return result;
 }
 
+StringVector ConfigContext::fields() const
+{
+  return ConfigValues::instance().fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Doxygen: global information
@@ -401,6 +417,10 @@ class DoxygenContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
   private:
     struct Cachable
     {
@@ -428,6 +448,11 @@ DoxygenContext::~DoxygenContext()
 TemplateVariant DoxygenContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector DoxygenContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -1227,6 +1252,10 @@ class TranslateContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
   private:
     bool m_javaOpt;
     bool m_fortranOpt;
@@ -1251,6 +1280,11 @@ TranslateContext::~TranslateContext()
 TemplateVariant TranslateContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector TranslateContext::fields() const
+{
+  return p->fields();
 }
 
 static TemplateVariant parseDoc(const Definition *def,const QCString &file,int line,
@@ -1698,6 +1732,10 @@ class IncludeInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant isLocal() const
     {
       bool isIDLorJava = m_lang==SrcLangExt_IDL || m_lang==SrcLangExt_Java;
@@ -1749,6 +1787,12 @@ TemplateVariant IncludeInfoContext::get(const QCString &n) const
 {
   return p->get(n);
 }
+
+StringVector IncludeInfoContext::fields() const
+{
+  return p->fields();
+}
+
 //%% }
 
 //------------------------------------------------------------------------
@@ -1880,6 +1924,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -2652,6 +2700,11 @@ TemplateVariant ClassContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector ClassContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Namespace(Symbol): namespace information
@@ -2697,6 +2750,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -2943,6 +3000,11 @@ TemplateVariant NamespaceContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector NamespaceContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct File(Symbol): file information
@@ -2998,6 +3060,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -3395,6 +3461,11 @@ TemplateVariant FileContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector FileContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Dir(Symbol): directory information
@@ -3426,6 +3497,10 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -3584,6 +3659,11 @@ TemplateVariant DirContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector DirContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Page(Symbol): page information
@@ -3611,6 +3691,10 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -3715,6 +3799,11 @@ PageContext::~PageContext()
 TemplateVariant PageContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector PageContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -4062,6 +4151,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant fieldType() const
     {
@@ -5164,6 +5257,10 @@ TemplateVariant MemberContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector MemberContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -5228,6 +5325,10 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -5675,6 +5776,11 @@ TemplateVariant ModuleContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector ModuleContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% list ClassList[Class] : list of classes
@@ -5752,6 +5858,10 @@ class ClassIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant list() const
     {
@@ -5838,6 +5948,11 @@ ClassIndexContext::~ClassIndexContext()
 TemplateVariant ClassIndexContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector ClassIndexContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -5944,6 +6059,10 @@ class ClassHierarchyContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -6053,6 +6172,11 @@ TemplateVariant ClassHierarchyContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ClassHierarchyContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct NestingNode: node is a nesting relation tree
@@ -6111,6 +6235,10 @@ class NestingNodeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant isLeafNode() const
     {
@@ -6373,6 +6501,11 @@ NestingNodeContext::~NestingNodeContext()
 TemplateVariant NestingNodeContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector NestingNodeContext::fields() const
+{
+  return p->fields();
 }
 
 QCString NestingNodeContext::id() const
@@ -6740,6 +6873,10 @@ class ClassTreeContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant tree() const
     {
       return m_classTree.get();
@@ -6828,6 +6965,11 @@ TemplateVariant ClassTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ClassTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% list NamespaceList[Namespace] : list of namespaces
@@ -6903,6 +7045,10 @@ class NamespaceTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -6993,6 +7139,12 @@ TemplateVariant NamespaceTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
+
+StringVector NamespaceTreeContext::fields() const
+{
+  return p->fields();
+}
+
 
 //------------------------------------------------------------------------
 
@@ -7174,6 +7326,10 @@ class FileTreeContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant tree() const
     {
       return m_dirFileTree.get();
@@ -7249,6 +7405,11 @@ TemplateVariant FileTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector FileTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct PageTree: tree of related pages
@@ -7281,6 +7442,10 @@ class PageTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -7355,6 +7520,11 @@ PageTreeContext::~PageTreeContext()
 TemplateVariant PageTreeContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector PageTreeContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -7524,6 +7694,10 @@ class ModuleTreeContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant tree() const
     {
       return m_moduleTree.get();
@@ -7599,6 +7773,11 @@ TemplateVariant ModuleTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ModuleTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct NavPathElem: list of examples page
@@ -7623,6 +7802,10 @@ class NavPathElemContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant isLinkable() const
     {
@@ -7693,6 +7876,10 @@ TemplateVariant NavPathElemContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector NavPathElemContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -7725,6 +7912,10 @@ class ExampleTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -7801,6 +7992,11 @@ TemplateVariant ExampleTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ExampleTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct GlobalsIndex: list of examples page
@@ -7834,6 +8030,10 @@ class GlobalsIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
     TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
@@ -7954,6 +8154,12 @@ TemplateVariant GlobalsIndexContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector GlobalsIndexContext::fields() const
+{
+  return p->fields();
+}
+
+
 //------------------------------------------------------------------------
 
 //%% struct ClassMembersIndex: list of examples page
@@ -7987,6 +8193,10 @@ class ClassMembersIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
     TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
@@ -8109,6 +8319,11 @@ TemplateVariant ClassMembersIndexContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ClassMembersIndexContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct NamespaceMembersIndex: list of examples page
@@ -8142,6 +8357,10 @@ class NamespaceMembersIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
     TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
@@ -8261,6 +8480,11 @@ TemplateVariant NamespaceMembersIndexContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector NamespaceMembersIndexContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct InheritanceGraph: a connected graph representing part of the overall inheritance tree
@@ -8280,6 +8504,10 @@ class InheritanceGraphContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant graph() const
     {
@@ -8322,6 +8550,10 @@ TemplateVariant InheritanceGraphContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector InheritanceGraphContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -8343,6 +8575,10 @@ class InheritanceNodeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant getClass() const
     {
@@ -8379,6 +8615,11 @@ InheritanceNodeContext::~InheritanceNodeContext()
 TemplateVariant InheritanceNodeContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector InheritanceNodeContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -8528,6 +8769,10 @@ class MemberInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant protection() const
     {
       switch (m_memberInfo->prot())
@@ -8592,6 +8837,10 @@ TemplateVariant MemberInfoContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector MemberInfoContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -8680,6 +8929,10 @@ class MemberGroupInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant members() const
     {
       if (!m_cache.memberListContext)
@@ -8762,6 +9015,11 @@ MemberGroupInfoContext::~MemberGroupInfoContext()
 TemplateVariant MemberGroupInfoContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector MemberGroupInfoContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -8854,6 +9112,10 @@ class MemberListInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant members() const
     {
       if (!m_cache.memberListContext)
@@ -8936,6 +9198,11 @@ TemplateVariant MemberListInfoContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector MemberListInfoContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct InheritedMemberInfo: inherited member information
@@ -8960,6 +9227,10 @@ class InheritedMemberInfoContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     virtual ~Private()
     {
@@ -9028,6 +9299,11 @@ InheritedMemberInfoContext::~InheritedMemberInfoContext()
 TemplateVariant InheritedMemberInfoContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector InheritedMemberInfoContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9193,6 +9469,10 @@ class ArgumentContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant type() const
     {
       return createLinkedText(m_def,m_relPath,m_argument.type);
@@ -9269,6 +9549,11 @@ ArgumentContext::~ArgumentContext()
 TemplateVariant ArgumentContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector ArgumentContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9359,6 +9644,10 @@ class SymbolContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant fileName() const
     {
@@ -9486,6 +9775,11 @@ TemplateVariant SymbolContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector SymbolContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% list SymbolList[Symbol] : list of search symbols with the same name
@@ -9558,6 +9852,10 @@ class SymbolGroupContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant id() const
     {
       return searchId(*m_start);
@@ -9603,6 +9901,11 @@ SymbolGroupContext::~SymbolGroupContext()
 TemplateVariant SymbolGroupContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector SymbolGroupContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9688,6 +9991,10 @@ class SymbolIndexContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant name() const
     {
       return m_name;
@@ -9733,6 +10040,11 @@ SymbolIndexContext::~SymbolIndexContext()
 TemplateVariant SymbolIndexContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector SymbolIndexContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9799,6 +10111,10 @@ class SearchIndexContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant name() const
     {
       return m_info.name;
@@ -9843,6 +10159,12 @@ TemplateVariant SearchIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
+
+StringVector SearchIndexContext::fields() const
+{
+  return p->fields();
+}
+
 
 //------------------------------------------------------------------------
 
