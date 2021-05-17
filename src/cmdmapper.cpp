@@ -150,6 +150,8 @@ CommandMap cmdMap[] =
   { "docbookinclude",CMD_DOCBOOKINCLUDE },
   { "maninclude",    CMD_MANINCLUDE },
   { "xmlinclude",    CMD_XMLINCLUDE },
+  { "startmermaid",  CMD_STARTMERMAID },
+  { "endmermaid",    CMD_ENDMERMAID },
   { 0,               0 },
 };
 
@@ -267,5 +269,3 @@ void Mappers::freeMappers()
   delete cmdMapper;     cmdMapper     = 0;
   delete htmlTagMapper; htmlTagMapper = 0;
 }
-
-

@@ -469,6 +469,8 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 %x St_Msc
 %x St_PlantUMLOpt
 %x St_PlantUML
+%x St_MermaidOpt
+%x St_Mermaid
 %x St_Param
 %x St_XRefItem
 %x St_XRefItem2
@@ -1001,6 +1003,42 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_MermaidOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // case 1: options present
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_MermaidOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_MermaidOpt>{BLANK}*{FILEMASK}{BLANK}+/"\"" { // case 3: plain file name specified followed by a quoted title
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_MermaidOpt>{BLANK}*{FILEMASK}{BLANKopt}/\n { // case 4: plain file name specified without title or attributes
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_MermaidOpt>{BLANK}*{FILEMASK}{BLANKopt}/"\\ilinebr" { // case 5: plain file name specified without title or attributes
+                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_MermaidOpt>"\\ilinebr" |
+<St_MermaidOpt>"\n"   |
+<St_MermaidOpt>.      {
+                         g_token->sectionId = "";
+                         unput_string(yytext,yyleng);
+                         return RetVal_OK;
+                       }
+<St_Mermaid>{CMD}"endmermaid"  {
+                         return RetVal_OK;
+                       }
+<St_Mermaid>[^\\@\n]+ |
+<St_Mermaid>\n        |
+<St_Mermaid>.         { /* mermaid text */
+                         lineCount(yytext,yyleng);
+                         g_token->verb+=yytext;
+                       }
 <St_Title>"\""         { // quoted title
                          BEGIN(St_TitleQ);
                        }
@@ -1400,6 +1438,10 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                                       g_endMarker="enduml";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"startmermaid"/[^a-z_A-Z0-9] {
+                                      g_endMarker="endmermaid";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
                                       g_endMarker="endhtmlonly";
                                       BEGIN(St_SecSkip);
@@ -1630,6 +1672,19 @@ void doctokenizerYYsetStatePlantUML()
 {
   g_token->verb="";
   BEGIN(St_PlantUML);
+}
+
+void doctokenizerYYsetStateMermaidOpt()
+{
+  g_token->verb="";
+  g_token->sectionId="";
+  BEGIN(St_MermaidOpt);
+}
+
+void doctokenizerYYsetStateMermaid()
+{
+  g_token->verb="";
+  BEGIN(St_Mermaid);
 }
 
 void doctokenizerYYsetStateParam()

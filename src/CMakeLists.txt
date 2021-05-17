@@ -101,7 +101,7 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 1)
 
-set(LEX_FILES scanner 
+set(LEX_FILES scanner
     code
     pyscanner
     pycode
@@ -279,6 +279,7 @@ add_library(doxymain STATIC
     memberdef.cpp
     membergroup.cpp
     memberlist.cpp
+    mermaid.cpp
     msc.cpp
     namespacedef.cpp
     outputgen.cpp
@@ -378,4 +379,3 @@ set_project_coverage(doxygen)
 
 
 install(TARGETS doxygen DESTINATION bin)
-

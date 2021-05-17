@@ -5664,6 +5664,72 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         doctokenizerYYsetStatePara();
       }
       break;
+    case CMD_STARTMERMAID:
+      {
+        doctokenizerYYsetStateMermaidOpt();
+        retval = doctokenizerYYlex();
+
+        QCString fullMatch = g_token->sectionId;
+        QCString sectionId = "";
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        StringVector optList;
+
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             bool found = false;
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (!found)
+             {
+               if (sectionId.isEmpty())
+               {
+                 sectionId = opt;
+               }
+               else
+               {
+                 warn(g_fileName,getDoctokinizerLineNr(),"Multiple use of of filename for '\\startmermaid'");
+               }
+             }
+           }
+        }
+        else
+        {
+          sectionId = g_token->sectionId;
+        }
+
+        if (sectionId.isEmpty())
+        {
+          doctokenizerYYsetStateMermaidOpt();
+          retval = doctokenizerYYlex();
+
+          sectionId = g_token->sectionId;
+          sectionId = sectionId.stripWhiteSpace();
+        }
+
+        QCString mermaidFile(sectionId);
+        DocVerbatim *dv = new DocVerbatim(this,g_context,g_token->verb,DocVerbatim::Mermaid,FALSE,mermaidFile);
+        dv->setEngine(QCString("mermaid"));
+        doctokenizerYYsetStatePara();
+        QCString width,height;
+        defaultHandleTitleAndSize(CMD_STARTMERMAID,dv,dv->children(),width,height);
+        doctokenizerYYsetStateMermaid();
+        retval = doctokenizerYYlex();
+        int line=0;
+        dv->setText(stripLeadingAndTrailingEmptyLines(g_token->verb,line));
+        dv->setWidth(width);
+        dv->setHeight(height);
+        dv->setLocation(g_fileName,getDoctokinizerLineNr());
+        m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
+        if (retval==0) warn_doc_error(g_fileName,getDoctokinizerLineNr(),"mermaid section ended without end marker");
+        doctokenizerYYsetStatePara();
+      }
+      break;
     case CMD_ENDPARBLOCK:
       retval=RetVal_EndParBlock;
       break;
@@ -5679,6 +5745,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDDOT:
     case CMD_ENDMSC:
     case CMD_ENDUML:
+      warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected command %s",qPrint(g_token->name));
+      break;
+    case CMD_ENDMERMAID:
       warn_doc_error(g_fileName,getDoctokinizerLineNr(),"unexpected command %s",qPrint(g_token->name));
       break;
     case CMD_PARAM:

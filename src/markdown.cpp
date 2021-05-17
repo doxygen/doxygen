@@ -346,6 +346,10 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   {
     return "enduml";
   }
+  else if (blockName=="startmermaid")
+  {
+    return "endmermaid";
+  }
   else if (blockName=="f" && end<size)
   {
     if (data[end]=='$')
@@ -2864,4 +2868,3 @@ void MarkdownOutlineParser::parsePrototype(const QCString &text)
 }
 
 //------------------------------------------------------------------------
-

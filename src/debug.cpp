@@ -44,6 +44,7 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "filteroutput",      Debug::FilterOutput      },
   { "lex",               Debug::Lex               },
   { "plantuml",          Debug::Plantuml          },
+  { "mermaid",           Debug::Mermaid           },
   { "fortranfixed2free", Debug::FortranFixed2Free },
   { "cite",              Debug::Cite              }
 };
@@ -138,4 +139,3 @@ double Debug::elapsedTime()
 {
   return g_runningTime.elapsedTimeS();
 }
-

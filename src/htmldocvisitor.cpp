@@ -32,6 +32,7 @@
 #include "htmlentity.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "formula.h"
 #include "fileinfo.h"
 
@@ -639,6 +640,28 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         m_t << "</div>\n";
         forceStartParagraph(s);
       }
+      break;
+      case DocVerbatim::Mermaid:
+        {
+          forceEndParagraph(s);
+          static QCString htmlOutput = Config_getString(HTML_OUTPUT);
+          QCString imgExt = getDotImageExtension();
+          MermaidManager::OutputFormat format = MermaidManager::MERMAID_BITMAP;	// default : PUML_BITMAP
+          if (imgExt=="svg")
+          {
+            format = MermaidManager::MERMAID_SVG;
+          }
+          QCString baseName = MermaidManager::instance().writeMermaidSource(
+                                      htmlOutput,s->exampleFile(),
+                                      s->text(),format,s->engine(),s->srcFile(),s->srcLine());
+          m_t << "<div class=\"mermaidgraph\">\n";
+          writeMermaidFile(baseName,s->relPath(),s->context(),s->srcFile(),s->srcLine());
+          visitPreCaption(m_t, s);
+          visitCaption(this, s->children());
+          visitPostCaption(m_t, s);
+          m_t << "</div>\n";
+          forceStartParagraph(s);
+        }
       break;
   }
 }
@@ -2333,6 +2356,36 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   }
 }
 
+void HtmlDocVisitor::writeMermaidFile(const QCString &fileName, const QCString &relPath,
+                                      const QCString &,const QCString &srcFile,int srcLine)
+{
+  QCString baseName=fileName;
+  int i;
+  if ((i=baseName.findRev('/'))!=-1) // strip path
+  {
+    baseName=baseName.right(baseName.length()-i-1);
+  }
+  if ((i=baseName.findRev('.'))!=-1) // strip extension
+  {
+    baseName=baseName.left(i);
+  }
+  static QCString outDir = Config_getString(HTML_OUTPUT);
+  QCString imgExt = getDotImageExtension();
+  if (imgExt=="svg")
+  {
+    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERMAID_SVG);
+    //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />\n";
+    //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
+    //m_t << "</iframe>\n";
+    m_t << "<object type=\"image/svg+xml\" data=\"" << relPath << baseName << ".svg\"></object>\n";
+  }
+  else
+  {
+    MermaidManager::instance().generateMermaidOutput(fileName,outDir,MermaidManager::MERMAID_BITMAP);
+    m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
+  }
+}
+
 /** Returns TRUE if the child nodes in paragraph \a para until \a nodeIndex
     contain a style change node that is still active and that style change is one that
     must be located outside of a paragraph, i.e. it is a center, div, or pre tag.
@@ -2448,4 +2501,3 @@ void HtmlDocVisitor::forceStartParagraph(DocNode *n)
     if (needsTag) m_t << "<p>";
   }
 }
-

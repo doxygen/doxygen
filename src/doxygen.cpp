@@ -97,6 +97,7 @@
 #include "fileparser.h"
 #include "emoji.h"
 #include "plantuml.h"
+#include "mermaid.h"
 #include "stlsupport.h"
 #include "threadpool.h"
 #include "clangparser.h"
@@ -12042,6 +12043,12 @@ void generateOutput()
 
   g_s.begin("Running plantuml with JAVA...\n");
   PlantumlManager::instance().run();
+  g_s.end();
+
+  warn_flush();
+
+  g_s.begin("Running mermaid with mermaid-cli...\n");
+  MermaidManager::instance().run();
   g_s.end();
 
   warn_flush();

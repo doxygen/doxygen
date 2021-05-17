@@ -278,6 +278,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "snippet",         { 0,                       CommandSpacing::Block     }},
   { "snippetlineno",   { 0,                       CommandSpacing::Block     }},
   { "startuml",        { &handleFormatBlock,      CommandSpacing::Block     }},
+  { "startmermaid",    { &handleFormatBlock,      CommandSpacing::Block     }},
   { "static",          { &handleStatic,           CommandSpacing::Invisible }},
   { "struct",          { &handleStruct,           CommandSpacing::Invisible }},
   { "subpage",         { &handleSubpage,          CommandSpacing::Inline    }},
@@ -490,11 +491,11 @@ TMPLSPEC  "<"{BN}*[^>]+{BN}*">"
 MAILADDR   [a-z_A-Z0-9.+\-]+"@"[a-z_A-Z0-9\-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 RCSTAG    "$"{ID}":"[^\n$]+"$"
 
-  // C start comment 
+  // C start comment
 CCS   "/\*"
   // C end comment
 CCE   "*\/"
-  // Cpp comment 
+  // Cpp comment
 CPPC  "/\/"
 
   // end of section title with asterisk
@@ -1493,6 +1494,13 @@ STopt  [^\n@\\]*
                                               BEGIN(Comment);
                                           }
                                         }
+<FormatBlock>{CMD}"endmermaid"              {
+                                          addOutput(yyscanner,yytext);
+                                          if (yyextra->blockName=="startmermaid") // found end of the block
+                                          {
+                                              BEGIN(Comment);
+                                          }
+                                        }
 <FormatBlock>[^ \@\*\/\\\n]*            { // some word
                                           addOutput(yyscanner,yytext);
                                         }
@@ -1522,6 +1530,7 @@ STopt  [^\n@\\]*
 <FormatBlock><<EOF>>                    {
                                           QCString endTag = "end"+yyextra->blockName;
                                           if (yyextra->blockName=="startuml") endTag="enduml";
+                                          if (yyextra->blockName=="startmermaid") endTag="endmermaid";
                                           warn(yyextra->fileName,yyextra->lineNr,
                                             "reached end of comment while inside a \\%s block; check for missing \\%s tag!",
                                             qPrint(yyextra->blockName),qPrint(endTag)
