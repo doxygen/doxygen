@@ -1955,7 +1955,7 @@ NONLopt [^\n]*
                                             //printf("Found %s\n",qPrint(yyextra->current->name));
                                             BEGIN( ReadFuncArgType ) ;
                                           }
-                                          else if (yyextra->sharpCount<=0)
+                                          else
                                           {
                                              yyextra->current->name+="(";
                                              yyextra->roundCount++;
