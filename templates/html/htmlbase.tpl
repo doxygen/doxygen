@@ -74,10 +74,7 @@
  {% endif %}
   <td id="projectalign" style="padding-left: 0.5em;">
  {% if config.PROJECT_NAME %}
-   <div id="projectname">{{ config.PROJECT_NAME }}
-  {% if config.PROJECT_NUMBER %}
-    <span id="projectnumber">{{ config.PROJECT_NUMBER }}</span>
-  {% endif %}
+   <div id="projectname">{{ config.PROJECT_NAME }}{% if config.PROJECT_NUMBER %}<span id="projectnumber">&#160;{{ config.PROJECT_NUMBER }}</span>{% endif %}
    </div>
  {% endif %}
  {% if config.PROJECT_BRIEF %}

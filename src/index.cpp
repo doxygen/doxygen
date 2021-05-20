@@ -289,18 +289,6 @@ void endFileWithNavPath(const Definition *d,OutputList &ol)
 
 //----------------------------------------------------------------------
 
-static bool memberVisibleInIndex(const MemberDef *md)
-{
-  bool isAnonymous = md->isAnonymous();
-  bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-  bool extractStatic = Config_getBool(EXTRACT_STATIC);
-  return (!isAnonymous &&
-      (!hideUndocMembers || md->hasDocumentation()) &&
-      (!md->isStatic() || extractStatic) &&
-      md->isLinkable()
-     );
-}
-
 static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool addToIndex)
 {
   bool isAnonymous = md->isAnonymous();
@@ -388,7 +376,7 @@ void addMembersToIndex(T *def,LayoutDocManager::LayoutPart part,
         {
           for (const auto &md : *ml)
           {
-            if (memberVisibleInIndex(md))
+            if (md->visibleInIndex())
             {
               writeMemberToIndex(def,md,addToIndex);
             }
@@ -1611,7 +1599,7 @@ static int countVisibleMembers(const NamespaceDef *nd)
       {
         for (const auto &md : *ml)
         {
-          if (memberVisibleInIndex(md))
+          if (md->visibleInIndex())
           {
             count++;
           }
@@ -1634,8 +1622,8 @@ static void writeNamespaceMembers(const NamespaceDef *nd,bool addToIndex)
       {
         for (const auto &md : *ml)
         {
-          //printf("  member %s visible=%d\n",qPrint(md->name()),memberVisibleInIndex(md));
-          if (memberVisibleInIndex(md))
+          //printf("  member %s visible=%d\n",qPrint(md->name()),md->visibleInIndex());
+          if (md->visibleInIndex())
           {
              writeMemberToIndex(nd,md,addToIndex);
           }
@@ -2180,7 +2168,9 @@ static void writeAlphabeticalClassList(OutputList &ol, ClassDef::CompoundType ct
       // write character heading
       ol.writeString("<dt class=\"alphachar\">");
       QCString s = letterToLabel(cl.first.c_str());
-      ol.writeString("<a name=\"letter_");
+      ol.writeString("<a id=\"letter_");
+      ol.writeString(s);
+      ol.writeString("\" name=\"letter_");
       ol.writeString(s);
       ol.writeString("\">");
       ol.writeString(cl.first.c_str());
@@ -2511,10 +2501,10 @@ static void writeClassLinkForMember(OutputList &ol,const MemberDef *md,const QCS
   const ClassDef *cd=md->getClassDef();
   if ( cd && prevClassName!=cd->displayName())
   {
-    ol.docify(separator);
+    ol.writeString(separator);
     ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),md->anchor(),
         cd->displayName());
-    ol.writeString("\n");
+    //ol.writeString("\n");
     prevClassName = cd->displayName();
   }
 }
@@ -2525,10 +2515,10 @@ static void writeFileLinkForMember(OutputList &ol,const MemberDef *md,const QCSt
   const FileDef *fd=md->getFileDef();
   if (fd && prevFileName!=fd->name())
   {
-    ol.docify(separator);
+    ol.writeString(separator);
     ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),md->anchor(),
         fd->name());
-    ol.writeString("\n");
+    //ol.writeString("\n");
     prevFileName = fd->name();
   }
 }
@@ -2539,10 +2529,10 @@ static void writeNamespaceLinkForMember(OutputList &ol,const MemberDef *md,const
   const NamespaceDef *nd=md->getNamespaceDef();
   if (nd && prevNamespaceName!=nd->displayName())
   {
-    ol.docify(separator);
+    ol.writeString(separator);
     ol.writeObjectLink(md->getReference(),md->getOutputFileBase(),md->anchor(),
         nd->displayName());
-    ol.writeString("\n");
+    //ol.writeString("\n");
     prevNamespaceName = nd->displayName();
   }
 }
@@ -2625,11 +2615,11 @@ static void writeMemberList(OutputList &ol,bool useSections,const std::string &p
         firstItem=FALSE;
         ol.docify(name);
         if (isFunc) ol.docify("()");
-        ol.writeString("\n");
+        //ol.writeString("\n");
 
         // link to class
         prevDefName="";
-        sep = ": ";
+        sep = "&#160;:&#160;";
         prevName = name.data()+startIndex;
       }
       else // same entry
@@ -3512,7 +3502,7 @@ static void writeExampleIndex(OutputList &ol)
       }
     }
     ol.endItemListItem();
-    ol.writeString("\n");
+    //ol.writeString("\n");
   }
   ol.endItemList();
 

@@ -57,6 +57,7 @@
   {% endif %}
 {% endif %}
 {% resource 'search_common.css'      append 'search/search.css' %}
+{% create 'search/nomatches.html' from 'nomatches.tpl' %}
 
 {% if config.SERVER_BASED_SEARCH %}
   {# server side search resources #}
@@ -87,9 +88,9 @@
 
 {# open the global navigation index #}
 {% if config.PROJECT_NAME %}
-  {% indexentry nav name=config.PROJECT_NAME file='index' anchor='' isReference=False %}
+  {% indexentry nav name=config.PROJECT_NAME file='index' anchor='' isReference=False separateIndex=False %}
 {% else %}
-  {% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False %}
+  {% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False separateIndex=False %}
 {% endif %}
 {% opensubindex nav %}
 
@@ -180,7 +181,7 @@
 
 {# --- namespaces --- #}
 {% if namespaceList %}
-  {% indexentry nav name=tr.namespaces file='namespaces' anchor='' isReference=False %}
+  {% indexentry nav name=tr.namespaces file='namespaces' anchor='' isReference=False separateIndex=False %}
   {% opensubindex nav %}
 
   {% if namespaceTree.tree %}
@@ -192,7 +193,7 @@
   {# write symbol indices for namespace members #}
   {% if namespaceMembersIndex.all %}
     {% with page=namespaceMembersIndex scope='namespace' template='htmlnsmembers.tpl' %}
-      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False %}
+      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False separateIndex=False %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -202,7 +203,7 @@
 
 {# --- classes --- #}
 {% if classList %}
-  {% indexentry nav name=tr.classes file='annotated'|append:config.HTML_FILE_EXTENSION anchor='' isReference=False %}
+  {% indexentry nav name=tr.classes file='annotated'|append:config.HTML_FILE_EXTENSION anchor='' isReference=False separateIndex=False %}
   {% opensubindex nav %}
 
   {# write the annotated class list #}
@@ -234,7 +235,7 @@
   {# write symbol indices for class members #}
   {% if classMembersIndex.all %}
     {% with page=classMembersIndex scope='class' template='htmlclmembers.tpl' %}
-      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False %}
+      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False separateIndex=False %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -244,7 +245,7 @@
 
 {# --- files --- #}
 {% if fileList %}
-  {% indexentry nav name=tr.files file='files' anchor='' isReference=False %}
+  {% indexentry nav name=tr.files file='files' anchor='' isReference=False separateIndex=False %}
   {% opensubindex nav %}
 
   {# write the directory/file hierarchy #}
@@ -257,7 +258,7 @@
   {# write symbol indices for global namespace #}
   {% if globalsIndex.all %}
     {% with page=globalsIndex scope='file' template='htmlflmembers.tpl' %}
-      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False %}
+      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False separateIndex=False %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -281,7 +282,7 @@
   {% set symbolCount=0 %}
   {% for idx in searchIndices %}
     {% for si in idx.symbolIndices %}
-      {% with baseName=si.name|append:'_'|append:forloop.counter0 %}
+      {% with hexCount=forloop.counter0|hex baseName=si.name|append:'_'|append:hexCount %}
         {% create baseName|prepend:'search/'|append:config.HTML_FILE_EXTENSION from 'htmlsearchresult.tpl' %}
         {% create baseName|prepend:'search/'|append:'.js' from 'htmljssearchindex.tpl' %}
       {% endwith %}

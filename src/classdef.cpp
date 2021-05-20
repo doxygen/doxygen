@@ -2893,7 +2893,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             first = false;
           }
           ol.writeString("  <tr");
-          if ((idx&1)==0) ol.writeString(" class=\"even\"");
+          if ((idx&1)==0) ol.writeString(" class=\"even\""); else ol.writeString(" class=\"odd\"");
           idx++;
           ol.writeString("><td class=\"entry\">");
           if (cd->isObjectiveC())
@@ -2951,7 +2951,7 @@ void ClassDefImpl::writeMemberList(OutputList &ol) const
             first = false;
           }
           ol.writeString("  <tr bgcolor=\"#f0f0f0\"");
-          if ((idx&1)==0) ol.writeString(" class=\"even\"");
+          if ((idx&1)==0) ol.writeString(" class=\"even\""); else ol.writeString(" class=\"odd\"");
           idx++;
           ol.writeString("><td class=\"entry\">");
           if (cd->isObjectiveC())

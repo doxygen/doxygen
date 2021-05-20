@@ -2887,14 +2887,14 @@ void HtmlGenerator::startHeaderSection()
 
 void HtmlGenerator::startTitleHead(const QCString &)
 {
-  m_t << "  <div class=\"headertitle\">\n";
+  m_t << "  <div class=\"headertitle\">";
   startTitle();
 }
 
 void HtmlGenerator::endTitleHead(const QCString &,const QCString &)
 {
   endTitle();
-  m_t << "  </div>\n";
+  m_t << "</div>\n";
 }
 
 void HtmlGenerator::endHeaderSection()

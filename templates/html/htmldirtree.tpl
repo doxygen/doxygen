@@ -11,7 +11,12 @@
 {# the table with entries #}
 <table class="directory">
 {% recursetree tree.tree %}
-  {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference %}
+  {% if node.isLinkable %}
+    {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference separateIndex=True %}
+  {% else %}
+    {% indexentry nav name=node.name file='' anchor=node.anchor isReference=False separateIndex=False %}
+  {% endif %}
+  {% if not node.member %}
   {% spaceless %}
   <tr id="row_{{ node.id }}" class="{% cycle 'even' 'odd' %}"{%if node.level>tree.preferredDepth %} style="display:none;"{% endif %}>
     <td class="entry">
@@ -47,6 +52,16 @@
   {% opensubindex nav %}
   {{ children }}
   {% closesubindex nav %}
+  {% spaceless %}
+    {% if node.members %}
+      {% opensubindex nav %}
+        {% for member in node.members %}
+          {% indexentry nav name=member.name file=member.fileName anchor=member.anchor isReference=member.isReference externalReference=member.externalReference separateIndex=False %}
+        {% endfor %}
+      {% closesubindex nav %}
+    {% endif %}
+  {% endspaceless %}
+  {% endif %}
 {% endrecursetree %}
 </table>
 </div><!-- directory -->

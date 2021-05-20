@@ -1044,6 +1044,10 @@ class TranslateContext::Private
     {
       return HtmlHelp::getLanguageString();
     }
+    TemplateVariant code() const
+    {
+      return theTranslator->trCode();
+    }
     Private()
     {
       static bool init=FALSE;
@@ -1239,6 +1243,8 @@ class TranslateContext::Private
         s_inst.addProperty("examplesDescription",&Private::examplesDescription);
         //%% string langstring
         s_inst.addProperty("langString",         &Private::langString);
+        //%% string code
+        s_inst.addProperty("code",               &Private::code);
 
         init=TRUE;
       }
@@ -6190,6 +6196,7 @@ class NestingNodeContext::Private
       : m_parent(parent), m_def(d), m_level(level), m_index(index)
     {
       m_children.reset(NestingContext::alloc(thisNode,level+1));
+      m_members.reset(NestingContext::alloc(thisNode,level+1));
       static bool init=FALSE;
       if (!init)
       {
@@ -6197,6 +6204,8 @@ class NestingNodeContext::Private
         s_inst.addProperty("is_leaf_node",&Private::isLeafNode);
         //%% Nesting children: list of nested classes/namespaces
         s_inst.addProperty("children",&Private::children);
+        //%% Nesting children: list of nested classes/namespaces
+        s_inst.addProperty("members",&Private::members);
         //%% [optional] Class class: class info (if this node represents a class)
         s_inst.addProperty("class",&Private::getClass);
         //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
@@ -6209,6 +6218,8 @@ class NestingNodeContext::Private
         s_inst.addProperty("page",&Private::getPage);
         //%% [optional] Module module: module info (if this node represents a module)
         s_inst.addProperty("module",&Private::getModule);
+        //%% [optional] Member member: member info (if this node represents a member)
+        s_inst.addProperty("member",&Private::getMember);
         //%% int id
         s_inst.addProperty("id",&Private::id);
         //%% string level
@@ -6231,6 +6242,7 @@ class NestingNodeContext::Private
       addDirFiles(visitedClasses);
       addPages(visitedClasses);
       addModules(visitedClasses);
+      addMembers(visitedClasses);
     }
     TemplateVariant get(const QCString &n) const
     {
@@ -6247,6 +6259,10 @@ class NestingNodeContext::Private
     TemplateVariant children() const
     {
       return m_children.get();
+    }
+    TemplateVariant members() const
+    {
+      return m_members.get();
     }
     TemplateVariant getClass() const
     {
@@ -6338,6 +6354,21 @@ class NestingNodeContext::Private
         return TemplateVariant(FALSE);
       }
     }
+    TemplateVariant getMember() const
+    {
+      if (!m_cache.memberContext && m_def->definitionType()==Definition::TypeMember)
+      {
+        m_cache.memberContext.reset(MemberContext::alloc(toMemberDef(m_def)));
+      }
+      if (m_cache.memberContext)
+      {
+        return m_cache.memberContext.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
     TemplateVariant level() const
     {
       return m_level;
@@ -6400,26 +6431,26 @@ class NestingNodeContext::Private
     void addClasses(bool inherit, bool hideSuper,ClassDefSet &visitedClasses)
     {
       const ClassDef *cd = toClassDef(m_def);
-      if (cd && inherit)
+      if (cd)
       {
-        bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
-                           !hideSuper && classHasVisibleChildren(cd);
-        if (hasChildren)
+        if (inherit)
         {
-          visitedClasses.insert(cd);
-          if (cd->getLanguage()==SrcLangExt_VHDL)
+          bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
+            !hideSuper && classHasVisibleChildren(cd);
+          if (hasChildren)
           {
-            m_children->addDerivedClasses(cd->baseClasses(),false,visitedClasses);
-          }
-          else
-          {
-            m_children->addDerivedClasses(cd->subClasses(),false,visitedClasses);
+            visitedClasses.insert(cd);
+            if (cd->getLanguage()==SrcLangExt_VHDL)
+            {
+              m_children->addDerivedClasses(cd->baseClasses(),false,visitedClasses);
+            }
+            else
+            {
+              m_children->addDerivedClasses(cd->subClasses(),false,visitedClasses);
+            }
           }
         }
-      }
-      else
-      {
-        if (cd)
+        else
         {
           m_children->addClasses(cd->getClasses(),FALSE,visitedClasses);
         }
@@ -6428,13 +6459,16 @@ class NestingNodeContext::Private
     void addNamespaces(bool addClasses,ClassDefSet &visitedClasses)
     {
       const NamespaceDef *nd = toNamespaceDef(m_def);
-      if (nd && !nd->getNamespaces().empty())
+      if (nd)
       {
-        m_children->addNamespaces(nd->getNamespaces(),FALSE,addClasses,visitedClasses);
-      }
-      if (addClasses && nd)
-      {
-        m_children->addClasses(nd->getClasses(),FALSE,visitedClasses);
+        if (!nd->getNamespaces().empty())
+        {
+          m_children->addNamespaces(nd->getNamespaces(),FALSE,addClasses,visitedClasses);
+        }
+        if (addClasses)
+        {
+          m_children->addClasses(nd->getClasses(),FALSE,visitedClasses);
+        }
       }
     }
     void addDirFiles(ClassDefSet &visitedClasses)
@@ -6462,10 +6496,53 @@ class NestingNodeContext::Private
         m_children->addModules(gd->getSubGroups(),visitedClasses);
       }
     }
+    void addMembers(ClassDefSet &visitedClasses)
+    {
+      if (m_def->definitionType()==Definition::TypeNamespace)
+      {
+        // add namespace members
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
+        {
+          if (lde->kind()==LayoutDocEntry::MemberDef)
+          {
+            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
+            m_members->addMembers(ml,visitedClasses);
+          }
+        }
+      }
+      else if (m_def->definitionType()==Definition::TypeClass)
+      {
+        // add class members
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
+        {
+          if (lde->kind()==LayoutDocEntry::MemberDef)
+          {
+            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
+            m_members->addMembers(ml,visitedClasses);
+          }
+        }
+      }
+      else if (m_def->definitionType()==Definition::TypeFile)
+      {
+        // add class members
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
+        {
+          if (lde->kind()==LayoutDocEntry::MemberDef)
+          {
+            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
+            m_members->addMembers(ml,visitedClasses);
+          }
+        }
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     const Definition *m_def;
     SharedPtr<NestingContext> m_children;
+    SharedPtr<NestingContext> m_members;
     int m_level;
     int m_index;
     struct Cachable
@@ -6476,6 +6553,7 @@ class NestingNodeContext::Private
       SharedPtr<FileContext>      fileContext;
       SharedPtr<PageContext>      pageContext;
       SharedPtr<ModuleContext>    moduleContext;
+      SharedPtr<MemberContext>    memberContext;
       ScopedPtr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
@@ -6618,7 +6696,8 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses);
+            append(nnc);
             m_index++;
           }
         }
@@ -6628,7 +6707,8 @@ class NestingContext::Private : public GenericNodeListContext
     {
       for (const auto &fd : fList)
       {
-        append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+        NestingNodeContext *nnc=NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses);
+        append(nnc);
         m_index++;
       }
     }
@@ -6738,6 +6818,21 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
+    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+    {
+      if (ml)
+      {
+        for (const auto &md : *ml)
+        {
+          if (md->visibleInIndex())
+          {
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,md,m_index,m_level+1,TRUE,TRUE,FALSE,visitedClasses);
+            append(nnc);
+            m_index++;
+          }
+        }
+      }
+    }
 
   private:
     const NestingNodeContext *m_parent;
@@ -6839,6 +6934,11 @@ void NestingContext::addClassHierarchy(const ClassLinkedMap &classLinkedMap,Clas
 void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses)
 {
   p->addDerivedClasses(bcl,hideSuper,visitedClasses);
+}
+
+void NestingContext::addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+{
+  p->addMembers(ml,visitedClasses);
 }
 
 //------------------------------------------------------------------------

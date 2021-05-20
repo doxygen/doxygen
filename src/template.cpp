@@ -1327,6 +1327,23 @@ class FilterUpper
 
 //--------------------------------------------------------------------
 
+/** @brief The implementation of the "upper" filter */
+class FilterHex
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &)
+    {
+      if (v.isValid())
+      {
+        return QCString().sprintf("%x",v.toInt());
+      }
+      return v;
+    }
+};
+
+
+//--------------------------------------------------------------------
+
 /** @brief The implementation of the "e" filter */
 class FilterEscape
 {
@@ -1419,6 +1436,7 @@ class TemplateFilterFactory
 // register a handlers for each filter we support
 static TemplateFilterFactory::AutoRegister<FilterAdd>                fAdd("add");
 static TemplateFilterFactory::AutoRegister<FilterGet>                fGet("get");
+static TemplateFilterFactory::AutoRegister<FilterHex>                fHex("hex");
 static TemplateFilterFactory::AutoRegister<FilterRaw>                fRaw("raw");
 static TemplateFilterFactory::AutoRegister<FilterList>               fList("list");
 static TemplateFilterFactory::AutoRegister<FilterLower>              fLower("lower");

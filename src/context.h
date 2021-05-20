@@ -578,6 +578,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
     void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
     void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses);
+    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses);
 
   private:
     NestingContext(const NestingNodeContext *parent,int level);

@@ -341,7 +341,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
       if (dd->hasDocumentation() || dd->getFiles().empty())
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(dd->getOutputFileBase(),0);
+        ol.startMemberItem(dd->anchor(),0);
         ol.parseText(theTranslator->trDir(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         ol.writeObjectLink(dd->getReference(),dd->getOutputFileBase(),QCString(),dd->shortName());
@@ -359,7 +359,7 @@ void DirDefImpl::writeSubDirList(OutputList &ol)
               );
           ol.endMemberDescription();
         }
-        ol.endMemberDeclaration(QCString(),QCString());
+        ol.endMemberDeclaration(dd->anchor(),QCString());
       }
     }
 
@@ -390,7 +390,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
       if (fd->hasDocumentation())
       {
         ol.startMemberDeclaration();
-        ol.startMemberItem(fd->getOutputFileBase(),0);
+        ol.startMemberItem(fd->anchor(),0);
         ol.docify(theTranslator->trFile(FALSE,TRUE)+" ");
         ol.insertMemberAlign();
         if (fd->isLinkable())
@@ -429,7 +429,7 @@ void DirDefImpl::writeFileList(OutputList &ol)
               );
           ol.endMemberDescription();
         }
-        ol.endMemberDeclaration(QCString(),QCString());
+        ol.endMemberDeclaration(fd->anchor(),QCString());
       }
     }
     ol.endMemberList();

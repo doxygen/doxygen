@@ -4,7 +4,7 @@
 <div class="textblock">
 {{ tr.namespaceListDescription }}
 </div>
-{% indexentry nav name=tr.namespaceList file=page.fileName anchor='' isReference=False %}
+{% indexentry nav name=tr.namespaceList file=page.fileName anchor='' isReference=False separateIndex=False %}
 {% opensubindex nav %}
 {% with tree=namespaceTree %}
   {% include 'htmldirtree.tpl' %}
