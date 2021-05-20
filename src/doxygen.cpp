@@ -1671,6 +1671,7 @@ static void buildNamespaceList(const Entry *root)
           nd->setName(fullName); // change name to match docs
           nd->addSectionsToDefinition(root->anchors);
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
+          nd->setArtificial(FALSE); // found namespace explicitly, so cannot be artificial
           if (nd->getLanguage()==SrcLangExt_Unknown)
           {
             nd->setLanguage(root->lang);
