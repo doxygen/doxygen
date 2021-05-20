@@ -134,6 +134,7 @@ MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z
 %x SkipChar
 %x SComment
 %x CComment
+%x CNComment
 %x Verbatim
 %x VerbatimCode
 %x ReadLine
@@ -346,7 +347,10 @@ SLASHopt [/]*
                                      yyextra->nestingCount=1;
                                      clearCommentStack(yyscanner); /*  to be on the save side */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
-				     BEGIN(CComment); 
+                                     if (yyextra->specialComment)
+				       BEGIN(CComment); 
+                                     else
+				       BEGIN(CNComment); 
                                      yyextra->commentStack.push(yyextra->lineNr);
                                    }
 <Scan>"#"("#")?		           {
@@ -402,8 +406,8 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
-<CComment,ReadLine>{MAILADR}      |
-<CComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
+<CComment,CNComment,ReadLine>{MAILADR}      |
+<CComment,CNComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"{@code"/[ \t\n]	   {
@@ -618,10 +622,10 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 
-<CComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */ 
+<CComment,CNComment>[^ `~<\\!@*\n{\"\/]*     { /* anything that is not a '*' or command */ 
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
-<CComment>"*"+[^*\/\\@\n{\"]*      { /* stars without slashes */
+<CComment,CNComment>"*"+[^*\/\\@\n{\"]*      { /* stars without slashes */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
                                    }
 <CComment>"\"\"\""                 { /* end of Python docstring */
@@ -637,7 +641,7 @@ SLASHopt [/]*
 				       BEGIN(Scan);
 				     }
   				   }
-<CComment>\n                       { /* new line in comment */
+<CComment,CNComment>\n                       { /* new line in comment */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                      /* in case of Fortran always end of comment */
   				     if (yyextra->lang==SrcLangExt_Fortran)
@@ -645,7 +649,7 @@ SLASHopt [/]*
 				       BEGIN(Scan);
 				     }
                                    }
-<CComment>"/"+"*"                  { /* nested C comment */
+<CComment,CNComment>"/"+"*"                  { /* nested C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
                                          yyextra->lang==SrcLangExt_Markdown)
 				     {
@@ -655,7 +659,7 @@ SLASHopt [/]*
                                      yyextra->commentStack.push(yyextra->lineNr);
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment>"*"+"/"                  { /* end of C comment */
+<CComment,CNComment>"*"+"/"                  { /* end of C comment */
                                      if (yyextra->lang==SrcLangExt_Python ||
                                          yyextra->lang==SrcLangExt_Markdown)
 				     {
@@ -676,8 +680,8 @@ SLASHopt [/]*
                                        }
 				     }
                                    }
-  /* Python an VHDL share CComment, so special attention for ending comments is required */
-<CComment>"\n"/[ \t]*"#" 	   {
+  /* Python an VHDL share CComment,CNComment, so special attention for ending comments is required */
+<CComment,CNComment>"\n"/[ \t]*"#" 	   {
                                      if (yyextra->lang!=SrcLangExt_VHDL)
                                      {
                                        REJECT;
@@ -696,7 +700,7 @@ SLASHopt [/]*
                                        }
                                      }
                                    }
-<CComment>"\n"/[ \t]*"-" 	   {
+<CComment,CNComment>"\n"/[ \t]*"-" 	   {
                                      if (yyextra->lang!=SrcLangExt_Python || yyextra->pythonDocString)
 				     {
 				       REJECT;
@@ -707,7 +711,7 @@ SLASHopt [/]*
 				       BEGIN(Scan);
 				     }
                                    }
-<CComment>"\n"/[ \t]*[^ \t#\-] 	   {
+<CComment,CNComment>"\n"/[ \t]*[^ \t#\-] 	   {
                                      if (yyextra->lang==SrcLangExt_Python)
                                      {
                                        if (yyextra->pythonDocString)
@@ -739,18 +743,18 @@ SLASHopt [/]*
                                      }
                                    }
    /* removed for bug 674842 (bug was introduced in rev 768)
-<CComment>"'"			   {
+<CComment,CNComment>"'"			   {
   			             yyextra->charContext = YY_START;
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(SkipChar);
   				   }
-<CComment>"\""			   {
+<CComment,CNComment>"\""			   {
   			             yyextra->stringContext = YY_START;
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(SkipString);
   				   }
    */
-<CComment>.			   {
+<CComment,CNComment>.			   {
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
   				   }
 <SComment>^[ \t]*{CPPC}"/"{SLASHopt}/\n     {
@@ -838,7 +842,7 @@ SLASHopt [/]*
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
 				     BEGIN(yyextra->readLineCtx);
 				   }
-<CComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
+<CComment,CNComment,ReadLine>[\\@][\\@][~a-z_A-Z][a-z_A-Z0-9]*[ \t]* { // escaped command
 				     copyToOutput(yyscanner,yytext,(int)yyleng);
   				   }
 <CComment,ReadLine>[\\@]"cond"/[^a-z_A-Z0-9]	   { // conditional section
