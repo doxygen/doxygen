@@ -3258,22 +3258,16 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
       size_t i=i_obrace+1;
       //printf("predefined function macro '%s'\n",ds.c_str());
       int count = 0;
-      reg::Iterator arg_it(ds,reId,i);
+      reg::Iterator arg_it(args,reId,0);
       // gather the formal arguments in a dictionary
       while (i<i_cbrace && arg_it!=end)
       {
         const auto &match = *arg_it;
-        size_t pi = match.position();
         size_t l  = match.length();
         if (l>0) // see bug375037
         {
           argMap.emplace(match.str(),count);
           count++;
-          i=pi+l;
-        }
-        else
-        {
-          i++;
         }
         ++arg_it;
       }
