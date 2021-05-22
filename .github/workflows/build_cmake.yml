@@ -111,7 +111,8 @@ jobs:
         sudo apt install libclang-common-10-dev libclang-10-dev  
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
-        ls -d /usr/bin/clang*
+        ls -al /usr/bin/clang++
+        which clang++
         clang++ -v
       if: matrix.config.os == 'ubuntu-20.04'
     
