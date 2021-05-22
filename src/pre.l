@@ -3241,50 +3241,32 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
        ) // predefined function macro definition
     {
       static const reg::Ex reId(R"(\a\w*)");
-      reg::Iterator end;
       std::map<std::string,int> argMap;
-      std::string args    = ds.substr(i_obrace+1,i_cbrace-i_obrace-1); // part between ( and )
-      size_t varArgsPos   = args.find("...");
-      bool   hasVarArgs   = varArgsPos!=std::string::npos;
-      if (hasVarArgs)
-      {
-        size_t lastCommaPos = args.rfind(',',varArgsPos);
-        i_cbrace = i_obrace+1;               // leave out the varargs part
-        if (lastCommaPos!=std::string::npos)
-        {
-          i_cbrace += lastCommaPos;          // but keep the explicit arguments if any
-        }
-      }
-      size_t i=i_obrace+1;
+      std::string args  = ds.substr(i_obrace+1,i_cbrace-i_obrace-1); // part between ( and )
+      bool   hasVarArgs = args.find("...")!=std::string::npos;
       //printf("predefined function macro '%s'\n",ds.c_str());
       int count = 0;
       reg::Iterator arg_it(args,reId,0);
+      reg::Iterator arg_end;
       // gather the formal arguments in a dictionary
-      while (i<i_cbrace && arg_it!=end)
+      for (; arg_it!=arg_end; ++arg_it)
       {
-        const auto &match = *arg_it;
-        size_t l  = match.length();
-        if (l>0) // see bug375037
-        {
-          argMap.emplace(match.str(),count);
-          count++;
-        }
-        ++arg_it;
+        argMap.emplace(arg_it->str(),count++);
       }
       if (hasVarArgs) // add the variable argument if present
       {
-        argMap.emplace("__VA_ARGS__",count);
-        count++;
+        argMap.emplace("__VA_ARGS__",count++);
       }
 
       // strip definition part
       std::string definition;
       std::string in=ds.substr(i_equals+1);
       reg::Iterator re_it(in,reId);
-      i=0;
+      reg::Iterator re_end;
+      size_t i=0;
       // substitute all occurrences of formal arguments by their 
       // corresponding markers
-      for (; re_it!=end; ++re_it)
+      for (; re_it!=re_end; ++re_it)
       {
         const auto &match = *re_it;
         size_t pi = match.position();
