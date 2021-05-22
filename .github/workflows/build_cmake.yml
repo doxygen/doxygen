@@ -111,6 +111,8 @@ jobs:
         sudo apt install libclang-common-10-dev libclang-10-dev  
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
+        sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-10   100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
         ls -al /usr/bin/clang++
         ls -al /etc/alternatives/clang++
         which clang++
