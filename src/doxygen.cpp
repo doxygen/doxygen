@@ -1671,7 +1671,6 @@ static void buildNamespaceList(const Entry *root)
           nd->setName(fullName); // change name to match docs
           nd->addSectionsToDefinition(root->anchors);
           nd->setBriefDescription(root->brief,root->briefFile,root->briefLine);
-          nd->setArtificial(FALSE); // found namespace explicitly, so cannot be artificial
           if (nd->getLanguage()==SrcLangExt_Unknown)
           {
             nd->setLanguage(root->lang);
@@ -1687,6 +1686,11 @@ static void buildNamespaceList(const Entry *root)
 
           // file definition containing the namespace nd
           FileDef *fd=root->fileDef();
+          if (nd->isArtificial())
+          {
+            nd->setArtificial(FALSE); // found namespace explicitly, so cannot be artificial
+            nd->setDefFile(root->fileName,root->startLine,root->startColumn);
+          }
           // insert the namespace in the file definition
           if (fd) fd->insertNamespace(nd);
           addNamespaceToGroups(root,nd);
