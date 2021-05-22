@@ -112,7 +112,9 @@ jobs:
         sudo apt install llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-10-dev libclang1-10 libllvm10  
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
-        clang++ -v
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-10 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-10 100
+        c++ -v
       if: matrix.config.os == 'ubuntu-20.04'
     
     - name: Install libxapian (Ubuntu 18.04)
