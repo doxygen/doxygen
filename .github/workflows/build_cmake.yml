@@ -112,6 +112,7 @@ jobs:
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
         ls -al /usr/bin/clang++
+        ls -al /etc/alternatives/clang++
         which clang++
         clang++ -v
       if: matrix.config.os == 'ubuntu-20.04'
