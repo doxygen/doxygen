@@ -108,13 +108,10 @@ jobs:
         sudo apt remove llvm-12 llvm-12-dev llvm-12-tools llvm-12-runtime clang-12 clang-format-12 libclang-common-12-dev libclang-cpp12 libclang1-12 libllvm12  
         sudo apt-get autoremove
         sudo apt-get clean
-        #sudo apt install libclang-9-dev libclang-common-9-dev
-        sudo apt install llvm-10 llvm-10-dev llvm-10-tools llvm-10-runtime clang-10 clang-format-10 libclang-common-10-dev libclang-10-dev libclang1-10 libllvm10  
+        sudo apt install llvm-12 llvm-12-dev llvm-12-tools llvm-12-runtime clang-12 clang-format-12 libclang-common-12-dev libclang-12-dev libclang1-12 libllvm12  
         apt list --installed | egrep '(clang|llvm)'
         ls -d /usr/lib/llvm-*/include/
-        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-10 100
-        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-10 100
-        c++ -v
+        clang++ -v
       if: matrix.config.os == 'ubuntu-20.04'
     
     - name: Install libxapian (Ubuntu 18.04)
