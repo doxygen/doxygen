@@ -398,6 +398,19 @@ class QCString
       return m_rep.rfind(s.str(),0)==0; // looking "backward" starting and ending at index 0
     }
 
+    bool endsWith(const char *s) const
+    {
+      if (m_rep.empty() || s==0) return s==0;
+      size_t l = strlen(s);
+      return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s, l)==0;
+    }
+
+    bool endsWith(const QCString &s) const
+    {
+      size_t l = s.length();
+      return m_rep.length()>=l && m_rep.compare(m_rep.length()-l, l, s.str())==0;
+    }
+
 #define HAS_IMPLICIT_CAST_TO_PLAIN_C_STRING 0
 #if HAS_IMPLICIT_CAST_TO_PLAIN_C_STRING
     /** Converts the string to a plain C string */
