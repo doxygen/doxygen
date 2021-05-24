@@ -709,9 +709,17 @@ NONLopt [^\n]*
 <DocBlock>{CMD}("f$"|"f["|"f{"|"f(") {
                             yyextra->cCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
+                            if (yyextra->docBlockName.at(1)=='[')
+                            {
+                              yyextra->docBlockName.at(1)=']';
+                            }
                             if (yyextra->docBlockName.at(1)=='{')
                             {
                               yyextra->docBlockName.at(1)='}';
+                            }
+                            if (yyextra->docBlockName.at(1)=='(')
+                            {
+                              yyextra->docBlockName.at(1)=')';
                             }
                             yyextra->fencedSize=0;
                             yyextra->nestedComment=FALSE;
@@ -724,7 +732,14 @@ NONLopt [^\n]*
                             yyextra->nestedComment=FALSE;
                             BEGIN(DocCopyBlock);
                           }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-] { // verbatim type command (which could contain nested comments!)
+                            yyextra->cCodeBuffer += yytext;
+                            yyextra->docBlockName="uml";
+                            yyextra->fencedSize=0;
+                            yyextra->nestedComment=FALSE;
+                            BEGIN(DocCopyBlock);
+                          }
+<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->cCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
@@ -777,11 +792,14 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>[\\@]("f$"|"f]"|"f}"|"f)") {
                             yyextra->cCodeBuffer += yytext;
-                            BEGIN(DocBlock);
+                            if (yyextra->docBlockName==&yytext[1])
+                            {
+                              BEGIN(DocBlock);
+                            }
                           }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->cCodeBuffer += yytext;
-                            if (&yytext[4]==yyextra->docBlockName)
+                            if (yyextra->docBlockName==&yytext[4])
                             {
                               BEGIN(DocBlock);
                             }
