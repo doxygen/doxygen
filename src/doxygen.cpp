@@ -9848,7 +9848,6 @@ static std::string resolveSymlink(const std::string &path)
   return Dir::cleanDirPath(result.str());
 }
 
-static std::mutex g_pathsVisitedMutex;
 static StringUnorderedSet g_pathsVisited(1009);
 
 //----------------------------------------------------------------------------
@@ -9875,15 +9874,24 @@ static void readDir(FileInfo *fi,
   {
     paths->insert(dirName);
   }
+  //printf("%s isSymLink()=%d\n",qPrint(dirName),fi->isSymLink());
   if (fi->isSymLink())
   {
     dirName = resolveSymlink(dirName);
-    if (dirName.empty()) return;  // recursive symlink
-
-    std::lock_guard<std::mutex> lock(g_pathsVisitedMutex);
-    if (g_pathsVisited.find(dirName)!=g_pathsVisited.end()) return; // already visited path
-    g_pathsVisited.insert(dirName);
+    if (dirName.empty())
+    {
+      //printf("RECURSIVE SYMLINK: %s\n",qPrint(dirName));
+      return;  // recursive symlink
+    }
   }
+
+  if (g_pathsVisited.find(dirName)!=g_pathsVisited.end())
+  {
+    //printf("PATH ALREADY VISITED: %s\n",qPrint(dirName));
+    return; // already visited path
+  }
+  g_pathsVisited.insert(dirName);
+
   Dir dir(dirName);
   msg("Searching for files in directory %s\n", qPrint(fi->absFilePath()));
   //printf("killSet=%p count=%d\n",killSet,killSet ? (int)killSet->count() : -1);
@@ -9966,6 +9974,8 @@ void readFileOrDirectory(const QCString &s,
   //printf("killSet count=%d\n",killSet ? (int)killSet->size() : -1);
   // strip trailing slashes
   if (s.isEmpty()) return;
+
+  g_pathsVisited.clear();
 
   FileInfo fi(s.str());
   //printf("readFileOrDirectory(%s)\n",s);
