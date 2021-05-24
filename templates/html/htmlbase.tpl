@@ -43,14 +43,37 @@
   {% endif %}
 {% endif %}
 {% if config.USE_MATHJAX %}
+{% if config.MATHJAX_VERSION=="MathJax_3" %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript">
+window.MathJax = {
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  },
+  tex: {
+{% if doxygen.mathJaxMacros %}
+    macros: { {{ doxygen.mathJaxMacros|raw }} },
+{% endif %}
+    packages: ['base','configmacros'{% if doxygen.mathJaxMacros %},'newcommand'{% endif %}{% for ext in config.MATHJAX_EXTENSIONS %},'{{ ext }}'{% endfor %}]
+  }
+};
+{{ doxygen.mathJaxCodeFile }}
+</script>
+<script type="text/javascript" id="MathJax-script" async="async" src="{{ config.MATHJAX_RELPATH }}{% if config.MATHJAX_RELPATH|relative %}{{ page.relPath }}{% endif %}es5/tex-{{ config.MATHJAX_FORMAT|lower }}.js"></script>
+{% else %}{# MathJax_2 #}
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    extensions: ["tex2jax.js"{% for ext in config.MATHJAX_EXTENSIONS %}, "{{ ext }}"{% endfor %}],
-    jax: ["input/TeX","output/{{ config.MATHJAX_FORMAT|default:'HTML-CSS' }}"],
+MathJax.Hub.Config({
+  extensions: ["tex2jax.js"{% for ext in config.MATHJAX_EXTENSIONS %}, "{{ ext }}.js"{% endfor %}],
+  jax: ["input/TeX","output/{{ config.MATHJAX_FORMAT|default:'HTML-CSS' }}"],
+{% if doxygen.mathJaxMacros %}
+  TeX: { Macros: { {{ doxygen.mathJaxMacros|raw }} } }
+{% endif %}
 });
 {{ doxygen.mathJaxCodeFile }}
 </script>
-<script type="text/javascript" src="{{ config.MATHJAX_RELPATH }}{% if config.MATHJAX_RELPATH|relative %}{{ page.relPath }}{% endif %}MathJax.js"></script>
+<script type="text/javascript" async="async" src="{{ config.MATHJAX_RELPATH }}{% if config.MATHJAX_RELPATH|relative %}{{ page.relPath }}{% endif %}MathJax.js"></script>
+{% endif %}{# MathJax_3 #}
 {% endif %}{# MathJax #}
 <link href="{{ page.relPath }}{{ config.HTML_STYLESHEET|default:'doxygen.css' }}" rel="stylesheet" type="text/css" />
 {% if config.HTML_EXTRA_STYLESHEET %}

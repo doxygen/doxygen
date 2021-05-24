@@ -395,9 +395,13 @@ class DoxygenContext::Private
     {
       return dateToString(TRUE);
     }
-    TemplateVariant maxJaxCodeFile() const
+    TemplateVariant mathJaxCodeFile() const
     {
-      return m_cache.maxJaxCodeFile;
+      return m_cache.mathJaxCodeFile;
+    }
+    TemplateVariant mathJaxMacros() const
+    {
+      return m_cache.mathJaxMacros;
     }
     Private()
     {
@@ -409,7 +413,9 @@ class DoxygenContext::Private
         //%% string date
         s_inst.addProperty("date",            &Private::date);
         //%% string maxJaxCodeFile
-        s_inst.addProperty("mathJaxCodeFile", &Private::maxJaxCodeFile);
+        s_inst.addProperty("mathJaxCodeFile", &Private::mathJaxCodeFile);
+        //%% string maxJaxMacros
+        s_inst.addProperty("mathJaxMacros",   &Private::mathJaxMacros);
         init=TRUE;
       }
     }
@@ -424,8 +430,12 @@ class DoxygenContext::Private
   private:
     struct Cachable
     {
-      Cachable() { maxJaxCodeFile=fileToString(Config_getString(MATHJAX_CODEFILE)); }
-      QCString maxJaxCodeFile;
+      Cachable() {
+        mathJaxCodeFile=fileToString(Config_getString(MATHJAX_CODEFILE));
+        mathJaxMacros=HtmlGenerator::getMathJaxMacros();
+      }
+      QCString mathJaxCodeFile;
+      QCString mathJaxMacros;
     };
     mutable Cachable m_cache;
     static PropertyMapper<DoxygenContext::Private> s_inst;

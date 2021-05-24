@@ -46,7 +46,7 @@ var menudata={children:[
 ,{text:"{{ tr.classes }}",url:"annotated{{ config.HTML_FILE_EXTENSION }}",children:[
  {text:"{{ tr.classList }}",url:"annotated{{ config.HTML_FILE_EXTENSION }}"}
 ,{text:"{{ tr.classIndex }}",url:"classes{{ config.HTML_FILE_EXTENSION }}"}
-{% if classHierarchy.tree %}
+{% if classHierarchy.tree and classHierarchy.maxDepth>1 %}
 ,{text:"{{ tr.classHierarchy }}",url:"hierarchy{{ config.HTML_FILE_EXTENSION }}"}
 {% endif %}
 {% if classMembersIndex.all %}

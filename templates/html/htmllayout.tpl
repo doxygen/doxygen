@@ -30,9 +30,11 @@
 {% resource 'nav_f.lum' %}
 {% resource 'nav_g.png' %}
 {% resource 'nav_h.lum' %}
+{% if config.GENERATE_TREEVIEW %}
 {% resource 'navtree.css' %}
 {% resource 'navtree.js' %}
 {% resource 'resize.js' %}
+{% endif %}
 {% resource 'menu.js' %}
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
@@ -221,7 +223,7 @@
   {% endif %}
 
   {# write the class inheritance hierarchy #}
-  {% if classHierarchy.tree %}
+  {% if classHierarchy.tree and classHierarchy.maxDepth>1 %}
     {% with page=classHierarchy %}
       {% create classHierarchy.fileName|append:config.HTML_FILE_EXTENSION from 'htmlhierarchy.tpl' %}
       {% if config.HAVE_DOT and config.GRAPHICAL_HIERARCHY %}
