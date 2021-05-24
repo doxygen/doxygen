@@ -3406,6 +3406,7 @@ void ClassDefImpl::mergeMembers()
     {
       // merge the members in the base class of this inheritance branch first
       bClass->mergeMembers();
+      if (bClass->getLanguage()==SrcLangExt_Python) continue; // python does not have member overloading, see issue 8480
 
       const MemberNameInfoLinkedMap &srcMnd  = bClass->memberNameInfoLinkedMap();
       MemberNameInfoLinkedMap &dstMnd        = m_impl->allMemberNameInfoLinkedMap;

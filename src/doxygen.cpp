@@ -7674,6 +7674,7 @@ static void computeMemberRelations()
                 //        qPrint(argListToString(mdAl))
                 //      );
                 if (
+                    bmd->getLanguage()==SrcLangExt_Python ||
                     matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
                       md->getOuterScope(), md->getFileDef(), &mdAl,
                       TRUE
