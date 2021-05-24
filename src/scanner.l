@@ -7584,6 +7584,16 @@ static void parseMain(yyscan_t yyscanner,
   {
     BEGIN( FindMembersPHP );
   }
+  else if ( yyextra->insideJava )
+  {
+    QCString scope="java.lang";
+    yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
+    yyextra->current->fileName = yyextra->yyFileName;
+    yyextra->current->section=Entry::USINGDIR_SEC;
+    yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
+    initEntry(yyscanner);
+    BEGIN( FindMembers );
+  }
   else
   {
     BEGIN( FindMembers );
