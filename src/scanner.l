@@ -7563,8 +7563,8 @@ static void parseMain(yyscan_t yyscanner,
   }
   else if ( yyextra->insideJava )
   {
-    QCString scope="java.lang.*";
-    yyextra->current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-1),".","::"));
+    QCString scope="java.lang";
+    yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
     yyextra->current->fileName = yyextra->yyFileName;
     yyextra->current->section=Entry::USINGDIR_SEC;
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
