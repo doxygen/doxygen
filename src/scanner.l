@@ -7584,10 +7584,9 @@ static void parseMain(yyscan_t yyscanner,
   {
     BEGIN( FindMembersPHP );
   }
-  else if ( yyextra->insideJava )
+  else if ( yyextra->insideJava ) // add default java.lang package scope
   {
-    QCString scope="java.lang";
-    yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
+    yyextra->current->name="java::lang"; // '::' is used in doxygen's internal representation as a scope separator
     yyextra->current->fileName = yyextra->yyFileName;
     yyextra->current->section=Entry::USINGDIR_SEC;
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
