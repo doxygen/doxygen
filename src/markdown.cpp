@@ -2695,7 +2695,7 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
 
 //---------------------------------------------------------------------------
 
-QCString Markdown::process(const QCString &input, int &startNewlines)
+QCString Markdown::process(const QCString &input, int &startNewlines, bool fromParseInput)
 {
   if (input.isEmpty()) return input;
   int refIndent;
@@ -2718,7 +2718,14 @@ QCString Markdown::process(const QCString &input, int &startNewlines)
   m_out.clear();
   processInline(s.data(),s.length());
   m_out.addChar(0);
-  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(m_out.get()));
+  if (fromParseInput)
+  {
+    Debug::print(Debug::Markdown,0,"---- output -----\n%s\n=========\n",qPrint(m_out.get()));
+  }
+  else
+  {
+    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(m_out.get()));
+  }
 
   // post processing
   QCString result = substitute(m_out.get(),g_doxy_nsbp,"&nbsp;");
@@ -2785,6 +2792,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   current->docFile  = fileName;
   current->docLine  = 1;
   QCString docs = fileBuf;
+  Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n",qPrint(fileBuf));
   QCString id;
   Markdown markdown(fileName,1,0);
   QCString title=markdown.extractPageTitle(docs,id,prepend).stripWhiteSpace();
@@ -2827,7 +2835,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   Protection prot=Public;
   bool needsEntry = FALSE;
   int position=0;
-  QCString processedDocs = markdown.process(docs,lineNr);
+  QCString processedDocs = markdown.process(docs,lineNr,true);
   while (p->commentScanner.parseCommentBlock(
         this,
         current.get(),
