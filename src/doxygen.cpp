@@ -9918,19 +9918,21 @@ static void readDir(FileInfo *fi,
           )
       {
         std::string name=cfi.fileName();
+        std::string path=cfi.dirPath()+"/";
+        std::string fullName=path+name;
         if (fnMap)
         {
-          std::unique_ptr<FileDef> fd { createFileDef(QCString(cfi.dirPath()+"/"),QCString(name)) };
+          std::unique_ptr<FileDef> fd { createFileDef(QCString(path),QCString(name)) };
           FileName *fn=0;
           if (!name.empty())
           {
-            fn = fnMap->add(QCString(name),QCString(cfi.absFilePath()));
+            fn = fnMap->add(QCString(name),QCString(fullName));
             fn->push_back(std::move(fd));
           }
         }
-        if (resultList) resultList->push_back(cfi.absFilePath());
-        if (resultSet) resultSet->insert(cfi.absFilePath());
-        if (killSet) killSet->insert(cfi.absFilePath());
+        if (resultList) resultList->push_back(fullName);
+        if (resultSet) resultSet->insert(fullName);
+        if (killSet) killSet->insert(fullName);
       }
       else if (recursive &&
           (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
