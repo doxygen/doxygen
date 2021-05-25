@@ -288,10 +288,15 @@ Here is an example of the use of these comment blocks:
 
 \warning These blocks can only be used to document \e members and \e parameters.
          They cannot be used to document files, classes, unions, structs,
-         groups, namespaces and enums themselves. Furthermore, the structural 
+         groups, namespaces, defines and enums themselves. Furthermore, the structural 
          commands mentioned in the next section 
          (like <code>\\class</code>) are not allowed 
          inside these comment blocks.
+
+\warning Don't use this construct with a define as in that cases
+         (when \ref cfg_macro_expansion "MACRO_EXPANSION" is set to `YES`)
+         at places where the define is used the defines is replaced including the comment
+         and this comment is seen as documentation for the last documentable item seen.
 
 \subsubsection docexamples Examples
 
