@@ -12,10 +12,10 @@ of files (and tested against a DTD), it is also possible to create a pdf file
 for each test to see if the LaTeX / pdf generation is possible, similar for
 rtf and docbook output.
 
-The runtest.py script responsible for running the tests takes a number of
+The runtests.py script responsible for running the tests takes a number of
 optional parameters:
   --updateref           update the reference files. Should be used in
-                        combination with -id to update the reference file(s)
+                        combination with --id to update the reference file(s)
                         for the given test
   --doxygen [DOXYGEN]   path/name of the doxygen executable
   --xmllint [XMLLINT]   path/name of the xmllint executable
@@ -48,13 +48,13 @@ optional parameters:
 In case neither --xml, --xmlxsd, --pdf, --rtf, --docbook or --xhtml is used the
 default is set to --xml.
 
-The runtest.pl has the following dependencies on 3rd party tools:
+The runtests.py has the following dependencies on 3rd party tools:
 - python  to run the script
 - xmllint to normalize the XML output
 - diff    to show the differences in case a test fails
 
 Each test file can have a number of special comment lines that are extracted by
-the runtest.pl script and take the form:
+the runtests.py script and take the form:
 // <identifier>: 'argument'
 Where <identifier> can be one of:
 - objective: 'argument' provides the objective for the test (i.e. its purpose)
@@ -64,15 +64,15 @@ Where <identifier> can be one of:
              run doxygen on the test file.
 
 Example to run all tests:
-    python runtest.py
+    python runtests.py
 
 Example to run a test
-    python runtest.py -id 10
+    python runtests.py --id 10
 
 Example to update the reference files for a test
-    python runtest.py -updateref -id 10
+    python runtests.py --updateref --id 10
 
 There is also a CMakeLists.txt, which can be used from the build directory
 to run all tests by simply invoking 'make tests', to use the specific options use
 the flag TEST_FLAGS with make
-  e.g. make tests TEST_FLAGS="--id=5 --id=10 --pdf --xhtml"
+  e.g. make tests TEST_FLAGS="--id=5 ---id=10 --pdf --xhtml"
