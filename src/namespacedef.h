@@ -47,7 +47,7 @@ class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
   public:
     void writeDeclaration(OutputList &ol,const QCString &title,
             bool isConstantGroup=false, bool localName=FALSE);
-    bool declVisible() const;
+    bool declVisible(bool isContantGroup) const;
 };
 
 /** An abstract interface of a namespace symbol. */

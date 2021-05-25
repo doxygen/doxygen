@@ -1059,7 +1059,7 @@ void GroupDefImpl::writeSummaryLinks(OutputList &ol) const
   {
     if ((lde->kind()==LayoutDocEntry::GroupClasses      &&  m_classes.declVisible()) ||
         (lde->kind()==LayoutDocEntry::GroupConcepts     &&  m_concepts.declVisible()) ||
-        (lde->kind()==LayoutDocEntry::GroupNamespaces   &&  m_namespaces.declVisible()) ||
+        (lde->kind()==LayoutDocEntry::GroupNamespaces   &&  m_namespaces.declVisible(false)) ||
         (lde->kind()==LayoutDocEntry::GroupFiles        && !m_fileList.empty()) ||
         (lde->kind()==LayoutDocEntry::GroupNestedGroups && !m_groups.empty()) ||
         (lde->kind()==LayoutDocEntry::GroupDirs         && !m_dirList.empty())

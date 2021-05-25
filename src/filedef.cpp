@@ -790,7 +790,7 @@ void FileDefImpl::writeSummaryLinks(OutputList &ol) const
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible())
+    else if (lde->kind()==LayoutDocEntry::FileNamespaces && m_namespaces.declVisible(false))
     {
       const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
       QCString label = "namespaces";

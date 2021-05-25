@@ -839,10 +839,17 @@ void NamespaceDefImpl::writeSummaryLinks(OutputList &ol) const
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
-    else if (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaces.declVisible())
+    else if (lde->kind()==LayoutDocEntry::NamespaceNestedNamespaces && namespaces.declVisible(false))
     {
       const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
       QCString label = "namespaces";
+      ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
+      first=FALSE;
+    }
+    else if (lde->kind()==LayoutDocEntry::NamespaceNestedConstantGroups && namespaces.declVisible(true))
+    {
+      const LayoutDocEntrySection *ls = (const LayoutDocEntrySection*)lde.get();
+      QCString label = "constantgroups";
       ol.writeSummaryLink(QCString(),label,ls->title(lang),first);
       first=FALSE;
     }
@@ -1270,16 +1277,34 @@ void NamespaceDefImpl::combineUsingRelations(NamespaceDefSet &visitedNamespaces)
 
 //-------------------------------------------------------------------------------
 
-bool NamespaceLinkedRefMap::declVisible() const
+bool NamespaceLinkedRefMap::declVisible(bool isConstantGroup) const
 {
+  bool found=false;
   for (const auto &nd : *this)
   {
-    if (nd->isLinkable())
+    if (nd->isLinkable() && nd->hasDocumentation())
     {
-      return TRUE;
+      SrcLangExt lang = nd->getLanguage();
+      if (SrcLangExt_IDL==lang)
+      {
+        if (isConstantGroup == nd->isConstantGroup())
+        {
+          found=true;
+          break;
+        }
+      }
+      else if (!isConstantGroup) // ensure we only get extra section in IDL
+      {
+        if (nd->isConstantGroup())
+        {
+          err("Internal inconsistency: constant group but not IDL?\n");
+        }
+        found=true;
+        break;
+      }
     }
   }
-  return FALSE;
+  return found;
 }
 
 void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &title,
@@ -1291,35 +1316,10 @@ void NamespaceLinkedRefMap::writeDeclaration(OutputList &ol,const QCString &titl
 
   if (Config_getBool(OPTIMIZE_OUTPUT_VHDL)) return;
 
-  bool found=FALSE;
-  for (const auto &nd : *this)
-  {
-    if (nd->isLinkable() && nd->hasDocumentation())
-    {
-      SrcLangExt lang = nd->getLanguage();
-      if (SrcLangExt_IDL==lang)
-      {
-        if (isConstantGroup == nd->isConstantGroup())
-        {
-          found=TRUE;
-          break;
-        }
-      }
-      else if (!isConstantGroup) // ensure we only get extra section in IDL
-      {
-        if (nd->isConstantGroup())
-        {
-          err("Internal inconsistency: constant group but not IDL?\n");
-        }
-        found=TRUE;
-        break;
-      }
-    }
-  }
-  if (!found) return; // no linkable namespaces in the list
+  if (!declVisible(isConstantGroup)) return;
 
   // write list of namespaces
-  ol.startMemberHeader("namespaces");
+  ol.startMemberHeader(isConstantGroup ? "constantgroups" : "namespaces");
   //bool javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
   //bool fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
   ol.parseText(title);
