@@ -22,6 +22,7 @@
 #include "doxygen.h"
 #include "util.h"
 #include "textstream.h"
+#include "qcstring.h"
 
 /** Helper struct holding the properties of a edge in a dot graph. */
 struct EdgeProperties
@@ -101,7 +102,16 @@ enum class UmlDetailLevel
 {
   Default, // == NO, the default setting
   Full,    // == YES, include type and arguments
+  Aggregate, // == AGGREGATE, don't include compartments for attributes and methods
+             //    and when multiple overloaded entities are present show the count
   None     // == NONE, don't include compartments for attributes and methods
+};
+
+struct aggrInfo
+{
+  aggrInfo(const char *nam, int cnt) : name(nam), count(cnt){}
+  QCString name;
+  int count;
 };
 
 // Local helper function for extracting the configured detail level
@@ -116,6 +126,10 @@ static UmlDetailLevel getUmlDetailLevelFromConfig()
   else if (umlDetailsStr == "NONE")
   {
     result=UmlDetailLevel::None;
+  }
+  else if (umlDetailsStr == "AGGREGATE")
+  {
+    result=UmlDetailLevel::Aggregate;
   }
   return result;
 }
@@ -144,6 +158,50 @@ static void writeBoxMemberList(TextStream &t,
 {
   if (ml)
   {
+    int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
+    if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Aggregate)
+    {
+      std::vector<aggrInfo> members;
+      for (const auto &mma : *ml)
+      {
+        if (mma->getClassDef()==scope &&
+            (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
+        {
+          bool found = false;
+          for (auto &it : members)
+          {
+            if (it.name == mma->name())
+            {
+              it.count++;
+              found = true;
+              break;
+            }
+          }
+          if (!found) members.push_back(aggrInfo(mma->name().data(), 1));
+        }
+      }
+      int totalCount = members.size();
+      int count=0;
+
+      for (const auto &it : members)
+      {
+        if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
+        {
+          t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << "\\l";
+          break;
+        }
+        t << prot << " ";
+        QCString label;
+        label+=it.name.data();
+        label+="()";
+        t << DotNode::convertLabel(label);
+        if (it.count != 1) t << " (" << it.count << "x)";
+        t << "\\l";
+        count++;
+      }
+      return;
+    }
+
     int totalCount=0;
     for (const auto &mma : *ml)
     {
@@ -160,7 +218,6 @@ static void writeBoxMemberList(TextStream &t,
       if (mma->getClassDef() == scope &&
         (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
       {
-        int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
         {
           t << theTranslator->trAndMore(QCString().sprintf("%d",totalCount-count)) << "\\l";
