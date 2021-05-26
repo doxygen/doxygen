@@ -1,6 +1,6 @@
 <!--
 // objective: test markdown parsing
-// check: md_055_markdown.xml
+// check: md_055__markdown.xml
 -->
 
 # Foo
