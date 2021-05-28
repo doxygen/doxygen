@@ -149,7 +149,7 @@ void doctokenizerYYsetStateParam();
 void doctokenizerYYsetStateXRefItem();
 void doctokenizerYYsetStateFile();
 void doctokenizerYYsetStatePattern();
-void doctokenizerYYsetStateLink();
+void doctokenizerYYsetStateLink(bool isJavaLnk = false);
 void doctokenizerYYsetStateCite();
 void doctokenizerYYsetStateRef();
 void doctokenizerYYsetStateInternalRef();
