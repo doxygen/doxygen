@@ -105,7 +105,7 @@ struct scannerYY_state
   int              yyBegLineNr  = 1 ;
   int              yyColNr      = 1 ;
   int              yyBegColNr   = 1 ;
-  QCString         yyFileName;
+  QCString         fileName;
   MethodTypes      mtype = Method;
   bool             stat = false;
   Specifier        virt = Normal;
@@ -229,6 +229,10 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -767,7 +771,7 @@ NONLopt [^\n]*
                                           else
                                           {
                                             lineCount(yyscanner);
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -909,7 +913,7 @@ NONLopt [^\n]*
                                             lineCount(yyscanner);
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
-                                            yyextra->current->fileName = yyextra->yyFileName ;
+                                            yyextra->current->fileName = yyextra->fileName ;
                                             yyextra->current->startLine = yyextra->yyLineNr ;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->args.resize(0);
@@ -926,7 +930,7 @@ NONLopt [^\n]*
                                             lineCount(yyscanner);
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
-                                            yyextra->current->fileName = yyextra->yyFileName ;
+                                            yyextra->current->fileName = yyextra->fileName ;
                                             yyextra->current->startLine = yyextra->yyLineNr ;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->args.resize(0);
@@ -1035,7 +1039,7 @@ NONLopt [^\n]*
                                           yyextra->current->name = substitute(yyextra->current->name,"\\","::");
                                           yyextra->current->section = Entry::NAMESPACE_SEC;
                                           yyextra->current->type = "namespace" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1154,7 +1158,7 @@ NONLopt [^\n]*
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::NAMESPACE_SEC;
                                           yyextra->current->type = "namespace" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1176,7 +1180,7 @@ NONLopt [^\n]*
                                             yyextra->isTypedef=FALSE;
                                             yyextra->current->section = Entry::NAMESPACE_SEC;
                                             yyextra->current->type = "module" ;
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1201,7 +1205,7 @@ NONLopt [^\n]*
                                             yyextra->isTypedef=FALSE;
                                             yyextra->current->section = Entry::NAMESPACE_SEC;
                                             yyextra->current->type = "library" ;
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1221,7 +1225,7 @@ NONLopt [^\n]*
                                             yyextra->isTypedef=FALSE;
                                             yyextra->current->section = Entry::NAMESPACE_SEC;
                                             yyextra->current->type = "constants";
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1245,7 +1249,7 @@ NONLopt [^\n]*
                                               (yyextra->current->spec & (Entry::Optional|Entry::Published));
                                             addType(yyscanner);
                                             yyextra->current->type += " service " ;
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -1267,7 +1271,7 @@ NONLopt [^\n]*
                                               (yyextra->current->spec & Entry::Published); // preserve
                                             addType(yyscanner);
                                             yyextra->current->type += " singleton " ;
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
                                             yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -1290,7 +1294,7 @@ NONLopt [^\n]*
                                                 (yyextra->current->spec & (Entry::Optional|Entry::Published|Entry::Local));
                                             addType(yyscanner);
                                             yyextra->current->type += " interface" ;
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1312,7 +1316,7 @@ NONLopt [^\n]*
                                           yyextra->current->protection = yyextra->protection = Public ;
                                           addType(yyscanner);
                                           yyextra->current->type += " implementation" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
@@ -1331,7 +1335,7 @@ NONLopt [^\n]*
                                           yyextra->current->protection = yyextra->protection = Public ;
                                           addType(yyscanner);
                                           yyextra->current->type += " interface" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1348,7 +1352,7 @@ NONLopt [^\n]*
                                           yyextra->current->protection = yyextra->protection = Public ;
                                           addType(yyscanner);
                                           yyextra->current->type += " protocol" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1364,7 +1368,7 @@ NONLopt [^\n]*
                                             (yyextra->current->spec & Entry::Local);
                                           addType(yyscanner);
                                           yyextra->current->type += " exception" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1400,7 +1404,7 @@ NONLopt [^\n]*
                                             yyextra->current->type += " volatile";
                                           }
                                           yyextra->current->type += " class" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1421,7 +1425,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec = Entry::Value;
                                           addType(yyscanner);
                                           yyextra->current->type += " value class" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1437,7 +1441,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec = Entry::Ref;
                                           addType(yyscanner);
                                           yyextra->current->type += " ref class" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1453,7 +1457,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec = Entry::Interface;
                                           addType(yyscanner);
                                           yyextra->current->type += " interface class" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1469,7 +1473,7 @@ NONLopt [^\n]*
                                             yyextra->current->section = Entry::CLASS_SEC;
                                             addType(yyscanner);
                                             yyextra->current->type += " coclass" ;
-                                            yyextra->current->fileName  = yyextra->yyFileName;
+                                            yyextra->current->fileName  = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1509,7 +1513,7 @@ NONLopt [^\n]*
                                             yyextra->current->type += " volatile";
                                           }
                                           yyextra->current->type += " struct" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1525,7 +1529,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec    = Entry::Struct | Entry::Value;
                                           addType(yyscanner);
                                           yyextra->current->type += " value struct" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1541,7 +1545,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec    = Entry::Struct | Entry::Ref;
                                           addType(yyscanner);
                                           yyextra->current->type += " ref struct" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1557,7 +1561,7 @@ NONLopt [^\n]*
                                           yyextra->current->spec    = Entry::Struct | Entry::Interface;
                                           addType(yyscanner);
                                           yyextra->current->type += " interface struct";
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1586,7 +1590,7 @@ NONLopt [^\n]*
                                             yyextra->current->type += " volatile";
                                           }
                                           yyextra->current->type += " union" ;
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1621,7 +1625,7 @@ NONLopt [^\n]*
                                             yyextra->current->spec |= Entry::Strong;
                                             yyextra->current->spec |= Entry::EnumStruct;
                                           }
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1635,7 +1639,7 @@ NONLopt [^\n]*
                                           yyextra->current->section = Entry::CONCEPT_SEC;
                                           addType(yyscanner);
                                           yyextra->current->type += " concept";
-                                          yyextra->current->fileName  = yyextra->yyFileName;
+                                          yyextra->current->fileName  = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
@@ -1706,7 +1710,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(yytext,"\\","::"));
                                           //printf("PHP: adding use relation: %s\n",qPrint(yyextra->current->name));
-                                          yyextra->current->fileName = yyextra->yyFileName;
+                                          yyextra->current->fileName = yyextra->fileName;
                                           // add a using declaration
                                           yyextra->current->section=Entry::USINGDECL_SEC;
                                           yyextra->current_root->copyToSubEntry(yyextra->current);
@@ -1745,7 +1749,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           QCString scope=yytext;
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope.left(scope.length()-1),".","::"));
-                                          yyextra->current->fileName = yyextra->yyFileName;
+                                          yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=Entry::USINGDIR_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
@@ -1755,7 +1759,7 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                           QCString scope=yytext;
                                           yyextra->current->name=removeRedundantWhiteSpace(substitute(scope,".","::"));
-                                          yyextra->current->fileName = yyextra->yyFileName;
+                                          yyextra->current->fileName = yyextra->fileName;
                                           if (yyextra->insideD)
                                           {
                                             yyextra->current->section=Entry::USINGDIR_SEC;
@@ -1780,7 +1784,7 @@ NONLopt [^\n]*
 <Using>({ID}{BN}*("::"|"."){BN}*)*({ID}|{OPERATOR}) {
                                           lineCount(yyscanner);
                                           yyextra->current->name=yytext;
-                                          yyextra->current->fileName = yyextra->yyFileName;
+                                          yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=Entry::USINGDECL_SEC;
                                           yyextra->current->startLine = yyextra->yyLineNr;
                                           yyextra->previous = yyextra->current;
@@ -1792,7 +1796,7 @@ NONLopt [^\n]*
                                                          */
                                           {
                                             yyextra->current->name=yytext;
-                                            yyextra->current->fileName = yyextra->yyFileName;
+                                            yyextra->current->fileName = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->section=Entry::USINGDIR_SEC;
@@ -1856,7 +1860,7 @@ NONLopt [^\n]*
                                           BEGIN(UsingAlias);
                                         }
 <UsingDirective>{SCOPENAME}             { yyextra->current->name=removeRedundantWhiteSpace(yytext);
-                                          yyextra->current->fileName = yyextra->yyFileName;
+                                          yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=Entry::USINGDIR_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
                                           initEntry(yyscanner);
@@ -2432,7 +2436,7 @@ NONLopt [^\n]*
                                           BEGIN( PreLineCtrl );
                                         }
 <PreLineCtrl>"\""[^\n\"]*"\""           {
-                                          yyextra->yyFileName = stripQuotes(yytext);
+                                          yyextra->fileName = stripQuotes(yytext);
                                           if (yyextra->lastPreLineCtrlContext==ReadBody ||
                                               yyextra->lastPreLineCtrlContext==ReadNSBody ||
                                               yyextra->lastPreLineCtrlContext==ReadBodyIntf)
@@ -2497,7 +2501,7 @@ NONLopt [^\n]*
                                         }
 <DefineEnd>\n                           {
                                           //printf("End define: doc=%s docFile=%s docLine=%d\n",qPrint(yyextra->current->doc),qPrint(yyextra->current->docFile),yyextra->current->docLine);
-                                          yyextra->current->fileName   = yyextra->yyFileName;
+                                          yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->startLine  = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->type.resize(0);
@@ -2511,7 +2515,7 @@ NONLopt [^\n]*
                                         }
 <DefinePHPEnd>";"                       {
                                           //printf("End define\n");
-                                          yyextra->current->fileName   = yyextra->yyFileName;
+                                          yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->startLine  = yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           yyextra->current->type.resize(0);
@@ -2667,12 +2671,12 @@ NONLopt [^\n]*
                                           if (yyextra->previous && yyextra->previous->section==Entry::GROUPDOC_SEC)
                                           {
                                             // link open command to the group defined in the yyextra->previous entry
-                                            yyextra->commentScanner.open(yyextra->previous.get(),yyextra->yyFileName,yyextra->yyLineNr);
+                                            yyextra->commentScanner.open(yyextra->previous.get(),yyextra->fileName,yyextra->yyLineNr);
                                           }
                                           else
                                           {
                                             // link open command to the yyextra->current entry
-                                            yyextra->commentScanner.open(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr);
+                                            yyextra->commentScanner.open(yyextra->current.get(),yyextra->fileName,yyextra->yyLineNr);
                                           }
                                           //yyextra->current = tmp;
                                           initEntry(yyscanner);
@@ -2716,7 +2720,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers,FindFields,ReadInitializer,ReadInitializerPtr>{CPPC}([!/]){B}*{CMD}"}".*|{CCS}([!*]){B}*{CMD}"}"[^*]*{CCE}     {
                                           bool insideEnum = YY_START==FindFields || ((YY_START==ReadInitializer || YY_START==ReadInitializerPtr) && yyextra->lastInitializerContext==FindFields); // see bug746226
-                                          yyextra->commentScanner.close(yyextra->current.get(),yyextra->yyFileName,yyextra->yyLineNr,insideEnum);
+                                          yyextra->commentScanner.close(yyextra->current.get(),yyextra->fileName,yyextra->yyLineNr,insideEnum);
                                           lineCount(yyscanner);
                                         }
 <FindMembers>"=>"                       {
@@ -2774,7 +2778,7 @@ NONLopt [^\n]*
                                           //printf(">> initializer '%s' <<\n",qPrint(yyextra->current->initializer));
                                           if (*yytext==';' && (yyextra->current_root->spec&Entry::Enum))
                                           {
-                                            yyextra->current->fileName   = yyextra->yyFileName;
+                                            yyextra->current->fileName   = yyextra->fileName;
                                             yyextra->current->startLine  = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
@@ -3385,7 +3389,7 @@ NONLopt [^\n]*
                                                 yyextra->current->spec = 0;
                                             }
                                             yyextra->current->section = Entry::VARIABLE_SEC ;
-                                            yyextra->current->fileName = yyextra->yyFileName;
+                                            yyextra->current->fileName = yyextra->fileName;
                                             yyextra->current->startLine = yyextra->yyBegLineNr;
                                             yyextra->current->startColumn = yyextra->yyBegColNr;
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
@@ -3619,7 +3623,7 @@ NONLopt [^\n]*
                                           // the parameter name for the property - just skip.
                                         }
 <IDLProp>";"                            {
-                                          yyextra->current->fileName   = yyextra->yyFileName;
+                                          yyextra->current->fileName   = yyextra->fileName;
                                           yyextra->current->type                = yyextra->idlProp;
                                           yyextra->current->args       = yyextra->current->args.simplifyWhiteSpace();
                                           if (!yyextra->current->args.isEmpty())
@@ -3699,7 +3703,7 @@ NONLopt [^\n]*
                                           {
                                             if (!yyextra->current->name.isEmpty())
                                             {
-                                              yyextra->current->fileName   = yyextra->yyFileName;
+                                              yyextra->current->fileName   = yyextra->fileName;
                                               yyextra->current->startLine  = yyextra->yyLineNr;
                                               yyextra->current->startColumn = yyextra->yyColNr;
                                               if (!(yyextra->current_root->spec&Entry::Enum))
@@ -3730,7 +3734,7 @@ NONLopt [^\n]*
                                           //     qPrint(yyextra->current->args), qPrint(yyextra->current_root->name),yyextra->current->mGrpId);
                                           if (!yyextra->current->name.isEmpty())
                                           {
-                                            yyextra->current->fileName   = yyextra->yyFileName;
+                                            yyextra->current->fileName   = yyextra->fileName;
                                             yyextra->current->startLine  = yyextra->yyLineNr;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             if (!(yyextra->current_root->spec&Entry::Enum))
@@ -4119,7 +4123,7 @@ NONLopt [^\n]*
                                               {
                                                 varEntry->type+=yyextra->current->name+yyextra->msType;
                                               }
-                                              varEntry->fileName = yyextra->yyFileName;
+                                              varEntry->fileName = yyextra->fileName;
                                               varEntry->startLine = yyextra->yyLineNr;
                                               varEntry->startColumn = yyextra->yyColNr;
                                               varEntry->doc = yyextra->current->doc;
@@ -4231,7 +4235,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <FuncPtr>.                              {
-                                          //printf("error: FuncPtr '%c' unexpected at line %d of %s\n",*yytext,yyextra->yyLineNr,yyextra->yyFileName);
+                                          //printf("error: FuncPtr '%c' unexpected at line %d of %s\n",*yytext,yyextra->yyLineNr,yyextra->fileName);
                                         }
 <FuncPtrOperator>"("{BN}*")"{BNopt}/"(" {
                                           yyextra->current->name += yytext;
@@ -4577,7 +4581,7 @@ NONLopt [^\n]*
 <CopyArgComment,CopyArgVerbatim>\n      { yyextra->fullArgString+=*yytext; lineCount(yyscanner); }
 <CopyArgComment,CopyArgVerbatim>.       { yyextra->fullArgString+=*yytext; }
 <CopyArgComment>{CMD}("brief"|"short"){B}+ {
-                                          warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
                                               "Ignoring %cbrief command inside argument documentation",*yytext
                                              );
                                           yyextra->fullArgString+=' ';
@@ -4823,7 +4827,7 @@ NONLopt [^\n]*
                                           }
                                           else
                                           {
-                                            warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                            warn(yyextra->fileName,yyextra->yyLineNr,
                                                  "Found ')' without opening '(' for trailing return type '%s)...'",
                                                  qPrint(yyextra->current->argList.trailingReturnType()));
                                           }
@@ -5043,7 +5047,7 @@ NONLopt [^\n]*
                                           yyextra->current->type=yyextra->current->type.simplifyWhiteSpace();
                                           yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
                                                         // was: yyextra->current->args.simplifyWhiteSpace();
-                                          yyextra->current->fileName = yyextra->yyFileName;
+                                          yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;
                                           static const reg::Ex re(R"(\([^)]*[*&][^)]*\))");
@@ -5349,7 +5353,7 @@ NONLopt [^\n]*
                                           BEGIN( SkipString );
                                         }
 <SkipInits>;                            {
-                                          warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
                                               "Found ';' while parsing initializer list! "
                                               "(doxygen could be confused by a macro call without semicolon)"
                                              );
@@ -5868,7 +5872,7 @@ NONLopt [^\n]*
                                           {
                                             lineCount(yyscanner);
                                             yyextra->current->program << yytext;
-                                            yyextra->current->fileName = yyextra->yyFileName ;
+                                            yyextra->current->fileName = yyextra->fileName ;
                                             yyextra->current->startLine = yyextra->yyLineNr ;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->curlyCount=0;
@@ -5887,7 +5891,7 @@ NONLopt [^\n]*
                                           {
                                             lineCount(yyscanner);
                                             yyextra->current->program << yytext;
-                                            yyextra->current->fileName = yyextra->yyFileName ;
+                                            yyextra->current->fileName = yyextra->fileName ;
                                             yyextra->current->startLine = yyextra->yyLineNr ;
                                             yyextra->current->startColumn = yyextra->yyColNr;
                                             yyextra->curlyCount=0;
@@ -5896,7 +5900,7 @@ NONLopt [^\n]*
                                         }
 <CompoundName,ClassVar>{B}*"{"{B}*      {
                                           yyextra->current->program.str(std::string());
-                                          yyextra->current->fileName = yyextra->yyFileName ;
+                                          yyextra->current->fileName = yyextra->fileName ;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
@@ -6149,7 +6153,7 @@ NONLopt [^\n]*
                                         }
 <Bases>{B}*"{"{B}*                      {
                                           yyextra->current->program.str(std::string());
-                                          yyextra->current->fileName = yyextra->yyFileName ;
+                                          yyextra->current->fileName = yyextra->fileName ;
                                           yyextra->current->bodyLine  = yyextra->yyLineNr;
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name = removeRedundantWhiteSpace(yyextra->current->name);
@@ -6206,7 +6210,7 @@ NONLopt [^\n]*
                                           else
                                           {
                                             yyextra->current->docLine = yyextra->yyLineNr;
-                                            yyextra->current->docFile = yyextra->yyFileName;
+                                            yyextra->current->docFile = yyextra->fileName;
                                           }
 
                                           yyextra->lastDocContext = YY_START;
@@ -6225,7 +6229,7 @@ NONLopt [^\n]*
                                           if (yyextra->docBlockAutoBrief)
                                           {
                                             yyextra->current->briefLine = yyextra->yyLineNr;
-                                            yyextra->current->briefFile = yyextra->yyFileName;
+                                            yyextra->current->briefFile = yyextra->fileName;
                                           }
                                           startCommentBlock(yyscanner,FALSE);
                                           BEGIN( DocBlock );
@@ -6238,13 +6242,13 @@ NONLopt [^\n]*
                                           {
                                             yyextra->lastDocContext = YY_START;
 
-                                            //printf("Found comment banner at %s:%d\n",yyextra->yyFileName,yyextra->yyLineNr);
+                                            //printf("Found comment banner at %s:%d\n",yyextra->fileName,yyextra->yyLineNr);
                                             if (yyextra->current_root->section & Entry::SCOPE_MASK)
                                             {
                                               yyextra->current->inside = yyextra->current_root->name+"::";
                                             }
                                             yyextra->current->docLine = yyextra->yyLineNr;
-                                            yyextra->current->docFile = yyextra->yyFileName;
+                                            yyextra->current->docFile = yyextra->fileName;
                                             yyextra->docBlockContext = YY_START;
                                             yyextra->docBlockInBody  = YY_START==SkipCurly;
                                             bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
@@ -6257,7 +6261,7 @@ NONLopt [^\n]*
                                             if (yyextra->docBlockAutoBrief)
                                             {
                                               yyextra->current->briefLine = yyextra->yyLineNr;
-                                              yyextra->current->briefFile = yyextra->yyFileName;
+                                              yyextra->current->briefFile = yyextra->fileName;
                                             }
                                             startCommentBlock(yyscanner,FALSE);
                                             BEGIN( DocBlock );
@@ -6272,13 +6276,13 @@ NONLopt [^\n]*
 <FindMembers,FindFields,MemberSpec,FuncQual,SkipCurly,Operator,ClassVar,SkipInits,Bases,OldStyleArgs>({CPPC}{B}*)?{CCS}"*"/{NCOMM} {
                                           yyextra->lastDocContext = YY_START;
 
-                                          //printf("Found comment block at %s:%d\n",yyextra->yyFileName,yyextra->yyLineNr);
+                                          //printf("Found comment block at %s:%d\n",yyextra->fileName,yyextra->yyLineNr);
                                           if (yyextra->current_root->section & Entry::SCOPE_MASK)
                                           {
                                             yyextra->current->inside = yyextra->current_root->name+"::";
                                           }
                                           yyextra->current->docLine = yyextra->yyLineNr;
-                                          yyextra->current->docFile = yyextra->yyFileName;
+                                          yyextra->current->docFile = yyextra->fileName;
                                           yyextra->docBlockContext = YY_START;
                                           yyextra->docBlockInBody  = YY_START==SkipCurly;
                                           bool javadocAutoBrief = Config_getBool(JAVADOC_AUTOBRIEF);
@@ -6291,7 +6295,7 @@ NONLopt [^\n]*
                                           if (yyextra->docBlockAutoBrief)
                                           {
                                             yyextra->current->briefLine = yyextra->yyLineNr;
-                                            yyextra->current->briefFile = yyextra->yyFileName;
+                                            yyextra->current->briefFile = yyextra->fileName;
                                           }
                                           startCommentBlock(yyscanner,FALSE);
                                           BEGIN( DocBlock );
@@ -6767,7 +6771,7 @@ NONLopt [^\n]*
                                           yyextra->docBlock << *yytext;
                                         }
 <DocCopyBlock><<EOF>>                   {
-                                          warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                          warn(yyextra->fileName,yyextra->yyLineNr,
                                               "reached end of file while inside a '%s' block!\n"
                                               "The command that should end the block seems to be missing!\n",
                                               qPrint(yyextra->docBlockName));
@@ -7080,7 +7084,7 @@ static bool nameIsOperator(QCString &name)
 static void setContext(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->language    = getLanguageFromFileName(yyextra->yyFileName);
+  yyextra->language    = getLanguageFromFileName(yyextra->fileName);
   yyextra->insideIDL   = yyextra->language==SrcLangExt_IDL;
   yyextra->insideJava  = yyextra->language==SrcLangExt_Java;
   yyextra->insideCS    = yyextra->language==SrcLangExt_CSharp;
@@ -7093,7 +7097,7 @@ static void setContext(yyscan_t yyscanner)
                           yyextra->language==SrcLangExt_Lex);
   //printf("setContext(%s) yyextra->insideIDL=%d yyextra->insideJava=%d yyextra->insideCS=%d "
   //       "yyextra->insideD=%d yyextra->insidePHP=%d yyextra->insideObjC=%d\n",
-  //       qPrint(yyextra->yyFileName),yyextra->insideIDL,yyextra->insideJava,yyextra->insideCS,yyextra->insideD,yyextra->insidePHP,yyextra->insideObjC
+  //       qPrint(yyextra->fileName),yyextra->insideIDL,yyextra->insideJava,yyextra->insideCS,yyextra->insideD,yyextra->insidePHP,yyextra->insideObjC
   //    );
 }
 
@@ -7120,7 +7124,7 @@ static void prependScope(yyscan_t yyscanner)
 static bool checkForKnRstyleC(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (((QCString)yyextra->yyFileName).right(2).lower()!=".c") return FALSE; // must be a C file
+  if (((QCString)yyextra->fileName).right(2).lower()!=".c") return FALSE; // must be a C file
   if (yyextra->current->argList.empty()) return FALSE; // must have arguments
   for (const Argument &a : yyextra->current->argList)
   {
@@ -7273,12 +7277,12 @@ static void startCommentBlock(yyscan_t yyscanner,bool brief)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (brief)
   {
-    yyextra->current->briefFile = yyextra->yyFileName;
+    yyextra->current->briefFile = yyextra->fileName;
     yyextra->current->briefLine = yyextra->yyLineNr;
   }
   else
   {
-    yyextra->current->docFile = yyextra->yyFileName;
+    yyextra->current->docFile = yyextra->fileName;
     yyextra->current->docLine = yyextra->yyLineNr;
   }
 }
@@ -7317,20 +7321,20 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   std::shared_ptr<Entry> docEntry = yyextra->docBlockInBody && yyextra->previous ? yyextra->previous : yyextra->current;
   if (yyextra->docBlockInBody && docEntry && docEntry->inbodyLine==-1)
   {
-    docEntry->inbodyFile = yyextra->yyFileName;
+    docEntry->inbodyFile = yyextra->fileName;
     docEntry->inbodyLine = lineNr;
   }
 
   int position=0;
   bool needsEntry=FALSE;
-  Markdown markdown(yyextra->yyFileName,lineNr);
+  Markdown markdown(yyextra->fileName,lineNr);
   QCString strippedDoc = stripIndentation(doc);
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(strippedDoc,lineNr) : strippedDoc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         yyextra->docBlockInBody && yyextra->previous ? yyextra->previous.get() : yyextra->current.get(),
         processedDoc, // text
-        yyextra->yyFileName,   // file
+        yyextra->fileName,   // file
         lineNr,       // line of block start
         yyextra->docBlockInBody ? FALSE : brief,               // isBrief
         yyextra->docBlockInBody ? FALSE : yyextra->docBlockAutoBrief,   // isJavaDocStyle
@@ -7390,7 +7394,7 @@ static void handleParametersCommentBlocks(yyscan_t yyscanner,ArgumentList &al)
              yyextra->thisParser,
              yyextra->current.get(),
              a.docs,             // text
-             yyextra->yyFileName,         // file
+             yyextra->fileName,         // file
              yyextra->current->docLine,   // line of block start
              FALSE,
              FALSE,
@@ -7445,7 +7449,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       else
         BEGIN( FindMembers ) ;
       yyextra->current_root = ce;
-      yyextra->yyFileName = ce->fileName;
+      yyextra->fileName = ce->fileName;
       //setContext();
       yyextra->yyLineNr = ce->bodyLine;
       yyextra->yyColNr = ce->bodyColumn;
@@ -7514,13 +7518,13 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
       //memberGroupRelates.resize(0);
       //memberGroupInside.resize(0);
       QCString name = ce->name;
-      yyextra->commentScanner.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.enterCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
       scannerYYlex(yyscanner);
       yyextra->lexInit=TRUE;
       //forceEndGroup();
 
-      yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.leaveCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
       yyextra->programStr.resize(0);
       ce->program.str(std::string());
@@ -7528,7 +7532,7 @@ static void parseCompounds(yyscan_t yyscanner,const std::shared_ptr<Entry> &rt)
 
       //if (depthIf>0)
       //{
-      //        warn(yyextra->yyFileName,yyextra->yyLineNr,"Documentation block ended in the middle of a conditional section!");
+      //        warn(yyextra->fileName,yyextra->yyLineNr,"Documentation block ended in the middle of a conditional section!");
       //}
     }
     parseCompounds(yyscanner,ce);
@@ -7560,21 +7564,21 @@ static void parseMain(yyscan_t yyscanner,
   yyextra->yyLineNr      = 1 ;
   yyextra->yyBegLineNr   = 1;
   yyextra->yyBegColNr    = 0;
-  yyextra->yyFileName = fileName;
+  yyextra->fileName = fileName;
   yyextra->clangParser = clangParser;
   setContext(yyscanner);
   rt->lang = yyextra->language;
-  msg("Parsing file %s...\n",qPrint(yyextra->yyFileName));
+  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
 
   yyextra->current_root  = rt;
   initParser(yyscanner);
-  yyextra->commentScanner.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.enterFile(yyextra->fileName,yyextra->yyLineNr);
   yyextra->current = std::make_shared<Entry>();
   //printf("yyextra->current=%p yyextra->current_root=%p\n",yyextra->current,yyextra->current_root);
-  int sec=guessSection(yyextra->yyFileName);
+  int sec=guessSection(yyextra->fileName);
   if (sec)
   {
-    yyextra->current->name    = yyextra->yyFileName;
+    yyextra->current->name    = yyextra->fileName;
     yyextra->current->section = sec;
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   }
@@ -7587,7 +7591,7 @@ static void parseMain(yyscan_t yyscanner,
   else if ( yyextra->insideJava ) // add default java.lang package scope
   {
     yyextra->current->name="java::lang"; // '::' is used in doxygen's internal representation as a scope separator
-    yyextra->current->fileName = yyextra->yyFileName;
+    yyextra->current->fileName = yyextra->fileName;
     yyextra->current->section=Entry::USINGDIR_SEC;
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
     initEntry(yyscanner);
@@ -7603,11 +7607,11 @@ static void parseMain(yyscan_t yyscanner,
 
   if (YY_START==Comment)
   {
-    warn(yyextra->yyFileName,yyextra->yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
+    warn(yyextra->fileName,yyextra->yyLineNr,"File ended in the middle of a comment block! Perhaps a missing \\endcode?");
   }
 
   //forceEndGroup();
-  yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.leaveFile(yyextra->fileName,yyextra->yyLineNr);
 
   yyextra->programStr.resize(0);
   rt->program.str(std::string());
@@ -7634,7 +7638,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   //printf("**** parsePrototype(%s) begin\n",qPrint(text));
   if (text.isEmpty())
   {
-    warn(yyextra->yyFileName,yyextra->yyLineNr,"Empty prototype found!");
+    warn(yyextra->fileName,yyextra->yyLineNr,"Empty prototype found!");
     return;
   }
   if (!yyextra->current) // nothing to store (see bug683516)

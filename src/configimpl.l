@@ -598,6 +598,11 @@ static ConfigImpl       *g_config;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_REENTRANT
+#include "doxygen_lex.h"
+
 static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
   // no file included

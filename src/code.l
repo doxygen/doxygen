@@ -105,6 +105,7 @@ struct codeYY_state
 
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   yy_size_t     yyColNr = 0;         //!< current column number
@@ -263,6 +264,9 @@ static std::mutex g_countFlowKeywordsMutex;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -3853,6 +3857,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
+  yyextra->fileName      = fd ? fd->fileName():"";
   yyextra->inputPosition = 0;
   codeYYrestart(0,yyscanner);
   yyextra->currentFontClass = 0;

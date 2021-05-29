@@ -136,6 +136,7 @@ struct fortrancodeYY_state
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
+  QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
   int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
@@ -215,6 +216,10 @@ static std::mutex g_countFlowKeywordsMutex;
 /* -----------------------------------------------------------------*/
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -1459,6 +1464,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->isFixedForm = recognizeFixedForm(input,p->format);
   yyextra->contLineNr = 1;
   yyextra->hasContLine = NULL;

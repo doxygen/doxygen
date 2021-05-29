@@ -74,6 +74,7 @@ struct pycodeYY_state
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   const char *  currentFontClass = 0;
   bool          needsTermination = FALSE;
   const Definition *searchCtx = 0;
@@ -156,6 +157,10 @@ static std::mutex g_countFlowKeywordsMutex;
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -1581,6 +1586,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
   printlex(yy_flex_debug, TRUE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
