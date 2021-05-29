@@ -1631,6 +1631,18 @@ WSopt [ \t\r]*
 					    BEGIN(SkipCComment);
                                           }
   					}
+<*>{CPPC}[^/!].*\n                      {
+                                          if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->yyFileName)==SrcLangExt_Fortran)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+  					    yyextra->yyLineNr++;
+                                            yyextra->isSpecialComment = false;
+                                            outputArray(yyscanner,yytext,yyleng);
+                                          }
+                                        }
 <*>{CPPC}[/!]?				{
                                           if (YY_START==SkipVerbatim || YY_START==SkipCond || getLanguageFromFileName(yyextra->yyFileName)==SrcLangExt_Fortran)
                                           {
