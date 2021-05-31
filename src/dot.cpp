@@ -319,6 +319,8 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param baseName the base name of the output files
  *  \param context the scope in which this graph is found (for resolving links)
  *  \param graphId a unique id for this graph, use for dynamic sections
+ *  \param srcFile the source file
+ *  \param srcLine the line number in the source file
  */
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,

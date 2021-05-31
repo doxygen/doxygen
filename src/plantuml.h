@@ -68,7 +68,6 @@ class PlantumlManager
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
-     *  @param[in] engine   the plantuml engine to be used so the start command will be `@start<engine>`
      */
     void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
 
