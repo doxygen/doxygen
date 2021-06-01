@@ -2461,7 +2461,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isFinal())    sl.push_back("final");
   if (isSealed())   sl.push_back("sealed");
   if (isAbstract()) sl.push_back("abstract");
-  if (isStatic())   sl.append("static");
+  if (isStatic())   sl.push_back("static");
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
   ol.pushGeneratorState();
