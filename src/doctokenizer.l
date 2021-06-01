@@ -58,9 +58,9 @@ static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;
 static bool g_insideQuot;
-static int g_sharpCount=0;
+static int g_sharpCount = 0;
 static bool g_markdownSupport = TRUE;
-static bool g_quotSupport = FALSE;
+static bool g_quotSupport = TRUE;
 
 // context for section finding phase
 static const Definition  *g_definition;
