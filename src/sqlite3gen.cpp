@@ -175,6 +175,7 @@ const char * table_schema[][2] = {
       "\twrite                TEXT,\n"
       "\tprot                 INTEGER DEFAULT 0, -- 0:public 1:protected 2:private 3:package\n"
       "\tstatic               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
+      "\textern               INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tconst                INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\texplicit             INTEGER DEFAULT 0, -- 0:no 1:yes\n"
       "\tinline               INTEGER DEFAULT 0, -- 0:no 1:yes 2:both (set after encountering inline and not-inline)\n"
@@ -608,6 +609,7 @@ SqlStmt memberdef_insert={
     "write,"
     "prot,"
     "static,"
+    "extern,"
     "const,"
     "explicit,"
     "inline,"
@@ -666,6 +668,7 @@ SqlStmt memberdef_insert={
     ":write,"
     ":prot,"
     ":static,"
+    ":extern,"
     ":const,"
     ":explicit,"
     ":inline,"
@@ -925,7 +928,7 @@ static int insertPath(QCString name, bool local=TRUE, bool found=TRUE, int type=
 static void recordMetadata()
 {
   bindTextParameter(meta_insert,":doxygen_version",getFullVersion());
-  bindTextParameter(meta_insert,":schema_version","0.2.0",TRUE); //TODO: this should be a constant somewhere; not sure where
+  bindTextParameter(meta_insert,":schema_version","0.2.1",TRUE); //TODO: this should be a constant somewhere; not sure where
   bindTextParameter(meta_insert,":generated_at",dateToString(TRUE));
   bindTextParameter(meta_insert,":generated_on",dateToString(FALSE));
   bindTextParameter(meta_insert,":project_name",Config_getString(PROJECT_NAME));
@@ -1147,7 +1150,7 @@ static int prepareStatement(sqlite3 *db, SqlStmt &s)
   rc = sqlite3_prepare_v2(db,s.query,-1,&s.stmt,0);
   if (rc!=SQLITE_OK)
   {
-    err("prepare failed for %s\n%s\n", s.query, sqlite3_errmsg(db));
+    err("prepare failed for:\n  %s\n  %s\n", s.query, sqlite3_errmsg(db));
     s.db = NULL;
     return -1;
   }
@@ -1612,6 +1615,7 @@ static void generateSqlite3ForMember(const MemberDef *md, struct Refid scope_ref
   bindIntParameter(memberdef_insert,":prot",md->protection());
 
   bindIntParameter(memberdef_insert,":static",md->isStatic());
+  bindIntParameter(memberdef_insert,":extern",md->isExternal());
 
   bool isFunc=FALSE;
   switch (md->memberType())
@@ -2496,7 +2500,7 @@ void generateSqlite3()
 
   if ( -1 == prepareStatements(db) )
   {
-    err("sqlite generator: prepareStatements failed!");
+    err("sqlite generator: prepareStatements failed!\n");
     return;
   }
 
@@ -2579,7 +2583,7 @@ void generateSqlite3()
 #else // USE_SQLITE3
 void generateSqlite3()
 {
-  err("sqlite3 support has not been compiled in!");
+  err("sqlite3 support has not been compiled in!\n");
 }
 #endif
 // vim: noai:ts=2:sw=2:ss=2:expandtab

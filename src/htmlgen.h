@@ -83,6 +83,7 @@ class HtmlGenerator : public OutputGenerator
     static void writeExternalSearchPage();
     static QCString writeLogoAsString(const QCString &path);
     static QCString writeSplitBarAsString(const QCString &name,const QCString &relpath);
+    static QCString getMathJaxMacros();
 
     // ---- CodeOutputInterface
     void codify(const QCString &text)

@@ -6771,6 +6771,7 @@ reparsetoken:
           }
           else
           {
+            m_children.push_back(std::make_unique<DocWord>(this,g_token->name));
             warn_doc_error(g_fileName,getDoctokinizerLineNr(),"Unsupported symbol %s found",
                 qPrint(g_token->name));
           }

@@ -1214,6 +1214,7 @@ void writeJavaScriptSearchIndex()
       t << "</html>\n";
     }
   }
+
   Doxygen::indexList->addStyleSheetFile("search/search.js");
 }
 

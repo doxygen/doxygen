@@ -3241,48 +3241,32 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
        ) // predefined function macro definition
     {
       static const reg::Ex reId(R"(\a\w*)");
-      reg::Iterator end;
-      bool varArgs = false;
-      int count = 0;
       std::map<std::string,int> argMap;
-      if (ds.substr(i_obrace+1,i_cbrace-i_obrace-1)=="...")
+      std::string args  = ds.substr(i_obrace+1,i_cbrace-i_obrace-1); // part between ( and )
+      bool   hasVarArgs = args.find("...")!=std::string::npos;
+      //printf("predefined function macro '%s'\n",ds.c_str());
+      int count = 0;
+      reg::Iterator arg_it(args,reId,0);
+      reg::Iterator arg_end;
+      // gather the formal arguments in a dictionary
+      for (; arg_it!=arg_end; ++arg_it)
       {
-        varArgs = true;
-        argMap.emplace("__VA_ARGS__",count);
-        count++;
+        argMap.emplace(arg_it->str(),count++);
       }
-      else
+      if (hasVarArgs) // add the variable argument if present
       {
-        size_t i=i_obrace+1;
-        //printf("predefined function macro '%s'\n",ds.c_str());
-        reg::Iterator it(ds,reId,i);
-        // gather the formal arguments in a dictionary 
-        while (i<i_cbrace && it!=end)
-        {
-          const auto &match = *it;
-          size_t pi = match.position();
-          size_t l  = match.length();
-          if (l>0) // see bug375037
-          {
-            argMap.emplace(match.str(),count);
-            count++;
-            i=pi+l;
-          }
-          else
-          {
-            i++;
-          }
-          ++it;
-        }
+        argMap.emplace("__VA_ARGS__",count++);
       }
+
       // strip definition part
       std::string definition;
       std::string in=ds.substr(i_equals+1);
       reg::Iterator re_it(in,reId);
+      reg::Iterator re_end;
       size_t i=0;
       // substitute all occurrences of formal arguments by their 
       // corresponding markers
-      for (; re_it!=end; ++re_it)
+      for (; re_it!=re_end; ++re_it)
       {
         const auto &match = *re_it;
         size_t pi = match.position();
@@ -3317,11 +3301,11 @@ static void initPredefined(yyscan_t yyscanner,const QCString &fileName)
         def.nonRecursive = nonRecursive;
         def.fileDef      = state->yyFileDef;
         def.fileName     = fileName;
-        def.varArgs      = varArgs;
+        def.varArgs      = hasVarArgs;
         state->contextDefines.insert(std::make_pair(def.name.str(),def));
 
-        //printf("#define '%s' '%s' #nargs=%d\n",
-        //  qPrint(def->name),qPrint(def->definition),def->nargs);
+        //printf("#define '%s' '%s' #nargs=%d hasVarArgs=%d\n",
+        //  qPrint(def.name),qPrint(def.definition),def.nargs,def.varArgs);
       }
     }
     else if (!ds.empty()) // predefined non-function macro definition

@@ -741,7 +741,7 @@ static Definition *buildScopeFromQualifiedName(const QCString &name_,SrcLangExt 
     else if (nd==0 && cd==0 && fullScope.find('<')==-1) // scope is not known and could be a namespace!
     {
       // introduce bogus namespace
-      //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",qPrint(nsName),qPrint(prevScope->name()),tagInfo);
+      //printf("++ adding dummy namespace %s to %s tagInfo=%p\n",qPrint(nsName),qPrint(prevScope->name()),(void*)tagInfo);
       NamespaceDefMutable *newNd=
         toNamespaceDefMutable(
           Doxygen::namespaceLinkedMap->add(fullScope,
@@ -1695,6 +1695,11 @@ static void buildNamespaceList(const Entry *root)
 
           // file definition containing the namespace nd
           FileDef *fd=root->fileDef();
+          if (nd->isArtificial())
+          {
+            nd->setArtificial(FALSE); // found namespace explicitly, so cannot be artificial
+            nd->setDefFile(root->fileName,root->startLine,root->startColumn);
+          }
           // insert the namespace in the file definition
           if (fd) fd->insertNamespace(nd);
           addNamespaceToGroups(root,nd);
@@ -1980,15 +1985,16 @@ static void buildListOfUsingDecls(const Entry *root)
 }
 
 
-static void findUsingDeclarations(const Entry *root)
+static void findUsingDeclarations(const Entry *root,bool filterPythonPackages)
 {
   if (root->section==Entry::USINGDECL_SEC &&
-      !(root->parent()->section&Entry::COMPOUND_MASK) // not a class/struct member
+      !(root->parent()->section&Entry::COMPOUND_MASK) && // not a class/struct member
+      (!filterPythonPackages || (root->lang==SrcLangExt_Python && root->fileName.endsWith("__init__.py")))
      )
   {
     //printf("Found using declaration %s at line %d of %s inside section %x\n",
     //   qPrint(root->name),root->startLine,qPrint(root->fileName),
-    //   rootNav->parent()->section());
+    //   root->parent()->section);
     if (!root->name.isEmpty())
     {
       ClassDefMutable *usingCd = 0;
@@ -2027,7 +2033,7 @@ static void findUsingDeclarations(const Entry *root)
         usingCd = toClassDefMutable(Doxygen::hiddenClassLinkedMap->find(name)); // check if it is already hidden
       }
 
-      //printf("%s -> %p\n",qPrint(root->name),usingCd);
+      //printf("%s -> %p\n",qPrint(root->name),(void*)usingCd);
       if (usingCd==0) // definition not in the input => add an artificial class
       {
         Debug::print(Debug::Classes,0,"  New using class '%s' (sec=0x%08x)! #tArgLists=%d\n",
@@ -2063,7 +2069,7 @@ static void findUsingDeclarations(const Entry *root)
       }
     }
   }
-  for (const auto &e : root->children()) findUsingDeclarations(e.get());
+  for (const auto &e : root->children()) findUsingDeclarations(e.get(),filterPythonPackages);
 }
 
 //----------------------------------------------------------------------
@@ -7677,6 +7683,7 @@ static void computeMemberRelations()
                 //        qPrint(argListToString(mdAl))
                 //      );
                 if (
+                    bmd->getLanguage()==SrcLangExt_Python ||
                     matchArguments2(bmd->getOuterScope(),bmd->getFileDef(),&bmdAl,
                       md->getOuterScope(), md->getFileDef(), &mdAl,
                       TRUE
@@ -9851,7 +9858,6 @@ static std::string resolveSymlink(const std::string &path)
   return Dir::cleanDirPath(result.str());
 }
 
-static std::mutex g_pathsVisitedMutex;
 static StringUnorderedSet g_pathsVisited(1009);
 
 //----------------------------------------------------------------------------
@@ -9878,15 +9884,24 @@ static void readDir(FileInfo *fi,
   {
     paths->insert(dirName);
   }
+  //printf("%s isSymLink()=%d\n",qPrint(dirName),fi->isSymLink());
   if (fi->isSymLink())
   {
     dirName = resolveSymlink(dirName);
-    if (dirName.empty()) return;  // recursive symlink
-
-    std::lock_guard<std::mutex> lock(g_pathsVisitedMutex);
-    if (g_pathsVisited.find(dirName)!=g_pathsVisited.end()) return; // already visited path
-    g_pathsVisited.insert(dirName);
+    if (dirName.empty())
+    {
+      //printf("RECURSIVE SYMLINK: %s\n",qPrint(dirName));
+      return;  // recursive symlink
+    }
   }
+
+  if (g_pathsVisited.find(dirName)!=g_pathsVisited.end())
+  {
+    //printf("PATH ALREADY VISITED: %s\n",qPrint(dirName));
+    return; // already visited path
+  }
+  g_pathsVisited.insert(dirName);
+
   Dir dir(dirName);
   msg("Searching for files in directory %s\n", qPrint(fi->absFilePath()));
   //printf("killSet=%p count=%d\n",killSet,killSet ? (int)killSet->count() : -1);
@@ -9912,19 +9927,21 @@ static void readDir(FileInfo *fi,
           )
       {
         std::string name=cfi.fileName();
+        std::string path=cfi.dirPath()+"/";
+        std::string fullName=path+name;
         if (fnMap)
         {
-          std::unique_ptr<FileDef> fd { createFileDef(QCString(cfi.dirPath()+"/"),QCString(name)) };
+          std::unique_ptr<FileDef> fd { createFileDef(QCString(path),QCString(name)) };
           FileName *fn=0;
           if (!name.empty())
           {
-            fn = fnMap->add(QCString(name),QCString(cfi.absFilePath()));
+            fn = fnMap->add(QCString(name),QCString(fullName));
             fn->push_back(std::move(fd));
           }
         }
-        if (resultList) resultList->push_back(cfi.absFilePath());
-        if (resultSet) resultSet->insert(cfi.absFilePath());
-        if (killSet) killSet->insert(cfi.absFilePath());
+        if (resultList) resultList->push_back(fullName);
+        if (resultSet) resultSet->insert(fullName);
+        if (killSet) killSet->insert(fullName);
       }
       else if (recursive &&
           (!Config_getBool(EXCLUDE_SYMLINKS) || !cfi.isSymLink()) &&
@@ -9938,6 +9955,13 @@ static void readDir(FileInfo *fi,
             recursive,killSet,paths);
       }
     }
+  }
+  if (resultList)
+  {
+    // sort the resulting list to make the order platform independent.
+    std::sort(resultList->begin(),
+              resultList->end(),
+              [](const auto &f1,const auto &f2) { return qstricmp(f1.c_str(),f2.c_str())<0; });
   }
 }
 
@@ -9962,6 +9986,8 @@ void readFileOrDirectory(const QCString &s,
   //printf("killSet count=%d\n",killSet ? (int)killSet->size() : -1);
   // strip trailing slashes
   if (s.isEmpty()) return;
+
+  g_pathsVisited.clear();
 
   FileInfo fi(s.str());
   //printf("readFileOrDirectory(%s)\n",s);
@@ -11519,7 +11545,8 @@ void parseInput()
   g_s.begin("Searching for members imported via using declarations...\n");
   // this should be after buildTypedefList in order to properly import
   // used typedefs
-  findUsingDeclarations(root.get());
+  findUsingDeclarations(root.get(),TRUE);  // do for python packages first
+  findUsingDeclarations(root.get(),FALSE); // then the rest
   g_s.end();
 
   g_s.begin("Searching for included using directives...\n");

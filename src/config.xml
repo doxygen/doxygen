@@ -1914,21 +1914,25 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  The following block names are supported:
  <dl>
  <dt><code>DISABLE_INDEX</code><dd>Content within this block is copied to the output
-     when the \ref cfg_disable_index "DISABLE_INDEX" option is enabled (so when the index is disabled).
+     if the \ref cfg_disable_index "DISABLE_INDEX" option is enabled (so when the index is disabled).
  <dt><code>GENERATE_TREEVIEW</code><dd>Content within this block is copied to the output
-     when the \ref cfg_generate_treeview "GENERATE_TREEVIEW" option is enabled.
+     if the \ref cfg_generate_treeview "GENERATE_TREEVIEW" option is enabled.
  <dt><code>SEARCHENGINE</code><dd>Content within this block is copied to the output
-     when the \ref cfg_searchengine "SEARCHENGINE" option is enabled.
+     if the \ref cfg_searchengine "SEARCHENGINE" option is enabled.
  <dt><code>PROJECT_NAME</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_name "PROJECT_NAME" option is not empty.
+     if the \ref cfg_project_name "PROJECT_NAME" option is not empty.
  <dt><code>PROJECT_NUMBER</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_number "PROJECT_NUMBER" option is not empty.
+     if the \ref cfg_project_number "PROJECT_NUMBER" option is not empty.
  <dt><code>PROJECT_BRIEF</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_brief "PROJECT_BRIEF" option is not empty.
+     if the \ref cfg_project_brief "PROJECT_BRIEF" option is not empty.
  <dt><code>PROJECT_LOGO</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_logo "PROJECT_LOGO" option is not empty.
+     if the \ref cfg_project_logo "PROJECT_LOGO" option is not empty.
+ <dt><code>FULL_SIDEBAR</code><dd>Content within the block is copied to the output
+     if the \ref cfg_full_sidebar "FULL_SIDEBAR",
+     \ref cfg_disable_index "DISABLE_INDEX" and \ref cfg_generate_treeview "GENERATE_TREEVIEW"
+     options are all enabled.
  <dt><code>TITLEAREA</code><dd>Content within this block is copied to the output
-     when a title is visible at the top of each page. This is the case
+     if a title is visible at the top of each page. This is the case
      if either \ref cfg_project_name "PROJECT_NAME",
      \ref cfg_project_brief "PROJECT_BRIEF", \ref cfg_project_logo "PROJECT_LOGO"
      is filled in or if both \ref cfg_disable_index "DISABLE_INDEX" and
@@ -2391,7 +2395,21 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='FULL_SIDEBAR' defval='0' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+  When both \c GENERATE_TREEVIEW and \c DISABLE_INDEX are set to YES, then the
+  \c FULL_SIDEBAR option determines if the side bar is limited to only the
+  treeview area (value \c NO) or if it should extend to the full height of the
+  window (value \c YES). Setting this to \c YES gives a layout similar to
+  https://docs.readthedocs.io with more room for contents,
+  but less room for the project logo, title, and description.
 
+  If either \c GENERATOR_TREEVIEW or \c DISABLE_INDEX is set to \c NO, this option
+  has no effect.
+]]>
+      </docs>
+    </option>
     <option type='int' id='ENUM_VALUES_PER_LINE' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[

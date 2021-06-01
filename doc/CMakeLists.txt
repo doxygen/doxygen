@@ -82,6 +82,11 @@ set(DOC_FILES
         infoflow.fig
         infoflow.png
         install.doc
+        layout_index_and_notreeview.png
+        layout_index_and_treeview.png
+        layout_noindex_and_notreeview.png
+        layout_noindex_and_treeview.png
+        layout_noindex_and_sidebar.png
         lists.doc
         markdown.doc
         output.doc

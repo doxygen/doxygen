@@ -642,7 +642,11 @@ class DocFormula : public DocNode
     QCString relPath() const    { return m_relPath; }
     int id() const             { return m_id; }
     void accept(DocVisitor *v) override { v->visit(this); }
-    bool isInline()            { return m_text.length()>1 ? !(m_text.at(0)=='\\' && (m_text.at(1)=='{' || m_text.at(1)=='[')): TRUE; }
+    bool isInline()            {
+      if (m_text.length()>1 && m_text.at(0)=='\\' && m_text.at(1)=='[') return false;
+      if (m_text.length()>7 && m_text.startsWith("\\begin{")) return false;
+      return true;
+    }
 
   private:
     QCString  m_name;

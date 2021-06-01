@@ -1479,7 +1479,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle arguments of the preformatted block commands ------- */
 
-<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc"|"endvhdlflow")/{NW} { // possible ends
+<FormatBlock>{CMD}("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"endmsc")/{NW} { // possible ends
                                           addOutput(yyscanner,yytext);
                                           if (&yytext[4]==yyextra->blockName) // found end of the block
                                           {
@@ -2120,7 +2120,6 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool stop=makeStructuralIndicator(yyscanner,Entry::MAINPAGEDOC_SEC);
-  yyextra->current->name = "";
   if (!stop)
   {
     yyextra->current->name = "mainpage";

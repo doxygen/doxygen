@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "qcstring.h"
+#include "containers.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;
@@ -28,7 +29,7 @@ class TextStream;
 /** @defgroup template_api Template API
  *
  *  This is the API for a
- *  <a href="https://docs.djangoproject.com/en/1.6/topics/templates/">Django</a>
+ *  <a href="https://www.djangoproject.com/">Django</a>
  *  compatible template system written in C++.
  *  It is somewhat inspired by Stephen Kelly's
  *  <a href="http://www.gitorious.org/grantlee/pages/Home">Grantlee</a>.
@@ -175,6 +176,9 @@ class TemplateVariant
     /** Constructs a new variant with a string value \a s. */
     TemplateVariant(const QCString &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
 
+    /** Constructs a new variant with a string value \a s. */
+    TemplateVariant(const std::string &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a reference to the object.
      */
@@ -228,6 +232,9 @@ class TemplateVariant
       }
     }
 
+    QCString listToString() const;
+    QCString structToString() const;
+
     /** Returns the variant as a string. */
     QCString toString() const
     {
@@ -237,8 +244,8 @@ class TemplateVariant
         case Bool:     return m_boolVal ? "true" : "false";
         case Integer:  return QCString().setNum(m_intVal);
         case String:   return m_strVal;
-        case Struct:   return "[struct]";
-        case List:     return "[list]";
+        case Struct:   return structToString();
+        case List:     return listToString();
         case Function: return "[function]";
       }
       return QCString();
@@ -414,6 +421,9 @@ class TemplateStructIntf
      */
     virtual TemplateVariant get(const QCString &name) const = 0;
 
+    /** Return the list of fields. */
+    virtual StringVector fields() const = 0;
+
     /** Increase object's reference count */
     virtual int addRef() = 0;
 
@@ -428,6 +438,7 @@ class TemplateStruct : public TemplateStructIntf
   public:
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
+    virtual StringVector fields() const;
     virtual int addRef();
     virtual int release();
 

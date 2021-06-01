@@ -64,7 +64,7 @@
         {% spaceless %}
           template&lt;
           {% for targ in member.templateArgs %}
-            {{ targ.type }} {{ targ.name }}{% if targ.defVal %} = {{ targ.defval }}{% endif %}{% if not forloop.last %}, {% endif %}
+            {{ targ.type }} {{ targ.name }}{% if targ.defVal %} = {{ targ.defVal }}{% endif %}{% if not forloop.last %}, {% endif %}
           {% endfor %}
         {% endspaceless %} &gt;
         </td></tr><tr class="memitem:{{ member.anchor }}{% if inheritId %} inherit {{ inheritId }}{% endif %}"><td class="memTemplItemLeft" align="right" valign="top">

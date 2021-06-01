@@ -321,6 +321,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeTagFile(TextStream &) const;
     virtual void warnIfUndocumented() const;
     virtual void warnIfUndocumentedParams() const;
+    virtual bool visibleInIndex() const;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const;
     virtual MemberDefMutable *createTemplateInstanceMember(const ArgumentList &formalArgs,
                const std::unique_ptr<ArgumentList> &actualArgs) const;
@@ -744,6 +745,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->getDeclColumn(); }
     virtual QCString requiresClause() const
     { return getMdAlias()->requiresClause(); }
+    virtual bool visibleInIndex() const
+    { return getMdAlias()->visibleInIndex(); }
 
     virtual void warnIfUndocumented() const {}
     virtual void warnIfUndocumentedParams() const {}
@@ -3844,6 +3847,18 @@ void MemberDefImpl::warnIfUndocumented() const
     warnIfUndocumentedParams();
   }
 }
+
+bool MemberDefImpl::visibleInIndex() const
+{
+  bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
+  bool extractStatic = Config_getBool(EXTRACT_STATIC);
+  return (!isAnonymous() &&
+      (!hideUndocMembers || hasDocumentation()) &&
+      (!isStatic() || extractStatic) &&
+      isLinkable()
+     );
+}
+
 static QCString stripTrailingReturn(const QCString &trailRet)
 {
   QCString ret = trailRet;

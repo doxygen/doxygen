@@ -338,6 +338,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool hasProjectNumber = !Config_getString(PROJECT_NUMBER).isEmpty();
   bool hasProjectBrief = !Config_getString(PROJECT_BRIEF).isEmpty();
   bool hasProjectLogo = !Config_getString(PROJECT_LOGO).isEmpty();
+  bool hasFullSideBar = Config_getBool(FULL_SIDEBAR) && disableIndex && treeView;
   static bool titleArea = (hasProjectName || hasProjectBrief || hasProjectLogo || (disableIndex && searchEngine));
 
   cssFile = Config_getString(HTML_STYLESHEET);
@@ -385,6 +386,9 @@ static QCString substituteHtmlKeywords(const QCString &str,
   if (treeView)
   {
     treeViewCssJs = "<link href=\"$relpath^navtree.css\" rel=\"stylesheet\" type=\"text/css\"/>\n"
+    //                    "<script type=\"text/javascript\">var page_layout=";
+    //treeViewCssJs += Config_getBool(DISABLE_INDEX) ? "1" : "0";
+    //treeViewCssJs += ";</script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^resize.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtreedata.js\"></script>\n"
 			"<script type=\"text/javascript\" src=\"$relpath^navtree.js\"></script>\n";
@@ -445,17 +449,25 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
     if (mathJaxVersion == "MathJax_3")
     {
-       mathJaxJs += "<script>\n"
-                    "  window.MathJax = {\n"
-                    "    options: {\n"
-                    "      ignoreHtmlClass: 'tex2jax_ignore',\n"
-                    "      processHtmlClass: 'tex2jax_process'\n"
-                    "    },\n";
+       mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"
+                    "<script type=\"text/javascript\">\n"
+                    "window.MathJax = {\n"
+                    "  options: {\n"
+                    "    ignoreHtmlClass: 'tex2jax_ignore',\n"
+                    "    processHtmlClass: 'tex2jax_process'\n"
+                    "  }";
       const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
       if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
       {
-        mathJaxJs+= "    tex: {\n"
-                    "      packages: ['base'";
+        mathJaxJs+= ",\n"
+                    "  tex: {\n"
+                    "    macros: {";
+        if (!g_latex_macro.isEmpty())
+        {
+          mathJaxJs += g_latex_macro+"    ";
+        }
+        mathJaxJs+="},\n"
+                    "    packages: ['base','configmacros'";
         if (!g_latex_macro.isEmpty())
         {
           mathJaxJs+= ",'newcommand'";
@@ -465,49 +477,30 @@ static QCString substituteHtmlKeywords(const QCString &str,
           mathJaxJs+= ",'"+QCString(s.c_str())+"'";
         }
         mathJaxJs += "]\n"
-                      "    },\n"
-                      "    tex: {\n"
-                      "      macros: {}\n"
-                      "    }\n";
+                      "  }\n";
       }
-      mathJaxJs += "  };\n";
-      mathJaxJs += "</script>\n";
-
-      if (!g_latex_macro.isEmpty())
+      else
       {
-        mathJaxJs += "<script>\n"
-                   "  Object.assign(MathJax.tex.macros, {\n";
-        mathJaxJs += g_latex_macro;
-        mathJaxJs += "\n"
-                     "  });\n"
-                     "</script>\n";
+        mathJaxJs += "\n";
       }
-
+      mathJaxJs += "};\n";
       // MATHJAX_CODEFILE
       if (!g_mathjax_code.isEmpty())
       {
-        mathJaxJs += "<script>\n";
         mathJaxJs += g_mathjax_code;
         mathJaxJs += "\n";
-        mathJaxJs += "</script>\n";
       }
+      mathJaxJs += "</script>\n";
 
-
-      mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" + path;
-      if (mathJaxFormat == "chtml")
-      {
-        mathJaxJs += "es5/tex-chtml.js\"></script>\n" ;
-      }
-      else if (mathJaxFormat == "SVG")
-      {
-        mathJaxJs += "es5/tex-svg.js\"></script>\n" ;
-      }
+      mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" +
+                   path + "es5/tex-" + mathJaxFormat.lower() + ".js\">";
+      mathJaxJs+="</script>\n";
     }
-    else
+    else // MathJax v2
     {
       mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
-                  "  MathJax.Hub.Config({\n"
-                  "    extensions: [\"tex2jax.js\"";
+                  "MathJax.Hub.Config({\n"
+                  "  extensions: [\"tex2jax.js\"";
       const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
       for (const auto &s : mathJaxExtensions)
       {
@@ -518,25 +511,21 @@ static QCString substituteHtmlKeywords(const QCString &str,
         mathJaxFormat = "HTML-CSS";
       }
       mathJaxJs += "],\n"
-                   "    jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n"
-                   "});\n";
+                   "  jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n";
+      if (!g_latex_macro.isEmpty())
+      {
+        mathJaxJs += "   TeX: { Macros: {\n";
+        mathJaxJs += g_latex_macro;
+        mathJaxJs += "\n"
+                     "  } }\n";
+      }
+      mathJaxJs +=   "});\n";
       if (!g_mathjax_code.isEmpty())
       {
         mathJaxJs += g_mathjax_code;
         mathJaxJs += "\n";
       }
       mathJaxJs += "</script>\n";
-      if (!g_latex_macro.isEmpty())
-      {
-        mathJaxJs += "<script type=\"text/x-mathjax-config\">\n"
-                     "  MathJax.Hub.Config({\n"
-  		   "   TeX: { Macros: {\n";
-        mathJaxJs += g_latex_macro;
-        mathJaxJs += "\n"
-                     "  } }\n"
-                     "});\n"
-                     "</script>\n";
-      }
       mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
     }
   }
@@ -560,6 +549,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   result = substitute(result,"$relpath^",relPath); //<-- must be last
 
   // additional HTML only conditional blocks
+  result = selectBlock(result,"FULL_SIDEBAR",hasFullSideBar,OutputGenerator::Html);
   result = selectBlock(result,"DISABLE_INDEX",disableIndex,OutputGenerator::Html);
   result = selectBlock(result,"GENERATE_TREEVIEW",treeView,OutputGenerator::Html);
   result = selectBlock(result,"SEARCHENGINE",searchEngine,OutputGenerator::Html);
@@ -994,13 +984,7 @@ void HtmlGenerator::init()
       t << mgr.getAsString("dynsections.js");
       if (Config_getBool(SOURCE_BROWSER) && Config_getBool(SOURCE_TOOLTIPS))
       {
-        t <<
-          "\n$(document).ready(function() {\n"
-          "  $('.code,.codeRef').each(function() {\n"
-          "    $(this).data('powertip',$('#a'+$(this).attr('href').replace(/.*\\//,'').replace(/[^a-z_A-Z0-9]/g,'_')).html());\n"
-          "    $(this).powerTip({ placement: 's', smartPlacement: true, mouseOnToPopup: true });\n"
-          "  });\n"
-          "});\n";
+        t << mgr.getAsString("dynsections_tooltips.js");
       }
     }
   }
@@ -1069,7 +1053,14 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     QCString searchCss;
     if (Config_getBool(DISABLE_INDEX))
     {
-      searchCss = mgr.getAsString("search_nomenu.css");
+      if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(FULL_SIDEBAR))
+      {
+        searchCss = mgr.getAsString("search_sidebar.css");
+      }
+      else
+      {
+        searchCss = mgr.getAsString("search_nomenu.css");
+      }
     }
     else if (!Config_getBool(HTML_DYNAMIC_MENUS))
     {
@@ -1079,6 +1070,7 @@ void HtmlGenerator::writeSearchData(const QCString &dname)
     {
       searchCss = mgr.getAsString("search.css");
     }
+    searchCss += mgr.getAsString("search_common.css");
     searchCss = substitute(replaceColorMarkers(searchCss),"$doxygenversion",getDoxygenVersion());
     t << searchCss;
     Doxygen::indexList->addStyleSheetFile("search/search.css");
@@ -1132,7 +1124,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
     m_t << "<script type=\"text/javascript\">\n";
     m_t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
     m_t << "var searchBox = new SearchBox(\"searchBox\", \""
-        << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+        << m_relPath<< "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
     m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
@@ -2488,7 +2480,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+    t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
     t << "$(function() {\n";
     t << "  initMenu('" << relPath << "',"
       << (searchEngine?"true":"false") << ","
@@ -2503,14 +2495,13 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
       }
       else
       {
-				t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
         t << "  $(document).ready(function() {\n"
           << "    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
           << "  });\n";
       }
     }
     t << "});\n";
-		t << "/* @license-end */";
+    t << "/* @license-end */\n";
     t << "</script>\n";
     t << "<div id=\"main-nav\"></div>\n";
   }
@@ -2556,8 +2547,12 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
   // write split bar
   if (generateTreeView)
   {
-    result = QCString(
-     "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n"
+    if (!Config_getBool(DISABLE_INDEX) || !Config_getBool(FULL_SIDEBAR))
+    {
+      result += QCString(
+        "<div id=\"side-nav\" class=\"ui-resizable side-nav-resizable\">\n");
+    }
+    result+= QCString(
      "  <div id=\"nav-tree\">\n"
      "    <div id=\"nav-tree-contents\">\n"
      "      <div id=\"nav-sync\" class=\"sync\"></div>\n"
@@ -2667,7 +2662,7 @@ void HtmlGenerator::writeSearchPage()
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+      << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
@@ -2723,7 +2718,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<script type=\"text/javascript\">\n";
 		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+      << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
@@ -2877,14 +2872,14 @@ void HtmlGenerator::startHeaderSection()
 
 void HtmlGenerator::startTitleHead(const QCString &)
 {
-  m_t << "  <div class=\"headertitle\">\n";
+  m_t << "  <div class=\"headertitle\">";
   startTitle();
 }
 
 void HtmlGenerator::endTitleHead(const QCString &,const QCString &)
 {
   endTitle();
-  m_t << "  </div>\n";
+  m_t << "</div>\n";
 }
 
 void HtmlGenerator::endHeaderSection()
@@ -3056,4 +3051,9 @@ void HtmlGenerator::addWord(const QCString &word,bool hiPriority)
   {
     Doxygen::searchIndex->addWord(word,hiPriority);
   }
+}
+
+QCString HtmlGenerator::getMathJaxMacros()
+{
+  return getConvertLatexMacro();
 }

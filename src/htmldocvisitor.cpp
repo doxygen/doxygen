@@ -1266,7 +1266,12 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //printf("  needsTag=%d\n",needsTag);
   // write the paragraph tag (if needed)
   if (needsTag)
-    m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p->attribs()) << ">";
+  {
+    if (strlen(contexts[t]))
+      m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p->attribs()) << ">";
+    else
+      m_t << "<p " << htmlAttribsToString(p->attribs()) << ">";
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)

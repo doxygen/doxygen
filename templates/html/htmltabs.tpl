@@ -81,7 +81,7 @@
   {% if page.highlight=='classes' %}
     <li{% if page.subhighlight=='classlist' %} class="current"{% endif %}><a href="{{ page.relPath }}annotated{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classList|nowrap }}</span></a></li>
     <li{% if page.subhighlight=='classindex' %} class="current"{% endif %}><a href="{{ page.relPath }}classes{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classIndex|nowrap }}</span></a></li>
-    {% if classHierarchy.tree %}
+    {% if classHierarchy.tree and classHierarchy.maxDepth>1 %}
     <li{% if page.subhighlight=='classhierarchy' %} class="current"{% endif %}><a href="{{ page.relPath }}hierarchy{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classHierarchy|nowrap }}</span></a></li>
     {% endif %}
     {% if classMembersIndex.all %}

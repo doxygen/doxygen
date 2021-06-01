@@ -285,9 +285,11 @@ class MemberDef : public Definition
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
     virtual void warnIfUndocumented() const = 0;
     virtual void warnIfUndocumentedParams() const = 0;
+    virtual bool visibleInIndex() const = 0;
 
     // TODO: this is not a getter, should be passed at construction
     virtual void setMemberGroup(MemberGroup *grp) = 0;
+
 };
 
 class MemberDefMutable : public DefinitionMutable, public MemberDef

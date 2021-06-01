@@ -4,7 +4,7 @@
 <div class="textblock">
 {{ tr.relatedPagesDesc }}
 </div>
-{% indexentry nav name=tr.pages file=page.fileName anchor='' isReference=False %}
+{% indexentry nav name=tr.pages file=page.fileName anchor='' isReference=False separateIndex=False %}
 {% opensubindex nav %}
 {% with tree=pageTree %}
   {% include 'htmldirtree.tpl' %}

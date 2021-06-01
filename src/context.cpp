@@ -279,6 +279,17 @@ class PropertyMapper
       return it!=m_map.end() ? (*it->second)(obj) : TemplateVariant();
     }
 
+    StringVector fields() const
+    {
+      StringVector result;
+      for (const auto &kv : m_map)
+      {
+        result.push_back(kv.first);
+      }
+      std::sort(result.begin(),result.end());
+      return result;
+    }
+
   private:
     std::unordered_map<std::string,std::unique_ptr<PropertyFuncIntf>> m_map;
 };
@@ -364,6 +375,11 @@ TemplateVariant ConfigContext::get(const QCString &name) const
   return result;
 }
 
+StringVector ConfigContext::fields() const
+{
+  return ConfigValues::instance().fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Doxygen: global information
@@ -379,9 +395,13 @@ class DoxygenContext::Private
     {
       return dateToString(TRUE);
     }
-    TemplateVariant maxJaxCodeFile() const
+    TemplateVariant mathJaxCodeFile() const
     {
-      return m_cache.maxJaxCodeFile;
+      return m_cache.mathJaxCodeFile;
+    }
+    TemplateVariant mathJaxMacros() const
+    {
+      return m_cache.mathJaxMacros;
     }
     Private()
     {
@@ -393,7 +413,9 @@ class DoxygenContext::Private
         //%% string date
         s_inst.addProperty("date",            &Private::date);
         //%% string maxJaxCodeFile
-        s_inst.addProperty("mathJaxCodeFile", &Private::maxJaxCodeFile);
+        s_inst.addProperty("mathJaxCodeFile", &Private::mathJaxCodeFile);
+        //%% string maxJaxMacros
+        s_inst.addProperty("mathJaxMacros",   &Private::mathJaxMacros);
         init=TRUE;
       }
     }
@@ -401,11 +423,19 @@ class DoxygenContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
   private:
     struct Cachable
     {
-      Cachable() { maxJaxCodeFile=fileToString(Config_getString(MATHJAX_CODEFILE)); }
-      QCString maxJaxCodeFile;
+      Cachable() {
+        mathJaxCodeFile=fileToString(Config_getString(MATHJAX_CODEFILE));
+        mathJaxMacros=HtmlGenerator::getMathJaxMacros();
+      }
+      QCString mathJaxCodeFile;
+      QCString mathJaxMacros;
     };
     mutable Cachable m_cache;
     static PropertyMapper<DoxygenContext::Private> s_inst;
@@ -428,6 +458,11 @@ DoxygenContext::~DoxygenContext()
 TemplateVariant DoxygenContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector DoxygenContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -1019,6 +1054,10 @@ class TranslateContext::Private
     {
       return HtmlHelp::getLanguageString();
     }
+    TemplateVariant code() const
+    {
+      return theTranslator->trCode();
+    }
     Private()
     {
       static bool init=FALSE;
@@ -1214,6 +1253,8 @@ class TranslateContext::Private
         s_inst.addProperty("examplesDescription",&Private::examplesDescription);
         //%% string langstring
         s_inst.addProperty("langString",         &Private::langString);
+        //%% string code
+        s_inst.addProperty("code",               &Private::code);
 
         init=TRUE;
       }
@@ -1226,6 +1267,10 @@ class TranslateContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
   private:
     bool m_javaOpt;
@@ -1251,6 +1296,11 @@ TranslateContext::~TranslateContext()
 TemplateVariant TranslateContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector TranslateContext::fields() const
+{
+  return p->fields();
 }
 
 static TemplateVariant parseDoc(const Definition *def,const QCString &file,int line,
@@ -1698,6 +1748,10 @@ class IncludeInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant isLocal() const
     {
       bool isIDLorJava = m_lang==SrcLangExt_IDL || m_lang==SrcLangExt_Java;
@@ -1749,6 +1803,12 @@ TemplateVariant IncludeInfoContext::get(const QCString &n) const
 {
   return p->get(n);
 }
+
+StringVector IncludeInfoContext::fields() const
+{
+  return p->fields();
+}
+
 //%% }
 
 //------------------------------------------------------------------------
@@ -1880,6 +1940,10 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -2652,6 +2716,11 @@ TemplateVariant ClassContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector ClassContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Namespace(Symbol): namespace information
@@ -2697,6 +2766,10 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -2943,6 +3016,11 @@ TemplateVariant NamespaceContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector NamespaceContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct File(Symbol): file information
@@ -2998,6 +3076,10 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -3395,6 +3477,11 @@ TemplateVariant FileContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector FileContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Dir(Symbol): directory information
@@ -3426,6 +3513,10 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -3584,6 +3675,11 @@ TemplateVariant DirContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector DirContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct Page(Symbol): page information
@@ -3611,6 +3707,10 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -3715,6 +3815,11 @@ PageContext::~PageContext()
 TemplateVariant PageContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector PageContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -4062,6 +4167,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant fieldType() const
     {
@@ -5164,6 +5273,10 @@ TemplateVariant MemberContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector MemberContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -5228,6 +5341,10 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant title() const
     {
@@ -5675,6 +5792,11 @@ TemplateVariant ModuleContext::get(const QCString &n) const
   return p->get(n);
 }
 
+StringVector ModuleContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% list ClassList[Class] : list of classes
@@ -5752,6 +5874,10 @@ class ClassIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant list() const
     {
@@ -5838,6 +5964,11 @@ ClassIndexContext::~ClassIndexContext()
 TemplateVariant ClassIndexContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector ClassIndexContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -5944,6 +6075,10 @@ class ClassHierarchyContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -6053,6 +6188,11 @@ TemplateVariant ClassHierarchyContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ClassHierarchyContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct NestingNode: node is a nesting relation tree
@@ -6066,6 +6206,7 @@ class NestingNodeContext::Private
       : m_parent(parent), m_def(d), m_level(level), m_index(index)
     {
       m_children.reset(NestingContext::alloc(thisNode,level+1));
+      m_members.reset(NestingContext::alloc(thisNode,level+1));
       static bool init=FALSE;
       if (!init)
       {
@@ -6073,6 +6214,8 @@ class NestingNodeContext::Private
         s_inst.addProperty("is_leaf_node",&Private::isLeafNode);
         //%% Nesting children: list of nested classes/namespaces
         s_inst.addProperty("children",&Private::children);
+        //%% Nesting children: list of nested classes/namespaces
+        s_inst.addProperty("members",&Private::members);
         //%% [optional] Class class: class info (if this node represents a class)
         s_inst.addProperty("class",&Private::getClass);
         //%% [optional] Namespace namespace: namespace info (if this node represents a namespace)
@@ -6085,6 +6228,8 @@ class NestingNodeContext::Private
         s_inst.addProperty("page",&Private::getPage);
         //%% [optional] Module module: module info (if this node represents a module)
         s_inst.addProperty("module",&Private::getModule);
+        //%% [optional] Member member: member info (if this node represents a member)
+        s_inst.addProperty("member",&Private::getMember);
         //%% int id
         s_inst.addProperty("id",&Private::id);
         //%% string level
@@ -6107,10 +6252,15 @@ class NestingNodeContext::Private
       addDirFiles(visitedClasses);
       addPages(visitedClasses);
       addModules(visitedClasses);
+      addMembers(visitedClasses);
     }
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant isLeafNode() const
     {
@@ -6119,6 +6269,10 @@ class NestingNodeContext::Private
     TemplateVariant children() const
     {
       return m_children.get();
+    }
+    TemplateVariant members() const
+    {
+      return m_members.get();
     }
     TemplateVariant getClass() const
     {
@@ -6210,6 +6364,21 @@ class NestingNodeContext::Private
         return TemplateVariant(FALSE);
       }
     }
+    TemplateVariant getMember() const
+    {
+      if (!m_cache.memberContext && m_def->definitionType()==Definition::TypeMember)
+      {
+        m_cache.memberContext.reset(MemberContext::alloc(toMemberDef(m_def)));
+      }
+      if (m_cache.memberContext)
+      {
+        return m_cache.memberContext.get();
+      }
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
+    }
     TemplateVariant level() const
     {
       return m_level;
@@ -6272,26 +6441,26 @@ class NestingNodeContext::Private
     void addClasses(bool inherit, bool hideSuper,ClassDefSet &visitedClasses)
     {
       const ClassDef *cd = toClassDef(m_def);
-      if (cd && inherit)
+      if (cd)
       {
-        bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
-                           !hideSuper && classHasVisibleChildren(cd);
-        if (hasChildren)
+        if (inherit)
         {
-          visitedClasses.insert(cd);
-          if (cd->getLanguage()==SrcLangExt_VHDL)
+          bool hasChildren = visitedClasses.find(cd)==visitedClasses.end() &&
+            !hideSuper && classHasVisibleChildren(cd);
+          if (hasChildren)
           {
-            m_children->addDerivedClasses(cd->baseClasses(),false,visitedClasses);
-          }
-          else
-          {
-            m_children->addDerivedClasses(cd->subClasses(),false,visitedClasses);
+            visitedClasses.insert(cd);
+            if (cd->getLanguage()==SrcLangExt_VHDL)
+            {
+              m_children->addDerivedClasses(cd->baseClasses(),false,visitedClasses);
+            }
+            else
+            {
+              m_children->addDerivedClasses(cd->subClasses(),false,visitedClasses);
+            }
           }
         }
-      }
-      else
-      {
-        if (cd)
+        else
         {
           m_children->addClasses(cd->getClasses(),FALSE,visitedClasses);
         }
@@ -6300,13 +6469,16 @@ class NestingNodeContext::Private
     void addNamespaces(bool addClasses,ClassDefSet &visitedClasses)
     {
       const NamespaceDef *nd = toNamespaceDef(m_def);
-      if (nd && !nd->getNamespaces().empty())
+      if (nd)
       {
-        m_children->addNamespaces(nd->getNamespaces(),FALSE,addClasses,visitedClasses);
-      }
-      if (addClasses && nd)
-      {
-        m_children->addClasses(nd->getClasses(),FALSE,visitedClasses);
+        if (!nd->getNamespaces().empty())
+        {
+          m_children->addNamespaces(nd->getNamespaces(),FALSE,addClasses,visitedClasses);
+        }
+        if (addClasses)
+        {
+          m_children->addClasses(nd->getClasses(),FALSE,visitedClasses);
+        }
       }
     }
     void addDirFiles(ClassDefSet &visitedClasses)
@@ -6334,10 +6506,53 @@ class NestingNodeContext::Private
         m_children->addModules(gd->getSubGroups(),visitedClasses);
       }
     }
+    void addMembers(ClassDefSet &visitedClasses)
+    {
+      if (m_def->definitionType()==Definition::TypeNamespace)
+      {
+        // add namespace members
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
+        {
+          if (lde->kind()==LayoutDocEntry::MemberDef)
+          {
+            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
+            m_members->addMembers(ml,visitedClasses);
+          }
+        }
+      }
+      else if (m_def->definitionType()==Definition::TypeClass)
+      {
+        // add class members
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
+        {
+          if (lde->kind()==LayoutDocEntry::MemberDef)
+          {
+            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
+            m_members->addMembers(ml,visitedClasses);
+          }
+        }
+      }
+      else if (m_def->definitionType()==Definition::TypeFile)
+      {
+        // add class members
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
+        {
+          if (lde->kind()==LayoutDocEntry::MemberDef)
+          {
+            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+            const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
+            m_members->addMembers(ml,visitedClasses);
+          }
+        }
+      }
+    }
   private:
     const NestingNodeContext *m_parent;
     const Definition *m_def;
     SharedPtr<NestingContext> m_children;
+    SharedPtr<NestingContext> m_members;
     int m_level;
     int m_index;
     struct Cachable
@@ -6348,6 +6563,7 @@ class NestingNodeContext::Private
       SharedPtr<FileContext>      fileContext;
       SharedPtr<PageContext>      pageContext;
       SharedPtr<ModuleContext>    moduleContext;
+      SharedPtr<MemberContext>    memberContext;
       ScopedPtr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
@@ -6373,6 +6589,11 @@ NestingNodeContext::~NestingNodeContext()
 TemplateVariant NestingNodeContext::get(const QCString &n) const
 {
   return p->get(n);
+}
+
+StringVector NestingNodeContext::fields() const
+{
+  return p->fields();
 }
 
 QCString NestingNodeContext::id() const
@@ -6485,7 +6706,8 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            append(NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,FALSE,FALSE,FALSE,visitedClasses);
+            append(nnc);
             m_index++;
           }
         }
@@ -6495,7 +6717,8 @@ class NestingContext::Private : public GenericNodeListContext
     {
       for (const auto &fd : fList)
       {
-        append(NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses));
+        NestingNodeContext *nnc=NestingNodeContext::alloc(m_parent,fd,m_index,m_level,FALSE,FALSE,FALSE,visitedClasses);
+        append(nnc);
         m_index++;
       }
     }
@@ -6605,6 +6828,21 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
+    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+    {
+      if (ml)
+      {
+        for (const auto &md : *ml)
+        {
+          if (md->visibleInIndex())
+          {
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,md,m_index,m_level+1,TRUE,TRUE,FALSE,visitedClasses);
+            append(nnc);
+            m_index++;
+          }
+        }
+      }
+    }
 
   private:
     const NestingNodeContext *m_parent;
@@ -6708,6 +6946,11 @@ void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper,C
   p->addDerivedClasses(bcl,hideSuper,visitedClasses);
 }
 
+void NestingContext::addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+{
+  p->addMembers(ml,visitedClasses);
+}
+
 //------------------------------------------------------------------------
 
 //%% struct ClassTree: Class nesting relations
@@ -6739,6 +6982,10 @@ class ClassTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -6828,6 +7075,11 @@ TemplateVariant ClassTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ClassTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% list NamespaceList[Namespace] : list of namespaces
@@ -6903,6 +7155,10 @@ class NamespaceTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -6993,6 +7249,12 @@ TemplateVariant NamespaceTreeContext::get(const QCString &name) const
 {
   return p->get(name);
 }
+
+StringVector NamespaceTreeContext::fields() const
+{
+  return p->fields();
+}
+
 
 //------------------------------------------------------------------------
 
@@ -7174,6 +7436,10 @@ class FileTreeContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant tree() const
     {
       return m_dirFileTree.get();
@@ -7249,6 +7515,11 @@ TemplateVariant FileTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector FileTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct PageTree: tree of related pages
@@ -7281,6 +7552,10 @@ class PageTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -7355,6 +7630,11 @@ PageTreeContext::~PageTreeContext()
 TemplateVariant PageTreeContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector PageTreeContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -7524,6 +7804,10 @@ class ModuleTreeContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant tree() const
     {
       return m_moduleTree.get();
@@ -7599,6 +7883,11 @@ TemplateVariant ModuleTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ModuleTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct NavPathElem: list of examples page
@@ -7623,6 +7912,10 @@ class NavPathElemContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant isLinkable() const
     {
@@ -7693,6 +7986,10 @@ TemplateVariant NavPathElemContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector NavPathElemContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -7725,6 +8022,10 @@ class ExampleTreeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant tree() const
     {
@@ -7801,6 +8102,11 @@ TemplateVariant ExampleTreeContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ExampleTreeContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct GlobalsIndex: list of examples page
@@ -7834,6 +8140,10 @@ class GlobalsIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
     TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
@@ -7954,6 +8264,12 @@ TemplateVariant GlobalsIndexContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector GlobalsIndexContext::fields() const
+{
+  return p->fields();
+}
+
+
 //------------------------------------------------------------------------
 
 //%% struct ClassMembersIndex: list of examples page
@@ -7987,6 +8303,10 @@ class ClassMembersIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
     TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
@@ -8109,6 +8429,11 @@ TemplateVariant ClassMembersIndexContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector ClassMembersIndexContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct NamespaceMembersIndex: list of examples page
@@ -8142,6 +8467,10 @@ class NamespaceMembersIndexContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
     TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
@@ -8261,6 +8590,11 @@ TemplateVariant NamespaceMembersIndexContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector NamespaceMembersIndexContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct InheritanceGraph: a connected graph representing part of the overall inheritance tree
@@ -8280,6 +8614,10 @@ class InheritanceGraphContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant graph() const
     {
@@ -8322,6 +8660,10 @@ TemplateVariant InheritanceGraphContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector InheritanceGraphContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -8343,6 +8685,10 @@ class InheritanceNodeContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     TemplateVariant getClass() const
     {
@@ -8379,6 +8725,11 @@ InheritanceNodeContext::~InheritanceNodeContext()
 TemplateVariant InheritanceNodeContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector InheritanceNodeContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -8528,6 +8879,10 @@ class MemberInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant protection() const
     {
       switch (m_memberInfo->prot())
@@ -8592,6 +8947,10 @@ TemplateVariant MemberInfoContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector MemberInfoContext::fields() const
+{
+  return p->fields();
+}
 
 //------------------------------------------------------------------------
 
@@ -8680,6 +9039,10 @@ class MemberGroupInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant members() const
     {
       if (!m_cache.memberListContext)
@@ -8762,6 +9125,11 @@ MemberGroupInfoContext::~MemberGroupInfoContext()
 TemplateVariant MemberGroupInfoContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector MemberGroupInfoContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -8854,6 +9222,10 @@ class MemberListInfoContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant members() const
     {
       if (!m_cache.memberListContext)
@@ -8936,6 +9308,11 @@ TemplateVariant MemberListInfoContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector MemberListInfoContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% struct InheritedMemberInfo: inherited member information
@@ -8960,6 +9337,10 @@ class InheritedMemberInfoContext::Private
     TemplateVariant get(const QCString &n) const
     {
       return s_inst.get(this,n);
+    }
+    StringVector fields() const
+    {
+      return s_inst.fields();
     }
     virtual ~Private()
     {
@@ -9028,6 +9409,11 @@ InheritedMemberInfoContext::~InheritedMemberInfoContext()
 TemplateVariant InheritedMemberInfoContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector InheritedMemberInfoContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9193,6 +9579,10 @@ class ArgumentContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant type() const
     {
       return createLinkedText(m_def,m_relPath,m_argument.type);
@@ -9269,6 +9659,11 @@ ArgumentContext::~ArgumentContext()
 TemplateVariant ArgumentContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector ArgumentContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9360,6 +9755,10 @@ class SymbolContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant fileName() const
     {
       return m_def->getOutputFileBase();
@@ -9377,61 +9776,82 @@ class SymbolContext::Private
       const Definition *prevScope = prev ? prev->getOuterScope() : 0;
       const MemberDef  *md        = toMemberDef(m_def);
       bool isFunctionLike   = md && (md->isFunction() || md->isSlot() || md->isSignal());
-      bool overloadedFunction = isFunctionLike &&
-                                ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope));
-      QCString prefix;
-      if (md) prefix=md->localName();
-      if (overloadedFunction) // overloaded member function
-      {
-        prefix+=md->argsString();
-        // show argument list to disambiguate overloaded functions
-      }
-      else if (md && isFunctionLike) // unique member function
-      {
-        prefix+="()"; // only to show it is a function
-      }
-      bool found=FALSE;
+      bool overloadedFunction = ((prevScope!=0 && scope==prevScope) || (scope && scope==nextScope)) &&
+                                md && (md->isFunction() || md->isSlot());
+
       QCString name;
-      if (m_def->definitionType()==Definition::TypeClass)
+      if (prev==0 && next==0) // unique name
       {
-        name = m_def->displayName();
-        found = TRUE;
-      }
-      else if (m_def->definitionType()==Definition::TypeNamespace)
-      {
-        name = m_def->displayName();
-        found = TRUE;
-      }
-      else if (scope==0 || scope==Doxygen::globalScope) // in global scope
-      {
-        if (md)
+        if (scope!=Doxygen::globalScope)
+        {
+          name = scope->name();
+        }
+        else if (md)
         {
           const FileDef *fd = md->getBodyDef();
           if (fd==0) fd = md->getFileDef();
           if (fd)
           {
-            if (!prefix.isEmpty()) prefix+=": ";
-            name = prefix + convertToXML(fd->localName());
-            found = TRUE;
+            name = fd->localName();
           }
         }
       }
-      else if (md && (md->getClassDef() || md->getNamespaceDef()))
-        // member in class or namespace scope
+      else
       {
-        SrcLangExt lang = md->getLanguage();
-        name = m_def->getOuterScope()->qualifiedName()
-          + getLanguageSpecificSeparator(lang) + prefix;
-        found = TRUE;
-      }
-      else if (scope) // some thing else? -> show scope
-      {
-        name = prefix + convertToXML(scope->name());
-        found = TRUE;
-      }
-      if (!found) // fallback
-      {
-        name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+
+        QCString prefix;
+        if (md) prefix=md->localName();
+        if (overloadedFunction) // overloaded member function
+        {
+          prefix+=md->argsString();
+          // show argument list to disambiguate overloaded functions
+        }
+        else if (md && isFunctionLike) // unique member function
+        {
+          prefix+="()"; // only to show it is a function
+        }
+        bool found=FALSE;
+        if (m_def->definitionType()==Definition::TypeClass)
+        {
+          name = m_def->displayName();
+          found = TRUE;
+        }
+        else if (m_def->definitionType()==Definition::TypeNamespace)
+        {
+          name = m_def->displayName();
+          found = TRUE;
+        }
+        else if (scope==0 || scope==Doxygen::globalScope) // in global scope
+        {
+          if (md)
+          {
+            const FileDef *fd = md->getBodyDef();
+            if (fd==0) fd = md->getFileDef();
+            if (fd)
+            {
+              if (!prefix.isEmpty()) prefix+=": ";
+              name = prefix + convertToXML(fd->localName());
+              found = TRUE;
+            }
+          }
+        }
+        else if (md && (md->resolveAlias()->getClassDef() || md->resolveAlias()->getNamespaceDef()))
+          // member in class or namespace scope
+        {
+          SrcLangExt lang = md->getLanguage();
+          name = m_def->getOuterScope()->qualifiedName()
+            + getLanguageSpecificSeparator(lang) + prefix;
+          found = TRUE;
+        }
+        else if (scope) // some thing else? -> show scope
+        {
+          name = prefix + convertToXML(scope->name());
+          found = TRUE;
+        }
+        if (!found) // fallback
+        {
+          name = prefix + "("+theTranslator->trGlobalNamespace()+")";
+        }
       }
       return name;
     }
@@ -9463,6 +9883,11 @@ SymbolContext::~SymbolContext()
 TemplateVariant SymbolContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector SymbolContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9537,6 +9962,10 @@ class SymbolGroupContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant id() const
     {
       return searchId(*m_start);
@@ -9584,6 +10013,11 @@ TemplateVariant SymbolGroupContext::get(const QCString &name) const
   return p->get(name);
 }
 
+StringVector SymbolGroupContext::fields() const
+{
+  return p->fields();
+}
+
 //------------------------------------------------------------------------
 
 //%% list SymbolGroupList[SymbolGroup] : list of search groups one per by name
@@ -9600,7 +10034,10 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
         QCString name = searchName(*it);
         if (name!=lastName)
         {
-          append(SymbolGroupContext::alloc(it_begin,it));
+          if (it!=it_begin)
+          {
+            append(SymbolGroupContext::alloc(it_begin,it));
+          }
           it_begin = it;
           lastName = name;
         }
@@ -9664,6 +10101,10 @@ class SymbolIndexContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant name() const
     {
       return m_name;
@@ -9709,6 +10150,11 @@ SymbolIndexContext::~SymbolIndexContext()
 TemplateVariant SymbolIndexContext::get(const QCString &name) const
 {
   return p->get(name);
+}
+
+StringVector SymbolIndexContext::fields() const
+{
+  return p->fields();
 }
 
 //------------------------------------------------------------------------
@@ -9775,6 +10221,10 @@ class SearchIndexContext::Private
     {
       return s_inst.get(this,n);
     }
+    StringVector fields() const
+    {
+      return s_inst.fields();
+    }
     TemplateVariant name() const
     {
       return m_info.name;
@@ -9819,6 +10269,12 @@ TemplateVariant SearchIndexContext::get(const QCString &name) const
 {
   return p->get(name);
 }
+
+StringVector SearchIndexContext::fields() const
+{
+  return p->fields();
+}
+
 
 //------------------------------------------------------------------------
 
