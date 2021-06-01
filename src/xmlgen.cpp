@@ -1279,6 +1279,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
   if (cd->isFinal()) t << "\" final=\"yes";
   if (cd->isSealed()) t << "\" sealed=\"yes";
   if (cd->isAbstract()) t << "\" abstract=\"yes";
+  if (cd->isStatic()) t << "\" static=\"yes";
   t << "\">\n";
   t << "    <compoundname>";
   writeXMLString(t,cd->name());
