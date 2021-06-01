@@ -57,8 +57,10 @@ static yy_size_t g_inputPos = 0;
 static const char *g_inputString;
 static QCString g_fileName;
 static bool g_insidePre;
+static bool g_insideQuot;
 static int g_sharpCount=0;
-static bool g_markdownSupport=TRUE;
+static bool g_markdownSupport = TRUE;
+static bool g_quotSupport = FALSE;
 
 // context for section finding phase
 static const Definition  *g_definition;
@@ -426,7 +428,8 @@ LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 ESCWORD   ("%"{ID}(("::"|"."){ID})*)|("%'")
 CHARWORDQ1 [^ \-+0-9\t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
-WORD1     {ESCWORD}|{CHARWORDQ1}{CHARWORDQ}*|"{"|"}"|"'\"'"|("\""([^"\n]*\n?)*[^"\n]*"\"")
+WORD1     {ESCWORD}|{CHARWORDQ1}{CHARWORDQ}*|"{"|"}"|"'\"'"
+WORD1QU   ("\""([^"\n]*\n?)*[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
 WORD2NQ   "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
@@ -448,6 +451,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 %option noyywrap
 
 %x St_Para
+%x St_Para_Quot
 %x St_Comment
 %x St_Title
 %x St_TitleN
@@ -761,10 +765,27 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          return TK_LNKWORD;
                        }
   /********* patterns for normal words ******************/
-
+<St_Para>"\""          {
+                         g_insideQuot = !g_insideQuot;
+                         if (g_quotSupport)
+                         {
+                           assert(g_insideQuot);
+                           unput('\"');
+                           BEGIN(St_Para_Quot);
+                         } else
+                         {
+                           unput_string("&quot;", 6);
+                         }
+                       }
 <St_Para,St_Text>[\-+0-9] |
-<St_Para,St_Text>{WORD1} |
-<St_Para,St_Text>{WORD2} { /* function call */
+<St_Para,St_Text>{WORD1}  |
+<St_Para,St_Text>{WORD2}  |
+<St_Para_Quot,St_Text>{WORD1QU} { /* function call */
+                         if (g_quotSupport && g_insideQuot)
+                         {
+                           g_insideQuot = FALSE;
+                           BEGIN(St_Para);
+                         }
                          if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
@@ -778,6 +799,16 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                           * on my machine
                           */
                          goto find_rule;
+                       }
+<St_Para_Quot>"\""     {
+                         warn(g_fileName,g_yyLineNr,"Unclosed quotation (not formatting remaining text)",yytext);
+                         unput_string("&quot;", 6);
+                         BEGIN(St_Para);
+                       }
+<St_Para_Quot>.        {
+                         warn(g_fileName,g_yyLineNr,"Unexpected character in quotation '%s'",yytext);
+                         unput(yytext[0]);
+                         BEGIN(St_Para);
                        }
 <St_Text>({ID}".")+{ID} {
                           g_token->name = yytext;
@@ -1504,6 +1535,11 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <*>.                   {
                          warn(g_fileName,g_yyLineNr,"Unexpected character '%s'",yytext);
                        }
+<*><<EOF>>             {
+                         if (g_insideQuot)
+                           warn(g_fileName,g_yyLineNr,"Unclosed quotation");
+                         return 0;
+                       }
 %%
 
 //--------------------------------------------------------------------------
@@ -1524,14 +1560,17 @@ void doctokenizerYYFindSections(const QCString &input,const Definition *d,
   printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
-void doctokenizerYYinit(const char *input,const QCString &fileName,bool markdownSupport)
+void doctokenizerYYinit(const char *input,const QCString &fileName,
+                        bool markdownSupport,bool quotSupport)
 {
   g_autoListLevel = 0;
   g_inputString = input;
   g_inputPos    = 0;
   g_fileName    = fileName;
   g_insidePre   = FALSE;
+  g_insideQuot  = FALSE;
   g_markdownSupport = markdownSupport;
+  g_quotSupport = quotSupport;
   BEGIN(St_Para);
 }
 

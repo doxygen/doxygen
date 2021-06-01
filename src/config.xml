@@ -664,6 +664,19 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='QUOT_SUPPORT' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c QUOT_SUPPORT tag is enabled then doxygen interprets double-quoted
+ text in paragraphs as unformatted. Double quotes in code or html tags is not
+ affected by this setting. If disabled, the double quote is treated as an ordinary
+ character.
+ Disable e.g. for code bases where authors frequently use html tags inside quotations.
+ This may for instance be the case for Java doc comments since authors may be used to
+ Javadoc's behavior.
+]]>
+      </docs>
+    </option>
     <option type='int' id='TOC_INCLUDE_HEADINGS' minval='0' maxval='99' defval='5' depends='MARKDOWN_SUPPORT'>
       <docs>
 <![CDATA[

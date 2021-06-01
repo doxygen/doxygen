@@ -126,7 +126,8 @@ int getDoctokinizerLineNr(void);
 // operations on the scanner
 void doctokenizerYYFindSections(const QCString &input,const Definition *d,
                                 const QCString &fileName);
-void doctokenizerYYinit(const char *input,const QCString &fileName,bool markdownSupport);
+void doctokenizerYYinit(const char *input,const QCString &fileName,
+                        bool markdownSupport,bool quotSupport);
 void doctokenizerYYcleanup();
 void doctokenizerYYpushContext();
 bool doctokenizerYYpopContext();
