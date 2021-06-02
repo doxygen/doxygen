@@ -26,13 +26,15 @@
 /*
 Notes
 
+Cloned structure from PlantUML implementation.
 Works, but hackish. I need to understand better how this is going to be used to generate SVG and PDF from
-the other format types. Perhaps set the config to make SVG or a latex version and see what happens.
+the other format types. Perhaps set the config to make SVG or a latex version and see what happens?
 
-I'm not sure if the cache feature is useful for Mermaid since they need to be in separate files.
+I'm not sure if the cache feature is useful for Mermaid since they need to be in separate files. Remove it.
+Need to remove the 'engine' functionality as it's PlantUML specific.
 
 The visitor calls six times because there are two diagrams, 2 copies of jExecute (new and old) and the
-new one gets 2 entries for some reason.
+new one gets 2 entries for some reason (differ by a g and a h in the filename).
  */
 
 QCString MermaidManager::writeMermaidSource(const QCString &outDirArg,const QCString &fileName,
