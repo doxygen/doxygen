@@ -163,6 +163,7 @@ class DocNode
     /*! Sets whether or not this item is inside a preformatted section */
     void setInsidePreformatted(bool p) { m_insidePre = p; }
     DocNode *m_parent = 0;
+    enum RefType { Unknown, Anchor, Section, Table };
   private:
 
     bool m_insidePre = false;
@@ -883,7 +884,6 @@ class DocRef : public CompAccept<DocRef>
     bool isSubPage() const       { return m_isSubPage; }
 
   private:
-    enum RefType { Unknown, Anchor, Section, Table };
     RefType    m_refType = Unknown;
     bool       m_isSubPage = false;
     QCString   m_file;
@@ -1005,12 +1005,20 @@ class DocSecRefItem : public CompAccept<DocSecRefItem>
     QCString target() const     { return m_target; }
     QCString file() const       { return m_file; }
     QCString anchor() const     { return m_anchor; }
+    QCString relPath() const      { return m_relPath; }
+    QCString ref() const          { return m_ref; }
+    bool refToTable() const      { return m_refType==Table; }
+    bool isSubPage() const       { return m_isSubPage; }
     void parse();
 
   private:
     QCString  m_target;
-    QCString  m_file;
-    QCString  m_anchor;
+    RefType    m_refType = Unknown;
+    bool       m_isSubPage = false;
+    QCString   m_file;
+    QCString   m_relPath;
+    QCString   m_ref;
+    QCString   m_anchor;
 };
 
 /** Node representing a list of section references */

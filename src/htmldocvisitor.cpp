@@ -1887,15 +1887,24 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  QCString refName=addHtmlExtensionIfMissing(ref->file());
-  m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
-
+  //QCString refName=addHtmlExtensionIfMissing(ref->file());
+  //m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
+  if (!ref->file().isEmpty())
+  {
+    m_t << "<li>";
+    startLink(ref->ref(),ref->file(),ref->relPath(),ref->isSubPage() ? QCString() : ref->anchor());
+  }
 }
 
-void HtmlDocVisitor::visitPost(DocSecRefItem *)
+void HtmlDocVisitor::visitPost(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  m_t << "</a></li>\n";
+  if (!ref->file().isEmpty())
+  {
+    endLink();
+    m_t << "</li>\n";
+  }
+  // m_t << "</a></li>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefList *s)
