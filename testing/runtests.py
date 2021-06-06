@@ -257,6 +257,7 @@ class Tester:
 						else:
 							check_file = check_file[0]
 					# convert output to canonical form
+					check_file = check_file.replace('\\','/')
 					data = xpopen('%s --format --noblanks --nowarning %s' % (self.args.xmllint,check_file))
 					if data:
 						# strip version
@@ -264,6 +265,8 @@ class Tester:
 					else:
 						msg += ('Failed to run %s on the doxygen output file %s' % (self.args.xmllint,self.test_out),)
 						break
+					if self.args.subdirs:
+						data = re.sub('d[0-9a-f]/d[0-9a-f][0-9a-f]/','',data)
 					out_file='%s/%s' % (self.test_out,check)
 					with xopen(out_file,'w') as f:
 						print(data,file=f)
