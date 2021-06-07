@@ -1800,7 +1800,8 @@ static int internalValidatingParseDoc(DocNode *parent,DocNodeList &children,
 
   if (doc.isEmpty()) return retval;
 
-  doctokenizerYYinit(doc.data(),g_fileName,g_markdownSupport);
+  doctokenizerYYinit(doc.data(),g_fileName,g_markdownSupport,
+                     Config_getBool(QUOT_SUPPORT));
 
   // first parse any number of paragraphs
   bool isFirst=TRUE;
@@ -7593,7 +7594,7 @@ DocRoot *validatingParseDoc(const QCString &fileName,int startLine,
     inpStr+='\n';
   }
   //printf("processCopyDoc(in='%s' out='%s')\n",input,qPrint(inpStr));
-  doctokenizerYYinit(inpStr.data(),g_fileName,markdownSupport);
+  doctokenizerYYinit(inpStr.data(),g_fileName,markdownSupport,Config_getBool(QUOT_SUPPORT));
 
   // build abstract syntax tree
   DocRoot *root = new DocRoot(md!=0,singleLine);
@@ -7659,7 +7660,8 @@ DocText *validatingParseText(const QCString &input)
   if (!input.isEmpty())
   {
     setDoctokinizerLineNr(1);
-    doctokenizerYYinit(input.data(),g_fileName,Config_getBool(MARKDOWN_SUPPORT));
+    doctokenizerYYinit(input.data(),g_fileName,Config_getBool(MARKDOWN_SUPPORT),
+                       Config_getBool(QUOT_SUPPORT));
 
     // build abstract syntax tree
     txt->parse();
