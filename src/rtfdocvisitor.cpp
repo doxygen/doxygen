@@ -1135,12 +1135,11 @@ void RTFDocVisitor::visitPre(DocHRef *href)
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHRef)}\n");
   if (Config_getBool(RTF_HYPERLINKS))
   {
-    if (href->url().startsWith("#CITEREF"))
+    if (href->url().startsWith("#"))
     {
-      // when starting with #CITEREF it is a doxygen generated "url"a
-      // so a local link
+      // when starting with # so a local link
       QCString cite;
-      cite = "citelist_" + href->url().right(href->url().length()-1);
+      cite = href->file() + "_" + href->url().right(href->url().length()-1);
       m_t << "{\\field "
                "{\\*\\fldinst "
                  "{ HYPERLINK \\\\l \"" << rtfFormatBmkStr(cite) << "\" "

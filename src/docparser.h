@@ -915,10 +915,11 @@ class DocHRef : public CompAccept<DocHRef>
 {
   public:
     DocHRef(DocNode *parent,const HtmlAttribList &attribs,const QCString &url,
-           const QCString &relPath) :
-      m_attribs(attribs), m_url(url), m_relPath(relPath) { m_parent = parent; }
+           const QCString &relPath, const QCString &file) :
+      m_attribs(attribs), m_url(url), m_relPath(relPath), m_file(file) { m_parent = parent; }
     int parse();
     QCString url() const        { return m_url; }
+    QCString file() const       { return m_file; }
     QCString relPath() const    { return m_relPath; }
     Kind kind() const override           { return Kind_HRef; }
     const HtmlAttribList &attribs() const { return m_attribs; }
@@ -926,6 +927,7 @@ class DocHRef : public CompAccept<DocHRef>
   private:
     HtmlAttribList m_attribs;
     QCString   m_url;
+    QCString   m_file;
     QCString   m_relPath;
 };
 

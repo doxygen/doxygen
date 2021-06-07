@@ -5179,6 +5179,12 @@ QCString rtfFormatBmkStr(const QCString &name)
   // substitute a short arbitrary string for the name
   // supplied, and keep track of the correspondence
   // between names and strings.
+  auto it = g_tagMap.find(name.str());
+  if (it!=g_tagMap.end()) // already known
+  {
+    return QCString(it->second);
+  }
+
   QCString tag = g_nextTag;
   auto result = g_tagMap.insert( std::make_pair(name.str(), g_nextTag.str()) );
 
