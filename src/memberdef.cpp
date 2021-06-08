@@ -211,6 +211,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool hasCallGraph() const;
     virtual bool hasCallerGraph() const;
     virtual bool visibleMemberGroup(bool hideNoHeader) const;
+    virtual bool hasMemberSourceRefs() const;
+    virtual bool hasMemberSourceReffedBy() const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
     virtual const MemberDef *templateMaster() const;
@@ -340,7 +342,9 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void _writeCallGraph(OutputList &ol) const;
     void _writeCallerGraph(OutputList &ol) const;
     void _writeReimplements(OutputList &ol) const;
+    bool _isReimplements() const;
     void _writeReimplementedBy(OutputList &ol) const;
+    size_t _countReimplementedBy() const;
     void _writeExamples(OutputList &ol) const;
     void _writeTypeConstraints(OutputList &ol) const;
     void _writeEnumValues(OutputList &ol,const Definition *container,
@@ -691,6 +695,10 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasCallerGraph(); }
     virtual bool visibleMemberGroup(bool hideNoHeader) const
     { return getMdAlias()->visibleMemberGroup(hideNoHeader); }
+    virtual bool hasMemberSourceRefs() const
+    { return getMdAlias()->hasMemberSourceRefs(); }
+    virtual bool hasMemberSourceReffedBy() const
+    { return getMdAlias()->hasMemberSourceReffedBy(); }
     virtual bool hasReferencesRelation() const
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
@@ -1792,7 +1800,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
   {
     if (isStatic()) ol.docify("+ "); else ol.docify("- ");
   }
-  if (!onlyText && isLinkable()) // write link
+  if (!onlyText && (isLinkable() || isDetailedSectionLinkable())) // write link
   {
     if (m_impl->mtype==MemberType_EnumValue && getGroupDef()==0 &&          // enum value is not grouped
         getEnumScope() && getEnumScope()->getGroupDef()) // but its container is
@@ -2253,7 +2261,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!name().isEmpty() && // name valid
-        (hasDocumentation() || isReference()) && // has docs
+        (isDetailedSectionLinkable() || isReference()) && // has docs
         !(m_impl->prot==Private && !extractPrivate && (m_impl->virt==Normal || !extractPrivateVirtual) && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
         !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
        )
@@ -2450,7 +2458,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.endAnonTypeScope(--s_indentLevel);
   }
 
-  // write brief description
+  // write brief description all but HTML
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::Html);
   if (!briefDescription().isEmpty() &&
       Config_getBool(BRIEF_MEMBER_DESC)
       /* && !annMemb */
@@ -2464,18 +2474,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       ol.startMemberDescription(anchor(),inheritId);
       ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
-      if (detailsVisible)
-      {
-        ol.pushGeneratorState();
-        ol.disableAllBut(OutputGenerator::Html);
-        //ol.endEmphasis();
-        ol.docify(" ");
-        ol.startTextLink(getOutputFileBase(),anchor());
-        ol.parseText(theTranslator->trMore());
-        ol.endTextLink();
-        //ol.startEmphasis();
-        ol.popGeneratorState();
-      }
       // for RTF we need to add an extra empty paragraph
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
@@ -2486,6 +2484,42 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     }
     delete rootNode;
   }
+  ol.popGeneratorState();
+
+  // write brief description HTML
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Html);
+  if ( Config_getBool(BRIEF_MEMBER_DESC)
+     )
+  {
+    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),
+                getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE,
+                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+
+    if (rootNode)
+    {
+      if (!rootNode->isEmpty() || detailsVisible)
+      { // to prevent empty line i n case both are empty
+        ol.startMemberDescription(anchor(),inheritId);
+        ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
+      }
+      if (detailsVisible)
+      {
+        //ol.endEmphasis();
+        ol.docify(" ");
+        ol.startTextLink(getOutputFileBase(),anchor());
+        ol.parseText(theTranslator->trMore());
+        ol.endTextLink();
+        //ol.startEmphasis();
+      }
+      if (!rootNode->isEmpty() || detailsVisible)
+      {
+        ol.endMemberDescription();
+      }
+    }
+    delete rootNode;
+  }
+  ol.popGeneratorState();
 
   ol.endMemberDeclaration(anchor(),inheritId);
 
@@ -2501,6 +2535,7 @@ bool MemberDefImpl::isDetailedSectionLinkable() const
   static bool hideUndocMembers  = Config_getBool(HIDE_UNDOC_MEMBERS);
   static bool extractStatic     = Config_getBool(EXTRACT_STATIC);
   static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+  static bool inlineSources     = Config_getBool(INLINE_SOURCES);
 
   // the member has details documentation for any of the following reasons
   bool docFilter =
@@ -2529,10 +2564,18 @@ bool MemberDefImpl::isDetailedSectionLinkable() const
          (m_impl->defArgList.hasDocumentation()) ||
          // is an attribute or property - need to display that tag
          (m_impl->memSpec & (Entry::Attribute|Entry::Property)) ||
+         // has inline sources
+         (inlineSources && hasSources()) ||
+         // has references
+         (hasReferencesRelation() && hasMemberSourceRefs()) ||
+         (hasReferencedByRelation() && hasMemberSourceReffedBy()) ||
+         // reimplements / reimplemented by
+         _isReimplements() ||
+         (_countReimplementedBy() > 0) ||
          // has user comments
          Doxygen::userComments
          ;
-
+  //
   // this is not a global static or global statics should be extracted
   bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic;
 
@@ -2744,6 +2787,20 @@ void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
   }
 }
 
+bool MemberDefImpl::_isReimplements() const
+{
+  const MemberDef *bmd=reimplements();
+  const ClassDef *bcd=0;
+  if (bmd && (bcd=bmd->getClassDef()))
+  {
+    // write class that contains a member that is reimplemented by this one
+    if (bcd->isLinkable())
+    {
+      return true;
+    }
+  }
+  return false;
+}
 void MemberDefImpl::_writeReimplements(OutputList &ol) const
 {
   const MemberDef *bmd=reimplements();
@@ -2803,7 +2860,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
   }
 }
 
-void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
+size_t MemberDefImpl::_countReimplementedBy() const
 {
   const MemberList &bml=reimplementedBy();
   size_t count=0;
@@ -2817,6 +2874,13 @@ void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
       count++;
     }
   }
+  return count;
+}
+
+void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
+{
+  const MemberList &bml=reimplementedBy();
+  size_t count = _countReimplementedBy();
   if (count>0)
   {
     auto replaceFunc = [&bml,&ol](size_t entryIndex)
@@ -5358,6 +5422,16 @@ bool MemberDefImpl::hasCallGraph() const
 bool MemberDefImpl::hasCallerGraph() const
 {
   return m_impl->hasCallerGraph;
+}
+
+bool MemberDefImpl::hasMemberSourceRefs() const
+{
+  return hasSourceRefs();
+}
+
+bool MemberDefImpl::hasMemberSourceReffedBy() const
+{
+  return hasSourceReffedBy();
 }
 
 bool MemberDefImpl::hasReferencedByRelation() const

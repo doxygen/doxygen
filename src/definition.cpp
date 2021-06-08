@@ -1334,6 +1334,16 @@ void DefinitionImpl::writeSourceRefs(OutputList &ol,const QCString &scopeName) c
   _writeSourceRefList(ol,scopeName,theTranslator->trReferences(),m_impl->sourceRefsDict,TRUE);
 }
 
+bool DefinitionImpl::hasSourceReffedBy() const
+{
+  return !m_impl->sourceRefByDict.empty();
+}
+
+bool DefinitionImpl::hasSourceRefs() const
+{
+  return !m_impl->sourceRefsDict.empty();
+}
+
 bool DefinitionImpl::hasDocumentation() const
 {
   static bool extractAll    = Config_getBool(EXTRACT_ALL);
