@@ -262,7 +262,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         t << "  <LI><OBJECT type=\"text/sitemap\">";
         t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
         t << "\">";
-        t << "<param name=\"Name\" value=\"" << m_recoder.recode(level1) << "\">"
+        t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">"
            "</OBJECT>\n";
       }
       else
@@ -272,14 +272,14 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
           t << "  <LI><OBJECT type=\"text/sitemap\">";
           t << "<param name=\"Local\" value=\"" << field2URL(f.get(),TRUE);
           t << "\">";
-          t << "<param name=\"Name\" value=\"" << m_recoder.recode(level1) << "\">"
+          t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">"
                "</OBJECT>\n";
         }
         else
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"See Also\" value=\"" << m_recoder.recode(level1) << "\">";
-          t << "<param name=\"Name\" value=\"" << m_recoder.recode(level1) << "\">"
+          t << "<param name=\"See Also\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">";
+          t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">"
                "</OBJECT>\n";
         }
       }
@@ -299,7 +299,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       t << "    <LI><OBJECT type=\"text/sitemap\">";
       t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
       t << "\">";
-      t << "<param name=\"Name\" value=\"" << m_recoder.recode(level2) << "\">"
+      t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level2),TRUE) << "\">"
          "</OBJECT>\n";
     }
   }
