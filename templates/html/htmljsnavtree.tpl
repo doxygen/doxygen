@@ -45,7 +45,7 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-{% with navlist=index.nav|flatten|listsort:config.HTML_FILE_EXTENSION|prepend:'{{file}}'|append:'#{{anchor}}' navpages=navlist|paginate:250 %}
+{% with navlist=index.nav|flatten|keep:'addToIndex'|listsort:config.HTML_FILE_EXTENSION|prepend:'{{file}}'|append:'#{{anchor}}' navpages=navlist|paginate:250 %}
   {% for page in navpages %}
     "{{ page.0.file }}{{ config.HTML_FILE_EXTENSION }}{% if page.0.anchor %}#{{ page.0.anchor }}{% endif %}"{% if not forloop.last %},{%endif %}
     {% with idx=forloop.counter0 entries=page %}

@@ -143,7 +143,7 @@ class TemplateVariant
     Type type() const { return m_type; }
 
     /** Return a string representation of the type of the value stored in the variant */
-    QCString typeAsString() const
+    const char *typeAsString() const
     {
       switch (m_type)
       {

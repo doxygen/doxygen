@@ -52,6 +52,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
                               const QCString &header,bool localNames) const;
     virtual const NamespaceDef *getNamespaceDef() const;
     virtual const FileDef *getFileDef() const;
+    virtual QCString title() const;
 
     //---------- ConceptDefMutable
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force);
@@ -125,6 +126,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     { return getCdAlias()->getNamespaceDef(); }
     virtual const FileDef *getFileDef() const
     { return getCdAlias()->getFileDef(); }
+    virtual QCString title() const
+    { return getCdAlias()->title(); }
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
@@ -255,14 +258,9 @@ const FileDef *ConceptDefImpl::getFileDef() const
   return m_fileDef;
 }
 
-void ConceptDefImpl::setInitializer(const QCString &init)
+QCString ConceptDefImpl::title() const
 {
-  m_initializer = init;
-}
-
-QCString ConceptDefImpl::initializer() const
-{
-  return m_initializer;
+  return theTranslator->trConceptReference(displayName());
 }
 
 void ConceptDefImpl::writeTagFile(TextStream &tagFile)
@@ -379,6 +377,16 @@ static QCString templateSpec(const ArgumentList &al)
   return t.str();
 }
 
+void ConceptDefImpl::setInitializer(const QCString &init)
+{
+  m_initializer = templateSpec(m_tArgList)+"\nconcept "+name()+" = "+init;
+}
+
+QCString ConceptDefImpl::initializer() const
+{
+  return m_initializer;
+}
+
 void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 {
     ol.startGroupHeader();
@@ -391,10 +399,6 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     QCString scopeName;
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
     TextStream conceptDef;
-    conceptDef << templateSpec(m_tArgList);
-    conceptDef << "\nconcept ";
-    conceptDef << name();
-    conceptDef << " = ";
     conceptDef << m_initializer;
     intf->parseCode(ol,scopeName,conceptDef.str(),SrcLangExt_Cpp,false,QCString(),
                     m_fileDef, -1,-1,true,0,false,this);
@@ -479,6 +483,7 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
   // ---- title part
   startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
+  addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
 
   // ---- contents part

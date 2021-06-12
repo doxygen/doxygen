@@ -4,7 +4,7 @@
 <div class="textblock">
 {{ tr.modulesDescription }}
 </div>
-{% indexentry nav name=tr.modules file=page.fileName anchor='' isReference=False separateIndex=False %}
+{% indexentry nav name=tr.modules file=page.fileName anchor='' isReference=False separateIndex=True addToIndex=True %}
 {% opensubindex nav %}
 {% with tree=moduleTree %}
   {% include 'htmldirtree.tpl' %}

@@ -1237,11 +1237,11 @@ static void addConceptToContext(const Entry *root)
       cd->setLanguage(root->lang);
       cd->setId(root->id);
       cd->setHidden(root->hidden);
-      cd->setInitializer(root->initializer.str().c_str());
       if (tArgList)
       {
         cd->setTemplateArguments(*tArgList);
       }
+      cd->setInitializer(root->initializer.str().c_str());
       // file definition containing the class cd
       cd->setBodySegment(root->startLine,root->bodyLine,root->endBodyLine);
       cd->setBodyDef(fd);

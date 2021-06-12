@@ -90,9 +90,9 @@
 
 {# open the global navigation index #}
 {% if config.PROJECT_NAME %}
-  {% indexentry nav name=config.PROJECT_NAME file='index' anchor='' isReference=False separateIndex=False %}
+  {% indexentry nav name=config.PROJECT_NAME file='index' anchor='' isReference=False separateIndex=False addToIndex=True %}
 {% else %}
-  {% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False separateIndex=False %}
+  {% indexentry nav name=tr.mainPage file='index' anchor='' isReference=False separateIndex=False addToIndex=True %}
 {% endif %}
 {% opensubindex nav %}
 
@@ -107,6 +107,13 @@
 {% for compound in namespaceList %}
   {% with page=compound %}
     {% create compound.fileName|append:config.HTML_FILE_EXTENSION from 'htmlnamespace.tpl' %}
+  {% endwith %}
+{% endfor %}
+
+{# write concept documentation pages #}
+{% for compound in conceptList %}
+  {% with page=compound %}
+    {% create compound.fileName|append:config.HTML_FILE_EXTENSION from 'htmlconcept.tpl' %}
   {% endwith %}
 {% endfor %}
 
@@ -183,7 +190,7 @@
 
 {# --- namespaces --- #}
 {% if namespaceList %}
-  {% indexentry nav name=tr.namespaces file='namespaces' anchor='' isReference=False separateIndex=False %}
+  {% indexentry nav name=tr.namespaces file='namespaces' anchor='' isReference=False separateIndex=False addToIndex=True %}
   {% opensubindex nav %}
 
   {% if namespaceTree.tree %}
@@ -195,7 +202,7 @@
   {# write symbol indices for namespace members #}
   {% if namespaceMembersIndex.all %}
     {% with page=namespaceMembersIndex scope='namespace' template='htmlnsmembers.tpl' %}
-      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False separateIndex=False %}
+      {% indexentry nav name=tr.namespaceMembers file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -203,9 +210,16 @@
   {% closesubindex nav %}
 {% endif %}
 
+{# --- concepts --- #}
+{% if conceptTree.tree %}
+  {% with page=conceptTree %}
+    {% create conceptTree.fileName|append:config.HTML_FILE_EXTENSION from 'htmlconcepts.tpl' %}
+  {% endwith %}
+{% endif %}
+
 {# --- classes --- #}
 {% if classList %}
-  {% indexentry nav name=tr.classes file='annotated'|append:config.HTML_FILE_EXTENSION anchor='' isReference=False separateIndex=False %}
+  {% indexentry nav name=tr.classes file='annotated'|append:config.HTML_FILE_EXTENSION anchor='' isReference=False separateIndex=False addToIndex=False %}
   {% opensubindex nav %}
 
   {# write the annotated class list #}
@@ -237,7 +251,7 @@
   {# write symbol indices for class members #}
   {% if classMembersIndex.all %}
     {% with page=classMembersIndex scope='class' template='htmlclmembers.tpl' %}
-      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False separateIndex=False %}
+      {% indexentry nav name=tr.classMembers file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}
@@ -247,7 +261,7 @@
 
 {# --- files --- #}
 {% if fileList %}
-  {% indexentry nav name=tr.files file='files' anchor='' isReference=False separateIndex=False %}
+  {% indexentry nav name=tr.files file='files' anchor='' isReference=False separateIndex=False addToIndex=False addToIndex=False %}
   {% opensubindex nav %}
 
   {# write the directory/file hierarchy #}
@@ -260,7 +274,7 @@
   {# write symbol indices for global namespace #}
   {% if globalsIndex.all %}
     {% with page=globalsIndex scope='file' template='htmlflmembers.tpl' %}
-      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False separateIndex=False %}
+      {% indexentry nav name=tr.fileMembers file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
       {% include 'htmlmembersindex.tpl' %}
     {% endwith %}
   {% endif %}

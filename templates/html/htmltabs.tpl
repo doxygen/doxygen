@@ -15,6 +15,10 @@
     {% if namespaceList %}
    <li{% if page.highlight=='namespaces' %} class="current"{% endif %}><a href="{{ page.relPath }}namespaces{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.namespaces|nowrap }}</span></a></li>
     {% endif %}
+  {# concepts tab #}
+    {% if conceptList %}
+   <li{% if page.highlight=='concepts' %} class="current"{% endif %}><a href="{{ page.relPath }}concepts{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.concepts|nowrap }}</span></a></li>
+    {% endif %}
   {# classes tab #}
     {% if classList %}
    <li{% if page.highlight=='classes' %} class="current"{% endif %}><a href="{{ page.relPath }}annotated{{ config.HTML_FILE_EXTENSION }}"><span>{{ tr.classes|nowrap }}</span></a></li>

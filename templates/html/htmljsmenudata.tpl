@@ -30,6 +30,9 @@ var menudata={children:[
 {% if moduleTree.tree %}
 ,{text:"{{ tr.modules }}",url:"modules{{ config.HTML_FILE_EXTENSION }}"}
 {% endif %}
+{% if conceptList %}
+,{text:"{{ tr.concepts }}",url:"concepts{{ config.HTML_FILE_EXTENSION }}"}
+{% endif %}
 {% if namespaceList %}
 ,{text:"{{ tr.namespaces }}",url:'namespaces{{ config.HTML_FILE_EXTENSION }}",children:[
  {text:"{{ tr.namespaceList }}",url:'namespaces{{ config.HTML_FILE_EXTENSION }}"}

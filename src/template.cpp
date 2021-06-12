@@ -676,6 +676,46 @@ class FilterRaw
 
 //-----------------------------------------------------------------------------
 
+/** @brief The implementation of the "keep" filter */
+class FilterKeep
+{
+  public:
+    static TemplateVariant apply(const TemplateVariant &v,const TemplateVariant &args)
+    {
+      if (v.isValid() && v.type()==TemplateVariant::List && args.type()==TemplateVariant::String)
+      {
+        //printf("FilterKeep::apply: v=%s args=%s\n",qPrint(v.toString()),qPrint(args.toString()));
+        TemplateListIntf::ConstIterator *it = v.toList()->createIterator();
+
+        TemplateList *result = TemplateList::alloc();
+        TemplateVariant item;
+        for (it->toFirst();(it->current(item));it->toNext())
+        {
+          //printf("item type=%s\n",item.typeAsString());
+          TemplateStructIntf *s = item.toStruct();
+          if (s)
+          {
+            TemplateVariant value = s->get(args.toString());
+            //printf("value type=%s\n",value.typeAsString());
+            if (value.toBool())
+            {
+              //printf("keeping it\n");
+              result->append(item);
+            }
+            else
+            {
+              //printf("Dropping it\n");
+            }
+          }
+        }
+        return result;
+      }
+      return v;
+    }
+};
+
+//-----------------------------------------------------------------------------
+
 /** @brief The implementation of the "list" filter */
 class FilterList
 {
@@ -1438,6 +1478,7 @@ static TemplateFilterFactory::AutoRegister<FilterAdd>                fAdd("add")
 static TemplateFilterFactory::AutoRegister<FilterGet>                fGet("get");
 static TemplateFilterFactory::AutoRegister<FilterHex>                fHex("hex");
 static TemplateFilterFactory::AutoRegister<FilterRaw>                fRaw("raw");
+static TemplateFilterFactory::AutoRegister<FilterKeep>               fKeep("keep");
 static TemplateFilterFactory::AutoRegister<FilterList>               fList("list");
 static TemplateFilterFactory::AutoRegister<FilterLower>              fLower("lower");
 static TemplateFilterFactory::AutoRegister<FilterUpper>              fUpper("upper");

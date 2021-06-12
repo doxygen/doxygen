@@ -2,11 +2,11 @@
 {% block content %}
 <div class="contents">
 <div class="textblock">
-{{ tr.relatedPagesDesc }}
+{{ tr.conceptListDescription }}
 </div>
-{% indexentry nav name=tr.pages file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
+{% indexentry nav name=tr.concepts file=page.fileName anchor='' isReference=False separateIndex=True addToIndex=True %}
 {% opensubindex nav %}
-{% with tree=pageTree %}
+{% with tree=conceptTree %}
   {% include 'htmldirtree.tpl' %}
 {% endwith %}
 {% closesubindex nav %}

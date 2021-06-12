@@ -3747,8 +3747,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
   /* Some groups should appear twice under different parent-groups.
    * That is why we should not check if it was visited
    */
-  if (/*!gd->visited &&*/ (!gd->isASubGroup() || level>0) &&
-      gd->isVisible() &&
+  if ((!gd->isASubGroup() || level>0) && gd->isVisible() &&
       (!gd->isReference() || Config_getBool(EXTERNAL_GROUPS)) // hide external groups by default
      )
   {

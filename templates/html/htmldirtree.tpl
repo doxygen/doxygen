@@ -12,9 +12,9 @@
 <table class="directory">
 {% recursetree tree.tree %}
   {% if node.isLinkable %}
-    {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference separateIndex=True %}
+    {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference separateIndex=node.is_leaf_node==False addToIndex=node.partOfGroup==False %}
   {% else %}
-    {% indexentry nav name=node.name file='' anchor=node.anchor isReference=False separateIndex=False %}
+    {% indexentry nav name=node.name file='' anchor=node.anchor isReference=False separateIndex=False addToIndex=False %}
   {% endif %}
   {% if not node.member %}
   {% spaceless %}
@@ -56,7 +56,7 @@
     {% if node.members %}
       {% opensubindex nav %}
         {% for member in node.members %}
-          {% indexentry nav name=member.name file=member.fileName anchor=member.anchor isReference=member.isReference externalReference=member.externalReference separateIndex=False %}
+          {% indexentry nav name=member.name file=member.fileName anchor=member.anchor isReference=member.isReference externalReference=member.externalReference separateIndex=False addToIndex=member.partOfGroup==False %}
         {% endfor %}
       {% closesubindex nav %}
     {% endif %}

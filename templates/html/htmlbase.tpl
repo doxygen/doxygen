@@ -186,9 +186,6 @@ $(function() {
 
 {% endblock %}
 
-{% block navpath %}
-{% endblock %}
-
 {% block splitbar %}
 {% if config.GENERATE_TREEVIEW %}
 {% if not config.DISABLE_INDEX or not config.FULL_SIDEBAR %}
@@ -229,10 +226,15 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% endif %}
 {% endblock %}
 
+{% block navpath %}
+{% endblock %}
+
 <div class="header">
 {% block title %}
-<div class="headertitle">
-<div class="title">{{ page.title }}</div></div>
+{% if page.title %}
+  <div class="headertitle">
+  <div class="title">{{ page.title }}</div></div>
+{% endif %}
 {% endblock %}
 </div><!-- header -->
 
