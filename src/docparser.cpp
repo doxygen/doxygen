@@ -109,8 +109,8 @@ static QCString               g_relPath;
 
 static bool                   g_hasParamCommand;
 static bool                   g_hasReturnCommand;
-static StringSet              g_retvalsFound;
-static StringSet              g_paramsFound;
+static StringMultiSet         g_retvalsFound;
+static StringMultiSet         g_paramsFound;
 static const MemberDef *      g_memberDef;
 static bool                   g_isExample;
 static QCString               g_exampleName;
@@ -145,8 +145,8 @@ struct DocParserContext
   bool         hasParamCommand;
   bool         hasReturnCommand;
   const MemberDef *  memberDef;
-  StringSet    retvalsFound;
-  StringSet    paramsFound;
+  StringMultiSet retvalsFound;
+  StringMultiSet paramsFound;
   bool         isExample;
   QCString     exampleName;
   QCString     searchUrl;
@@ -483,7 +483,7 @@ static void checkRetvalName(const QCString &name)
 {
   if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
   if (g_memberDef==0 || name.isEmpty()) return; // not a member or no valid name
-  if (g_retvalsFound.find(name.str())!=g_retvalsFound.end())
+  if (g_retvalsFound.count(name.str())==1) // only report the first double entry
   {
      warn_doc_error(g_memberDef->getDefFileName(),
                     g_memberDef->getDefLine(),
@@ -511,10 +511,9 @@ static void checkUnOrMultipleDocumentedParams()
     SrcLangExt lang = g_memberDef->getLanguage();
     if (!al.empty())
     {
-      int notArgCnt=0;
+      ArgumentList undocParams;
       for (const Argument &a: al)
       {
-        int count = 0;
         QCString argName = g_memberDef->isDefine() ? a.type : a.name;
         if (lang==SrcLangExt_Fortran) argName = argName.lower();
         argName=argName.stripWhiteSpace();
@@ -524,59 +523,42 @@ static void checkUnOrMultipleDocumentedParams()
         {
           // allow undocumented self / cls parameter for Python
         }
-        else if (!argName.isEmpty() && g_paramsFound.find(argName.str())==g_paramsFound.end() && a.docs.isEmpty())
+        else if (!argName.isEmpty())
         {
-          notArgCnt++;
-        }
-        else
-        {
-          for (const auto &par : g_paramsFound)
+          size_t count = g_paramsFound.count(argName.str());
+          if (count==0 && a.docs.isEmpty())
           {
-            if (argName == QCString(par)) count++;
+            undocParams.push_back(a);
+          }
+          else if (count>1 && Config_getBool(WARN_IF_DOC_ERROR))
+          {
+            warn_doc_error(g_memberDef->getDefFileName(),
+                           g_memberDef->getDefLine(),
+                           "%s",
+                           qPrint("argument '" + aName +
+                           "' from the argument list of " +
+                           QCString(g_memberDef->qualifiedName()) +
+                           " has multiple @param documentation sections"));
           }
         }
-        if ((count > 1) &&  Config_getBool(WARN_IF_DOC_ERROR))
-        {
-          warn_doc_error(g_memberDef->getDefFileName(),
-                         g_memberDef->getDefLine(),
-                         "%s",
-                         qPrint("argument '" + aName +
-                         "' from the argument list of " +
-                         QCString(g_memberDef->qualifiedName()) +
-                         " has multiple @param documentation sections"));
-        }
       }
-      if ((notArgCnt>0) && Config_getBool(WARN_IF_INCOMPLETE_DOC))
+      if (!undocParams.empty() && Config_getBool(WARN_IF_INCOMPLETE_DOC))
       {
         bool first=TRUE;
-        QCString errMsg=
-            "The following parameter";
-        errMsg+= (notArgCnt>1 ? "s" : "");
+        QCString errMsg = "The following parameter";
+        if (undocParams.size()>1) errMsg+="s";
         errMsg+=" of "+
             QCString(g_memberDef->qualifiedName()) +
             QCString(argListToString(al)) +
-            (notArgCnt>1 ? " are" : " is") + " not documented:\n";
-        for (const Argument &a : al)
+            (undocParams.size()>1 ? " are" : " is") + " not documented:\n";
+        for (const Argument &a : undocParams)
         {
           QCString argName = g_memberDef->isDefine() ? a.type : a.name;
           if (lang==SrcLangExt_Fortran) argName = argName.lower();
           argName=argName.stripWhiteSpace();
-          if (lang==SrcLangExt_Python && (argName=="self" || argName=="cls"))
-          {
-            // allow undocumented self / cls parameter for Python
-          }
-          else if (!argName.isEmpty() && g_paramsFound.find(argName.str())==g_paramsFound.end())
-          {
-            if (!first)
-            {
-              errMsg+="\n";
-            }
-            else
-            {
-              first=FALSE;
-            }
-            errMsg+="  parameter '"+argName+"'";
-          }
+          if (!first) errMsg+="\n";
+          first=FALSE;
+          errMsg+="  parameter '"+argName+"'";
         }
         warn_incomplete_doc(g_memberDef->getDefFileName(),
                             g_memberDef->getDefLine(),
