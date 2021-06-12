@@ -497,6 +497,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
 
+    virtual void cleanup() = 0;
+
   protected:
     TextStream m_t;
   private:

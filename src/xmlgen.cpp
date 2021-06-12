@@ -2021,6 +2021,7 @@ void generateXML()
   }
 
   writeCombineScript();
+  clearSubDirs(xmlDir);
 }
 
 

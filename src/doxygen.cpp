@@ -12144,6 +12144,8 @@ void generateOutput()
     g_s.end();
   }
 
+  g_outputList->cleanup();
+
   int cacheParam;
   msg("lookup cache used %zu/%zu hits=%" PRIu64 " misses=%" PRIu64 "\n",
       Doxygen::lookupCache->size(),

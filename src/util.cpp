@@ -3702,6 +3702,32 @@ void createSubDirs(const Dir &d)
   }
 }
 
+void clearSubDirs(const Dir &d)
+{
+  if (Config_getBool(CREATE_SUBDIRS))
+  {
+    // remove empty subdirectories
+    for (int l1=0;l1<16;l1++)
+    {
+      QCString subdir;
+      subdir.sprintf("d%x",l1);
+      for (int l2=0;l2<256;l2++)
+      {
+        QCString subsubdir;
+        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        if (d.exists(subsubdir.str()) && d.isEmpty(subsubdir.str()))
+        {
+          d.rmdir(subsubdir.str());
+        }
+      }
+      if (d.exists(subdir.str()) && d.isEmpty(subdir.str()))
+      {
+        d.rmdir(subdir.str());
+      }
+    }
+  }
+}
+
 /*! Input is a scopeName, output is the scopename split into a
  *  namespace part (as large as possible) and a classname part.
  */

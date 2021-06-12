@@ -475,6 +475,9 @@ class OutputList : public OutputDocInterface
     void endLabels()
     { forall(&OutputGenerator::endLabels); }
 
+    void cleanup()
+    { forall(&OutputGenerator::cleanup); }
+
     void startFontClass(const QCString &c)
     { forall(&OutputGenerator::startFontClass,c); }
     void endFontClass()

@@ -494,6 +494,13 @@ void LatexGenerator::init()
   createSubDirs(d);
 }
 
+void LatexGenerator::cleanup()
+{
+  QCString dname = Config_getString(LATEX_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 static void writeDefaultStyleSheet(TextStream &t)
 {
   t << ResourceMgr::instance().getAsString("doxygen.sty");

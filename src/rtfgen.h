@@ -32,6 +32,7 @@ class RTFGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
+    void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeExtensionsFile(TextStream &t);
     OutputType type() const { return RTF; }

@@ -35,6 +35,7 @@ class ManGenerator : public OutputGenerator
     void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
 
     static void init();
+    void cleanup();
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}

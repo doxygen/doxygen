@@ -115,6 +115,13 @@ void ManGenerator::init()
   createSubDirs(d);
 }
 
+void ManGenerator::cleanup()
+{
+  QCString dname = Config_getString(MAN_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 static QCString buildFileName(const QCString &name)
 {
   QCString fileName;
