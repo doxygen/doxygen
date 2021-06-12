@@ -3659,16 +3659,16 @@ static QCString simplifyTypeForTable(const QCString &s)
 {
   QCString ts=removeAnonymousScopes(s);
   if (ts.right(2)=="::") ts = ts.left(ts.length()-2);
-  static const reg::Ex re1(R"(\a\w*::(\a\w*))");       // non-template version
-  static const reg::Ex re2(R"(\a\w*<[^>]*>::(\a\w*))"); // template version
+  static const reg::Ex re1(R"(\a\w*::)");       // non-template version
+  static const reg::Ex re2(R"(\a\w*<[^>]*>::)"); // template version
   reg::Match match;
   std::string t = ts.str();
-  if (reg::search(t,match,re1) || reg::search(t,match,re2))
+  while (reg::search(t,match,re2) || reg::search(t,match,re1))
   {
-    ts = match[1].str(); // take the identifier after the last ::
+    t = match.prefix().str() + match.suffix().str(); // remove the matched part
   }
-  //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),qPrint(ts));
-  return ts;
+  //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),t.c_str());
+  return t;
 }
 
 QCString MemberDefImpl::fieldType() const
