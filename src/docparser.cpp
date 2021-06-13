@@ -998,7 +998,9 @@ static int handleAHref(DocNode *parent,DocNodeList &children,const HtmlAttribLis
       HtmlAttribList attrList = tagHtmlAttribs;
       // and remove the href attribute
       attrList.erase(attrList.begin()+index);
-      DocHRef *href = new DocHRef(parent,attrList,opt.value,g_relPath);
+      QCString relPath;
+      if (opt.value.at(0) != '#') relPath = g_relPath;
+      DocHRef *href = new DocHRef(parent,attrList,opt.value,relPath,convertNameToFile(g_fileName,FALSE,TRUE));
       children.push_back(std::unique_ptr<DocHRef>(href));
       g_insideHtmlLink=TRUE;
       retval = href->parse();

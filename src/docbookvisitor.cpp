@@ -1190,7 +1190,14 @@ void DocbookDocVisitor::visitPre(DocHRef *href)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "<link xlink:href=\"" << convertToDocBook(href->url()) << "\">";
+  if (href->url().at(0) != '#')
+  {
+    m_t << "<link xlink:href=\"" << convertToDocBook(href->url()) << "\">";
+  }
+  else
+  {
+    startLink(href->file(),filterId(href->url().mid(1)));
+  }
 }
 
 void DocbookDocVisitor::visitPost(DocHRef *)
