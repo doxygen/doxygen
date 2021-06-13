@@ -313,6 +313,13 @@ void DocbookGenerator::init()
 
   createSubDirs(d);
 }
+void DocbookGenerator::cleanup()
+{
+  QCString dname = Config_getString(DOCBOOK_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 
 void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
 {

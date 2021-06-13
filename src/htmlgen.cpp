@@ -971,6 +971,7 @@ void HtmlGenerator::init()
   {
     mgr.copyResource("svgpan.js",dname);
   }
+
   if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     mgr.copyResource("menu.js",dname);
@@ -988,6 +989,13 @@ void HtmlGenerator::init()
       }
     }
   }
+}
+
+void HtmlGenerator::cleanup()
+{
+  QCString dname = Config_getString(HTML_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
 }
 
 /// Additional initialization after indices have been created

@@ -207,6 +207,13 @@ void RTFGenerator::init()
   createSubDirs(d);
 }
 
+void RTFGenerator::cleanup()
+{
+  QCString dname = Config_getString(RTF_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 static QCString makeIndexName(const QCString &s,int i)
 {
   QCString result=s;

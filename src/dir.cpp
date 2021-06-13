@@ -202,6 +202,13 @@ bool Dir::exists() const
   return fi.exists() && fi.isDir();
 }
 
+bool Dir::isEmpty(const std::string subdir) const
+{
+  fs::path pth = path();
+  pth /= subdir;
+  return fs::is_empty(pth);
+}
+
 bool Dir::isRelative() const
 {
   return isRelativePath(p->path.string());

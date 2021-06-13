@@ -321,6 +321,7 @@ void addDirPrefix(QCString &fileName);
 QCString relativePathToRoot(const QCString &name);
 
 void createSubDirs(const Dir &d);
+void clearSubDirs(const Dir &d);
 
 QCString stripPath(const QCString &s);
 

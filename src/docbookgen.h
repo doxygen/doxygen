@@ -99,6 +99,7 @@ class DocbookGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
+    void cleanup();
 
     OutputType type() const { return Docbook; }
 
