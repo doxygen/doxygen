@@ -115,8 +115,8 @@ documentation. For this purpose you can use the following:
 \endverbatim
 Note: the 2 slashes to end the normal comment block and start a special comment block.
 
-Note: be careful when using a reformatter as a reformatter can see this type of comment
-as 2 separate comments resulting in non expected comment formatting.
+Note: be careful when using a reformatter like clang-format as it may see this type of comment
+as 2 separate comments and introduce spacing between them.
 
 or
 
