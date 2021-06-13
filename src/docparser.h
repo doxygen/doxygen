@@ -927,8 +927,8 @@ class DocHRef : public CompAccept<DocHRef>
   private:
     HtmlAttribList m_attribs;
     QCString   m_url;
-    QCString   m_file;
     QCString   m_relPath;
+    QCString   m_file;
 };
 
 /** Node Html heading */
