@@ -3770,6 +3770,12 @@ void MemberDefImpl::writeMemberDocSimple(OutputList &ol, const Definition *conta
   /* write detailed description */
   if (!detailed.isEmpty())
   {
+    if (!brief.isEmpty())
+    {
+      ol.disable(OutputGenerator::Html);
+      ol.lineBreak();
+      ol.enable(OutputGenerator::Html);
+    }
     ol.generateDoc(docFile(),docLine(),
                 getOuterScope()?getOuterScope():container,this,
                 detailed+"\n",FALSE,FALSE,
