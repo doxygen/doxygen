@@ -856,7 +856,7 @@ void DocbookGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
                                  const QCString &)
 {
 DB_GEN_C
-  if (!m_inListItem[m_levelListItem] && !m_descTable)
+  if (!m_inListItem[m_levelListItem] && !m_descTable && !m_simpleTable)
   {
     if (!m_firstMember) m_t << "    </section>";
     m_firstMember = FALSE;
@@ -1028,6 +1028,77 @@ void DocbookGenerator::addIndexItem(const QCString &prim,const QCString &sec)
 {
 DB_GEN_C
   addIndexTerm(m_t, prim, sec);
+}
+
+void DocbookGenerator::startMemberDocSimple(bool isEnum)
+{
+DB_GEN_C
+  int ncols;
+  QCString title;
+  if (isEnum)
+  {
+    ncols = 2;
+    title = theTranslator->trEnumerationValues();
+  }
+  else
+  {
+    ncols = 3;
+    title = theTranslator->trCompoundMembers();
+  }
+  m_t << "<table frame=\"all\">\n";
+  if (!title.isEmpty()) m_t << "<title>" << convertToDocBook(title) << "</title>\n";
+  m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
+  for (int i = 0; i < ncols; i++)
+  {
+    m_t << "      <colspec colname='c" << i+1 << "'/>\n";
+  }
+  m_t << "<tbody>\n";
+  m_simpleTable = true;
+}
+
+void DocbookGenerator::endMemberDocSimple(bool isEnum)
+{
+DB_GEN_C
+  m_t << "    </tbody>\n";
+  m_t << "    </tgroup>\n";
+  m_t << "</table>\n";
+  m_simpleTable = false;
+}
+
+void DocbookGenerator::startInlineMemberType()
+{
+DB_GEN_C
+  m_t << "<row><entry>";
+}
+
+void DocbookGenerator::endInlineMemberType()
+{
+DB_GEN_C
+  m_t << "</entry>";
+}
+
+void DocbookGenerator::startInlineMemberName()
+{
+DB_GEN_C
+  m_t << "<entry>";
+}
+
+void DocbookGenerator::endInlineMemberName()
+{
+DB_GEN_C
+  m_t << "</entry>";
+}
+
+void DocbookGenerator::startInlineMemberDoc()
+{
+DB_GEN_C
+  m_t << "<entry>";
+}
+
+void DocbookGenerator::endInlineMemberDoc()
+{
+DB_GEN_C
+  m_t << "</entry></row>\n";
 }
 
 void DocbookGenerator::startDescTable(const QCString &title)
