@@ -103,6 +103,8 @@ class DefinitionImpl
     void setLanguage(SrcLangExt lang);
     void writeSourceDef(OutputList &ol,const QCString &scopeName) const;
     void writeInlineCode(OutputList &ol,const QCString &scopeName) const;
+    bool hasSourceRefs() const;
+    bool hasSourceReffedBy() const;
     void writeSourceRefs(OutputList &ol,const QCString &scopeName) const;
     void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const;
     void makePartOfGroup(const GroupDef *gd);
@@ -245,6 +247,10 @@ class DefinitionMixin : public Base
     { m_impl.writeSourceDef(ol,scopeName); }
     virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const
     { m_impl.writeInlineCode(ol,scopeName); }
+    virtual bool hasSourceRefs() const
+    { return m_impl.hasSourceRefs(); }
+    virtual bool hasSourceReffedBy() const
+    { return m_impl.hasSourceReffedBy(); }
     virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const
     { m_impl.writeSourceRefs(ol,scopeName); }
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const

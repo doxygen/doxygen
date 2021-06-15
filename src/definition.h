@@ -379,6 +379,8 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
     virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual bool hasSourceRefs() const = 0;
+    virtual bool hasSourceReffedBy() const = 0;
     virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeNavigationPath(OutputList &ol) const = 0;
