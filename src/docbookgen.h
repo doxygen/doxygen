@@ -321,14 +321,14 @@ class DocbookGenerator : public OutputGenerator
     void endConstraintDocs();
     void endConstraintList();
 
-    void startMemberDocSimple(bool){DB_GEN_NEW};
-    void endMemberDocSimple(bool){DB_GEN_NEW};
-    void startInlineMemberType(){DB_GEN_NEW};
-    void endInlineMemberType(){DB_GEN_NEW};
-    void startInlineMemberName(){DB_GEN_NEW};
-    void endInlineMemberName(){DB_GEN_NEW};
-    void startInlineMemberDoc(){DB_GEN_NEW};
-    void endInlineMemberDoc(){DB_GEN_NEW};
+    void startMemberDocSimple(bool);
+    void endMemberDocSimple(bool);
+    void startInlineMemberType();
+    void endInlineMemberType();
+    void startInlineMemberName();
+    void endInlineMemberName();
+    void startInlineMemberDoc();
+    void endInlineMemberDoc();
 
     void startLabels();
     void writeLabel(const QCString &,bool);
@@ -349,6 +349,7 @@ private:
     bool m_inListItem[20] = { false, };
     bool m_inSimpleSect[20] = { false, };
     bool m_descTable = false;
+    bool m_simpleTable = false;
     int m_inLevel = -1;
     bool m_firstMember = false;
 };
