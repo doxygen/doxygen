@@ -11195,14 +11195,24 @@ void searchInputFiles()
           &Doxygen::inputPaths);              // paths
     }
   }
+
+  // Sort the FileDef objects by full path to get a predictable ordering over multiple runs
   std::sort(Doxygen::inputNameLinkedMap->begin(),
             Doxygen::inputNameLinkedMap->end(),
             [](const auto &f1,const auto &f2)
             {
-              return Config_getBool(FULL_PATH_NAMES) ?
-                     qstricmp(f1->fullName(),f2->fullName())<0 :
-                     qstricmp(f1->fileName(),f2->fileName())<0;
+              return  qstricmp(f1->fullName(),f2->fullName())<0;
             });
+  for (auto &fileName : *Doxygen::inputNameLinkedMap)
+  {
+    if (fileName->size()>1)
+    {
+      std::sort(fileName->begin(),fileName->end(),[](const auto &f1,const auto &f2)
+        {
+          return qstricmp(f1->absFilePath(),f2->absFilePath())<0;
+        });
+    }
+  }
   g_s.end();
 }
 
