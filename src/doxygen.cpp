@@ -7889,87 +7889,89 @@ static void generateFileSources()
     else
 #endif
     {
-#define MULTITHREADED_SOURCE_GENERATOR 0 // not ready to be enabled yet
-#if MULTITHREADED_SOURCE_GENERATOR
       std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
       if (numThreads==0)
       {
         numThreads = std::thread::hardware_concurrency();
       }
-      msg("Generating code files using %zu threads.\n",numThreads);
-      struct SourceContext
+      if (numThreads>1)
       {
-        SourceContext(FileDef *fd_,bool gen_,OutputList ol_)
-          : fd(fd_), generateSourceFile(gen_), ol(ol_) {}
-        FileDef *fd;
-        bool generateSourceFile;
-        OutputList ol;
-      };
-      ThreadPool threadPool(numThreads);
-      std::vector< std::future< std::shared_ptr<SourceContext> > > results;
-      for (const auto &fn : *Doxygen::inputNameLinkedMap)
-      {
-        for (const auto &fd : *fn)
+        msg("Generating code files using %zu threads.\n",numThreads);
+        struct SourceContext
         {
-          bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate;
-          auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
-          if (generateSourceFile)
+          SourceContext(FileDef *fd_,bool gen_,OutputList ol_)
+            : fd(fd_), generateSourceFile(gen_), ol(ol_) {}
+          FileDef *fd;
+          bool generateSourceFile;
+          OutputList ol;
+        };
+        ThreadPool threadPool(numThreads);
+        std::vector< std::future< std::shared_ptr<SourceContext> > > results;
+        for (const auto &fn : *Doxygen::inputNameLinkedMap)
+        {
+          for (const auto &fd : *fn)
           {
-            msg("Generating code for file %s...\n",qPrint(fd->docName()));
-            fd->writeSourceHeader(ctx->ol);
-          }
-          else
-          {
-            msg("Parsing code for file %s...\n",qPrint(fd->docName()));
-          }
-          auto processFile = [ctx]() {
-            StringVector filesInSameTu;
-            ctx->fd->getAllIncludeFilesRecursively(filesInSameTu);
-            if (ctx->generateSourceFile) // sources need to be shown in the output
+            bool generateSourceFile = fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate;
+            auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
+            if (generateSourceFile)
             {
-              ctx->fd->writeSourceBody(ctx->ol,nullptr);
+              msg("Generating code for file %s...\n",qPrint(fd->docName()));
+              fd->writeSourceHeader(ctx->ol);
             }
-            else if (!ctx->fd->isReference() && Doxygen::parseSourcesNeeded)
+            else
+            {
+              msg("Parsing code for file %s...\n",qPrint(fd->docName()));
+            }
+            auto processFile = [ctx]() {
+              StringVector filesInSameTu;
+              ctx->fd->getAllIncludeFilesRecursively(filesInSameTu);
+              if (ctx->generateSourceFile) // sources need to be shown in the output
+              {
+                ctx->fd->writeSourceBody(ctx->ol,nullptr);
+              }
+              else if (!ctx->fd->isReference() && Doxygen::parseSourcesNeeded)
+                // we needed to parse the sources even if we do not show them
+              {
+                ctx->fd->parseSource(nullptr);
+              }
+              return ctx;
+            };
+            results.emplace_back(threadPool.queue(processFile));
+          }
+        }
+        for (auto &f : results)
+        {
+          auto ctx = f.get();
+          if (ctx->generateSourceFile)
+          {
+            ctx->fd->writeSourceFooter(ctx->ol);
+          }
+        }
+      }
+      else // single threaded version
+      {
+        for (const auto &fn : *Doxygen::inputNameLinkedMap)
+        {
+          for (const auto &fd : *fn)
+          {
+            StringVector filesInSameTu;
+            fd->getAllIncludeFilesRecursively(filesInSameTu);
+            if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
+            {
+              msg("Generating code for file %s...\n",qPrint(fd->docName()));
+              fd->writeSourceHeader(*g_outputList);
+              fd->writeSourceBody(*g_outputList,nullptr);
+              fd->writeSourceFooter(*g_outputList);
+            }
+            else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
               // we needed to parse the sources even if we do not show them
             {
-              ctx->fd->parseSource(nullptr);
+              msg("Parsing code for file %s...\n",qPrint(fd->docName()));
+              fd->parseSource(nullptr);
             }
-            return ctx;
-          };
-          results.emplace_back(threadPool.queue(processFile));
-        }
-      }
-      for (auto &f : results)
-      {
-        auto ctx = f.get();
-        if (ctx->generateSourceFile)
-        {
-          ctx->fd->writeSourceFooter(ctx->ol);
-        }
-      }
-#else // single threaded version
-      for (const auto &fn : *Doxygen::inputNameLinkedMap)
-      {
-        for (const auto &fd : *fn)
-        {
-          StringVector filesInSameTu;
-          fd->getAllIncludeFilesRecursively(filesInSameTu);
-          if (fd->generateSourceFile() && !Htags::useHtags && !g_useOutputTemplate) // sources need to be shown in the output
-          {
-            msg("Generating code for file %s...\n",qPrint(fd->docName()));
-            fd->writeSourceHeader(*g_outputList);
-            fd->writeSourceBody(*g_outputList,nullptr);
-            fd->writeSourceFooter(*g_outputList);
-          }
-          else if (!fd->isReference() && Doxygen::parseSourcesNeeded)
-            // we needed to parse the sources even if we do not show them
-          {
-            msg("Parsing code for file %s...\n",qPrint(fd->docName()));
-            fd->parseSource(nullptr);
           }
         }
       }
-#endif
     }
   }
 }

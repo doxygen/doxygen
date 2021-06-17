@@ -61,6 +61,9 @@ class CodeOutputInterface
 {
   public:
     virtual ~CodeOutputInterface() {}
+    CodeOutputInterface() {}
+    CodeOutputInterface(const CodeOutputInterface &) = delete;
+    CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
 
     /** Identifier for the output file */
     virtual int id() const { return 0; }

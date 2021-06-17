@@ -225,6 +225,11 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 
 //-------------------------------------------------------------------------------------------
 
+XMLCodeGenerator::XMLCodeGenerator(TextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
+      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE)
+{
+}
+
 /** Generator for producing XML formatted source code. */
 void XMLCodeGenerator::codify(const QCString &text)
 {

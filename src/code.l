@@ -181,6 +181,7 @@ struct codeYY_state
   VariableContext theVarContext;
   CallContext     theCallContext;
   SymbolResolver  symbolResolver;
+  TooltipManager  tooltipManager;
 };
 
 static bool isCastKeyword(const char *s);
@@ -2480,7 +2481,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  TooltipManager::instance().addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -3933,7 +3934,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
     yyextra->sourceFileDef=0;
   }
   // write the tooltips
-  TooltipManager::instance().writeTooltips(od);
+  yyextra->tooltipManager.writeTooltips(od);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
   return;

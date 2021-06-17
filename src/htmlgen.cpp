@@ -895,7 +895,7 @@ HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT)),
 {
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 

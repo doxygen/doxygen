@@ -282,7 +282,7 @@ DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_
 DB_GEN_C
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 

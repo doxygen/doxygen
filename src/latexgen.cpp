@@ -263,7 +263,7 @@ LatexGenerator::LatexGenerator() : OutputGenerator(Config_getString(LATEX_OUTPUT
   //printf("LatexGenerator::LatexGenerator() m_insideTabbing=FALSE\n");
 }
 
-LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
+LatexGenerator::LatexGenerator(const LatexGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 
