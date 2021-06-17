@@ -47,6 +47,7 @@
 #include "namespacedef.h"
 #include "dir.h"
 #include "utf8.h"
+#include "debug.h"
 
 
 //#define DBG_RTF(x) x;
@@ -2428,6 +2429,7 @@ static void encodeForOutput(TextStream &t,const QCString &s)
  */
 static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool bIncludeHeader=TRUE)
 {
+  static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
   std::ifstream f(infName.str(),std::ifstream::in);
   if (!f.is_open())
   {
@@ -2488,7 +2490,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   }
   f.close();
   // remove temporary file
-  d.remove(infName.str());
+  if (!rtfDebug) d.remove(infName.str());
   return TRUE;
 }
 
@@ -2640,6 +2642,7 @@ err:
  */
 bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &name)
 {
+  static bool rtfDebug = Debug::isFlagSet(Debug::Rtf);
   Dir d(path.str());
   // store the original directory
   if (!d.exists())
@@ -2670,7 +2673,7 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
     // it failed, remove the temp file
     outt.flush();
     f.close();
-    thisDir.remove(combinedName.str());
+    if (!rtfDebug) thisDir.remove(combinedName.str());
     Dir::setCurrent(oldDir);
     return FALSE;
   }
@@ -2678,7 +2681,14 @@ bool RTFGenerator::preProcessFileInplace(const QCString &path,const QCString &na
   // everything worked, move the files
   outt.flush();
   f.close();
-  thisDir.remove(mainRTFName.str());
+  if (!rtfDebug)
+  {
+    thisDir.remove(mainRTFName.str());
+  }
+  else
+  {
+    thisDir.rename(mainRTFName.str(),mainRTFName.str() + ".org");
+  }
   thisDir.rename(combinedName.str(),mainRTFName.str());
 
   testRTFOutput(mainRTFName);
