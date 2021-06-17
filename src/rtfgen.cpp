@@ -1478,17 +1478,9 @@ void RTFGenerator::endTitleHead(const QCString &fileName,const QCString &name)
 
     // make an index entry
     addIndexItem(name,QCString());
-
-    //if (name)
-    //{
-    //  writeAnchor(0,name);
-    //}
-    //
-    //if (Config_getBool(RTF_HYPERLINKS) && fileName)
-    //{
-      writeAnchor(fileName,QCString());
-    //}
   }
+
+  if (!fileName.isEmpty()) writeAnchor(fileName,QCString());
 }
 
 void RTFGenerator::startTitle()
