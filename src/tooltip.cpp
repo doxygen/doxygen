@@ -27,11 +27,13 @@
 #include "doxygen.h"
 #include "config.h"
 
+static std::mutex                                      g_tooltipsMutex;
+static std::unordered_map<int, std::set<std::string> > g_tooltipsWrittenPerFile;
+
 class TooltipManager::Private
 {
   public:
     std::map<std::string,const Definition*> tooltipInfo;
-    std::set<std::string> tooltipWritten;
 };
 
 TooltipManager::TooltipManager() : p(std::make_unique<Private>())
@@ -73,9 +75,22 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
 
 void TooltipManager::writeTooltips(CodeOutputInterface &ol)
 {
+  int id = ol.id();
+  std::unordered_map<int, std::set<std::string> >::iterator it;
+  // critical section
+  {
+    std::lock_guard<std::mutex> lock(g_tooltipsMutex);
+    it = g_tooltipsWrittenPerFile.find(id);
+    if (it==g_tooltipsWrittenPerFile.end()) // new file
+    {
+      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
+    }
+  }
+
   for (const auto &kv : p->tooltipInfo)
   {
-    if (p->tooltipWritten.find(kv.first)==p->tooltipWritten.end()) // only write tooltips once
+    bool written = it->second.find(kv.first)!=it->second.end();
+    if (!written) // only write tooltips once
     {
       //printf("%p: writeTooltips(%s) ol=%d\n",this,kv.first.c_str(),ol.id());
       const Definition *d = kv.second;
@@ -109,7 +124,7 @@ void TooltipManager::writeTooltips(CodeOutputInterface &ol)
           defInfo,
           declInfo
           );
-      p->tooltipWritten.insert(kv.first);
+      it->second.insert(kv.first); // remember we wrote this tooltip for the given file id
     }
   }
 }
