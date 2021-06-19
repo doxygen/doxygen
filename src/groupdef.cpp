@@ -1538,6 +1538,19 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
           {
             cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
           }
+          if (mdm->isEnumerate() && mdm->getGroupDef() && md->isStrong())
+          {
+            for (const auto &emd : mdm->enumFieldList())
+            {
+              MemberDefMutable *emdm = toMemberDefMutable(emd);
+              if (emdm && emdm->getGroupDef()==0)
+              {
+                emdm->setGroupDef(mdm->getGroupDef(),mdm->getGroupPri(),
+                                 mdm->getGroupFileName(),mdm->getGroupStartLine(),
+                                 mdm->getGroupHasDocs());
+              }
+            }
+          }
         }
       }
     }
