@@ -13,14 +13,14 @@
 <div class="SRStatus" id="Loading">{{ tr.loading }}</div>
 <div id="SRResults"></div>
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
 createResults();
 /* @license-end */
 </script>
 <div class="SRStatus" id="Searching">{{ tr.searching }}</div>
 <div class="SRStatus" id="NoMatches">{{ tr.noMatches }}</div>
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
 document.getElementById("Loading").style.display="none";
 document.getElementById("NoMatches").style.display="none";
 var searchResults = new SearchResults("searchResults");

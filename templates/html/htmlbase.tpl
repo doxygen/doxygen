@@ -27,7 +27,7 @@
 <script type="text/javascript" src="{{ page.relPath }}search/search.js"></script>
   {% if config.SERVER_BASED_SEARCH %}
 <script type="text/javascript">
-  /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+  /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
   $(document).ready(function() {
     if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
   });
@@ -36,7 +36,7 @@
 <link rel="search" href="{{ page.relPath }}search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="{{ config.PROJECT_NAME }}"/>
   {% elif config.DISABLE_INDEX or not config.HTML_DYNAMIC_MENUS %}
 <script type="text/javascript">
-  /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+  /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
   $(document).ready(function() { init_search(); });
   /* @license-end */
 </script>
@@ -155,7 +155,7 @@ MathJax.Hub.Config({
 {% block search %}
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
 	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
 /* @license-end */
 </script>
@@ -167,7 +167,7 @@ MathJax.Hub.Config({
 <script type="text/javascript" src="menudata.js"></script>
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
 $(function() {
  initMenu('{{ page.relPath }}',{% if config.SEARCHENGINE %}true{% else %}false{% endif %},{% if config.SERVER_BASED_SEARCH %}true{% else %}false{% endif %},{% if config.EXTERNAL_SEARCH %}'search{{ config.HTML_FILE_EXTENSION }}'{% else %}'search.php'{% endif %},'{{ tr.search }}');
  {% if config.SEARCHENGINE %}
@@ -201,7 +201,7 @@ $(function() {
   </div>
 </div>
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt MIT */
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
 $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix %}{{ page_postfix }}{% endif %}{{ config.HTML_FILE_EXTENSION }}','{{ page.relPath }}'); initResizable(); });
 /* @license-end */
 </script>
