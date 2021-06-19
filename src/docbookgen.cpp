@@ -69,6 +69,7 @@
 #define DB_GEN_C2(y)
 #define DB_GEN_C2a(x,y)
 #endif
+
 //------------------
 
 inline void writeDocbookString(TextStream &t,const QCString &s)
@@ -354,14 +355,8 @@ DB_GEN_C
 void DocbookGenerator::endFile()
 {
 DB_GEN_C
-  if (m_inDetail) m_t << "</section>\n";
-  m_inDetail = FALSE;
-  while (m_inLevel != -1)
-  {
-    m_t << "</section>\n";
-    m_inLevel--;
-  }
-  if (m_inGroup) m_t << "</section>\n";
+  closeAllSections();
+  m_inLevel = -1;
   m_inGroup = FALSE;
 
   QCString fileType="section";
@@ -752,16 +747,16 @@ DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;
-  if (m_inLevel == extraIndentLevel) m_t << "</section>\n";
+  if (m_inLevel == extraIndentLevel) closeSection();
   m_inLevel = extraIndentLevel;
-  m_t << "<section>\n";
+  openSection();
   m_t << "<title>";
 }
 void DocbookGenerator::writeRuler()
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("m_inGroup " << m_inGroup)
-  if (m_inGroup) m_t << "</section>\n";
+  if (m_inGroup) closeSection();
   m_inGroup = FALSE;
 }
 
@@ -822,7 +817,7 @@ void DocbookGenerator::startMemberDoc(const QCString &clname, const QCString &me
                                       int memCount, int memTotal, bool)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
-  m_t << "    <section>\n";
+  openSection();
   m_t << "    <title>" << convertToDocBook(title);
   if (memTotal>1)
   {
@@ -858,7 +853,7 @@ void DocbookGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
 DB_GEN_C
   if (!m_inListItem[m_levelListItem] && !m_descTable && !m_simpleTable)
   {
-    if (!m_firstMember) m_t << "    </section>";
+    if (!m_firstMember) closeSection();
     m_firstMember = FALSE;
   }
   if (!anchor.isEmpty())
@@ -1015,14 +1010,14 @@ DB_GEN_C
 void DocbookGenerator::startSection(const QCString &lab,const QCString &,SectionType)
 {
 DB_GEN_C
-  m_t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
+  openSection("xml:id=\"_" + stripPath(lab) + "\"");
   m_t << "<title>";
 }
 void DocbookGenerator::endSection(const QCString &,SectionType)
 {
 DB_GEN_C
   m_t << "</title>";
-  m_t << "    </section>";
+  closeSection();
 }
 void DocbookGenerator::addIndexItem(const QCString &prim,const QCString &sec)
 {
@@ -1252,3 +1247,26 @@ void DocbookGenerator::endConstraintList()
 DB_GEN_C
   m_t << "</simplesect>\n";
 }
+
+void DocbookGenerator::openSection(const QCString &attr)
+{
+   m_t << "<section";
+   if (!attr.isEmpty()) m_t << " " << attr;
+   m_t << ">\n";
+   m_openSectionCount++;
+}
+
+void DocbookGenerator::closeSection()
+{
+   m_t << "</section>\n";
+   m_openSectionCount--;
+}
+
+void DocbookGenerator::closeAllSections()
+{
+  while (m_openSectionCount>0)
+  {
+    closeSection();
+  }
+}
+
