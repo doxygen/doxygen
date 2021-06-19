@@ -344,7 +344,6 @@ private:
     bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
     bool m_denseText = false;
     bool m_inGroup = false;
-    bool m_inDetail = false;
     int  m_levelListItem = 0;
     bool m_inListItem[20] = { false, };
     bool m_inSimpleSect[20] = { false, };
@@ -352,6 +351,7 @@ private:
     bool m_simpleTable = false;
     int m_inLevel = -1;
     bool m_firstMember = false;
+    int m_openSection = 0;
 };
 
 #endif
