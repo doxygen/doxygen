@@ -338,6 +338,9 @@ class DocbookGenerator : public OutputGenerator
     void addWord(const QCString &,bool) {DB_GEN_EMPTY}
 
 private:
+    void openSection(const QCString &attr=QCString());
+    void closeSection();
+    void closeAllSections();
 
     QCString relPath;
     DocbookCodeGenerator m_codeGen;
@@ -351,7 +354,7 @@ private:
     bool m_simpleTable = false;
     int m_inLevel = -1;
     bool m_firstMember = false;
-    int m_openSection = 0;
+    int m_openSectionCount = 0;
 };
 
 #endif
