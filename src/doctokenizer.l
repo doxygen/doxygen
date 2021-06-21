@@ -545,7 +545,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                              g_token->id         = std::stoul(match.str());
                            } catch (...) {
                              g_token->id         = -1;
-                             warn(g_fileName,g_yyLineNr,"Unexpected number for list item '%s' ",match.str());
+                             warn(g_fileName,g_yyLineNr,"Unexpected number for list item '%s' ",match.str().c_str());
                            }
                            g_token->indent     = computeIndent(yytext,markPos);
                            return TK_LISTITEM;
@@ -600,7 +600,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                              g_token->id         = std::stoul(match.str());
                            } catch (...) {
                              g_token->id         = -1;
-                             warn(g_fileName,g_yyLineNr,"Unexpected number for list item '%s' ",match.str());
+                             warn(g_fileName,g_yyLineNr,"Unexpected number for list item '%s' ",match.str().c_str());
                            }
                            g_token->indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
