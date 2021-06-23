@@ -155,7 +155,6 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
   if (f.is_open())
   {
     TextStream t(&f);
-    if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode\n";
     t << "\\documentclass{article}\n";
     t << "\\usepackage{ifthen}\n";
     t << "\\usepackage{epsfig}\n"; // for those who want to include images
