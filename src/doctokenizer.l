@@ -390,6 +390,7 @@ FILEECHAR [a-z_A-Z0-9\-\+&#@]
 HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
 FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
+JAVALINKMASK  [^ \t\n\r\\@<&${}]+("("[^)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
 SPCMD2    {CMD}[\\@<>&$#%~".+=|-]
@@ -475,6 +476,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 %x St_File
 %x St_Pattern
 %x St_Link
+%x St_JavaLink
 %x St_Cite
 %x St_Ref
 %x St_Ref2
@@ -1327,6 +1329,11 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
                          g_token->name = yytext;
                          return TK_WORD;
                        }
+<St_JavaLink>{JAVALINKMASK}|{REFWORD}    {
+                         lineCount(yytext,yyleng);
+                         g_token->name = yytext;
+                         return TK_WORD;
+                       }
 <St_Comment>"-->"      { /* end of html comment */
                          BEGIN(g_commentState);
                        }
@@ -1653,9 +1660,16 @@ void doctokenizerYYsetStatePattern()
   BEGIN(St_Pattern);
 }
 
-void doctokenizerYYsetStateLink()
+void doctokenizerYYsetStateLink(bool isJavaLink)
 {
-  BEGIN(St_Link);
+  if (isJavaLink)
+  {
+    BEGIN(St_JavaLink);
+  }
+  else
+  {
+    BEGIN(St_Link);
+  }
 }
 
 void doctokenizerYYsetStateCite()

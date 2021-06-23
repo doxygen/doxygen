@@ -5034,7 +5034,8 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
         qPrint(saveCmdName));
     return;
   }
-  doctokenizerYYsetStateLink();
+
+  doctokenizerYYsetStateLink(isJavaLink);
   tok=doctokenizerYYlex();
   if (tok!=TK_WORD)
   {
