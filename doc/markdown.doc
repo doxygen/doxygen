@@ -609,7 +609,7 @@ C-type doxygen comment block (`/&zwj;** ... *&zwj;/`) and not using an `*` as
  **this is not bold**
  */
 \endverbatim
-but will render as bold:
+but this will render as bold:
 \verbatim
 /**
  * **this is bold**
