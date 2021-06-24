@@ -600,6 +600,21 @@ An emphasis or a strikethrough ends if
 
 Lastly, the span of the emphasis or strikethrough is limited to a single paragraph.
 
+Note When using emphasis by means of `*`s at the beginning of a line and a
+C-type doxygen comment block (`/&zwj;** ... *&zwj;/`) and not using an `*` as
+"lineup" doxygen will seen the sequence of `*`s at the beginning of the line as
+"lineup" and not as emphasis. So the following will not render as bold:
+\verbatim
+/**
+ **this is not bold**
+ */
+\endverbatim
+but will render as bold:
+\verbatim
+/**
+ * **this is bold**
+ */
+\endverbatim
 
 \subsection mddox_code_spans Code Spans Limits
 
