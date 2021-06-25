@@ -171,7 +171,7 @@ int guessSection(const QCString &name);
 
 inline bool isId(int c)
 {
-  return c=='_' || c>=128 || c<0 || isalnum(c);
+  return c=='_' || c>=128 || c<0 || isalnum(c) || c=='$';
 }
 inline bool isIdJS(int c)
 {
