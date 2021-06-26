@@ -6,7 +6,7 @@
 </div>
 {% indexentry nav name=tr.pages file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
 {% opensubindex nav %}
-{% with tree=pageTree %}
+{% with tree=pageTree treeType='Page' %}
   {% include 'htmldirtree.tpl' %}
 {% endwith %}
 {% closesubindex nav %}

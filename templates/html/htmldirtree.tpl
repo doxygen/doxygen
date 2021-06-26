@@ -11,8 +11,9 @@
 {# the table with entries #}
 <table class="directory">
 {% recursetree tree.tree %}
+  {% set addIdx=node.partOfGroup==False or treeType=='Module' %}
   {% if node.isLinkable %}
-    {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference separateIndex=node.is_leaf_node==False addToIndex=node.partOfGroup==False %}
+    {% indexentry nav name=node.name file=node.fileName anchor=node.anchor isReference=node.isReference externalReference=node.externalReference separateIndex=node.is_leaf_node==False addToIndex=addIdx %}
   {% else %}
     {% indexentry nav name=node.name file='' anchor=node.anchor isReference=False separateIndex=False addToIndex=False %}
   {% endif %}
@@ -56,7 +57,15 @@
     {% if node.members %}
       {% opensubindex nav %}
         {% for member in node.members %}
-          {% indexentry nav name=member.name file=member.fileName anchor=member.anchor isReference=member.isReference externalReference=member.externalReference separateIndex=False addToIndex=member.partOfGroup==False %}
+          {% set addIdx=member.partOfGroup==False or treeType=='Module' %}
+          {% indexentry nav name=member.name file=member.fileName anchor=member.anchor isReference=member.isReference externalReference=member.externalReference separateIndex=False addToIndex=addIdx %}
+	  {% if member.members %}
+            {% opensubindex nav %}
+	      {% for enumVal in member.members %}
+                {% indexentry nav name=enumVal.name file=enumVal.fileName anchor=enumVal.anchor isReference=enumVal.isReference externalReference=enumVal.externalReference separateIndex=False addToIndex=addIdx %}
+	      {% endfor %}
+            {% closesubindex nav %}
+	  {% endif %}
         {% endfor %}
       {% closesubindex nav %}
     {% endif %}

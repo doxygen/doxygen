@@ -35,7 +35,9 @@
 {% resource 'navtree.js' %}
 {% resource 'resize.js' %}
 {% endif %}
+{% if not config.DISABLE_INDEX and config.HTML_DYNAMIC_MENUS %}
 {% resource 'menu.js' %}
+{% endif %}
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
 {% resource 'folderclosed.luma' %}

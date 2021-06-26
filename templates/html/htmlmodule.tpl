@@ -48,9 +48,9 @@
     {% with memberListInfo=compound.enums %}
       {% include 'htmlmemsummary.tpl' %}
     {% endwith %}
-    {% with memberListInfo=compound.enumvalues %}
-      {% include 'htmlmemsummary.tpl' %}
-    {% endwith %}
+    {#{% with memberListInfo=compound.enumvalues %}#}
+    {#  {% include 'htmlmemsummary.tpl' %}#}
+    {#{% endwith %}#}
     {% with memberListInfo=compound.functions %}
       {% include 'htmlmemsummary.tpl' %}
     {% endwith %}
@@ -143,9 +143,9 @@
       {% include 'htmlmemdecls.tpl' %}
     {% endwith %}
   {# enum values #}
-    {% with memberListInfo=compound.enumvalues %}
-      {% include 'htmlmemdecls.tpl' %}
-    {% endwith %}
+  {#  {% with memberListInfo=compound.enumvalues %}#}
+  {#    {% include 'htmlmemdecls.tpl' %}#}
+  {#  {% endwith %}#}
   {# functions #}
     {% with memberListInfo=compound.functions %}
       {% include 'htmlmemdecls.tpl' %}

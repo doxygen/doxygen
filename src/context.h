@@ -549,15 +549,28 @@ class ClassHierarchyContext : public RefCountedContext, public TemplateStructInt
 
 //----------------------------------------------------
 
+enum class ContextTreeType
+{
+  Namespace,           // NamespaceTreeContext
+  ClassInheritance,    // ClassHierarchyContext
+  ClassNesting,        // ClassTreeContext
+  Module,              // ModuleTreeContext
+  File,                // FileTreeContext
+  Page,                // PageTreeContext
+  Concept,             // ContextTreeContext
+  Example              // ExampleTreeContext
+};
+
 class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static NestingNodeContext *alloc(const NestingNodeContext *parent,const Definition *def,
+    static NestingNodeContext *alloc(const NestingNodeContext *parent,ContextTreeType type,
+                                     const Definition *def,
                                      int index,int level,
-                                     bool useFullName, bool addClasses,bool addConcepts,
+                                     bool addClasses,bool addConcepts,
                                      bool inherit,bool hideSuper,
                                      ClassDefSet &visitedClasses)
-    { return new NestingNodeContext(parent,def,index,level,useFullName,addClasses,addConcepts,
+    { return new NestingNodeContext(parent,type,def,index,level,addClasses,addConcepts,
                                     inherit,hideSuper,visitedClasses); }
 
     QCString id() const;
@@ -570,8 +583,9 @@ class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 
   private:
     NestingNodeContext(const NestingNodeContext *parent,
+                       ContextTreeType type,
                        const Definition *,int index,int level,
-                       bool useFullName, bool addClasses,bool addConcepts,
+                       bool addClasses,bool addConcepts,
                        bool inherit,bool hideSuper,
                        ClassDefSet &visitedClasses);
    ~NestingNodeContext();
@@ -585,8 +599,8 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
 {
   public:
 
-    static NestingContext *alloc(const NestingNodeContext *parent,int level,bool useFullName)
-    { return new NestingContext(parent,level,useFullName); }
+    static NestingContext *alloc(const NestingNodeContext *parent,ContextTreeType type,int level)
+    { return new NestingContext(parent,type,level); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -614,7 +628,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addMembers(const MemberList *ml,ClassDefSet &visitedClasses);
 
   private:
-    NestingContext(const NestingNodeContext *parent,int level,bool useFullName);
+    NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level);
    ~NestingContext();
     class Private;
     Private *p;
