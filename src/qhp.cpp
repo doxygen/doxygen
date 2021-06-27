@@ -228,6 +228,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   if (md) // member
   {
     static bool separateMemberPages = Config_getBool(SEPARATE_MEMBER_PAGES);
+    static bool noConstructorKeywords = Config_getBool(QHP_NO_CONSTRUCTOR_KEYWORDS);
     if (context==0) // global member
     {
       if (md->getGroupDef())
@@ -236,6 +237,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
         context = md->getFileDef();
     }
     if (context==0) return; // should not happen
+    if (md->isConstructor() && noConstructorKeywords) return;
     QCString cfname  = md->getOutputFileBase();
     QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
