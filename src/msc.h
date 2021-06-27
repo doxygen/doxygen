@@ -20,9 +20,11 @@ class QCString;
 class TextStream;
 
 enum MscOutputFormat { MSC_BITMAP , MSC_EPS, MSC_SVG };
+enum MscDocOutputFormat { MSC_HTML, MSC_LATEX, MSC_RTF, MSC_DOCBOOK };
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,
+                           MscDocOutputFormat docFormat,
                            const QCString &srcFile,int srcLine);
 
 QCString getMscImageMapFromFile(const QCString &inFile, const QCString &outDir,

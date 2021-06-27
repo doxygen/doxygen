@@ -271,6 +271,7 @@ bool DotManager::run() const
 
 void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,GraphOutputFormat format,
+                           EmbeddedOutputFormat docFormat,
                            const QCString &srcFile,int srcLine)
 {
   Dir d(outDir.str());
@@ -307,7 +308,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
      return;
   }
 
-  Doxygen::indexList->addImageFile(imgName);
+  if (docFormat == EOF_Html) Doxygen::indexList->addImageFile(imgName);
 
 }
 

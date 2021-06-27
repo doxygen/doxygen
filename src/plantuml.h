@@ -43,6 +43,7 @@ class PlantumlManager
   public:
     /** Plant UML output image formats */
     enum OutputFormat { PUML_BITMAP, PUML_EPS, PUML_SVG };
+    enum PumlDocOutputFormat { PUML_HTML, PUML_LATEX, PUML_RTF, PUML_DOCBOOK };
 
     static PlantumlManager &instance();
 
@@ -69,7 +70,7 @@ class PlantumlManager
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
      */
-    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
+    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format,PumlDocOutputFormat docFormat);
 
     using FilesMap   = std::map< std::string, StringVector    >;
     using ContentMap = std::map< std::string, PlantumlContent >;

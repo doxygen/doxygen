@@ -29,12 +29,14 @@ class TextStream;
 class ClassDiagram
 {
   public:
+    enum DocFormat { DIAG_HTML, DIAG_LATEX, DIAG_RTF, DIAG_DOCBOOK };
+
     ClassDiagram(const ClassDef *root);
    ~ClassDiagram();
     void writeFigure(TextStream &t,const QCString &path,
                      const QCString &file) const;
     void writeImage(TextStream &t,const QCString &path,const QCString &relPath,
-                     const QCString &file,bool generateMap=true) const;
+                     const QCString &file,DocFormat docFormat,bool generateMap=true) const;
   private:
     struct Private;
     std::unique_ptr<Private> p;
