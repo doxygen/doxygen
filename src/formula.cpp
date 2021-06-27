@@ -127,7 +127,7 @@ void FormulaManager::readFormulas(const QCString &dir,bool doCompare)
   }
 }
 
-void FormulaManager::generateImages(const QCString &path,Format format,HighDPI hd) const
+void FormulaManager::generateImages(const QCString &path,Format format,DocFormat docFormat,HighDPI hd) const
 {
   Dir d(path.str());
   // store the original directory
@@ -181,7 +181,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
         t << p->formulas[i].c_str() << "\n\\pagebreak\n\n";
         formulasToGenerate.push_back(i);
       }
-      Doxygen::indexList->addImageFile(resultName);
+      if (docFormat == DocFormat::FORM_HTML) Doxygen::indexList->addImageFile(resultName);
     }
     t << "\\end{document}\n";
     t.flush();

@@ -3342,7 +3342,7 @@ void  FlowChart::printUmlTree()
 
   QCString n=convertNameToFileName();
   n=PlantumlManager::instance().writePlantUMLSource(htmlOutDir,n,qcs,PlantumlManager::PUML_SVG,"uml",n,1);
-  PlantumlManager::instance().generatePlantUMLOutput(n,htmlOutDir,PlantumlManager::PUML_SVG);
+  PlantumlManager::instance().generatePlantUMLOutput(n,htmlOutDir,PlantumlManager::PUML_SVG,PlantumlManager::PUML_HTML);
 }
 
 QCString FlowChart::convertNameToFileName()

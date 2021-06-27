@@ -1889,7 +1889,7 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
   newParagraph();
 
   // create a png file
-  d.writeImage(m_t,dir(),m_relPath,fileName,FALSE);
+  d.writeImage(m_t,dir(),m_relPath,fileName,ClassDiagram::DIAG_RTF,FALSE);
 
   // display the file
   m_t << "{\n";

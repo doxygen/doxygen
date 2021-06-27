@@ -32,7 +32,6 @@
 #include "util.h"
 #include "linkedmap.h"
 #include "regex.h"
-#include "fileinfo.h"
 
 //----------------------------------------------------------------------------
 
@@ -553,7 +552,7 @@ void HtmlHelp::Private::createProjectFile()
     }
     for (auto &s : imageFiles)
     {
-      t << FileInfo(s).fileName() << "\n";
+      t << s << "\n";
     }
     t.close();
   }
