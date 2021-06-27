@@ -61,6 +61,7 @@ struct declinfoYY_state
      QCString     name;
      QCString     args;
      int          sharpCount;
+     int          roundCount;
      bool         classTempListFound;
      bool         funcTempListFound;
      QCString     exceptionString;
@@ -169,22 +170,38 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*"<"			{
   				  yyextra->name+="<";
 				  yyextra->sharpCount=0;
+                                  yyextra->roundCount=0;
   				  BEGIN(Template);
   				}
 <Template>"<<"			{ yyextra->name+="<<"; }
 <Template>">>"			{ yyextra->name+=">>"; }
+<Template>"("                   { yyextra->name+="(";
+                                  yyextra->roundCount++;
+                                }
+<Template>")"                   { yyextra->name+=")";
+                                  if (yyextra->roundCount>0)
+                                  {
+                                    yyextra->roundCount--;
+                                  }
+                                }
 <Template>"<"			{
   				  yyextra->name+="<";
-  				  yyextra->sharpCount++;
+                                  if (yyextra->roundCount==0)
+                                  {
+  				    yyextra->sharpCount++;
+                                  }
   				}
 <Template>">"			{
   				  yyextra->name+=">";
-  				  if (yyextra->sharpCount)
-				    --yyextra->sharpCount;
-				  else
-				  {
-				    BEGIN(Start);
-				  }
+                                  if (yyextra->roundCount==0)
+                                  {
+                                    if (yyextra->sharpCount)
+                                      --yyextra->sharpCount;
+                                    else
+                                    {
+                                      BEGIN(Start);
+                                    }
+                                  }
   				}
 <Template>.			{
   				  yyextra->name+=*yytext;
