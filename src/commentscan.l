@@ -94,6 +94,7 @@ static bool handleXRefItem(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleRelated(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleBelongsTo(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleRefItem(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleSection(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleAnchor(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -169,6 +170,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "attention",       { 0,                       CommandSpacing::Block     }},
   { "author",          { 0,                       CommandSpacing::Block     }},
   { "authors",         { 0,                       CommandSpacing::Block     }},
+  { "belongsto",       { &handleBelongsTo,        CommandSpacing::Invisible }},
   { "brief",           { &handleBrief,            CommandSpacing::Invisible }},
   { "bug",             { &handleBug,              CommandSpacing::XRef      }},
   { "callergraph",     { &handleCallergraph,      CommandSpacing::Invisible }},
@@ -509,6 +511,7 @@ STopt  [^\n@\\]*
 %x      PageDocArg1
 %x      PageDocArg2
 %x      RelatesParam1
+%x      BelongsParam
 %x      ClassDocArg1
 %x      ClassDocArg2
 %x      ClassDocArg3
@@ -1354,6 +1357,16 @@ STopt  [^\n@\\]*
 <RelatesParam1>.                        { // ignore other stuff
                                         }
 
+  /* ----- handle arguments of the belongsto commands ----- */
+
+<BelongsParam>{SCOPENAME}               { 
+                                          StringVector scopeList;
+                                          scopeList = split(yyextra->current->name.str(),"::");
+                                          QCString classname = QCString(scopeList[scopeList.size()-1]);
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext) 
+                                            + QCString("::") + classname),".","::");
+                                          BEGIN( Comment );
+                                        }
 
   /* ----- handle arguments of the relates(also)/addindex commands ----- */
 
@@ -2324,6 +2337,15 @@ static bool handleRelatedAlso(yyscan_t yyscanner,const QCString &cmd, const Stri
   yyextra->current->relatesType = Duplicate;
   yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
+  return FALSE;
+}
+
+static bool handleBelongsTo(yyscan_t yyscanner,const QCString &cmd, const StringVector &)
+{   
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->current->relatesType = BelongsTo;
+  yyextra->currentCmd = cmd;
+  BEGIN(BelongsParam);
   return FALSE;
 }
 
