@@ -240,6 +240,10 @@ a.code.highlightnamespace {
 a.code.highlightmember {
     /* style for links to member variable/function names in code snippets */
 }
+a.code.highlightgroup {}
+a.code.highlightpackage {}
+a.code.highlightpage {}
+a.code.highlightdir {}
 a.code.highlightconcept {
     /* style for links to concept names in code snippets */
 }
