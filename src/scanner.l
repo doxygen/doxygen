@@ -175,6 +175,7 @@ struct scannerYY_state
   int              docBlockContext = 0;
   TextStream       docBlock;
   QCString         docBlockName;
+  int              docBlockLine = 0;
   bool             docBlockInBody = false;
   bool             docBlockAutoBrief = false;
   char             docBlockTerm = '\0';
@@ -4536,16 +4537,19 @@ NONLopt [^\n]*
                                         }
 <CopyArgCommentLine>{CMD}"startuml"/[^a-z_A-Z0-9\-]   { // verbatim type command (which could contain nested comments!)
                                           yyextra->docBlockName="uml";
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
 <CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlockName=&yytext[1];
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
 <CopyArgCommentLine>{CMD}("f$"|"f["|"f{"|"f(")               {
                                           yyextra->docBlockName=&yytext[1];
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           if (yyextra->docBlockName.at(1)=='[')
                                           {
                                             yyextra->docBlockName.at(1)=']';
@@ -6561,6 +6565,7 @@ NONLopt [^\n]*
 <DocBlock>{CMD}("f$"|"f["|"f{"|"f(")         {
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           if (yyextra->docBlockName.at(1)=='[')
                                           {
                                             yyextra->docBlockName.at(1)=']';
@@ -6580,6 +6585,7 @@ NONLopt [^\n]*
 <DocBlock>{B}*"<"{PRE}">"               {
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName="<pre>";
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
@@ -6587,6 +6593,7 @@ NONLopt [^\n]*
 <DocBlock>{CMD}"startuml"/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName="uml";
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
@@ -6594,6 +6601,7 @@ NONLopt [^\n]*
 <DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fencedSize=0;
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
@@ -6603,6 +6611,7 @@ NONLopt [^\n]*
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="~~~";
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
@@ -6611,6 +6620,7 @@ NONLopt [^\n]*
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="```";
+                                          yyextra->docBlockLine=yyextra->yyLineNr;
                                           yyextra->fencedSize=pat.stripWhiteSpace().length();
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
@@ -6620,6 +6630,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->docBlock << yytext;
                                             yyextra->docBlockName="<code>";
+                                            yyextra->docBlockLine=yyextra->yyLineNr;
                                             yyextra->nestedComment=FALSE;
                                             BEGIN(DocCopyBlock);
                                           }
@@ -6769,8 +6780,8 @@ NONLopt [^\n]*
 <DocCopyBlock><<EOF>>                   {
                                           warn(yyextra->yyFileName,yyextra->yyLineNr,
                                               "reached end of file while inside a '%s' block!\n"
-                                              "The command that should end the block seems to be missing!\n",
-                                              qPrint(yyextra->docBlockName));
+                                              "The command that should end the block seems to be missing (probable line reference: %d)!\n",
+                                              qPrint(yyextra->docBlockName), yyextra->docBlockLine);
                                           yyterminate();
                                         }
 
