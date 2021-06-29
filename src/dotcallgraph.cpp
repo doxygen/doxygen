@@ -22,9 +22,11 @@
 
 static QCString getUniqueId(const MemberDef *md)
 {
-  QCString result = md->getReference()+"$"+
-         md->getOutputFileBase()+"#"+
-         md->anchor();
+  const MemberDef *def = md->memberDefinition();
+  if (def==0) def = md;
+  QCString result = def->getReference()+"$"+
+         def->getOutputFileBase()+"#"+
+         def->anchor();
   return result;
 }
 
