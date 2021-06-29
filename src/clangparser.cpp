@@ -595,7 +595,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
       line++;
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d,ref,file,anchor,sp,tooltip);
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
       writeLineNumber(ol,fd,line);
@@ -603,7 +603,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d,ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
@@ -635,7 +635,7 @@ void ClangTUParser::linkInclude(CodeOutputInterface &ol,const FileDef *fd,
   }
   if (ifd)
   {
-    ol.writeCodeLink(ifd->getReference(),ifd->getOutputFileBase(),QCString(),text,ifd->briefDescriptionAsTooltip());
+    ol.writeCodeLink(ifd,ifd->getReference(),ifd->getOutputFileBase(),QCString(),text,ifd->briefDescriptionAsTooltip());
   }
   else
   {

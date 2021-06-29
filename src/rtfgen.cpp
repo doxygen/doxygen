@@ -1425,7 +1425,8 @@ void RTFGenerator::endPageRef(const QCString &clname, const QCString &anchor)
   m_t << ")";
 }
 
-void RTFGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+void RTFGenerator::writeCodeLink(const Definition *,
+                                 const QCString &ref,const QCString &f,
                                  const QCString &anchor,const QCString &name,
                                  const QCString &)
 {
