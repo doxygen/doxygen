@@ -1231,7 +1231,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
     if (d && d->isLinkable())
     {
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-          md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
+          yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
