@@ -4843,6 +4843,13 @@ int DocPara::handleXRefItem()
   return retval;
 }
 
+void DocPara::handleIline()
+{
+  doctokenizerYYsetStateIline();
+  int retval=doctokenizerYYlex();
+  doctokenizerYYsetStatePara();
+}
+
 void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
 {
   QCString saveCmdName = cmdName;
@@ -5844,6 +5851,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_INHERITDOC:
       handleInheritDoc();
+      break;
+    case CMD_ILINE:
+      handleIline();
       break;
     default:
       // we should not get here!

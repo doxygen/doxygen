@@ -167,5 +167,6 @@ void doctokenizerYYsetStatePlantUMLOpt();
 void doctokenizerYYsetStateOptions();
 void doctokenizerYYsetStateBlock();
 void doctokenizerYYsetStateEmoji();
+void doctokenizerYYsetStateIline();
 
 #endif
