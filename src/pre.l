@@ -304,6 +304,9 @@ struct preYY_state
   DefineMap                                localDefines;   // macros defined in this file
   DefineList                               macroDefinitions;
   LinkedMap<PreIncludeInfo>                includeRelations;
+
+  QCString         guardExprCond;
+  int              roundCountCond = 0;
 };
 
 // stateless functions
@@ -346,6 +349,9 @@ BN	[ \t\r\n]
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^'\\\n]{1,4}"'"))
+
+DOCNL     "\n"
+LC        "\\"{B}*"\n"
 
   // C start comment 
 CCS   "/\*"
@@ -397,9 +403,11 @@ WSopt [ \t\r]*
 %x	IgnoreLine
 %x	FindDefineArgs
 %x	ReadString
-%x	CondLineC
-%x	CondLineCpp
 %x      SkipCond
+%x      GuardParamCpp
+%x      GuardParamC
+%x      GuardExprCpp
+%x      GuardExprC
 
 %%
 
@@ -1223,18 +1231,74 @@ WSopt [ \t\r]*
 <SkipCPPComment>[\\@]"cond"[ \t]+	{ // conditional section
                                           yyextra->ccomment=TRUE;
                                           yyextra->condCtx=YY_START;
-  					  BEGIN(CondLineCpp);
+  					  BEGIN(GuardParamCpp);
   					}
 <SkipCComment>[\\@]"cond"[ \t]+	{ // conditional section
                                           yyextra->ccomment=FALSE;
                                           yyextra->condCtx=YY_START;
-  					  BEGIN(CondLineC);
+  					  BEGIN(GuardParamC);
   					}
-<CondLineC,CondLineCpp>[!()&| \ta-z_A-Z0-9\x80-\xFF.\-]+      {
+
+  /* ----- handle arguments of cond command ------- */
+
+<GuardParamCpp,GuardParamC>{B}*"("      {
+                                          yyextra->guardExprCond=yytext;
+                                          yyextra->roundCountCond=1;
+                                          if (YY_START == GuardParamCpp)
+                                            BEGIN(GuardExprCpp);
+                                          else
+                                            BEGIN(GuardExprC);
+                                        }
+<GuardExprC>\n[ \t]*[*]+                {
+  					  outputArray(yyscanner,yytext,yyleng);
+  					}
+<GuardExprCpp,GuardExprC>[^()\n]*       {
+                                          yyextra->guardExprCond+=yytext;
+                                        }
+<GuardExprCpp,GuardExprC>"("            {
+                                          yyextra->guardExprCond+=yytext;
+                                          yyextra->roundCountCond++;
+                                        }
+<GuardExprCpp,GuardExprC>")"            {
+                                          yyextra->guardExprCond+=yytext;
+                                          yyextra->roundCountCond--;
+                                          if (yyextra->roundCountCond==0)
+                                          {
+  				            startCondSection(yyscanner,yyextra->guardExprCond);
+                                            if (yyextra->skip)
+                                            {
+                                              if (YY_START==GuardExprC)
+                                              {
+                                                // end C comment
+  					        outputArray(yyscanner,"*/",2);
+                                                yyextra->ccomment=TRUE;
+                                              }
+                                              else
+                                              {
+                                                yyextra->ccomment=FALSE;
+                                              }
+                                              BEGIN(SkipCond);
+                                            }
+                                            else
+                                            {
+  					      BEGIN(yyextra->condCtx);
+                                            }
+                                          }
+                                        }
+<GuardExprCpp,GuardExprC>\n             {
+                                          warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                "invalid expression '%s' for yyextra->guards",qPrint(yyextra->guardExprCond));
+                                          unput(*yytext);
+                                          if (YY_START == GuardExprCpp)
+                                            BEGIN(GuardParamCpp);
+                                          else
+                                            BEGIN(GuardParamC);
+                                        }
+<GuardParamCpp,GuardParamC>[!&| \ta-z_A-Z0-9\x80-\xFF.\-]+      {
   				          startCondSection(yyscanner,yytext);
                                           if (yyextra->skip)
                                           {
-                                            if (YY_START==CondLineC)
+                                            if (YY_START==GuardParamC)
                                             {
                                               // end C comment
   					      outputArray(yyscanner,"*/",2);
@@ -1250,13 +1314,21 @@ WSopt [ \t\r]*
                                           {
   					    BEGIN(yyextra->condCtx);
                                           }
-  					}
-<CondLineC,CondLineCpp>.		{ // non-guard character
+                                        }
+<GuardParamCpp,GuardParamC>{DOCNL}      { // end of argument
+                                          yyextra->yyLineNr++;
+                                          BEGIN( yyextra->condCtx );
+                                        }
+<GuardParamCpp,GuardParamC>{LC}         { // line continuation
+                                          yyextra->yyLineNr++;
+                                          outputArray(yyscanner,"\n",1);
+                                        }
+<GuardParamCpp,GuardParamC>.            { // non-guard character
   					  unput(*yytext);
   					  startCondSection(yyscanner," ");
                                           if (yyextra->skip)
                                           {
-                                            if (YY_START==CondLineC)
+                                            if (YY_START==GuardParamC)
                                             {
                                               // end C comment
   					      outputArray(yyscanner,"*/",2);
@@ -1273,6 +1345,8 @@ WSopt [ \t\r]*
 					    BEGIN(yyextra->condCtx);
                                           }
   					}
+  /* ----- end handle arguments of cond command ------- */
+
 <SkipCComment,SkipCPPComment>[\\@]"cond"{WSopt}/\n { // no guard
                                           if (YY_START==SkipCComment)
                                           {
