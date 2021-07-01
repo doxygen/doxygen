@@ -1538,6 +1538,7 @@ STopt  [^\n@\\]*
                                         }
 <GuardExpr>[^()]*                       {
                                           yyextra->guardExpr+=yytext;
+                                          lineCount(yyscanner);
                                         }
 <GuardExpr>"("                          {
                                           yyextra->guardExpr+=yytext;
@@ -1564,6 +1565,9 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
+                                          char tmp[20];
+                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
+                                          addOutput(yyscanner, tmp);
                                           BEGIN( Comment );
                                         }
 <GuardParam>{LC}                        { // line continuation
@@ -1576,6 +1580,9 @@ STopt  [^\n@\\]*
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
                                           yyextra->spaceBeforeIf.resize(0);
+                                          char tmp[20];
+                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
+                                          addOutput(yyscanner, tmp);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
@@ -1584,10 +1591,16 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
                                           yyextra->spaceBeforeIf.resize(0);
+                                          char tmp[20];
+                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
+                                          addOutput(yyscanner, tmp);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>.                        {
                                           unput(*yytext);
+                                          char tmp[20];
+                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
+                                          addOutput(yyscanner, tmp);
                                           BEGIN(Comment);
                                         }
 
