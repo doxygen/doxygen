@@ -4760,6 +4760,18 @@ int DocPara::handleXRefItem()
   return retval;
 }
 
+void DocPara::handleIline()
+{
+  doctokenizerYYsetStateIline();
+  int tok = doctokenizerYYlex();
+  if (tok!=TK_WORD)
+  {
+    warn_doc_error(g_parserContext.fileName,getDoctokinizerLineNr(),"invalid argument for command iline\n");
+    return;
+  }
+  doctokenizerYYsetStatePara();
+}
+
 void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t)
 {
   QCString saveCmdName = cmdName;
@@ -5769,6 +5781,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_INHERITDOC:
       handleInheritDoc();
+      break;
+    case CMD_ILINE:
+      handleIline();
       break;
     default:
       // we should not get here!

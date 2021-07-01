@@ -444,6 +444,7 @@ REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
 REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
+LINENR {BLANK}*[1-9][0-9]*{BLANK}
 
 %option noyywrap
 
@@ -488,6 +489,7 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 %x St_Options
 %x St_Block
 %x St_Emoji
+%x St_Iline
 
 %x St_Sections
 %s St_SecLabel1
@@ -1299,6 +1301,13 @@ RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revisio
 <St_Emoji>.            {
                          return 0;
                        }
+<St_Iline>{LINENR}     {
+                         g_yyLineNr = QCString(yytext).toInt();
+                         return TK_WORD;
+                       }
+<St_Iline>.            {
+                         return 0;
+                       }
 <St_File>{FILEMASK}    {
                          g_token->name = yytext;
                          return TK_WORD;
@@ -1715,6 +1724,11 @@ void doctokenizerYYsetStateEmoji()
 {
   g_token->name="";
   BEGIN(St_Emoji);
+}
+
+void doctokenizerYYsetStateIline()
+{
+  BEGIN(St_Iline);
 }
 
 void doctokenizerYYcleanup()
