@@ -1302,11 +1302,7 @@ LINENR {BLANK}*[1-9][0-9]*{BLANK}
                          return 0;
                        }
 <St_Iline>{LINENR}     {
-                         try {
-                           g_yyLineNr = std::stoul(yytext);
-                         } catch (...) {
-                           warn(g_fileName,g_yyLineNr,"Unexpected line number '%s' ",yytext);
-                         }
+                         g_yyLineNr = QCString(yytext).toInt();
                          return TK_WORD;
                        }
 <St_Iline>.            {

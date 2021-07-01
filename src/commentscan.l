@@ -439,6 +439,7 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
+static void addIline(yyscan_t yyscanner,int lineNr);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -1565,9 +1566,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
-                                          char tmp[20];
-                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
-                                          addOutput(yyscanner, tmp);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN( Comment );
                                         }
 <GuardParam>{LC}                        { // line continuation
@@ -1580,9 +1579,7 @@ STopt  [^\n@\\]*
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
                                           yyextra->spaceBeforeIf.resize(0);
-                                          char tmp[20];
-                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
-                                          addOutput(yyscanner, tmp);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
@@ -1591,16 +1588,12 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
                                           yyextra->spaceBeforeIf.resize(0);
-                                          char tmp[20];
-                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
-                                          addOutput(yyscanner, tmp);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>.                        {
                                           unput(*yytext);
-                                          char tmp[20];
-                                          sprintf(tmp,"\\iline %d ",yyextra->lineNr);
-                                          addOutput(yyscanner, tmp);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 
@@ -3244,6 +3237,13 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   *yyextra->pOutputString+=c;
+}
+
+static void addIline(yyscan_t yyscanner,int lineNr)
+{
+  char cmd[20];
+  sprintf(cmd,"\\iline %d ",lineNr);
+  addOutput(yyscanner, cmd);
 }
 
 static void endBrief(yyscan_t yyscanner,bool addToOutput)
