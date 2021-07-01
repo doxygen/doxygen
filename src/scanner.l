@@ -3356,6 +3356,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>[;,]                       {
                                           QCString oldType = yyextra->current->type;
+                                          Protection oldProtection = yyextra->current->protection;
                                           if (yyextra->current->bodyLine==-1)
                                           {
                                             yyextra->current->bodyLine = yyextra->yyLineNr;
@@ -3403,6 +3404,7 @@ NONLopt [^\n]*
                                             int i=oldType.length();
                                             while (i>0 && (oldType[i-1]=='*' || oldType[i-1]=='&' || oldType[i-1]==' ')) i--;
                                             yyextra->current->type = oldType.left(i);
+                                            yyextra->current->protection = oldProtection;
                                           }
                                           else
                                           {
