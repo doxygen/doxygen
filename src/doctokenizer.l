@@ -366,7 +366,7 @@ WS        [ \t\r\n]
 NONWS     [^ \t\r\n]
 BLANK     [ \t\r]
 BLANKopt  {BLANK}*
-ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+ID        "$"?[$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
