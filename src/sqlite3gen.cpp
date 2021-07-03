@@ -1947,7 +1947,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
       DBG_CTX(("-----> ClassDef includeInfo for %s\n", qPrint(nm)));
       DBG_CTX(("       local    : %d\n", ii->local));
       DBG_CTX(("       imported : %d\n", ii->imported));
-      DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
+      if (ii->fileDef)
+      {
+          DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
+      }
       DBG_CTX(("       file_id  : %d\n", file_id));
       DBG_CTX(("       header_id: %d\n", header_id));
 
