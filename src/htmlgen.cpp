@@ -716,7 +716,6 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     codify(lineNumber);
   }
   m_t << "</span>";
-  m_t << "&#160;";
   m_col=0;
 }
 
