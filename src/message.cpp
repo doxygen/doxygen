@@ -157,6 +157,8 @@ static void do_warn(bool enabled, const QCString &file, int line, const char *pr
   vsnprintf(text.rawData()+l, bufSize-l, fmt, argsCopy);
   text[bufSize-1]='\0';
   format_warn(file,line,text);
+
+  va_end(argsCopy);
 }
 
 void warn(const QCString &file,int line,const char *fmt, ...)
