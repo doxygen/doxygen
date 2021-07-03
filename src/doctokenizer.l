@@ -1301,12 +1301,18 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Emoji>.            {
                          return 0;
                        }
-<St_Iline>{LINENR}/[\n\.]     {
-                         g_yyLineNr = QCString(yytext).toInt();
-                         return TK_WORD;
-                       }
+<St_Iline>{LINENR}/[\n\.]     |
 <St_Iline>{LINENR}{BLANK}     {
-                         g_yyLineNr = QCString(yytext).toInt();
+                         bool ok = false;
+                         int nr = QCString(yytext).toInt(&ok);
+                         if (!ok)
+                         {
+                           warn(g_fileName,g_yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                         }
+                         else
+                         {
+                           g_yyLineNr = nr;
+                         }
                          return TK_WORD;
                        }
 <St_Iline>.            {
