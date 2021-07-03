@@ -2062,7 +2062,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
         //printf("type: '%s':='%s'\n",qPrint(dstA.type),qPrint(srcA.type));
         //printf("name: '%s':='%s'\n",qPrint(dstA.name),qPrint(srcA.name));
         dstA.type = srcA.type;
-        dstA.name = dstA.name;
+        dstA.name = srcA.name;
       }
       else if (!srcA.name.isEmpty() && !dstA.name.isEmpty())
       {
@@ -2117,7 +2117,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
       //printf("type: '%s':='%s'\n",qPrint(dstA.type),qPrint(srcA.type));
       //printf("name: '%s':='%s'\n",qPrint(dstA.name),qPrint(srcA.name));
       dstA.type = srcA.type.left(i1+2)+dstA.type;
-      dstA.name = dstA.name;
+      dstA.name = srcA.name;
     }
     else if (i1==-1 && i2!=-1 && dstA.type.right(j2)==srcA.type)
     {
