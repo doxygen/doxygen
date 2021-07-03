@@ -163,7 +163,7 @@ MathJax.Hub.Config({
 {% endblock %}
 
 {% block tabs %}
-{% if config.HTML_DYNAMIC_MENUS %}
+{% if not config.DISABLE_INDEX and config.HTML_DYNAMIC_MENUS %}
 <script type="text/javascript" src="menudata.js"></script>
 <script type="text/javascript" src="menu.js"></script>
 <script type="text/javascript">

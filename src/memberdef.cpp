@@ -1782,10 +1782,10 @@ void MemberDefImpl::writeLink(OutputList &ol,
   const NamespaceDef *nspace = getNamespaceDef();
   if (!hideScopeNames)
   {
-    //if (m_impl->enumScope && m_impl->livesInsideEnum)
-    //{
-    //  n.prepend(m_impl->enumScope->displayName()+sep);
-    //}
+    if (m_impl->enumScope && m_impl->livesInsideEnum && getGroupDef()!=0)
+    {
+      n.prepend(m_impl->enumScope->displayName()+sep);
+    }
     if (classDef && gd && !isRelated())
     {
       n.prepend(classDef->displayName()+sep);
@@ -1984,6 +1984,17 @@ bool MemberDefImpl::isBriefSectionVisible() const
 QCString MemberDefImpl::getDeclType() const
 {
   QCString ltype(m_impl->type);
+  if (isEnumerate() && isStrong())
+  {
+    if (isEnumStruct())
+    {
+      ltype+=" struct";
+    }
+    else
+    {
+      ltype+=" class";
+    }
+  }
   if (isTypedef() && getLanguage() != SrcLangExt_Slice)
   {
     ltype.prepend("typedef ");
@@ -2083,7 +2094,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
   // start a new member declaration
   bool isAnonType = annoClassDef || m_impl->annMemb || m_impl->annEnumType;
-  ///printf("startMemberItem for %s\n",qPrint(name()));
   ol.startMemberItem(anchor(),
                      isAnonType ? 1 : !m_impl->tArgList.empty() ? 3 : 0,
                      inheritId
@@ -2528,7 +2538,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
 bool MemberDefImpl::isDetailedSectionLinkable() const
 {
-  static bool extractAll        = Config_getBool(EXTRACT_ALL);
   static bool alwaysDetailedSec = Config_getBool(ALWAYS_DETAILED_SEC);
   static bool repeatBrief       = Config_getBool(REPEAT_BRIEF);
   static bool briefMemberDesc   = Config_getBool(BRIEF_MEMBER_DESC);
@@ -2539,8 +2548,6 @@ bool MemberDefImpl::isDetailedSectionLinkable() const
 
   // the member has details documentation for any of the following reasons
   bool docFilter =
-         // treat everything as documented
-         extractAll ||
          // has detailed docs
          !documentation().isEmpty() ||
          // has inbody docs

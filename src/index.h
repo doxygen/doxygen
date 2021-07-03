@@ -24,6 +24,7 @@
 
 class Definition;
 class DefinitionMutable;
+class NamespaceDef;
 class MemberDef;
 class OutputList;
 
@@ -268,5 +269,7 @@ void addFileMemberNameToIndex(const MemberDef *md);
 void addNamespaceMemberNameToIndex(const MemberDef *md);
 void sortMemberIndexLists();
 QCString fixSpaces(const QCString &s);
+
+int countVisibleMembers(const NamespaceDef *nd);
 
 #endif

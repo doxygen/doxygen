@@ -318,12 +318,12 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
         if (emd->getOuterScope()==def || emd->getOuterScope()==Doxygen::globalScope)
         {
           Doxygen::indexList->addContentsItem(FALSE,
-              emd->name(),emd->getReference(),emd->getOutputFileBase(),emd->anchor(),FALSE,addToIndex);
+              emd->name(),emd->getReference(),emd->getOutputFileBase(),emd->anchor(),FALSE,addToIndex && emd->getGroupDef()==nullptr);
         }
         else // inherited member
         {
           Doxygen::indexList->addContentsItem(FALSE,
-              emd->name(),def->getReference(),def->getOutputFileBase(),emd->anchor(),FALSE,addToIndex);
+              emd->name(),def->getReference(),def->getOutputFileBase(),emd->anchor(),FALSE,addToIndex && emd->getGroupDef()==nullptr);
         }
       }
     }
@@ -1586,7 +1586,7 @@ static void writeClassTree(const ListType &cl,FTVHelp *ftv,bool addToIndex,bool 
   }
 }
 
-static int countVisibleMembers(const NamespaceDef *nd)
+int countVisibleMembers(const NamespaceDef *nd)
 {
   int count=0;
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))

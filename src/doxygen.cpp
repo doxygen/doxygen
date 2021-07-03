@@ -2106,7 +2106,7 @@ static void findUsingDeclImports(const Entry *root)
                   fileName = root->tagInfo()->tagName;
                 }
                 const ArgumentList &templAl = md->templateArguments();
-                const ArgumentList &al = md->templateArguments();
+                const ArgumentList &al = md->argumentList();
                 std::unique_ptr<MemberDefMutable> newMd { createMemberDef(
                     fileName,root->startLine,root->startColumn,
                     md->typeString(),memName,md->argsString(),

@@ -2768,7 +2768,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
                  (void*)yyextra->currentDefinition,(void*)yyextra->currentMemberDef,yyextra->insideBody));
 
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-            md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
+            yyextra->insideBody && yyextra->collectXRefs)
         {
           std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
           addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -3052,7 +3052,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
     {
       // add usage reference
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-          /*xmd!=yyextra->currentMemberDef &&*/ yyextra->insideBody && yyextra->collectXRefs)
+          yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));

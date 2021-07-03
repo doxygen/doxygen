@@ -1178,6 +1178,7 @@ class DocPara : public CompAccept<DocPara>
     void handleSection(const QCString &cmdName);
     void handleInheritDoc();
     void handleVhdlFlow();
+    void handleIline();
     int handleStartCode();
     int handleHtmlHeader(const HtmlAttribList &tagHtmlAttribs,int level);
 
