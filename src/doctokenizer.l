@@ -444,7 +444,7 @@ REFWORD4       {REFWORD4_NOCV}{CVSPEC}?
 REFWORD        {FILEMASK}|{LABELID}|{REFWORD2}|{REFWORD3}|{REFWORD4}
 REFWORD_NOCV   {FILEMASK}|{LABELID}|{REFWORD2_NOCV}|{REFWORD3}|{REFWORD4_NOCV}
 RCSID "$"("Author"|"Date"|"Header"|"Id"|"Locker"|"Log"|"Name"|"RCSfile"|"Revision"|"Source"|"State")":"[^:\n$][^\n$]*"$"
-LINENR {BLANK}*[1-9][0-9]*{BLANK}
+LINENR {BLANK}*[1-9][0-9]*
 
 %option noyywrap
 
@@ -1301,7 +1301,11 @@ LINENR {BLANK}*[1-9][0-9]*{BLANK}
 <St_Emoji>.            {
                          return 0;
                        }
-<St_Iline>{LINENR}     {
+<St_Iline>{LINENR}/[\n\.]     {
+                         g_yyLineNr = QCString(yytext).toInt();
+                         return TK_WORD;
+                       }
+<St_Iline>{LINENR}{BLANK}     {
                          g_yyLineNr = QCString(yytext).toInt();
                          return TK_WORD;
                        }

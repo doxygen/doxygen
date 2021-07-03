@@ -4766,7 +4766,7 @@ void DocPara::handleIline()
   int tok = doctokenizerYYlex();
   if (tok!=TK_WORD)
   {
-    warn_doc_error(g_parserContext.fileName,getDoctokinizerLineNr(),"invalid argument for command iline\n");
+    warn_doc_error(g_parserContext.fileName,getDoctokinizerLineNr(),"invalid argument for command '\\iline'\n");
     return;
   }
   doctokenizerYYsetStatePara();
