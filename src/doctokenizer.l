@@ -543,7 +543,12 @@ LINENR {BLANK}*[1-9][0-9]*
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            g_token->isEnumList = true;
-                           g_token->id         = std::stoul(match.str());
+                           try {
+                             g_token->id         = std::stoul(match.str());
+                           } catch (...) {
+                             g_token->id         = -1;
+                             warn(g_fileName,g_yyLineNr,"Unexpected number for list item '%s' ",match.str().c_str());
+                           }
                            g_token->indent     = computeIndent(yytext,markPos);
                            return TK_LISTITEM;
                          }
@@ -593,7 +598,12 @@ LINENR {BLANK}*[1-9][0-9]*
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
                            g_token->isEnumList = true;
-                           g_token->id         = std::stoul(match.str());
+                           try {
+                             g_token->id         = std::stoul(match.str());
+                           } catch (...) {
+                             g_token->id         = -1;
+                             warn(g_fileName,g_yyLineNr,"Unexpected number for list item '%s' ",match.str().c_str());
+                           }
                            g_token->indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
                          }
