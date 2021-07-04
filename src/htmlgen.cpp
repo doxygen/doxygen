@@ -706,7 +706,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     m_lineOpen = TRUE;
   }
 
-  m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
+  m_t << "<a id=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
   if (!filename.isEmpty())
   {
     _writeCodeLink("line",ref,filename,anchor,lineNumber,QCString());
