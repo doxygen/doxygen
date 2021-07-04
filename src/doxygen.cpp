@@ -5720,10 +5720,12 @@ static void addMemberFunction(const Entry *root,
     if (md->isEnumValue() && (enumNamePos=className.findRev("::"))!=-1)
     {
       QCString enumName = className.mid(enumNamePos+2);
-      if (className.left(enumNamePos)==cd->name())
+      QCString fullScope = className.left(enumNamePos);
+      if (!namespaceName.isEmpty()) fullScope.prepend(namespaceName+"::");
+      if (fullScope==cd->name())
       {
         MemberName *enumMn=Doxygen::memberNameLinkedMap->find(enumName);
-        //printf("enumMn(%s)=%p\n",qPrint(className),enumMn);
+        //printf("enumMn(%s)=%p\n",qPrint(className),(void*)enumMn);
         if (enumMn)
         {
           for (const auto &emd : *enumMn)
