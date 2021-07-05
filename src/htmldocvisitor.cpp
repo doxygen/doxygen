@@ -907,7 +907,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   {
     anchor.prepend(e->member()->anchor()+"_");
   }
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
   //printf("*** DocIndexEntry: word='%s' scope='%s' member='%s'\n",
   //       qPrint(e->entry()),
   //       e->scope()  ? qPrint(e->scope()->name())  : "<null>",

@@ -706,7 +706,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     m_lineOpen = TRUE;
   }
 
-  m_t << "<a id=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
+  m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
   if (!filename.isEmpty())
   {
     _writeCodeLink("line",ref,filename,anchor,lineNumber,QCString());
@@ -871,7 +871,7 @@ void HtmlCodeGenerator::endFontClass()
 
 void HtmlCodeGenerator::writeCodeAnchor(const QCString &anchor)
 {
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlCodeGenerator::startCodeFragment(const QCString &)
@@ -1286,7 +1286,7 @@ void HtmlGenerator::startDoxyAnchor(const QCString &,const QCString &,
                                     const QCString &anchor, const QCString &,
                                     const QCString &)
 {
-  m_t << "<a id=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const QCString &,const QCString &)
@@ -1466,7 +1466,7 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
     case SectionType::Paragraph:     m_t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  m_t << "<a id=\"" << lab << "\"></a>";
+  m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
 }
 
 void HtmlGenerator::endSection(const QCString &,SectionType type)
@@ -1780,7 +1780,7 @@ void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
   m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
   if (!anchor.isEmpty())
   {
-    m_t << "<a name=\"" << anchor << "\"></a>\n";
+    m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>\n";
   }
 }
 
