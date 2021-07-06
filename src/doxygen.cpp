@@ -10242,6 +10242,7 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted 'Doxyfile' will be used as a default.\n");
   msg("If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
+  msg("If -q is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.\n\n");
   msg("-v print version string, -V print extended version information\n");
 }
 
@@ -10420,6 +10421,7 @@ void readConfiguration(int argc, char **argv)
   bool diffList=FALSE;
   bool updateConfig=FALSE;
   int retVal;
+  bool quiet = false;
   while (optind<argc && argv[optind][0]=='-' &&
                (isalpha(argv[optind][1]) || argv[optind][1]=='?' ||
                 argv[optind][1]=='-')
@@ -10573,7 +10575,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
           Config::postProcess(TRUE);
-          Config::checkAndCorrect();
+          Config::checkAndCorrect(Config_getBool(QUIET));
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
@@ -10622,7 +10624,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
           Config::postProcess(TRUE);
-          Config::checkAndCorrect();
+          Config::checkAndCorrect(Config_getBool(QUIET));
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
@@ -10699,6 +10701,9 @@ void readConfiguration(int argc, char **argv)
         break;
       case 'b':
         setvbuf(stdout,NULL,_IONBF,0);
+        break;
+      case 'q':
+        quiet = true;
         break;
       case 'T':
         msg("Warning: this option activates output generation via Django like template files. "
@@ -10801,6 +10806,8 @@ void readConfiguration(int argc, char **argv)
   FileInfo configFileInfo(configName.str());
   setPerlModDoxyfile(configFileInfo.absFilePath());
 
+  /* handle -q option */
+  if (quiet) Config_updateBool(QUIET,TRUE);
 }
 
 /** check and resolve config options */
@@ -10808,7 +10815,7 @@ void checkConfiguration()
 {
 
   Config::postProcess(FALSE);
-  Config::checkAndCorrect();
+  Config::checkAndCorrect(Config_getBool(QUIET));
   initWarningFormat();
 }
 
