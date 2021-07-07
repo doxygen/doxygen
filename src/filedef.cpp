@@ -199,7 +199,8 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:
     virtual void codify(const QCString &) override {}
-    virtual void writeCodeLink(const QCString &,const QCString &,
+    virtual void writeCodeLink(const Definition *,
+                               const QCString &,const QCString &,
                                const QCString &,const QCString &,
                                const QCString &) override {}
     virtual void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,

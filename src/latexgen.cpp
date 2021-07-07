@@ -148,7 +148,8 @@ void LatexCodeGenerator::codify(const QCString &str)
 }
 
 
-void LatexCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+void LatexCodeGenerator::writeCodeLink(const Definition *,
+                                   const QCString &ref,const QCString &f,
                                    const QCString &anchor,const QCString &name,
                                    const QCString &)
 {
@@ -196,7 +197,7 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
       {
         m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
       }
-      writeCodeLink(ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(nullptr,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {

@@ -1250,12 +1250,12 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
     {
       yyextra->yyLineNr++;
       // printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,QCString(sp,p-sp-1),tooltip);
+      ol.writeCodeLink(d,ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       nextCodeLine(yyscanner);
     }
     else
     {
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d,ref,file,anchor,sp,tooltip);
       done=true;
     }
   }
