@@ -1516,7 +1516,7 @@ void Config::checkAndCorrect(bool quiet)
 {
   ConfigValues::instance().init();
 
-  Config_updateBool(QUIET,quiet);
+  Config_updateBool(QUIET,quiet || Config_getBool(QUIET));
   //------------------------
   // check WARN_FORMAT
   QCString warnFormat = Config_getString(WARN_FORMAT);
