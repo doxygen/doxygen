@@ -18,6 +18,8 @@
 
 %option never-interactive
 %option prefix="doctokenizerYY"
+%option reentrant
+%option extra-type="struct doctokenizerYY_state *"
 %top{
 #include <stdint.h>
 }
@@ -50,24 +52,6 @@
 
 //--------------------------------------------------------------------------
 
-// context for tokenizer phase
-static int g_commentState;
-TokenInfo *g_token = 0;
-static yy_size_t g_inputPos = 0;
-static const char *g_inputString;
-static QCString g_fileName;
-static bool g_insidePre;
-static int g_sharpCount=0;
-static bool g_markdownSupport=TRUE;
-
-// context for section finding phase
-static const Definition  *g_definition;
-static QCString     g_secLabel;
-static QCString     g_secTitle;
-static SectionType  g_secType;
-static QCString     g_endMarker;
-static int          g_autoListLevel;
-
 struct DocLexerContext
 {
   DocLexerContext(TokenInfo *tk,int r,int lvl,yy_size_t pos,const char *s,YY_BUFFER_STATE bs)
@@ -80,39 +64,44 @@ struct DocLexerContext
   YY_BUFFER_STATE state;
 };
 
-static std::stack< std::unique_ptr<DocLexerContext> > g_lexerStack;
+struct doctokenizerYY_state
+{
 
-static int g_yyLineNr = 0;
+  // context for tokenizer phase
+  int commentState;
+  TokenInfo *token = 0;
+  yy_size_t inputPos = 0;
+  const char *inputString = 0;
+  QCString fileName;
+  bool insidePre = false;
+  int sharpCount=0;
+  bool markdownSupport=TRUE;
 
-#define lineCount(s,len) do { for(int i=0;i<(int)len;i++) if (s[i]=='\n') g_yyLineNr++; } while(0)
+  // context for section finding phase
+  const Definition  *definition = 0;
+  QCString     secLabel;
+  QCString     secTitle;
+  SectionType  secType;
+  QCString     endMarker;
+  int          autoListLevel;
+  std::stack< std::unique_ptr<DocLexerContext> > lexerStack;
+
+  int yyLineNr = 0;
+};
+
+#define lineCount(s,len) do { for(int i=0;i<(int)len;i++) if (s[i]=='\n') yyextra->yyLineNr++; } while(0)
 
 
 #if USE_STATE2STRING
 static const char *stateToString(int state);
 #endif
+
+
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static void handleHtmlTag(yyscan_t yyscanner,const char *text);
+static void processSection(yyscan_t yyscanner);
+
 //--------------------------------------------------------------------------
-
-void doctokenizerYYpushContext()
-{
-  g_lexerStack.push(
-      std::make_unique<DocLexerContext>(
-        g_token,YY_START,g_autoListLevel,g_inputPos,g_inputString,YY_CURRENT_BUFFER));
-  yy_switch_to_buffer(yy_create_buffer(doctokenizerYYin, YY_BUF_SIZE));
-}
-
-bool doctokenizerYYpopContext()
-{
-  if (g_lexerStack.empty()) return FALSE;
-  const auto &ctx = g_lexerStack.top();
-  g_autoListLevel = ctx->autoListLevel;
-  g_inputPos = ctx->inputPos;
-  g_inputString = ctx->inputString;
-  yy_delete_buffer(YY_CURRENT_BUFFER);
-  yy_switch_to_buffer(ctx->state);
-  BEGIN(ctx->rule);
-  g_lexerStack.pop();
-  return TRUE;
-}
 
 QCString extractPartAfterNewLine(const QCString &text)
 {
@@ -132,7 +121,7 @@ QCString extractPartAfterNewLine(const QCString &text)
 
 //--------------------------------------------------------------------------
 
-const char *tokToString(int token)
+const char *DocTokenizer::tokToString(int token)
 {
   switch (token)
   {
@@ -179,126 +168,6 @@ static int computeIndent(const char *str,size_t length)
 
 //--------------------------------------------------------------------------
 
-static void processSection()
-{
-  //printf("%s: found section/anchor with name '%s'\n",qPrint(g_fileName),qPrint(g_secLabel));
-  QCString file;
-  if (g_definition)
-  {
-    file = g_definition->getOutputFileBase();
-  }
-  else
-  {
-    warn(g_fileName,g_yyLineNr,"Found section/anchor %s without context\n",qPrint(g_secLabel));
-  }
-  SectionInfo *si = SectionManager::instance().find(g_secLabel);
-  if (si)
-  {
-    si->setFileName(file);
-    si->setType(g_secType);
-  }
-}
-
-static void handleHtmlTag()
-{
-  QCString tagText(yytext);
-  g_token->attribs.clear();
-  g_token->endTag = FALSE;
-  g_token->emptyTag = FALSE;
-
-  // Check for end tag
-  int startNamePos=1;
-  if (tagText.at(1)=='/')
-  {
-    g_token->endTag = TRUE;
-    startNamePos++;
-  }
-
-  // Parse the name portion
-  int i = startNamePos;
-  for (i=startNamePos; i < (int)yyleng; i++)
-  {
-    // Check for valid HTML/XML name chars (including namespaces)
-    char c = tagText.at(i);
-    if (!(isalnum(c) || c=='-' || c=='_' || c==':')) break;
-  }
-  g_token->name = tagText.mid(startNamePos,i-startNamePos);
-
-  // Parse the attributes. Each attribute is a name, value pair
-  // The result is stored in g_token->attribs.
-  int startName,endName,startAttrib,endAttrib;
-  int startAttribList = i;
-  while (i<(int)yyleng)
-  {
-    char c=tagText.at(i);
-    // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
-    // check for end of the tag
-    if (c == '>') break;
-    // Check for XML style "empty" tag.
-    if (c == '/')
-    {
-      g_token->emptyTag = TRUE;
-      break;
-    }
-    startName=i;
-    // search for end of name
-    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
-    endName=i;
-    HtmlAttrib opt;
-    opt.name  = tagText.mid(startName,endName-startName).lower();
-    // skip spaces
-    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
-    if (tagText.at(i)=='=') // option has value
-    {
-      c=tagText.at(++i);
-      // skip spaces
-      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
-      if (tagText.at(i)=='\'') // option '...'
-      {
-        c=tagText.at(++i);
-        startAttrib=i;
-
-        // search for matching quote
-        while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); }
-        endAttrib=i;
-        if (i<(int)yyleng) { c=tagText.at(++i);}
-      }
-      else if (tagText.at(i)=='"') // option "..."
-      {
-        c=tagText.at(++i);
-        startAttrib=i;
-        // search for matching quote
-        while (i<(int)yyleng && c!='"') { c=tagText.at(++i); }
-        endAttrib=i;
-        if (i<(int)yyleng) { c=tagText.at(++i);}
-      }
-      else // value without any quotes
-      {
-        startAttrib=i;
-        // search for separator or end symbol
-        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); }
-        endAttrib=i;
-        if (i<(int)yyleng) { c=tagText.at(++i);}
-      }
-      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib);
-      if (opt.name == "align") opt.value = opt.value.lower();
-      else if (opt.name == "valign")
-      {
-        opt.value = opt.value.lower();
-        if (opt.value == "center") opt.value="middle";
-      }
-    }
-    else // start next option
-    {
-    }
-    //printf("=====> Adding option name=<%s> value=<%s>\n",
-    //    qPrint(opt.name),qPrint(opt.value));
-    g_token->attribs.push_back(opt);
-  }
-  g_token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
-}
-
 static QCString stripEmptyLines(const QCString &s)
 {
   if (s.isEmpty()) return QCString();
@@ -343,16 +212,7 @@ static QCString stripEmptyLines(const QCString &s)
 //--------------------------------------------------------------------------
 
 #undef  YY_INPUT
-#define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
-
-static yy_size_t yyread(char *buf,yy_size_t max_size)
-{
-  yy_size_t c=0;
-  const char *src=g_inputString+g_inputPos;
-  while ( c < max_size && *src ) *buf++ = *src++, c++;
-  g_inputPos+=c;
-  return c;
-}
+#define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
 //--------------------------------------------------------------------------
 //#define REAL_YY_DECL int doctokenizerYYlex (void)
@@ -504,13 +364,13 @@ LINENR {BLANK}*[1-9][0-9]*
                          QCString text(yytext);
                          size_t dashPos = static_cast<size_t>(text.findRev('-'));
                          assert(dashPos!=std::string::npos);
-                         g_token->isEnumList = text.at(dashPos+1)=='#';
-                         g_token->id         = -1;
-                         g_token->indent     = computeIndent(yytext,dashPos);
+                         yyextra->token->isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token->id         = -1;
+                         yyextra->token->indent     = computeIndent(yytext,dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>^{MLISTITEM}  { /* list item */
-                         if (!g_markdownSupport || g_insidePre)
+                         if (!yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -523,14 +383,14 @@ LINENR {BLANK}*[1-9][0-9]*
                            reg::search(text,match,re);
                            size_t listPos = match.position();
                            assert(listPos!=std::string::npos);
-                           g_token->isEnumList = FALSE;
-                           g_token->id         = -1;
-                           g_token->indent     = computeIndent(yytext,listPos);
+                           yyextra->token->isEnumList = FALSE;
+                           yyextra->token->id         = -1;
+                           yyextra->token->indent     = computeIndent(yytext,listPos);
                            return TK_LISTITEM;
                          }
                        }
 <St_Para>^{OLISTITEM}  { /* numbered list item */
-                         if (!g_markdownSupport || g_insidePre)
+                         if (!yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -542,15 +402,15 @@ LINENR {BLANK}*[1-9][0-9]*
                            reg::search(text,match,re);
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
-                           g_token->isEnumList = true;
+                           yyextra->token->isEnumList = true;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
-                           g_token->id = ok ? id : -1;
+                           yyextra->token->id = ok ? id : -1;
                            if (!ok)
                            {
-                             warn(g_fileName,g_yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
+                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
                            }
-                           g_token->indent     = computeIndent(yytext,markPos);
+                           yyextra->token->indent     = computeIndent(yytext,markPos);
                            return TK_LISTITEM;
                          }
                        }
@@ -559,13 +419,13 @@ LINENR {BLANK}*[1-9][0-9]*
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          size_t dashPos = static_cast<size_t>(text.findRev('-'));
                          assert(dashPos!=std::string::npos);
-                         g_token->isEnumList = text.at(dashPos+1)=='#';
-                         g_token->id         = -1;
-                         g_token->indent     = computeIndent(text.data(),dashPos);
+                         yyextra->token->isEnumList = text.at(dashPos+1)=='#';
+                         yyextra->token->id         = -1;
+                         yyextra->token->indent     = computeIndent(text.data(),dashPos);
                          return TK_LISTITEM;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){MLISTITEM}     { /* list item on next line */
-                         if (!g_markdownSupport || g_insidePre)
+                         if (!yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -578,14 +438,14 @@ LINENR {BLANK}*[1-9][0-9]*
                            reg::search(text,match,re);
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
-                           g_token->isEnumList = FALSE;
-                           g_token->id         = -1;
-                           g_token->indent     = computeIndent(text.c_str(),markPos);
+                           yyextra->token->isEnumList = FALSE;
+                           yyextra->token->id         = -1;
+                           yyextra->token->indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
                          }
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){OLISTITEM}     { /* list item on next line */
-                         if (!g_markdownSupport || g_insidePre)
+                         if (!yyextra->markdownSupport || yyextra->insidePre)
                          {
                            REJECT;
                          }
@@ -598,15 +458,15 @@ LINENR {BLANK}*[1-9][0-9]*
                            reg::search(text,match,re);
                            size_t markPos = match.position();
                            assert(markPos!=std::string::npos);
-                           g_token->isEnumList = true;
+                           yyextra->token->isEnumList = true;
                            bool ok = false;
                            int id = QCString(match.str()).toInt(&ok);
-                           g_token->id = ok ? id : -1;
+                           yyextra->token->id = ok ? id : -1;
                            if (!ok)
                            {
-                             warn(g_fileName,g_yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
+                             warn(yyextra->fileName,yyextra->yyLineNr,"Invalid number for list item '%s' ",match.str().c_str());
                            }
-                           g_token->indent     = computeIndent(text.c_str(),markPos);
+                           yyextra->token->indent     = computeIndent(text.c_str(),markPos);
                            return TK_LISTITEM;
                          }
                        }
@@ -614,40 +474,40 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          int dotPos = QCString(yytext).findRev('.');
                          assert(dotPos!=-1);
-                         g_token->indent     = computeIndent(yytext,dotPos);
+                         yyextra->token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
                          int dotPos = text.findRev('.');
-                         g_token->indent = computeIndent(text.data(),dotPos);
+                         yyextra->token->indent = computeIndent(text.data(),dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>"{"{BLANK}*"@link"/{WS}+ {
-                         g_token->name = "javalink";
+                         yyextra->token->name = "javalink";
                          return TK_COMMAND_AT;
                        }
 <St_Para>"{"{BLANK}*"@inheritDoc"{BLANK}*"}" {
-                         g_token->name = "inheritdoc";
+                         yyextra->token->name = "inheritdoc";
                          return TK_COMMAND_AT;
                        }
 <St_Para>"@_fakenl"    { // artificial new line
-                         //g_yyLineNr++;
+                         //yyextra->yyLineNr++;
                        }
 <St_Para>{SPCMD3}      {
-                         g_token->name = "_form";
+                         yyextra->token->name = "_form";
                          bool ok;
-                         g_token->id = QCString(yytext).right((int)yyleng-7).toInt(&ok);
+                         yyextra->token->id = QCString(yytext).right((int)yyleng-7).toInt(&ok);
                          ASSERT(ok);
                          return TK_COMMAND_SEL();
                        }
 <St_Para>{CMD}"n"\n    { /* \n followed by real newline */
                          lineCount(yytext,yyleng);
-                         //g_yyLineNr++;
-                         g_token->name = yytext+1;
-                         g_token->name = g_token->name.stripWhiteSpace();
-                         g_token->paramDir=TokenInfo::Unspecified;
+                         //yyextra->yyLineNr++;
+                         yyextra->token->name = yytext+1;
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
+                         yyextra->token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_Para>"\\ilinebr"   {
@@ -656,13 +516,13 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>{SPCMD2}      |
 <St_Para>{SPCMD5}      |
 <St_Para>{SPCMD4}      { /* special command */
-                         g_token->name = yytext+1;
-                         g_token->name = g_token->name.stripWhiteSpace();
-                         g_token->paramDir=TokenInfo::Unspecified;
+                         yyextra->token->name = yytext+1;
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
+                         yyextra->token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_Para>{PARAMIO}     { /* param [in,out] command */
-                         g_token->name = "param";
+                         yyextra->token->name = "param";
                          QCString s(yytext);
                          bool isIn  = s.find("in")!=-1;
                          bool isOut = s.find("out")!=-1;
@@ -670,60 +530,60 @@ LINENR {BLANK}*[1-9][0-9]*
                          {
                            if (isOut)
                            {
-                             g_token->paramDir=TokenInfo::InOut;
+                             yyextra->token->paramDir=TokenInfo::InOut;
                            }
                            else
                            {
-                             g_token->paramDir=TokenInfo::In;
+                             yyextra->token->paramDir=TokenInfo::In;
                            }
                          }
                          else if (isOut)
                          {
-                           g_token->paramDir=TokenInfo::Out;
+                           yyextra->token->paramDir=TokenInfo::Out;
                          }
                          else
                          {
-                           g_token->paramDir=TokenInfo::Unspecified;
+                           yyextra->token->paramDir=TokenInfo::Unspecified;
                          }
                          return TK_COMMAND_SEL();
                        }
 <St_Para>{URLPROTOCOL}{URLMASK}/[,\.] { // URL, or URL.
-                         g_token->name=yytext;
-                         g_token->isEMailAddr=FALSE;
+                         yyextra->token->name=yytext;
+                         yyextra->token->isEMailAddr=FALSE;
                          return TK_URL;
                        }
 <St_Para>{URLPROTOCOL}{URLMASK} { // URL
-                         g_token->name=yytext;
-                         g_token->isEMailAddr=FALSE;
+                         yyextra->token->name=yytext;
+                         yyextra->token->isEMailAddr=FALSE;
                          return TK_URL;
                        }
 <St_Para>"<"{URLPROTOCOL}{URLMASK}">" { // URL
-                         g_token->name=yytext;
-                         g_token->name = g_token->name.mid(1,g_token->name.length()-2);
-                         g_token->isEMailAddr=FALSE;
+                         yyextra->token->name=yytext;
+                         yyextra->token->name = yyextra->token->name.mid(1,yyextra->token->name.length()-2);
+                         yyextra->token->isEMailAddr=FALSE;
                          return TK_URL;
                        }
 <St_Para>{MAILADDR}    { // Mail address
-                         g_token->name=yytext;
-                         g_token->name.stripPrefix("mailto:");
-                         g_token->isEMailAddr=TRUE;
+                         yyextra->token->name=yytext;
+                         yyextra->token->name.stripPrefix("mailto:");
+                         yyextra->token->isEMailAddr=TRUE;
                          return TK_URL;
                        }
 <St_Para>"<"{MAILADDR}">" { // Mail address
-                         g_token->name=yytext;
-                         g_token->name = g_token->name.mid(1,g_token->name.length()-2);
-                         g_token->name.stripPrefix("mailto:");
-                         g_token->isEMailAddr=TRUE;
+                         yyextra->token->name=yytext;
+                         yyextra->token->name = yyextra->token->name.mid(1,yyextra->token->name.length()-2);
+                         yyextra->token->name.stripPrefix("mailto:");
+                         yyextra->token->isEMailAddr=TRUE;
                          return TK_URL;
                        }
 <St_Para>"<"{MAILADDR2}">" { // anti spam mail address
-                         g_token->name=yytext;
+                         yyextra->token->name=yytext;
                          return TK_WORD;
                        }
 <St_Para>{RCSID} { /* RCS tag */
                          QCString tagName(yytext+1);
                          int index=tagName.find(':');
-                         g_token->name = tagName.left(index);
+                         yyextra->token->name = tagName.left(index);
                          int text_begin = index+2;
                          int text_end = tagName.length()-1;
                          if (tagName[text_begin-1]==':') /* check for Subversion fixed-length keyword */
@@ -732,7 +592,7 @@ LINENR {BLANK}*[1-9][0-9]*
                                  if (tagName[text_end-1]=='#')
                                          --text_end;
                          }
-                         g_token->text = tagName.mid(text_begin,text_end-text_begin);
+                         yyextra->token->text = tagName.mid(text_begin,text_end-text_begin);
                          return TK_RCSTAG;
                        }
 <St_Para,St_HtmlOnly,St_ManOnly,St_LatexOnly,St_RtfOnly,St_XmlOnly,St_DbOnly>"$("{ID}")"   | /* environment variable */
@@ -744,11 +604,11 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_Para>{HTMLTAG}     { /* html tag */
                          lineCount(yytext,yyleng);
-                         handleHtmlTag();
+                         handleHtmlTag(yyscanner,yytext);
                          return TK_HTMLTAG;
                        }
 <St_Para,St_Text>"&"{ID}";" { /* special symbol */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_SYMBOL;
                        }
 
@@ -757,7 +617,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>{ID}/"<"{HTMLKEYW}">" { /* this rule is to prevent opening html
                                   * tag to be recognized as a templated classes
                                   */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_LNKWORD;
                         }
 <St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
@@ -765,12 +625,12 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>{LNKWORD1}{FUNCARG}         |
 <St_Para>{LNKWORD2}                  |
 <St_Para>{LNKWORD3}    {
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_LNKWORD;
                        }
 <St_Para>{LNKWORD1}{FUNCARG}{CVSPEC}[^a-z_A-Z0-9] {
-                         g_token->name = yytext;
-                         g_token->name = g_token->name.left(g_token->name.length()-1);
+                         yyextra->token->name = yytext;
+                         yyextra->token->name = yyextra->token->name.left(yyextra->token->name.length()-1);
                          unput(yytext[(int)yyleng-1]);
                          return TK_LNKWORD;
                        }
@@ -782,9 +642,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
-                           g_token->name = &yytext[1];
+                           yyextra->token->name = &yytext[1];
                          else
-                           g_token->name = yytext;
+                           yyextra->token->name = yytext;
                          return TK_WORD;
 
                          /* the following is dummy code to please the
@@ -794,12 +654,12 @@ LINENR {BLANK}*[1-9][0-9]*
                          goto find_rule;
                        }
 <St_Text>({ID}".")+{ID} {
-                          g_token->name = yytext;
+                          yyextra->token->name = yytext;
                           return TK_WORD;
                         }
 <St_Para,St_Text>"operator"/{BLANK}*"<"[a-zA-Z_0-9]+">" { // Special case: word "operator" followed by a HTML command
                                                           // avoid interpretation as "operator <"
-                           g_token->name = yytext;
+                           yyextra->token->name = yytext;
                            return TK_WORD;
                          }
 
@@ -808,29 +668,29 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para,St_Text>{BLANK}+      |
 <St_Para,St_Text>{BLANK}*\n{BLANK}* { /* white space */
                          lineCount(yytext,yyleng);
-                         g_token->chars=yytext;
+                         yyextra->token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_Text>[\\@<>&$#%~]  {
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_COMMAND_SEL();
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{LISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (g_insidePre || g_autoListLevel==0)
+                         if (yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
                          }
                          lineCount(yytext,yyleng);
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{MLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
+                         if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
                          }
                          lineCount(yytext,yyleng);
                        }
 <St_Para>({BLANK}*\n)+{BLANK}*\n/{OLISTITEM} { /* skip trailing paragraph followed by new list item */
-                         if (!g_markdownSupport || g_insidePre || g_autoListLevel==0)
+                         if (!yyextra->markdownSupport || yyextra->insidePre || yyextra->autoListLevel==0)
                          {
                            REJECT;
                          }
@@ -838,17 +698,17 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_Para,St_Param>({BLANK}*(\n|"\\ilinebr"))+{BLANK}*(\n|"\\ilinebr"){BLANK}* {
                          lineCount(yytext,yyleng);
-                         if (g_insidePre)
+                         if (yyextra->insidePre)
                          {
-                           g_token->chars=yytext;
+                           yyextra->token->chars=yytext;
                            return TK_WHITESPACE;
                          }
                          else
                          {
-                           g_token->indent=computeIndent(yytext,yyleng);
+                           yyextra->token->indent=computeIndent(yytext,yyleng);
                            int i;
                            // put back the indentation (needed for list items)
-                           for (i=0;i<g_token->indent;i++)
+                           for (i=0;i<yyextra->token->indent;i++)
                            {
                              unput(' ');
                            }
@@ -860,9 +720,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          }
                        }
 <St_CodeOpt>{BLANK}*"{"(".")?{LABELID}"}" {
-                         g_token->name = yytext;
-                         int i=g_token->name.find('{'); /* } to keep vi happy */
-                         g_token->name = g_token->name.mid(i+1,g_token->name.length()-i-2);
+                         yyextra->token->name = yytext;
+                         int i=yyextra->token->name.find('{'); /* } to keep vi happy */
+                         yyextra->token->name = yyextra->token->name.mid(i+1,yyextra->token->name.length()-i-2);
                          BEGIN(St_Code);
                        }
 <St_CodeOpt>"\\ilinebr" |
@@ -883,10 +743,10 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Code,St_XmlCode>\n          |
 <St_Code,St_XmlCode>.           {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_HtmlOnlyOption>" [block]" { // the space is added in commentscan.l
-                         g_token->name="block";
+                         yyextra->token->name="block";
                          BEGIN(St_HtmlOnly);
                         }
 <St_HtmlOnlyOption>.|\n {
@@ -904,7 +764,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_HtmlOnly>\n            |
 <St_HtmlOnly>.             {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_ManOnly>{CMD}"endmanonly" {
                          return RetVal_OK;
@@ -913,7 +773,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_ManOnly>\n            |
 <St_ManOnly>.             {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_RtfOnly>{CMD}"endrtfonly" {
                          return RetVal_OK;
@@ -922,7 +782,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_RtfOnly>\n            |
 <St_RtfOnly>.             {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_LatexOnly>{CMD}"endlatexonly" {
                          return RetVal_OK;
@@ -931,7 +791,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_LatexOnly>\n            |
 <St_LatexOnly>.             {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_XmlOnly>{CMD}"endxmlonly" {
                          return RetVal_OK;
@@ -940,7 +800,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_XmlOnly>\n         |
 <St_XmlOnly>.          {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_DbOnly>{CMD}"enddocbookonly" {
                          return RetVal_OK;
@@ -949,17 +809,17 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_DbOnly>\n         |
 <St_DbOnly>.          {
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_Verbatim>{CMD}"endverbatim" {
-                         g_token->verb=stripEmptyLines(g_token->verb);
+                         yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
                          return RetVal_OK;
                        }
 <St_Verbatim>[^\\@\n]+ |
 <St_Verbatim>\n        |
 <St_Verbatim>.         { /* Verbatim text */
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
@@ -968,7 +828,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Dot>\n             |
 <St_Dot>.              { /* dot text */
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_Msc>{CMD}("endmsc")  {
                          return RetVal_OK;
@@ -977,32 +837,32 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Msc>\n             |
 <St_Msc>.              { /* msc text */
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_PlantUMLOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // case 1: options present
-                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         yyextra->token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/{ID}"=" { // case 2: plain file name specified followed by an attribute
-                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         yyextra->token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANK}+/"\"" { // case 3: plain file name specified followed by a quoted title
-                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         yyextra->token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANKopt}/\n { // case 4: plain file name specified without title or attributes
-                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         yyextra->token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>{BLANK}*{FILEMASK}{BLANKopt}/"\\ilinebr" { // case 5: plain file name specified without title or attributes
-                         g_token->sectionId = QCString(yytext).stripWhiteSpace();
+                         yyextra->token->sectionId = QCString(yytext).stripWhiteSpace();
                          return RetVal_OK;
                        }
 <St_PlantUMLOpt>"\\ilinebr" |
 <St_PlantUMLOpt>"\n"   |
 <St_PlantUMLOpt>.      {
-                         g_token->sectionId = "";
+                         yyextra->token->sectionId = "";
                          unput_string(yytext,yyleng);
                          return RetVal_OK;
                        }
@@ -1013,13 +873,13 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_PlantUML>\n        |
 <St_PlantUML>.         { /* plantuml text */
                          lineCount(yytext,yyleng);
-                         g_token->verb+=yytext;
+                         yyextra->token->verb+=yytext;
                        }
 <St_Title>"\""         { // quoted title
                          BEGIN(St_TitleQ);
                        }
 <St_Title>[ \t]+       {
-                         g_token->chars=yytext;
+                         yyextra->token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_Title>.            { // non-quoted title
@@ -1035,7 +895,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          return 0;
                        }
 <St_TitleN>"&"{ID}";"  { /* symbol */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_SYMBOL;
                        }
 <St_TitleN>{HTMLTAG}   {
@@ -1051,15 +911,15 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_TitleN>{SPCMD1}    |
 <St_TitleN>{SPCMD2}    { /* special command */
-                         g_token->name = yytext+1;
-                         g_token->paramDir=TokenInfo::Unspecified;
+                         yyextra->token->name = yytext+1;
+                         yyextra->token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_TitleN>{ID}"="     { /* attribute */
                          if (yytext[0]=='%') // strip % if present
-                           g_token->name = &yytext[1];
+                           yyextra->token->name = &yytext[1];
                          else
-                           g_token->name = yytext;
+                           yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_TitleN>[\-+0-9]    |
@@ -1068,17 +928,17 @@ LINENR {BLANK}*[1-9][0-9]*
                          if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
-                           g_token->name = &yytext[1];
+                           yyextra->token->name = &yytext[1];
                          else
-                           g_token->name = yytext;
+                           yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_TitleN>[ \t]+      {
-                         g_token->chars=yytext;
+                         yyextra->token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_TitleQ>"&"{ID}";"  { /* symbol */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_SYMBOL;
                        }
 <St_TitleQ>(\n|"\\ilinebr") { /* new line => end of title */
@@ -1087,17 +947,17 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_TitleQ>{SPCMD1}    |
 <St_TitleQ>{SPCMD2}    { /* special command */
-                         g_token->name = yytext+1;
-                         g_token->paramDir=TokenInfo::Unspecified;
+                         yyextra->token->name = yytext+1;
+                         yyextra->token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_TitleQ>{WORD1NQ}   |
 <St_TitleQ>{WORD2NQ}   { /* word */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_TitleQ>[ \t]+      {
-                         g_token->chars=yytext;
+                         yyextra->token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_TitleQ>"\""        { /* closing quote => end of title */
@@ -1105,13 +965,13 @@ LINENR {BLANK}*[1-9][0-9]*
                          return 0;
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
-                         g_token->name = yytext;
-                         g_token->name = g_token->name.left(g_token->name.find('=')).stripWhiteSpace();
+                         yyextra->token->name = yytext;
+                         yyextra->token->name = yyextra->token->name.left(yyextra->token->name.find('=')).stripWhiteSpace();
                          BEGIN(St_TitleV);
                        }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
                          lineCount(yytext,yyleng);
-                         g_token->chars = yytext;
+                         yyextra->token->chars = yytext;
                          BEGIN(St_TitleN);
                          return TK_WORD;
                        }
@@ -1126,7 +986,7 @@ LINENR {BLANK}*[1-9][0-9]*
 
 <St_Anchor>{LABELID}{WS}? { // anchor
                          lineCount(yytext,yyleng);
-                         g_token->name = QCString(yytext).stripWhiteSpace();
+                         yyextra->token->name = QCString(yytext).stripWhiteSpace();
                          return TK_WORD;
                        }
 <St_Anchor>.           {
@@ -1136,12 +996,12 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Cite>{CITEID}      { // label to cite
                          if (yytext[0] =='"')
                          {
-                           g_token->name=yytext+1;
-                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-2);
+                           yyextra->token->name=yytext+1;
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-2);
                          }
                          else
                          {
-                           g_token->name=yytext;
+                           yyextra->token->name=yytext;
                          }
                          return TK_WORD;
                        }
@@ -1158,15 +1018,15 @@ LINENR {BLANK}*[1-9][0-9]*
                          return 0;
                        }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("const")[a-z_A-Z0-9] { // see bug776988
-                         g_token->name=yytext;
+                         yyextra->token->name=yytext;
                          return TK_WORD;
                        }
 <St_Ref>{REFWORD_NOCV}/{BLANK}("volatile")[a-z_A-Z0-9] { // see bug776988
-                         g_token->name=yytext;
+                         yyextra->token->name=yytext;
                          return TK_WORD;
                        }
 <St_Ref>{REFWORD}      { // label to refer to
-                         g_token->name=yytext;
+                         yyextra->token->name=yytext;
                          return TK_WORD;
                        }
 <St_Ref>{BLANK}        { // white space
@@ -1186,42 +1046,42 @@ LINENR {BLANK}*[1-9][0-9]*
                          return 0;
                        }
 <St_IntRef>[A-Z_a-z0-9.:/#\-\+\(\)]+ {
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_IntRef>{BLANK}+"\"" {
                          BEGIN(St_Ref2);
                        }
 <St_SetScope>({SCOPEMASK}|{ANONNS}){BLANK}|{FILEMASK} {
-                         g_token->name = yytext;
-                         g_token->name = g_token->name.stripWhiteSpace();
+                         yyextra->token->name = yytext;
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
 <St_SetScope>{SCOPEMASK}"<" {
-                         g_token->name = yytext;
-                         g_token->name = g_token->name.stripWhiteSpace();
-                         g_sharpCount=1;
+                         yyextra->token->name = yytext;
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
+                         yyextra->sharpCount=1;
                          BEGIN(St_SetScopeEnd);
                        }
 <St_SetScope>{BLANK}   {
                        }
 <St_SetScopeEnd>"<"    {
-                         g_token->name += yytext;
-                         g_sharpCount++;
+                         yyextra->token->name += yytext;
+                         yyextra->sharpCount++;
                        }
 <St_SetScopeEnd>">"    {
-                         g_token->name += yytext;
-                         g_sharpCount--;
-                         if (g_sharpCount<=0)
+                         yyextra->token->name += yytext;
+                         yyextra->sharpCount--;
+                         if (yyextra->sharpCount<=0)
                          {
                            return TK_WORD;
                          }
                        }
 <St_SetScopeEnd>.      {
-                         g_token->name += yytext;
+                         yyextra->token->name += yytext;
                        }
 <St_Ref2>"&"{ID}";"    { /* symbol */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_SYMBOL;
                        }
 <St_Ref2>"\""|\n|"\\ilinebr" { /* " or \n => end of title */
@@ -1230,22 +1090,22 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_Ref2>{SPCMD1}      |
 <St_Ref2>{SPCMD2}      { /* special command */
-                         g_token->name = yytext+1;
-                         g_token->paramDir=TokenInfo::Unspecified;
+                         yyextra->token->name = yytext+1;
+                         yyextra->token->paramDir=TokenInfo::Unspecified;
                          return TK_COMMAND_SEL();
                        }
 <St_Ref2>{WORD1NQ}     |
 <St_Ref2>{WORD2NQ}     {
                          /* word */
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_Ref2>[ \t]+        {
-                         g_token->chars=yytext;
+                         yyextra->token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_XRefItem>{LABELID} {
-                         g_token->name=yytext;
+                         yyextra->token->name=yytext;
                        }
 <St_XRefItem>" "       {
                          BEGIN(St_XRefItem2);
@@ -1253,16 +1113,16 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_XRefItem2>[0-9]+"." {
                          QCString numStr(yytext);
                          numStr=numStr.left((int)yyleng-1);
-                         g_token->id=numStr.toInt();
+                         yyextra->token->id=numStr.toInt();
                          return RetVal_OK;
                        }
 <St_Para,St_Title,St_Ref2>"<!--"     { /* html style comment block */
-                         g_commentState = YY_START;
+                         yyextra->commentState = YY_START;
                          BEGIN(St_Comment);
                        }
 <St_Param>"\""[^\n\"]+"\"" {
-                         g_token->name = yytext+1;
-                         g_token->name = g_token->name.left((int)yyleng-2);
+                         yyextra->token->name = yytext+1;
+                         yyextra->token->name = yyextra->token->name.left((int)yyleng-2);
                          return TK_WORD;
                        }
 <St_Param>({PHPTYPE}{BLANK}*("["{BLANK}*"]")*{BLANK}*"|"{BLANK}*)*{PHPTYPE}{BLANK}*("["{BLANK}*"]")*{WS}+("&")?"$"{LABELID} {
@@ -1272,42 +1132,42 @@ LINENR {BLANK}*[1-9][0-9]*
                          int i = params.find('$');
                          if (j<i && j!=-1) i=j;
                          QCString types = params.left(i).stripWhiteSpace();
-                         g_token->name = types+"#"+params.mid(i);
+                         yyextra->token->name = types+"#"+params.mid(i);
                          return TK_WORD;
                        }
 <St_Param>[^ \t\n,@\\]+  {
-                         g_token->name = yytext;
-                         if (g_token->name.at(static_cast<uint>(yyleng)-1)==':')
+                         yyextra->token->name = yytext;
+                         if (yyextra->token->name.at(static_cast<uint>(yyleng)-1)==':')
                          {
-                           g_token->name=g_token->name.left(static_cast<uint>(yyleng)-1);
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-1);
                          }
                          return TK_WORD;
                        }
 <St_Param>{WS}*","{WS}*  /* param separator */
 <St_Param>{WS}         {
                          lineCount(yytext,yyleng);
-                         g_token->chars=yytext;
+                         yyextra->token->chars=yytext;
                          return TK_WHITESPACE;
                        }
 <St_Options>{ID}       {
-                         g_token->name+=yytext;
+                         yyextra->token->name+=yytext;
                        }
 <St_Options>{WS}*","{WS}*
 <St_Options>{WS}       { /* option separator */
                          lineCount(yytext,yyleng);
-                         g_token->name+=",";
+                         yyextra->token->name+=",";
                        }
 <St_Options>"}"        {
                          return TK_WORD;
                        }
 <St_Block>{ID}         {
-                         g_token->name+=yytext;
+                         yyextra->token->name+=yytext;
                        }
 <St_Block>"]"          {
                          return TK_WORD;
                        }
 <St_Emoji>[:0-9_a-z+-]+  {
-                         g_token->name=yytext;
+                         yyextra->token->name=yytext;
                          return TK_WORD;
                        }
 <St_Emoji>.            {
@@ -1319,11 +1179,11 @@ LINENR {BLANK}*[1-9][0-9]*
                          int nr = QCString(yytext).toInt(&ok);
                          if (!ok)
                          {
-                           warn(g_fileName,g_yyLineNr,"Invalid line number '%s' for iline command",yytext);
+                           warn(yyextra->fileName,yyextra->yyLineNr,"Invalid line number '%s' for iline command",yytext);
                          }
                          else
                          {
-                           g_yyLineNr = nr;
+                           yyextra->yyLineNr = nr;
                          }
                          return TK_WORD;
                        }
@@ -1331,35 +1191,35 @@ LINENR {BLANK}*[1-9][0-9]*
                          return 0;
                        }
 <St_File>{FILEMASK}    {
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_File>"\""[^\n\"]+"\"" {
                          QCString text(yytext);
-                         g_token->name = text.mid(1,text.length()-2);
+                         yyextra->token->name = text.mid(1,text.length()-2);
                          return TK_WORD;
                        }
 <St_Pattern>[^\\\r\n]+   {
-                         g_token->name += yytext;
+                         yyextra->token->name += yytext;
                        }
 <St_Pattern>"\\ilinebr" {
-                         g_token->name = g_token->name.stripWhiteSpace();
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
 <St_Pattern>\n         {
                          lineCount(yytext,yyleng);
-                         g_token->name = g_token->name.stripWhiteSpace();
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
 <St_Pattern>.          {
-                         g_token->name += yytext;
+                         yyextra->token->name += yytext;
                        }
 <St_Link>{LINKMASK}|{REFWORD}    {
-                         g_token->name = yytext;
+                         yyextra->token->name = yytext;
                          return TK_WORD;
                        }
 <St_Comment>"-->"      { /* end of html comment */
-                         BEGIN(g_commentState);
+                         BEGIN(yyextra->commentState);
                        }
 <St_Comment>[^-]+      /* inside html comment */
 <St_Comment>.          /* inside html comment */
@@ -1388,89 +1248,89 @@ LINENR {BLANK}*[1-9][0-9]*
                                           int e=tag.find(c,s+4);
                                           if (e!=-1) // found matching end
                                           {
-                                            g_secType = SectionType::Table;
-                                            g_secLabel=tag.mid(s+4,e-s-4); // extract id
-                                            processSection();
+                                            yyextra->secType = SectionType::Table;
+                                            yyextra->secLabel=tag.mid(s+4,e-s-4); // extract id
+                                            processSection(yyscanner);
                                           }
                                         }
                                       }
                                     }
 <St_Sections>{CMD}"anchor"{BLANK}+  {
-                                      g_secType = SectionType::Anchor;
+                                      yyextra->secType = SectionType::Anchor;
                                       BEGIN(St_SecLabel1);
                                     }
 <St_Sections>{CMD}"section"{BLANK}+ {
-                                      g_secType = SectionType::Section;
+                                      yyextra->secType = SectionType::Section;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"subsection"{BLANK}+ {
-                                      g_secType = SectionType::Subsection;
+                                      yyextra->secType = SectionType::Subsection;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"subsubsection"{BLANK}+ {
-                                      g_secType = SectionType::Subsubsection;
+                                      yyextra->secType = SectionType::Subsubsection;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"paragraph"{BLANK}+ {
-                                      g_secType = SectionType::Paragraph;
+                                      yyextra->secType = SectionType::Paragraph;
                                       BEGIN(St_SecLabel2);
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
-                                      g_endMarker="endverbatim";
+                                      yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
-                                      g_endMarker="enddot";
+                                      yyextra->endMarker="enddot";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"msc"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endmsc";
+                                      yyextra->endMarker="endmsc";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"startuml"/[^a-z_A-Z0-9] {
-                                      g_endMarker="enduml";
+                                      yyextra->endMarker="enduml";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"htmlonly"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endhtmlonly";
+                                      yyextra->endMarker="endhtmlonly";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"latexonly"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endlatexonly";
+                                      yyextra->endMarker="endlatexonly";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"manonly"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endmanonly";
+                                      yyextra->endMarker="endmanonly";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"rtfonly"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endrtfonly";
+                                      yyextra->endMarker="endrtfonly";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"xmlonly"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endxmlonly";
+                                      yyextra->endMarker="endxmlonly";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"docbookonly"/[^a-z_A-Z0-9] {
-                                      g_endMarker="enddocbookonly";
+                                      yyextra->endMarker="enddocbookonly";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"code"/[^a-z_A-Z0-9] {
-                                      g_endMarker="endcode";
+                                      yyextra->endMarker="endcode";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>"<!--"                 {
-                                      g_endMarker="-->";
+                                      yyextra->endMarker="-->";
                                       BEGIN(St_SecSkip);
                                     }
 <St_SecSkip>{CMD}{ID}               {
-                                      if (g_endMarker==yytext+1)
+                                      if (yyextra->endMarker==yytext+1)
                                       {
                                         BEGIN(St_Sections);
                                       }
                                     }
 <St_SecSkip>"-->"                   {
-                                      if (g_endMarker==yytext)
+                                      if (yyextra->endMarker==yytext)
                                       {
                                         BEGIN(St_Sections);
                                       }
@@ -1482,289 +1342,573 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Sections>(\n|"\\ilinebr")
 <St_SecLabel1>{LABELID} {
                          lineCount(yytext,yyleng);
-                         g_secLabel = yytext;
-                         processSection();
+                         yyextra->secLabel = yytext;
+                         processSection(yyscanner);
                          BEGIN(St_Sections);
                        }
 <St_SecLabel2>{LABELID}{BLANK}+ |
 <St_SecLabel2>{LABELID}         {
-                         g_secLabel = yytext;
-                         g_secLabel = g_secLabel.stripWhiteSpace();
+                         yyextra->secLabel = yytext;
+                         yyextra->secLabel = yyextra->secLabel.stripWhiteSpace();
                          BEGIN(St_SecTitle);
                        }
 <St_SecTitle>[^\n]+    |
 <St_SecTitle>[^\n]*\n  {
                          lineCount(yytext,yyleng);
-                         g_secTitle = yytext;
-                         g_secTitle = g_secTitle.stripWhiteSpace();
-                         if (g_secTitle.right(8)=="\\ilinebr")
+                         yyextra->secTitle = yytext;
+                         yyextra->secTitle = yyextra->secTitle.stripWhiteSpace();
+                         if (yyextra->secTitle.right(8)=="\\ilinebr")
                          {
-                           g_secTitle.left(g_secTitle.length()-8);
+                           yyextra->secTitle.left(yyextra->secTitle.length()-8);
                          }
-                         processSection();
+                         processSection(yyscanner);
                          BEGIN(St_Sections);
                        }
 <St_SecTitle,St_SecLabel1,St_SecLabel2>. {
-                         warn(g_fileName,g_yyLineNr,"Unexpected character '%s' while looking for section label or title",yytext);
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s' while looking for section label or title",yytext);
                        }
 
 <St_Snippet>[^\\\n]+   {
-                         g_token->name += yytext;
+                         yyextra->token->name += yytext;
                        }
 <St_Snippet>"\\"       {
-                         g_token->name += yytext;
+                         yyextra->token->name += yytext;
                        }
 <St_Snippet>(\n|"\\ilinebr")  {
                          lineCount(yytext,yyleng);
-                         g_token->name = g_token->name.stripWhiteSpace();
+                         yyextra->token->name = yyextra->token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
 
      /* Generic rules that work for all states */
 <*>\n                  {
                          lineCount(yytext,yyleng);
-                         warn(g_fileName,g_yyLineNr,"Unexpected new line character");
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected new line character");
                        }
 <*>"\\ilinebr"         {
                        }
 <*>[\\@<>&$#%~"=]      { /* unescaped special character */
-                         //warn(g_fileName,g_yyLineNr,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext);
-                         g_token->name = yytext;
+                         //warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s', assuming command \\%s was meant.",yytext,yytext);
+                         yyextra->token->name = yytext;
                          return TK_COMMAND_SEL();
                        }
 <*>.                   {
-                         warn(g_fileName,g_yyLineNr,"Unexpected character '%s'",yytext);
+                         warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s'",yytext);
                        }
 %%
 
 //--------------------------------------------------------------------------
 
-void doctokenizerYYFindSections(const QCString &input,const Definition *d,
+static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yy_size_t c=0;
+  const char *p = yyextra->inputString + yyextra->inputPos;
+  while ( c < max_size && *p ) { *buf++ = *p++; c++; }
+  yyextra->inputPos+=c;
+  return c;
+}
+
+static void processSection(yyscan_t yyscanner)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("%s: found section/anchor with name '%s'\n",qPrint(g_fileName),qPrint(g_secLabel));
+  QCString file;
+  if (yyextra->definition)
+  {
+    file = yyextra->definition->getOutputFileBase();
+  }
+  else
+  {
+    warn(yyextra->fileName,yyextra->yyLineNr,"Found section/anchor %s without context\n",qPrint(yyextra->secLabel));
+  }
+  SectionInfo *si = SectionManager::instance().find(yyextra->secLabel);
+  if (si)
+  {
+    si->setFileName(file);
+    si->setType(yyextra->secType);
+  }
+}
+
+static void handleHtmlTag(yyscan_t yyscanner,const char *text)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
+  QCString tagText(text);
+  yyextra->token->attribs.clear();
+  yyextra->token->endTag = FALSE;
+  yyextra->token->emptyTag = FALSE;
+
+  // Check for end tag
+  int startNamePos=1;
+  if (tagText.at(1)=='/')
+  {
+    yyextra->token->endTag = TRUE;
+    startNamePos++;
+  }
+
+  // Parse the name portion
+  int i = startNamePos;
+  for (i=startNamePos; i < (int)yyleng; i++)
+  {
+    // Check for valid HTML/XML name chars (including namespaces)
+    char c = tagText.at(i);
+    if (!(isalnum(c) || c=='-' || c=='_' || c==':')) break;
+  }
+  yyextra->token->name = tagText.mid(startNamePos,i-startNamePos);
+
+  // Parse the attributes. Each attribute is a name, value pair
+  // The result is stored in yyextra->token->attribs.
+  int startName,endName,startAttrib,endAttrib;
+  int startAttribList = i;
+  while (i<(int)yyleng)
+  {
+    char c=tagText.at(i);
+    // skip spaces
+    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    // check for end of the tag
+    if (c == '>') break;
+    // Check for XML style "empty" tag.
+    if (c == '/')
+    {
+      yyextra->token->emptyTag = TRUE;
+      break;
+    }
+    startName=i;
+    // search for end of name
+    while (i<(int)yyleng && !isspace((uchar)c) && c!='=' && c!= '>') { c=tagText.at(++i); }
+    endName=i;
+    HtmlAttrib opt;
+    opt.name  = tagText.mid(startName,endName-startName).lower();
+    // skip spaces
+    while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+    if (tagText.at(i)=='=') // option has value
+    {
+      c=tagText.at(++i);
+      // skip spaces
+      while (i<(int)yyleng && isspace((uchar)c)) { c=tagText.at(++i); }
+      if (tagText.at(i)=='\'') // option '...'
+      {
+        c=tagText.at(++i);
+        startAttrib=i;
+
+        // search for matching quote
+        while (i<(int)yyleng && c!='\'') { c=tagText.at(++i); }
+        endAttrib=i;
+        if (i<(int)yyleng) { c=tagText.at(++i);}
+      }
+      else if (tagText.at(i)=='"') // option "..."
+      {
+        c=tagText.at(++i);
+        startAttrib=i;
+        // search for matching quote
+        while (i<(int)yyleng && c!='"') { c=tagText.at(++i); }
+        endAttrib=i;
+        if (i<(int)yyleng) { c=tagText.at(++i);}
+      }
+      else // value without any quotes
+      {
+        startAttrib=i;
+        // search for separator or end symbol
+        while (i<(int)yyleng && !isspace((uchar)c) && c!='>') { c=tagText.at(++i); }
+        endAttrib=i;
+        if (i<(int)yyleng) { c=tagText.at(++i);}
+      }
+      opt.value  = tagText.mid(startAttrib,endAttrib-startAttrib);
+      if (opt.name == "align") opt.value = opt.value.lower();
+      else if (opt.name == "valign")
+      {
+        opt.value = opt.value.lower();
+        if (opt.value == "center") opt.value="middle";
+      }
+    }
+    else // start next option
+    {
+    }
+    //printf("=====> Adding option name=<%s> value=<%s>\n",
+    //    qPrint(opt.name),qPrint(opt.value));
+    yyextra->token->attribs.push_back(opt);
+  }
+  yyextra->token->attribsStr = tagText.mid(startAttribList,i-startAttribList);
+}
+
+struct DocTokenizer::Private
+{
+  yyscan_t yyscanner;
+  doctokenizerYY_state extra;
+};
+
+
+void DocTokenizer::pushContext()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->lexerStack.push(
+      std::make_unique<DocLexerContext>(
+        yyextra->token,YY_START,
+        yyextra->autoListLevel,
+        yyextra->inputPos,
+        yyextra->inputString,
+        YY_CURRENT_BUFFER));
+  yy_switch_to_buffer(yy_create_buffer(0, YY_BUF_SIZE, yyscanner), yyscanner);
+}
+
+bool DocTokenizer::popContext()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (yyextra->lexerStack.empty()) return FALSE;
+  const auto &ctx = yyextra->lexerStack.top();
+  yyextra->autoListLevel = ctx->autoListLevel;
+  yyextra->inputPos      = ctx->inputPos;
+  yyextra->inputString   = ctx->inputString;
+
+  YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
+  yy_switch_to_buffer(ctx->state, yyscanner);
+  yy_delete_buffer(tmpBuf, yyscanner);
+
+  BEGIN(ctx->rule);
+  yyextra->lexerStack.pop();
+  return TRUE;
+}
+
+
+DocTokenizer::DocTokenizer() : p(std::make_unique<Private>())
+{
+  doctokenizerYYlex_init_extra(&p->extra,&p->yyscanner);
+#ifdef FLEX_DEBUG
+  doctokenizerYYset_debug(1,p->yyscanner);
+#endif
+}
+
+DocTokenizer::~DocTokenizer()
+{
+  doctokenizerYYlex_destroy(p->yyscanner);
+}
+
+int DocTokenizer::lex()
+{
+  return doctokenizerYYlex(p->yyscanner);
+}
+
+void DocTokenizer::findSections(const QCString &input,const Definition *d,
                                 const QCString &fileName)
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+
   if (input.isEmpty()) return;
   printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
-  g_inputString = input.data();
+  yyextra->inputString = input.data();
   //printf("parsing --->'%s'<---\n",input);
-  g_inputPos    = 0;
-  g_definition  = d;
-  g_fileName    = fileName;
+  yyextra->inputPos    = 0;
+  yyextra->definition  = d;
+  yyextra->fileName    = fileName;
   BEGIN(St_Sections);
-  g_yyLineNr = 1;
-  doctokenizerYYlex();
+  yyextra->yyLineNr = 1;
+  doctokenizerYYlex(yyscanner);
   printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
-void doctokenizerYYinit(const char *input,const QCString &fileName,bool markdownSupport)
+void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport)
 {
-  g_autoListLevel = 0;
-  g_inputString = input;
-  g_inputPos    = 0;
-  g_fileName    = fileName;
-  g_insidePre   = FALSE;
-  g_markdownSupport = markdownSupport;
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->autoListLevel = 0;
+  yyextra->inputString = input;
+  yyextra->inputPos    = 0;
+  yyextra->fileName    = fileName;
+  yyextra->insidePre   = FALSE;
+  yyextra->markdownSupport = markdownSupport;
   BEGIN(St_Para);
 }
 
-void doctokenizerYYsetStatePara()
+TokenInfo *DocTokenizer::newToken()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  return yyextra->token = new TokenInfo;
+}
+
+void DocTokenizer::replaceToken(TokenInfo *newToken)
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  delete yyextra->token;
+  yyextra->token = newToken;
+}
+
+void DocTokenizer::setStatePara()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Para);
 }
 
-void doctokenizerYYsetStateTitle()
+void DocTokenizer::setStateTitle()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Title);
 }
 
-void doctokenizerYYsetStateTitleAttrValue()
+void DocTokenizer::setStateTitleAttrValue()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_TitleV);
 }
 
-void doctokenizerYYsetStateCode()
+void DocTokenizer::setStateCode()
 {
-  g_token->verb="";
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->name="";
   BEGIN(St_CodeOpt);
 }
 
-void doctokenizerYYsetStateXmlCode()
+void DocTokenizer::setStateXmlCode()
 {
-  g_token->verb="";
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->name="";
   BEGIN(St_XmlCode);
 }
 
-void doctokenizerYYsetStateHtmlOnly()
+void DocTokenizer::setStateHtmlOnly()
 {
-  g_token->verb="";
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->name="";
   BEGIN(St_HtmlOnlyOption);
 }
 
-void doctokenizerYYsetStateManOnly()
+void DocTokenizer::setStateManOnly()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_ManOnly);
 }
 
-void doctokenizerYYsetStateRtfOnly()
+void DocTokenizer::setStateRtfOnly()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_RtfOnly);
 }
 
-void doctokenizerYYsetStateXmlOnly()
+void DocTokenizer::setStateXmlOnly()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_XmlOnly);
 }
 
-void doctokenizerYYsetStateDbOnly()
+void DocTokenizer::setStateDbOnly()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_DbOnly);
 }
 
-void doctokenizerYYsetStateLatexOnly()
+void DocTokenizer::setStateLatexOnly()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_LatexOnly);
 }
 
-void doctokenizerYYsetStateVerbatim()
+void DocTokenizer::setStateVerbatim()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_Verbatim);
 }
 
-void doctokenizerYYsetStateDot()
+void DocTokenizer::setStateDot()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_Dot);
 }
 
-void doctokenizerYYsetStateMsc()
+void DocTokenizer::setStateMsc()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_Msc);
 }
 
-void doctokenizerYYsetStatePlantUMLOpt()
+void DocTokenizer::setStatePlantUMLOpt()
 {
-  g_token->verb="";
-  g_token->sectionId="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  yyextra->token->sectionId="";
   BEGIN(St_PlantUMLOpt);
 }
 
-void doctokenizerYYsetStatePlantUML()
+void DocTokenizer::setStatePlantUML()
 {
-  g_token->verb="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
   BEGIN(St_PlantUML);
 }
 
-void doctokenizerYYsetStateParam()
+void DocTokenizer::setStateParam()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Param);
 }
 
-void doctokenizerYYsetStateXRefItem()
+void DocTokenizer::setStateXRefItem()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_XRefItem);
 }
 
-void doctokenizerYYsetStateFile()
+void DocTokenizer::setStateFile()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_File);
 }
 
-void doctokenizerYYsetStatePattern()
+void DocTokenizer::setStatePattern()
 {
-  g_token->name = "";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->name = "";
   BEGIN(St_Pattern);
 }
 
-void doctokenizerYYsetStateLink()
+void DocTokenizer::setStateLink()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Link);
 }
 
-void doctokenizerYYsetStateCite()
+void DocTokenizer::setStateCite()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Cite);
 }
 
-void doctokenizerYYsetStateRef()
+void DocTokenizer::setStateRef()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Ref);
 }
 
-void doctokenizerYYsetStateInternalRef()
+void DocTokenizer::setStateInternalRef()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_IntRef);
 }
 
-void doctokenizerYYsetStateText()
+void DocTokenizer::setStateText()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Text);
 }
 
-void doctokenizerYYsetStateSkipTitle()
+void DocTokenizer::setStateSkipTitle()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_SkipTitle);
 }
 
-void doctokenizerYYsetStateAnchor()
+void DocTokenizer::setStateAnchor()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Anchor);
 }
 
-void doctokenizerYYsetStateSnippet()
+void DocTokenizer::setStateSnippet()
 {
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->name="";
   BEGIN(St_Snippet);
 }
 
-void doctokenizerYYsetStateSetScope()
+void DocTokenizer::setStateSetScope()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_SetScope);
 }
 
-void doctokenizerYYsetStateOptions()
+void DocTokenizer::setStateOptions()
 {
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->name="";
   BEGIN(St_Options);
 }
 
-void doctokenizerYYsetStateBlock()
+void DocTokenizer::setStateBlock()
 {
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->name="";
   BEGIN(St_Block);
 }
 
-void doctokenizerYYsetStateEmoji()
+void DocTokenizer::setStateEmoji()
 {
-  g_token->name="";
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->name="";
   BEGIN(St_Emoji);
 }
 
-void doctokenizerYYsetStateIline()
+void DocTokenizer::setStateIline()
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Iline);
 }
 
-void doctokenizerYYcleanup()
+void DocTokenizer::cleanup()
 {
-  yy_delete_buffer( YY_CURRENT_BUFFER );
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yy_delete_buffer( YY_CURRENT_BUFFER, yyscanner );
 }
 
-void doctokenizerYYsetInsidePre(bool b)
+void DocTokenizer::setInsidePre(bool b)
 {
-  g_insidePre = b;
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->insidePre = b;
 }
 
-void doctokenizerYYpushBackHtmlTag(const QCString &tag)
+void DocTokenizer::pushBackHtmlTag(const QCString &tag)
 {
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString tagName = tag;
   int i,l = tagName.length();
   unput('>');
@@ -1775,14 +1919,18 @@ void doctokenizerYYpushBackHtmlTag(const QCString &tag)
   unput('<');
 }
 
-void doctokenizerYYstartAutoList()
+void DocTokenizer::startAutoList()
 {
-  g_autoListLevel++;
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->autoListLevel++;
 }
 
-void doctokenizerYYendAutoList()
+void DocTokenizer::endAutoList()
 {
-  g_autoListLevel--;
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->autoListLevel--;
 }
 
 //REAL_YY_DECL
@@ -1793,16 +1941,19 @@ void doctokenizerYYendAutoList()
 //  return retval;
 //}
 
-void setDoctokinizerLineNr(int lineno)
+void DocTokenizer::setLineNr(int lineno)
 {
-  g_yyLineNr = lineno;
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->yyLineNr = lineno;
 }
 
-int getDoctokinizerLineNr(void)
+int DocTokenizer::getLineNr(void)
 {
-  return g_yyLineNr;
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  return yyextra->yyLineNr;
 }
-
 
 #if USE_STATE2STRING
 #include "doctokenizer.l.h"
