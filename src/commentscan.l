@@ -853,6 +853,9 @@ STopt  [^\n@\\]*
 <Comment>"...\\"[ \t]                   { // ellipsis with escaped space.
                                           addOutput(yyscanner,"... ");
                                         }
+<Comment>"..."/[^\.]                    { // ellipsis
+                                          addOutput(yyscanner,"...");
+                                        }
 <Comment>".."[\.]?/[^ \t\n]             { // internal ellipsis
                                           addOutput(yyscanner,yytext);
                                         }
