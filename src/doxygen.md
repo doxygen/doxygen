@@ -149,6 +149,7 @@ easy ways to get debug information.
     following:
      - It converts multi-line C++ style comment blocks (that are aligned)
        to C style comment blocks (if `MULTILINE_CPP_IS_BRIEF` is set to `NO`).
+       (`IGNORE_CPP_ALIGNMENT` loosens the alignment criterion.)
      - It replaces aliases with their definition (see `ALIASES`)
      - It handles conditional sections (<tt>\\cond ... \\endcond</tt> blocks)
   - commentscan<br>

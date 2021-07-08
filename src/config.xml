@@ -499,6 +499,16 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='IGNORE_CPP_ALIGNMENT' defval='0'>
+      <docs>
+<![CDATA[
+  When the \c IGNORE_CPP_ALIGNMENT tag is set to \c YES, doxygen will
+  build multi-line C++ special comment blocks regardless of the indentation
+  of the comments. If set to \c NO, doxygen would only group multi-line C++
+  comments if they align vertically.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='PYTHON_DOCSTRING' defval='1'>
       <docs>
 <![CDATA[
