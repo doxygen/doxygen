@@ -885,6 +885,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_Code>{CMD}{CMD}    {
+                         g_token->verb+=yytext;
+                       }
 <St_HtmlOnlyOption>" [block]" { // the space is added in commentscan.l
                          g_token->name="block";
                          BEGIN(St_HtmlOnly);
@@ -906,6 +909,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_HtmlOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_ManOnly>{CMD}"endmanonly" {
                          return RetVal_OK;
                        }
@@ -913,6 +919,9 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_ManOnly>\n            |
 <St_ManOnly>.             {
                          lineCount(yytext,yyleng);
+                         g_token->verb+=yytext;
+                       }
+<St_ManOnly>{CMD}{CMD} {
                          g_token->verb+=yytext;
                        }
 <St_RtfOnly>{CMD}"endrtfonly" {
@@ -924,6 +933,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_RtfOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_LatexOnly>{CMD}"endlatexonly" {
                          return RetVal_OK;
                        }
@@ -931,6 +943,9 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_LatexOnly>\n            |
 <St_LatexOnly>.             {
                          lineCount(yytext,yyleng);
+                         g_token->verb+=yytext;
+                       }
+<St_LatexOnly>{CMD}{CMD} {
                          g_token->verb+=yytext;
                        }
 <St_XmlOnly>{CMD}"endxmlonly" {
@@ -942,6 +957,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_XmlOnly>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_DbOnly>{CMD}"enddocbookonly" {
                          return RetVal_OK;
                        }
@@ -949,6 +967,9 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_DbOnly>\n         |
 <St_DbOnly>.          {
                          lineCount(yytext,yyleng);
+                         g_token->verb+=yytext;
+                       }
+<St_DbOnly>{CMD}{CMD} {
                          g_token->verb+=yytext;
                        }
 <St_Verbatim>{CMD}"endverbatim" {
@@ -961,6 +982,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_Verbatim>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
                        }
@@ -970,6 +994,9 @@ LINENR {BLANK}*[1-9][0-9]*
                          lineCount(yytext,yyleng);
                          g_token->verb+=yytext;
                        }
+<St_Dot>{CMD}{CMD} {
+                         g_token->verb+=yytext;
+                       }
 <St_Msc>{CMD}("endmsc")  {
                          return RetVal_OK;
                        }
@@ -977,6 +1004,9 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Msc>\n             |
 <St_Msc>.              { /* msc text */
                          lineCount(yytext,yyleng);
+                         g_token->verb+=yytext;
+                       }
+<St_Msc>{CMD}{CMD} {
                          g_token->verb+=yytext;
                        }
 <St_PlantUMLOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // case 1: options present
@@ -1013,6 +1043,9 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_PlantUML>\n        |
 <St_PlantUML>.         { /* plantuml text */
                          lineCount(yytext,yyleng);
+                         g_token->verb+=yytext;
+                       }
+<St_PlantUML>{CMD}{CMD} {
                          g_token->verb+=yytext;
                        }
 <St_Title>"\""         { // quoted title
