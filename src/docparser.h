@@ -508,6 +508,7 @@ class DocVerbatim : public DocNode
     QCString width() const       { return m_width; }
     QCString height() const      { return m_height; }
     QCString engine() const      { return m_engine; }
+    bool useBitmap() const       { return m_useBitmap; }
     const DocNodeList &children() const { return m_children; }
     DocNodeList &children()      { return m_children; }
     QCString srcFile() const     { return m_srcFile; }
@@ -516,6 +517,7 @@ class DocVerbatim : public DocNode
     void setWidth(const QCString &w)  { m_width=w;  }
     void setHeight(const QCString &h) { m_height=h; }
     void setEngine(const QCString &e) { m_engine=e; }
+    void setUseBitmap(const bool &u)  { m_useBitmap=u; }
     void setLocation(const QCString &file,int line) { m_srcFile=file; m_srcLine=line; }
 
   private:
@@ -530,6 +532,7 @@ class DocVerbatim : public DocNode
     QCString  m_width;
     QCString  m_height;
     QCString  m_engine;
+    bool      m_useBitmap=false; // some PlantUML engines cannot output data in EPS format so bitmap format is required
     DocNodeList m_children;
     QCString  m_srcFile;
     int       m_srcLine = -1;

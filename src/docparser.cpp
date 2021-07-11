@@ -5567,8 +5567,30 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
         doctokenizerYYsetStatePlantUML();
         retval = doctokenizerYYlex();
-        int line=0;
-        dv->setText(stripLeadingAndTrailingEmptyLines(g_parserContext.token->verb,line));
+        int line = 0;
+        QCString trimmedVerb = stripLeadingAndTrailingEmptyLines(g_parserContext.token->verb,line);
+        if (engine == "ditaa")
+        {
+          dv->setUseBitmap(true);
+        }
+        else if (engine == "uml")
+        {
+           // check on ditaa in first line
+           if (!trimmedVerb.isEmpty())
+           {
+             const char *p = trimmedVerb.data();
+             int i=0;
+             while (*p)
+             {
+               if (*p=='\n') break;
+               i++;
+               p++;
+             }
+             QCString firstLine = trimmedVerb.left(i);
+             if (firstLine.stripWhiteSpace() == "ditaa") dv->setUseBitmap(true);
+           }
+        }
+        dv->setText(trimmedVerb);
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(g_parserContext.fileName,getDoctokinizerLineNr());
