@@ -4915,7 +4915,7 @@ void DocPara::handleImage(const QCString &cmdName)
 }
 
 template<class T>
-void DocPara::handleFile(const QCString &cmdName)
+void DocPara::handleFile(const QCString &cmdName, const char *warnTxt)
 {
   QCString saveCmdName = cmdName;
   int tok=doctokenizerYYlex();
@@ -4938,7 +4938,15 @@ void DocPara::handleFile(const QCString &cmdName)
   T *df = new T(this,name,g_parserContext.context,g_parserContext.fileName,getDoctokinizerLineNr());
   if (df->parse())
   {
-    m_children.push_back(std::unique_ptr<T>(df));
+    if (warnTxt)
+    {
+      warn_doc_error(g_parserContext.fileName,getDoctokinizerLineNr(),warnTxt);
+      delete df;
+    }
+    else
+    {
+      m_children.push_back(std::unique_ptr<T>(df));
+    }
   }
   else
   {
@@ -5468,6 +5476,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_DOT:
       {
+        int startLine = getDoctokinizerLineNr();
         DocVerbatim *dv = new DocVerbatim(this,g_parserContext.context,g_parserContext.token->verb,DocVerbatim::Dot,g_parserContext.isExample,g_parserContext.exampleName);
         doctokenizerYYsetStatePara();
         QCString width,height;
@@ -5478,7 +5487,15 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(g_parserContext.fileName,getDoctokinizerLineNr());
-        m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
+        if (!Config_getBool(HAVE_DOT))
+        {
+          warn_doc_error(g_parserContext.fileName,startLine,"ignoring \\dot command because HAVE_DOT is not set");
+          delete dv;
+        }
+        else
+        {
+          m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
+        }
         if (retval==0) warn_doc_error(g_parserContext.fileName,getDoctokinizerLineNr(),"dot section ended without end marker");
         doctokenizerYYsetStatePara();
       }
@@ -5717,7 +5734,8 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       handleImage(cmdName);
       break;
     case CMD_DOTFILE:
-      handleFile<DocDotFile>(cmdName);
+      handleFile<DocDotFile>(cmdName,
+        Config_getBool(HAVE_DOT) ? NULL : "ignoring \\dotfile command because HAVE_DOT is not set");
       break;
     case CMD_VHDLFLOW:
       handleVhdlFlow();

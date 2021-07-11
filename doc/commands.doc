@@ -2850,6 +2850,8 @@ only copy the detailed documentation, not the brief description.
   By using the command \ref cmdref "\\ref" inside the URL value you can conveniently
   link to an item inside doxygen. Here is an example:
 
+  \note usage of this command requires that \ref cfg_have_dot "HAVE_DOT" is set to \c YES
+
   \note doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
@@ -3057,6 +3059,8 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
+
+  \note usage of this command requires that \ref cfg_have_dot "HAVE_DOT" is set to \c YES
 
   \sa section \ref cmddot "\\dot".
 
