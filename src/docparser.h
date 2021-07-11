@@ -1169,7 +1169,7 @@ class DocPara : public CompAccept<DocPara>
                            int direction);
     void handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type t);
     void handleImage(const QCString &cmdName);
-    template<class T> void handleFile(const QCString &cmdName);
+    template<class T> void handleFile(const QCString &cmdName, const char *warnTxt = NULL);
     void handleInclude(const QCString &cmdName,DocInclude::Type t);
     void handleLink(const QCString &cmdName,bool isJavaLink);
     void handleCite();
