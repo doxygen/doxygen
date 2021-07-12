@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _PRINTDOCVISITOR_H
-#define _PRINTDOCVISITOR_H
+#ifndef PRINTDOCVISITOR_H
+#define PRINTDOCVISITOR_H
 
 #include "docvisitor.h"
 #include "htmlentity.h"

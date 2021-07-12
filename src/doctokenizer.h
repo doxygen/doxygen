@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _DOCTOKENIZER_H
-#define _DOCTOKENIZER_H
+#ifndef DOCTOKENIZER_H
+#define DOCTOKENIZER_H
 
 #include <stdio.h>
 
