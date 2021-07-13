@@ -149,13 +149,13 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
       {
         result=href+"=\"";
         // fake ref node to resolve the url
-        DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
+        std::unique_ptr<IDocParser> parser { createDocParser() };
+        auto df = createRef( *parser.get(), link.mid(5), context );
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
           result += df->file() + Doxygen::htmlFileExtension;
         if (!df->anchor().isEmpty())
           result += "#" + df->anchor();
-        delete df;
         result += "\"";
       }
       else

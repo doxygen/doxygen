@@ -1326,8 +1326,11 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
-                                     QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocRoot>    root   { validatingParseDoc(
+                                       *parser.get(),file,line,def,0,docStr,TRUE,FALSE,
+                                       QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
+                                     };
   TextStream ts;
   switch (g_globals.outputFormat)
   {
@@ -1355,7 +1358,6 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
     result = "";
   else
     result = TemplateVariant(ts.str().c_str(),TRUE);
-  delete root;
   return result;
 }
 

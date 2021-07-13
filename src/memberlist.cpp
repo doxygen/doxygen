@@ -433,17 +433,18 @@ void MemberList::writePlainDeclarations(OutputList &ol,
               ol.endMemberItem();
               if (!md->briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
               {
-                DocRoot *rootNode = validatingParseDoc(
-                    md->briefFile(),md->briefLine(),
-                    cd,md,
-                    md->briefDescription(),
-                    TRUE,FALSE,
-                    QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)
-                    );
+                std::unique_ptr<IDocParser> parser { createDocParser() };
+                std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                                                     md->briefFile(),md->briefLine(),
+                                                     cd,md,
+                                                     md->briefDescription(),
+                                                     TRUE,FALSE,
+                                                     QCString(),TRUE,FALSE,
+                                                     Config_getBool(MARKDOWN_SUPPORT)) };
                 if (rootNode && !rootNode->isEmpty())
                 {
                   ol.startMemberDescription(md->anchor());
-                  ol.writeDoc(rootNode,cd,md);
+                  ol.writeDoc(rootNode.get(),cd,md);
                   if (md->isDetailedSectionLinkable())
                   {
                     ol.disableAllBut(OutputGenerator::Html);
@@ -456,7 +457,6 @@ void MemberList::writePlainDeclarations(OutputList &ol,
                   }
                   ol.endMemberDescription();
                 }
-                delete rootNode;
               }
               ol.endMemberDeclaration(md->anchor(),inheritId);
             }

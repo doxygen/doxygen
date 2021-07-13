@@ -1543,6 +1543,7 @@ void DocTokenizer::pushContext()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("DocTokenizer::pushContext() stack=%zu\n",yyextra->lexerStack.size());
   yyextra->lexerStack.push(
       std::make_unique<DocLexerContext>(
         yyextra->token,YY_START,
@@ -1557,15 +1558,15 @@ bool DocTokenizer::popContext()
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  //printf("DocTokenizer::popContext() stack=%zu\n",yyextra->lexerStack.size());
   if (yyextra->lexerStack.empty()) return FALSE;
   const auto &ctx = yyextra->lexerStack.top();
   yyextra->autoListLevel = ctx->autoListLevel;
   yyextra->inputPos      = ctx->inputPos;
   yyextra->inputString   = ctx->inputString;
 
-  YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
+  yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
   yy_switch_to_buffer(ctx->state, yyscanner);
-  yy_delete_buffer(tmpBuf, yyscanner);
 
   BEGIN(ctx->rule);
   yyextra->lexerStack.pop();
@@ -1575,6 +1576,7 @@ bool DocTokenizer::popContext()
 
 DocTokenizer::DocTokenizer() : p(std::make_unique<Private>())
 {
+  //printf("%p:DocTokenizer::DocTokenizer()\n",(void*)this);
   doctokenizerYYlex_init_extra(&p->extra,&p->yyscanner);
 #ifdef FLEX_DEBUG
   doctokenizerYYset_debug(1,p->yyscanner);
@@ -1583,6 +1585,7 @@ DocTokenizer::DocTokenizer() : p(std::make_unique<Private>())
 
 DocTokenizer::~DocTokenizer()
 {
+  //printf("%p:DocTokenizer::~DocTokenizer()\n",(void*)this);
   doctokenizerYYlex_destroy(p->yyscanner);
 }
 

@@ -7666,9 +7666,8 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
     yyextra->current->section = Entry::VARIABLEDOC_SEC;
 
   // restore original scanner state
-  YY_BUFFER_STATE tmpState = YY_CURRENT_BUFFER;
+  yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
   yy_switch_to_buffer(orgState, yyscanner);
-  yy_delete_buffer(tmpState, yyscanner);
   yyextra->inputString = orgInputString;
   yyextra->inputPosition = orgInputPosition;
 

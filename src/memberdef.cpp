@@ -2476,14 +2476,17 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       /* && !annMemb */
      )
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),
-                getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE,
-                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                                         briefFile(),briefLine(),
+                                         getOuterScope()?getOuterScope():d,
+                                         this,briefDescription(),TRUE,FALSE,
+                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
 
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startMemberDescription(anchor(),inheritId);
-      ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
+      ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
       // for RTF we need to add an extra empty paragraph
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
@@ -2492,7 +2495,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.popGeneratorState();
       ol.endMemberDescription();
     }
-    delete rootNode;
   }
   ol.popGeneratorState();
 
@@ -2502,16 +2504,19 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if ( Config_getBool(BRIEF_MEMBER_DESC)
      )
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),
-                getOuterScope()?getOuterScope():d,this,briefDescription(),TRUE,FALSE,
-                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                                         briefFile(),briefLine(),
+                                         getOuterScope()?getOuterScope():d,
+                                         this,briefDescription(),TRUE,FALSE,
+                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
 
     if (rootNode)
     {
       if (!rootNode->isEmpty() || detailsVisible)
       { // to prevent empty line i n case both are empty
         ol.startMemberDescription(anchor(),inheritId);
-        ol.writeDoc(rootNode,getOuterScope()?getOuterScope():d,this);
+        ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
       }
       if (detailsVisible)
       {
@@ -2527,7 +2532,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         ol.endMemberDescription();
       }
     }
-    delete rootNode;
   }
   ol.popGeneratorState();
 

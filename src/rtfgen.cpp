@@ -641,9 +641,10 @@ void RTFGenerator::endIndexSection(IndexSections is)
         }
         else
         {
-          DocText *root = validatingParseText(projectName);
+          std::unique_ptr<IDocParser> parser { createDocParser() };
+          std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), projectName) };
           m_t << "{\\field\\fldedit {\\*\\fldinst TITLE \\\\*MERGEFORMAT}{\\fldrslt ";
-          writeDoc(root,0,0,0);
+          writeDoc(root.get(),0,0,0);
           m_t << "}}\\par\n";
         }
 
