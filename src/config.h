@@ -80,8 +80,10 @@ namespace Config
    */
   void postProcess(bool clearHeaderAndFooter, bool compare = FALSE);
 
-  /*! Check the validity of the parsed options and correct or warn the user where needed. */
-  void checkAndCorrect();
+  /*! Check the validity of the parsed options and correct or warn the user where needed.
+   * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)
+   */
+  void checkAndCorrect(bool quiet);
 
   /*! Clean up any data */
   void deinit();
