@@ -472,15 +472,14 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_Para>^{ENDLIST}       { /* end list */
                          lineCount(yytext,yyleng);
-                         int dotPos = QCString(yytext).findRev('.');
-                         assert(dotPos!=-1);
+                         size_t dotPos = static_cast<size_t>(QCString(yytext).findRev('.'));
                          yyextra->token->indent     = computeIndent(yytext,dotPos);
                          return TK_ENDLIST;
                        }
 <St_Para>{BLANK}*(\n|"\\ilinebr"){ENDLIST}      { /* end list on next line */
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
-                         int dotPos = text.findRev('.');
+                         size_t dotPos = static_cast<size_t>(text.findRev('.'));
                          yyextra->token->indent = computeIndent(text.data(),dotPos);
                          return TK_ENDLIST;
                        }

@@ -5087,6 +5087,12 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
       t = DocInclude::SnippetDoc;
     }
     tok=m_parser.tokenizer.lex();
+    if (tok!=TK_WHITESPACE)
+    {
+      warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command",
+          qPrint(saveCmdName));
+      return;
+    }
   }
   else if (tok==TK_WORD && m_parser.context.token->name=="[")
   {
@@ -5596,6 +5602,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         {
           m_parser.tokenizer.setStatePlantUMLOpt();
           retval = m_parser.tokenizer.lex();
+          assert(retval==RetVal_OK);
 
           sectionId = m_parser.context.token->sectionId;
           sectionId = sectionId.stripWhiteSpace();
