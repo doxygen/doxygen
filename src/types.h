@@ -32,7 +32,7 @@ enum Specifier    { Normal, Virtual, Pure } ;
 enum MethodTypes  { Method, Signal, Slot, DCOP, Property, Event };
 
 /** Type of member relation */
-enum RelatesType  { Simple, Duplicate, MemberOf };
+enum RelatesType  { Simple, Duplicate, MemberOf, BelongsTo };
 
 /** Kind of member relationship */
 enum Relationship { Member, Related, Foreign };
