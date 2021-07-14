@@ -690,7 +690,7 @@ STopt  [^\n@\\]*
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
                                             yyextra->spaceBeforeCmd = QCString(yytext).left(i);
-                                            if (it->second.spacing==CommandSpacing::Block && !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
+                                            if ((it->second.spacing==CommandSpacing::Block || it->second.spacing==CommandSpacing::XRef) && !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
                                             {
                                               yyextra->briefEndsAtDot=FALSE;
                                               // this command forces the end of brief description
