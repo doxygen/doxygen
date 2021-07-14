@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _RTFDOCVISITOR_H
-#define _RTFDOCVISITOR_H
+#ifndef RTFDOCVISITOR_H
+#define RTFDOCVISITOR_H
 
 #include <iostream>
 

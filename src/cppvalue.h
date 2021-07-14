@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _CPPVALUE_H
-#define _CPPVALUE_H
+#ifndef CPPVALUE_H
+#define CPPVALUE_H
 
 #include <cstdio>
 #include <string>

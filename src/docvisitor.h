@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _DOCVISITOR_H
-#define _DOCVISITOR_H
+#ifndef DOCVISITOR_H
+#define DOCVISITOR_H
 
 #include <memory>
 

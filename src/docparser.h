@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _DOCPARSER_H
-#define _DOCPARSER_H
+#ifndef DOCPARSER_H
+#define DOCPARSER_H
 
 #include <stdio.h>
 #include <vector>

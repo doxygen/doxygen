@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef _DIA_H
-#define _DIA_H
+#ifndef DIA_H
+#define DIA_H
 
 class QCString;
 

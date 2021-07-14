@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _CONSTEXP_H
-#define _CONSTEXP_H
+#ifndef CONSTEXP_H
+#define CONSTEXP_H
 
 #include <string>
 

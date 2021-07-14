@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _LATEXDOCVISITOR_H
-#define _LATEXDOCVISITOR_H
+#ifndef LATEXDOCVISITOR_H
+#define LATEXDOCVISITOR_H
 
 #include <stack>
 

@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _HTMLDOCVISITOR_H
-#define _HTMLDOCVISITOR_H
+#ifndef HTMLDOCVISITOR_H
+#define HTMLDOCVISITOR_H
 
 #include "docvisitor.h"
 #include "qcstring.h"

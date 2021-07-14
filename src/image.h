@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _IMAGE_H
-#define _IMAGE_H
+#ifndef IMAGE_H
+#define IMAGE_H
 
 #include "types.h"
 #include "qcstring.h"

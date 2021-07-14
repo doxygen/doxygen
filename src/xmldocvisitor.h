@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _XMLDOCVISITOR_H
-#define _XMLDOCVISITOR_H
+#ifndef XMLDOCVISITOR_H
+#define XMLDOCVISITOR_H
 
 #include <iostream>
 

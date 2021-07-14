@@ -1,5 +1,5 @@
-#ifndef _MD5LOC_H
-#define _MD5LOC_H
+#ifndef MD5LOC_H
+#define MD5LOC_H
 
 # define UWORD32 unsigned int
 

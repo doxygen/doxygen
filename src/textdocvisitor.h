@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _TEXTDOCVISITOR_H
-#define _TEXTDOCVISITOR_H
+#ifndef TEXTDOCVISITOR_H
+#define TEXTDOCVISITOR_H
 
 #include "qcstring.h"
 #include "docvisitor.h"
