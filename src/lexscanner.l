@@ -889,6 +889,9 @@ NONLopt [^\n]*
 <DocCopyBlock>\n          { // newline
                             yyextra->cCodeBuffer += yytext;
                           }
+<DocCopyBlock>{CMD}{CMD}  {
+                            yyextra->cCodeBuffer += yytext;
+                          }
 <DocCopyBlock>.           { // any other character
                             yyextra->cCodeBuffer += yytext;
                           }
