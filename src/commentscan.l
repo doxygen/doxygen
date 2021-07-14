@@ -1512,8 +1512,10 @@ STopt  [^\n@\\]*
                                             yyextra->commentCount--;
                                             if (yyextra->commentCount<0)
                                             {
+                                              QCString endTag = "end"+yyextra->blockName;
+                                              if (yyextra->blockName=="startuml") endTag="enduml";
                                               warn(yyextra->fileName,yyextra->lineNr,
-                                                 "found */ without matching /* while inside a \\%s block! Perhaps a missing \\end%s?\n",qPrint(yyextra->blockName),qPrint(yyextra->blockName));
+                                                 "found */ without matching /* while inside a \\%s block! Perhaps a missing \\%s?\n",qPrint(yyextra->blockName),qPrint(endTag));
                                             }
                                           }
                                         }
