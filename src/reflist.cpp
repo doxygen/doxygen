@@ -20,6 +20,8 @@
 #include "util.h"
 #include "definition.h"
 #include "config.h"
+#include "language.h"
+#include "message.h"
 
 RefList::RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle) :
        m_listName(listName), m_fileName(convertNameToFile(listName,FALSE,TRUE)),
@@ -43,12 +45,32 @@ RefItem *RefList::find(int itemId)
   return it!=m_lookup.end() ? it->second : nullptr;
 }
 
-bool RefList::isEnabled() const
+bool RefList::isEnabled()
 {
-  if      (m_listName=="todo"       && !Config_getBool(GENERATE_TODOLIST))       return false;
-  else if (m_listName=="test"       && !Config_getBool(GENERATE_TESTLIST))       return false;
-  else if (m_listName=="bug"        && !Config_getBool(GENERATE_BUGLIST))        return false;
-  else if (m_listName=="deprecated" && !Config_getBool(GENERATE_DEPRECATEDLIST)) return false;
+  if (m_listName=="todo")
+  {
+    QCString val = Config_getEnum(GENERATE_TODOLIST).upper();
+    m_position = (val == "POSITION");
+    return (val != "NO");
+  }
+  else if (m_listName=="test")
+  {
+    QCString val = Config_getEnum(GENERATE_TESTLIST).upper();
+    m_position = (val == "POSITION");
+    return (val != "NO");
+  }
+  else if (m_listName=="bug")
+  {
+    QCString val = Config_getEnum(GENERATE_BUGLIST).upper();
+    m_position = (val == "POSITION");
+    return (val != "NO");
+  }
+  else if (m_listName=="deprecated")
+  {
+    QCString val = Config_getEnum(GENERATE_DEPRECATEDLIST).upper();
+    m_position = (val == "POSITION");
+    return (val != "NO");
+  }
   return true;
 }
 
@@ -65,6 +87,8 @@ void RefList::generatePage()
   doc += "<dl class=\"reflist\">";
   QCString lastGroup;
   bool first=true;
+  int lineNr;
+  QCString fileName;
   for (const std::unique_ptr<RefItem> &item : m_entries)
   {
     if (item->name().isEmpty()) continue;
@@ -74,6 +98,7 @@ void RefList::generatePage()
     {
       if (!first)
       {
+        doc += createDefLine(fileName,lineNr);
         doc += "</dd>";
         first=false;
       }
@@ -105,6 +130,7 @@ void RefList::generatePage()
     }
     else
     {
+      doc += createDefLine(fileName,lineNr);
       doc += "<p>";
     }
     doc += " \\anchor ";
@@ -113,6 +139,12 @@ void RefList::generatePage()
     doc += item->text();
     lastGroup = item->group();
     first = false;
+    lineNr = item->lineNr();
+    fileName = item->fileName();
+  }
+  if (!fileName.isEmpty())
+  {
+    doc += createDefLine(fileName,lineNr);
   }
   if (!first)
   {
@@ -124,4 +156,39 @@ void RefList::generatePage()
   {
     addRelatedPage(m_listName,m_pageTitle,doc,m_fileName,1,1,RefItemVector(),0,0,TRUE);
   }
+}
+
+QCString RefList::createDefLine(QCString fileName, int lineNr)
+{
+  if (!m_position) return "";
+  QCString result = "";
+  QCString refText = theTranslator->trDefinedAtLineInSourceFile();
+  int lineMarkerPos = refText.find("@0");
+  int fileMarkerPos = refText.find("@1");
+  if (lineMarkerPos!=-1 && fileMarkerPos!=-1) // should always pass this.
+  {
+    result = "<p><small>";
+    if (lineMarkerPos<fileMarkerPos) // line marker before file marker
+    {
+       result += refText.left(lineMarkerPos);
+       result += QCString().setNum(lineNr);
+       result += refText.mid(lineMarkerPos+2, fileMarkerPos-lineMarkerPos-2);
+       result += stripFromPath(fileName);
+       result += refText.right(refText.length()-(uint)fileMarkerPos-2);
+    }
+    else
+    {
+       result += refText.left(lineMarkerPos);
+       result += stripFromPath(fileName);
+       result += refText.mid(lineMarkerPos+2, fileMarkerPos-lineMarkerPos-2);
+       result += QCString().setNum(lineNr);
+       result += refText.right(refText.length()-(uint)fileMarkerPos-2);
+    }
+    result += "</small>";
+  }
+  else
+  {
+    err("translation error: invalid markers in trDefinedAtLineInSourceFile()\n");
+  }
+  return result;
 }

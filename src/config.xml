@@ -1108,42 +1108,62 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='GENERATE_TODOLIST' defval='1'>
+    <option type='enum' id='GENERATE_TODOLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_TODOLIST tag can be used to enable (\c YES) or
- disable (\c NO) the todo list. This list is created by
+ disable (\c NO) the todo list. When using the value \c POSITION
+ the todo list is enabled and also the place of the item in the source
+ is given. This list is created by
  putting \ref cmdtodo "\\todo" commands in the documentation.
 ]]>
       </docs>
+      <value name="NO"/>
+      <value name="YES" />
+      <value name="POSITION" />
     </option>
-    <option type='bool' id='GENERATE_TESTLIST' defval='1'>
+    <option type='enum' id='GENERATE_TESTLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_TESTLIST tag can be used to enable (\c YES) or
- disable (\c NO) the test list. This list is created by
+ disable (\c NO) the test list. When using the value \c POSITION
+ the test list is enabled and also the place of the item in the source
+ is given. This list is created by
  putting \ref cmdtest "\\test" commands in the documentation.
 ]]>
       </docs>
+      <value name="NO"/>
+      <value name="YES" />
+      <value name="POSITION" />
     </option>
-    <option type='bool' id='GENERATE_BUGLIST' defval='1'>
+    <option type='enum' id='GENERATE_BUGLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_BUGLIST tag can be used to enable (\c YES) or
- disable (\c NO) the bug list. This list is created by
+ disable (\c NO) the bug list. When using the value \c POSITION
+ the todo bug is enabled and also the place of the item in the source
+ is given. This list is created by
  putting \ref cmdbug "\\bug" commands in the documentation.
 ]]>
       </docs>
+      <value name="NO"/>
+      <value name="YES" />
+      <value name="POSITION" />
     </option>
-    <option type='bool' id='GENERATE_DEPRECATEDLIST' defval='1'>
+    <option type='enum' id='GENERATE_DEPRECATEDLIST' defval='YES'>
       <docs>
 <![CDATA[
  The \c GENERATE_DEPRECATEDLIST tag can be used to enable (\c YES) or
- disable (\c NO) the deprecated list. This list is created by
+ disable (\c NO) the deprecated list. When using the value \c POSITION
+ the deprecated list is enabled and also the place of the item in the source
+ is given. This list is created by
  putting \ref cmddeprecated "\\deprecated"
  commands in the documentation.
 ]]>
       </docs>
+      <value name="NO"/>
+      <value name="YES" />
+      <value name="POSITION" />
     </option>
     <option type='list' id='ENABLED_SECTIONS' format='string'>
       <docs>

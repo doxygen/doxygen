@@ -40,6 +40,7 @@ class RefItem
     void setArgs  (const QCString &args)   { m_args   = args;   }
     void setGroup (const QCString &group)  { m_group  = group;  }
     void setScope (const Definition *scope) { m_scope  = scope;  }
+    void setPosition (const QCString fileName, const int lineNr) { m_fileName = fileName; m_lineNr = lineNr;}
 
     QCString text()     const { return m_text;   }
     QCString anchor()   const { return m_anchor; }
@@ -51,6 +52,8 @@ class RefItem
     int id()            const { return m_id;     }
     RefList *list()     const { return m_list;   }
     const Definition *scope() const { return m_scope;  }
+    QCString fileName() const { return m_fileName;}
+    int lineNr()        const { return m_lineNr; }
 
   private:
     int m_id = 0;              //!< unique identifier for this item within its list
@@ -62,6 +65,8 @@ class RefItem
     QCString m_title;          //!< display name of the entity
     QCString m_args;           //!< optional arguments for the entity (if function)
     QCString m_group;          //!< group id used to combine item under a single header
+    QCString m_fileName;       //!< file name of first occurrence of this ref
+    int m_lineNr = -1;         //!< line number of first occurrence of this ref
     const Definition *m_scope = 0;   //!< scope to use for references.
 };
 
@@ -84,7 +89,7 @@ class RefList
      *  @param secTitle String representing the title of the section.
      */
     RefList(const QCString &listName, const QCString &pageTitle, const QCString &secTitle);
-    bool isEnabled() const;
+    bool isEnabled();
 
     /*! Adds a new item to the list.
      *  @returns A unique id for this item.
@@ -105,7 +110,10 @@ class RefList
     void generatePage();
 
   private:
+    QCString createDefLine(QCString fileName, int lineNr);
+
     int m_id = 0;
+    bool m_position = false; //!< signal whether or not the POSITION setting is used
     QCString m_listName;
     QCString m_fileName;
     QCString m_pageTitle;
