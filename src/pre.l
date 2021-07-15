@@ -313,26 +313,26 @@ static QCString escapeAt(const QCString &text);
 static QCString extractTrailingComment(const QCString &s);
 static char resolveTrigraph(char c);
 
-// statefull functions
-static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len);
+// stateful functions
+static inline void  outputArray(yyscan_t yyscanner,const char *a,yy_size_t len);
 static inline void outputString(yyscan_t yyscanner,const QCString &s);
-static inline void  outputChar(yyscan_t yyscanner,char c);
+static inline void   outputChar(yyscan_t yyscanner,char c);
 static inline void outputSpaces(yyscan_t yyscanner,char *s);
 static inline void extraSpacing(yyscan_t yyscanner);
-static QCString    expandMacro(yyscan_t yyscanner,const QCString &name);
-static void    readIncludeFile(yyscan_t yyscanner,const QCString &inc);
-static void          incrLevel(yyscan_t yyscanner);
-static void          decrLevel(yyscan_t yyscanner);
-static void        setCaseDone(yyscan_t yyscanner,bool value);
-static bool      otherCaseDone(yyscan_t yyscanner);
-static bool  computeExpression(yyscan_t yyscanner,const QCString &expr);
-static void   startCondSection(yyscan_t yyscanner,const QCString &sectId);
-static void     endCondSection(yyscan_t yyscanner);
-static void addMacroDefinition(yyscan_t yyscanner);
-static void          addDefine(yyscan_t yyscanner);
-static void        setFileName(yyscan_t yyscanner,const QCString &name);
-static yy_size_t        yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
-static Define *      isDefined(yyscan_t yyscanner,const QCString &name);
+static QCString     expandMacro(yyscan_t yyscanner,const QCString &name);
+static void     readIncludeFile(yyscan_t yyscanner,const QCString &inc);
+static void           incrLevel(yyscan_t yyscanner);
+static void           decrLevel(yyscan_t yyscanner);
+static void         setCaseDone(yyscan_t yyscanner,bool value);
+static bool       otherCaseDone(yyscan_t yyscanner);
+static bool   computeExpression(yyscan_t yyscanner,const QCString &expr);
+static void    startCondSection(yyscan_t yyscanner,const QCString &sectId);
+static void      endCondSection(yyscan_t yyscanner);
+static void  addMacroDefinition(yyscan_t yyscanner);
+static void           addDefine(yyscan_t yyscanner);
+static void         setFileName(yyscan_t yyscanner,const QCString &name);
+static yy_size_t         yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
+static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
 
 /* ----------------------------------------------------------------- */
 
@@ -413,7 +413,12 @@ WSopt [ \t\r]*
 <*>"??"[=/'()!<>-]			{ // Trigraph
   					  unput(resolveTrigraph(yytext[2]));
   					}
-<Start>^{B}*"#"				{ BEGIN(Command); yyextra->yyColNr+=(int)yyleng; yyextra->yyMLines=0; yyextra->potentialDefine = yytext;}
+<Start>^{B}*"#"				{
+                                          yyextra->yyColNr+=(int)yyleng;
+                                          yyextra->yyMLines=0;
+                                          yyextra->potentialDefine=yytext;
+                                          BEGIN(Command); 
+                                        }
 <Start>^("%top{"|"%{")                  {
                                           if (getLanguageFromFileName(yyextra->yyFileName)!=SrcLangExt_Lex) REJECT
                                           outputArray(yyscanner,yytext,yyleng);
@@ -827,8 +832,12 @@ WSopt [ \t\r]*
 					  yyextra->yyLineNr++;
 					}
 <IgnoreLine>.
-<Command>\t                             { yyextra->potentialDefine += '\t';yyextra->yyColNr+=(int)yyleng;}
-<Command>.                              { yyextra->potentialDefine += ' ';yyextra->yyColNr+=(int)yyleng;}
+<Command>\t                             { yyextra->potentialDefine += '\t';
+                                          yyextra->yyColNr+=(int)yyleng;
+                                        }
+<Command>.                              { yyextra->potentialDefine += ' ';
+                                          yyextra->yyColNr+=(int)yyleng;
+                                        }
 <UndefName>{ID}				{
   					  Define *def;
   					  if ((def=isDefined(yyscanner,yytext))
@@ -1027,16 +1036,16 @@ WSopt [ \t\r]*
                                           yyextra->argMap.clear();
 					  yyextra->defArgs = -1;
                                           yyextra->defArgsStr.resize(0);
-					  yyextra->defName = yytext;
-					  yyextra->defName = yyextra->defName.left(yyextra->defName.length()-1).stripWhiteSpace();
+					  yyextra->defName = QCString(yytext).left(yyleng-1).stripWhiteSpace();
 					  yyextra->defVarArgs = FALSE;
 					  //printf("Guard check: %s!=%s || %d\n",
 					  //    qPrint(yyextra->defName),qPrint(yyextra->lastGuardName),yyextra->expectGuard);
 					  if (yyextra->curlyCount>0 || yyextra->defName!=yyextra->lastGuardName || !yyextra->expectGuard)
 					  { // define may appear in the output
-					    QCString tmp=yyextra->potentialDefine+yyextra->defName+
-                                                         substitute(QCString(yytext).mid(yyextra->defName.length()),"1"," ");
-					    outputString(yyscanner,tmp);
+					    QCString def = yyextra->potentialDefine +
+                                                           yyextra->defName         ;
+					    outputString(yyscanner,def);
+                                            outputSpaces(yyscanner,yytext+yyextra->defName.length());
 					    yyextra->quoteArg=FALSE;
 					    yyextra->insideComment=FALSE;
 					    yyextra->lastGuardName.resize(0);
@@ -1065,8 +1074,8 @@ WSopt [ \t\r]*
 					  //    qPrint(yyextra->defName),qPrint(yyextra->lastGuardName),yyextra->expectGuard);
 					  if (yyextra->curlyCount>0 || yyextra->defName!=yyextra->lastGuardName || !yyextra->expectGuard)
 					  { // define may appear in the output
-					    QCString tmp=yyextra->potentialDefine+yyextra->defName;
-					    outputString(yyscanner,tmp);
+					    QCString def = yyextra->potentialDefine + yyextra->defName;
+					    outputString(yyscanner,def);
 					    yyextra->quoteArg=FALSE;
 					    yyextra->insideComment=FALSE;
 					    if (yyextra->insideCS) yyextra->defText="1"; // for C#, use "1" as define text
@@ -1090,8 +1099,10 @@ WSopt [ \t\r]*
 					  yyextra->defLitText.resize(0);
 					  yyextra->defName = yytext;
 					  yyextra->defVarArgs = FALSE;
-					  QCString tmp=yyextra->potentialDefine+yyextra->defName+yyextra->defArgsStr;
-					  outputString(yyscanner,tmp);
+					  QCString def = yyextra->potentialDefine +
+                                                         yyextra->defName         +
+                                                         yyextra->defArgsStr      ;
+					  outputString(yyscanner,def);
 					  yyextra->quoteArg=FALSE;
 					  yyextra->insideComment=FALSE;
 					  BEGIN(DefineText);
@@ -1101,14 +1112,17 @@ WSopt [ \t\r]*
 					  yyextra->defContinue = true;
 					  yyextra->yyLineNr++;
                                         }
-<DefineArg>{B}*                         { yyextra->defExtraSpacing+=yytext;}
+<DefineArg>{B}*                         { yyextra->defExtraSpacing+=yytext; }
 <DefineArg>","{B}*			{ yyextra->defArgsStr+=yytext; }
 <DefineArg>"("{B}*                      { yyextra->defArgsStr+=yytext; }
 <DefineArg>{B}*")"{B}*			{
                                           extraSpacing(yyscanner);
                                           yyextra->defArgsStr+=yytext;
-					  QCString tmp=yyextra->potentialDefine+yyextra->defName+yyextra->defArgsStr+yyextra->defExtraSpacing;
-					  outputString(yyscanner,tmp);
+					  QCString def = yyextra->potentialDefine +
+                                                         yyextra->defName         +
+                                                         yyextra->defArgsStr      +
+                                                         yyextra->defExtraSpacing ;
+					  outputString(yyscanner,def);
 					  yyextra->quoteArg=FALSE;
 					  yyextra->insideComment=FALSE;
   					  BEGIN(DefineText);
@@ -1522,9 +1536,18 @@ WSopt [ \t\r]*
 					  yyextra->lastGuardName.resize(0);
 					  BEGIN(Start);
   					}
-<DefineText>{B}*			{ outputString(yyscanner,yytext);yyextra->defText += ' '; yyextra->defLitText+=yytext; }
-<DefineText>{B}*"##"{B}*		{ outputString(yyscanner,substitute(yytext,"##","  "));yyextra->defText += "##"; yyextra->defLitText+=yytext; }
-<DefineText>"@"				{ outputString(yyscanner,substitute(yytext,"@@","  "));yyextra->defText += "@@"; yyextra->defLitText+=yytext; }
+<DefineText>{B}*			{ outputString(yyscanner,yytext);
+                                          yyextra->defText += ' ';
+                                          yyextra->defLitText+=yytext;
+                                        }
+<DefineText>{B}*"##"{B}*		{ outputString(yyscanner,substitute(yytext,"##","  "));
+                                          yyextra->defText += "##";
+                                          yyextra->defLitText+=yytext;
+                                        }
+<DefineText>"@"				{ outputString(yyscanner,substitute(yytext,"@@","  "));
+                                          yyextra->defText += "@@";
+                                          yyextra->defLitText+=yytext;
+                                        }
 <DefineText>\"				{
 					  outputChar(yyscanner,' ');
                                           yyextra->defText += *yytext;
@@ -1543,26 +1566,43 @@ WSopt [ \t\r]*
   					    BEGIN(SkipSingleQuote);
 					  }
 					}
-<SkipDoubleQuote>{CPPC}[/]?		{ outputSpaces(yyscanner,yytext);yyextra->defText += yytext; yyextra->defLitText+=yytext; }
-<SkipDoubleQuote>{CCS}[*]?		{ outputSpaces(yyscanner,yytext);yyextra->defText += yytext; yyextra->defLitText+=yytext; }
+<SkipDoubleQuote>{CPPC}[/]?		{ outputSpaces(yyscanner,yytext);
+                                          yyextra->defText += yytext;
+                                          yyextra->defLitText+=yytext;
+                                        }
+<SkipDoubleQuote>{CCS}[*]?		{ outputSpaces(yyscanner,yytext);
+                                          yyextra->defText += yytext;
+                                          yyextra->defLitText+=yytext;
+                                        }
 <SkipDoubleQuote>\"			{
 					  outputChar(yyscanner,' ');
-  					  yyextra->defText += *yytext; yyextra->defLitText+=yytext;
+  					  yyextra->defText += *yytext;
+                                          yyextra->defLitText+=yytext;
 					  BEGIN(DefineText);
   					}
 <SkipSingleQuote,SkipDoubleQuote>\\.	{
                                           outputSpaces(yyscanner,yytext);
-                                          yyextra->defText += yytext; yyextra->defLitText+=yytext;
+                                          yyextra->defText += yytext;
+                                          yyextra->defLitText+=yytext;
 					}
 <SkipSingleQuote>\'			{
 					  outputChar(yyscanner,' ');
-  					  yyextra->defText += *yytext; yyextra->defLitText+=yytext;
+  					  yyextra->defText += *yytext;
+                                          yyextra->defLitText+=yytext;
 					  BEGIN(DefineText);
   					}
-<SkipDoubleQuote,SkipSingleQuote>\t	{ outputChar(yyscanner,'\t');yyextra->defText += *yytext; yyextra->defLitText+=yytext; }
-<SkipDoubleQuote,SkipSingleQuote>.	{ outputChar(yyscanner,' ');yyextra->defText += *yytext; yyextra->defLitText+=yytext; }
-<DefineText>\t				{ outputChar(yyscanner,'\t');yyextra->defText += *yytext; yyextra->defLitText+=yytext; }
-<DefineText>.				{ outputChar(yyscanner,' ');yyextra->defText += *yytext; yyextra->defLitText+=yytext; }
+<SkipDoubleQuote,SkipSingleQuote>.	{ outputChar(yyscanner,yytext[0]);
+                                          yyextra->defText    += *yytext;
+                                          yyextra->defLitText += *yytext;
+                                        }
+<DefineText>\t				{ outputChar(yyscanner,'\t');
+                                          yyextra->defText    += *yytext;
+                                          yyextra->defLitText += *yytext;
+                                        }
+<DefineText>.				{ outputChar(yyscanner,' ');
+                                          yyextra->defText    += *yytext;
+                                          yyextra->defLitText += *yytext;
+                                        }
 <<EOF>>					{
                                           DBG_CTX((stderr,"End of include file\n"));
 					  //printf("Include stack depth=%d\n",yyextra->includeStack.size());
@@ -2890,7 +2930,7 @@ static inline void extraSpacing(yyscan_t yyscanner)
 {
   struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->defContinue) return;
-  for (unsigned int i = 0; i < yyleng; i++)
+  for (int i=0; i< (int)yyleng; i++)
   {
     if (yytext[i] == '\t')
       yyextra->defExtraSpacing+='\t';
