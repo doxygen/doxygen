@@ -40,7 +40,8 @@
 
 #include <assert.h>
 
-#define YY_NO_INPUT 1
+// yyinput used to assign afterMarker
+//#define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
 
 #define ADDCHAR(c)    yyextra->outBuf->addChar(c)
@@ -83,6 +84,7 @@ struct commentcnvYY_state
   int      lastCommentContext = 0;
   bool     inSpecialComment = FALSE;
   bool     inRoseComment= FALSE;
+  bool     afterMarker = FALSE;
   int      stringContext = 0;
   int      charContext = 0;
   int      javaBlock = 0;
@@ -311,6 +313,12 @@ SLASHopt [/]*
 				       yyextra->inSpecialComment=TRUE;
 				       //BEGIN(SComment); 
 				       yyextra->readLineCtx=SComment;
+
+				       // remember the after-mark, compare later on replaceComment()
+				       int nextChar = yyinput(yyscanner);
+				       yyextra->afterMarker = nextChar == '<';
+				       unput(nextChar);
+
 				       BEGIN(ReadLine);
 				     }
                                    }
@@ -1140,7 +1148,15 @@ static void replaceComment(yyscan_t yyscanner,int offset)
   {
     //printf("replaceComment(%s)\n",yytext);
     int i=computeIndent(&yytext[offset]);
-    if (i==yyextra->blockHeadCol)
+
+    // ignore C++ comment alignment
+    // plus extra check for the '<' after-marker (do not pair ///< with plain ///)
+
+    bool afterMarker = yytext[yyleng-1] == '<';
+    bool ignoreCppAlignment = Config_getBool(IGNORE_CPP_ALIGNMENT)
+                              && afterMarker == yyextra->afterMarker;
+
+    if (ignoreCppAlignment || i==yyextra->blockHeadCol)
     {
       replaceCommentMarker(yyscanner,yytext,(int)yyleng);
     }
