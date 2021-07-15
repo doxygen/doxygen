@@ -1003,6 +1003,14 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SHOW_HEADERFILE' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c SHOW_HEADERFILE tag is set to \c YES then the documentation
+ for a class will show which file needs to be included to use the class.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='SHOW_INCLUDE_FILES' defval='1'>
       <docs>
 <![CDATA[
