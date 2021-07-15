@@ -89,6 +89,7 @@ struct defargsYY_state
   QCString         curTypeConstraint;
   QCString         extraTypeChars;
   int              argRoundCount = 0;
+  int              argSquareCount = 0;
   int              argSharpCount = 0;
   int              argCurlyCount = 0;
   int              readArgContext = 0;
@@ -132,6 +133,7 @@ CPPC  "/\/"
 %x      CopyRawString
 %x	CopyArgRound
 %x	CopyArgRound2
+%x	CopyArgSquare
 %x	CopyArgSharp
 %x	CopyArgCurly
 %x	ReadFuncArgType
@@ -209,7 +211,7 @@ CPPC  "/\/"
 <ReadFuncArgType>"<="|">="|"->"|">>"|"<<" { // handle operators in defargs
   					  yyextra->curArgTypeName+=yytext;
   					}
-<ReadFuncArgType,ReadFuncArgDef>[({<]	{	 
+<ReadFuncArgType,ReadFuncArgDef>[({<\[]	{	 
 					  if (YY_START==ReadFuncArgType)
 					  {
 					    yyextra->curArgTypeName+=*yytext;
@@ -225,6 +227,11 @@ CPPC  "/\/"
 					  {
 					    yyextra->argRoundCount=0; 
 					    BEGIN( CopyArgRound ); 
+					  }
+					  else if (*yytext=='[')
+					  {
+					    yyextra->argSquareCount=0; 
+					    BEGIN( CopyArgSquare ); 
 					  }
 					  else if (*yytext=='{')
 					  {
@@ -260,6 +267,26 @@ CPPC  "/\/"
 <CopyArgRound>")"/{B}*                  {
 					  *yyextra->copyArgValue += *yytext;
 					  if (yyextra->argRoundCount>0) yyextra->argRoundCount--;
+					  else BEGIN( yyextra->readArgContext );
+                                        }
+<CCopyArgSquare>"["		{
+  					  yyextra->argSquareCount++;
+					  *yyextra->copyArgValue += *yytext;
+  					}
+<CopyArgSquare>"]"({B}*{ID})* {
+					  *yyextra->copyArgValue += yytext;
+					  if (yyextra->argSquareCount>0) 
+					  {
+					    yyextra->argRoundCount--;
+					  }
+					  else 
+					  {
+					    BEGIN( yyextra->readArgContext );
+					  }
+  					}
+<CopyArgSquare>"]"/{B}*                  {
+					  *yyextra->copyArgValue += *yytext;
+					  if (yyextra->argSquareCount>0) yyextra->argSquareCount--;
 					  else BEGIN( yyextra->readArgContext );
                                         }
 <CopyArgSharp>"<<"                      {
@@ -494,10 +521,10 @@ CPPC  "/\/"
 <ReadFuncArgDef,CopyArgString,CopyRawString>.		{
 					  yyextra->curArgDefValue+=*yytext;
   					}
-<CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>{ID}  {
+<CopyArgRound,CopyArgRound2,CopyArgSquare,CopyArgSharp,CopyArgCurly>{ID}  {
 					  *yyextra->copyArgValue+=yytext;
 					}
-<CopyArgRound,CopyArgRound2,CopyArgSharp,CopyArgCurly>.  {
+<CopyArgRound,CopyArgRound2,CopyArgSquare,CopyArgSharp,CopyArgCurly>.  {
 					  *yyextra->copyArgValue += *yytext;
 					}
 <ReadTypeConstraint>[,)>]               {

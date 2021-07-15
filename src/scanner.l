@@ -136,6 +136,7 @@ struct scannerYY_state
   bool             insideProtocolList = false;
 
   int              argRoundCount = 0;
+  int              argSquareCount = 0;
   int              argSharpCount = 0;
   int              currentArgumentContext = 0;
   int              lastCopyArgStringContext = 0;
@@ -403,6 +404,7 @@ NONLopt [^\n]*
 %x      CopyArgString
 %x      CopyArgPHPString
 %x      CopyArgRound
+%x      CopyArgSquare
 %x      CopyArgSharp
 %x      CopyArgComment
 %x      CopyArgCommentLine
@@ -4382,7 +4384,7 @@ NONLopt [^\n]*
 
   /*- Function argument reading rules ---------------------------------------*/
 
-<ReadFuncArgType>[^ \/\r\t\n\)\(\"\'#]+ { *yyextra->copyArgString+=yytext;
+<ReadFuncArgType>[^ \/\r\t\n\[\]\)\(\"\'#]+ { *yyextra->copyArgString+=yytext;
                                           yyextra->fullArgString+=yytext;
                                         }
 <CopyArgString,CopyArgPHPString>[^\n\\\"\']+            { *yyextra->copyArgString+=yytext;
@@ -4392,12 +4394,16 @@ NONLopt [^\n]*
                                           *yyextra->copyArgString+=yytext;
                                           yyextra->fullArgString+=yytext;
                                         }
+<CopyArgSquare>[^\/\n\]\[\"\']+          {
+                                          *yyextra->copyArgString+=yytext;
+                                          yyextra->fullArgString+=yytext;
+                                        }
 <ReadFuncArgType,ReadTempArgs>{BN}*     {
                                           *yyextra->copyArgString+=" ";
                                           yyextra->fullArgString+=" ";
                                           lineCount(yyscanner);
                                         }
-<ReadFuncArgType,CopyArgRound,CopyArgSharp,ReadTempArgs>{RAWBEGIN}      {
+<ReadFuncArgType,CopyArgRound,CopyArgSquare,CopyArgSharp,ReadTempArgs>{RAWBEGIN}      {
                                           yyextra->delimiter = yytext+2;
                                           yyextra->delimiter=yyextra->delimiter.left(yyextra->delimiter.length()-1);
                                           yyextra->lastRawStringContext = YY_START;
@@ -4406,11 +4412,19 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(RawString);
                                         }
-<ReadFuncArgType,CopyArgRound,CopyArgSharp,ReadTempArgs>\"      {
+<ReadFuncArgType,CopyArgRound,CopyArgSquare,CopyArgSharp,ReadTempArgs>\"      {
                                           *yyextra->copyArgString+=*yytext;
                                           yyextra->fullArgString+=*yytext;
                                           yyextra->lastCopyArgStringContext = YY_START;
                                           BEGIN( CopyArgString );
+                                        }
+<ReadFuncArgType>"["                    {
+                                          if (!yyextra->insidePHP) REJECT;
+                                          *yyextra->copyArgString+=*yytext;
+                                          yyextra->fullArgString+=*yytext;
+                                          yyextra->argSquareCount=0;
+                                          yyextra->lastCopyArgContext = YY_START;
+                                          BEGIN( CopyArgSquare );
                                         }
 <ReadFuncArgType,ReadTempArgs>"("       {
                                           *yyextra->copyArgString+=*yytext;
@@ -4608,6 +4622,19 @@ NONLopt [^\n]*
                                           else
                                             BEGIN( yyextra->lastCopyArgContext );
                                         }
+<CopyArgSquare>"["                       {
+                                          yyextra->argSquareCount++;
+                                          *yyextra->copyArgString+=*yytext;
+                                          yyextra->fullArgString+=*yytext;
+                                        }
+<CopyArgSquare>"]"                       {
+                                          *yyextra->copyArgString+=*yytext;
+                                          yyextra->fullArgString+=*yytext;
+                                          if (yyextra->argSquareCount>0)
+                                            yyextra->argSquareCount--;
+                                          else
+                                            BEGIN( yyextra->lastCopyArgContext );
+                                        }
 <CopyArgSharp>"("                       {
                                           *yyextra->copyArgString+=*yytext;
                                           yyextra->fullArgString+=*yytext;
@@ -4649,7 +4676,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=*yytext;
                                           BEGIN( yyextra->lastCopyArgStringContext );
                                         }
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>{CHARLIT}     {
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSquare,CopyArgSharp>{CHARLIT}     {
                                           if (yyextra->insidePHP)
                                           {
                                             REJECT;
@@ -4660,7 +4687,7 @@ NONLopt [^\n]*
                                             yyextra->fullArgString+=yytext;
                                           }
                                         }
-<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSharp>\'     {
+<ReadFuncArgType,ReadTempArgs,CopyArgRound,CopyArgSquare,CopyArgSharp>\'     {
                                           *yyextra->copyArgString+=yytext;
                                           yyextra->fullArgString+=yytext;
                                           if (yyextra->insidePHP)
@@ -4669,12 +4696,12 @@ NONLopt [^\n]*
                                             BEGIN(CopyArgPHPString);
                                           }
                                         }
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSharp>\n  {
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>\n  {
                                           lineCount(yyscanner);
                                           *yyextra->copyArgString+=*yytext;
                                           yyextra->fullArgString+=*yytext;
                                         }
-<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSharp>.          {
+<ReadFuncArgType,ReadTempArgs,CopyArgString,CopyArgPHPString,CopyArgRound,CopyArgSquare,CopyArgSharp>.          {
                                           *yyextra->copyArgString+=*yytext;
                                           yyextra->fullArgString+=*yytext;
                                         }
