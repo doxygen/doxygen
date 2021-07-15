@@ -5616,8 +5616,19 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         m_parser.defaultHandleTitleAndSize(CMD_STARTUML,dv,dv->children(),width,height);
         m_parser.tokenizer.setStatePlantUML();
         retval = m_parser.tokenizer.lex();
-        int line=0;
-        dv->setText(stripLeadingAndTrailingEmptyLines(m_parser.context.token->verb,line));
+        int line = 0;
+        QCString trimmedVerb = stripLeadingAndTrailingEmptyLines(m_parser.context.token->verb,line);
+        if (engine == "ditaa")
+        {
+          dv->setUseBitmap(true);
+        }
+        else if (engine == "uml")
+        {
+          int i = trimmedVerb.find('\n');
+          QCString firstLine = i==-1 ? trimmedVerb : trimmedVerb.left(i);
+          if (firstLine.stripWhiteSpace() == "ditaa") dv->setUseBitmap(true);
+        }
+        dv->setText(trimmedVerb);
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(m_parser.context.fileName,m_parser.tokenizer.getLineNr());
