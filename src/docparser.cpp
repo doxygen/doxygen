@@ -5575,20 +5575,13 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         }
         else if (engine == "uml")
         {
-           // check on ditaa in first line
-           if (!trimmedVerb.isEmpty())
-           {
-             const char *p = trimmedVerb.data();
-             int i=0;
-             while (*p)
-             {
-               if (*p=='\n') break;
-               i++;
-               p++;
-             }
-             QCString firstLine = trimmedVerb.left(i);
-             if (firstLine.stripWhiteSpace() == "ditaa") dv->setUseBitmap(true);
-           }
+          int i = trimmedVerb.find('\n');
+          QCString firstLine;
+          if (i == -1)
+            firstLine = trimmedVerb;
+          else
+            firstLine = trimmedVerb.left(i);
+          if (firstLine.stripWhiteSpace() == "ditaa") dv->setUseBitmap(true);
         }
         dv->setText(trimmedVerb);
         dv->setWidth(width);
