@@ -2237,6 +2237,8 @@ NONLopt [^\n]*
                                           else if (yyextra->insideCpp && qstrcmp(yytext,"decltype")==0)
                                           {
                                             // C++11 decltype(x)
+                                            addType(yyscanner);
+                                            if (!yyextra->current->type.isEmpty()) yyextra->current->type+=' ';
                                             yyextra->current->type+=yytext;
                                             BEGIN(DeclType);
                                           }
