@@ -344,7 +344,8 @@ static Define *       isDefined(yyscan_t yyscanner,const QCString &name);
 
 %}
 
-ID      [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+IDSTART [a-z_A-Z\x80-\xFF]
+ID      {IDSTART}[a-z_A-Z0-9\x80-\xFF]*
 B       [ \t]
 Bopt    {B}*
 BN      [ \t\r\n]
@@ -1489,6 +1490,25 @@ WSopt [ \t\r]*
                                         }
 <DefineText>\n                          {
                                           QCString comment=extractTrailingComment(yyextra->defLitText);
+                                          yyextra->defText = yyextra->defText.stripWhiteSpace();
+                                          if (yyextra->defText.startsWith("##"))
+                                          {
+                                            warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                 "'##' cannot occur at the beginning of a macro definition '%s': '%s'",
+                                                 qPrint(yyextra->defName),qPrint(yyextra->defLitText.stripWhiteSpace()));
+                                          }
+                                          else if (yyextra->defText.endsWith("##"))
+                                          {
+                                            warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                 "'##' cannot occur at the end of a macro definition '%s': '%s'",
+                                                 qPrint(yyextra->defName),qPrint(yyextra->defLitText.stripWhiteSpace()));
+                                          }
+                                          else if (yyextra->defText.endsWith("#"))
+                                          {
+                                            warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                 "expected formal parameter after # in macro definition '%s': '%s'",
+                                                 qPrint(yyextra->defName),qPrint(yyextra->defLitText.stripWhiteSpace()));
+                                          }
                                           yyextra->defLitText+=yytext;
                                           if (!comment.isEmpty())
                                           {
