@@ -269,6 +269,10 @@ CPPC  "/\/"
 					  if (yyextra->argRoundCount>0) yyextra->argRoundCount--;
 					  else BEGIN( yyextra->readArgContext );
                                         }
+<CopyArgSquare>"["                      {
+                                           yyextra->argSquareCount++;
+                                           *yyextra->copyArgValue += *yytext;
+                                        }
 <CopyArgSquare>"]"({B}*{ID})* {
 					  *yyextra->copyArgValue += yytext;
 					  if (yyextra->argSquareCount>0) 
