@@ -1441,7 +1441,7 @@ WSopt [ \t\r]*
 <RemoveCPPComment>{CPPC}
 <RemoveCPPComment>[^\x06\n]+
 <RemoveCPPComment>.
-<DefineText>"#"                         {
+<DefineText>"#"/{IDSTART}               {
                                           outputChar(yyscanner,' ');
                                           yyextra->quoteArg=TRUE;
                                           yyextra->defLitText+=yytext;
