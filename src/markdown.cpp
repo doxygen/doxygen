@@ -2309,6 +2309,12 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
   TRACE(data);
   QCString lang = lng;
   if (!lang.isEmpty() && lang.at(0)=='.') lang=lang.mid(1);
+  while (*data==' ' || *data=='\t')
+  {
+    m_out.addChar(*data++);
+    blockStart--;
+    blockEnd--;
+  }
   m_out.addStr("@code");
   if (!lang.isEmpty())
   {

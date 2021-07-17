@@ -2413,6 +2413,11 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
 static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
   if (optList.empty())
   {
     addOutput(yyscanner,"@"+s+" ");
