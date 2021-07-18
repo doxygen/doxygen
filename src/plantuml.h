@@ -89,8 +89,6 @@ class PlantumlManager
     ContentMap m_pngPlantumlContent;               // use circular queue for using multi-processor (multi threading)
     ContentMap m_svgPlantumlContent;
     ContentMap m_epsPlantumlContent;
-    QCString   m_cachedPlantumlAllContent;         // read from CACHE_FILENAME file
-    QCString   m_currentPlantumlAllContent;        // processing plantuml then write it into CACHE_FILENAME to reuse the next time as cache information
 };
 
 #endif

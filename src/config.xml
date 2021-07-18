@@ -3906,8 +3906,7 @@ UML notation for the relationships.
 If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate files that are used to generate the various graphs.
  <br>Note:
-This setting is not only used for dot files but also for msc and plantuml
-temporary files.
+This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
