@@ -22,7 +22,6 @@
 #include "containers.h"
 #include "qcstring.h"
 
-#define CACHE_FILENAME          "inline_umlgraph_cache_all.pu"
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
 
