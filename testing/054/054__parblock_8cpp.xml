@@ -170,8 +170,8 @@
                 <parameterdescription>
                   <para>
                     <parblock>
-                      <para>First paragraph of the param description. <verbatim>                  Second paragraph of the param description.
-</verbatim> </para>
+                      <para>First paragraph of the param description.</para>
+                      <para>Second paragraph of the param description. </para>
                     </parblock>
                   </para>
                 </parameterdescription>
