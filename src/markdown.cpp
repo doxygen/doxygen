@@ -263,7 +263,7 @@ static QCString escapeDoubleQuotes(const QCString &s)
     pc=c;
   }
   growBuf.addChar(0);
-  TRACE_RESULT(growBuf.get())
+  TRACE_RESULT(growBuf.get());
   return growBuf.get();
 }
 // escape characters that have a special meaning later on.
