@@ -2542,13 +2542,15 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
 bool MemberDefImpl::isDetailedSectionLinkable() const
 {
-  static bool alwaysDetailedSec = Config_getBool(ALWAYS_DETAILED_SEC);
-  static bool repeatBrief       = Config_getBool(REPEAT_BRIEF);
-  static bool briefMemberDesc   = Config_getBool(BRIEF_MEMBER_DESC);
-  static bool hideUndocMembers  = Config_getBool(HIDE_UNDOC_MEMBERS);
-  static bool extractStatic     = Config_getBool(EXTRACT_STATIC);
+  static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
+  static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
+  static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
+  static bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
+  static bool extractStatic         = Config_getBool(EXTRACT_STATIC);
   static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-  static bool inlineSources     = Config_getBool(INLINE_SOURCES);
+  static bool inlineSources         = Config_getBool(INLINE_SOURCES);
+  static bool sourceBrowser         = Config_getBool(SOURCE_BROWSER);
+  static bool extractAll            = Config_getBool(EXTRACT_ALL);
 
   // the member has details documentation for any of the following reasons
   bool docFilter =
@@ -2584,7 +2586,9 @@ bool MemberDefImpl::isDetailedSectionLinkable() const
          _isReimplements() ||
          (_countReimplementedBy() > 0) ||
          // has user comments
-         Doxygen::userComments
+         Doxygen::userComments ||
+         // has source files and all entities are assumed to be documented
+         (sourceBrowser && extractAll)
          ;
   //
   // this is not a global static or global statics should be extracted
