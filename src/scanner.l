@@ -226,7 +226,6 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
                           const QCString &brief,const QCString &docs);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
-
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -2345,6 +2344,7 @@ NONLopt [^\n]*
                                               BEGIN(FindMembers);
                                             }
                                           }
+                                          yyextra->current->name = yyextra->current->name.removeWhiteSpace();
                                         }
 <StaticAssert>"("                       {
                                           yyextra->lastSkipRoundContext = FindMembers;
@@ -7068,7 +7068,7 @@ static void addType(yyscan_t yyscanner)
   {
     yyextra->current->type += ' ' ;
   }
-  yyextra->current->type += yyextra->current->name ;
+  yyextra->current->type += yyextra->current->name;
   yyextra->current->name.resize(0) ;
   tl=yyextra->current->type.length();
   if( tl>0 && !yyextra->current->args.isEmpty() && yyextra->current->type.at(tl-1)!='.')
