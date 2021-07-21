@@ -241,7 +241,7 @@ inline int isNewline(const char *data)
   // normal newline
   if (data[0] == '\n') return 1;
   // artificial new line from ^^ in ALIASES
-  if (data[0] == '\\' && qstrncmp(data+1,"ilinebr",7)==0) return 8;
+  if (data[0] == '\\' && qstrncmp(data+1,"ilinebr ",7)==0) return data[8]==' ' ? 9 : 8;
   return 0;
 }
 
@@ -2508,15 +2508,54 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
   int size = s.length();
   int i=0,end=0,pi=-1;
   int blockStart,blockEnd,blockOffset;
+  bool newBlock = false;
+  bool insideList = false;
+  int currentIndent = refIndent;
+  int listIndent = refIndent;
   QCString lang;
   while (i<size)
   {
     findEndOfLine(data,size,pi,i,end);
     // line is now found at [i..end)
 
+    int lineIndent=0;
+    while (lineIndent<end && data[i+lineIndent]==' ') lineIndent++;
+    //printf("** lineIndent=%d line=(%s)\n",lineIndent,qPrint(QCString(data+i).left(end-i)));
+
+    if (newBlock)
+    {
+      //printf("** end of block\n");
+      if (insideList && lineIndent<currentIndent) // end of list
+      {
+        //printf("** end of list\n");
+        currentIndent = refIndent;
+        insideList = false;
+      }
+      newBlock = false;
+    }
+
+    if ((listIndent=isListMarker(data+i,end-i))) // see if we need to increase the indent level
+    {
+      //printf("** start of list\n");
+      insideList = true;
+      currentIndent = listIndent;
+    }
+    else if (isEndOfList(data+i,end-i))
+    {
+      //printf("** end of list\n");
+      insideList = false;
+      currentIndent = listIndent;
+    }
+    else if (isEmptyLine(data+i,end-i))
+    {
+      //printf("** new block\n");
+      newBlock = true;
+    }
+    //printf("currentIndent=%d listIndent=%d refIndent=%d\n",currentIndent,listIndent,refIndent);
+
     if (pi!=-1)
     {
-      if (isFencedCodeBlock(data+pi,size-pi,refIndent,lang,blockStart,blockEnd,blockOffset))
+      if (isFencedCodeBlock(data+pi,size-pi,currentIndent,lang,blockStart,blockEnd,blockOffset))
       {
         writeFencedCodeBlock(data+pi,lang.data(),blockStart,blockEnd);
         i=pi+blockOffset;
@@ -2524,7 +2563,7 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
         end=i+1;
         continue;
       }
-      else if (isBlockQuote(data+pi,i-pi,refIndent))
+      else if (isBlockQuote(data+pi,i-pi,currentIndent))
       {
         i = pi+writeBlockQuote(data+pi,size-pi);
         pi=-1;
@@ -2542,7 +2581,7 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
   }
   if (pi!=-1 && pi<size) // deal with the last line
   {
-    if (isBlockQuote(data+pi,size-pi,refIndent))
+    if (isBlockQuote(data+pi,size-pi,currentIndent))
     {
       writeBlockQuote(data+pi,size-pi);
     }
@@ -2593,38 +2632,52 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
 
   int currentIndent = indent;
   int listIndent = indent;
+  bool insideList = false;
   bool newBlock = false;
   // process each line
   while (i<size)
   {
     findEndOfLine(data,size,pi,i,end);
     // line is now found at [i..end)
-    if (isEmptyLine(data+i,end)) // may need to reset indent for the next block
+
+    int lineIndent=0;
+    while (lineIndent<end && data[i+lineIndent]==' ') lineIndent++;
+    //printf("** lineIndent=%d line=(%s)\n",lineIndent,qPrint(QCString(data+i).left(end-i)));
+
+    if (newBlock)
     {
+      //printf("** end of block\n");
+      if (insideList && lineIndent<currentIndent) // end of list
+      {
+        //printf("** end of list\n");
+        currentIndent = indent;
+        blockIndent = indent;
+        insideList = false;
+      }
+      newBlock = false;
+    }
+
+    if ((listIndent=isListMarker(data+i,end-i))) // see if we need to increase the indent level
+    {
+      //printf("** start of list\n");
+      insideList = true;
+      currentIndent = listIndent;
+      blockIndent = listIndent;
+    }
+    else if (isEndOfList(data+i,end-i))
+    {
+      //printf("** end of list\n");
+      insideList = false;
+      currentIndent = listIndent;
+      blockIndent = listIndent;
+    }
+    else if (isEmptyLine(data+i,end-i))
+    {
+      //printf("** new block\n");
       newBlock = true;
     }
-    else if ((listIndent=isListMarker(data+i,end))) // see if we need to increase the indent level
-    {
-      if (listIndent>currentIndent)
-      {
-        currentIndent = listIndent;
-      }
-    }
-    else if (isEndOfList(data+i,end))
-    {
-      currentIndent = indent;
-      newBlock = false;
-    }
-    else if (newBlock) // re-evaluate indent
-    {
-      int lineIndent=0;
-      while (lineIndent<end && data[i+lineIndent]==' ') lineIndent++;
-      if (lineIndent<listIndent) // end of list
-      {
-        currentIndent = indent;
-      }
-      newBlock = false;
-    }
+
+    //printf("indent=%d listIndent=%d blockIndent=%d\n",indent,listIndent,blockIndent);
 
     //printf("findEndOfLine: pi=%d i=%d end=%d\n",pi,i,end);
 
