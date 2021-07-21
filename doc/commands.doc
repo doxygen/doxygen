@@ -714,7 +714,7 @@ Structural indicators
   \ref cfg_force_local_includes "FORCE_LOCAL_INCLUDES" to \c YES.
 
   To disable the include information altogether set
-  \ref cfg_show_include_files "SHOW_INCLUDE_FILES" to \c NO.
+  \ref cfg_show_headerfile "SHOW_HEADERFILE" to \c NO.
 
 <hr>
 \section cmdhideinitializer \\hideinitializer
