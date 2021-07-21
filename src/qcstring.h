@@ -239,6 +239,7 @@ class QCString
       return QCString(convertUTF8ToUpper(m_rep));
     }
 
+    /// returns a copy of this string with leading and trailing whitespace removed
     QCString stripWhiteSpace() const
     {
       int sl = (uint)m_rep.size();
@@ -250,6 +251,24 @@ class QCString
       return QCString(m_rep.substr(start,1+end-start));
     }
 
+    /// returns a copy of this string with all whitespace removed
+    QCString removeWhiteSpace() const
+    {
+      size_t sl = (uint)m_rep.size();
+      if (sl==0) return *this;
+      std::string result = m_rep;
+      size_t src=0,dst=0;
+      while (src<sl)
+      {
+        if (!qisspace(m_rep[src])) result[dst++]=m_rep[src];
+        src++;
+      }
+      if (dst<m_rep.size()) result.resize(dst);
+      return QCString(result);
+    }
+
+    /// return a copy of this string with leading and trailing whitespace removed and multiple
+    /// whitespace characters replaced by a single space
     QCString simplifyWhiteSpace() const;
 
     QCString &insert( uint index, const QCString &s )

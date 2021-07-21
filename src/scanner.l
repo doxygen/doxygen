@@ -226,8 +226,6 @@ static void addKnRArgInfo(yyscan_t yyscanner,const QCString &type,const QCString
                           const QCString &brief,const QCString &docs);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
-static QCString removeWhiteSpace(const QCString &s);
-
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
@@ -2346,7 +2344,7 @@ NONLopt [^\n]*
                                               BEGIN(FindMembers);
                                             }
                                           }
-                                          yyextra->current->name = removeWhiteSpace(yyextra->current->name);
+                                          yyextra->current->name = yyextra->current->name.removeWhiteSpace();
                                         }
 <StaticAssert>"("                       {
                                           yyextra->lastSkipRoundContext = FindMembers;
@@ -7704,19 +7702,6 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
 
   //printf("**** parsePrototype end\n");
-}
-
-// removeRedundantWhiteSpace does not work as it will leave e.g. "foo:: bar"
-static QCString removeWhiteSpace(const QCString &s)
-{
-  QCString res;
-  uint l=s.length();
-  const char *src=s.data();
-  for (uint i = 0;i<l;i++)
-  {
-    if (!isspace((uchar)src[i])) res += src[i];
-  }
-  return res;
 }
 
 //static void handleGroupStartCommand(const char *header)
