@@ -700,6 +700,7 @@ static QCString substituteLatexKeywords(const QCString &str,
 void LatexGenerator::startIndexSection(IndexSections is)
 {
   bool compactLatex = Config_getBool(COMPACT_LATEX);
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   switch (is)
   {
     case isTitlePageStart:
@@ -823,7 +824,8 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if ((fd->isLinkableInProject()) ||
+                (sourceBrowser && m_prettyCode && fd->generateSourceFile()))
             {
               if (isFirst)
               {
@@ -994,14 +996,23 @@ void LatexGenerator::endIndexSection(IndexSections is)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if ((fd->isLinkableInProject()) ||
+                (sourceBrowser && m_prettyCode && fd->generateSourceFile()))
             {
               if (isFirst)
               {
                 m_t << "}\n"; // end doxysection or chapter title
               }
               isFirst=FALSE;
-              m_t << "\\input{" << fd->getOutputFileBase() << "}\n";
+              if (fd->isLinkableInProject())
+              {
+                m_t << "\\input{" << fd->getOutputFileBase() << "}\n";
+              }
+              else
+              {
+                writeAnchor(QCString(),fd->getOutputFileBase());
+              }
+
               if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
               {
                 //m_t << "\\include{" << fd->getSourceFileBase() << "}\n";
@@ -1451,19 +1462,25 @@ void LatexGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
 void LatexGenerator::writeAnchor(const QCString &fName,const QCString &name)
 {
   //printf("LatexGenerator::writeAnchor(%s,%s)\n",fName,name);
-  m_t << "\\label{" << stripPath(name) << "}\n";
+  if (!name.isEmpty()) m_t << "\\label{" << stripPath(name) << "}\n";
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePDFLatex   = Config_getBool(USE_PDFLATEX);
   if (usePDFLatex && pdfHyperlinks)
   {
+    m_t << "\\Hypertarget{";
     if (!fName.isEmpty())
     {
-      m_t << "\\Hypertarget{" << stripPath(fName) << "_" << stripPath(name) << "}\n";
+      m_t << stripPath(fName);
     }
-    else
+    if (!fName.isEmpty() && !name.isEmpty())
     {
-      m_t << "\\Hypertarget{" << stripPath(name) << "}\n";
+      m_t << "_";
     }
+    if (!name.isEmpty())
+    {
+      m_t << stripPath(name);
+    }
+    m_t << "}\n";
   }
 }
 

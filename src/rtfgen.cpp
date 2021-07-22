@@ -410,6 +410,7 @@ void RTFGenerator::endProjectNumber()
 
 void RTFGenerator::startIndexSection(IndexSections is)
 {
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   //QCString paperName;
 
   m_listLevel = 0;
@@ -552,7 +553,8 @@ void RTFGenerator::startIndexSection(IndexSections is)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if ((fd->isLinkableInProject()) ||
+                (sourceBrowser && m_prettyCode && fd->generateSourceFile()))
             {
               if (isFirst)
               {
@@ -884,25 +886,38 @@ void RTFGenerator::endIndexSection(IndexSections is)
       {
         bool isFirst=TRUE;
 
-        m_t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}\n";
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if ((fd->isLinkableInProject()) ||
+                (sourceBrowser && m_prettyCode && fd->generateSourceFile()))
             {
-              m_t << "\\par " << rtf_Style_Reset << "\n";
               if (!isFirst)
               {
+                m_t << "\\par " << rtf_Style_Reset << "\n";
                 beginRTFSection();
               }
-              isFirst=FALSE;
-              m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
-              m_t << fd->getOutputFileBase();
-              m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+              else
+              {
+                m_t << "{\\tc \\v " << theTranslator->trFileDocumentation() << "}\n";
+                m_t << "\\par " << rtf_Style_Reset << "\n";
+                isFirst=FALSE;
+              }
+              if (fd->isLinkableInProject())
+              {
+                m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"";
+                m_t << fd->getOutputFileBase();
+                m_t << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
+              }
+              else
+              {
+                writeAnchor(fd->getOutputFileBase(),QCString());
+              }
               if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
               {
                 m_t << "\\par " << rtf_Style_Reset << "\n";
+                writeAnchor(fd->getSourceFileBase(),QCString());
                 m_t << "{\\field\\fldedit{\\*\\fldinst INCLUDETEXT \"" << fd->getSourceFileBase() << ".rtf\" \\\\*MERGEFORMAT}{\\fldrslt includedstuff}}\n";
               }
             }

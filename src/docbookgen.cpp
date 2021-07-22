@@ -377,6 +377,8 @@ DB_GEN_C
 void DocbookGenerator::startIndexSection(IndexSections is)
 {
 DB_GEN_C2("IndexSections " << is)
+  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
+
   switch (is)
   {
     case isTitlePageStart:
@@ -571,29 +573,20 @@ DB_GEN_C2("IndexSections " << is)
     case isFileDocumentation:
       {
         m_t << "</title>\n";
-        bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if ((fd->isLinkableInProject()) ||
+                (sourceBrowser && m_prettyCode && fd->generateSourceFile()))
             {
-              if (isFirst)
+              if (fd->isLinkableInProject())
               {
                 m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                }
-                isFirst=FALSE;
               }
-              else
+              if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
               {
-                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                }
+                m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
               }
             }
           }

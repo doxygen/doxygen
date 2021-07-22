@@ -5233,7 +5233,7 @@ QCString rtfFormatBmkStr(const QCString &name)
     }
   }
 
-  //printf("Name = %s RTF_tag = %s\n",name,qPrint(*tag)));
+  //printf("Name = %s RTF_tag = %s\n",qPrint(name),qPrint(tag));
   return tag;
 }
 

@@ -73,11 +73,14 @@ int documentedClassMembers[CMHL_Total];
 int documentedFileMembers[FMHL_Total];
 int documentedNamespaceMembers[NMHL_Total];
 int documentedHtmlFiles;
+int documentedLatexFiles;
+int documentedRtfFiles;
+int documentedDocbookFiles;
 int documentedPages;
 int documentedDirs;
 
 static int countClassHierarchy(ClassDef::CompoundType ct);
-static void countFiles(int &htmlFiles,int &files);
+static void countFiles(int &htmlFiles,int &files, int &latexFiles, int &rtfFiles, int &docbookFiles);
 static int countGroups();
 static int countDirs();
 static int countNamespaces();
@@ -100,7 +103,7 @@ void countDataStructures()
   annotatedExceptions        = sliceOpt ? countAnnotatedClasses(&annotatedExceptionsPrinted, ClassDef::Exception) : 0;
   // "exceptionhierarchy"
   hierarchyExceptions        = sliceOpt ? countClassHierarchy(ClassDef::Exception) : 0;
-  countFiles(documentedHtmlFiles,documentedFiles);        // "files"
+  countFiles(documentedHtmlFiles,documentedFiles,documentedLatexFiles,documentedRtfFiles,documentedDocbookFiles); // "files"
   countRelatedPages(documentedPages,indexedPages);        // "pages"
   documentedGroups           = countGroups();             // "modules"
   documentedNamespaces       = countNamespaces();         // "namespaces"
@@ -1263,10 +1266,19 @@ static void writeGraphicalExceptionHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-static void countFiles(int &htmlFiles,int &files)
+static void countFiles(int &htmlFiles,int &files, int &latexFiles, int &rtfFiles, int &docbookFiles)
 {
+  static bool sourceBrowser         = Config_getBool(SOURCE_BROWSER);
+  static bool docbookProgramListing = Config_getBool(DOCBOOK_PROGRAMLISTING);
+  static bool latexSourceCode       = Config_getBool(LATEX_SOURCE_CODE);
+  static bool rtfSourceCode         = Config_getBool(RTF_SOURCE_CODE);
+
   htmlFiles=0;
+  latexFiles=0;
+  docbookFiles=0;
+  rtfFiles=0;
   files=0;
+
   for (const auto &fn : *Doxygen::inputNameLinkedMap)
   {
     for (const auto &fd: *fn)
@@ -1281,14 +1293,19 @@ static void countFiles(int &htmlFiles,int &files)
       {
         files++;
       }
+      if ((fd->isLinkableInProject()) ||
+          (sourceBrowser && latexSourceCode && fd->generateSourceFile())) latexFiles++;
+      if ((fd->isLinkableInProject()) ||
+          (sourceBrowser && rtfSourceCode && fd->generateSourceFile())) rtfFiles++;
+      if ((fd->isLinkableInProject()) ||
+          (sourceBrowser && docbookProgramListing && fd->generateSourceFile())) docbookFiles++;
     }
   }
 }
-
-static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
+static void writeSingleFileIndexLow(OutputList &ol,const FileDef *fd, bool srcCode)
 {
   //printf("Found filedef %s\n",qPrint(fd->name()));
-  bool doc = fd->isLinkableInProject();
+  bool doc = fd->isLinkableInProject() || srcCode;
   bool src = fd->generateSourceFile();
   bool nameOk = !fd->isDocumentationFile();
   if (nameOk && (doc || src) && !fd->isReference())
@@ -1362,6 +1379,38 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
   }
 }
 
+static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
+{
+  static bool sourceBrowser     = Config_getBool(SOURCE_BROWSER);
+  static bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
+  static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
+  static bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
+
+
+  ol.pushGeneratorState();
+  ol.disable(OutputGenerator::RTF);
+  ol.disable(OutputGenerator::Docbook);
+  ol.disable(OutputGenerator::Latex);
+  writeSingleFileIndexLow(ol,fd, sourceBrowser);
+  ol.popGeneratorState();
+
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::RTF);
+  writeSingleFileIndexLow(ol,fd, sourceBrowser && rtfSourceCode);
+  ol.popGeneratorState();
+
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Latex);
+  writeSingleFileIndexLow(ol,fd, sourceBrowser && latexSourceCode);
+  ol.popGeneratorState();
+
+  ol.pushGeneratorState();
+  ol.disableAllBut(OutputGenerator::Docbook);
+  writeSingleFileIndexLow(ol,fd, sourceBrowser && docbookSourceCode);
+  ol.popGeneratorState();
+}
+
+
 //----------------------------------------------------------------------------
 
 static void writeFileIndex(OutputList &ol)
@@ -1371,7 +1420,11 @@ static void writeFileIndex(OutputList &ol)
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Docbook);
+  ol.enable(OutputGenerator::RTF);
+  ol.enable(OutputGenerator::Latex);
   if (documentedFiles==0) ol.disableAllBut(OutputGenerator::Html);
+  if (documentedRtfFiles) ol.enable(OutputGenerator::RTF);
+  if (documentedLatexFiles) ol.enable(OutputGenerator::Latex);
 
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::FileList);
   if (lne==0) lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files); // fall back
@@ -4598,11 +4651,50 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/theTranslator->trExceptionIndex());
       ol.endIndexSection(isCompoundIndex);
     }
-    if (Config_getBool(SHOW_FILES) && (documentedFiles>0))
+
+    if (Config_getBool(SHOW_FILES) )
     {
-      ol.startIndexSection(isFileIndex);
-      ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
-      ol.endIndexSection(isFileIndex);
+      if (documentedFiles)
+      {
+        ol.pushGeneratorState();
+        ol.disable(OutputGenerator::RTF);
+        ol.disable(OutputGenerator::Docbook);
+        ol.disable(OutputGenerator::Latex);
+        ol.startIndexSection(isFileIndex);
+        ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
+        ol.endIndexSection(isFileIndex);
+        ol.popGeneratorState();
+      }
+
+      if (documentedRtfFiles)
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::RTF);
+        ol.startIndexSection(isFileIndex);
+        ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
+        ol.endIndexSection(isFileIndex);
+        ol.popGeneratorState();
+      }
+
+      if (documentedLatexFiles)
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Latex);
+        ol.startIndexSection(isFileIndex);
+        ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
+        ol.endIndexSection(isFileIndex);
+        ol.popGeneratorState();
+      }
+
+      if (documentedDocbookFiles)
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Docbook);
+        ol.startIndexSection(isFileIndex);
+        ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
+        ol.endIndexSection(isFileIndex);
+        ol.popGeneratorState();
+      }
     }
   }
   ol.enable(OutputGenerator::Docbook);
@@ -4649,12 +4741,49 @@ static void writeIndex(OutputList &ol)
     ol.parseText(/*projPrefix+*/theTranslator->trExceptionDocumentation());
     ol.endIndexSection(isClassDocumentation);
   }
-  if (documentedFiles>0)
+
+  if (documentedFiles)
   {
+    ol.pushGeneratorState();
+    ol.disable(OutputGenerator::RTF);
+    ol.disable(OutputGenerator::Docbook);
+    ol.disable(OutputGenerator::Latex);
     ol.startIndexSection(isFileDocumentation);
     ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
     ol.endIndexSection(isFileDocumentation);
+    ol.popGeneratorState();
   }
+
+  if (documentedRtfFiles)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::RTF);
+    ol.startIndexSection(isFileDocumentation);
+    ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
+    ol.endIndexSection(isFileDocumentation);
+    ol.popGeneratorState();
+  }
+
+  if (documentedLatexFiles)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Latex);
+    ol.startIndexSection(isFileDocumentation);
+    ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
+    ol.endIndexSection(isFileDocumentation);
+    ol.popGeneratorState();
+  }
+
+  if (documentedDocbookFiles)
+  {
+    ol.pushGeneratorState();
+    ol.disableAllBut(OutputGenerator::Docbook);
+    ol.startIndexSection(isFileDocumentation);
+    ol.parseText(/*projPrefix+*/theTranslator->trFileDocumentation());
+    ol.endIndexSection(isFileDocumentation);
+    ol.popGeneratorState();
+  }
+
   if (!Doxygen::exampleLinkedMap->empty())
   {
     ol.startIndexSection(isExampleDocumentation);
