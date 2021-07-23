@@ -8817,7 +8817,19 @@ static void findMainPage(Entry *root)
       const SectionInfo *si = SectionManager::instance().find(Doxygen::mainPage->name());
       if (si)
       {
-        if (si->lineNr() != -1)
+        if (!si->ref().isEmpty()) // we are from a tag file
+        {
+          SectionManager::instance().del(Doxygen::mainPage->name());
+          // a page name is a label as well! but should no be double either
+          SectionManager::instance().add(
+            Doxygen::mainPage->name(),
+            indexName,
+            root->startLine,
+            Doxygen::mainPage->title(),
+            SectionType::Page,
+            0); // level 0
+        }
+        else if (si->lineNr() != -1)
         {
           warn(root->fileName,root->startLine,"multiple use of section label '%s' for main page, (first occurrence: %s, line %d)",
                qPrint(Doxygen::mainPage->name()),qPrint(si->fileName()),si->lineNr());
