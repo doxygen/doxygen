@@ -866,10 +866,11 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_2
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"Dokumentationen för ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="denna klass"; break;
+        case ClassDef::Class:      result+=vhdlOpt? "denna designenhets":"denna klass"; break;
         case ClassDef::Struct:     result+="denna strukt"; break;
         case ClassDef::Union:      result+="denna union"; break;
         case ClassDef::Interface:  result+="detta gränssnitt"; break;

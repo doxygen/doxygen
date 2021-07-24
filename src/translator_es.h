@@ -756,10 +756,11 @@ class TranslatorSpanish : public TranslatorAdapter_1_8_15
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"La documentación para est";
       switch(compType)
       {
-        case ClassDef::Class:      result+="a clase"; break;
+        case ClassDef::Class:      result+=vhdlOpt? "a unidades de diseño":"a clase"; break;
         case ClassDef::Struct:     result+="a estructura"; break;
         case ClassDef::Union:      result+="a unión"; break;
         case ClassDef::Interface:  result+="e interfaz"; break;

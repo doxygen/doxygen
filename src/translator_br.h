@@ -808,6 +808,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_2
         bool single)
     { // here s is one of " Class", " Struct" or " Union"
       // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"A documentação para ";
       if (compType == ClassDef::Protocol)
       {
@@ -819,7 +820,7 @@ class TranslatorBrazilian : public TranslatorAdapter_1_9_2
       }
       switch(compType)
       {
-        case ClassDef::Class:      result+="classe "; break;
+        case ClassDef::Class:      result+=vhdlOpt?"Unidade de Design ":"classe "; break;
         case ClassDef::Struct:     result+="estrutura "; break;
         case ClassDef::Union:      result+="união "; break;
         case ClassDef::Interface:  result+="interface "; break;

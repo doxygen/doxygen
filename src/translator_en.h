@@ -766,10 +766,11 @@ class TranslatorEnglish : public Translator
     virtual QCString trGeneratedFromFiles(ClassDef::CompoundType compType,
         bool single)
     { // single is true implies a single file
+      static bool vhdlOpt = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
       QCString result=(QCString)"The documentation for this ";
       switch(compType)
       {
-        case ClassDef::Class:      result+="class"; break;
+        case ClassDef::Class:      result+=vhdlOpt?"design unit":"class"; break;
         case ClassDef::Struct:     result+="struct"; break;
         case ClassDef::Union:      result+="union"; break;
         case ClassDef::Interface:  result+="interface"; break;
