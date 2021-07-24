@@ -4253,52 +4253,6 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
 
 //----------------------------------------------------------
 
-/** @brief Class representing an 'update' tag in a template */
-class TemplateNodeUpdate : public TemplateNodeCreator<TemplateNodeUpdate>
-{
-    struct Mapping
-    {
-      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
-     ~Mapping() { }
-      QCString name;
-      ExprAst *value = 0;
-    };
-  public:
-    TemplateNodeUpdate(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeUpdate>(parser,parent,line)
-    {
-      TRACE(("{TemplateNodeUpdate(%s)\n",qPrint(data)));
-      ExpressionParser expParser(parser,line);
-      // data format: name=expression
-      int j=data.find('=');
-      ExprAst *expr = 0;
-      if (j>0 && (expr = expParser.parse(data.mid(j+1))))
-      {
-        m_mapping = std::make_unique<Mapping>(data.left(j),expr);
-      }
-      TRACE(("}TemplateNodeUpdate(%s)\n",qPrint(data)));
-    }
-    ~TemplateNodeUpdate()
-    {
-    }
-    void render(TextStream &, TemplateContext *c)
-    {
-      TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
-      if (ci==0) return; // should not happen
-      ci->setLocation(m_templateName,m_line);
-      if (m_mapping)
-      {
-        TemplateVariant value = m_mapping->value->resolve(c);
-        ci->update(m_mapping->name,value);
-      }
-    }
-  private:
-    std::unique_ptr<Mapping> m_mapping;
-};
-
-
-//----------------------------------------------------------
-
 /** @brief Class representing an 'spaceless' tag in a template */
 class TemplateNodeSpaceless : public TemplateNodeCreator<TemplateNodeSpaceless>
 {
@@ -4670,7 +4624,6 @@ static TemplateNodeFactory::AutoRegister<TemplateNodeRange>         autoRefRange
 static TemplateNodeFactory::AutoRegister<TemplateNodeExtend>        autoRefExtend("extend");
 static TemplateNodeFactory::AutoRegister<TemplateNodeCreate>        autoRefCreate("create");
 static TemplateNodeFactory::AutoRegister<TemplateNodeRepeat>        autoRefRepeat("repeat");
-static TemplateNodeFactory::AutoRegister<TemplateNodeUpdate>        autoRefUpdate("update");
 static TemplateNodeFactory::AutoRegister<TemplateNodeInclude>       autoRefInclude("include");
 static TemplateNodeFactory::AutoRegister<TemplateNodeMarkers>       autoRefMarkers("markers");
 static TemplateNodeFactory::AutoRegister<TemplateNodeTabbing>       autoRefTabbing("tabbing");
