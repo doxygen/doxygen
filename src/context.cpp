@@ -78,27 +78,6 @@ struct ContextGlobals
   ContextOutputFormat outputFormat;
 } g_globals;
 
-/** @brief Scoped smart pointer */
-template<class T> class ScopedPtr
-{
-  private:
-    T *m_ptr;
-    ScopedPtr(const ScopedPtr &);
-    ScopedPtr &operator=(const ScopedPtr &);
-    void operator==(const ScopedPtr &) const;
-    void operator!=(const ScopedPtr &) const;
-
-  public:
-    typedef T Type;
-    explicit ScopedPtr(T *p=0) : m_ptr(p) {}
-    ~ScopedPtr() { delete m_ptr; };
-    T &operator*() const { return *m_ptr; }
-    T *operator->() const { return m_ptr; }
-    T *get() const { return m_ptr; }
-    operator bool() const { return m_ptr!=0; }
-    void reset(T *p=0) { if (p!=m_ptr) { delete m_ptr; m_ptr = p; } }
-};
-
 /** @brief Reference counting smart pointer */
 template<class T> class SharedPtr
 {
@@ -1721,11 +1700,11 @@ class DefinitionContext
           sourceDef->append(fileLink.get());
         }
       }
-      ScopedPtr<TemplateVariant> details;
+      std::unique_ptr<TemplateVariant> details;
       ContextOutputFormat        detailsOutputFormat;
-      ScopedPtr<TemplateVariant> brief;
+      std::unique_ptr<TemplateVariant> brief;
       ContextOutputFormat        briefOutputFormat;
-      ScopedPtr<TemplateVariant> inbodyDocs;
+      std::unique_ptr<TemplateVariant> inbodyDocs;
       ContextOutputFormat        inbodyDocsOutputFormat;
       SharedPtr<TemplateList>    navPath;
       SharedPtr<TemplateList>    sourceDef;
@@ -2652,8 +2631,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       SharedPtr<IncludeInfoContext>     includeInfo;
       SharedPtr<InheritanceListContext> inheritsList;
       SharedPtr<InheritanceListContext> inheritedByList;
-      ScopedPtr<DotClassGraph>          classGraph;
-      ScopedPtr<DotClassGraph>          collaborationGraph;
+      std::unique_ptr<DotClassGraph>          classGraph;
+      std::unique_ptr<DotClassGraph>          collaborationGraph;
       SharedPtr<TemplateList>           classes;
       SharedPtr<TemplateList>           innerClasses;
       SharedPtr<MemberListInfoContext>  publicTypes;
@@ -3448,9 +3427,9 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       Cachable(const FileDef *fd) : DefinitionContext<FileContext::Private>::Cachable(fd) {}
       SharedPtr<IncludeInfoListContext>     includeInfoList;
-      ScopedPtr<DotInclDepGraph>            includeGraph;
-      ScopedPtr<DotInclDepGraph>            includedByGraph;
-      ScopedPtr<TemplateVariant>            sources;
+      std::unique_ptr<DotInclDepGraph>      includeGraph;
+      std::unique_ptr<DotInclDepGraph>      includedByGraph;
+      std::unique_ptr<TemplateVariant>      sources;
       SharedPtr<TemplateList>               classes;
       SharedPtr<TemplateList>               namespaces;
       SharedPtr<TemplateList>               constantgroups;
@@ -3667,7 +3646,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       Cachable(const DirDef *dd) : DefinitionContext<DirContext::Private>::Cachable(dd) {}
       SharedPtr<TemplateList>  dirs;
       SharedPtr<TemplateList>  files;
-      ScopedPtr<DotDirDeps>    dirDepsGraph;
+      std::unique_ptr<DotDirDeps>    dirDepsGraph;
     };
     Cachable &getCache() const
     {
@@ -3818,7 +3797,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     {
       Cachable(const PageDef *pd) : DefinitionContext<PageContext::Private>::Cachable(pd),
                               exampleOutputFormat(ContextOutputFormat_Unspecified) { }
-      ScopedPtr<TemplateVariant> example;
+      std::unique_ptr<TemplateVariant> example;
       ContextOutputFormat        exampleOutputFormat;
     };
     Cachable &getCache() const
@@ -5266,14 +5245,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       SharedPtr<ClassContext>        classDef;
       SharedPtr<ClassContext>        anonymousType;
       SharedPtr<TemplateList>        templateDecls;
-      ScopedPtr<TemplateVariant>     paramDocs;
+      std::unique_ptr<TemplateVariant>     paramDocs;
       SharedPtr<TemplateList>        implements;
       SharedPtr<TemplateList>        reimplements;
       SharedPtr<TemplateList>        implementedBy;
       SharedPtr<MemberListContext>   sourceRefs;
       SharedPtr<MemberListContext>   sourceRefBys;
-      ScopedPtr<DotCallGraph>        callGraph;
-      ScopedPtr<DotCallGraph>        callerGraph;
+      std::unique_ptr<DotCallGraph>        callGraph;
+      std::unique_ptr<DotCallGraph>        callerGraph;
       SharedPtr<MemberContext>       anonymousMember;
       SharedPtr<TemplateList>        reimplementedBy;
       SharedPtr<TemplateList>        labels;
@@ -5962,7 +5941,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       SharedPtr<MemberListInfoContext>      detailedProperties;
       SharedPtr<MemberListInfoContext>      detailedFriends;
       SharedPtr<TemplateList>               inlineClasses;
-      ScopedPtr<DotGroupCollaboration>      groupGraph;
+      std::unique_ptr<DotGroupCollaboration>      groupGraph;
     };
     Cachable &getCache() const
     {
@@ -6357,13 +6336,13 @@ class ClassHierarchyContext::Private
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
-                   preferredDepth(0), preferredDepthComputed(FALSE), hierarchy(0) {}
+                   preferredDepth(0), preferredDepthComputed(FALSE) {}
       int   maxDepth;
       bool  maxDepthComputed;
       int   preferredDepth;
       bool  preferredDepthComputed;
       SharedPtr<TemplateList> diagrams;
-      ScopedPtr<DotGfxHierarchyTable> hierarchy;
+      std::unique_ptr<DotGfxHierarchyTable> hierarchy;
     };
     mutable Cachable m_cache;
     static PropertyMapper<ClassHierarchyContext::Private> s_inst;
@@ -6835,7 +6814,7 @@ class NestingNodeContext::Private
       SharedPtr<PageContext>      pageContext;
       SharedPtr<ModuleContext>    moduleContext;
       SharedPtr<MemberContext>    memberContext;
-      ScopedPtr<TemplateVariant>  brief;
+      std::unique_ptr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
     static PropertyMapper<NestingNodeContext::Private> s_inst;
@@ -9592,7 +9571,7 @@ class MemberGroupInfoContext::Private
     {
       SharedPtr<MemberListContext>      memberListContext;
       SharedPtr<MemberGroupListContext> memberGroups;
-      ScopedPtr<TemplateVariant>        docs;
+      std::unique_ptr<TemplateVariant>        docs;
     };
     mutable Cachable m_cache;
     static PropertyMapper<MemberGroupInfoContext::Private> s_inst;
@@ -10127,7 +10106,7 @@ class ArgumentContext::Private
     QCString m_relPath;
     struct Cachable
     {
-      ScopedPtr<TemplateVariant> docs;
+      std::unique_ptr<TemplateVariant> docs;
     };
     mutable Cachable m_cache;
     static PropertyMapper<ArgumentContext::Private> s_inst;
