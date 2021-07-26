@@ -195,7 +195,7 @@ void FormulaManager::generateImages(const QCString &path,Format format,HighDPI h
     Portable::sysTimerStart();
     char args[4096];
     sprintf(args,"-interaction=batchmode _formulas.tex >%s",Portable::devNull());
-    if (Portable::system(latexCmd,args)!=0)
+    if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
     {
       err("Problems running latex. Check your installation or look "
           "for typos in _formulas.tex and check _formulas.log!\n");
