@@ -1003,6 +1003,14 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SHOW_HEADERFILE' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c SHOW_HEADERFILE tag is set to \c YES then the documentation
+ for a class will show which file needs to be included to use the class.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='SHOW_INCLUDE_FILES' defval='1'>
       <docs>
 <![CDATA[
@@ -3906,8 +3914,7 @@ UML notation for the relationships.
 If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate files that are used to generate the various graphs.
  <br>Note:
-This setting is not only used for dot files but also for msc and plantuml
-temporary files.
+This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
