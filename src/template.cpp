@@ -4214,7 +4214,7 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
     struct Mapping
     {
       Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
-     ~Mapping() { }
+     ~Mapping() { delete value; }
       QCString name;
       ExprAst *value = 0;
     };
