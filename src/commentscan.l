@@ -97,6 +97,7 @@ static bool handleMemberOf(yyscan_t yyscanner,const QCString &, const StringVect
 static bool handleRefItem(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleSection(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleAnchor(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleImage(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleCite(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleFormatBlock(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleAddIndex(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -213,7 +214,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "idlexcept",       { &handleIdlException,     CommandSpacing::Invisible }},
   { "if",              { &handleIf,               CommandSpacing::Inline    }},
   { "ifnot",           { &handleIfNot,            CommandSpacing::Inline    }},
-  { "image",           { 0,                       CommandSpacing::Block     }},
+  { "image",           { &handleImage,            CommandSpacing::Block     }},
   { "implements",      { &handleExtends,          CommandSpacing::Invisible }},
   { "include",         { 0,                       CommandSpacing::Block     }},
   { "includelineno",   { 0,                       CommandSpacing::Block     }},
@@ -2394,6 +2395,31 @@ static bool handleAnchor(yyscan_t yyscanner,const QCString &s, const StringVecto
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   addOutput(yyscanner,"@"+s+" ");
   BEGIN(AnchorLabel);
+  return FALSE;
+}
+
+static bool handleImage(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  for (const auto &opt : optList)
+  {
+    QCString locOpt(opt);
+    locOpt = locOpt.stripWhiteSpace();
+    if (locOpt.lower().startsWith("anchor:"))
+    {
+      addAnchor(yyscanner,locOpt.mid(7));
+      break; // real option handling will be done later on
+    }
+  }
+  if (optList.empty())
+  {
+    addOutput(yyscanner,"@"+s+" ");
+  }
+  else
+  {
+    addOutput(yyscanner,"@"+s+"{"+QCString(join(optList,","))+"} ");
+  }
+  BEGIN(Comment);
   return FALSE;
 }
 

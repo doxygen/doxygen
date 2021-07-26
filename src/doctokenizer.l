@@ -1151,7 +1151,11 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Options>{ID}       {
                          yyextra->token->name+=yytext;
                        }
-<St_Options>{WS}*","{WS}*
+<St_Options>{WS}*":"{WS}* {
+                         lineCount(yytext,yyleng);
+                         yyextra->token->name+=":";
+                       }
+<St_Options>{WS}*","{WS}* |
 <St_Options>{WS}       { /* option separator */
                          lineCount(yytext,yyleng);
                          yyextra->token->name+=",";
