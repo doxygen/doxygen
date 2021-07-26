@@ -223,11 +223,11 @@ void LatexDocVisitor::visit(DocSymbol *s)
   {
     if (((s->symbol() == DocSymbol::Sym_lt) || (s->symbol() == DocSymbol::Sym_Less))&& (!m_insidePre))
     {
-      m_t << "$<$";
+      m_t << "\\texorpdfstring{$<$}{<}";
     }
     else if (((s->symbol() == DocSymbol::Sym_gt) || (s->symbol() == DocSymbol::Sym_Greater)) && (!m_insidePre))
     {
-      m_t << "$>$";
+      m_t << "\\texorpdfstring{$>$}{>}";
     }
     else
     {
