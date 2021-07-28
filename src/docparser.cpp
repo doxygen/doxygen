@@ -5149,6 +5149,12 @@ void DocPara::handleInclude(const QCString &cmdName,DocInclude::Type t)
      m_parser.readTextFileByName(fileName,inc_text);
      if (t==DocInclude::SnippetDoc)
      {
+       int count;
+       if (!blockId.isEmpty() && (count=inc_text.contains(blockId.data()))!=2)
+       {
+          warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"block marked with %s for \\snippet should appear twice in file %s, found it %d times\n",
+            qPrint(blockId),qPrint(fileName),count);
+       }
        inc_line = lineBlock(inc_text, blockId);
        inc_text = extractBlock(inc_text, blockId);
      }

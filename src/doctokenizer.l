@@ -1374,7 +1374,7 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->name += yytext;
                        }
 <St_Snippet>(\n|"\\ilinebr")  {
-                         lineCount(yytext,yyleng);
+                         unput_string(yytext,yyleng);
                          yyextra->token->name = yyextra->token->name.stripWhiteSpace();
                          return TK_WORD;
                        }
