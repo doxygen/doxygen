@@ -160,7 +160,7 @@ struct Variant {
       HelperT::move(src.type_id, &src.data, &data);
     }
 
-    // copy asignment operator
+    // copy assignment operator
     Variant<Ts...>& operator= (const Variant<Ts...> &src)
     {
       if (this!=&src)
