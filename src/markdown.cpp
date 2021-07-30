@@ -2536,9 +2536,12 @@ QCString Markdown::processQuotations(const QCString &s,int refIndent)
 
     if ((listIndent=isListMarker(data+i,end-i))) // see if we need to increase the indent level
     {
-      //printf("** start of list\n");
-      insideList = true;
-      currentIndent = listIndent;
+      if (listIndent<currentIndent+4)
+      {
+        //printf("** start of list\n");
+        insideList = true;
+        currentIndent = listIndent;
+      }
     }
     else if (isEndOfList(data+i,end-i))
     {
@@ -2659,10 +2662,13 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
 
     if ((listIndent=isListMarker(data+i,end-i))) // see if we need to increase the indent level
     {
-      //printf("** start of list\n");
-      insideList = true;
-      currentIndent = listIndent;
-      blockIndent = listIndent;
+      if (listIndent<currentIndent+4)
+      {
+        //printf("** start of list\n");
+        insideList = true;
+        currentIndent = listIndent;
+        blockIndent = listIndent;
+      }
     }
     else if (isEndOfList(data+i,end-i))
     {
