@@ -120,7 +120,7 @@ struct HelperT<F, Ts...>
 
   //! Helper function to returns the index of a given type within the template parameter list
   //! @param id The id to search for
-  //! @param index The index into the orginal template list
+  //! @param index The index into the original template list
   inline static size_t index(size_t id,size_t index)
   {
     if (id == typeid(F).hash_code()) // found it
@@ -163,7 +163,7 @@ struct Variant {
     //! The id that represents an invalid type
     static inline size_t invalid_type() { return typeid(void).hash_code(); }
 
-    //! a unique indentifier for the type held by this variant
+    //! a unique identifier for the type held by this variant
     size_t type_id;
     //! the actual data
     Data data;
