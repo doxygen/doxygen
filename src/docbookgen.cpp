@@ -59,9 +59,9 @@
 //#define Docbook_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
 #if 0
-#define DB_GEN_C DB_GEN_C1(t)
+#define DB_GEN_C DB_GEN_C1(m_t)
 #define DB_GEN_C1(x) x << "<!-- DB_GEN_C " << __LINE__ << " -->\n";
-#define DB_GEN_C2(y) DB_GEN_C2a(t,y)
+#define DB_GEN_C2(y) DB_GEN_C2a(m_t,y)
 #define DB_GEN_C2a(x,y) x << "<!-- DB_GEN_C " << __LINE__ << " " << y << " -->\n";
 #else
 #define DB_GEN_C
