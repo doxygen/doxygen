@@ -4405,14 +4405,15 @@ int DocSimpleSect::parseXml()
     if (m_children.empty())
     {
       par->markFirst();
+      par->markLast();
+      m_children.push_back(std::unique_ptr<DocPara>(par));
     }
     else
     {
       ASSERT(m_children.back()->kind()==DocNode::Kind_Para);
       ((DocPara *)m_children.back().get())->markLast(FALSE);
+      par = (DocPara *)m_children.back().get();
     }
-    par->markLast();
-    m_children.push_back(std::unique_ptr<DocPara>(par));
 
     // parse the contents of the paragraph
     retval = par->parse();
@@ -4430,23 +4431,12 @@ int DocSimpleSect::parseXml()
 
 void DocSimpleSect::appendLinkWord(const QCString &word)
 {
-  DocPara *p;
-  if (m_children.empty() || m_children.back()->kind()!=DocNode::Kind_Para)
-  {
-    p = new DocPara(m_parser,this);
-    m_children.push_back(std::unique_ptr<DocPara>(p));
-  }
-  else
-  {
-    p = (DocPara *)m_children.back().get();
-
-    // Comma-separate <seealso> links.
-    p->injectToken(TK_WORD,",");
-    p->injectToken(TK_WHITESPACE," ");
-  }
+  DocPara *p = new DocPara(m_parser,this);
+  m_children.push_back(std::unique_ptr<DocPara>(p));
 
   m_parser.context.inSeeBlock=TRUE;
   p->injectToken(TK_LNKWORD,word);
+  p->injectToken(TK_WHITESPACE," ");
   m_parser.context.inSeeBlock=FALSE;
 }
 
@@ -4686,6 +4676,7 @@ int DocPara::handleSimpleSection(DocSimpleSect::Type t, bool xmlContext)
   int rv = RetVal_OK;
   if (xmlContext)
   {
+    if (m_parser.context.token->emptyTag) return rv;
     return ss->parseXml();
   }
   else
@@ -6245,7 +6236,8 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
           }
 
           ss->appendLinkWord(cref);
-          retval = RetVal_OK;
+          m_parser.context.xmlComment=TRUE;
+          retval = handleSimpleSection(DocSimpleSect::See,TRUE);
         }
         else
         {
