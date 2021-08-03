@@ -4563,6 +4563,7 @@ int DocParamList::parseXml(const QCString &paramName)
   }
 
   m_parser.handleLinkedWord(this,m_params);
+  if (m_parser.context.token->emptyTag) return retval;
 
   do
   {
