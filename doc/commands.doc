@@ -1336,6 +1336,9 @@ Section indicators
 
   For conditional sections within a comment block one should
   use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
+  When using \c \\cond and the condition is not satisfied the current comment block is
+  terminated and everything till \ref cmdendcond "\\endcond" is removed and a new command
+  block is started there.
 
   Conditional sections can be nested. In this case a nested section will only
   be shown if it and its containing section are included.
@@ -1385,7 +1388,10 @@ class Implementation : public Intf
 The output will be different depending on whether or not \ref cfg_enabled_sections "ENABLED_SECTIONS"
 contains \c TEST, or \c DEV
 
-  \sa sections \ref cmdendcond "\\endcond" and  \ref cfg_enabled_sections "ENABLED_SECTIONS".
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot",
+               \ref cmdelse "\\else", \ref cmdelseif "\\elseif",
+               \ref cmdendif "\\endif", \ref cmdendcond "\\endcond", and
+               \ref cfg_enabled_sections "ENABLED_SECTIONS".
   \note Due to the moment of parsing the \c \\cond and \ref cmdendcond "\\endcond" commands cannot
   be used in \ref cfg_aliases "ALIASES".
 
@@ -1445,7 +1451,7 @@ contains \c TEST, or \c DEV
   a \ref cmdif "\\if", \ref cmdifnot "\\ifnot", or \ref cmdelseif "\\elseif"
   command.
 
-  \sa \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelseif "\\elseif",
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelseif "\\elseif",
       \ref cmdendif "\\endif."
 
 <hr>
@@ -1461,8 +1467,8 @@ contains \c TEST, or \c DEV
   Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
 
-  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
-              \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelse "\\else",
+      \ref cmdendif "\\endif."
 
 <hr>
 \section cmdendcond \\endcond
@@ -1482,7 +1488,8 @@ contains \c TEST, or \c DEV
   For each \ref cmdif "\\if" or \ref cmdifnot "\\ifnot" one and only one matching
   \ref cmdendif "\\endif" must follow.
 
-  \sa sections \ref cmdif "\\if" and \ref cmdifnot "\\ifnot".
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelse "\\else",
+      \ref cmdelseif "\\elseif."
 
 <hr>
 \section cmdexception \\exception <exception-object> { exception description }
@@ -1512,10 +1519,14 @@ contains \c TEST, or \c DEV
   The section label can be a logical expression
   build of section names, round brackets, && (AND), || (OR) and ! (NOT).
   If you use an expression you need to wrap it in round brackets, i.e
-  <tt>\\cond (!LABEL1 && LABEL2)</tt>.
+  <tt>\\if (!LABEL1 && LABEL2)</tt>.
 
   Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
+
+  The \c \\if and corresponding \ref cmdendif "\\endif" have to be in the sane comment block.
+  When a conditional block spans more that one comment block one has to use
+  \ref cmdcond "\\cond" ...  \ref cmdendcond "\\endcond".
 
   \par Example:
 \verbatim
@@ -1563,7 +1574,8 @@ ALIASES  = "english=\if english" \
   and \ref cfg_enabled_sections "ENABLED_SECTIONS" can be used to enable either \c english or \c dutch.
 
   \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
-               \ref cmdelse "\\else", \ref cmdelseif "\\elseif", and
+               \ref cmdelse "\\else", \ref cmdelseif "\\elseif",
+               \ref cmdcond "\\cond", \ref cmdendcond "\\endcond", and
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
 
 <hr>
@@ -1578,7 +1590,8 @@ ALIASES  = "english=\if english" \
   build of section names, round brackets, && (AND), || (OR) and ! (NOT).
 
   \sa sections \ref cmdendif "\\endif", \ref cmdif "\\if",
-               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif", and
+               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif",
+               \ref cmdcond "\\cond", \ref cmdendcond "\\endcond", and
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
 
 <hr>
