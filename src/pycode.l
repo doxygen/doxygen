@@ -80,7 +80,7 @@ struct pycodeYY_state
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  FileDef *     sourceFileDef = 0;
+  const FileDef *    sourceFileDef = 0;
   const Definition * currentDefinition = 0;
   const MemberDef *  currentMemberDef = 0;
   bool          includeCodeFragment = FALSE;
@@ -1564,7 +1564,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     SrcLangExt /*lang*/,
     bool isExampleBlock,
     const QCString &exampleName,
-    FileDef *fileDef,
+    const FileDef *fileDef,
     int startLine,
     int endLine,
     bool inlineFragment,

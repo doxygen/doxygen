@@ -4263,7 +4263,8 @@ void addMembersToMemberGroup(MemberList *ml,
                         info->header,
                         info->doc,
                         info->docFile,
-                        info->docLine);
+                        info->docLine,
+                        ml->container());
               mg_ptr = mg.get();
               pMemberGroups->push_back(std::move(mg));
             }
@@ -4302,7 +4303,8 @@ void addMembersToMemberGroup(MemberList *ml,
                     info->header,
                     info->doc,
                     info->docFile,
-                    info->docLine);
+                    info->docLine,
+                    ml->container());
           mg_ptr = mg.get();
           pMemberGroups->push_back(std::move(mg));
         }

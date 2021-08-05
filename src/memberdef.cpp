@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <mutex>
 
 #include "md5.h"
 #include "memberdef.h"
@@ -180,19 +181,19 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool hasDocumentation() const;
     virtual bool isDeleted() const;
     virtual bool isBriefSectionVisible() const;
-    virtual bool isDetailedSectionVisible(bool inGroup,bool inFile) const;
-    virtual bool isDetailedSectionLinkable() const;
+    virtual bool isDetailedSectionVisible(MemberListContainer container) const;
+    virtual bool hasDetailedDescription() const;
     virtual bool isFriendClass() const;
     virtual bool isDocumentedFriendClass() const;
     virtual const MemberDef *reimplements() const;
-    virtual const MemberList &reimplementedBy() const;
+    virtual const MemberVector &reimplementedBy() const;
     virtual bool isReimplementedBy(const ClassDef *cd) const;
     virtual ClassDef *relatedAlso() const;
     virtual bool hasDocumentedEnumValues() const;
     virtual const MemberDef *getAnonymousEnumType() const;
     virtual bool isDocsForDefinition() const;
     virtual const MemberDef *getEnumScope() const;
-    virtual const MemberList &enumFieldList() const;
+    virtual const MemberVector &enumFieldList() const;
     virtual void setEnumBaseType(const QCString &type);
     virtual QCString enumBaseType() const;
     virtual bool hasExamples() const;
@@ -211,8 +212,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool hasCallGraph() const;
     virtual bool hasCallerGraph() const;
     virtual bool visibleMemberGroup(bool hideNoHeader) const;
-    virtual bool hasMemberSourceRefs() const;
-    virtual bool hasMemberSourceReffedBy() const;
     virtual bool hasReferencesRelation() const;
     virtual bool hasReferencedByRelation() const;
     virtual const MemberDef *templateMaster() const;
@@ -339,6 +338,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void _computeIsConstructor();
     void _computeIsDestructor();
     void _writeGroupInclude(OutputList &ol,bool inGroup) const;
+    void _writeMultiLineInitializer(OutputList &ol,const QCString &scopeName) const;
     void _writeCallGraph(OutputList &ol) const;
     void _writeCallerGraph(OutputList &ol) const;
     void _writeReimplements(OutputList &ol) const;
@@ -354,6 +354,8 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     void _writeTagData(const DefType) const;
     void _writeTemplatePrefix(OutputList &ol, const Definition *def,
                               const ArgumentList &al, bool writeReqClause=true) const;
+    bool _hasVisibleCallGraph() const;
+    bool _hasVisibleCallerGraph() const;
 
     static int s_indentLevel;
 
@@ -637,17 +639,17 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isDeleted(); }
     virtual bool isBriefSectionVisible() const
     { return getMdAlias()->isBriefSectionVisible(); }
-    virtual bool isDetailedSectionVisible(bool inGroup,bool inFile) const
-    { return getMdAlias()->isDetailedSectionVisible(inGroup,inFile); }
-    virtual bool isDetailedSectionLinkable() const
-    { return getMdAlias()->isDetailedSectionLinkable(); }
+    virtual bool isDetailedSectionVisible(MemberListContainer container) const
+    { return getMdAlias()->isDetailedSectionVisible(container); }
+    virtual bool hasDetailedDescription() const
+    { return getMdAlias()->hasDetailedDescription(); }
     virtual bool isFriendClass() const
     { return getMdAlias()->isFriendClass(); }
     virtual bool isDocumentedFriendClass() const
     { return getMdAlias()->isDocumentedFriendClass(); }
     virtual const MemberDef *reimplements() const
     { return getMdAlias()->reimplements(); }
-    virtual const MemberList &reimplementedBy() const
+    virtual const MemberVector &reimplementedBy() const
     { return getMdAlias()->reimplementedBy(); }
     virtual bool isReimplementedBy(const ClassDef *cd) const
     { return getMdAlias()->isReimplementedBy(cd); }
@@ -661,7 +663,7 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isDocsForDefinition(); }
     virtual const MemberDef *getEnumScope() const
     { return getMdAlias()->getEnumScope(); }
-    virtual const MemberList &enumFieldList() const
+    virtual const MemberVector &enumFieldList() const
     { return getMdAlias()->enumFieldList(); }
     virtual QCString enumBaseType() const
     { return getMdAlias()->enumBaseType(); }
@@ -695,10 +697,6 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->hasCallerGraph(); }
     virtual bool visibleMemberGroup(bool hideNoHeader) const
     { return getMdAlias()->visibleMemberGroup(hideNoHeader); }
-    virtual bool hasMemberSourceRefs() const
-    { return getMdAlias()->hasMemberSourceRefs(); }
-    virtual bool hasMemberSourceReffedBy() const
-    { return getMdAlias()->hasMemberSourceReffedBy(); }
     virtual bool hasReferencesRelation() const
     { return getMdAlias()->hasReferencesRelation(); }
     virtual bool hasReferencedByRelation() const
@@ -1161,10 +1159,10 @@ class MemberDefImpl::IMPL
     const MemberDef  *enumScope = 0;    // the enclosing scope, if this is an enum field
     bool        livesInsideEnum = false;
     const MemberDef  *annEnumType = 0;  // the anonymous enum that is the type of this member
-    MemberList enumFields;              // enumeration fields
+    MemberVector enumFields;              // enumeration fields
 
     const MemberDef  *redefines = 0;    // the members that this member redefines
-    MemberList redefinedBy;             // the list of members that redefine this one
+    MemberVector redefinedBy;             // the list of members that redefine this one
 
     MemberDef  *memDef = 0;       // member definition for this declaration
     MemberDef  *memDec = 0;       // member declaration for this definition
@@ -1253,6 +1251,8 @@ class MemberDefImpl::IMPL
 
     mutable bool annScope = false;    // member is part of an anonymous scope
     mutable bool annUsed = false;     // ugly: needs to be mutable to allow setAnonymousUsed to act as a
+    mutable bool hasDetailedDescriptionCached = false;
+    bool detailedDescriptionCachedValue = false;
                                       // const member.
     bool hasCallGraph = false;
     bool hasCallerGraph = false;
@@ -1272,7 +1272,7 @@ class MemberDefImpl::IMPL
     int numberOfFlowKW = 0;
 };
 
-MemberDefImpl::IMPL::IMPL() : enumFields(MemberListType_enumFields)
+MemberDefImpl::IMPL::IMPL()
 {
 }
 
@@ -1478,7 +1478,7 @@ const MemberDef *MemberDefImpl::reimplements() const
   return m_impl->redefines;
 }
 
-const MemberList &MemberDefImpl::reimplementedBy() const
+const MemberVector &MemberDefImpl::reimplementedBy() const
 {
   return m_impl->redefinedBy;
 }
@@ -1568,7 +1568,7 @@ QCString MemberDefImpl::getOutputFileBase() const
       );
     return "dummy";
   }
-  else if (separateMemberPages && isDetailedSectionLinkable())
+  else if (separateMemberPages && hasDetailedDescription())
   {
     if (getEnumScope()) // enum value, which is part of enum's documentation
     {
@@ -1800,7 +1800,7 @@ void MemberDefImpl::writeLink(OutputList &ol,
   {
     if (isStatic()) ol.docify("+ "); else ol.docify("- ");
   }
-  if (!onlyText && (isLinkable() || isDetailedSectionLinkable())) // write link
+  if (!onlyText && (isLinkable() || hasDetailedDescription())) // write link
   {
     if (m_impl->mtype==MemberType_EnumValue && getGroupDef()==0 &&          // enum value is not grouped
         getEnumScope() && getEnumScope()->getGroupDef()) // but its container is
@@ -2100,7 +2100,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                     );
 
   // If there is no detailed description we need to write the anchor here.
-  bool detailsVisible = isDetailedSectionLinkable();
+  bool detailsVisible = hasDetailedDescription();
   bool writeAnchor = (inGroup || getGroupDef()==0) &&     // only write anchors for member that have no details and are
                      !detailsVisible && !m_impl->annMemb; // rendered inside the group page or are not grouped at all
   if (writeAnchor)
@@ -2271,7 +2271,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     MemberDefMutable *annMemb = toMemberDefMutable(m_impl->annMemb);
     //printf("Member name=`%s gd=%p md->groupDef=%p inGroup=%d isLinkable()=%d hasDocumentation=%d\n",qPrint(name()),gd,getGroupDef(),inGroup,isLinkable(),hasDocumentation());
     if (!name().isEmpty() && // name valid
-        (isDetailedSectionLinkable() || isReference()) && // has docs
+        (hasDetailedDescription() || isReference()) && // has docs
         !(m_impl->prot==Private && !extractPrivate && (m_impl->virt==Normal || !extractPrivateVirtual) && m_impl->mtype!=MemberType_Friend) && // hidden due to protection
         !(isStatic() && getClassDef()==0 && !extractStatic) // hidden due to static-ness
        )
@@ -2540,87 +2540,119 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   warnIfUndocumented();
 }
 
-bool MemberDefImpl::isDetailedSectionLinkable() const
+bool MemberDefImpl::hasDetailedDescription() const
 {
-  static bool alwaysDetailedSec = Config_getBool(ALWAYS_DETAILED_SEC);
-  static bool repeatBrief       = Config_getBool(REPEAT_BRIEF);
-  static bool briefMemberDesc   = Config_getBool(BRIEF_MEMBER_DESC);
-  static bool hideUndocMembers  = Config_getBool(HIDE_UNDOC_MEMBERS);
-  static bool extractStatic     = Config_getBool(EXTRACT_STATIC);
-  static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-  static bool inlineSources     = Config_getBool(INLINE_SOURCES);
+  static std::once_flag flag;
+  if (!m_impl->hasDetailedDescriptionCached)
+  {
+    std::call_once(flag, [this]() // in cause of multiple threads, let one go and compute and let
+                                  // the others wait for the result to become available
+    {
+      static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
+      static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
+      static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
+      static bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
+      static bool extractStatic         = Config_getBool(EXTRACT_STATIC);
+      static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+      static bool inlineSources         = Config_getBool(INLINE_SOURCES);
 
-  // the member has details documentation for any of the following reasons
-  bool docFilter =
-         // has detailed docs
-         !documentation().isEmpty() ||
-         // has inbody docs
-         !inbodyDocumentation().isEmpty() ||
-         // is an enum with values that are documented
-         (m_impl->mtype==MemberType_Enumeration && m_impl->docEnumValues) ||
-         // is documented enum value
-         (m_impl->mtype==MemberType_EnumValue && !briefDescription().isEmpty()) ||
-         // has brief description that is part of the detailed description
-         (!briefDescription().isEmpty() &&           // has brief docs
-          (alwaysDetailedSec &&                      // they are visible in
-           (repeatBrief ||                           // detailed section or
-            !briefMemberDesc                         // they are explicitly not
-           )                                         // shown in brief section
-          )
-         ) ||
-         // has a multi-line initialization block
-         //(initLines>0 && initLines<maxInitLines) ||
-         (hasMultiLineInitializer() && !hideUndocMembers) ||
-         // has one or more documented arguments
-         (m_impl->defArgList.hasDocumentation()) ||
-         // is an attribute or property - need to display that tag
-         (m_impl->memSpec & (Entry::Attribute|Entry::Property)) ||
-         // has inline sources
-         (inlineSources && hasSources()) ||
-         // has references
-         (hasReferencesRelation() && hasMemberSourceRefs()) ||
-         (hasReferencedByRelation() && hasMemberSourceReffedBy()) ||
-         // reimplements / reimplemented by
-         _isReimplements() ||
-         (_countReimplementedBy() > 0) ||
-         // has user comments
-         Doxygen::userComments
-         ;
-  //
-  // this is not a global static or global statics should be extracted
-  bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic;
+      // the member has detailed documentation because the user added some comments
+      bool docFilter =
+             // has detailed docs
+             !documentation().isEmpty() ||
+             // has inbody docs
+             !inbodyDocumentation().isEmpty() ||
+             // is an enum with values that are documented
+             (isEnumerate() && hasDocumentedEnumValues()) ||
+             // is documented enum value
+             (m_impl->mtype==MemberType_EnumValue && !briefDescription().isEmpty()) ||
+             // has brief description that is part of the detailed description
+             (!briefDescription().isEmpty() &&           // has brief docs
+              (alwaysDetailedSec &&                      // they are visible in
+               (repeatBrief ||                           // detailed section or
+                !briefMemberDesc                         // they are explicitly not
+               )                                         // shown in brief section
+              )
+             ) ||
+             // has one or more documented arguments
+             (m_impl->templateMaster ?
+              m_impl->templateMaster->argumentList().hasDocumentation() :
+              m_impl->defArgList.hasDocumentation());
 
-  // only include members that are non-private unless EXTRACT_PRIVATE is
-  // set to YES or the member is part of a   group
-  bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
-                       (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
+      // generate function                  guard
+      // ==================                 =======
+      // _writeGroupInclude              -> ignored in calculation
+      // multiLineInitializer()          -> hasMultiLineInitializer()
+      // _writeReimplements              -> _isReimplements()
+      // _writeReimplementedBy           -> _countReimplementedBy()>0
+      // _writeExamples                  -> hasExamples()
+      // _writeTypeConstraints           -> m_impl->typeConstraints.hasParameters()
+      // writeSourceDef                  -> !getSourceFileBase().isEmpty();
+      // writeInlineCode                 -> INLINE_SOURCES && hasSources()
+      // writeSourceRefs                 -> hasReferencesRelation() && hasSourceRefs()
+      // writeSourceReffedBy             -> hasReferencedByRelation() && hasSourceReffedBy()
+      // _writeCallGraph                 -> _hasVisibleCallGraph()
+      // _writeCallerGraph               -> _hasVisibleCallerGraph()
 
-  // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
-  // is true
-  bool friendCompoundFilter = !(Config_getBool(HIDE_FRIEND_COMPOUNDS) &&
-                                isFriend() /*&&
-                                (m_impl->type=="friend class" ||
-                                 m_impl->type=="friend struct" ||
-                                 m_impl->type=="friend union"
-                                )*/
-                               );
+      // the member has detailed documentation because there is some generated info
+      bool docInfo =
+             // has a multi-line initialization block
+             (hasMultiLineInitializer()) ||
+             // reimplements / reimplemented by
+             _isReimplements() || (_countReimplementedBy() > 0) ||
+             // examples
+             hasExamples() ||
+             // type constraints
+             m_impl->typeConstraints.hasParameters() ||
+             // has source definition
+             !getSourceFileBase().isEmpty() ||
+             // has inline sources
+             (inlineSources && hasSources()) ||
+             // has references
+             (hasReferencesRelation() && hasSourceRefs()) ||
+             (hasReferencedByRelation() && hasSourceReffedBy()) ||
+             // call graph
+             _hasVisibleCallGraph() ||
+             // caller graph
+             _hasVisibleCallerGraph();
 
+      if (!hideUndocMembers) // if HIDE_UNDOC_MEMBERS is NO we also show the detailed section
+                             // if there is only some generated info
+      {
+        docFilter = docFilter || docInfo;
+      }
 
-  bool result = (docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden());
-  return result;
+      // this is not a global static or global statics should be extracted
+      bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic;
+
+      // only include members that are non-private unless EXTRACT_PRIVATE is
+      // set to YES or the member is part of a   group
+      bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
+                           (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
+
+      // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
+      // is true
+      bool friendCompoundFilter = !(Config_getBool(HIDE_FRIEND_COMPOUNDS) && isFriend());
+
+      m_impl->detailedDescriptionCachedValue =
+          (docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden());
+      m_impl->hasDetailedDescriptionCached = true;
+    });
+  }
+  return m_impl->detailedDescriptionCachedValue;
 }
 
-bool MemberDefImpl::isDetailedSectionVisible(bool inGroup,bool inFile) const
+bool MemberDefImpl::isDetailedSectionVisible(MemberListContainer container) const
 {
   static bool separateMemPages = Config_getBool(SEPARATE_MEMBER_PAGES);
   static bool inlineSimpleStructs = Config_getBool(INLINE_SIMPLE_STRUCTS);
   static bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-  bool groupFilter = getGroupDef()==0 || inGroup || separateMemPages;
-  bool fileFilter  = getNamespaceDef()==0 || !getNamespaceDef()->isLinkable() || !inFile;
+  bool groupFilter = getGroupDef()==0 || container==MemberListContainer::Group || separateMemPages;
+  bool fileFilter  = getNamespaceDef()==0 || !getNamespaceDef()->isLinkable() || container!=MemberListContainer::File;
   bool simpleFilter = (hasBriefDescription() || !hideUndocMembers) && inlineSimpleStructs &&
                       getClassDef()!=0 && getClassDef()->isSimple();
 
-  bool visible = isDetailedSectionLinkable() && groupFilter && fileFilter &&
+  bool visible = hasDetailedDescription() && groupFilter && fileFilter &&
                  !isReference();
   bool result = visible || simpleFilter;
   //printf("%s::isDetailedSectionVisible: %d groupFilter=%d fileFilter=%d\n",
@@ -2752,9 +2784,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
 void MemberDefImpl::_writeCallGraph(OutputList &ol) const
 {
   // write call graph
-  if (m_impl->hasCallGraph
-      && (isFunction() || isSlot() || isSignal()) && Config_getBool(HAVE_DOT)
-     )
+  if (_hasVisibleCallGraph())
   {
     DotCallGraph callGraph(this,FALSE);
     if (callGraph.isTooBig())
@@ -2776,9 +2806,7 @@ void MemberDefImpl::_writeCallGraph(OutputList &ol) const
 
 void MemberDefImpl::_writeCallerGraph(OutputList &ol) const
 {
-  if (m_impl->hasCallerGraph
-      && (isFunction() || isSlot() || isSignal()) && Config_getBool(HAVE_DOT)
-     )
+  if (_hasVisibleCallerGraph())
   {
     DotCallGraph callerGraph(this, TRUE);
     if (callerGraph.isTooBig())
@@ -2873,7 +2901,7 @@ void MemberDefImpl::_writeReimplements(OutputList &ol) const
 
 size_t MemberDefImpl::_countReimplementedBy() const
 {
-  const MemberList &bml=reimplementedBy();
+  const MemberVector &bml=reimplementedBy();
   size_t count=0;
   for (const auto &bmd : bml)
   {
@@ -2890,7 +2918,7 @@ size_t MemberDefImpl::_countReimplementedBy() const
 
 void MemberDefImpl::_writeReimplementedBy(OutputList &ol) const
 {
-  const MemberList &bml=reimplementedBy();
+  const MemberVector &bml=reimplementedBy();
   size_t count = _countReimplementedBy();
   if (count>0)
   {
@@ -3211,6 +3239,30 @@ void MemberDefImpl::_writeGroupInclude(OutputList &ol,bool inGroup) const
   }
 }
 
+void MemberDefImpl::_writeMultiLineInitializer(OutputList &ol,const QCString &scopeName) const
+{
+    //printf("md=%s initLines=%d init='%s'\n",qPrint(name()),initLines,qPrint(init));
+    ol.startBold();
+    if (m_impl->mtype==MemberType_Define)
+      ol.parseText(theTranslator->trDefineValue());
+    else
+      ol.parseText(theTranslator->trInitialValue());
+    ol.endBold();
+    QCString langCorrected = getDefFileExtension();
+    SrcLangExt srcLangExt = getLanguageFromFileName(getDefFileExtension());
+    if (srcLangExt == SrcLangExt_Lex)
+    {
+      langCorrected = ".doxygen_lex_c";
+      srcLangExt = SrcLangExt_Cpp;
+    }
+    auto intf = Doxygen::parserManager->getCodeParser(langCorrected);
+    intf->resetCodeParserState();
+    ol.startCodeFragment("DoxyCode");
+    intf->parseCode(ol,scopeName,m_impl->initializer,srcLangExt,FALSE,QCString(),const_cast<FileDef*>(getFileDef()),
+                     -1,-1,TRUE,this,FALSE,this);
+    ol.endCodeFragment("DoxyCode");
+}
+
 /*! Writes the "detailed documentation" section of this member to
  *  all active output formats.
  */
@@ -3228,7 +3280,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   bool hasParameterList = FALSE;
 
   //printf("MemberDefImpl::writeDocumentation(): name='%s' hasDocs='%d' containerType=%d inGroup=%d sectionLinkable=%d\n",
-  //    qPrint(name()),hasDocs,container->definitionType(),inGroup,isDetailedSectionLinkable());
+  //    qPrint(name()),hasDocs,container->definitionType(),inGroup,hasDetailedDescription());
 
   //if ( !hasDocs ) return;
   //if (isEnumValue() && !showEnumValues) return;
@@ -3579,45 +3631,10 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   _writeGroupInclude(ol,inGroup);
 
   /* write multi-line initializer (if any) */
-  if (hasMultiLineInitializer()
-      //initLines>0 && ((initLines<maxInitLines && userInitLines==-1) // implicitly enabled
-      //                || initLines<userInitLines // explicitly enabled
-      //               )
-     )
-  {
-    //printf("md=%s initLines=%d init='%s'\n",qPrint(name()),initLines,qPrint(init));
-    ol.startBold();
-    if (m_impl->mtype==MemberType_Define)
-      ol.parseText(theTranslator->trDefineValue());
-    else
-      ol.parseText(theTranslator->trInitialValue());
-    ol.endBold();
-    QCString langCorrected = getDefFileExtension();
-    SrcLangExt srcLangExt = getLanguageFromFileName(getDefFileExtension());
-    if (srcLangExt == SrcLangExt_Lex)
-    {
-      langCorrected = ".doxygen_lex_c";
-      srcLangExt = SrcLangExt_Cpp;
-    }
-    auto intf = Doxygen::parserManager->getCodeParser(langCorrected);
-    intf->resetCodeParserState();
-    ol.startCodeFragment("DoxyCode");
-    intf->parseCode(ol,scopeName,m_impl->initializer,srcLangExt,FALSE,QCString(),const_cast<FileDef*>(getFileDef()),
-                     -1,-1,TRUE,this,FALSE,this);
-    ol.endCodeFragment("DoxyCode");
-  }
-
-  QCString brief           = briefDescription();
-  QCString detailed        = documentation();
-  ArgumentList &docArgList = m_impl->defArgList;
-  if (m_impl->templateMaster)
-  {
-    brief      = m_impl->templateMaster->briefDescription();
-    detailed   = m_impl->templateMaster->documentation();
-    docArgList = m_impl->templateMaster->argumentList();
-  }
+  if (hasMultiLineInitializer()) _writeMultiLineInitializer(ol,scopeName);
 
   /* write brief description */
+  QCString brief = briefDescription();
   if (!brief.isEmpty() &&
       (Config_getBool(REPEAT_BRIEF) ||
        !Config_getBool(BRIEF_MEMBER_DESC)
@@ -3633,6 +3650,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   }
 
   /* write detailed description */
+  QCString detailed = documentation();
   if (!detailed.isEmpty() ||
       !inbodyDocumentation().isEmpty())
   {
@@ -3656,8 +3674,7 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
                      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
     }
   }
-  else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) ||
-        !Config_getBool(BRIEF_MEMBER_DESC)))
+  else if (!brief.isEmpty() && (Config_getBool(REPEAT_BRIEF) || !Config_getBool(BRIEF_MEMBER_DESC)))
   {
     if (!inbodyDocumentation().isEmpty())
     {
@@ -3670,6 +3687,9 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   //printf("***** defArgList=%p name=%s docs=%s hasDocs=%d\n",
   //     defArgList,
   //     defArgList?defArgList->hasDocumentation():-1);
+  const ArgumentList &docArgList = m_impl->templateMaster ?
+                                   m_impl->templateMaster->argumentList() :
+                                   m_impl->defArgList;
   if (docArgList.hasDocumentation())
   {
     QCString paramDocs;
@@ -3707,17 +3727,6 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
   if (hasReferencedByRelation()) writeSourceReffedBy(ol,cname);
   _writeCallGraph(ol);
   _writeCallerGraph(ol);
-
-  if (Doxygen::userComments)
-  {
-    ol.pushGeneratorState();
-    ol.disableAllBut(OutputGenerator::Html);
-    QCString cmd = "<? $root=$_SERVER['DOCUMENT_ROOT']; "
-                   "passthru(\"$root/doxynotes --lookup "+
-                   getOutputFileBase()+":"+anchor()+"\") ?>";
-    ol.writeString(cmd);
-    ol.popGeneratorState();
-  }
 
   ol.endIndent();
 
@@ -3923,7 +3932,7 @@ void MemberDefImpl::warnIfUndocumented() const
     warn_undoc(getDefFileName(),getDefLine(),"Member %s%s (%s) of %s %s is not documented.",
          qPrint(name()),qPrint(argsString()),qPrint(memberTypeName()),qPrint(t),qPrint(d->name()));
   }
-  else if (!isDetailedSectionLinkable())
+  else if (!hasDetailedDescription())
   {
     warnIfUndocumentedParams();
   }
@@ -4103,14 +4112,6 @@ bool MemberDefImpl::hasDocumentation() const
          (m_impl->defArgList.hasDocumentation());   // has doc arguments
 }
 
-#if 0
-bool MemberDefImpl::hasUserDocumentation() const
-{
-  bool hasDocs = DefinitionMixin::hasUserDocumentation();
-  return hasDocs;
-}
-#endif
-
 
 void MemberDefImpl::setMemberGroup(MemberGroup *grp)
 {
@@ -4130,31 +4131,6 @@ QCString MemberDefImpl::getScopeString() const
   else if (getNamespaceDef()) result=getNamespaceDef()->displayName();
   return result;
 }
-
-#if 0
-static QCString escapeAnchor(const QCString &anchor)
-{
-  QCString result;
-  int l = anchor.length(),i;
-  for (i=0;i<l;i++)
-  {
-    char c = anchor.at(i);
-    if ((c>='a' && c<='z') || (c>='A' && c<='Z'))
-    {
-      result+=c;
-    }
-    else
-    {
-      static char hexStr[]="0123456789ABCDEF";
-      char escChar[]={ '_', 0, 0, 0 };
-      escChar[1]=hexStr[c>>4];
-      escChar[2]=hexStr[c&0xf];
-      result+=escChar;
-    }
-  }
-  return result;
-}
-#endif
 
 void MemberDefImpl::setAnchor()
 {
@@ -5318,7 +5294,7 @@ bool MemberDefImpl::isConstExpr() const
   return (m_impl->memSpec&Entry::ConstExpr)!=0;
 }
 
-const MemberList &MemberDefImpl::enumFieldList() const
+const MemberVector &MemberDefImpl::enumFieldList() const
 {
   return m_impl->enumFields;
 }
@@ -5436,19 +5412,33 @@ bool MemberDefImpl::hasCallGraph() const
   return m_impl->hasCallGraph;
 }
 
+bool MemberDefImpl::_hasVisibleCallGraph() const
+{
+  bool enabled = m_impl->hasCallGraph &&
+         (isFunction() || isSlot() || isSignal()) &&
+         Config_getBool(HAVE_DOT);
+  if (enabled)
+  {
+    return DotCallGraph::isTrivial(this,FALSE);
+  }
+  return FALSE;
+}
+
 bool MemberDefImpl::hasCallerGraph() const
 {
   return m_impl->hasCallerGraph;
 }
 
-bool MemberDefImpl::hasMemberSourceRefs() const
+bool MemberDefImpl::_hasVisibleCallerGraph() const
 {
-  return hasSourceRefs();
-}
-
-bool MemberDefImpl::hasMemberSourceReffedBy() const
-{
-  return hasSourceReffedBy();
+  bool enabled = m_impl->hasCallerGraph &&
+         (isFunction() || isSlot() || isSignal()) &&
+         Config_getBool(HAVE_DOT);
+  if (enabled)
+  {
+    return DotCallGraph::isTrivial(this,TRUE);
+  }
+  return FALSE;
 }
 
 bool MemberDefImpl::hasReferencedByRelation() const

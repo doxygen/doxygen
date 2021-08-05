@@ -111,7 +111,6 @@ class Doxygen
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
     static QCString                  filterDBFileName;
-    static bool                      userComments;
     static IndexList                *indexList;
     static int                       subpageNestingLevel;
     static QCString                  spaces;

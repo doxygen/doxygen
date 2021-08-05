@@ -161,7 +161,6 @@ bool                  Doxygen::suppressDocWarnings = FALSE;
 QCString              Doxygen::filterDBFileName;
 IndexList            *Doxygen::indexList;
 int                   Doxygen::subpageNestingLevel = 0;
-bool                  Doxygen::userComments = FALSE;
 QCString              Doxygen::spaces;
 bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
@@ -8008,28 +8007,28 @@ static void addSourceReferences()
   // add source references for class definitions
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    FileDef *fd=cd->getBodyDef();
+    const FileDef *fd=cd->getBodyDef();
     if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
+      const_cast<FileDef*>(fd)->addSourceRef(cd->getStartDefLine(),cd.get(),0);
     }
   }
   // add source references for concept definitions
   for (const auto &cd : *Doxygen::conceptLinkedMap)
   {
-    FileDef *fd=cd->getBodyDef();
+    const FileDef *fd=cd->getBodyDef();
     if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
+      const_cast<FileDef*>(fd)->addSourceRef(cd->getStartDefLine(),cd.get(),0);
     }
   }
   // add source references for namespace definitions
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    FileDef *fd=nd->getBodyDef();
+    const FileDef *fd=nd->getBodyDef();
     if (fd && nd->isLinkableInProject() && nd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(nd->getStartDefLine(),nd.get(),0);
+      const_cast<FileDef*>(fd)->addSourceRef(nd->getStartDefLine(),nd.get(),0);
     }
   }
 
@@ -8042,7 +8041,7 @@ static void addSourceReferences()
       //    qPrint(md->name()),
       //    md->getBodyDef()?qPrint(md->getBodyDef()->name()):"<none>",
       //    md->getStartBodyLine(),md->isLinkableInProject());
-      FileDef *fd=md->getBodyDef();
+      const FileDef *fd=md->getBodyDef();
       if (fd &&
           md->getStartDefLine()!=-1 &&
           md->isLinkableInProject() &&
@@ -8051,7 +8050,7 @@ static void addSourceReferences()
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    qPrint(md->name()),qPrint(fd->name()),md->getStartBodyLine(),qPrint(md->getOuterScope()->name()));
-        fd->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
+        const_cast<FileDef*>(fd)->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
       }
     }
   }
@@ -8059,7 +8058,7 @@ static void addSourceReferences()
   {
     for (const auto &md : *mn)
     {
-      FileDef *fd=md->getBodyDef();
+      const FileDef *fd=md->getBodyDef();
       //printf("member %s body=[%d,%d] fd=%p link=%d parseSources=%d\n",
       //    qPrint(md->name()),
       //    md->getStartBodyLine(),md->getEndBodyLine(),fd,
@@ -8073,7 +8072,7 @@ static void addSourceReferences()
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    qPrint(md->name()),qPrint(fd->name()),md->getStartBodyLine(),qPrint(md->getOuterScope()->name()));
-        fd->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
+        const_cast<FileDef*>(fd)->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
       }
     }
   }

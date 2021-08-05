@@ -1011,7 +1011,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
     {
-      FileDef *bodyDef = md->getBodyDef();
+      const FileDef *bodyDef = md->getBodyDef();
       if (bodyDef)
       {
         t << " bodyfile=\"" << convertToXML(stripFromPath(bodyDef->absFilePath())) << "\"";
@@ -1397,7 +1397,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     << cd->getDefColumn() << "\"" ;
     if (cd->getStartBodyLine()!=-1)
     {
-      FileDef *bodyDef = cd->getBodyDef();
+      const FileDef *bodyDef = cd->getBodyDef();
       if (bodyDef)
       {
         t << " bodyfile=\"" << convertToXML(stripFromPath(bodyDef->absFilePath())) << "\"";

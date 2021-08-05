@@ -1672,7 +1672,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList &enumFields = md->enumFieldList();
+    const MemberVector &enumFields = md->enumFieldList();
     if (!enumFields.empty())
     {
       m_output.openList("values");
@@ -1707,7 +1707,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       .addFieldQuotedString("name", rmd->name())
       .closeHash();
 
-  const MemberList &rbml = md->reimplementedBy();
+  const MemberVector &rbml = md->reimplementedBy();
   if (!rbml.empty())
   {
     m_output.openList("reimplemented_by");

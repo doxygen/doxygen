@@ -86,6 +86,9 @@ class DefinitionImpl::IMPL
     int defLine;
     int defColumn;
     Definition::Cookie *cookie;
+
+    mutable MemberVector referencesMembers;
+    mutable MemberVector referencedByMembers;
 };
 
 
@@ -1085,7 +1088,7 @@ void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
   m_impl->body->endLine   = ble;
 }
 
-void DefinitionImpl::setBodyDef(FileDef *fd)
+void DefinitionImpl::setBodyDef(const FileDef *fd)
 {
   if (m_impl->body==0) m_impl->body = new BodyInfo;
   m_impl->body->fileDef=fd;
@@ -1144,10 +1147,10 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
   ol.popGeneratorState();
 }
 
-static inline std::vector<const MemberDef*> refMapToVector(const std::unordered_map<std::string,const MemberDef *> &map)
+static inline MemberVector refMapToVector(const std::unordered_map<std::string,const MemberDef *> &map)
 {
   // convert map to a vector of values
-  std::vector<const MemberDef *> result;
+  MemberVector result;
   std::transform(map.begin(),map.end(),      // iterate over map
                  std::back_inserter(result), // add results to vector
                  [](const auto &item)
@@ -1951,7 +1954,7 @@ int DefinitionImpl::getEndBodyLine() const
   return m_impl->body ? m_impl->body->endLine : -1;
 }
 
-FileDef *DefinitionImpl::getBodyDef() const
+const FileDef *DefinitionImpl::getBodyDef() const
 {
   return m_impl->body ? m_impl->body->fileDef : 0;
 }
@@ -1975,14 +1978,22 @@ Definition *DefinitionImpl::getOuterScope() const
   return m_impl->outerScope;
 }
 
-std::vector<const MemberDef*> DefinitionImpl::getReferencesMembers() const
+const MemberVector &DefinitionImpl::getReferencesMembers() const
 {
-  return refMapToVector(m_impl->sourceRefsDict);
+  if (m_impl->referencesMembers.empty() && !m_impl->sourceRefsDict.empty())
+  {
+    m_impl->referencesMembers = refMapToVector(m_impl->sourceRefsDict);
+  }
+  return m_impl->referencesMembers;
 }
 
-std::vector<const MemberDef*> DefinitionImpl::getReferencedByMembers() const
+const MemberVector &DefinitionImpl::getReferencedByMembers() const
 {
-  return refMapToVector(m_impl->sourceRefByDict);
+  if (m_impl->referencedByMembers.empty() && !m_impl->sourceRefByDict.empty())
+  {
+    m_impl->referencedByMembers = refMapToVector(m_impl->sourceRefByDict);
+  }
+  return m_impl->referencedByMembers;
 }
 
 void DefinitionImpl::mergeReferences(const Definition *other)

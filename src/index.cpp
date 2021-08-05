@@ -293,7 +293,7 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
 {
   bool isAnonymous = md->isAnonymous();
   bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-  const MemberList &enumList = md->enumFieldList();
+  const MemberVector &enumList = md->enumFieldList();
   bool isDir = !enumList.empty() && md->isEnumerate();
   if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
   {
@@ -3814,7 +3814,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
         {
           for (const auto &md : *ml)
           {
-            const MemberList &enumList = md->enumFieldList();
+            const MemberVector &enumList = md->enumFieldList();
             isDir = !enumList.empty() && md->isEnumerate();
             if (md->isVisible() && !md->isAnonymous())
             {

@@ -123,7 +123,7 @@ struct codeYY_state
   std::stack<int> scopeStack;      //!< 1 if bracket starts a scope,
                                    //   2 for internal blocks
   int           anchorCount = 0;
-  FileDef *     sourceFileDef = 0;
+  const FileDef *     sourceFileDef = 0;
   bool          lineNumbers = FALSE;
   const Definition *  currentDefinition = 0;
   const MemberDef *   currentMemberDef = 0;
@@ -193,7 +193,6 @@ static const char *stateToString(yyscan_t yyscanner,int state);
 
 static void saveObjCContext(yyscan_t yyscanner);
 static void restoreObjCContext(yyscan_t yyscanner);
-static void addUsingDirective(yyscan_t yyscanner,const char *name);
 static void pushScope(yyscan_t yyscanner,const QCString &s);
 static void popScope(yyscan_t yyscanner);
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
@@ -258,6 +257,7 @@ static std::mutex g_searchIndexMutex;
 static std::mutex g_docCrossReferenceMutex;
 static std::mutex g_addExampleMutex;
 static std::mutex g_countFlowKeywordsMutex;
+static std::mutex g_usingDirectiveMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -2534,15 +2534,17 @@ static void addParmType(yyscan_t yyscanner)
   yyextra->parmName.resize(0) ;
 }
 
+// TODO: make this have a scope only effect, at least not modifying the FileDef object.
 static void addUsingDirective(yyscan_t yyscanner,const char *name)
 {
+  std::lock_guard<std::mutex> lock(g_usingDirectiveMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->sourceFileDef && name)
   {
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
-      yyextra->sourceFileDef->addUsingDirective(nd);
+      const_cast<FileDef*>(yyextra->sourceFileDef)->addUsingDirective(nd);
     }
   }
 }
@@ -3838,7 +3840,7 @@ void CCodeParser::setStartCodeLine(const bool inp)
 }
 
 void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,const QCString &s,
-                SrcLangExt lang,bool exBlock, const QCString &exName,FileDef *fd,
+                SrcLangExt lang,bool exBlock, const QCString &exName,const FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
                 const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
                 bool collectXRefs)

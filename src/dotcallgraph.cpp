@@ -207,3 +207,16 @@ int DotCallGraph::numNodes() const
   return (int)m_startNode->children().size();
 }
 
+bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
+{
+  auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
+  {
+    if (rmd->showInCallGraph())
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+

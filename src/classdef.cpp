@@ -1077,7 +1077,7 @@ void ClassDefImpl::internalInsertMember(const MemberDef *md,
               case MemberType_Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
-                  m_impl->memberLists.get(MemberListType_constructors)->push_back(md);
+                  m_impl->memberLists.get(MemberListType_constructors,MemberListContainer::Class)->push_back(md);
                 }
                 else
                 {
@@ -3251,8 +3251,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)
   {
-    mg->setInGroup(inGroup);
-    mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
+    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,inheritedFrom,inheritId);
   }
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
@@ -4166,7 +4165,7 @@ void ClassDefImpl::addMemberToList(MemberListType lt,const MemberDef *md,bool is
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_impl->memberLists.get(lt);
+  const auto &ml = m_impl->memberLists.get(lt,MemberListContainer::Class);
   ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
   ml->push_back(md);
 
@@ -4513,8 +4512,7 @@ void ClassDefImpl::writePlainMemberDeclaration(OutputList &ol,
   MemberList * ml = getMemberList(lt);
   if (ml)
   {
-    ml->setInGroup(inGroup);
-    ml->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
+    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,inheritedFrom,inheritId);
   }
 }
 

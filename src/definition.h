@@ -33,6 +33,7 @@ class FileDef;
 class OutputList;
 class SectionRefs;
 class MemberDef;
+class MemberVector;
 class GroupDef;
 class GroupList;
 class SectionInfo;
@@ -64,7 +65,7 @@ struct BodyInfo
     int      defLine = -1;     //!< line number of the start of the definition
     int      startLine = -1;   //!< line number of the start of the definition's body
     int      endLine = -1;     //!< line number of the end of the definition's body
-    FileDef *fileDef = 0;      //!< file definition containing the function body
+    const FileDef *fileDef = 0;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.
@@ -254,7 +255,7 @@ class Definition
     /*! Returns the file in which the body of this item is located or 0 if no
      *  body is available.
      */
-    virtual FileDef *getBodyDef() const = 0;
+    virtual const FileDef *getBodyDef() const = 0;
 
     /** Returns the programming language this definition was written in. */
     virtual SrcLangExt getLanguage() const = 0;
@@ -267,8 +268,8 @@ class Definition
     virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
-    virtual std::vector<const MemberDef *> getReferencesMembers() const = 0;
-    virtual std::vector<const MemberDef *> getReferencedByMembers() const = 0;
+    virtual const MemberVector &getReferencesMembers() const = 0;
+    virtual const MemberVector &getReferencedByMembers() const = 0;
 
     virtual bool hasSections() const = 0;
     virtual bool hasSources() const = 0;
@@ -344,7 +345,7 @@ class DefinitionMutable
 
     // source references
     virtual void setBodySegment(int defLine, int bls,int ble) = 0;
-    virtual void setBodyDef(FileDef *fd) = 0;
+    virtual void setBodyDef(const FileDef *fd) = 0;
 
     virtual void setRefItems(const RefItemVector &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;

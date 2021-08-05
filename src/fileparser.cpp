@@ -22,7 +22,7 @@ void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                SrcLangExt,          // lang
                bool,                // isExampleBlock
                const QCString &,    // exampleName
-               FileDef *            fileDef,
+               const FileDef *      fileDef,
                int                  startLine,
                int                  endLine,
                bool,                // inlineFragment

@@ -457,7 +457,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
     if (allMemberList==0)
     {
-      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList));
+      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::Namespace));
       allMemberList = m_memberLists.back().get();
     }
     allMemberList->push_back(md);
@@ -1369,7 +1369,7 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_memberLists.get(lt);
+  const auto &ml = m_memberLists.get(lt,MemberListContainer::Namespace);
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));

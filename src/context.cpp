@@ -2627,7 +2627,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     struct Cachable : public DefinitionContext<ClassContext::Private>::Cachable
     {
       Cachable(const ClassDef *cd) : DefinitionContext<ClassContext::Private>::Cachable(cd),
-                               inheritanceNodes(-1) { }
+                               inheritanceNodes(-1),
+                               allMembers(MemberListType_allMembersList,MemberListContainer::Class) { }
       SharedPtr<IncludeInfoContext>     includeInfo;
       SharedPtr<InheritanceListContext> inheritsList;
       SharedPtr<InheritanceListContext> inheritedByList;
@@ -4475,7 +4476,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasDetails() const
     {
-      return m_memberDef->isDetailedSectionLinkable();
+      return m_memberDef->hasDetailedDescription();
     }
     TemplateVariant initializer() const
     {
@@ -4573,7 +4574,8 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         Cachable &cache = getCache();
         if (!cache.enumValues)
         {
-          cache.enumValues.reset(MemberListContext::alloc(&m_memberDef->enumFieldList()));
+          MemberVector mv = m_memberDef->enumFieldList();
+          cache.enumValues.reset(MemberListContext::alloc(std::move(mv)));
         }
         return cache.enumValues.get();
       }
@@ -5184,7 +5186,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (args.size()==1)
       {
-        return m_memberDef->isDetailedSectionVisible(args[0].toString()=="module",args[0].toString()=="file");
+        QCString containerStr = args[0].toString();
+        MemberListContainer                 container = MemberListContainer::Class;
+        if      (containerStr=="module")    container = MemberListContainer::Group;
+        else if (containerStr=="file")      container = MemberListContainer::File;
+        else if (containerStr=="namespace") container = MemberListContainer::Namespace;
+        return m_memberDef->isDetailedSectionVisible(container);
       }
       else
       {
@@ -6744,7 +6751,10 @@ class NestingNodeContext::Private
             {
               const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
               const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
-              m_members->addMembers(ml,visitedClasses);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
             }
           }
         }
@@ -6757,7 +6767,10 @@ class NestingNodeContext::Private
             {
               const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
               const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
-              m_members->addMembers(ml,visitedClasses);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
             }
           }
         }
@@ -6770,7 +6783,10 @@ class NestingNodeContext::Private
             {
               const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
               const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
-              m_members->addMembers(ml,visitedClasses);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
             }
           }
         }
@@ -6784,7 +6800,10 @@ class NestingNodeContext::Private
           {
             const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
             const MemberList *ml = toGroupDef(m_def)->getMemberList(lmd->type);
-            m_members->addMembers(ml,visitedClasses);
+            if (ml)
+            {
+              m_members->addMembers(*ml,visitedClasses);
+            }
           }
         }
       }
@@ -6793,7 +6812,7 @@ class NestingNodeContext::Private
         const MemberDef *md = toMemberDef(m_def);
         if (md->isEnumerate() && md->isStrong())
         {
-          m_members->addMembers(&md->enumFieldList(),visitedClasses);
+          m_members->addMembers(md->enumFieldList(),visitedClasses);
         }
       }
     }
@@ -7121,19 +7140,16 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+    void addMembers(const MemberVector &mv,ClassDefSet &visitedClasses)
     {
-      if (ml)
+      for (const auto &md : mv)
       {
-        for (const auto &md : *ml)
+        if (md->visibleInIndex())
         {
-          if (md->visibleInIndex())
-          {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,md,m_index,m_level+1,
-                                              TRUE,FALSE,TRUE,FALSE,visitedClasses);
-            append(nnc);
-            m_index++;
-          }
+          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,md,m_index,m_level+1,
+              TRUE,FALSE,TRUE,FALSE,visitedClasses);
+          append(nnc);
+          m_index++;
         }
       }
     }
@@ -7252,10 +7268,11 @@ void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper,C
   p->addDerivedClasses(bcl,hideSuper,visitedClasses);
 }
 
-void NestingContext::addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+void NestingContext::addMembers(const MemberVector &mv,ClassDefSet &visitedClasses)
 {
-  p->addMembers(ml,visitedClasses);
+  p->addMembers(mv,visitedClasses);
 }
+
 
 //------------------------------------------------------------------------
 
@@ -9281,7 +9298,7 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
     for (const auto &md : *list)
     {
       if ((md->isBriefSectionVisible() && !details) ||
-          (md->isDetailedSectionLinkable() && details)
+          (md->hasDetailedDescription() && details)
          )
       {
         p->addMember(md);
@@ -9290,14 +9307,13 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
   }
 }
 
-MemberListContext::MemberListContext(std::vector<const MemberDef *> &&ml) : RefCountedContext("MemberListContext")
+MemberListContext::MemberListContext(const MemberVector &ml) : RefCountedContext("MemberListContext")
 {
   p = new Private;
   for (const auto &md : ml)
   {
     p->addMember(md);
   }
-  ml.clear();
 }
 
 MemberListContext::~MemberListContext()
@@ -9942,7 +9958,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       {
         const MemberList *ml  = cd->getMemberList(lt1);
         const MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
-        MemberList *combinedList = new MemberList(lt);
+        MemberList *combinedList = new MemberList(lt,MemberListContainer::Class);
         addMemberListIncludingGrouped(inheritedFrom,ml,combinedList);
         addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList);
         addMemberGroupsOfClass(inheritedFrom,cd,lt,combinedList);

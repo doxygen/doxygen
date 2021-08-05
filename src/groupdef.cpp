@@ -169,7 +169,7 @@ GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
 
 GroupDefImpl::GroupDefImpl(const QCString &df,int dl,const QCString &na,const QCString &t,
                    const QCString &refFileName) : DefinitionMixin(df,dl,1,na),
-                    m_allMemberList(MemberListType_allMembersList)
+                    m_allMemberList(MemberListType_allMembersList,MemberListContainer::Group)
 {
   if (!refFileName.isEmpty())
   {
@@ -314,12 +314,6 @@ void GroupDefImpl::addMembersToMemberGroup()
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
-  }
-
-  //printf("GroupDefImpl::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
-  for (const auto &mg : m_memberGroups)
-  {
-    mg->setInGroup(TRUE);
   }
 }
 
@@ -1607,8 +1601,7 @@ void GroupDefImpl::addMemberToList(MemberListType lt,const MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_memberLists.get(lt);
-  ml->setInGroup(true);
+  const auto &ml = m_memberLists.get(lt,MemberListContainer::Group);
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
