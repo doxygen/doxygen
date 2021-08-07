@@ -2542,103 +2542,102 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
 
 bool MemberDefImpl::hasDetailedDescription() const
 {
-  static std::once_flag flag;
+  //printf(">hasDetailedDescription(cached=%d)\n",m_impl->hasDetailedDescriptionCached);
   if (!m_impl->hasDetailedDescriptionCached)
   {
-    std::call_once(flag, [this]() // in cause of multiple threads, let one go and compute and let
-                                  // the others wait for the result to become available
+    static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
+    static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
+    static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
+    static bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
+    static bool extractStatic         = Config_getBool(EXTRACT_STATIC);
+    static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
+    static bool inlineSources         = Config_getBool(INLINE_SOURCES);
+
+    // the member has detailed documentation because the user added some comments
+    bool docFilter =
+           // has detailed docs
+           !documentation().isEmpty() ||
+           // has inbody docs
+           !inbodyDocumentation().isEmpty() ||
+           // is an enum with values that are documented
+           (isEnumerate() && hasDocumentedEnumValues()) ||
+           // is documented enum value
+           (m_impl->mtype==MemberType_EnumValue && !briefDescription().isEmpty()) ||
+           // has brief description that is part of the detailed description
+           (!briefDescription().isEmpty() &&           // has brief docs
+            (alwaysDetailedSec &&                      // they are visible in
+             (repeatBrief ||                           // detailed section or
+              !briefMemberDesc                         // they are explicitly not
+             )                                         // shown in brief section
+            )
+           ) ||
+           // has one or more documented arguments
+           (m_impl->templateMaster ?
+            m_impl->templateMaster->argumentList().hasDocumentation() :
+            m_impl->defArgList.hasDocumentation());
+
+    // generate function                  guard
+    // ==================                 =======
+    // _writeGroupInclude              -> ignored in calculation
+    // multiLineInitializer()          -> hasMultiLineInitializer()
+    // _writeReimplements              -> _isReimplements()
+    // _writeReimplementedBy           -> _countReimplementedBy()>0
+    // _writeExamples                  -> hasExamples()
+    // _writeTypeConstraints           -> m_impl->typeConstraints.hasParameters()
+    // writeSourceDef                  -> !getSourceFileBase().isEmpty();
+    // writeInlineCode                 -> INLINE_SOURCES && hasSources()
+    // writeSourceRefs                 -> hasReferencesRelation() && hasSourceRefs()
+    // writeSourceReffedBy             -> hasReferencedByRelation() && hasSourceReffedBy()
+    // _writeCallGraph                 -> _hasVisibleCallGraph()
+    // _writeCallerGraph               -> _hasVisibleCallerGraph()
+
+    // the member has detailed documentation because there is some generated info
+    bool docInfo =
+           // has a multi-line initialization block
+           (hasMultiLineInitializer()) ||
+           // reimplements / reimplemented by
+           _isReimplements() || (_countReimplementedBy() > 0) ||
+           // examples
+           hasExamples() ||
+           // type constraints
+           m_impl->typeConstraints.hasParameters() ||
+           // has source definition
+           !getSourceFileBase().isEmpty() ||
+           // has inline sources
+           (inlineSources && hasSources()) ||
+           // has references
+           (hasReferencesRelation() && hasSourceRefs()) ||
+           (hasReferencedByRelation() && hasSourceReffedBy()) ||
+           // call graph
+           _hasVisibleCallGraph() ||
+           // caller graph
+           _hasVisibleCallerGraph();
+
+    if (!hideUndocMembers) // if HIDE_UNDOC_MEMBERS is NO we also show the detailed section
+                           // if there is only some generated info
     {
-      static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
-      static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
-      static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
-      static bool hideUndocMembers      = Config_getBool(HIDE_UNDOC_MEMBERS);
-      static bool extractStatic         = Config_getBool(EXTRACT_STATIC);
-      static bool extractPrivateVirtual = Config_getBool(EXTRACT_PRIV_VIRTUAL);
-      static bool inlineSources         = Config_getBool(INLINE_SOURCES);
+      docFilter = docFilter || docInfo;
+    }
 
-      // the member has detailed documentation because the user added some comments
-      bool docFilter =
-             // has detailed docs
-             !documentation().isEmpty() ||
-             // has inbody docs
-             !inbodyDocumentation().isEmpty() ||
-             // is an enum with values that are documented
-             (isEnumerate() && hasDocumentedEnumValues()) ||
-             // is documented enum value
-             (m_impl->mtype==MemberType_EnumValue && !briefDescription().isEmpty()) ||
-             // has brief description that is part of the detailed description
-             (!briefDescription().isEmpty() &&           // has brief docs
-              (alwaysDetailedSec &&                      // they are visible in
-               (repeatBrief ||                           // detailed section or
-                !briefMemberDesc                         // they are explicitly not
-               )                                         // shown in brief section
-              )
-             ) ||
-             // has one or more documented arguments
-             (m_impl->templateMaster ?
-              m_impl->templateMaster->argumentList().hasDocumentation() :
-              m_impl->defArgList.hasDocumentation());
+    // this is not a global static or global statics should be extracted
+    bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic;
 
-      // generate function                  guard
-      // ==================                 =======
-      // _writeGroupInclude              -> ignored in calculation
-      // multiLineInitializer()          -> hasMultiLineInitializer()
-      // _writeReimplements              -> _isReimplements()
-      // _writeReimplementedBy           -> _countReimplementedBy()>0
-      // _writeExamples                  -> hasExamples()
-      // _writeTypeConstraints           -> m_impl->typeConstraints.hasParameters()
-      // writeSourceDef                  -> !getSourceFileBase().isEmpty();
-      // writeInlineCode                 -> INLINE_SOURCES && hasSources()
-      // writeSourceRefs                 -> hasReferencesRelation() && hasSourceRefs()
-      // writeSourceReffedBy             -> hasReferencedByRelation() && hasSourceReffedBy()
-      // _writeCallGraph                 -> _hasVisibleCallGraph()
-      // _writeCallerGraph               -> _hasVisibleCallerGraph()
+    // only include members that are non-private unless EXTRACT_PRIVATE is
+    // set to YES or the member is part of a   group
+    bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
+                         (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
 
-      // the member has detailed documentation because there is some generated info
-      bool docInfo =
-             // has a multi-line initialization block
-             (hasMultiLineInitializer()) ||
-             // reimplements / reimplemented by
-             _isReimplements() || (_countReimplementedBy() > 0) ||
-             // examples
-             hasExamples() ||
-             // type constraints
-             m_impl->typeConstraints.hasParameters() ||
-             // has source definition
-             !getSourceFileBase().isEmpty() ||
-             // has inline sources
-             (inlineSources && hasSources()) ||
-             // has references
-             (hasReferencesRelation() && hasSourceRefs()) ||
-             (hasReferencedByRelation() && hasSourceReffedBy()) ||
-             // call graph
-             _hasVisibleCallGraph() ||
-             // caller graph
-             _hasVisibleCallerGraph();
+    // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
+    // is true
+    bool friendCompoundFilter = !(Config_getBool(HIDE_FRIEND_COMPOUNDS) && isFriend());
 
-      if (!hideUndocMembers) // if HIDE_UNDOC_MEMBERS is NO we also show the detailed section
-                             // if there is only some generated info
-      {
-        docFilter = docFilter || docInfo;
-      }
-
-      // this is not a global static or global statics should be extracted
-      bool staticFilter = getClassDef()!=0 || !isStatic() || extractStatic;
-
-      // only include members that are non-private unless EXTRACT_PRIVATE is
-      // set to YES or the member is part of a   group
-      bool privateFilter = protectionLevelVisible(protection()) || m_impl->mtype==MemberType_Friend ||
-                           (m_impl->prot==Private && m_impl->virt!=Normal && extractPrivateVirtual);
-
-      // hide friend (class|struct|union) member if HIDE_FRIEND_COMPOUNDS
-      // is true
-      bool friendCompoundFilter = !(Config_getBool(HIDE_FRIEND_COMPOUNDS) && isFriend());
-
-      m_impl->detailedDescriptionCachedValue =
-          (docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden());
-      m_impl->hasDetailedDescriptionCached = true;
-    });
+    m_impl->detailedDescriptionCachedValue =
+        (docFilter && staticFilter && privateFilter && friendCompoundFilter && !isHidden());
+    //printf("docFilter=%d docInfo=%d staticFilter=%d privateFilter=%d friendCompoundFilter=%d !isHidden()=%d",
+    //    docFilter,docInfo,staticFilter,privateFilter,friendCompoundFilter,!isHidden());
+    m_impl->hasDetailedDescriptionCached = true;
   }
+  //printf("<hasDetailedDescription(cached=%d)\n",m_impl->hasDetailedDescriptionCached);
   return m_impl->detailedDescriptionCachedValue;
 }
 
