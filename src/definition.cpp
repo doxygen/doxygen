@@ -210,7 +210,7 @@ static void addToMap(const QCString &name,Definition *d)
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty())
   {
-    Doxygen::symbolMap.add(symbolName,d);
+    Doxygen::symbolMap->add(symbolName,d);
 
     d->_setSymbolName(symbolName);
   }
@@ -218,7 +218,7 @@ static void addToMap(const QCString &name,Definition *d)
 
 static void removeFromMap(const QCString &name,Definition *d)
 {
-  Doxygen::symbolMap.remove(name,d);
+  Doxygen::symbolMap->remove(name,d);
 }
 
 DefinitionImpl::DefinitionImpl(Definition *def,

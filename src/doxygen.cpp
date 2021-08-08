@@ -150,7 +150,7 @@ bool                  Doxygen::insideMainPage = FALSE; // are we generating docs
 NamespaceDefMutable  *Doxygen::globalScope = 0;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
-SymbolMap<Definition> Doxygen::symbolMap;
+SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = 0;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
@@ -8166,7 +8166,7 @@ static bool isSymbolHidden(const Definition *d)
 
 static void computeTooltipTexts()
 {
-  for (const auto &kv : Doxygen::symbolMap)
+  for (const auto &kv : *Doxygen::symbolMap)
   {
     DefinitionMutable *dm = toDefinitionMutable(kv.second);
     if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
@@ -10155,7 +10155,7 @@ static void dumpSymbolMap()
   if (f.is_open())
   {
     TextStream t(&f);
-    for (const auto &kv : Doxygen::symbolMap)
+    for (const auto &kv : *Doxygen::symbolMap)
     {
       dumpSymbol(t,kv.second);
     }
@@ -10285,6 +10285,8 @@ void initDoxygen()
   std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   std::setlocale(LC_NUMERIC,"C");
 
+  Doxygen::symbolMap = new SymbolMap<Definition>;
+
   Portable::correct_path();
 
   Debug::startTimer();
@@ -10385,6 +10387,7 @@ void cleanUpDoxygen()
   delete Doxygen::groupLinkedMap;
   delete Doxygen::namespaceLinkedMap;
   delete Doxygen::dirLinkedMap;
+  delete Doxygen::symbolMap;
 
   DotManager::deleteInstance();
 }
@@ -10909,6 +10912,7 @@ static void stopDoxygen(int)
     thisDir.remove(Doxygen::filterDBFileName.str());
   }
   killpg(0,SIGINT);
+  cleanUpDoxygen();
   exit(1);
 }
 #endif

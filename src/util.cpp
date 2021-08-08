@@ -5616,7 +5616,7 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
   if (name.isEmpty())
     return 0; // no name was given
 
-  auto range = Doxygen::symbolMap.find(name);
+  auto range = Doxygen::symbolMap->find(name);
   if (range.first==range.second)
     return 0; // could not find any matching symbols
 

@@ -1513,7 +1513,7 @@ static void findMemberLink(yyscan_t yyscanner,
   //    );
   if (yyextra->currentDefinition)
   {
-    auto range = Doxygen::symbolMap.find(symName);
+    auto range = Doxygen::symbolMap->find(symName);
     for (auto it = range.first; it!=range.second; ++it)
     {
       findMemberLink(yyscanner,ol,it->second,symName);

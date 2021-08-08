@@ -11087,7 +11087,7 @@ void generateOutputViaTemplate()
       }
 
       // clear all cached data in Definition objects.
-      for (const auto &kv : Doxygen::symbolMap)
+      for (const auto &kv : *Doxygen::symbolMap)
       {
         kv.second->setCookie(0);
       }

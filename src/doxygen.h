@@ -103,7 +103,7 @@ class Doxygen
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
     static SearchIndexIntf          *searchIndex;
-    static SymbolMap<Definition>     symbolMap;
+    static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;
