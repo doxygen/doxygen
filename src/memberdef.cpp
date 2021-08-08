@@ -2468,12 +2468,9 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     ol.endAnonTypeScope(--s_indentLevel);
   }
 
-  // write brief description all but HTML
-  ol.pushGeneratorState();
-  ol.disable(OutputGenerator::Html);
+  // write brief description
   if (!briefDescription().isEmpty() &&
       Config_getBool(BRIEF_MEMBER_DESC)
-      /* && !annMemb */
      )
   {
     std::unique_ptr<IDocParser> parser { createDocParser() };
@@ -2487,6 +2484,16 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       ol.startMemberDescription(anchor(),inheritId);
       ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
+      if (detailsVisible) // add More.. link only when both brief and details are visible
+      {
+        ol.pushGeneratorState();
+        ol.disableAllBut(OutputGenerator::Html);
+        ol.docify(" ");
+        ol.startTextLink(getOutputFileBase(),anchor());
+        ol.parseText(theTranslator->trMore());
+        ol.endTextLink();
+        ol.popGeneratorState();
+      }
       // for RTF we need to add an extra empty paragraph
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::RTF);
@@ -2496,44 +2503,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
       ol.endMemberDescription();
     }
   }
-  ol.popGeneratorState();
-
-  // write brief description HTML
-  ol.pushGeneratorState();
-  ol.disableAllBut(OutputGenerator::Html);
-  if ( Config_getBool(BRIEF_MEMBER_DESC)
-     )
-  {
-    std::unique_ptr<IDocParser> parser { createDocParser() };
-    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
-                                         briefFile(),briefLine(),
-                                         getOuterScope()?getOuterScope():d,
-                                         this,briefDescription(),TRUE,FALSE,
-                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
-
-    if (rootNode)
-    {
-      if (!rootNode->isEmpty() || detailsVisible)
-      { // to prevent empty line i n case both are empty
-        ol.startMemberDescription(anchor(),inheritId);
-        ol.writeDoc(rootNode.get(),getOuterScope()?getOuterScope():d,this);
-      }
-      if (detailsVisible)
-      {
-        //ol.endEmphasis();
-        ol.docify(" ");
-        ol.startTextLink(getOutputFileBase(),anchor());
-        ol.parseText(theTranslator->trMore());
-        ol.endTextLink();
-        //ol.startEmphasis();
-      }
-      if (!rootNode->isEmpty() || detailsVisible)
-      {
-        ol.endMemberDescription();
-      }
-    }
-  }
-  ol.popGeneratorState();
 
   ol.endMemberDeclaration(anchor(),inheritId);
 
