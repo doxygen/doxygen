@@ -362,8 +362,8 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>^{LISTITEM}   { /* list item */
                          lineCount(yytext,yyleng);
                          QCString text(yytext);
-                         size_t dashPos = static_cast<size_t>(text.findRev('-'));
-                         assert(dashPos!=std::string::npos);
+                         uint dashPos = static_cast<uint>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(yytext,dashPos);
@@ -417,8 +417,8 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>{BLANK}*(\n|"\\ilinebr"){LISTITEM}     { /* list item on next line */
                          lineCount(yytext,yyleng);
                          QCString text=extractPartAfterNewLine(QCString(yytext));
-                         size_t dashPos = static_cast<size_t>(text.findRev('-'));
-                         assert(dashPos!=std::string::npos);
+                         uint dashPos = static_cast<uint>(text.findRev('-'));
+                         assert(dashPos!=static_cast<uint>(-1));
                          yyextra->token->isEnumList = text.at(dashPos+1)=='#';
                          yyextra->token->id         = -1;
                          yyextra->token->indent     = computeIndent(text.data(),dashPos);

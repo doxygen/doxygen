@@ -49,6 +49,7 @@ class MemberVector
     const_reference front() const           { return m_members.front();   }
     const_reference back() const            { return m_members.back();    }
     const_reference operator[](int index) const { return m_members[index];    }
+    const_reference operator[](size_t index) const { return m_members[index];    }
 
     static bool lessThan(const MemberDef *md1,const MemberDef *md2)
     {
