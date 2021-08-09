@@ -671,7 +671,7 @@ bool DocParser::findDocsForMemberOrCompound(const QCString &commandName,
       cmdArg.startsWith("anonymous_namespace{")
       )
   {
-    int rightBracePos = cmdArg.find("}", std::strlen("anonymous_namespace{"));
+    size_t rightBracePos = cmdArg.find("}", std::strlen("anonymous_namespace{"));
     QCString leftPart = cmdArg.left(rightBracePos + 1);
     QCString rightPart = cmdArg.right(cmdArg.size() - rightBracePos - 1);
     rightPart = substitute(rightPart, ".", "::");

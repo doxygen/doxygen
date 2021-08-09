@@ -5989,14 +5989,14 @@ int countAliasArguments(const QCString &argList)
   return count;
 }
 
-QCString extractAliasArgs(const QCString &args,int pos)
+QCString extractAliasArgs(const QCString &args,size_t pos)
 {
-  int i;
+  size_t i;
   int bc=0;
   char prevChar=0;
   if (args.at(pos)=='{') // alias has argument
   {
-    for (i=pos;i<(int)args.length();i++)
+    for (i=pos;i<args.length();i++)
     {
       if (prevChar!='\\')
       {

@@ -346,7 +346,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
 
-QCString extractAliasArgs(const QCString &args,int pos);
+QCString extractAliasArgs(const QCString &args,size_t pos);
 
 int countAliasArguments(const QCString &argList);
 
