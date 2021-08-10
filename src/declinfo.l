@@ -85,7 +85,7 @@ static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
 
 B       [ \t]
 Bopt    {B}*
-ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
+ID	"$"?([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
 %x      Start
 %x	Template
