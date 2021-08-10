@@ -7981,7 +7981,7 @@ static void generateFileSources()
 
 static void generateFileDocs()
 {
-  if (documentedHtmlFiles==0) return;
+  if (documentedFiles==0) return;
 
   if (!Doxygen::inputNameLinkedMap->empty())
   {

@@ -452,21 +452,6 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     //printf("Writing source ref for file %s\n",qPrint(name()));
     if (Config_getBool(SOURCE_BROWSER))
     {
-      //if Latex enabled and LATEX_SOURCE_CODE isn't -> skip, bug_738548
-      ol.pushGeneratorState();
-      if (ol.isEnabled(OutputGenerator::Latex) && !Config_getBool(LATEX_SOURCE_CODE))
-      {
-        ol.disable(OutputGenerator::Latex);
-      }
-      if (ol.isEnabled(OutputGenerator::Docbook) && !Config_getBool(DOCBOOK_PROGRAMLISTING))
-      {
-        ol.disable(OutputGenerator::Docbook);
-      }
-      if (ol.isEnabled(OutputGenerator::RTF) && !Config_getBool(RTF_SOURCE_CODE))
-      {
-        ol.disable(OutputGenerator::RTF);
-      }
-
       ol.startParagraph("definition");
       QCString refText = theTranslator->trDefinedInSourceFile();
       int fileMarkerPos = refText.find("@0");
@@ -482,8 +467,6 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
         err("translation error: invalid marker in trDefinedInSourceFile()\n");
       }
       ol.endParagraph();
-      //Restore settings, bug_738548
-      ol.popGeneratorState();
     }
     ol.endTextBlock();
   }
@@ -1110,9 +1093,6 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
 void FileDefImpl::writeSourceHeader(OutputList &ol)
 {
   bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
-  bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
-  bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
-  bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
@@ -1120,9 +1100,6 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputGenerator::Man);
-  if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
-  if (!docbookSourceCode) ol.disable(OutputGenerator::Docbook);
-  if (!rtfSourceCode) ol.disable(OutputGenerator::RTF);
 
   bool isDocFile = isDocumentationFile();
   bool genSourceFile = !isDocFile && generateSourceFile();
@@ -1153,14 +1130,9 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
 
   if (isLinkable())
   {
-    ol.pushGeneratorState();
-    if (latexSourceCode) ol.disable(OutputGenerator::Latex);
-    if (rtfSourceCode) ol.disable(OutputGenerator::RTF);
-    if (docbookSourceCode) ol.disable(OutputGenerator::Docbook);
     ol.startTextLink(getOutputFileBase(),QCString());
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
-    ol.popGeneratorState();
   }
 }
 

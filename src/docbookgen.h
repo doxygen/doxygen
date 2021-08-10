@@ -62,7 +62,6 @@ class DocbookCodeGenerator : public CodeOutputInterface
     bool m_insideSpecialHL = false;
     QCString m_relPath;
     QCString m_sourceFileName;
-    bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
 };
 
 
@@ -344,7 +343,6 @@ private:
 
     QCString relPath;
     DocbookCodeGenerator m_codeGen;
-    bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
     bool m_denseText = false;
     bool m_inGroup = false;
     int  m_levelListItem = 0;
