@@ -399,7 +399,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
                 ol.writeString("local ");
               }
               ol.writeString("enum ");
-              if (md->isStrong())
+              if (md->getLanguage()==SrcLangExt_Cpp && md->isStrong())
               {
                 if (md->isEnumStruct())
                 {

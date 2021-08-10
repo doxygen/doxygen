@@ -1983,8 +1983,9 @@ bool MemberDefImpl::isBriefSectionVisible() const
 
 QCString MemberDefImpl::getDeclType() const
 {
+  SrcLangExt lang = getLanguage();
   QCString ltype(m_impl->type);
-  if (isEnumerate() && isStrong())
+  if (lang==SrcLangExt_Cpp && isEnumerate() && isStrong())
   {
     if (isEnumStruct())
     {
@@ -2699,7 +2700,7 @@ StringVector MemberDefImpl::getLabels(const Definition *container) const
         else if (isCopy())                sl.push_back("copy");
         else if (isRetain())              sl.push_back("retain");
         else if (isWeak())                sl.push_back("weak");
-        else if (isStrong())              sl.push_back("strong");
+        else if (lang!=SrcLangExt_CSharp && isStrong()) sl.push_back("strong");
         else if (isUnretained())          sl.push_back("unsafe_unretained");
 
         if (!isObjCMethod())
@@ -3302,8 +3303,11 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     }
     else
     {
-      if (isEnumStruct()) ldef.prepend("struct ");
-      else if (isStrong()) ldef.prepend("class ");
+      if (lang==SrcLangExt_Cpp)
+      {
+        if (isEnumStruct()) ldef.prepend("struct ");
+        else if (isStrong()) ldef.prepend("class ");
+      }
       ldef.prepend("enum ");
       if (isSliceLocal())
       {
