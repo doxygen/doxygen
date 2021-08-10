@@ -123,7 +123,7 @@ struct codeYY_state
   std::stack<int> scopeStack;      //!< 1 if bracket starts a scope,
                                    //   2 for internal blocks
   int           anchorCount = 0;
-  FileDef *     sourceFileDef = 0;
+  const FileDef *     sourceFileDef = 0;
   bool          lineNumbers = FALSE;
   const Definition *  currentDefinition = 0;
   const MemberDef *   currentMemberDef = 0;
@@ -193,7 +193,6 @@ static const char *stateToString(yyscan_t yyscanner,int state);
 
 static void saveObjCContext(yyscan_t yyscanner);
 static void restoreObjCContext(yyscan_t yyscanner);
-static void addUsingDirective(yyscan_t yyscanner,const char *name);
 static void pushScope(yyscan_t yyscanner,const QCString &s);
 static void popScope(yyscan_t yyscanner);
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
@@ -258,6 +257,7 @@ static std::mutex g_searchIndexMutex;
 static std::mutex g_docCrossReferenceMutex;
 static std::mutex g_addExampleMutex;
 static std::mutex g_countFlowKeywordsMutex;
+static std::mutex g_usingDirectiveMutex;
 
 /* -----------------------------------------------------------------
  */
@@ -277,7 +277,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|{KEYWORD_OBJC})
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|"decltype"|{KEYWORD_OBJC})
 FLOWKW  ("break"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"return"|"switch"|"throw"|"throws"|"@catch"|"@finally")
 FLOWCONDITION  ("case"|"for"|"foreach"|"for each"|"goto"|"if"|"try"|"while"|"@try")
 TYPEKW  ("bool"|"byte"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
@@ -2534,15 +2534,17 @@ static void addParmType(yyscan_t yyscanner)
   yyextra->parmName.resize(0) ;
 }
 
+// TODO: make this have a scope only effect, at least not modifying the FileDef object.
 static void addUsingDirective(yyscan_t yyscanner,const char *name)
 {
+  std::lock_guard<std::mutex> lock(g_usingDirectiveMutex);
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->sourceFileDef && name)
   {
     const NamespaceDef *nd = Doxygen::namespaceLinkedMap->find(name);
     if (nd)
     {
-      yyextra->sourceFileDef->addUsingDirective(nd);
+      const_cast<FileDef*>(yyextra->sourceFileDef)->addUsingDirective(nd);
     }
   }
 }
@@ -2768,7 +2770,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
                  (void*)yyextra->currentDefinition,(void*)yyextra->currentMemberDef,yyextra->insideBody));
 
         if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-            md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
+            yyextra->insideBody && yyextra->collectXRefs)
         {
           std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
           addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -3052,7 +3054,7 @@ static bool generateClassMemberLink(yyscan_t yyscanner,
     {
       // add usage reference
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-          /*xmd!=yyextra->currentMemberDef &&*/ yyextra->insideBody && yyextra->collectXRefs)
+          yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(xmd));
@@ -3838,7 +3840,7 @@ void CCodeParser::setStartCodeLine(const bool inp)
 }
 
 void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,const QCString &s,
-                SrcLangExt lang,bool exBlock, const QCString &exName,FileDef *fd,
+                SrcLangExt lang,bool exBlock, const QCString &exName,const FileDef *fd,
                 int startLine,int endLine,bool inlineFragment,
                 const MemberDef *memberDef,bool showLineNumbers,const Definition *searchCtx,
                 bool collectXRefs)

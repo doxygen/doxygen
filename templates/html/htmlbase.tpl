@@ -156,7 +156,7 @@ MathJax.Hub.Config({
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
+	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
 /* @license-end */
 </script>
 {% endif %}

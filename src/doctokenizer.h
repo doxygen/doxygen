@@ -20,11 +20,10 @@
 #define _DOCTOKENIZER_H
 
 #include <stdio.h>
+#include <memory>
 
 #include "htmlattrib.h"
 #include "qcstring.h"
-
-class Definition;
 
 enum Tokens
 {
@@ -113,59 +112,77 @@ struct TokenInfo
   ParamDir paramDir = Unspecified;
 };
 
+class Definition;
+
+class DocTokenizer
+{
+  public:
+    DocTokenizer();
+   ~DocTokenizer();
+
+    TokenInfo *token();
+    TokenInfo *newToken();
+    void replaceToken(TokenInfo *newToken);
+
+    // helper functions
+    static const char *tokToString(int token);
+
+    void setLineNr(int lineno);
+    int getLineNr(void);
+
+    // operations on the scanner
+    void findSections(const QCString &input,const Definition *d,
+        const QCString &fileName);
+    void init(const char *input,const QCString &fileName,bool markdownSupport);
+    void cleanup();
+    void pushContext();
+    bool popContext();
+    int  lex();
+    void setStatePara();
+    void setStateTitle();
+    void setStateTitleAttrValue();
+    void setStateCode();
+    void setStateXmlCode();
+    void setStateHtmlOnly();
+    void setStateManOnly();
+    void setStateLatexOnly();
+    void setStateXmlOnly();
+    void setStateDbOnly();
+    void setStateRtfOnly();
+    void setStateVerbatim();
+    void setStateDot();
+    void setStateMsc();
+    void setStateParam();
+    void setStateXRefItem();
+    void setStateFile();
+    void setStatePattern();
+    void setStateLink();
+    void setStateCite();
+    void setStateRef();
+    void setStateInternalRef();
+    void setStateText();
+    void setStateSkipTitle();
+    void setStateAnchor();
+    void setInsidePre(bool b);
+    void pushBackHtmlTag(const QCString &tag);
+    void setStateSnippet();
+    void startAutoList();
+    void endAutoList();
+    void setStatePlantUML();
+    void setStateSetScope();
+    void setStatePlantUMLOpt();
+    void setStateOptions();
+    void setStateBlock();
+    void setStateEmoji();
+    void setStateIline();
+
+  private:
+    struct Private;
+    std::unique_ptr<Private> p;
+};
+
 // globals
-extern TokenInfo *g_token;
-extern FILE *doctokenizerYYin;
+//extern TokenInfo *g_token;
 
-// helper functions
-const char *tokToString(int token);
-
-void setDoctokinizerLineNr(int lineno);
-int getDoctokinizerLineNr(void);
-
-// operations on the scanner
-void doctokenizerYYFindSections(const QCString &input,const Definition *d,
-                                const QCString &fileName);
-void doctokenizerYYinit(const char *input,const QCString &fileName,bool markdownSupport);
-void doctokenizerYYcleanup();
-void doctokenizerYYpushContext();
-bool doctokenizerYYpopContext();
-int  doctokenizerYYlex();
-void doctokenizerYYsetStatePara();
-void doctokenizerYYsetStateTitle();
-void doctokenizerYYsetStateTitleAttrValue();
-void doctokenizerYYsetStateCode();
-void doctokenizerYYsetStateXmlCode();
-void doctokenizerYYsetStateHtmlOnly();
-void doctokenizerYYsetStateManOnly();
-void doctokenizerYYsetStateLatexOnly();
-void doctokenizerYYsetStateXmlOnly();
-void doctokenizerYYsetStateDbOnly();
-void doctokenizerYYsetStateRtfOnly();
-void doctokenizerYYsetStateVerbatim();
-void doctokenizerYYsetStateDot();
-void doctokenizerYYsetStateMsc();
-void doctokenizerYYsetStateParam();
-void doctokenizerYYsetStateXRefItem();
-void doctokenizerYYsetStateFile();
-void doctokenizerYYsetStatePattern();
-void doctokenizerYYsetStateLink();
-void doctokenizerYYsetStateCite();
-void doctokenizerYYsetStateRef();
-void doctokenizerYYsetStateInternalRef();
-void doctokenizerYYsetStateText();
-void doctokenizerYYsetStateSkipTitle();
-void doctokenizerYYsetStateAnchor();
-void doctokenizerYYsetInsidePre(bool b);
-void doctokenizerYYpushBackHtmlTag(const QCString &tag);
-void doctokenizerYYsetStateSnippet();
-void doctokenizerYYstartAutoList();
-void doctokenizerYYendAutoList();
-void doctokenizerYYsetStatePlantUML();
-void doctokenizerYYsetStateSetScope();
-void doctokenizerYYsetStatePlantUMLOpt();
-void doctokenizerYYsetStateOptions();
-void doctokenizerYYsetStateBlock();
-void doctokenizerYYsetStateEmoji();
 
 #endif

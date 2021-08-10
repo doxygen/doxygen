@@ -103,7 +103,7 @@ class Doxygen
     static QCString                  htmlFileExtension;
     static bool                      parseSourcesNeeded;
     static SearchIndexIntf          *searchIndex;
-    static SymbolMap<Definition>     symbolMap;
+    static SymbolMap<Definition>    *symbolMap;
     static ClangUsrMap              *clangUsrMap;
     static Cache<std::string,LookupInfo> *lookupCache;
     static DirLinkedMap             *dirLinkedMap;
@@ -111,7 +111,6 @@ class Doxygen
     static ParserManager            *parserManager;
     static bool                      suppressDocWarnings;
     static QCString                  filterDBFileName;
-    static bool                      userComments;
     static IndexList                *indexList;
     static int                       subpageNestingLevel;
     static QCString                  spaces;

@@ -20,6 +20,7 @@
 #include "template.h"
 #include "classdef.h"
 #include "searchindex.h"
+#include "memberlist.h"
 
 class Definition;
 
@@ -64,6 +65,7 @@ class DotGfxHierarchyTable;
 class MemberGroup;
 class MemberGroupList;
 class MemberGroupRefList;
+class MemberVector;
 
 //----------------------------------------------------
 
@@ -625,7 +627,7 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
     void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
     void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses);
-    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses);
+    void addMembers(const MemberVector &mv,ClassDefSet &visitedClasses);
 
   private:
     NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level);
@@ -1080,8 +1082,8 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
     { return new MemberListContext; }
     static MemberListContext *alloc(const MemberList *ml)
     { return new MemberListContext(ml); }
-    static MemberListContext *alloc(std::vector<const MemberDef *> &&ml)
-    { return new MemberListContext(std::move(ml)); }
+    static MemberListContext *alloc(const MemberVector &ml)
+    { return new MemberListContext(ml); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -1093,7 +1095,7 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
   private:
     MemberListContext();
     MemberListContext(const MemberList *ml);
-    MemberListContext(std::vector<const MemberDef *> &&ml);
+    MemberListContext(const MemberVector &ml);
    ~MemberListContext();
     class Private;
     Private *p;

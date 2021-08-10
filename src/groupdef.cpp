@@ -169,7 +169,7 @@ GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
 
 GroupDefImpl::GroupDefImpl(const QCString &df,int dl,const QCString &na,const QCString &t,
                    const QCString &refFileName) : DefinitionMixin(df,dl,1,na),
-                    m_allMemberList(MemberListType_allMembersList)
+                    m_allMemberList(MemberListType_allMembersList,MemberListContainer::Group)
 {
   if (!refFileName.isEmpty())
   {
@@ -314,12 +314,6 @@ void GroupDefImpl::addMembersToMemberGroup()
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
-  }
-
-  //printf("GroupDefImpl::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
-  for (const auto &mg : m_memberGroups)
-  {
-    mg->setInGroup(TRUE);
   }
 }
 
@@ -798,9 +792,11 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
-                                briefDescription(),TRUE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                                         briefFile(),briefLine(),this,0,
+                                         briefDescription(),TRUE,FALSE,
+                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -808,7 +804,7 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -824,7 +820,6 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
       ol.popGeneratorState();
       ol.endParagraph();
     }
-    delete rootNode;
   }
   ol.writeSynopsis();
 }
@@ -1606,8 +1601,7 @@ void GroupDefImpl::addMemberToList(MemberListType lt,const MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_memberLists.get(lt);
-  ml->setInGroup(true);
+  const auto &ml = m_memberLists.get(lt,MemberListContainer::Group);
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));

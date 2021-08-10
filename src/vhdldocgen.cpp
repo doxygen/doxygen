@@ -1785,7 +1785,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
    ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
-  bool detailsVisible = mdef->isDetailedSectionLinkable();
+  bool detailsVisible = mdef->hasDetailedDescription();
   if (!detailsVisible) // && !m_impl->annMemb)
   {
     QCString doxyName=mdef->name();

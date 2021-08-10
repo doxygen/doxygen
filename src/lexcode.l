@@ -76,7 +76,7 @@ struct lexcodeYY_state
      QCString      exampleName;
      QCString      classScope;
 
-     FileDef    *sourceFileDef;
+     const FileDef    *sourceFileDef;
      const Definition *currentDefinition;
      const MemberDef  *currentMemberDef;
      bool          includeCodeFragment;
@@ -1198,7 +1198,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                SrcLangExt,
                bool isExampleBlock,
                const QCString &exampleName,
-               FileDef *fileDef,
+               const FileDef *fileDef,
                int startLine,
                int endLine,
                bool inlineFragment,

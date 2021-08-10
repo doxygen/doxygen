@@ -317,8 +317,8 @@ class HtmlHelp::Private
     int dc = 0;
     StringSet indexFiles;
     StringSet imageFiles;
-    HtmlHelpIndex index;
     HtmlHelpRecoder recoder;
+    HtmlHelpIndex index;
 };
 
 

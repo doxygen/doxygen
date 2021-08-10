@@ -62,22 +62,21 @@ class DocbookCodeGenerator : public CodeOutputInterface
     bool m_insideSpecialHL = false;
     QCString m_relPath;
     QCString m_sourceFileName;
-    bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
 };
 
 
 #if 0
 // define for cases that have been implemented with an empty body
-#define DB_GEN_EMPTY  t << "<!-- DBG_GEN_head_check " << __LINE__ << " -->\n";
+#define DB_GEN_EMPTY  m_t << "<!-- DBG_GEN_head_check " << __LINE__ << " -->\n";
 #else
 #define DB_GEN_EMPTY
 #endif
 
 #if 0
 // Generic debug statements
-#define DB_GEN_H DB_GEN_H1(t)
+#define DB_GEN_H DB_GEN_H1(m_t)
 #define DB_GEN_H1(x) x << "<!-- DBG_GEN_head " << __LINE__ << " -->\n";
-#define DB_GEN_H2(y) DB_GEN_H2a(t,y)
+#define DB_GEN_H2(y) DB_GEN_H2a(m_t,y)
 #define DB_GEN_H2a(x,y) x << "<!-- DBG_GEN_head " << __LINE__ << " " << y << " -->\n";
 // define for cases that have NOT yet been implemented / considered
 #define DB_GEN_NEW fprintf(stderr,"DBG_GEN_head %d\n",__LINE__); DB_GEN_H
@@ -344,7 +343,6 @@ private:
 
     QCString relPath;
     DocbookCodeGenerator m_codeGen;
-    bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
     bool m_denseText = false;
     bool m_inGroup = false;
     int  m_levelListItem = 0;

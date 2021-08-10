@@ -150,7 +150,7 @@ bool                  Doxygen::insideMainPage = FALSE; // are we generating docs
 NamespaceDefMutable  *Doxygen::globalScope = 0;
 bool                  Doxygen::parseSourcesNeeded = FALSE;
 SearchIndexIntf      *Doxygen::searchIndex=0;
-SymbolMap<Definition> Doxygen::symbolMap;
+SymbolMap<Definition>*Doxygen::symbolMap;
 ClangUsrMap          *Doxygen::clangUsrMap = 0;
 Cache<std::string,LookupInfo> *Doxygen::lookupCache;
 DirLinkedMap         *Doxygen::dirLinkedMap;
@@ -161,7 +161,6 @@ bool                  Doxygen::suppressDocWarnings = FALSE;
 QCString              Doxygen::filterDBFileName;
 IndexList            *Doxygen::indexList;
 int                   Doxygen::subpageNestingLevel = 0;
-bool                  Doxygen::userComments = FALSE;
 QCString              Doxygen::spaces;
 bool                  Doxygen::generatingXmlOutput = FALSE;
 DefinesPerFileList    Doxygen::macroDefinitions;
@@ -5720,10 +5719,12 @@ static void addMemberFunction(const Entry *root,
     if (md->isEnumValue() && (enumNamePos=className.findRev("::"))!=-1)
     {
       QCString enumName = className.mid(enumNamePos+2);
-      if (className.left(enumNamePos)==cd->name())
+      QCString fullScope = className.left(enumNamePos);
+      if (!namespaceName.isEmpty()) fullScope.prepend(namespaceName+"::");
+      if (fullScope==cd->name())
       {
         MemberName *enumMn=Doxygen::memberNameLinkedMap->find(enumName);
-        //printf("enumMn(%s)=%p\n",qPrint(className),enumMn);
+        //printf("enumMn(%s)=%p\n",qPrint(className),(void*)enumMn);
         if (enumMn)
         {
           for (const auto &emd : *enumMn)
@@ -7980,7 +7981,7 @@ static void generateFileSources()
 
 static void generateFileDocs()
 {
-  if (documentedHtmlFiles==0) return;
+  if (documentedFiles==0) return;
 
   if (!Doxygen::inputNameLinkedMap->empty())
   {
@@ -8006,28 +8007,28 @@ static void addSourceReferences()
   // add source references for class definitions
   for (const auto &cd : *Doxygen::classLinkedMap)
   {
-    FileDef *fd=cd->getBodyDef();
+    const FileDef *fd=cd->getBodyDef();
     if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
+      const_cast<FileDef*>(fd)->addSourceRef(cd->getStartDefLine(),cd.get(),0);
     }
   }
   // add source references for concept definitions
   for (const auto &cd : *Doxygen::conceptLinkedMap)
   {
-    FileDef *fd=cd->getBodyDef();
+    const FileDef *fd=cd->getBodyDef();
     if (fd && cd->isLinkableInProject() && cd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(cd->getStartDefLine(),cd.get(),0);
+      const_cast<FileDef*>(fd)->addSourceRef(cd->getStartDefLine(),cd.get(),0);
     }
   }
   // add source references for namespace definitions
   for (const auto &nd : *Doxygen::namespaceLinkedMap)
   {
-    FileDef *fd=nd->getBodyDef();
+    const FileDef *fd=nd->getBodyDef();
     if (fd && nd->isLinkableInProject() && nd->getStartDefLine()!=-1)
     {
-      fd->addSourceRef(nd->getStartDefLine(),nd.get(),0);
+      const_cast<FileDef*>(fd)->addSourceRef(nd->getStartDefLine(),nd.get(),0);
     }
   }
 
@@ -8040,7 +8041,7 @@ static void addSourceReferences()
       //    qPrint(md->name()),
       //    md->getBodyDef()?qPrint(md->getBodyDef()->name()):"<none>",
       //    md->getStartBodyLine(),md->isLinkableInProject());
-      FileDef *fd=md->getBodyDef();
+      const FileDef *fd=md->getBodyDef();
       if (fd &&
           md->getStartDefLine()!=-1 &&
           md->isLinkableInProject() &&
@@ -8049,7 +8050,7 @@ static void addSourceReferences()
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    qPrint(md->name()),qPrint(fd->name()),md->getStartBodyLine(),qPrint(md->getOuterScope()->name()));
-        fd->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
+        const_cast<FileDef*>(fd)->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
       }
     }
   }
@@ -8057,7 +8058,7 @@ static void addSourceReferences()
   {
     for (const auto &md : *mn)
     {
-      FileDef *fd=md->getBodyDef();
+      const FileDef *fd=md->getBodyDef();
       //printf("member %s body=[%d,%d] fd=%p link=%d parseSources=%d\n",
       //    qPrint(md->name()),
       //    md->getStartBodyLine(),md->getEndBodyLine(),fd,
@@ -8071,7 +8072,7 @@ static void addSourceReferences()
       {
         //printf("Found member '%s' in file '%s' at line '%d' def=%s\n",
         //    qPrint(md->name()),qPrint(fd->name()),md->getStartBodyLine(),qPrint(md->getOuterScope()->name()));
-        fd->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
+        const_cast<FileDef*>(fd)->addSourceRef(md->getStartDefLine(),md->getOuterScope(),md.get());
       }
     }
   }
@@ -8165,7 +8166,7 @@ static bool isSymbolHidden(const Definition *d)
 
 static void computeTooltipTexts()
 {
-  for (const auto &kv : Doxygen::symbolMap)
+  for (const auto &kv : *Doxygen::symbolMap)
   {
     DefinitionMutable *dm = toDefinitionMutable(kv.second);
     if (dm && !isSymbolHidden(toDefinition(dm)) && toDefinition(dm)->isLinkableInProject())
@@ -10154,7 +10155,7 @@ static void dumpSymbolMap()
   if (f.is_open())
   {
     TextStream t(&f);
-    for (const auto &kv : Doxygen::symbolMap)
+    for (const auto &kv : *Doxygen::symbolMap)
     {
       dumpSymbol(t,kv.second);
     }
@@ -10240,6 +10241,7 @@ static void usage(const QCString &name,const QCString &versionString)
   msg("If -s is specified the comments of the configuration items in the config file will be omitted.\n");
   msg("If configName is omitted 'Doxyfile' will be used as a default.\n");
   msg("If - is used for configFile doxygen will write / read the configuration to /from standard output / input.\n\n");
+  msg("If -q is used for a doxygen documentation run, doxygen will see this as if QUIET=YES has been set.\n\n");
   msg("-v print version string, -V print extended version information\n");
 }
 
@@ -10282,6 +10284,8 @@ void initDoxygen()
   std::setlocale(LC_ALL,"");
   std::setlocale(LC_CTYPE,"C"); // to get isspace(0xA0)==0, needed for UTF-8
   std::setlocale(LC_NUMERIC,"C");
+
+  Doxygen::symbolMap = new SymbolMap<Definition>;
 
   Portable::correct_path();
 
@@ -10383,6 +10387,7 @@ void cleanUpDoxygen()
   delete Doxygen::groupLinkedMap;
   delete Doxygen::namespaceLinkedMap;
   delete Doxygen::dirLinkedMap;
+  delete Doxygen::symbolMap;
 
   DotManager::deleteInstance();
 }
@@ -10418,6 +10423,7 @@ void readConfiguration(int argc, char **argv)
   bool diffList=FALSE;
   bool updateConfig=FALSE;
   int retVal;
+  bool quiet = false;
   while (optind<argc && argv[optind][0]=='-' &&
                (isalpha(argv[optind][1]) || argv[optind][1]=='?' ||
                 argv[optind][1]=='-')
@@ -10571,7 +10577,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
           Config::postProcess(TRUE);
-          Config::checkAndCorrect();
+          Config::checkAndCorrect(Config_getBool(QUIET));
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
@@ -10620,7 +10626,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
           Config::postProcess(TRUE);
-          Config::checkAndCorrect();
+          Config::checkAndCorrect(Config_getBool(QUIET));
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
           if (!setTranslator(outputLanguage))
@@ -10697,6 +10703,9 @@ void readConfiguration(int argc, char **argv)
         break;
       case 'b':
         setvbuf(stdout,NULL,_IONBF,0);
+        break;
+      case 'q':
+        quiet = true;
         break;
       case 'T':
         msg("Warning: this option activates output generation via Django like template files. "
@@ -10799,6 +10808,8 @@ void readConfiguration(int argc, char **argv)
   FileInfo configFileInfo(configName.str());
   setPerlModDoxyfile(configFileInfo.absFilePath());
 
+  /* handle -q option */
+  if (quiet) Config_updateBool(QUIET,TRUE);
 }
 
 /** check and resolve config options */
@@ -10806,7 +10817,7 @@ void checkConfiguration()
 {
 
   Config::postProcess(FALSE);
-  Config::checkAndCorrect();
+  Config::checkAndCorrect(Config_getBool(QUIET));
   initWarningFormat();
 }
 
@@ -10901,6 +10912,7 @@ static void stopDoxygen(int)
     thisDir.remove(Doxygen::filterDBFileName.str());
   }
   killpg(0,SIGINT);
+  cleanUpDoxygen();
   exit(1);
 }
 #endif
