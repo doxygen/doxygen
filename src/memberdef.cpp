@@ -2515,6 +2515,7 @@ bool MemberDefImpl::hasDetailedDescription() const
   //printf(">hasDetailedDescription(cached=%d)\n",m_impl->hasDetailedDescriptionCached);
   if (!m_impl->hasDetailedDescriptionCached)
   {
+    static bool extractAll            = Config_getBool(EXTRACT_ALL);
     static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
     static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
     static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
@@ -2525,6 +2526,8 @@ bool MemberDefImpl::hasDetailedDescription() const
 
     // the member has detailed documentation because the user added some comments
     bool docFilter =
+           // extract all is enabled
+           extractAll ||
            // has detailed docs
            !documentation().isEmpty() ||
            // has inbody docs
