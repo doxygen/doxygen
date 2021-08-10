@@ -729,7 +729,8 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         {
           *dst++=c;
           break;
-        } // fallthrough
+        }
+        // else fallthrough
       case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
         if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace((uchar)pc) &&
