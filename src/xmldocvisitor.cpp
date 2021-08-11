@@ -1022,7 +1022,10 @@ void XmlDocVisitor::visitPost(DocRef *ref)
 void XmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  m_t << "<tocitem id=\"" << ref->file() << "_1" << ref->anchor() << "\">";
+  m_t << "<tocitem id=\"" << ref->file();
+  if (!ref->anchor().isEmpty()) m_t << "_1" << ref->anchor();
+  m_t << "\"";
+  m_t << ">";
 }
 
 void XmlDocVisitor::visitPost(DocSecRefItem *)

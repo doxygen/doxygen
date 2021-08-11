@@ -2198,6 +2198,12 @@ DocFormula::DocFormula(DocParser &parser,DocNode *parent,int id) : DocNode(parse
 
 //---------------------------------------------------------------------------
 
+DocSecRefItem::DocSecRefItem(DocParser &parser,DocNode *parent,const QCString &target) :
+      CompAccept<DocSecRefItem>(parser), m_target(target), m_relPath(parser.context.relPath)
+{
+  m_parent = parent;
+}
+
 void DocSecRefItem::parse()
 {
   DBG(("DocSecRefItem::parse() start\n"));
@@ -2215,14 +2221,46 @@ void DocSecRefItem::parse()
   m_parser.tokenizer.setStatePara();
   m_parser.handlePendingStyleCommands(this,m_children);
 
-  const SectionInfo *sec=0;
   if (!m_target.isEmpty())
   {
-    sec = SectionManager::instance().find(m_target);
-    if (sec)
+    SrcLangExt lang = getLanguageFromFileName(m_target);
+    const SectionInfo *sec = SectionManager::instance().find(m_target);
+    if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
     {
-      m_file   = sec->fileName();
-      m_anchor = sec->label();
+      sec = SectionManager::instance().find(markdownFileNameToId(m_target));
+    }
+    if (sec) // ref to section or anchor
+    {
+      // set defaults
+      m_ref       = sec->ref();
+      m_file      = stripKnownExtensions(sec->fileName());
+      m_refType   = Section;
+      m_anchor    = sec->label();
+      m_isSubPage = false;
+      // adjust if needed
+      switch (sec->type())
+      {
+        case SectionType::Page:
+          {
+            PageDef *pd = Doxygen::pageLinkedMap->find(m_target);
+            m_isSubPage = pd && pd->hasParentPage();
+            if (!m_isSubPage)
+            {
+              m_anchor="";
+            }
+          }
+          break;
+        case SectionType::Anchor:
+          m_refType = Anchor;
+          break;
+        case SectionType::Table:
+          m_refType = Table;
+          break;
+        default:
+          break;
+      }
+      //printf("m_ref=%s,m_file=%s,type=%d\n",
+      //    qPrint(m_ref),qPrint(m_file),m_refType);
     }
     else
     {

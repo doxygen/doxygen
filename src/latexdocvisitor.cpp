@@ -1540,22 +1540,35 @@ void LatexDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
   m_t << "\\item \\contentsline{section}{";
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (pdfHyperlinks)
+  if (ref->isSubPage())
   {
-    m_t << "\\mbox{\\hyperlink{" << ref->file() << "_" << ref->anchor() << "}{" ;
+    startLink(ref->ref(),QCString(),ref->anchor());
+  }
+  else
+  {
+    if (!ref->file().isEmpty())
+    {
+      startLink(ref->ref(),ref->file(),ref->anchor(),ref->refToTable());
+    }
   }
 }
 
 void LatexDocVisitor::visitPost(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (pdfHyperlinks)
+  if (ref->isSubPage())
   {
-    m_t << "}}";
+    endLink(ref->ref(),QCString(),ref->anchor());
   }
-  m_t << "}{\\ref{" << ref->file() << "_" << ref->anchor() << "}}{}\n";
+  else
+  {
+    if (!ref->file().isEmpty()) endLink(ref->ref(),ref->file(),ref->anchor(),ref->refToTable());
+  }
+  m_t << "}{\\ref{";
+  if (!ref->file().isEmpty()) m_t << stripPath(ref->file());
+  if (!ref->file().isEmpty() && !ref->anchor().isEmpty()) m_t << "_";
+  if (!ref->anchor().isEmpty()) m_t << ref->anchor();
+  m_t << "}}{}\n";
 }
 
 void LatexDocVisitor::visitPre(DocSecRefList *)
