@@ -3018,8 +3018,7 @@ The following block name is set based on whether or not a feature is used in the
  If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \c \\batchmode
  command to the generated \f$\mbox{\LaTeX}\f$ files. This will
  instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of
- asking the user for help. This option is also used when generating formulas
- in HTML.
+ asking the user for help.
 ]]>
       </docs>
     </option>
