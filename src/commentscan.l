@@ -695,8 +695,9 @@ STopt  [^\n@\\]*
                                                 !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
                                             {
                                               yyextra->briefEndsAtDot=FALSE;
+                                              bool insideXRef = yyextra->inContext==OutputXRef && spacing==CommandSpacing::XRef;
                                               // this command forces the end of brief description
-                                              setOutput(yyscanner,spacing==CommandSpacing::Block ? OutputDoc : OutputXRef);
+                                              setOutput(yyscanner,insideXRef ? OutputXRef : OutputDoc);
                                             }
                                             //if (i>0) addOutput(yyscanner,QCString(yytext).left(i)); // removed for bug 689341
                                             if (it->second.handler && it->second.handler(yyscanner, cmdName, optList))
