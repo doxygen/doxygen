@@ -1887,8 +1887,6 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  //QCString refName=addHtmlExtensionIfMissing(ref->file());
-  //m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
   if (!ref->file().isEmpty())
   {
     m_t << "<li>";
@@ -1904,7 +1902,6 @@ void HtmlDocVisitor::visitPost(DocSecRefItem *ref)
     endLink();
     m_t << "</li>\n";
   }
-  // m_t << "</a></li>\n";
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefList *s)

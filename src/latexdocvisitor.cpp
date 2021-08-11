@@ -1546,28 +1546,16 @@ void LatexDocVisitor::visitPre(DocSecRefItem *ref)
   }
   else
   {
-    if (!ref->file().isEmpty()) startLink(ref->ref(),ref->file(),ref->anchor(),ref->refToTable());
+    if (!ref->file().isEmpty())
+    {
+      startLink(ref->ref(),ref->file(),ref->anchor(),ref->refToTable());
+    }
   }
-  #if 0
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (pdfHyperlinks)
-  {
-    m_t << "\\mbox{\\hyperlink{" << ref->file() << "_" << ref->anchor() << "}{" ;
-  }
-  #endif
 }
 
 void LatexDocVisitor::visitPost(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  #if 0
-  static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
-  if (pdfHyperlinks)
-  {
-    m_t << "}}";
-  }
-  m_t << "}{\\ref{" << ref->file() << "_" << ref->anchor() << "}}{}\n";
-  #endif
   if (ref->isSubPage())
   {
     endLink(ref->ref(),QCString(),ref->anchor());

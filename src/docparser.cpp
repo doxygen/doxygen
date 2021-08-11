@@ -2198,6 +2198,12 @@ DocFormula::DocFormula(DocParser &parser,DocNode *parent,int id) : DocNode(parse
 
 //---------------------------------------------------------------------------
 
+DocSecRefItem::DocSecRefItem(DocParser &parser,DocNode *parent,const QCString &target) :
+      CompAccept<DocSecRefItem>(parser), m_target(target), m_relPath(parser.context.relPath)
+{
+  m_parent = parent;
+}
+
 void DocSecRefItem::parse()
 {
   DBG(("DocSecRefItem::parse() start\n"));
@@ -2218,7 +2224,6 @@ void DocSecRefItem::parse()
   if (!m_target.isEmpty())
   {
     SrcLangExt lang = getLanguageFromFileName(m_target);
-    m_relPath = g_relPath;
     const SectionInfo *sec = SectionManager::instance().find(m_target);
     if (sec==0 && lang==SrcLangExt_Markdown) // lookup as markdown file
     {
@@ -2226,27 +2231,34 @@ void DocSecRefItem::parse()
     }
     if (sec) // ref to section or anchor
     {
-      PageDef *pd = 0;
-      if (sec->type()==SectionType::Page)
+      // set defaults
+      m_ref       = sec->ref();
+      m_file      = stripKnownExtensions(sec->fileName());
+      m_refType   = Section;
+      m_anchor    = sec->label();
+      m_isSubPage = false;
+      // adjust if needed
+      switch (sec->type())
       {
-        pd = Doxygen::pageLinkedMap->find(m_target);
+        case SectionType::Page:
+          {
+            PageDef *pd = Doxygen::pageLinkedMap->find(m_target);
+            m_isSubPage = pd && pd->hasParentPage();
+            if (!m_isSubPage)
+            {
+              m_anchor="";
+            }
+          }
+          break;
+        case SectionType::Anchor:
+          m_refType = Anchor;
+          break;
+        case SectionType::Table:
+          m_refType = Table;
+          break;
+        default:
+          break;
       }
-      m_ref          = sec->ref();
-      m_file         = stripKnownExtensions(sec->fileName());
-      if (sec->type()==SectionType::Anchor)
-      {
-        m_refType = Anchor;
-      }
-        else if (sec->type()==SectionType::Table)
-      {
-        m_refType = Table;
-      }
-      else
-      {
-        m_refType = Section;
-      }
-      m_isSubPage    = pd && pd->hasParentPage();
-      if (sec->type()!=SectionType::Page || m_isSubPage) m_anchor = sec->label();
       //printf("m_ref=%s,m_file=%s,type=%d\n",
       //    qPrint(m_ref),qPrint(m_file),m_refType);
     }
