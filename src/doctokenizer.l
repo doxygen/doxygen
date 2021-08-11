@@ -245,10 +245,12 @@ ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#@\.]
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
 FILEECHAR [a-z_A-Z0-9\-\+&#@]
-HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
-FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
+FILECHARS {FILEICHAR}*{FILEECHAR}+
+HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
+VFILEMASK {FILECHARS}("."{FILECHARS})*
+FILEMASK  {VFILEMASK}|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
