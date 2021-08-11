@@ -2948,7 +2948,14 @@ static void addXRefItem(yyscan_t yyscanner,
       const SectionInfo *si = sm.find(anchorLabel);
       if (si)
       {
-        if (si->lineNr() != -1)
+        if (!si->ref().isEmpty()) // we are from a tag file
+        {
+          si = sm.replace(anchorLabel,listName,yyextra->lineNr,
+              yyextra->sectionTitle,SectionType::Anchor,
+              yyextra->sectionLevel);
+          yyextra->current->anchors.push_back(si);
+        }
+        else if (si->lineNr() != -1)
         {
           warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(anchorLabel),qPrint(si->fileName()),si->lineNr());
         }
@@ -3003,7 +3010,19 @@ static void addSection(yyscan_t yyscanner)
   const SectionInfo *si = sm.find(yyextra->sectionLabel);
   if (si)
   {
-    if (si->lineNr() != -1)
+    if (!si->ref().isEmpty()) // we are from a tag file
+    {
+      // create a new section element
+      yyextra->sectionTitle+=yytext;
+      yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
+      si = sm.replace(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
+                      yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
+                      yyextra->sectionLevel);
+
+      // add section to this entry
+      yyextra->current->anchors.push_back(si);
+    }
+    else if (si->lineNr() != -1)
     {
       warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",qPrint(yyextra->sectionLabel),qPrint(si->fileName()),si->lineNr());
     }
@@ -3204,7 +3223,12 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
   const SectionInfo *si = sm.find(anchor);
   if (si)
   {
-    if (si->lineNr() != -1)
+    if (!si->ref().isEmpty()) // we are from a tag file
+    {
+      si = sm.replace(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
+      yyextra->current->anchors.push_back(si);
+    }
+    else if (si->lineNr() != -1)
     {
       warn(yyextra->fileName,yyextra->lineNr,
           "multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",

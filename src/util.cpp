@@ -4767,9 +4767,10 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     )
 {
   PageDef *pd=0;
-  //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
+  //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
   QCString title=ptitle.stripWhiteSpace();
-  if ((pd=Doxygen::pageLinkedMap->find(name)) && !tagInfo)
+  bool newPage = true;
+  if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
   {
     if (!xref && !title.isEmpty() && pd->title()!=title)
     {
@@ -4781,8 +4782,14 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     //printf("Adding page docs '%s' pi=%p name=%s\n",qPrint(doc),pd,name);
     // append (x)refitems to the page.
     pd->setRefItems(sli);
+    newPage = false;
   }
-  else // new page
+  else if (pd) // we are from a tag file
+  {
+    Doxygen::pageLinkedMap->del(name);
+  }
+
+  if (newPage) // new page
   {
     QCString baseName=name;
     if (baseName.right(4)==".tex")
@@ -4830,7 +4837,12 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
       {
-        if (si->lineNr() != -1)
+        if (!si->ref().isEmpty()) // we are from a tag file
+        {
+          SectionManager::instance().replace(pd->name(),
+              file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+        }
+        else if (si->lineNr() != -1)
         {
           warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(pd->name()),qPrint(si->fileName()),si->lineNr());
         }
