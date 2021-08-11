@@ -4839,8 +4839,7 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       {
         if (!si->ref().isEmpty()) // we are from a tag file
         {
-          SectionManager::instance().del(pd->name());
-          SectionManager::instance().add(pd->name(),
+          SectionManager::instance().replace(pd->name(),
               file,-1,pd->title(),SectionType::Page,0,pd->getReference());
         }
         else if (si->lineNr() != -1)

@@ -8818,9 +8818,8 @@ static void findMainPage(Entry *root)
       {
         if (!si->ref().isEmpty()) // we are from a tag file
         {
-          SectionManager::instance().del(Doxygen::mainPage->name());
           // a page name is a label as well! but should no be double either
-          SectionManager::instance().add(
+          SectionManager::instance().replace(
             Doxygen::mainPage->name(),
             indexName,
             root->startLine,

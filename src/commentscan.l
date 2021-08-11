@@ -2950,8 +2950,7 @@ static void addXRefItem(yyscan_t yyscanner,
       {
         if (!si->ref().isEmpty()) // we are from a tag file
         {
-          sm.del(anchorLabel);
-          si = sm.add(anchorLabel,listName,yyextra->lineNr,
+          si = sm.replace(anchorLabel,listName,yyextra->lineNr,
               yyextra->sectionTitle,SectionType::Anchor,
               yyextra->sectionLevel);
           yyextra->current->anchors.push_back(si);
@@ -3013,13 +3012,12 @@ static void addSection(yyscan_t yyscanner)
   {
     if (!si->ref().isEmpty()) // we are from a tag file
     {
-      sm.del(yyextra->sectionLabel);
       // create a new section element
       yyextra->sectionTitle+=yytext;
       yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
-      si = sm.add(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
-                  yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
-                  yyextra->sectionLevel);
+      si = sm.replace(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
+                      yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
+                      yyextra->sectionLevel);
 
       // add section to this entry
       yyextra->current->anchors.push_back(si);
@@ -3227,8 +3225,7 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
   {
     if (!si->ref().isEmpty()) // we are from a tag file
     {
-      sm.del(anchor);
-      si = sm.add(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
+      si = sm.replace(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
       yyextra->current->anchors.push_back(si);
     }
     else if (si->lineNr() != -1)
