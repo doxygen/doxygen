@@ -103,7 +103,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     function resetState() {
       var $menu = $('#main-menu');
       var $mainMenuState = $('#main-menu-state');
-      if ($(window).innerWidth()<768) {
+      if ($(window).outerWidth()<768) {
         $mainMenuState.prop('checked',false); $menu.hide();
         $('#searchBoxPos1').html(searchBox);
         $('#searchBoxPos2').empty();

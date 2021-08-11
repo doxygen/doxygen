@@ -1003,6 +1003,14 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='bool' id='SHOW_HEADERFILE' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c SHOW_HEADERFILE tag is set to \c YES then the documentation
+ for a class will show which file needs to be included to use the class.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='SHOW_INCLUDE_FILES' defval='1'>
       <docs>
 <![CDATA[
@@ -3024,16 +3032,6 @@ The following block name is set based on whether or not a feature is used in the
 ]]>
       </docs>
     </option>
-    <option type='bool' id='LATEX_SOURCE_CODE' defval='0' depends='GENERATE_LATEX'>
-      <docs>
-<![CDATA[
- If the \c LATEX_SOURCE_CODE tag is set to \c YES then doxygen will include
- source code with syntax highlighting in the \f$\mbox{\LaTeX}\f$ output.
- <br>Note that which sources are shown also depends on other settings
- such as \ref cfg_source_browser "SOURCE_BROWSER".
-]]>
-      </docs>
-    </option>
     <option type='string' id='LATEX_BIB_STYLE' format='string' defval='plain' depends='GENERATE_LATEX'>
       <docs>
 <![CDATA[
@@ -3126,16 +3124,6 @@ The following block name is set based on whether or not a feature is used in the
  Syntax is similar to doxygen's configuration file.
  A template extensions file can be generated using
  <code>doxygen -e rtf extensionFile</code>.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='RTF_SOURCE_CODE' defval='0' depends='GENERATE_RTF'>
-      <docs>
-<![CDATA[
- If the \c RTF_SOURCE_CODE tag is set to \c YES then doxygen will include
- source code with syntax highlighting in the RTF output.
- <br>Note that which sources are shown also depends on other settings
- such as \ref cfg_source_browser "SOURCE_BROWSER".
 ]]>
       </docs>
     </option>
@@ -3244,16 +3232,6 @@ that can be used to generate PDF.
 The \c DOCBOOK_OUTPUT tag is used to specify where the Docbook pages will be put.
 If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be put in
 front of it.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='DOCBOOK_PROGRAMLISTING' defval='0' depends='GENERATE_DOCBOOK'>
-      <docs>
-<![CDATA[
- If the \c DOCBOOK_PROGRAMLISTING tag is set to \c YES, doxygen will
- include the program listings (including syntax highlighting
- and cross-referencing information) to the DOCBOOK output. Note that
- enabling this will significantly increase the size of the DOCBOOK output.
 ]]>
       </docs>
     </option>
@@ -3906,8 +3884,7 @@ UML notation for the relationships.
 If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate files that are used to generate the various graphs.
  <br>Note:
-This setting is not only used for dot files but also for msc and plantuml
-temporary files.
+This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
@@ -3935,5 +3912,8 @@ temporary files.
     <option type='obsolete' id='TCL_SUBST'/>
     <option type='obsolete' id='COLS_IN_ALPHA_INDEX'/>
     <option type='obsolete' id='OUTPUT_TEXT_DIRECTION'/>
+    <option type='obsolete' id='DOCBOOK_PROGRAMLISTING'/>
+    <option type='obsolete' id='RTF_SOURCE_CODE'/>
+    <option type='obsolete' id='LATEX_SOURCE_CODE'/>
   </group>
 </doxygenconfig>

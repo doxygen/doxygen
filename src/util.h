@@ -171,7 +171,7 @@ int guessSection(const QCString &name);
 
 inline bool isId(int c)
 {
-  return c=='_' || c>=128 || c<0 || isalnum(c);
+  return c=='_' || c>=128 || c<0 || isalnum(c) || c=='$';
 }
 inline bool isIdJS(int c)
 {
@@ -346,7 +346,7 @@ QCString transcodeCharacterStringToUTF8(const QCString &input);
 
 QCString recodeString(const QCString &str,const char *fromEncoding,const char *toEncoding);
 
-QCString extractAliasArgs(const QCString &args,int pos);
+QCString extractAliasArgs(const QCString &args,size_t pos);
 
 int countAliasArguments(const QCString &argList);
 

@@ -30,14 +30,14 @@ var menudata={children:[
 {% if moduleTree.tree %}
 ,{text:"{{ tr.modules }}",url:"modules{{ config.HTML_FILE_EXTENSION }}"}
 {% endif %}
-{% if conceptList %}
+{% if conceptTree.tree %}
 ,{text:"{{ tr.concepts }}",url:"concepts{{ config.HTML_FILE_EXTENSION }}"}
 {% endif %}
 {% if namespaceList %}
-,{text:"{{ tr.namespaces }}",url:'namespaces{{ config.HTML_FILE_EXTENSION }}",children:[
- {text:"{{ tr.namespaceList }}",url:'namespaces{{ config.HTML_FILE_EXTENSION }}"}
+,{text:"{{ tr.namespaces }}",url:"namespaces{{ config.HTML_FILE_EXTENSION }}",children:[
+ {text:"{{ tr.namespaceList }}",url:"namespaces{{ config.HTML_FILE_EXTENSION }}"}
 {% if namespaceMembersIndex.all %}
-,{text:"{{ tr.namespaceMembers }}",url:'namespacemembers{{ config.HTML_FILE_EXTENSION }}",children:[
+,{text:"{{ tr.namespaceMembers }}",url:"namespacemembers{{ config.HTML_FILE_EXTENSION }}",children:[
   {% with page=namespaceMembersIndex %}
     {% include 'htmljsmenumembersdata.tpl' %}
   {% endwith %}

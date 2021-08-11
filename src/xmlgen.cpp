@@ -225,6 +225,11 @@ class TextGeneratorXMLImpl : public TextGeneratorIntf
 
 //-------------------------------------------------------------------------------------------
 
+XMLCodeGenerator::XMLCodeGenerator(TextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
+      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE)
+{
+}
+
 /** Generator for producing XML formatted source code. */
 void XMLCodeGenerator::codify(const QCString &text)
 {
@@ -418,19 +423,17 @@ static void writeXMLDocBlock(TextStream &t,
   QCString stext = text.stripWhiteSpace();
   if (stext.isEmpty()) return;
   // convert the documentation string into an abstract syntax tree
-  DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,text,FALSE,FALSE,
-                                     QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocNode>    root   { validatingParseDoc(*parser.get(),
+                                       fileName,lineNr,scope,md,text,FALSE,FALSE,
+                                       QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
   // create a code generator
-  XMLCodeGenerator *xmlCodeGen = new XMLCodeGenerator(t);
+  auto xmlCodeGen = std::make_unique<XMLCodeGenerator>(t);
   // create a parse tree visitor for XML
-  XmlDocVisitor *visitor = new XmlDocVisitor(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
+  auto visitor = std::make_unique<XmlDocVisitor>(t,*xmlCodeGen,scope?scope->getDefFileExtension():QCString(""));
   // visit all nodes
-  root->accept(visitor);
+  root->accept(visitor.get());
   // clean up
-  delete visitor;
-  delete xmlCodeGen;
-  delete root;
-
 }
 
 void writeXMLCodeBlock(TextStream &t,FileDef *fd)
@@ -1008,7 +1011,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
       << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
     {
-      FileDef *bodyDef = md->getBodyDef();
+      const FileDef *bodyDef = md->getBodyDef();
       if (bodyDef)
       {
         t << " bodyfile=\"" << convertToXML(stripFromPath(bodyDef->absFilePath())) << "\"";
@@ -1394,7 +1397,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     << cd->getDefColumn() << "\"" ;
     if (cd->getStartBodyLine()!=-1)
     {
-      FileDef *bodyDef = cd->getBodyDef();
+      const FileDef *bodyDef = cd->getBodyDef();
       if (bodyDef)
       {
         t << " bodyfile=\"" << convertToXML(stripFromPath(bodyDef->absFilePath())) << "\"";

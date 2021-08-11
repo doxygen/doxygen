@@ -20,6 +20,7 @@
 #include "template.h"
 #include "classdef.h"
 #include "searchindex.h"
+#include "memberlist.h"
 
 class Definition;
 
@@ -64,6 +65,7 @@ class DotGfxHierarchyTable;
 class MemberGroup;
 class MemberGroupList;
 class MemberGroupRefList;
+class MemberVector;
 
 //----------------------------------------------------
 
@@ -549,15 +551,28 @@ class ClassHierarchyContext : public RefCountedContext, public TemplateStructInt
 
 //----------------------------------------------------
 
+enum class ContextTreeType
+{
+  Namespace,           // NamespaceTreeContext
+  ClassInheritance,    // ClassHierarchyContext
+  ClassNesting,        // ClassTreeContext
+  Module,              // ModuleTreeContext
+  File,                // FileTreeContext
+  Page,                // PageTreeContext
+  Concept,             // ContextTreeContext
+  Example              // ExampleTreeContext
+};
+
 class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 {
   public:
-    static NestingNodeContext *alloc(const NestingNodeContext *parent,const Definition *def,
+    static NestingNodeContext *alloc(const NestingNodeContext *parent,ContextTreeType type,
+                                     const Definition *def,
                                      int index,int level,
-                                     bool useFullName, bool addClasses,bool addConcepts,
+                                     bool addClasses,bool addConcepts,
                                      bool inherit,bool hideSuper,
                                      ClassDefSet &visitedClasses)
-    { return new NestingNodeContext(parent,def,index,level,useFullName,addClasses,addConcepts,
+    { return new NestingNodeContext(parent,type,def,index,level,addClasses,addConcepts,
                                     inherit,hideSuper,visitedClasses); }
 
     QCString id() const;
@@ -570,8 +585,9 @@ class NestingNodeContext : public RefCountedContext, public TemplateStructIntf
 
   private:
     NestingNodeContext(const NestingNodeContext *parent,
+                       ContextTreeType type,
                        const Definition *,int index,int level,
-                       bool useFullName, bool addClasses,bool addConcepts,
+                       bool addClasses,bool addConcepts,
                        bool inherit,bool hideSuper,
                        ClassDefSet &visitedClasses);
    ~NestingNodeContext();
@@ -585,8 +601,8 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
 {
   public:
 
-    static NestingContext *alloc(const NestingNodeContext *parent,int level,bool useFullName)
-    { return new NestingContext(parent,level,useFullName); }
+    static NestingContext *alloc(const NestingNodeContext *parent,ContextTreeType type,int level)
+    { return new NestingContext(parent,type,level); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -611,10 +627,10 @@ class NestingContext : public RefCountedContext, public TemplateListIntf
     void addModules(const GroupList &modules,ClassDefSet &visitedClasses);
     void addClassHierarchy(const ClassLinkedMap &clLinkedMap,ClassDefSet &visitedClasses);
     void addDerivedClasses(const BaseClassList &bcl,bool hideSuper,ClassDefSet &visitedClasses);
-    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses);
+    void addMembers(const MemberVector &mv,ClassDefSet &visitedClasses);
 
   private:
-    NestingContext(const NestingNodeContext *parent,int level,bool useFullName);
+    NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level);
    ~NestingContext();
     class Private;
     Private *p;
@@ -1066,8 +1082,8 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
     { return new MemberListContext; }
     static MemberListContext *alloc(const MemberList *ml)
     { return new MemberListContext(ml); }
-    static MemberListContext *alloc(std::vector<const MemberDef *> &&ml)
-    { return new MemberListContext(std::move(ml)); }
+    static MemberListContext *alloc(const MemberVector &ml)
+    { return new MemberListContext(ml); }
 
     // TemplateListIntf
     virtual uint count() const;
@@ -1079,7 +1095,7 @@ class MemberListContext : public RefCountedContext, public TemplateListIntf
   private:
     MemberListContext();
     MemberListContext(const MemberList *ml);
-    MemberListContext(std::vector<const MemberDef *> &&ml);
+    MemberListContext(const MemberVector &ml);
    ~MemberListContext();
     class Private;
     Private *p;

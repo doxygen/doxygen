@@ -33,6 +33,7 @@ class DotCallGraph : public DotGraph
                         const QCString &path,const QCString &fileName,
                         const QCString &relPath,bool writeImageMap=TRUE,
                         int graphId=-1);
+    static bool isTrivial(const MemberDef *md,bool inverse);
 
   protected:
     virtual QCString getBaseName() const;

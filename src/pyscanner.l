@@ -1919,9 +1919,8 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
   // restore original scanner state
 
-  YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
+  yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
   yy_switch_to_buffer(orgState, yyscanner);
-  yy_delete_buffer(tmpBuf, yyscanner);
 
   yyextra->inputString = orgInputString; 
   yyextra->inputPosition = orgInputPosition;

@@ -78,27 +78,6 @@ struct ContextGlobals
   ContextOutputFormat outputFormat;
 } g_globals;
 
-/** @brief Scoped smart pointer */
-template<class T> class ScopedPtr
-{
-  private:
-    T *m_ptr;
-    ScopedPtr(const ScopedPtr &);
-    ScopedPtr &operator=(const ScopedPtr &);
-    void operator==(const ScopedPtr &) const;
-    void operator!=(const ScopedPtr &) const;
-
-  public:
-    typedef T Type;
-    explicit ScopedPtr(T *p=0) : m_ptr(p) {}
-    ~ScopedPtr() { delete m_ptr; };
-    T &operator*() const { return *m_ptr; }
-    T *operator->() const { return m_ptr; }
-    T *get() const { return m_ptr; }
-    operator bool() const { return m_ptr!=0; }
-    void reset(T *p=0) { if (p!=m_ptr) { delete m_ptr; m_ptr = p; } }
-};
-
 /** @brief Reference counting smart pointer */
 template<class T> class SharedPtr
 {
@@ -626,19 +605,19 @@ class TranslateContext::Private
     }
     TemplateVariant generatedAt() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleGeneratedAt>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleGeneratedAt>(this);
     }
     TemplateVariant inheritanceDiagramFor() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleInheritanceDiagramFor>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleInheritanceDiagramFor>(this);
     }
     TemplateVariant collaborationDiagramFor() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleCollaborationDiagramFor>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleCollaborationDiagramFor>(this);
     }
     TemplateVariant dirDependencyGraphFor() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleDirDependencyGraphFor>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleDirDependencyGraphFor>(this);
     }
     TemplateVariant search() const
     {
@@ -820,11 +799,11 @@ class TranslateContext::Private
     }
     TemplateVariant inheritsList() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleInheritsList>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleInheritsList>(this);
     }
     TemplateVariant inheritedByList() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleInheritedByList>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleInheritedByList>(this);
     }
     TemplateVariant definedAtLineInSourceFile() const
     {
@@ -836,7 +815,7 @@ class TranslateContext::Private
     }
     TemplateVariant exampleList() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleWriteList>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleWriteList>(this);
     }
     TemplateVariant listOfAllMembers() const
     {
@@ -876,19 +855,19 @@ class TranslateContext::Private
     }
     TemplateVariant implementedBy() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleImplementedBy>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleImplementedBy>(this);
     }
     TemplateVariant reimplementedBy() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleReimplementedBy>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleReimplementedBy>(this);
     }
     TemplateVariant sourceRefs() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleSourceRefs>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleSourceRefs>(this);
     }
     TemplateVariant sourceRefBys() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleSourceRefBys>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleSourceRefBys>(this);
     }
     TemplateVariant callGraph() const
     {
@@ -916,7 +895,7 @@ class TranslateContext::Private
     }
     TemplateVariant includeDependencyGraph() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleIncludeDependencyGraph>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleIncludeDependencyGraph>(this);
     }
     TemplateVariant includedByDependencyGraph() const
     {
@@ -1326,8 +1305,11 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
                                 const QCString &relPath,const QCString &docStr,bool isBrief)
 {
   TemplateVariant result;
-  DocRoot *root = validatingParseDoc(file,line,def,0,docStr,TRUE,FALSE,
-                                     QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocRoot>    root   { validatingParseDoc(
+                                       *parser.get(),file,line,def,0,docStr,TRUE,FALSE,
+                                       QCString(),isBrief,FALSE,Config_getBool(MARKDOWN_SUPPORT))
+                                     };
   TextStream ts;
   switch (g_globals.outputFormat)
   {
@@ -1355,7 +1337,6 @@ static TemplateVariant parseDoc(const Definition *def,const QCString &file,int l
     result = "";
   else
     result = TemplateVariant(ts.str().c_str(),TRUE);
-  delete root;
   return result;
 }
 
@@ -1719,11 +1700,11 @@ class DefinitionContext
           sourceDef->append(fileLink.get());
         }
       }
-      ScopedPtr<TemplateVariant> details;
+      std::unique_ptr<TemplateVariant> details;
       ContextOutputFormat        detailsOutputFormat;
-      ScopedPtr<TemplateVariant> brief;
+      std::unique_ptr<TemplateVariant> brief;
       ContextOutputFormat        briefOutputFormat;
-      ScopedPtr<TemplateVariant> inbodyDocs;
+      std::unique_ptr<TemplateVariant> inbodyDocs;
       ContextOutputFormat        inbodyDocsOutputFormat;
       SharedPtr<TemplateList>    navPath;
       SharedPtr<TemplateList>    sourceDef;
@@ -2646,12 +2627,13 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     struct Cachable : public DefinitionContext<ClassContext::Private>::Cachable
     {
       Cachable(const ClassDef *cd) : DefinitionContext<ClassContext::Private>::Cachable(cd),
-                               inheritanceNodes(-1) { }
+                               inheritanceNodes(-1),
+                               allMembers(MemberListType_allMembersList,MemberListContainer::Class) { }
       SharedPtr<IncludeInfoContext>     includeInfo;
       SharedPtr<InheritanceListContext> inheritsList;
       SharedPtr<InheritanceListContext> inheritedByList;
-      ScopedPtr<DotClassGraph>          classGraph;
-      ScopedPtr<DotClassGraph>          collaborationGraph;
+      std::unique_ptr<DotClassGraph>          classGraph;
+      std::unique_ptr<DotClassGraph>          collaborationGraph;
       SharedPtr<TemplateList>           classes;
       SharedPtr<TemplateList>           innerClasses;
       SharedPtr<MemberListInfoContext>  publicTypes;
@@ -3446,9 +3428,9 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     {
       Cachable(const FileDef *fd) : DefinitionContext<FileContext::Private>::Cachable(fd) {}
       SharedPtr<IncludeInfoListContext>     includeInfoList;
-      ScopedPtr<DotInclDepGraph>            includeGraph;
-      ScopedPtr<DotInclDepGraph>            includedByGraph;
-      ScopedPtr<TemplateVariant>            sources;
+      std::unique_ptr<DotInclDepGraph>      includeGraph;
+      std::unique_ptr<DotInclDepGraph>      includedByGraph;
+      std::unique_ptr<TemplateVariant>      sources;
       SharedPtr<TemplateList>               classes;
       SharedPtr<TemplateList>               namespaces;
       SharedPtr<TemplateList>               constantgroups;
@@ -3665,7 +3647,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       Cachable(const DirDef *dd) : DefinitionContext<DirContext::Private>::Cachable(dd) {}
       SharedPtr<TemplateList>  dirs;
       SharedPtr<TemplateList>  files;
-      ScopedPtr<DotDirDeps>    dirDepsGraph;
+      std::unique_ptr<DotDirDeps>    dirDepsGraph;
     };
     Cachable &getCache() const
     {
@@ -3816,7 +3798,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
     {
       Cachable(const PageDef *pd) : DefinitionContext<PageContext::Private>::Cachable(pd),
                               exampleOutputFormat(ContextOutputFormat_Unspecified) { }
-      ScopedPtr<TemplateVariant> example;
+      std::unique_ptr<TemplateVariant> example;
       ContextOutputFormat        exampleOutputFormat;
     };
     Cachable &getCache() const
@@ -4091,6 +4073,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         s_inst.addProperty("isRetain",            &Private::isRetain);
         s_inst.addProperty("isWeak",              &Private::isWeak);
         s_inst.addProperty("isStrong",            &Private::isStrong);
+        s_inst.addProperty("isEnumStruct",        &Private::isEnumStruct);
         s_inst.addProperty("isUnretained",        &Private::isUnretained);
         s_inst.addProperty("isNew",               &Private::isNew);
         s_inst.addProperty("isSealed",            &Private::isSealed);
@@ -4395,6 +4378,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       return m_memberDef->isStrong();
     }
+    TemplateVariant isEnumStruct() const
+    {
+      return m_memberDef->isEnumStruct();
+    }
     TemplateVariant isUnretained() const
     {
       return m_memberDef->isUnretained();
@@ -4489,7 +4476,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant hasDetails() const
     {
-      return m_memberDef->isDetailedSectionLinkable();
+      return m_memberDef->hasDetailedDescription();
     }
     TemplateVariant initializer() const
     {
@@ -4582,12 +4569,20 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant enumValues() const
     {
-      Cachable &cache = getCache();
-      if (!cache.enumValues)
+      if (m_memberDef->isEnumerate())
       {
-        cache.enumValues.reset(MemberListContext::alloc(&m_memberDef->enumFieldList()));
+        Cachable &cache = getCache();
+        if (!cache.enumValues)
+        {
+          MemberVector mv = m_memberDef->enumFieldList();
+          cache.enumValues.reset(MemberListContext::alloc(std::move(mv)));
+        }
+        return cache.enumValues.get();
       }
-      return cache.enumValues.get();
+      else
+      {
+        return TemplateVariant(FALSE);
+      }
     }
     TemplateVariant templateArgs() const
     {
@@ -5191,7 +5186,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       if (args.size()==1)
       {
-        return m_memberDef->isDetailedSectionVisible(args[0].toString()=="module",args[0].toString()=="file");
+        QCString containerStr = args[0].toString();
+        MemberListContainer                 container = MemberListContainer::Class;
+        if      (containerStr=="module")    container = MemberListContainer::Group;
+        else if (containerStr=="file")      container = MemberListContainer::File;
+        else if (containerStr=="namespace") container = MemberListContainer::Namespace;
+        return m_memberDef->isDetailedSectionVisible(container);
       }
       else
       {
@@ -5201,7 +5201,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant detailsVisibleFor() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleDetailsVisibleFor>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleDetailsVisibleFor>(this);
     }
     TemplateVariant handleNameWithContextFor(const std::vector<TemplateVariant> &args) const
     {
@@ -5233,7 +5233,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant nameWithContextFor() const
     {
-      return TemplateVariant::Delegate::fromMethod<Private,&Private::handleNameWithContextFor>(this);
+      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleNameWithContextFor>(this);
     }
   private:
     const MemberDef *m_memberDef;
@@ -5252,14 +5252,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       SharedPtr<ClassContext>        classDef;
       SharedPtr<ClassContext>        anonymousType;
       SharedPtr<TemplateList>        templateDecls;
-      ScopedPtr<TemplateVariant>     paramDocs;
+      std::unique_ptr<TemplateVariant>     paramDocs;
       SharedPtr<TemplateList>        implements;
       SharedPtr<TemplateList>        reimplements;
       SharedPtr<TemplateList>        implementedBy;
       SharedPtr<MemberListContext>   sourceRefs;
       SharedPtr<MemberListContext>   sourceRefBys;
-      ScopedPtr<DotCallGraph>        callGraph;
-      ScopedPtr<DotCallGraph>        callerGraph;
+      std::unique_ptr<DotCallGraph>        callGraph;
+      std::unique_ptr<DotCallGraph>        callerGraph;
       SharedPtr<MemberContext>       anonymousMember;
       SharedPtr<TemplateList>        reimplementedBy;
       SharedPtr<TemplateList>        labels;
@@ -5948,7 +5948,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       SharedPtr<MemberListInfoContext>      detailedProperties;
       SharedPtr<MemberListInfoContext>      detailedFriends;
       SharedPtr<TemplateList>               inlineClasses;
-      ScopedPtr<DotGroupCollaboration>      groupGraph;
+      std::unique_ptr<DotGroupCollaboration>      groupGraph;
     };
     Cachable &getCache() const
     {
@@ -6237,7 +6237,7 @@ class ClassHierarchyContext::Private
   public:
     Private()
     {
-      m_classTree.reset(NestingContext::alloc(0,0,false));
+      m_classTree.reset(NestingContext::alloc(0,ContextTreeType::ClassInheritance,0));
       ClassDefSet visitedClasses;
       m_classTree->addClassHierarchy(*Doxygen::classLinkedMap,visitedClasses);
       m_classTree->addClassHierarchy(*Doxygen::hiddenClassLinkedMap,visitedClasses);
@@ -6343,13 +6343,13 @@ class ClassHierarchyContext::Private
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
-                   preferredDepth(0), preferredDepthComputed(FALSE), hierarchy(0) {}
+                   preferredDepth(0), preferredDepthComputed(FALSE) {}
       int   maxDepth;
       bool  maxDepthComputed;
       int   preferredDepth;
       bool  preferredDepthComputed;
       SharedPtr<TemplateList> diagrams;
-      ScopedPtr<DotGfxHierarchyTable> hierarchy;
+      std::unique_ptr<DotGfxHierarchyTable> hierarchy;
     };
     mutable Cachable m_cache;
     static PropertyMapper<ClassHierarchyContext::Private> s_inst;
@@ -6386,13 +6386,14 @@ class NestingNodeContext::Private
 {
   public:
     Private(const NestingNodeContext *parent,const NestingNodeContext *thisNode,
+        ContextTreeType type,
         const Definition *d,int index,int level,
-        bool useFullName,bool addCls,bool addCps,bool inherit, bool hideSuper,
+        bool addCls,bool addCps,bool inherit, bool hideSuper,
         ClassDefSet &visitedClasses)
-      : m_parent(parent), m_def(d), m_level(level), m_index(index), m_useFullName(useFullName)
+      : m_parent(parent), m_type(type), m_def(d), m_level(level), m_index(index)
     {
-      m_children.reset(NestingContext::alloc(thisNode,level+1,useFullName));
-      m_members.reset(NestingContext::alloc(thisNode,level+1,useFullName));
+      m_children.reset(NestingContext::alloc(thisNode,m_type,level+1));
+      m_members.reset(NestingContext::alloc(thisNode,m_type,level+1));
       static bool init=FALSE;
       if (!init)
       {
@@ -6579,11 +6580,19 @@ class NestingNodeContext::Private
     }
     TemplateVariant name() const
     {
-      return m_def->displayName(m_useFullName);
+      if (m_def->definitionType()==Definition::TypeMember && m_type==ContextTreeType::Module)
+      {
+        return toMemberDef(m_def)->qualifiedName();
+      }
+      else
+      {
+        return m_def->displayName(m_type==ContextTreeType::Module);
+      }
     }
     TemplateVariant partOfGroup() const
     {
-      return !(m_def->partOfGroups().empty() || m_useFullName);
+      return m_def->definitionType()==Definition::TypeMember ? toMemberDef(m_def)->getGroupDef()!=0 :
+             !m_def->partOfGroups().empty();
     }
     QCString relPathAsString() const
     {
@@ -6731,54 +6740,90 @@ class NestingNodeContext::Private
     }
     void addMembers(ClassDefSet &visitedClasses)
     {
-      if (m_def->definitionType()==Definition::TypeNamespace)
+      if (m_type!=ContextTreeType::Module && m_def->partOfGroups().empty()) // show outside of group
       {
-        // add namespace members
-        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
+        if (m_def->definitionType()==Definition::TypeNamespace)
         {
-          if (lde->kind()==LayoutDocEntry::MemberDef)
+          // add namespace members
+          for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Namespace))
           {
-            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
-            const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
-            m_members->addMembers(ml,visitedClasses);
+            if (lde->kind()==LayoutDocEntry::MemberDef)
+            {
+              const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+              const MemberList *ml = toNamespaceDef(m_def)->getMemberList(lmd->type);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
+            }
+          }
+        }
+        else if (m_def->definitionType()==Definition::TypeClass)
+        {
+          // add class members
+          for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
+          {
+            if (lde->kind()==LayoutDocEntry::MemberDef)
+            {
+              const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+              const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
+            }
+          }
+        }
+        else if (m_def->definitionType()==Definition::TypeFile)
+        {
+          // add class members
+          for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
+          {
+            if (lde->kind()==LayoutDocEntry::MemberDef)
+            {
+              const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
+              const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
+              if (ml)
+              {
+                m_members->addMembers(*ml,visitedClasses);
+              }
+            }
           }
         }
       }
-      else if (m_def->definitionType()==Definition::TypeClass)
+      else if (m_def->definitionType()==Definition::TypeGroup && m_type==ContextTreeType::Module) // show as part of group
       {
         // add class members
-        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
+        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
         {
           if (lde->kind()==LayoutDocEntry::MemberDef)
           {
             const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
-            const MemberList *ml = toClassDef(m_def)->getMemberList(lmd->type);
-            m_members->addMembers(ml,visitedClasses);
+            const MemberList *ml = toGroupDef(m_def)->getMemberList(lmd->type);
+            if (ml)
+            {
+              m_members->addMembers(*ml,visitedClasses);
+            }
           }
         }
       }
-      else if (m_def->definitionType()==Definition::TypeFile)
+      if (m_def->definitionType()==Definition::TypeMember)
       {
-        // add class members
-        for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::File))
+        const MemberDef *md = toMemberDef(m_def);
+        if (md->isEnumerate() && md->isStrong())
         {
-          if (lde->kind()==LayoutDocEntry::MemberDef)
-          {
-            const LayoutDocEntryMemberDef *lmd = (const LayoutDocEntryMemberDef*)lde.get();
-            const MemberList *ml = toFileDef(m_def)->getMemberList(lmd->type);
-            m_members->addMembers(ml,visitedClasses);
-          }
+          m_members->addMembers(md->enumFieldList(),visitedClasses);
         }
       }
     }
   private:
     const NestingNodeContext *m_parent;
+    ContextTreeType m_type;
     const Definition *m_def;
     SharedPtr<NestingContext> m_children;
     SharedPtr<NestingContext> m_members;
     int m_level;
     int m_index;
-    bool m_useFullName;
     struct Cachable
     {
       SharedPtr<ClassContext>     classContext;
@@ -6788,7 +6833,7 @@ class NestingNodeContext::Private
       SharedPtr<PageContext>      pageContext;
       SharedPtr<ModuleContext>    moduleContext;
       SharedPtr<MemberContext>    memberContext;
-      ScopedPtr<TemplateVariant>  brief;
+      std::unique_ptr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
     static PropertyMapper<NestingNodeContext::Private> s_inst;
@@ -6798,13 +6843,14 @@ class NestingNodeContext::Private
 PropertyMapper<NestingNodeContext::Private> NestingNodeContext::Private::s_inst;
 
 NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
+                                       ContextTreeType type,
                                        const Definition *d,int index,int level,
-                                       bool useFullName,bool addClass,bool addConcepts,
+                                       bool addClass,bool addConcepts,
                                        bool inherit,bool hideSuper,
                                        ClassDefSet &visitedClasses)
    : RefCountedContext("NestingNodeContext")
 {
-  p = new Private(parent,this,d,index,level,useFullName,addClass,addConcepts,inherit,hideSuper,visitedClasses);
+  p = new Private(parent,this,type,d,index,level,addClass,addConcepts,inherit,hideSuper,visitedClasses);
 }
 
 NestingNodeContext::~NestingNodeContext()
@@ -6833,8 +6879,8 @@ QCString NestingNodeContext::id() const
 class NestingContext::Private : public GenericNodeListContext
 {
   public:
-    Private(const NestingNodeContext *parent,int level,bool useFullName)
-      : m_parent(parent), m_level(level), m_useFullName(useFullName) {}
+    Private(const NestingNodeContext *parent,ContextTreeType type,int level)
+      : m_parent(parent), m_type(type), m_level(level) {}
 
     void addNamespace(const NamespaceDef *nd,bool rootOnly,bool addClasses,bool addConcepts,
                       ClassDefSet &visitedClasses)
@@ -6844,11 +6890,12 @@ class NestingContext::Private : public GenericNodeListContext
       {
         bool hasChildren = namespaceHasNestedNamespace(nd) ||
                            (addClasses  && namespaceHasNestedClass(nd,false,ClassDef::Class)) ||
-                           (addConcepts && namespaceHasNestedConcept(nd));
+                           (addConcepts && namespaceHasNestedConcept(nd)) ||
+                           (m_type==ContextTreeType::Namespace && countVisibleMembers(nd));
         bool isLinkable  = nd->isLinkableInProject();
-        if (isLinkable || hasChildren)
+        if (isLinkable && hasChildren)
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,nd,m_index,m_level,m_useFullName,
+          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,nd,m_index,m_level,
                                     addClasses,addConcepts,FALSE,FALSE,visitedClasses);
           append(nnc);
           m_index++;
@@ -6887,7 +6934,7 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (classVisibleInIndex(cd) && cd->templateMaster()==0)
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,m_useFullName,
+          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
                                                               TRUE,FALSE,FALSE,FALSE,visitedClasses);
           append(nnc);
           m_index++;
@@ -6900,7 +6947,7 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (cd->isLinkable())
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,m_useFullName,
+          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
                                                               FALSE,TRUE,FALSE,FALSE,visitedClasses);
           append(nnc);
           m_index++;
@@ -6941,7 +6988,7 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (dd->getOuterScope()==Doxygen::globalScope)
         {
-          append(NestingNodeContext::alloc(m_parent,dd.get(),m_index,m_level,m_useFullName,
+          append(NestingNodeContext::alloc(m_parent,m_type,dd.get(),m_index,m_level,
                                            FALSE,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
@@ -6951,7 +6998,7 @@ class NestingContext::Private : public GenericNodeListContext
     {
       for(const auto dd : dirList)
       {
-        append(NestingNodeContext::alloc(m_parent,dd,m_index,m_level,m_useFullName,
+        append(NestingNodeContext::alloc(m_parent,m_type,dd,m_index,m_level,
                                          FALSE,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
       }
@@ -6964,7 +7011,7 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,fd.get(),m_index,m_level,m_useFullName,
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,fd.get(),m_index,m_level,
                                           FALSE,FALSE,FALSE,FALSE,visitedClasses);
             append(nnc);
             m_index++;
@@ -6976,7 +7023,7 @@ class NestingContext::Private : public GenericNodeListContext
     {
       for (const auto &fd : fList)
       {
-        NestingNodeContext *nnc=NestingNodeContext::alloc(m_parent,fd,m_index,m_level,m_useFullName,
+        NestingNodeContext *nnc=NestingNodeContext::alloc(m_parent,m_type,fd,m_index,m_level,
                                           FALSE,FALSE,FALSE,FALSE,visitedClasses);
         append(nnc);
         m_index++;
@@ -6988,7 +7035,7 @@ class NestingContext::Private : public GenericNodeListContext
           pd->getOuterScope()==0 ||
           pd->getOuterScope()->definitionType()!=Definition::TypePage)
       {
-        append(NestingNodeContext::alloc(m_parent,pd,m_index,m_level,m_useFullName,
+        append(NestingNodeContext::alloc(m_parent,m_type,pd,m_index,m_level,
                                           FALSE,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
       }
@@ -7016,7 +7063,7 @@ class NestingContext::Private : public GenericNodeListContext
             (!gd->isReference() || externalGroups)
            )
         {
-          append(NestingNodeContext::alloc(m_parent,gd.get(),m_index,m_level,m_useFullName,
+          append(NestingNodeContext::alloc(m_parent,m_type,gd.get(),m_index,m_level,
                                            FALSE,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
@@ -7028,7 +7075,7 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (gd->isVisible())
         {
-          append(NestingNodeContext::alloc(m_parent,gd,m_index,m_level,m_useFullName,
+          append(NestingNodeContext::alloc(m_parent,m_type,gd,m_index,m_level,
                                            FALSE,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
@@ -7056,7 +7103,7 @@ class NestingContext::Private : public GenericNodeListContext
 
         if (cd->isVisibleInHierarchy() && b)
         {
-          NestingNodeContext *tnc = NestingNodeContext::alloc(m_parent,cd,m_index,m_level,m_useFullName,
+          NestingNodeContext *tnc = NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
                                            TRUE,FALSE,TRUE,hideSuper,visitedClasses);
           append(tnc);
           m_index++;
@@ -7085,7 +7132,7 @@ class NestingContext::Private : public GenericNodeListContext
           if (cd->isVisibleInHierarchy()) // should it be visible
           {
             // new root level class
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,cd.get(),m_index,m_level,m_useFullName,
+            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,cd.get(),m_index,m_level,
                                              TRUE,FALSE,TRUE,FALSE,visitedClasses);
             append(nnc);
             m_index++;
@@ -7093,34 +7140,31 @@ class NestingContext::Private : public GenericNodeListContext
         }
       }
     }
-    void addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+    void addMembers(const MemberVector &mv,ClassDefSet &visitedClasses)
     {
-      if (ml)
+      for (const auto &md : mv)
       {
-        for (const auto &md : *ml)
+        if (md->visibleInIndex())
         {
-          if (md->visibleInIndex())
-          {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,md,m_index,m_level+1,m_useFullName,
-                                              TRUE,FALSE,TRUE,FALSE,visitedClasses);
-            append(nnc);
-            m_index++;
-          }
+          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,md,m_index,m_level+1,
+              TRUE,FALSE,TRUE,FALSE,visitedClasses);
+          append(nnc);
+          m_index++;
         }
       }
     }
 
   private:
     const NestingNodeContext *m_parent;
+    ContextTreeType m_type;
     int m_level;
     int m_index = 0;
-    bool m_useFullName;
 };
 
-NestingContext::NestingContext(const NestingNodeContext *parent,int level,bool useFullName) :
+NestingContext::NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level) :
      RefCountedContext("NestingContext")
 {
-  p = new Private(parent,level,useFullName);
+  p = new Private(parent,type,level);
 }
 
 NestingContext::~NestingContext()
@@ -7224,10 +7268,11 @@ void NestingContext::addDerivedClasses(const BaseClassList &bcl,bool hideSuper,C
   p->addDerivedClasses(bcl,hideSuper,visitedClasses);
 }
 
-void NestingContext::addMembers(const MemberList *ml,ClassDefSet &visitedClasses)
+void NestingContext::addMembers(const MemberVector &mv,ClassDefSet &visitedClasses)
 {
-  p->addMembers(ml,visitedClasses);
+  p->addMembers(mv,visitedClasses);
 }
+
 
 //------------------------------------------------------------------------
 
@@ -7238,7 +7283,7 @@ class ClassTreeContext::Private
   public:
     Private()
     {
-      m_classTree.reset(NestingContext::alloc(0,0,false));
+      m_classTree.reset(NestingContext::alloc(0,ContextTreeType::ClassNesting,0));
       ClassDefSet visitedClasses;
       m_classTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,TRUE,FALSE,visitedClasses);
       m_classTree->addClasses(*Doxygen::classLinkedMap,TRUE,visitedClasses);
@@ -7457,7 +7502,7 @@ class NamespaceTreeContext::Private
   public:
     Private()
     {
-      m_namespaceTree.reset(NestingContext::alloc(0,0,false));
+      m_namespaceTree.reset(NestingContext::alloc(0,ContextTreeType::Namespace,0));
       ClassDefSet visitedClasses;
       m_namespaceTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,TRUE,visitedClasses);
       //%% Nesting tree
@@ -7733,7 +7778,7 @@ class FileTreeContext::Private
     Private()
     {
       // Add dirs tree
-      m_dirFileTree.reset(NestingContext::alloc(0,0,false));
+      m_dirFileTree.reset(NestingContext::alloc(0,ContextTreeType::File,0));
       ClassDefSet visitedClasses;
       m_dirFileTree->addDirs(*Doxygen::dirLinkedMap,visitedClasses);
       if (Doxygen::inputNameLinkedMap)
@@ -7852,7 +7897,7 @@ class PageTreeContext::Private
   public:
     Private(const PageLinkedMap &pages)
     {
-      m_pageTree.reset(NestingContext::alloc(0,0,false));
+      m_pageTree.reset(NestingContext::alloc(0,ContextTreeType::Page,0));
       ClassDefSet visitedClasses;
       // Add pages
       m_pageTree->addPages(pages,TRUE,visitedClasses);
@@ -8103,7 +8148,7 @@ class ConceptTreeContext::Private
   public:
     Private()
     {
-      m_conceptTree.reset(NestingContext::alloc(0,0,false));
+      m_conceptTree.reset(NestingContext::alloc(0,ContextTreeType::Concept,0));
       ClassDefSet visitedClasses;
       // Add concepts
       m_conceptTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,TRUE,visitedClasses);
@@ -8221,7 +8266,7 @@ class ModuleTreeContext::Private
   public:
     Private()
     {
-      m_moduleTree.reset(NestingContext::alloc(0,0,true));
+      m_moduleTree.reset(NestingContext::alloc(0,ContextTreeType::Module,0));
       ClassDefSet visitedClasses;
       // Add modules
       m_moduleTree->addModules(*Doxygen::groupLinkedMap,visitedClasses);
@@ -8441,7 +8486,7 @@ class ExampleTreeContext::Private
   public:
     Private()
     {
-      m_exampleTree.reset(NestingContext::alloc(0,0,false));
+      m_exampleTree.reset(NestingContext::alloc(0,ContextTreeType::Example,0));
       ClassDefSet visitedClasses;
       // Add pages
       m_exampleTree->addPages(*Doxygen::exampleLinkedMap,TRUE,visitedClasses);
@@ -9253,7 +9298,7 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
     for (const auto &md : *list)
     {
       if ((md->isBriefSectionVisible() && !details) ||
-          (md->isDetailedSectionLinkable() && details)
+          (md->hasDetailedDescription() && details)
          )
       {
         p->addMember(md);
@@ -9262,14 +9307,13 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
   }
 }
 
-MemberListContext::MemberListContext(std::vector<const MemberDef *> &&ml) : RefCountedContext("MemberListContext")
+MemberListContext::MemberListContext(const MemberVector &ml) : RefCountedContext("MemberListContext")
 {
   p = new Private;
   for (const auto &md : ml)
   {
     p->addMember(md);
   }
-  ml.clear();
 }
 
 MemberListContext::~MemberListContext()
@@ -9543,7 +9587,7 @@ class MemberGroupInfoContext::Private
     {
       SharedPtr<MemberListContext>      memberListContext;
       SharedPtr<MemberGroupListContext> memberGroups;
-      ScopedPtr<TemplateVariant>        docs;
+      std::unique_ptr<TemplateVariant>        docs;
     };
     mutable Cachable m_cache;
     static PropertyMapper<MemberGroupInfoContext::Private> s_inst;
@@ -9914,7 +9958,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       {
         const MemberList *ml  = cd->getMemberList(lt1);
         const MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
-        MemberList *combinedList = new MemberList(lt);
+        MemberList *combinedList = new MemberList(lt,MemberListContainer::Class);
         addMemberListIncludingGrouped(inheritedFrom,ml,combinedList);
         addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList);
         addMemberGroupsOfClass(inheritedFrom,cd,lt,combinedList);
@@ -10078,7 +10122,7 @@ class ArgumentContext::Private
     QCString m_relPath;
     struct Cachable
     {
-      ScopedPtr<TemplateVariant> docs;
+      std::unique_ptr<TemplateVariant> docs;
     };
     mutable Cachable m_cache;
     static PropertyMapper<ArgumentContext::Private> s_inst;
@@ -11043,7 +11087,7 @@ void generateOutputViaTemplate()
       }
 
       // clear all cached data in Definition objects.
-      for (const auto &kv : Doxygen::symbolMap)
+      for (const auto &kv : *Doxygen::symbolMap)
       {
         kv.second->setCookie(0);
       }

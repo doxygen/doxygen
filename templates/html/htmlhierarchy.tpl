@@ -9,7 +9,7 @@
 </div>
 {% indexentry nav name=tr.classHierarchy file=page.fileName anchor='' isReference=False separateIndex=True addToIndex=True %}
 {% opensubindex nav %}
-{% with tree=classHierarchy %}
+{% with tree=classHierarchy treeType='ClassInheritance' %}
   {% include 'htmldirtree.tpl' %}
 {% endwith %}
 {% closesubindex nav %}

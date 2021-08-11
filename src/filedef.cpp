@@ -452,21 +452,6 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
     //printf("Writing source ref for file %s\n",qPrint(name()));
     if (Config_getBool(SOURCE_BROWSER))
     {
-      //if Latex enabled and LATEX_SOURCE_CODE isn't -> skip, bug_738548
-      ol.pushGeneratorState();
-      if (ol.isEnabled(OutputGenerator::Latex) && !Config_getBool(LATEX_SOURCE_CODE))
-      {
-        ol.disable(OutputGenerator::Latex);
-      }
-      if (ol.isEnabled(OutputGenerator::Docbook) && !Config_getBool(DOCBOOK_PROGRAMLISTING))
-      {
-        ol.disable(OutputGenerator::Docbook);
-      }
-      if (ol.isEnabled(OutputGenerator::RTF) && !Config_getBool(RTF_SOURCE_CODE))
-      {
-        ol.disable(OutputGenerator::RTF);
-      }
-
       ol.startParagraph("definition");
       QCString refText = theTranslator->trDefinedInSourceFile();
       int fileMarkerPos = refText.find("@0");
@@ -482,8 +467,6 @@ void FileDefImpl::writeDetailedDescription(OutputList &ol,const QCString &title)
         err("translation error: invalid marker in trDefinedInSourceFile()\n");
       }
       ol.endParagraph();
-      //Restore settings, bug_738548
-      ol.popGeneratorState();
     }
     ol.endTextBlock();
   }
@@ -493,9 +476,11 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
-                       briefDescription(),TRUE,FALSE,
-                       QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot> rootNode { validatingParseDoc(*parser.get(),
+                                        briefFile(),briefLine(),this,0,
+                                        briefDescription(),TRUE,FALSE,
+                                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
 
     if (rootNode && !rootNode->isEmpty())
     {
@@ -504,7 +489,7 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -522,7 +507,6 @@ void FileDefImpl::writeBriefDescription(OutputList &ol)
       ol.popGeneratorState();
       ol.endParagraph();
     }
-    delete rootNode;
   }
   ol.writeSynopsis();
 }
@@ -1109,9 +1093,6 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
 void FileDefImpl::writeSourceHeader(OutputList &ol)
 {
   bool generateTreeView  = Config_getBool(GENERATE_TREEVIEW);
-  bool latexSourceCode   = Config_getBool(LATEX_SOURCE_CODE);
-  bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
-  bool rtfSourceCode     = Config_getBool(RTF_SOURCE_CODE);
   QCString title = m_docname;
   if (!m_fileVersion.isEmpty())
   {
@@ -1119,9 +1100,6 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
   }
   QCString pageTitle = theTranslator->trSourceFile(title);
   ol.disable(OutputGenerator::Man);
-  if (!latexSourceCode) ol.disable(OutputGenerator::Latex);
-  if (!docbookSourceCode) ol.disable(OutputGenerator::Docbook);
-  if (!rtfSourceCode) ol.disable(OutputGenerator::RTF);
 
   bool isDocFile = isDocumentationFile();
   bool genSourceFile = !isDocFile && generateSourceFile();
@@ -1152,14 +1130,9 @@ void FileDefImpl::writeSourceHeader(OutputList &ol)
 
   if (isLinkable())
   {
-    ol.pushGeneratorState();
-    if (latexSourceCode) ol.disable(OutputGenerator::Latex);
-    if (rtfSourceCode) ol.disable(OutputGenerator::RTF);
-    if (docbookSourceCode) ol.disable(OutputGenerator::Docbook);
     ol.startTextLink(getOutputFileBase(),QCString());
     ol.parseText(theTranslator->trGotoDocumentation());
     ol.endTextLink();
-    ol.popGeneratorState();
   }
 }
 
@@ -1281,7 +1254,7 @@ void FileDefImpl::insertMember(MemberDef *md)
 
   if (allMemberList==0)
   {
-    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList));
+    m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::File));
     allMemberList = m_memberLists.back().get();
   }
   allMemberList->push_back(md);
@@ -1634,15 +1607,11 @@ void FileDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_memberLists.get(lt);
+  const auto &ml = m_memberLists.get(lt,MemberListContainer::File);
   ml->setNeedsSorting(
        ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
        ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));
   ml->push_back(md);
-  if (lt&MemberListType_documentationLists)
-  {
-    ml->setInFile(TRUE);
-  }
   if (ml->listType()&MemberListType_declarationLists)
   {
     MemberDefMutable *mdm = toMemberDefMutable(md);

@@ -35,7 +35,9 @@
 {% resource 'navtree.js' %}
 {% resource 'resize.js' %}
 {% endif %}
+{% if not config.DISABLE_INDEX and config.HTML_DYNAMIC_MENUS %}
 {% resource 'menu.js' %}
+{% endif %}
 {% resource 'doc.luma' %}
 {% resource 'folderopen.luma' %}
 {% resource 'folderclosed.luma' %}
@@ -295,7 +297,6 @@
 {# write search data #}
 {% if config.SEARCHENGINE and not config.SERVER_BASED_SEARCH %}
   {% create 'search/searchdata.js' from 'htmljssearchdata.tpl' %}
-  {% set symbolCount=0 %}
   {% for idx in searchIndices %}
     {% for si in idx.symbolIndices %}
       {% with hexCount=forloop.counter0|hex baseName=si.name|append:'_'|append:hexCount %}

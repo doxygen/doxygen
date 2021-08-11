@@ -29,9 +29,11 @@
 #include "entry.h"
 #include "md5.h"
 
-MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,const QCString &d,const QCString &docFile,int docLine)
+MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
+                         const QCString &d,const QCString &docFile,int docLine,
+                         MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup)),
+    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
@@ -97,13 +99,13 @@ void MemberGroup::writeDeclarations(OutputList &ol,
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 
-void MemberGroup::writePlainDeclarations(OutputList &ol,
+void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                const ClassDef *inheritedFrom,const QCString &inheritId
               ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
+  memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,inheritedFrom,inheritId);
 }
 
 void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
@@ -135,10 +137,10 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
     const MemberList *ml = md->getSectionList(m_container);
     if (ml && lt==ml->listType())
     {
-      MemberList mml(lt);
+      MemberList mml(lt,MemberListContainer::Class);
       mml.push_back(md);
       mml.countDecMembers();
-      mml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
+      mml.writePlainDeclarations(ol,false,cd,0,0,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -252,12 +254,6 @@ int MemberGroup::numDocEnumValues() const
 {
   return memberList->numDocEnumValues();
 }
-
-void MemberGroup::setInGroup(bool b)
-{
-  memberList->setInGroup(b);
-}
-
 
 QCString MemberGroup::anchor() const
 {
