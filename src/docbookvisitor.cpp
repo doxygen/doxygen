@@ -516,7 +516,7 @@ DB_VIS_C
   {
     if (!m_hide)
     {
-      m_t << "<programlisting>";
+      m_t << "<programlisting linenumbering=\"unnumbered\">";
     }
     pushHidden(m_hide);
     m_hide = TRUE;
@@ -1190,7 +1190,14 @@ void DocbookDocVisitor::visitPre(DocHRef *href)
 {
 DB_VIS_C
   if (m_hide) return;
-  m_t << "<link xlink:href=\"" << convertToDocBook(href->url()) << "\">";
+  if (href->url().at(0) != '#')
+  {
+    m_t << "<link xlink:href=\"" << convertToDocBook(href->url()) << "\">";
+  }
+  else
+  {
+    startLink(href->file(),filterId(href->url().mid(1)));
+  }
 }
 
 void DocbookDocVisitor::visitPost(DocHRef *)
@@ -1388,7 +1395,7 @@ DB_VIS_C
     default:
       ASSERT(0);
   }
-  m_t << "                    </title>\n";
+  m_t << "</title>\n";
   m_t << "                    <para>\n";
   m_t << "                    <table frame=\"all\">\n";
   int ncols = 2;
@@ -1434,7 +1441,7 @@ DB_VIS_C
 
   if (sect && sect->hasInOutSpecifier())
   {
-    m_t << "                                <entry>";
+    m_t << "<entry>";
     if (pl->direction()!=DocParamSect::Unspecified)
     {
       if (pl->direction()==DocParamSect::In)
@@ -1450,12 +1457,12 @@ DB_VIS_C
         m_t << "in,out";
       }
     }
-    m_t << "                                </entry>";
+    m_t << "</entry>";
   }
 
   if (sect && sect->hasTypeSpecifier())
   {
-    m_t << "                                <entry>";
+    m_t << "<entry>";
     for (const auto &type : pl->paramTypes())
     {
       if (type->kind()==DocNode::Kind_Word)
@@ -1472,16 +1479,16 @@ DB_VIS_C
       }
 
     }
-    m_t << "                                </entry>";
+    m_t << "</entry>";
   }
 
   if (pl->parameters().empty())
   {
-    m_t << "                                <entry></entry>\n";
+    m_t << "<entry></entry>\n";
   }
   else
   {
-    m_t << "                                <entry>";
+    m_t << "<entry>";
     int cnt = 0;
     for (const auto &param : pl->parameters())
     {
@@ -1499,9 +1506,9 @@ DB_VIS_C
       }
       cnt++;
     }
-    m_t << "</entry>\n";
+    m_t << "</entry>";
   }
-  m_t << "                                <entry>";
+  m_t << "<entry>";
 }
 
 void DocbookDocVisitor::visitPost(DocParamList *)

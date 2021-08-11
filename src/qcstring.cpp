@@ -204,7 +204,7 @@ QCString QCString::simplifyWhiteSpace() const
   return result;
 }
 
-QCString &QCString::replace( uint index, uint len, const char *s)
+QCString &QCString::replace( size_t index, size_t len, const char *s)
 {
   remove( index, len );
   insert( index, s );
@@ -394,7 +394,7 @@ bye:
 
 //-------------------------------------------------
 
-void *qmemmove( void *dst, const void *src, uint len )
+void *qmemmove( void *dst, const void *src, size_t len )
 {
     char *d;
     char *s;
@@ -420,7 +420,7 @@ char *qstrdup( const char *str )
     return strcpy( dst, str );
 }
 
-char *qstrncpy( char *dst, const char *src, uint len )
+char *qstrncpy( char *dst, const char *src, size_t len )
 {
     if ( !src )
 	return 0;
@@ -444,7 +444,7 @@ int qstricmp( const char *str1, const char *str2 )
     return res;
 }
 
-int qstrnicmp( const char *str1, const char *str2, uint len )
+int qstrnicmp( const char *str1, const char *str2, size_t len )
 {
     const uchar *s1 = (const uchar *)str1;
     const uchar *s2 = (const uchar *)str2;

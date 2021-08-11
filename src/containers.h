@@ -28,6 +28,7 @@ using StringUnorderedMap = std::unordered_map<std::string,std::string>;
 using StringUnorderedSet = std::unordered_set<std::string>;
 using StringMap          = std::map<std::string,std::string>;
 using StringSet          = std::set<std::string>;
+using StringMultiSet     = std::multiset<std::string>;
 using StringVector       = std::vector<std::string>;
 using BoolStack          = std::stack<bool>;
 using BoolVector         = std::vector<bool>;

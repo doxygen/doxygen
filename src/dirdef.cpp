@@ -264,9 +264,10 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(
-         briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE,
-         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot> rootNode  { validatingParseDoc(
+         *parser.get(), briefFile(),briefLine(),this,0,briefDescription(),TRUE,FALSE,
+         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -274,7 +275,7 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -293,7 +294,6 @@ void DirDefImpl::writeBriefDescription(OutputList &ol)
 
       ol.endParagraph();
     }
-    delete rootNode;
   }
   ol.writeSynopsis();
 }

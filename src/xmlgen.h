@@ -21,8 +21,7 @@ class XMLCodeGenerator : public CodeOutputInterface
 {
   public:
 
-    XMLCodeGenerator(TextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
-      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE) {}
+    XMLCodeGenerator(TextStream &t);
     virtual ~XMLCodeGenerator() { }
 
     void codify(const QCString &text) override;

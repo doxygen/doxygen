@@ -61,6 +61,9 @@ class CodeOutputInterface
 {
   public:
     virtual ~CodeOutputInterface() {}
+    CodeOutputInterface() {}
+    CodeOutputInterface(const CodeOutputInterface &) = delete;
+    CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
 
     /** Identifier for the output file */
     virtual int id() const { return 0; }
@@ -496,6 +499,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startLabels() = 0;
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
+
+    virtual void cleanup() = 0;
 
   protected:
     TextStream m_t;

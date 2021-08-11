@@ -11,7 +11,7 @@
     {% endif %}
   {% endfor %}
   </div>
-  {% indexentry nav name=tr.classIndex file=page.fileName anchor='' isReference=False separateIndex=False %}
+  {% indexentry nav name=tr.classIndex file=page.fileName anchor='' isReference=False separateIndex=False addToIndex=True %}
   {# multi column index #}
   <div class="classindex">
   {% for section in index %}

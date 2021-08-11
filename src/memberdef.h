@@ -39,6 +39,7 @@ class GroupDef;
 struct TagInfo;
 class MemberDefMutable;
 class MemberGroupList;
+class MemberVector;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition
@@ -195,13 +196,13 @@ class MemberDef : public Definition
     //bool hasUserDocumentation() const = 0; // overrides hasUserDocumentation
     virtual bool isDeleted() const = 0;
     virtual bool isBriefSectionVisible() const = 0;
-    virtual bool isDetailedSectionVisible(bool inGroup,bool inFile) const = 0;
-    virtual bool isDetailedSectionLinkable() const = 0;
+    virtual bool isDetailedSectionVisible(MemberListContainer container) const = 0;
+    virtual bool hasDetailedDescription() const = 0;
     virtual bool isFriendClass() const = 0;
     virtual bool isDocumentedFriendClass() const = 0;
 
     virtual const MemberDef *reimplements() const = 0;
-    virtual const MemberList &reimplementedBy() const = 0;
+    virtual const MemberVector &reimplementedBy() const = 0;
     virtual bool isReimplementedBy(const ClassDef *cd) const = 0;
 
     virtual ClassDef *relatedAlso() const = 0;
@@ -210,7 +211,7 @@ class MemberDef : public Definition
     virtual const MemberDef *getAnonymousEnumType() const = 0;
     virtual bool isDocsForDefinition() const = 0;
     virtual const MemberDef *getEnumScope() const = 0;
-    virtual const MemberList &enumFieldList() const = 0;
+    virtual const MemberVector &enumFieldList() const = 0;
     virtual QCString enumBaseType() const = 0;
 
     virtual bool hasExamples() const = 0;

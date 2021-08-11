@@ -35,6 +35,7 @@ class ManGenerator : public OutputGenerator
     void writeDoc(DocNode *,const Definition *,const MemberDef *,int);
 
     static void init();
+    void cleanup();
     void startFile(const QCString &name,const QCString &manName,const QCString &title,int);
     void writeSearchInfo() {}
     void writeFooter(const QCString &) {}
@@ -96,7 +97,6 @@ class ManGenerator : public OutputGenerator
     void insertMemberAlignLeft(int,bool){}
     void startMemberSubtitle() {}
     void endMemberSubtitle() {}
-    //void writeListItem();
     void startItemListItem();
     void endItemListItem();
     void startMemberDocList() {}
@@ -166,7 +166,6 @@ class ManGenerator : public OutputGenerator
     void endExamples();
     void startParamList(ParamListTypes,const QCString &title);
     void endParamList();
-    //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
     void startSection(const QCString &,const QCString &,SectionType);

@@ -113,7 +113,10 @@ documentation. For this purpose you can use the following:
  *  ... text
  ***********************************************/
 \endverbatim
-(note the 2 slashes to end the normal comment block and start a special comment block).
+Note: the 2 slashes to end the normal comment block and start a special comment block.
+
+Note: be careful when using a reformatter like clang-format as it may see this type of comment
+as 2 separate comments and introduce spacing between them.
 
 or
 

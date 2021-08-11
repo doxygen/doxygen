@@ -20,6 +20,7 @@
 
 #include "qcstring.h"
 #include "containers.h"
+#include "variant.h"
 
 class TemplateListIntf;
 class TemplateStructIntf;
@@ -92,27 +93,27 @@ class TemplateVariant
 {
   public:
     /** @brief Helper class to create a delegate that can store a function/method call. */
-    class Delegate
+    class FunctionDelegate
     {
       public:
         /** Callback type to use when creating a delegate from a function. */
         typedef TemplateVariant (*StubType)(const void *obj, const std::vector<TemplateVariant> &args);
 
-        Delegate() : m_objectPtr(0) , m_stubPtr(0) {}
+        FunctionDelegate() : m_objectPtr(0) , m_stubPtr(0) {}
 
         /** Creates a delegate given an object. The method to call is passed as a template parameter */
         template <class T, TemplateVariant (T::*TMethod)(const std::vector<TemplateVariant> &) const>
-        static Delegate fromMethod(const T* objectPtr)
+        static FunctionDelegate fromMethod(const T* objectPtr)
         {
-          Delegate d;
+          FunctionDelegate d;
           d.m_objectPtr = objectPtr;
           d.m_stubPtr   = &methodStub<T, TMethod>;
           return d;
         }
         /** Creates a delegate given an object, and a plain function. */
-        static Delegate fromFunction(const void *obj,StubType func)
+        static FunctionDelegate fromFunction(const void *obj,StubType func)
         {
-          Delegate d;
+          FunctionDelegate d;
           d.m_objectPtr = obj;
           d.m_stubPtr = func;
           return d;
@@ -136,48 +137,23 @@ class TemplateVariant
         }
     };
 
-    /** Types of data that can be stored in a TemplateVariant */
-    enum Type { None, Bool, Integer, String, Struct, List, Function };
-
-    /** Returns the type of the value stored in the variant */
-    Type type() const { return m_type; }
-
-    /** Return a string representation of the type of the value stored in the variant */
-    QCString typeAsString() const
-    {
-      switch (m_type)
-      {
-        case None:     return "none";
-        case Bool:     return "bool";
-        case Integer:  return "integer";
-        case String:   return "string";
-        case Struct:   return "struct";
-        case List:     return "list";
-        case Function: return "function";
-      }
-      return "invalid";
-    }
-
-    /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
-    bool isValid() const { return m_type!=None; }
-
     /** Constructs an invalid variant. */
-    TemplateVariant() : m_type(None), m_strukt(0), m_raw(FALSE) {}
+    TemplateVariant() {}
 
     /** Constructs a new variant with a boolean value \a b. */
-    explicit TemplateVariant(bool b) : m_type(Bool), m_boolVal(b), m_raw(FALSE) {}
+    explicit TemplateVariant(bool b) { m_variant.set<bool>(b); }
 
     /** Constructs a new variant with a integer value \a v. */
-    TemplateVariant(int v) : m_type(Integer), m_intVal(v), m_raw(FALSE) {}
+    TemplateVariant(int v) { m_variant.set<int>(v); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const char *s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+    TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant.set<QCString>(s); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const QCString &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+    TemplateVariant(const QCString &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<QCString>(s); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const std::string &s,bool raw=FALSE) : m_type(String), m_strVal(s), m_strukt(0), m_raw(raw) {}
+    TemplateVariant(const std::string &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<QCString>(s); }
 
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a reference to the object.
@@ -190,13 +166,13 @@ class TemplateVariant
     TemplateVariant(TemplateListIntf *l);
 
     /** Constructs a new variant which represents a method call
-     *  @param[in] delegate Delegate object to invoke when
+     *  @param[in] delegate FunctionDelegate object to invoke when
      *             calling call() on this variant.
-     *  @note Use TemplateVariant::Delegate::fromMethod() and
-     *  TemplateVariant::Delegate::fromFunction() to create
-     *  Delegate objects.
+     *  @note Use TemplateVariant::FunctionDelegate::fromMethod() and
+     *  TemplateVariant::FunctionDelegate::fromFunction() to create
+     *  FunctionDelegate objects.
      */
-    TemplateVariant(const Delegate &delegate) : m_type(Function), m_strukt(0), m_delegate(delegate), m_raw(FALSE) {}
+    TemplateVariant(const FunctionDelegate &delegate) { m_variant.set<FunctionDelegate>(delegate); }
 
     /** Destroys the Variant object */
     ~TemplateVariant();
@@ -206,50 +182,51 @@ class TemplateVariant
      */
     TemplateVariant(const TemplateVariant &v);
 
+    /** Moves the contents of variant \a v into this variant.
+     *  variant \a v will become invalid
+     */
+    TemplateVariant(TemplateVariant &&v);
+
     /** Assigns the value of the variant \a v to this variant. */
     TemplateVariant &operator=(const TemplateVariant &v);
+
+    /** Move the value of the variant \a v into this variant.
+     *  Variant \a v will become invalid */
+    TemplateVariant &operator=(TemplateVariant &&v);
 
     /** Compares this QVariant with v and returns true if they are equal;
      *  otherwise returns false.
      */
     bool operator==(TemplateVariant &other)
     {
-      if (m_type==None)
+      if (!m_variant.valid())
       {
         return FALSE;
       }
-      if (m_type==TemplateVariant::List && other.m_type==TemplateVariant::List)
+      if (isBool() && other.isBool())
       {
-        return m_list==other.m_list; // TODO: improve me
+        return m_variant.get<bool>() == other.m_variant.get<bool>();
       }
-      else if (m_type==TemplateVariant::Struct && other.m_type==TemplateVariant::Struct)
+      else if (isInt() && other.isInt())
       {
-        return m_strukt==other.m_strukt; // TODO: improve me
+        return m_variant.get<int>() == other.m_variant.get<int>();
       }
-      else
+      else if (isList() && other.isList())
       {
-        return toString()==other.toString();
+        return m_variant.get<TemplateListIntf*>() == other.m_variant.get<TemplateListIntf*>();
       }
+      else if (isStruct() && other.isStruct())
+      {
+        return m_variant.get<TemplateStructIntf*>() == other.m_variant.get<TemplateStructIntf*>();
+      }
+      return toString()==other.toString();
     }
 
     QCString listToString() const;
     QCString structToString() const;
 
     /** Returns the variant as a string. */
-    QCString toString() const
-    {
-      switch (m_type)
-      {
-        case None:     return QCString();
-        case Bool:     return m_boolVal ? "true" : "false";
-        case Integer:  return QCString().setNum(m_intVal);
-        case String:   return m_strVal;
-        case Struct:   return structToString();
-        case List:     return listToString();
-        case Function: return "[function]";
-      }
-      return QCString();
-    }
+    QCString toString() const;
 
     /** Returns the variant as a boolean. */
     bool toBool() const;
@@ -257,20 +234,43 @@ class TemplateVariant
     /** Returns the variant as an integer. */
     int toInt() const;
 
+    /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
+    constexpr bool isValid()    const { return m_variant.valid(); }
+    /** Returns TRUE if the variant holds a boolean value */
+    constexpr bool isBool()     const { return m_variant.is<bool>(); }
+    /** Returns TRUE if the variant holds an integer value */
+    constexpr bool isInt()      const { return m_variant.is<int>(); }
+    /** Returns TRUE if the variant holds a string value */
+    constexpr bool isString()   const { return m_variant.is<QCString>(); }
+    /** Returns TRUE if the variant holds a struct value */
+    constexpr bool isStruct()   const { return m_variant.is<TemplateStructIntf*>(); }
+    /** Returns TRUE if the variant holds a list value */
+    constexpr bool isList()     const { return m_variant.is<TemplateListIntf*>(); }
+    /** Returns TRUE if the variant holds a function value */
+    constexpr bool isFunction() const { return m_variant.is<FunctionDelegate>(); }
+
     /** Returns the pointer to list referenced by this variant
      *  or 0 if this variant does not have list type.
      */
-    TemplateListIntf   *toList() const
+    TemplateListIntf   *toList()
     {
-      return m_type==List ? m_list : 0;
+      return isList() ? m_variant.get<TemplateListIntf*>() : nullptr;
+    }
+    const TemplateListIntf *toList() const
+    {
+      return isList() ? m_variant.get<TemplateListIntf*>() : nullptr;
     }
 
     /** Returns the pointer to struct referenced by this variant
      *  or 0 if this variant does not have struct type.
      */
-    TemplateStructIntf *toStruct() const
+    TemplateStructIntf *toStruct()
     {
-      return m_type==Struct ? m_strukt : 0;
+      return isStruct() ? m_variant.get<TemplateStructIntf*>() : nullptr;
+    }
+    const TemplateStructIntf *toStruct() const
+    {
+      return isStruct() ? m_variant.get<TemplateStructIntf*>() : nullptr;
     }
 
     /** Return the result of apply this function with \a args.
@@ -278,8 +278,7 @@ class TemplateVariant
      */
     TemplateVariant call(const std::vector<TemplateVariant> &args)
     {
-      if (m_type==Function) return m_delegate(args);
-      return TemplateVariant();
+      return isFunction() ? m_variant.get<FunctionDelegate>()(args) : TemplateVariant();
     }
 
     /** Sets whether or not the value of the Variant should be
@@ -291,20 +290,49 @@ class TemplateVariant
     /** Returns whether or not the value of the Value is raw.
      *  @see setRaw()
      */
-    bool raw() const { return m_raw; }
+    constexpr bool raw() const { return m_raw; }
+
+    /** Symbolic names for the possible types that this variant can hold. */
+    enum class Type : size_t
+    {
+      None     = std::string::npos,
+      Bool     = 0,
+      Int      = 1,
+      String   = 2,
+      Struct   = 3,
+      List     = 4,
+      Function = 5
+    };
+
+    /** Returns the type held by this variant */
+    constexpr Type type() const { return static_cast<Type>(m_variant.index()); }
+
+    /** Return a string representation of the type of the value stored in the variant */
+    constexpr const char *typeAsString() const
+    {
+      switch (type())
+      {
+        case Type::None:       return "invalid";
+        case Type::Bool:       return "bool";
+        case Type::Int:        return "integer";
+        case Type::String:     return "string";
+        case Type::Struct:     return "struct";
+        case Type::List:       return "list";
+        case Type::Function:   return "function";
+      }
+      return "invalid";
+    }
 
   private:
-    Type                  m_type;
-    QCString              m_strVal;
-    union
-    {
-      int                 m_intVal;
-      bool                m_boolVal;
-      TemplateStructIntf *m_strukt;
-      TemplateListIntf   *m_list;
-    };
-    Delegate              m_delegate;
-    bool                  m_raw;
+    using VariantT = Variant<bool,                  // index==0: Type::Bool
+                             int,                   // index==1: Type::Int
+                             QCString,              // index==2: Type::String
+                             TemplateStructIntf*,   // index==3: Type::Struct
+                             TemplateListIntf*,     // index==4: Type::List
+                             FunctionDelegate       // index==5: Type::Function
+                            >;
+    VariantT              m_variant;
+    bool                  m_raw = false;
 };
 
 //------------------------------------------------------------------------

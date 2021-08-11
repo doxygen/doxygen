@@ -408,7 +408,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 				"  $(document).ready(function() { init_search(); });\n"
 					"/* @license-end */\n"
 					"</script>";
@@ -419,7 +419,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 					"  $(document).ready(function() {\n"
 					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
 					"  });\n"
@@ -706,7 +706,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     m_lineOpen = TRUE;
   }
 
-  m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
+  m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
   if (!filename.isEmpty())
   {
     _writeCodeLink("line",ref,filename,anchor,lineNumber,QCString());
@@ -716,7 +716,6 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     codify(lineNumber);
   }
   m_t << "</span>";
-  m_t << "&#160;";
   m_col=0;
 }
 
@@ -872,7 +871,7 @@ void HtmlCodeGenerator::endFontClass()
 
 void HtmlCodeGenerator::writeCodeAnchor(const QCString &anchor)
 {
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlCodeGenerator::startCodeFragment(const QCString &)
@@ -895,7 +894,7 @@ HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT)),
 {
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 
@@ -971,6 +970,7 @@ void HtmlGenerator::init()
   {
     mgr.copyResource("svgpan.js",dname);
   }
+
   if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     mgr.copyResource("menu.js",dname);
@@ -988,6 +988,13 @@ void HtmlGenerator::init()
       }
     }
   }
+}
+
+void HtmlGenerator::cleanup()
+{
+  QCString dname = Config_getString(HTML_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
 }
 
 /// Additional initialization after indices have been created
@@ -1122,7 +1129,7 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     m_t << "var searchBox = new SearchBox(\"searchBox\", \""
         << m_relPath<< "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
     m_t << "/* @license-end */\n";
@@ -1279,7 +1286,7 @@ void HtmlGenerator::startDoxyAnchor(const QCString &,const QCString &,
                                     const QCString &anchor, const QCString &,
                                     const QCString &)
 {
-  m_t << "<a id=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const QCString &,const QCString &)
@@ -1459,7 +1466,7 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
     case SectionType::Paragraph:     m_t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  m_t << "<a id=\"" << lab << "\"></a>";
+  m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
 }
 
 void HtmlGenerator::endSection(const QCString &,SectionType type)
@@ -1773,7 +1780,7 @@ void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
   m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
   if (!anchor.isEmpty())
   {
-    m_t << "<a name=\"" << anchor << "\"></a>\n";
+    m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>\n";
   }
 }
 
@@ -2273,7 +2280,6 @@ static void endQuickIndexItem(TextStream &t,const QCString &l)
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
-  bool showFiles = Config_getBool(SHOW_FILES);
   bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
   switch (kind)
   {
@@ -2291,8 +2297,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
     case LayoutNavEntry::ClassHierarchy:     return hierarchyClasses>0;
     case LayoutNavEntry::ClassMembers:       return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:              return documentedHtmlFiles>0 && showFiles;
-    case LayoutNavEntry::FileList:           return documentedHtmlFiles>0 && showFiles;
+    case LayoutNavEntry::Files:              return documentedFiles>0;
+    case LayoutNavEntry::FileList:           return documentedFiles>0;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::Interfaces:         return annotatedInterfaces>0;
@@ -2480,7 +2486,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+    t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     t << "$(function() {\n";
     t << "  initMenu('" << relPath << "',"
       << (searchEngine?"true":"false") << ","
@@ -2563,7 +2569,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
-     "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
      "$(document).ready(function(){initNavTree('") +
      QCString(addHtmlExtensionIfMissing(name)) +
      QCString("','") + relpath +
@@ -2660,7 +2666,7 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
@@ -2716,7 +2722,7 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
       << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";

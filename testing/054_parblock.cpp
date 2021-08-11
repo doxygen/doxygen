@@ -52,7 +52,8 @@ void function(int client,int *resource,int parblock,int *test,int p);
                        @endparblock
  @param[out] test      This is a test parameter for this function to see if
                        it is included in the parameter table
- @param[in]  p         @parblock First paragraph of the param description.
+ @param[in]  p         @parblock
+                       First paragraph of the param description.
 
                        Second paragraph of the param description.
  @endparblock

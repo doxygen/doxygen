@@ -151,7 +151,7 @@ struct fortrancodeYY_state
   QCString      exampleName;
   QCString      exampleFile;
 
-  FileDef *     sourceFileDef = 0;
+  const FileDef *    sourceFileDef = 0;
   const Definition * currentDefinition = 0;
   const MemberDef *  currentMemberDef = 0;
   bool          includeCodeFragment = false;
@@ -165,6 +165,7 @@ struct fortrancodeYY_state
   int           inTypeDecl = 0;
 
   bool          endComment = false;
+  TooltipManager tooltipManager;
 };
 
 #if USE_STATE2STRING
@@ -1014,7 +1015,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  TooltipManager::instance().addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1230,7 +1231,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
     if (d && d->isLinkable())
     {
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-          md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
+          yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -1384,7 +1385,7 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
 }
 
 void parseFortranCode(CodeOutputInterface &od,const char *,const QCString &s,
-                  bool exBlock, const char *exName,FileDef *fd,
+                  bool exBlock, const char *exName,const FileDef *fd,
                   int startLine,int endLine,bool inlineFragment,
                   const MemberDef *,bool,const Definition *searchCtx,
                   bool collectXRefs, FortranFormat format)
@@ -1434,7 +1435,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
                    SrcLangExt /*lang*/,
                    bool isExampleBlock,
                    const QCString & exampleName,
-                   FileDef * fileDef,
+                   const FileDef * fileDef,
                    int startLine,
                    int endLine,
                    bool inlineFragment,
@@ -1518,7 +1519,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   yyextra->hasContLine = NULL;
 
   // write the tooltips
-  TooltipManager::instance().writeTooltips(codeOutIntf);
+  yyextra->tooltipManager.writeTooltips(codeOutIntf);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }

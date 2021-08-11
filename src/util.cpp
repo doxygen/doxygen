@@ -723,8 +723,15 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         }
         *dst++=c;
         break;
-      case '@':  // '@name' -> ' @name'
       case '$':  // '$name' -> ' $name'
+                 // 'name$name' -> 'name$name'
+        if (isId(pc))
+        {
+          *dst++=c;
+          break;
+        }
+        // else fallthrough
+      case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
         if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace((uchar)pc) &&
             isId(nc) && osp<8) // ")id" -> ") id"
@@ -2062,7 +2069,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
         //printf("type: '%s':='%s'\n",qPrint(dstA.type),qPrint(srcA.type));
         //printf("name: '%s':='%s'\n",qPrint(dstA.name),qPrint(srcA.name));
         dstA.type = srcA.type;
-        dstA.name = dstA.name;
+        dstA.name = srcA.name;
       }
       else if (!srcA.name.isEmpty() && !dstA.name.isEmpty())
       {
@@ -2117,7 +2124,7 @@ void mergeArguments(ArgumentList &srcAl,ArgumentList &dstAl,bool forceNameOverwr
       //printf("type: '%s':='%s'\n",qPrint(dstA.type),qPrint(srcA.type));
       //printf("name: '%s':='%s'\n",qPrint(dstA.name),qPrint(srcA.name));
       dstA.type = srcA.type.left(i1+2)+dstA.type;
-      dstA.name = dstA.name;
+      dstA.name = srcA.name;
     }
     else if (i1==-1 && i2!=-1 && dstA.type.right(j2)==srcA.type)
     {
@@ -3702,6 +3709,32 @@ void createSubDirs(const Dir &d)
   }
 }
 
+void clearSubDirs(const Dir &d)
+{
+  if (Config_getBool(CREATE_SUBDIRS))
+  {
+    // remove empty subdirectories
+    for (int l1=0;l1<16;l1++)
+    {
+      QCString subdir;
+      subdir.sprintf("d%x",l1);
+      for (int l2=0;l2<256;l2++)
+      {
+        QCString subsubdir;
+        subsubdir.sprintf("d%x/d%02x",l1,l2);
+        if (d.exists(subsubdir.str()) && d.isEmpty(subsubdir.str()))
+        {
+          d.rmdir(subsubdir.str());
+        }
+      }
+      if (d.exists(subdir.str()) && d.isEmpty(subdir.str()))
+      {
+        d.rmdir(subdir.str());
+      }
+    }
+  }
+}
+
 /*! Input is a scopeName, output is the scopename split into a
  *  namespace part (as large as possible) and a classname part.
  */
@@ -4237,7 +4270,8 @@ void addMembersToMemberGroup(MemberList *ml,
                         info->header,
                         info->doc,
                         info->docFile,
-                        info->docLine);
+                        info->docLine,
+                        ml->container());
               mg_ptr = mg.get();
               pMemberGroups->push_back(std::move(mg));
             }
@@ -4276,7 +4310,8 @@ void addMembersToMemberGroup(MemberList *ml,
                     info->header,
                     info->doc,
                     info->docFile,
-                    info->docLine);
+                    info->docLine,
+                    ml->container());
           mg_ptr = mg.get();
           pMemberGroups->push_back(std::move(mg));
         }
@@ -4732,9 +4767,10 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     )
 {
   PageDef *pd=0;
-  //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
+  //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
   QCString title=ptitle.stripWhiteSpace();
-  if ((pd=Doxygen::pageLinkedMap->find(name)) && !tagInfo)
+  bool newPage = true;
+  if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
   {
     if (!xref && !title.isEmpty() && pd->title()!=title)
     {
@@ -4746,8 +4782,14 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     //printf("Adding page docs '%s' pi=%p name=%s\n",qPrint(doc),pd,name);
     // append (x)refitems to the page.
     pd->setRefItems(sli);
+    newPage = false;
   }
-  else // new page
+  else if (pd) // we are from a tag file
+  {
+    Doxygen::pageLinkedMap->del(name);
+  }
+
+  if (newPage) // new page
   {
     QCString baseName=name;
     if (baseName.right(4)==".tex")
@@ -4795,7 +4837,12 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
       {
-        if (si->lineNr() != -1)
+        if (!si->ref().isEmpty()) // we are from a tag file
+        {
+          SectionManager::instance().replace(pd->name(),
+              file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+        }
+        else if (si->lineNr() != -1)
         {
           warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(pd->name()),qPrint(si->fileName()),si->lineNr());
         }
@@ -5179,6 +5226,12 @@ QCString rtfFormatBmkStr(const QCString &name)
   // substitute a short arbitrary string for the name
   // supplied, and keep track of the correspondence
   // between names and strings.
+  auto it = g_tagMap.find(name.str());
+  if (it!=g_tagMap.end()) // already known
+  {
+    return QCString(it->second);
+  }
+
   QCString tag = g_nextTag;
   auto result = g_tagMap.insert( std::make_pair(name.str(), g_nextTag.str()) );
 
@@ -5582,7 +5635,7 @@ static MemberDef *getMemberFromSymbol(const Definition *scope,const FileDef *fil
   if (name.isEmpty())
     return 0; // no name was given
 
-  auto range = Doxygen::symbolMap.find(name);
+  auto range = Doxygen::symbolMap->find(name);
   if (range.first==range.second)
     return 0; // could not find any matching symbols
 
@@ -5679,13 +5732,13 @@ QCString parseCommentAsText(const Definition *scope,const MemberDef *md,
   if (doc.isEmpty()) return "";
   //printf("parseCommentAsText(%s)\n",qPrint(doc));
   TextStream t;
-  DocNode *root = validatingParseDoc(fileName,lineNr,
-      (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
-      QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
-  TextDocVisitor *visitor = new TextDocVisitor(t);
-  root->accept(visitor);
-  delete visitor;
-  delete root;
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                       fileName,lineNr,
+                                       (Definition*)scope,(MemberDef*)md,doc,FALSE,FALSE,
+                                       QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
+  auto visitor = std::make_unique<TextDocVisitor>(t);
+  root->accept(visitor.get());
   QCString result = convertCharEntitiesToUTF8(t.str().c_str()).stripWhiteSpace();
   int i=0;
   int charCnt=0;
@@ -5955,14 +6008,14 @@ int countAliasArguments(const QCString &argList)
   return count;
 }
 
-QCString extractAliasArgs(const QCString &args,int pos)
+QCString extractAliasArgs(const QCString &args,size_t pos)
 {
-  int i;
+  size_t i;
   int bc=0;
   char prevChar=0;
   if (args.at(pos)=='{') // alias has argument
   {
-    for (i=pos;i<(int)args.length();i++)
+    for (i=pos;i<args.length();i++)
     {
       if (prevChar!='\\')
       {

@@ -73,6 +73,7 @@ class HtmlGenerator : public OutputGenerator
 
     virtual OutputType type() const { return Html; }
     static void init();
+    void cleanup();
     static void writeStyleSheetFile(TextStream &t);
     static void writeHeaderFile(TextStream &t, const QCString &cssname);
     static void writeFooterFile(TextStream &t);

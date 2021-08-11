@@ -52,6 +52,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
                               const QCString &header,bool localNames) const;
     virtual const NamespaceDef *getNamespaceDef() const;
     virtual const FileDef *getFileDef() const;
+    virtual QCString title() const;
 
     //---------- ConceptDefMutable
     virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force);
@@ -125,6 +126,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     { return getCdAlias()->getNamespaceDef(); }
     virtual const FileDef *getFileDef() const
     { return getCdAlias()->getFileDef(); }
+    virtual QCString title() const
+    { return getCdAlias()->title(); }
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
                               const QCString &header,bool localNames) const
     { getCdAlias()->writeDeclarationLink(ol,found,header,localNames); }
@@ -255,14 +258,9 @@ const FileDef *ConceptDefImpl::getFileDef() const
   return m_fileDef;
 }
 
-void ConceptDefImpl::setInitializer(const QCString &init)
+QCString ConceptDefImpl::title() const
 {
-  m_initializer = init;
-}
-
-QCString ConceptDefImpl::initializer() const
-{
-  return m_initializer;
+  return theTranslator->trConceptReference(displayName());
 }
 
 void ConceptDefImpl::writeTagFile(TextStream &tagFile)
@@ -283,9 +281,11 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+                        *parser.get(),briefFile(),briefLine(),this,0,
                         briefDescription(),TRUE,FALSE,
-                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -293,7 +293,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -309,7 +309,6 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
       ol.popGeneratorState();
       ol.endParagraph();
     }
-    delete rootNode;
   }
   ol.writeSynopsis();
 }
@@ -379,6 +378,16 @@ static QCString templateSpec(const ArgumentList &al)
   return t.str();
 }
 
+void ConceptDefImpl::setInitializer(const QCString &init)
+{
+  m_initializer = templateSpec(m_tArgList)+"\nconcept "+name()+" = "+init;
+}
+
+QCString ConceptDefImpl::initializer() const
+{
+  return m_initializer;
+}
+
 void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
 {
     ol.startGroupHeader();
@@ -391,10 +400,6 @@ void ConceptDefImpl::writeDefinition(OutputList &ol,const QCString &title) const
     QCString scopeName;
     if (getOuterScope()!=Doxygen::globalScope) scopeName=getOuterScope()->name();
     TextStream conceptDef;
-    conceptDef << templateSpec(m_tArgList);
-    conceptDef << "\nconcept ";
-    conceptDef << name();
-    conceptDef << " = ";
     conceptDef << m_initializer;
     intf->parseCode(ol,scopeName,conceptDef.str(),SrcLangExt_Cpp,false,QCString(),
                     m_fileDef, -1,-1,true,0,false,this);
@@ -479,6 +484,7 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
   // ---- title part
   startTitle(ol,getOutputFileBase(),this);
   ol.parseText(pageTitle);
+  addGroupListToTitle(ol,this);
   endTitle(ol,getOutputFileBase(),displayName());
 
   // ---- contents part
@@ -619,16 +625,17 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
-      DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+      std::unique_ptr<IDocParser> parser { createDocParser() };
+      std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+                                *parser.get(),briefFile(),briefLine(),this,0,
                                 briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (rootNode && !rootNode->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(rootNode,this,0);
+        ol.writeDoc(rootNode.get(),this,0);
         ol.endMemberDescription();
       }
-      delete rootNode;
     }
     ol.endMemberDeclaration(anchor(),QCString());
   }

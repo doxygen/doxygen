@@ -80,7 +80,7 @@ struct pycodeYY_state
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  FileDef *     sourceFileDef = 0;
+  const FileDef *    sourceFileDef = 0;
   const Definition * currentDefinition = 0;
   const MemberDef *  currentMemberDef = 0;
   bool          includeCodeFragment = FALSE;
@@ -108,6 +108,7 @@ struct pycodeYY_state
   VariableContext theVarContext;
   CallContext theCallContext;
   SymbolResolver symbolResolver;
+  TooltipManager tooltipManager;
 };
 
 
@@ -1104,7 +1105,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (text.isEmpty()) return;
   bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  TooltipManager::instance().addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1229,8 +1230,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       //printf("yyextra->currentDefinition=%p yyextra->currentMemberDef=%p\n",
       //        yyextra->currentDefinition,yyextra->currentMemberDef);
 
-      if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-          md!=yyextra->currentMemberDef && yyextra->collectXRefs)
+      if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -1513,7 +1513,7 @@ static void findMemberLink(yyscan_t yyscanner,
   //    );
   if (yyextra->currentDefinition)
   {
-    auto range = Doxygen::symbolMap.find(symName);
+    auto range = Doxygen::symbolMap->find(symName);
     for (auto it = range.first; it!=range.second; ++it)
     {
       findMemberLink(yyscanner,ol,it->second,symName);
@@ -1564,7 +1564,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     SrcLangExt /*lang*/,
     bool isExampleBlock,
     const QCString &exampleName,
-    FileDef *fileDef,
+    const FileDef *fileDef,
     int startLine,
     int endLine,
     bool inlineFragment,
@@ -1639,7 +1639,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     yyextra->sourceFileDef=0;
   }
   // write the tooltips
-  TooltipManager::instance().writeTooltips(codeOutIntf);
+  yyextra->tooltipManager.writeTooltips(codeOutIntf);
   printlex(yy_flex_debug, FALSE, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 

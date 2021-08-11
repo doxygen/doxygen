@@ -223,11 +223,11 @@ void LatexDocVisitor::visit(DocSymbol *s)
   {
     if (((s->symbol() == DocSymbol::Sym_lt) || (s->symbol() == DocSymbol::Sym_Less))&& (!m_insidePre))
     {
-      m_t << "$<$";
+      m_t << "\\texorpdfstring{$<$}{<}";
     }
     else if (((s->symbol() == DocSymbol::Sym_gt) || (s->symbol() == DocSymbol::Sym_Greater)) && (!m_insidePre))
     {
-      m_t << "$>$";
+      m_t << "\\texorpdfstring{$>$}{>}";
     }
     else
     {
@@ -434,7 +434,8 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         QCString latexOutput = Config_getString(LATEX_OUTPUT);
         QCString baseName = PlantumlManager::instance().writePlantUMLSource(
                               latexOutput,s->exampleFile(),s->text(),
-                              PlantumlManager::PUML_EPS,s->engine(),s->srcFile(),s->srcLine());
+                              s->useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
+                              s->engine(),s->srcFile(),s->srcLine());
 
         writePlantUMLFile(baseName, s);
       }
@@ -2043,8 +2044,13 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s
   {
     shortName=shortName.right(shortName.length()-i-1);
   }
+  if (s->useBitmap())
+  {
+    if (shortName.find('.')==-1) shortName += ".png";
+  }
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,PlantumlManager::PUML_EPS);
+  PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,
+                              s->useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
