@@ -907,7 +907,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   {
     anchor.prepend(e->member()->anchor()+"_");
   }
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
   //printf("*** DocIndexEntry: word='%s' scope='%s' member='%s'\n",
   //       qPrint(e->entry()),
   //       e->scope()  ? qPrint(e->scope()->name())  : "<null>",
@@ -1887,15 +1887,21 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  QCString refName=addHtmlExtensionIfMissing(ref->file());
-  m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
-
+  if (!ref->file().isEmpty())
+  {
+    m_t << "<li>";
+    startLink(ref->ref(),ref->file(),ref->relPath(),ref->isSubPage() ? QCString() : ref->anchor());
+  }
 }
 
-void HtmlDocVisitor::visitPost(DocSecRefItem *)
+void HtmlDocVisitor::visitPost(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  m_t << "</a></li>\n";
+  if (!ref->file().isEmpty())
+  {
+    endLink();
+    m_t << "</li>\n";
+  }
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefList *s)

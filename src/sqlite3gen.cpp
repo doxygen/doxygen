@@ -1394,7 +1394,10 @@ QCString getSQLDocBlock(const Definition *scope,
   if (doc.isEmpty()) return "";
 
   TextStream t;
-  DocNode *root = validatingParseDoc(
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocRoot>    root   {
+    validatingParseDoc(
+    *parser.get(),
     fileName,
     lineNr,
     const_cast<Definition*>(scope),
@@ -1406,14 +1409,12 @@ QCString getSQLDocBlock(const Definition *scope,
     FALSE,
     FALSE,
     Config_getBool(MARKDOWN_SUPPORT)
-  );
+  ) };
   XMLCodeGenerator codeGen(t);
   // create a parse tree visitor for XML
-  XmlDocVisitor *visitor = new XmlDocVisitor(t,codeGen,
+  auto visitor = std::make_unique<XmlDocVisitor>(t,codeGen,
                       scope ? scope->getDefFileExtension() : QCString(""));
-  root->accept(visitor);
-  delete visitor;
-  delete root;
+  root->accept(visitor.get());
   return convertCharEntitiesToUTF8(t.str().c_str());
 }
 
@@ -1947,7 +1948,10 @@ static void generateSqlite3ForClass(const ClassDef *cd)
       DBG_CTX(("-----> ClassDef includeInfo for %s\n", qPrint(nm)));
       DBG_CTX(("       local    : %d\n", ii->local));
       DBG_CTX(("       imported : %d\n", ii->imported));
-      DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
+      if (ii->fileDef)
+      {
+          DBG_CTX(("header: %s\n", qPrint(ii->fileDef->absFilePath())));
+      }
       DBG_CTX(("       file_id  : %d\n", file_id));
       DBG_CTX(("       header_id: %d\n", header_id));
 

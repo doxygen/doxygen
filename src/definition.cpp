@@ -86,6 +86,9 @@ class DefinitionImpl::IMPL
     int defLine;
     int defColumn;
     Definition::Cookie *cookie;
+
+    mutable MemberVector referencesMembers;
+    mutable MemberVector referencedByMembers;
 };
 
 
@@ -207,7 +210,7 @@ static void addToMap(const QCString &name,Definition *d)
   if (!vhdlOpt && index!=-1) symbolName=symbolName.mid(index+2);
   if (!symbolName.isEmpty())
   {
-    Doxygen::symbolMap.add(symbolName,d);
+    Doxygen::symbolMap->add(symbolName,d);
 
     d->_setSymbolName(symbolName);
   }
@@ -215,7 +218,7 @@ static void addToMap(const QCString &name,Definition *d)
 
 static void removeFromMap(const QCString &name,Definition *d)
 {
-  Doxygen::symbolMap.remove(name,d);
+  Doxygen::symbolMap->remove(name,d);
 }
 
 DefinitionImpl::DefinitionImpl(Definition *def,
@@ -890,10 +893,6 @@ QCString DefinitionImpl::getSourceAnchor() const
 /*! Write a reference to the source code defining this definition */
 void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
 {
-  static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE);
-  static bool rtfSourceCode = Config_getBool(RTF_SOURCE_CODE);
-  static bool docbookSourceCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
-  ol.pushGeneratorState();
   //printf("DefinitionImpl::writeSourceRef %d %p\n",bodyLine,bodyDef);
   QCString fn = getSourceFileBase();
   if (!fn.isEmpty())
@@ -911,78 +910,11 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
       {
         // write text left from linePos marker
         ol.parseText(refText.left(lineMarkerPos));
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        if (!latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (!docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (!rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write line link (HTML and  optionally LaTeX, Docbook, RTF)
         ol.writeObjectLink(QCString(),fn,anchorStr,lineStr);
-        ol.enableAll();
-        ol.disable(OutputGenerator::Html);
-        if (latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write normal text (Man, Latex optionally, RTF optionally)
-        ol.docify(lineStr);
-        ol.popGeneratorState();
-
         // write text between markers
-        ol.parseText(refText.mid(lineMarkerPos+2,
-              fileMarkerPos-lineMarkerPos-2));
-
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        if (!latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (!docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (!rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write file link (HTML, LaTeX optionally, RTF optionally)
+        ol.parseText(refText.mid(lineMarkerPos+2,fileMarkerPos-lineMarkerPos-2));
+        // write file link
         ol.writeObjectLink(QCString(),fn,QCString(),m_impl->body->fileDef->name());
-        ol.enableAll();
-        ol.disable(OutputGenerator::Html);
-        if (latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write normal text (Man, Latex optionally, RTF optionally)
-        ol.docify(m_impl->body->fileDef->name());
-        ol.popGeneratorState();
-
         // write text right from file marker
         ol.parseText(refText.right(refText.length()-(uint)fileMarkerPos-2));
       }
@@ -990,79 +922,12 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
       {
         // write text left from file marker
         ol.parseText(refText.left(fileMarkerPos));
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        if (!latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (!docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (!rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write file link (HTML only)
+        // write file link
         ol.writeObjectLink(QCString(),fn,QCString(),m_impl->body->fileDef->name());
-        ol.enableAll();
-        ol.disable(OutputGenerator::Html);
-        if (latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write normal text (RTF/Latex/Man only)
-        ol.docify(m_impl->body->fileDef->name());
-        ol.popGeneratorState();
-
         // write text between markers
-        ol.parseText(refText.mid(fileMarkerPos+2,
-              lineMarkerPos-fileMarkerPos-2));
-
-        ol.pushGeneratorState();
-        ol.disable(OutputGenerator::Man);
-        ol.disableAllBut(OutputGenerator::Html);
-        if (latexSourceCode)
-        {
-          ol.enable(OutputGenerator::Latex);
-        }
-        if (docbookSourceCode)
-        {
-          ol.enable(OutputGenerator::Docbook);
-        }
-        if (rtfSourceCode)
-        {
-          ol.enable(OutputGenerator::RTF);
-        }
-        // write line link (HTML only)
+        ol.parseText(refText.mid(fileMarkerPos+2,lineMarkerPos-fileMarkerPos-2));
+        // write line link
         ol.writeObjectLink(QCString(),fn,anchorStr,lineStr);
-        ol.enableAll();
-        ol.disable(OutputGenerator::Html);
-        if (latexSourceCode)
-        {
-          ol.disable(OutputGenerator::Latex);
-        }
-        if (docbookSourceCode)
-        {
-          ol.disable(OutputGenerator::Docbook);
-        }
-        if (rtfSourceCode)
-        {
-          ol.disable(OutputGenerator::RTF);
-        }
-        // write normal text (Latex/Man only)
-        ol.docify(lineStr);
-        ol.popGeneratorState();
-
         // write text right from linePos marker
         ol.parseText(refText.right(refText.length()-(uint)lineMarkerPos-2));
       }
@@ -1073,7 +938,6 @@ void DefinitionImpl::writeSourceDef(OutputList &ol,const QCString &) const
       err("translation error: invalid markers in trDefinedAtLineInSourceFile()\n");
     }
   }
-  ol.popGeneratorState();
 }
 
 void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
@@ -1085,7 +949,7 @@ void DefinitionImpl::setBodySegment(int defLine, int bls,int ble)
   m_impl->body->endLine   = ble;
 }
 
-void DefinitionImpl::setBodyDef(FileDef *fd)
+void DefinitionImpl::setBodyDef(const FileDef *fd)
 {
   if (m_impl->body==0) m_impl->body = new BodyInfo;
   m_impl->body->fileDef=fd;
@@ -1144,10 +1008,10 @@ void DefinitionImpl::writeInlineCode(OutputList &ol,const QCString &scopeName) c
   ol.popGeneratorState();
 }
 
-static inline std::vector<const MemberDef*> refMapToVector(const std::unordered_map<std::string,const MemberDef *> &map)
+static inline MemberVector refMapToVector(const std::unordered_map<std::string,const MemberDef *> &map)
 {
   // convert map to a vector of values
-  std::vector<const MemberDef *> result;
+  MemberVector result;
   std::transform(map.begin(),map.end(),      // iterate over map
                  std::back_inserter(result), // add results to vector
                  [](const auto &item)
@@ -1166,12 +1030,8 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
     const QCString &text,const std::unordered_map<std::string,const MemberDef *> &membersMap,
     bool /*funcOnly*/) const
 {
-  static bool latexSourceCode = Config_getBool(LATEX_SOURCE_CODE);
-  static bool docbookSourceCode   = Config_getBool(DOCBOOK_PROGRAMLISTING);
-  static bool rtfSourceCode   = Config_getBool(RTF_SOURCE_CODE);
   static bool sourceBrowser   = Config_getBool(SOURCE_BROWSER);
   static bool refLinkSource   = Config_getBool(REFERENCES_LINK_SOURCE);
-  ol.pushGeneratorState();
   if (!membersMap.empty())
   {
     auto members = refMapToVector(membersMap);
@@ -1196,98 +1056,23 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
         {
           name+="()";
         }
-        //DefinitionImpl *d = md->getOutputFileBase();
-        //if (d==Doxygen::globalScope) d=md->getBodyDef();
         if (sourceBrowser &&
             !(md->isLinkable() && !refLinkSource) &&
             md->getStartBodyLine()!=-1 &&
             md->getBodyDef()
            )
         {
-          //printf("md->getBodyDef()=%p global=%p\n",md->getBodyDef(),Doxygen::globalScope);
-          // for HTML write a real link
-          ol.pushGeneratorState();
-          //ol.disableAllBut(OutputGenerator::Html);
-
-          ol.disable(OutputGenerator::Man);
-          if (!latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
-          }
-          if (!docbookSourceCode)
-          {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (!rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
           const int maxLineNrStr = 10;
           char anchorStr[maxLineNrStr];
           qsnprintf(anchorStr,maxLineNrStr,"l%05d",md->getStartBodyLine());
           //printf("Write object link to %s\n",qPrint(md->getBodyDef()->getSourceFileBase()));
           ol.writeObjectLink(QCString(),md->getBodyDef()->getSourceFileBase(),anchorStr,name);
-          ol.popGeneratorState();
-
-          // for the other output formats just mention the name
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Html);
-          if (latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
-          }
-          if (docbookSourceCode)
-          {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
-          ol.docify(name);
-          ol.popGeneratorState();
         }
-        else if (md->isLinkable() /*&& d && d->isLinkable()*/)
+        else if (md->isLinkable())
         {
-          // for HTML write a real link
-          ol.pushGeneratorState();
-          //ol.disableAllBut(OutputGenerator::Html);
-          ol.disable(OutputGenerator::Man);
-          if (!latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
-          }
-          if (!docbookSourceCode)
-          {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (!rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
-
           ol.writeObjectLink(md->getReference(),
               md->getOutputFileBase(),
               md->anchor(),name);
-          ol.popGeneratorState();
-
-          // for the other output formats just mention the name
-          ol.pushGeneratorState();
-          ol.disable(OutputGenerator::Html);
-          if (latexSourceCode)
-          {
-            ol.disable(OutputGenerator::Latex);
-          }
-          if (docbookSourceCode)
-          {
-            ol.disable(OutputGenerator::Docbook);
-          }
-          if (rtfSourceCode)
-          {
-            ol.disable(OutputGenerator::RTF);
-          }
-          ol.docify(name);
-          ol.popGeneratorState();
         }
         else
         {
@@ -1307,7 +1092,6 @@ void DefinitionImpl::_writeSourceRefList(OutputList &ol,const QCString &scopeNam
     ol.endParagraph();
 
   }
-  ol.popGeneratorState();
 }
 
 void DefinitionImpl::writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const
@@ -1951,7 +1735,7 @@ int DefinitionImpl::getEndBodyLine() const
   return m_impl->body ? m_impl->body->endLine : -1;
 }
 
-FileDef *DefinitionImpl::getBodyDef() const
+const FileDef *DefinitionImpl::getBodyDef() const
 {
   return m_impl->body ? m_impl->body->fileDef : 0;
 }
@@ -1975,14 +1759,22 @@ Definition *DefinitionImpl::getOuterScope() const
   return m_impl->outerScope;
 }
 
-std::vector<const MemberDef*> DefinitionImpl::getReferencesMembers() const
+const MemberVector &DefinitionImpl::getReferencesMembers() const
 {
-  return refMapToVector(m_impl->sourceRefsDict);
+  if (m_impl->referencesMembers.empty() && !m_impl->sourceRefsDict.empty())
+  {
+    m_impl->referencesMembers = refMapToVector(m_impl->sourceRefsDict);
+  }
+  return m_impl->referencesMembers;
 }
 
-std::vector<const MemberDef*> DefinitionImpl::getReferencedByMembers() const
+const MemberVector &DefinitionImpl::getReferencedByMembers() const
 {
-  return refMapToVector(m_impl->sourceRefByDict);
+  if (m_impl->referencedByMembers.empty() && !m_impl->sourceRefByDict.empty())
+  {
+    m_impl->referencedByMembers = refMapToVector(m_impl->sourceRefByDict);
+  }
+  return m_impl->referencedByMembers;
 }
 
 void DefinitionImpl::mergeReferences(const Definition *other)

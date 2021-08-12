@@ -193,6 +193,14 @@ enum MemberListType
   MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
 };
 
+enum class MemberListContainer
+{
+  File,
+  Namespace,
+  Group,
+  Class
+};
+
 enum MemberType
 {
   MemberType_Define,

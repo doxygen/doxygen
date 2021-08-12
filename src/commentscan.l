@@ -439,6 +439,7 @@ static void endBrief(yyscan_t yyscanner,bool addToOutput=TRUE);
 static void handleGuard(yyscan_t yyscanner,const QCString &expr);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 static void addCite(yyscan_t yyscanner);
+static void addIline(yyscan_t yyscanner,int lineNr);
 
 #define unput_string(yytext,yyleng) do { for (int i=(int)yyleng-1;i>=0;i--) unput(yytext[i]); } while(0)
 
@@ -479,7 +480,7 @@ NW          [^a-z_A-Z0-9]
 FILESCHAR [a-z_A-Z0-9\x80-\xFF\\:\\\/\-\+@&#]
 FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+@&#]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
-ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]*
@@ -689,11 +690,14 @@ STopt  [^\n@\\]*
                                             int i=0;
                                             while (yytext[i]==' ' || yytext[i]=='\t') i++;
                                             yyextra->spaceBeforeCmd = QCString(yytext).left(i);
-                                            if (it->second.spacing==CommandSpacing::Block && !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
+                                            CommandSpacing spacing = it->second.spacing;
+                                            if ((spacing==CommandSpacing::Block || spacing==CommandSpacing::XRef) &&
+                                                !(yyextra->inContext==OutputXRef && cmdName=="parblock"))
                                             {
                                               yyextra->briefEndsAtDot=FALSE;
+                                              bool insideXRef = yyextra->inContext==OutputXRef && spacing==CommandSpacing::XRef;
                                               // this command forces the end of brief description
-                                              setOutput(yyscanner,OutputDoc);
+                                              setOutput(yyscanner,insideXRef ? OutputXRef : OutputDoc);
                                             }
                                             //if (i>0) addOutput(yyscanner,QCString(yytext).left(i)); // removed for bug 689341
                                             if (it->second.handler && it->second.handler(yyscanner, cmdName, optList))
@@ -851,6 +855,9 @@ STopt  [^\n@\\]*
                                         }
 <Comment>"...\\"[ \t]                   { // ellipsis with escaped space.
                                           addOutput(yyscanner,"... ");
+                                        }
+<Comment>"..."/[^\.]                    { // ellipsis
+                                          addOutput(yyscanner,"...");
                                         }
 <Comment>".."[\.]?/[^ \t\n]             { // internal ellipsis
                                           addOutput(yyscanner,yytext);
@@ -1538,6 +1545,7 @@ STopt  [^\n@\\]*
                                         }
 <GuardExpr>[^()]*                       {
                                           yyextra->guardExpr+=yytext;
+                                          lineCount(yyscanner);
                                         }
 <GuardExpr>"("                          {
                                           yyextra->guardExpr+=yytext;
@@ -1564,6 +1572,7 @@ STopt  [^\n@\\]*
                                           if (*yytext=='\n') yyextra->lineNr++;
                                           //next line is commented out due to bug620924
                                           //addOutput(yyscanner,'\n');
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN( Comment );
                                         }
 <GuardParam>{LC}                        { // line continuation
@@ -1576,6 +1585,7 @@ STopt  [^\n@\\]*
 <GuardParamEnd>{B}*{DOCNL}              {
                                           lineCount(yyscanner);
                                           yyextra->spaceBeforeIf.resize(0);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>{B}*                     {
@@ -1584,10 +1594,12 @@ STopt  [^\n@\\]*
                                             addOutput(yyscanner,yyextra->spaceBeforeIf);
                                           }
                                           yyextra->spaceBeforeIf.resize(0);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 <GuardParamEnd>.                        {
                                           unput(*yytext);
+                                          addIline(yyscanner,yyextra->lineNr);
                                           BEGIN(Comment);
                                         }
 
@@ -2407,6 +2419,11 @@ static bool handleCite(yyscan_t yyscanner,const QCString &s, const StringVector 
 static bool handleFormatBlock(yyscan_t yyscanner,const QCString &s, const StringVector &optList)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  if (!yyextra->spaceBeforeCmd.isEmpty())
+  {
+    addOutput(yyscanner,yyextra->spaceBeforeCmd);
+    yyextra->spaceBeforeCmd.resize(0);
+  }
   if (optList.empty())
   {
     addOutput(yyscanner,"@"+s+" ");
@@ -2935,7 +2952,14 @@ static void addXRefItem(yyscan_t yyscanner,
       const SectionInfo *si = sm.find(anchorLabel);
       if (si)
       {
-        if (si->lineNr() != -1)
+        if (!si->ref().isEmpty()) // we are from a tag file
+        {
+          si = sm.replace(anchorLabel,listName,yyextra->lineNr,
+              yyextra->sectionTitle,SectionType::Anchor,
+              yyextra->sectionLevel);
+          yyextra->current->anchors.push_back(si);
+        }
+        else if (si->lineNr() != -1)
         {
           warn(listName,yyextra->lineNr,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(anchorLabel),qPrint(si->fileName()),si->lineNr());
         }
@@ -2990,7 +3014,19 @@ static void addSection(yyscan_t yyscanner)
   const SectionInfo *si = sm.find(yyextra->sectionLabel);
   if (si)
   {
-    if (si->lineNr() != -1)
+    if (!si->ref().isEmpty()) // we are from a tag file
+    {
+      // create a new section element
+      yyextra->sectionTitle+=yytext;
+      yyextra->sectionTitle=yyextra->sectionTitle.stripWhiteSpace();
+      si = sm.replace(yyextra->sectionLabel,yyextra->fileName,yyextra->lineNr,
+                      yyextra->sectionTitle,sectionLevelToType(yyextra->sectionLevel),
+                      yyextra->sectionLevel);
+
+      // add section to this entry
+      yyextra->current->anchors.push_back(si);
+    }
+    else if (si->lineNr() != -1)
     {
       warn(yyextra->fileName,yyextra->lineNr,"multiple use of section label '%s' while adding section, (first occurrence: %s, line %d)",qPrint(yyextra->sectionLabel),qPrint(si->fileName()),si->lineNr());
     }
@@ -3191,7 +3227,12 @@ static void addAnchor(yyscan_t yyscanner,const QCString &anchor)
   const SectionInfo *si = sm.find(anchor);
   if (si)
   {
-    if (si->lineNr() != -1)
+    if (!si->ref().isEmpty()) // we are from a tag file
+    {
+      si = sm.replace(anchor,yyextra->fileName,yyextra->lineNr,QCString(),SectionType::Anchor,0);
+      yyextra->current->anchors.push_back(si);
+    }
+    else if (si->lineNr() != -1)
     {
       warn(yyextra->fileName,yyextra->lineNr,
           "multiple use of section label '%s' while adding anchor, (first occurrence: %s, line %d)",
@@ -3231,6 +3272,13 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   *yyextra->pOutputString+=c;
+}
+
+static void addIline(yyscan_t yyscanner,int lineNr)
+{
+  char cmd[20];
+  sprintf(cmd,"\\iline %d ",lineNr);
+  addOutput(yyscanner, cmd);
 }
 
 static void endBrief(yyscan_t yyscanner,bool addToOutput)

@@ -146,7 +146,7 @@ static void listSymbol(Definition *d)
 
 static void listSymbols()
 {
-  for (const auto &kv : Doxygen::symbolMap)
+  for (const auto &kv : *Doxygen::symbolMap)
   {
     listSymbol(kv.second);
   }
@@ -205,7 +205,7 @@ static void lookupSymbols(const QCString &sym)
 {
   if (!sym.isEmpty())
   {
-    auto range = Doxygen::symbolMap.find(sym);
+    auto range = Doxygen::symbolMap->find(sym);
     bool found=false;
     for (auto it=range.first; it!=range.second; ++it)
     {

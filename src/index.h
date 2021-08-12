@@ -249,7 +249,6 @@ extern int documentedClassMembers[CMHL_Total];
 extern int documentedFileMembers[FMHL_Total];
 extern int documentedNamespaceMembers[NMHL_Total];
 extern int documentedDirs;
-extern int documentedHtmlFiles;
 extern int documentedPages;
 
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);

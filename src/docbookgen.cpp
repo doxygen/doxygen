@@ -59,9 +59,9 @@
 //#define Docbook_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
 #if 0
-#define DB_GEN_C DB_GEN_C1(t)
+#define DB_GEN_C DB_GEN_C1(m_t)
 #define DB_GEN_C1(x) x << "<!-- DB_GEN_C " << __LINE__ << " -->\n";
-#define DB_GEN_C2(y) DB_GEN_C2a(t,y)
+#define DB_GEN_C2(y) DB_GEN_C2a(m_t,y)
 #define DB_GEN_C2a(x,y) x << "<!-- DB_GEN_C " << __LINE__ << " " << y << " -->\n";
 #else
 #define DB_GEN_C
@@ -145,7 +145,6 @@ void writeDocbookLink(TextStream &t,const QCString & /*extRef*/,const QCString &
 
 DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(t)
 {
-  m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
 }
 
 DocbookCodeGenerator::~DocbookCodeGenerator() {}
@@ -227,14 +226,17 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
 {
   Docbook_DB(("(writeLineNumber)\n"));
   m_insideCodeLine = TRUE;
-  if (m_prettyCode)
+  if (Config_getBool(SOURCE_BROWSER))
   {
     QCString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    if (!fileName.isEmpty() && !m_sourceFileName.isEmpty())
+    if (!m_sourceFileName.isEmpty())
     {
       writeCodeLinkLine(nullptr,ref,m_sourceFileName,anchor,lineNumber,QCString());
+    }
+    if (!fileName.isEmpty())
+    {
       writeCodeLink(nullptr,ref,fileName,anchor,lineNumber,QCString());
     }
     else
@@ -266,7 +268,7 @@ void DocbookCodeGenerator::finish()
 void DocbookCodeGenerator::startCodeFragment(const QCString &)
 {
 DB_GEN_C1(m_t)
-  m_t << "<programlisting>";
+  m_t << "<programlisting linenumbering=\"unnumbered\">";
 }
 
 void DocbookCodeGenerator::endCodeFragment(const QCString &)
@@ -459,7 +461,6 @@ DB_GEN_C2("IndexSections " << is)
 void DocbookGenerator::endIndexSection(IndexSections is)
 {
 DB_GEN_C2("IndexSections " << is)
-  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   switch (is)
   {
     case isTitlePageStart:
@@ -573,30 +574,17 @@ DB_GEN_C2("IndexSections " << is)
     case isFileDocumentation:
       {
         m_t << "</title>\n";
-        bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
           {
             if (fd->isLinkableInProject())
             {
-              if (isFirst)
-              {
-                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                }
-                isFirst=FALSE;
-              }
-              else
-              {
-                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                }
-              }
+              m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            }
+            if (fd->generateSourceFile())
+            {
+              m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
             }
           }
         }
@@ -803,7 +791,7 @@ DB_GEN_C
   if (dense)
   {
     m_denseText = TRUE;
-    m_t << "<programlisting>";
+    m_t << "<programlisting linenumbering=\"unnumbered\">";
   }
 }
 void DocbookGenerator::endTextBlock(bool)

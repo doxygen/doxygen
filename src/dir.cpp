@@ -112,7 +112,7 @@ const DirIterator::value_type *DirIterator::operator->() const
 
 bool operator==(const DirIterator &it1,const DirIterator &it2)
 {
-  return it1.p->it!=it2.p->it;
+  return it1.p->it == it2.p->it;
 }
 
 bool operator!=(const DirIterator &it1,const DirIterator &it2)

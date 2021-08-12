@@ -47,7 +47,6 @@ class RTFGenerator : public OutputGenerator
     void writeFooter(const QCString &) {}
     void endFile();
     void clearBuffer();
-    //void postProcess(QByteArray &);
 
     void startIndexSection(IndexSections);
     void endIndexSection(IndexSections);
@@ -95,7 +94,6 @@ class RTFGenerator : public OutputGenerator
     void endTypewriter()   { m_t << "}";      }
     void startGroupHeader(int);
     void endGroupHeader(int);
-    //void writeListItem();
     void startItemListItem();
     void endItemListItem();
 
@@ -170,7 +168,6 @@ class RTFGenerator : public OutputGenerator
     void endExamples();
     void startParamList(ParamListTypes,const QCString &);
     void endParamList();
-    //void writeDescItem();
     void startDescForItem();
     void endDescForItem();
     void startSection(const QCString &,const QCString &,SectionType);
@@ -289,7 +286,6 @@ class RTFGenerator : public OutputGenerator
 
     QCString m_sourceFileName;
     int  m_col = 0;
-    bool m_prettyCode = Config_getBool(RTF_SOURCE_CODE);
     bool m_bstartedBody = false;  // has startbody been called yet?
     int  m_listLevel = 0; // // RTF does not really have a additive indent...manually set list level.
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?

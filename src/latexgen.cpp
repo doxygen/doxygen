@@ -52,12 +52,10 @@ static QCString g_footer;
 LatexCodeGenerator::LatexCodeGenerator(TextStream &t,const QCString &relPath,const QCString &sourceFileName)
   : m_t(t), m_relPath(relPath), m_sourceFileName(sourceFileName)
 {
-  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }
 
 LatexCodeGenerator::LatexCodeGenerator(TextStream &t) : m_t(t)
 {
-  m_prettyCode=Config_getBool(LATEX_SOURCE_CODE);
 }
 
 void LatexCodeGenerator::setRelativePath(const QCString &path)
@@ -182,21 +180,24 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
     m_t << "\\DoxyCodeLine{";
     m_doxyCodeLineOpen = TRUE;
   }
-  if (m_prettyCode)
+  if (Config_getBool(SOURCE_BROWSER))
   {
     QCString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    if (!fileName.isEmpty() && !m_sourceFileName.isEmpty())
+    QCString lineAnchor;
+    if (!m_sourceFileName.isEmpty())
     {
-      QCString lineAnchor;
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".tex"));
-      //if (!m_prettyCode) return;
-      if (usePDFLatex && pdfHyperlinks)
-      {
-        m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
-      }
+    }
+    bool showTarget = usePDFLatex && pdfHyperlinks && !lineAnchor.isEmpty();
+    if (showTarget)
+    {
+      m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
+    }
+    if (!fileName.isEmpty())
+    {
       writeCodeLink(nullptr,ref,fileName,anchor,lineNumber,QCString());
     }
     else
@@ -824,7 +825,7 @@ void LatexGenerator::startIndexSection(IndexSections is)
         {
           for (const auto &fd : *fn)
           {
-            if (fd->isLinkableInProject())
+            if (fd->isLinkableInProject() || fd->generateSourceFile())
             {
               if (isFirst)
               {
@@ -859,7 +860,6 @@ void LatexGenerator::startIndexSection(IndexSections is)
 
 void LatexGenerator::endIndexSection(IndexSections is)
 {
-  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   switch (is)
   {
     case isTitlePageStart:
@@ -1003,11 +1003,15 @@ void LatexGenerator::endIndexSection(IndexSections is)
               }
               isFirst=FALSE;
               m_t << "\\input{" << fd->getOutputFileBase() << "}\n";
-              if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
+            }
+            if (fd->generateSourceFile())
+            {
+              if (isFirst)
               {
-                //m_t << "\\include{" << fd->getSourceFileBase() << "}\n";
-                m_t << "\\input{" << fd->getSourceFileBase() << "}\n";
+                m_t << "}\n"; // end doxysection or chapter title
               }
+              isFirst=FALSE;
+              m_t << "\\input{" << fd->getSourceFileBase() << "}\n";
             }
           }
         }

@@ -281,9 +281,11 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+                        *parser.get(),briefFile(),briefLine(),this,0,
                         briefDescription(),TRUE,FALSE,
-                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -291,7 +293,7 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -307,7 +309,6 @@ void ConceptDefImpl::writeBriefDescription(OutputList &ol) const
       ol.popGeneratorState();
       ol.endParagraph();
     }
-    delete rootNode;
   }
   ol.writeSynopsis();
 }
@@ -624,16 +625,17 @@ void ConceptDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStr
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
-      DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+      std::unique_ptr<IDocParser> parser { createDocParser() };
+      std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(
+                                *parser.get(),briefFile(),briefLine(),this,0,
                                 briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (rootNode && !rootNode->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(rootNode,this,0);
+        ol.writeDoc(rootNode.get(),this,0);
         ol.endMemberDescription();
       }
-      delete rootNode;
     }
     ol.endMemberDeclaration(anchor(),QCString());
   }

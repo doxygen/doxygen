@@ -142,6 +142,15 @@ class SectionManager : public LinkedMap<SectionInfo>
       return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
     }
 
+    //! Replace an existing section with a new one
+    //! Return a non-owning pointer to the newly added section
+    SectionInfo *replace(const QCString &label, const QCString &fileName, int lineNr,
+                         const QCString &title, SectionType type, int level,const QCString &ref=QCString())
+    {
+      LinkedMap<SectionInfo>::del(label.data());
+      return LinkedMap<SectionInfo>::add(label.data(),fileName,lineNr,title,type,level,ref);
+    }
+
     //! returns a reference to the singleton
     static SectionManager &instance()
     {

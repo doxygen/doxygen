@@ -6,6 +6,8 @@ import subprocess
 import shlex
 
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
+bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
+hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
 
 
 def xopen(fname, mode='r', encoding='utf-8'):
@@ -149,6 +151,7 @@ class Tester:
 				print('GENERATE_XML=NO', file=f)
 			if (self.args.rtf):
 				print('GENERATE_RTF=YES', file=f)
+				print('RTF_HYPERLINKS=YES', file=f)
 				print('RTF_OUTPUT=%s/rtf' % self.test_out, file=f)
 			else:
 				print('GENERATE_RTF=NO', file=f)
@@ -193,6 +196,33 @@ class Tester:
 		if os.system('%s %s/Doxyfile %s' % (self.args.doxygen,self.test_out,redir))!=0:
 			print('Error: failed to run %s on %s/Doxyfile' % (self.args.doxygen,self.test_out))
 			sys.exit(1)
+
+
+	def check_link_rtf_file(self,fil):
+		bkmk_res = []
+		hyper_res = []
+		with xopen(fil,'r') as f:
+			for line in f.readlines():
+				if ("bkmkstart" in line) or ("HYPERLINK" in line):
+					msg = line.split('}')
+					for m in msg:
+						if bkmk_reg.match(m):
+							m1 = re.sub(bkmk_reg, '\\1', m)
+							bkmk_res.append(m1)
+						elif hyper_reg.match(m):
+							m1 = re.sub(hyper_reg, '\\1', m)
+							hyper_res.append(m1)
+		# Has been commented out as in the test 57, inline namespace, there is still a small problem.
+		#if sorted(bkmk_res) != sorted(set(bkmk_res)):
+		#	return (False, "RTF: one (or more) bookmark(s) has(have) been defined multiple times")
+		hyper_res = sorted(set(hyper_res))
+		for h in hyper_res:
+			if h not in bkmk_res:
+				#print(bkmk_res)
+				#print(hyper_res)
+				return (False, "RTF: Not all used hyperlinks have been defined")
+		return (True,"")
+
 
 	# update the reference data for this test
 	def update_test(self,testmgr):
@@ -368,8 +398,11 @@ class Tester:
 				shutil.rmtree(xml_output,ignore_errors=True)
 
 		if (self.args.rtf):
-			# no tests defined yet
-			pass
+			(res, msg1) = self.check_link_rtf_file("%s/rtf/refman.rtf" % self.test_out)
+			if not res:
+				#msg += ("RTF: Not all used hyperlinks have been defined",)
+				msg += (msg1,)
+				failed_rtf=True
 
 		if (self.args.docbook):
 			docbook_output='%s/docbook' % self.test_out

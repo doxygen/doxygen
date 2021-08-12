@@ -261,11 +261,6 @@ void ManGenerator::endHtmlLink()
 {
 }
 
-//void ManGenerator::writeMailLink(const QCString &url)
-//{
-//  docify(url);
-//}
-
 void ManGenerator::startGroupHeader(int)
 {
   if (!m_firstCol) m_t << "\n";
@@ -503,12 +498,6 @@ void ManGenerator::startDescItem()
   m_t << ".IP \"";
   m_firstCol=FALSE;
 }
-
-//void ManGenerator::endDescTitle()
-//{
-//  endBold();
-//  m_paragraph=TRUE;
-//}
 
 void ManGenerator::startDescForItem()
 {

@@ -71,7 +71,6 @@ class LatexCodeGenerator : public CodeOutputInterface
     QCString m_relPath;
     QCString m_sourceFileName;
     int m_col = 0;
-    bool m_prettyCode = false;
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
 };
@@ -341,7 +340,6 @@ class LatexGenerator : public OutputGenerator
     QCString m_relPath;
     int m_indent = 0;
     bool templateMemberItem = false;
-    bool m_prettyCode = Config_getBool(LATEX_SOURCE_CODE);
     LatexCodeGenerator m_codeGen;
 };
 
