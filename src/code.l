@@ -2828,10 +2828,13 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
   QCString className=clName;
   if (!className.isEmpty() && className[0]=='~') // correct for matching negated values i.s.o. destructors.
   {
-    yyextra->code->codify("~");
     className=className.mid(1);
   }
-  if (className.isEmpty()) return;
+  if (className.isEmpty())
+  {
+    yyextra->code->codify("~");
+    return;
+  }
   if (yyextra->insideProtocolList) // for Obj-C
   {
     className+="-p";
@@ -2981,8 +2984,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
         DBG_CTX((stderr,"is a global md=%p yyextra->currentDefinition=%s linkable=%d\n",(void*)md,yyextra->currentDefinition?qPrint(yyextra->currentDefinition->name()):"<none>",md->isLinkable()));
         if (md->isLinkable())
         {
-          QCString text=clName;
-          writeMultiLineCodeLink(yyscanner,ol,md,text);
+          writeMultiLineCodeLink(yyscanner,ol,md,clName);
           addToSearchIndex(yyscanner,clName);
           if (yyextra->currentMemberDef && yyextra->collectXRefs)
           {
