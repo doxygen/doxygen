@@ -1196,6 +1196,8 @@ int Markdown::processLink(const char *data,int,int size)
         m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");
       }
+      m_out.addStr(" ");
+      m_out.addStr(externalLinkTarget());
       m_out.addStr(">");
       content = content.simplifyWhiteSpace();
       processInline(content.data(),content.length());
