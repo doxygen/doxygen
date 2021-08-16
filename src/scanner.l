@@ -3374,6 +3374,7 @@ NONLopt [^\n]*
                                             yyextra->current->type.prepend("typedef ");
                                           }
                                           bool stat = yyextra->current->stat;
+                                          Protection prot = yyextra->current->protection;
                                           if (yyextra->current->section==Entry::CONCEPT_SEC) // C++20 concept
                                           {
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
@@ -3398,6 +3399,7 @@ NONLopt [^\n]*
                                           if ( *yytext == ',')
                                           {
                                             yyextra->current->stat = stat; // the static attribute holds for all variables
+                                            yyextra->current->protection = prot;
                                             yyextra->current->name.resize(0);
                                             yyextra->current->args.resize(0);
                                             yyextra->current->brief.resize(0);
