@@ -84,7 +84,7 @@ struct CondCtx
 
 struct FileState
 {
-  FileState(int size) : fileBuf(size) {}
+  FileState(uint size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
   BufStr fileBuf;
@@ -1852,7 +1852,7 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = new FileState(fi.size()+4096);
+    fs = new FileState(static_cast<uint>(fi.size())+4096);
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2920,7 +2920,7 @@ static inline void outputChar(yyscan_t yyscanner,char c)
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,len);
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint>(len));
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
