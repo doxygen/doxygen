@@ -740,6 +740,7 @@ function createResults()
     if (searchData[e][1].length==2) // single result
     {
       srLink.setAttribute('href',searchData[e][1][1][0]);
+      srLink.setAttribute('onclick','parent.searchBox.CloseResultsWindow()');
       if (searchData[e][1][1][1])
       {
        srLink.setAttribute('target','_parent');
@@ -761,6 +762,7 @@ function createResults()
         setKeyActions(srChild,'return searchResults.NavChild(event,'+e+','+c+')');
         setClassAttr(srChild,'SRScope');
         srChild.setAttribute('href',searchData[e][1][c+1][0]);
+        srChild.setAttribute('onclick','parent.searchBox.CloseResultsWindow()');
         if (searchData[e][1][c+1][1])
         {
          srChild.setAttribute('target','_parent');
