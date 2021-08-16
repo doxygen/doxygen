@@ -265,7 +265,7 @@ TEMPCHAR  [a-z_A-Z0-9.,: \t\*\&\(\)\[\]]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\^\*\&\[\]]|{VARARGS}
 FUNCPART  {FUNCCHAR}*("("{FUNCCHAR}*")"{FUNCCHAR}*)?
 SCOPESEP  "::"|"#"|"."
-TEMPLPART "<"{TEMPCHAR}*">"
+TEMPLPART "<"{TEMPCHAR}*("<"{TEMPCHAR}*("<"{TEMPCHAR}*">")?">")?">"
 ANONNS    "anonymous_namespace{"[^}]*"}"
 SCOPEPRE  (({ID}{TEMPLPART}?)|{ANONNS}){SCOPESEP}
 SCOPEKEYS ":"({ID}":")*

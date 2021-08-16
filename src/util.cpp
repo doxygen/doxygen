@@ -662,7 +662,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case '>': // current char is a >
         if (i>0 && !isspace((uchar)pc) &&
-            (isId(pc) || pc=='*' || pc=='&' || pc=='.') && // prev char is an id char or space or *&.
+            (isId(pc) || pc=='*' || pc=='&' || pc=='.' || pc=='>') && // prev char is an id char or space or *&.
             (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
            )
         {
