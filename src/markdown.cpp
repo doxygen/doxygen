@@ -963,7 +963,8 @@ int Markdown::processLink(const char *data,int,int size)
   {
     i++;
     while (i<size && data[i]==' ') i++;
-    if (i<size && data[i]=='<') i++;
+    bool uriFormat=false;
+    if (i<size && data[i]=='<') { i++; uriFormat=true; }
     linkStart=i;
     int braceCount=1;
     while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
@@ -993,7 +994,7 @@ int Markdown::processLink(const char *data,int,int size)
     link = link.stripWhiteSpace();
     //printf("processLink: link={%s}\n",qPrint(link));
     if (link.isEmpty()) { TRACE_RESULT(0); return 0; }
-    if (link.at(link.length()-1)=='>') link=link.left(link.length()-1);
+    if (uriFormat && link.at(link.length()-1)=='>') link=link.left(link.length()-1);
 
     // optional title
     if (data[i]=='\'' || data[i]=='"')
