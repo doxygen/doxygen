@@ -5416,7 +5416,8 @@ bool MemberDefImpl::_hasVisibleCallerGraph() const
          Config_getBool(HAVE_DOT);
   if (enabled)
   {
-    return DotCallGraph::isTrivial(this,TRUE);
+    bool trivial = DotCallGraph::isTrivial(this,TRUE);
+    return !trivial;
   }
   return FALSE;
 }
