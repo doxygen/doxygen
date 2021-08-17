@@ -3007,7 +3007,7 @@ int DocHRef::parse()
             }
             else if (tagId==HTML_BR)
             {
-              m_children.push_back(std::make_unique<DocLineBreak>(this,g_token->attribs));
+              m_children.push_back(std::make_unique<DocLineBreak>(m_parser,this,m_parser.context.token->attribs));
             }
             else
             {
