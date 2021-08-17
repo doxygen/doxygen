@@ -1323,7 +1323,7 @@ void RTFGenerator::endPageRef(const QCString &clname, const QCString &anchor)
   m_t << ")";
 }
 
-void RTFGenerator::writeCodeLink(const Definition *,
+void RTFGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &ref,const QCString &f,
                                  const QCString &anchor,const QCString &name,
                                  const QCString &)
@@ -2701,7 +2701,7 @@ void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
     }
     if (!fileName.isEmpty())
     {
-      writeCodeLink(nullptr,ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {

@@ -245,7 +245,7 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::writeCodeLink(const Definition *,
+void ManGenerator::writeCodeLink(CodeSymbolType,
                                  const QCString &,const QCString &,
                                  const QCString &, const QCString &name,
                                  const QCString &)

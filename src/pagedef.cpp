@@ -37,6 +37,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual void setLocalToc(const LocalToc &tl);
     virtual void setShowLineNo(bool);
     virtual DefType definitionType() const { return TypePage; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
     virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
     virtual QCString getOutputFileBase() const;

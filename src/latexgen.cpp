@@ -146,7 +146,7 @@ void LatexCodeGenerator::codify(const QCString &str)
 }
 
 
-void LatexCodeGenerator::writeCodeLink(const Definition *,
+void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
                                    const QCString &ref,const QCString &f,
                                    const QCString &anchor,const QCString &name,
                                    const QCString &)
@@ -198,7 +198,7 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
     }
     if (!fileName.isEmpty())
     {
-      writeCodeLink(nullptr,ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {

@@ -56,6 +56,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual ~GroupDefImpl();
 
     virtual DefType definitionType() const { return TypeGroup; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual QCString displayName(bool=TRUE) const { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }

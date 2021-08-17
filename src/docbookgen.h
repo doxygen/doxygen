@@ -30,11 +30,11 @@ class DocbookCodeGenerator : public CodeOutputInterface
     QCString sourceFileName() { return m_sourceFileName; }
 
     void codify(const QCString &text);
-    void writeCodeLink(const Definition *,
+    void writeCodeLink(CodeSymbolType type,
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
         const QCString &tooltip);
-    void writeCodeLinkLine(const Definition *,
+    void writeCodeLinkLine(CodeSymbolType type,
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
         const QCString &tooltip);
@@ -107,11 +107,11 @@ class DocbookGenerator : public OutputGenerator
     // --- CodeOutputInterface
     void codify(const QCString &text)
     { m_codeGen.codify(text); }
-    void writeCodeLink(const Definition *def,
+    void writeCodeLink(CodeSymbolType type,
                        const QCString &ref, const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { m_codeGen.writeCodeLink(def,ref,file,anchor,name,tooltip); }
+    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber)
     { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,

@@ -27,7 +27,7 @@ class HtmlCodeGenerator : public CodeOutputInterface
     void setId(int id) { m_id = id; }
     void setRelativePath(const QCString &path);
     void codify(const QCString &text);
-    void writeCodeLink(const Definition *def,
+    void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip);
@@ -90,11 +90,11 @@ class HtmlGenerator : public OutputGenerator
     // ---- CodeOutputInterface
     void codify(const QCString &text)
     { m_codeGen.codify(text); }
-    void writeCodeLink(const Definition *def,
+    void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { m_codeGen.writeCodeLink(def,ref,file,anchor,name,tooltip); }
+    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber)
     { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,

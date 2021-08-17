@@ -41,6 +41,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual ~DirDefImpl();
 
     virtual DefType definitionType() const { return TypeDir; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual bool isLinkableInProject() const;

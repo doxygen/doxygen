@@ -25,7 +25,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     virtual ~XMLCodeGenerator() { }
 
     void codify(const QCString &text) override;
-    void writeCodeLink(const Definition *def,
+    void writeCodeLink(CodeSymbolType type,
                        const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip) override;

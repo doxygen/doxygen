@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "types.h"
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
@@ -75,8 +76,8 @@ class CodeOutputInterface
     virtual void codify(const QCString &s) = 0;
 
     /*! Writes a link to an object in a code fragment.
-     *  \param def      The definition of the object, used for semantic syntax
-     *                  highlighting, may be nullptr.
+     *  \param type     The type of symbol, used for semantic syntax
+     *                  highlighting, may be Default is no info is available.
      *  \param ref      If this is non-zero, the object is to be found in
      *                  an external documentation file.
      *  \param file     The file in which the object is located.
@@ -85,7 +86,7 @@ class CodeOutputInterface
      *  \param name     The text to display as a placeholder for the link.
      *  \param tooltip  The tooltip to display when the mouse is on the link.
      */
-    virtual void writeCodeLink(const Definition *def,
+    virtual void writeCodeLink(CodeSymbolType type,
                                const QCString &ref,const QCString &file,
                                const QCString &anchor,const QCString &name,
                                const QCString &tooltip) = 0;
