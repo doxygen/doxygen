@@ -719,12 +719,28 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
   m_col=0;
 }
 
-void HtmlCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+void HtmlCodeGenerator::writeCodeLink(const Definition *def, 
+                                      const QCString &ref,const QCString &f,
                                       const QCString &anchor, const QCString &name,
                                       const QCString &tooltip)
 {
   //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
-  _writeCodeLink("code",ref,f,anchor,name,tooltip);
+  auto getClassNames = [](Definition::DefType tp) {
+      switch (tp) {
+        case Definition::DefType::TypeClass: return "highlightclass code";
+        case Definition::DefType::TypeFile: return "highlightfile code";
+        case Definition::DefType::TypeNamespace: return "highlightnamespace code";
+        case Definition::DefType::TypeMember: return "highlightmember code";
+        case Definition::DefType::TypeGroup: return "highlightgroup code";
+        case Definition::DefType::TypePackage: return "highlightpackage code";
+        case Definition::DefType::TypePage: return "highlightpage code";
+        case Definition::DefType::TypeDir: return "highlightdir code";
+        case Definition::DefType::TypeConcept: return "highlightconcept code";
+        default: return "code";
+      }
+  };
+  const auto classes = def ? getClassNames(def->definitionType()) : "code";
+  _writeCodeLink(classes,ref,f,anchor,name,tooltip);
 }
 
 void HtmlCodeGenerator::_writeCodeLink(const QCString &className,

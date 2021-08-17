@@ -228,6 +228,26 @@ a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
 	color: ##60; 
 }
 
+a.code.highlightclass {
+    /* style for links to class names in code snippets */
+}
+a.code.highlightfile {
+    /* style for links to file names in code snippets */
+}
+a.code.highlightnamespace {
+    /* style for links to namespace names in code snippets */
+}
+a.code.highlightmember {
+    /* style for links to member variable/function names in code snippets */
+}
+a.code.highlightgroup {}
+a.code.highlightpackage {}
+a.code.highlightpage {}
+a.code.highlightdir {}
+a.code.highlightconcept {
+    /* style for links to concept names in code snippets */
+}
+
 /* @end */
 
 dl.el {

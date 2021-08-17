@@ -241,7 +241,8 @@ void XMLCodeGenerator::codify(const QCString &text)
   }
   writeXMLCodeString(m_t,text,m_col);
 }
-void XMLCodeGenerator::writeCodeLink(const QCString &ref,const QCString &file,
+void XMLCodeGenerator::writeCodeLink(const Definition *,
+                   const QCString &ref,const QCString &file,
                    const QCString &anchor,const QCString &name,
                    const QCString &tooltip)
 {
