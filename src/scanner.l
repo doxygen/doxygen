@@ -5664,6 +5664,8 @@ NONLopt [^\n]*
                                           else
                                           {
                                             addType(yyscanner);
+                                            yyextra->yyBegColNr=yyextra->yyColNr;
+                                            yyextra->yyBegLineNr=yyextra->yyLineNr;
                                             yyextra->current->name = yytext;
                                             yyextra->current->name = yyextra->current->name.stripWhiteSpace();
                                             lineCount(yyscanner);
@@ -5698,6 +5700,9 @@ NONLopt [^\n]*
                                           }
                                         }
 <ClassVar>{ID}                          {
+                                          yyextra->yyBegColNr=yyextra->yyColNr;
+                                          yyextra->yyBegLineNr=yyextra->yyLineNr;
+
                                           if (yyextra->clangParser && (yyextra->insideCpp || yyextra->insideObjC))
                                           {
                                             yyextra->current->id = yyextra->clangParser->lookup(yyextra->yyLineNr,yytext);
