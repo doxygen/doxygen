@@ -5036,14 +5036,10 @@ void DocPara::handleFile(const QCString &cmdName)
     return;
   }
   QCString name = m_parser.context.token->name;
-  T *df = new T(m_parser,this,name,m_parser.context.context,m_parser.context.fileName,m_parser.tokenizer.getLineNr());
+  auto df = std::make_unique<T>(m_parser,this,name,m_parser.context.context,m_parser.context.fileName,m_parser.tokenizer.getLineNr());
   if (df->parse())
   {
-    m_children.push_back(std::unique_ptr<T>(df));
-  }
-  else
-  {
-    delete df;
+    m_children.push_back(std::move(df));
   }
 }
 
@@ -5581,34 +5577,41 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_DOT:
       {
-        DocVerbatim *dv = new DocVerbatim(m_parser,this,m_parser.context.context,m_parser.context.token->verb,DocVerbatim::Dot,m_parser.context.isExample,m_parser.context.exampleName);
+        auto dv = std::make_unique<DocVerbatim>(m_parser,this,m_parser.context.context,m_parser.context.token->verb,DocVerbatim::Dot,m_parser.context.isExample,m_parser.context.exampleName);
         m_parser.tokenizer.setStatePara();
         QCString width,height;
-        m_parser.defaultHandleTitleAndSize(CMD_DOT,dv,dv->children(),width,height);
+        m_parser.defaultHandleTitleAndSize(CMD_DOT,dv.get(),dv->children(),width,height);
         m_parser.tokenizer.setStateDot();
         retval = m_parser.tokenizer.lex();
         dv->setText(m_parser.context.token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(m_parser.context.fileName,m_parser.tokenizer.getLineNr());
-        m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
+        if (!Config_getBool(HAVE_DOT))
+        {
+          warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"ignoring \\dot command because HAVE_DOT is not set");
+        }
+        else
+        {
+          m_children.push_back(std::move(dv));
+        }
         if (retval==0) warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"dot section ended without end marker");
         m_parser.tokenizer.setStatePara();
       }
       break;
     case CMD_MSC:
       {
-        DocVerbatim *dv = new DocVerbatim(m_parser,this,m_parser.context.context,m_parser.context.token->verb,DocVerbatim::Msc,m_parser.context.isExample,m_parser.context.exampleName);
+        auto dv = std::make_unique<DocVerbatim>(m_parser,this,m_parser.context.context,m_parser.context.token->verb,DocVerbatim::Msc,m_parser.context.isExample,m_parser.context.exampleName);
         m_parser.tokenizer.setStatePara();
         QCString width,height;
-        m_parser.defaultHandleTitleAndSize(CMD_MSC,dv,dv->children(),width,height);
+        m_parser.defaultHandleTitleAndSize(CMD_MSC,dv.get(),dv->children(),width,height);
         m_parser.tokenizer.setStateMsc();
         retval = m_parser.tokenizer.lex();
         dv->setText(m_parser.context.token->verb);
         dv->setWidth(width);
         dv->setHeight(height);
         dv->setLocation(m_parser.context.fileName,m_parser.tokenizer.getLineNr());
-        m_children.push_back(std::unique_ptr<DocVerbatim>(dv));
+        m_children.push_back(std::move(dv));
         if (retval==0) warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"msc section ended without end marker");
         m_parser.tokenizer.setStatePara();
       }
@@ -5842,7 +5845,15 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       handleImage(cmdName);
       break;
     case CMD_DOTFILE:
-      handleFile<DocDotFile>(cmdName);
+      if (!Config_getBool(HAVE_DOT))
+      {
+        warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
+                       "ignoring \\dotfile command because HAVE_DOT is not set");
+      }
+      else
+      {
+        handleFile<DocDotFile>(cmdName);
+      }
       break;
     case CMD_VHDLFLOW:
       handleVhdlFlow();
