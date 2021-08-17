@@ -4906,7 +4906,8 @@ void DocPara::handleIncludeOperator(const QCString &cmdName,DocIncOperator::Type
 void DocPara::handleImage(const QCString &cmdName)
 {
   QCString saveCmdName = cmdName;
-  bool inlineImage = FALSE;
+  bool inlineImage = false;
+  QCString anchorStr;
 
   int tok=m_parser.tokenizer.lex();
   if (tok!=TK_WHITESPACE)
@@ -4915,31 +4916,46 @@ void DocPara::handleImage(const QCString &cmdName)
     {
       if (m_parser.context.token->name == "{")
       {
-        while ((tok=m_parser.tokenizer.lex())==TK_WHITESPACE);
-        if (m_parser.context.token->name != "}") // non-empty option string
-	{
-          if (m_parser.context.token->name.lower() != "inline")
+        m_parser.tokenizer.setStateOptions();
+        tok=m_parser.tokenizer.lex();
+        m_parser.tokenizer.setStatePara();
+        StringVector optList=split(m_parser.context.token->name.str(),",");
+        for (const auto &opt : optList)
+        {
+          if (opt.empty()) continue;
+          QCString locOpt(opt);
+          QCString locOptLow;
+          locOpt = locOpt.stripWhiteSpace();
+          locOptLow = locOpt.lower();
+          if (locOptLow == "inline")
           {
-            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"currently only 'inline' supported as option of %s command",
-              qPrint(saveCmdName));
+            inlineImage = true;
+          }
+          else if (locOptLow.startsWith("anchor:"))
+          {
+            if (!anchorStr.isEmpty())
+            {
+               warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
+                  "multiple use of option 'anchor' for '%s' command, ignoring: '%s'",
+                  qPrint(saveCmdName),qPrint(locOpt.mid(7)));
+            }
+            else
+            {
+               anchorStr = locOpt.mid(7);
+            }
           }
           else
           {
-            inlineImage = TRUE;
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
+                  "unknown option '%s' for '%s' command specified",
+                  qPrint(locOpt), qPrint(saveCmdName));
           }
-          while ((tok=m_parser.tokenizer.lex())==TK_WHITESPACE);
-	}
-        if (!((tok==TK_WORD) && (m_parser.context.token->name == "}")))
-        {
-          warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected closing '}' at option of %s command",
-            qPrint(saveCmdName));
-          return;
         }
         tok=m_parser.tokenizer.lex();
         if (tok!=TK_WHITESPACE)
         {
-          warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command with option",
-            qPrint(saveCmdName));
+          warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command",
+              qPrint(saveCmdName));
           return;
         }
       }
@@ -4986,6 +5002,11 @@ void DocPara::handleImage(const QCString &cmdName)
     warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
         DocTokenizer::tokToString(tok),qPrint(saveCmdName));
     return;
+  }
+  if (!anchorStr.isEmpty())
+  {
+    DocAnchor *anchor = new DocAnchor(m_parser,this,anchorStr,true);
+    m_children.push_back(std::unique_ptr<DocAnchor>(anchor));
   }
   HtmlAttribList attrList;
   DocImage *img = new DocImage(m_parser,this,attrList,
