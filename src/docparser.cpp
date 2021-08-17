@@ -3005,6 +3005,10 @@ int DocHRef::parse()
             {
               goto endhref;
             }
+            else if (tagId==HTML_BR)
+            {
+              m_children.push_back(std::make_unique<DocLineBreak>(this,g_token->attribs));
+            }
             else
             {
               warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"Unexpected html tag <%s%s> found within <a href=...> context",
