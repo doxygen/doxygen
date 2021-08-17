@@ -248,7 +248,9 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       if (it_next!=std::end(m_map))
       {
         auto &fnext = *it_next;
-        nextLevel1 = fnext->name.left(fnext->name.find('?'));
+        int j = fnext->name.find('?');
+        if (j<0) j=0;
+        nextLevel1 = fnext->name.left(j);
       }
       if (!(level1 == prevLevel1 || level1 == nextLevel1))
       {

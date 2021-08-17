@@ -483,7 +483,15 @@ static void buildFileList(const Entry *root)
       // directory as the describing file.
       QCString fn = root->fileName;
       int newIndex=fn.findRev('/');
-      fd=findFileDef(Doxygen::inputNameLinkedMap,fn.left(newIndex) + "/" + root->name,ambig);
+      if (newIndex<0)
+      {
+        fn = root->name;
+      }
+      else
+      {
+        fn = fn.left(newIndex)+"/"+root->name;
+      }
+      fd=findFileDef(Doxygen::inputNameLinkedMap,fn,ambig);
       if (!fd) ambig = save_ambig;
     }
     //printf("**************** root->name=%s fd=%p\n",qPrint(root->name),fd);
@@ -2800,7 +2808,7 @@ static void addVariable(const Entry *root,int isFuncPtr=-1)
       int i=isFuncPtr;
       if (i==-1 && (root->spec&Entry::Alias)==0) i=findFunctionPtr(type.str(),root->lang); // for typedefs isFuncPtr is not yet set
       Debug::print(Debug::Variables,0,"  functionPtr? %s\n",i!=-1?"yes":"no");
-      if (i!=-1) // function pointer
+      if (i>=0) // function pointer
       {
         int ai = type.find('[',i);
         if (ai>i) // function pointer array

@@ -442,7 +442,9 @@ WSopt [ \t\r]*
 <Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n { // function like macro
                                           bool skipFuncMacros = Config_getBool(SKIP_FUNCTION_MACROS);
                                           QCString name(yytext);
-                                          name=name.left(name.find('(')).stripWhiteSpace();
+                                          int pos = name.find('(');
+                                          if (pos<0) pos=0; // should never happen
+                                          name=name.left(pos).stripWhiteSpace();
 
                                           Define *def=0;
                                           if (skipFuncMacros && !yyextra->insideFtn &&

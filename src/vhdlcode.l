@@ -612,9 +612,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                         left=VhdlDocGen::getIndexWord(tt,0);
                                         if (!left.isEmpty())
                                         {
-                                          if (left.contains('('))
+                                          j=left.find('(',false);
+                                          if (j>=0)
                                           {
-                                            j=left.find('(',false);
                                             QCString name=left.left(j);
                                             generateClassOrGlobalLink(yyscanner,*yyextra->code,name);
                                             yyextra->PortMapComp=name;

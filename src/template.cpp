@@ -158,8 +158,15 @@ TemplateVariant::TemplateVariant(TemplateListIntf *l)
 
 TemplateVariant::~TemplateVariant()
 {
-  if      (m_variant.is<TemplateStructIntf*>()) m_variant.get<TemplateStructIntf*>()->release();
-  else if (m_variant.is<TemplateListIntf*>())   m_variant.get<TemplateListIntf*>()->release();
+  try
+  {
+    if      (m_variant.is<TemplateStructIntf*>()) m_variant.get<TemplateStructIntf*>()->release();
+    else if (m_variant.is<TemplateListIntf*>())   m_variant.get<TemplateListIntf*>()->release();
+  }
+  catch(...)
+  {
+    // should never happen
+  }
 }
 
 TemplateVariant::TemplateVariant(const TemplateVariant &v)

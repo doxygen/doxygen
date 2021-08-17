@@ -1321,16 +1321,6 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
     {
       ol.writeObjectLink(QCString(),fd->getSourceFileBase(),QCString(),fd->name());
     }
-    else
-    {
-      ol.startBold();
-      ol.docify(fd->name());
-      ol.endBold();
-      //if (addToIndex)
-      //{
-      //  Doxygen::indexList->addContentsItem(FALSE,fullName,QCString(),QCString(),QCString());
-      //}
-    }
     if (doc && src)
     {
       ol.pushGeneratorState();

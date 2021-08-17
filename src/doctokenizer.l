@@ -584,6 +584,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>{RCSID} { /* RCS tag */
                          QCString tagName(yytext+1);
                          int index=tagName.find(':');
+                         if (index<0) index=0; // should never happen
                          yyextra->token->name = tagName.left(index);
                          int text_begin = index+2;
                          int text_end = tagName.length()-1;
@@ -647,12 +648,6 @@ LINENR {BLANK}*[1-9][0-9]*
                          else
                            yyextra->token->name = yytext;
                          return TK_WORD;
-
-                         /* the following is dummy code to please the
-                          * compiler, removing this results in a warning
-                          * on my machine
-                          */
-                         goto find_rule;
                        }
 <St_Text>({ID}".")+{ID} {
                           yyextra->token->name = yytext;
@@ -967,7 +962,9 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
                          yyextra->token->name = yytext;
-                         yyextra->token->name = yyextra->token->name.left(yyextra->token->name.find('=')).stripWhiteSpace();
+                         int pos = yyextra->token->name.find('=');
+                         if (pos<0) pos=0; // should never happen
+                         yyextra->token->name = yyextra->token->name.left(pos).stripWhiteSpace();
                          BEGIN(St_TitleV);
                        }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
@@ -1131,7 +1128,8 @@ LINENR {BLANK}*[1-9][0-9]*
                          QCString params(yytext);
                          int j = params.find('&');
                          int i = params.find('$');
-                         if (j<i && j!=-1) i=j;
+                         if (i<0) i=0; // should never happen
+                         if (j<i && j>=0) i=j;
                          QCString types = params.left(i).stripWhiteSpace();
                          yyextra->token->name = types+"#"+params.mid(i);
                          return TK_WORD;

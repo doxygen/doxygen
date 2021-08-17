@@ -993,6 +993,7 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
   QCString temp;
 
   index=s1.find("(");
+  if (index<0) index=0;
   end=s1.findRev(")");
 
   if ((end-index)>0)
@@ -2302,6 +2303,7 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,const QCString &fil
         {
           static const reg::Ex ee(R"([\s=])");
           int in=findIndex(temp.str(),ee);
+          if (in<0) in=0;
           QCString ff=temp.left(in);
           temp.stripPrefix(ff);
           ff.append("#");

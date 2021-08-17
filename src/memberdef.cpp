@@ -3504,12 +3504,16 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     {
       // Eliminate the self-reference.
       int pos = ldef.findRev(' ');
-      linkifyText(TextGeneratorOLImpl(ol),
-                  scopedContainer,
-                  getBodyDef(),
-                  this,
-                  ldef.left(pos)
-                 );
+      if (pos<0) pos=0;
+      if (pos>0)
+      {
+        linkifyText(TextGeneratorOLImpl(ol),
+                    scopedContainer,
+                    getBodyDef(),
+                    this,
+                    ldef.left(pos)
+                   );
+      }
       ol.docify(ldef.mid(pos));
       const Definition *scope = cd;
       if (scope==0) scope = nd;
