@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _CMDMAPPER_H
-#define _CMDMAPPER_H
+#ifndef CMDMAPPER_H
+#define CMDMAPPER_H
 
 #include <map>
 #include <string>

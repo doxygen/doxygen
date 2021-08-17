@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _INPUTINT_H
-#define _INPUTINT_H
+#ifndef INPUTINT_H
+#define INPUTINT_H
 
 #include "input.h"
 #include <QObject>
