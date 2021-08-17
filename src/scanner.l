@@ -1807,6 +1807,9 @@ NONLopt [^\n]*
                                         }
 <UsingAlias>";"                         {
                                           yyextra->previous->section=Entry::VARIABLE_SEC;
+                                          yyextra->previous->args = yyextra->previous->args.stripWhiteSpace();
+                                          yyextra->previous->args.stripPrefix("class ");
+                                          yyextra->previous->args.stripPrefix("struct ");
                                           yyextra->previous->type = "typedef "+yyextra->previous->args;
                                           yyextra->previous->type=yyextra->previous->type.simplifyWhiteSpace();
                                           yyextra->previous->args.resize(0);
