@@ -719,12 +719,19 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
   m_col=0;
 }
 
-void HtmlCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+void HtmlCodeGenerator::writeCodeLink(CodeSymbolType type,
+                                      const QCString &ref,const QCString &f,
                                       const QCString &anchor, const QCString &name,
                                       const QCString &tooltip)
 {
-  //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
-  _writeCodeLink("code",ref,f,anchor,name,tooltip);
+  const char *hl = codeSymbolType2Str(type);
+  QCString hlClass = "code";
+  if (hl)
+  {
+    hlClass+=" hl_";
+    hlClass+=hl;
+  }
+  _writeCodeLink(hlClass,ref,f,anchor,name,tooltip);
 }
 
 void HtmlCodeGenerator::_writeCodeLink(const QCString &className,

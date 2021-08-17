@@ -103,6 +103,9 @@ class Definition
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() const = 0;
 
+    /*! Used for syntax highlighting symbol class */
+    virtual CodeSymbolType codeSymbolType() const = 0;
+
     /*! Returns TRUE if this is an alias of another definition */
     virtual bool isAlias() const = 0;
 

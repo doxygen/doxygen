@@ -163,6 +163,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     virtual ClassDef *resolveAlias() { return this; }
     virtual DefType definitionType() const { return TypeClass; }
+    virtual CodeSymbolType codeSymbolType() const;
     virtual QCString getOutputFileBase() const;
     virtual QCString getInstanceOutputFileBase() const;
     virtual QCString getSourceFileBase() const;
@@ -384,6 +385,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }
     virtual ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
 
+    virtual CodeSymbolType codeSymbolType() const
+    { return getCdAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getCdAlias()->getOutputFileBase(); }
     virtual QCString getInstanceOutputFileBase() const
@@ -4884,6 +4887,23 @@ QCString ClassDefImpl::collaborationGraphFileName() const
 QCString ClassDefImpl::inheritanceGraphFileName() const
 {
   return m_impl->inheritFileName;
+}
+
+CodeSymbolType ClassDefImpl::codeSymbolType() const
+{
+  switch (compoundType())
+  {
+    case Class:     return CodeSymbolType::Class;     break;
+    case Struct:    return CodeSymbolType::Struct;    break;
+    case Union:     return CodeSymbolType::Union;     break;
+    case Interface: return CodeSymbolType::Interface; break;
+    case Protocol:  return CodeSymbolType::Protocol;  break;
+    case Category:  return CodeSymbolType::Category;  break;
+    case Exception: return CodeSymbolType::Exception; break;
+    case Service:   return CodeSymbolType::Service;   break;
+    case Singleton: return CodeSymbolType::Singleton; break;
+  }
+  return CodeSymbolType::Class;
 }
 
 // --- Cast functions

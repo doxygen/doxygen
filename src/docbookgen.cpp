@@ -155,7 +155,8 @@ void DocbookCodeGenerator::codify(const QCString &text)
   writeDocbookCodeString(m_t,text,m_col);
 }
 
-void DocbookCodeGenerator::writeCodeLink(const QCString &ref,const QCString &file,
+void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
+    const QCString &ref,const QCString &file,
     const QCString &anchor,const QCString &name,
     const QCString &tooltip)
 {
@@ -164,7 +165,8 @@ void DocbookCodeGenerator::writeCodeLink(const QCString &ref,const QCString &fil
   m_col+=name.length();
 }
 
-void DocbookCodeGenerator::writeCodeLinkLine(const QCString &,const QCString &file,
+void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
+    const QCString &,const QCString &file,
     const QCString &,const QCString &name,
     const QCString &)
 {
@@ -231,11 +233,11 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
 
     if (!m_sourceFileName.isEmpty())
     {
-      writeCodeLinkLine(ref,m_sourceFileName,anchor,lineNumber,QCString());
+      writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,QCString());
     }
     if (!fileName.isEmpty())
     {
-      writeCodeLink(ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {

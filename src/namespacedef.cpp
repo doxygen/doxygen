@@ -58,6 +58,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
                  bool isPublished=false);
     virtual ~NamespaceDefImpl();
     virtual DefType definitionType() const { return TypeNamespace; }
+    virtual CodeSymbolType codeSymbolType() const
+    { return getLanguage()==SrcLangExt_Java ? CodeSymbolType::Package : CodeSymbolType::Namespace; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual void insertUsedFile(FileDef *fd);
@@ -179,6 +181,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     const NamespaceDef *getNSAlias() const { return toNamespaceDef(getAlias()); }
 
     // ---- getters
+    virtual CodeSymbolType codeSymbolType() const
+    { return getNSAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getNSAlias()->getOutputFileBase(); }
     virtual QCString anchor() const

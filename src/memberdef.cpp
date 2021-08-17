@@ -61,6 +61,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual DefType definitionType() const        { return TypeMember; }
     virtual       MemberDef *resolveAlias()       { return this; }
     virtual const MemberDef *resolveAlias() const { return this; }
+    virtual CodeSymbolType codeSymbolType() const;
     virtual MemberDef *deepCopy() const;
     virtual void moveTo(Definition *);
     virtual QCString getOutputFileBase() const;
@@ -403,6 +404,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
     virtual QCString name() const
     { return getMdAlias()->name(); }
+    virtual CodeSymbolType codeSymbolType() const
+    { return getMdAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getMdAlias()->getOutputFileBase(); }
     virtual QCString getReference() const
@@ -6066,6 +6069,30 @@ bool MemberDefImpl::isReference() const
 {
   return DefinitionMixin::isReference() ||
          (m_impl->templateMaster && m_impl->templateMaster->isReference());
+}
+
+CodeSymbolType MemberDefImpl::codeSymbolType() const
+{
+  switch (memberType())
+  {
+    case MemberType_Define:      return CodeSymbolType::Define;
+    case MemberType_Function:    return CodeSymbolType::Function;
+    case MemberType_Variable:    return CodeSymbolType::Variable;
+    case MemberType_Typedef:     return CodeSymbolType::Typedef;
+    case MemberType_Enumeration: return CodeSymbolType::Enumeration;
+    case MemberType_EnumValue:   return CodeSymbolType::EnumValue;
+    case MemberType_Signal:      return CodeSymbolType::Signal;
+    case MemberType_Slot:        return CodeSymbolType::Slot;
+    case MemberType_Friend:      return CodeSymbolType::Friend;
+    case MemberType_DCOP:        return CodeSymbolType::DCOP;
+    case MemberType_Property:    return CodeSymbolType::Property;
+    case MemberType_Event:       return CodeSymbolType::Event;
+    case MemberType_Interface:   return CodeSymbolType::Interface;
+    case MemberType_Service:     return CodeSymbolType::Service;
+    case MemberType_Sequence:    return CodeSymbolType::Sequence;
+    case MemberType_Dictionary:  return CodeSymbolType::Dictionary;
+  }
+  return CodeSymbolType::Default;
 }
 
 //-------------------------------------------------------------------------------

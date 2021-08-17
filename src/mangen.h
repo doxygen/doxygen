@@ -73,7 +73,8 @@ class ManGenerator : public OutputGenerator
     void codify(const QCString &text);
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor,const QCString &name);
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip);
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,

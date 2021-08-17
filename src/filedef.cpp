@@ -60,6 +60,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual ~FileDefImpl();
 
     virtual DefType definitionType() const { return TypeFile; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual QCString name() const;
 
     virtual QCString displayName(bool=TRUE) const { return name(); }
@@ -199,7 +200,8 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:
     virtual void codify(const QCString &) override {}
-    virtual void writeCodeLink(const QCString &,const QCString &,
+    virtual void writeCodeLink(CodeSymbolType,
+                               const QCString &,const QCString &,
                                const QCString &,const QCString &,
                                const QCString &) override {}
     virtual void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,

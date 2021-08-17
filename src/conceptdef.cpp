@@ -39,6 +39,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
 
     //---------- ConceptDef
     virtual DefType definitionType() const;
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Concept; }
     virtual QCString getOutputFileBase() const;
     virtual bool hasDetailedDescription() const;
     virtual QCString displayName(bool includeScope=true) const;
@@ -100,6 +101,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     virtual ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }
 
     virtual DefType definitionType() const { return TypeConcept; }
+    virtual CodeSymbolType codeSymbolType() const
+    { return getCdAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getCdAlias()->getOutputFileBase(); }
     virtual QCString getReference() const
