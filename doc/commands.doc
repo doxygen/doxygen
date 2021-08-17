@@ -3343,7 +3343,7 @@ class Receiver
               \ref cmdhtmlinclude "\\htmlinclude".
 
 <hr>
-\section cmdimage \\image['{'option'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \\image['{'option[,option]'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
 
   \addindex \\image
   Inserts an image into the documentation. This command is format
@@ -3375,9 +3375,10 @@ class Receiver
   The size specifier in \LaTeX (for example `10cm` or
   `4in` or a symbolic width like `\textwidth`).
 
-  Currently only the option `inline` is supported. In case the option `inline` is
+  Currently only the options `inline` and `anchor` are supported. In case the option `inline` is
   specified the image is placed "in the line", when a caption s present it is shown
-  in HTML as tooltip (ignored for the other formats).
+  in HTML as tooltip (ignored for the other formats). For the `anchor` option the syntax is:
+  `anchor:<anchorId>`.
 
   Here is example of a comment block:
 
