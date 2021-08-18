@@ -8,6 +8,7 @@ import shlex
 config_reg = re.compile('.*\/\/\s*(?P<name>\S+):\s*(?P<value>.*)$')
 bkmk_reg = re.compile(r'.*bkmkstart\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 hyper_reg = re.compile(r'.*HYPERLINK\s+[\\l]*\s+"([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z])".*')
+pageref_reg = re.compile(r'.*PAGEREF\s+([A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z][A-Z]).*')
 
 
 def xopen(fname, mode='r', encoding='utf-8'):
@@ -201,9 +202,10 @@ class Tester:
 	def check_link_rtf_file(self,fil):
 		bkmk_res = []
 		hyper_res = []
+		pageref_res = []
 		with xopen(fil,'r') as f:
 			for line in f.readlines():
-				if ("bkmkstart" in line) or ("HYPERLINK" in line):
+				if ("bkmkstart" in line) or ("HYPERLINK" in line) or ("PAGEREF" in line):
 					msg = line.split('}')
 					for m in msg:
 						if bkmk_reg.match(m):
@@ -212,6 +214,9 @@ class Tester:
 						elif hyper_reg.match(m):
 							m1 = re.sub(hyper_reg, '\\1', m)
 							hyper_res.append(m1)
+						elif pageref_reg.match(m):
+							m1 = re.sub(pageref_reg, '\\1', m)
+							pageref_res.append(m1)
 		# Has been commented out as in the test 57, inline namespace, there is still a small problem.
 		#if sorted(bkmk_res) != sorted(set(bkmk_res)):
 		#	return (False, "RTF: one (or more) bookmark(s) has(have) been defined multiple times")
@@ -221,6 +226,12 @@ class Tester:
 				#print(bkmk_res)
 				#print(hyper_res)
 				return (False, "RTF: Not all used hyperlinks have been defined")
+		pageref_res = sorted(set(pageref_res))
+		for p in pageref_res:
+			if p not in bkmk_res:
+				#print(bkmk_res)
+				#print(pageref_res)
+				return (False, "RTF: Not all used page reference bookmarks have been defined")
 		return (True,"")
 
 
