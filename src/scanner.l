@@ -5073,10 +5073,9 @@ NONLopt [^\n]*
                                           if (!yyextra->insidePHP) BEGIN(SkipInits);
                                         }
 <Function>[;{,]                         {
-                                          yyextra->current->name=yyextra->current->name.simplifyWhiteSpace();
-                                          yyextra->current->type=yyextra->current->type.simplifyWhiteSpace();
+                                          yyextra->current->name=removeRedundantWhiteSpace(yyextra->current->name);
+                                          yyextra->current->type=removeRedundantWhiteSpace(yyextra->current->type);
                                           yyextra->current->args=removeRedundantWhiteSpace(yyextra->current->args);
-                                                        // was: yyextra->current->args.simplifyWhiteSpace();
                                           yyextra->current->fileName = yyextra->yyFileName;
                                           yyextra->current->startLine = yyextra->yyBegLineNr;
                                           yyextra->current->startColumn = yyextra->yyBegColNr;

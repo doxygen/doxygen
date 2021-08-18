@@ -232,8 +232,9 @@ struct Variant {
 
     //! Replaces the contents of the variant container by constructing a type T calling
     //! the constructor with Args
-    //! @param T the type to make the variant hold an instance of.
-    //! @param Args The arguments to pass to the constructor of T.
+    //! @tparam T the type to make the variant hold an instance of.
+    //! @tparam Args The arguments types to pass to the constructor of T.
+    //! @param args The argument values
     template<typename T, typename... Args>
     void set(Args&&... args)
     {
