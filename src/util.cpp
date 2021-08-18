@@ -4772,10 +4772,19 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
   bool newPage = true;
   if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
   {
-    if (!xref && !title.isEmpty() && pd->title()!=title)
+    if (!xref && !title.isEmpty() && pd->title()!=pd->name() && pd->title()!=title)
     {
-      warn(fileName,startLine,"multiple use of page label '%s', (other occurrence: %s, line: %d)",
+      warn(fileName,startLine,"multiple use of page label '%s' with different titles, (other occurrence: %s, line: %d)",
          qPrint(name),qPrint(pd->docFile()),pd->getStartBodyLine());
+    }
+    if (!title.isEmpty() && pd->title()==pd->name()) // pd has no real title yet
+    {
+      pd->setTitle(title);
+      SectionInfo *si = SectionManager::instance().find(pd->name());
+      if (si)
+      {
+        si->setTitle(title);
+      }
     }
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,docLine);

@@ -57,6 +57,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual Definition *getPageScope() const { return m_pageScope; }
     virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
     virtual bool showLineNo() const;
+    virtual void setTitle(const QCString &title);
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeTagFile(TextStream &);
     virtual void setNestingLevel(int l);
@@ -397,6 +398,11 @@ bool PageDefImpl::showLineNo() const
 bool PageDefImpl::hasTitle() const
 {
   return !m_title.isEmpty() && m_title.lower()!="notitle";
+}
+
+void PageDefImpl::setTitle(const QCString &title)
+{
+  m_title = title;
 }
 
 // --- Cast functions

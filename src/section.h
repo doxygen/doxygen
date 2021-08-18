@@ -77,6 +77,7 @@ class SectionInfo
     void setType(SectionType t)          { m_type       = t;  }
     void setGenerated(bool b)            { m_generated  = b;  }
     void setDefinition(Definition *d)    { m_definition = d;  }
+    void setTitle(const QCString &t)     { m_title      = t;  }
 
   private:
     QCString    m_label;
