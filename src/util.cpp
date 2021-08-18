@@ -3657,7 +3657,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
 
     result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
   }
-  //printf("*** convertNameToFile(%s)->%s\n",name,qPrint(result));
+  //printf("*** convertNameToFile(%s)->%s\n",qPrint(name),qPrint(result));
   return result;
 }
 
