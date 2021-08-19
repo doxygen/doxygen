@@ -4145,12 +4145,12 @@ static void writeConceptRootList(FTVHelp *ftv,bool addToIndex)
       //printf("*** adding %s hasSubPages=%d hasSections=%d\n",qPrint(pageTitle),hasSubPages,hasSections);
       ftv->addContentsItem(
           false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
-          QCString(),false,true,cd.get());
+          QCString(),false,cd->partOfGroups().empty(),cd.get());
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(
             false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
-            QCString(),false,true);
+            QCString(),false,cd->partOfGroups().empty(),cd.get());
       }
     }
   }

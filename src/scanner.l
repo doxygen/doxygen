@@ -3380,7 +3380,7 @@ NONLopt [^\n]*
                                           Protection prot = yyextra->current->protection;
                                           if (yyextra->current->section==Entry::CONCEPT_SEC) // C++20 concept
                                           {
-                                            yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
+                                            yyextra->current_root->copyToSubEntry( yyextra->current ) ;
                                             initEntry(yyscanner);
                                           }
                                           else if (!yyextra->current->name.isEmpty() && yyextra->current->section!=Entry::ENUM_SEC)
@@ -3417,7 +3417,6 @@ NONLopt [^\n]*
                                           {
                                             yyextra->mtype = Method;
                                             yyextra->virt = Normal;
-                                            yyextra->current->groups.clear();
                                             initEntry(yyscanner);
                                           }
                                         }
