@@ -146,7 +146,7 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);
 
-  auto rv = m_filePatchers.emplace(fileName.str(), fileName.data());
+  auto rv = m_filePatchers.emplace(std::make_pair(fileName.str(), fileName));
   assert(rv.second);
   return &(rv.first->second);
 }

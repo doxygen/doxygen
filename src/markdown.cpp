@@ -1584,7 +1584,7 @@ static QCString extractTitleId(QCString &title, int level)
     title = title.left((int)match.position());
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     TRACE_RESULT(QCString(id));
-    return id;
+    return QCString(id);
   }
   if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
   {

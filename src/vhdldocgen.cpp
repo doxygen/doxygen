@@ -2465,7 +2465,7 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   {
     arch=ql[2];
   }
-  return label;
+  return QCString(label);
 }
 
 

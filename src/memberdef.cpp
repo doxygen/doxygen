@@ -3734,7 +3734,7 @@ static QCString simplifyTypeForTable(const QCString &s)
     t = match.prefix().str() + match.suffix().str(); // remove the matched part
   }
   //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),t.c_str());
-  return t;
+  return QCString(t);
 }
 
 QCString MemberDefImpl::fieldType() const

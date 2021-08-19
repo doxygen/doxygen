@@ -233,7 +233,7 @@ class TextStream final
       {
 	n = (uint32_t)(-(int32_t)n);
       }
-      do { *--p = ((int32_t)(n%10)) + '0'; n /= 10; } while ( n );
+      do { *--p = ((char)(n%10)) + '0'; n /= 10; } while ( n );
       if ( neg ) *--p = '-';
       m_buffer+=p;
     }

@@ -5579,7 +5579,7 @@ static QCString substituteTemplatesInString(
   dst+=src.substr(p);
   //printf("  substituteTemplatesInString(%s)=%s\n",
   //    qPrint(src),qPrint(dst));
-  return dst;
+  return QCString(dst);
 }
 
 static void substituteTemplatesInArgList(

@@ -166,7 +166,7 @@ const int maxInheritanceDepth = 100000;
 QCString removeAnonymousScopes(const QCString &str)
 {
   std::string result;
-  if (str.isEmpty()) return result;
+  if (str.isEmpty()) return QCString(result);
 
   // helper to check if the found delimiter starts with a colon
   auto startsWithColon = [](const std::string &del)
@@ -227,7 +227,7 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
   std::string result = reg::replace(s.str(),marker,
                                     replacement.isEmpty() ? replacement.data() : "__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",qPrint(s),qPrint(result));
-  return result;
+  return QCString(result);
 }
 
 
@@ -1412,7 +1412,7 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     {
       contents+=line+'\n';
     }
-    return contents;
+    return QCString(contents);
   }
   else // read from file
   {
@@ -6269,7 +6269,7 @@ QCString filterTitle(const QCString &title)
     p=i+l;
   }
   tf+=t.substr(p);
-  return tf;
+  return QCString(tf);
 }
 
 //----------------------------------------------------------------------------
@@ -6430,7 +6430,7 @@ QCString replaceColorMarkers(const QCString &str)
     p=i+l;
   }
   if (p<sl) result+=s.substr(p);
-  return result;
+  return QCString(result);
 }
 
 /** Copies the contents of file with name \a src to the newly created
