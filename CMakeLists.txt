@@ -61,6 +61,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 if (CMAKE_SYSTEM MATCHES "Darwin")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOS_VERSION_MIN}" CACHE STRING "Minimum OS X deployment version" FORCE)
     set(CMAKE_CXX_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_CXX_FLAGS}")
     set(CMAKE_C_FLAGS "-Wno-deprecated-register -mmacosx-version-min=${MACOS_VERSION_MIN} ${CMAKE_C_FLAGS}")
     find_library(CORESERVICES_LIB CoreServices)
