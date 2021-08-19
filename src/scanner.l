@@ -2108,6 +2108,11 @@ NONLopt [^\n]*
                                           yyextra->requiresContext = YY_START;
                                           BEGIN(RequiresClause);
                                         }
+<RequiresClause>"requires"{BN}*/"{"     { // requires requires { ... }
+                                          lineCount(yyscanner) ;
+                                          yyextra->current->req+=yytext;
+                                          BEGIN( RequiresExpression ) ;
+                                        }
 <RequiresClause>"requires"{BN}*"("      { // requires requires(T x) { ... }
                                           lineCount(yyscanner) ;
                                           yyextra->current->req+=yytext;
