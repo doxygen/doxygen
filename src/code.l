@@ -3728,9 +3728,9 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   static std::vector<std::string> non_cpp_keywords = {
-    "__assume", "__super", "abstract", "final", "function",
-    "gcnew", "gcroot", "generic", "get", "import",
-    "internal", "null", "override", "pin_ptr", "raise",
+    "__assume", "__super", "abstract", "function",
+    "gcnew", "gcroot", "generic", "get",
+    "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
   return yyextra->lang==SrcLangExt_Cpp && (std::find(non_cpp_keywords.begin(), non_cpp_keywords.end(), keyword) != non_cpp_keywords.end());
 }
