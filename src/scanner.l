@@ -18,6 +18,10 @@
 %option extra-type="struct scannerYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve typesafety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{

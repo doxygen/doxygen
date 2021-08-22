@@ -23,8 +23,10 @@
 
 #include "cppvalue.h"
 #define YYSTYPE CPPValue
+#define YY_TYPEDEF_YY_SCANNER_T
 
-typedef void* yyscan_t;
+struct yyguts_t;
+typedef yyguts_t* yyscan_t;
 struct constexpYY_state
 {
   std::string  strToken;
