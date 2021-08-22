@@ -2130,7 +2130,7 @@ NONLopt [^\n]*
                                         }
 <RequiresExpression>\n                  {
                                           yyextra->current->req+=' ';
-                                          lineCount(yyextra);
+                                          lineCount(yyscanner);
                                         }
 <RequiresExpression>.                   {
                                           yyextra->current->req+=yytext;
