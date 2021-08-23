@@ -241,6 +241,7 @@ def parseOption(node):
 	adefval = node.getAttribute('altdefval')
 	depends = node.getAttribute('depends')
 	setting = node.getAttribute('setting')
+	orgtype = node.getAttribute('orgtype')
 	docC = prepCDocs(node);
 	if len(setting) > 0:
 		print("#if %s" % (setting))
@@ -338,7 +339,7 @@ def parseOption(node):
 		elif format == 'filedir':
 			print("  cl->setWidgetType(ConfigList::FileAndDir);")
 	elif type == 'obsolete':
-		print("  cfg->addObsolete(\"%s\");" % (name))
+		print("  cfg->addObsolete(\"%s\",ConfigOption::O_%s);" % (name,orgtype.capitalize()))
 	if len(setting) > 0:
 		print("#else")
 		print("  cfg->addDisabled(\"%s\");" % (name))

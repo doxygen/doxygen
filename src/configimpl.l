@@ -210,24 +210,38 @@ void ConfigInt::convertStrToVal()
   }
 }
 
-void ConfigBool::convertStrToVal()
+static bool convertStringToBool(const QCString &str,bool &isValid)
 {
-  QCString val = m_valueString.stripWhiteSpace().lower();
+  isValid=false;
+  QCString val = str.stripWhiteSpace().lower();
   if (!val.isEmpty())
   {
     if (val=="yes" || val=="true" || val=="1" || val=="all")
     {
-      m_value=TRUE;
+      isValid=true;
+      return true;
     }
     else if (val=="no" || val=="false" || val=="0" || val=="none")
     {
-      m_value=FALSE;
+      isValid=true;
+      return false;
     }
-    else
-    {
-      config_warn("argument '%s' for option %s is not a valid boolean value\n"
+  }
+  return false;
+}
+
+void ConfigBool::convertStrToVal()
+{
+  bool isValid=false;
+  bool b = convertStringToBool(m_valueString,isValid);
+  if (isValid)
+  {
+    m_value=b;
+  }
+  else
+  {
+    config_warn("argument '%s' for option %s is not a valid boolean value\n"
                 "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
-    }
   }
 }
 
@@ -1004,7 +1018,20 @@ static void readIncludeFile(const QCString &incName)
                                                               "         To avoid this warning please remove this line from your configuration "
                                                               "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
-                                                 BEGIN(SkipInvalid);
+                                                 ((ConfigObsolete*)option)->markAsPresent();
+                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 {
+                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_list->clear();
+                                                   g_listStr="";
+                                                   BEGIN(GetStrList);
+                                                 }
+                                                 else
+                                                 {
+                                                   g_string = ((ConfigObsolete*)option)->valueStringRef();
+                                                   g_string->resize(0);
+                                                   BEGIN(GetString);
+                                                 }
                                                  break;
                                                case ConfigOption::O_Disabled:
                                                  if (g_configUpdate)
@@ -1058,7 +1085,16 @@ static void readIncludeFile(const QCString &incName)
                                                  config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
                                                             "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
-                                                 BEGIN(SkipInvalid);
+                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 {
+                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_listStr="";
+                                                   BEGIN(GetStrList);
+                                                 }
+                                                 else
+                                                 {
+                                                   BEGIN(SkipInvalid);
+                                                 }
                                                  break;
                                                case ConfigOption::O_Disabled:
                                                  config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
@@ -2166,7 +2202,6 @@ void Config::checkAndCorrect(bool quiet)
   }
 #endif
 
-
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)
@@ -2194,6 +2229,28 @@ bool Config::parse(const QCString &fileName,bool update)
   // when updating etc. the output is in this format as well and not in the read format
   ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
   option->init();
+
+  //------------------------
+  // check for obsolete CLASS_DIAGRAM option
+  ConfigOption *classDiagramOpt = ConfigImpl::instance()->get("CLASS_DIAGRAM");
+  if (classDiagramOpt && classDiagramOpt->kind()==ConfigOption::O_Obsolete)
+  {
+    ConfigObsolete *opt = (ConfigObsolete*)classDiagramOpt;
+    if (opt->isPresent() && opt->orgType()==ConfigOption::O_Bool)
+    {
+      QCString s = *opt->valueStringRef();
+      bool isValid=false;
+      bool b = convertStringToBool(s,isValid);
+      if (isValid)
+      {
+        if (!b && !Config_getBool(HAVE_DOT) && Config_getEnum(CLASS_GRAPH)=="YES")
+        {
+          Config_updateEnum(CLASS_GRAPH,"TEXT");
+        }
+      }
+    }
+  }
+
   return parseRes;
 }
 
