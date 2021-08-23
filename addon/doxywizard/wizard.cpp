@@ -64,7 +64,6 @@
 #define STR_PDF_HYPERLINKS        QString::fromLatin1("PDF_HYPERLINKS")
 #define STR_SEARCHENGINE          QString::fromLatin1("SEARCHENGINE")
 #define STR_HAVE_DOT              QString::fromLatin1("HAVE_DOT")
-#define STR_CLASS_DIAGRAMS        QString::fromLatin1("CLASS_DIAGRAMS")
 #define STR_CLASS_GRAPH           QString::fromLatin1("CLASS_GRAPH")
 #define STR_COLLABORATION_GRAPH   QString::fromLatin1("COLLABORATION_GRAPH")
 #define STR_GRAPHICAL_HIERARCHY   QString::fromLatin1("GRAPHICAL_HIERARCHY")
@@ -1132,19 +1131,21 @@ Step4::Step4(Wizard *wizard,const QHash<QString,Input*> &modelData)
   QGridLayout *gbox = new QGridLayout( this );
   gbox->addWidget(new QLabel(tr("Diagrams to generate")),0,0);
 
+  // CLASS_GRAPH = NO, HAVE_DOT = NO
   QRadioButton *rb = new QRadioButton(tr("No diagrams"));
   m_diagramModeGroup->addButton(rb, 0);
   gbox->addWidget(rb,1,0);
-  // CLASS_DIAGRAMS = NO, HAVE_DOT = NO
   rb->setChecked(true);
+
+  // CLASS_GRAPH = YES, HAVE_DOT = NO
   rb = new QRadioButton(tr("Use built-in class diagram generator"));
   m_diagramModeGroup->addButton(rb, 1);
-  // CLASS_DIAGRAMS = YES, HAVE_DOT = NO
   gbox->addWidget(rb,2,0);
+
+  // CLASS_GRAPH = YES, HAVE_DOT = YES
   rb = new QRadioButton(tr("Use dot tool from the GraphViz package"));
   m_diagramModeGroup->addButton(rb, 2);
   gbox->addWidget(rb,3,0);
-  // CLASS_DIAGRAMS = NO, HAVE_DOT = YES
 
   m_dotGroup = new QGroupBox(tr("Dot graphs to generate"));
     QVBoxLayout *vbox = new QVBoxLayout;
@@ -1202,24 +1203,24 @@ void Step4::diagramModeChanged(int id)
   if (id==0) // no diagrams
   {
     updateBoolOption(m_modelData,STR_HAVE_DOT,false);
-    updateBoolOption(m_modelData,STR_CLASS_DIAGRAMS,false);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("NO"));
   }
   else if (id==1) // builtin diagrams
   {
     updateBoolOption(m_modelData,STR_HAVE_DOT,false);
-    updateBoolOption(m_modelData,STR_CLASS_DIAGRAMS,true);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("YES"));
   }
   else if (id==2) // dot diagrams
   {
     updateBoolOption(m_modelData,STR_HAVE_DOT,true);
-    updateBoolOption(m_modelData,STR_CLASS_DIAGRAMS,false);
+    updateStringOption(m_modelData,STR_CLASS_GRAPH, QString::fromLatin1("YES"));
   }
   m_dotGroup->setEnabled(id==2);
 }
 
 void Step4::setClassGraphEnabled(int state)
 {
-  updateBoolOption(m_modelData,STR_CLASS_GRAPH,state==Qt::Checked);
+  updateStringOption(m_modelData,STR_CLASS_GRAPH,state==Qt::Checked ? QString::fromLatin1("YES") : QString::fromLatin1("NO"));
 }
 
 void Step4::setCollaborationGraphEnabled(int state)
@@ -1257,13 +1258,17 @@ void Step4::init()
   int id = 0;
   if (getBoolOption(m_modelData,STR_HAVE_DOT))
   {
-    m_diagramModeGroup->button(2)->setChecked(true); // Dot
-    id = 2;
-  }
-  else if (getBoolOption(m_modelData,STR_CLASS_DIAGRAMS))
-  {
-    m_diagramModeGroup->button(1)->setChecked(true); // Builtin diagrams
-    id = 1;
+    QString class_graph = getStringOption(m_modelData,STR_CLASS_GRAPH).toLower();
+    if ((class_graph == QString::fromLatin1("yes")) || (class_graph == QString::fromLatin1("graph")))
+    {
+      m_diagramModeGroup->button(1)->setChecked(true); // Dot
+      id = 2;
+    }
+    else 
+    {
+      m_diagramModeGroup->button(1)->setChecked(true); // Builtin diagrams
+      id = 1;
+    }
   }
   else
   {

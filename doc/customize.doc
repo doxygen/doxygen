@@ -336,7 +336,7 @@ The class page has the following specific elements:
       this class.
 <dt>\c inheritancegraph
   <dd>Represents the inheritance relations for a class.
-      Note that the CLASS_DIAGRAM option determines
+      Note that the \ref cfg_class_graph "CLASS_GRAPH" option determines
       if the inheritance relation is a list of base and derived classes or
       a graph.
 <dt>\c collaborationgraph

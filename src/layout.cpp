@@ -89,6 +89,10 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     {
       return ConfigValues::instance().*(opt->value.b);
     }
+    else if (opt && opt->type==ConfigValues::Info::String)
+    {
+      return ConfigValues::instance().*(opt->value.s) != "NO";
+    }
     else if (!opt)
     {
       err("found unsupported value %s for visible attribute in layout file\n",

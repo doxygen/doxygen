@@ -3489,17 +3489,6 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
     </option>
   </group>
   <group name='Dot' docs='Configuration options related to the dot tool'>
-    <option type='bool' id='CLASS_DIAGRAMS' defval='1'>
-      <docs>
-<![CDATA[
- If the \c CLASS_DIAGRAMS tag is set to \c YES, doxygen will
- generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
- super classes. Setting the tag to \c NO turns the diagrams off. Note that
- this option also works with \ref cfg_have_dot "HAVE_DOT" disabled, but it is recommended to
- install and use \c dot, since it yields more powerful graphs.
-]]>
-      </docs>
-    </option>
     <option type='string' id='DIA_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
@@ -3570,15 +3559,21 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CLASS_GRAPH' defval='1' depends='HAVE_DOT'>
+    <option type='enum' id='CLASS_GRAPH' defval='YES'>
       <docs>
 <![CDATA[
- If the \c CLASS_GRAPH tag is set to \c YES then doxygen
+ If the \c CLASS_GRAPH tag is set to \c YES (or \c GRAPH) then doxygen
  will generate a graph for each documented class showing the direct and
- indirect inheritance relations. Setting this tag to \c YES will force
- the \ref cfg_class_diagrams "CLASS_DIAGRAMS" tag to \c NO.
+ indirect inheritance relations. In case \ref cfg_have_dot "HAVE_DOT" is set as well
+ `dot` will be used to draw the graph, otherwise the built-in generator will be used.
+ If the \c CLASS_GRAPH tag is set to \c TEXT the direct and indirect inheritance relations
+ will be shown as texts / links.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="TEXT" />
+      <value name="GRAPH" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
@@ -3914,5 +3909,6 @@ This setting is not only used for dot files but also for msc temporary files.
     <option type='obsolete' id='DOCBOOK_PROGRAMLISTING'/>
     <option type='obsolete' id='RTF_SOURCE_CODE'/>
     <option type='obsolete' id='LATEX_SOURCE_CODE'/>
+    <option type='obsolete' id='CLASS_DIAGRAM'/>
   </group>
 </doxygenconfig>

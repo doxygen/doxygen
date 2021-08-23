@@ -1605,12 +1605,15 @@ int ClassDefImpl::countInheritanceNodes() const
 
 void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 {
+  static bool haveDot        = Config_getBool(HAVE_DOT);
+  static QCString classGraph = Config_getEnum(CLASS_GRAPH).upper();
+
+  if (classGraph == "NO") return;
   // count direct inheritance relations
   const int count=countInheritanceNodes();
 
   bool renderDiagram = FALSE;
-  if (Config_getBool(HAVE_DOT) &&
-      (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
+  if (haveDot && (classGraph == "YES" || classGraph =="GRAPH"))
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,Inheritance);
@@ -1630,7 +1633,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
       renderDiagram = TRUE;
     }
   }
-  else if (Config_getBool(CLASS_DIAGRAMS) && count>0)
+  else if ((classGraph == "YES" || classGraph =="GRAPH") && count>0)
     // write class diagram using built-in generator
   {
     ClassDiagram diagram(this); // create a diagram of this class.
