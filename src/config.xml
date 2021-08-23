@@ -3882,33 +3882,33 @@ This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
-    <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
-    <option type='obsolete' id='DETAILS_AT_TOP'/>
-    <option type='obsolete' id='QTHELP_FILE'/>
-    <option type='obsolete' id='QTHELP_CONFIG'/>
-    <option type='obsolete' id='DOXYGEN2QTHELP_LOC'/>
-    <option type='obsolete' id='MAX_DOT_GRAPH_WIDTH'/>
-    <option type='obsolete' id='MAX_DOT_GRAPH_HEIGHT'/>
-    <option type='obsolete' id='CGI_NAME'/>
-    <option type='obsolete' id='CGI_URL'/>
-    <option type='obsolete' id='DOC_URL'/>
-    <option type='obsolete' id='DOC_ABSPATH'/>
-    <option type='obsolete' id='BIN_ABSPATH'/>
-    <option type='obsolete' id='EXT_DOC_PATHS'/>
-    <option type='obsolete' id='USE_INLINE_TREES'/>
-    <option type='obsolete' id='SHOW_DIRECTORIES'/>
-    <option type='obsolete' id='HTML_ALIGN_MEMBERS'/>
-    <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
-    <option type='obsolete' id='XML_SCHEMA'/>
-    <option type='obsolete' id='XML_DTD'/>
-    <option type='obsolete' id='PERL_PATH'/>
-    <option type='obsolete' id='MSCGEN_PATH'/>
-    <option type='obsolete' id='TCL_SUBST'/>
-    <option type='obsolete' id='COLS_IN_ALPHA_INDEX'/>
-    <option type='obsolete' id='OUTPUT_TEXT_DIRECTION'/>
-    <option type='obsolete' id='DOCBOOK_PROGRAMLISTING'/>
-    <option type='obsolete' id='RTF_SOURCE_CODE'/>
-    <option type='obsolete' id='LATEX_SOURCE_CODE'/>
-    <option type='obsolete' id='CLASS_DIAGRAM'/>
+    <option type='obsolete' orgtype='bool' id='USE_WINDOWS_ENCODING'/>
+    <option type='obsolete' orgtype='bool' id='DETAILS_AT_TOP'/>
+    <option type='obsolete' orgtype='string' id='QTHELP_FILE'/>
+    <option type='obsolete' orgtype='string' id='QTHELP_CONFIG'/>
+    <option type='obsolete' orgtype='string' id='DOXYGEN2QTHELP_LOC'/>
+    <option type='obsolete' orgtype='int' id='MAX_DOT_GRAPH_WIDTH'/>
+    <option type='obsolete' orgtype='int' id='MAX_DOT_GRAPH_HEIGHT'/>
+    <option type='obsolete' orgtype='string' id='CGI_NAME'/>
+    <option type='obsolete' orgtype='string' id='CGI_URL'/>
+    <option type='obsolete' orgtype='string' id='DOC_URL'/>
+    <option type='obsolete' orgtype='string' id='DOC_ABSPATH'/>
+    <option type='obsolete' orgtype='string' id='BIN_ABSPATH'/>
+    <option type='obsolete' orgtype='list' id='EXT_DOC_PATHS'/>
+    <option type='obsolete' orgtype='bool' id='USE_INLINE_TREES'/>
+    <option type='obsolete' orgtype='bool' id='SHOW_DIRECTORIES'/>
+    <option type='obsolete' orgtype='bool' id='HTML_ALIGN_MEMBERS'/>
+    <option type='obsolete' orgtype='int' id='SYMBOL_CACHE_SIZE'/>
+    <option type='obsolete' orgtype='string' id='XML_SCHEMA'/>
+    <option type='obsolete' orgtype='string' id='XML_DTD'/>
+    <option type='obsolete' orgtype='string' id='PERL_PATH'/>
+    <option type='obsolete' orgtype='string' id='MSCGEN_PATH'/>
+    <option type='obsolete' orgtype='list' id='TCL_SUBST'/>
+    <option type='obsolete' orgtype='int' id='COLS_IN_ALPHA_INDEX'/>
+    <option type='obsolete' orgtype='enum' id='OUTPUT_TEXT_DIRECTION'/>
+    <option type='obsolete' orgtype='bool' id='DOCBOOK_PROGRAMLISTING'/>
+    <option type='obsolete' orgtype='bool' id='RTF_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='LATEX_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='CLASS_DIAGRAMS'/>
   </group>
 </doxygenconfig>

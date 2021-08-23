@@ -278,12 +278,22 @@ class ConfigBool : public ConfigOption
 class ConfigObsolete : public ConfigOption
 {
   public:
-    ConfigObsolete(const char *name) : ConfigOption(O_Obsolete)
+    ConfigObsolete(const char *name,OptionType orgType) : ConfigOption(O_Obsolete), m_orgType(orgType)
     { m_name = name; }
     void writeTemplate(TextStream &,bool,bool);
     void compareDoxyfile(TextStream &) {}
     void writeXMLDoxyfile(TextStream &) {}
     void substEnvVars() {}
+    OptionType orgType() const { return m_orgType; }
+    StringVector *valueListRef() { return &m_listvalue; }
+    QCString *valueStringRef() { return &m_valueString; }
+    void markAsPresent() { m_present = true; }
+    bool isPresent() const { return m_present; }
+  private:
+    OptionType m_orgType;
+    StringVector m_listvalue;
+    QCString m_valueString;
+    bool m_present = false;
 };
 
 /** Section marker for compile time optional options
@@ -468,9 +478,9 @@ class ConfigImpl
       return result;
     }
     /*! Adds an option that has become obsolete. */
-    ConfigOption *addObsolete(const char *name)
+    ConfigOption *addObsolete(const char *name,ConfigOption::OptionType orgType)
     {
-      ConfigObsolete *result = new ConfigObsolete(name);
+      ConfigObsolete *result = new ConfigObsolete(name,orgType);
       m_obsolete.push_back(std::unique_ptr<ConfigOption>(result));
       m_dict.insert(std::make_pair(name,result));
       return result;
