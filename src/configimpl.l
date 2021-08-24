@@ -232,16 +232,19 @@ static bool convertStringToBool(const QCString &str,bool &isValid)
 
 void ConfigBool::convertStrToVal()
 {
-  bool isValid=false;
-  bool b = convertStringToBool(m_valueString,isValid);
-  if (isValid)
+  if (!m_valueString.stripWhiteSpace().isEmpty())
   {
-    m_value=b;
-  }
-  else
-  {
-    config_warn("argument '%s' for option %s is not a valid boolean value\n"
-                "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
+    bool isValid=false;
+    bool b = convertStringToBool(m_valueString,isValid);
+    if (isValid)
+    {
+      m_value=b;
+    }
+    else
+    {
+      config_warn("argument '%s' for option %s is not a valid boolean value\n"
+          "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
+    }
   }
 }
 
