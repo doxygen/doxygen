@@ -280,7 +280,7 @@ class MemberDef : public Definition
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                 bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
+                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
@@ -407,7 +407,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     //-----------------------------------------------------------------------------------
 
     virtual void findSectionsInDocumentation() = 0;
-    virtual void addToSearchIndex() const = 0;
+    //virtual void addToSearchIndex() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- write output ----

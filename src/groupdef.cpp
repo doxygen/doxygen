@@ -1119,23 +1119,6 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.endHeaderSection();
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    std::string title = m_title.str();
-    static const reg::Ex re(R"(\a[\w-]*)");
-    reg::Iterator it(title,re);
-    reg::Iterator end;
-    for (; it!=end ; ++it)
-    {
-      const auto &match = *it;
-      std::string matchStr = match.str();
-      Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
-    }
-  }
-
-  Doxygen::indexList->addIndexItem(this,0,QCString(),m_title);
-
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang=getLanguage();

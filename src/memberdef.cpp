@@ -312,7 +312,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void incrementFlowKeyWordCount();
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                   bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const;
+                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const;
     virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                             const QCString &scopeName,const Definition *container,
                             bool inGroup,bool showEnumValues=FALSE,bool
@@ -331,7 +331,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeLink(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool onlyText=FALSE) const;
-    virtual void addToSearchIndex() const;
     virtual void resolveUnnamedParameters(const MemberDef *md);
 
   private:
@@ -357,8 +356,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                               const ArgumentList &al, bool writeReqClause=true) const;
     bool _hasVisibleCallGraph() const;
     bool _hasVisibleCallerGraph() const;
-
-    static int s_indentLevel;
 
     // disable copying of member defs
     MemberDefImpl(const MemberDefImpl &);
@@ -767,9 +764,9 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                   bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const
+                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const
     {
-      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,inGroup,inheritFrom,inheritId);
+      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel,inheritFrom,inheritId);
     }
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const
@@ -787,10 +784,6 @@ MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *alia
   //printf("amd: name=%s displayName=%s\n",qPrint(amd->name()),qPrint(amd->displayName()));
   return amd;
 }
-
-//-----------------------------------------------------------------------------
-
-int MemberDefImpl::s_indentLevel = 0;
 
 //-----------------------------------------------------------------------------
 
@@ -1826,11 +1819,14 @@ void MemberDefImpl::writeLink(OutputList &ol,
   }
 }
 
+static std::mutex g_cachedAnonymousTypeMutex;
+
 /*! If this member has an anonymous class/struct/union as its type, then
  *  this method will return the ClassDef that describes this return type.
  */
 ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 {
+  std::lock_guard<std::mutex> lock(g_cachedAnonymousTypeMutex);
   //printf("%s:getClassDefOfAnonymousType() cache=%s\n",qPrint(name()),
   //                   m_impl->cachedAnonymousType?qPrint(m_impl->cachedAnonymousType->name()):"<empty>");
   if (m_impl->cachedAnonymousType) return m_impl->cachedAnonymousType;
@@ -2066,9 +2062,9 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               bool inGroup, const ClassDef *inheritedFrom,const QCString &inheritId) const
+               bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
-  //printf("%s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
+  //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
 
   // hide enum value, since they appear already as part of the enum, unless they
   // are explicitly grouped.
@@ -2084,8 +2080,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     else if (getNamespaceDef()) d = getNamespaceDef();
     else if (getFileDef())      d = getFileDef();
   }
-
-  addToSearchIndex();
 
   QCString cname  = d->name();
   QCString cdname = d->displayName();
@@ -2131,7 +2125,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if (annoClassDef || m_impl->annMemb)
   {
     int j;
-    for (j=0;j<s_indentLevel;j++)
+    for (j=0;j<indentLevel;j++)
     {
       ol.writeNonBreakableSpace(3);
     }
@@ -2173,12 +2167,12 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
-      ol.startAnonTypeScope(s_indentLevel++);
-      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
+      ol.startAnonTypeScope(indentLevel);
+      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
       ol.startMemberItem(anchor(),2,inheritId);
       int j;
-      for (j=0;j< s_indentLevel-1;j++)
+      for (j=0;j< indentLevel;j++)
       {
         ol.writeNonBreakableSpace(3);
       }
@@ -2320,26 +2314,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     }
   }
 
-  // add to index
-  if (isEnumerate() && isAnonymous())
-  {
-    // don't add to index
-  }
-  else // index member
-  {
-    //static bool separateMemPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    //QCString cfname = getOutputFileBase();
-    //QCString cfiname = d->getOutputFileBase();
-    //Doxygen::indexList->addIndexItem(
-    //    cname,                                 // level1
-    //    name(),                                // level2
-    //    separateMemPages ? cfname : cfiname,   // contRef
-    //    cfname,                                // memRef
-    //    anchor(),                              // anchor
-    //    this);                                 // memberdef
-    Doxygen::indexList->addIndexItem(d,this);
-  }
-
   // *** write arguments
   if (!argsString().isEmpty() && !isObjCMethod())
   {
@@ -2356,7 +2330,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 m_impl->annMemb,         // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
-                s_indentLevel
+                indentLevel
                );
   }
   // *** write exceptions
@@ -2469,7 +2443,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.endMemberItem();
   if (endAnonScopeNeeded)
   {
-    ol.endAnonTypeScope(--s_indentLevel);
+    ol.endAnonTypeScope(indentLevel);
   }
 
   // write brief description
@@ -2511,6 +2485,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.endMemberDeclaration(anchor(),inheritId);
 
   warnIfUndocumented();
+  //printf("< %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
 }
 
 bool MemberDefImpl::hasDetailedDescription() const
@@ -3046,8 +3021,6 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         ol.startDescTableRow();
         ol.addIndexItem(fmd->name(),ciname);
         ol.addIndexItem(ciname,fmd->name());
-
-        Doxygen::indexList->addIndexItem(container,fmd);
 
         ol.startDescTableTitle();
         ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
@@ -4533,7 +4506,6 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
       //_writeTagData(compoundType);
-      addToSearchIndex();
       writeLink(typeDecl,cd,nd,fd,gd);
     }
     else
@@ -4590,7 +4562,6 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
           MemberDefMutable *fmdm = toMemberDefMutable(fmd);
           if (fmdm && fmd->hasDocumentation()) // enum value has docs
           {
-            fmdm->addToSearchIndex();
             fmdm->writeLink(typeDecl,cd,nd,fd,gd);
           }
           else // no docs for this enum value
@@ -5811,31 +5782,6 @@ QCString MemberDefImpl::displayName(bool) const
 {
   return DefinitionMixin::name();
 }
-
-void MemberDefImpl::addToSearchIndex() const
-{
-  // write search index info
-  if (Doxygen::searchIndex && isLinkableInProject())
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    QCString ln=localName(),qn=qualifiedName();
-    Doxygen::searchIndex->addWord(ln,TRUE);
-    if (ln!=qn)
-    {
-      Doxygen::searchIndex->addWord(qn,TRUE);
-      if (getClassDef())
-      {
-        Doxygen::searchIndex->addWord(getClassDef()->displayName(),TRUE);
-      }
-      else if (getNamespaceDef())
-      {
-        Doxygen::searchIndex->addWord(getNamespaceDef()->displayName(),TRUE);
-      }
-    }
-  }
-}
-
-
 
 //----------------
 

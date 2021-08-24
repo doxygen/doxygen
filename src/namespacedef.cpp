@@ -945,13 +945,12 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
   endTitle(ol,getOutputFileBase(),displayName());
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
-
-  Doxygen::indexList->addIndexItem(this,0);
+  //if (Doxygen::searchIndex)
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
+  //  Doxygen::searchIndex->addWord(localName(),TRUE);
+  //}
+  //Doxygen::indexList->addIndexItem(this,0);
 
   //---------------------------------------- start flexible part -------------------------------
 

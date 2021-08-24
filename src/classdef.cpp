@@ -285,7 +285,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void writeDocumentationForInnerClasses(OutputList &ol) const;
     virtual void writeMemberPages(OutputList &ol) const;
     virtual void writeMemberList(OutputList &ol) const;
-    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
                           const ClassDef *inheritedFrom,const QCString &inheritId) const;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const;
     virtual void writeSummaryLinks(OutputList &ol) const;
@@ -326,13 +326,13 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                                           bool showAlways) const;
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE) const;
     void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt) const;
-    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,const ClassDef *inheritedFrom,const QCString &inheritId) const;
+    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,
+                                     int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeBriefDescription(OutputList &ol,bool exampleFlag) const;
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString()) const;
     void writeIncludeFiles(OutputList &ol) const;
     void writeIncludeFilesForSlice(OutputList &ol) const;
-    //void writeAllMembersLink(OutputList &ol);
     void writeInheritanceGraph(OutputList &ol) const;
     void writeCollaborationGraph(OutputList &ol) const;
     void writeMemberGroups(OutputList &ol,bool showInline=FALSE) const;
@@ -2488,13 +2488,6 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
   QCString pageType = " ";
   pageType += compoundTypeString();
 
-  Doxygen::indexList->addIndexItem(this,0);
-
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
   bool exampleFlag=hasExamples();
 
   //---------------------------------------- start flexible part -------------------------------
@@ -3230,7 +3223,7 @@ void ClassDefImpl::setRequiresClause(const QCString &req)
 /*! called from MemberDef::writeDeclaration() to (recursively) write the
  *  definition of an anonymous struct, union or class.
  */
-void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
     const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("ClassName='%s' inGroup=%d\n",qPrint(name()),inGroup);
@@ -3257,7 +3250,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)
   {
-    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,inheritedFrom,inheritId);
+    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,indentLevel,inheritedFrom,inheritId);
   }
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
@@ -3265,7 +3258,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
-      writePlainMemberDeclaration(ol,lmd->type,inGroup,inheritedFrom,inheritId);
+      writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
     }
   }
 }
@@ -4512,13 +4505,13 @@ void ClassDefImpl::writeSimpleMemberDocumentation(OutputList &ol,MemberListType 
 
 void ClassDefImpl::writePlainMemberDeclaration(OutputList &ol,
          MemberListType lt,bool inGroup,
-         const ClassDef *inheritedFrom,const QCString &inheritId) const
+         int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("%s: ClassDefImpl::writePlainMemberDeclaration()\n",qPrint(name()));
   MemberList * ml = getMemberList(lt);
   if (ml)
   {
-    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,inheritedFrom,inheritId);
+    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,indentLevel,inheritedFrom,inheritId);
   }
 }
 

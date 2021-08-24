@@ -876,13 +876,6 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
     ol.enableAll();
   }
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
-
-
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang = getLanguage();

@@ -494,13 +494,6 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
 
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
-
-  Doxygen::indexList->addIndexItem(this,0);
   //---------------------------------------- start flexible part -------------------------------
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Concept))

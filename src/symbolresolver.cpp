@@ -25,6 +25,7 @@
 #include "defargs.h"
 
 static std::mutex g_cacheMutex;
+static std::recursive_mutex g_cacheTypedefMutex;
 
 //--------------------------------------------------------------------------------------
 
@@ -494,6 +495,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
                   QCString *pResolvedType,                             // out
                   const std::unique_ptr<ArgumentList> &actTemplParams) // in
 {
+  std::lock_guard<std::recursive_mutex> lock(g_cacheTypedefMutex);
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)

@@ -81,6 +81,7 @@ static void writeTable(const std::vector<const MemberDef*> &portList,TextStream 
 static void endTable(TextStream &t);
 static void writeClassToDot(TextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(TextStream &t,const QCString &a,const QCString &b,const QCString &style);
+
 static const MemberDef *flowMember=0;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)

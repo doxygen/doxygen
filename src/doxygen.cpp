@@ -7575,7 +7575,7 @@ static void findDocumentedEnumValues()
 
 static void addMembersToIndex()
 {
-  // for each member name
+  // for each class member name
   for (const auto &mn : *Doxygen::memberNameLinkedMap)
   {
     // for each member definition
@@ -7584,7 +7584,7 @@ static void addMembersToIndex()
       addClassMemberNameToIndex(md.get());
     }
   }
-  // for each member name
+  // for each file/namespace function name
   for (const auto &mn : *Doxygen::functionNameLinkedMap)
   {
     // for each member definition
@@ -7601,6 +7601,154 @@ static void addMembersToIndex()
     }
   }
   sortMemberIndexLists();
+}
+
+//----------------------------------------------------------------------
+
+static void addToIndices()
+{
+  for (const auto &cd : *Doxygen::classLinkedMap)
+  {
+    if (cd->isLinkableInProject())
+    {
+      Doxygen::indexList->addIndexItem(cd.get(),0);
+      if (Doxygen::searchIndex)
+      {
+        Doxygen::searchIndex->setCurrentDoc(cd.get(),cd->anchor(),FALSE);
+        Doxygen::searchIndex->addWord(cd->localName(),TRUE);
+      }
+    }
+  }
+
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->isLinkableInProject())
+    {
+      Doxygen::indexList->addIndexItem(cd.get(),0);
+      if (Doxygen::searchIndex)
+      {
+        Doxygen::searchIndex->setCurrentDoc(cd.get(),cd->anchor(),FALSE);
+        Doxygen::searchIndex->addWord(cd->localName(),TRUE);
+      }
+    }
+  }
+
+  for (const auto &nd : *Doxygen::namespaceLinkedMap)
+  {
+    if (nd->isLinkableInProject())
+    {
+      Doxygen::indexList->addIndexItem(nd.get(),0);
+      if (Doxygen::searchIndex)
+      {
+        Doxygen::searchIndex->setCurrentDoc(nd.get(),nd->anchor(),FALSE);
+        Doxygen::searchIndex->addWord(nd->localName(),TRUE);
+      }
+    }
+  }
+
+  for (const auto &fn : *Doxygen::inputNameLinkedMap)
+  {
+    for (const auto &fd : *fn)
+    {
+      if (Doxygen::searchIndex && fd->isLinkableInProject())
+      {
+        Doxygen::searchIndex->setCurrentDoc(fd.get(),fd->anchor(),FALSE);
+        Doxygen::searchIndex->addWord(fd->localName(),TRUE);
+      }
+    }
+  }
+
+  for (const auto &gd : *Doxygen::groupLinkedMap)
+  {
+    if (gd->isLinkableInProject())
+    {
+      Doxygen::indexList->addIndexItem(gd.get(),0,QCString(),gd->groupTitle());
+      if (Doxygen::searchIndex)
+      {
+        Doxygen::searchIndex->setCurrentDoc(gd.get(),gd->anchor(),FALSE);
+        std::string title = gd->groupTitle().str();
+        static const reg::Ex re(R"(\a[\w-]*)");
+        reg::Iterator it(title,re);
+        reg::Iterator end;
+        for (; it!=end ; ++it)
+        {
+          const auto &match = *it;
+          std::string matchStr = match.str();
+          Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
+        }
+      }
+    }
+  }
+
+  for (const auto &pd : *Doxygen::pageLinkedMap)
+  {
+    if (pd->isLinkableInProject())
+    {
+      Doxygen::indexList->addIndexItem(pd.get(),0,QCString(),filterTitle(pd->title().str()));
+    }
+  }
+
+  auto addMemberToSearchIndex = [](const MemberDef *md)
+  {
+    if (Doxygen::searchIndex)
+    {
+      Doxygen::searchIndex->setCurrentDoc(md,md->anchor(),FALSE);
+      QCString ln=md->localName();
+      QCString qn=md->qualifiedName();
+      Doxygen::searchIndex->addWord(ln,TRUE);
+      if (ln!=qn)
+      {
+        Doxygen::searchIndex->addWord(qn,TRUE);
+        if (md->getClassDef())
+        {
+          Doxygen::searchIndex->addWord(md->getClassDef()->displayName(),TRUE);
+        }
+        if (md->getNamespaceDef())
+        {
+          Doxygen::searchIndex->addWord(md->getNamespaceDef()->displayName(),TRUE);
+        }
+      }
+    }
+  };
+
+  auto addMemberToIndices = [addMemberToSearchIndex](const MemberDef *md)
+  {
+    if (md->isLinkableInProject())
+    {
+      if (!(md->isEnumerate() && md->isAnonymous()))
+      {
+        Doxygen::indexList->addIndexItem(md->getOuterScope(),md);
+        addMemberToSearchIndex(md);
+      }
+      if (md->isEnumerate())
+      {
+        for (const auto &fmd : md->enumFieldList())
+        {
+          Doxygen::indexList->addIndexItem(md->getOuterScope(),fmd);
+          addMemberToSearchIndex(fmd);
+        }
+      }
+    }
+  };
+
+  // for each class member name
+  for (const auto &mn : *Doxygen::memberNameLinkedMap)
+  {
+    // for each member definition
+    for (const auto &md : *mn)
+    {
+      addMemberToIndices(md.get());
+    }
+  }
+  // for each file/namespace function name
+  for (const auto &mn : *Doxygen::functionNameLinkedMap)
+  {
+    // for each member definition
+    for (const auto &md : *mn)
+    {
+      addMemberToIndices(md.get());
+    }
+  }
 }
 
 //----------------------------------------------------------------------
@@ -7924,14 +8072,17 @@ static void generateFileSources()
             auto ctx = std::make_shared<SourceContext>(fd.get(),generateSourceFile,*g_outputList);
             if (generateSourceFile)
             {
-              msg("Generating code for file %s...\n",qPrint(fd->docName()));
               fd->writeSourceHeader(ctx->ol);
             }
-            else
-            {
-              msg("Parsing code for file %s...\n",qPrint(fd->docName()));
-            }
             auto processFile = [ctx]() {
+              if (ctx->generateSourceFile)
+              {
+                msg("Generating code for file %s...\n",qPrint(ctx->fd->docName()));
+              }
+              else
+              {
+                msg("Parsing code for file %s...\n",qPrint(ctx->fd->docName()));
+              }
               StringVector filesInSameTu;
               ctx->fd->getAllIncludeFilesRecursively(filesInSameTu);
               if (ctx->generateSourceFile) // sources need to be shown in the output
@@ -7993,15 +8144,56 @@ static void generateFileDocs()
 
   if (!Doxygen::inputNameLinkedMap->empty())
   {
-    for (const auto &fn : *Doxygen::inputNameLinkedMap)
+    std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+    if (numThreads==0)
     {
-      for (const auto &fd : *fn)
+      numThreads = std::thread::hardware_concurrency();
+    }
+    if (numThreads>1) // multi threaded processing
+    {
+      struct DocContext
       {
-        bool doc = fd->isLinkableInProject();
-        if (doc)
+        DocContext(FileDef *fd_,OutputList ol_)
+          : fd(fd_), ol(ol_) {}
+        FileDef *fd;
+        OutputList ol;
+      };
+      ThreadPool threadPool(numThreads);
+      std::vector< std::future< std::shared_ptr<DocContext> > > results;
+      for (const auto &fn : *Doxygen::inputNameLinkedMap)
+      {
+        for (const auto &fd : *fn)
         {
-          msg("Generating docs for file %s...\n",qPrint(fd->docName()));
-          fd->writeDocumentation(*g_outputList);
+          bool doc = fd->isLinkableInProject();
+          if (doc)
+          {
+            auto ctx = std::make_shared<DocContext>(fd.get(),*g_outputList);
+            auto processFile = [ctx]() {
+              msg("Generating docs for file %s...\n",qPrint(ctx->fd->docName()));
+              ctx->fd->writeDocumentation(ctx->ol);
+              return ctx;
+            };
+            results.emplace_back(threadPool.queue(processFile));
+          }
+        }
+      }
+      for (auto &f : results)
+      {
+        auto ctx = f.get();
+      }
+    }
+    else // single threaded processing
+    {
+      for (const auto &fn : *Doxygen::inputNameLinkedMap)
+      {
+        for (const auto &fd : *fn)
+        {
+          bool doc = fd->isLinkableInProject();
+          if (doc)
+          {
+            msg("Generating docs for file %s...\n",qPrint(fd->docName()));
+            fd->writeDocumentation(*g_outputList);
+          }
         }
       }
     }
@@ -8478,6 +8670,9 @@ static void findSectionsInDocumentation()
   }
   if (Doxygen::mainPage) Doxygen::mainPage->findSectionsInDocumentation();
 }
+
+//----------------------------------------------------------------------
+
 
 static void flushCachedTemplateRelations()
 {
@@ -11821,6 +12016,7 @@ void parseInput()
 
   g_s.begin("Adding members to index pages...\n");
   addMembersToIndex();
+  addToIndices();
   g_s.end();
 
   g_s.begin("Correcting members for VHDL...\n");

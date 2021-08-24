@@ -325,8 +325,8 @@ bool MemberList::declVisible() const
 }
 
 void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
-                       const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,
-                       const GroupDef *gd,const ClassDef *inheritedFrom,const QCString &inheritId
+                       const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,
+                       int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId
                       ) const
 {
   //printf("----- writePlainDeclaration() ----\n");
@@ -372,7 +372,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
         case MemberType_Event:
           {
             if (first) ol.startMemberList(),first=FALSE;
-            md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel,inheritedFrom,inheritId);
             break;
           }
         case MemberType_Enumeration:
@@ -457,7 +457,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
               ol.startMemberList();
               first=FALSE;
             }
-            md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,inheritedFrom,inheritId);
+            md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel,inheritedFrom,inheritId);
             break;
           }
         case MemberType_EnumValue:
@@ -466,7 +466,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             {
               //printf("EnumValue!\n");
               if (first) ol.startMemberList(),first=FALSE;
-              md->writeDeclaration(ol,cd,nd,fd,gd,true,inheritedFrom,inheritId);
+              md->writeDeclaration(ol,cd,nd,fd,gd,true,indentLevel,inheritedFrom,inheritId);
             }
           }
           break;
@@ -492,7 +492,7 @@ void MemberList::writePlainDeclarations(OutputList &ol, bool inGroup,
             ol.startMemberList();
             first=FALSE;
           }
-          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup);
+          md->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel);
         }
         if (mdm) mdm->setFromAnonymousScope(TRUE);
       }
@@ -608,7 +608,7 @@ void MemberList::writeDeclarations(OutputList &ol,
     }
     else
     {
-      writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,inheritedFrom,inheritId);
+      writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,0,0,inheritId);
     }
 
     //printf("memberGroupList=%p\n",memberGroupList);
@@ -635,7 +635,7 @@ void MemberList::writeDeclarations(OutputList &ol,
         ol.startMemberGroup();
       }
       //printf("--- mg->writePlainDeclarations ---\n");
-      mg->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,inheritedFrom,inheritId);
+      mg->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,0,inheritedFrom,inheritId);
       if (inheritId.isEmpty())
       {
         ol.endMemberGroup(hasHeader);
