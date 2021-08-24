@@ -23,8 +23,8 @@
 #include "types.h"
 #include "reflist.h"
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-// To disable 'inherits via dominance' warnings.
+#ifdef _MSC_VER
+// To disable 'inherits via dominance' warnings with MSVC.
 // See also https://stackoverflow.com/a/14487243/784672
 #pragma warning( disable: 4250 )
 #endif
