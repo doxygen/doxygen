@@ -8432,28 +8432,83 @@ static void countMembers()
 
 static void generateClassList(const ClassLinkedMap &classList)
 {
-  for (const auto &cdi : classList)
+  std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+  if (numThreads==0)
   {
-    ClassDefMutable *cd=toClassDefMutable(cdi.get());
-
-    //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
-    if (cd &&
-        (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
-         cd->getOuterScope()==Doxygen::globalScope // only look at global classes
-        ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
-       )
+    numThreads = std::thread::hardware_concurrency();
+  }
+  if (numThreads>1) // multi threaded processing
+  {
+    struct DocContext
     {
-      // skip external references, anonymous compounds and
-      // template instances
-      if ( cd->isLinkableInProject() && cd->templateMaster()==0)
-      {
-        msg("Generating docs for compound %s...\n",qPrint(cd->name()));
+      DocContext(ClassDefMutable *cd_,OutputList ol_)
+        : cd(cd_), ol(ol_) {}
+      ClassDefMutable *cd;
+      OutputList ol;
+    };
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::shared_ptr<DocContext> > > results;
+    for (const auto &cdi : classList)
+    {
+      ClassDefMutable *cd=toClassDefMutable(cdi.get());
 
-        cd->writeDocumentation(*g_outputList);
-        cd->writeMemberList(*g_outputList);
+      //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
+      if (cd &&
+          (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+           cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+          ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
+         )
+      {
+        auto ctx = std::make_shared<DocContext>(cd,*g_outputList);
+        auto processFile = [ctx]()
+        {
+          msg("Generating docs for compound %s...\n",qPrint(ctx->cd->name()));
+
+          // skip external references, anonymous compounds and
+          // template instances
+          if ( ctx->cd->isLinkableInProject() && ctx->cd->templateMaster()==0)
+          {
+            ctx->cd->writeDocumentation(ctx->ol);
+            ctx->cd->writeMemberList(ctx->ol);
+          }
+
+          // even for undocumented classes, the inner classes can be documented.
+          ctx->cd->writeDocumentationForInnerClasses(ctx->ol);
+          return ctx;
+        };
+        results.emplace_back(threadPool.queue(processFile));
       }
-      // even for undocumented classes, the inner classes can be documented.
-      cd->writeDocumentationForInnerClasses(*g_outputList);
+    }
+    for (auto &f : results)
+    {
+      auto ctx = f.get();
+    }
+  }
+  else // single threaded processing
+  {
+    for (const auto &cdi : classList)
+    {
+      ClassDefMutable *cd=toClassDefMutable(cdi.get());
+
+      //printf("cd=%s getOuterScope=%p global=%p\n",qPrint(cd->name()),cd->getOuterScope(),Doxygen::globalScope);
+      if (cd &&
+          (cd->getOuterScope()==0 || // <-- should not happen, but can if we read an old tag file
+           cd->getOuterScope()==Doxygen::globalScope // only look at global classes
+          ) && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
+         )
+      {
+        // skip external references, anonymous compounds and
+        // template instances
+        if ( cd->isLinkableInProject() && cd->templateMaster()==0)
+        {
+          msg("Generating docs for compound %s...\n",qPrint(cd->name()));
+
+          cd->writeDocumentation(*g_outputList);
+          cd->writeMemberList(*g_outputList);
+        }
+        // even for undocumented classes, the inner classes can be documented.
+        cd->writeDocumentationForInnerClasses(*g_outputList);
+      }
     }
   }
 }
@@ -9325,25 +9380,76 @@ static void generateGroupDocs()
 
 static void generateNamespaceClassDocs(const ClassLinkedRefMap &classList)
 {
-  // for each class in the namespace...
-  for (const auto &cd : classList)
+  std::size_t numThreads = static_cast<std::size_t>(Config_getInt(NUM_PROC_THREADS));
+  if (numThreads==0)
   {
-    ClassDefMutable *cdm = toClassDefMutable(cd);
-    if (cdm)
+    numThreads = std::thread::hardware_concurrency();
+  }
+  if (numThreads>1) // multi threaded processing
+  {
+    struct DocContext
     {
-      if ( ( cd->isLinkableInProject() &&
-             cd->templateMaster()==0
-           ) // skip external references, anonymous compounds and
-          // template instances and nested classes
-          && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
-         )
+      DocContext(ClassDefMutable *cdm_,OutputList ol_)
+        : cdm(cdm_), ol(ol_) {}
+      ClassDefMutable *cdm;
+      OutputList ol;
+    };
+    ThreadPool threadPool(numThreads);
+    std::vector< std::future< std::shared_ptr<DocContext> > > results;
+    // for each class in the namespace...
+    for (const auto &cd : classList)
+    {
+      ClassDefMutable *cdm = toClassDefMutable(cd);
+      if (cdm)
       {
-        msg("Generating docs for compound %s...\n",qPrint(cd->name()));
-
-        cdm->writeDocumentation(*g_outputList);
-        cdm->writeMemberList(*g_outputList);
+        auto ctx = std::make_shared<DocContext>(cdm,*g_outputList);
+        auto processFile = [ctx]()
+        {
+          if ( ( ctx->cdm->isLinkableInProject() &&
+                ctx->cdm->templateMaster()==0
+               ) // skip external references, anonymous compounds and
+              // template instances and nested classes
+              && !ctx->cdm->isHidden() && !ctx->cdm->isEmbeddedInOuterScope()
+             )
+          {
+            msg("Generating docs for compound %s...\n",qPrint(ctx->cdm->name()));
+            ctx->cdm->writeDocumentation(ctx->ol);
+            ctx->cdm->writeMemberList(ctx->ol);
+          }
+          ctx->cdm->writeDocumentationForInnerClasses(ctx->ol);
+          return ctx;
+        };
+        results.emplace_back(threadPool.queue(processFile));
       }
-      cdm->writeDocumentationForInnerClasses(*g_outputList);
+    }
+    // wait for the results
+    for (auto &f : results)
+    {
+      auto ctx = f.get();
+    }
+  }
+  else // single threaded processing
+  {
+    // for each class in the namespace...
+    for (const auto &cd : classList)
+    {
+      ClassDefMutable *cdm = toClassDefMutable(cd);
+      if (cdm)
+      {
+        if ( ( cd->isLinkableInProject() &&
+              cd->templateMaster()==0
+             ) // skip external references, anonymous compounds and
+            // template instances and nested classes
+            && !cd->isHidden() && !cd->isEmbeddedInOuterScope()
+           )
+        {
+          msg("Generating docs for compound %s...\n",qPrint(cd->name()));
+
+          cdm->writeDocumentation(*g_outputList);
+          cdm->writeMemberList(*g_outputList);
+        }
+        cdm->writeDocumentationForInnerClasses(*g_outputList);
+      }
     }
   }
 }
@@ -10407,10 +10513,6 @@ static void version(const bool extended)
     if (!extVers.isEmpty()) extVers+= ", ";
     extVers += "clang support ";
     extVers += CLANG_VERSION_STRING;
-#endif
-#if MULTITHREADED_SOURCE_GENERATOR
-    if (!extVers.isEmpty()) extVers+= ", ";
-    extVers += "multi-threaded support ";
 #endif
     if (!extVers.isEmpty())
     {
