@@ -10893,6 +10893,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
           Config::postProcess(TRUE);
+          Config::updateObsolete();
           Config::checkAndCorrect(Config_getBool(QUIET));
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
@@ -10942,6 +10943,7 @@ void readConfiguration(int argc, char **argv)
             exit(1);
           }
           Config::postProcess(TRUE);
+          Config::updateObsolete();
           Config::checkAndCorrect(Config_getBool(QUIET));
 
           QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
@@ -11108,6 +11110,7 @@ void readConfiguration(int argc, char **argv)
 
   if (diffList)
   {
+    Config::updateObsolete();
     compareDoxyfile();
     cleanUpDoxygen();
     exit(0);
@@ -11115,6 +11118,7 @@ void readConfiguration(int argc, char **argv)
 
   if (updateConfig)
   {
+    Config::updateObsolete();
     generateConfigFile(configName,shortList,TRUE);
     cleanUpDoxygen();
     exit(0);
@@ -11133,6 +11137,7 @@ void checkConfiguration()
 {
 
   Config::postProcess(FALSE);
+  Config::updateObsolete();
   Config::checkAndCorrect(Config_getBool(QUIET));
   initWarningFormat();
 }

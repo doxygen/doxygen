@@ -85,6 +85,9 @@ namespace Config
    */
   void checkAndCorrect(bool quiet);
 
+  /*! Adjust any configuration values based on the value of obsolete options. */
+  void updateObsolete();
+
   /*! Clean up any data */
   void deinit();
 }
