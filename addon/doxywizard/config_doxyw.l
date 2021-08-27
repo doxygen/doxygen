@@ -329,7 +329,7 @@ static FILE *findFile(const QString &fileName)
   return tryPath(QString::fromLatin1("."),fileName);
 }
 
-static void readIncludeFile(const QString &incName)
+static void readIncludeFile(const QString &incName, const bool mandatory)
 {
   if (g_includeDepth==MAX_INCLUDE_DEPTH)
   {
@@ -371,7 +371,7 @@ static void readIncludeFile(const QString &incName)
   }
   else
   {
-    config_err("@INCLUDE = %s: not found!\n",qPrintable(inc));
+    if (mandatory) config_err("@INCLUDE = %s: not found!\n",qPrintable(inc));
   }
 }
 
@@ -385,10 +385,9 @@ static void readIncludeFile(const QString &incName)
 %x      Start
 %x      SkipInvalid
 %x      GetString
-%x      GetEnum
 %x      GetStrList
-%x      GetQuotedString
 %x      Include
+%x      IncludeIfPresent
 
 %%
 
@@ -512,7 +511,12 @@ static void readIncludeFile(const QString &incName)
   /* include a config file */
 <Start>"@INCLUDE"[ \t]*"="     		{ BEGIN(Include);}
 <Include>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
-  					  readIncludeFile(g_codec->toUnicode(yytext));
+  					  readIncludeFile(g_codec->toUnicode(yytext),true);
+  					  BEGIN(Start);
+					}
+<Start>"@INCLUDE_IF_PRESENT"[ \t]*"="   { BEGIN(IncludeIfPresent);}
+<IncludeIfPresent>([^ \"\t\r\n]+)|("\""[^\n\"]+"\"") {
+  					  readIncludeFile(g_codec->toUnicode(yytext),false);
   					  BEGIN(Start);
 					}
 <<EOF>>					{
