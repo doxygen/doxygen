@@ -3281,7 +3281,7 @@ int DocHtmlCell::parse()
     if (retval==TK_HTMLTAG)
     {
       int tagId=Mappers::htmlTagMapper->map(m_parser.context.token->name);
-      if (tagId==HTML_TD && m_parser.context.token->endTag) // found </dt> tag
+      if (tagId==HTML_TD && m_parser.context.token->endTag) // found </td> tag
       {
         retval=TK_NEWPARA; // ignore the tag
       }
@@ -3291,7 +3291,7 @@ int DocHtmlCell::parse()
       }
     }
   }
-  while (retval==TK_NEWPARA);
+  while ((retval==TK_NEWPARA) || (retval==RetVal_EndParBlock));
   if (par) par->markLast();
 
   DBG(("DocHtmlCell::parse() end\n"));
