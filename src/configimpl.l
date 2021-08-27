@@ -2209,7 +2209,6 @@ void Config::checkAndCorrect(bool quiet)
 
 void Config::updateObsolete()
 {
-  printf("Config::updateObsolete()\n");
   //------------------------
   // check for presence of obsolete CLASS_DIAGRAM option and correct CLASS_GRAPH if needed
   ConfigOption *classDiagramsOpt = ConfigImpl::instance()->get("CLASS_DIAGRAMS");
@@ -2217,7 +2216,6 @@ void Config::updateObsolete()
   ConfigOption *classGraphOpt    = ConfigImpl::instance()->get("CLASS_GRAPH");
   if (classDiagramsOpt && classDiagramsOpt->kind()==ConfigOption::O_Obsolete && haveDotOpt && classGraphOpt)
   {
-    printf("found CLASS_DIAGRAMS option\n");
     ConfigObsolete *classDiagramsOpt_ = dynamic_cast<ConfigObsolete*>(classDiagramsOpt);
     ConfigBool     *haveDotOpt_       = dynamic_cast<ConfigBool*>(haveDotOpt);
     ConfigEnum     *classGraphOpt_    = dynamic_cast<ConfigEnum*>(classGraphOpt);
@@ -2229,7 +2227,6 @@ void Config::updateObsolete()
       bool isValid1=false, isValid2=false;
       bool bClassDiagrams = convertStringToBool(classDiagramValue,isValid1);
       bool bHaveDot       = convertStringToBool(haveDotValue,     isValid2);
-      printf("isValid=%d valid=%d have_dot=%d class_graph=%s\n",isValid1,bClassDiagrams,bHaveDot,qPrint(classGraphValue));
       if (isValid1 && isValid2 && !bClassDiagrams && !bHaveDot && classGraphValue.lower()=="yes")
       {
         warn_uncond("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
