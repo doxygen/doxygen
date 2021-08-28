@@ -2193,7 +2193,8 @@ void Config::updateObsolete()
   ConfigOption *classDiagramsOpt = ConfigImpl::instance()->get("CLASS_DIAGRAMS");
   ConfigOption *haveDotOpt       = ConfigImpl::instance()->get("HAVE_DOT");
   ConfigOption *classGraphOpt    = ConfigImpl::instance()->get("CLASS_GRAPH");
-  if (classDiagramsOpt && classDiagramsOpt->kind()==ConfigOption::O_Obsolete && haveDotOpt && classGraphOpt)
+  if (classDiagramsOpt && classDiagramsOpt->kind()==ConfigOption::O_Obsolete &&
+      haveDotOpt && classGraphOpt)
   {
     ConfigObsolete *classDiagramsOpt_ = dynamic_cast<ConfigObsolete*>(classDiagramsOpt);
     ConfigBool     *haveDotOpt_       = dynamic_cast<ConfigBool*>(haveDotOpt);
@@ -2202,10 +2203,10 @@ void Config::updateObsolete()
     {
       QCString classDiagramValue = *classDiagramsOpt_->valueStringRef();
       QCString haveDotValue      = *haveDotOpt_->valueStringRef();
-      QCString &classGraphValue   = *classGraphOpt_->valueRef();
-      bool isValid1=false, isValid2=false;
+      QCString &classGraphValue  = *classGraphOpt_->valueRef();
+      bool isValid1=true, isValid2=true;
       bool bClassDiagrams = convertStringToBool(classDiagramValue,isValid1);
-      bool bHaveDot       = convertStringToBool(haveDotValue,     isValid2);
+      bool bHaveDot       = haveDotValue.isEmpty() ? false : convertStringToBool(haveDotValue,     isValid2);
       if (isValid1 && isValid2 && !bClassDiagrams && !bHaveDot && classGraphValue.lower()=="yes")
       {
         warn_uncond("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
