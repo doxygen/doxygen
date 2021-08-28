@@ -279,23 +279,15 @@ void RTFGenerator::beginRTFDocument()
   m_t << "{\\widctlpar\\adjustright \\fs20\\cgrid \\snext0 Normal;}\n";
 
   // set the paper dimensions according to PAPER_TYPE
-  QCString paperName = Config_getEnum(PAPER_TYPE);
+  static auto paperType = Config_getEnum(PAPER_TYPE);
   m_t << "{";
-  if (paperName=="a4")
+  switch (paperType)
   {
-    m_t << "\\paperw11900\\paperh16840"; // width & height values are inches * 1440
-  }
-  else if (paperName=="letter")
-  {
-    m_t << "\\paperw12240\\paperh15840";
-  }
-  else if (paperName=="legal")
-  {
-    m_t << "\\paperw12240\\paperh20160";
-  }
-  else if (paperName=="executive")
-  {
-    m_t << "\\paperw10440\\paperh15120";
+    // width & height values are inches * 1440
+    case PAPER_TYPE_t::a4:        m_t << "\\paperw11900\\paperh16840"; break;
+    case PAPER_TYPE_t::letter:    m_t << "\\paperw12240\\paperh15840"; break;
+    case PAPER_TYPE_t::legal:     m_t << "\\paperw12240\\paperh20160"; break;
+    case PAPER_TYPE_t::executive: m_t << "\\paperw10440\\paperh15120"; break;
   }
   m_t << "\\margl1800\\margr1800\\margt1440\\margb1440\\gutter0\\ltrsect}\n";
 

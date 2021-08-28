@@ -7031,7 +7031,7 @@ bool mainPageHasTitle()
 
 QCString getDotImageExtension()
 {
-  QCString imgExt = Config_getEnum(DOT_IMAGE_FORMAT);
+  QCString imgExt = Config_getEnumAsString(DOT_IMAGE_FORMAT);
   int i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
   return i==-1 ? imgExt : imgExt.left(i);
 }

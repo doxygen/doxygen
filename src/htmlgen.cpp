@@ -332,7 +332,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool mathJax = Config_getBool(USE_MATHJAX);
-  QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
+  QCString mathJaxFormat = Config_getEnumAsString(MATHJAX_FORMAT);
   bool disableIndex = Config_getBool(DISABLE_INDEX);
   bool hasProjectName = !projectName.isEmpty();
   bool hasProjectNumber = !Config_getString(PROJECT_NUMBER).isEmpty();
@@ -440,93 +440,97 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   if (mathJax)
   {
-    QCString mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
+    auto mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
     QCString path = Config_getString(MATHJAX_RELPATH);
     if (path.isEmpty() || path.left(2)=="..") // relative path
     {
       path.prepend(relPath);
     }
 
-    if (mathJaxVersion == "MathJax_3")
+    switch (mathJaxVersion)
     {
-       mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"
-                    "<script type=\"text/javascript\">\n"
-                    "window.MathJax = {\n"
-                    "  options: {\n"
-                    "    ignoreHtmlClass: 'tex2jax_ignore',\n"
-                    "    processHtmlClass: 'tex2jax_process'\n"
-                    "  }";
-      const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
-      if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
-      {
-        mathJaxJs+= ",\n"
-                    "  tex: {\n"
-                    "    macros: {";
-        if (!g_latex_macro.isEmpty())
+      case MATHJAX_VERSION_t::MathJax_3:
         {
-          mathJaxJs += g_latex_macro+"    ";
+          mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"
+                       "<script type=\"text/javascript\">\n"
+                       "window.MathJax = {\n"
+                       "  options: {\n"
+                       "    ignoreHtmlClass: 'tex2jax_ignore',\n"
+                       "    processHtmlClass: 'tex2jax_process'\n"
+                       "  }";
+         const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+         if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
+         {
+           mathJaxJs+= ",\n"
+                       "  tex: {\n"
+                       "    macros: {";
+           if (!g_latex_macro.isEmpty())
+           {
+             mathJaxJs += g_latex_macro+"    ";
+           }
+           mathJaxJs+="},\n"
+                       "    packages: ['base','configmacros'";
+           if (!g_latex_macro.isEmpty())
+           {
+             mathJaxJs+= ",'newcommand'";
+           }
+           for (const auto &s : mathJaxExtensions)
+           {
+             mathJaxJs+= ",'"+QCString(s.c_str())+"'";
+           }
+           mathJaxJs += "]\n"
+                         "  }\n";
+         }
+         else
+         {
+           mathJaxJs += "\n";
+         }
+         mathJaxJs += "};\n";
+         // MATHJAX_CODEFILE
+         if (!g_mathjax_code.isEmpty())
+         {
+           mathJaxJs += g_mathjax_code;
+           mathJaxJs += "\n";
+         }
+         mathJaxJs += "</script>\n";
+         mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" +
+                      path + "es5/tex-" + mathJaxFormat.lower() + ".js\">";
+         mathJaxJs+="</script>\n";
         }
-        mathJaxJs+="},\n"
-                    "    packages: ['base','configmacros'";
-        if (!g_latex_macro.isEmpty())
+        break;
+      case MATHJAX_VERSION_t::MathJax_2:
         {
-          mathJaxJs+= ",'newcommand'";
+          mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
+                      "MathJax.Hub.Config({\n"
+                      "  extensions: [\"tex2jax.js\"";
+          const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+          for (const auto &s : mathJaxExtensions)
+          {
+            mathJaxJs+= ", \""+QCString(s.c_str())+".js\"";
+          }
+          if (mathJaxFormat.isEmpty())
+          {
+            mathJaxFormat = "HTML-CSS";
+          }
+          mathJaxJs += "],\n"
+                       "  jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n";
+          if (!g_latex_macro.isEmpty())
+          {
+            mathJaxJs += "   TeX: { Macros: {\n";
+            mathJaxJs += g_latex_macro;
+            mathJaxJs += "\n"
+                         "  } }\n";
+          }
+          mathJaxJs +=   "});\n";
+          if (!g_mathjax_code.isEmpty())
+          {
+            mathJaxJs += g_mathjax_code;
+            mathJaxJs += "\n";
+          }
+          mathJaxJs += "</script>\n";
+          mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
         }
-        for (const auto &s : mathJaxExtensions)
-        {
-          mathJaxJs+= ",'"+QCString(s.c_str())+"'";
-        }
-        mathJaxJs += "]\n"
-                      "  }\n";
-      }
-      else
-      {
-        mathJaxJs += "\n";
-      }
-      mathJaxJs += "};\n";
-      // MATHJAX_CODEFILE
-      if (!g_mathjax_code.isEmpty())
-      {
-        mathJaxJs += g_mathjax_code;
-        mathJaxJs += "\n";
-      }
-      mathJaxJs += "</script>\n";
-
-      mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" +
-                   path + "es5/tex-" + mathJaxFormat.lower() + ".js\">";
-      mathJaxJs+="</script>\n";
-    }
-    else // MathJax v2
-    {
-      mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
-                  "MathJax.Hub.Config({\n"
-                  "  extensions: [\"tex2jax.js\"";
-      const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
-      for (const auto &s : mathJaxExtensions)
-      {
-        mathJaxJs+= ", \""+QCString(s.c_str())+".js\"";
-      }
-      if (mathJaxFormat.isEmpty())
-      {
-        mathJaxFormat = "HTML-CSS";
-      }
-      mathJaxJs += "],\n"
-                   "  jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n";
-      if (!g_latex_macro.isEmpty())
-      {
-        mathJaxJs += "   TeX: { Macros: {\n";
-        mathJaxJs += g_latex_macro;
-        mathJaxJs += "\n"
-                     "  } }\n";
-      }
-      mathJaxJs +=   "});\n";
-      if (!g_mathjax_code.isEmpty())
-      {
-        mathJaxJs += g_mathjax_code;
-        mathJaxJs += "\n";
-      }
-      mathJaxJs += "</script>\n";
-      mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
+        break;
     }
   }
 

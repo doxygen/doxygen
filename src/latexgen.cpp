@@ -608,7 +608,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePdfLatex = Config_getBool(USE_PDFLATEX);
   bool latexBatchmode = Config_getBool(LATEX_BATCHMODE);
-  QCString paperType = Config_getString(PAPER_TYPE);
+  QCString paperType = Config_getEnumAsString(PAPER_TYPE);
 
   QCString style = Config_getString(LATEX_BIB_STYLE);
   if (style.isEmpty())

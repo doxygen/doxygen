@@ -741,7 +741,7 @@ STopt  [^\n@\\]*
 <Comment>{B}*{CMD}"~"[a-z_A-Z-]*        { // language switch command
                                           QCString langId = QCString(yytext).stripWhiteSpace().mid(2);
                                           if (!langId.isEmpty() &&
-                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE).data(),langId.data())!=0)
+                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE).data(),langId.data())!=0)
                                           { // enable language specific section
                                             BEGIN(SkipLang);
                                           }
@@ -1897,7 +1897,7 @@ STopt  [^\n@\\]*
 <SkipLang>[\\@]"~"[a-zA-Z-]*            { /* language switch */
                                           QCString langId(&yytext[2]);
                                           if (langId.isEmpty() ||
-                                              qstricmp(Config_getEnum(OUTPUT_LANGUAGE).data(),langId.data())==0)
+                                              qstricmp(Config_getEnumAsString(OUTPUT_LANGUAGE).data(),langId.data())==0)
                                           { // enable language specific section
                                             BEGIN(Comment);
                                           }

@@ -52,10 +52,13 @@ void initWarningFormat()
     warnFile = stderr;
   }
 
-  QCString warnStr = Config_getEnum(WARN_AS_ERROR).upper();
-  if (warnStr =="NO") warnBehavior=WARN_NO;
-  else if (warnStr =="YES") warnBehavior=WARN_YES;
-  else if (warnStr =="FAIL_ON_WARNINGS") warnBehavior=FAIL_ON_WARNINGS;
+  static WARN_AS_ERROR_t warnOpt = Config_getEnum(WARN_AS_ERROR);
+  switch(warnOpt)
+  {
+    case WARN_AS_ERROR_t::NO:               warnBehavior=WARN_NO;  break;
+    case WARN_AS_ERROR_t::YES:              warnBehavior=WARN_YES; break;
+    case WARN_AS_ERROR_t::FAIL_ON_WARNINGS: warnBehavior=FAIL_ON_WARNINGS; break;
+  }
   if (warnBehavior == WARN_YES)
   {
     warning_str = error_str;

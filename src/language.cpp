@@ -153,271 +153,140 @@
 #endif
 #endif // !ENGLISH_ONLY
 
-#define L_EQUAL(a) !qstricmp(langName.data(),a)
-
 Translator *theTranslator=0;
 
-bool setTranslator(const QCString &langName)
+void setTranslator(OUTPUT_LANGUAGE_t langName)
 {
-  if (L_EQUAL("english"))
+  switch (langName)
   {
-    theTranslator=new TranslatorEnglish;
-  }
+    case OUTPUT_LANGUAGE_t::English:             theTranslator = new TranslatorEnglish; break;
 #if !defined(ENGLISH_ONLY)
-#ifdef LANG_NL
-  else if (L_EQUAL("dutch"))
-  {
-    theTranslator=new TranslatorDutch;
-  }
-#endif
-#ifdef LANG_AM
-  else if (L_EQUAL("armenian"))
-  {
-    theTranslator=new TranslatorArmenian;
-  }
-#endif
-#ifdef LANG_SV
-  else if (L_EQUAL("swedish"))
-  {
-    theTranslator=new TranslatorSwedish;
-  }
-#endif
-#ifdef LANG_CZ
-  else if (L_EQUAL("czech"))
-  {
-    theTranslator=new TranslatorCzech;
-  }
-#endif
-#ifdef LANG_FR
-  else if (L_EQUAL("french"))
-  {
-    theTranslator=new TranslatorFrench;
-  }
-#endif
-#ifdef LANG_ID
-  else if (L_EQUAL("indonesian"))
-  {
-    theTranslator=new TranslatorIndonesian;
-  }
-#endif
-#ifdef LANG_IT
-  else if (L_EQUAL("italian"))
-  {
-    theTranslator=new TranslatorItalian;
-  }
-#endif
-#ifdef LANG_DE
-  else if (L_EQUAL("german"))
-  {
-    theTranslator=new TranslatorGerman;
-  }
-#endif
-#ifdef LANG_JP
-  else if (L_EQUAL("japanese"))
-  {
-    theTranslator=new TranslatorJapanese;
-  }
-#endif
-#ifdef LANG_JE
-  else if (L_EQUAL("japanese-en"))
-  {
-    theTranslator=new TranslatorJapaneseEn;
-  }
-#endif
-#ifdef LANG_ES
-  else if (L_EQUAL("spanish"))
-  {
-    theTranslator=new TranslatorSpanish;
-  }
-#endif
-#ifdef LANG_FI
-  else if (L_EQUAL("finnish"))
-  {
-    theTranslator=new TranslatorFinnish;
-  }
-#endif
-#ifdef LANG_RU
-  else if (L_EQUAL("russian"))
-  {
-    theTranslator=new TranslatorRussian;
-  }
-#endif
-#ifdef LANG_HR
-  else if (L_EQUAL("croatian"))
-  {
-    theTranslator=new TranslatorCroatian;
-  }
-#endif
-#ifdef LANG_PL
-  else if (L_EQUAL("polish"))
-  {
-    theTranslator=new TranslatorPolish;
-  }
-#endif
-#ifdef LANG_PT
-  else if (L_EQUAL("portuguese"))
-  {
-    theTranslator=new TranslatorPortuguese;
-  }
-#endif
-#ifdef LANG_HU
-  else if (L_EQUAL("hungarian"))
-  {
-    theTranslator=new TranslatorHungarian;
-  }
-#endif
-#ifdef LANG_KR
-  else if (L_EQUAL("korean"))
-  {
-    theTranslator=new TranslatorKorean;
-  }
-#endif
-#ifdef LANG_KE
-  else if (L_EQUAL("korean-en"))
-  {
-    theTranslator=new TranslatorKoreanEn;
-  }
-#endif
-#ifdef LANG_RO
-  else if (L_EQUAL("romanian"))
-  {
-    theTranslator=new TranslatorRomanian;
-  }
-#endif
-#ifdef LANG_SI
-  else if (L_EQUAL("slovene"))
-  {
-    theTranslator=new TranslatorSlovene;
-  }
-#endif
-#ifdef LANG_CN
-  else if (L_EQUAL("chinese"))
-  {
-    theTranslator=new TranslatorChinese;
-  }
-#endif
-#ifdef LANG_TW
-  else if (L_EQUAL("chinese-traditional"))
-  {
-    theTranslator=new TranslatorChinesetraditional;
-  }
-#endif
-#ifdef LANG_NO
-  else if (L_EQUAL("norwegian"))
-  {
-    theTranslator=new TranslatorNorwegian;
-  }
-#endif
-#ifdef LANG_BR
-  else if (L_EQUAL("brazilian"))
-  {
-    theTranslator=new TranslatorBrazilian;
-  }
-#endif
-#ifdef LANG_DK
-  else if (L_EQUAL("danish"))
-  {
-    theTranslator=new TranslatorDanish;
-  }
-#endif
-#ifdef LANG_SK
-  else if (L_EQUAL("slovak"))
-  {
-    theTranslator=new TranslatorSlovak;
-  }
-#endif
-#ifdef LANG_UA
-  else if (L_EQUAL("ukrainian"))
-  {
-    theTranslator=new TranslatorUkrainian;
-  }
-#endif
-#ifdef LANG_GR
-  else if (L_EQUAL("greek"))
-  {
-    theTranslator=new TranslatorGreek;
-  }
-#endif
-#ifdef LANG_SR
-  else if (L_EQUAL("serbian"))
-  {
-    theTranslator=new TranslatorSerbian;
-  }
-#endif
-#ifdef LANG_SC
-  else if (L_EQUAL("serbian-cyrillic") || L_EQUAL("serbiancyr")) /* serbiancyr for consistency with older versions */
-  {
-    theTranslator=new TranslatorSerbianCyrillic;
-  }
-#endif
-#ifdef LANG_CA
-  else if (L_EQUAL("catalan"))
-  {
-    theTranslator=new TranslatorCatalan;
-  }
-#endif
-#ifdef LANG_LT
-  else if (L_EQUAL("lithuanian"))
-  {
-    theTranslator=new TranslatorLithuanian;
-  }
-#endif
-#ifdef LANG_LV
-  else if (L_EQUAL("latvian"))
-  {
-    theTranslator=new TranslatorLatvian;
-  }
-#endif
 #ifdef LANG_ZA
-  else if (L_EQUAL("afrikaans"))
-  {
-    theTranslator=new TranslatorAfrikaans;
-  }
+    case OUTPUT_LANGUAGE_t::Afrikaans:           theTranslator = new TranslatorAfrikaans; break;
 #endif
 #ifdef LANG_AR
-  else if (L_EQUAL("arabic"))
-  {
-    theTranslator=new TranslatorArabic;
-  }
+    case OUTPUT_LANGUAGE_t::Arabic:              theTranslator = new TranslatorArabic; break;
 #endif
-#ifdef LANG_FA
-  else if (L_EQUAL("persian") || L_EQUAL("farsi"))
-  {
-    theTranslator=new TranslatorPersian;
-  }
+#ifdef LANG_AM
+    case OUTPUT_LANGUAGE_t::Armenian:            theTranslator = new TranslatorArmenian; break;
 #endif
-#ifdef LANG_MK
-  else if (L_EQUAL("macedonian"))
-  {
-    theTranslator=new TranslatorMacedonian;
-  }
+#ifdef LANG_BR
+    case OUTPUT_LANGUAGE_t::Brazilian:           theTranslator = new TranslatorBrazilian; break;
 #endif
-#ifdef LANG_VI
-  else if (L_EQUAL("vietnamese"))
-  {
-    theTranslator=new TranslatorVietnamese;
-  }
+#ifdef LANG_CA
+    case OUTPUT_LANGUAGE_t::Catalan:             theTranslator = new TranslatorCatalan; break;
 #endif
-#ifdef LANG_TR
-  else if (L_EQUAL("turkish"))
-  {
-    theTranslator=new TranslatorTurkish;
-  }
+#ifdef LANG_CN
+    case OUTPUT_LANGUAGE_t::Chinese:             theTranslator = new TranslatorChinese; break;
+#endif
+#ifdef LANG_TW
+    case OUTPUT_LANGUAGE_t::Chinese_Traditional: theTranslator = new TranslatorChinesetraditional; break;
+#endif
+#ifdef LANG_HR
+    case OUTPUT_LANGUAGE_t::Croatian:            theTranslator = new TranslatorCroatian; break;
+#endif
+#ifdef LANG_CZ
+    case OUTPUT_LANGUAGE_t::Czech:               theTranslator = new TranslatorCzech; break;
+#endif
+#ifdef LANG_DK
+    case OUTPUT_LANGUAGE_t::Danish:              theTranslator = new TranslatorDanish; break;
+#endif
+#ifdef LANG_NL
+    case OUTPUT_LANGUAGE_t::Dutch:               theTranslator = new TranslatorDutch; break;
 #endif
 #ifdef LANG_EO
-  else if (L_EQUAL("esperanto"))
-  {
-    theTranslator=new TranslatorEsperanto;
-  }
+    case OUTPUT_LANGUAGE_t::Esperanto:           theTranslator = new TranslatorEsperanto; break;
 #endif
-#endif // ENGLISH_ONLY
-  else // use the default language (i.e. english)
-  {
-    theTranslator=new TranslatorEnglish;
-    return FALSE;
+#ifdef LANG_FA
+    case OUTPUT_LANGUAGE_t::Farsi:               theTranslator = new TranslatorPersian; break;
+#endif
+#ifdef LANG_FI
+    case OUTPUT_LANGUAGE_t::Finnish:             theTranslator = new TranslatorFinnish; break;
+#endif
+#ifdef LANG_FR
+    case OUTPUT_LANGUAGE_t::French:              theTranslator = new TranslatorFrench; break;
+#endif
+#ifdef LANG_DE
+    case OUTPUT_LANGUAGE_t::German:              theTranslator = new TranslatorGerman; break;
+#endif
+#ifdef LANG_GR
+    case OUTPUT_LANGUAGE_t::Greek:               theTranslator = new TranslatorGreek; break;
+#endif
+#ifdef LANG_HU
+    case OUTPUT_LANGUAGE_t::Hungarian:           theTranslator = new TranslatorHungarian; break;
+#endif
+#ifdef LANG_ID
+    case OUTPUT_LANGUAGE_t::Indonesian:          theTranslator = new TranslatorIndonesian; break;
+#endif
+#ifdef LANG_IT
+    case OUTPUT_LANGUAGE_t::Italian:             theTranslator = new TranslatorItalian; break;
+#endif
+#ifdef LANG_JP
+    case OUTPUT_LANGUAGE_t::Japanese:            theTranslator = new TranslatorJapanese; break;
+#endif
+#ifdef LANG_JE
+    case OUTPUT_LANGUAGE_t::Japanese_en:         theTranslator = new TranslatorJapaneseEn; break;
+#endif
+#ifdef LANG_KR
+    case OUTPUT_LANGUAGE_t::Korean:              theTranslator = new TranslatorKorean; break;
+#endif
+#ifdef LANG_KE
+    case OUTPUT_LANGUAGE_t::Korean_en:           theTranslator = new TranslatorKoreanEn; break;
+#endif
+#ifdef LANG_LV
+    case OUTPUT_LANGUAGE_t::Latvian:             theTranslator = new TranslatorLatvian; break;
+#endif
+#ifdef LANG_LT
+    case OUTPUT_LANGUAGE_t::Lithuanian:          theTranslator = new TranslatorLithuanian; break;
+#endif
+#ifdef LANG_MK
+    case OUTPUT_LANGUAGE_t::Macedonian:          theTranslator = new TranslatorMacedonian; break;
+#endif
+#ifdef LANG_NO
+    case OUTPUT_LANGUAGE_t::Norwegian:           theTranslator = new TranslatorNorwegian; break;
+#endif
+#ifdef LANG_FA
+    case OUTPUT_LANGUAGE_t::Persian:             theTranslator = new TranslatorPersian; break;
+#endif
+#ifdef LANG_PL
+    case OUTPUT_LANGUAGE_t::Polish:              theTranslator = new TranslatorPolish; break;
+#endif
+#ifdef LANG_PT
+    case OUTPUT_LANGUAGE_t::Portuguese:          theTranslator = new TranslatorPortuguese; break;
+#endif
+#ifdef LANG_RO
+    case OUTPUT_LANGUAGE_t::Romanian:            theTranslator = new TranslatorRomanian; break;
+#endif
+#ifdef LANG_RU
+    case OUTPUT_LANGUAGE_t::Russian:             theTranslator = new TranslatorRussian; break;
+#endif
+#ifdef LANG_SR
+    case OUTPUT_LANGUAGE_t::Serbian:             theTranslator = new TranslatorSerbian; break;
+#endif
+#ifdef LANG_SC
+    case OUTPUT_LANGUAGE_t::Serbian_Cyrillic:    theTranslator = new TranslatorSerbianCyrillic; break;
+#endif
+#ifdef LANG_SK
+    case OUTPUT_LANGUAGE_t::Slovak:              theTranslator = new TranslatorSlovak; break;
+#endif
+#ifdef LANG_SI
+    case OUTPUT_LANGUAGE_t::Slovene:             theTranslator = new TranslatorSlovene; break;
+#endif
+#ifdef LANG_ES
+    case OUTPUT_LANGUAGE_t::Spanish:             theTranslator = new TranslatorSpanish; break;
+#endif
+#ifdef LANG_SV
+    case OUTPUT_LANGUAGE_t::Swedish:             theTranslator = new TranslatorSwedish; break;
+#endif
+#ifdef LANG_TR
+    case OUTPUT_LANGUAGE_t::Turkish:             theTranslator = new TranslatorTurkish; break;
+#endif
+#ifdef LANG_UA
+    case OUTPUT_LANGUAGE_t::Ukrainian:           theTranslator = new TranslatorUkrainian; break;
+#endif
+#ifdef LANG_VI
+    case OUTPUT_LANGUAGE_t::Vietnamese:          theTranslator = new TranslatorVietnamese; break;
+#endif
+#endif
   }
-
-  QCString msg = theTranslator->updateNeededMessage();
-  if (!msg.isEmpty()) warn_uncond("%s", qPrint(msg));
-  return TRUE;
 }

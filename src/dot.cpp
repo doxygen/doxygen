@@ -287,7 +287,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
-    dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
+    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {

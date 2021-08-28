@@ -108,12 +108,12 @@ enum class UmlDetailLevel
 static UmlDetailLevel getUmlDetailLevelFromConfig()
 {
   UmlDetailLevel result = UmlDetailLevel::Default;
-  QCString umlDetailsStr = Config_getEnum(DOT_UML_DETAILS).upper();
-  if (umlDetailsStr == "YES")
+  static auto umlDetails = Config_getEnum(DOT_UML_DETAILS);
+  if (umlDetails == DOT_UML_DETAILS_t::YES)
   {
     result=UmlDetailLevel::Full;
   }
-  else if (umlDetailsStr == "NONE")
+  else if (umlDetails == DOT_UML_DETAILS_t::NONE)
   {
     result=UmlDetailLevel::None;
   }

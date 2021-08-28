@@ -1995,15 +1995,16 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant hasInheritanceDiagram() const
     {
       bool result=FALSE;
-      static bool haveDot        = Config_getBool(HAVE_DOT);
-      static QCString classGraph = Config_getEnum(CLASS_GRAPH).upper();
+      static bool haveDot    = Config_getBool(HAVE_DOT);
+      static auto classGraph = Config_getEnum(CLASS_GRAPH);
+      bool classGraphEnabled = classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH;
 
-      if (haveDot && (classGraph == "YES" || classGraph =="GRAPH"))
+      if (haveDot && classGraphEnabled)
       {
         DotClassGraph *cg = getClassGraph();
         result = !cg->isTrivial() && !cg->isTooBig();
       }
-      else if (classGraph == "YES" || classGraph =="GRAPH")
+      else if (classGraphEnabled)
       {
         result = numInheritanceNodes()>0;
       }
@@ -2012,10 +2013,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     TemplateVariant inheritanceDiagram() const
     {
       TextStream t;
-      static bool haveDot        = Config_getBool(HAVE_DOT);
-      static QCString classGraph = Config_getEnum(CLASS_GRAPH).upper();
+      static bool haveDot    = Config_getBool(HAVE_DOT);
+      static auto classGraph = Config_getEnum(CLASS_GRAPH);
+      bool classGraphEnabled = classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH;
 
-      if (haveDot && (classGraph == "YES" || classGraph =="GRAPH"))
+      if (haveDot && classGraphEnabled)
       {
         DotClassGraph *cg = getClassGraph();
         switch (g_globals.outputFormat)
@@ -2045,7 +2047,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         }
         g_globals.dynSectionId++;
       }
-      else if (classGraph == "YES" || classGraph =="GRAPH")
+      else if (classGraphEnabled)
       {
         ClassDiagram d(m_classDef);
         switch (g_globals.outputFormat)

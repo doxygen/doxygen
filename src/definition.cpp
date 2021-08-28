@@ -490,10 +490,10 @@ void DefinitionImpl::setDocumentation(const QCString &d,const QCString &docFile,
 
 void DefinitionImpl::_setBriefDescription(const QCString &b,const QCString &briefFile,int briefLine)
 {
-  static QCString outputLanguage = Config_getEnum(OUTPUT_LANGUAGE);
-  static bool needsDot = outputLanguage!="Japanese" &&
-                         outputLanguage!="Chinese" &&
-                         outputLanguage!="Korean";
+  static OUTPUT_LANGUAGE_t outputLanguage = Config_getEnum(OUTPUT_LANGUAGE);
+  static bool needsDot = outputLanguage!=OUTPUT_LANGUAGE_t::Japanese &&
+                         outputLanguage!=OUTPUT_LANGUAGE_t::Chinese &&
+                         outputLanguage!=OUTPUT_LANGUAGE_t::Korean;
   QCString brief = b;
   brief = brief.stripWhiteSpace();
   brief = stripLeadingAndTrailingEmptyLines(brief,briefLine);
