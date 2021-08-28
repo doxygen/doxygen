@@ -96,30 +96,6 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-// Extracted from config setting "DOT_UML_DETAILS"
-enum class UmlDetailLevel
-{
-  Default, // == NO, the default setting
-  Full,    // == YES, include type and arguments
-  None     // == NONE, don't include compartments for attributes and methods
-};
-
-// Local helper function for extracting the configured detail level
-static UmlDetailLevel getUmlDetailLevelFromConfig()
-{
-  UmlDetailLevel result = UmlDetailLevel::Default;
-  static auto umlDetails = Config_getEnum(DOT_UML_DETAILS);
-  if (umlDetails == DOT_UML_DETAILS_t::YES)
-  {
-    result=UmlDetailLevel::Full;
-  }
-  else if (umlDetails == DOT_UML_DETAILS_t::NONE)
-  {
-    result=UmlDetailLevel::None;
-  }
-  return result;
-}
-
 static QCString escapeTooltip(const QCString &tooltip)
 {
   if (tooltip.isEmpty()) return tooltip;
@@ -155,6 +131,7 @@ static void writeBoxMemberList(TextStream &t,
     }
 
     int count=0;
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
@@ -170,7 +147,7 @@ static void writeBoxMemberList(TextStream &t,
         {
           t << prot << " ";
           QCString label;
-          if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+          if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
             label+=mma->typeString();
             label+=" ";
@@ -178,7 +155,7 @@ static void writeBoxMemberList(TextStream &t,
           label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-            if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+            if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
             {
               label+=mma->argsString();
             }
@@ -413,7 +390,8 @@ void DotNode::writeBox(TextStream &t,
 
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "{" << convertLabel(m_label) << "\\n";
-    if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
       t << "|";
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
