@@ -2161,6 +2161,16 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='string' id='DOCSET_FEEDURL' format='string' depends='GENERATE_DOCSET'>
+      <docs>
+<![CDATA[
+ This tag determines the URL of the docset
+ feed. A documentation feed provides an umbrella under which multiple
+ documentation sets from a single provider (such as a company or product suite)
+ can be grouped.
+]]>
+      </docs>
+    </option>
     <option type='string' id='DOCSET_BUNDLE_ID' format='string' defval='org.doxygen.Project' depends='GENERATE_DOCSET'>
       <docs>
 <![CDATA[
