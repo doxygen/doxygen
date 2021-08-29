@@ -67,11 +67,13 @@ class TextStream final
     {
       flush();
       m_s = s;
+      m_f = nullptr;
     }
 
     void setFile(FILE *f)
     {
       flush();
+      m_s = nullptr;
       m_f = f;
     }
 
