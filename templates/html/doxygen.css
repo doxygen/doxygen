@@ -1356,6 +1356,11 @@ dl.section dd {
 }
 
 
+#projectrow
+{
+	height: 56px;
+}
+
 #projectlogo
 {
 	text-align: center;
@@ -1371,6 +1376,7 @@ dl.section dd {
 #projectalign
 {
         vertical-align: middle;
+        padding-left: 0.5em;
 }
 
 #projectname
