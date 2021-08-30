@@ -79,7 +79,7 @@ to automate the use of these files are also added to
 <ul>
 
 <li>`doxylatex.pl`: This Perl script uses `DoxyDocs.pm` and 
-DoxyModel.pm to generate `doxydocs.tex`, a \TeX file containing 
+`DoxyModel.pm` to generate `doxydocs.tex`, a \TeX file containing 
 the documentation in a format that can be accessed by \LaTeX code. This 
 file is not directly LaTeXable.
 

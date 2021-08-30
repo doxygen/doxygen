@@ -51,8 +51,8 @@ USE_PDFLATEX      = YES
 STRIP_CODE_COMMENTS = NO
 HTML_STYLESHEET   = doxygen_manual.css
 HTML_EXTRA_FILES  = doxygen_logo.svg
-ALIASES           = LaTeX="\f(\LaTeX\f)"
-ALIASES          += TeX="\f(\TeX\f)"
+ALIASES           = LaTeX="\f({\LaTeX}\f)"
+ALIASES          += TeX="\f({\TeX}\f)"
 ALIASES          += forceNewPage="\latexonly \newpage \endlatexonly"
 LATEX_BATCHMODE   = YES
 LATEX_EXTRA_STYLESHEET = manual.sty
