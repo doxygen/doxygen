@@ -2869,7 +2869,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            as set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
            `plain` is used.
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
- <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib. files
+ <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib`. files
            as set by \ref cfg_cite_bib_files "CITE_BIB_FILES" (when necessary a missing `.bib` is
            automatically added).
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
