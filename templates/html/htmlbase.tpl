@@ -91,11 +91,11 @@ MathJax.Hub.Config({
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
  <tbody>
- <tr style="height: 56px;">
+ <tr id="projectrow">
  {% if config.PROJECT_LOGO %}
   <td id="projectlogo"><img alt="Logo" src="{{ page.relPath }}{{ config.PROJECT_LOGO|stripPath }}"/></td>
  {% endif %}
-  <td id="projectalign" style="padding-left: 0.5em;">
+  <td id="projectalign">
  {% if config.PROJECT_NAME %}
    <div id="projectname">{{ config.PROJECT_NAME }}{% if config.PROJECT_NUMBER %}<span id="projectnumber">&#160;{{ config.PROJECT_NUMBER }}</span>{% endif %}
    </div>
