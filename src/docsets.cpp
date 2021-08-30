@@ -58,6 +58,8 @@ void DocSets::initialize()
   if (bundleId.isEmpty()) bundleId="org.doxygen.Project";
   QCString feedName = Config_getString(DOCSET_FEEDNAME);
   if (feedName.isEmpty()) feedName="FeedName";
+  QCString feedURL = Config_getString(DOCSET_FEEDURL);
+  if (feedURL.isEmpty()) feedURL="FeedUrl";
   QCString publisherId = Config_getString(DOCSET_PUBLISHER_ID);
   if (publisherId.isEmpty()) publisherId="PublisherId";
   QCString publisherName = Config_getString(DOCSET_PUBLISHER_NAME);
@@ -136,6 +138,8 @@ void DocSets::initialize()
           "     <string>" << projectNumber << "</string>\n"
           "     <key>DocSetFeedName</key>\n"
           "     <string>" << feedName << "</string>\n"
+          "     <key>DocSetFeedUrl</key>\n"
+          "     <string>" << feedURL << "</string>\n"
           "     <key>DocSetPublisherIdentifier</key>\n"
           "     <string>" << publisherId << "</string>\n"
           "     <key>DocSetPublisherName</key>\n"
