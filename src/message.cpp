@@ -43,7 +43,7 @@ void initWarningFormat()
     g_warnFile = stderr;
   }
   g_warnBehavior = Config_getEnum(WARN_AS_ERROR);
-  if (g_warnBehavior == WARN_AS_ERROR_t::YES)
+  if (g_warnBehavior != WARN_AS_ERROR_t::NO)
   {
     g_warningStr = g_errorStr;
   }
