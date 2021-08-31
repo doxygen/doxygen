@@ -78,31 +78,6 @@ struct ContextGlobals
   ContextOutputFormat outputFormat;
 } g_globals;
 
-/** @brief Reference counting smart pointer */
-template<class T> class SharedPtr
-{
-  private:
-    T *m_ptr;
-    SharedPtr(const SharedPtr &);
-    SharedPtr &operator=(const SharedPtr &p);
-    void operator==(const SharedPtr &) const;
-    void operator!=(const SharedPtr &) const;
-
-  public:
-    typedef T Type;
-    explicit SharedPtr(T *p=0) : m_ptr(p) { if (m_ptr) m_ptr->addRef(); }
-    ~SharedPtr() { if (m_ptr) m_ptr->release(); };
-    T &operator*() const { return *m_ptr; }
-    T *operator->() const { return m_ptr; }
-    T *get() const { return m_ptr; }
-    operator bool() const { return m_ptr!=0; }
-    void reset(T *p=0)
-    {
-      if (p) p->addRef();
-      if (m_ptr) m_ptr->release();
-      m_ptr = p;
-    }
-};
 
 /** @brief Template List iterator support */
 class GenericConstIterator : public TemplateListIntf::ConstIterator
@@ -150,12 +125,12 @@ class GenericConstIterator : public TemplateListIntf::ConstIterator
 class GenericNodeListContext : public TemplateListIntf
 {
   public:
-    GenericNodeListContext() : m_refCount(0)
+    GenericNodeListContext()
     {
     }
-    static GenericNodeListContext *alloc()
+    static TemplateListIntfPtr alloc()
     {
-      return new GenericNodeListContext;
+      return std::static_pointer_cast<TemplateListIntf>(std::make_shared<GenericNodeListContext>());
     }
 
     // TemplateListIntf methods
@@ -185,22 +160,8 @@ class GenericNodeListContext : public TemplateListIntf
     {
       return m_children.empty();
     }
-    int addRef()
-    {
-      return ++m_refCount;
-    }
-    int release()
-    {
-      int count = --m_refCount;
-      if (count<=0)
-      {
-        delete this;
-      }
-      return count;
-    }
   private:
     std::vector< TemplateVariant > m_children;
-    int m_refCount;
 };
 
 //------------------------------------------------------------------------
@@ -288,13 +249,13 @@ class ConfigContext::Private
       auto it = m_cachedLists.find(name.str());
       if (it==m_cachedLists.end())
       {
-        TemplateList *tlist = TemplateList::alloc();
-        m_cachedLists.insert(std::make_pair(name.str(),TemplateVariant(tlist)));
+        TemplateListPtr tlist = TemplateList::alloc();
+        m_cachedLists.insert(std::make_pair(name.str(),TemplateVariant(std::static_pointer_cast<TemplateListIntf>(tlist))));
         for (const auto &s : list)
         {
           tlist->append(s.c_str());
         }
-        return tlist;
+        return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(tlist));
       }
       else
       {
@@ -306,7 +267,7 @@ class ConfigContext::Private
 };
 //%% }
 
-ConfigContext::ConfigContext() : RefCountedContext("ConfigContext")
+ConfigContext::ConfigContext()
 {
   p = new Private;
 }
@@ -424,7 +385,7 @@ class DoxygenContext::Private
 PropertyMapper<DoxygenContext::Private> DoxygenContext::Private::s_inst;
 //                                (PropertyMapper<DoxygenContext::Private>::instance());
 
-DoxygenContext::DoxygenContext() : RefCountedContext("DoxygenContext")
+DoxygenContext::DoxygenContext()
 {
   p = new Private;
 }
@@ -605,19 +566,19 @@ class TranslateContext::Private
     }
     TemplateVariant generatedAt() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleGeneratedAt>(this);
+      return TemplateVariant(std::bind(&Private::handleGeneratedAt,this,std::placeholders::_1));
     }
     TemplateVariant inheritanceDiagramFor() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleInheritanceDiagramFor>(this);
+      return TemplateVariant(std::bind(&Private::handleInheritanceDiagramFor,this,std::placeholders::_1));
     }
     TemplateVariant collaborationDiagramFor() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleCollaborationDiagramFor>(this);
+      return TemplateVariant(std::bind(&Private::handleCollaborationDiagramFor,this,std::placeholders::_1));
     }
     TemplateVariant dirDependencyGraphFor() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleDirDependencyGraphFor>(this);
+      return TemplateVariant(std::bind(&Private::handleDirDependencyGraphFor,this,std::placeholders::_1));
     }
     TemplateVariant search() const
     {
@@ -799,11 +760,11 @@ class TranslateContext::Private
     }
     TemplateVariant inheritsList() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleInheritsList>(this);
+      return TemplateVariant(std::bind(&Private::handleInheritsList,this,std::placeholders::_1));
     }
     TemplateVariant inheritedByList() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleInheritedByList>(this);
+      return TemplateVariant(std::bind(&Private::handleInheritedByList,this,std::placeholders::_1));
     }
     TemplateVariant definedAtLineInSourceFile() const
     {
@@ -815,7 +776,7 @@ class TranslateContext::Private
     }
     TemplateVariant exampleList() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleWriteList>(this);
+      return TemplateVariant(std::bind(&Private::handleWriteList,this,std::placeholders::_1));
     }
     TemplateVariant listOfAllMembers() const
     {
@@ -855,19 +816,19 @@ class TranslateContext::Private
     }
     TemplateVariant implementedBy() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleImplementedBy>(this);
+      return TemplateVariant(std::bind(&Private::handleImplementedBy,this,std::placeholders::_1));
     }
     TemplateVariant reimplementedBy() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleReimplementedBy>(this);
+      return TemplateVariant(std::bind(&Private::handleReimplementedBy,this,std::placeholders::_1));
     }
     TemplateVariant sourceRefs() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleSourceRefs>(this);
+      return TemplateVariant(std::bind(&Private::handleSourceRefs,this,std::placeholders::_1));
     }
     TemplateVariant sourceRefBys() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleSourceRefBys>(this);
+      return TemplateVariant(std::bind(&Private::handleSourceRefBys,this,std::placeholders::_1));
     }
     TemplateVariant callGraph() const
     {
@@ -895,7 +856,7 @@ class TranslateContext::Private
     }
     TemplateVariant includeDependencyGraph() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleIncludeDependencyGraph>(this);
+      return TemplateVariant(std::bind(&Private::handleIncludeDependencyGraph,this,std::placeholders::_1));
     }
     TemplateVariant includedByDependencyGraph() const
     {
@@ -1281,7 +1242,7 @@ class TranslateContext::Private
 
 PropertyMapper<TranslateContext::Private> TranslateContext::Private::s_inst;
 
-TranslateContext::TranslateContext() : RefCountedContext("TranslateContext")
+TranslateContext::TranslateContext()
 {
   p = new Private;
 }
@@ -1612,14 +1573,14 @@ class DefinitionContext
       Cachable &cache = getCache();
       if (cache.sourceDef->count()==2)
       {
-        return cache.sourceDef.get();
+        return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.sourceDef));
       }
       else
       {
         return FALSE;
       }
     }
-    void fillPath(const Definition *def,TemplateList *list) const
+    void fillPath(const Definition *def,TemplateListPtr list) const
     {
       const Definition *outerScope = def->getOuterScope();
       Definition::DefType type = def->definitionType();
@@ -1638,7 +1599,7 @@ class DefinitionContext
       Cachable &cache = getCache();
       if (!cache.navPath)
       {
-        TemplateList *list = TemplateList::alloc();
+        TemplateListPtr list = TemplateList::alloc();
         if (m_def->getOuterScope() && m_def->getOuterScope()!=Doxygen::globalScope)
         {
           fillPath(m_def,list);
@@ -1647,9 +1608,9 @@ class DefinitionContext
         {
           fillPath((toFileDef(m_def))->getDirDef(),list);
         }
-        cache.navPath.reset(list);
+        cache.navPath = list;
       }
-      return cache.navPath.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.navPath));
     }
     TemplateVariant isReference() const
     {
@@ -1667,9 +1628,9 @@ class DefinitionContext
                                   briefOutputFormat(ContextOutputFormat_Unspecified),
                                   inbodyDocsOutputFormat(ContextOutputFormat_Unspecified)
       {
-        sourceDef.reset(TemplateList::alloc());
-        lineLink.reset(TemplateStruct::alloc());
-        fileLink.reset(TemplateStruct::alloc());
+        sourceDef = TemplateList::alloc();
+        lineLink = TemplateStruct::alloc();
+        fileLink = TemplateStruct::alloc();
 
         if (def && !def->getSourceFileBase().isEmpty())
         {
@@ -1696,8 +1657,8 @@ class DefinitionContext
           fileLink->set("anchor",QCString());
           fileLink->set("isReference",FALSE);
           fileLink->set("externalReference","");
-          sourceDef->append(lineLink.get());
-          sourceDef->append(fileLink.get());
+          sourceDef->append(std::static_pointer_cast<TemplateStructIntf>(lineLink));
+          sourceDef->append(std::static_pointer_cast<TemplateStructIntf>(fileLink));
         }
       }
       std::unique_ptr<TemplateVariant> details;
@@ -1706,10 +1667,10 @@ class DefinitionContext
       ContextOutputFormat        briefOutputFormat;
       std::unique_ptr<TemplateVariant> inbodyDocs;
       ContextOutputFormat        inbodyDocsOutputFormat;
-      SharedPtr<TemplateList>    navPath;
-      SharedPtr<TemplateList>    sourceDef;
-      SharedPtr<TemplateStruct>  fileLink;
-      SharedPtr<TemplateStruct>  lineLink;
+      TemplateListPtr            navPath;
+      TemplateListPtr            sourceDef;
+      TemplateStructPtr          fileLink;
+      TemplateStructPtr          lineLink;
     };
 
   private:
@@ -1765,11 +1726,11 @@ class IncludeInfoContext::Private
     {
       if (!m_fileContext && m_info && m_info->fileDef)
       {
-        m_fileContext.reset(FileContext::alloc(m_info->fileDef));
+        m_fileContext = FileContext::alloc(m_info->fileDef);
       }
       if (m_fileContext)
       {
-        return m_fileContext.get();
+        return m_fileContext;
       }
       else
       {
@@ -1782,14 +1743,14 @@ class IncludeInfoContext::Private
     }
   private:
     const IncludeInfo *m_info;
-    mutable SharedPtr<FileContext> m_fileContext;
+    mutable TemplateStructIntfPtr m_fileContext;
     SrcLangExt m_lang;
     static PropertyMapper<IncludeInfoContext::Private> s_inst;
 };
 
 PropertyMapper<IncludeInfoContext::Private> IncludeInfoContext::Private::s_inst;
 
-IncludeInfoContext::IncludeInfoContext(const IncludeInfo *info,SrcLangExt lang) : RefCountedContext("IncludeContext")
+IncludeInfoContext::IncludeInfoContext(const IncludeInfo *info,SrcLangExt lang)
 {
   p = new Private(info,lang);
 }
@@ -1826,7 +1787,7 @@ class IncludeInfoListContext::Private : public GenericNodeListContext
     }
 };
 
-IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang) : RefCountedContext("IncludeListContext")
+IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang)
 {
   p = new Private(list,lang);
 }
@@ -1970,9 +1931,9 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.usedFiles)
       {
-        cache.usedFiles.reset(UsedFilesContext::alloc(m_classDef));
+        cache.usedFiles = UsedFilesContext::alloc(m_classDef);
       }
-      return cache.usedFiles.get();
+      return cache.usedFiles;
     }
     DotClassGraph *getClassGraph() const
     {
@@ -2151,11 +2112,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.includeInfo && m_classDef->includeInfo())
       {
-        cache.includeInfo.reset(IncludeInfoContext::alloc(m_classDef->includeInfo(),m_classDef->getLanguage()));
+        cache.includeInfo = IncludeInfoContext::alloc(m_classDef->includeInfo(),m_classDef->getLanguage());
       }
       if (cache.includeInfo)
       {
-        return cache.includeInfo.get();
+        return cache.includeInfo;
       }
       else
       {
@@ -2167,20 +2128,20 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.inheritsList)
       {
-        cache.inheritsList.reset(InheritanceListContext::alloc(m_classDef->baseClasses(),TRUE));
+        cache.inheritsList = InheritanceListContext::alloc(m_classDef->baseClasses(),TRUE);
       }
-      return cache.inheritsList.get();
+      return cache.inheritsList;
     }
     TemplateVariant inheritedBy() const
     {
       Cachable &cache = getCache();
       if (!cache.inheritedByList)
       {
-        cache.inheritedByList.reset(InheritanceListContext::alloc(m_classDef->subClasses(),FALSE));
+        cache.inheritedByList = InheritanceListContext::alloc(m_classDef->subClasses(),FALSE);
       }
-      return cache.inheritedByList.get();
+      return cache.inheritedByList;
     }
-    TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
+    TemplateVariant getMemberList(TemplateStructIntfPtr &list,
                                   MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
@@ -2188,12 +2149,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         const MemberList *ml = m_classDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_classDef,relPathAsString(),ml,title,""));
+          list = MemberListInfoContext::alloc(m_classDef,relPathAsString(),ml,title,"");
         }
       }
       if (list)
       {
-        return list.get();
+        return list;
       }
       else
       {
@@ -2369,7 +2330,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.classes)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_classDef->getClasses())
         {
           if (cd->visibleInParentsDeclList())
@@ -2377,16 +2338,16 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.classes.reset(classList);
+        cache.classes = classList;
       }
-      return cache.classes.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.classes));
     }
     TemplateVariant innerClasses() const
     {
       Cachable &cache = getCache();
       if (!cache.innerClasses)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_classDef->getClasses())
         {
           if (!cd->isAnonymous() &&
@@ -2398,15 +2359,15 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.innerClasses.reset(classList);
+        cache.innerClasses = classList;
       }
-      return cache.innerClasses.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.innerClasses));
     }
     TemplateVariant compoundType() const
     {
       return m_classDef->compoundTypeString();
     }
-    void addTemplateDecls(const Definition *d,TemplateList *tl) const
+    void addTemplateDecls(const Definition *d,TemplateListPtr tl) const
     {
       if (d->definitionType()==Definition::TypeClass)
       {
@@ -2418,27 +2379,27 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         const ClassDef *cd=toClassDef(d);
         if (!cd->templateArguments().empty())
         {
-          ArgumentListContext *al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
+          TemplateListIntfPtr al = ArgumentListContext::alloc(cd->templateArguments(),cd,relPathAsString());
           // since a TemplateVariant does take ownership of the object, we add it
           // a separate list just to be able to delete it and avoid a memory leak
           tl->append(al);
         }
       }
     }
-    void addExamples(TemplateList *list) const
+    void addExamples(TemplateListPtr list) const
     {
       if (m_classDef->hasExamples())
       {
         for (const auto &ex : m_classDef->getExamples())
         {
-          TemplateStruct *s = TemplateStruct::alloc();
+          TemplateStructPtr s = TemplateStruct::alloc();
           s->set("text",ex.name);
           s->set("isLinkable",TRUE);
           s->set("anchor",ex.anchor);
           s->set("fileName",ex.file);
           s->set("isReference",FALSE);
           s->set("externalReference","");
-          list->append(s);
+          list->append(std::static_pointer_cast<TemplateStructIntf>(s));
         }
       }
     }
@@ -2447,11 +2408,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.templateDecls)
       {
-        TemplateList *tl = TemplateList::alloc();
+        TemplateListPtr tl = TemplateList::alloc();
         addTemplateDecls(m_classDef,tl);
-        cache.templateDecls.reset(tl);
+        cache.templateDecls = tl;
       }
-      return cache.templateDecls.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.templateDecls));
     }
     TemplateVariant typeConstraints() const
     {
@@ -2460,9 +2421,9 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         Cachable &cache = getCache();
         if (!cache.typeConstraints && !m_classDef->typeConstraints().empty())
         {
-          cache.typeConstraints.reset(ArgumentListContext::alloc(m_classDef->typeConstraints(),m_classDef,relPathAsString()));
+          cache.typeConstraints = ArgumentListContext::alloc(m_classDef->typeConstraints(),m_classDef,relPathAsString());
         }
-        return cache.typeConstraints.get();
+        return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.typeConstraints));
       }
       return FALSE;
     }
@@ -2471,11 +2432,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.examples)
       {
-        TemplateList *exampleList = TemplateList::alloc();
+        TemplateListPtr exampleList = TemplateList::alloc();
         addExamples(exampleList);
-        cache.examples.reset(exampleList);
+        cache.examples = exampleList;
       }
-      return cache.examples.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.examples));
     }
     void addMembers(const ClassDef *cd,MemberListType lt) const
     {
@@ -2526,19 +2487,19 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         addMembers(m_classDef,MemberListType_priAttribs);
         addMembers(m_classDef,MemberListType_priStaticAttribs);
         addMembers(m_classDef,MemberListType_related);
-        cache.members.reset(MemberListContext::alloc(&cache.allMembers));
+        cache.members = MemberListContext::alloc(&cache.allMembers);
       }
-      return cache.members.get();
+      return TemplateVariant(cache.members);
     }
     TemplateVariant allMembersList() const
     {
       Cachable &cache = getCache();
       if (!cache.allMembersList)
       {
-        AllMembersListContext *ml = AllMembersListContext::alloc(m_classDef->memberNameInfoLinkedMap());
-        cache.allMembersList.reset(ml);
+        TemplateListIntfPtr ml = AllMembersListContext::alloc(m_classDef->memberNameInfoLinkedMap());
+        cache.allMembersList = ml;
       }
-      return cache.allMembersList.get();
+      return cache.allMembersList;
     }
     TemplateVariant allMembersFileName() const
     {
@@ -2551,21 +2512,22 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       {
         if (!m_classDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_classDef,relPathAsString(),m_classDef->getMemberGroups(),m_classDef->subGrouping()));
+          cache.memberGroups = MemberGroupListContext::alloc(m_classDef,relPathAsString(),m_classDef->getMemberGroups(),m_classDef->subGrouping());
         }
         else
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc());
+          cache.memberGroups = MemberGroupListContext::alloc();
         }
       }
-      return cache.memberGroups.get();
+      return cache.memberGroups;
     }
     TemplateVariant additionalInheritedMembers() const
     {
       Cachable &cache = getCache();
       if (!cache.additionalInheritedMembers)
       {
-        InheritedMemberInfoListContext *ctx = InheritedMemberInfoListContext::alloc();
+        cache.additionalInheritedMembers = InheritedMemberInfoListContext::alloc();
+        auto ctx = std::dynamic_pointer_cast<InheritedMemberInfoListContext>(cache.additionalInheritedMembers);
         ctx->addMemberList(m_classDef,MemberListType_pubTypes,theTranslator->trPublicTypes());
         ctx->addMemberList(m_classDef,MemberListType_services,theTranslator->trServices());
         ctx->addMemberList(m_classDef,MemberListType_interfaces,theTranslator->trInterfaces());
@@ -2599,9 +2561,8 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
         ctx->addMemberList(m_classDef,MemberListType_priAttribs,theTranslator->trPrivateAttribs());
         ctx->addMemberList(m_classDef,MemberListType_priStaticAttribs,theTranslator->trStaticPrivateAttribs());
         ctx->addMemberList(m_classDef,MemberListType_related,theTranslator->trRelatedFunctions());
-        cache.additionalInheritedMembers.reset(ctx);
       }
-      return cache.additionalInheritedMembers.get();
+      return cache.additionalInheritedMembers;
     }
     TemplateVariant isSimple() const
     {
@@ -2612,11 +2573,11 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable &cache = getCache();
       if (!cache.categoryOf && m_classDef->categoryOf())
       {
-        cache.categoryOf.reset(ClassContext::alloc(m_classDef->categoryOf()));
+        cache.categoryOf = ClassContext::alloc(m_classDef->categoryOf());
       }
       if (cache.categoryOf)
       {
-        return cache.categoryOf.get();
+        return cache.categoryOf;
       }
       else
       {
@@ -2631,65 +2592,65 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
       Cachable(const ClassDef *cd) : DefinitionContext<ClassContext::Private>::Cachable(cd),
                                inheritanceNodes(-1),
                                allMembers(MemberListType_allMembersList,MemberListContainer::Class) { }
-      SharedPtr<IncludeInfoContext>     includeInfo;
-      SharedPtr<InheritanceListContext> inheritsList;
-      SharedPtr<InheritanceListContext> inheritedByList;
+      TemplateStructIntfPtr                   includeInfo;
+      TemplateListIntfPtr                     inheritsList;
+      TemplateListIntfPtr                     inheritedByList;
       std::unique_ptr<DotClassGraph>          classGraph;
       std::unique_ptr<DotClassGraph>          collaborationGraph;
-      SharedPtr<TemplateList>           classes;
-      SharedPtr<TemplateList>           innerClasses;
-      SharedPtr<MemberListInfoContext>  publicTypes;
-      SharedPtr<MemberListInfoContext>  publicMethods;
-      SharedPtr<MemberListInfoContext>  publicStaticMethods;
-      SharedPtr<MemberListInfoContext>  publicAttributes;
-      SharedPtr<MemberListInfoContext>  publicStaticAttributes;
-      SharedPtr<MemberListInfoContext>  publicSlots;
-      SharedPtr<MemberListInfoContext>  protectedTypes;
-      SharedPtr<MemberListInfoContext>  protectedMethods;
-      SharedPtr<MemberListInfoContext>  protectedStaticMethods;
-      SharedPtr<MemberListInfoContext>  protectedAttributes;
-      SharedPtr<MemberListInfoContext>  protectedStaticAttributes;
-      SharedPtr<MemberListInfoContext>  protectedSlots;
-      SharedPtr<MemberListInfoContext>  privateTypes;
-      SharedPtr<MemberListInfoContext>  privateMethods;
-      SharedPtr<MemberListInfoContext>  privateStaticMethods;
-      SharedPtr<MemberListInfoContext>  privateAttributes;
-      SharedPtr<MemberListInfoContext>  privateStaticAttributes;
-      SharedPtr<MemberListInfoContext>  privateSlots;
-      SharedPtr<MemberListInfoContext>  packageTypes;
-      SharedPtr<MemberListInfoContext>  packageMethods;
-      SharedPtr<MemberListInfoContext>  packageStaticMethods;
-      SharedPtr<MemberListInfoContext>  packageAttributes;
-      SharedPtr<MemberListInfoContext>  packageStaticAttributes;
-      SharedPtr<MemberListInfoContext>  unoIDLServices;
-      SharedPtr<MemberListInfoContext>  unoIDLInterfaces;
-      SharedPtr<MemberListInfoContext>  signals;
-      SharedPtr<MemberListInfoContext>  properties;
-      SharedPtr<MemberListInfoContext>  events;
-      SharedPtr<MemberListInfoContext>  friends;
-      SharedPtr<MemberListInfoContext>  related;
-      SharedPtr<MemberListInfoContext>  detailedTypedefs;
-      SharedPtr<MemberListInfoContext>  detailedEnums;
-      SharedPtr<MemberListInfoContext>  detailedServices;
-      SharedPtr<MemberListInfoContext>  detailedInterfaces;
-      SharedPtr<MemberListInfoContext>  detailedConstructors;
-      SharedPtr<MemberListInfoContext>  detailedMethods;
-      SharedPtr<MemberListInfoContext>  detailedRelated;
-      SharedPtr<MemberListInfoContext>  detailedVariables;
-      SharedPtr<MemberListInfoContext>  detailedProperties;
-      SharedPtr<MemberListInfoContext>  detailedEvents;
-      SharedPtr<MemberGroupListContext> memberGroups;
-      SharedPtr<AllMembersListContext>  allMembersList;
-      SharedPtr<ArgumentListContext>    typeConstraints;
-      SharedPtr<TemplateList>           examples;
-      SharedPtr<TemplateList>           templateDecls;
-      SharedPtr<InheritedMemberInfoListContext> additionalInheritedMembers;
-      SharedPtr<MemberListContext>      members;
-      SharedPtr<UsedFilesContext>       usedFiles;
-      SharedPtr<TemplateList>           exampleList;
-      SharedPtr<ClassContext>           categoryOf;
-      int                               inheritanceNodes;
-      MemberList                        allMembers;
+      TemplateListPtr                         classes;
+      TemplateListPtr                         innerClasses;
+      TemplateStructIntfPtr                   publicTypes;
+      TemplateStructIntfPtr                   publicMethods;
+      TemplateStructIntfPtr                   publicStaticMethods;
+      TemplateStructIntfPtr                   publicAttributes;
+      TemplateStructIntfPtr                   publicStaticAttributes;
+      TemplateStructIntfPtr                   publicSlots;
+      TemplateStructIntfPtr                   protectedTypes;
+      TemplateStructIntfPtr                   protectedMethods;
+      TemplateStructIntfPtr                   protectedStaticMethods;
+      TemplateStructIntfPtr                   protectedAttributes;
+      TemplateStructIntfPtr                   protectedStaticAttributes;
+      TemplateStructIntfPtr                   protectedSlots;
+      TemplateStructIntfPtr                   privateTypes;
+      TemplateStructIntfPtr                   privateMethods;
+      TemplateStructIntfPtr                   privateStaticMethods;
+      TemplateStructIntfPtr                   privateAttributes;
+      TemplateStructIntfPtr                   privateStaticAttributes;
+      TemplateStructIntfPtr                   privateSlots;
+      TemplateStructIntfPtr                   packageTypes;
+      TemplateStructIntfPtr                   packageMethods;
+      TemplateStructIntfPtr                   packageStaticMethods;
+      TemplateStructIntfPtr                   packageAttributes;
+      TemplateStructIntfPtr                   packageStaticAttributes;
+      TemplateStructIntfPtr                   unoIDLServices;
+      TemplateStructIntfPtr                   unoIDLInterfaces;
+      TemplateStructIntfPtr                   signals;
+      TemplateStructIntfPtr                   properties;
+      TemplateStructIntfPtr                   events;
+      TemplateStructIntfPtr                   friends;
+      TemplateStructIntfPtr                   related;
+      TemplateStructIntfPtr                   detailedTypedefs;
+      TemplateStructIntfPtr                   detailedEnums;
+      TemplateStructIntfPtr                   detailedServices;
+      TemplateStructIntfPtr                   detailedInterfaces;
+      TemplateStructIntfPtr                   detailedConstructors;
+      TemplateStructIntfPtr                   detailedMethods;
+      TemplateStructIntfPtr                   detailedRelated;
+      TemplateStructIntfPtr                   detailedVariables;
+      TemplateStructIntfPtr                   detailedProperties;
+      TemplateStructIntfPtr                   detailedEvents;
+      TemplateListIntfPtr                     memberGroups;
+      TemplateListIntfPtr                     allMembersList;
+      TemplateListIntfPtr                     typeConstraints;
+      TemplateListPtr                         examples;
+      TemplateListPtr                         templateDecls;
+      TemplateListIntfPtr                     additionalInheritedMembers;
+      TemplateListIntfPtr                     members;
+      TemplateListIntfPtr                     usedFiles;
+      TemplateListPtr                         exampleList;
+      TemplateStructIntfPtr                   categoryOf;
+      int                                     inheritanceNodes;
+      MemberList                              allMembers;
     };
     Cachable &getCache() const
     {
@@ -2703,7 +2664,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
 
 PropertyMapper<ClassContext::Private> ClassContext::Private::s_inst;
 
-ClassContext::ClassContext(const ClassDef *cd) : RefCountedContext("ClassContext")
+ClassContext::ClassContext(const ClassDef *cd)
 {
   //printf("ClassContext::ClassContext(%s)\n",cd?qPrint(cd->name()):"<none>");
   p = new Private(cd);
@@ -2800,7 +2761,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       if (!cache.classes)
       {
         static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_namespaceDef->getClasses())
         {
           if (sliceOpt && (cd->compoundType()==ClassDef::Struct    ||
@@ -2814,16 +2775,16 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.classes.reset(classList);
+        cache.classes = classList;
       }
-      return cache.classes.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.classes));
     }
     TemplateVariant namespaces() const
     {
       Cachable &cache = getCache();
       if (!cache.namespaces)
       {
-        TemplateList *namespaceList = TemplateList::alloc();
+        TemplateListPtr namespaceList = TemplateList::alloc();
         for (const auto &nd : m_namespaceDef->getNamespaces())
         {
           if (nd->isLinkable() && !nd->isConstantGroup())
@@ -2831,16 +2792,16 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
             namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
-        cache.namespaces.reset(namespaceList);
+        cache.namespaces = namespaceList;
       }
-      return cache.namespaces.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.namespaces));
     }
     TemplateVariant constantgroups() const
     {
       Cachable &cache = getCache();
       if (!cache.constantgroups)
       {
-        TemplateList *namespaceList = TemplateList::alloc();
+        TemplateListPtr namespaceList = TemplateList::alloc();
         for (const auto &nd : m_namespaceDef->getNamespaces())
         {
           if (nd->isLinkable() && nd->isConstantGroup())
@@ -2848,11 +2809,11 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
             namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
-        cache.constantgroups.reset(namespaceList);
+        cache.constantgroups = namespaceList;
       }
-      return cache.constantgroups.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.constantgroups));
     }
-    TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
+    TemplateVariant getMemberList(TemplateStructIntfPtr &list,
                                   MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
@@ -2860,12 +2821,12 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
         const MemberList *ml = m_namespaceDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,""));
+          list = MemberListInfoContext::alloc(m_namespaceDef,relPathAsString(),ml,title,"");
         }
       }
       if (list)
       {
-        return list.get();
+        return TemplateVariant(list);
       }
       else
       {
@@ -2909,14 +2870,14 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       {
         if (!m_namespaceDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_namespaceDef,relPathAsString(),m_namespaceDef->getMemberGroups(),m_namespaceDef->subGrouping()));
+          cache.memberGroups = MemberGroupListContext::alloc(m_namespaceDef,relPathAsString(),m_namespaceDef->getMemberGroups(),m_namespaceDef->subGrouping());
         }
         else
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc());
+          cache.memberGroups = MemberGroupListContext::alloc();
         }
       }
-      return cache.memberGroups.get();
+      return cache.memberGroups;
     }
     TemplateVariant detailedTypedefs() const
     {
@@ -2953,7 +2914,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
       Cachable &cache = getCache();
       if (!cache.inlineClasses)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_namespaceDef->getClasses())
         {
           if (!cd->isAnonymous() &&
@@ -2964,33 +2925,33 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.inlineClasses.reset(classList);
+        cache.inlineClasses = classList;
       }
-      return cache.inlineClasses.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.inlineClasses));
     }
   private:
     const NamespaceDef *m_namespaceDef;
     struct Cachable : public DefinitionContext<NamespaceContext::Private>::Cachable
     {
       Cachable(const NamespaceDef *nd) : DefinitionContext<NamespaceContext::Private>::Cachable(nd) {}
-      SharedPtr<TemplateList>               classes;
-      SharedPtr<TemplateList>               interfaces;
-      SharedPtr<TemplateList>               namespaces;
-      SharedPtr<TemplateList>               constantgroups;
-      SharedPtr<MemberListInfoContext>      typedefs;
-      SharedPtr<MemberListInfoContext>      sequences;
-      SharedPtr<MemberListInfoContext>      dictionaries;
-      SharedPtr<MemberListInfoContext>      enums;
-      SharedPtr<MemberListInfoContext>      functions;
-      SharedPtr<MemberListInfoContext>      variables;
-      SharedPtr<MemberGroupListContext>     memberGroups;
-      SharedPtr<MemberListInfoContext>      detailedTypedefs;
-      SharedPtr<MemberListInfoContext>      detailedSequences;
-      SharedPtr<MemberListInfoContext>      detailedDictionaries;
-      SharedPtr<MemberListInfoContext>      detailedEnums;
-      SharedPtr<MemberListInfoContext>      detailedFunctions;
-      SharedPtr<MemberListInfoContext>      detailedVariables;
-      SharedPtr<TemplateList>               inlineClasses;
+      TemplateListPtr                             classes;
+      TemplateListPtr                             interfaces;
+      TemplateListPtr                             namespaces;
+      TemplateListPtr                             constantgroups;
+      TemplateStructIntfPtr                       typedefs;
+      TemplateStructIntfPtr                       sequences;
+      TemplateStructIntfPtr                       dictionaries;
+      TemplateStructIntfPtr                       enums;
+      TemplateStructIntfPtr                       functions;
+      TemplateStructIntfPtr                       variables;
+      TemplateListIntfPtr                         memberGroups;
+      TemplateStructIntfPtr                       detailedTypedefs;
+      TemplateStructIntfPtr                       detailedSequences;
+      TemplateStructIntfPtr                       detailedDictionaries;
+      TemplateStructIntfPtr                       detailedEnums;
+      TemplateStructIntfPtr                       detailedFunctions;
+      TemplateStructIntfPtr                       detailedVariables;
+      TemplateListPtr                             inlineClasses;
     };
     Cachable &getCache() const
     {
@@ -3004,7 +2965,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
 
 PropertyMapper<NamespaceContext::Private> NamespaceContext::Private::s_inst;
 
-NamespaceContext::NamespaceContext(const NamespaceDef *nd) : RefCountedContext("NamespaceContext")
+NamespaceContext::NamespaceContext(const NamespaceDef *nd)
 {
   p = new Private(nd);
 }
@@ -3105,12 +3066,12 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       Cachable &cache = getCache();
       if (!cache.includeInfoList && !m_fileDef->includeFileList().empty())
       {
-        cache.includeInfoList.reset(IncludeInfoListContext::alloc(
-              m_fileDef->includeFileList(),m_fileDef->getLanguage()));
+        cache.includeInfoList = IncludeInfoListContext::alloc(
+              m_fileDef->includeFileList(),m_fileDef->getLanguage());
       }
       if (cache.includeInfoList)
       {
-        return cache.includeInfoList.get();
+        return TemplateVariant(cache.includeInfoList);
       }
       else
       {
@@ -3252,7 +3213,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       Cachable &cache = getCache();
       if (!cache.classes)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_fileDef->getClasses())
         {
           if (cd->visibleInParentsDeclList())
@@ -3260,16 +3221,16 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.classes.reset(classList);
+        cache.classes = classList;
       }
-      return cache.classes.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.classes));
     }
     TemplateVariant namespaces() const
     {
       Cachable &cache = getCache();
       if (!cache.namespaces)
       {
-        TemplateList *namespaceList = TemplateList::alloc();
+        TemplateListPtr namespaceList = TemplateList::alloc();
         for (const auto &nd : m_fileDef->getNamespaces())
         {
           if (nd->isLinkable() && !nd->isConstantGroup())
@@ -3277,16 +3238,16 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
-        cache.namespaces.reset(namespaceList);
+        cache.namespaces = namespaceList;
       }
-      return cache.namespaces.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.namespaces));
     }
     TemplateVariant constantgroups() const
     {
       Cachable &cache = getCache();
       if (!cache.constantgroups)
       {
-        TemplateList *namespaceList = TemplateList::alloc();
+        TemplateListPtr namespaceList = TemplateList::alloc();
         for (const auto &nd : m_fileDef->getNamespaces())
         {
           if (nd->isLinkable() && nd->isConstantGroup())
@@ -3294,11 +3255,11 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
-        cache.constantgroups.reset(namespaceList);
+        cache.constantgroups = namespaceList;
       }
-      return cache.constantgroups.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.constantgroups));
     }
-    TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
+    TemplateVariant getMemberList(TemplateStructIntfPtr &list,
                                   MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
@@ -3306,12 +3267,12 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
         const MemberList *ml = m_fileDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_fileDef,relPathAsString(),ml,title,""));
+          list = MemberListInfoContext::alloc(m_fileDef,relPathAsString(),ml,title,"");
         }
       }
       if (list)
       {
-        return list.get();
+        return TemplateVariant(list);
       }
       else
       {
@@ -3359,14 +3320,14 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       {
         if (!m_fileDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_fileDef,relPathAsString(),m_fileDef->getMemberGroups(),m_fileDef->subGrouping()));
+          cache.memberGroups = MemberGroupListContext::alloc(m_fileDef,relPathAsString(),m_fileDef->getMemberGroups(),m_fileDef->subGrouping());
         }
         else
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc());
+          cache.memberGroups = MemberGroupListContext::alloc();
         }
       }
-      return cache.memberGroups.get();
+      return TemplateVariant(cache.memberGroups);
     }
     TemplateVariant detailedMacros() const
     {
@@ -3404,7 +3365,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
       Cachable &cache = getCache();
       if (!cache.inlineClasses)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_fileDef->getClasses())
         {
           if (!cd->isAnonymous() &&
@@ -3415,9 +3376,9 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.inlineClasses.reset(classList);
+        cache.inlineClasses = classList;
       }
-      return cache.inlineClasses.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.inlineClasses));
     }
     TemplateVariant compoundType() const
     {
@@ -3429,29 +3390,29 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     struct Cachable : public DefinitionContext<FileContext::Private>::Cachable
     {
       Cachable(const FileDef *fd) : DefinitionContext<FileContext::Private>::Cachable(fd) {}
-      SharedPtr<IncludeInfoListContext>     includeInfoList;
+      TemplateListIntfPtr                   includeInfoList;
       std::unique_ptr<DotInclDepGraph>      includeGraph;
       std::unique_ptr<DotInclDepGraph>      includedByGraph;
       std::unique_ptr<TemplateVariant>      sources;
-      SharedPtr<TemplateList>               classes;
-      SharedPtr<TemplateList>               namespaces;
-      SharedPtr<TemplateList>               constantgroups;
-      SharedPtr<MemberListInfoContext>      macros;
-      SharedPtr<MemberListInfoContext>      typedefs;
-      SharedPtr<MemberListInfoContext>      sequences;
-      SharedPtr<MemberListInfoContext>      dictionaries;
-      SharedPtr<MemberListInfoContext>      enums;
-      SharedPtr<MemberListInfoContext>      functions;
-      SharedPtr<MemberListInfoContext>      variables;
-      SharedPtr<MemberGroupListContext>     memberGroups;
-      SharedPtr<MemberListInfoContext>      detailedMacros;
-      SharedPtr<MemberListInfoContext>      detailedTypedefs;
-      SharedPtr<MemberListInfoContext>      detailedSequences;
-      SharedPtr<MemberListInfoContext>      detailedDictionaries;
-      SharedPtr<MemberListInfoContext>      detailedEnums;
-      SharedPtr<MemberListInfoContext>      detailedFunctions;
-      SharedPtr<MemberListInfoContext>      detailedVariables;
-      SharedPtr<TemplateList>               inlineClasses;
+      TemplateListPtr                       classes;
+      TemplateListPtr                       namespaces;
+      TemplateListPtr                       constantgroups;
+      TemplateStructIntfPtr                 macros;
+      TemplateStructIntfPtr                 typedefs;
+      TemplateStructIntfPtr                 sequences;
+      TemplateStructIntfPtr                 dictionaries;
+      TemplateStructIntfPtr                 enums;
+      TemplateStructIntfPtr                 functions;
+      TemplateStructIntfPtr                 variables;
+      TemplateListIntfPtr                   memberGroups;
+      TemplateStructIntfPtr                 detailedMacros;
+      TemplateStructIntfPtr                 detailedTypedefs;
+      TemplateStructIntfPtr                 detailedSequences;
+      TemplateStructIntfPtr                 detailedDictionaries;
+      TemplateStructIntfPtr                 detailedEnums;
+      TemplateStructIntfPtr                 detailedFunctions;
+      TemplateStructIntfPtr                 detailedVariables;
+      TemplateListPtr                       inlineClasses;
     };
     Cachable &getCache() const
     {
@@ -3465,7 +3426,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
 
 PropertyMapper<FileContext::Private> FileContext::Private::s_inst;
 
-FileContext::FileContext(const FileDef *fd) : RefCountedContext("FileContext")
+FileContext::FileContext(const FileDef *fd)
 {
   p = new Private(fd);
 }
@@ -3542,28 +3503,26 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
       Cachable &cache = getCache();
       if (!cache.dirs)
       {
-        cache.dirs.reset(TemplateList::alloc());
+        cache.dirs = TemplateList::alloc();
         for(const auto dd : m_dirDef->subDirs())
         {
-          DirContext *dc = new DirContext(dd);
-          cache.dirs->append(dc);
+          cache.dirs->append(DirContext::alloc(dd));
         }
       }
-      return cache.dirs.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.dirs));
     }
     TemplateVariant files() const
     {
       Cachable &cache = getCache();
       if (!cache.files)
       {
-        cache.files.reset(TemplateList::alloc());
+        cache.files = TemplateList::alloc();
         for (const auto &fd : m_dirDef->getFiles())
         {
-          FileContext *fc = FileContext::alloc(fd);
-          cache.files->append(fc);
+          cache.files->append(FileContext::alloc(fd));
         }
       }
-      return cache.files.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.files));
     }
     TemplateVariant hasDetails() const
     {
@@ -3647,8 +3606,8 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
     struct Cachable : public DefinitionContext<DirContext::Private>::Cachable
     {
       Cachable(const DirDef *dd) : DefinitionContext<DirContext::Private>::Cachable(dd) {}
-      SharedPtr<TemplateList>  dirs;
-      SharedPtr<TemplateList>  files;
+      TemplateListPtr                dirs;
+      TemplateListPtr                files;
       std::unique_ptr<DotDirDeps>    dirDepsGraph;
     };
     Cachable &getCache() const
@@ -3663,7 +3622,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
 
 PropertyMapper<DirContext::Private> DirContext::Private::s_inst;
 
-DirContext::DirContext(const DirDef *fd) : RefCountedContext("DirContext")
+DirContext::DirContext(const DirDef *fd)
 {
   p = new Private(fd);
 }
@@ -3817,7 +3776,7 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
 
 PropertyMapper<PageContext::Private> PageContext::Private::s_inst;
 
-PageContext::PageContext(const PageDef *pd,bool isMainPage,bool isExample) : RefCountedContext("PageContext")
+PageContext::PageContext(const PageDef *pd,bool isMainPage,bool isExample)
 {
   p = new Private(pd,isMainPage,isExample);
 }
@@ -4160,23 +4119,22 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       }
       if (!md->cookie()) { md->setCookie(new MemberContext::Private::Cachable(md)); }
 
-      Cachable &cache = getCache();
-      cache.propertyAttrs.reset(TemplateList::alloc());
+      m_propertyAttrs = TemplateList::alloc();
       if (md->isProperty())
       {
-        if (md->isGettable())           cache.propertyAttrs->append("get");
-        if (md->isPrivateGettable())    cache.propertyAttrs->append("private get");
-        if (md->isProtectedGettable())  cache.propertyAttrs->append("protected get");
-        if (md->isSettable())           cache.propertyAttrs->append("set");
-        if (md->isPrivateSettable())    cache.propertyAttrs->append("private set");
-        if (md->isProtectedSettable())  cache.propertyAttrs->append("protected set");
+        if (md->isGettable())           m_propertyAttrs->append("get");
+        if (md->isPrivateGettable())    m_propertyAttrs->append("private get");
+        if (md->isProtectedGettable())  m_propertyAttrs->append("protected get");
+        if (md->isSettable())           m_propertyAttrs->append("set");
+        if (md->isPrivateSettable())    m_propertyAttrs->append("private set");
+        if (md->isProtectedSettable())  m_propertyAttrs->append("protected set");
       }
-      cache.eventAttrs.reset(TemplateList::alloc());
+      m_eventAttrs = TemplateList::alloc();
       if (md->isEvent())
       {
-        if (md->isAddable())   cache.eventAttrs->append("add");
-        if (md->isRemovable()) cache.eventAttrs->append("remove");
-        if (md->isRaisable())  cache.eventAttrs->append("raise");
+        if (md->isAddable())   m_eventAttrs->append("add");
+        if (md->isRemovable()) m_eventAttrs->append("remove");
+        if (md->isRaisable())  m_eventAttrs->append("raise");
       }
     }
     virtual ~Private() {}
@@ -4521,12 +4479,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         const ClassDef *cd = m_memberDef->getClassDefOfAnonymousType();
         if (cd)
         {
-          cache.anonymousType.reset(ClassContext::alloc(cd));
+          cache.anonymousType = ClassContext::alloc(cd);
         }
       }
       if (cache.anonymousType)
       {
-        return cache.anonymousType.get();
+        return TemplateVariant(cache.anonymousType);
       }
       else
       {
@@ -4541,12 +4499,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         MemberDef *md = m_memberDef->fromAnonymousMember();
         if (md)
         {
-          cache.anonymousMember.reset(MemberContext::alloc(md));
+          cache.anonymousMember = MemberContext::alloc(md);
         }
       }
       if (cache.anonymousMember)
       {
-        return cache.anonymousMember.get();
+        return TemplateVariant(cache.anonymousMember);
       }
       else
       {
@@ -4576,10 +4534,9 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         Cachable &cache = getCache();
         if (!cache.enumValues)
         {
-          MemberVector mv = m_memberDef->enumFieldList();
-          cache.enumValues.reset(MemberListContext::alloc(std::move(mv)));
+          cache.enumValues = MemberListContext::alloc(m_memberDef->enumFieldList());
         }
-        return cache.enumValues.get();
+        return TemplateVariant(cache.enumValues);
       }
       else
       {
@@ -4591,11 +4548,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.templateArgs && !m_memberDef->templateArguments().empty())
       {
-        cache.templateArgs.reset(ArgumentListContext::alloc(m_memberDef->templateArguments(),m_memberDef,relPathAsString()));
+        cache.templateArgs = ArgumentListContext::alloc(m_memberDef->templateArguments(),m_memberDef,relPathAsString());
       }
       if (cache.templateArgs)
       {
-        return cache.templateArgs.get();
+        return TemplateVariant(cache.templateArgs);
       }
       else
       {
@@ -4613,22 +4570,22 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant propertyAttrs() const
     {
-      return getCache().propertyAttrs.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_propertyAttrs));
     }
     TemplateVariant eventAttrs() const
     {
-      return getCache().eventAttrs.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_eventAttrs));
     }
     TemplateVariant getClass() const
     {
       Cachable &cache = getCache();
       if (!cache.classDef && m_memberDef->getClassDef())
       {
-        cache.classDef.reset(ClassContext::alloc(m_memberDef->getClassDef()));
+        cache.classDef = ClassContext::alloc(m_memberDef->getClassDef());
       }
       if (cache.classDef)
       {
-        return cache.classDef.get();
+        return TemplateVariant(cache.classDef);
       }
       else
       {
@@ -4640,11 +4597,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.category && m_memberDef->category())
       {
-        cache.category.reset(ClassContext::alloc(m_memberDef->category()));
+        cache.category = ClassContext::alloc(m_memberDef->category());
       }
       if (cache.category)
       {
-        return cache.category.get();
+        return TemplateVariant(cache.category);
       }
       else
       {
@@ -4656,11 +4613,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.categoryRelation && m_memberDef->categoryRelation())
       {
-        cache.categoryRelation.reset(MemberContext::alloc(m_memberDef->categoryRelation()));
+        cache.categoryRelation = MemberContext::alloc(m_memberDef->categoryRelation());
       }
       if (cache.categoryRelation)
       {
-        return cache.categoryRelation.get();
+        return TemplateVariant(cache.categoryRelation);
       }
       else
       {
@@ -4672,11 +4629,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.fileDef && m_memberDef->getFileDef())
       {
-        cache.fileDef.reset(FileContext::alloc(m_memberDef->getFileDef()));
+        cache.fileDef = FileContext::alloc(m_memberDef->getFileDef());
       }
       if (cache.fileDef)
       {
-        return cache.fileDef.get();
+        return TemplateVariant(cache.fileDef);
       }
       else
       {
@@ -4688,11 +4645,11 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.namespaceDef && m_memberDef->getNamespaceDef())
       {
-        cache.namespaceDef.reset(NamespaceContext::alloc(m_memberDef->getNamespaceDef()));
+        cache.namespaceDef = NamespaceContext::alloc(m_memberDef->getNamespaceDef());
       }
       if (cache.namespaceDef)
       {
-        return cache.namespaceDef.get();
+        return TemplateVariant(cache.namespaceDef);
       }
       else
       {
@@ -4717,14 +4674,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         const ArgumentList &defArgList = getDefArgList();
         if (!m_memberDef->isProperty())
         {
-          cache.arguments.reset(ArgumentListContext::alloc(defArgList,m_memberDef,relPathAsString()));
+          cache.arguments = ArgumentListContext::alloc(defArgList,m_memberDef,relPathAsString());
         }
         else
         {
-          cache.arguments.reset(ArgumentListContext::alloc());
+          cache.arguments = ArgumentListContext::alloc();
         }
       }
-      return cache.arguments.get();
+      return TemplateVariant(cache.arguments);
     }
     TemplateVariant hasParameters() const
     {
@@ -4763,7 +4720,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     {
       return m_memberDef->extraTypeChars();
     }
-    void addTemplateDecls(TemplateList *tl) const
+    void addTemplateDecls(TemplateListPtr tl) const
     {
       const ClassDef *cd=m_memberDef->getClassDef();
       if (!m_memberDef->definitionTemplateParameterLists().empty())
@@ -4772,8 +4729,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
         {
           if (!tal.empty())
           {
-            ArgumentListContext *al = ArgumentListContext::alloc(tal,m_memberDef,relPathAsString());
-            tl->append(al);
+            tl->append(ArgumentListContext::alloc(tal,m_memberDef,relPathAsString()));
           }
         }
       }
@@ -4785,16 +4741,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
           {
             if (!tal.empty())
             {
-              ArgumentListContext *al = ArgumentListContext::alloc(tal,m_memberDef,relPathAsString());
-              tl->append(al);
+              tl->append(ArgumentListContext::alloc(tal,m_memberDef,relPathAsString()));
             }
           }
         }
         if (!m_memberDef->templateArguments().empty()) // function template prefix
         {
-          ArgumentListContext *al = ArgumentListContext::alloc(
-              m_memberDef->templateArguments(),m_memberDef,relPathAsString());
-          tl->append(al);
+          tl->append(ArgumentListContext::alloc(
+              m_memberDef->templateArguments(),m_memberDef,relPathAsString()));
         }
       }
     }
@@ -4803,11 +4757,10 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.templateDecls)
       {
-        TemplateList *tl = TemplateList::alloc();
-        addTemplateDecls(tl);
-        cache.templateDecls.reset(tl);
+        cache.templateDecls = TemplateList::alloc();
+        addTemplateDecls(cache.templateDecls);
       }
-      return cache.templateDecls.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.templateDecls));
     }
     TemplateVariant labels() const
     {
@@ -4815,14 +4768,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!cache.labels)
       {
         StringVector sl = m_memberDef->getLabels(m_memberDef->getOuterScope());
-        TemplateList *tl = TemplateList::alloc();
+        TemplateListPtr tl = TemplateList::alloc();
         for (const auto &s : sl)
         {
           tl->append(s.c_str());
         }
-        cache.labels.reset(tl);
+        cache.labels = tl;
       }
-      return cache.labels.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.labels));
     }
     TemplateVariant paramDocs() const
     {
@@ -4858,19 +4811,18 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!cache.implements)
       {
         const MemberDef *md = m_memberDef->reimplements();
-        cache.implements.reset(TemplateList::alloc());
+        cache.implements = TemplateList::alloc();
         if (md)
         {
           const ClassDef *cd = md->getClassDef();
           // filter on pure virtual/interface methods
           if (cd && (md->virtualness()==Pure || cd->compoundType()==ClassDef::Interface))
           {
-            MemberContext *mc = MemberContext::alloc(md);
-            cache.implements->append(mc);
+            cache.implements->append(MemberContext::alloc(md));
           }
         }
       }
-      return cache.implements.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.implements));
     }
     TemplateVariant reimplements() const
     {
@@ -4878,72 +4830,69 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       if (!cache.reimplements)
       {
         const MemberDef *md = m_memberDef->reimplements();
-        cache.reimplements.reset(TemplateList::alloc());
+        cache.reimplements = TemplateList::alloc();
         if (md)
         {
           const ClassDef *cd = md->getClassDef();
           // filter on non-pure virtual & non interface methods
           if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
-            MemberContext *mc = MemberContext::alloc(md);
-            cache.reimplements->append(mc);
+            cache.reimplements->append(MemberContext::alloc(md));
           }
         }
       }
-      return cache.reimplements.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.reimplements));
     }
     TemplateVariant implementedBy() const
     {
       Cachable &cache = getCache();
       if (!cache.implementedBy)
       {
-        cache.implementedBy.reset(TemplateList::alloc());
+        cache.implementedBy = TemplateList::alloc();
         for (const auto &md : m_memberDef->reimplementedBy())
         {
           const ClassDef *cd = md->getClassDef();
           // filter on pure virtual/interface methods
           if (cd && md->virtualness()==Pure && cd->compoundType()==ClassDef::Interface)
           {
-            MemberContext *mc = new MemberContext(md);
-            cache.implementedBy->append(mc);
+            cache.implementedBy->append(MemberContext::alloc(md));
           }
         }
       }
-      return cache.implementedBy.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.implementedBy));
     }
     TemplateVariant reimplementedBy() const
     {
       Cachable &cache = getCache();
       if (!cache.reimplementedBy)
       {
-        cache.reimplementedBy.reset(TemplateList::alloc());
+        cache.reimplementedBy = TemplateList::alloc();
         for (const auto &md : m_memberDef->reimplementedBy())
         {
           const ClassDef *cd = md->getClassDef();
           // filter on non-pure virtual & non interface methods
           if (cd && md->virtualness()!=Pure && cd->compoundType()!=ClassDef::Interface)
           {
-            MemberContext *mc = new MemberContext(md);
-            cache.reimplementedBy->append(mc);
+            cache.reimplementedBy->append(MemberContext::alloc(md));
           }
         }
       }
-      return cache.reimplementedBy.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.reimplementedBy));
     }
-    void addExamples(TemplateList *list) const
+    void addExamples(TemplateListPtr list) const
     {
       if (m_memberDef->hasExamples())
       {
         for (const auto &ex : m_memberDef->getExamples())
         {
-          TemplateStruct *s = TemplateStruct::alloc();
+          TemplateStructPtr s = TemplateStruct::alloc();
           s->set("text",ex.name);
           s->set("isLinkable",TRUE);
           s->set("anchor",ex.anchor);
           s->set("fileName",ex.file);
           s->set("isReference",FALSE);
           s->set("externalReference","");
-          list->append(s);
+          list->append(std::static_pointer_cast<TemplateStructIntf>(s));
         }
       }
     }
@@ -4952,24 +4901,23 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.examples)
       {
-        TemplateList *exampleList = TemplateList::alloc();
-        addExamples(exampleList);
-        cache.examples.reset(exampleList);
+        cache.examples = TemplateList::alloc();
+        addExamples(cache.examples);
       }
-      return cache.examples.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.examples));
     }
     TemplateVariant typeConstraints() const
     {
       Cachable &cache = getCache();
       if (cache.typeConstraints && !m_memberDef->typeConstraints().empty())
       {
-        cache.typeConstraints.reset(ArgumentListContext::alloc(m_memberDef->typeConstraints(),m_memberDef,relPathAsString()));
+        cache.typeConstraints = ArgumentListContext::alloc(m_memberDef->typeConstraints(),m_memberDef,relPathAsString());
       }
       else
       {
-        cache.typeConstraints.reset(ArgumentListContext::alloc());
+        cache.typeConstraints = ArgumentListContext::alloc();
       }
-      return cache.typeConstraints.get();
+      return TemplateVariant(cache.typeConstraints);
     }
     TemplateVariant functionQualifier() const
     {
@@ -4991,18 +4939,18 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable &cache = getCache();
       if (!cache.sourceRefs)
       {
-        cache.sourceRefs.reset(MemberListContext::alloc(m_memberDef->getReferencesMembers()));
+        cache.sourceRefs = MemberListContext::alloc(m_memberDef->getReferencesMembers());
       }
-      return cache.sourceRefs.get();
+      return TemplateVariant(cache.sourceRefs);
     }
     TemplateVariant sourceRefBys() const
     {
       Cachable &cache = getCache();
       if (!cache.sourceRefBys)
       {
-        cache.sourceRefBys.reset(MemberListContext::alloc(m_memberDef->getReferencedByMembers()));
+        cache.sourceRefBys = MemberListContext::alloc(m_memberDef->getReferencedByMembers());
       }
-      return cache.sourceRefBys.get();
+      return TemplateVariant(cache.sourceRefBys);
     }
     TemplateVariant hasSources() const
     {
@@ -5203,7 +5151,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant detailsVisibleFor() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleDetailsVisibleFor>(this);
+      return TemplateVariant(std::bind(&Private::handleDetailsVisibleFor,this,std::placeholders::_1));
     }
     TemplateVariant handleNameWithContextFor(const std::vector<TemplateVariant> &args) const
     {
@@ -5235,7 +5183,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     }
     TemplateVariant nameWithContextFor() const
     {
-      return TemplateVariant::FunctionDelegate::fromMethod<Private,&Private::handleNameWithContextFor>(this);
+      return TemplateVariant(std::bind(&Private::handleNameWithContextFor,this,std::placeholders::_1));
     }
   private:
     const MemberDef *m_memberDef;
@@ -5244,40 +5192,37 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       Cachable(const MemberDef *md) : DefinitionContext<MemberContext::Private>::Cachable(md),
                                 initializerParsed(FALSE), sourceCodeParsed(FALSE),
                                 declArgsParsed(FALSE), declTypeParsed(FALSE) { }
-      SharedPtr<ArgumentListContext> templateArgs;
-      SharedPtr<ArgumentListContext> arguments;
-      SharedPtr<MemberListContext>   enumValues;
-      SharedPtr<FileContext>         fileDef;
-      SharedPtr<NamespaceContext>    namespaceDef;
-      SharedPtr<ClassContext>        category;
-      SharedPtr<MemberContext>       categoryRelation;
-      SharedPtr<ClassContext>        classDef;
-      SharedPtr<ClassContext>        anonymousType;
-      SharedPtr<TemplateList>        templateDecls;
+      TemplateListIntfPtr                  templateArgs;
+      TemplateListIntfPtr                  arguments;
+      TemplateListIntfPtr                  enumValues;
+      TemplateStructIntfPtr                fileDef;
+      TemplateStructIntfPtr                namespaceDef;
+      TemplateStructIntfPtr                category;
+      TemplateStructIntfPtr                categoryRelation;
+      TemplateStructIntfPtr                classDef;
+      TemplateStructIntfPtr                anonymousType;
+      TemplateListPtr                      templateDecls;
       std::unique_ptr<TemplateVariant>     paramDocs;
-      SharedPtr<TemplateList>        implements;
-      SharedPtr<TemplateList>        reimplements;
-      SharedPtr<TemplateList>        implementedBy;
-      SharedPtr<MemberListContext>   sourceRefs;
-      SharedPtr<MemberListContext>   sourceRefBys;
+      TemplateListPtr                      implements;
+      TemplateListPtr                      reimplements;
+      TemplateListPtr                      implementedBy;
+      TemplateListPtr                      reimplementedBy;
+      TemplateListIntfPtr                  sourceRefs;
+      TemplateListIntfPtr                  sourceRefBys;
       std::unique_ptr<DotCallGraph>        callGraph;
       std::unique_ptr<DotCallGraph>        callerGraph;
-      SharedPtr<MemberContext>       anonymousMember;
-      SharedPtr<TemplateList>        reimplementedBy;
-      SharedPtr<TemplateList>        labels;
-      TemplateVariant                initializer;
-      bool                           initializerParsed;
-      TemplateVariant                sourceCode;
-      bool                           sourceCodeParsed;
-      TemplateVariant                declArgs;
-      bool                           declArgsParsed;
-      TemplateVariant                declType;
-      bool                           declTypeParsed;
-      SharedPtr<TemplateList>        examples;
-      SharedPtr<TemplateList>        exampleList;
-      SharedPtr<ArgumentListContext> typeConstraints;
-      SharedPtr<TemplateList>        propertyAttrs;
-      SharedPtr<TemplateList>        eventAttrs;
+      TemplateStructIntfPtr                anonymousMember;
+      TemplateListPtr                      labels;
+      TemplateVariant                      initializer;
+      bool                                 initializerParsed;
+      TemplateVariant                      sourceCode;
+      bool                                 sourceCodeParsed;
+      TemplateVariant                      declArgs;
+      bool                                 declArgsParsed;
+      TemplateVariant                      declType;
+      bool                                 declTypeParsed;
+      TemplateListPtr                      examples;
+      TemplateListIntfPtr                  typeConstraints;
     };
     Cachable &getCache() const
     {
@@ -5286,12 +5231,14 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
       return *c;
     }
     static PropertyMapper<MemberContext::Private> s_inst;
+    TemplateListPtr                               m_propertyAttrs;
+    TemplateListPtr                               m_eventAttrs;
 };
 //%% }
 
 PropertyMapper<MemberContext::Private> MemberContext::Private::s_inst;
 
-MemberContext::MemberContext(const MemberDef *md) : RefCountedContext("MemberContext")
+MemberContext::MemberContext(const MemberDef *md)
 {
   p = new Private(md);
 }
@@ -5367,25 +5314,24 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
       Cachable &cache = getCache();
       if (!cache.includeInfo && m_conceptDef->includeInfo())
       {
-        cache.includeInfo.reset(IncludeInfoContext::alloc(m_conceptDef->includeInfo(),m_conceptDef->getLanguage()));
+        cache.includeInfo = IncludeInfoContext::alloc(m_conceptDef->includeInfo(),m_conceptDef->getLanguage());
       }
       if (cache.includeInfo)
       {
-        return cache.includeInfo.get();
+        return TemplateVariant(cache.includeInfo);
       }
       else
       {
         return TemplateVariant(FALSE);
       }
     }
-    void addTemplateDecls(const ConceptDef *cd,TemplateList *tl) const
+    void addTemplateDecls(const ConceptDef *cd,TemplateListPtr tl) const
     {
       if (!cd->getTemplateParameterList().empty())
       {
-        ArgumentListContext *al = ArgumentListContext::alloc(cd->getTemplateParameterList(),cd,relPathAsString());
         // since a TemplateVariant does take ownership of the object, we add it
         // a separate list just to be able to delete it and avoid a memory leak
-        tl->append(al);
+        tl->append(ArgumentListContext::alloc(cd->getTemplateParameterList(),cd,relPathAsString()));
       }
     }
     TemplateVariant templateDecls() const
@@ -5393,11 +5339,10 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
       Cachable &cache = getCache();
       if (!cache.templateDecls)
       {
-        TemplateList *tl = TemplateList::alloc();
-        addTemplateDecls(m_conceptDef,tl);
-        cache.templateDecls.reset(tl);
+        cache.templateDecls = TemplateList::alloc();
+        addTemplateDecls(m_conceptDef,cache.templateDecls);
       }
-      return cache.templateDecls.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.templateDecls));
     }
     TemplateVariant initializer() const
     {
@@ -5426,9 +5371,8 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
     struct Cachable : public DefinitionContext<ConceptContext::Private>::Cachable
     {
       Cachable(const ConceptDef *cd) : DefinitionContext<ConceptContext::Private>::Cachable(cd) {}
-      SharedPtr<IncludeInfoContext>     includeInfo;
-      SharedPtr<ArgumentListContext>    typeConstraints;
-      SharedPtr<TemplateList>           templateDecls;
+      TemplateStructIntfPtr             includeInfo;
+      TemplateListPtr                   templateDecls;
       TemplateVariant                   initializer;
       bool                              initializerParsed = false;
     };
@@ -5444,7 +5388,7 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
 
 PropertyMapper<ConceptContext::Private> ConceptContext::Private::s_inst;
 
-ConceptContext::ConceptContext(const ConceptDef *cd) : RefCountedContext("ConceptContext")
+ConceptContext::ConceptContext(const ConceptDef *cd)
 {
   //printf("ConceptContext::ConceptContext(%s)\n",cd?qPrint(cd->name()):"<none>");
   p = new Private(cd);
@@ -5616,7 +5560,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       Cachable &cache = getCache();
       if (!cache.modules)
       {
-        TemplateList *moduleList = TemplateList::alloc();
+        TemplateListPtr moduleList = TemplateList::alloc();
         for (const auto &gd : m_groupDef->getSubGroups())
         {
           if (gd->isVisible())
@@ -5624,72 +5568,72 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             moduleList->append(ModuleContext::alloc(gd));
           }
         }
-        cache.modules.reset(moduleList);
+        cache.modules = moduleList;
       }
-      return cache.modules.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.modules));
     }
     TemplateVariant examples() const
     {
       Cachable &cache = getCache();
       if (!cache.examples)
       {
-        TemplateList *exampleList = TemplateList::alloc();
+        TemplateListPtr exampleList = TemplateList::alloc();
         for (const auto &ex : m_groupDef->getExamples())
         {
           exampleList->append(PageContext::alloc(ex,FALSE,TRUE));
         }
-        cache.examples.reset(exampleList);
+        cache.examples = exampleList;
       }
-      return cache.examples.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.examples));
     }
     TemplateVariant pages() const
     {
       Cachable &cache = getCache();
       if (!cache.pages)
       {
-        TemplateList *pageList = TemplateList::alloc();
+        TemplateListPtr pageList = TemplateList::alloc();
         for (const auto &ex : m_groupDef->getPages())
         {
           pageList->append(PageContext::alloc(ex,FALSE,TRUE));
         }
-        cache.pages.reset(pageList);
+        cache.pages = pageList;
       }
-      return cache.pages.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.pages));
     }
     TemplateVariant dirs() const
     {
       Cachable &cache = getCache();
       if (!cache.dirs)
       {
-        TemplateList *dirList = TemplateList::alloc();
+        TemplateListPtr dirList = TemplateList::alloc();
         for(const auto dd : m_groupDef->getDirs())
         {
           dirList->append(DirContext::alloc(dd));
         }
-        cache.dirs.reset(dirList);
+        cache.dirs = dirList;
       }
-      return cache.dirs.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.dirs));
     }
     TemplateVariant files() const
     {
       Cachable &cache = getCache();
       if (!cache.files)
       {
-        TemplateList *fileList = TemplateList::alloc();
+        TemplateListPtr fileList = TemplateList::alloc();
         for (const auto &fd : m_groupDef->getFiles())
         {
           fileList->append(FileContext::alloc(fd));
         }
-        cache.files.reset(fileList);
+        cache.files = fileList;
       }
-      return cache.files.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.files));
     }
     TemplateVariant classes() const
     {
       Cachable &cache = getCache();
       if (!cache.classes)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_groupDef->getClasses())
         {
           if (cd->visibleInParentsDeclList())
@@ -5697,16 +5641,16 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.classes.reset(classList);
+        cache.classes = classList;
       }
-      return cache.classes.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.classes));
     }
     TemplateVariant namespaces() const
     {
       Cachable &cache = getCache();
       if (!cache.namespaces)
       {
-        TemplateList *namespaceList = TemplateList::alloc();
+        TemplateListPtr namespaceList = TemplateList::alloc();
         for (const auto &nd : m_groupDef->getNamespaces())
         {
           if (nd->isLinkable() && !nd->isConstantGroup())
@@ -5714,16 +5658,16 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
-        cache.namespaces.reset(namespaceList);
+        cache.namespaces = namespaceList;
       }
-      return cache.namespaces.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.namespaces));
     }
     TemplateVariant constantgroups() const
     {
       Cachable &cache = getCache();
       if (!cache.constantgroups)
       {
-        TemplateList *namespaceList = TemplateList::alloc();
+        TemplateListPtr namespaceList = TemplateList::alloc();
         for (const auto &nd : m_groupDef->getNamespaces())
         {
           if (nd->isLinkable() && nd->isConstantGroup())
@@ -5731,12 +5675,12 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             namespaceList->append(NamespaceContext::alloc(nd));
           }
         }
-        cache.constantgroups.reset(namespaceList);
+        cache.constantgroups = namespaceList;
       }
-      return cache.constantgroups.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.constantgroups));
     }
 
-    TemplateVariant getMemberList(SharedPtr<MemberListInfoContext> &list,
+    TemplateVariant getMemberList(TemplateStructIntfPtr &list,
                                   MemberListType type,const QCString &title,bool=FALSE) const
     {
       if (!list)
@@ -5744,12 +5688,12 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
         MemberList *ml = m_groupDef->getMemberList(type);
         if (ml)
         {
-          list.reset(MemberListInfoContext::alloc(m_groupDef,relPathAsString(),ml,title,""));
+          list = MemberListInfoContext::alloc(m_groupDef,relPathAsString(),ml,title,"");
         }
       }
       if (list)
       {
-        return list.get();
+        return TemplateVariant(list);
       }
       else
       {
@@ -5821,14 +5765,15 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       {
         if (!m_groupDef->getMemberGroups().empty())
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc(m_groupDef,relPathAsString(),m_groupDef->getMemberGroups(),m_groupDef->subGrouping()));
+          cache.memberGroups = MemberGroupListContext::alloc(
+              m_groupDef,relPathAsString(),m_groupDef->getMemberGroups(),m_groupDef->subGrouping());
         }
         else
         {
-          cache.memberGroups.reset(MemberGroupListContext::alloc());
+          cache.memberGroups = MemberGroupListContext::alloc();
         }
       }
-      return cache.memberGroups.get();
+      return TemplateVariant(cache.memberGroups);
     }
     TemplateVariant detailedMacros() const
     {
@@ -5890,7 +5835,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
       Cachable &cache = getCache();
       if (!cache.inlineClasses)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         for (const auto &cd : m_groupDef->getClasses())
         {
           if (!cd->isAnonymous() &&
@@ -5901,9 +5846,9 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
             classList->append(ClassContext::alloc(cd));
           }
         }
-        cache.inlineClasses.reset(classList);
+        cache.inlineClasses = classList;
       }
-      return cache.inlineClasses.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.inlineClasses));
     }
     TemplateVariant compoundType() const
     {
@@ -5914,42 +5859,42 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
     struct Cachable : public DefinitionContext<ModuleContext::Private>::Cachable
     {
       Cachable(const GroupDef *gd) : DefinitionContext<ModuleContext::Private>::Cachable(gd) {}
-      SharedPtr<TemplateList>               modules;
-      SharedPtr<TemplateList>               dirs;
-      SharedPtr<TemplateList>               files;
-      SharedPtr<TemplateList>               classes;
-      SharedPtr<TemplateList>               namespaces;
-      SharedPtr<TemplateList>               constantgroups;
-      SharedPtr<TemplateList>               examples;
-      SharedPtr<TemplateList>               pages;
-      SharedPtr<MemberListInfoContext>      macros;
-      SharedPtr<MemberListInfoContext>      typedefs;
-      SharedPtr<MemberListInfoContext>      enums;
-      SharedPtr<MemberListInfoContext>      enumValues;
-      SharedPtr<MemberListInfoContext>      functions;
-      SharedPtr<MemberListInfoContext>      variables;
-      SharedPtr<MemberListInfoContext>      signals;
-      SharedPtr<MemberListInfoContext>      publicSlots;
-      SharedPtr<MemberListInfoContext>      protectedSlots;
-      SharedPtr<MemberListInfoContext>      privateSlots;
-      SharedPtr<MemberListInfoContext>      events;
-      SharedPtr<MemberListInfoContext>      properties;
-      SharedPtr<MemberListInfoContext>      friends;
-      SharedPtr<MemberGroupListContext>     memberGroups;
-      SharedPtr<MemberListInfoContext>      detailedMacros;
-      SharedPtr<MemberListInfoContext>      detailedTypedefs;
-      SharedPtr<MemberListInfoContext>      detailedEnums;
-      SharedPtr<MemberListInfoContext>      detailedEnumValues;
-      SharedPtr<MemberListInfoContext>      detailedFunctions;
-      SharedPtr<MemberListInfoContext>      detailedVariables;
-      SharedPtr<MemberListInfoContext>      detailedSignals;
-      SharedPtr<MemberListInfoContext>      detailedPublicSlots;
-      SharedPtr<MemberListInfoContext>      detailedProtectedSlots;
-      SharedPtr<MemberListInfoContext>      detailedPrivateSlots;
-      SharedPtr<MemberListInfoContext>      detailedEvents;
-      SharedPtr<MemberListInfoContext>      detailedProperties;
-      SharedPtr<MemberListInfoContext>      detailedFriends;
-      SharedPtr<TemplateList>               inlineClasses;
+      TemplateListPtr       modules;
+      TemplateListPtr       dirs;
+      TemplateListPtr       files;
+      TemplateListPtr       classes;
+      TemplateListPtr       namespaces;
+      TemplateListPtr       constantgroups;
+      TemplateListPtr       examples;
+      TemplateListPtr       pages;
+      TemplateStructIntfPtr macros;
+      TemplateStructIntfPtr typedefs;
+      TemplateStructIntfPtr enums;
+      TemplateStructIntfPtr enumValues;
+      TemplateStructIntfPtr functions;
+      TemplateStructIntfPtr variables;
+      TemplateStructIntfPtr signals;
+      TemplateStructIntfPtr publicSlots;
+      TemplateStructIntfPtr protectedSlots;
+      TemplateStructIntfPtr privateSlots;
+      TemplateStructIntfPtr events;
+      TemplateStructIntfPtr properties;
+      TemplateStructIntfPtr friends;
+      TemplateListIntfPtr   memberGroups;
+      TemplateStructIntfPtr detailedMacros;
+      TemplateStructIntfPtr detailedTypedefs;
+      TemplateStructIntfPtr detailedEnums;
+      TemplateStructIntfPtr detailedEnumValues;
+      TemplateStructIntfPtr detailedFunctions;
+      TemplateStructIntfPtr detailedVariables;
+      TemplateStructIntfPtr detailedSignals;
+      TemplateStructIntfPtr detailedPublicSlots;
+      TemplateStructIntfPtr detailedProtectedSlots;
+      TemplateStructIntfPtr detailedPrivateSlots;
+      TemplateStructIntfPtr detailedEvents;
+      TemplateStructIntfPtr detailedProperties;
+      TemplateStructIntfPtr detailedFriends;
+      TemplateListPtr       inlineClasses;
       std::unique_ptr<DotGroupCollaboration>      groupGraph;
     };
     Cachable &getCache() const
@@ -5964,7 +5909,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
 
 PropertyMapper<ModuleContext::Private> ModuleContext::Private::s_inst;
 
-ModuleContext::ModuleContext(const GroupDef *gd) : RefCountedContext("ModuleContext")
+ModuleContext::ModuleContext(const GroupDef *gd)
 {
   p = new Private(gd);
 }
@@ -6010,7 +5955,7 @@ class ClassListContext::Private : public GenericNodeListContext
     }
 };
 
-ClassListContext::ClassListContext() : RefCountedContext("ClassListContext")
+ClassListContext::ClassListContext()
 {
   p = new Private;
   p->addClasses(*Doxygen::classLinkedMap);
@@ -6070,7 +6015,7 @@ class ClassIndexContext::Private
     {
       if (!m_cache.classes)
       {
-        TemplateList *classList = TemplateList::alloc();
+        TemplateListPtr classList = TemplateList::alloc();
         if (Doxygen::classLinkedMap)
         {
           for (const auto &cd : *Doxygen::classLinkedMap)
@@ -6088,9 +6033,9 @@ class ClassIndexContext::Private
             }
           }
         }
-        m_cache.classes.reset(classList);
+        m_cache.classes = classList;
       }
-      return m_cache.classes.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_cache.classes));
     }
     TemplateVariant fileName() const
     {
@@ -6128,7 +6073,7 @@ class ClassIndexContext::Private
   private:
     struct Cachable
     {
-      SharedPtr<TemplateList> classes;
+      TemplateListPtr classes;
     };
     mutable Cachable m_cache;
     static PropertyMapper<ClassIndexContext::Private> s_inst;
@@ -6136,7 +6081,7 @@ class ClassIndexContext::Private
 
 PropertyMapper<ClassIndexContext::Private> ClassIndexContext::Private::s_inst;
 
-ClassIndexContext::ClassIndexContext() : RefCountedContext("ClassIndexContext")
+ClassIndexContext::ClassIndexContext()
 {
   p = new Private;
   //p->addClasses(*Doxygen::hiddenClasses);
@@ -6160,7 +6105,7 @@ StringVector ClassIndexContext::fields() const
 
 //------------------------------------------------------------------------
 
-static int computeMaxDepth(const TemplateListIntf *list)
+static int computeMaxDepth(const TemplateListIntfPtr list)
 {
   int maxDepth=0;
   if (list)
@@ -6169,7 +6114,7 @@ static int computeMaxDepth(const TemplateListIntf *list)
     TemplateVariant v;
     for (it->toFirst();it->current(v);it->toNext())
     {
-      const TemplateStructIntf *s = v.toStruct();
+      const TemplateStructIntfPtr s = v.toStruct();
       TemplateVariant child = s->get("children");
       int d = computeMaxDepth(child.toList())+1;
       if (d>maxDepth) maxDepth=d;
@@ -6179,7 +6124,7 @@ static int computeMaxDepth(const TemplateListIntf *list)
   return maxDepth;
 }
 
-static int computeNumNodesAtLevel(const TemplateStructIntf *s,int level,int maxLevel)
+static int computeNumNodesAtLevel(const TemplateStructIntfPtr s,int level,int maxLevel)
 {
   int num=0;
   if (level<maxLevel)
@@ -6200,7 +6145,7 @@ static int computeNumNodesAtLevel(const TemplateStructIntf *s,int level,int maxL
   return num;
 }
 
-static int computePreferredDepth(const TemplateListIntf *list,int maxDepth)
+static int computePreferredDepth(const TemplateListIntfPtr list,int maxDepth)
 {
   int preferredNumEntries = Config_getInt(HTML_INDEX_NUM_ENTRIES);
   int preferredDepth=1;
@@ -6239,10 +6184,11 @@ class ClassHierarchyContext::Private
   public:
     Private()
     {
-      m_classTree.reset(NestingContext::alloc(0,ContextTreeType::ClassInheritance,0));
+      m_classTree = NestingContext::alloc(0,ContextTreeType::ClassInheritance,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_classTree);
       ClassDefSet visitedClasses;
-      m_classTree->addClassHierarchy(*Doxygen::classLinkedMap,visitedClasses);
-      m_classTree->addClassHierarchy(*Doxygen::hiddenClassLinkedMap,visitedClasses);
+      ctx->addClassHierarchy(*Doxygen::classLinkedMap,visitedClasses);
+      ctx->addClassHierarchy(*Doxygen::hiddenClassLinkedMap,visitedClasses);
       //%% ClassInheritance tree
       static bool init=FALSE;
       if (!init)
@@ -6269,7 +6215,7 @@ class ClassHierarchyContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_classTree.get();
+      return TemplateVariant(m_classTree);
     }
     TemplateVariant fileName() const
     {
@@ -6299,16 +6245,16 @@ class ClassHierarchyContext::Private
     {
       if (!m_cache.diagrams)
       {
-        TemplateList *diagrams = TemplateList::alloc();
+        TemplateListPtr diagrams = TemplateList::alloc();
         DotGfxHierarchyTable *hierarchy = getHierarchy();
         int id=0;
         for (auto n : hierarchy->subGraphs())
         {
           diagrams->append(InheritanceGraphContext::alloc(hierarchy,n,id++));
         }
-        m_cache.diagrams.reset(diagrams);
+        m_cache.diagrams = diagrams;
       }
-      return m_cache.diagrams.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_cache.diagrams));
     }
     TemplateVariant title() const
     {
@@ -6326,7 +6272,7 @@ class ClassHierarchyContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_classTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_classTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -6335,13 +6281,13 @@ class ClassHierarchyContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_classTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_classTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_classTree;
+    TemplateListIntfPtr m_classTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -6350,7 +6296,7 @@ class ClassHierarchyContext::Private
       bool  maxDepthComputed;
       int   preferredDepth;
       bool  preferredDepthComputed;
-      SharedPtr<TemplateList> diagrams;
+      TemplateListPtr diagrams;
       std::unique_ptr<DotGfxHierarchyTable> hierarchy;
     };
     mutable Cachable m_cache;
@@ -6360,7 +6306,7 @@ class ClassHierarchyContext::Private
 
 PropertyMapper<ClassHierarchyContext::Private> ClassHierarchyContext::Private::s_inst;
 
-ClassHierarchyContext::ClassHierarchyContext() : RefCountedContext("ClassHierarchyContext")
+ClassHierarchyContext::ClassHierarchyContext()
 {
   p = new Private;
 }
@@ -6394,8 +6340,8 @@ class NestingNodeContext::Private
         ClassDefSet &visitedClasses)
       : m_parent(parent), m_type(type), m_def(d), m_level(level), m_index(index)
     {
-      m_children.reset(NestingContext::alloc(thisNode,m_type,level+1));
-      m_members.reset(NestingContext::alloc(thisNode,m_type,level+1));
+      m_children = std::dynamic_pointer_cast<NestingContext>(NestingContext::alloc(thisNode,m_type,level+1));
+      m_members = std::dynamic_pointer_cast<NestingContext>(NestingContext::alloc(thisNode,m_type,level+1));
       static bool init=FALSE;
       if (!init)
       {
@@ -6458,21 +6404,21 @@ class NestingNodeContext::Private
     }
     TemplateVariant children() const
     {
-      return m_children.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_children));
     }
     TemplateVariant members() const
     {
-      return m_members.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_members));
     }
     TemplateVariant getClass() const
     {
       if (!m_cache.classContext && m_def->definitionType()==Definition::TypeClass)
       {
-        m_cache.classContext.reset(ClassContext::alloc(toClassDef(m_def)));
+        m_cache.classContext = ClassContext::alloc(toClassDef(m_def));
       }
       if (m_cache.classContext)
       {
-        return m_cache.classContext.get();
+        return TemplateVariant(m_cache.classContext);
       }
       else
       {
@@ -6483,11 +6429,11 @@ class NestingNodeContext::Private
     {
       if (!m_cache.namespaceContext && m_def->definitionType()==Definition::TypeNamespace)
       {
-        m_cache.namespaceContext.reset(NamespaceContext::alloc(toNamespaceDef(m_def)));
+        m_cache.namespaceContext = NamespaceContext::alloc(toNamespaceDef(m_def));
       }
       if (m_cache.namespaceContext)
       {
-        return m_cache.namespaceContext.get();
+        return TemplateVariant(m_cache.namespaceContext);
       }
       else
       {
@@ -6498,11 +6444,11 @@ class NestingNodeContext::Private
     {
       if (!m_cache.dirContext && m_def->definitionType()==Definition::TypeDir)
       {
-        m_cache.dirContext.reset(DirContext::alloc(toDirDef(m_def)));
+        m_cache.dirContext = DirContext::alloc(toDirDef(m_def));
       }
       if (m_cache.dirContext)
       {
-        return m_cache.dirContext.get();
+        return TemplateVariant(m_cache.dirContext);
       }
       else
       {
@@ -6513,11 +6459,11 @@ class NestingNodeContext::Private
     {
       if (!m_cache.fileContext && m_def->definitionType()==Definition::TypeFile)
       {
-        m_cache.fileContext.reset(FileContext::alloc(toFileDef(m_def)));
+        m_cache.fileContext = FileContext::alloc(toFileDef(m_def));
       }
       if (m_cache.fileContext)
       {
-        return m_cache.fileContext.get();
+        return TemplateVariant(m_cache.fileContext);
       }
       else
       {
@@ -6528,11 +6474,11 @@ class NestingNodeContext::Private
     {
       if (!m_cache.pageContext && m_def->definitionType()==Definition::TypePage)
       {
-        m_cache.pageContext.reset(PageContext::alloc(toPageDef(m_def),FALSE,FALSE));
+        m_cache.pageContext = PageContext::alloc(toPageDef(m_def),FALSE,FALSE);
       }
       if (m_cache.pageContext)
       {
-        return m_cache.pageContext.get();
+        return TemplateVariant(m_cache.pageContext);
       }
       else
       {
@@ -6543,11 +6489,11 @@ class NestingNodeContext::Private
     {
       if (!m_cache.moduleContext && m_def->definitionType()==Definition::TypeGroup)
       {
-        m_cache.moduleContext.reset(ModuleContext::alloc(toGroupDef(m_def)));
+        m_cache.moduleContext = ModuleContext::alloc(toGroupDef(m_def));
       }
       if (m_cache.moduleContext)
       {
-        return m_cache.moduleContext.get();
+        return TemplateVariant(m_cache.moduleContext);
       }
       else
       {
@@ -6558,11 +6504,11 @@ class NestingNodeContext::Private
     {
       if (!m_cache.memberContext && m_def->definitionType()==Definition::TypeMember)
       {
-        m_cache.memberContext.reset(MemberContext::alloc(toMemberDef(m_def)));
+        m_cache.memberContext = MemberContext::alloc(toMemberDef(m_def));
       }
       if (m_cache.memberContext)
       {
-        return m_cache.memberContext.get();
+        return TemplateVariant(m_cache.memberContext);
       }
       else
       {
@@ -6822,19 +6768,19 @@ class NestingNodeContext::Private
     const NestingNodeContext *m_parent;
     ContextTreeType m_type;
     const Definition *m_def;
-    SharedPtr<NestingContext> m_children;
-    SharedPtr<NestingContext> m_members;
+    std::shared_ptr<NestingContext> m_children;
+    std::shared_ptr<NestingContext> m_members;
     int m_level;
     int m_index;
     struct Cachable
     {
-      SharedPtr<ClassContext>     classContext;
-      SharedPtr<NamespaceContext> namespaceContext;
-      SharedPtr<DirContext>       dirContext;
-      SharedPtr<FileContext>      fileContext;
-      SharedPtr<PageContext>      pageContext;
-      SharedPtr<ModuleContext>    moduleContext;
-      SharedPtr<MemberContext>    memberContext;
+      TemplateStructIntfPtr classContext;
+      TemplateStructIntfPtr namespaceContext;
+      TemplateStructIntfPtr dirContext;
+      TemplateStructIntfPtr fileContext;
+      TemplateStructIntfPtr pageContext;
+      TemplateStructIntfPtr moduleContext;
+      TemplateStructIntfPtr memberContext;
       std::unique_ptr<TemplateVariant>  brief;
     };
     mutable Cachable m_cache;
@@ -6850,7 +6796,6 @@ NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
                                        bool addClass,bool addConcepts,
                                        bool inherit,bool hideSuper,
                                        ClassDefSet &visitedClasses)
-   : RefCountedContext("NestingNodeContext")
 {
   p = new Private(parent,this,type,d,index,level,addClass,addConcepts,inherit,hideSuper,visitedClasses);
 }
@@ -6897,9 +6842,8 @@ class NestingContext::Private : public GenericNodeListContext
         bool isLinkable  = nd->isLinkableInProject();
         if (isLinkable && hasChildren)
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,nd,m_index,m_level,
-                                    addClasses,addConcepts,FALSE,FALSE,visitedClasses);
-          append(nnc);
+          append(NestingNodeContext::alloc(m_parent,m_type,nd,m_index,m_level,
+                                           addClasses,addConcepts,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
@@ -6936,9 +6880,8 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (classVisibleInIndex(cd) && cd->templateMaster()==0)
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
-                                                              TRUE,FALSE,FALSE,FALSE,visitedClasses);
-          append(nnc);
+          append(NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
+                                           TRUE,FALSE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
@@ -6949,9 +6892,8 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (cd->isLinkable())
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
-                                                              FALSE,TRUE,FALSE,FALSE,visitedClasses);
-          append(nnc);
+          append(NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
+                                           FALSE,TRUE,FALSE,FALSE,visitedClasses));
           m_index++;
         }
       }
@@ -7013,9 +6955,8 @@ class NestingContext::Private : public GenericNodeListContext
         {
           if (fd->getDirDef()==0) // top level file
           {
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,fd.get(),m_index,m_level,
-                                          FALSE,FALSE,FALSE,FALSE,visitedClasses);
-            append(nnc);
+            append(NestingNodeContext::alloc(m_parent,m_type,fd.get(),m_index,m_level,
+                                             FALSE,FALSE,FALSE,FALSE,visitedClasses));
             m_index++;
           }
         }
@@ -7025,9 +6966,8 @@ class NestingContext::Private : public GenericNodeListContext
     {
       for (const auto &fd : fList)
       {
-        NestingNodeContext *nnc=NestingNodeContext::alloc(m_parent,m_type,fd,m_index,m_level,
-                                          FALSE,FALSE,FALSE,FALSE,visitedClasses);
-        append(nnc);
+        append(NestingNodeContext::alloc(m_parent,m_type,fd,m_index,m_level,
+                                         FALSE,FALSE,FALSE,FALSE,visitedClasses));
         m_index++;
       }
     }
@@ -7105,9 +7045,8 @@ class NestingContext::Private : public GenericNodeListContext
 
         if (cd->isVisibleInHierarchy() && b)
         {
-          NestingNodeContext *tnc = NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
-                                           TRUE,FALSE,TRUE,hideSuper,visitedClasses);
-          append(tnc);
+          append(NestingNodeContext::alloc(m_parent,m_type,cd,m_index,m_level,
+                                           TRUE,FALSE,TRUE,hideSuper,visitedClasses));
           m_index++;
         }
       }
@@ -7134,9 +7073,8 @@ class NestingContext::Private : public GenericNodeListContext
           if (cd->isVisibleInHierarchy()) // should it be visible
           {
             // new root level class
-            NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,cd.get(),m_index,m_level,
-                                             TRUE,FALSE,TRUE,FALSE,visitedClasses);
-            append(nnc);
+            append(NestingNodeContext::alloc(m_parent,m_type,cd.get(),m_index,m_level,
+                                             TRUE,FALSE,TRUE,FALSE,visitedClasses));
             m_index++;
           }
         }
@@ -7148,9 +7086,8 @@ class NestingContext::Private : public GenericNodeListContext
       {
         if (md->visibleInIndex())
         {
-          NestingNodeContext *nnc = NestingNodeContext::alloc(m_parent,m_type,md,m_index,m_level+1,
-              TRUE,FALSE,TRUE,FALSE,visitedClasses);
-          append(nnc);
+          append(NestingNodeContext::alloc(m_parent,m_type,md,m_index,m_level+1,
+                                           TRUE,FALSE,TRUE,FALSE,visitedClasses));
           m_index++;
         }
       }
@@ -7163,8 +7100,7 @@ class NestingContext::Private : public GenericNodeListContext
     int m_index = 0;
 };
 
-NestingContext::NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level) :
-     RefCountedContext("NestingContext")
+NestingContext::NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level)
 {
   p = new Private(parent,type,level);
 }
@@ -7285,10 +7221,11 @@ class ClassTreeContext::Private
   public:
     Private()
     {
-      m_classTree.reset(NestingContext::alloc(0,ContextTreeType::ClassNesting,0));
+      m_classTree = NestingContext::alloc(0,ContextTreeType::ClassNesting,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_classTree);
       ClassDefSet visitedClasses;
-      m_classTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,TRUE,FALSE,visitedClasses);
-      m_classTree->addClasses(*Doxygen::classLinkedMap,TRUE,visitedClasses);
+      ctx->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,TRUE,FALSE,visitedClasses);
+      ctx->addClasses(*Doxygen::classLinkedMap,TRUE,visitedClasses);
       //%% Nesting tree
       static bool init=FALSE;
       if (!init)
@@ -7314,7 +7251,7 @@ class ClassTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_classTree.get();
+      return TemplateVariant(m_classTree);
     }
     TemplateVariant fileName() const
     {
@@ -7353,7 +7290,7 @@ class ClassTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_classTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_classTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -7362,13 +7299,13 @@ class ClassTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_classTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_classTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_classTree;
+    TemplateListIntfPtr m_classTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -7385,7 +7322,7 @@ class ClassTreeContext::Private
 
 PropertyMapper<ClassTreeContext::Private> ClassTreeContext::Private::s_inst;
 
-ClassTreeContext::ClassTreeContext() : RefCountedContext("ClassTreeContext")
+ClassTreeContext::ClassTreeContext()
 {
   p = new Private;
 }
@@ -7423,7 +7360,7 @@ class ConceptListContext::Private : public GenericNodeListContext
     }
 };
 
-ConceptListContext::ConceptListContext() : RefCountedContext("ConceptListContext")
+ConceptListContext::ConceptListContext()
 {
   p = new Private;
   p->addConcepts(*Doxygen::conceptLinkedMap);
@@ -7468,7 +7405,7 @@ class NamespaceListContext::Private : public GenericNodeListContext
     }
 };
 
-NamespaceListContext::NamespaceListContext() : RefCountedContext("NamespaceListContext")
+NamespaceListContext::NamespaceListContext()
 {
   p = new Private;
   p->addNamespaces(*Doxygen::namespaceLinkedMap);
@@ -7504,9 +7441,10 @@ class NamespaceTreeContext::Private
   public:
     Private()
     {
-      m_namespaceTree.reset(NestingContext::alloc(0,ContextTreeType::Namespace,0));
+      m_namespaceTree = NestingContext::alloc(0,ContextTreeType::Namespace,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_namespaceTree);
       ClassDefSet visitedClasses;
-      m_namespaceTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,TRUE,visitedClasses);
+      ctx->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,TRUE,visitedClasses);
       //%% Nesting tree
       static bool init=FALSE;
       if (!init)
@@ -7532,7 +7470,7 @@ class NamespaceTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_namespaceTree.get();
+      return TemplateVariant(m_namespaceTree);
     }
     TemplateVariant fileName() const
     {
@@ -7573,7 +7511,7 @@ class NamespaceTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_namespaceTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_namespaceTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -7582,13 +7520,13 @@ class NamespaceTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_namespaceTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_namespaceTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_namespaceTree;
+    TemplateListIntfPtr m_namespaceTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -7605,7 +7543,7 @@ class NamespaceTreeContext::Private
 
 PropertyMapper<NamespaceTreeContext::Private> NamespaceTreeContext::Private::s_inst;
 
-NamespaceTreeContext::NamespaceTreeContext() : RefCountedContext("NamespaceTreeContext")
+NamespaceTreeContext::NamespaceTreeContext()
 {
   p = new Private;
 }
@@ -7651,7 +7589,7 @@ class FileListContext::Private : public GenericNodeListContext
     }
 };
 
-FileListContext::FileListContext() : RefCountedContext("FileListContext")
+FileListContext::FileListContext()
 {
   p = new Private;
   if (Doxygen::inputNameLinkedMap) p->addFiles(*Doxygen::inputNameLinkedMap);
@@ -7693,7 +7631,7 @@ class DirListContext::Private : public GenericNodeListContext
     }
 };
 
-DirListContext::DirListContext() : RefCountedContext("DirListContext")
+DirListContext::DirListContext()
 {
   p = new Private;
 }
@@ -7732,7 +7670,7 @@ class UsedFilesContext::Private : public GenericNodeListContext
     }
 };
 
-UsedFilesContext::UsedFilesContext(const ClassDef *cd) : RefCountedContext("UsedFilesContext")
+UsedFilesContext::UsedFilesContext(const ClassDef *cd)
 {
   p = new Private;
   if (cd)
@@ -7780,12 +7718,13 @@ class FileTreeContext::Private
     Private()
     {
       // Add dirs tree
-      m_dirFileTree.reset(NestingContext::alloc(0,ContextTreeType::File,0));
+      m_dirFileTree = NestingContext::alloc(0,ContextTreeType::File,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_dirFileTree);
       ClassDefSet visitedClasses;
-      m_dirFileTree->addDirs(*Doxygen::dirLinkedMap,visitedClasses);
+      ctx->addDirs(*Doxygen::dirLinkedMap,visitedClasses);
       if (Doxygen::inputNameLinkedMap)
       {
-        m_dirFileTree->addFiles(*Doxygen::inputNameLinkedMap,visitedClasses);
+        ctx->addFiles(*Doxygen::inputNameLinkedMap,visitedClasses);
       }
       //%% DirFile tree:
       static bool init=FALSE;
@@ -7812,7 +7751,7 @@ class FileTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_dirFileTree.get();
+      return TemplateVariant(m_dirFileTree);
     }
     TemplateVariant fileName() const
     {
@@ -7838,7 +7777,7 @@ class FileTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_dirFileTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_dirFileTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -7847,13 +7786,13 @@ class FileTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_dirFileTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_dirFileTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_dirFileTree;
+    TemplateListIntfPtr m_dirFileTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -7870,7 +7809,7 @@ class FileTreeContext::Private
 
 PropertyMapper<FileTreeContext::Private> FileTreeContext::Private::s_inst;
 
-FileTreeContext::FileTreeContext() : RefCountedContext("FileTreeContext")
+FileTreeContext::FileTreeContext()
 {
   p = new Private;
 }
@@ -7899,10 +7838,11 @@ class PageTreeContext::Private
   public:
     Private(const PageLinkedMap &pages)
     {
-      m_pageTree.reset(NestingContext::alloc(0,ContextTreeType::Page,0));
+      m_pageTree = NestingContext::alloc(0,ContextTreeType::Page,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_pageTree);
       ClassDefSet visitedClasses;
       // Add pages
-      m_pageTree->addPages(pages,TRUE,visitedClasses);
+      ctx->addPages(pages,TRUE,visitedClasses);
 
       //%% PageNodeList tree:
       static bool init=FALSE;
@@ -7929,7 +7869,7 @@ class PageTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_pageTree.get();
+      return TemplateVariant(m_pageTree);
     }
     TemplateVariant fileName() const
     {
@@ -7955,7 +7895,7 @@ class PageTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_pageTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_pageTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -7964,13 +7904,13 @@ class PageTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_pageTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_pageTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_pageTree;
+    TemplateListIntfPtr m_pageTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -7987,7 +7927,7 @@ class PageTreeContext::Private
 
 PropertyMapper<PageTreeContext::Private> PageTreeContext::Private::s_inst;
 
-PageTreeContext::PageTreeContext(const PageLinkedMap &pages) : RefCountedContext("PageTreeContext")
+PageTreeContext::PageTreeContext(const PageLinkedMap &pages)
 {
   p = new Private(pages);
 }
@@ -8025,7 +7965,7 @@ class PageListContext::Private : public GenericNodeListContext
     }
 };
 
-PageListContext::PageListContext(const PageLinkedMap &pages) : RefCountedContext("PageListContext")
+PageListContext::PageListContext(const PageLinkedMap &pages)
 {
   p = new Private;
   p->addPages(pages);
@@ -8070,7 +8010,7 @@ class ExampleListContext::Private : public GenericNodeListContext
     }
 };
 
-ExampleListContext::ExampleListContext() : RefCountedContext("ExampleListContext")
+ExampleListContext::ExampleListContext()
 {
   p = new Private;
 }
@@ -8114,7 +8054,7 @@ class ModuleListContext::Private : public GenericNodeListContext
     }
 };
 
-ModuleListContext::ModuleListContext() : RefCountedContext("ModuleListContext")
+ModuleListContext::ModuleListContext()
 {
   p = new Private;
   p->addModules();
@@ -8150,11 +8090,12 @@ class ConceptTreeContext::Private
   public:
     Private()
     {
-      m_conceptTree.reset(NestingContext::alloc(0,ContextTreeType::Concept,0));
+      m_conceptTree = NestingContext::alloc(0,ContextTreeType::Concept,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_conceptTree);
       ClassDefSet visitedClasses;
       // Add concepts
-      m_conceptTree->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,TRUE,visitedClasses);
-      m_conceptTree->addConcepts(*Doxygen::conceptLinkedMap,TRUE,visitedClasses);
+      ctx->addNamespaces(*Doxygen::namespaceLinkedMap,TRUE,FALSE,TRUE,visitedClasses);
+      ctx->addConcepts(*Doxygen::conceptLinkedMap,TRUE,visitedClasses);
 
       //%% ConceptList tree:
       static bool init=FALSE;
@@ -8181,7 +8122,7 @@ class ConceptTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_conceptTree.get();
+      return TemplateVariant(m_conceptTree);
     }
     TemplateVariant fileName() const
     {
@@ -8207,7 +8148,7 @@ class ConceptTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_conceptTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_conceptTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -8216,13 +8157,13 @@ class ConceptTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_conceptTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_conceptTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_conceptTree;
+    TemplateListIntfPtr m_conceptTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -8239,7 +8180,7 @@ class ConceptTreeContext::Private
 
 PropertyMapper<ConceptTreeContext::Private> ConceptTreeContext::Private::s_inst;
 
-ConceptTreeContext::ConceptTreeContext() : RefCountedContext("ConceptTreeContext")
+ConceptTreeContext::ConceptTreeContext()
 {
   p = new Private;
 }
@@ -8268,10 +8209,11 @@ class ModuleTreeContext::Private
   public:
     Private()
     {
-      m_moduleTree.reset(NestingContext::alloc(0,ContextTreeType::Module,0));
+      m_moduleTree = NestingContext::alloc(0,ContextTreeType::Module,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_moduleTree);
       ClassDefSet visitedClasses;
       // Add modules
-      m_moduleTree->addModules(*Doxygen::groupLinkedMap,visitedClasses);
+      ctx->addModules(*Doxygen::groupLinkedMap,visitedClasses);
 
       //%% ModuleList tree:
       static bool init=FALSE;
@@ -8298,7 +8240,7 @@ class ModuleTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_moduleTree.get();
+      return TemplateVariant(m_moduleTree);
     }
     TemplateVariant fileName() const
     {
@@ -8324,7 +8266,7 @@ class ModuleTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_moduleTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_moduleTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -8333,13 +8275,13 @@ class ModuleTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_moduleTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_moduleTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_moduleTree;
+    TemplateListIntfPtr m_moduleTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -8356,7 +8298,7 @@ class ModuleTreeContext::Private
 
 PropertyMapper<ModuleTreeContext::Private> ModuleTreeContext::Private::s_inst;
 
-ModuleTreeContext::ModuleTreeContext() : RefCountedContext("ModuleTreeContext")
+ModuleTreeContext::ModuleTreeContext()
 {
   p = new Private;
 }
@@ -8459,7 +8401,7 @@ class NavPathElemContext::Private
 
 PropertyMapper<NavPathElemContext::Private> NavPathElemContext::Private::s_inst;
 
-NavPathElemContext::NavPathElemContext(const Definition *def) : RefCountedContext("NavPathElemContext")
+NavPathElemContext::NavPathElemContext(const Definition *def)
 {
   p = new Private(def);
 }
@@ -8488,10 +8430,11 @@ class ExampleTreeContext::Private
   public:
     Private()
     {
-      m_exampleTree.reset(NestingContext::alloc(0,ContextTreeType::Example,0));
+      m_exampleTree = NestingContext::alloc(0,ContextTreeType::Example,0);
+      auto ctx = std::dynamic_pointer_cast<NestingContext>(m_exampleTree);
       ClassDefSet visitedClasses;
       // Add pages
-      m_exampleTree->addPages(*Doxygen::exampleLinkedMap,TRUE,visitedClasses);
+      ctx->addPages(*Doxygen::exampleLinkedMap,TRUE,visitedClasses);
 
       static bool init=FALSE;
       if (!init)
@@ -8517,7 +8460,7 @@ class ExampleTreeContext::Private
     }
     TemplateVariant tree() const
     {
-      return m_exampleTree.get();
+      return TemplateVariant(m_exampleTree);
     }
     TemplateVariant fileName() const
     {
@@ -8543,7 +8486,7 @@ class ExampleTreeContext::Private
     {
       if (!m_cache.maxDepthComputed)
       {
-        m_cache.maxDepth = computeMaxDepth(m_exampleTree.get());
+        m_cache.maxDepth = computeMaxDepth(m_exampleTree);
         m_cache.maxDepthComputed=TRUE;
       }
       return m_cache.maxDepth;
@@ -8552,13 +8495,13 @@ class ExampleTreeContext::Private
     {
       if (!m_cache.preferredDepthComputed)
       {
-        m_cache.preferredDepth = computePreferredDepth(m_exampleTree.get(),maxDepth().toInt());
+        m_cache.preferredDepth = computePreferredDepth(m_exampleTree,maxDepth().toInt());
         m_cache.preferredDepthComputed=TRUE;
       }
       return m_cache.preferredDepth;
     }
   private:
-    SharedPtr<NestingContext> m_exampleTree;
+    TemplateListIntfPtr m_exampleTree;
     struct Cachable
     {
       Cachable() : maxDepth(0), maxDepthComputed(FALSE),
@@ -8575,7 +8518,7 @@ class ExampleTreeContext::Private
 
 PropertyMapper<ExampleTreeContext::Private> ExampleTreeContext::Private::s_inst;
 
-ExampleTreeContext::ExampleTreeContext() : RefCountedContext("ExampleTreeContext")
+ExampleTreeContext::ExampleTreeContext()
 {
   p = new Private;
 }
@@ -8634,11 +8577,11 @@ class GlobalsIndexContext::Private
       return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
-    TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
+    TemplateVariant getMembersFiltered(TemplateListPtr &listRef,MemberFunc filter) const
     {
-      if (!listRef)
+      if (!listRef) // fill cache
       {
-        TemplateList *list = TemplateList::alloc();
+        TemplateListPtr list = TemplateList::alloc();
         for (const auto &mn : *Doxygen::functionNameLinkedMap)
         {
           for (const auto &md : *mn)
@@ -8654,9 +8597,9 @@ class GlobalsIndexContext::Private
             }
           }
         }
-        listRef.reset(list);
+        listRef = list;
       }
-      return listRef.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(listRef));
     }
     TemplateVariant all() const
     {
@@ -8722,13 +8665,13 @@ class GlobalsIndexContext::Private
     struct Cachable
     {
       Cachable() {}
-      SharedPtr<TemplateList> all;
-      SharedPtr<TemplateList> functions;
-      SharedPtr<TemplateList> variables;
-      SharedPtr<TemplateList> typedefs;
-      SharedPtr<TemplateList> enums;
-      SharedPtr<TemplateList> enumValues;
-      SharedPtr<TemplateList> macros;
+      TemplateListPtr all;
+      TemplateListPtr functions;
+      TemplateListPtr variables;
+      TemplateListPtr typedefs;
+      TemplateListPtr enums;
+      TemplateListPtr enumValues;
+      TemplateListPtr macros;
     };
     mutable Cachable m_cache;
     static PropertyMapper<GlobalsIndexContext::Private> s_inst;
@@ -8737,7 +8680,7 @@ class GlobalsIndexContext::Private
 
 PropertyMapper<GlobalsIndexContext::Private> GlobalsIndexContext::Private::s_inst;
 
-GlobalsIndexContext::GlobalsIndexContext() : RefCountedContext("GlobalsIndexContext")
+GlobalsIndexContext::GlobalsIndexContext()
 {
   p = new Private;
 }
@@ -8797,11 +8740,11 @@ class ClassMembersIndexContext::Private
       return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
-    TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
+    TemplateVariant getMembersFiltered(TemplateListPtr &listRef,MemberFunc filter) const
     {
-      if (!listRef)
+      if (!listRef) // fill cache
       {
-        TemplateList *list = TemplateList::alloc();
+        TemplateListPtr list = TemplateList::alloc();
         for (const auto &mn : *Doxygen::memberNameLinkedMap)
         {
           for (const auto &md : *mn)
@@ -8817,9 +8760,9 @@ class ClassMembersIndexContext::Private
             }
           }
         }
-        listRef.reset(list);
+        listRef = list;
       }
-      return listRef.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(listRef));
     }
     TemplateVariant all() const
     {
@@ -8885,15 +8828,15 @@ class ClassMembersIndexContext::Private
     struct Cachable
     {
       Cachable() {}
-      SharedPtr<TemplateList> all;
-      SharedPtr<TemplateList> functions;
-      SharedPtr<TemplateList> variables;
-      SharedPtr<TemplateList> typedefs;
-      SharedPtr<TemplateList> enums;
-      SharedPtr<TemplateList> enumValues;
-      SharedPtr<TemplateList> properties;
-      SharedPtr<TemplateList> events;
-      SharedPtr<TemplateList> related;
+      TemplateListPtr all;
+      TemplateListPtr functions;
+      TemplateListPtr variables;
+      TemplateListPtr typedefs;
+      TemplateListPtr enums;
+      TemplateListPtr enumValues;
+      TemplateListPtr properties;
+      TemplateListPtr events;
+      TemplateListPtr related;
     };
     mutable Cachable m_cache;
     static PropertyMapper<ClassMembersIndexContext::Private> s_inst;
@@ -8902,7 +8845,7 @@ class ClassMembersIndexContext::Private
 
 PropertyMapper<ClassMembersIndexContext::Private> ClassMembersIndexContext::Private::s_inst;
 
-ClassMembersIndexContext::ClassMembersIndexContext() : RefCountedContext("ClassMembersIndexContext")
+ClassMembersIndexContext::ClassMembersIndexContext()
 {
   p = new Private;
 }
@@ -8961,11 +8904,11 @@ class NamespaceMembersIndexContext::Private
       return s_inst.fields();
     }
     typedef bool (MemberDef::*MemberFunc)() const;
-    TemplateVariant getMembersFiltered(SharedPtr<TemplateList> &listRef,MemberFunc filter) const
+    TemplateVariant getMembersFiltered(TemplateListPtr &listRef,MemberFunc filter) const
     {
-      if (!listRef)
+      if (!listRef) // fill the cache
       {
-        TemplateList *list = TemplateList::alloc();
+        TemplateListPtr list = TemplateList::alloc();
         for (const auto &mn : *Doxygen::functionNameLinkedMap)
         {
           for (const auto &md : *mn)
@@ -8981,9 +8924,9 @@ class NamespaceMembersIndexContext::Private
             }
           }
         }
-        listRef.reset(list);
+        listRef = list;
       }
-      return listRef.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(listRef));
     }
     TemplateVariant all() const
     {
@@ -9049,12 +8992,12 @@ class NamespaceMembersIndexContext::Private
     struct Cachable
     {
       Cachable() {}
-      SharedPtr<TemplateList> all;
-      SharedPtr<TemplateList> functions;
-      SharedPtr<TemplateList> variables;
-      SharedPtr<TemplateList> typedefs;
-      SharedPtr<TemplateList> enums;
-      SharedPtr<TemplateList> enumValues;
+      TemplateListPtr all;
+      TemplateListPtr functions;
+      TemplateListPtr variables;
+      TemplateListPtr typedefs;
+      TemplateListPtr enums;
+      TemplateListPtr enumValues;
     };
     mutable Cachable m_cache;
     static PropertyMapper<NamespaceMembersIndexContext::Private> s_inst;
@@ -9063,7 +9006,7 @@ class NamespaceMembersIndexContext::Private
 
 PropertyMapper<NamespaceMembersIndexContext::Private> NamespaceMembersIndexContext::Private::s_inst;
 
-NamespaceMembersIndexContext::NamespaceMembersIndexContext() : RefCountedContext("NamespaceMembersIndexContext")
+NamespaceMembersIndexContext::NamespaceMembersIndexContext()
 {
   p = new Private;
 }
@@ -9133,7 +9076,6 @@ class InheritanceGraphContext::Private
 PropertyMapper<InheritanceGraphContext::Private> InheritanceGraphContext::Private::s_inst;
 
 InheritanceGraphContext::InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id)
-   : RefCountedContext("InheritanceGraphContext")
 {
   p = new Private(hierarchy,n,id);
 }
@@ -9182,9 +9124,9 @@ class InheritanceNodeContext::Private
     {
       if (!m_classContext)
       {
-        m_classContext.reset(ClassContext::alloc(m_classDef));
+        m_classContext = ClassContext::alloc(m_classDef);
       }
-      return m_classContext.get();
+      return TemplateVariant(m_classContext);
     }
     TemplateVariant name() const
     {
@@ -9192,7 +9134,7 @@ class InheritanceNodeContext::Private
     }
   private:
     const ClassDef *m_classDef;
-    mutable SharedPtr<ClassContext> m_classContext;
+    mutable TemplateStructIntfPtr m_classContext;
     QCString m_name;
     static PropertyMapper<InheritanceNodeContext::Private> s_inst;
 };
@@ -9200,7 +9142,7 @@ class InheritanceNodeContext::Private
 
 PropertyMapper<InheritanceNodeContext::Private> InheritanceNodeContext::Private::s_inst;
 
-InheritanceNodeContext::InheritanceNodeContext(const ClassDef *cd,const QCString &name) : RefCountedContext("InheritanceNodeContext")
+InheritanceNodeContext::InheritanceNodeContext(const ClassDef *cd,const QCString &name)
 {
   p = new Private(cd,name);
 }
@@ -9232,7 +9174,7 @@ class InheritanceListContext::Private : public GenericNodeListContext
     }
 };
 
-InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool baseClasses) : RefCountedContext("InheritanceListContext")
+InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool baseClasses)
 {
   p = new Private;
   for (const auto &bcd : list)
@@ -9286,12 +9228,12 @@ class MemberListContext::Private : public GenericNodeListContext
     }
 };
 
-MemberListContext::MemberListContext() : RefCountedContext("MemberListContext")
+MemberListContext::MemberListContext()
 {
   p = new Private;
 }
 
-MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext("MemberListContext")
+MemberListContext::MemberListContext(const MemberList *list)
 {
   p = new Private;
   if (list)
@@ -9309,7 +9251,7 @@ MemberListContext::MemberListContext(const MemberList *list) : RefCountedContext
   }
 }
 
-MemberListContext::MemberListContext(const MemberVector &ml) : RefCountedContext("MemberListContext")
+MemberListContext::MemberListContext(const MemberVector &ml)
 {
   p = new Private;
   for (const auto &md : ml)
@@ -9399,11 +9341,11 @@ class MemberInfoContext::Private
     {
       if (!m_member && m_memberInfo->memberDef())
       {
-        m_member.reset(MemberContext::alloc(m_memberInfo->memberDef()));
+        m_member = MemberContext::alloc(m_memberInfo->memberDef());
       }
       if (m_member)
       {
-        return m_member.get();
+        return TemplateVariant(m_member);
       }
       else
       {
@@ -9412,14 +9354,14 @@ class MemberInfoContext::Private
     }
   private:
     const MemberInfo *m_memberInfo;
-    mutable SharedPtr<MemberContext> m_member;
+    mutable TemplateStructIntfPtr m_member;
     static PropertyMapper<MemberInfoContext::Private> s_inst;
 };
 //%% }
 
 PropertyMapper<MemberInfoContext::Private> MemberInfoContext::Private::s_inst;
 
-MemberInfoContext::MemberInfoContext(const MemberInfo *mi) : RefCountedContext("MemberInfoContext")
+MemberInfoContext::MemberInfoContext(const MemberInfo *mi)
 {
   p = new Private(mi);
 }
@@ -9471,7 +9413,6 @@ class AllMembersListContext::Private : public GenericNodeListContext
 };
 
 AllMembersListContext::AllMembersListContext(const MemberNameInfoLinkedMap &ml)
-  : RefCountedContext("AllMembersListContext")
 {
   p = new Private(ml);
 }
@@ -9534,9 +9475,9 @@ class MemberGroupInfoContext::Private
     {
       if (!m_cache.memberListContext)
       {
-        m_cache.memberListContext.reset(MemberListContext::alloc(&m_memberGroup->members()));
+        m_cache.memberListContext = MemberListContext::alloc(&m_memberGroup->members());
       }
-      return m_cache.memberListContext.get();
+      return TemplateVariant(m_cache.memberListContext);
     }
     TemplateVariant groupTitle() const
     {
@@ -9554,9 +9495,9 @@ class MemberGroupInfoContext::Private
     {
       if (!m_cache.memberGroups)
       {
-        m_cache.memberGroups.reset(MemberGroupListContext::alloc());
+        m_cache.memberGroups = MemberGroupListContext::alloc();
       }
-      return m_cache.memberGroups.get();
+      return TemplateVariant(m_cache.memberGroups);
     }
     TemplateVariant docs() const
     {
@@ -9587,9 +9528,9 @@ class MemberGroupInfoContext::Private
     const MemberGroup *m_memberGroup;
     struct Cachable
     {
-      SharedPtr<MemberListContext>      memberListContext;
-      SharedPtr<MemberGroupListContext> memberGroups;
-      std::unique_ptr<TemplateVariant>        docs;
+      TemplateListIntfPtr              memberListContext;
+      TemplateListIntfPtr              memberGroups;
+      std::unique_ptr<TemplateVariant> docs;
     };
     mutable Cachable m_cache;
     static PropertyMapper<MemberGroupInfoContext::Private> s_inst;
@@ -9599,7 +9540,7 @@ class MemberGroupInfoContext::Private
 PropertyMapper<MemberGroupInfoContext::Private> MemberGroupInfoContext::Private::s_inst;
 
 MemberGroupInfoContext::MemberGroupInfoContext(const Definition *def,
-       const QCString &relPath,const MemberGroup *mg) : RefCountedContext("MemberGroupInfoContext")
+       const QCString &relPath,const MemberGroup *mg)
 {
   p = new Private(def,relPath,mg);
 }
@@ -9631,12 +9572,12 @@ class MemberGroupListContext::Private : public GenericNodeListContext
     }
 };
 
-MemberGroupListContext::MemberGroupListContext() : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext()
 {
   p = new Private;
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list)
 {
   p = new Private;
   for (const auto &mg : list)
@@ -9645,7 +9586,7 @@ MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCStr
   }
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping) : RefCountedContext("MemberGroupListContext")
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping)
 {
   p = new Private;
   for (const auto &mg : list)
@@ -9717,9 +9658,9 @@ class MemberListInfoContext::Private
     {
       if (!m_cache.memberListContext)
       {
-        m_cache.memberListContext.reset(MemberListContext::alloc(m_memberList));
+        m_cache.memberListContext = MemberListContext::alloc(m_memberList);
       }
-      return m_cache.memberListContext.get();
+      return TemplateVariant(m_cache.memberListContext);
     }
     TemplateVariant title() const
     {
@@ -9737,22 +9678,22 @@ class MemberListInfoContext::Private
     {
       if (!m_cache.memberGroups)
       {
-        m_cache.memberGroups.reset(MemberGroupListContext::alloc(m_def,m_relPath,m_memberList->getMemberGroupList()));
+        m_cache.memberGroups = MemberGroupListContext::alloc(m_def,m_relPath,m_memberList->getMemberGroupList());
       }
-      return m_cache.memberGroups.get();
+      return TemplateVariant(m_cache.memberGroups);
     }
     TemplateVariant inherited() const
     {
       if (!m_cache.inherited && (m_memberList->listType()&MemberListType_detailedLists)==0 &&
           m_def->definitionType()==Definition::TypeClass)
       {
-        InheritedMemberInfoListContext *ctx = InheritedMemberInfoListContext::alloc();
+        m_cache.inherited = InheritedMemberInfoListContext::alloc();
+        auto ctx = std::dynamic_pointer_cast<InheritedMemberInfoListContext>(m_cache.inherited);
         ctx->addMemberList(toClassDef(m_def),m_memberList->listType(),m_title,FALSE);
-        m_cache.inherited.reset(ctx);
       }
       if (m_cache.inherited)
       {
-        return m_cache.inherited.get();
+        return TemplateVariant(m_cache.inherited);
       }
       else
       {
@@ -9767,9 +9708,9 @@ class MemberListInfoContext::Private
     QCString m_subtitle;
     struct Cachable
     {
-      SharedPtr<MemberListContext> memberListContext;
-      SharedPtr<MemberGroupListContext> memberGroups;
-      SharedPtr<InheritedMemberInfoListContext> inherited;
+      TemplateListIntfPtr memberListContext;
+      TemplateListIntfPtr memberGroups;
+      TemplateListIntfPtr inherited;
     };
     mutable Cachable m_cache;
     static PropertyMapper<MemberListInfoContext::Private> s_inst;
@@ -9780,7 +9721,7 @@ PropertyMapper<MemberListInfoContext::Private> MemberListInfoContext::Private::s
 
 MemberListInfoContext::MemberListInfoContext(
            const Definition *def,const QCString &relPath,const MemberList *ml,
-           const QCString &title,const QCString &subtitle) : RefCountedContext("MemberListInfoContext")
+           const QCString &title,const QCString &subtitle)
 {
   p = new Private(def,relPath,ml,title,subtitle);
 }
@@ -9837,9 +9778,9 @@ class InheritedMemberInfoContext::Private
     {
       if (!m_classCtx)
       {
-        m_classCtx.reset(ClassContext::alloc(m_class));
+        m_classCtx = ClassContext::alloc(m_class);
       }
-      return m_classCtx.get();
+      return TemplateVariant(m_classCtx);
     }
     TemplateVariant title() const
     {
@@ -9849,9 +9790,9 @@ class InheritedMemberInfoContext::Private
     {
       if (!m_memberListCtx)
       {
-        m_memberListCtx.reset(MemberListContext::alloc(m_memberList));
+        m_memberListCtx = MemberListContext::alloc(m_memberList);
       }
-      return m_memberListCtx.get();
+      return TemplateVariant(m_memberListCtx);
     }
     TemplateVariant id() const
     {
@@ -9862,20 +9803,20 @@ class InheritedMemberInfoContext::Private
     {
       if (!m_inheritedFrom)
       {
-        m_inheritedFrom.reset(TemplateList::alloc());
+        m_inheritedFrom = TemplateList::alloc();
         m_inheritedFrom->append(title());
         m_inheritedFrom->append(getClass());
       }
-      return m_inheritedFrom.get();
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(m_inheritedFrom));
     }
 
   private:
     const ClassDef *  m_class;
     const MemberList *m_memberList;
     QCString    m_title;
-    mutable SharedPtr<ClassContext> m_classCtx;
-    mutable SharedPtr<MemberListContext> m_memberListCtx;
-    mutable SharedPtr<TemplateList> m_inheritedFrom;
+    mutable TemplateStructIntfPtr m_classCtx;
+    mutable TemplateListIntfPtr   m_memberListCtx;
+    mutable TemplateListPtr m_inheritedFrom;
     static PropertyMapper<InheritedMemberInfoContext::Private> s_inst;
 };
 //%% }
@@ -9883,7 +9824,7 @@ class InheritedMemberInfoContext::Private
 PropertyMapper<InheritedMemberInfoContext::Private> InheritedMemberInfoContext::Private::s_inst;
 
 InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,
-                                                       const QCString &title) : RefCountedContext("InheritedMemberInfoContext")
+                                                       const QCString &title)
 {
   p = new Private(cd,ml,title);
 }
@@ -9999,7 +9940,7 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
     }
 };
 
-InheritedMemberInfoListContext::InheritedMemberInfoListContext() : RefCountedContext("InheritedMemberInfoListContext")
+InheritedMemberInfoListContext::InheritedMemberInfoListContext()
 {
   p = new Private;
 }
@@ -10133,7 +10074,7 @@ class ArgumentContext::Private
 
 PropertyMapper<ArgumentContext::Private> ArgumentContext::Private::s_inst;
 
-ArgumentContext::ArgumentContext(const Argument &al,const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentContext")
+ArgumentContext::ArgumentContext(const Argument &al,const Definition *def,const QCString &relPath)
 {
   p = new Private(al,def,relPath);
 }
@@ -10165,13 +10106,13 @@ class ArgumentListContext::Private : public GenericNodeListContext
     }
 };
 
-ArgumentListContext::ArgumentListContext() : RefCountedContext("ArgumentListContext")
+ArgumentListContext::ArgumentListContext()
 {
   p = new Private;
 }
 
 ArgumentListContext::ArgumentListContext(const ArgumentList &list,
-                        const Definition *def,const QCString &relPath) : RefCountedContext("ArgumentListContext")
+                        const Definition *def,const QCString &relPath)
 {
   p = new Private;
   for (const Argument &arg : list)
@@ -10357,7 +10298,6 @@ class SymbolContext::Private
 PropertyMapper<SymbolContext::Private> SymbolContext::Private::s_inst;
 
 SymbolContext::SymbolContext(const Definition *def,const Definition *prevDef,const Definition *nextDef)
-    : RefCountedContext("SymbolContext")
 {
   p = new Private(def,prevDef,nextDef);
 }
@@ -10400,7 +10340,6 @@ class SymbolListContext::Private : public GenericNodeListContext
 
 SymbolListContext::SymbolListContext(const SearchIndexList::const_iterator &start,
                                      const SearchIndexList::const_iterator &end)
-    : RefCountedContext("SymbolListContext")
 {
   p = new Private(start,end);
 }
@@ -10465,16 +10404,16 @@ class SymbolGroupContext::Private
     {
       if (!m_cache.symbolList)
       {
-        m_cache.symbolList.reset(SymbolListContext::alloc(m_start,m_end));
+        m_cache.symbolList = SymbolListContext::alloc(m_start,m_end);
       }
-      return m_cache.symbolList.get();
+      return TemplateVariant(m_cache.symbolList);
     }
   private:
     SearchIndexList::const_iterator m_start;
     SearchIndexList::const_iterator m_end;
     struct Cachable
     {
-      SharedPtr<SymbolListContext> symbolList;
+      TemplateListIntfPtr symbolList;
     };
     mutable Cachable m_cache;
     static PropertyMapper<SymbolGroupContext::Private> s_inst;
@@ -10485,7 +10424,6 @@ PropertyMapper<SymbolGroupContext::Private> SymbolGroupContext::Private::s_inst;
 
 SymbolGroupContext::SymbolGroupContext(const SearchIndexList::const_iterator &start,
                                        const SearchIndexList::const_iterator &end)
-    : RefCountedContext("SymbolGroupContext")
 {
   p = new Private(start,end);
 }
@@ -10538,7 +10476,6 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
 };
 
 SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList &sil)
-    : RefCountedContext("SymbolGroupListContext")
 {
   p = new Private(sil);
 }
@@ -10604,9 +10541,9 @@ class SymbolIndexContext::Private
     {
       if (!m_cache.symbolGroups)
       {
-        m_cache.symbolGroups.reset(SymbolGroupListContext::alloc(m_searchList));
+        m_cache.symbolGroups = SymbolGroupListContext::alloc(m_searchList);
       }
-      return m_cache.symbolGroups.get();
+      return TemplateVariant(m_cache.symbolGroups);
     }
   private:
     QCString m_letter;
@@ -10614,7 +10551,7 @@ class SymbolIndexContext::Private
     QCString m_name;
     struct Cachable
     {
-      SharedPtr<SymbolGroupListContext> symbolGroups;
+      TemplateListIntfPtr symbolGroups;
     };
     mutable Cachable m_cache;
     static PropertyMapper<SymbolIndexContext::Private> s_inst;
@@ -10624,7 +10561,6 @@ class SymbolIndexContext::Private
 PropertyMapper<SymbolIndexContext::Private> SymbolIndexContext::Private::s_inst;
 
 SymbolIndexContext::SymbolIndexContext(const std::string &letter,const SearchIndexList &sl,const QCString &name)
-    : RefCountedContext("SymbolIndexContext")
 {
   p = new Private(letter,sl,name);
 }
@@ -10660,7 +10596,7 @@ class SymbolIndicesContext::Private : public GenericNodeListContext
     }
 };
 
-SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo &info) : RefCountedContext("SymbolIndicesContext")
+SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo &info)
 {
   p = new Private(info);
 }
@@ -10724,15 +10660,15 @@ class SearchIndexContext::Private
     {
       if (!m_cache.symbolIndices)
       {
-        m_cache.symbolIndices.reset(SymbolIndicesContext::alloc(m_info));
+        m_cache.symbolIndices = SymbolIndicesContext::alloc(m_info);
       }
-      return m_cache.symbolIndices.get();
+      return TemplateVariant(m_cache.symbolIndices);
     }
   private:
     const SearchIndexInfo &m_info;
     struct Cachable
     {
-      SharedPtr<SymbolIndicesContext> symbolIndices;
+      TemplateListIntfPtr symbolIndices;
     };
     mutable Cachable m_cache;
     static PropertyMapper<SearchIndexContext::Private> s_inst;
@@ -10742,7 +10678,6 @@ class SearchIndexContext::Private
 PropertyMapper<SearchIndexContext::Private> SearchIndexContext::Private::s_inst;
 
 SearchIndexContext::SearchIndexContext(const SearchIndexInfo &info)
-    : RefCountedContext("SearchIndexContext")
 {
   p = new Private(info);
 }
@@ -10778,7 +10713,7 @@ class SearchIndicesContext::Private : public GenericNodeListContext
     }
 };
 
-SearchIndicesContext::SearchIndicesContext() : RefCountedContext("SearchIndicesContext")
+SearchIndicesContext::SearchIndicesContext()
 {
   p = new Private;
 }
@@ -10939,10 +10874,6 @@ class LatexEscaper : public TemplateEscapeIntf
 
 //------------------------------------------------------------------------
 
-#if DEBUG_REF
-int RefCountedContext::s_totalCount;
-#endif
-
 void generateOutputViaTemplate()
 {
   msg("Generating output via template engine...\n");
@@ -10951,93 +10882,93 @@ void generateOutputViaTemplate()
     TemplateContext *ctx = e.createContext();
     if (ctx)
     {
-      SharedPtr<DoxygenContext>               doxygen              (DoxygenContext::alloc());
-      SharedPtr<ConfigContext>                config               (ConfigContext::alloc());
-      SharedPtr<TranslateContext>             tr                   (TranslateContext::alloc());
-      SharedPtr<ClassListContext>             classList            (ClassListContext::alloc());
-      SharedPtr<ClassIndexContext>            classIndex           (ClassIndexContext::alloc());
-      SharedPtr<ClassTreeContext>             classTree            (ClassTreeContext::alloc());
-      SharedPtr<ClassHierarchyContext>        classHierarchy       (ClassHierarchyContext::alloc());
-      SharedPtr<ConceptListContext>           conceptList          (ConceptListContext::alloc());
-      SharedPtr<ConceptTreeContext>           conceptTree          (ConceptTreeContext::alloc());
-      SharedPtr<NamespaceListContext>         namespaceList        (NamespaceListContext::alloc());
-      SharedPtr<NamespaceTreeContext>         namespaceTree        (NamespaceTreeContext::alloc());
-      SharedPtr<DirListContext>               dirList              (DirListContext::alloc());
-      SharedPtr<FileListContext>              fileList             (FileListContext::alloc());
-      SharedPtr<FileTreeContext>              fileTree             (FileTreeContext::alloc());
-      SharedPtr<PageTreeContext>              pageTree             (PageTreeContext::alloc(*Doxygen::pageLinkedMap));
-      SharedPtr<PageListContext>              pageList             (PageListContext::alloc(*Doxygen::pageLinkedMap));
-      SharedPtr<ExampleTreeContext>           exampleTree          (ExampleTreeContext::alloc());
-      SharedPtr<ExampleListContext>           exampleList          (ExampleListContext::alloc());
-      SharedPtr<ModuleTreeContext>            moduleTree           (ModuleTreeContext::alloc());
-      SharedPtr<ModuleListContext>            moduleList           (ModuleListContext::alloc());
-      SharedPtr<GlobalsIndexContext>          globalsIndex         (GlobalsIndexContext::alloc());
-      SharedPtr<ClassMembersIndexContext>     classMembersIndex    (ClassMembersIndexContext::alloc());
-      SharedPtr<NamespaceMembersIndexContext> namespaceMembersIndex(NamespaceMembersIndexContext::alloc());
-      SharedPtr<SearchIndicesContext>         searchIndices        (SearchIndicesContext::alloc());
+      TemplateStructIntfPtr doxygen              (DoxygenContext::alloc());
+      TemplateStructIntfPtr config               (ConfigContext::alloc());
+      TemplateStructIntfPtr tr                   (TranslateContext::alloc());
+      TemplateListIntfPtr   classList            (ClassListContext::alloc());
+      TemplateStructIntfPtr classIndex           (ClassIndexContext::alloc());
+      TemplateStructIntfPtr classTree            (ClassTreeContext::alloc());
+      TemplateStructIntfPtr classHierarchy       (ClassHierarchyContext::alloc());
+      TemplateListIntfPtr   conceptList          (ConceptListContext::alloc());
+      TemplateStructIntfPtr conceptTree          (ConceptTreeContext::alloc());
+      TemplateListIntfPtr   namespaceList        (NamespaceListContext::alloc());
+      TemplateStructIntfPtr namespaceTree        (NamespaceTreeContext::alloc());
+      TemplateListIntfPtr   dirList              (DirListContext::alloc());
+      TemplateListIntfPtr   fileList             (FileListContext::alloc());
+      TemplateStructIntfPtr fileTree             (FileTreeContext::alloc());
+      TemplateStructIntfPtr pageTree             (PageTreeContext::alloc(*Doxygen::pageLinkedMap));
+      TemplateListIntfPtr   pageList             (PageListContext::alloc(*Doxygen::pageLinkedMap));
+      TemplateStructIntfPtr exampleTree          (ExampleTreeContext::alloc());
+      TemplateListIntfPtr   exampleList          (ExampleListContext::alloc());
+      TemplateStructIntfPtr moduleTree           (ModuleTreeContext::alloc());
+      TemplateListIntfPtr   moduleList           (ModuleListContext::alloc());
+      TemplateStructIntfPtr globalsIndex         (GlobalsIndexContext::alloc());
+      TemplateStructIntfPtr classMembersIndex    (ClassMembersIndexContext::alloc());
+      TemplateStructIntfPtr namespaceMembersIndex(NamespaceMembersIndexContext::alloc());
+      TemplateListIntfPtr   searchIndices        (SearchIndicesContext::alloc());
 
       //%% Doxygen doxygen:
-      ctx->set("doxygen",doxygen.get());
+      ctx->set("doxygen",doxygen);
       //%% Translator tr:
-      ctx->set("tr",tr.get());
+      ctx->set("tr",tr);
       //%% Config config:
-      ctx->set("config",config.get());
+      ctx->set("config",config);
       //%% ClassList classList:
-      ctx->set("classList",classList.get()); // not used for standard HTML
+      ctx->set("classList",classList); // not used for standard HTML
       //%% ClassTree classTree:
-      ctx->set("classTree",classTree.get());
+      ctx->set("classTree",classTree);
       //%% ClassIndex classIndex:
-      ctx->set("classIndex",classIndex.get());
+      ctx->set("classIndex",classIndex);
       //%% ClassHierarchy classHierarchy:
-      ctx->set("classHierarchy",classHierarchy.get());
+      ctx->set("classHierarchy",classHierarchy);
       //%% ConceptList conceptList:
-      ctx->set("conceptList",conceptList.get());
+      ctx->set("conceptList",conceptList);
       //%% ConceptTree conceptTree:
-      ctx->set("conceptTree",conceptTree.get());
+      ctx->set("conceptTree",conceptTree);
       //%% NamespaceList namespaceList:
-      ctx->set("namespaceList",namespaceList.get());
+      ctx->set("namespaceList",namespaceList);
       //%% NamespaceTree namespaceTree:
-      ctx->set("namespaceTree",namespaceTree.get());
+      ctx->set("namespaceTree",namespaceTree);
       //%% FileList fileList:
-      ctx->set("fileList",fileList.get());
+      ctx->set("fileList",fileList);
       //%% FileTree fileTree:
-      ctx->set("fileTree",fileTree.get());
+      ctx->set("fileTree",fileTree);
       //%% PageList pageList
-      ctx->set("pageList",pageList.get());
+      ctx->set("pageList",pageList);
       //%% PageTree pageTree
-      ctx->set("pageTree",pageTree.get());
+      ctx->set("pageTree",pageTree);
       //%% ExampleTree exampleTree
-      ctx->set("exampleTree",exampleTree.get());
+      ctx->set("exampleTree",exampleTree);
       //%% ExampleList exampleList
-      ctx->set("exampleList",exampleList.get());
+      ctx->set("exampleList",exampleList);
       //%% ModuleTree moduleTree
-      ctx->set("moduleTree",moduleTree.get());
+      ctx->set("moduleTree",moduleTree);
       //%% ModuleList moduleList
-      ctx->set("moduleList",moduleList.get());
+      ctx->set("moduleList",moduleList);
       //%% DirList dirList
-      ctx->set("dirList",dirList.get());
+      ctx->set("dirList",dirList);
       //%% Page mainPage
       if (Doxygen::mainPage)
       {
-        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE));
-        ctx->set("mainPage",mainPage.get());
+        TemplateStructIntfPtr mainPage = PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE);
+        ctx->set("mainPage",mainPage);
       }
       else
       {
         // TODO: for LaTeX output index should be main... => solve in template
         Doxygen::mainPage.reset(createPageDef("[generated]",1,"index","",Config_getString(PROJECT_NAME)));
         Doxygen::mainPage->setFileName("index");
-        SharedPtr<PageContext> mainPage(PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE));
-        ctx->set("mainPage",mainPage.get());
+        TemplateStructIntfPtr mainPage = PageContext::alloc(Doxygen::mainPage.get(),TRUE,FALSE);
+        ctx->set("mainPage",mainPage);
       }
       //%% GlobalsIndex globalsIndex:
-      ctx->set("globalsIndex",globalsIndex.get());
+      ctx->set("globalsIndex",globalsIndex);
       //%% ClassMembersIndex classMembersIndex:
-      ctx->set("classMembersIndex",classMembersIndex.get());
+      ctx->set("classMembersIndex",classMembersIndex);
       //%% NamespaceMembersIndex namespaceMembersIndex:
-      ctx->set("namespaceMembersIndex",namespaceMembersIndex.get());
+      ctx->set("namespaceMembersIndex",namespaceMembersIndex);
       //%% SearchIndices searchIndices
-      ctx->set("searchIndices",searchIndices.get());
+      ctx->set("searchIndices",searchIndices);
       //%% string space
       ctx->set("space"," ");
 
@@ -11097,9 +11028,6 @@ void generateOutputViaTemplate()
       e.destroyContext(ctx);
     }
   }
-#if DEBUG_REF // should be 0, i.e. all objects are deleted
-  printf("==== total ref count %d\n",RefCountedContext::s_totalCount);
-#endif
 }
 
 void generateTemplateFiles(const QCString &templateDir)
