@@ -84,7 +84,7 @@ class ConfigContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -104,7 +104,7 @@ class DoxygenContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -124,7 +124,7 @@ class TranslateContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -147,7 +147,7 @@ class UsedFilesContext : public TemplateListIntf
   private:
 
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -167,7 +167,7 @@ class IncludeInfoContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -188,7 +188,7 @@ class IncludeInfoListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -208,7 +208,7 @@ class ClassContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
@@ -229,7 +229,7 @@ class ConceptContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -249,7 +249,7 @@ class NamespaceContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -269,7 +269,7 @@ class FileContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 //----------------------------------------------------
 
@@ -288,7 +288,7 @@ class DirContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
@@ -309,7 +309,7 @@ class PageContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -329,7 +329,7 @@ class MemberContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
@@ -350,7 +350,7 @@ class ModuleContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -371,7 +371,7 @@ class ClassListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -391,7 +391,7 @@ class ClassIndexContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -411,7 +411,7 @@ class InheritanceGraphContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -432,7 +432,7 @@ class ClassInheritanceNodeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -453,7 +453,7 @@ class ClassInheritanceContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -473,7 +473,7 @@ class ClassHierarchyContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -518,7 +518,7 @@ class NestingNodeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -558,7 +558,7 @@ class NestingContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -578,7 +578,7 @@ class ClassTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -599,7 +599,7 @@ class ConceptListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -620,7 +620,7 @@ class NamespaceListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -640,7 +640,7 @@ class NamespaceTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -661,7 +661,7 @@ class DirListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -682,7 +682,7 @@ class FileListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -702,7 +702,7 @@ class FileTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -725,7 +725,7 @@ class PageListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -745,7 +745,7 @@ class PageTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -765,7 +765,7 @@ class ModuleNodeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -789,7 +789,7 @@ class ModuleListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -809,7 +809,7 @@ class ConceptTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -829,7 +829,7 @@ class ModuleTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -850,7 +850,7 @@ class ExampleListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -871,7 +871,7 @@ class ExampleTreeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -891,7 +891,7 @@ class GlobalsIndexContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -911,7 +911,7 @@ class ClassMembersIndexContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -931,7 +931,7 @@ class NamespaceMembersIndexContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -951,7 +951,7 @@ class NavPathElemContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
@@ -972,7 +972,7 @@ class InheritanceNodeContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -993,7 +993,7 @@ class InheritanceListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1020,7 +1020,7 @@ class MemberListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1040,7 +1040,7 @@ class MemberGroupInfoContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1067,7 +1067,7 @@ class MemberGroupListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 
@@ -1092,7 +1092,7 @@ class MemberListInfoContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1112,7 +1112,7 @@ class MemberInfoContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1132,7 +1132,7 @@ class InheritedMemberInfoContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1154,7 +1154,7 @@ class InheritedMemberInfoListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1175,7 +1175,7 @@ class AllMembersListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1195,7 +1195,7 @@ class ArgumentContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1219,7 +1219,7 @@ class ArgumentListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1239,7 +1239,7 @@ class SymbolContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1262,7 +1262,7 @@ class SymbolListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1284,7 +1284,7 @@ class SymbolGroupContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1305,7 +1305,7 @@ class SymbolGroupListContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1326,7 +1326,7 @@ class SymbolIndexContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1347,7 +1347,7 @@ class SymbolIndicesContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1367,7 +1367,7 @@ class SearchIndexContext : public TemplateStructIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------
@@ -1388,7 +1388,7 @@ class SearchIndicesContext : public TemplateListIntf
 
   private:
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //----------------------------------------------------

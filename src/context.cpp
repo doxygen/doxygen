@@ -267,14 +267,12 @@ class ConfigContext::Private
 };
 //%% }
 
-ConfigContext::ConfigContext()
+ConfigContext::ConfigContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ConfigContext::~ConfigContext()
 {
-  delete p;
 }
 
 TemplateVariant ConfigContext::get(const QCString &name) const
@@ -385,14 +383,12 @@ class DoxygenContext::Private
 PropertyMapper<DoxygenContext::Private> DoxygenContext::Private::s_inst;
 //                                (PropertyMapper<DoxygenContext::Private>::instance());
 
-DoxygenContext::DoxygenContext()
+DoxygenContext::DoxygenContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 DoxygenContext::~DoxygenContext()
 {
-  delete p;
 }
 
 TemplateVariant DoxygenContext::get(const QCString &n) const
@@ -1242,14 +1238,12 @@ class TranslateContext::Private
 
 PropertyMapper<TranslateContext::Private> TranslateContext::Private::s_inst;
 
-TranslateContext::TranslateContext()
+TranslateContext::TranslateContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 TranslateContext::~TranslateContext()
 {
-  delete p;
 }
 
 TemplateVariant TranslateContext::get(const QCString &n) const
@@ -1750,14 +1744,12 @@ class IncludeInfoContext::Private
 
 PropertyMapper<IncludeInfoContext::Private> IncludeInfoContext::Private::s_inst;
 
-IncludeInfoContext::IncludeInfoContext(const IncludeInfo *info,SrcLangExt lang)
+IncludeInfoContext::IncludeInfoContext(const IncludeInfo *info,SrcLangExt lang) : p(std::make_unique<Private>(info,lang))
 {
-  p = new Private(info,lang);
 }
 
 IncludeInfoContext::~IncludeInfoContext()
 {
-  delete p;
 }
 
 TemplateVariant IncludeInfoContext::get(const QCString &n) const
@@ -1787,14 +1779,12 @@ class IncludeInfoListContext::Private : public GenericNodeListContext
     }
 };
 
-IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang)
+IncludeInfoListContext::IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang) : p(std::make_unique<Private>(list,lang))
 {
-  p = new Private(list,lang);
 }
 
 IncludeInfoListContext::~IncludeInfoListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -2664,15 +2654,12 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
 
 PropertyMapper<ClassContext::Private> ClassContext::Private::s_inst;
 
-ClassContext::ClassContext(const ClassDef *cd)
+ClassContext::ClassContext(const ClassDef *cd) : p(std::make_unique<Private>(cd))
 {
-  //printf("ClassContext::ClassContext(%s)\n",cd?qPrint(cd->name()):"<none>");
-  p = new Private(cd);
 }
 
 ClassContext::~ClassContext()
 {
-  delete p;
 }
 
 TemplateVariant ClassContext::get(const QCString &n) const
@@ -2965,14 +2952,12 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
 
 PropertyMapper<NamespaceContext::Private> NamespaceContext::Private::s_inst;
 
-NamespaceContext::NamespaceContext(const NamespaceDef *nd)
+NamespaceContext::NamespaceContext(const NamespaceDef *nd) : p(std::make_unique<Private>(nd))
 {
-  p = new Private(nd);
 }
 
 NamespaceContext::~NamespaceContext()
 {
-  delete p;
 }
 
 TemplateVariant NamespaceContext::get(const QCString &n) const
@@ -3426,14 +3411,12 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
 
 PropertyMapper<FileContext::Private> FileContext::Private::s_inst;
 
-FileContext::FileContext(const FileDef *fd)
+FileContext::FileContext(const FileDef *fd) : p(std::make_unique<Private>(fd))
 {
-  p = new Private(fd);
 }
 
 FileContext::~FileContext()
 {
-  delete p;
 }
 
 TemplateVariant FileContext::get(const QCString &n) const
@@ -3622,14 +3605,12 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
 
 PropertyMapper<DirContext::Private> DirContext::Private::s_inst;
 
-DirContext::DirContext(const DirDef *fd)
+DirContext::DirContext(const DirDef *fd) : p(std::make_unique<Private>(fd))
 {
-  p = new Private(fd);
 }
 
 DirContext::~DirContext()
 {
-  delete p;
 }
 
 TemplateVariant DirContext::get(const QCString &n) const
@@ -3776,14 +3757,12 @@ class PageContext::Private : public DefinitionContext<PageContext::Private>
 
 PropertyMapper<PageContext::Private> PageContext::Private::s_inst;
 
-PageContext::PageContext(const PageDef *pd,bool isMainPage,bool isExample)
+PageContext::PageContext(const PageDef *pd,bool isMainPage,bool isExample) : p(std::make_unique<Private>(pd,isMainPage,isExample))
 {
-  p = new Private(pd,isMainPage,isExample);
 }
 
 PageContext::~PageContext()
 {
-  delete p;
 }
 
 TemplateVariant PageContext::get(const QCString &n) const
@@ -5238,14 +5217,12 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
 
 PropertyMapper<MemberContext::Private> MemberContext::Private::s_inst;
 
-MemberContext::MemberContext(const MemberDef *md)
+MemberContext::MemberContext(const MemberDef *md) : p(std::make_unique<Private>(md))
 {
-  p = new Private(md);
 }
 
 MemberContext::~MemberContext()
 {
-  delete p;
 }
 
 TemplateVariant MemberContext::get(const QCString &n) const
@@ -5388,15 +5365,12 @@ class ConceptContext::Private : public DefinitionContext<ConceptContext::Private
 
 PropertyMapper<ConceptContext::Private> ConceptContext::Private::s_inst;
 
-ConceptContext::ConceptContext(const ConceptDef *cd)
+ConceptContext::ConceptContext(const ConceptDef *cd) : p(std::make_unique<Private>(cd))
 {
-  //printf("ConceptContext::ConceptContext(%s)\n",cd?qPrint(cd->name()):"<none>");
-  p = new Private(cd);
 }
 
 ConceptContext::~ConceptContext()
 {
-  delete p;
 }
 
 TemplateVariant ConceptContext::get(const QCString &n) const
@@ -5909,14 +5883,12 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
 
 PropertyMapper<ModuleContext::Private> ModuleContext::Private::s_inst;
 
-ModuleContext::ModuleContext(const GroupDef *gd)
+ModuleContext::ModuleContext(const GroupDef *gd) : p(std::make_unique<Private>(gd))
 {
-  p = new Private(gd);
 }
 
 ModuleContext::~ModuleContext()
 {
-  delete p;
 }
 
 TemplateVariant ModuleContext::get(const QCString &n) const
@@ -5955,16 +5927,14 @@ class ClassListContext::Private : public GenericNodeListContext
     }
 };
 
-ClassListContext::ClassListContext()
+ClassListContext::ClassListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
   p->addClasses(*Doxygen::classLinkedMap);
   p->addClasses(*Doxygen::hiddenClassLinkedMap);
 }
 
 ClassListContext::~ClassListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -6081,15 +6051,12 @@ class ClassIndexContext::Private
 
 PropertyMapper<ClassIndexContext::Private> ClassIndexContext::Private::s_inst;
 
-ClassIndexContext::ClassIndexContext()
+ClassIndexContext::ClassIndexContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
-  //p->addClasses(*Doxygen::hiddenClasses);
 }
 
 ClassIndexContext::~ClassIndexContext()
 {
-  delete p;
 }
 
 // TemplateStructIntf
@@ -6306,14 +6273,12 @@ class ClassHierarchyContext::Private
 
 PropertyMapper<ClassHierarchyContext::Private> ClassHierarchyContext::Private::s_inst;
 
-ClassHierarchyContext::ClassHierarchyContext()
+ClassHierarchyContext::ClassHierarchyContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ClassHierarchyContext::~ClassHierarchyContext()
 {
-  delete p;
 }
 
 TemplateVariant ClassHierarchyContext::get(const QCString &name) const
@@ -6796,13 +6761,12 @@ NestingNodeContext::NestingNodeContext(const NestingNodeContext *parent,
                                        bool addClass,bool addConcepts,
                                        bool inherit,bool hideSuper,
                                        ClassDefSet &visitedClasses)
+  : p(std::make_unique<Private>(parent,this,type,d,index,level,addClass,addConcepts,inherit,hideSuper,visitedClasses))
 {
-  p = new Private(parent,this,type,d,index,level,addClass,addConcepts,inherit,hideSuper,visitedClasses);
 }
 
 NestingNodeContext::~NestingNodeContext()
 {
-  delete p;
 }
 
 TemplateVariant NestingNodeContext::get(const QCString &n) const
@@ -7100,14 +7064,12 @@ class NestingContext::Private : public GenericNodeListContext
     int m_index = 0;
 };
 
-NestingContext::NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level)
+NestingContext::NestingContext(const NestingNodeContext *parent,ContextTreeType type,int level) : p(std::make_unique<Private>(parent,type,level))
 {
-  p = new Private(parent,type,level);
 }
 
 NestingContext::~NestingContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -7322,14 +7284,12 @@ class ClassTreeContext::Private
 
 PropertyMapper<ClassTreeContext::Private> ClassTreeContext::Private::s_inst;
 
-ClassTreeContext::ClassTreeContext()
+ClassTreeContext::ClassTreeContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ClassTreeContext::~ClassTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant ClassTreeContext::get(const QCString &name) const
@@ -7360,15 +7320,13 @@ class ConceptListContext::Private : public GenericNodeListContext
     }
 };
 
-ConceptListContext::ConceptListContext()
+ConceptListContext::ConceptListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
   p->addConcepts(*Doxygen::conceptLinkedMap);
 }
 
 ConceptListContext::~ConceptListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -7405,15 +7363,13 @@ class NamespaceListContext::Private : public GenericNodeListContext
     }
 };
 
-NamespaceListContext::NamespaceListContext()
+NamespaceListContext::NamespaceListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
   p->addNamespaces(*Doxygen::namespaceLinkedMap);
 }
 
 NamespaceListContext::~NamespaceListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -7543,14 +7499,12 @@ class NamespaceTreeContext::Private
 
 PropertyMapper<NamespaceTreeContext::Private> NamespaceTreeContext::Private::s_inst;
 
-NamespaceTreeContext::NamespaceTreeContext()
+NamespaceTreeContext::NamespaceTreeContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 NamespaceTreeContext::~NamespaceTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant NamespaceTreeContext::get(const QCString &name) const
@@ -7589,15 +7543,13 @@ class FileListContext::Private : public GenericNodeListContext
     }
 };
 
-FileListContext::FileListContext()
+FileListContext::FileListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
   if (Doxygen::inputNameLinkedMap) p->addFiles(*Doxygen::inputNameLinkedMap);
 }
 
 FileListContext::~FileListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -7631,14 +7583,12 @@ class DirListContext::Private : public GenericNodeListContext
     }
 };
 
-DirListContext::DirListContext()
+DirListContext::DirListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 DirListContext::~DirListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -7670,9 +7620,8 @@ class UsedFilesContext::Private : public GenericNodeListContext
     }
 };
 
-UsedFilesContext::UsedFilesContext(const ClassDef *cd)
+UsedFilesContext::UsedFilesContext(const ClassDef *cd) : p(std::make_unique<Private>())
 {
-  p = new Private;
   if (cd)
   {
     for (const auto &fd : cd->usedFiles())
@@ -7684,7 +7633,6 @@ UsedFilesContext::UsedFilesContext(const ClassDef *cd)
 
 UsedFilesContext::~UsedFilesContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -7809,14 +7757,12 @@ class FileTreeContext::Private
 
 PropertyMapper<FileTreeContext::Private> FileTreeContext::Private::s_inst;
 
-FileTreeContext::FileTreeContext()
+FileTreeContext::FileTreeContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 FileTreeContext::~FileTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant FileTreeContext::get(const QCString &name) const
@@ -7927,14 +7873,12 @@ class PageTreeContext::Private
 
 PropertyMapper<PageTreeContext::Private> PageTreeContext::Private::s_inst;
 
-PageTreeContext::PageTreeContext(const PageLinkedMap &pages)
+PageTreeContext::PageTreeContext(const PageLinkedMap &pages) : p(std::make_unique<Private>(pages))
 {
-  p = new Private(pages);
 }
 
 PageTreeContext::~PageTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant PageTreeContext::get(const QCString &name) const
@@ -7965,15 +7909,13 @@ class PageListContext::Private : public GenericNodeListContext
     }
 };
 
-PageListContext::PageListContext(const PageLinkedMap &pages)
+PageListContext::PageListContext(const PageLinkedMap &pages) : p(std::make_unique<Private>())
 {
-  p = new Private;
   p->addPages(pages);
 }
 
 PageListContext::~PageListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -8010,14 +7952,12 @@ class ExampleListContext::Private : public GenericNodeListContext
     }
 };
 
-ExampleListContext::ExampleListContext()
+ExampleListContext::ExampleListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ExampleListContext::~ExampleListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -8054,15 +7994,13 @@ class ModuleListContext::Private : public GenericNodeListContext
     }
 };
 
-ModuleListContext::ModuleListContext()
+ModuleListContext::ModuleListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
   p->addModules();
 }
 
 ModuleListContext::~ModuleListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -8180,14 +8118,12 @@ class ConceptTreeContext::Private
 
 PropertyMapper<ConceptTreeContext::Private> ConceptTreeContext::Private::s_inst;
 
-ConceptTreeContext::ConceptTreeContext()
+ConceptTreeContext::ConceptTreeContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ConceptTreeContext::~ConceptTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant ConceptTreeContext::get(const QCString &name) const
@@ -8298,14 +8234,12 @@ class ModuleTreeContext::Private
 
 PropertyMapper<ModuleTreeContext::Private> ModuleTreeContext::Private::s_inst;
 
-ModuleTreeContext::ModuleTreeContext()
+ModuleTreeContext::ModuleTreeContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ModuleTreeContext::~ModuleTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant ModuleTreeContext::get(const QCString &name) const
@@ -8401,14 +8335,12 @@ class NavPathElemContext::Private
 
 PropertyMapper<NavPathElemContext::Private> NavPathElemContext::Private::s_inst;
 
-NavPathElemContext::NavPathElemContext(const Definition *def)
+NavPathElemContext::NavPathElemContext(const Definition *def) : p(std::make_unique<Private>(def))
 {
-  p = new Private(def);
 }
 
 NavPathElemContext::~NavPathElemContext()
 {
-  delete p;
 }
 
 TemplateVariant NavPathElemContext::get(const QCString &name) const
@@ -8518,14 +8450,12 @@ class ExampleTreeContext::Private
 
 PropertyMapper<ExampleTreeContext::Private> ExampleTreeContext::Private::s_inst;
 
-ExampleTreeContext::ExampleTreeContext()
+ExampleTreeContext::ExampleTreeContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ExampleTreeContext::~ExampleTreeContext()
 {
-  delete p;
 }
 
 TemplateVariant ExampleTreeContext::get(const QCString &name) const
@@ -8680,14 +8610,12 @@ class GlobalsIndexContext::Private
 
 PropertyMapper<GlobalsIndexContext::Private> GlobalsIndexContext::Private::s_inst;
 
-GlobalsIndexContext::GlobalsIndexContext()
+GlobalsIndexContext::GlobalsIndexContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 GlobalsIndexContext::~GlobalsIndexContext()
 {
-  delete p;
 }
 
 TemplateVariant GlobalsIndexContext::get(const QCString &name) const
@@ -8845,14 +8773,12 @@ class ClassMembersIndexContext::Private
 
 PropertyMapper<ClassMembersIndexContext::Private> ClassMembersIndexContext::Private::s_inst;
 
-ClassMembersIndexContext::ClassMembersIndexContext()
+ClassMembersIndexContext::ClassMembersIndexContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ClassMembersIndexContext::~ClassMembersIndexContext()
 {
-  delete p;
 }
 
 TemplateVariant ClassMembersIndexContext::get(const QCString &name) const
@@ -9006,14 +8932,12 @@ class NamespaceMembersIndexContext::Private
 
 PropertyMapper<NamespaceMembersIndexContext::Private> NamespaceMembersIndexContext::Private::s_inst;
 
-NamespaceMembersIndexContext::NamespaceMembersIndexContext()
+NamespaceMembersIndexContext::NamespaceMembersIndexContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 NamespaceMembersIndexContext::~NamespaceMembersIndexContext()
 {
-  delete p;
 }
 
 TemplateVariant NamespaceMembersIndexContext::get(const QCString &name) const
@@ -9075,14 +8999,12 @@ class InheritanceGraphContext::Private
 
 PropertyMapper<InheritanceGraphContext::Private> InheritanceGraphContext::Private::s_inst;
 
-InheritanceGraphContext::InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id)
+InheritanceGraphContext::InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id) : p(std::make_unique<Private>(hierarchy,n,id))
 {
-  p = new Private(hierarchy,n,id);
 }
 
 InheritanceGraphContext::~InheritanceGraphContext()
 {
-  delete p;
 }
 
 TemplateVariant InheritanceGraphContext::get(const QCString &name) const
@@ -9142,14 +9064,12 @@ class InheritanceNodeContext::Private
 
 PropertyMapper<InheritanceNodeContext::Private> InheritanceNodeContext::Private::s_inst;
 
-InheritanceNodeContext::InheritanceNodeContext(const ClassDef *cd,const QCString &name)
+InheritanceNodeContext::InheritanceNodeContext(const ClassDef *cd,const QCString &name) : p(std::make_unique<Private>(cd,name))
 {
-  p = new Private(cd,name);
 }
 
 InheritanceNodeContext::~InheritanceNodeContext()
 {
-  delete p;
 }
 
 TemplateVariant InheritanceNodeContext::get(const QCString &name) const
@@ -9174,9 +9094,8 @@ class InheritanceListContext::Private : public GenericNodeListContext
     }
 };
 
-InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool baseClasses)
+InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool baseClasses) : p(std::make_unique<Private>())
 {
-  p = new Private;
   for (const auto &bcd : list)
   {
     const ClassDef *cd=bcd.classDef;
@@ -9197,7 +9116,6 @@ InheritanceListContext::InheritanceListContext(const BaseClassList &list, bool b
 
 InheritanceListContext::~InheritanceListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -9228,14 +9146,12 @@ class MemberListContext::Private : public GenericNodeListContext
     }
 };
 
-MemberListContext::MemberListContext()
+MemberListContext::MemberListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
-MemberListContext::MemberListContext(const MemberList *list)
+MemberListContext::MemberListContext(const MemberList *list) : p(std::make_unique<Private>())
 {
-  p = new Private;
   if (list)
   {
     bool details = list->listType()&MemberListType_detailedLists;
@@ -9251,9 +9167,8 @@ MemberListContext::MemberListContext(const MemberList *list)
   }
 }
 
-MemberListContext::MemberListContext(const MemberVector &ml)
+MemberListContext::MemberListContext(const MemberVector &ml) : p(std::make_unique<Private>())
 {
-  p = new Private;
   for (const auto &md : ml)
   {
     p->addMember(md);
@@ -9262,7 +9177,6 @@ MemberListContext::MemberListContext(const MemberVector &ml)
 
 MemberListContext::~MemberListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -9361,14 +9275,12 @@ class MemberInfoContext::Private
 
 PropertyMapper<MemberInfoContext::Private> MemberInfoContext::Private::s_inst;
 
-MemberInfoContext::MemberInfoContext(const MemberInfo *mi)
+MemberInfoContext::MemberInfoContext(const MemberInfo *mi) : p(std::make_unique<Private>(mi))
 {
-  p = new Private(mi);
 }
 
 MemberInfoContext::~MemberInfoContext()
 {
-  delete p;
 }
 
 TemplateVariant MemberInfoContext::get(const QCString &name) const
@@ -9412,14 +9324,12 @@ class AllMembersListContext::Private : public GenericNodeListContext
     }
 };
 
-AllMembersListContext::AllMembersListContext(const MemberNameInfoLinkedMap &ml)
+AllMembersListContext::AllMembersListContext(const MemberNameInfoLinkedMap &ml) : p(std::make_unique<Private>(ml))
 {
-  p = new Private(ml);
 }
 
 AllMembersListContext::~AllMembersListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -9540,14 +9450,12 @@ class MemberGroupInfoContext::Private
 PropertyMapper<MemberGroupInfoContext::Private> MemberGroupInfoContext::Private::s_inst;
 
 MemberGroupInfoContext::MemberGroupInfoContext(const Definition *def,
-       const QCString &relPath,const MemberGroup *mg)
+       const QCString &relPath,const MemberGroup *mg) : p(std::make_unique<Private>(def,relPath,mg))
 {
-  p = new Private(def,relPath,mg);
 }
 
 MemberGroupInfoContext::~MemberGroupInfoContext()
 {
-  delete p;
 }
 
 TemplateVariant MemberGroupInfoContext::get(const QCString &name) const
@@ -9572,23 +9480,20 @@ class MemberGroupListContext::Private : public GenericNodeListContext
     }
 };
 
-MemberGroupListContext::MemberGroupListContext()
+MemberGroupListContext::MemberGroupListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list)
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list) : p(std::make_unique<Private>())
 {
-  p = new Private;
   for (const auto &mg : list)
   {
     p->addMemberGroup(def,relPath,mg);
   }
 }
 
-MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping)
+MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupList &list,bool subGrouping) : p(std::make_unique<Private>())
 {
-  p = new Private;
   for (const auto &mg : list)
   {
     if (!mg->allMembersInSameSection() || !subGrouping)
@@ -9600,7 +9505,6 @@ MemberGroupListContext::MemberGroupListContext(const Definition *def,const QCStr
 
 MemberGroupListContext::~MemberGroupListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -9721,14 +9625,12 @@ PropertyMapper<MemberListInfoContext::Private> MemberListInfoContext::Private::s
 
 MemberListInfoContext::MemberListInfoContext(
            const Definition *def,const QCString &relPath,const MemberList *ml,
-           const QCString &title,const QCString &subtitle)
+           const QCString &title,const QCString &subtitle) : p(std::make_unique<Private>(def,relPath,ml,title,subtitle))
 {
-  p = new Private(def,relPath,ml,title,subtitle);
 }
 
 MemberListInfoContext::~MemberListInfoContext()
 {
-  delete p;
 }
 
 TemplateVariant MemberListInfoContext::get(const QCString &name) const
@@ -9824,14 +9726,12 @@ class InheritedMemberInfoContext::Private
 PropertyMapper<InheritedMemberInfoContext::Private> InheritedMemberInfoContext::Private::s_inst;
 
 InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,
-                                                       const QCString &title)
+                                                       const QCString &title) : p(std::make_unique<Private>(cd,ml,title))
 {
-  p = new Private(cd,ml,title);
 }
 
 InheritedMemberInfoContext::~InheritedMemberInfoContext()
 {
-  delete p;
 }
 
 TemplateVariant InheritedMemberInfoContext::get(const QCString &name) const
@@ -9940,9 +9840,8 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
     }
 };
 
-InheritedMemberInfoListContext::InheritedMemberInfoListContext()
+InheritedMemberInfoListContext::InheritedMemberInfoListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 void InheritedMemberInfoListContext::addMemberList(
@@ -9961,7 +9860,6 @@ void InheritedMemberInfoListContext::addMemberList(
 
 InheritedMemberInfoListContext::~InheritedMemberInfoListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -10074,14 +9972,12 @@ class ArgumentContext::Private
 
 PropertyMapper<ArgumentContext::Private> ArgumentContext::Private::s_inst;
 
-ArgumentContext::ArgumentContext(const Argument &al,const Definition *def,const QCString &relPath)
+ArgumentContext::ArgumentContext(const Argument &al,const Definition *def,const QCString &relPath) : p(std::make_unique<Private>(al,def,relPath))
 {
-  p = new Private(al,def,relPath);
 }
 
 ArgumentContext::~ArgumentContext()
 {
-  delete p;
 }
 
 TemplateVariant ArgumentContext::get(const QCString &name) const
@@ -10106,15 +10002,13 @@ class ArgumentListContext::Private : public GenericNodeListContext
     }
 };
 
-ArgumentListContext::ArgumentListContext()
+ArgumentListContext::ArgumentListContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 ArgumentListContext::ArgumentListContext(const ArgumentList &list,
-                        const Definition *def,const QCString &relPath)
+                        const Definition *def,const QCString &relPath) : p(std::make_unique<Private>())
 {
-  p = new Private;
   for (const Argument &arg : list)
   {
     p->addArgument(arg,def,relPath);
@@ -10123,7 +10017,6 @@ ArgumentListContext::ArgumentListContext(const ArgumentList &list,
 
 ArgumentListContext::~ArgumentListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -10297,14 +10190,12 @@ class SymbolContext::Private
 
 PropertyMapper<SymbolContext::Private> SymbolContext::Private::s_inst;
 
-SymbolContext::SymbolContext(const Definition *def,const Definition *prevDef,const Definition *nextDef)
+SymbolContext::SymbolContext(const Definition *def,const Definition *prevDef,const Definition *nextDef) : p(std::make_unique<Private>(def,prevDef,nextDef))
 {
-  p = new Private(def,prevDef,nextDef);
 }
 
 SymbolContext::~SymbolContext()
 {
-  delete p;
 }
 
 TemplateVariant SymbolContext::get(const QCString &name) const
@@ -10339,14 +10230,12 @@ class SymbolListContext::Private : public GenericNodeListContext
 };
 
 SymbolListContext::SymbolListContext(const SearchIndexList::const_iterator &start,
-                                     const SearchIndexList::const_iterator &end)
+                                     const SearchIndexList::const_iterator &end) : p(std::make_unique<Private>(start,end))
 {
-  p = new Private(start,end);
 }
 
 SymbolListContext::~SymbolListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -10423,14 +10312,12 @@ class SymbolGroupContext::Private
 PropertyMapper<SymbolGroupContext::Private> SymbolGroupContext::Private::s_inst;
 
 SymbolGroupContext::SymbolGroupContext(const SearchIndexList::const_iterator &start,
-                                       const SearchIndexList::const_iterator &end)
+                                       const SearchIndexList::const_iterator &end) : p(std::make_unique<Private>(start,end))
 {
-  p = new Private(start,end);
 }
 
 SymbolGroupContext::~SymbolGroupContext()
 {
-  delete p;
 }
 
 TemplateVariant SymbolGroupContext::get(const QCString &name) const
@@ -10475,14 +10362,12 @@ class SymbolGroupListContext::Private : public GenericNodeListContext
     }
 };
 
-SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList &sil)
+SymbolGroupListContext::SymbolGroupListContext(const SearchIndexList &sil) : p(std::make_unique<Private>(sil))
 {
-  p = new Private(sil);
 }
 
 SymbolGroupListContext::~SymbolGroupListContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -10560,14 +10445,12 @@ class SymbolIndexContext::Private
 
 PropertyMapper<SymbolIndexContext::Private> SymbolIndexContext::Private::s_inst;
 
-SymbolIndexContext::SymbolIndexContext(const std::string &letter,const SearchIndexList &sl,const QCString &name)
+SymbolIndexContext::SymbolIndexContext(const std::string &letter,const SearchIndexList &sl,const QCString &name) : p(std::make_unique<Private>(letter,sl,name))
 {
-  p = new Private(letter,sl,name);
 }
 
 SymbolIndexContext::~SymbolIndexContext()
 {
-  delete p;
 }
 
 TemplateVariant SymbolIndexContext::get(const QCString &name) const
@@ -10596,14 +10479,12 @@ class SymbolIndicesContext::Private : public GenericNodeListContext
     }
 };
 
-SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo &info)
+SymbolIndicesContext::SymbolIndicesContext(const SearchIndexInfo &info) : p(std::make_unique<Private>(info))
 {
-  p = new Private(info);
 }
 
 SymbolIndicesContext::~SymbolIndicesContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
@@ -10677,14 +10558,12 @@ class SearchIndexContext::Private
 
 PropertyMapper<SearchIndexContext::Private> SearchIndexContext::Private::s_inst;
 
-SearchIndexContext::SearchIndexContext(const SearchIndexInfo &info)
+SearchIndexContext::SearchIndexContext(const SearchIndexInfo &info) : p(std::make_unique<Private>(info))
 {
-  p = new Private(info);
 }
 
 SearchIndexContext::~SearchIndexContext()
 {
-  delete p;
 }
 
 TemplateVariant SearchIndexContext::get(const QCString &name) const
@@ -10713,14 +10592,12 @@ class SearchIndicesContext::Private : public GenericNodeListContext
     }
 };
 
-SearchIndicesContext::SearchIndicesContext()
+SearchIndicesContext::SearchIndicesContext() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 SearchIndicesContext::~SearchIndicesContext()
 {
-  delete p;
 }
 
 // TemplateListIntf
