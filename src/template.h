@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include "qcstring.h"
 #include "containers.h"
