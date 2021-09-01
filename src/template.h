@@ -319,6 +319,7 @@ class TemplateListIntf
          */
         virtual bool current(TemplateVariant &v) const = 0;
     };
+    using ConstIteratorPtr = std::unique_ptr<ConstIterator>;
 
     /** Destroys the list */
     virtual ~TemplateListIntf() {}
@@ -332,7 +333,7 @@ class TemplateListIntf
     /** Creates a new iterator for this list.
      *  @note the user should call delete on the returned pointer.
      */
-    virtual TemplateListIntf::ConstIterator *createIterator() const = 0;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const = 0;
 
 };
 
@@ -346,7 +347,7 @@ class TemplateList : public TemplateListIntf
     // TemplateListIntf methods
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     /** Creates an instance with ref count set to 0 */
     static TemplateListPtr alloc();
@@ -363,7 +364,7 @@ class TemplateList : public TemplateListIntf
 
     friend class TemplateListConstIterator;
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //------------------------------------------------------------------------
@@ -412,7 +413,7 @@ class TemplateStruct : public TemplateStructIntf
   private:
 
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 //------------------------------------------------------------------------
@@ -534,12 +535,7 @@ class TemplateEngine
     /** Creates a new context that can be using to render a template.
      *  @see Template::render()
      */
-    TemplateContext *createContext() const;
-
-    /** Destroys a context created via createContext().
-     *  @param[in] ctx The context.
-     */
-    void destroyContext(TemplateContext *ctx);
+    std::unique_ptr<TemplateContext> createContext() const;
 
     /** Creates a new template whose contents are in a file.
      *  @param[in] fileName The name of the file containing the template data
@@ -575,7 +571,7 @@ class TemplateEngine
     QCString outputExtension() const;
 
     class Private;
-    Private *p;
+    std::unique_ptr<Private> p;
 };
 
 /** @} */

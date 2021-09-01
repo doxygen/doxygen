@@ -147,9 +147,9 @@ class GenericNodeListContext : public TemplateListIntf
       }
       return result;
     }
-    TemplateListIntf::ConstIterator *createIterator() const
+    TemplateListIntf::ConstIteratorPtr createIterator() const
     {
-      return new GenericConstIterator(m_children);
+      return std::make_unique<GenericConstIterator>(m_children);
     }
 
     void append(const TemplateVariant &ctn)
@@ -1798,7 +1798,7 @@ TemplateVariant IncludeInfoListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *IncludeInfoListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr IncludeInfoListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -5948,7 +5948,7 @@ TemplateVariant ClassListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *ClassListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr ClassListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -6077,7 +6077,7 @@ static int computeMaxDepth(const TemplateListIntfPtr list)
   int maxDepth=0;
   if (list)
   {
-    TemplateListIntf::ConstIterator *it = list->createIterator();
+    TemplateListIntf::ConstIteratorPtr it = list->createIterator();
     TemplateVariant v;
     for (it->toFirst();it->current(v);it->toNext())
     {
@@ -6086,7 +6086,6 @@ static int computeMaxDepth(const TemplateListIntfPtr list)
       int d = computeMaxDepth(child.toList())+1;
       if (d>maxDepth) maxDepth=d;
     }
-    delete it;
   }
   return maxDepth;
 }
@@ -6100,13 +6099,12 @@ static int computeNumNodesAtLevel(const TemplateStructIntfPtr s,int level,int ma
     TemplateVariant child = s->get("children");
     if (child.toList())
     {
-      TemplateListIntf::ConstIterator *it = child.toList()->createIterator();
+      TemplateListIntf::ConstIteratorPtr it = child.toList()->createIterator();
       TemplateVariant v;
       for (it->toFirst();it->current(v);it->toNext())
       {
         num+=computeNumNodesAtLevel(v.toStruct(),level+1,maxLevel);
       }
-      delete it;
     }
   }
   return num;
@@ -6122,13 +6120,12 @@ static int computePreferredDepth(const TemplateListIntfPtr list,int maxDepth)
     for (int i=1;i<=depth;i++)
     {
       int num=0;
-      TemplateListIntf::ConstIterator *it = list->createIterator();
+      TemplateListIntf::ConstIteratorPtr it = list->createIterator();
       TemplateVariant v;
       for (it->toFirst();it->current(v);it->toNext())
       {
         num+=computeNumNodesAtLevel(v.toStruct(),0,i);
       }
-      delete it;
       if (num<=preferredNumEntries)
       {
         preferredDepth=i;
@@ -7083,7 +7080,7 @@ TemplateVariant NestingContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *NestingContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr NestingContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7340,7 +7337,7 @@ TemplateVariant ConceptListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *ConceptListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr ConceptListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7383,7 +7380,7 @@ TemplateVariant NamespaceListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *NamespaceListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr NamespaceListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7563,7 +7560,7 @@ TemplateVariant FileListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *FileListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr FileListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7602,7 +7599,7 @@ TemplateVariant DirListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *DirListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr DirListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7646,7 +7643,7 @@ TemplateVariant UsedFilesContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *UsedFilesContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr UsedFilesContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7929,7 +7926,7 @@ TemplateVariant PageListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *PageListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr PageListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -7971,7 +7968,7 @@ TemplateVariant ExampleListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *ExampleListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr ExampleListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -8014,7 +8011,7 @@ TemplateVariant ModuleListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *ModuleListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr ModuleListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -9129,7 +9126,7 @@ TemplateVariant InheritanceListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *InheritanceListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr InheritanceListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -9190,7 +9187,7 @@ TemplateVariant MemberListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *MemberListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr MemberListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -9343,7 +9340,7 @@ TemplateVariant AllMembersListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *AllMembersListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr AllMembersListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -9518,7 +9515,7 @@ TemplateVariant MemberGroupListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *MemberGroupListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr MemberGroupListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -9650,8 +9647,8 @@ StringVector MemberListInfoContext::fields() const
 class InheritedMemberInfoContext::Private
 {
   public:
-    Private(const ClassDef *cd,const MemberList *ml,const QCString &title)
-      : m_class(cd), m_memberList(ml), m_title(title)
+    Private(const ClassDef *cd,std::unique_ptr<MemberList> &&ml,const QCString &title)
+      : m_class(cd), m_memberList(std::move(ml)), m_title(title)
     {
       static bool init=FALSE;
       if (!init)
@@ -9672,10 +9669,6 @@ class InheritedMemberInfoContext::Private
     {
       return s_inst.fields();
     }
-    virtual ~Private()
-    {
-      delete m_memberList;
-    }
     TemplateVariant getClass() const
     {
       if (!m_classCtx)
@@ -9692,7 +9685,7 @@ class InheritedMemberInfoContext::Private
     {
       if (!m_memberListCtx)
       {
-        m_memberListCtx = MemberListContext::alloc(m_memberList);
+        m_memberListCtx = MemberListContext::alloc(m_memberList.get());
       }
       return TemplateVariant(m_memberListCtx);
     }
@@ -9714,7 +9707,7 @@ class InheritedMemberInfoContext::Private
 
   private:
     const ClassDef *  m_class;
-    const MemberList *m_memberList;
+    std::unique_ptr<const MemberList> m_memberList;
     QCString    m_title;
     mutable TemplateStructIntfPtr m_classCtx;
     mutable TemplateListIntfPtr   m_memberListCtx;
@@ -9725,8 +9718,8 @@ class InheritedMemberInfoContext::Private
 
 PropertyMapper<InheritedMemberInfoContext::Private> InheritedMemberInfoContext::Private::s_inst;
 
-InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,
-                                                       const QCString &title) : p(std::make_unique<Private>(cd,ml,title))
+InheritedMemberInfoContext::InheritedMemberInfoContext(const ClassDef *cd,std::unique_ptr<MemberList> &&ml,const QCString &title)
+  : p(std::make_unique<Private>(cd,std::move(ml),title))
 {
 }
 
@@ -9801,12 +9794,12 @@ class InheritedMemberInfoListContext::Private : public GenericNodeListContext
       {
         const MemberList *ml  = cd->getMemberList(lt1);
         const MemberList *ml2 = lt2!=-1 ? cd->getMemberList((MemberListType)lt2) : 0;
-        MemberList *combinedList = new MemberList(lt,MemberListContainer::Class);
-        addMemberListIncludingGrouped(inheritedFrom,ml,combinedList);
-        addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList);
-        addMemberGroupsOfClass(inheritedFrom,cd,lt,combinedList);
-        if (lt2!=-1) addMemberGroupsOfClass(inheritedFrom,cd,(MemberListType)lt2,combinedList);
-        append(InheritedMemberInfoContext::alloc(cd,combinedList,title));
+        std::unique_ptr<MemberList> combinedList = std::make_unique<MemberList>(lt,MemberListContainer::Class);
+        addMemberListIncludingGrouped(inheritedFrom,ml,combinedList.get());
+        addMemberListIncludingGrouped(inheritedFrom,ml2,combinedList.get());
+        addMemberGroupsOfClass(inheritedFrom,cd,lt,combinedList.get());
+        if (lt2!=-1) addMemberGroupsOfClass(inheritedFrom,cd,(MemberListType)lt2,combinedList.get());
+        append(InheritedMemberInfoContext::alloc(cd,std::move(combinedList),title));
       }
     }
     void findInheritedMembers(const ClassDef *inheritedFrom,const ClassDef *cd,MemberListType lt,
@@ -9873,7 +9866,7 @@ TemplateVariant InheritedMemberInfoListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *InheritedMemberInfoListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr InheritedMemberInfoListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -10030,7 +10023,7 @@ TemplateVariant ArgumentListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *ArgumentListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr ArgumentListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -10249,7 +10242,7 @@ TemplateVariant SymbolListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *SymbolListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr SymbolListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -10381,7 +10374,7 @@ TemplateVariant SymbolGroupListContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *SymbolGroupListContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr SymbolGroupListContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -10498,7 +10491,7 @@ TemplateVariant SymbolIndicesContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *SymbolIndicesContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr SymbolIndicesContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -10611,7 +10604,7 @@ TemplateVariant SearchIndicesContext::at(uint index) const
   return p->at(index);
 }
 
-TemplateListIntf::ConstIterator *SearchIndicesContext::createIterator() const
+TemplateListIntf::ConstIteratorPtr SearchIndicesContext::createIterator() const
 {
   return p->createIterator();
 }
@@ -10756,7 +10749,7 @@ void generateOutputViaTemplate()
   msg("Generating output via template engine...\n");
   {
     TemplateEngine e;
-    TemplateContext *ctx = e.createContext();
+    auto ctx = e.createContext();
     if (ctx)
     {
       TemplateStructIntfPtr doxygen              (DoxygenContext::alloc());
@@ -10866,7 +10859,7 @@ void generateOutputViaTemplate()
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
           TextStream ts;
-          tpl->render(ts,ctx);
+          tpl->render(ts,ctx.get());
           e.unload(tpl);
         }
       }
@@ -10891,7 +10884,7 @@ void generateOutputViaTemplate()
           ctx->setSpacelessIntf(&spl);
           ctx->setOutputDirectory(g_globals.outputDir);
           TextStream ts;
-          tpl->render(ts,ctx);
+          tpl->render(ts,ctx.get());
           e.unload(tpl);
         }
       }
@@ -10901,8 +10894,6 @@ void generateOutputViaTemplate()
       {
         kv.second->setCookie(0);
       }
-
-      e.destroyContext(ctx);
     }
   }
 }

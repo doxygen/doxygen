@@ -138,7 +138,7 @@ class UsedFilesContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addFile(const FileDef *fd);
     UsedFilesContext(const ClassDef *cd);
@@ -181,7 +181,7 @@ class IncludeInfoListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     IncludeInfoListContext(const IncludeInfoList &list,SrcLangExt lang);
     virtual ~IncludeInfoListContext();
@@ -364,7 +364,7 @@ class ClassListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ClassListContext();
     virtual ~ClassListContext();
@@ -446,7 +446,7 @@ class ClassInheritanceContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ClassInheritanceContext();
     virtual ~ClassInheritanceContext();
@@ -533,7 +533,7 @@ class NestingContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addNamespaces(const NamespaceLinkedMap &nsLinkedMap,bool rootOnly,bool addClasses,bool addConcepts,ClassDefSet &visitedClasses);
     void addNamespaces(const NamespaceLinkedRefMap &nsLinkedMap,bool rootOnly,bool addClasses,bool addConcepts,ClassDefSet &visitedClasses);
@@ -592,7 +592,7 @@ class ConceptListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ConceptListContext();
     virtual ~ConceptListContext();
@@ -613,7 +613,7 @@ class NamespaceListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     NamespaceListContext();
     virtual ~NamespaceListContext();
@@ -654,7 +654,7 @@ class DirListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     DirListContext();
     virtual ~DirListContext();
@@ -675,7 +675,7 @@ class FileListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     FileListContext();
     virtual ~FileListContext();
@@ -716,7 +716,7 @@ class PageListContext : public TemplateListIntf
     // TemplateListIntf methods
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addPages(const PageLinkedMap &pages);
 
@@ -779,7 +779,7 @@ class ModuleListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     void addModules(const GroupLinkedMap &);
     void addModules(const GroupList &);
@@ -843,7 +843,7 @@ class ExampleListContext : public TemplateListIntf
     // TemplateListIntf methods
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ExampleListContext();
     virtual ~ExampleListContext();
@@ -986,7 +986,7 @@ class InheritanceListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     InheritanceListContext(const BaseClassList &list,bool baseClasses);
     virtual ~InheritanceListContext();
@@ -1011,7 +1011,7 @@ class MemberListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     MemberListContext();
     MemberListContext(const MemberList *ml);
@@ -1058,7 +1058,7 @@ class MemberGroupListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     MemberGroupListContext();
     MemberGroupListContext(const Definition *def,const QCString &relPath,const MemberGroupRefList &list);
@@ -1120,14 +1120,14 @@ class MemberInfoContext : public TemplateStructIntf
 class InheritedMemberInfoContext : public TemplateStructIntf
 {
   public:
-    static TemplateStructIntfPtr alloc(const ClassDef *cd,const MemberList *ml,const QCString &title)
-    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<InheritedMemberInfoContext>(cd,ml,title)); }
+    static TemplateStructIntfPtr alloc(const ClassDef *cd,std::unique_ptr<MemberList> &&ml,const QCString &title)
+    { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<InheritedMemberInfoContext>(cd,std::move(ml),title)); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
     virtual StringVector fields() const;
 
-    InheritedMemberInfoContext(const ClassDef *cd,const MemberList *ml,const QCString &title);
+    InheritedMemberInfoContext(const ClassDef *cd,std::unique_ptr<MemberList> &&ml,const QCString &title);
     virtual ~InheritedMemberInfoContext();
 
   private:
@@ -1147,7 +1147,7 @@ class InheritedMemberInfoListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     InheritedMemberInfoListContext();
     virtual ~InheritedMemberInfoListContext();
@@ -1168,7 +1168,7 @@ class AllMembersListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     AllMembersListContext(const MemberNameInfoLinkedMap &ml);
     virtual ~AllMembersListContext();
@@ -1211,7 +1211,7 @@ class ArgumentListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     ArgumentListContext();
     ArgumentListContext(const ArgumentList &al,const Definition *def,const QCString &relPath);
@@ -1254,7 +1254,7 @@ class SymbolListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SymbolListContext(const SearchIndexList::const_iterator &start,
                       const SearchIndexList::const_iterator &end);
@@ -1298,7 +1298,7 @@ class SymbolGroupListContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SymbolGroupListContext(const SearchIndexList &sil);
     virtual ~SymbolGroupListContext();
@@ -1340,7 +1340,7 @@ class SymbolIndicesContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SymbolIndicesContext(const SearchIndexInfo &info);
     virtual ~SymbolIndicesContext();
@@ -1381,7 +1381,7 @@ class SearchIndicesContext : public TemplateListIntf
     // TemplateListIntf
     virtual uint count() const;
     virtual TemplateVariant at(uint index) const;
-    virtual TemplateListIntf::ConstIterator *createIterator() const;
+    virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
     SearchIndicesContext();
     virtual ~SearchIndicesContext();

@@ -265,14 +265,12 @@ class TemplateStruct::Private
     int refCount = 0;
 };
 
-TemplateStruct::TemplateStruct()
+TemplateStruct::TemplateStruct() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 TemplateStruct::~TemplateStruct()
 {
-  delete p;
 }
 
 void TemplateStruct::set(const QCString &name,const TemplateVariant &v)
@@ -324,14 +322,12 @@ class TemplateList::Private
 };
 
 
-TemplateList::TemplateList()
+TemplateList::TemplateList() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 TemplateList::~TemplateList()
 {
-  delete p;
 }
 
 uint TemplateList::count() const
@@ -397,9 +393,9 @@ class TemplateListConstIterator : public TemplateListIntf::ConstIterator
     size_t m_index = 0;
 };
 
-TemplateListIntf::ConstIterator *TemplateList::createIterator() const
+TemplateListIntf::ConstIteratorPtr TemplateList::createIterator() const
 {
-  return new TemplateListConstIterator(*this);
+  return std::make_unique<TemplateListConstIterator>(*this);
 }
 
 TemplateVariant TemplateList::at(uint index) const
@@ -683,7 +679,7 @@ class FilterKeep
         if (list)
         {
           //printf("FilterKeep::apply: v=%s args=%s\n",qPrint(v.toString()),qPrint(args.toString()));
-          TemplateListIntf::ConstIterator *it = list->createIterator();
+          TemplateListIntf::ConstIteratorPtr it = list->createIterator();
 
           TemplateListPtr result = TemplateList::alloc();
           TemplateVariant item;
@@ -904,7 +900,7 @@ class FilterFlatten
     {
       if (tree)
       {
-        TemplateListIntf::ConstIterator *it = tree->createIterator();
+        TemplateListIntf::ConstIteratorPtr it = tree->createIterator();
         TemplateVariant item;
         for (it->toFirst();(it->current(item));it->toNext())
         {
@@ -924,7 +920,6 @@ class FilterFlatten
             list->append(item);
           }
         }
-        delete it;
       }
     }
 };
@@ -949,7 +944,7 @@ class FilterListSort
         TemplateListIntfPtr list = v.toList();
         if (list)
         {
-          TemplateListIntf::ConstIterator *it = list->createIterator();
+          TemplateListIntf::ConstIteratorPtr it = list->createIterator();
 
           TemplateVariant item;
           TemplateListPtr result = TemplateList::alloc();
@@ -968,7 +963,6 @@ class FilterListSort
               //printf("sortKey=%s\n",qPrint(sortKey));
             }
           }
-          delete it;
 
           // sort the list
           std::sort(sortList.begin(),
@@ -1033,7 +1027,7 @@ class FilterGroupBy
         if (list)
         {
           //printf("FilterListSort::apply: v=%s args=%s\n",qPrint(v.toString()),qPrint(args.toString()));
-          TemplateListIntf::ConstIterator *it = list->createIterator();
+          TemplateListIntf::ConstIteratorPtr it = list->createIterator();
 
           TemplateVariant item;
           TemplateListPtr result = TemplateList::alloc();
@@ -1052,7 +1046,6 @@ class FilterGroupBy
               //printf("sortKey=%s\n",qPrint(sortKey));
             }
           }
-          delete it;
 
           // sort the list
           std::sort(sortList.begin(),
@@ -1119,7 +1112,7 @@ class FilterPaginate
         int pageSize = args.toInt();
         const TemplateListIntfPtr list   = v.toList();
         TemplateListPtr   result = TemplateList::alloc();
-        TemplateListIntf::ConstIterator *it = list->createIterator();
+        TemplateListIntf::ConstIteratorPtr it = list->createIterator();
         TemplateVariant   item;
         TemplateListPtr   pageList;
         int i = 0;
@@ -1138,7 +1131,6 @@ class FilterPaginate
             i=0;
           }
         }
-        delete it;
         return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(result));
       }
       else // wrong arguments
@@ -1199,7 +1191,7 @@ class FilterAlphaIndex
         if (list)
         {
           //printf("FilterListSort::apply: v=%s args=%s\n",qPrint(v.toString()),qPrint(args.toString()));
-          TemplateListIntf::ConstIterator *it = list->createIterator();
+          TemplateListIntf::ConstIteratorPtr it = list->createIterator();
 
           TemplateVariant item;
           TemplateListPtr result = TemplateList::alloc();
@@ -1218,7 +1210,6 @@ class FilterAlphaIndex
               //printf("sortKey=%s\n",qPrint(sortKey));
             }
           }
-          delete it;
 
           // sort the list
           std::sort(sortList.begin(),
@@ -1541,7 +1532,8 @@ class ExprAst
     virtual TemplateVariant resolve(TemplateContext *) { return TemplateVariant(); }
 };
 
-using ExprAstList = std::vector< std::unique_ptr<ExprAst> >;
+using ExprAstPtr = std::unique_ptr<ExprAst>;
+using ExprAstList = std::vector< ExprAstPtr >;
 
 /** @brief Class representing a number in the AST */
 class ExprAstNumber : public ExprAst
@@ -1579,13 +1571,9 @@ class ExprAstVariable : public ExprAst
 class ExprAstFunctionVariable : public ExprAst
 {
   public:
-    ExprAstFunctionVariable(ExprAst *var, ExprAstList &&args)
-      : m_var(var), m_args(std::move(args))
+    ExprAstFunctionVariable(ExprAstPtr &&var, ExprAstList &&args)
+      : m_var(std::move(var)), m_args(std::move(args))
     { TRACE(("ExprAstFunctionVariable()\n"));
-    }
-   ~ExprAstFunctionVariable()
-    {
-      delete m_var;
     }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
@@ -1603,7 +1591,7 @@ class ExprAstFunctionVariable : public ExprAst
       return v;
     }
   private:
-    ExprAst *m_var = 0;
+    ExprAstPtr m_var;
     ExprAstList m_args;
 };
 
@@ -1611,9 +1599,8 @@ class ExprAstFunctionVariable : public ExprAst
 class ExprAstFilter : public ExprAst
 {
   public:
-    ExprAstFilter(const QCString &name,ExprAst *arg) : m_name(name), m_arg(arg)
+    ExprAstFilter(const QCString &name,ExprAstPtr &&arg) : m_name(name), m_arg(std::move(arg))
     { TRACE(("ExprAstFilter(%s)\n",name.data())); }
-   ~ExprAstFilter() { delete m_arg; }
     const QCString &name() const { return m_name; }
     TemplateVariant apply(const TemplateVariant &v,TemplateContext *c)
     {
@@ -1632,24 +1619,25 @@ class ExprAstFilter : public ExprAst
     }
   private:
     QCString m_name;
-    ExprAst *m_arg = 0;
+    ExprAstPtr m_arg;
 };
+
+using ExprAstFilterPtr = std::unique_ptr<ExprAstFilter>;
 
 /** @brief Class representing a filter applied to an expression in the AST */
 class ExprAstFilterAppl : public ExprAst
 {
   public:
-    ExprAstFilterAppl(ExprAst *expr,ExprAstFilter *filter)
-      : m_expr(expr), m_filter(filter)
+    ExprAstFilterAppl(ExprAstPtr &&expr,ExprAstFilterPtr &&filter)
+      : m_expr(std::move(expr)), m_filter(std::move(filter))
     { TRACE(("ExprAstFilterAppl\n")); }
-   ~ExprAstFilterAppl() { delete m_expr; delete m_filter; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       return m_filter->apply(m_expr->resolve(c),c);
     }
   private:
-    ExprAst *m_expr = 0;
-    ExprAstFilter *m_filter;
+    ExprAstPtr m_expr;
+    ExprAstFilterPtr m_filter;
 };
 
 /** @brief Class representing a string literal in the AST */
@@ -1668,45 +1656,42 @@ class ExprAstLiteral : public ExprAst
 class ExprAstNegate : public ExprAst
 {
   public:
-    ExprAstNegate(ExprAst *expr) : m_expr(expr)
+    ExprAstNegate(ExprAstPtr &&expr) : m_expr(std::move(expr))
     { TRACE(("ExprAstNegate\n")); }
-   ~ExprAstNegate() { delete m_expr; }
     virtual TemplateVariant resolve(TemplateContext *c)
     { return TemplateVariant(!m_expr->resolve(c).toBool()); }
   private:
-    ExprAst *m_expr = 0;
+    ExprAstPtr m_expr;
 };
 
 class ExprAstUnary : public ExprAst
 {
   public:
-    ExprAstUnary(Operator::Type op,ExprAst *exp) : m_operator(op), m_exp(exp)
+    ExprAstUnary(Operator::Type op,ExprAstPtr &&expr) : m_operator(op), m_expr(std::move(expr))
     { TRACE(("ExprAstUnary %s\n",Operator::toString(op))); }
-   ~ExprAstUnary() { delete m_exp; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
-      TemplateVariant exp = m_exp->resolve(c);
+      TemplateVariant expr = m_expr->resolve(c);
       switch (m_operator)
       {
         case Operator::Minus:
-          return -exp.toInt();
+          return -expr.toInt();
         default:
           return TemplateVariant();
       }
     }
   private:
     Operator::Type m_operator = Operator::Or;
-    ExprAst *m_exp = 0;
+    ExprAstPtr m_expr;
 };
 
 /** @brief Class representing a binary operator in the AST */
 class ExprAstBinary : public ExprAst
 {
   public:
-    ExprAstBinary(Operator::Type op,ExprAst *lhs,ExprAst *rhs)
-      : m_operator(op), m_lhs(lhs), m_rhs(rhs)
+    ExprAstBinary(Operator::Type op,ExprAstPtr &&lhs,ExprAstPtr &&rhs)
+      : m_operator(op), m_lhs(std::move(lhs)), m_rhs(std::move(rhs))
     { TRACE(("ExprAstBinary %s\n",Operator::toString(op))); }
-   ~ExprAstBinary() { delete m_lhs; delete m_rhs; }
     virtual TemplateVariant resolve(TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -1803,8 +1788,8 @@ class ExprAstBinary : public ExprAst
     }
   private:
     Operator::Type m_operator = Operator::Or;
-    ExprAst *m_lhs = 0;
-    ExprAst *m_rhs = 0;
+    ExprAstPtr m_lhs;
+    ExprAstPtr m_rhs;
 };
 
 //----------------------------------------------------------
@@ -1896,7 +1881,7 @@ class ExpressionParser
     {
     }
 
-    ExprAst *parse(const QCString &expr)
+    ExprAstPtr parse(const QCString &expr)
     {
       if (expr.isEmpty()) return 0;
       m_tokenStream = expr.data();
@@ -1924,65 +1909,65 @@ class ExpressionParser
         Operator::Type op;
     };
 
-    ExprAst *parseExpression()
+    ExprAstPtr parseExpression()
     {
       TRACE(("{parseExpression(%s)\n",m_tokenStream));
-      ExprAst *result = parseOrExpression();
+      ExprAstPtr result { parseOrExpression() };
       TRACE(("}parseExpression(%s)\n",m_tokenStream));
       return result;
     }
 
-    ExprAst *parseOrExpression()
+    ExprAstPtr parseOrExpression()
     {
       TRACE(("{parseOrExpression(%s)\n",m_tokenStream));
-      ExprAst *lhs = parseAndExpression();
+      ExprAstPtr lhs { parseAndExpression() };
       if (lhs)
       {
         while (m_curToken.type==ExprToken::Operator &&
             m_curToken.op==Operator::Or)
         {
           getNextToken();
-          ExprAst *rhs = parseAndExpression();
-          lhs = new ExprAstBinary(Operator::Or,lhs,rhs);
+          ExprAstPtr rhs { parseAndExpression() };
+          lhs = std::make_unique<ExprAstBinary>(Operator::Or,std::move(lhs),std::move(rhs));
         }
       }
       TRACE(("}parseOrExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
-    ExprAst *parseAndExpression()
+    ExprAstPtr parseAndExpression()
     {
       TRACE(("{parseAndExpression(%s)\n",m_tokenStream));
-      ExprAst *lhs = parseNotExpression();
+      ExprAstPtr lhs { parseNotExpression() };
       if (lhs)
       {
         while (m_curToken.type==ExprToken::Operator &&
                m_curToken.op==Operator::And)
         {
           getNextToken();
-          ExprAst *rhs = parseNotExpression();
-          lhs = new ExprAstBinary(Operator::And,lhs,rhs);
+          ExprAstPtr rhs { parseNotExpression() };
+          lhs = std::make_unique<ExprAstBinary>(Operator::And,std::move(lhs),std::move(rhs));
         }
       }
       TRACE(("}parseAndExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
-    ExprAst *parseNotExpression()
+    ExprAstPtr parseNotExpression()
     {
       TRACE(("{parseNotExpression(%s)\n",m_tokenStream));
-      ExprAst *result=0;
+      ExprAstPtr result;
       if (m_curToken.type==ExprToken::Operator &&
           m_curToken.op==Operator::Not)
       {
         getNextToken();
-        ExprAst *expr = parseCompareExpression();
+        ExprAstPtr expr = parseCompareExpression();
         if (expr==0)
         {
           warn(m_parser->templateName(),m_line,"argument missing for not operator");
           return 0;
         }
-        result = new ExprAstNegate(expr);
+        result = std::make_unique<ExprAstNegate>(std::move(expr));
       }
       else
       {
@@ -1992,10 +1977,10 @@ class ExpressionParser
       return result;
     }
 
-    ExprAst *parseCompareExpression()
+    ExprAstPtr parseCompareExpression()
     {
       TRACE(("{parseCompareExpression(%s)\n",m_tokenStream));
-      ExprAst *lhs = parseAdditiveExpression();
+      ExprAstPtr lhs { parseAdditiveExpression() };
       if (lhs)
       {
         Operator::Type op = m_curToken.op;
@@ -2010,18 +1995,18 @@ class ExpressionParser
            )
         {
           getNextToken();
-          ExprAst *rhs = parseNotExpression();
-          lhs = new ExprAstBinary(op,lhs,rhs);
+          ExprAstPtr rhs { parseNotExpression() };
+          lhs = std::make_unique<ExprAstBinary>(op,std::move(lhs),std::move(rhs));
         }
       }
       TRACE(("}parseCompareExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
-    ExprAst *parseAdditiveExpression()
+    ExprAstPtr parseAdditiveExpression()
     {
       TRACE(("{parseAdditiveExpression(%s)\n",m_tokenStream));
-      ExprAst *lhs = parseMultiplicativeExpression();
+      ExprAstPtr lhs { parseMultiplicativeExpression() };
       if (lhs)
       {
         while (m_curToken.type==ExprToken::Operator &&
@@ -2029,18 +2014,18 @@ class ExpressionParser
         {
           Operator::Type op = m_curToken.op;
           getNextToken();
-          ExprAst *rhs = parseMultiplicativeExpression();
-          lhs = new ExprAstBinary(op,lhs,rhs);
+          ExprAstPtr rhs { parseMultiplicativeExpression() };
+          lhs = std::make_unique<ExprAstBinary>(op,std::move(lhs),std::move(rhs));
         }
       }
       TRACE(("}parseAdditiveExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
-    ExprAst *parseMultiplicativeExpression()
+    ExprAstPtr parseMultiplicativeExpression()
     {
       TRACE(("{parseMultiplicativeExpression(%s)\n",m_tokenStream));
-      ExprAst *lhs = parseUnaryExpression();
+      ExprAstPtr lhs = parseUnaryExpression();
       if (lhs)
       {
         while (m_curToken.type==ExprToken::Operator &&
@@ -2048,18 +2033,18 @@ class ExpressionParser
         {
           Operator::Type op = m_curToken.op;
           getNextToken();
-          ExprAst *rhs = parseUnaryExpression();
-          lhs = new ExprAstBinary(op,lhs,rhs);
+          ExprAstPtr rhs = parseUnaryExpression();
+          lhs = std::make_unique<ExprAstBinary>(op,std::move(lhs),std::move(rhs));
         }
       }
       TRACE(("}parseMultiplicativeExpression(%s)\n",m_tokenStream));
       return lhs;
     }
 
-    ExprAst *parseUnaryExpression()
+    ExprAstPtr parseUnaryExpression()
     {
       TRACE(("{parseUnaryExpression(%s)\n",m_tokenStream));
-      ExprAst *result=0;
+      ExprAstPtr result;
       if (m_curToken.type==ExprToken::Operator)
       {
         if (m_curToken.op==Operator::Plus)
@@ -2070,8 +2055,8 @@ class ExpressionParser
         else if (m_curToken.op==Operator::Minus)
         {
           getNextToken();
-          ExprAst *rhs = parsePrimaryExpression();
-          result = new ExprAstUnary(m_curToken.op,rhs);
+          ExprAstPtr rhs { parsePrimaryExpression() };
+          result = std::make_unique<ExprAstUnary>(m_curToken.op,std::move(rhs));
         }
         else
         {
@@ -2086,10 +2071,10 @@ class ExpressionParser
       return result;
     }
 
-    ExprAst *parsePrimaryExpression()
+    ExprAstPtr parsePrimaryExpression()
     {
       TRACE(("{parsePrimary(%s)\n",m_tokenStream));
-      ExprAst *result=0;
+      ExprAstPtr result;
       switch (m_curToken.type)
       {
         case ExprToken::Number:
@@ -2130,37 +2115,37 @@ class ExpressionParser
       return result;
     }
 
-    ExprAst *parseNumber()
+    ExprAstPtr parseNumber()
     {
       TRACE(("{parseNumber(%d)\n",m_curToken.num));
-      ExprAst *num = new ExprAstNumber(m_curToken.num);
+      ExprAstPtr num = std::make_unique<ExprAstNumber>(m_curToken.num);
       getNextToken();
       TRACE(("}parseNumber()\n"));
       return num;
     }
 
-    ExprAst *parseIdentifier()
+    ExprAstPtr parseIdentifier()
     {
       TRACE(("{parseIdentifier(%s)\n",qPrint(m_curToken.id)));
-      ExprAst *id = new ExprAstVariable(m_curToken.id);
+      ExprAstPtr id = std::make_unique<ExprAstVariable>(m_curToken.id);
       getNextToken();
       TRACE(("}parseIdentifier()\n"));
       return id;
     }
 
-    ExprAst *parseLiteral()
+    ExprAstPtr parseLiteral()
     {
       TRACE(("{parseLiteral(%s)\n",qPrint(m_curToken.id)));
-      ExprAst *expr = new ExprAstLiteral(m_curToken.id);
+      ExprAstPtr expr = std::make_unique<ExprAstLiteral>(m_curToken.id);
       getNextToken();
       TRACE(("}parseLiteral()\n"));
       return expr;
     }
 
-    ExprAst *parseIdentifierOptionalArgs()
+    ExprAstPtr parseIdentifierOptionalArgs()
     {
       TRACE(("{parseIdentifierOptionalArgs(%s)\n",qPrint(m_curToken.id)));
-      ExprAst *expr = parseIdentifier();
+      ExprAstPtr expr { parseIdentifier() };
       if (expr)
       {
         if (m_curToken.type==ExprToken::Operator &&
@@ -2175,45 +2160,45 @@ class ExpressionParser
             getNextToken();
             args.push_back(std::unique_ptr<ExprAst>(parsePrimaryExpression()));
           }
-          expr = new ExprAstFunctionVariable(expr,std::move(args));
+          expr = std::make_unique<ExprAstFunctionVariable>(std::move(expr),std::move(args));
         }
       }
       TRACE(("}parseIdentifierOptionalArgs()\n"));
       return expr;
     }
 
-    ExprAst *parseFilteredVariable()
+    ExprAstPtr parseFilteredVariable()
     {
       TRACE(("{parseFilteredVariable()\n"));
-      ExprAst *expr = parseIdentifierOptionalArgs();
+      ExprAstPtr expr = parseIdentifierOptionalArgs();
       if (expr)
       {
         while (m_curToken.type==ExprToken::Operator &&
                m_curToken.op==Operator::Filter)
         {
           getNextToken();
-          ExprAstFilter *filter = parseFilter();
+          ExprAstFilterPtr filter = parseFilter();
           if (!filter) break;
-          expr = new ExprAstFilterAppl(expr,filter);
+          expr = std::make_unique<ExprAstFilterAppl>(std::move(expr),std::move(filter));
         }
       }
       TRACE(("}parseFilteredVariable()\n"));
       return expr;
     }
 
-    ExprAstFilter *parseFilter()
+    ExprAstFilterPtr parseFilter()
     {
       TRACE(("{parseFilter(%s)\n",qPrint(m_curToken.id)));
       QCString filterName = m_curToken.id;
       getNextToken();
-      ExprAst *argExpr=0;
+      ExprAstPtr argExpr;
       if (m_curToken.type==ExprToken::Operator &&
           m_curToken.op==Operator::Colon)
       {
         getNextToken();
         argExpr = parsePrimaryExpression();
       }
-      ExprAstFilter *filter = new ExprAstFilter(filterName,argExpr);
+      ExprAstFilterPtr filter = std::make_unique<ExprAstFilter>(filterName,std::move(argExpr));
       TRACE(("}parseFilter()\n"));
       return filter;
     }
@@ -2873,7 +2858,6 @@ class TemplateNodeVariable : public TemplateNode
     }
     ~TemplateNodeVariable()
     {
-      delete m_var;
     }
 
     void render(TextStream &ts, TemplateContext *c)
@@ -2916,7 +2900,7 @@ class TemplateNodeVariable : public TemplateNode
   private:
     QCString m_templateName;
     int m_line = 0;
-    ExprAst *m_var = 0;
+    ExprAstPtr m_var;
 };
 
 //----------------------------------------------------------
@@ -2946,7 +2930,7 @@ template<class T> class TemplateNodeCreator : public TemplateNode
       return dynamic_cast<TemplateImpl*>(root);
     }
   protected:
-    void mkpath(TemplateContextImpl *ci,const std::string &fileName)
+    void mkpath(const TemplateContextImpl *ci,const std::string &fileName)
     {
       size_t i=fileName.find('/');
       std::string outputDir = ci->outputDirectory().str();
@@ -3071,10 +3055,8 @@ class TemplateNodeIf : public TemplateNodeCreator<TemplateNodeIf>
   private:
     struct GuardedNodes
     {
-      GuardedNodes() : guardAst(0) {}
-     ~GuardedNodes() { delete guardAst; }
       int line = 0;
-      ExprAst *guardAst = 0;
+      ExprAstPtr guardAst;
       TemplateNodeList trueNodes;
     };
     std::vector< std::unique_ptr<GuardedNodes> > m_ifGuardedNodes;
@@ -3096,10 +3078,6 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
       parser->parse(this,line,stopAt,m_repeatNodes);
       parser->removeNextToken(); // skip over endrepeat
       TRACE(("}TemplateNodeRepeat(%s)\n",qPrint(data)));
-    }
-    ~TemplateNodeRepeat()
-    {
-      delete m_expr;
     }
     void render(TextStream &ts, TemplateContext *c)
     {
@@ -3131,7 +3109,7 @@ class TemplateNodeRepeat : public TemplateNodeCreator<TemplateNodeRepeat>
     }
   private:
     TemplateNodeList m_repeatNodes;
-    ExprAst *m_expr = 0;
+    ExprAstPtr m_expr;
 };
 
 //----------------------------------------------------------
@@ -3205,12 +3183,6 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       parser->parse(this,line,stopAt,m_loopNodes);
       parser->removeNextToken(); // skip over endrange
       TRACE(("}TemplateNodeRange(%s)\n",qPrint(data)));
-    }
-
-    ~TemplateNodeRange()
-    {
-      delete m_startExpr;
-      delete m_endExpr;
     }
 
     void render(TextStream &ts, TemplateContext *c)
@@ -3297,8 +3269,8 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
 
   private:
     bool m_down = false;
-    ExprAst *m_startExpr = 0;
-    ExprAst *m_endExpr = 0;
+    ExprAstPtr m_startExpr;
+    ExprAstPtr m_endExpr;
     QCString m_var;
     TemplateNodeList m_loopNodes;
 };
@@ -3366,11 +3338,6 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       TRACE(("}TemplateNodeFor(%s)\n",qPrint(data)));
     }
 
-    ~TemplateNodeFor()
-    {
-      delete m_expr;
-    }
-
     void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl* ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -3399,7 +3366,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
           //TemplateVariant v;
           const TemplateVariant *parentLoop = c->getRef("forloop");
           uint index = m_reversed ? listSize-1 : 0;
-          TemplateListIntf::ConstIterator *it = list->createIterator();
+          TemplateListIntf::ConstIteratorPtr it = list->createIterator();
           TemplateVariant ve;
           for (m_reversed ? it->toLast() : it->toFirst();
               (it->current(ve));
@@ -3445,7 +3412,6 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
             if (m_reversed) index--; else index++;
           }
           c->pop();
-          delete it;
         }
         else // simple type...
         {
@@ -3456,7 +3422,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
 
   private:
     bool m_reversed = false;
-    ExprAst *m_expr = 0;
+    ExprAstPtr m_expr;
     std::vector<QCString> m_vars;
     TemplateNodeList m_loopNodes;
     TemplateNodeList m_emptyNodes;
@@ -3595,10 +3561,6 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
       parser->parse(this,line,stopAt,m_nodes);
       TRACE(("}TemplateNodeExtend(%s)\n",qPrint(data)));
     }
-   ~TemplateNodeExtend()
-    {
-      delete m_extendExpr;
-    }
 
     void render(TextStream &ts, TemplateContext *c)
     {
@@ -3654,7 +3616,7 @@ class TemplateNodeExtend : public TemplateNodeCreator<TemplateNodeExtend>
     }
 
   private:
-    ExprAst *m_extendExpr = 0;
+    ExprAstPtr m_extendExpr;
     TemplateNodeList m_nodes;
 };
 
@@ -3672,10 +3634,6 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
         parser->warn(m_templateName,line,"include tag is missing template file argument");
       }
       m_includeExpr = ep.parse(data);
-    }
-   ~TemplateNodeInclude()
-    {
-      delete m_includeExpr;
     }
     void render(TextStream &ts, TemplateContext *c)
     {
@@ -3711,7 +3669,7 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
     }
 
   private:
-    ExprAst *m_includeExpr = 0;
+    ExprAstPtr m_includeExpr;
 };
 
 //----------------------------------------------------------
@@ -3735,7 +3693,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
 {
   public:
     TemplateNodeCreate(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line), m_templateExpr(0), m_fileExpr(0)
+      : TemplateNodeCreator<TemplateNodeCreate>(parser,parent,line)
     {
       TRACE(("TemplateNodeCreate(%s)\n",qPrint(data)));
       if (data.isEmpty())
@@ -3764,11 +3722,6 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
         m_fileExpr = ep.parse(data.left(i).stripWhiteSpace());
         m_templateExpr = ep.parse(data.mid(i+6).stripWhiteSpace());
       }
-    }
-   ~TemplateNodeCreate()
-    {
-      delete m_templateExpr;
-      delete m_fileExpr;
     }
     void render(TextStream &, TemplateContext *c)
     {
@@ -3839,8 +3792,8 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
     }
 
   private:
-    ExprAst *m_templateExpr = 0;
-    ExprAst *m_fileExpr = 0;
+    ExprAstPtr m_templateExpr;
+    ExprAstPtr m_fileExpr;
 };
 
 //----------------------------------------------------------
@@ -3872,10 +3825,6 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       parser->removeNextToken(); // skip over endrecursetree
       TRACE(("}TemplateNodeTree(%s)\n",qPrint(data)));
     }
-    ~TemplateNodeTree()
-    {
-      delete m_treeExpr;
-    }
     QCString renderChildren(const TreeContext *ctx)
     {
       //printf("TemplateNodeTree::renderChildren(%d)\n",ctx->list->count());
@@ -3886,7 +3835,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
       TextStream ss;
       c->push();
       TemplateVariant node;
-      TemplateListIntf::ConstIterator *it = ctx->list->createIterator();
+      TemplateListIntf::ConstIteratorPtr it = ctx->list->createIterator();
       for (it->toFirst();(it->current(node));it->toNext())
       {
         c->set("node",node);
@@ -3927,7 +3876,6 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
         }
       }
       c->pop();
-      delete it;
       return ss.str();
     }
     void render(TextStream &ts, TemplateContext *c)
@@ -3950,7 +3898,7 @@ class TemplateNodeTree : public TemplateNodeCreator<TemplateNodeTree>
     }
 
   private:
-    ExprAst         *m_treeExpr = 0;
+    ExprAstPtr       m_treeExpr;
     TemplateNodeList m_treeNodes;
 };
 
@@ -3963,7 +3911,7 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
     {
       Mapping(const QCString &n,std::unique_ptr<ExprAst> &&e) : name(n), value(std::move(e)) {}
       QCString name;
-      std::unique_ptr<ExprAst> value = 0;
+      ExprAstPtr value;
     };
   public:
     TemplateNodeIndexEntry(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
@@ -3987,10 +3935,10 @@ class TemplateNodeIndexEntry : public TemplateNodeCreator<TemplateNodeIndexEntry
           int j=arg.find('=');
           if (j>0)
           {
-            ExprAst *expr = expParser.parse(arg.mid(j+1));
+            ExprAstPtr expr = expParser.parse(arg.mid(j+1));
             if (expr)
             {
-              m_args.emplace_back(arg.left(j),std::unique_ptr<ExprAst>(expr));
+              m_args.emplace_back(arg.left(j),std::move(expr));
             }
           }
           else
@@ -4102,9 +4050,9 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
 {
     struct Mapping
     {
-      Mapping(const QCString &n,std::unique_ptr<ExprAst> &&e) : name(n), value(std::move(e)) {}
+      Mapping(const QCString &n,ExprAstPtr &&e) : name(n), value(std::move(e)) {}
       QCString name;
-      std::unique_ptr<ExprAst> value;
+      ExprAstPtr value;
     };
   public:
     TemplateNodeWith(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
@@ -4122,10 +4070,10 @@ class TemplateNodeWith : public TemplateNodeCreator<TemplateNodeWith>
         int j=arg.find('=');
         if (j>0)
         {
-          ExprAst *expr = expParser.parse(arg.mid(j+1));
+          ExprAstPtr expr = expParser.parse(arg.mid(j+1));
           if (expr)
           {
-            m_args.emplace_back(arg.left(j),std::unique_ptr<ExprAst>(expr));
+            m_args.emplace_back(arg.left(j),std::move(expr));
           }
         }
         else
@@ -4177,10 +4125,10 @@ class TemplateNodeCycle : public TemplateNodeCreator<TemplateNodeCycle>
       auto it = args.begin();
       while (it!=args.end())
       {
-        ExprAst *expr = expParser.parse(*it);
+        ExprAstPtr expr = expParser.parse(*it);
         if (expr)
         {
-          m_args.push_back(std::unique_ptr<ExprAst>(expr));
+          m_args.emplace_back(std::move(expr));
         }
         ++it;
       }
@@ -4242,10 +4190,9 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
 {
     struct Mapping
     {
-      Mapping(const QCString &n,ExprAst *e) : name(n), value(e) {}
-     ~Mapping() { delete value; }
+      Mapping(const QCString &n,ExprAstPtr &&e) : name(n), value(std::move(e)) {}
       QCString name;
-      ExprAst *value = 0;
+      ExprAstPtr value;
     };
   public:
     TemplateNodeSet(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
@@ -4255,10 +4202,10 @@ class TemplateNodeSet : public TemplateNodeCreator<TemplateNodeSet>
       ExpressionParser expParser(parser,line);
       // data format: name=expression
       int j=data.find('=');
-      ExprAst *expr = 0;
+      ExprAstPtr expr = 0;
       if (j>0 && (expr = expParser.parse(data.mid(j+1))))
       {
-        m_mapping = std::make_unique<Mapping>(data.left(j),expr);
+        m_mapping = std::make_unique<Mapping>(data.left(j),std::move(expr));
       }
       TRACE(("}TemplateNodeSet(%s)\n",qPrint(data)));
     }
@@ -4316,7 +4263,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
 {
   public:
     TemplateNodeMarkers(TemplateParser *parser,TemplateNode *parent,int line,const QCString &data)
-      : TemplateNodeCreator<TemplateNodeMarkers>(parser,parent,line), m_listExpr(0), m_patternExpr(0)
+      : TemplateNodeCreator<TemplateNodeMarkers>(parser,parent,line)
     {
       TRACE(("{TemplateNodeMarkers(%s)\n",qPrint(data)));
       int i = data.find(" in ");
@@ -4337,11 +4284,6 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
       parser->removeNextToken(); // skip over endmarkers
       TRACE(("}TemplateNodeMarkers(%s)\n",qPrint(data)));
     }
-   ~TemplateNodeMarkers()
-    {
-      delete m_listExpr;
-      delete m_patternExpr;
-    }
     void render(TextStream &ts, TemplateContext *c)
     {
       TemplateContextImpl *ci = dynamic_cast<TemplateContextImpl*>(c);
@@ -4356,7 +4298,7 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
         {
           if (patternStr.isString())
           {
-            TemplateListIntf::ConstIterator *it = list->createIterator();
+            TemplateListIntf::ConstIteratorPtr it = list->createIterator();
             c->push();
             std::string str = patternStr.toString().str();
 
@@ -4409,7 +4351,6 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
               ts << str.substr(index); // write text after last marker
             }
             c->pop();
-            delete it;
           }
           else
           {
@@ -4425,8 +4366,8 @@ class TemplateNodeMarkers : public TemplateNodeCreator<TemplateNodeMarkers>
   private:
     TemplateNodeList m_nodes;
     QCString m_var;
-    ExprAst *m_listExpr = 0;
-    ExprAst *m_patternExpr = 0;
+    ExprAstPtr m_listExpr;
+    ExprAstPtr m_patternExpr;
 };
 
 //----------------------------------------------------------
@@ -4473,8 +4414,8 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       if (data.isEmpty())
       {
         parser->warn(m_templateName,line,"resource tag is missing resource file argument");
-        m_resExpr=0;
-        m_asExpr=0;
+        m_resExpr.reset();
+        m_asExpr.reset();
       }
       else if ((i=data.find(" as "))!=-1) // resource a as b
       {
@@ -4490,14 +4431,9 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       else // resource a
       {
         m_resExpr = ep.parse(data);
-        m_asExpr  = 0;
+        m_asExpr.reset();
       }
       TRACE(("}TemplateNodeResource(%s)\n",qPrint(data)));
-    }
-    ~TemplateNodeResource()
-    {
-      delete m_resExpr;
-      delete m_asExpr;
     }
     void render(TextStream &, TemplateContext *c)
     {
@@ -4535,8 +4471,8 @@ class TemplateNodeResource : public TemplateNodeCreator<TemplateNodeResource>
       }
     }
   private:
-    ExprAst *m_resExpr = 0;
-    ExprAst *m_asExpr = 0;
+    ExprAstPtr m_resExpr;
+    ExprAstPtr m_asExpr;
     bool m_append = false;
 };
 
@@ -4554,7 +4490,7 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
       if (data.isEmpty())
       {
         parser->warn(m_templateName,line,"encoding tag is missing encoding argument");
-        m_encExpr = 0;
+        m_encExpr.reset();
       }
       else
       {
@@ -4564,10 +4500,6 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
       parser->parse(this,line,stopAt,m_nodes);
       parser->removeNextToken(); // skip over endencoding
       TRACE(("}TemplateNodeEncoding(%s)\n",qPrint(data)));
-    }
-   ~TemplateNodeEncoding()
-    {
-      delete m_encExpr;
     }
     void render(TextStream &ts, TemplateContext *c)
     {
@@ -4588,7 +4520,7 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
       ci->setEncoding(m_templateName,m_line,oldEncStr);
     }
   private:
-    ExprAst *m_encExpr;
+    ExprAstPtr m_encExpr;
     TemplateNodeList m_nodes;
 };
 
@@ -5294,24 +5226,17 @@ class TemplateEngine::Private
     QCString m_templateDirName;
 };
 
-TemplateEngine::TemplateEngine()
+TemplateEngine::TemplateEngine() : p(std::make_unique<Private>(this))
 {
-  p = new Private(this);
 }
 
 TemplateEngine::~TemplateEngine()
 {
-  delete p;
 }
 
-TemplateContext *TemplateEngine::createContext() const
+std::unique_ptr<TemplateContext> TemplateEngine::createContext() const
 {
-  return new TemplateContextImpl(this);
-}
-
-void TemplateEngine::destroyContext(TemplateContext *ctx)
-{
-  delete ctx;
+  return std::make_unique<TemplateContextImpl>(this);
 }
 
 Template *TemplateEngine::loadByName(const QCString &fileName,int line)
@@ -5364,14 +5289,13 @@ QCString TemplateVariant::listToString() const
   {
     bool first=true;
     TemplateVariant ve;
-    TemplateListIntf::ConstIterator *it = list->createIterator();
+    TemplateListIntf::ConstIteratorPtr it = list->createIterator();
     for (it->toFirst();it->current(ve);it->toNext())
     {
       if (!first) result+=",\n";
       result+="'"+ve.toString()+"'";
       first=false;
     }
-    delete it;
   }
   result+="]";
   return result;
