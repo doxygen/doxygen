@@ -63,6 +63,7 @@ class Qhp : public IndexIntf
 
     int m_prevSectionLevel;
     int m_sectionLevel;
+    int m_openClose;
 
     bool m_skipMainPageSection;
 };
