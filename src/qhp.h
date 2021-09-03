@@ -61,10 +61,10 @@ class Qhp : public IndexIntf
     QCString m_prevSectionBaseName;
     QCString m_prevSectionAnchor;
 
-    int m_prevSectionLevel;
-    int m_sectionLevel;
-
-    bool m_skipMainPageSection;
+    int m_prevSectionLevel = 0;
+    int m_sectionLevel = 0;
+    int m_openCount = 0;
+    bool m_skipMainPageSection = false;
 };
 
 #endif // DOXYGEN_QHP_H
