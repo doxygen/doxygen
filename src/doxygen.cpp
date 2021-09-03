@@ -12249,6 +12249,29 @@ void generateOutput()
   }
   g_s.end();
 
+  // copy static stuff
+  if (generateHtml)
+  {
+    FTVHelp::generateTreeViewImages();
+    copyStyleSheet();
+    copyLogo(Config_getString(HTML_OUTPUT));
+    copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
+  }
+  if (generateLatex)
+  {
+    copyLatexStyleSheet();
+    copyLogo(Config_getString(LATEX_OUTPUT));
+    copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
+  }
+  if (generateDocbook)
+  {
+    copyLogo(Config_getString(DOCBOOK_OUTPUT));
+  }
+  if (generateRtf)
+  {
+    copyLogo(Config_getString(RTF_OUTPUT));
+  }
+
   const FormulaManager &fm = FormulaManager::instance();
   if (fm.hasFormulas() && generateHtml
       && !Config_getBool(USE_MATHJAX))
@@ -12411,29 +12434,6 @@ void generateOutput()
     g_s.begin("Running dot...\n");
     DotManager::instance()->run();
     g_s.end();
-  }
-
-  // copy static stuff
-  if (generateHtml)
-  {
-    FTVHelp::generateTreeViewImages();
-    copyStyleSheet();
-    copyLogo(Config_getString(HTML_OUTPUT));
-    copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
-  }
-  if (generateLatex)
-  {
-    copyLatexStyleSheet();
-    copyLogo(Config_getString(LATEX_OUTPUT));
-    copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
-  }
-  if (generateDocbook)
-  {
-    copyLogo(Config_getString(DOCBOOK_OUTPUT));
-  }
-  if (generateRtf)
-  {
-    copyLogo(Config_getString(RTF_OUTPUT));
   }
 
   if (generateHtml &&
