@@ -53,7 +53,7 @@ static QCString makeRef(const QCString & withoutExtension, const QCString & anch
   return result+"#"+anchor;
 }
 
-Qhp::Qhp() : m_prevSectionLevel(0), m_sectionLevel(0), m_skipMainPageSection(FALSE), m_openClose(0)
+Qhp::Qhp()
 {
   m_doc.setIndentLevel(0);
   m_toc.setIndentLevel(2);
@@ -136,10 +136,10 @@ void Qhp::initialize()
     NULL
   };
   m_toc.open("section", attributes);
+  m_openCount=1;
   m_prevSectionTitle = getFullProjectName();
   m_prevSectionLevel = 1;
   m_sectionLevel = 1;
-  m_openClose = 1;
 
   m_index.open("keywords");
   m_files.open("files");
@@ -149,11 +149,11 @@ void Qhp::finalize()
 {
   // Finish TOC
   handlePrevSection();
-  for (int i = m_openClose; i > 0; i--)
+  while (m_openCount>0)
   {
     m_toc.close("section");
+    m_openCount--;
   }
-  m_openClose = 0;
   m_toc.close("toc");
   m_doc.insert(m_toc);
 
@@ -212,10 +212,11 @@ void Qhp::addContentsItem(bool /*isDir*/, const QCString & name,
 
   // Close sections as needed
   //printf("Qhp::addContentsItem() closing %d sections\n",diff);
-  for (; diff > 0; diff--)
+  while (diff>0)
   {
     m_toc.close("section");
-    m_openClose -=1;
+    m_openCount--;
+    diff--;
   }
 }
 
@@ -329,7 +330,7 @@ void Qhp::handlePrevSection()
     {
       // Section with children
       m_toc.open("section", attributes);
-      m_openClose +=1;
+      m_openCount++;
     }
     else
     {
