@@ -1023,6 +1023,7 @@ void HtmlGenerator::writeTabData()
   mgr.copyResource("nav_f.lum",dname);
   mgr.copyResource("bc_s.luma",dname);
   mgr.copyResource("doxygen.svg",dname);
+  Doxygen::indexList->addImageFile("doxygen.svg");
   mgr.copyResource("closed.luma",dname);
   mgr.copyResource("open.luma",dname);
   mgr.copyResource("bdwn.luma",dname);
@@ -1036,6 +1037,7 @@ void HtmlGenerator::writeTabData()
   //  img.save(dname+"/nav_g.png");
   //}
   mgr.copyResource("nav_g.png",dname);
+  Doxygen::indexList->addImageFile("nav_g.png");
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
