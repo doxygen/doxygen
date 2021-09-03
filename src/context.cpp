@@ -1424,6 +1424,8 @@ class DefinitionContext
       inst.addProperty("sourceDef",&DefinitionContext::sourceDef);
       //%% list[Definition] navigationPath: Breadcrumb navigation path to this item
       inst.addProperty("navigationPath",&DefinitionContext::navigationPath);
+      //%% list[GroupDef] partOfGroups: groups to which this definition belongs
+      inst.addProperty("partOfGroups",&DefinitionContext::partOfGroups);
       //%% string kind: Kind of compound object: class, namespace, module, package, page, dir
       inst.addProperty("compoundKind",&DefinitionContext::compoundKind);
       //%% bool isReference: is this definition imported via a tag file
@@ -1606,6 +1608,20 @@ class DefinitionContext
       }
       return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.navPath));
     }
+    TemplateVariant partOfGroups() const
+    {
+      Cachable &cache = getCache();
+      if (!cache.partOfGroups)
+      {
+        TemplateListPtr list = TemplateList::alloc();
+        for (const auto &gd : m_def->partOfGroups())
+        {
+          list->append(ModuleContext::alloc(gd));
+        }
+        cache.partOfGroups = list;
+      }
+      return TemplateVariant(std::static_pointer_cast<TemplateListIntf>(cache.partOfGroups));
+    }
     TemplateVariant isReference() const
     {
       return m_def->isReference();
@@ -1662,6 +1678,7 @@ class DefinitionContext
       std::unique_ptr<TemplateVariant> inbodyDocs;
       ContextOutputFormat        inbodyDocsOutputFormat;
       TemplateListPtr            navPath;
+      TemplateListPtr            partOfGroups;
       TemplateListPtr            sourceDef;
       TemplateStructPtr          fileLink;
       TemplateStructPtr          lineLink;

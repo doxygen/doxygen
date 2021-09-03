@@ -9,6 +9,10 @@
   {% endif %}
 {% endblock %}
 
+{% block ingroups %}
+{% include 'htmlpartofgroups.tpl' %}
+{% endblock %}
+
 {% block content %}
 <div class="contents">
 {% if isMainPage and config.DISABLE_INDEX %}

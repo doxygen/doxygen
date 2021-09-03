@@ -233,7 +233,10 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% block title %}
 {% if page.title %}
   <div class="headertitle">
-  <div class="title">{{ page.title }}</div></div>
+  <div class="title">{{ page.title }}
+  {% block ingroups %}
+  {% endblock %}
+  </div></div>
 {% endif %}
 {% endblock %}
 </div><!-- header -->

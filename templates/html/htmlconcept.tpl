@@ -9,6 +9,10 @@
 {% endif %}
 {% endblock %}
 
+{% block ingroups %}
+{% include 'htmlpartofgroups.tpl' %}
+{% endblock %}
+
 {% block title %}
   {{ block.super }}
 {% endblock %}
