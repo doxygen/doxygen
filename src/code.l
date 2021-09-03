@@ -281,6 +281,7 @@ TEMPLIST "<"[^\"\}\{\(\)\/\n\>]*">"
 SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
+  /* please also pay attention to skipLanguageSpecificKeyword when changing the list of keywords. */
 KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|"decltype"|{KEYWORD_OBJC}|"constexpr"|"consteval"|"constinit"|"co_await"|"co_return"|"co_yield"|"static_assert"|"noexcept"|"thread_local")
 FLOWKW  ("break"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"return"|"switch"|"throw"|"throws"|"@catch"|"@finally")
 FLOWCONDITION  ("case"|"for"|"foreach"|"for each"|"goto"|"if"|"try"|"while"|"@try")
@@ -3730,8 +3731,12 @@ static QCString escapeComment(yyscan_t yyscanner,const char *s)
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  QCString kw(keyword);
-  return yyextra->lang==SrcLangExt_Cpp && (kw == "remove" || kw == "set" || kw == "get");
+  static std::vector<std::string> non_cpp_keywords = {
+    "__assume", "__super", "abstract", "function",
+    "gcnew", "gcroot", "generic", "get",
+    "internal", "null", "pin_ptr", "raise",
+    "remove", "self", "set", "transient"};
+  return yyextra->lang==SrcLangExt_Cpp && (std::find(non_cpp_keywords.begin(), non_cpp_keywords.end(), keyword) != non_cpp_keywords.end());
 }
 
 static bool isCastKeyword(const char *keyword)
