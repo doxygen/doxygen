@@ -34,6 +34,7 @@ typedef yyguts_t *yyscan_t;
 #include <memory>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 #include <stack>
 #include <vector>
 #include <string>
@@ -3731,12 +3732,12 @@ static QCString escapeComment(yyscan_t yyscanner,const char *s)
 static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  static std::vector<std::string> non_cpp_keywords = {
+  static std::unordered_set<std::string> non_cpp_keywords = {
     "__assume", "__super", "abstract", "function",
     "gcnew", "gcroot", "generic", "get",
     "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
-  return yyextra->lang==SrcLangExt_Cpp && (std::find(non_cpp_keywords.begin(), non_cpp_keywords.end(), keyword) != non_cpp_keywords.end());
+  return yyextra->lang==SrcLangExt_Cpp && (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
 }
 
 static bool isCastKeyword(const char *keyword)
