@@ -453,6 +453,11 @@ NONLopt [^\n]*
 %x      RequiresExpression
 %x      ConceptName
 
+ /** PHP attribute states */
+%x      PHPAttrib
+%x      CopyPHPDString
+%x      CopyPHPSString
+
 %%
 
 <NextSemi>"{"                           {
@@ -2422,6 +2427,18 @@ NONLopt [^\n]*
                                           yyextra->insideCppQuote=FALSE;
                                           BEGIN(FindMembers);
                                         }
+<FindMembers,FindFields>{B}*"#["        {
+                                          if (yyextra->insidePHP)
+                                          {
+                                            yyextra->squareCount = 1;
+                                            yyextra->lastSquareContext=YY_START;
+                                            BEGIN(PHPAttrib);
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <FindMembers,FindFields>{B}*"#"         { if (yyextra->insidePHP)
                                             REJECT;
                                           yyextra->lastCPPContext = YY_START;
@@ -3228,6 +3245,63 @@ NONLopt [^\n]*
 <GCopySquare>.                          {
                                           *yyextra->pCopySquareGString << *yytext;
                                         }
+ /** PHP attribute handling (just ignoring the attribute) */
+<PHPAttrib>\"                           {
+                                          yyextra->lastStringContext=YY_START;
+                                          BEGIN(CopyPHPDString);
+                                        }
+<PHPAttrib>"["                          {
+                                          yyextra->squareCount++;
+                                        }
+<PHPAttrib>"]"                          {
+                                          if (--yyextra->squareCount<=0) BEGIN(yyextra->lastSquareContext);
+                                        }
+<PHPAttrib>\n                           {
+                                          lineCount(yyscanner);
+                                        }
+<PHPAttrib>\'                           {
+                                          if (yyextra->insidePHP)
+                                          {
+                                            yyextra->lastStringContext=YY_START;
+                                            BEGIN(CopyPHPSString);
+                                          }
+                                        }
+<PHPAttrib>{CHARLIT}                    {
+                                          if (yyextra->insidePHP)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                          }
+                                        }
+<PHPAttrib>[^"\[\]\n\/,]+               { }
+<PHPAttrib>.                            { }
+
+
+  /** PHP string with double quote */
+<CopyPHPDString>\\.                     { }
+<CopyPHPDString>\"                      {
+                                          BEGIN( yyextra->lastStringContext );
+                                        }
+<CopyPHPDString>{CCS}|{CCE}|{CPPC}      { }
+<CopyPHPDString>\n                      {
+                                          lineCount(yyscanner);
+                                        }
+<CopyPHPDString>.                       { }
+
+  /** PHP string with single quote */
+<CopyPHPSString>\\.                     { }
+<CopyPHPSString>\'                      {
+                                          BEGIN( yyextra->lastStringContext );
+                                        }
+<CopyPHPSString>"<?php"                 { // we had an odd number of quotes.
+                                        }
+<CopyPHPSString>{CCS}|{CCE}|{CPPC}      { }
+<CopyPHPSString>\n                      {
+                                          lineCount(yyscanner);
+                                        }
+<CopyPHPSString>.                       { }
 
   /* generic curly bracket list copy rules */
 <CopyCurly>\"                           {
@@ -3322,7 +3396,19 @@ NONLopt [^\n]*
                                             *yyextra->pCopyCurlyGString << yytext;
                                           }
                                         }
-<GCopyCurly>[^"'{}\/\n,]+               {
+<GCopyCurly>"#["                        {
+                                          if (yyextra->insidePHP)
+                                          {
+                                            yyextra->squareCount = 1;
+                                            yyextra->lastSquareContext=YY_START;
+                                            BEGIN(PHPAttrib);
+                                          }
+                                          else
+                                          {
+                                            *yyextra->pCopyCurlyGString << yytext;
+                                          }
+                                        }
+<GCopyCurly>[^"'{}\/\n,#]+              {
                                           *yyextra->pCopyCurlyGString << yytext;
                                         }
 <GCopyCurly>[,]+                        {
