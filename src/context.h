@@ -21,6 +21,7 @@
 #include "classdef.h"
 #include "searchindex.h"
 #include "memberlist.h"
+#include "dotgfxhierarchytable.h"
 
 class Definition;
 
@@ -60,7 +61,6 @@ struct Argument;
 class ArgumentList;
 class MemberInfo;
 class DotNode;
-class DotGfxHierarchyTable;
 
 class MemberGroup;
 class MemberGroupList;
@@ -399,14 +399,14 @@ class ClassIndexContext : public TemplateStructIntf
 class InheritanceGraphContext : public TemplateStructIntf
 {
   public:
-    static TemplateStructIntfPtr alloc(DotGfxHierarchyTable *hierarchy,DotNode *n,int id)
+    static TemplateStructIntfPtr alloc(DotGfxHierarchyTablePtr hierarchy,DotNode *n,int id)
     { return std::static_pointer_cast<TemplateStructIntf>(std::make_shared<InheritanceGraphContext>(hierarchy,n,id)); }
 
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
     virtual StringVector fields() const;
 
-    InheritanceGraphContext(DotGfxHierarchyTable *hierarchy,DotNode *n,int id);
+    InheritanceGraphContext(DotGfxHierarchyTablePtr hierarchy,DotNode *n,int id);
     virtual ~InheritanceGraphContext();
 
   private:
