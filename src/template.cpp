@@ -3128,7 +3128,7 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       int i3 = data.find(" downto ");
       if (i1==-1)
       {
-        if (data.right(5)==" from")
+        if (data.endsWith(" from"))
         {
           parser->warn(m_templateName,line,"range missing after 'from' keyword");
         }
@@ -3143,11 +3143,11 @@ class TemplateNodeRange : public TemplateNodeCreator<TemplateNodeRange>
       }
       else if (i2==-1 && i3==-1)
       {
-        if (data.right(3)==" to")
+        if (data.endsWith(" to"))
         {
           parser->warn(m_templateName,line,"range is missing end value after 'to' keyword");
         }
-        else if (data.right(7)==" downto")
+        else if (data.endsWith(" downto"))
         {
           parser->warn(m_templateName,line,"range is missing end value after 'downto' keyword");
         }
@@ -3289,7 +3289,7 @@ class TemplateNodeFor : public TemplateNodeCreator<TemplateNodeFor>
       int i = data.find(" in ");
       if (i==-1)
       {
-        if (data.right(3)==" in")
+        if (data.endsWith(" in"))
         {
           parser->warn(m_templateName,line,"for is missing container after 'in' keyword");
         }
@@ -3703,7 +3703,7 @@ class TemplateNodeCreate : public TemplateNodeCreator<TemplateNodeCreate>
       int i = data.find(" from ");
       if (i==-1)
       {
-        if (data.right(3)==" from")
+        if (data.endsWith(" from"))
         {
           parser->warn(m_templateName,line,"create is missing template name after 'from' keyword");
         }

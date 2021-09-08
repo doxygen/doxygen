@@ -273,6 +273,7 @@ class PropertyMapper
 class ConfigContext::Private
 {
   public:
+    // TemplateStructIntf methods
     StringVector fields() const
     {
       return m_fields.get(this);
@@ -372,22 +373,6 @@ StringVector ConfigContext::fields() const
 class DoxygenContext::Private
 {
   public:
-    TemplateVariant version() const
-    {
-      return getDoxygenVersion();
-    }
-    TemplateVariant date() const
-    {
-      return dateToString(TRUE);
-    }
-    TemplateVariant mathJaxCodeFile() const
-    {
-      return m_mathJaxCodeFile.get(this);
-    }
-    TemplateVariant mathJaxMacros() const
-    {
-      return m_mathJaxMacros.get(this);
-    }
     Private()
     {
       static bool init=FALSE;
@@ -404,14 +389,18 @@ class DoxygenContext::Private
         init=TRUE;
       }
     }
-    TemplateVariant get(const QCString &n) const
-    {
-      return s_inst.get(this,n);
-    }
-    StringVector fields() const
-    {
-      return s_inst.fields();
-    }
+
+    // TemplateStructIntf methods
+    TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
+    StringVector fields() const                  { return s_inst.fields(); }
+
+  private:
+    // Property getters
+    TemplateVariant version() const         { return getDoxygenVersion(); }
+    TemplateVariant date() const            { return dateToString(TRUE); }
+    TemplateVariant mathJaxCodeFile() const { return m_mathJaxCodeFile.get(this); }
+    TemplateVariant mathJaxMacros() const   { return m_mathJaxMacros.get(this); }
+
   private:
     QCString createMathJaxCodeFile() const { return fileToString(Config_getString(MATHJAX_CODEFILE)); }
     QCString createMathJaxMacros() const   { return HtmlGenerator::getMathJaxMacros(); }
@@ -450,6 +439,225 @@ class TranslateContext::Private
 {
   public:
 
+    Private()
+    {
+      static bool init=FALSE;
+      if (!init)
+      {
+        //%% string generatedBy
+        s_inst.addProperty("generatedBy",       &Private::generatedBy);
+        //%% string generatedAt
+        s_inst.addProperty("generatedAt",       &Private::generatedAt);
+        //%% string search
+        s_inst.addProperty("search",            &Private::search);
+        //%% string mainPage
+        s_inst.addProperty("mainPage",          &Private::mainPage);
+        //%% string classes
+        s_inst.addProperty("classes",           &Private::classes);
+        //%% string classList
+        s_inst.addProperty("classList",         &Private::classList);
+        //%% string classListDescription
+        s_inst.addProperty("classListDescription", &Private::classListDescription);
+        //%% string classIndex
+        s_inst.addProperty("classIndex",        &Private::classIndex);
+        //%% string concepts
+        s_inst.addProperty("concepts",          &Private::concepts);
+        //%% string conceptDefintion
+        s_inst.addProperty("conceptDefinition", &Private::conceptDefinition);
+        //%% string namespaceIndex
+        s_inst.addProperty("namespaceIndex",    &Private::namespaceIndex);
+        //%% string classHierarchy
+        s_inst.addProperty("classHierarchy",    &Private::classHierarchy);
+        //%% string classMembers
+        s_inst.addProperty("classMembers",      &Private::classMembers);
+        //%% string classMembersDescription
+        s_inst.addProperty("classMembersDescription",&Private::classMembersDescription);
+        //%% string modules
+        s_inst.addProperty("modules",           &Private::modules);
+        //%% string moduleIndex
+        s_inst.addProperty("moduleIndex",       &Private::moduleIndex);
+        //%% string namespaces
+        s_inst.addProperty("namespaces",        &Private::namespaces);
+        //%% string fileIndex
+        s_inst.addProperty("fileIndex",         &Private::fileIndex);
+        //%% string files
+        s_inst.addProperty("files",             &Private::files);
+        //%% string pages
+        s_inst.addProperty("pages",             &Private::pages);
+        //%% string examples
+        s_inst.addProperty("examples",          &Private::examples);
+        //%% string namespaceList
+        s_inst.addProperty("namespaceList",     &Private::namespaceList);
+        //%% string namespaceMembers
+        s_inst.addProperty("namespaceMembers",  &Private::namespaceMembers);
+        //%% string fileList
+        s_inst.addProperty("fileList",          &Private::fileList);
+        //%% string fileMembers
+        s_inst.addProperty("fileMembers",       &Private::fileMembers);
+        //%% string fileMembersDescription
+        s_inst.addProperty("fileMembersDescription", &Private::fileMembersDescription);
+        //%% string relatedPagesDescription
+        s_inst.addProperty("relatedPagesDesc",  &Private::relatedPagesDesc);
+        //%% string more
+        s_inst.addProperty("more",              &Private::more);
+        //%% string detailedDescription
+        s_inst.addProperty("detailedDesc",      &Private::detailedDesc);
+        //%% string inheritanceDiagramFor
+        s_inst.addProperty("inheritanceDiagramFor", &Private::inheritanceDiagramFor);
+        //%% string collaborationDiagramFor
+        s_inst.addProperty("collaborationDiagramFor", &Private::collaborationDiagramFor);
+        //%% markerstring inheritsList
+        s_inst.addProperty("inheritsList",      &Private::inheritsList);
+        //%% markerstring inheritedByList
+        s_inst.addProperty("inheritedByList",   &Private::inheritedByList);
+        //%% markerstring definedAtLineInSourceFile
+        s_inst.addProperty("definedAtLineInSourceFile", &Private::definedAtLineInSourceFile);
+        //%% string typeConstraints
+        s_inst.addProperty("typeConstraints",   &Private::typeConstraints);
+        //%% string exampleList
+        s_inst.addProperty("exampleList",       &Private::exampleList);
+        //%% string listOfAllMembers
+        s_inst.addProperty("listOfAllMembers",  &Private::listOfAllMembers);
+        //%% string memberList
+        s_inst.addProperty("memberList",        &Private::memberList);
+        //%% string theListOfAllMembers
+        s_inst.addProperty("theListOfAllMembers",&Private::theListOfAllMembers);
+        //%% string incInheritedMembers
+        s_inst.addProperty("incInheritedMembers",&Private::incInheritedMembers);
+        //%% string defineValue
+        s_inst.addProperty("defineValue",        &Private::defineValue);
+        //%% string initialValue
+        s_inst.addProperty("initialValue",       &Private::initialValue);
+        //%% markerstring implements
+        s_inst.addProperty("implements",         &Private::implements);
+        //%% markerstring reimplements
+        s_inst.addProperty("reimplements",       &Private::reimplements);
+        //%% markerstring implementedBy
+        s_inst.addProperty("implementedBy",      &Private::implementedBy);
+        //%% markerstring reimplementedBy
+        s_inst.addProperty("reimplementedBy",    &Private::reimplementedBy);
+        //%% markerstring sourceRefs
+        s_inst.addProperty("sourceRefs",         &Private::sourceRefs);
+        //%% markerstring sourceRefBys
+        s_inst.addProperty("sourceRefBys",       &Private::sourceRefBys);
+        //%% string callGraph
+        s_inst.addProperty("callGraph",          &Private::callGraph);
+        //%% string callerGraph
+        s_inst.addProperty("callerGraph",        &Private::callerGraph);
+        //%% string referencedByRelation
+        s_inst.addProperty("referencedByRelation", &Private::referencedByRelation);
+        //%% string referencesRelation
+        s_inst.addProperty("referencesRelation",   &Private::referencesRelation);
+        //%% markerstring inheritedFrom
+        s_inst.addProperty("inheritedFrom",      &Private::inheritedFrom);
+        //%% string additionalInheritedMembers
+        s_inst.addProperty("additionalInheritedMembers",&Private::additionalInheritedMembers);
+        //%% string includeDependencyGraph:container_name
+        s_inst.addProperty("includeDependencyGraph",&Private::includeDependencyGraph);
+        //%% string includedByDependencyGraph
+        s_inst.addProperty("includedByDependencyGraph",&Private::includedByDependencyGraph);
+        //%% string gotoSourceCode
+        s_inst.addProperty("gotoSourceCode",     &Private::gotoSourceCode);
+        //%% string gotoDocumentation
+        s_inst.addProperty("gotoDocumentation",  &Private::gotoDocumentation);
+        //%% string constantgroups
+        s_inst.addProperty("constantgroups",     &Private::constantgroups);
+        //%% string classDocumentation
+        s_inst.addProperty("classDocumentation", &Private::classDocumentation);
+        //%% string namespaceDocumentation
+        s_inst.addProperty("namespaceDocumentation", &Private::namespaceDocumentation);
+        //%% string moduleDocumentation
+        s_inst.addProperty("moduleDocumentation",&Private::moduleDocumentation);
+        //%% string fileDocumentation
+        s_inst.addProperty("fileDocumentation",  &Private::fileDocumentation);
+        //%% string compoundMembers
+        s_inst.addProperty("compoundMembers",    &Private::compoundMembers);
+        //%% string detailLevel
+        s_inst.addProperty("detailLevel",        &Private::detailLevel);
+        //%% string fileListDescription
+        s_inst.addProperty("fileListDescription",&Private::fileListDescription);
+        //%% string namespaceListDescription
+        s_inst.addProperty("namespaceListDescription",&Private::namespaceListDescription);
+        //%% string conceptListDescription
+        s_inst.addProperty("conceptListDescription",&Private::conceptListDescription);
+        //%% string directories
+        s_inst.addProperty("directories",        &Private::directories);
+        //%% string moduleDescription
+        s_inst.addProperty("modulesDescription", &Private::modulesDescription);
+        //%% string all
+        s_inst.addProperty("all",                &Private::all);
+        //%% string functions
+        s_inst.addProperty("functions",          &Private::functions);
+        //%% string variables
+        s_inst.addProperty("variables",          &Private::variables);
+        //%% string typedefs
+        s_inst.addProperty("typedefs",           &Private::typedefs);
+        //%% string enums
+        s_inst.addProperty("enums",              &Private::enums);
+        //%% string enumValues
+        s_inst.addProperty("enumValues",         &Private::enumerationValues);
+        //%% string properties
+        s_inst.addProperty("properties",         &Private::properties);
+        //%% string events
+        s_inst.addProperty("events",             &Private::events);
+        //%% string related
+        s_inst.addProperty("related",            &Private::related);
+        //%% string macros
+        s_inst.addProperty("macros",             &Private::macros);
+        //%% string namespaceMembersDescription
+        s_inst.addProperty("namespaceMembersDescription",&Private::namespaceMembersDescription);
+        //%% string classHierarchyDescription
+        s_inst.addProperty("classHierarchyDescription",&Private::classHierarchyDescription);
+        //%% string gotoGraphicalHierarchy
+        s_inst.addProperty("gotoGraphicalHierarchy",&Private::gotoGraphicalHierarchy);
+        //%% string gotoTextualHierarchy
+        s_inst.addProperty("gotoTextualHierarchy",&Private::gotoTextualHierarchy);
+        //%% string loading
+        s_inst.addProperty("loading",            &Private::loading);
+        //%% string searching
+        s_inst.addProperty("searching",          &Private::searching);
+        //%% string noMatches
+        s_inst.addProperty("noMatches",          &Private::noMatches);
+        //%% string enumValue
+        s_inst.addProperty("enumValue",          &Private::enumValue);
+        //%% string enumName
+        s_inst.addProperty("enumName",           &Private::enumName);
+        //%% string referenceManual
+        s_inst.addProperty("referenceManual",    &Private::referenceManual);
+        //%% string index
+        s_inst.addProperty("index",              &Private::index);
+        //%% string panelSyncOn
+        s_inst.addProperty("panelSyncOn",        &Private::panelSyncOn);
+        //%% string panelSyncOff
+        s_inst.addProperty("panelSyncOff",       &Private::panelSyncOff);
+        //%% string dirDependencyGraph
+        s_inst.addProperty("dirDependencyGraphFor", &Private::dirDependencyGraphFor);
+        //%% string providedByCategory
+        s_inst.addProperty("providedByCategory", &Private::providedByCategory);
+        //%% string extendsClass
+        s_inst.addProperty("extendsClass",       &Private::extendsClass);
+        //%% string examplesDescription
+        s_inst.addProperty("examplesDescription",&Private::examplesDescription);
+        //%% string langstring
+        s_inst.addProperty("langString",         &Private::langString);
+        //%% string code
+        s_inst.addProperty("code",               &Private::code);
+
+        init=TRUE;
+      }
+
+      m_javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
+      m_fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
+      m_vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
+      m_sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
+    }
+
+    // TemplateStructIntf methods
+    TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
+    StringVector fields() const                  { return s_inst.fields(); }
+  private:
+
+    // Handlers for properties with parameters
     TemplateVariant handleGeneratedAt(const std::vector<TemplateVariant> &args) const
     {
       if (args.size()==2)
@@ -595,8 +803,7 @@ class TranslateContext::Private
       return TemplateVariant();
     }
 
-
-
+    // Property getters
     TemplateVariant generatedBy() const
     {
       return theTranslator->trGeneratedBy();
@@ -1048,226 +1255,7 @@ class TranslateContext::Private
     {
       return theTranslator->trCode();
     }
-    Private()
-    {
-      static bool init=FALSE;
-      if (!init)
-      {
-        //%% string generatedBy
-        s_inst.addProperty("generatedBy",       &Private::generatedBy);
-        //%% string generatedAt
-        s_inst.addProperty("generatedAt",       &Private::generatedAt);
-        //%% string search
-        s_inst.addProperty("search",            &Private::search);
-        //%% string mainPage
-        s_inst.addProperty("mainPage",          &Private::mainPage);
-        //%% string classes
-        s_inst.addProperty("classes",           &Private::classes);
-        //%% string classList
-        s_inst.addProperty("classList",         &Private::classList);
-        //%% string classListDescription
-        s_inst.addProperty("classListDescription", &Private::classListDescription);
-        //%% string classIndex
-        s_inst.addProperty("classIndex",        &Private::classIndex);
-        //%% string concepts
-        s_inst.addProperty("concepts",          &Private::concepts);
-        //%% string conceptDefintion
-        s_inst.addProperty("conceptDefinition", &Private::conceptDefinition);
-        //%% string namespaceIndex
-        s_inst.addProperty("namespaceIndex",    &Private::namespaceIndex);
-        //%% string classHierarchy
-        s_inst.addProperty("classHierarchy",    &Private::classHierarchy);
-        //%% string classMembers
-        s_inst.addProperty("classMembers",      &Private::classMembers);
-        //%% string classMembersDescription
-        s_inst.addProperty("classMembersDescription",&Private::classMembersDescription);
-        //%% string modules
-        s_inst.addProperty("modules",           &Private::modules);
-        //%% string moduleIndex
-        s_inst.addProperty("moduleIndex",       &Private::moduleIndex);
-        //%% string namespaces
-        s_inst.addProperty("namespaces",        &Private::namespaces);
-        //%% string fileIndex
-        s_inst.addProperty("fileIndex",         &Private::fileIndex);
-        //%% string files
-        s_inst.addProperty("files",             &Private::files);
-        //%% string pages
-        s_inst.addProperty("pages",             &Private::pages);
-        //%% string examples
-        s_inst.addProperty("examples",          &Private::examples);
-        //%% string namespaceList
-        s_inst.addProperty("namespaceList",     &Private::namespaceList);
-        //%% string namespaceMembers
-        s_inst.addProperty("namespaceMembers",  &Private::namespaceMembers);
-        //%% string fileList
-        s_inst.addProperty("fileList",          &Private::fileList);
-        //%% string fileMembers
-        s_inst.addProperty("fileMembers",       &Private::fileMembers);
-        //%% string fileMembersDescription
-        s_inst.addProperty("fileMembersDescription", &Private::fileMembersDescription);
-        //%% string relatedPagesDescription
-        s_inst.addProperty("relatedPagesDesc",  &Private::relatedPagesDesc);
-        //%% string more
-        s_inst.addProperty("more",              &Private::more);
-        //%% string detailedDescription
-        s_inst.addProperty("detailedDesc",      &Private::detailedDesc);
-        //%% string inheritanceDiagramFor
-        s_inst.addProperty("inheritanceDiagramFor", &Private::inheritanceDiagramFor);
-        //%% string collaborationDiagramFor
-        s_inst.addProperty("collaborationDiagramFor", &Private::collaborationDiagramFor);
-        //%% markerstring inheritsList
-        s_inst.addProperty("inheritsList",      &Private::inheritsList);
-        //%% markerstring inheritedByList
-        s_inst.addProperty("inheritedByList",   &Private::inheritedByList);
-        //%% markerstring definedAtLineInSourceFile
-        s_inst.addProperty("definedAtLineInSourceFile", &Private::definedAtLineInSourceFile);
-        //%% string typeConstraints
-        s_inst.addProperty("typeConstraints",   &Private::typeConstraints);
-        //%% string exampleList
-        s_inst.addProperty("exampleList",       &Private::exampleList);
-        //%% string listOfAllMembers
-        s_inst.addProperty("listOfAllMembers",  &Private::listOfAllMembers);
-        //%% string memberList
-        s_inst.addProperty("memberList",        &Private::memberList);
-        //%% string theListOfAllMembers
-        s_inst.addProperty("theListOfAllMembers",&Private::theListOfAllMembers);
-        //%% string incInheritedMembers
-        s_inst.addProperty("incInheritedMembers",&Private::incInheritedMembers);
-        //%% string defineValue
-        s_inst.addProperty("defineValue",        &Private::defineValue);
-        //%% string initialValue
-        s_inst.addProperty("initialValue",       &Private::initialValue);
-        //%% markerstring implements
-        s_inst.addProperty("implements",         &Private::implements);
-        //%% markerstring reimplements
-        s_inst.addProperty("reimplements",       &Private::reimplements);
-        //%% markerstring implementedBy
-        s_inst.addProperty("implementedBy",      &Private::implementedBy);
-        //%% markerstring reimplementedBy
-        s_inst.addProperty("reimplementedBy",    &Private::reimplementedBy);
-        //%% markerstring sourceRefs
-        s_inst.addProperty("sourceRefs",         &Private::sourceRefs);
-        //%% markerstring sourceRefBys
-        s_inst.addProperty("sourceRefBys",       &Private::sourceRefBys);
-        //%% string callGraph
-        s_inst.addProperty("callGraph",          &Private::callGraph);
-        //%% string callerGraph
-        s_inst.addProperty("callerGraph",        &Private::callerGraph);
-        //%% string referencedByRelation
-        s_inst.addProperty("referencedByRelation", &Private::referencedByRelation);
-        //%% string referencesRelation
-        s_inst.addProperty("referencesRelation",   &Private::referencesRelation);
-        //%% markerstring inheritedFrom
-        s_inst.addProperty("inheritedFrom",      &Private::inheritedFrom);
-        //%% string additionalInheritedMembers
-        s_inst.addProperty("additionalInheritedMembers",&Private::additionalInheritedMembers);
-        //%% string includeDependencyGraph:container_name
-        s_inst.addProperty("includeDependencyGraph",&Private::includeDependencyGraph);
-        //%% string includedByDependencyGraph
-        s_inst.addProperty("includedByDependencyGraph",&Private::includedByDependencyGraph);
-        //%% string gotoSourceCode
-        s_inst.addProperty("gotoSourceCode",     &Private::gotoSourceCode);
-        //%% string gotoDocumentation
-        s_inst.addProperty("gotoDocumentation",  &Private::gotoDocumentation);
-        //%% string constantgroups
-        s_inst.addProperty("constantgroups",     &Private::constantgroups);
-        //%% string classDocumentation
-        s_inst.addProperty("classDocumentation", &Private::classDocumentation);
-        //%% string namespaceDocumentation
-        s_inst.addProperty("namespaceDocumentation", &Private::namespaceDocumentation);
-        //%% string moduleDocumentation
-        s_inst.addProperty("moduleDocumentation",&Private::moduleDocumentation);
-        //%% string fileDocumentation
-        s_inst.addProperty("fileDocumentation",  &Private::fileDocumentation);
-        //%% string compoundMembers
-        s_inst.addProperty("compoundMembers",    &Private::compoundMembers);
-        //%% string detailLevel
-        s_inst.addProperty("detailLevel",        &Private::detailLevel);
-        //%% string fileListDescription
-        s_inst.addProperty("fileListDescription",&Private::fileListDescription);
-        //%% string namespaceListDescription
-        s_inst.addProperty("namespaceListDescription",&Private::namespaceListDescription);
-        //%% string conceptListDescription
-        s_inst.addProperty("conceptListDescription",&Private::conceptListDescription);
-        //%% string directories
-        s_inst.addProperty("directories",        &Private::directories);
-        //%% string moduleDescription
-        s_inst.addProperty("modulesDescription", &Private::modulesDescription);
-        //%% string all
-        s_inst.addProperty("all",                &Private::all);
-        //%% string functions
-        s_inst.addProperty("functions",          &Private::functions);
-        //%% string variables
-        s_inst.addProperty("variables",          &Private::variables);
-        //%% string typedefs
-        s_inst.addProperty("typedefs",           &Private::typedefs);
-        //%% string enums
-        s_inst.addProperty("enums",              &Private::enums);
-        //%% string enumValues
-        s_inst.addProperty("enumValues",         &Private::enumerationValues);
-        //%% string properties
-        s_inst.addProperty("properties",         &Private::properties);
-        //%% string events
-        s_inst.addProperty("events",             &Private::events);
-        //%% string related
-        s_inst.addProperty("related",            &Private::related);
-        //%% string macros
-        s_inst.addProperty("macros",             &Private::macros);
-        //%% string namespaceMembersDescription
-        s_inst.addProperty("namespaceMembersDescription",&Private::namespaceMembersDescription);
-        //%% string classHierarchyDescription
-        s_inst.addProperty("classHierarchyDescription",&Private::classHierarchyDescription);
-        //%% string gotoGraphicalHierarchy
-        s_inst.addProperty("gotoGraphicalHierarchy",&Private::gotoGraphicalHierarchy);
-        //%% string gotoTextualHierarchy
-        s_inst.addProperty("gotoTextualHierarchy",&Private::gotoTextualHierarchy);
-        //%% string loading
-        s_inst.addProperty("loading",            &Private::loading);
-        //%% string searching
-        s_inst.addProperty("searching",          &Private::searching);
-        //%% string noMatches
-        s_inst.addProperty("noMatches",          &Private::noMatches);
-        //%% string enumValue
-        s_inst.addProperty("enumValue",          &Private::enumValue);
-        //%% string enumName
-        s_inst.addProperty("enumName",           &Private::enumName);
-        //%% string referenceManual
-        s_inst.addProperty("referenceManual",    &Private::referenceManual);
-        //%% string index
-        s_inst.addProperty("index",              &Private::index);
-        //%% string panelSyncOn
-        s_inst.addProperty("panelSyncOn",        &Private::panelSyncOn);
-        //%% string panelSyncOff
-        s_inst.addProperty("panelSyncOff",       &Private::panelSyncOff);
-        //%% string dirDependencyGraph
-        s_inst.addProperty("dirDependencyGraphFor", &Private::dirDependencyGraphFor);
-        //%% string providedByCategory
-        s_inst.addProperty("providedByCategory", &Private::providedByCategory);
-        //%% string extendsClass
-        s_inst.addProperty("extendsClass",       &Private::extendsClass);
-        //%% string examplesDescription
-        s_inst.addProperty("examplesDescription",&Private::examplesDescription);
-        //%% string langstring
-        s_inst.addProperty("langString",         &Private::langString);
-        //%% string code
-        s_inst.addProperty("code",               &Private::code);
 
-        init=TRUE;
-      }
-
-      m_javaOpt    = Config_getBool(OPTIMIZE_OUTPUT_JAVA);
-      m_fortranOpt = Config_getBool(OPTIMIZE_FOR_FORTRAN);
-      m_vhdlOpt    = Config_getBool(OPTIMIZE_OUTPUT_VHDL);
-      m_sliceOpt   = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
-    }
-    TemplateVariant get(const QCString &n) const
-    {
-      return s_inst.get(this,n);
-    }
-    StringVector fields() const
-    {
-      return s_inst.fields();
-    }
   private:
     bool m_javaOpt;
     bool m_fortranOpt;
@@ -1465,6 +1453,7 @@ class DefinitionContext
       }
     }
     virtual ~DefinitionContext() {}
+
     void addBaseProperties(PropertyMapper<T> &inst)
     {
       //%% string name: the name of the symbol
@@ -1508,8 +1497,7 @@ class DefinitionContext
     }
 
   private:
-
-    // propery getters
+    // Property getters
     TemplateVariant fileName() const            { return m_def->getOutputFileBase(); }
     TemplateVariant anchor() const              { return m_def->anchor(); }
     TemplateVariant sourceFileName() const      { return m_def->getSourceFileBase(); }
@@ -1882,7 +1870,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
     StringVector fields() const                        { return s_inst.fields(); }
 
   private:
-    // property getters
+    // Property getters
     TemplateVariant title() const                      { return TemplateVariant(m_classDef->title()); }
     TemplateVariant highlight() const                  { return TemplateVariant("classes"); }
     TemplateVariant subHighlight() const               { return TemplateVariant(""); }
@@ -2620,7 +2608,7 @@ class NamespaceContext::Private : public DefinitionContext<NamespaceContext::Pri
     StringVector fields() const                  { return s_inst.fields(); }
 
   private:
-    // property getters
+    // Property getters
     TemplateVariant title() const                { return TemplateVariant(m_namespaceDef->title()); }
     TemplateVariant highlight() const            { return TemplateVariant("namespaces"); }
     TemplateVariant subHighlight() const         { return TemplateVariant(""); }
@@ -2883,7 +2871,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
     TemplateVariant get(const QCString &n) const { return s_inst.get(this,n); }
     StringVector fields() const { return s_inst.fields(); }
 
-    // property getters
+    // Property getters
     TemplateVariant title() const                 { return m_fileDef->title(); }
     TemplateVariant highlight() const             { return TemplateVariant("files"); }
     TemplateVariant subHighlight() const          { return TemplateVariant(""); }
