@@ -272,6 +272,7 @@ struct preYY_state
   BufStr            *outputBuf      = 0;
   int                roundCount     = 0;
   bool               quoteArg       = false;
+  bool               idStart        = false;
   int                findDefArgContext = 0;
   bool               expectGuard    = false;
   QCString           guardName;
@@ -1450,6 +1451,7 @@ WSopt [ \t\r]*
 <DefineText>"#"/{IDSTART}               {
                                           outputChar(yyscanner,' ');
                                           yyextra->quoteArg=TRUE;
+                                          yyextra->idStart=true;
                                           yyextra->defLitText+=yytext;
                                         }
 <DefineText,CopyCComment>{ID}           {
@@ -1470,6 +1472,12 @@ WSopt [ \t\r]*
                                             }
                                             else
                                             {
+                                              if (yyextra->idStart)
+                                              {
+                                                warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                  "'#' is not followed by a macro parameter '%s': '%s'",
+                                                  qPrint(yyextra->defName),qPrint(yyextra->defLitText.stripWhiteSpace()));
+                                              }
                                               yyextra->defText+=yytext;
                                             }
                                           }
@@ -1482,6 +1490,7 @@ WSopt [ \t\r]*
                                             yyextra->defText+="\"";
                                           }
                                           yyextra->quoteArg=FALSE;
+                                          yyextra->idStart=false;
                                         }
 <CopyCComment>.                         {
                                           yyextra->defLitText+=yytext;
