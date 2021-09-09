@@ -3850,6 +3850,14 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
+    <option type='int' id='MAX_DOT_GRAPH_SUCCESSOR' minval='0' maxval='1000' defval='1' depends='DIRECTORY_GRAPH'>
+      <docs>
+<![CDATA[
+ The \c MAX_DOT_GRAPH_SUCCESSOR tag can be used to set the maximum number of 
+ levels of child directories generated in directory dependency graphs by \c dot.
+]]>
+      </docs>
+    </option>
     <option type='bool' id='DOT_TRANSPARENT' defval='0' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

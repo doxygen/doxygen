@@ -68,7 +68,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual void setParent(DirDef *parent);
     virtual void setLevel();
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
-                                   const FileDef *dstFd,bool inherited);
+                                   const FileDef *dstFd,const bool inheritedByDependent, const bool inheritedByDependee);
     virtual void computeDependencies();
 
   public:
@@ -631,7 +631,7 @@ void DirDefImpl::setLevel()
  *  that was caused by a dependency on file \a fd.
  */
 void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
-                                   const FileDef *dstFd,bool inherited)
+                                   const FileDef *dstFd,const bool inheritedByDependent, const bool inheritedByDependee)
 {
   if (this==dir) return; // do not add self-dependencies
   //static int count=0;
@@ -650,7 +650,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
      if (usedPair==0) // new file dependency
      {
        //printf("  => new file\n");
-       usedDir->addFileDep(srcFd,dstFd);
+       usedDir->addFileDep(srcFd,dstFd, inheritedByDependent, inheritedByDependee);
        added=TRUE;
      }
      else
@@ -661,8 +661,8 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
   else // new directory dependency
   {
     //printf("  => new file\n");
-    auto newUsedDir = std::make_unique<UsedDir>(dir,inherited);
-    newUsedDir->addFileDep(srcFd,dstFd);
+    auto newUsedDir = std::make_unique<UsedDir>(dir);
+    newUsedDir->addFileDep(srcFd,dstFd, inheritedByDependent, inheritedByDependee);
     usedDir = m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
     added=TRUE;
   }
@@ -671,12 +671,17 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
     if (dir->parent())
     {
       // add relation to parent of used dir
-      addUsesDependency(dir->parent(),srcFd,dstFd,inherited);
+      addUsesDependency(
+                        dir->parent(),
+                        srcFd,
+                        dstFd,
+                        inheritedByDependent,
+                        true);
     }
     if (parent())
     {
       // add relation for the parent of this dir as well
-      parent()->addUsesDependency(dir,srcFd,dstFd,TRUE);
+      parent()->addUsesDependency(dir, srcFd, dstFd, true, inheritedByDependee);
     }
   }
 }
@@ -701,7 +706,7 @@ void DirDefImpl::computeDependencies()
           // add dependency: thisDir->usedDir
           //static int count=0;
           //printf("      %d: add dependency %s->%s\n",count++,qPrint(name()),qPrint(usedDir->name()));
-          addUsesDependency(usedDir,fd,ii.fileDef,FALSE);
+          addUsesDependency(usedDir,fd,ii.fileDef,false, false);
         }
       }
     }
@@ -735,8 +740,8 @@ bool DirDefImpl::depGraphIsTrivial() const
 
 //----------------------------------------------------------------------
 
-UsedDir::UsedDir(const DirDef *dir,bool inherited) :
-   m_dir(dir), m_inherited(inherited)
+UsedDir::UsedDir(const DirDef *dir) :
+   m_dir(dir), m_SODO(false), m_SODI(false), m_SIDO(false), m_SIDI(false)
 {
 }
 
@@ -744,9 +749,13 @@ UsedDir::~UsedDir()
 {
 }
 
-void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd)
+void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd, const bool isInheritedByDependent, const bool isInheritedByDependee)
 {
   m_filePairs.add(FilePair::key(srcFd,dstFd),std::make_unique<FilePair>(srcFd,dstFd));
+  m_SODO = m_SODO || (!isInheritedByDependent && !isInheritedByDependee);
+  m_SODI = m_SODI || (!isInheritedByDependent && isInheritedByDependee);
+  m_SIDO = m_SIDO || (isInheritedByDependent && !isInheritedByDependee);
+  m_SIDI = m_SIDI || (isInheritedByDependent && isInheritedByDependee);
 }
 
 void UsedDir::sort()
@@ -1113,3 +1122,12 @@ const DirDef *toDirDef(const Definition *d)
   }
 }
 
+bool UsedDir::isAllDependentsInherited() const
+{
+  return !(m_SODI || m_SODO);
+}
+
+bool UsedDir::isAllDependeesInherited(const bool checkAlsoInheritedDependents) const
+{
+  return !(m_SODO || (checkAlsoInheritedDependents && m_SIDO));
+}
