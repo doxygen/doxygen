@@ -26,7 +26,7 @@
 void DotLegendGraph::writeGraph(const QCString &path)
 {
   TextStream ts;
-  DotGraph::writeGraph(ts, GOF_BITMAP, EOF_Html, path, "", "", FALSE, 0);
+  DotGraph::writeGraph(ts, GOF_BITMAP, EOF_Html, path, "", "", true, FALSE, 0);
 
   if (getDotImageExtension()=="svg")
   {

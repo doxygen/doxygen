@@ -1971,7 +1971,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
                              g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                             relPathAsString(),true,TRUE,TRUE,g_globals.dynSectionId
                             );
             }
             break;
@@ -1980,7 +1980,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                              g_globals.outputDir,
                              g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+".tex",
-                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                             relPathAsString(),false,TRUE,TRUE,g_globals.dynSectionId
                             );
             }
             break;
@@ -2003,7 +2003,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               QCString name = convertToHtml(m_classDef->displayName());
               d.writeImage(tt,g_globals.outputDir,
                            relPathAsString(),
-                           m_classDef->getOutputFileBase());
+                           m_classDef->getOutputFileBase(),true);
               if (!tt.empty())
               {
                 t << "<div class=\"center\">\n";
@@ -2062,7 +2062,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
                              g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                             relPathAsString(),true,TRUE,TRUE,g_globals.dynSectionId
                             );
             }
             break;
@@ -2071,7 +2071,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                              g_globals.outputDir,
                              g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+".tex",
-                             relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
+                             relPathAsString(),false,TRUE,TRUE,g_globals.dynSectionId
                             );
             }
             break;
@@ -2924,7 +2924,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),true,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -2933,7 +2933,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),false,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -2966,7 +2966,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),true,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -2975,7 +2975,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+".tex",
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),false,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -3269,6 +3269,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
                                 g_globals.outputDir,
                                 g_globals.outputDir+Portable::pathSeparator()+m_dirDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                                 relPathAsString(),
+                                true,
                                 TRUE,
                                 g_globals.dynSectionId,
                                 FALSE);
@@ -3281,6 +3282,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
                                 g_globals.outputDir,
                                 g_globals.outputDir+Portable::pathSeparator()+m_dirDef->getOutputFileBase()+".tex",
                                 relPathAsString(),
+                                false,
                                 TRUE,
                                 g_globals.dynSectionId,
                                 FALSE);
@@ -3982,7 +3984,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),true,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -3991,7 +3993,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),false,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -4040,7 +4042,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),true,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -4049,7 +4051,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
               cg->writeGraph(t,GOF_EPS,EOF_LaTeX,
                   g_globals.outputDir,
                   g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+".tex",
-                  relPathAsString(),TRUE,g_globals.dynSectionId
+                  relPathAsString(),false,TRUE,g_globals.dynSectionId
                   );
             }
             break;
@@ -4780,6 +4782,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
                                 g_globals.outputDir,
                                 g_globals.outputDir+Portable::pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
                                 relPathAsString(),
+                                true,
                                 TRUE,
                                 g_globals.dynSectionId);
             }
@@ -4791,6 +4794,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
                                 g_globals.outputDir,
                                 g_globals.outputDir+Portable::pathSeparator()+m_groupDef->getOutputFileBase()+".tex",
                                 relPathAsString(),
+                                false,
                                 TRUE,
                                 g_globals.dynSectionId);
             }

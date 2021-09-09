@@ -32,7 +32,7 @@ class DotGroupCollaboration : public DotGraph
    ~DotGroupCollaboration();
     QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
                         const QCString &path,const QCString &fileName,const QCString &relPath,
-                        bool writeImageMap=TRUE,int graphId=-1);
+                        const bool toIndex,bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
 
   protected:

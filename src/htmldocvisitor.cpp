@@ -2267,7 +2267,7 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   }
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine,true);
   writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
 }
 
@@ -2290,7 +2290,7 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPa
   MscOutputFormat mscFormat = MSC_BITMAP;
   if ("svg" == imgExt)
     mscFormat = MSC_SVG;
-  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
+  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine,true);
   writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
 }
 
@@ -2331,7 +2331,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   QCString imgExt = getDotImageExtension();
   if (imgExt=="svg")
   {
-    PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG);
+    PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_SVG,true);
     //m_t << "<iframe scrolling=\"no\" frameborder=\"0\" src=\"" << relPath << baseName << ".svg" << "\" />\n";
     //m_t << "<p><b>This browser is not able to show SVG: try Firefox, Chrome, Safari, or Opera instead.</b></p>";
     //m_t << "</iframe>\n";
@@ -2339,7 +2339,7 @@ void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString 
   }
   else
   {
-    PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
+    PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP,true);
     m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
   }
 }

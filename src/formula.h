@@ -39,7 +39,7 @@ class FormulaManager
     void readFormulas(const QCString &dir,bool doCompare=false);
     void clear();
     int addFormula(const std::string &formulaText);
-    void generateImages(const QCString &outputDir,Format format,HighDPI hd = HighDPI::Off) const;
+    void generateImages(const QCString &outputDir,Format format,const bool toIndex,HighDPI hd = HighDPI::Off) const;
     std::string findFormula(int formulaId) const;
     bool hasFormulas() const;
     DisplaySize displaySize(int formulaId) const;

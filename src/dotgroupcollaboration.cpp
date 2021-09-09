@@ -242,11 +242,10 @@ QCString DotGroupCollaboration::getMapLabel() const
 QCString DotGroupCollaboration::writeGraph( TextStream &t,
   GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
   const QCString &path, const QCString &fileName, const QCString &relPath,
-  bool generateImageMap,int graphId)
+  const bool toIndex,bool generateImageMap,int graphId)
 {
-  m_doNotAddImageToIndex = TRUE;
-
-  return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+  m_doNotAddImageToIndex = !toIndex;
+  return DotGraph::writeGraph(t, graphFormat, textFormat, path, fileName, relPath, toIndex, generateImageMap, graphId);
 }
 
 void DotGroupCollaboration::Edge::write( TextStream &t ) const

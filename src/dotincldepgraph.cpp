@@ -187,10 +187,11 @@ QCString DotInclDepGraph::writeGraph(TextStream &out,
                                      const QCString &path,
                                      const QCString &fileName,
                                      const QCString &relPath,
+                                     const bool toIndex,
                                      bool generateImageMap,
                                      int graphId)
 {
-  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, toIndex, generateImageMap, graphId);
 }
 
 bool DotInclDepGraph::isTrivial() const

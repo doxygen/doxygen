@@ -898,7 +898,7 @@ DB_GEN_C
   m_t << "                <imagedata width=\"50%\" align=\"center\" valign=\"middle\" scalefit=\"0\" fileref=\""
                          << relPath << fileName << ".png\">" << "</imagedata>\n";
   m_t << "            </imageobject>\n";
-  d.writeImage(m_t,dir(),relPath,fileName,FALSE);
+  d.writeImage(m_t,dir(),relPath,fileName,false,FALSE);
   m_t << "        </mediaobject>\n";
   m_t << "    </informalfigure>\n";
   m_t << "</para>\n";
@@ -1151,7 +1151,7 @@ DB_GEN_C
 void DocbookGenerator::endGroupCollaboration(DotGroupCollaboration &g)
 {
 DB_GEN_C
-  g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,false,FALSE);
 }
 void DocbookGenerator::startDotGraph()
 {
@@ -1160,7 +1160,7 @@ DB_GEN_C
 void DocbookGenerator::endDotGraph(DotClassGraph &g)
 {
 DB_GEN_C
-  g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,TRUE,FALSE);
+  g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,false,TRUE,FALSE);
 }
 void DocbookGenerator::startInclDepGraph()
 {
@@ -1169,7 +1169,7 @@ DB_GEN_C
 void DocbookGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,false,FALSE);
 }
 void DocbookGenerator::startCallGraph()
 {
@@ -1178,7 +1178,7 @@ DB_GEN_C
 void DocbookGenerator::endCallGraph(DotCallGraph &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,false,FALSE);
 }
 void DocbookGenerator::startDirDepGraph()
 {
@@ -1187,7 +1187,7 @@ DB_GEN_C
 void DocbookGenerator::endDirDepGraph(DotDirDeps &g)
 {
 DB_GEN_C
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_DocBook,dir(),fileName(),relPath,false,FALSE);
 }
 void DocbookGenerator::startMemberDocList()
 {

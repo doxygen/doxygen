@@ -67,8 +67,9 @@ class PlantumlManager
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
+     *  @param[in] toIndex  should the image be added to the image list?
      */
-    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
+    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format,const bool toIndex);
 
     using FilesMap   = std::map< std::string, StringVector    >;
     using ContentMap = std::map< std::string, PlantumlContent >;

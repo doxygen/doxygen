@@ -88,7 +88,7 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
   return baseName;
 }
 
-void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format)
+void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format,const bool toIndex)
 {
   QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
   QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
@@ -115,7 +115,7 @@ void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCSt
       break;
   }
 
-  Doxygen::indexList->addImageFile(imgName);
+  if (toIndex) Doxygen::indexList->addImageFile(imgName);
 }
 
 //--------------------------------------------------------------------

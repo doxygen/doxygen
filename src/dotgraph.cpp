@@ -115,6 +115,7 @@ QCString DotGraph::writeGraph(
         const QCString &path,     // output folder
         const QCString &fileName, // name of the code file (for code patcher)
         const QCString &relPath,  // output folder relative to code file
+        const bool toIndex,       // Do we need to add the file to the indexList
         bool generateImageMap,    // in case of bitmap, shall there be code generated?
         int graphId)              // number of this graph in the current code, used in svg code
 {
@@ -133,7 +134,7 @@ QCString DotGraph::writeGraph(
 
   m_regenerate = prepareDotFile();
 
-  if (!m_doNotAddImageToIndex) Doxygen::indexList->addImageFile(imgName());
+  if (toIndex) Doxygen::indexList->addImageFile(imgName());
 
   generateCode(t);
 

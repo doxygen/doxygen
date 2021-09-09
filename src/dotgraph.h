@@ -46,6 +46,7 @@ class DotGraph
                         const QCString &path,
                         const QCString &fileName,
                         const QCString &relPath,
+                        const bool toIndex,
                         bool writeImageMap=TRUE,
                         int graphId=-1
                        );

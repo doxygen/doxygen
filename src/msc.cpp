@@ -91,10 +91,11 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
 
 void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
                            const QCString &outFile,MscOutputFormat format,
-                           const QCString &srcFile,int srcLine
+                           const QCString &srcFile,int srcLine,const bool toIndex
                           )
 {
   QCString absOutFile = outDir;
+  QCString localOutFile = outFile;
   absOutFile+=Portable::pathSeparator();
   absOutFile+=outFile;
 
@@ -105,14 +106,17 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     case MSC_BITMAP:
       msc_format = mscgen_format_png;
       imgName+=".png";
+      localOutFile+=".png";
       break;
     case MSC_EPS:
       msc_format = mscgen_format_eps;
       imgName+=".eps";
+      localOutFile+=".eps";
       break;
     case MSC_SVG:
       msc_format = mscgen_format_svg;
       imgName+=".svg";
+      localOutFile+=".svg";
       break;
     default:
       return;
@@ -139,7 +143,7 @@ void writeMscGraphFromFile(const QCString &inFile,const QCString &outDir,
     Portable::sysTimerStop();
   }
 
-  Doxygen::indexList->addImageFile(imgName);
+  if (toIndex) Doxygen::indexList->addImageFile(localOutFile);
 
 }
 

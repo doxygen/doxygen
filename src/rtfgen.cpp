@@ -1691,7 +1691,7 @@ void RTFGenerator::endClassDiagram(const ClassDiagram &d,
   newParagraph();
 
   // create a png file
-  d.writeImage(m_t,dir(),m_relPath,fileName,FALSE);
+  d.writeImage(m_t,dir(),m_relPath,fileName,false,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2150,7 +2150,7 @@ void RTFGenerator::endDotGraph(DotClassGraph &g)
   newParagraph();
 
   QCString fn =
-    g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,TRUE,FALSE);
+    g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,false,TRUE,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2173,7 +2173,7 @@ void RTFGenerator::endInclDepGraph(DotInclDepGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,false,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2203,7 +2203,7 @@ void RTFGenerator::endCallGraph(DotCallGraph &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,false,FALSE);
 
   // display the file
   m_t << "{\n";
@@ -2225,7 +2225,7 @@ void RTFGenerator::endDirDepGraph(DotDirDeps &g)
 {
   newParagraph();
 
-  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,FALSE);
+  QCString fn = g.writeGraph(m_t,GOF_BITMAP,EOF_Rtf,dir(),fileName(),m_relPath,false,FALSE);
 
   // display the file
   m_t << "{\n";

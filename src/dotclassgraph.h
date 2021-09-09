@@ -35,6 +35,7 @@ public:
   int numNodes() const;
   QCString writeGraph(TextStream &t,GraphOutputFormat gf,EmbeddedOutputFormat ef,
     const QCString &path, const QCString &fileName, const QCString &relPath,
+    const bool toIndex,
     bool TBRank=TRUE,bool imageMap=TRUE,int graphId=-1);
 
   void writeXML(TextStream &t);

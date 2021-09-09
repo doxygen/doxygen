@@ -450,11 +450,12 @@ QCString DotClassGraph::writeGraph(TextStream &out,
   const QCString &path,
   const QCString &fileName,
   const QCString &relPath,
+  const bool toIndex,
   bool /*isTBRank*/,
   bool generateImageMap,
   int graphId)
 {
-  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
+  return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, toIndex, generateImageMap, graphId);
 }
 
 //--------------------------------------------------------------------

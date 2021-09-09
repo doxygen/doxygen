@@ -9683,7 +9683,7 @@ static void copyStyleSheet()
   }
 }
 
-static void copyLogo(const QCString &outputOption)
+static void copyLogo(const QCString &outputOption, const bool toIndex)
 {
   QCString projectLogo = Config_getString(PROJECT_LOGO);
   if (!projectLogo.isEmpty())
@@ -9698,12 +9698,12 @@ static void copyLogo(const QCString &outputOption)
     {
       QCString destFileName = outputOption+"/"+fi.fileName();
       copyFile(projectLogo,destFileName);
-      Doxygen::indexList->addImageFile(fi.fileName().c_str());
+      if (toIndex) Doxygen::indexList->addImageFile(fi.fileName().c_str());
     }
   }
 }
 
-static void copyExtraFiles(const StringVector &files,const QCString &filesOption,const QCString &outputOption)
+static void copyExtraFiles(const StringVector &files,const QCString &filesOption,const QCString &outputOption, const bool toIndex)
 {
   for (const auto &fileName : files)
   {
@@ -9717,7 +9717,7 @@ static void copyExtraFiles(const StringVector &files,const QCString &filesOption
       else
       {
         QCString destFileName = outputOption+"/"+fi.fileName();
-        Doxygen::indexList->addImageFile(fi.fileName().c_str());
+        if (toIndex) Doxygen::indexList->addImageFile(fi.fileName().c_str());
         copyFile(QCString(fileName), destFileName);
       }
     }
@@ -12259,22 +12259,22 @@ void generateOutput()
   {
     FTVHelp::generateTreeViewImages();
     copyStyleSheet();
-    copyLogo(Config_getString(HTML_OUTPUT));
-    copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT));
+    copyLogo(Config_getString(HTML_OUTPUT),true);
+    copyExtraFiles(Config_getList(HTML_EXTRA_FILES),"HTML_EXTRA_FILES",Config_getString(HTML_OUTPUT),true);
   }
   if (generateLatex)
   {
     copyLatexStyleSheet();
-    copyLogo(Config_getString(LATEX_OUTPUT));
-    copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT));
+    copyLogo(Config_getString(LATEX_OUTPUT),false);
+    copyExtraFiles(Config_getList(LATEX_EXTRA_FILES),"LATEX_EXTRA_FILES",Config_getString(LATEX_OUTPUT),false);
   }
   if (generateDocbook)
   {
-    copyLogo(Config_getString(DOCBOOK_OUTPUT));
+    copyLogo(Config_getString(DOCBOOK_OUTPUT),false);
   }
   if (generateRtf)
   {
-    copyLogo(Config_getString(RTF_OUTPUT));
+    copyLogo(Config_getString(RTF_OUTPUT),false);
   }
 
   const FormulaManager &fm = FormulaManager::instance();
@@ -12283,20 +12283,20 @@ void generateOutput()
   {
     g_s.begin("Generating images for formulas in HTML...\n");
     fm.generateImages(Config_getString(HTML_OUTPUT), Config_getEnum(HTML_FORMULA_FORMAT)==HTML_FORMULA_FORMAT_t::svg ?
-        FormulaManager::Format::Vector : FormulaManager::Format::Bitmap, FormulaManager::HighDPI::On);
+        FormulaManager::Format::Vector : FormulaManager::Format::Bitmap, true, FormulaManager::HighDPI::On);
     g_s.end();
   }
   if (fm.hasFormulas() && generateRtf)
   {
     g_s.begin("Generating images for formulas in RTF...\n");
-    fm.generateImages(Config_getString(RTF_OUTPUT),FormulaManager::Format::Bitmap);
+    fm.generateImages(Config_getString(RTF_OUTPUT),FormulaManager::Format::Bitmap,false);
     g_s.end();
   }
 
   if (fm.hasFormulas() && generateDocbook)
   {
     g_s.begin("Generating images for formulas in Docbook...\n");
-    fm.generateImages(Config_getString(DOCBOOK_OUTPUT),FormulaManager::Format::Bitmap);
+    fm.generateImages(Config_getString(DOCBOOK_OUTPUT),FormulaManager::Format::Bitmap,false);
     g_s.end();
   }
 
