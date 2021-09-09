@@ -555,7 +555,7 @@ void HtmlHelp::Private::createProjectFile()
     }
     for (auto &s : imageFiles)
     {
-      t << FileInfo(s).fileName() << "\n";
+      t << s.c_str() << "\n";
     }
     t.close();
   }
