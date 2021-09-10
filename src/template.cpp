@@ -1450,11 +1450,11 @@ class TemplateFilterFactory
   public:
     typedef TemplateVariant (FilterFunction)(const TemplateVariant &v,const TemplateVariant &arg);
 
-    static TemplateFilterFactory *instance()
+    static TemplateFilterFactory &instance()
     {
-      static TemplateFilterFactory *instance = 0;
-      if (instance==0) instance = new TemplateFilterFactory;
-      return instance;
+      static std::unique_ptr<TemplateFilterFactory> instance;
+      if (instance==0) instance = std::make_unique<TemplateFilterFactory>();
+      return *instance;
     }
 
     TemplateVariant apply(const QCString &name,const TemplateVariant &v,const TemplateVariant &arg, bool &ok)
@@ -1483,7 +1483,7 @@ class TemplateFilterFactory
       public:
         AutoRegister<T>(const QCString &key)
         {
-          TemplateFilterFactory::instance()->registerFilter(key,&T::apply);
+          TemplateFilterFactory::instance().registerFilter(key,&T::apply);
         }
     };
 
@@ -1610,7 +1610,7 @@ class ExprAstFilter : public ExprAst
       TemplateVariant arg;
       if (m_arg) arg = m_arg->resolve(c);
       bool ok;
-      TemplateVariant result = TemplateFilterFactory::instance()->apply(m_name,v,arg,ok);
+      TemplateVariant result = TemplateFilterFactory::instance().apply(m_name,v,arg,ok);
       if (!ok)
       {
         ci->warn(ci->templateName(),ci->line(),"unknown filter '%s'",qPrint(m_name));
@@ -1809,6 +1809,8 @@ class TemplateNode
     TemplateNode *m_parent = 0;
 };
 
+using TemplateNodePtr = std::unique_ptr<TemplateNode>;
+
 //----------------------------------------------------------
 
 /** @brief Class representing a lexical token in a template */
@@ -1828,7 +1830,7 @@ using TemplateTokenStream = std::deque< TemplateTokenPtr >;
 //----------------------------------------------------------
 
 /** @brief Class representing a list of AST nodes in a template */
-class TemplateNodeList : public std::vector< std::unique_ptr<TemplateNode> >
+class TemplateNodeList : public std::vector< TemplateNodePtr >
 {
   public:
     void render(TextStream &ts,TemplateContext *c)
@@ -2913,12 +2915,12 @@ template<class T> class TemplateNodeCreator : public TemplateNode
   public:
     TemplateNodeCreator(TemplateParser *parser,TemplateNode *parent,int line)
       : TemplateNode(parent), m_templateName(parser->templateName()), m_line(line) {}
-    static TemplateNode *createInstance(TemplateParser *parser,
+    static TemplateNodePtr createInstance(TemplateParser *parser,
                                         TemplateNode *parent,
                                         int line,
                                         const QCString &data)
     {
-      return new T(parser,parent,line,data);
+      return std::make_unique<T>(parser,parent,line,data);
     }
     TemplateImpl *getTemplate()
     {
@@ -4530,19 +4532,19 @@ class TemplateNodeEncoding : public TemplateNodeCreator<TemplateNodeEncoding>
 class TemplateNodeFactory
 {
   public:
-    typedef TemplateNode *(*CreateFunc)(TemplateParser *parser,
+    typedef TemplateNodePtr (*CreateFunc)(TemplateParser *parser,
                                         TemplateNode *parent,
                                         int line,
                                         const QCString &data);
 
-    static TemplateNodeFactory *instance()
+    static TemplateNodeFactory &instance()
     {
-      static TemplateNodeFactory *instance = 0;
-      if (instance==0) instance = new TemplateNodeFactory;
-      return instance;
+      static std::unique_ptr<TemplateNodeFactory> instance;
+      if (instance==0) instance = std::make_unique<TemplateNodeFactory>();
+      return *instance;
     }
 
-    TemplateNode *create(const QCString &name,
+    TemplateNodePtr create(const QCString &name,
                          TemplateParser *parser,
                          TemplateNode *parent,
                          int line,
@@ -4564,7 +4566,7 @@ class TemplateNodeFactory
       public:
         AutoRegister<T>(const QCString &key)
         {
-          TemplateNodeFactory::instance()->registerTemplateNode(key,T::createInstance);
+          TemplateNodeFactory::instance().registerTemplateNode(key,T::createInstance);
         }
     };
 
@@ -4960,8 +4962,8 @@ void TemplateParser::parse(
           {
             arg = tok_ptr->data.mid(sep+1);
           }
-          std::unique_ptr<TemplateNode> node { TemplateNodeFactory::instance()->
-                               create(command,this,parent,tok_ptr->line,arg) };
+          TemplateNodePtr node = TemplateNodeFactory::instance().create(
+                                 command,this,parent,tok_ptr->line,arg);
           if (node)
           {
             nodes.push_back(std::move(node));
