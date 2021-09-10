@@ -15,34 +15,74 @@
 
 #include <algorithm>
 #include <iterator>
-#include <tuple>
+#include <utility>
 #include <sstream>
+#include <cstdint>
+#include <cmath>
 
 #include "dotdirdeps.h"
 #include "util.h"
 #include "doxygen.h"
 #include "config.h"
+#include "image.h"
 
 using DirDefMap = std::map<std::string,const DirDef *>;
 
 /** Properties are used to format the directories in the graph distinctively. */
 struct DotDirProperty
 {
-  bool isIncomplete = false; //!< true if not all successor of a cluster are drawn
-  bool isOrphaned = false; //!< true if parent is not drawn
-  bool isTruncated = false; //!< true has successors, none is drawn
-  bool isOriginal = false; //!< true if is the directory for which the graph is drawn
-  bool isPeriperal = false; //!< true if no successor of parent of original directory
+  bool isIncomplete = false; //!< true if not all successors of a cluster are drawn
+  bool isOrphaned   = false; //!< true if parent is not drawn
+  bool isTruncated  = false; //!< true has successors, none is drawn
+  bool isOriginal   = false; //!< true if is the directory for which the graph is drawn
+  bool isPeripheral = false; //!< true if no successor of parent of original directory
+};
+
+/** Builder helper to create instances of the DotDirProperty struct */
+class DotDirPropertyBuilder
+{
+  public:
+    DotDirPropertyBuilder &makeIncomplete(bool b=true) { m_property.isIncomplete=b; return *this; }
+    DotDirPropertyBuilder &makeOrphaned  (bool b=true) { m_property.isOrphaned  =b; return *this; }
+    DotDirPropertyBuilder &makeTruncated (bool b=true) { m_property.isTruncated =b; return *this; }
+    DotDirPropertyBuilder &makeOriginal  (bool b=true) { m_property.isOriginal  =b; return *this; }
+    DotDirPropertyBuilder &makePeripheral(bool b=true) { m_property.isPeripheral=b; return *this; }
+    operator DotDirProperty() { return std::move(m_property); }
+  private:
+    DotDirProperty m_property;
 };
 
 /** Elements consist of (1) directory relation and (2) whether it is pointing only to inherited dependees. */
-typedef std::vector<std::tuple<const DirRelation*, bool>> DirRelations;
-typedef decltype(std::declval<DirDef>().level()) DirectoryLevel; //!< Integer for directory level.
+typedef std::vector< std::pair< std::unique_ptr<DirRelation>, bool> > DirRelations;
 
 /** Returns a DOT color name according to the directory depth. */
-static QCString getDirectoryBackgroundColor(const DirectoryLevel depthIndex)
+static QCString getDirectoryBackgroundColor(int depthIndex)
 {
-  return "/pastel19/" + QCString().setNum(depthIndex % 9 + 1);
+  static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
+  static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
+  static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  float fraction = (float)depthIndex/(float)Config_getInt(DIR_GRAPH_MAX_DEPTH);
+  const char hex[] = "0123456789abcdef";
+  int range = 0x40; // range from darkest color to lightest color
+  int luma   = 0xef-(int)(fraction*range); // interpolation
+  double r,g,b;
+  ColoredImage::hsl2rgb(hue/360.0,sat/255.0,
+                        pow(luma/255.0,gamma/100.0),&r,&g,&b);
+  int red   = (int)(r*255.0);
+  int green = (int)(g*255.0);
+  int blue  = (int)(b*255.0);
+  char colStr[8];
+  colStr[0]='#';
+  colStr[1]=hex[red>>4];
+  colStr[2]=hex[red&0xf];
+  colStr[3]=hex[green>>4];
+  colStr[4]=hex[green&0xf];
+  colStr[5]=hex[blue>>4];
+  colStr[6]=hex[blue&0xf];
+  colStr[7]=0;
+  //printf("i=%d max=%d fraction=%f luma=%d %02x %02x %02x -> color=%s\n",
+  //    depthIndex,Config_getInt(DIR_GRAPH_MAX_DEPTH),fraction,luma,red,green,blue,colStr);
+  return colStr;
 }
 
 /** Returns a DOT color name according to the directory properties. */
@@ -50,7 +90,7 @@ static const char* getDirectoryBorderColor(const DotDirProperty &property)
 {
   if (property.isTruncated && property.isOrphaned)
   {
-    return "darkorchid3";
+    return "red";
   }
   else if (property.isTruncated)
   {
@@ -58,11 +98,11 @@ static const char* getDirectoryBorderColor(const DotDirProperty &property)
   }
   else if (property.isOrphaned)
   {
-    return "grey75";
+    return "grey50";
   }
   else
   {
-    return "black";
+    return "grey25";
   }
 }
 
@@ -70,7 +110,7 @@ static const char* getDirectoryBorderColor(const DotDirProperty &property)
 static std::string getDirectoryBorderStyle(const DotDirProperty &property)
 {
   std::string style;
-  if (!property.isPeriperal)
+  if (!property.isPeripheral)
   {
     style += "filled,";
   }
@@ -79,6 +119,10 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
     style += "bold,";
   }
   if (property.isIncomplete)
+  {
+    style += "dashed,";
+  }
+  else if (property.isTruncated && property.isOrphaned)
   {
     style += "dashed,";
   }
@@ -92,24 +136,24 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
  * @param[in] property are evaluated for formatting
  * @param[in,out] directoriesInGraph lists the directories which have been written to the output stream
  */
-static void drawDirectory(TextStream &outStream, const DirDef *const directory, const DotDirProperty &property,
+static void drawDirectory(TextStream &t, const DirDef *const directory, const DotDirProperty &property,
     DirDefMap &directoriesInGraph)
 {
-  outStream << "  " << directory->getOutputFileBase() << " ["
+  t << "  " << directory->getOutputFileBase() << " ["
       "shape=box, "
-      "label=\"" << directory->shortName() << "\", "
-      "style=\"" << getDirectoryBorderStyle(property) << "\", "
-      "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()) << "\", "
-      "color=\"" << getDirectoryBorderColor(property) << "\", "
-      "URL=\"" << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\""
+      "label=\""     << directory->shortName()                                       << "\", "
+      "style=\""     << getDirectoryBorderStyle(property)                            << "\", "
+      "fillcolor=\"" << getDirectoryBackgroundColor(directory->level())              << "\", "
+      "color=\""     << getDirectoryBorderColor(property)                            << "\", "
+      "URL=\""       << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\""
       "];\n";
   directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
 }
 
 /** Checks, if the directory is a the maximum drawn directory level. */
-static bool isAtLowerVisibilityBorder(const DirDef *const directory, const DirectoryLevel startLevel)
+static bool isAtMaxDepth(const DirDef *const directory, const int startLevel)
 {
-  return (directory->level() - startLevel) == Config_getInt(MAX_DOT_GRAPH_SUCCESSOR);
+  return (directory->level() - startLevel) >= Config_getInt(DIR_GRAPH_MAX_DEPTH);
 }
 
 /**
@@ -123,9 +167,9 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
 {
   outputStream << "  subgraph cluster" << directory->getOutputFileBase() << " {\n"
       "    graph [ "
-      "bgcolor=\"" << getDirectoryBackgroundColor(directory->level()) << "\", "
+      "bgcolor=\""  << getDirectoryBackgroundColor(directory->level()) << "\", "
       "pencolor=\"" << getDirectoryBorderColor(directoryProperty) << "\", "
-      "style=\"" << getDirectoryBorderStyle(directoryProperty) << "\", "
+      "style=\""    << getDirectoryBorderStyle(directoryProperty) << "\", "
       "label=\"";
   if (isAncestor)
   {
@@ -145,77 +189,80 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
   }
 }
 
-/**
- * Assembles a list of the directory relations and if they result from inheritance.
- * @param dependent is the source of the dependency
- * @param isLeaf true, if no successors are drawn for this directory
- * @return list of directory relations
- */
-static auto getDependencies(const DirDef *const dependent, const bool isLeaf)
+static void drawClusterClosing(TextStream &t)
 {
-  DirRelations dependencies;
-  for (const auto &usedDirectory : dependent->usedDirs())
+  t << "  }\n";
+}
+
+/**
+ * Assembles a list of the directory relations and whether or not they result from "inheritance".
+ * @param dependencies Array to add the dependencies to.
+ * @param srcDir is the source of the dependency.
+ * @param isLeaf true, if no children are drawn for this directory.
+ */
+static void addDependencies(DirRelations &dependencies,const DirDef *const srcDir, bool isLeaf)
+{
+  for (const auto &usedDirectory : srcDir->usedDirs())
   {
-    const auto dependee = usedDirectory->dir();
-    if (!dependee->isParentOf(dependent) && (isLeaf || !usedDirectory->isAllDependentsInherited()))
+    const auto dstDir = usedDirectory->dir();
+    if (!dstDir->isParentOf(srcDir) && (isLeaf || usedDirectory->hasDirectSrcDeps()))
     {
       QCString relationName;
-      relationName.sprintf("dir_%06d_%06d", dependent->dirCount(), dependee->dirCount());
-      const auto dependency = new DirRelation(relationName, dependent, usedDirectory.get());
-      dependencies.emplace_back(dependency, usedDirectory->isAllDependeesInherited(isLeaf));
+      relationName.sprintf("dir_%06d_%06d", srcDir->dirCount(), dstDir->dirCount());
+      bool directRelation = isLeaf ? usedDirectory->hasDirectDstDeps() : usedDirectory->hasDirectDeps();
+      auto &&dependency = std::make_unique<DirRelation>(relationName, srcDir, usedDirectory.get());
+      auto &&pair = std::make_pair(std::move(dependency),directRelation);
+      dependencies.emplace_back(std::move(pair));
     }
   }
-  return dependencies;
 }
 
 /** Recursively draws directory tree. */
-static DirRelations drawTree(TextStream &outputStream, const DirDef *const directory,
-    const DirectoryLevel startLevel, DirDefMap &directoriesInGraph, const bool isTreeRoot)
+static void drawTree(DirRelations &dependencies, TextStream &t, const DirDef *const directory,
+    int startLevel, DirDefMap &directoriesInGraph, const bool isTreeRoot)
 {
-  DirRelations dependencies;
-  if (!directory->isCluster())
+  if (!directory->hasSubdirs())
   {
-    const DotDirProperty directoryProperty = { false, false, false, isTreeRoot, false };
-    drawDirectory(outputStream, directory, directoryProperty, directoriesInGraph);
-    const auto deps = getDependencies(directory, true);
-    dependencies.insert(std::end(dependencies), std::begin(deps), std::end(deps));
+    const DotDirProperty directoryProperty = DotDirPropertyBuilder().makeOriginal(isTreeRoot);
+    drawDirectory(t, directory, directoryProperty, directoriesInGraph);
+    addDependencies(dependencies, directory, true);
   }
   else
   {
-    if (isAtLowerVisibilityBorder(directory, startLevel))
+    if (isAtMaxDepth(directory, startLevel)) // maximum nesting level reached
     {
-      const DotDirProperty directoryProperty = { false, false, true, isTreeRoot, false };
-      drawDirectory(outputStream, directory, directoryProperty, directoriesInGraph);
-      const auto deps = getDependencies(directory, true);
-      dependencies.insert(std::end(dependencies), std::begin(deps), std::end(deps));
+      const DotDirProperty directoryProperty = DotDirPropertyBuilder().makeOriginal(isTreeRoot);
+      drawDirectory(t, directory, directoryProperty, directoriesInGraph);
+      addDependencies(dependencies, directory, true);
     }
-    else
+    else // start a new nesting level
     {
-      {  // open cluster
-        const DotDirProperty directoryProperty = { false, false, false, isTreeRoot, false };
-        drawClusterOpening(outputStream, directory, directoryProperty, directoriesInGraph, false);
-        const auto deps = getDependencies(directory, false);
-        dependencies.insert(std::end(dependencies), std::begin(deps), std::end(deps));
+      // open cluster
+      {
+        const DotDirProperty directoryProperty = DotDirPropertyBuilder().makeOriginal(isTreeRoot);
+        drawClusterOpening(t, directory, directoryProperty, directoriesInGraph, false);
+        addDependencies(dependencies, directory, false);
       }
 
+      // process all sub directories
       for (const auto subDirectory : directory->subDirs())
       {
-        const auto deps = drawTree(outputStream, subDirectory, startLevel, directoriesInGraph, false);
-        dependencies.insert(std::end(dependencies), std::begin(deps), std::end(deps));
+        drawTree(dependencies, t, subDirectory, startLevel, directoriesInGraph, false);
       }
-      {  //close cluster
-        outputStream << "  }\n";
+
+      // close cluster
+      {
+        drawClusterClosing(t);
       }
     }
   }
-  return dependencies;
 }
 
 /**
  * Write DOT code for directory dependency graph.
  *
  * Code is generated for a directory. Successors (sub-directories) of this directory are recursively drawn.
- * Recursion is limited by `MAX_DOT_GRAPH_SUCCESSOR`. The dependencies of those directories
+ * Recursion is limited by `DIR_GRAPH_MAX_DEPTH`. The dependencies of those directories
  * are drawn.
  *
  * If a dependee is not part of directory tree above, then the dependency is drawn to the first parent of the
@@ -232,83 +279,92 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
   dirsInGraph.insert(std::make_pair(dd->getOutputFileBase().str(),dd));
 
   std::vector<const DirDef *> usedDirsNotDrawn, usedDirsDrawn;
-  for(const auto& usedDir : dd->usedDirs())
+  for (const auto& usedDir : dd->usedDirs())
   {
     usedDirsNotDrawn.push_back(usedDir->dir());
   }
 
+  auto moveDrawnDirs = [&usedDirsDrawn,&usedDirsNotDrawn](const std::vector<const DirDef *>::iterator &newEnd)
+  {
+    // usedDirsNotDrawn is split into two segments: [begin()....newEnd-1] and [newEnd....end()]
+    // where the second segment starting at newEnd has been drawn, so append this segment to the usedDirsDrawn list and
+    // remove it from the usedDirsNotDrawn list.
+    std::move(newEnd, std::end(usedDirsNotDrawn), std::back_inserter(usedDirsDrawn));
+    usedDirsNotDrawn.erase(newEnd, usedDirsNotDrawn.end());
+  };
+
+  // if dd has a parent draw it as the outer layer
   const auto parent = dd->parent();
   if (parent)
   {
-    const DotDirProperty parentDirProperty = {true, parent->parent()!=nullptr, false, false, false};
+    const DotDirProperty parentDirProperty = DotDirPropertyBuilder().
+                                             makeIncomplete().
+                                             makeOrphaned(parent->parent()!=nullptr);
     drawClusterOpening(t, parent, parentDirProperty, dirsInGraph, true);
 
     {
       // draw all directories which have `dd->parent()` as parent and `dd` as dependent
-      const auto newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(), [&](const DirDef *const usedDir)
-      {
-        if (dd!=usedDir && dd->parent()==usedDir->parent())
+      const auto newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(),
+        [&](const DirDef *const usedDir)
         {
-          const DotDirProperty usedDirProperty = {false, false, usedDir->isCluster(), false, false};
-          drawDirectory(t, usedDir, usedDirProperty, dirsInGraph);
-          return false;
-        }
-        return true;
-      }
-      );
-      std::move(newEnd, std::end(usedDirsNotDrawn), std::back_inserter(usedDirsDrawn));
-      usedDirsNotDrawn.erase(newEnd, usedDirsNotDrawn.end());
+          if (dd!=usedDir && dd->parent()==usedDir->parent()) // usedDir and dd share the same parent
+          {
+            const DotDirProperty usedDirProperty = DotDirPropertyBuilder().makeTruncated(usedDir->hasSubdirs());
+            drawDirectory(t, usedDir, usedDirProperty, dirsInGraph);
+            return false; // part of the drawn partition
+          }
+          return true; // part of the not-drawn partition
+        });
+      moveDrawnDirs(newEnd);
     }
   }
 
-  const auto dependencies = drawTree(t, dd, dd->level(), dirsInGraph, true);
+  // draw the directory tree with dd as root
+  DirRelations dependencies;
+  drawTree(dependencies, t, dd, dd->level(), dirsInGraph, true);
 
-  if (dd->parent())
+  if (parent)
   {
-    // close cluster subgraph
-    t << "  }\n";
+    drawClusterClosing(t);
   }
 
-  // add nodes for other used directories
+  // add nodes for other used directories (i.e. outside of the cluster of directories directly connected to dd)
   {
-    const auto newEnd =
-        std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(), [&](const DirDef *const usedDir)
-	        // for each used dir (=directly used or a parent of a directly used dir)
-        {
-          const DirDef *dir=dd;
-          while (dir)
-          {
-            if (dir!=usedDir && dir->parent()==usedDir->parent())
-            // include if both have the same parent (or no parent)
-            {
-              const DotDirProperty usedDirProperty = { false, usedDir->parent() != nullptr, usedDir->isCluster(), false, true};
-              drawDirectory(t, usedDir, usedDirProperty, dirsInGraph);
-              return false;
-            }
-            dir=dir->parent();
-          }
-          return true;
-        }
-        );
-    std::move(newEnd, std::end(usedDirsNotDrawn), std::back_inserter(usedDirsDrawn));
-    usedDirsNotDrawn.erase(newEnd, usedDirsNotDrawn.end());
+    const auto newEnd = std::stable_partition(usedDirsNotDrawn.begin(), usedDirsNotDrawn.end(),
+     [&](const DirDef *const usedDir) // for each used dir (=directly used or a parent of a directly used dir)
+     {
+       const DirDef *dir=dd;
+       while (dir)
+       {
+         if (dir!=usedDir && dir->parent()==usedDir->parent()) // include if both have the same parent (or no parent)
+         {
+           const DotDirProperty usedDirProperty = DotDirPropertyBuilder().
+                                                  makeOrphaned(usedDir->parent()!=nullptr).
+                                                  makeTruncated(usedDir->hasSubdirs()).
+                                                  makePeripheral();
+           drawDirectory(t, usedDir, usedDirProperty, dirsInGraph);
+           return false; // part of the drawn partition
+         }
+         dir=dir->parent();
+       }
+       return true; // part of the not-drawn partition
+     });
+    moveDrawnDirs(newEnd);
   }
-
 
   // add relations between all selected directories
   {
-    for (const auto relationTuple : dependencies)
+    for (const auto &relationPair : dependencies)
     {
-      const auto relation = std::get<0>(relationTuple);
-      const auto udir = relation->destination();
-      const auto usedDir = udir->dir();
+      const auto &relation         = relationPair.first;
+      const bool directRelation    = relationPair.second;
+      const auto udir              = relation->destination();
+      const auto usedDir           = udir->dir();
+      const bool destIsSibling     = std::find(std::begin(usedDirsDrawn), std::end(usedDirsDrawn), usedDir) != std::end(usedDirsDrawn);
+      const bool destIsDrawn       = dirsInGraph.find(usedDir->getOutputFileBase().str())!=dirsInGraph.end(); // only point to nodes that are in the graph
+      const bool atMaxDepth        = isAtMaxDepth(usedDir, dd->level());
 
-      const bool destIsSibling = std::find(std::begin(usedDirsDrawn), std::end(usedDirsDrawn), usedDir) != std::end(usedDirsDrawn);
-      const bool destIsDrawn = dirsInGraph.find(usedDir->getOutputFileBase().str())!=dirsInGraph.end(); // only point to nodes that are in the graph
-      const bool notInherited = !std::get<1>(relationTuple);
-      const bool atVisibilityLimit = isAtLowerVisibilityBorder(usedDir, dd->level());
-
-      if (destIsSibling || (destIsDrawn && (notInherited || atVisibilityLimit)))
+      if (destIsSibling || (destIsDrawn && (directRelation || atMaxDepth)))
       {
         const auto relationName = relation->getOutputFileBase();
         const auto dir = relation->source();
@@ -364,15 +420,9 @@ QCString DotDirDeps::getImgAltText() const
   return convertToXML(m_dir->displayName());
 }
 
-QCString DotDirDeps::writeGraph(TextStream &out,
-  GraphOutputFormat graphFormat,
-  EmbeddedOutputFormat textFormat,
-  const QCString &path,
-  const QCString &fileName,
-  const QCString &relPath,
-  bool generateImageMap,
-  int graphId,
-  bool linkRelations)
+QCString DotDirDeps::writeGraph(TextStream &out, GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
+                                const QCString &path, const QCString &fileName, const QCString &relPath, bool generateImageMap,
+                                int graphId, bool linkRelations)
 {
   m_linkRelations = linkRelations;
   m_urlOnly = TRUE;

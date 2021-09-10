@@ -3726,6 +3726,14 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
+    <option type='int' id='DIR_GRAPH_MAX_DEPTH' minval='0' maxval='25' defval='1' depends='DIRECTORY_GRAPH'>
+      <docs>
+<![CDATA[
+ The \c DIR_GRAPH_MAX_DEPTH tag can be used to limit the maximum number of
+ levels of child directories generated in directory dependency graphs by \c dot.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='DOT_IMAGE_FORMAT' defval='png' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
@@ -3847,14 +3855,6 @@ UML notation for the relationships.
  option to 1 or 2 may greatly reduce the computation time needed for large
  code bases. Also note that the size of a graph can be further restricted by
  \ref cfg_dot_graph_max_nodes "DOT_GRAPH_MAX_NODES". Using a depth of 0 means no depth restriction.
-]]>
-      </docs>
-    </option>
-    <option type='int' id='MAX_DOT_GRAPH_SUCCESSOR' minval='0' maxval='1000' defval='1' depends='DIRECTORY_GRAPH'>
-      <docs>
-<![CDATA[
- The \c MAX_DOT_GRAPH_SUCCESSOR tag can be used to set the maximum number of 
- levels of child directories generated in directory dependency graphs by \c dot.
 ]]>
       </docs>
     </option>

@@ -52,7 +52,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual const FileList &getFiles() const { return m_fileList; }
     virtual void addFile(const FileDef *fd);
     virtual const DirList &subDirs() const { return m_subdirs; }
-    virtual bool isCluster() const { return m_subdirs.size()>0; }
+    virtual bool hasSubdirs() const { return !m_subdirs.empty(); }
     virtual int level() const { return m_level; }
     virtual DirDef *parent() const { return m_parent; }
     virtual int dirCount() const { return m_dirCount; }
@@ -68,7 +68,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual void setParent(DirDef *parent);
     virtual void setLevel();
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
-                                   const FileDef *dstFd,const bool inheritedByDependent, const bool inheritedByDependee);
+                                   const FileDef *dstFd,bool srcDirect, bool dstDirect);
     virtual void computeDependencies();
 
   public:
@@ -629,9 +629,11 @@ void DirDefImpl::setLevel()
 
 /** Add as "uses" dependency between \a this dir and \a dir,
  *  that was caused by a dependency on file \a fd.
+ *  srcDirect and dstDirect indicate if it is a direct dependencies (true) or if
+ *  the dependencies was indirect (e.g. a parent dir that has a child dir that has the dependencies)
  */
 void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
-                                   const FileDef *dstFd,const bool inheritedByDependent, const bool inheritedByDependee)
+                                   const FileDef *dstFd,bool srcDirect, bool dstDirect)
 {
   if (this==dir) return; // do not add self-dependencies
   //static int count=0;
@@ -650,7 +652,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
      if (usedPair==0) // new file dependency
      {
        //printf("  => new file\n");
-       usedDir->addFileDep(srcFd,dstFd, inheritedByDependent, inheritedByDependee);
+       usedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
        added=TRUE;
      }
      else
@@ -662,7 +664,7 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
   {
     //printf("  => new file\n");
     auto newUsedDir = std::make_unique<UsedDir>(dir);
-    newUsedDir->addFileDep(srcFd,dstFd, inheritedByDependent, inheritedByDependee);
+    newUsedDir->addFileDep(srcFd,dstFd, srcDirect, dstDirect);
     usedDir = m_usedDirs.add(dir->getOutputFileBase(),std::move(newUsedDir));
     added=TRUE;
   }
@@ -671,17 +673,20 @@ void DirDefImpl::addUsesDependency(const DirDef *dir,const FileDef *srcFd,
     if (dir->parent())
     {
       // add relation to parent of used dir
-      addUsesDependency(
-                        dir->parent(),
+      addUsesDependency(dir->parent(),
                         srcFd,
                         dstFd,
-                        inheritedByDependent,
-                        true);
+                        srcDirect,
+                        false); // indirect dependency on dest dir
     }
     if (parent())
     {
       // add relation for the parent of this dir as well
-      parent()->addUsesDependency(dir, srcFd, dstFd, true, inheritedByDependee);
+      parent()->addUsesDependency(dir,
+                                 srcFd,
+                                 dstFd,
+                                 false, // indirect dependency from source dir
+                                 dstDirect);
     }
   }
 }
@@ -706,7 +711,7 @@ void DirDefImpl::computeDependencies()
           // add dependency: thisDir->usedDir
           //static int count=0;
           //printf("      %d: add dependency %s->%s\n",count++,qPrint(name()),qPrint(usedDir->name()));
-          addUsesDependency(usedDir,fd,ii.fileDef,false, false);
+          addUsesDependency(usedDir,fd,ii.fileDef,true,true);
         }
       }
     }
@@ -741,7 +746,7 @@ bool DirDefImpl::depGraphIsTrivial() const
 //----------------------------------------------------------------------
 
 UsedDir::UsedDir(const DirDef *dir) :
-   m_dir(dir), m_SODO(false), m_SODI(false), m_SIDO(false), m_SIDI(false)
+   m_dir(dir)
 {
 }
 
@@ -749,13 +754,12 @@ UsedDir::~UsedDir()
 {
 }
 
-void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd, const bool isInheritedByDependent, const bool isInheritedByDependee)
+void UsedDir::addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDirect, bool dstDirect)
 {
   m_filePairs.add(FilePair::key(srcFd,dstFd),std::make_unique<FilePair>(srcFd,dstFd));
-  m_SODO = m_SODO || (!isInheritedByDependent && !isInheritedByDependee);
-  m_SODI = m_SODI || (!isInheritedByDependent && isInheritedByDependee);
-  m_SIDO = m_SIDO || (isInheritedByDependent && !isInheritedByDependee);
-  m_SIDI = m_SIDI || (isInheritedByDependent && isInheritedByDependee);
+  m_hasDirectDeps    = m_hasDirectDeps    || (srcDirect && dstDirect);
+  m_hasDirectSrcDeps = m_hasDirectSrcDeps || srcDirect;
+  m_hasDirectDstDeps = m_hasDirectDstDeps || dstDirect;
 }
 
 void UsedDir::sort()
@@ -1059,13 +1063,13 @@ void computeDirDependencies()
   {
     dir->setLevel();
   }
+
   // compute uses dependencies between directories
   for (const auto &dir : *Doxygen::dirLinkedMap)
   {
     //printf("computeDependencies for %s: #dirs=%d\n",qPrint(dir->name()),Doxygen::directories.count());
     dir->computeDependencies();
   }
-
 }
 
 void generateDirDocs(OutputList &ol)
@@ -1122,12 +1126,3 @@ const DirDef *toDirDef(const Definition *d)
   }
 }
 
-bool UsedDir::isAllDependentsInherited() const
-{
-  return !(m_SODI || m_SODO);
-}
-
-bool UsedDir::isAllDependeesInherited(const bool checkAlsoInheritedDependents) const
-{
-  return !(m_SODO || (checkAlsoInheritedDependents && m_SIDO));
-}

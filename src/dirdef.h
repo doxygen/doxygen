@@ -70,57 +70,38 @@ class UsedDir
      * Take up dependency between files.
      * @param[in] srcFd dependent file which depends on dstFd
      * @param[in] dstFd dependee file on which srcFd depends on
-     * @param isInheritedByDependent true if dependency was inherited by dependent
-     * @param isInheritedByDependee true if dependency was inherited by dependee
+     * @param[in] srcDirect true iff the source dependency was the direct (not inherited from a sub dir)
+     * @param[in] dstDirect true iff the destination dependency was direct (not inherited from a sub dir)
      */
-    void addFileDep(const FileDef *srcFd,const FileDef *dstFd, const bool isInheritedByDependent, const bool isInheritedByDependee);
+    void addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDirect, bool dstDirect);
     FilePair *findFilePair(const QCString &name);
     const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
-    /** @return true if all file dependencies were inherited by their dependents */
-    bool isAllDependentsInherited() const;
 
-    /**
-     * Checks if all the file dependencies where inherited by the dependees.
-     * @param checkAlsoInheritedDependents  if true, also those dependencies, which have been inherited
-     *                                      by dependents are considered
-     * @return true if all file dependencies were inherited by their dependees
+    /** Returns true iff any of the dependencies between source and destination files are
+     *  direct (i.e. not "inherited" from sub directories)
      */
-    bool isAllDependeesInherited(const bool checkAlsoInheritedDependents) const;
+    bool hasDirectDeps() const { return m_hasDirectDeps; }
+
+    /** Returns true iff any of the dependencies from the source file to the destination file are
+     *  directly coming from a file in the source directory (i.e. not inherited via sub directories)
+     */
+    bool hasDirectSrcDeps() const { return m_hasDirectSrcDeps; }
+
+    /** Returns true iff any of the dependencies from the source file to the destination file are
+     *  directly targetting a file in the destination directory (i.e. not inherited via sub directories)
+     */
+    bool hasDirectDstDeps() const { return m_hasDirectDstDeps; }
+
     void sort();
 
   private:
     const DirDef *m_dir;
     FilePairLinkedMap m_filePairs;
 
-    /**
-     * @name Markers for directory dependency inheritance
-     *
-     * These markers are required for evaluation, if a dependency between directories
-     * shall be drawn at a certain level within the directory dependency graph.
-     *
-     * The dependent (*source*) depends on the dependee (*destination*).
-     *
-     * The dependency from the dependent directory (has a list containing this used
-     * directory) and dependee directory (m_dir) may be inherited by the successors
-     * of the dependent or the dependee. Only in case, the original directory is
-     * truncated in the graph, the next drawn inheritor directory is used as node
-     * for the relation.
-     *
-     * In order to properly graph the directory dependencies for more than one level
-     * of successors, it is necessary to record the *combination* of inheritance by
-     * dependent and inheritance by dependee. It is not sufficient to only record
-     * the individual inheritance.
-     *
-     * As it is sufficient to know if a combination exists in one of the file pairs,
-     * that information is accumulated when adding file dependencies.
-     */
-    ///@{
-    bool m_SODO; //!< dependency is neither inherited by dependent nor by dependee
-    bool m_SODI; //!< dependency is not inherited by dependent but by dependee
-    bool m_SIDO; //!< dependency is inherited by dependent but not by dependee
-    bool m_SIDI; //!< dependency is inherited by dependent and by dependee
-    ///@}
+    bool m_hasDirectDeps    = false;
+    bool m_hasDirectSrcDeps = false;
+    bool m_hasDirectDstDeps = false;
 };
 
 // ------------------
@@ -145,7 +126,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual const FileList &getFiles() const = 0;
     virtual void addFile(const FileDef *fd) = 0;
     virtual const DirList &subDirs() const = 0;
-    virtual bool isCluster() const = 0;
+    virtual bool hasSubdirs() const = 0;
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
     virtual int dirCount() const = 0;
@@ -164,7 +145,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
-                                   const FileDef *dstFd,const bool inheritedByDependent, const bool inheritedByDependee) = 0;
+                                   const FileDef *dstFd,bool srcDirect, bool dstDirect) = 0;
     virtual void computeDependencies() = 0;
 };
 
