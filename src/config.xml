@@ -3726,7 +3726,7 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='int' id='DIR_GRAPH_MAX_DEPTH' minval='0' maxval='25' defval='1' depends='DIRECTORY_GRAPH'>
+    <option type='int' id='DIR_GRAPH_MAX_DEPTH' minval='1' maxval='25' defval='1' depends='DIRECTORY_GRAPH'>
       <docs>
 <![CDATA[
  The \c DIR_GRAPH_MAX_DEPTH tag can be used to limit the maximum number of

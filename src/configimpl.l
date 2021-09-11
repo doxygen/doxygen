@@ -1848,18 +1848,19 @@ void Config::checkAndCorrect(bool quiet)
   }
   Config_updateString(DOT_FONTNAME,dotFontName);
 
+  // helper to clip a value within a given range (similar to C++17's std::clamp)
+  auto clipValue = [](int value,int minValue,int maxValue)
+  {
+    return value<minValue ? minValue : maxValue<value ? maxValue : value;
+  };
+
   //------------------------
   // clip dotFontSize against the maximum bounds
-  int dotFontSize = Config_getInt(DOT_FONTSIZE);
-  if (dotFontSize<4)
-  {
-    dotFontSize=4;
-  }
-  else if (dotFontSize>24)
-  {
-    dotFontSize=24;
-  }
-  Config_updateInt(DOT_FONTSIZE,dotFontSize);
+  Config_updateInt(DOT_FONTSIZE,clipValue(Config_getInt(DOT_FONTSIZE),4,24));
+
+  //------------------------
+  // clip DIR_GRAPH_MAX_DEPTH against the maximum bounds
+  Config_updateInt(DIR_GRAPH_MAX_DEPTH,clipValue(Config_getInt(DIR_GRAPH_MAX_DEPTH),1,25));
 
   //------------------------
   // clip number of threads
@@ -2083,29 +2084,8 @@ void Config::checkAndCorrect(bool quiet)
   Config_updateInt(HTML_COLORSTYLE_HUE,hue);
 
   //------------------------
-  int sat = Config_getInt(HTML_COLORSTYLE_SAT);
-  if (sat<0)
-  {
-    sat=0;
-  }
-  else if (sat>255)
-  {
-    sat=255;
-  }
-  Config_updateInt(HTML_COLORSTYLE_SAT,sat);
-
-
-  //------------------------
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  if (gamma<40)
-  {
-    gamma=40;
-  }
-  else if (gamma>240)
-  {
-    gamma=240;
-  }
-  Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
+  Config_updateInt(HTML_COLORSTYLE_SAT,  clipValue(Config_getInt(HTML_COLORSTYLE_SAT),  0, 255));
+  Config_updateInt(HTML_COLORSTYLE_GAMMA,clipValue(Config_getInt(HTML_COLORSTYLE_GAMMA),40,240));
 
   //------------------------
   // add default words if needed
