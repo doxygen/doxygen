@@ -19,6 +19,7 @@
 #include <sstream>
 #include <cstdint>
 #include <cmath>
+#include <cassert>
 
 #include "dotdirdeps.h"
 #include "util.h"
