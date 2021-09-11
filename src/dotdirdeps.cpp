@@ -61,6 +61,7 @@ static QCString getDirectoryBackgroundColor(int depthIndex)
   static int hue   = Config_getInt(HTML_COLORSTYLE_HUE);
   static int sat   = Config_getInt(HTML_COLORSTYLE_SAT);
   static int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
+  assert(depthIndex>=0 && depthIndex<=Config_getInt(DIR_GRAPH_MAX_DEPTH));
   float fraction = (float)depthIndex/(float)Config_getInt(DIR_GRAPH_MAX_DEPTH);
   const char hex[] = "0123456789abcdef";
   int range = 0x40; // range from darkest color to lightest color
@@ -71,6 +72,9 @@ static QCString getDirectoryBackgroundColor(int depthIndex)
   int red   = (int)(r*255.0);
   int green = (int)(g*255.0);
   int blue  = (int)(b*255.0);
+  assert(red>=0   && red<=255);
+  assert(green>=0 && green<=255);
+  assert(blue>=0  && blue<=255);
   char colStr[8];
   colStr[0]='#';
   colStr[1]=hex[red>>4];
@@ -137,13 +141,13 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
  * @param[in,out] directoriesInGraph lists the directories which have been written to the output stream
  */
 static void drawDirectory(TextStream &t, const DirDef *const directory, const DotDirProperty &property,
-    DirDefMap &directoriesInGraph)
+    DirDefMap &directoriesInGraph,int startLevel)
 {
   t << "  " << directory->getOutputFileBase() << " ["
       "shape=box, "
       "label=\""     << directory->shortName()                                       << "\", "
       "style=\""     << getDirectoryBorderStyle(property)                            << "\", "
-      "fillcolor=\"" << getDirectoryBackgroundColor(directory->level())              << "\", "
+      "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()-startLevel)   << "\", "
       "color=\""     << getDirectoryBorderColor(property)                            << "\", "
       "URL=\""       << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\""
       "];\n";
@@ -163,11 +167,11 @@ static bool isAtMaxDepth(const DirDef *const directory, const int startLevel)
  * This is because the plain text node can be used to draw dependency relationships.
  */
 static void drawClusterOpening(TextStream &outputStream, const DirDef *const directory,
-    const DotDirProperty &directoryProperty, DirDefMap &directoriesInGraph, const bool isAncestor)
+    const DotDirProperty &directoryProperty, DirDefMap &directoriesInGraph, const bool isAncestor,int startLevel)
 {
   outputStream << "  subgraph cluster" << directory->getOutputFileBase() << " {\n"
       "    graph [ "
-      "bgcolor=\""  << getDirectoryBackgroundColor(directory->level()) << "\", "
+      "bgcolor=\""  << getDirectoryBackgroundColor(directory->level()-startLevel) << "\", "
       "pencolor=\"" << getDirectoryBorderColor(directoryProperty) << "\", "
       "style=\""    << getDirectoryBorderStyle(directoryProperty) << "\", "
       "label=\"";
@@ -224,7 +228,7 @@ static void drawTree(DirRelations &dependencies, TextStream &t, const DirDef *co
   if (!directory->hasSubdirs())
   {
     const DotDirProperty directoryProperty = DotDirPropertyBuilder().makeOriginal(isTreeRoot);
-    drawDirectory(t, directory, directoryProperty, directoriesInGraph);
+    drawDirectory(t, directory, directoryProperty, directoriesInGraph,startLevel);
     addDependencies(dependencies, directory, true);
   }
   else
@@ -232,7 +236,7 @@ static void drawTree(DirRelations &dependencies, TextStream &t, const DirDef *co
     if (isAtMaxDepth(directory, startLevel)) // maximum nesting level reached
     {
       const DotDirProperty directoryProperty = DotDirPropertyBuilder().makeOriginal(isTreeRoot);
-      drawDirectory(t, directory, directoryProperty, directoriesInGraph);
+      drawDirectory(t, directory, directoryProperty, directoriesInGraph,startLevel);
       addDependencies(dependencies, directory, true);
     }
     else // start a new nesting level
@@ -240,7 +244,7 @@ static void drawTree(DirRelations &dependencies, TextStream &t, const DirDef *co
       // open cluster
       {
         const DotDirProperty directoryProperty = DotDirPropertyBuilder().makeOriginal(isTreeRoot);
-        drawClusterOpening(t, directory, directoryProperty, directoriesInGraph, false);
+        drawClusterOpening(t, directory, directoryProperty, directoriesInGraph, false, startLevel);
         addDependencies(dependencies, directory, false);
       }
 
@@ -300,7 +304,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
     const DotDirProperty parentDirProperty = DotDirPropertyBuilder().
                                              makeIncomplete().
                                              makeOrphaned(parent->parent()!=nullptr);
-    drawClusterOpening(t, parent, parentDirProperty, dirsInGraph, true);
+    drawClusterOpening(t, parent, parentDirProperty, dirsInGraph, true, parent->level());
 
     {
       // draw all directories which have `dd->parent()` as parent and `dd` as dependent
@@ -310,7 +314,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
           if (dd!=usedDir && dd->parent()==usedDir->parent()) // usedDir and dd share the same parent
           {
             const DotDirProperty usedDirProperty = DotDirPropertyBuilder().makeTruncated(usedDir->hasSubdirs());
-            drawDirectory(t, usedDir, usedDirProperty, dirsInGraph);
+            drawDirectory(t, usedDir, usedDirProperty, dirsInGraph, parent->level());
             return false; // part of the drawn partition
           }
           return true; // part of the not-drawn partition
@@ -342,7 +346,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
                                                   makeOrphaned(usedDir->parent()!=nullptr).
                                                   makeTruncated(usedDir->hasSubdirs()).
                                                   makePeripheral();
-           drawDirectory(t, usedDir, usedDirProperty, dirsInGraph);
+           drawDirectory(t, usedDir, usedDirProperty, dirsInGraph, dir->level());
            return false; // part of the drawn partition
          }
          dir=dir->parent();
