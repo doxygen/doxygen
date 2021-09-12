@@ -66,6 +66,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual void setDiskName(const QCString &name) { m_diskName = name; }
     virtual void sort();
     virtual void setParent(DirDef *parent);
+    virtual void setDirCount(int count);
     virtual void setLevel();
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
                                    const FileDef *dstFd,bool srcDirect, bool dstDirect);
@@ -92,7 +93,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     QCString m_shortName;
     QCString m_diskName;
     FileList m_fileList;                 // list of files in the group
-    int m_dirCount;
+    int m_dirCount = -1;
     int m_level;
     DirDef *m_parent;
     UsedDirLinkedMap m_usedDirs;
@@ -106,8 +107,6 @@ DirDef *createDirDef(const QCString &path)
 
 //----------------------------------------------------------------------
 // method implementation
-
-static int g_dirCount=0;
 
 DirDefImpl::DirDefImpl(const QCString &path) : DefinitionMixin(path,1,1,path)
 {
@@ -132,7 +131,6 @@ DirDefImpl::DirDefImpl(const QCString &path) : DefinitionMixin(path,1,1,path)
     m_dispName = m_dispName.left(m_dispName.length()-1);
   }
 
-  m_dirCount   = g_dirCount++;
   m_level=-1;
   m_parent=0;
 }
@@ -161,6 +159,11 @@ void DirDefImpl::addSubDir(DirDef *subdir)
 void DirDefImpl::setParent(DirDef *p)
 {
    m_parent=p;
+}
+
+void DirDefImpl::setDirCount(int count)
+{
+  m_dirCount=count;
 }
 
 void DirDefImpl::addFile(const FileDef *fd)
@@ -1006,7 +1009,6 @@ void buildDirectories()
   {
     for (const auto &fd : *fn)
     {
-      //printf("buildDirectories %s\n",qPrint(fd->name()));
       if (fd->getReference().isEmpty())
       {
         DirDef *dir;
@@ -1051,7 +1053,17 @@ void buildDirectories()
   std::sort(Doxygen::dirLinkedMap->begin(),
             Doxygen::dirLinkedMap->end(),
             [](const auto &d1,const auto &d2)
-            { return qstricmp(d1->shortName(),d2->shortName()) < 0; });
+            { int i1 = qstricmp(d1->shortName(),d2->shortName());
+              int i2 = qstricmp(d1->name(),d2->name());
+              return i1 < 0 ? true : i2<0 ? true : false;
+            });
+
+  // set the directory count identifier
+  int dirCount=0;
+  for (const auto &dir : *Doxygen::dirLinkedMap)
+  {
+    dir->setDirCount(dirCount++);
+  }
 
   computeCommonDirPrefix();
 }

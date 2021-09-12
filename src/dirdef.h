@@ -141,6 +141,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
+    virtual void setDirCount(int count) = 0;
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
