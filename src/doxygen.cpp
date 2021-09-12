@@ -11218,6 +11218,7 @@ void adjustConfiguration()
 #ifdef HAS_SIGNALS
 static void stopDoxygen(int)
 {
+  signal(SIGINT,SIG_DFL);   // Re-register signal handler for default action
   Dir thisDir;
   msg("Cleaning up...\n");
   if (!Doxygen::filterDBFileName.isEmpty())
