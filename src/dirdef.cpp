@@ -1053,9 +1053,16 @@ void buildDirectories()
   std::sort(Doxygen::dirLinkedMap->begin(),
             Doxygen::dirLinkedMap->end(),
             [](const auto &d1,const auto &d2)
-            { int i1 = qstricmp(d1->shortName(),d2->shortName());
-              int i2 = qstricmp(d1->name(),d2->name());
-              return i1 < 0 ? true : i2<0 ? true : false;
+            {
+              QCString s1 = d1->shortName(), s2 = d2->shortName();
+              int i = qstricmp(s1,s2);
+              if (i==0) // if sort name are equal, sort on full path
+              {
+                QCString n1 = d1->name(), n2 = d2->name();
+                int n = qstricmp(n1,n2);
+                return n < 0;
+              }
+              return i < 0;
             });
 
   // set the directory count identifier
