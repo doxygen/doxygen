@@ -121,7 +121,7 @@ class DirDef : public DefinitionMutable, public Definition
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
-    virtual const QCString &shortName() const = 0;
+    virtual const QCString shortName() const = 0;
     virtual void addSubDir(DirDef *subdir) = 0;
     virtual const FileList &getFiles() const = 0;
     virtual void addFile(const FileDef *fd) = 0;

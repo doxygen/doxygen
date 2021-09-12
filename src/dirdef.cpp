@@ -47,7 +47,7 @@ class DirDefImpl : public DefinitionMixin<DirDef>
     virtual bool isLinkableInProject() const;
     virtual bool isLinkable() const;
     virtual QCString displayName(bool=TRUE) const { return m_dispName; }
-    virtual const QCString &shortName() const { return m_shortName; }
+    virtual const QCString shortName() const { return m_shortName; }
     virtual void addSubDir(DirDef *subdir);
     virtual const FileList &getFiles() const { return m_fileList; }
     virtual void addFile(const FileDef *fd);
