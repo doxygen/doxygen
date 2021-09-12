@@ -13,19 +13,22 @@
 *
 */
 
-#include <algorithm>
-#include <iterator>
-#include <utility>
-#include <sstream>
-#include <cstdint>
-#include <cmath>
-#include <cassert>
-
 #include "dotdirdeps.h"
 #include "util.h"
 #include "doxygen.h"
 #include "config.h"
 #include "image.h"
+
+#include <algorithm>
+#include <iterator>
+#include <utility>
+#include <cstdint>
+#include <math.h>
+#include <cassert>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 using DirDefMap = std::map<std::string,const DirDef *>;
 
