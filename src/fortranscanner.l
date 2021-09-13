@@ -29,6 +29,17 @@
  * On one side we have arg->name and entry->name, on another side modifierMap[name].
  * In entries and arguments case is the same as in code, in modifier map case is lowered and
  * then it is compared to lowered entry/argument names.
+ * UPDATE:
+ * While it is true that Fortran is case-insensitive, modern-Fortran programmers (and even the old-schools) 
+ * hardly modify the case of Fortran entities throughout their codebase. As such, if a decision is to be made
+ * on whether to keep case-sensitivity, the readability of the generated documentation should be given more weight
+ * than the remote scenario where a Fortran developer uses mixed-case programming. In particular, several Fortran
+ * codebases use CameCase style, which become unreadable when Doxygen lowers the case of all letters.
+ * This updated file removes all lowering of the cases of the Fortran entities.
+ * This effectively means that Doxygen treats Fortran code as text-sensitive,
+ * and Fortran users of Doxygen must respect the case-sensitivity.
+ *
+ * Amir Shahmoradi, Sunday Sep 12, 2021, Dallas, TX, shahmoradi@utexas.edu
  *
  * - Do not like constructs like aa{BS} or {BS}bb. Should try to handle blank space
  * with separate rule?: It seems it is often necessary, because we may parse something like
@@ -468,7 +479,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Use>{ID}                               {
                                           DBG_CTX((stderr,"using dir %s\n",yytext));
                                           yyextra->current->name=yytext;
-                                          yyextra->current->name=yyextra->current->name.lower();
+                                          // yyextra->current->name=yyextra->current->name.lower();
+                                          yyextra->current->name=yyextra->current->name;
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=Entry::USINGDIR_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -477,14 +489,16 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                         }
 <Use>{ID}/,                             {
                                           yyextra->useModuleName=yytext;
-                                          yyextra->useModuleName=yyextra->useModuleName.lower();
+                                          // yyextra->useModuleName=yyextra->useModuleName.lower();
+                                          yyextra->useModuleName=yyextra->useModuleName;
                                         }
 <Use>,{BS}"ONLY"                        { BEGIN(UseOnly);
                                         }
 <UseOnly>{BS},{BS}                      {}
 <UseOnly>{ID}                           {
                                           yyextra->current->name= yyextra->useModuleName+"::"+yytext;
-                                          yyextra->current->name=yyextra->current->name.lower();
+                                          // yyextra->current->name=yyextra->current->name.lower();
+                                          yyextra->current->name=yyextra->current->name;
                                           yyextra->current->fileName = yyextra->fileName;
                                           yyextra->current->section=Entry::USINGDECL_SEC;
                                           yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -517,7 +531,8 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 
                                           // extract generic name
                                           QCString name = QCString(yytext).stripWhiteSpace();
-                                          name = name.right(name.length() - 9).stripWhiteSpace().lower();
+                                          // name = name.right(name.length() - 9).stripWhiteSpace().lower();
+                                          name = name.right(name.length() - 9).stripWhiteSpace();
                                           addInterface(yyscanner,name, yyextra->ifType);
                                           startScope(yyscanner,yyextra->last_entry.get());
                                         }
@@ -657,7 +672,8 @@ abstract                                {
                                           yyextra->current->spec |= Entry::AbstractClass;
                                         }
 extends{ARGS}                           {
-                                          QCString basename = extractFromParens(yytext).lower();
+                                          // QCString basename = extractFromParens(yytext).lower();
+                                          QCString basename = extractFromParens(yytext);
                                           yyextra->current->extends.push_back(BaseInfo(basename, Public, Normal));
                                         }
 public                                  {
@@ -713,7 +729,8 @@ private                                 {
                                         }
 {ID}                                    {
                                           QCString name = yytext;
-                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
+                                          // yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
+                                          yyextra->modifiers[yyextra->current_root][name.str()] |= yyextra->currentModifiers;
                                           yyextra->current->section  = Entry::FUNCTION_SEC;
                                           yyextra->current->name     = name;
                                           yyextra->current->fileName = yyextra->fileName;
@@ -723,7 +740,8 @@ private                                 {
                                         }
 {BS}"=>"[^(\n|\!)]*                     { /* Specific bindings come after the ID. */
                                           QCString args = yytext;
-                                          yyextra->last_entry->args = args.lower();
+                                          // yyextra->last_entry->args = args.lower();
+                                          yyextra->last_entry->args = args;
                                         }
 "\n"                                    {
                                           yyextra->currentModifiers = SymbolModifiers();
@@ -791,7 +809,8 @@ private                                 {
                                           }
                                           else
                                           {
-                                            yyextra->argType = QCString(yytext).simplifyWhiteSpace().lower();
+                                            // yyextra->argType = QCString(yytext).simplifyWhiteSpace().lower();
+                                            yyextra->argType = QCString(yytext).simplifyWhiteSpace();
                                           }
                                           yyextra->current->bodyLine = yyextra->lineNr + 1;
                                           yyextra->current->endBodyLine = yyextra->lineNr + yyextra->lineCountPrepass;
@@ -812,7 +831,8 @@ private                                 {
                                           }
                                           QCString tmp = yytext;
                                           yyextra->currentModifiers |= tmp.stripWhiteSpace();
-                                          yyextra->argType = QCString(yytext).simplifyWhiteSpace().lower();
+                                          // yyextra->argType = QCString(yytext).simplifyWhiteSpace().lower();
+                                          yyextra->argType = QCString(yytext).simplifyWhiteSpace();
                                           yy_push_state(AttributeList,yyscanner);
                                         }
 {ATTR_STMT}/{BS_}{ID}                   |
@@ -871,9 +891,10 @@ private                                 {
                                           //cout << "5=========> got variable: " << yyextra->argType << "::" << yytext << endl;
                                           /* work around for bug in QCString.replace (QCString works) */
                                           QCString name=yytext;
-                                          name = name.lower();
+                                          // name = name.lower();
                                           /* remember attributes for the symbol */
-                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
+                                          // yyextra->modifiers[yyextra->current_root][name.lower().str()] |= yyextra->currentModifiers;
+                                          yyextra->modifiers[yyextra->current_root][name.str()] |= yyextra->currentModifiers;
                                           yyextra->argName= name;
 
                                           yyextra->vtype= V_IGNORE;
@@ -914,12 +935,15 @@ private                                 {
                                             // save, it may be function return type
                                             if (parameter)
                                             {
-                                              yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->argType;
+                                              // yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->argType;
+                                              yyextra->modifiers[yyextra->current_root][name.str()].type = yyextra->argType;
                                             }
                                             else
                                             {
-                                              if ((yyextra->current_root->name.lower() == yyextra->argName.lower()) ||
-                                                  (yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName.lower() == yyextra->argName.lower()))
+                                              // if ((yyextra->current_root->name.lower() == yyextra->argName.lower()) ||
+                                              if ((yyextra->current_root->name == yyextra->argName) ||
+                                                  // (yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName.lower() == yyextra->argName.lower()))
+                                                  (yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.str()].returnName == yyextra->argName))
                                               {
                                                 int strt = yyextra->current_root->type.find("function");
                                                 QCString lft;
@@ -957,11 +981,13 @@ private                                 {
                                                   yyextra->current_root->type += " " + yyextra->argType.stripWhiteSpace();
                                                 }
                                                 yyextra->current_root->type = yyextra->current_root->type.stripWhiteSpace();
-                                                yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->current_root->type;
+                                                // yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->current_root->type;
+                                                yyextra->modifiers[yyextra->current_root][name.str()].type = yyextra->current_root->type;
                                               }
                                               else
                                               {
-                                                yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->argType;
+                                                // yyextra->modifiers[yyextra->current_root][name.lower().str()].type = yyextra->argType;
+                                                yyextra->modifiers[yyextra->current_root][name.str()].type = yyextra->argType;
                                               }
                                             }
                                             // any accumulated doc for argument should be emptied,
@@ -975,7 +1001,8 @@ private                                 {
                                           QCString name(yyextra->argName);
                                           QCString attr("dimension");
                                           attr += yytext;
-                                          yyextra->modifiers[yyextra->current_root][name.lower().str()] |= attr;
+                                          // yyextra->modifiers[yyextra->current_root][name.lower().str()] |= attr;
+                                          yyextra->modifiers[yyextra->current_root][name.str()] |= attr;
                                         }
 <Variable>{COMMA}                       { //printf("COMMA: %d<=..<=%d\n", yyextra->colNr-(int)yyleng, yyextra->colNr);
                                           // locate !< comment
@@ -1114,7 +1141,8 @@ private                                 {
                                           }
 
                                           // TYPE_SPEC is for old function style function result
-                                          QCString result = QCString(yytext).stripWhiteSpace().lower();
+                                          // QCString result = QCString(yytext).stripWhiteSpace().lower();
+                                          QCString result = QCString(yytext).stripWhiteSpace();
                                           yyextra->current->type = result;
                                           yy_push_state(SubprogPrefix,yyscanner);
                                         }
@@ -1149,7 +1177,8 @@ private                                 {
 <Subprog>{BS}                           {   /* ignore white space */   }
 <Subprog>{ID}                           { yyextra->current->name = yytext;
                                           //cout << "1a==========> got " << yyextra->current->type << " " << yytext << " " << yyextra->lineNr << endl;
-                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = yyextra->current->name.lower();
+                                          // yyextra->modifiers[yyextra->current_root][yyextra->current->name.lower().str()].returnName = yyextra->current->name.lower();
+                                          yyextra->modifiers[yyextra->current_root][yyextra->current->name.str()].returnName = yyextra->current->name;
 
                                           if (yyextra->ifType == IF_ABSTRACT || yyextra->ifType == IF_SPECIFIC)
                                           {
@@ -1199,7 +1228,8 @@ private                                 {
                                             QCString result= yytext;
                                             result= result.right(result.length()-result.find("(")-1);
                                             result= result.stripWhiteSpace();
-                                            yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName = result;
+                                            //yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.lower().str()].returnName = result;
+                                            yyextra->modifiers[yyextra->current_root->parent()][yyextra->current_root->name.str()].returnName = result;
                                           }
                                           //cout << "=====> got result " <<  result << endl;
                                          }
@@ -1305,7 +1335,8 @@ private                                 {
                                           BEGIN(PrototypeSubprog);
                                         }
 <Prototype,PrototypeSubprog>{BS}{SCOPENAME}?{BS}{ID} {
-                                          yyextra->current->name = QCString(yytext).lower();
+                                          //yyextra->current->name = QCString(yytext).lower();
+                                          yyextra->current->name = QCString(yytext);
                                           yyextra->current->name.stripWhiteSpace();
                                           BEGIN(PrototypeArgs);
                                         }
@@ -1313,7 +1344,8 @@ private                                 {
 "("|")"|","|{BS_}                       { yyextra->current->args += yytext; }
 {ID}                                    { yyextra->current->args += yytext;
                                           Argument a;
-                                          a.name = QCString(yytext).lower();
+                                          //a.name = QCString(yytext).lower();
+                                          a.name = QCString(yytext);
                                           yyextra->current->argList.push_back(a);
                                         }
 }
@@ -1890,7 +1922,8 @@ SymbolModifiers& SymbolModifiers::operator|=(const SymbolModifiers &mdfs)
 /*! Extracts and adds passed modifier to these yyextra->modifiers.*/
 SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 {
-  QCString mdfString = mdfStringArg.lower();
+  //QCString mdfString = mdfStringArg.lower();
+  QCString mdfString = mdfStringArg;
   SymbolModifiers newMdf;
 
   if (mdfString.find("dimension")==0)
@@ -2006,10 +2039,13 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
 static Argument *findArgument(Entry* subprog, QCString name, bool byTypeName = FALSE)
 {
   QCString cname(name.lower());
+  //QCString cname(name);
   for (Argument &arg : subprog->argList)
   {
-    if ((!byTypeName && arg.name.lower() == cname) ||
-         (byTypeName && arg.type.lower() == cname)
+    //if ((!byTypeName && arg.name.lower() == cname) ||
+    if ((!byTypeName && arg.name == cname) ||
+         //(byTypeName && arg.type.lower() == cname)
+         (byTypeName && arg.type == cname)
        )
     {
       return &arg;
@@ -2214,7 +2250,8 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
 
     // find return type for function
     //cout<<"RETURN NAME "<<yyextra->modifiers[yyextra->current_root][scope->name.lower()].returnName<<endl;
-    QCString returnName = yyextra->modifiers[yyextra->current_root][scope->name.lower().str()].returnName.lower();
+    //QCString returnName = yyextra->modifiers[yyextra->current_root][scope->name.lower().str()].returnName.lower();
+    QCString returnName = yyextra->modifiers[yyextra->current_root][scope->name.str()].returnName;
     if (yyextra->modifiers[scope].find(returnName.str())!=yyextra->modifiers[scope].end())
     {
       scope->type = yyextra->modifiers[scope][returnName.str()].type; // returning type works
@@ -2244,7 +2281,8 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
           arg->name = arg->type;
           arg->type = scope->name;
         }
-        if (ce->name.lower() == scope->name.lower()) found = TRUE;
+        //if (ce->name.lower() == scope->name.lower()) found = TRUE;
+        if (ce->name == scope->name) found = TRUE;
       }
       if ((count == 1) && found)
       {
@@ -2265,8 +2303,10 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
         continue;
 
       //cout<<ce->name<<", "<<mdfsMap.contains(ce->name.lower())<<mdfsMap.count()<<endl;
-      if (mdfsMap.find(ce->name.lower().str())!=mdfsMap.end())
-        applyModifiers(ce.get(), mdfsMap[ce->name.lower().str()]);
+      //if (mdfsMap.find(ce->name.lower().str())!=mdfsMap.end())
+      if (mdfsMap.find(ce->name.str())!=mdfsMap.end())
+        //applyModifiers(ce.get(), mdfsMap[ce->name.lower().str()]);
+        applyModifiers(ce.get(), mdfsMap[ce->name.str()]);
     }
   }
 
@@ -2318,7 +2358,8 @@ static void initEntry(yyscan_t yyscanner)
 static void addCurrentEntry(yyscan_t yyscanner,bool case_insens)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (case_insens) yyextra->current->name = yyextra->current->name.lower();
+  //if (case_insens) yyextra->current->name = yyextra->current->name.lower();
+  if (case_insens) yyextra->current->name = yyextra->current->name;
   //printf("===Adding entry %s to %s\n", qPrint(yyextra->current->name), qPrint(yyextra->current_root->name));
   yyextra->last_entry = yyextra->current;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
@@ -2363,7 +2404,8 @@ static void addSubprogram(yyscan_t yyscanner,const QCString &text)
   DBG_CTX((stderr,"1=========> got subprog, type: %s\n",qPrint(text)));
   yyextra->subrCurrent.push_back(yyextra->current);
   yyextra->current->section = Entry::FUNCTION_SEC ;
-  QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
+  //QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
+  QCString subtype = text; subtype=subtype.stripWhiteSpace();
   yyextra->functionLine = (subtype.find("function") != -1);
   yyextra->current->type += " " + subtype;
   yyextra->current->type = yyextra->current->type.stripWhiteSpace();
@@ -2434,7 +2476,8 @@ static Argument *getParameter(yyscan_t yyscanner,const QCString &name)
   Argument *ret = 0;
   for (Argument &a:yyextra->current_root->argList)
   {
-    if (a.name.lower()==name.lower())
+    //if (a.name.lower()==name.lower())
+    if (a.name==name)
     {
       ret=&a;
       //printf("parameter found: %s\n",(const char*)name);
@@ -2522,9 +2565,11 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
   loc_doc.stripWhiteSpace();
 
   // direction as defined with the declaration of the parameter
-  int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.lower().str()].direction;
+  //int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.lower().str()].direction;
+  int dir1 = yyextra->modifiers[yyextra->current_root][yyextra->argName.str()].direction;
   // in description [in] is specified
-  if (loc_doc.lower().find(directionParam[SymbolModifiers::IN]) == 0)
+  //if (loc_doc.lower().find(directionParam[SymbolModifiers::IN]) == 0)
+  if (loc_doc.find(directionParam[SymbolModifiers::IN]) == 0)
   {
     // check if with the declaration intent(in) or nothing has been specified
     if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
@@ -2534,7 +2579,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
       loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::IN]));
       loc_doc.stripWhiteSpace();
       // in case of empty documentation or (now) just name, consider it as no documentation
-      if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+      //if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+      if (!loc_doc.isEmpty() && (loc_doc != yyextra->argName))
       {
         handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::IN] + " " +
                          yyextra->argName + " " + loc_doc,brief);
@@ -2550,14 +2596,16 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
   }
   // analogous to the [in] case, here [out] direction specified
-  else if (loc_doc.lower().find(directionParam[SymbolModifiers::OUT]) == 0)
+  //else if (loc_doc.lower().find(directionParam[SymbolModifiers::OUT]) == 0)
+  else if (loc_doc.find(directionParam[SymbolModifiers::OUT]) == 0)
   {
     if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
         (directionParam[dir1] == directionParam[SymbolModifiers::OUT]))
     {
       loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::OUT]));
       loc_doc.stripWhiteSpace();
-      if (loc_doc.isEmpty() || (loc_doc.lower() == yyextra->argName.lower()))
+      //if (loc_doc.isEmpty() || (loc_doc.lower() == yyextra->argName.lower()))
+      if (loc_doc.isEmpty() || (loc_doc == yyextra->argName))
       {
         yyextra->current = tmp_entry;
         return;
@@ -2574,14 +2622,16 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
   }
   // analogous to the [in] case, here [in,out] direction specified
-  else if (loc_doc.lower().find(directionParam[SymbolModifiers::INOUT]) == 0)
+  //else if (loc_doc.lower().find(directionParam[SymbolModifiers::INOUT]) == 0)
+  else if (loc_doc.find(directionParam[SymbolModifiers::INOUT]) == 0)
   {
     if ((directionParam[dir1] == directionParam[SymbolModifiers::NONE_D]) ||
         (directionParam[dir1] == directionParam[SymbolModifiers::INOUT]))
     {
       loc_doc = loc_doc.right(loc_doc.length()-(int)strlen(directionParam[SymbolModifiers::INOUT]));
       loc_doc.stripWhiteSpace();
-      if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+      //if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+      if (!loc_doc.isEmpty() && (loc_doc != yyextra->argName))
       {
         handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[SymbolModifiers::INOUT] + " " +
                            yyextra->argName + " " + loc_doc,brief);
@@ -2596,7 +2646,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
   }
   // analogous to the [in] case; here no direction specified
-  else if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+  //else if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+  else if (!loc_doc.isEmpty() && (loc_doc != yyextra->argName))
   {
     handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                        yyextra->argName + " " + loc_doc,brief);
@@ -2627,7 +2678,8 @@ static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,
      ) (void)loc_doc; // Do nothing work has been done by stripPrefix; (void)loc_doc: to overcome 'empty controlled statement' warning
   loc_doc.stripWhiteSpace();
 
-  if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+  //if (!loc_doc.isEmpty() && (loc_doc.lower() != yyextra->argName.lower()))
+  if (!loc_doc.isEmpty() && (loc_doc != yyextra->argName))
   {
     handleCommentBlock(yyscanner,QCString("\n\n@returns ") + loc_doc,brief);
   }
@@ -2780,7 +2832,8 @@ void FortranOutlineParser::parseInput(const QCString &fileName,
 
 bool FortranOutlineParser::needsPreprocessing(const QCString &extension) const
 {
-  return extension!=extension.lower(); // use preprocessor only for upper case extensions
+  //return extension!=extension.lower(); // use preprocessor only for upper case extensions
+  return extension!=extension; // use preprocessor only for upper case extensions
 }
 
 void FortranOutlineParser::parsePrototype(const QCString &text)

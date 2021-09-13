@@ -127,13 +127,13 @@ class Scope
 
 struct fortrancodeYY_state
 {
-  QCString      docBlock;                   //!< contents of all lines of a documentation block
-  QCString      currentModule=QCString();   //!< name of the current enclosing module
-  UseMap      useMembers;                   //!< info about used modules
-  UseEntry      useEntry;                   //!< current use statement info
-  std::vector<Scope>  scopeStack;
-  bool          isExternal = false;
-  QCString      str=QCString();             //!< contents of fortran string
+  QCString              docBlock;                   //!< contents of all lines of a documentation block
+  QCString              currentModule=QCString();   //!< name of the current enclosing module
+  UseMap                useMembers;                 //!< info about used modules
+  UseEntry              useEntry;                   //!< current use statement info
+  std::vector<Scope>    scopeStack;
+  bool                  isExternal = false;
+  QCString              str=QCString();             //!< contents of fortran string
 
   CodeOutputInterface * code = 0;
 
@@ -176,10 +176,8 @@ struct fortrancodeYY_state
 static const char *stateToString(int state);
 #endif
 
-static bool getFortranNamespaceDefs(const QCString &mname,
-                               NamespaceDef *&cd);
-static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName,
-                               ClassDef *&cd, const UseMap &useMap);
+static bool getFortranNamespaceDefs(const QCString &mname, NamespaceDef *&cd);
+static bool getFortranTypeDefs(const QCString &tname, const QCString &moduleName, ClassDef *&cd, const UseMap &useMap);
 
 //----------------------------------------------------------------------------
 
@@ -191,11 +189,8 @@ static void startCodeLine(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
 static void codifyLines(yyscan_t yyscanner,const QCString &text);
-static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
-                  Definition *d,const QCString &text);
-static bool getGenericProcedureLink(yyscan_t yyscanner,const ClassDef *cd,
-                                    const QCString &memberText,
-                                    CodeOutputInterface &ol);
+static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol, Definition *d,const QCString &text);
+static bool getGenericProcedureLink(yyscan_t yyscanner,const ClassDef *cd, const QCString &memberText, CodeOutputInterface &ol);
 static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // map with used modules
                     const QCString &memberText,  // exact member text
                     CodeOutputInterface &ol,
@@ -207,8 +202,7 @@ static void startScope(yyscan_t yyscanner);
 static void endScope(yyscan_t yyscanner);
 static void addUse(yyscan_t yyscanner,const QCString &moduleName);
 static void addLocalVar(yyscan_t yyscanner,const QCString &varName);
-static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName,
-                                 const UseMap &useMap);
+static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, const QCString &moduleName, const UseMap &useMap);
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 
@@ -225,7 +219,6 @@ static std::mutex g_countFlowKeywordsMutex;
 
 IDSYM     [a-z_A-Z0-9]
 ID        [a-z_A-Z]+{IDSYM}*
-SUBPROG   (subroutine|function)
 B         [ \t]
 BS        [ \t]*
 BS_       [ \t]+
@@ -236,22 +229,105 @@ ARGS_L1   ("("{ARGS_L1a}*")")
 ARGS_L2   "("({ARGS_L0}|[^()]|{ARGS_L1a}|{ARGS_L1})*")"
 ARGS      {BS}({ARGS_L0}|{ARGS_L1}|{ARGS_L2})
 
-NUM_TYPE  (complex|integer|logical|real)
-LOG_OPER  (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
-KIND      {ARGS}
-CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
-TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE|CLASS|PROCEDURE|ENUMERATOR)
+/* The following appear in submodules as (subroutine|function|procedure) */
+SUBPROG   (subroutine|function|procedure)
 
-INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
-ATTR_SPEC (IMPLICIT|ALLOCATABLE|DIMENSION{ARGS}|EXTERNAL|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|(NON_)?RECURSIVE|PURE|IMPURE|ELEMENTAL|VALUE|NOPASS|DEFERRED|CONTIGUOUS|VOLATILE)
-ACCESS_SPEC (PROTECTED|PRIVATE|PUBLIC)
+/* REAL and LOGICAL are treated separately as it can also be a function */
+NUM_TYPE            (COMPLEX|INTEGER)
+OPERATOR_LOGICAL    (\.and\.|\.eq\.|\.eqv\.|\.ge\.|\.gt\.|\.le\.|\.lt\.|\.ne\.|\.neqv\.|\.or\.|\.not\.)
+OPERATOR_SYMBOLS    [\+\-\*/%::><=&]
+KIND      {ARGS}
+
+/* The pattern CHARACTER{ARGS}? is inconsistent with Fortran syntax and as such, removed from CHAR */
+CHAR      (CHARACTER|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
+
+/* The patterns ({NUM_TYPE}{KIND}) and ({NUM_TYPE}({BS}"*"{BS}[0-9]+)?) are inconsistent with Fortran syntax and as such, was removed from TYPE_SPEC */
+TYPE_SPEC ({NUM_TYPE}|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE|CLASS|PROCEDURE|ENUMERATOR)
+
+INTENT_SPEC         INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"
+ACCESS_SPEC         (PROTECTED|PRIVATE|PUBLIC)
+
+ATTR_SPEC           (ALLOCATABLE|ASSIGNMENT|ASYNCHRONOUS|ABSTRACT|BIND|CODIMENSION|CONTIGUOUS|DEFERRED|DIMENSION|ELEMENTAL|EXTENDS|EXTERNAL|IMPURE|INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"|INTRINSIC|LOCAL|LOCAL_INIT|NON_INTRINSIC|NON_OVERRIDABLE|NON_RECURSIVE|NOPASS|OPERATOR|OPTIONAL|OVERRIDABLE|PARAMETER|PASS|POINTER|PRIVATE|PROTECTED|PUBLIC|PURE|RECURSIVE|SAVE|SEQUENCE|SHARED|TARGET|VALUE|VOLATILE)
+
 /* Assume that attribute statements are almost the same as attributes. */
-ATTR_STMT {ATTR_SPEC}|DIMENSION
-FLOW      (DO|SELECT|CASE|SELECT{BS}(CASE|TYPE)|WHERE|IF|THEN|ELSE|WHILE|FORALL|ELSEWHERE|ELSEIF|RETURN|CONTINUE|EXIT|GO{BS}TO)
-COMMANDS  (FORMAT|CONTAINS|MODULE{BS_}PROCEDURE|WRITE|READ|ALLOCATE|ALLOCATED|ASSOCIATED|PRESENT|DEALLOCATE|NULLIFY|SIZE|INQUIRE|OPEN|CLOSE|FLUSH|DATA|COMMON)
-IGNORE    (CALL)
-PREFIX    ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?0
-LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
+ATTR_STMT           {ATTR_SPEC}
+
+/* Intel directive statement and attributes. */
+DIR_INTEL_STATEMENT (ALIAS|ASSUME|ASSUME_ALIGNED|ATTRIBUTES|DLLEXPORT|BLOCK_LOOP|DECLARE|DEFINE|DISTRIBUTE{BS_}POINT|FIXEDFORMLINESIZE|FMA|FORCEINLINE|FREEFORM|IDENT|IF|IF{BS_}DEFINED|INLINE|INTEGER|IVDEP|LOOP{BS_}COUNT|MESSAGE|NOBLOCK_LOOP|NODECLARE|NOFMA|NOFREEFORM|NOFUSION|NOINLINE|NOOPTIMIZE|NOPARALLEL|NOPREFETCH|NOSTRICT|NOUNROLL|NOUNROLL_AND_JAM|NOVECTOR|OBJCOMMENT|OPTIMIZE|OPTIONS|PACK|PARALLEL|PREFETCH|PSECT|REAL|SIMD|STRICT|UNDEFINE|UNROLL|UNROLL_AND_JAM|VECTOR|ALIGN|ALLOCATABLE|ALLOW_NULL|C|CODE_ALIGN|CONCURRENCY_SAFE|CVF|DECORATE|DEFAULT|DLLIMPORT|EXTERN|FASTMEM|IGNORE_LOC|INLINE|MIXED_STR_LEN_ARG|NO_ARG_CHECK|NOCLONE|OPTIMIZATION_PARAMETER|REFERENCE|STDCALL|VALUE|VARYING)
+
+/* ("ATTRIBUTE"{BS}[,]?{BS} */
+/* |ALLOCATABLE|C|DEFAULT|DLLEXPORT|DLLIMPORT|EXTERN|FASTMEM|INLINE|FORCEINLINE|IGNORE_LOC|MIXED_STR_LEN_ARG|NO_ARG_CHECK|NOCLONE|NOINLINE|OPTIMIZATION_PARAMETER|REFERENCE|STDCALL|VALUE|VARYING|VECTOR */
+
+/* IEEE constants can be merged with NAMED_CONST in the future.
+Currently, including IEEE objects increases the number of flex rules to beyond what GNU flex can handle.
+The flex "flex: input rules are too complicated (>= 32000 NFA states)" error can be resolved by increasing
+the definitions in flexdef.h of flex source code for:
+    #define JAMSTATE -32766
+    #define MAXIMUM_MNS 31999
+    #define BAD_SUBSCRIPT -32767
+before compiling th flex library. However, the default distributed versions of flex cannot handle this.
+*/
+
+NAMED_CONST_IEEE                (IEEE_ALL|IEEE_ALL|IEEE_AWAY|IEEE_DATATYPE|IEEE_DENORMAL|IEEE_DIVIDE|IEEE_DIVIDE_BY_ZERO|IEEE_DOWN|IEEE_HALTING|IEEE_INEXACT|IEEE_INEXACT_FLAG|IEEE_INF|IEEE_INVALID|IEEE_INVALID_FLAG|IEEE_NAN|IEEE_NEAREST|IEEE_NEGATIVE_DENORMAL|IEEE_NEGATIVE_INF|IEEE_NEGATIVE_NORMAL|IEEE_NEGATIVE_SUBNORMAL|IEEE_NEGATIVE_ZERO|IEEE_OTHER|IEEE_OTHER_VALUE|IEEE_OVERFLOW|IEEE_POSITIVE_DENORMAL|IEEE_POSITIVE_INF|IEEE_POSITIVE_NORMAL|IEEE_POSITIVE_SUBNORMAL|IEEE_POSITIVE_ZERO|IEEE_ROUNDING|IEEE_SIGNALING_NAN|IEEE_SQRT|IEEE_SUBNORMAL|IEEE_TO_ZERO|IEEE_UNDERFLOW|IEEE_UNDERFLOW_FLAG|IEEE_UP|IEEE_USUAL)
+
+NAMED_CONST                     ({NAMED_CONST_IEEE}|C_ALERT|C_BACKSPACE|C_BOOL|C_CARRIAGE_RETURN|C_CHAR|C_DOUBLE|C_DOUBLE_COMPLEX|C_FLOAT|C_FLOAT_COMPLEX|C_FORM_FEED|C_HORIZONTAL_TAB|C_INT|C_INT16_T|C_INT32_T|C_INT64_T|C_INT8_T|C_INT_FAST16_T|C_INT_FAST32_T|C_INT_FAST64_T|C_INT_FAST8_T|C_INT_LEAST16_T|C_INT_LEAST32_T|C_INT_LEAST64_T|C_INT_LEAST8_T|C_INTMAX_T|C_INTPTR_T|C_LONG|C_LONG_DOUBLE|C_LONG_DOUBLE_COMPLEX|C_LONG_LONG|C_NEW_LINE|C_NULL_CHAR|C_NULL_FUNPTR|C_NULL_PTR|C_SHORT|C_SIGNED_CHAR|C_SIZE_T|C_VERTICAL_TAB|CHARACTER_KINDS|CHARACTER_STORAGE_SIZE|CURRENT_TEAM|ERROR_UNIT|FILE_STORAGE_SIZE|INITIAL_TEAM|INPUT_UNIT|INT16|INT32|INT64|INT8|INTEGER_KINDS|IOSTAT_END|IOSTAT_EOR|IOSTAT_INQUIRE_INTERNAL_UNIT|LOGICAL_KINDS|NUMERIC_STORAGE_SIZE|OUTPUT_UNIT|PARENT_TEAM|REAL128|REAL64|REAL32|REAL_KINDS|STAT_FAILED_IMAGE|STAT_LOCKED|STAT_LOCKED_OTHER_IMAGE|STAT_STOPPED_IMAGE|STAT_UNLOCKED|STAT_UNLOCKED_FAILED_IMAGE|\.FALSE\.|\.TRUE\.)
+
+FLOW                            (DO|DO{BS}CONCURRENT|SELECT{BS}(CASE|TYPE|RANK)|CASE|IF|THEN|ELSE{BS}IF|ELSE|DO{BS}WHILE|WHERE|ELSEWHERE|FORALL|CRITICAL|BLOCK|ASSOCIATE)
+
+FLOW_END                        (DO|SELECT|WHERE|IF|WHILE|FORALL|CRITICAL|BLOCK|ASSOCIATE)
+
+PREFIX                          ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?0
+SUFFIX                          (RESULT{ARGS})
+LANGUAGE_BIND_SPEC              BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
+
+/* INTRINSIC_FUNC_ELEMENTAL_IEEE can be merged with INTRINSIC_FUNC_ELEMENTAL when the flex bug gets resolved in the future */
+INTRINSIC_FUNC_ELEMENTAL_IEEE   (IEEE_CLASS|IEEE_COPY_SIGN|IEEE_FMA|IEEE_GET_FLAG|IEEE_GET_HALTING_MODE|IEEE_INT|IEEE_IS_FINITE|IEEE_IS_NAN|IEEE_IS_NEGATIVE|IEEE_IS_NORMAL|IEEE_LOGB|IEEE_MAX_NUM|IEEE_MAX_NUM_MAG|IEEE_MIN_NUM|IEEE_MIN_NUM_MAG|IEEE_NEXT_AFTER|IEEE_NEXT_DOWN|IEEE_NEXT_UP|IEEE_QUIET_EQ|IEEE_QUIET_GE|IEEE_QUIET_GT|IEEE_QUIET_LE|IEEE_QUIET_LT|IEEE_QUIET_NAN|IEEE_QUIET_NE|IEEE_REAL|IEEE_REM|IEEE_RINT|IEEE_SCALB|IEEE_SIGNALING_EQ|IEEE_SIGNALING_GE|IEEE_SIGNALING_GT|IEEE_SIGNALING_LE|IEEE_SIGNALING_LT|IEEE_SIGNALING_NE|IEEE_SIGNBIT|IEEE_UNORDERED|IEEE_VALUE)
+
+INTRINSIC_FUNC_ELEMENTAL        (ACHAR|ACOS|ACOSH|ADJUSTL|ADJUSTR|AIMAG|AINT|ANINT|ASIN|ASINH|ATAN|ATAN2|ATANH|BESSEL_J0|BESSEL_J1|BESSEL_JN|BESSEL_Y0|BESSEL_Y1|BESSEL_YN|BGE|BGT|BLE|BLT|BTEST|CEILING|CHAR|CMPLX|CONJG|COS|COSH|DBLE|DIM|DPROD|DSHIFTL|DSHIFTR|ERF|ERFC|ERFC_SCALED|EXP|EXPONENT|FLOOR|FRACTION|GAMMA|HYPOT|IACHAR|IAND|IBCLR|IBITS|IBSET|ICHAR|IEOR|IMAGE_STATUS|INT|IOR|ISHFT|ISHFTC|LEADZ|LEN_TRIM|LGE|LGT|LLE|LLT|LOG|LOG10|LOG_GAMMA|LOGICAL|MASKL|MASKR|MAX|MIN|MOD|MODULO|MVBITS|NEAREST|NINT|NOT|OUT_OF_RANGE|POPCNT|POPPAR|REAL|SCALE|SCAN|SET_EXPONENT|SHAPE|SHIFTA|SHIFTL|SHIFTR|SIGN|SIN|SINH|SPACING|SQRT|TAN|TANH|TRAILZ|TRIM|VERIFY)
+
+/* INTRINSIC_FUNC_INQUIRY_IEEE can be merged with INTRINSIC_FUNC_INQUIRY when the flex bug gets resolved in the future */
+INTRINSIC_FUNC_INQUIRY_IEEE     (IEEE_SUPPORT_DATATYPE|IEEE_SUPPORT_DENORMAL|IEEE_SUPPORT_DIVIDE|IEEE_SUPPORT_INF|IEEE_SUPPORT_IO|IEEE_SUPPORT_NAN|IEEE_SUPPORT_SQRT|IEEE_SUPPORT_STANDARD|IEEE_SUPPORT_SUBNORMAL|IEEE_SUPPORT_UNDERFLOW_CONTROL)
+
+INTRINSIC_FUNC_INQUIRY          ({INTRINSIC_FUNC_INQUIRY_IEEE}|ALLOCATED|ASSOCIATED|BIT_SIZE|C_SIZEOF|COSHAPE|DIGITS|EPSILON|EXTENDS_TYPE_OF|FAILED_IMAGES|HUGE|IS_CONTIGUOUS|IS_IOSTAT_END|IS_IOSTAT_EOR|KIND|LBOUND|LCOBOUND|LEN|MAXEXPONENT|MINEXPONENT|NEW_LINE|PRECISION|PRESENT|RADIX|RANGE|RANK|SAME_TYPE_AS|SIZE|STORAGE_SIZE|TINY|UBOUND|UCOBOUND)
+
+INTRINSIC_FUNC_TRANSFORMATIONAL_IEEE (IEEE_SELECTED_REAL_KIND|IEEE_SUPPORT_FLAG|IEEE_SUPPORT_HALTING|IEEE_SUPPORT_ROUNDING)
+
+INTRINSIC_FUNC_TRANSFORMATIONAL ({INTRINSIC_FUNC_TRANSFORMATIONAL_IEEE}|ALL|ANY|BESSEL_JN|BESSEL_YN|C_ASSOCIATED|C_FUNLOC|C_LOC|COMMAND_ARGUMENT_COUNT|COMPILER_OPTIONS|COMPILER_VERSION|COUNT|CSHIFT|DOT_PRODUCT|EOSHIFT|FINDLOC|GET_TEAM|IALL|IANY|IMAGE_INDEX|INDEX|IPARITY|MATMUL|MAXLOC|MAXVAL|MERGE|MERGE_BITS|MINLOC|MINVAL|NORM2|NULL|NUM_IMAGES|PACK|PARITY|PRODUCT|REDUCE|REPEAT|RESHAPE|SELECTED_CHAR_KIND|SELECTED_INT_KIND|SELECTED_REAL_KIND|SPREAD|STOPPED_IMAGES|SUM|TEAM_NUMBER|THIS_IMAGE|TRANSPOSE|UNPACK)
+
+INTRINSIC_FUNC_VOID             (CFI_address|CFI_allocate|CFI_deallocate|CFI_establish|CFI_is_contiguous|CFI_section|CFI_select_part|CFI_setpointer)
+
+INTRINSIC_FUNC                  ({INTRINSIC_FUNC_ELEMENTAL}|{INTRINSIC_FUNC_INQUIRY}|{INTRINSIC_FUNC_TRANSFORMATIONAL})
+
+/* intrinsic subroutines */
+
+INTRINSIC_SUB_ATOMIC            (ATOMIC_ADD|ATOMIC_AND|ATOMIC_CAS|ATOMIC_DEFINE|ATOMIC_FETCH_ADD|ATOMIC_FETCH_AND|ATOMIC_FETCH_OR|ATOMIC_FETCH_XOR|ATOMIC_INT_KIND|ATOMIC_LOGICAL_KIND|ATOMIC_OR|ATOMIC_REF|ATOMIC_XOR)
+
+INTRINSIC_SUB_COLLECTIVE        (CO_BROADCAST|CO_MAX|CO_MIN|CO_REDUCE|CO_SUM)
+
+/* INTRINSIC_SUB_IMPURE_IEEE can be merged with INTRINSIC_SUB_IMPURE when the flex bug gets resolved in the future */
+INTRINSIC_SUB_IMPURE_IEEE       (IEEE_GET_MODES|IEEE_GET_ROUNDING_MODE|IEEE_GET_STATUS|IEEE_GET_UNDERFLOW_MODE|IEEE_SET_MODES|IEEE_SET_ROUNDING_MODE|IEEE_SET_STATUS|IEEE_SET_UNDERFLOW_MODE)
+INTRINSIC_SUB_IMPURE            ({INTRINSIC_SUB_IMPURE_IEEE}|C_F_POINTER|CPU_TIME|DATE_AND_TIME|EVENT_QUERY|EXECUTE_COMMAND_LINE|GET_COMMAND|GET_COMMAND_ARGUMENT|GET_ENVIRONMENT_VARIABLE|RANDOM_INIT|RANDOM_NUMBER|RANDOM_SEED|SYSTEM_CLOCK)
+
+/* INTRINSIC_SUB_PURE_IEEE can be merged with INTRINSIC_SUB_PURE when the flex bug gets resolved in the future */
+INTRINSIC_SUB_PURE_IEEE         (IEEE_SET_FLAG|IEEE_SET_HALTING_MODE)
+INTRINSIC_SUB_PURE              ({INTRINSIC_SUB_PURE_IEEE}|C_F_PROCPOINTER|MOVE_ALLOC)
+
+INTRINSIC_SUB                   ({INTRINSIC_SUB_ATOMIC}|{INTRINSIC_SUB_COLLECTIVE}|{INTRINSIC_SUB_IMPURE}|{INTRINSIC_SUB_PURE})
+
+INTRINSIC_PROC                  ({INTRINSIC_SUB}|{INTRINSIC_FUNC})
+
+/* INTRINSIC_MODULE_IEEE can be merged with INTRINSIC_MODULE when the flex bug gets resolved in the future */
+INTRINSIC_MODULE_IEEE           (IEEE_ARITHMETIC|IEEE_EXCEPTIONS|IEEE_FEATURES)
+INTRINSIC_MODULE                ({INTRINSIC_MODULE_IEEE}|ISO_C_BINDING|ISO_FORTRAN_ENV)
+
+SPECIFIER                       (ACCESS|ACQUIRED_LOCK|ACTION|ADVANCE|ASYNCHRONOUS|BLANK|DECIMAL|DELIM|DIM|DIRECT|ENCODING|EOR|ERR|ERRMSG|EXIST|FILE|FMT|FORM|FORMATTED|ID|IOLENGTH|IOMSG|IOSTAT|KIND|LEN|MOLD|NAME|NAMED|NEW_INDEX|NEWUNIT|NEXTREC|NML|NUMBER|OPENED|PAD|PENDING|POS|POSITION|QUIET|READ|READWRITE|REC|RECL|ROUND|SEQUENTIAL|SIGN|SIZE|SOURCE|STAT|STATUS|STREAM|TEAM|TEAM_NUMBER|UNFORMATTED|UNIT|UNTIL_COUNT|WRITE)
+
+STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ENUM|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|FUNCTION|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|END{BS}SUBMODULE|SUBROUTINE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
+
+/* INTRINSIC_DERIVED_TYPE_IEEE and INTRINSIC_DERIVED_TYPE_CFI can be merged with INTRINSIC_DERIVED_TYPE when the flex bug gets resolved in the future */
+INTRINSIC_DERIVED_TYPE_IEEE     (IEEE_CLASS_TYPE|IEEE_FEATURES_TYPE|IEEE_FLAG_TYPE|IEEE_MODES_TYPE|IEEE_ROUND_TYPE|IEEE_STATUS_TYPE)
+INTRINSIC_DERIVED_TYPE_CFI      (CFI_cdesc_t)
+INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
 
 /* |  */
 
@@ -280,68 +356,168 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 %%
  /*==================================================================*/
 
- /*-------- ignore ------------------------------------------------------------*/
-
-<Start>{IGNORE}/{BS}"("                   { // do not search keywords, intrinsics... TODO: complete list
-                                            codifyLines(yyscanner,yytext);
-                                          }
  /*-------- inner construct ---------------------------------------------------*/
 
-<Start>{COMMANDS}/{BS}[,( \t\n]           {  // highlight
-                                            /* font class is defined e.g. in doxygen.css */
-                                            startFontClass(yyscanner,"keyword");
-                                            codifyLines(yyscanner,yytext);
-                                            endFontClass(yyscanner);
-                                          }
-<Start>{FLOW}/{BS}[,( \t\n]               {
-                                          if (yyextra->isFixedForm)
-                                          {
-                                            if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
-                                          }
-                                          if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
-                                          {
-                                            std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
-                                            MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
-                                            if (mdm)
-                                            {
-                                              mdm->incrementFlowKeyWordCount();
-                                            }
-                                          }
-                                          /* font class is defined e.g. in doxygen.css */
-                                          startFontClass(yyscanner,"keywordflow");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
-<Start>{BS}(CASE|CLASS|TYPE){BS_}(IS|DEFAULT) {
-                                          startFontClass(yyscanner,"keywordflow");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
-<Start>{BS}"end"({BS}{FLOW})/[ \t\n]       { // list is a bit long as not all have possible end
-                                          startFontClass(yyscanner,"keywordflow");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
-<Start>"implicit"{BS}("none"|{TYPE_SPEC})  {
-                                          startFontClass(yyscanner,"keywordtype");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
-<Start>^{BS}"namelist"/[/]              {  // Namelist specification
-                                          startFontClass(yyscanner,"keywordtype");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
+<Start>{BS}"%"/{BS}[a-zA-Z]+.*                                  {   // highlight rule for the percent-symbol separator of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_operator_symbols");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}[.]*("+"|"-"|"*"|"/"|"<"|">"|"="|"&"){BS}                {   // highlight rule for the operators of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_operator_symbols");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}(0|[1-9]\d*)(\.\d*)?(e[-\+]?(0|[1-9]\d*))?(_([a-zA-Z])+)?    {   // highlight rule for the numeric values of Fortran.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_numeric_literal");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}{NAMED_CONST}{BS}                                        {   // highlight rule for the named constants of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_named_const");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Declaration>{BS}{ATTR_SPEC}[^0-9a-zA-Z]{BS}                    {   // highlight rule for the attributes of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_attribute");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}"("{BS}{INTRINSIC_DERIVED_TYPE}{BS}")"{BS}               {   // highlight rule for Fortran intrinsic derived types.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_inrinsic_dtype");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}{INTRINSIC_DERIVED_TYPE}{BS}                             {   // highlight rule for Fortran intrinsic module names.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_inrinsic_dtype");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}{INTRINSIC_MODULE}{BS}                                   {   // highlight rule for Fortran intrinsic module names.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_inrinsic_module");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start,Declaration>{BS}[^%]{SPECIFIER}/{BS}={BS}                {   // highlight rule for Fortran intrinsic specifier (intrinsic procedure argument) names.
+                                                                    // \todo: A specifier must be enclosed with parentheses. This is not currently enforced.
+                                                                    startFontClass(yyscanner,"fortran_spcifier");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+
+ /* Fortran intrinsic procedures */
+
+<Start>^{BS}"real"/[,:( ].*                                     {   // real is a data type but also an elemental function, which makes it a bit tricky.
+                                                                    yy_push_state(YY_START,yyscanner);
+                                                                    BEGIN(Declaration);
+                                                                    startFontClass(yyscanner,"fortran_statement");
+                                                                    yyextra->code->codify(QCString(yytext));
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>^{BS}"logical"/[,:( ].*                                  {   // logical is a data type but also an elemental function, which makes it a bit tricky.
+                                                                    yy_push_state(YY_START,yyscanner);
+                                                                    BEGIN(Declaration);
+                                                                    startFontClass(yyscanner,"fortran_statement");
+                                                                    yyextra->code->codify(QCString(yytext));
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start,Declaration>{BS}{INTRINSIC_FUNC}/{BS}[(]                 {   // highlight rule for Fortran intrinsic functions.
+                                                                    // \todo This must be improved when function name appears in an intrinsic module USE statement.
+                                                                    // \todo The current rule only captures function names when followed by "(".
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_function");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>{BS}{INTRINSIC_SUB}/{BS}[(]                              {   // highlight rule for Fortran intrinsic subroutines.
+                                                                    // \todo This must be improved when subroutine name appears in an intrinsic module USE statement.
+                                                                    // \todo The current rule only captures subroutine names when followed by "(".
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_subroutine");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>{BS}"MPI_"{BS}[a-zA-Z_]+/{BS}                            {   // highlight rule for MPI module intrinsic entities.
+                                                                    // \todo The current search pattern is too generic. In the future, all MPI entities from
+                                                                    // \todo the standard MPI module must be listed here and explicitly searched for.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_mpi");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+
+ /* Fortran intrinsic statements */
+
+<Start>{BS}{STATEMENT}/{BS}[;( \t\n]                            {   // highlight rule for Fortran intrinsic statements.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_statement");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>{FLOW}/{BS}[;( \t\n]                                     {   // highlight rule for Fortran flow-control statements.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    if (yyextra->isFixedForm)
+                                                                    {
+                                                                        if ((yy_my_start == 1) && ((yytext[0] == 'c') || (yytext[0] == 'C'))) YY_FTN_REJECT;
+                                                                    }
+                                                                    if (yyextra->currentMemberDef && yyextra->currentMemberDef->isFunction())
+                                                                    {
+                                                                        std::lock_guard<std::mutex> lock(g_countFlowKeywordsMutex);
+                                                                        MemberDefMutable *mdm = toMemberDefMutable(yyextra->currentMemberDef);
+                                                                        if (mdm)
+                                                                        {
+                                                                            mdm->incrementFlowKeyWordCount();
+                                                                        }
+                                                                    }
+                                                                    /* font class is defined e.g. in doxygen.css */
+                                                                    startFontClass(yyscanner,"fortran_keywordflow");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>(CASE|CLASS|TYPE|RANK){BS_}(IS|DEFAULT)                  {
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_keywordflow");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<*>{BS}"end"{BS}{FLOW_END}/[ ;\t\n]                             {   // list is a bit long as not all have possible end. <*> needed since the FLOW could be all in one line.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_keywordflow");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>"implicit"{BS}("none"|{TYPE_SPEC})                       {
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_statement");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
  /*-------- use statement -------------------------------------------*/
-<Start>"use"{BS_}                       {
-                                          startFontClass(yyscanner,"keywordtype");
+<Start>"use"{BS}                        {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                          startFontClass(yyscanner,"fortran_statement");
+                                          codifyLines(yyscanner,yytext);
+                                          endFontClass(yyscanner);
+                                          yy_push_state(YY_START,yyscanner);
+                                          BEGIN(Use);
+                                        }
+<Use>("intrinsic"|"non_intrinsic")      { // TODO: rename
+                                          startFontClass(yyscanner,"fortran_attribute");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(Use);
                                         }
 <Use>"ONLY"                             { // TODO: rename
-                                          startFontClass(yyscanner,"keywordtype");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -349,7 +525,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Use>{ID}                               {
                                           QCString tmp(yytext);
-                                          tmp = tmp.lower();
+                                          // tmp = tmp.lower();
                                           yyextra->insideBody=TRUE;
                                           generateLink(yyscanner,*yyextra->code, yytext);
                                           yyextra->insideBody=FALSE;
@@ -366,7 +542,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           YY_FTN_RESET}
 <UseOnly>{ID}                           {
                                           QCString tmp(yytext);
-                                          tmp = tmp.lower();
+                                          // tmp = tmp.lower();
                                           yyextra->useEntry.onlyNames.push_back(tmp);
                                           yyextra->insideBody=TRUE;
                                           generateLink(yyscanner,*yyextra->code, yytext);
@@ -379,7 +555,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*>"import"{BS}/"\n"                    |
 <*>"import"{BS_}                        {
-                                          startFontClass(yyscanner,"keywordtype");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -391,14 +567,14 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yyextra->insideBody=FALSE;
                                         }
 <Import>("ONLY"|"NONE"|"ALL")           {
-                                          startFontClass(yyscanner,"keywordtype");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
  /*-------- fortran module  -----------------------------------------*/
 <Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
                                           startScope(yyscanner);
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -407,20 +583,20 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <Start>("enum")/{BS_}|{BS}{COMMA}{BS}{LANGUAGE_BIND_SPEC}|\n {  //
                                           startScope(yyscanner);
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(ClassName);
                                         }
 <*>{LANGUAGE_BIND_SPEC}                 {  //
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
 <Start>("type")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
                                           startScope(yyscanner);
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -430,13 +606,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           if (yyextra->currentModule == "module")
                                           {
                                             yyextra->currentModule=yytext;
-                                            yyextra->currentModule = yyextra->currentModule.lower();
+                                            yyextra->currentModule = yyextra->currentModule;//.lower();
                                           }
                                           generateLink(yyscanner,*yyextra->code,yytext);
                                           yy_pop_state(yyscanner);
                                         }
 <ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_attribute");
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
@@ -456,12 +632,12 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
  /*-------- subprog definition -------------------------------------*/
 <Start>({PREFIX}{BS_})?{TYPE_SPEC}{BS_}({PREFIX}{BS_})?{BS}/{SUBPROG}{BS_}  {   // TYPE_SPEC is for old function style function result
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_prefix");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
-<Start>({PREFIX}{BS_})?{SUBPROG}{BS_}   {  // Fortran subroutine or function found
-                                          startFontClass(yyscanner,"keyword");
+<Start>({PREFIX}{BS_})?("module"{BS_})?{SUBPROG}{BS_}   {  // Fortran subroutine or function found
+                                          startFontClass(yyscanner,"fortran_prefix");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -473,7 +649,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           generateLink(yyscanner,*yyextra->code,yytext);
                                         }
 <Subprog>"result"/{BS}"("[^)]*")"       {
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_suffix");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
@@ -488,7 +664,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface")?{BS}     {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endScope(yyscanner);
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -501,26 +677,20 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <Start>"end"{BS}("block"{BS}"data"|{SUBPROG}|"module"|"program"|"enum"|"type"|"interface"){BS}/(\n|!|;) {  // Fortran subroutine or function ends
                                           //cout << "===> end function " << yytext << endl;
                                           endScope(yyscanner);
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
  /*-------- variable declaration ----------------------------------*/
-<Start>^{BS}"real"/[,:( ]               { // real is a bit tricky as it is a data type but also a function.
-                                          yy_push_state(YY_START,yyscanner);
-                                          BEGIN(Declaration);
-                                          startFontClass(yyscanner,"keywordtype");
-                                          yyextra->code->codify(QCString(yytext));
-                                          endFontClass(yyscanner);
-                                        }
 <Start>{TYPE_SPEC}/[,:( ]               {
                                           QCString typ(yytext);
                                           typ = removeRedundantWhiteSpace(typ.lower());
                                           if (typ.startsWith("real")) YY_FTN_REJECT;
+                                          if (typ.startsWith("logical")) YY_FTN_REJECT;
                                           if (typ == "type" || typ == "class" || typ == "procedure") yyextra->inTypeDecl = 1;
                                           yy_push_state(YY_START,yyscanner);
                                           BEGIN(Declaration);
-                                          startFontClass(yyscanner,"keywordtype");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
@@ -531,20 +701,20 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             BEGIN(Declaration);
                                             yyextra->isExternal = true;
                                           }
-                                          startFontClass(yyscanner,"keywordtype");
+                                          startFontClass(yyscanner,"fortran_attribute");
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
 <Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
                                           if (QCString(yytext) == "external") yyextra->isExternal = true;
-                                          startFontClass(yyscanner,"keywordtype");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
 <Declaration>{ID}                       { // local var
                                           if (yyextra->isFixedForm && yy_my_start == 1)
                                           {
-                                            startFontClass(yyscanner,"comment");
+                                            startFontClass(yyscanner,"fortran_comment");
                                             yyextra->code->codify(QCString(yytext));
                                             endFontClass(yyscanner);
                                           }
@@ -618,7 +788,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
  /*-------- subprog calls  -----------------------------------------*/
 
 <Start>"call"{BS_}                      {
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                           yy_push_state(YY_START,yyscanner);
@@ -640,7 +810,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           {
                                             yy_push_state(YY_START,yyscanner);
                                             BEGIN(Declaration);
-                                            startFontClass(yyscanner,"keywordtype");
+                                            startFontClass(yyscanner,"fortran_statement");
                                             yyextra->code->codify(QCString(yytext).stripWhiteSpace());
                                             endFontClass(yyscanner);
                                             yyextra->code->codify(QCString(yytext + 4));
@@ -698,7 +868,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           }
                                           else // do not remove comment
                                           {
-                                            startFontClass(yyscanner,"comment");
+                                            startFontClass(yyscanner,"fortran_comment");
                                             codifyLines(yyscanner,yyextra->docBlock);
                                             endFontClass(yyscanner);
                                           }
@@ -707,29 +877,48 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           yy_pop_state(yyscanner);
                                           YY_FTN_RESET
                                         }
+<Start>^{BS}[!C]("DEC"|"DIR")"$"{BS}"ATTRIBUTES".*/"::" {   // ATTRIBUTES directive is treated separately as its argument (procedure name) needs to be recognized by Doxygen).
+                                                            startFontClass(yyscanner,"fortran_directive_intel");
+                                                            codifyLines(yyscanner,yytext);
+                                                            endFontClass(yyscanner);
+                                                        }
+<Start>^{BS}[!C]("DEC"|"DIR")"$".*                      {   // highlight rule for Intel Fortran Compiler directives (except ATTRIBUTES).
+                                                            QCString directive(yytext);
+                                                            directive = removeRedundantWhiteSpace(directive.lower());
+                                                            if (directive.contains("attributes",true)) YY_FTN_REJECT;
+                                                            startFontClass(yyscanner,"fortran_directive_intel");
+                                                            codifyLines(yyscanner,yytext);
+                                                            endFontClass(yyscanner);
+                                                        }
+<Start>^{BS}[\!c]"$OMP".*                               {   // OpenMP directives
+                                                            yy_push_state(YY_START,yyscanner);
+                                                            BEGIN(Declaration);
+                                                            startFontClass(yyscanner,"fortran_directive_omp");
+                                                            yyextra->code->codify(QCString(yytext));
+                                                            endFontClass(yyscanner);
+                                                        }
+<*>"!"[^><\n].*|"!"$                                    {   // normal comment
+                                                            if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                            if (yyextra->isFixedForm && yy_my_start == 6) YY_FTN_REJECT;
+                                                            startFontClass(yyscanner,"fortran_comment");
+                                                            codifyLines(yyscanner,yytext);
+                                                            endFontClass(yyscanner);
+                                                        }
 
-<*>"!"[^><\n].*|"!"$                    { // normal comment
-                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
-                                          if (yyextra->isFixedForm && yy_my_start == 6) YY_FTN_REJECT;
-                                          startFontClass(yyscanner,"comment");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
+<*>^[Cc*].*                                             {   // normal comment
+                                                            if(! yyextra->isFixedForm) YY_FTN_REJECT;
+                                                            startFontClass(yyscanner,"fortran_comment");
+                                                            codifyLines(yyscanner,yytext);
+                                                            endFontClass(yyscanner);
+                                                        }
 
-<*>^[Cc*].*                             { // normal comment
-                                          if(! yyextra->isFixedForm) YY_FTN_REJECT;
-
-                                          startFontClass(yyscanner,"comment");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
 <*>"assignment"/{BS}"("{BS}"="{BS}")"   {
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
 <*>"operator"/{BS}"("[^)]*")"           {
-                                          startFontClass(yyscanner,"keyword");
+                                          startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
@@ -757,7 +946,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <String>\n                              { // string with \n inside
                                           yyextra->contLineNr++;
                                           yyextra->str+=yytext;
-                                          startFontClass(yyscanner,"stringliteral");
+                                          startFontClass(yyscanner,"fortran_string");
                                           codifyLines(yyscanner,yyextra->str);
                                           endFontClass(yyscanner);
                                           yyextra->str = "";
@@ -766,7 +955,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <String>\"|\'                           { // string ends with next quote without previous backspace
                                           if(yytext[0]!=yyextra->stringStartSymbol) YY_FTN_REJECT; // single vs double quote
                                           yyextra->str+=yytext;
-                                          startFontClass(yyscanner,"stringliteral");
+                                          startFontClass(yyscanner,"fortran_string");
                                           codifyLines(yyscanner,yyextra->str);
                                           endFontClass(yyscanner);
                                           yy_pop_state(yyscanner);
@@ -792,7 +981,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           {
                                             codifyLines(yyscanner,yytext);
                                             // comment cannot extend over the end of a line so should always be terminated at the end of the line.
-                                            if (yyextra->currentFontClass && !strcmp(yyextra->currentFontClass,"comment")) endFontClass(yyscanner);
+                                            if (yyextra->currentFontClass && !strcmp(yyextra->currentFontClass,"fortran_comment")) endFontClass(yyscanner);
                                           }
                                           yyextra->contLineNr++;
                                           YY_FTN_RESET
@@ -802,7 +991,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 <*>[\x80-\xFF]*                         { // keep utf8 characters together...
                                           if (yyextra->isFixedForm && yy_my_start > fixedCommentAfter)
                                           {
-                                            startFontClass(yyscanner,"comment");
+                                            startFontClass(yyscanner,"fortran_comment");
                                             codifyLines(yyscanner,yytext);
                                           }
                                           else
@@ -816,7 +1005,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             //yy_push_state(YY_START,yyscanner);
                                             //BEGIN(DocBlock);
                                             //yyextra->docBlock=yytext;
-                                            startFontClass(yyscanner,"comment");
+                                            startFontClass(yyscanner,"fortran_comment");
                                             codifyLines(yyscanner,yytext);
                                           }
                                           else
@@ -824,18 +1013,27 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                             yyextra->code->codify(QCString(yytext));
                                           }
                                         }
-<*>{LOG_OPER}                           { // Fortran logical comparison keywords
-                                          yyextra->code->codify(QCString(yytext));
+<*>{OPERATOR_LOGICAL}                   {   // Fortran logical comparison keywords
+                                            startFontClass(yyscanner,"fortran_operator_logical");
+                                            //codifyLines(yyscanner,yyextra->docBlock);
+                                            yyextra->code->codify(QCString(yytext));
+                                            endFontClass(yyscanner);
+                                        }
+<*>{OPERATOR_SYMBOLS}                   { // Fortran operator symbols
+                                            startFontClass(yyscanner,"fortran_operator_symbols");
+                                            //codifyLines(yyscanner,yyextra->docBlock);
+                                            yyextra->code->codify(QCString(yytext));
+                                            endFontClass(yyscanner);
                                         }
 <*><<EOF>>                              {
-                                          if (YY_START == DocBlock) {
-                                            if (!Config_getBool(STRIP_CODE_COMMENTS))
-                                            {
-                                              startFontClass(yyscanner,"comment");
-                                              codifyLines(yyscanner,yyextra->docBlock);
-                                              endFontClass(yyscanner);
+                                            if (YY_START == DocBlock) {
+                                                if  (!Config_getBool(STRIP_CODE_COMMENTS))
+                                                {
+                                                    startFontClass(yyscanner,"fortran_comment");
+                                                    codifyLines(yyscanner,yyextra->docBlock);
+                                                    endFontClass(yyscanner);
+                                                }
                                             }
-                                          }
                                           yyterminate();
                                         }
 %%
@@ -938,9 +1136,10 @@ static void startCodeLine(yyscan_t yyscanner)
       }
       else if (d->isLinkableInProject())
       {
-        yyextra->code->writeLineNumber(d->getReference(),
-                                d->getOutputFileBase(),
-                                QCString(),yyextra->yyLineNr);
+        yyextra->code->writeLineNumber( d->getReference(),
+                                        d->getOutputFileBase(),
+                                        QCString(),yyextra->yyLineNr
+                                        );
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
@@ -1127,7 +1326,8 @@ static MemberDef *getFortranDefs(yyscan_t yyscanner,const QCString &memberName, 
   for (auto it = yyextra->scopeStack.rbegin(); it!=yyextra->scopeStack.rend(); ++it)
   {
     const Scope &scope = *it;
-    std::string lowMemName = memberName.lower().str();
+    //std::string lowMemName = memberName.lower().str();
+    std::string lowMemName = memberName.str();
     if (scope.localVars   .find(lowMemName)!=std::end(scope.localVars)     &&  // local var
         scope.externalVars.find(lowMemName)==std::end(scope.externalVars))     // and not external
     {
@@ -1255,7 +1455,8 @@ static void generateLink(yyscan_t yyscanner,CodeOutputInterface &ol, const QCStr
   ClassDef *cd=0;
   NamespaceDef *nsd=0;
   QCString name = lname;
-  name = removeRedundantWhiteSpace(name.lower());
+  // name = removeRedundantWhiteSpace(name.lower());
+  name = removeRedundantWhiteSpace(name);
 
   // check if lowercase lname is a linkable type or interface
   if ( (getFortranTypeDefs(name, yyextra->currentModule, cd, yyextra->useMembers)) && cd->isLinkable() )
@@ -1358,7 +1559,8 @@ static void addLocalVar(yyscan_t yyscanner,const QCString &varName)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (!yyextra->scopeStack.empty())
   {
-    std::string lowVarName = varName.lower().str();
+    // std::string lowVarName = varName.lower().str();
+    std::string lowVarName = varName.str();
     yyextra->scopeStack.back().localVars.insert(lowVarName);
     if (yyextra->isExternal) yyextra->scopeStack.back().externalVars.insert(lowVarName);
   }
