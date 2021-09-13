@@ -2051,6 +2051,13 @@ void Config::checkAndCorrect(bool quiet)
   }
 
   //------------------------
+  int depth = Config_getInt(MAX_DOT_GRAPH_DEPTH);
+  if (depth==0)
+  {
+    Config_updateInt(MAX_DOT_GRAPH_DEPTH,1000);
+  }
+
+  //------------------------
   // add default words if needed
   const StringVector &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
   if (annotationFromBrief.empty())
