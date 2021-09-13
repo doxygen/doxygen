@@ -3726,6 +3726,14 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
+    <option type='int' id='DIR_GRAPH_MAX_DEPTH' minval='1' maxval='25' defval='1' depends='DIRECTORY_GRAPH'>
+      <docs>
+<![CDATA[
+ The \c DIR_GRAPH_MAX_DEPTH tag can be used to limit the maximum number of
+ levels of child directories generated in directory dependency graphs by \c dot.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='DOT_IMAGE_FORMAT' defval='png' depends='HAVE_DOT'>
       <docs>
 <![CDATA[

@@ -10220,6 +10220,8 @@ static void readDir(FileInfo *fi,
   msg("Searching for files in directory %s\n", qPrint(fi->absFilePath()));
   //printf("killSet=%p count=%d\n",killSet,killSet ? (int)killSet->count() : -1);
 
+  StringVector dirResultList;
+
   for (const auto &dirEntry : dir.iterator())
   {
     FileInfo cfi(dirEntry.path());
@@ -10253,7 +10255,7 @@ static void readDir(FileInfo *fi,
             fn->push_back(std::move(fd));
           }
         }
-        if (resultList) resultList->push_back(fullName);
+        dirResultList.push_back(fullName);
         if (resultSet) resultSet->insert(fullName);
         if (killSet) killSet->insert(fullName);
       }
@@ -10265,17 +10267,20 @@ static void readDir(FileInfo *fi,
       {
         FileInfo acfi(cfi.absFilePath());
         readDir(&acfi,fnMap,exclSet,
-            patList,exclPatList,resultList,resultSet,errorIfNotExist,
+            patList,exclPatList,&dirResultList,resultSet,errorIfNotExist,
             recursive,killSet,paths);
       }
     }
   }
-  if (resultList)
+  if (resultList && !dirResultList.empty())
   {
     // sort the resulting list to make the order platform independent.
-    std::sort(resultList->begin(),
-              resultList->end(),
+    std::sort(dirResultList.begin(),
+              dirResultList.end(),
               [](const auto &f1,const auto &f2) { return qstricmp(f1.c_str(),f2.c_str())<0; });
+
+    // append the sorted results to resultList
+    resultList->insert(resultList->end(), dirResultList.begin(), dirResultList.end());
   }
 }
 
@@ -11213,6 +11218,7 @@ void adjustConfiguration()
 #ifdef HAS_SIGNALS
 static void stopDoxygen(int)
 {
+  signal(SIGINT,SIG_DFL);   // Re-register signal handler for default action
   Dir thisDir;
   msg("Cleaning up...\n");
   if (!Doxygen::filterDBFileName.isEmpty())

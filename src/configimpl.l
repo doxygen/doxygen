@@ -1849,19 +1849,6 @@ void Config::checkAndCorrect(bool quiet)
   Config_updateString(DOT_FONTNAME,dotFontName);
 
   //------------------------
-  // clip dotFontSize against the maximum bounds
-  int dotFontSize = Config_getInt(DOT_FONTSIZE);
-  if (dotFontSize<4)
-  {
-    dotFontSize=4;
-  }
-  else if (dotFontSize>24)
-  {
-    dotFontSize=24;
-  }
-  Config_updateInt(DOT_FONTSIZE,dotFontSize);
-
-  //------------------------
   // clip number of threads
   int dotNumThreads = Config_getInt(DOT_NUM_THREADS);
   if (dotNumThreads>32)
@@ -2062,50 +2049,6 @@ void Config::checkAndCorrect(bool quiet)
     // concept.
     Config_updateBool(INLINE_INFO,FALSE);
   }
-
-  //------------------------
-  int depth = Config_getInt(MAX_DOT_GRAPH_DEPTH);
-  if (depth==0)
-  {
-    Config_updateInt(MAX_DOT_GRAPH_DEPTH,1000);
-  }
-
-  //------------------------
-  int hue = Config_getInt(HTML_COLORSTYLE_HUE);
-  if (hue<0)
-  {
-    hue=0;
-  }
-  else if (hue>=360)
-  {
-    hue=hue%360;
-  }
-  Config_updateInt(HTML_COLORSTYLE_HUE,hue);
-
-  //------------------------
-  int sat = Config_getInt(HTML_COLORSTYLE_SAT);
-  if (sat<0)
-  {
-    sat=0;
-  }
-  else if (sat>255)
-  {
-    sat=255;
-  }
-  Config_updateInt(HTML_COLORSTYLE_SAT,sat);
-
-
-  //------------------------
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  if (gamma<40)
-  {
-    gamma=40;
-  }
-  else if (gamma>240)
-  {
-    gamma=240;
-  }
-  Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
 
   //------------------------
   // add default words if needed

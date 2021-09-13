@@ -63,19 +63,45 @@ class FilePairLinkedMap : public LinkedMap<FilePair>
 class UsedDir
 {
   public:
-    UsedDir(const DirDef *dir,bool inherited);
+    UsedDir(const DirDef *dir);
     virtual ~UsedDir();
-    void addFileDep(const FileDef *srcFd,const FileDef *dstFd);
+
+    /**
+     * Take up dependency between files.
+     * @param[in] srcFd dependent file which depends on dstFd
+     * @param[in] dstFd dependee file on which srcFd depends on
+     * @param[in] srcDirect true iff the source dependency was the direct (not inherited from a sub dir)
+     * @param[in] dstDirect true iff the destination dependency was direct (not inherited from a sub dir)
+     */
+    void addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDirect, bool dstDirect);
     FilePair *findFilePair(const QCString &name);
     const FilePairLinkedMap &filePairs() const { return m_filePairs; }
     const DirDef *dir() const { return m_dir; }
-    bool inherited() const { return m_inherited; }
+
+    /** Returns true iff any of the dependencies between source and destination files are
+     *  direct (i.e. not "inherited" from sub directories)
+     */
+    bool hasDirectDeps() const { return m_hasDirectDeps; }
+
+    /** Returns true iff any of the dependencies from the source file to the destination file are
+     *  directly coming from a file in the source directory (i.e. not inherited via sub directories)
+     */
+    bool hasDirectSrcDeps() const { return m_hasDirectSrcDeps; }
+
+    /** Returns true iff any of the dependencies from the source file to the destination file are
+     *  directly targetting a file in the destination directory (i.e. not inherited via sub directories)
+     */
+    bool hasDirectDstDeps() const { return m_hasDirectDstDeps; }
+
     void sort();
 
   private:
     const DirDef *m_dir;
     FilePairLinkedMap m_filePairs;
-    bool m_inherited;
+
+    bool m_hasDirectDeps    = false;
+    bool m_hasDirectSrcDeps = false;
+    bool m_hasDirectDstDeps = false;
 };
 
 // ------------------
@@ -95,12 +121,12 @@ class DirDef : public DefinitionMutable, public Definition
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
-    virtual const QCString &shortName() const = 0;
+    virtual const QCString shortName() const = 0;
     virtual void addSubDir(DirDef *subdir) = 0;
     virtual const FileList &getFiles() const = 0;
     virtual void addFile(const FileDef *fd) = 0;
     virtual const DirList &subDirs() const = 0;
-    virtual bool isCluster() const = 0;
+    virtual bool hasSubdirs() const = 0;
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
     virtual int dirCount() const = 0;
@@ -115,11 +141,12 @@ class DirDef : public DefinitionMutable, public Definition
     virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
+    virtual void setDirCount(int count) = 0;
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
     virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
-                                   const FileDef *dstFd,bool inherited) = 0;
+                                   const FileDef *dstFd,bool srcDirect, bool dstDirect) = 0;
     virtual void computeDependencies() = 0;
 };
 

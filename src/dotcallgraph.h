@@ -16,6 +16,8 @@
 #ifndef DOTCALLGRAPH_H
 #define DOTCALLGRAPH_H
 
+#include <memory>
+
 #include "dotnode.h"
 #include "dotgraph.h"
 #include "memberdef.h"
@@ -50,5 +52,7 @@ class DotCallGraph : public DotGraph
     QCString        m_diskName;
     const Definition * m_scope;
 };
+
+using DotCallGraphPtr = std::shared_ptr<DotCallGraph>;
 
 #endif
