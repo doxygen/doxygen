@@ -215,6 +215,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
     ${GENERATED_SRC}/lang_cfg.h
+    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
