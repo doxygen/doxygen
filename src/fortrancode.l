@@ -611,7 +611,12 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           generateLink(yyscanner,*yyextra->code,yytext);
                                           yy_pop_state(yyscanner);
                                         }
-<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { //| variable declaration
+<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { // variable declaration
+                                          startFontClass(yyscanner,"fortran_attribute");
+                                          yyextra->code->codify(QCString(yytext));
+                                          endFontClass(yyscanner);
+                                        }
+<Start>{ACCESS_SPEC}/[,: ]              { // access attribute declaration
                                           startFontClass(yyscanner,"fortran_attribute");
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
