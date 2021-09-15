@@ -357,12 +357,12 @@ def parseGroups(node):
     print("  cfg->addInfo(\"%s\",\"%s\");" % (name, doc))
     print("%s%s" % ("  //-----------------------------------------",
                     "----------------------------------"))
+    if len(setting) > 0:
+        print("#endif")
     print("")
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             parseOption(n)
-    if len(setting) > 0:
-        print("#endif")
 
 def parseGroupMapEnums(node):
     def escape(value):
