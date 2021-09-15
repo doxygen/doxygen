@@ -51,6 +51,8 @@
 #include "emoji.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "configimpl.h"
+#include "configoptions.h"
 
 #define TK_COMMAND_CHAR(token) ((token)==TK_COMMAND_AT ? "@" : "\\")
 
@@ -4791,6 +4793,107 @@ void DocPara::handleCite()
   m_parser.tokenizer.setStatePara();
 }
 
+void DocPara::handleDoxySetting()
+{
+  // get the argument of the cite command.
+  int tok=m_parser.tokenizer.lex();
+  if (tok!=TK_WHITESPACE)
+  {
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected whitespace after \\%s command",
+        qPrint("doxysetting"));
+    return;
+  }
+  m_parser.tokenizer.setStateDoxySetting();
+  tok=m_parser.tokenizer.lex();
+  if (tok==0)
+  {
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected end of comment block while parsing the "
+        "argument of command %s\n", qPrint("doxysetting"));
+    return;
+  }
+  else if (tok!=TK_WORD && tok!=TK_LNKWORD)
+  {
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s as the argument of %s",
+        DocTokenizer::tokToString(tok),qPrint("doxysetting"));
+    return;
+  }
+  ConfigOption * opt = ConfigImpl::instance()->get(m_parser.context.token->name);
+  if (opt)
+  {
+    switch (opt->kind())
+    {
+      case ConfigOption::O_Bool:
+        m_children.push_back(std::make_unique<DocWord>(m_parser,this,*(dynamic_cast<ConfigBool*>(opt)->valueStringRef())));
+        break;
+      case ConfigOption::O_String:
+        m_children.push_back(std::make_unique<DocWord>(m_parser,this,*(dynamic_cast<ConfigString*>(opt)->valueRef())));
+        break;
+      case ConfigOption::O_Enum:
+        m_children.push_back(std::make_unique<DocWord>(m_parser,this,*(dynamic_cast<ConfigEnum*>(opt)->valueRef())));
+        break;
+      case ConfigOption::O_Int:
+        m_children.push_back(std::make_unique<DocWord>(m_parser,this,*(dynamic_cast<ConfigInt*>(opt)->valueStringRef())));
+        break;
+      case ConfigOption::O_List:
+        {
+          StringVector *lst = dynamic_cast<ConfigList*>(opt)->valueRef();
+          if (!lst->empty())
+          {
+            std::string lstFormat = theTranslator->trWriteList(lst->size()).str();
+            static const reg::Ex marker(R"(@(\d+))");
+            reg::Iterator it(lstFormat,marker);
+            reg::Iterator end;
+            size_t index=0;
+            QCString newList;
+            // now replace all markers with the real text
+            for ( ; it!=end ; ++it)
+            {
+              const auto &match = *it;
+              size_t newIndex = match.position();
+              size_t matchLen = match.length();
+              newList += lstFormat.substr(index,newIndex-index);
+              unsigned long entryIndex = std::stoul(match[1].str());
+              if (entryIndex<(unsigned long)lst->size())
+              {
+                newList += lst->at(entryIndex);
+              }
+              index=newIndex+matchLen;
+            }
+            m_children.push_back(std::make_unique<DocWord>(m_parser,this,newList));
+          }
+        }
+        break;
+      case ConfigOption::O_Obsolete:
+        warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(), "Obsolete setting for '\\doxysetting': '%s'",
+              qPrint(m_parser.context.token->name));
+        m_children.push_back(std::make_unique<DocWord>(m_parser,this,m_parser.context.token->name + " (obsolete)"));
+        break;
+      case ConfigOption::O_Disabled:
+        warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
+              "Disabled setting (i.e. not supported in this doxygen executable) for '\\doxysetting': '%s'",
+              qPrint(m_parser.context.token->name));
+        m_children.push_back(std::make_unique<DocWord>(m_parser,this,m_parser.context.token->name + " (Disabled)"));
+        break;
+      default:
+        break;
+    }
+  }
+  else
+  {
+    warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(), "Unknown setting for '\\doxysetting': '%s'",
+         qPrint(m_parser.context.token->name));
+    m_children.push_back(std::make_unique<DocWord>(m_parser,this,m_parser.context.token->name));
+  }
+  #if 0
+  m_parser.context.token->sectionId = m_parser.context.token->name;
+  m_children.push_back(
+      std::make_unique<DocCite>(
+        m_parser,this,m_parser.context.token->name,m_parser.context.context));
+
+  #endif
+  m_parser.tokenizer.setStatePara();
+}
+
 void DocPara::handleEmoji()
 {
   // get the argument of the emoji command.
@@ -5876,6 +5979,9 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
       break;
     case CMD_CITE:
       handleCite();
+      break;
+    case CMD_DOXYSETTING:
+      handleDoxySetting();
       break;
     case CMD_EMOJI:
       handleEmoji();

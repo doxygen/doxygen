@@ -236,6 +236,7 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
+DOXYSET   [a-z_A-Z][a-z_A-Z0-9]*
 MAILADDR  ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
 MAILWS    [\t a-z_A-Z0-9+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
@@ -343,6 +344,7 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_Pattern
 %x St_Link
 %x St_Cite
+%x St_DoxySetting
 %x St_Ref
 %x St_Ref2
 %x St_IntRef
@@ -1016,6 +1018,30 @@ LINENR {BLANK}*[1-9][0-9]*
                          return 0;
                        }
 <St_Cite>.             { // any other character
+                         unput(*yytext);
+                         return 0;
+                       }
+<St_DoxySetting>{DOXYSET} { // label to cite
+                         if (yytext[0] =='"')
+                         {
+                           yyextra->token->name=yytext+1;
+                           yyextra->token->name=yyextra->token->name.left(static_cast<uint>(yyleng)-2);
+                         }
+                         else
+                         {
+                           yyextra->token->name=yytext;
+                         }
+                         return TK_WORD;
+                       }
+<St_DoxySetting>{BLANK} { // white space
+                         unput(' ');
+                         return 0;
+                       }
+<St_DoxySetting>(\n|"\\ilinebr")  { // new line
+                         unput_string(yytext,yyleng);
+                         return 0;
+                       }
+<St_DoxySetting>.      { // any other character
                          unput(*yytext);
                          return 0;
                        }
@@ -1818,6 +1844,13 @@ void DocTokenizer::setStateCite()
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   BEGIN(St_Cite);
+}
+
+void DocTokenizer::setStateDoxySetting()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  BEGIN(St_DoxySetting);
 }
 
 void DocTokenizer::setStateRef()

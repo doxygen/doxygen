@@ -143,6 +143,7 @@ enum CommandType
   CMD_MANINCLUDE   = 114,
   CMD_XMLINCLUDE   = 115,
   CMD_ILINE        = 116,
+  CMD_DOXYSETTING  = 117,
 };
 
 enum HtmlTagType
