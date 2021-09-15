@@ -244,10 +244,14 @@ CHAR      (CHARACTER|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 /* The patterns ({NUM_TYPE}{KIND}) and ({NUM_TYPE}({BS}"*"{BS}[0-9]+)?) are inconsistent with Fortran syntax and as such, was removed from TYPE_SPEC */
 TYPE_SPEC ({NUM_TYPE}|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|{CHAR}|TYPE|CLASS|PROCEDURE|ENUMERATOR)
 
-INTENT_SPEC         INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"
 ACCESS_SPEC         (PROTECTED|PRIVATE|PUBLIC)
+INTENT_SPEC         INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"
 
+/* Fortran attributes except BIND and C which are treated separately */
 ATTR_SPEC           (ALLOCATABLE|ASSIGNMENT|ASYNCHRONOUS|ABSTRACT|BIND|CODIMENSION|CONTIGUOUS|DEFERRED|DIMENSION|ELEMENTAL|EXTENDS|EXTERNAL|IMPURE|INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"|INTRINSIC|LOCAL|LOCAL_INIT|NON_INTRINSIC|NON_OVERRIDABLE|NON_RECURSIVE|NOPASS|OPERATOR|OPTIONAL|OVERRIDABLE|PARAMETER|PASS|POINTER|PRIVATE|PROTECTED|PUBLIC|PURE|RECURSIVE|SAVE|SEQUENCE|SHARED|TARGET|VALUE|VOLATILE)
+
+/* attributes that take arguments */
+ATTR_SPEC_WARG      (CODIMENSION|DIMENSION|EXTENDS|OPERATOR|PASS|BIND)
 
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT           {ATTR_SPEC}
@@ -278,7 +282,9 @@ FLOW_END                        (DO|SELECT|WHERE|IF|WHILE|FORALL|CRITICAL|BLOCK|
 
 PREFIX                          ((NON_)?RECURSIVE{BS_}|IMPURE{BS_}|PURE{BS_}|ELEMENTAL{BS_}){0,4}((NON_)?RECURSIVE|IMPURE|PURE|ELEMENTAL)?0
 SUFFIX                          (RESULT{ARGS})
+/* The specified syntax is too generic and does not respect NAME and C as a specifiers. Also "bind" as an attribute takes precedence over its statement format.
 LANGUAGE_BIND_SPEC              BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")"
+*/
 
 /* INTRINSIC_FUNC_ELEMENTAL_IEEE can be merged with INTRINSIC_FUNC_ELEMENTAL when the flex bug gets resolved in the future */
 INTRINSIC_FUNC_ELEMENTAL_IEEE   (IEEE_CLASS|IEEE_COPY_SIGN|IEEE_FMA|IEEE_GET_FLAG|IEEE_GET_HALTING_MODE|IEEE_INT|IEEE_IS_FINITE|IEEE_IS_NAN|IEEE_IS_NEGATIVE|IEEE_IS_NORMAL|IEEE_LOGB|IEEE_MAX_NUM|IEEE_MAX_NUM_MAG|IEEE_MIN_NUM|IEEE_MIN_NUM_MAG|IEEE_NEXT_AFTER|IEEE_NEXT_DOWN|IEEE_NEXT_UP|IEEE_QUIET_EQ|IEEE_QUIET_GE|IEEE_QUIET_GT|IEEE_QUIET_LE|IEEE_QUIET_LT|IEEE_QUIET_NAN|IEEE_QUIET_NE|IEEE_REAL|IEEE_REM|IEEE_RINT|IEEE_SCALB|IEEE_SIGNALING_EQ|IEEE_SIGNALING_GE|IEEE_SIGNALING_GT|IEEE_SIGNALING_LE|IEEE_SIGNALING_LT|IEEE_SIGNALING_NE|IEEE_SIGNBIT|IEEE_UNORDERED|IEEE_VALUE)
@@ -322,7 +328,7 @@ INTRINSIC_MODULE                ({INTRINSIC_MODULE_IEEE}|ISO_C_BINDING|ISO_FORTR
 
 SPECIFIER                       (ACCESS|ACQUIRED_LOCK|ACTION|ADVANCE|ASYNCHRONOUS|BLANK|DECIMAL|DELIM|DIM|DIRECT|ENCODING|EOR|ERR|ERRMSG|EXIST|FILE|FMT|FORM|FORMATTED|ID|IOLENGTH|IOMSG|IOSTAT|KIND|LEN|MOLD|NAME|NAMED|NEW_INDEX|NEWUNIT|NEXTREC|NML|NUMBER|OPENED|PAD|PENDING|POS|POSITION|QUIET|READ|READWRITE|REC|RECL|ROUND|SEQUENTIAL|SIGN|SIZE|SOURCE|STAT|STATUS|STREAM|TEAM|TEAM_NUMBER|UNFORMATTED|UNIT|UNTIL_COUNT|WRITE)
 
-STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ENUM|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|FUNCTION|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|END{BS}SUBMODULE|SUBROUTINE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
+STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|FUNCTION|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|END{BS}SUBMODULE|SUBROUTINE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
 
 /* INTRINSIC_DERIVED_TYPE_IEEE and INTRINSIC_DERIVED_TYPE_CFI can be merged with INTRINSIC_DERIVED_TYPE when the flex bug gets resolved in the future */
 INTRINSIC_DERIVED_TYPE_IEEE     (IEEE_CLASS_TYPE|IEEE_FEATURES_TYPE|IEEE_FLAG_TYPE|IEEE_MODES_TYPE|IEEE_ROUND_TYPE|IEEE_STATUS_TYPE)
@@ -364,7 +370,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                                                     codifyLines(yyscanner,yytext);
                                                                     endFontClass(yyscanner);
                                                                 }
-<*>{BS}[.]*("+"|"-"|"*"|"/"|"<"|">"|"="|"&"){BS}                {   // highlight rule for the operators of Fortran standard.
+<*>{BS}[.]*{BS}("+"|"-"|"*"|"/"|"<"|">"|"="|"&"){BS}            {   // highlight rule for the operators of Fortran standard.
                                                                     if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                                                     startFontClass(yyscanner,"fortran_operator_symbols");
                                                                     codifyLines(yyscanner,yytext);
@@ -382,7 +388,26 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                                                     codifyLines(yyscanner,yytext);
                                                                     endFontClass(yyscanner);
                                                                 }
-<Declaration>{BS}{ATTR_SPEC}[^0-9a-zA-Z]{BS}                    {   // highlight rule for the attributes of Fortran standard.
+<Start>{BS}"bind"/{BS}"("[.]*                       {   // highlight rule for the bind attribute of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_attribute");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Start>{BS}"C"/{BS}(","{BS}"name"{BS}"="{BS}(.)+)("&"|")"){BS}  {   // highlight rule for the bind C attribute of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    startFontClass(yyscanner,"fortran_attribute");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Declaration>{BS}{ATTR_SPEC}/({BS},|{BS_}([a-zA-Z]|"::")){BS}   {   // highlight rule for the attributes of Fortran standard.
+                                                                    if(YY_START == String) YY_FTN_REJECT; // ignore in strings
+                                                                    if (QCString(yytext) == "external") yyextra->isExternal = true;
+                                                                    startFontClass(yyscanner,"fortran_attribute");
+                                                                    codifyLines(yyscanner,yytext);
+                                                                    endFontClass(yyscanner);
+                                                                }
+<Declaration>{BS}{ATTR_SPEC_WARG}/("("[.*]")")?({BS},|{BS_}([a-zA-Z]|"::")){BS}   {   // highlight rule for the attributes that take argument: DIMENSION(:,:).
                                                                     if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                                                     startFontClass(yyscanner,"fortran_attribute");
                                                                     codifyLines(yyscanner,yytext);
@@ -572,76 +597,74 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           endFontClass(yyscanner);
                                         }
  /*-------- fortran module  -----------------------------------------*/
-<Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n {  //
-                                          startScope(yyscanner);
-                                          startFontClass(yyscanner,"fortran_statement");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                          yy_push_state(YY_START,yyscanner);
-                                          BEGIN(ClassName);
-                                          if (!qstricmp(yytext,"module")) yyextra->currentModule="module";
+<Start>("block"{BS}"data"|"program"|"module"|"interface")/{BS_}|({COMMA}{ACCESS_SPEC})|\n { //
+                                            startScope(yyscanner);
+                                            startFontClass(yyscanner,"fortran_statement");
+                                            codifyLines(yyscanner,yytext);
+                                            endFontClass(yyscanner);
+                                            yy_push_state(YY_START,yyscanner);
+                                            BEGIN(ClassName);
+                                            if (!qstricmp(yytext,"module")) yyextra->currentModule="module";
                                         }
-<Start>("enum")/{BS_}|{BS}{COMMA}{BS}{LANGUAGE_BIND_SPEC}|\n {  //
-                                          startScope(yyscanner);
-                                          startFontClass(yyscanner,"fortran_statement");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                          yy_push_state(YY_START,yyscanner);
-                                          BEGIN(ClassName);
+<Start>^{BS}"enum"/{BS}("&"|",")        {   // rule for enum statement
+                                            startScope(yyscanner);
+                                            startFontClass(yyscanner,"fortran_statement");
+                                            codifyLines(yyscanner,yytext);
+                                            endFontClass(yyscanner);
+                                            yy_push_state(YY_START,yyscanner);
+                                            BEGIN(ClassName);
                                         }
-<*>{LANGUAGE_BIND_SPEC}                 {  //
-                                          startFontClass(yyscanner,"fortran_statement");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                        }
-<Start>("type")/{BS_}|({COMMA}({ACCESS_SPEC}|ABSTRACT|EXTENDS))|\n {  //
-                                          startScope(yyscanner);
-                                          startFontClass(yyscanner,"fortran_statement");
-                                          codifyLines(yyscanner,yytext);
-                                          endFontClass(yyscanner);
-                                          yy_push_state(YY_START,yyscanner);
-                                          BEGIN(ClassName);
+<Start>("type")/{BS}[:,]{BS}            {   // rule for type-definition construct. Do NOT put "(" in [:,] as it leads to confusion with variable declaration.
+                                            startScope(yyscanner);
+                                            startFontClass(yyscanner,"fortran_statement");
+                                            codifyLines(yyscanner,yytext);
+                                            endFontClass(yyscanner);
+                                            yy_push_state(YY_START,yyscanner);
+                                            BEGIN(ClassName);
                                         }
 <ClassName>{ID}                         {
-                                          if (yyextra->currentModule == "module")
-                                          {
-                                            yyextra->currentModule=yytext;
-                                            yyextra->currentModule = yyextra->currentModule;//.lower();
-                                          }
-                                          generateLink(yyscanner,*yyextra->code,yytext);
-                                          yy_pop_state(yyscanner);
+                                            if (yyextra->currentModule == "module")
+                                            {
+                                                yyextra->currentModule=yytext;
+                                                yyextra->currentModule = yyextra->currentModule;//.lower();
+                                            }
+                                            generateLink(yyscanner,*yyextra->code,yytext);
+                                            yy_pop_state(yyscanner);
                                         }
-<ClassName>({ACCESS_SPEC}|ABSTRACT|EXTENDS)/[,:( ] { // variable declaration
-                                          startFontClass(yyscanner,"fortran_attribute");
-                                          yyextra->code->codify(QCString(yytext));
-                                          endFontClass(yyscanner);
+<ClassName>{BS}({ATTR_SPEC})/{BS}[,:( ]{BS} { // variable declaration
+                                            if (QCString(yytext) == "external") yyextra->isExternal = true;
+                                            startFontClass(yyscanner,"fortran_attribute");
+                                            yyextra->code->codify(QCString(yytext));
+                                            endFontClass(yyscanner);
                                         }
-<Start>{ACCESS_SPEC}/[,: ]              { // access attribute declaration
-                                          startFontClass(yyscanner,"fortran_attribute");
-                                          yyextra->code->codify(QCString(yytext));
-                                          endFontClass(yyscanner);
+<Start>^{BS}{ACCESS_SPEC}/{BS}[,: ]     {   // access attribute declaration. Highlighting must be "fortran_attribute" as attribute has precedence over statement.
+                                            startFontClass(yyscanner,"fortran_attribute");
+                                            yyextra->code->codify(QCString(yytext));
+                                            endFontClass(yyscanner);
                                         }
-<ClassName>\n                           { // interface may be without name
-                                          yy_pop_state(yyscanner);
-                                          YY_FTN_REJECT;
+<ClassName>\n                           {   // interface may be without name
+                                            yy_pop_state(yyscanner);
+                                            YY_FTN_REJECT;
                                         }
 <Start>^{BS}"end"({BS_}"enum").*        {
-                                          YY_FTN_REJECT;
+                                            YY_FTN_REJECT;
                                         }
 <Start>^{BS}"end"({BS_}"type").*        {
-                                          YY_FTN_REJECT;
+                                            YY_FTN_REJECT;
                                         }
-<Start>^{BS}"end"({BS_}"module").*      { // just reset yyextra->currentModule, rest is done in following rule
-                                          yyextra->currentModule=0;
-                                          YY_FTN_REJECT;
+<Start>^{BS}"end"({BS_}"module").*      {   // just reset yyextra->currentModule, rest is done in following rule
+                                            yyextra->currentModule=0;
+                                            YY_FTN_REJECT;
                                         }
  /*-------- subprog definition -------------------------------------*/
+ /*
 <Start>({PREFIX}{BS_})?{TYPE_SPEC}{BS_}({PREFIX}{BS_})?{BS}/{SUBPROG}{BS_}  {   // TYPE_SPEC is for old function style function result
                                           startFontClass(yyscanner,"fortran_prefix");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
-<Start>({PREFIX}{BS_})?("module"{BS_})?{SUBPROG}{BS_}   {  // Fortran subroutine or function found
+ */
+<Start>("module"{BS_})?{SUBPROG}{BS_}   {  // Fortran subroutine or function found
                                           startFontClass(yyscanner,"fortran_prefix");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -687,7 +710,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           endFontClass(yyscanner);
                                         }
  /*-------- variable declaration ----------------------------------*/
-<Start>{TYPE_SPEC}/[,:( ]               {
+<Start>{TYPE_SPEC}/{BS}[,:( ]           {
                                           QCString typ(yytext);
                                           typ = removeRedundantWhiteSpace(typ.lower());
                                           if (typ.startsWith("real")) YY_FTN_REJECT;
@@ -699,7 +722,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
-<Start>{ATTR_SPEC}                      {
+<Start>^{BS}{ATTR_SPEC}                 { // declare attribute statement. Highlighting must be "fortran_attribute" as attribute has precedence over statement.
                                           if (QCString(yytext) == "external")
                                           {
                                             yy_push_state(YY_START,yyscanner);
@@ -710,7 +733,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                           yyextra->code->codify(QCString(yytext));
                                           endFontClass(yyscanner);
                                         }
-<Declaration>({TYPE_SPEC}|{ATTR_SPEC})/[,:( ] { //| variable declaration
+<Declaration>({TYPE_SPEC})/{BS}[(,: ]   { //| variable declaration
                                           if (QCString(yytext) == "external") yyextra->isExternal = true;
                                           startFontClass(yyscanner,"fortran_statement");
                                           yyextra->code->codify(QCString(yytext));

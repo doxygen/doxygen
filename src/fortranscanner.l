@@ -288,11 +288,18 @@ CHAR      (CHARACTER{ARGS}?|CHARACTER{BS}"*"({BS}[0-9]+|{ARGS}))
 TYPE_SPEC (({NUM_TYPE}({BS}"*"{BS}[0-9]+)?)|({NUM_TYPE}{KIND})|DOUBLE{BS}COMPLEX|DOUBLE{BS}PRECISION|ENUMERATOR|{CHAR}|TYPE{ARGS}|CLASS{ARGS}|PROCEDURE{ARGS}?)
 
 INTENT_SPEC intent{BS}"("{BS}(in|out|in{BS}out){BS}")"
+/*
+ATTR_SPEC           (ALLOCATABLE|ASSIGNMENT|ASYNCHRONOUS|ABSTRACT|CODIMENSION|CONTIGUOUS|DEFERRED|DIMENSION|EXTENDS|EXTERNAL|INTENT{BS}"("{BS}(IN|OUT|IN{BS}OUT){BS}")"|INTRINSIC|LOCAL|LOCAL_INIT|NON_INTRINSIC|NON_OVERRIDABLE|NOPASS|OPERATOR|OPTIONAL|OVERRIDABLE|PARAMETER|PASS{ARGS}?|POINTER|PRIVATE|PROTECTED|PUBLIC|SAVE|SEQUENCE|SHARED|TARGET|VALUE|VOLATILE)
+ */
 ATTR_SPEC (EXTERNAL|ALLOCATABLE|DIMENSION{ARGS}|{INTENT_SPEC}|INTRINSIC|OPTIONAL|PARAMETER|POINTER|PROTECTED|PRIVATE|PUBLIC|SAVE|TARGET|NOPASS|PASS{ARGS}?|DEFERRED|NON_OVERRIDABLE|CONTIGUOUS|VOLATILE|VALUE)
+
 ACCESS_SPEC (PRIVATE|PUBLIC)
+
 LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}((,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})|(,{BS}NAME{BS}"="{BS}"'"(.*)"'"{BS}))?")"
+
 /* Assume that attribute statements are almost the same as attributes. */
 ATTR_STMT {ATTR_SPEC}|DIMENSION|{ACCESS_SPEC}
+
 EXTERNAL_STMT (EXTERNAL)
 
 CONTAINS  CONTAINS
@@ -640,12 +647,14 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                             BEGIN(ModuleBody);
                                         }
 
-  /*------- access specification --------------------------------------------------------------------------*/
+ /*------- access specification --------------------------------------------------------------------------*/
 
-<ModuleBody>private/{BS}(\n|"!")        { yyextra->defaultProtection = Private;
+ /*
+<ModuleBody>private/{BS}("::"|\n|"!")   { yyextra->defaultProtection = Private;
                                           yyextra->current->protection = yyextra->defaultProtection ;
                                         }
-<ModuleBody>public/{BS}(\n|"!")         { yyextra->defaultProtection = Public;
+ */
+<ModuleBody>public/{BS}("::"|\n|"!")    { yyextra->defaultProtection = Public;
                                           yyextra->current->protection = yyextra->defaultProtection ;
                                         }
 
@@ -680,10 +689,12 @@ public                                  {
                                           yyextra->current->protection = Public;
                                           yyextra->typeProtection = Public;
                                         }
+ /*
 private                                 {
                                           yyextra->current->protection = Private;
                                           yyextra->typeProtection = Private;
                                         }
+ */
 {LANGUAGE_BIND_SPEC}                    {
                                           /* ignored for now */
                                         }
@@ -1943,10 +1954,12 @@ SymbolModifiers& SymbolModifiers::operator|=(QCString mdfStringArg)
   {
     newMdf.protection = SymbolModifiers::PUBLIC;
   }
+  /*
   else if (mdfString=="private")
   {
     newMdf.protection = SymbolModifiers::PRIVATE;
   }
+  */
   else if (mdfString=="protected")
   {
     newMdf.protect = TRUE;
@@ -2143,11 +2156,13 @@ static QCString applyModifiers(QCString typeName, const SymbolModifiers& mdfs)
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "public";
   }
+  /*
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
   {
     if (!typeName.isEmpty()) typeName += ", ";
     typeName += "private";
   }
+  */
   if (mdfs.protect)
   {
     if (!typeName.isEmpty()) typeName += ", ";
@@ -2187,8 +2202,10 @@ static void applyModifiers(Entry *ent, const SymbolModifiers& mdfs)
 
   if (mdfs.protection == SymbolModifiers::PUBLIC)
     ent->protection = Public;
+  /*
   else if (mdfs.protection == SymbolModifiers::PRIVATE)
     ent->protection = Private;
+  */
 }
 
 /*! Starts the new scope in fortran program. Consider using this function when
