@@ -328,7 +328,7 @@ INTRINSIC_MODULE                ({INTRINSIC_MODULE_IEEE}|ISO_C_BINDING|ISO_FORTR
 
 SPECIFIER                       (ACCESS|ACQUIRED_LOCK|ACTION|ADVANCE|ASYNCHRONOUS|BLANK|DECIMAL|DELIM|DIM|DIRECT|ENCODING|EOR|ERR|ERRMSG|EXIST|FILE|FMT|FORM|FORMATTED|ID|IOLENGTH|IOMSG|IOSTAT|KIND|LEN|MOLD|NAME|NAMED|NEW_INDEX|NEWUNIT|NEXTREC|NML|NUMBER|OPENED|PAD|PENDING|POS|POSITION|QUIET|READ|READWRITE|REC|RECL|ROUND|SEQUENTIAL|SIGN|SIZE|SOURCE|STAT|STATUS|STREAM|TEAM|TEAM_NUMBER|UNFORMATTED|UNIT|UNTIL_COUNT|WRITE)
 
-STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|FUNCTION|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|END{BS}SUBMODULE|SUBROUTINE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
+STATEMENT                       (ALLOCATE|ASSIGN|BACKSPACE|BLOCK{BS}DATA|CALL|CHANGE{BS}TEAM|CLOSE|COMMON|CONTAINS|CONTINUE|CYCLE|DATA|DEALLOCATE|ENTRY|ERROR{BS}STOP|EQUIVALENCE|EVENT{BS_}POST|EVENT{BS_}WAIT|EXIT|FAIL{BS_}IMAGE|FINAL|FLUSH|FORM{BS_}TEAM|FORMAT|FORMATTED|FUNCTION|GENERIC|GO{BS}TO|INCLUDE|INQUIRE|LOCK|MODULE{BS_}PROCEDURE|NAMELIST|NULLIFY|OPEN|PAUSE|PRINT|PROGRAM|READ|RESULT|RETURN|REWIND|STOP|SUBMODULE|END{BS}SUBMODULE|SUBROUTINE|SYNC{BS_}(ALL|MEMORY|IMAGES|TEAM)|UNFORMATTED|UNLOCK|WAIT|WRITE)
 
 /* INTRINSIC_DERIVED_TYPE_IEEE and INTRINSIC_DERIVED_TYPE_CFI can be merged with INTRINSIC_DERIVED_TYPE when the flex bug gets resolved in the future */
 INTRINSIC_DERIVED_TYPE_IEEE     (IEEE_CLASS_TYPE|IEEE_FEATURES_TYPE|IEEE_FLAG_TYPE|IEEE_MODES_TYPE|IEEE_ROUND_TYPE|IEEE_STATUS_TYPE)
@@ -388,7 +388,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                                                     codifyLines(yyscanner,yytext);
                                                                     endFontClass(yyscanner);
                                                                 }
-<Start>{BS}"bind"/{BS}"("[.]*                       {   // highlight rule for the bind attribute of Fortran standard.
+<Start>{BS}"bind"/{BS}"("[.]*                                   {   // highlight rule for the bind attribute of Fortran standard.
                                                                     if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                                                     startFontClass(yyscanner,"fortran_attribute");
                                                                     codifyLines(yyscanner,yytext);
@@ -431,7 +431,7 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                                                     codifyLines(yyscanner,yytext);
                                                                     endFontClass(yyscanner);
                                                                 }
-<Start,Declaration>{BS}[^%]{SPECIFIER}/{BS}={BS}                {   // highlight rule for Fortran intrinsic specifier (intrinsic procedure argument) names.
+<Start,Declaration>{BS}{SPECIFIER}/{BS}={BS}[a-zA-Z0-9_\.\-\+(\[][a-zA-Z0-9_)(\[\]!%,\.\-\+/=><\t ]*{BS}(")"|"&")  {   // highlight rule for Fortran intrinsic specifier (intrinsic procedure argument) names.
                                                                     // \todo: A specifier must be enclosed with parentheses. This is not currently enforced.
                                                                     startFontClass(yyscanner,"fortran_spcifier");
                                                                     codifyLines(yyscanner,yytext);
