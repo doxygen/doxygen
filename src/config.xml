@@ -2423,7 +2423,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
   https://docs.readthedocs.io with more room for contents,
   but less room for the project logo, title, and description.
 
-  If either \c GENERATOR_TREEVIEW or \c DISABLE_INDEX is set to \c NO, this option
+  If either \c GENERATE_TREEVIEW or \c DISABLE_INDEX is set to \c NO, this option
   has no effect.
 ]]>
       </docs>
