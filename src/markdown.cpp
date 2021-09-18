@@ -2467,7 +2467,7 @@ void Markdown::findEndOfLine(const char *data,int size,
             )
     {
       if (tolower(data[end])=='p' && tolower(data[end+1])=='r' &&
-          tolower(data[end+2])=='e' && data[end+3]=='>') // <pre> tag
+          tolower(data[end+2])=='e' && (data[end+3]=='>' || data[end+3]==' ')) // <pre> tag
       {
         // skip part until including </pre>
         end  = end + processHtmlTagWrite(data+end-1,end-1,size-end+1,false) + 2;
