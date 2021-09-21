@@ -134,6 +134,7 @@ class ConfigList : public ConfigOption
     WidgetType widgetType() const { return m_widgetType; }
     StringVector *valueRef() { return &m_value; }
     StringVector getDefault() { return m_defaultValue; }
+    void emptyValueToDefault() { if (m_value.empty() && !m_defaultValue.empty()) m_value=m_defaultValue; };
     void writeTemplate(TextStream &t,bool sl,bool);
     void compareDoxyfile(TextStream &t);
     void writeXMLDoxyfile(TextStream &t);
