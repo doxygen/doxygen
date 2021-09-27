@@ -61,7 +61,7 @@
 //#define DBG(x) printf x
 
 // debug to stderr
-//#define myprintf(x...) fprintf(stderr,x)
+//#define myprintf(...) fprintf(stderr,__VA_ARGS__)
 //#define DBG(x) myprintf x
 
 #define INTERNAL_ASSERT(x) do {} while(0)
@@ -830,6 +830,7 @@ int DocParser::handleStyleArgument(DocNode *parent,DocNodeList &children,const Q
           { // ignore </li> as the end of a style command
             continue;
           }
+          DBG(("handleStyleArgument(%s) end tok=%s\n",qPrint(saveCmdName), DocTokenizer::tokToString(tok)));
           return tok;
           break;
         default:
@@ -839,7 +840,7 @@ int DocParser::handleStyleArgument(DocNode *parent,DocNodeList &children,const Q
       break;
     }
   }
-  DBG(("handleStyleArgument(%s) end tok=%x\n",qPrint(saveCmdName),tok));
+  DBG(("handleStyleArgument(%s) end tok=%s\n",qPrint(saveCmdName), DocTokenizer::tokToString(tok)));
   return (tok==TK_NEWPARA || tok==TK_LISTITEM || tok==TK_ENDLIST
          ) ? tok : RetVal_OK;
 }
@@ -3089,7 +3090,7 @@ int DocInternal::parse(int level)
     warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"\\internal command found inside internal section");
   }
 
-  DBG(("DocInternal::parse() end: retval=%x\n",retval));
+  DBG(("DocInternal::parse() end: retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval;
 }
 
@@ -3182,7 +3183,7 @@ int DocIndexEntry::parse()
   m_parser.tokenizer.setStatePara();
   m_entry = m_entry.stripWhiteSpace();
 endindexentry:
-  DBG(("DocIndexEntry::parse() end retval=%x\n",retval));
+  DBG(("DocIndexEntry::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval;
 }
 
@@ -4002,7 +4003,7 @@ int DocHtmlListItem::parse()
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DBG(("DocHtmlListItem::parse() end retval=%x\n",retval));
+  DBG(("DocHtmlListItem::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval;
 }
 
@@ -4034,7 +4035,7 @@ int DocHtmlListItem::parseXml()
 
   if (par) par->markLast();
 
-  DBG(("DocHtmlListItem::parseXml() end retval=%x\n",retval));
+  DBG(("DocHtmlListItem::parseXml() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval;
 }
 
@@ -4111,7 +4112,7 @@ int DocHtmlList::parse()
   }
 
 endlist:
-  DBG(("DocHtmlList::parse() end retval=%x\n",retval));
+  DBG(("DocHtmlList::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval==RetVal_EndList ? RetVal_OK : retval;
 }
 
@@ -4172,7 +4173,7 @@ int DocHtmlList::parseXml()
   }
 
 endlist:
-  DBG(("DocHtmlList::parseXml() end retval=%x\n",retval));
+  DBG(("DocHtmlList::parseXml() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval==RetVal_EndList ||
          (retval==RetVal_CloseXml || m_parser.context.token->name=="list") ?
          RetVal_OK : retval;
@@ -4199,7 +4200,7 @@ int DocHtmlBlockQuote::parse()
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DBG(("DocHtmlBlockQuote::parse() end retval=%x\n",retval));
+  DBG(("DocHtmlBlockQuote::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
 }
 
@@ -4224,7 +4225,7 @@ int DocParBlock::parse()
   while (retval==TK_NEWPARA);
   if (par) par->markLast();
 
-  DBG(("DocParBlock::parse() end retval=%x\n",retval));
+  DBG(("DocParBlock::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   return (retval==RetVal_EndBlockQuote) ? RetVal_OK : retval;
 }
 
@@ -4578,8 +4579,8 @@ int DocParamList::parse(const QCString &cmdName)
   {
     if (tok!=TK_NEWPARA) /* empty param description */
     {
-      warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token in comment block while parsing the "
-          "argument of command %s",qPrint(saveCmdName));
+      warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected token %s in comment block while parsing the "
+          "argument of command %s",DocTokenizer::tokToString(tok),qPrint(saveCmdName));
     }
     retval=RetVal_EndParBlock;
     goto endparamlist;
@@ -5936,7 +5937,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
          retval==RetVal_Internal || retval==RetVal_SwitchLang ||
          retval==RetVal_EndInternal
         );
-  DBG(("handleCommand(%s) end retval=%x\n",qPrint(cmdName),retval));
+  DBG(("handleCommand(%s) end retval=%s\n",qPrint(cmdName),DocTokenizer::retvalToString(retval)));
   return retval;
 }
 
@@ -5958,7 +5959,7 @@ static bool findAttribute(const HtmlAttribList &tagHtmlAttribs,
 
 int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &tagHtmlAttribs)
 {
-  DBG(("handleHtmlStartTag(%s,%d)\n",qPrint(tagName),tagHtmlAttribs.count()));
+  DBG(("handleHtmlStartTag(%s,%d)\n",qPrint(tagName),tagHtmlAttribs.size()));
   int retval=RetVal_OK;
   int tagId = Mappers::htmlTagMapper->map(tagName);
   if (m_parser.context.token->emptyTag && !(tagId&XML_CmdMask) &&
@@ -6765,7 +6766,7 @@ reparsetoken:
 
           // handle the command
           retval=handleCommand(m_parser.context.token->name,tok);
-          DBG(("handleCommand returns %x\n",retval));
+          DBG(("handleCommand returns %s\n",DocTokenizer::retvalToString(retval)));
 
           // check the return value
           if (retval==RetVal_SimpleSec)
@@ -6872,14 +6873,14 @@ reparsetoken:
         break;
       default:
         warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),
-            "Found unexpected token (id=%x)\n",tok);
+            "Found unexpected token (id=%s)\n",DocTokenizer::tokToString(tok));
         break;
     }
   }
   retval=0;
 endparagraph:
   m_parser.handlePendingStyleCommands(this,m_children);
-  DBG(("DocPara::parse() end retval=%x\n",retval));
+  DBG(("DocPara::parse() end retval=%s\n",DocTokenizer::retvalToString(retval)));
   const DocNode *n = m_parser.context.nodeStack.top();
   if (!m_parser.context.token->endTag && n->kind()==DocNode::Kind_Para &&
       retval==TK_NEWPARA && m_parser.context.token->name.lower() == "p")
@@ -7013,7 +7014,7 @@ int DocSection::parse()
                   retval==RetVal_EndInternal
                  );
 
-  DBG(("DocSection::parse() end: retval=%x\n",retval));
+  DBG(("DocSection::parse() end: retval=%s\n",DocTokenizer::retvalToString(retval)));
   return retval;
 }
 
