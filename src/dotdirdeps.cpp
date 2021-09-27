@@ -13,19 +13,22 @@
 *
 */
 
-#include <algorithm>
-#include <iterator>
-#include <utility>
-#include <sstream>
-#include <cstdint>
-#include <cmath>
-#include <cassert>
-
 #include "dotdirdeps.h"
 #include "util.h"
 #include "doxygen.h"
 #include "config.h"
 #include "image.h"
+
+#include <algorithm>
+#include <iterator>
+#include <utility>
+#include <cstdint>
+#include <math.h>
+#include <cassert>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 using DirDefMap = std::map<std::string,const DirDef *>;
 
@@ -136,10 +139,11 @@ static std::string getDirectoryBorderStyle(const DotDirProperty &property)
 
 /**
  * Puts DOT code for drawing directory to stream and adds it to the list.
- * @param[in,out] outStream stream to which the DOT code is written to
+ * @param[in,out] t stream to which the DOT code is written to
  * @param[in] directory will be mapped to a node in DOT code
  * @param[in] property are evaluated for formatting
  * @param[in,out] directoriesInGraph lists the directories which have been written to the output stream
+ * @param[in] startLevel current level to calculate relative distances from to determine the background color
  */
 static void drawDirectory(TextStream &t, const DirDef *const directory, const DotDirProperty &property,
     DirDefMap &directoriesInGraph,int startLevel)

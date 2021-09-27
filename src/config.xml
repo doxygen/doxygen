@@ -430,7 +430,6 @@ Go to the <a href="commands.html">next</a> section or return to the
  started.
 ]]>
       </docs>
-      <value name=''/>
     </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
       <docs>
@@ -1394,7 +1393,6 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  \note If this tag is empty the current directory is searched.
 ]]>
       </docs>
-      <value name=''/>
     </option>
     <option type='string' id='INPUT_ENCODING' format='string' defval='UTF-8'>
       <docs>
@@ -2416,14 +2414,16 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='FULL_SIDEBAR' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
-  When both \c GENERATE_TREEVIEW and \c DISABLE_INDEX are set to YES, then the
+  When both \ref cfg_generate_treeview "GENERATE_TREEVIEW" and \ref cfg_disable_index "DISABLE_INDEX"
+  are set to \c YES, then the
   \c FULL_SIDEBAR option determines if the side bar is limited to only the
   treeview area (value \c NO) or if it should extend to the full height of the
   window (value \c YES). Setting this to \c YES gives a layout similar to
   https://docs.readthedocs.io with more room for contents,
   but less room for the project logo, title, and description.
 
-  If either \c GENERATOR_TREEVIEW or \c DISABLE_INDEX is set to \c NO, this option
+  If either \ref cfg_generate_treeview "GENERATE_TREEVIEW" or \ref cfg_disable_index "DISABLE_INDEX"
+  is set to \c NO, this option
   has no effect.
 ]]>
       </docs>

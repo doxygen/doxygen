@@ -1559,32 +1559,17 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // check WARN_FORMAT
   QCString warnFormat = Config_getString(WARN_FORMAT);
-  if (warnFormat.stripWhiteSpace().isEmpty())
+  if (warnFormat.find("$file")==-1)
   {
-    Config_updateString(WARN_FORMAT,"$file:$line $text");
+    warn_uncond("warning format does not contain a $file tag!\n");
   }
-  else
+  if (warnFormat.find("$line")==-1)
   {
-    if (warnFormat.find("$file")==-1)
-    {
-      warn_uncond("warning format does not contain a $file tag!\n");
-    }
-    if (warnFormat.find("$line")==-1)
-    {
-      warn_uncond("warning format does not contain a $line tag!\n");
-    }
-    if (warnFormat.find("$text")==-1)
-    {
-      warn_uncond("warning format foes not contain a $text tag!\n");
-    }
+    warn_uncond("warning format does not contain a $line tag!\n");
   }
-
-  //------------------------
-  // set default man page extension if non is given by the user
-  QCString manExtension = Config_getString(MAN_EXTENSION);
-  if (manExtension.isEmpty())
+  if (warnFormat.find("$text")==-1)
   {
-    Config_updateString(MAN_EXTENSION,".3");
+    warn_uncond("warning format foes not contain a $text tag!\n");
   }
 
   //------------------------
@@ -1602,17 +1587,6 @@ void Config::checkAndCorrect(bool quiet)
     err("Unknown page type '%s' specified\n",qPrint(paperType));
     Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
   }
-
-
-  //------------------------
-  // check & correct HTML_FILE_EXTENSION
-  QCString htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
-  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
-  if (htmlFileExtension.isEmpty())
-  {
-    htmlFileExtension = ".html";
-  }
-  Config_updateString(HTML_FILE_EXTENSION,htmlFileExtension);
 
   //------------------------
   // check & correct STRIP_FROM_PATH
@@ -1839,14 +1813,9 @@ void Config::checkAndCorrect(bool quiet)
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTNAME.\n"
-               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+               "  You may want to clear or change DOT_FONTNAME.\n"
+               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
-  else if (dotFontName.isEmpty())
-  {
-    dotFontName = "Helvetica";
-  }
-  Config_updateString(DOT_FONTNAME,dotFontName);
 
   //------------------------
   // clip number of threads
@@ -1889,12 +1858,8 @@ void Config::checkAndCorrect(bool quiet)
     uint i=0,l=dotPath.length();
     for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
 #endif
+    Config_updateString(DOT_PATH,dotPath);
   }
-  else // make sure the string is empty but not null!
-  {
-    dotPath="";
-  }
-  Config_updateString(DOT_PATH,dotPath);
 
   //------------------------
   // check plantuml path
@@ -1927,8 +1892,8 @@ void Config::checkAndCorrect(bool quiet)
                  qPrint(plantumlJarPath));
       plantumlJarPath="";
     }
+    Config_updateString(PLANTUML_JAR_PATH,plantumlJarPath);
   }
-  Config_updateString(PLANTUML_JAR_PATH,plantumlJarPath);
 
   //------------------------
   // check dia path
@@ -1950,12 +1915,8 @@ void Config::checkAndCorrect(bool quiet)
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }
+    Config_updateString(DIA_PATH,diaPath);
   }
-  else // make sure the string is empty but not null!
-  {
-    diaPath="";
-  }
-  Config_updateString(DIA_PATH,diaPath);
 
   //------------------------
   // check INPUT
@@ -1977,28 +1938,6 @@ void Config::checkAndCorrect(bool quiet)
     }
   }
   Config_updateList(INPUT,inputSources);
-
-  //------------------------
-  // add default file patterns if needed
-  StringVector filePatternList = Config_getList(FILE_PATTERNS);
-  if (filePatternList.empty())
-  {
-    ConfigOption * opt = ConfigImpl::instance()->get("FILE_PATTERNS");
-    if (opt->kind()==ConfigOption::O_List)
-    {
-      filePatternList = ((ConfigList*)opt)->getDefault();
-    }
-  }
-  Config_updateList(FILE_PATTERNS,filePatternList);
-
-  //------------------------
-  // add default pattern if needed
-  StringVector examplePatternList = Config_getList(EXAMPLE_PATTERNS);
-  if (examplePatternList.empty())
-  {
-    examplePatternList.push_back("*");
-    Config_updateList(EXAMPLE_PATTERNS,examplePatternList);
-  }
 
   //------------------------
   // if no output format is enabled, warn the user
@@ -2051,15 +1990,10 @@ void Config::checkAndCorrect(bool quiet)
   }
 
   //------------------------
-  // add default words if needed
-  const StringVector &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
-  if (annotationFromBrief.empty())
+  int depth = Config_getInt(MAX_DOT_GRAPH_DEPTH);
+  if (depth==0)
   {
-    Config_updateList(ABBREVIATE_BRIEF,
-                      { "The $name class", "The $name widget",
-                        "The $name file", "is", "provides", "specifies",
-                        "contains", "represents", "a", "an", "the"
-                      });
+    Config_updateInt(MAX_DOT_GRAPH_DEPTH,1000);
   }
 
   //------------------------
