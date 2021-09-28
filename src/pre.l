@@ -3182,6 +3182,7 @@ static void endCondSection(yyscan_t yyscanner)
   if (state->condStack.empty())
   {
     state->skip=FALSE;
+    warn(state->yyFileName,state->yyLineNr,"the \\endcond does not have a corresponding \\cond in this file");
   }
   else
   {
