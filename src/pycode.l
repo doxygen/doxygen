@@ -289,9 +289,6 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
 %x SuiteCaptureIndent
 %x SuiteStart
 %x SuiteMaintain
-%x SuiteContinuing
-
-%x LongString
 
 %x SingleQuoteString
 %x DoubleQuoteString

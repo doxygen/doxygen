@@ -95,10 +95,6 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 %x	Template
 %x	ReadArgs
 %x	Operator
-%x	FuncPtr
-%x	EndTemplate
-%x	StripTempArgs
-%x	SkipSharp
 %x      ReadExceptions
 
 %%

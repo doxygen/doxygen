@@ -208,7 +208,6 @@ STARTDOCSYMS      "##"
 
   /* %x FuncDoubleComment */
   /* %x ClassDoubleComment */
-%x TryClassDocString
 %x TripleComment
 %x SpecialComment
 

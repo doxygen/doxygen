@@ -327,7 +327,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
  /** comment parsing states */
 %x      DocBlock
 %x      DocBackLine
-%x      EndDoc
 
 %x      BlockData
 

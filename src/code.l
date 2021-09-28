@@ -349,7 +349,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 %x      SkipComment
 %x      SkipCxxComment
 %x      RemoveSpecialCComment
-%x      StripSpecialCComment
 %x      Body
 %x      FuncCall
 %x      MemberCall
