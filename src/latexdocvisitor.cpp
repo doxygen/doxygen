@@ -43,6 +43,8 @@ const int maxLevels=5;
 static const char *secLabels[maxLevels] =
    { "doxysection","doxysubsection","doxysubsubsection","doxyparagraph","doxysubparagraph" };
 
+LatexListItemInfo latex_listItemInfo[latex_maxIndentLevels];
+
 static const char *getSectionName(int level)
 {
   static bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -180,7 +182,7 @@ LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
                                  const QCString &langExt,bool insideTabbing)
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE),
     m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
-    m_langExt(langExt)
+    m_indentLevel(1), m_langExt(langExt)
 {
 }
 
@@ -668,9 +670,11 @@ void LatexDocVisitor::visitPre(DocAutoList *l)
   if (l->isEnumList())
   {
     m_t << "\n\\begin{DoxyEnumerate}";
+    latex_listItemInfo[m_indentLevel].isEnum = true;
   }
   else
   {
+    latex_listItemInfo[m_indentLevel].isEnum = false;
     m_t << "\n\\begin{DoxyItemize}";
   }
 }
@@ -692,10 +696,12 @@ void LatexDocVisitor::visitPre(DocAutoListItem *)
 {
   if (m_hide) return;
   m_t << "\n\\item ";
+  incIndentLevel();
 }
 
 void LatexDocVisitor::visitPost(DocAutoListItem *)
 {
+  decIndentLevel();
 }
 
 void LatexDocVisitor::visitPre(DocPara *)
@@ -712,12 +718,14 @@ void LatexDocVisitor::visitPost(DocPara *p)
      ) m_t << "\n\n";
 }
 
-void LatexDocVisitor::visitPre(DocRoot *)
+void LatexDocVisitor::visitPre(DocRoot *r)
 {
+  //if (r->indent()) incIndentLevel();
 }
 
-void LatexDocVisitor::visitPost(DocRoot *)
+void LatexDocVisitor::visitPost(DocRoot *r)
 {
+  //if (r->indent()) decIndentLevel();
 }
 
 void LatexDocVisitor::visitPre(DocSimpleSect *s)
@@ -797,6 +805,7 @@ void LatexDocVisitor::visitPre(DocSimpleSect *s)
   // special case 1: user defined title
   if (s->type()!=DocSimpleSect::User && s->type()!=DocSimpleSect::Rcs)
   {
+    incIndentLevel();
     m_t << "}\n";
   }
   else
@@ -864,6 +873,7 @@ void LatexDocVisitor::visitPost(DocSimpleSect *s)
     default:
       break;
   }
+  decIndentLevel();
 }
 
 void LatexDocVisitor::visitPre(DocTitle *)
@@ -881,6 +891,7 @@ void LatexDocVisitor::visitPre(DocSimpleList *)
 {
   if (m_hide) return;
   m_t << "\\begin{DoxyItemize}\n";
+  latex_listItemInfo[m_indentLevel].isEnum = false;
 }
 
 void LatexDocVisitor::visitPost(DocSimpleList *)
@@ -893,10 +904,12 @@ void LatexDocVisitor::visitPre(DocSimpleListItem *)
 {
   if (m_hide) return;
   m_t << "\\item ";
+  incIndentLevel();
 }
 
 void LatexDocVisitor::visitPost(DocSimpleListItem *)
 {
+  decIndentLevel();
 }
 
 void LatexDocVisitor::visitPre(DocSection *s)
@@ -918,6 +931,7 @@ void LatexDocVisitor::visitPost(DocSection *)
 void LatexDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
+  latex_listItemInfo[m_indentLevel].isEnum = s->type()==DocHtmlList::Ordered;
   if (s->type()==DocHtmlList::Ordered)
   {
     bool first = true;
@@ -960,7 +974,9 @@ void LatexDocVisitor::visitPre(DocHtmlList *s)
       else if (opt.name=="start")
       {
         m_t << (first ?  "[": ",");
-        m_t << "start=" << opt.value;
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok) m_t << "start=" << opt.value;
         first = false;
       }
     }
@@ -979,14 +995,31 @@ void LatexDocVisitor::visitPost(DocHtmlList *s)
     m_t << "\n\\end{DoxyItemize}";
 }
 
-void LatexDocVisitor::visitPre(DocHtmlListItem *)
+void LatexDocVisitor::visitPre(DocHtmlListItem *l)
 {
   if (m_hide) return;
+  if (latex_listItemInfo[m_indentLevel].isEnum)
+  {
+    for (const auto &opt : l->attribs())
+    {
+      if (opt.name=="value")
+      {
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok)
+        {
+          m_t << "\n\\setcounter{enum"<< integerToRoman(m_indentLevel,false).data() << "}{" << val - 1 << "}";
+        }
+      }
+    }
+  }
   m_t << "\n\\item ";
+  incIndentLevel();
 }
 
 void LatexDocVisitor::visitPost(DocHtmlListItem *)
 {
+  decIndentLevel();
 }
 
 //void LatexDocVisitor::visitPre(DocHtmlPre *)
@@ -1077,10 +1110,12 @@ void LatexDocVisitor::visitPost(DocHtmlDescTitle *)
 
 void LatexDocVisitor::visitPre(DocHtmlDescData *)
 {
+  incIndentLevel();
 }
 
 void LatexDocVisitor::visitPost(DocHtmlDescData *)
 {
+  decIndentLevel();
 }
 
 static bool tableIsNested(const DocNode *n)
@@ -1577,11 +1612,13 @@ void LatexDocVisitor::visitPre(DocSecRefList *)
   m_t << "\\footnotesize\n";
   m_t << "\\begin{multicols}{2}\n";
   m_t << "\\begin{DoxyCompactList}\n";
+  incIndentLevel();
 }
 
 void LatexDocVisitor::visitPost(DocSecRefList *)
 {
   if (m_hide) return;
+  decIndentLevel();
   m_t << "\\end{DoxyCompactList}\n";
   m_t << "\\end{multicols}\n";
   m_t << "\\normalsize\n";
@@ -1616,6 +1653,7 @@ void LatexDocVisitor::visitPre(DocParamSect *s)
       break;
     default:
       ASSERT(0);
+      incIndentLevel();
   }
   m_t << "}\n";
 }
@@ -1640,6 +1678,7 @@ void LatexDocVisitor::visitPost(DocParamSect *s)
       break;
     default:
       ASSERT(0);
+      decIndentLevel();
   }
 }
 
@@ -1752,6 +1791,7 @@ void LatexDocVisitor::visitPre(DocXRefItem *x)
   static bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   if (m_hide) return;
   if (x->title().isEmpty()) return;
+  incIndentLevel();
   m_t << "\\begin{DoxyRefDesc}{";
   filter(x->title());
   m_t << "}\n";
@@ -1779,6 +1819,7 @@ void LatexDocVisitor::visitPost(DocXRefItem *x)
 {
   if (m_hide) return;
   if (x->title().isEmpty()) return;
+  decIndentLevel();
   m_t << "\\end{DoxyRefDesc}\n";
 }
 
@@ -1806,12 +1847,14 @@ void LatexDocVisitor::visitPre(DocHtmlBlockQuote *)
 {
   if (m_hide) return;
   m_t << "\\begin{quote}\n";
+  incIndentLevel();
 }
 
 void LatexDocVisitor::visitPost(DocHtmlBlockQuote *)
 {
   if (m_hide) return;
   m_t << "\\end{quote}\n";
+  decIndentLevel();
 }
 
 void LatexDocVisitor::visitPre(DocVhdlFlow *)

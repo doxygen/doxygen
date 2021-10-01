@@ -170,6 +170,7 @@ class RTFDocVisitor : public DocVisitor
     int m_indentLevel;
     bool m_lastIsPara;
     QCString m_langExt;
+    int m_extra = 0;;
 };
 
 #endif

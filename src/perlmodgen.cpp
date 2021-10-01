@@ -950,7 +950,17 @@ void PerlModDocVisitor::visitPost(DocHtmlList *)
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlListItem *) { openSubBlock(); }
+void PerlModDocVisitor::visitPre(DocHtmlListItem *l)
+{
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="value")
+    {
+      m_output.addFieldQuotedString("item_value", qPrint(opt.value));
+    }
+  }
+  openSubBlock();
+}
 void PerlModDocVisitor::visitPost(DocHtmlListItem *) { closeSubBlock(); }
 
 //void PerlModDocVisitor::visitPre(DocHtmlPre *)
