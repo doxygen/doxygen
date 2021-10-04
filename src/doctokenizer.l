@@ -266,7 +266,7 @@ INOUT     "in"|"out"|("in"{BLANK}*","?{BLANK}*"out")|("out"{BLANK}*","?{BLANK}*"
 PARAMIO   {CMD}param{BLANK}*"["{BLANK}*{INOUT}{BLANK}*"]"
 VARARGS   "..."
 TEMPCHAR  [a-z_A-Z0-9.,: \t\*\&\(\)\[\]]
-FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\^\*\&\[\]]|{VARARGS}
+FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\n\^\*\&\[\]]|{VARARGS}|"\\ilinebr"
 FUNCPART  {FUNCCHAR}*("("{FUNCCHAR}*")"{FUNCCHAR}*)?
 SCOPESEP  "::"|"#"|"."
 TEMPLPART "<"{TEMPCHAR}*("<"{TEMPCHAR}*("<"{TEMPCHAR}*">")?">")?">"
