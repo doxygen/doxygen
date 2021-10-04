@@ -554,6 +554,7 @@ STopt  [^\n@\\]*
 %x      SkipLang
 %x      CiteLabel
 %x      CopyDoc
+%x      CopyDocExpr
 %x      GuardExpr
 %x      CdataSection
 %x      Noop
@@ -1935,9 +1936,28 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of the copydoc command ------- */
 
+<CopyDoc>"("                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          yyextra->roundCount=1;
+                                          BEGIN(CopyDocExpr);
+                                        }
+<CopyDocExpr>[^()]*                     {
+                                          yyextra->copyDocArg+=yytext;
+                                          lineCount(yyscanner);
+                                        }
+<CopyDocExpr>"("                        {
+                                          yyextra->copyDocArg+=yytext;
+                                          yyextra->roundCount++;
+                                        }
+<CopyDocExpr>")"                        {
+                                          yyextra->copyDocArg+=yytext;
+                                          yyextra->roundCount--;
+                                          if (yyextra->roundCount==0) BEGIN(CopyDoc);
+                                        }
 <CopyDoc><<EOF>>                        |
 <CopyDoc>{DOCNL}                        {
                                           if (*yytext=='\n') yyextra->lineNr++;
+                                          addOutput(yyscanner,yyextra->copyDocArg);
                                           addOutput(yyscanner,'\n');
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner," \\copydetails ");
@@ -1945,13 +1965,11 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
-<CopyDoc>[^\n\\]+                       {
+<CopyDoc>[^\n(\\]+                      {
                                           yyextra->copyDocArg+=yytext;
-                                          addOutput(yyscanner,yytext);
                                         }
 <CopyDoc>.                              {
                                           yyextra->copyDocArg+=yytext;
-                                          addOutput(yyscanner,yytext);
                                         }
 
  /*
