@@ -4592,7 +4592,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"ebdmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
 					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
                                           {
