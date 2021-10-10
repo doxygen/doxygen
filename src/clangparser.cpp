@@ -25,6 +25,7 @@
 //--------------------------------------------------------------------------
 
 static std::mutex g_clangMutex;
+static bool includeCodeFragment = false;
 
 ClangParser *ClangParser::instance()
 {
@@ -486,7 +487,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
 }
 
 
-void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line)
+void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool includeCodeFragment)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
   if (d && d->isLinkable())
@@ -505,7 +506,7 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
       ol.writeLineNumber(md->getReference(),
                          md->getOutputFileBase(),
                          md->anchor(),
-                         line);
+                         line,includeCodeFragment);
     }
     else // link to compound
     {
@@ -513,12 +514,12 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
       ol.writeLineNumber(d->getReference(),
                          d->getOutputFileBase(),
                          d->anchor(),
-                         line);
+                         line,includeCodeFragment);
     }
   }
   else // no link
   {
-    ol.writeLineNumber(QCString(),QCString(),QCString(),line);
+    ol.writeLineNumber(QCString(),QCString(),QCString(),line,includeCodeFragment);
   }
 
   // set search page target
@@ -556,7 +557,7 @@ void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const 
       if (fontClass) ol.endFontClass();
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line);
+      writeLineNumber(ol,fd,line,includeCodeFragment);
       if (fontClass) ol.startFontClass(fontClass);
     }
     else
@@ -598,7 +599,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
       ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line);
+      writeLineNumber(ol,fd,line,includeCodeFragment);
     }
     else
     {
@@ -761,7 +762,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
   unsigned int line=1,column=1;
   QCString lineNumber,lineAnchor;
   ol.startCodeLine(TRUE);
-  writeLineNumber(ol,fd,line);
+  writeLineNumber(ol,fd,line,includeCodeFragment);
   for (unsigned int i=0;i<p->numTokens;i++)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
@@ -773,7 +774,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
       line++;
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line);
+      writeLineNumber(ol,fd,line,includeCodeFragment);
     }
     while (column<c) { ol.codify(" "); column++; }
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);

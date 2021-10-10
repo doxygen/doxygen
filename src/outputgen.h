@@ -96,9 +96,12 @@ class CodeOutputInterface
      *  \param file       The file part of the URL pointing to the docs.
      *  \param anchor     The anchor part of the URL pointing to the docs.
      *  \param lineNumber The line number to write
+     *  \param includeCodeFragment Is it the real source code (false) or is it
+     *                             inline / included source code, in the later
+     *                             case no anchor should be writen.
      */
     virtual void writeLineNumber(const QCString &ref,const QCString &file,
-                                 const QCString &anchor,int lineNumber) = 0;
+                                 const QCString &anchor,int lineNumber, bool includeCodeFragment) = 0;
 
     /*! Writes a tool tip definition
      *  \param id       unique identifier for the tooltip

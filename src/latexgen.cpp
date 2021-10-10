@@ -171,7 +171,7 @@ void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
   m_col+=l;
 }
 
-void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l)
+void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool includeCodeFragment)
 {
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -191,7 +191,7 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".tex"));
     }
-    bool showTarget = usePDFLatex && pdfHyperlinks && !lineAnchor.isEmpty();
+    bool showTarget = usePDFLatex && pdfHyperlinks && !lineAnchor.isEmpty() && !includeCodeFragment;
     if (showTarget)
     {
       m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";

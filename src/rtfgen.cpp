@@ -1131,7 +1131,7 @@ void RTFGenerator::writeStartAnnoItem(const QCString &,const QCString &f,
   if (!f.isEmpty() && Config_getBool(RTF_HYPERLINKS))
   {
     m_t << "{\\field {\\*\\fldinst { HYPERLINK  \\\\l \"";
-    m_t << rtfFormatBmkStr(f);
+    m_t << rtfFormatBmkStr(stripPath(f));
     m_t << "\" }{}";
     m_t << "}{\\fldrslt {\\cs37\\ul\\cf2 ";
 
@@ -1236,7 +1236,7 @@ void RTFGenerator::startTextLink(const QCString &f,const QCString &anchor)
     QCString ref;
     if (!f.isEmpty())
     {
-      ref+=f;
+      ref+=stripPath(f);
     }
     if (!anchor.isEmpty())
     {
@@ -1267,7 +1267,7 @@ void RTFGenerator::writeObjectLink(const QCString &ref, const QCString &f,
     QCString refName;
     if (!f.isEmpty())
     {
-      refName+=f;
+      refName+=stripPath(f);
     }
     if (!anchor.isEmpty())
     {
@@ -1325,7 +1325,7 @@ void RTFGenerator::writeCodeLink(CodeSymbolType,
     QCString refName;
     if (!f.isEmpty())
     {
-      refName+=f;
+      refName+=stripPath(f);
     }
     if (!anchor.isEmpty())
     {
@@ -1458,7 +1458,7 @@ void RTFGenerator::endDoxyAnchor(const QCString &fName,const QCString &anchor)
   QCString ref;
   if (!fName.isEmpty())
   {
-    ref+=fName;
+    ref+=stripPath(fName);
   }
   if (!anchor.isEmpty())
   {
@@ -1719,7 +1719,7 @@ void RTFGenerator::writeAnchor(const QCString &fileName,const QCString &name)
   QCString anchor;
   if (!fileName.isEmpty())
   {
-    anchor+=fileName;
+    anchor+=stripPath(fileName);
   }
   if (!fileName.isEmpty() && !name.isEmpty())
   {
@@ -1739,7 +1739,7 @@ void RTFGenerator::writeAnchor(const QCString &fileName,const QCString &name)
 void RTFGenerator::writeRTFReference(const QCString &label)
 {
   m_t << "{\\field\\fldedit {\\*\\fldinst PAGEREF ";
-  m_t << rtfFormatBmkStr(label);
+  m_t << rtfFormatBmkStr(stripPath(label));
   m_t << " \\\\*MERGEFORMAT}{\\fldrslt pagenum}}";
 }
 
@@ -2079,7 +2079,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   std::ifstream f(infName.str(),std::ifstream::in);
   if (!f.is_open())
   {
-    err("problems opening rtf file %s for reading\n",infName.data());
+    err("problems opening rtf file '%s' for reading\n",infName.data());
     return false;
   }
 
@@ -2665,7 +2665,7 @@ void RTFGenerator::endInlineMemberDoc()
   m_t << "\\cell }{\\row }\n";
 }
 
-void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l)
+void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool includeCodeFragment)
 {
   bool rtfHyperlinks = Config_getBool(RTF_HYPERLINKS);
 
@@ -2679,9 +2679,9 @@ void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
     if (!m_sourceFileName.isEmpty())
     {
       lineAnchor.sprintf("_l%05d",l);
-      lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".rtf"));
+      lineAnchor.prepend(stripExtensionGeneral(stripPath(m_sourceFileName), ".rtf"));
     }
-    bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty();
+    bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty() && !includeCodeFragment;
     if (showTarget)
     {
         m_t << "{\\bkmkstart ";

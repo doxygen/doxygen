@@ -325,7 +325,7 @@ void XMLCodeGenerator::writeCodeAnchor(const QCString &)
   XML_DB(("(writeCodeAnchor)\n"));
 }
 void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &compId,
-                     const QCString &anchorId,int l)
+                     const QCString &anchorId,int l,bool includeCodeFragment)
 {
   XML_DB(("(writeLineNumber)\n"));
   // we remember the information provided here to use it

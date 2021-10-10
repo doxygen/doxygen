@@ -127,7 +127,7 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const QCString &fileName,const QCString &name);
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l);
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
     void startCodeLine(bool);
     void endCodeLine();
     void startEmphasis() { m_t << "{\\i ";  }

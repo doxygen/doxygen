@@ -402,7 +402,7 @@ void RTFDocVisitor::visit(DocAnchor *anc)
   QCString anchor;
   if (!anc->file().isEmpty())
   {
-    anchor+=anc->file();
+    anchor+=stripPath(anc->file());
   }
   if (!anc->file().isEmpty() && !anc->anchor().isEmpty())
   {
@@ -860,8 +860,8 @@ void RTFDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocSection)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
-  m_t << "{\\bkmkstart " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}\n";
-  m_t << "{\\bkmkend " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}\n";
+  m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(s->file())+"_"+s->anchor()) << "}\n";
+  m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(s->file())+"_"+s->anchor()) << "}\n";
   m_t << "{{" // start section
       << rtf_Style_Reset;
   QCString heading;
@@ -1624,7 +1624,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
     QCString refName;
     if (!x->file().isEmpty())
     {
-      refName+=x->file();
+      refName+=stripPath(x->file());
     }
     if (!x->file().isEmpty() && !x->anchor().isEmpty())
     {
@@ -1798,7 +1798,7 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
     QCString refName;
     if (!file.isEmpty())
     {
-      refName+=file;
+      refName+=stripPath(file);
     }
     if (!file.isEmpty() && !anchor.isEmpty())
     {
