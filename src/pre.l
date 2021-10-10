@@ -77,9 +77,9 @@ typedef yyguts_t *yyscan_t;
 static const char *stateToString(int state);
 #endif
 
-struct CondCtx
+struct preYY_CondCtx
 {
-  CondCtx(int line,QCString id,bool b)
+  preYY_CondCtx(int line,QCString id,bool b)
     : lineNr(line),sectionId(id), skip(b) {}
   int lineNr;
   QCString sectionId;
@@ -302,7 +302,7 @@ struct preYY_state
   StringVector                             pathList;
   IntMap                                   argMap;
   BoolStack                                levelGuard;
-  std::stack< std::unique_ptr<CondCtx> >   condStack;
+  std::stack< std::unique_ptr<preYY_CondCtx> >   condStack;
   std::deque< std::unique_ptr<FileState> > includeStack;
   std::unordered_map<std::string,Define*>  expandedDict;
   StringUnorderedSet                       expanded;
@@ -3168,7 +3168,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",state->skip,state->condStack.size());
   CondParser prs;
   bool expResult = prs.parse(state->yyFileName.data(),state->yyLineNr,sectId.data());
-  state->condStack.emplace(std::make_unique<CondCtx>(state->yyLineNr,sectId,state->skip));
+  state->condStack.emplace(std::make_unique<preYY_CondCtx>(state->yyLineNr,sectId,state->skip));
   if (!expResult)
   {
     state->skip=TRUE;
@@ -3185,7 +3185,7 @@ static void endCondSection(yyscan_t yyscanner)
   }
   else
   {
-    const std::unique_ptr<CondCtx> &ctx = state->condStack.top();
+    const std::unique_ptr<preYY_CondCtx> &ctx = state->condStack.top();
     state->skip=ctx->skip;
     state->condStack.pop();
   }
@@ -3532,7 +3532,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 
   while (!state->condStack.empty())
   {
-    const std::unique_ptr<CondCtx> &ctx = state->condStack.top();
+    const std::unique_ptr<preYY_CondCtx> &ctx = state->condStack.top();
     QCString sectionInfo = " ";
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",qPrint(ctx->sectionId.stripWhiteSpace()));
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "
