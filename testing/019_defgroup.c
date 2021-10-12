@@ -46,3 +46,35 @@ void func_g3_add();
 
 /** \} */
 
+// check: group___a.xml
+// check: group___b.xml
+// check: group___c.xml
+// check: group___d.xml
+
+/**
+  @defgroup A A
+  @{
+ */
+
+/** @defgroup B B
+   @{
+ */
+
+/// \}
+
+/** @defgroup C C
+   @{
+ */
+
+/** @} */
+
+/**
+  @defgroup D D
+  @{
+ */
+
+/// @}
+
+/**
+@}
+*/
