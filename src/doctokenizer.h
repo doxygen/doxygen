@@ -126,6 +126,7 @@ class DocTokenizer
 
     // helper functions
     static const char *tokToString(int token);
+    static const char *retvalToString(int retval);
 
     void setLineNr(int lineno);
     int getLineNr(void);
