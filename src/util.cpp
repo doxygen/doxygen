@@ -1204,17 +1204,20 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
       if (!first) result+=", ";
       if (!a.name.isEmpty()) // add template argument name
       {
+        int offset = 0;
         if (a.type.left(4)=="out") // C# covariance
         {
           result+="out ";
+          offset = 4;
         }
         else if (a.type.left(3)=="in") // C# contravariance
         {
           result+="in ";
+          offset = 3;
         }
         if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
         {
-          result+=a.type+" ";
+          result+=a.type.mid(offset)+" ";
         }
         result+=a.name;
       }
