@@ -91,11 +91,12 @@ B       [ \t]
 Bopt    {B}*
 ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
-%x      Start
+%x  Start
 %x	Template
 %x	ReadArgs
 %x	Operator
-%x      ReadExceptions
+%x	DeclType
+%x  ReadExceptions
 
 %%
 
@@ -159,10 +160,28 @@ ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*")"			{
   				  yyextra->type+=")";
   				}
+<Start>{B}*"decltype"/{B}*"("	{
+					  yyextra->roundCount=0;
+					  yyextra->type="decltype";
+					  BEGIN(DeclType);
+					}
+<DeclType>{B}*"("	{
+						++yyextra->roundCount;
+						yyextra->type+="(";
+					}
+<DeclType>{B}*")"	{
+						yyextra->type+=")";
+						if (--yyextra->roundCount == 0) {
+							BEGIN(Start);
+						}
+					}
+<DeclType>.	{
+						yyextra->type+=yytext;
+					}
 <Start>{B}*"("			{ // TODO: function pointers
-  				  yyextra->args+="(";
-  				  BEGIN(ReadArgs);
-  				}
+						yyextra->args+="(";
+						BEGIN(ReadArgs);
+					}
 <Start>{B}*"["			{
   				  yyextra->args+="[";
 				  BEGIN(ReadArgs);
@@ -361,7 +380,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   a=removeRedundantWhiteSpace(yyextra->args);
   exc=removeRedundantWhiteSpace(yyextra->exceptionString);
   
-  if (!t.isEmpty() && t.at(t.length()-1)==')') // for function pointers
+  if (!t.isEmpty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
   {
     a.prepend(")");
     t=t.left(t.length()-1);
