@@ -26,6 +26,8 @@
  * VERSION HISTORY
  * ---------------
  * History:
+ * 20211003:
+ *  - Updated to 1.9.3;
  * 20200112:
  * 	- Updated to 1.9.1;
  * 20190203:
@@ -63,7 +65,7 @@
 #define TRANSLATOR_PT_H
 
 
-class TranslatorPortuguese : public TranslatorAdapter_1_9_2
+class TranslatorPortuguese : public Translator
 {
   public:
 
@@ -2285,6 +2287,52 @@ class TranslatorPortuguese : public TranslatorAdapter_1_9_2
 	{
 	    return "Documentação da Unidade de Projeto";
     }
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// new since 1.9.2
+	//////////////////////////////////////////////////////////////////////////
+	/** C++20 concept */
+	virtual QCString trConcept(bool first_capital, bool singular)
+	{
+	  QCString result((first_capital ? "Conceito" : "conceito"));
+	  if (!singular) result+="s";
+	  return result;
+	}
+	/*! used as the title of the HTML page of a C++20 concept page */
+	virtual QCString trConceptReference(const QCString &conceptName)
+	{
+	  QCString result= "Referência do Conceito ";
+	  result+=conceptName;
+	  return result;
+	}
+
+	/*! used as the title of page containing all the index of all concepts. */
+	virtual QCString trConceptList()
+	{ return "Lista de Conceitos"; }
+
+	/*! used as the title of chapter containing the index listing all concepts. */
+	virtual QCString trConceptIndex()
+	{ return "Índice de Conceitos"; }
+
+	/*! used as the title of chapter containing all information about concepts. */
+	virtual QCString trConceptDocumentation()
+	{ return "Documentação do Conceito"; }
+
+	/*! used as an introduction to the concept list */
+	virtual QCString trConceptListDescription(bool extractAll)
+	{
+	  QCString result="Esta é a lista de todos os conceitos ";
+	  if (!extractAll) result+="documentados ";
+	  result+="com suas respectivas descrições:";
+	  return result;
+	}
+
+	/*! used to introduce the definition of the C++20 concept */
+	virtual QCString trConceptDefinition()
+	{
+	  return "Definição de conceito";
+	}
 };
 
 #endif
