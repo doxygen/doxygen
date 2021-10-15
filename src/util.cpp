@@ -4793,10 +4793,6 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     pd->setRefItems(sli);
     newPage = false;
   }
-  else if (pd) // we are from a tag file
-  {
-    Doxygen::pageLinkedMap->del(name);
-  }
 
   if (newPage) // new page
   {
@@ -4807,9 +4803,21 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
 
     //printf("Appending page '%s'\n",qPrint(baseName));
-    pd = Doxygen::pageLinkedMap->add(baseName,
-        std::unique_ptr<PageDef>(
-           createPageDef(fileName,docLine,baseName,doc,title)));
+    if (pd) // replace existing page
+    {
+      pd->setDocumentation(doc,fileName,docLine);
+      pd->setFileName(::convertNameToFile(baseName,FALSE,TRUE));
+      pd->setShowLineNo(FALSE);
+      pd->setNestingLevel(0);
+      pd->setPageScope(0);
+      pd->setTitle(title);
+    }
+    else // newPage
+    {
+      pd = Doxygen::pageLinkedMap->add(baseName,
+          std::unique_ptr<PageDef>(
+             createPageDef(fileName,docLine,baseName,doc,title)));
+    }
     pd->setBodySegment(startLine,startLine,-1);
 
     pd->setRefItems(sli);
