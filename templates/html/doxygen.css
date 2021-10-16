@@ -519,6 +519,139 @@ span.vhdllogic {
 	color: #ff0000 
 }
 
+/* Begin Fortran Code Colorization */
+
+span.fortran_keywordflow {
+    /* dull orange
+	color: #e08000
+	color: #FF6600 bright orange
+    */
+	color: #ff8000
+}
+
+span.fortran_statement {
+    /* deep blue */
+	color: #0000EE
+}
+
+span.fortran_function {
+    /* purple */
+	color: #8000ff
+}
+
+span.fortran_subroutine {
+    /* purple */
+	color: #8000ff
+}
+
+span.fortran_named_const {
+    /* solid red */
+	color: #FF0000
+}
+
+span.fortran_numeric_literal {
+    /* solid red */
+	color: #FF0000
+}
+
+span.fortran_operator_logical {
+    /* solid red */
+	color: #FF1493
+}
+
+span.fortran_operator_symbols {
+    /* solid red */
+	color: #FF1493
+}
+
+span.fortran_inrinsic_module {
+    /* solid red
+    */
+	color: #FF0000
+    /* deep red
+	color: #9e0202
+    */
+}
+
+span.fortran_inrinsic_dtype {
+    /* solid red
+    */
+	color: #FF0000
+    /* deep red
+	color: #9e0202
+    */
+}
+
+span.fortran_attribute {
+    /* pink */
+	color: #FF1493
+}
+
+span.fortran_spcifier {
+    font-style: italic;
+    /* dark gray */
+	color: #820000
+    /* 
+	color: #4d4d54
+    */
+}
+
+span.fortran_prefix {
+    /* deep blue */
+	color: #0000EE
+}
+
+span.fortran_suffix {
+    /* deep blue */
+	color: #0000EE
+}
+
+span.fortran_string {
+    /* green */
+    /* 
+	color: #008080;
+	color: #00B000;
+    */
+	color: #00B000;
+}
+
+span.fortran_comment {
+    /* green */
+	color: #008000
+}
+
+span.fortran_directive_omp {
+    /* preprocessor color */
+	color: #02b4cc
+}
+
+span.fortran_mpi {
+    /* preprocessor color */
+	color: #A52A2A
+}
+
+span.fortran_directive_intel {
+    /* preprocessor color */
+    /* 
+	color: #806020
+	color: #04D4F0
+	color: #059DC0
+    */
+	color: #02b4cc
+}
+
+span.fortran_directive_intel_statement {
+    /* pink */
+	color: #02b4cc
+}
+
+span.fortran_directive_intel_attribute {
+    /* pink */
+	color: #FF1493
+}
+
+/* End Fortran Code Colorization */
+
 blockquote {
         background-color: ##F8;
         border-left: 2px solid ##AA;
@@ -1200,8 +1333,8 @@ div.ingroups a
 
 div.header
 {
-        background-image:url('nav_h.png');
-        background-repeat:repeat-x;
+    background-image:url('nav_h.png');
+    background-repeat:repeat-x;
 	background-color: ##FA;
 	margin:  0px;
 	border-bottom: 1px solid ##CC;
