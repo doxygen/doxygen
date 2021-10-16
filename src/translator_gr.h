@@ -22,7 +22,7 @@
  * 01 Jan 2009 : Greek maintenance by
  *               Paul Gessos <gessos.paul@gmail.com>
  *
- * 
+ *
  * Δουλεύω με C, C++, Java, PHP και Python. Άλλες γλώσσες (π.χ. VHDL) μου είναι
  * άγνωστες.
  * Αν παρατηρήσετε σφάλματα ΠΑΡΑΚΑΛΩ ΠΟΛΥ επικοινωνήστε μαζί μου.
@@ -48,7 +48,7 @@
 #ifndef TRANSLATOR_GR_H
 #define TRANSLATOR_GR_H
 
-class TranslatorGreek : public TranslatorAdapter_1_9_2
+class TranslatorGreek : public Translator
 {
   public:
 
