@@ -2104,7 +2104,7 @@ static bool preProcessFile(Dir &d,const QCString &infName, TextStream &t, bool b
   {
     line+='\n';
     size_t pos;
-    if ((pos=prevLine.find("INCLUDETEXT"))!=std::string::npos)
+    if ((pos=prevLine.find("INCLUDETEXT \""))!=std::string::npos)
     {
       size_t startNamePos  = prevLine.find('"',pos)+1;
       size_t endNamePos    = prevLine.find('"',startNamePos);
