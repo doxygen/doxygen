@@ -37,7 +37,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void writeCodeLinkLine(CodeSymbolType type,
         const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
-        const QCString &tooltip);
+        const QCString &tooltip, bool);
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                      );
@@ -47,7 +47,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void endFontClass();
     void writeCodeAnchor(const QCString &);
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-        const QCString &anchorId,int l);
+        const QCString &anchorId,int l, bool writeLineAnchor);
     void setCurrentDoc(const Definition *,const QCString &,bool);
     void addWord(const QCString &,bool);
     void finish();
@@ -112,8 +112,8 @@ class DocbookGenerator : public OutputGenerator
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
     { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
                      )

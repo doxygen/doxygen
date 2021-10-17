@@ -126,7 +126,7 @@ class ManGenerator : public OutputGenerator
     void writeAnchor(const QCString &,const QCString &) {}
     void startCodeFragment(const QCString &);
     void endCodeFragment(const QCString &);
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l) { m_t << l << " "; m_col=0; }
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool) { m_t << l << " "; m_col=0; }
     void startCodeLine(bool) {}
     void endCodeLine() { codify("\n"); m_col=0; }
     void startEmphasis() { m_t << "\\fI"; m_firstCol=FALSE; }

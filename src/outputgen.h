@@ -96,9 +96,10 @@ class CodeOutputInterface
      *  \param file       The file part of the URL pointing to the docs.
      *  \param anchor     The anchor part of the URL pointing to the docs.
      *  \param lineNumber The line number to write
+     *  \param writeLineAnchor Indicates if an anchor for the line number needs to be written
      */
     virtual void writeLineNumber(const QCString &ref,const QCString &file,
-                                 const QCString &anchor,int lineNumber) = 0;
+                                 const QCString &anchor,int lineNumber, bool writeLineAnchor) = 0;
 
     /*! Writes a tool tip definition
      *  \param id       unique identifier for the tooltip

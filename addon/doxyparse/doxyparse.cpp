@@ -60,7 +60,7 @@ class Doxyparse : public CodeOutputInterface
     void writeCodeAnchor(const QCString &) override {}
     void startFontClass(const QCString &) override {}
     void endFontClass() override {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}

@@ -168,9 +168,10 @@ void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
 void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
     const QCString &,const QCString &file,
     const QCString &,const QCString &name,
-    const QCString &)
+    const QCString &,bool writeLineAnchor)
 {
   Docbook_DB(("(writeCodeLinkLine)\n"));
+  if (!writeLineAnchor) return;
   m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
   m_t << "_1l";
   writeDocbookString(m_t,name);
@@ -222,7 +223,7 @@ void DocbookCodeGenerator::writeCodeAnchor(const QCString &)
 }
 
 void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
-    const QCString &anchor,int l)
+    const QCString &anchor,int l,bool writeLineAnchor)
 {
   Docbook_DB(("(writeLineNumber)\n"));
   m_insideCodeLine = TRUE;
@@ -233,7 +234,7 @@ void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &f
 
     if (!m_sourceFileName.isEmpty())
     {
-      writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,QCString());
+      writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,QCString(),writeLineAnchor);
     }
     if (!fileName.isEmpty())
     {
