@@ -95,8 +95,8 @@ class HtmlGenerator : public OutputGenerator
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
     { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool includeCodeFragment)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,includeCodeFragment); }
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
                      )

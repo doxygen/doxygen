@@ -2665,7 +2665,7 @@ void RTFGenerator::endInlineMemberDoc()
   m_t << "\\cell }{\\row }\n";
 }
 
-void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool includeCodeFragment)
+void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
 {
   bool rtfHyperlinks = Config_getBool(RTF_HYPERLINKS);
 
@@ -2681,7 +2681,7 @@ void RTFGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(stripPath(m_sourceFileName), ".rtf"));
     }
-    bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty() && !includeCodeFragment;
+    bool showTarget = rtfHyperlinks && !lineAnchor.isEmpty() && writeLineAnchor;
     if (showTarget)
     {
         m_t << "{\\bkmkstart ";

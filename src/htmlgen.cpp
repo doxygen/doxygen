@@ -696,7 +696,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
 }
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
-                                    const QCString &anchor,int l,bool includeCodeFragment)
+                                    const QCString &anchor,int l,bool writeLineAnchor)
 {
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
@@ -710,7 +710,7 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     m_lineOpen = TRUE;
   }
 
-  if (!includeCodeFragment) m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a>";
+  if (writeLineAnchor) m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a>";
   m_t << "<span class=\"lineno\">";
   if (!filename.isEmpty())
   {
