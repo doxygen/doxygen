@@ -247,8 +247,8 @@ class OutputList : public OutputDocInterface
     void endCodeLine()
     { forall(&OutputGenerator::endCodeLine); }
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
-                         int lineNumber)
-    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
+                         int lineNumber, bool includeCodeFragment)
+    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber,includeCodeFragment); }
     void startEmphasis()
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis()

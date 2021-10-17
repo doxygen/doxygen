@@ -38,7 +38,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void endFontClass() override;
     void writeCodeAnchor(const QCString &) override;
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-                         const QCString &anchorId,int l) override;
+                         const QCString &anchorId,int l,bool includeCodeFragment) override;
     void setCurrentDoc(const Definition *,const QCString &,bool) override {}
     void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &) override;
