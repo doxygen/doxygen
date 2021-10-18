@@ -206,13 +206,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 %x ParseComponent
 %x ParsePackage
 %x ParseProcessProto
-%x ClassName
-%x PackageName
-%x ClassVar
 %x ClassesName
 %x Map
 %x End
-%x Body
 
 %%
 

@@ -91,16 +91,12 @@ B       [ \t]
 Bopt    {B}*
 ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
-%x      Start
+%x  Start
 %x	Template
 %x	ReadArgs
 %x	Operator
 %x	DeclType
-%x	FuncPtr
-%x	EndTemplate
-%x	StripTempArgs
-%x	SkipSharp
-%x      ReadExceptions
+%x  ReadExceptions
 
 %%
 

@@ -390,8 +390,6 @@ WSopt [ \t\r]*
 %x      DefineArg
 %x      DefineText
 %x      SkipCPPBlock
-%x      Ifdef
-%x      Ifndef
 %x      SkipCComment
 %x      ArgCopyCComment
 %x      CopyCComment
