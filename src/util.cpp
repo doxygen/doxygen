@@ -7381,3 +7381,16 @@ QCString integerToRoman(int n, bool upper)
 
   return result;
 }
+
+QCString escapePath(QCString s)
+{
+  if (s.isEmpty()) return s;
+  QCString str = s;
+  str=str.stripWhiteSpace();
+  if (str.at(0)!='"' && str.find(' ')!=-1)
+  {
+    // add quotes around command as it contains spaces and is not quoted already
+    str="\""+str+"\"";
+  }
+  return str;
+}

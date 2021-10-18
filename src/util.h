@@ -430,4 +430,5 @@ FortranFormat convertFileNameFortranParserCode(QCString fn);
 QCString integerToAlpha(int n, bool upper=true);
 QCString integerToRoman(int n, bool upper=true);
 
+QCString escapePath(QCString s);
 #endif
