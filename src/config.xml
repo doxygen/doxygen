@@ -45,8 +45,13 @@ the <code>+=</code> operator can be used instead of <code>=</code> to append
 new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
-as the last character of a line. Environment variables can be expanded
-using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+as the last character of a line.
+
+Environment variables can be expanded using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+A small example:
+\verbatim
+DOT_PATH      = $(YOUR_DOT_PATH)
+\endverbatim
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
