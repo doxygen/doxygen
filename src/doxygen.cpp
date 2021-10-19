@@ -11618,6 +11618,19 @@ void parseInput()
   {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
     Config_updateString(HTML_OUTPUT,htmlOutput);
+
+    // add HTML indexers that are enabled
+    bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
+    bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
+    bool generateQhp         = Config_getBool(GENERATE_QHP);
+    bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
+    bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
+    if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
+    if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
+    if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
+    if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
+    if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
+    Doxygen::indexList->initialize();
   }
 
   QCString docbookOutput;
@@ -12172,19 +12185,6 @@ void generateOutput()
   {
     g_outputList->add<HtmlGenerator>();
     HtmlGenerator::init();
-
-    // add HTML indexers that are enabled
-    bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
-    bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
-    bool generateQhp         = Config_getBool(GENERATE_QHP);
-    bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
-    bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
-    if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
-    if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
-    if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
-    if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
-    if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
-    Doxygen::indexList->initialize();
     HtmlGenerator::writeTabData();
   }
   if (generateLatex)
