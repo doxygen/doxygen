@@ -1476,7 +1476,6 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
       level--;
     }
     if (level <= maxLevel && inLi[level]) ol.writeString("</li>\n");
-    inLi[level]=false;
     ol.writeString("</ul>\n");
     ol.writeString("</div>\n");
     ol.popGeneratorState();
@@ -1531,7 +1530,6 @@ void DefinitionImpl::writeToc(OutputList &ol, const LocalToc &localToc) const
       ol.writeString("</tocdiv>\n");
       level--;
     }
-    inLi[level]=FALSE;
     ol.writeString("    </toc>\n");
     ol.popGeneratorState();
   }

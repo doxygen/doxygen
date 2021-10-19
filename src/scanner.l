@@ -305,7 +305,6 @@ NONLopt [^\n]*
 %x      FindMembersPHP
 %x      FindMemberName
 %x      FindFields
-%x      FindFieldArg
 %x      Function
 %x      FuncRound
 %x      ExcpRound
@@ -330,7 +329,6 @@ NONLopt [^\n]*
 %x      SkipC11Inits
 %x      SkipC11Attribute
 %x      SkipCPP
-%x      SkipCPPBlock
 %x      SkipComment
 %x      SkipCxxComment
 %x      SkipCurlyBlock
@@ -338,7 +336,6 @@ NONLopt [^\n]*
 %x      Sharp
 %x      SkipRound
 %x      SkipSquare
-%x      SkipRemainder
 %x      StaticAssert
 %x      DeclType
 %x      TypedefName
@@ -364,7 +361,6 @@ NONLopt [^\n]*
 %x      ObjCPropAttr
 %x      ObjCSkipStatement
 %x      QtPropType
-%x      QtPropName
 %x      QtPropAttr
 %x      QtPropRead
 %x      QtPropWrite
@@ -399,7 +395,6 @@ NONLopt [^\n]*
 %x      Specialization
 %x      SpecializationSingleQuote
 %x      SpecializationDoubleQuote
-%x      FuncPtrInit
 %x      FuncFunc
 %x      FuncFuncEnd
 %x      FuncFuncType
@@ -2650,7 +2645,7 @@ NONLopt [^\n]*
                                             BEGIN( DocBlock );
                                           }
                                         }
-<DefineEnd,FindFields,FindFieldArg,ReadInitializer,ReadInitializerPtr,OldStyleArgs>{BN}*{DCOMM}"<" {
+<DefineEnd,FindFields,ReadInitializer,ReadInitializerPtr,OldStyleArgs>{BN}*{DCOMM}"<" {
                                           if (yyextra->current->bodyLine==-1)
                                           {
                                             yyextra->current->bodyLine=yyextra->yyLineNr;
@@ -3739,10 +3734,6 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<SkipRemainder>\n                       {
-                                          lineCount(yyscanner);
-                                        }
-<SkipRemainder>[^\n]*
 <FindFields>","                         {
                                           //printf("adding '%s' '%s' '%s' to enum '%s' (mGrpId=%d)\n",
                                           //     qPrint(yyextra->current->type), qPrint(yyextra->current->name),
@@ -3784,9 +3775,6 @@ NONLopt [^\n]*
                                           yyextra->lastSquareContext = YY_START;
                                           BEGIN(SkipSquare);
                                         }
-  /*
-<FindFieldArg>","                       { unput(*yytext); BEGIN(FindFields); }
-  */
 <ReadBody,ReadNSBody,ReadBodyIntf>[^\r\n\#{}"@'/<]*     { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>{CPPC}.*                { yyextra->current->program << yytext ; }
 <ReadBody,ReadNSBody,ReadBodyIntf>"#".* { if (!yyextra->insidePHP)
@@ -4922,45 +4910,6 @@ NONLopt [^\n]*
                                           lineCount(yyscanner);
                                         }
 <CliOverride>.                          {
-                                        }
-<FuncPtrInit>[{;]                       {
-                                          unput(*yytext);
-                                          BEGIN(FuncQual);
-                                        }
-<FuncPtrInit>\"                         {
-                                          yyextra->current->args += *yytext;
-                                          yyextra->pCopyQuotedString=&yyextra->current->args;
-                                          yyextra->lastStringContext=FuncPtrInit;
-                                          BEGIN(CopyString);
-                                        }
-<FuncPtrInit>\'                         {
-                                          yyextra->current->args += *yytext;
-                                          if (yyextra->insidePHP)
-                                          {
-                                            yyextra->pCopyQuotedString=&yyextra->current->args;
-                                            yyextra->lastStringContext=FuncPtrInit;
-                                            BEGIN(CopyPHPString);
-                                          }
-                                        }
-<FuncPtrInit>{CHARLIT}                  {
-                                          if (yyextra->insidePHP)
-                                          {
-                                            REJECT;
-                                          }
-                                          else
-                                          {
-                                            yyextra->current->args += yytext;
-                                          }
-                                        }
-<FuncPtrInit>{ID}                       {
-                                          yyextra->current->args += yytext;
-                                        }
-<FuncPtrInit>.                          {
-                                          yyextra->current->args += *yytext;
-                                        }
-<FuncPtrInit>\n                         {
-                                          yyextra->current->args += *yytext;
-                                          lineCount(yyscanner);
                                         }
 <FuncQual>{ID}                          {
                                           if (yyextra->insideCpp && qstrcmp(yytext,"requires")==0)

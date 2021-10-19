@@ -262,9 +262,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 
 %x Start
 %x SubCall
-%x FuncDef
 %x ClassName
-%x ClassVar
 %x Subprog
 %x DocBlock
 %x Use
@@ -273,7 +271,6 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 %x Declaration
 %x DeclarationBinding
 %x DeclContLine
-%x Parameterlist
 %x String
 %x Subprogend
 
