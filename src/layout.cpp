@@ -122,7 +122,14 @@ LayoutNavEntry *LayoutNavEntry::find(LayoutNavEntry::Kind kind,
   return result;
 }
 
-
+void LayoutNavEntry::adjustVisibility()
+{
+  if (parent()) setVisible(visible() & parent()->visible());
+  for (const auto &entry : m_children)
+  {
+    entry.get()->adjustVisibility();
+  }
+}
 
 QCString LayoutNavEntry::url() const
 {
@@ -247,7 +254,11 @@ class LayoutParser
     {
       m_scope="navindex/";
       m_rootNav = LayoutDocManager::instance().rootNavEntry();
-      if (m_rootNav) m_rootNav->clear();
+      if (m_rootNav)
+      {
+        m_rootNav->clear();
+        m_rootNav->setVisible(true);
+      }
     }
 
     void endNavIndex()
@@ -1564,6 +1575,7 @@ void LayoutDocManager::init()
   layoutParser.setDocumentLocator(&parser);
   QCString layout_default = ResourceMgr::instance().getAsString("layout_default.xml");
   parser.parse("layout_default.xml",layout_default.data(),Debug::isFlagSet(Debug::Lex));
+  d->rootNav->adjustVisibility();
 }
 
 LayoutDocManager::~LayoutDocManager()
@@ -1607,6 +1619,7 @@ void LayoutDocManager::parse(const QCString &fileName)
   XMLParser parser(handlers);
   layoutParser.setDocumentLocator(&parser);
   parser.parse(fileName.data(),fileToString(fileName).data(),Debug::isFlagSet(Debug::Lex));
+  d->rootNav->adjustVisibility();
 }
 
 //---------------------------------------------------------------------------------
