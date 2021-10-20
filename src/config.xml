@@ -1517,7 +1517,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  (namespaces, classes, functions, etc.) that should be excluded from the
  output. The symbol name can be a fully qualified name, a word, or if the
  wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`,
- `AClass::ANamespace`, `ANamespace::*Test`
+ `ANamespace::AClass`, `ANamespace::*Test`
  <br>Note that the wildcards are matched against the file with absolute path,
  so to exclude all test directories use the pattern
  `*``/test/``*`
