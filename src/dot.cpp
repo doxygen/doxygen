@@ -340,14 +340,6 @@ void writeDotImageMapFromFile(TextStream &t,
   QCString imgName = baseName+"."+imgExt;
   QCString absOutFile = QCString(d.absPath())+"/"+mapName;
 
-  DotRunner dotRun(inFile);
-  dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
-  dotRun.preventCleanUp();
-  if (!dotRun.run())
-  {
-    return;
-  }
-
   if (imgExt=="svg") // vector graphics
   {
     QCString svgName = outDir+"/"+baseName+".svg";
@@ -358,6 +350,14 @@ void writeDotImageMapFromFile(TextStream &t,
   }
   else // bitmap graphics
   {
+    DotRunner dotRun(inFile);
+    dotRun.addJob(MAP_CMD,absOutFile,srcFile,srcLine);
+    dotRun.preventCleanUp();
+    if (!dotRun.run())
+    {
+      return;
+    }
+
     TextStream tt;
     t << "<img src=\"" << relPath << imgName << "\" alt=\""
       << imgName << "\" border=\"0\" usemap=\"#" << mapName << "\"/>\n";

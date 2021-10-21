@@ -142,6 +142,7 @@ QCString DotGraph::writeGraph(
 
 bool DotGraph::prepareDotFile()
 {
+  static QCString imgExt = getDotImageExtension();
   if (!m_dir.exists())
   {
     term("Output dir %s does not exist!\n", m_dir.path().c_str());
@@ -158,7 +159,7 @@ bool DotGraph::prepareDotFile()
 
   if (sameMd5Signature(absBaseName(), sigStr) &&
       deliverablesPresent(absImgName(),
-                          m_graphFormat == GOF_BITMAP && m_generateImageMap ? absMapName() : QCString()
+                          m_graphFormat == GOF_BITMAP && m_generateImageMap && imgExt != "svg" ? absMapName() : QCString()
                          )
      )
   {
@@ -183,7 +184,7 @@ bool DotGraph::prepareDotFile()
     // run dot to create a bitmap image
     DotRunner * dotRun = DotManager::instance()->createRunner(absDotName(), sigStr);
     dotRun->addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT), absImgName(), absDotName(), 1);
-    if (m_generateImageMap) dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
+    if (m_generateImageMap &&  imgExt != "svg") dotRun->addJob(MAP_CMD, absMapName(), absDotName(), 1);
   }
   else if (m_graphFormat == GOF_EPS)
   {
