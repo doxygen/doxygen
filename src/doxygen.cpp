@@ -7711,20 +7711,30 @@ static void addToIndices()
     }
   };
 
-  auto addMemberToIndices = [addMemberToSearchIndex](const MemberDef *md)
+  auto getScope = [](const MemberDef *md)
+  {
+    const Definition *scope = 0;
+    if (md->getGroupDef())          scope = md->getGroupDef();
+    else if (md->getClassDef())     scope = md->getClassDef();
+    else if (md->getNamespaceDef()) scope = md->getNamespaceDef();
+    else if (md->getFileDef())      scope = md->getFileDef();
+    return scope;
+  };
+
+  auto addMemberToIndices = [addMemberToSearchIndex,getScope](const MemberDef *md)
   {
     if (md->isLinkableInProject())
     {
       if (!(md->isEnumerate() && md->isAnonymous()))
       {
-        Doxygen::indexList->addIndexItem(md->getOuterScope(),md);
+        Doxygen::indexList->addIndexItem(getScope(md),md);
         addMemberToSearchIndex(md);
       }
       if (md->isEnumerate())
       {
         for (const auto &fmd : md->enumFieldList())
         {
-          Doxygen::indexList->addIndexItem(md->getOuterScope(),fmd);
+          Doxygen::indexList->addIndexItem(getScope(fmd),fmd);
           addMemberToSearchIndex(fmd);
         }
       }
