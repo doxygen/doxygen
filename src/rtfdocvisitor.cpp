@@ -71,12 +71,12 @@ QCString RTFDocVisitor::getStyle(const QCString &name)
 
 void RTFDocVisitor::incIndentLevel()
 {
-  if (m_indentLevel<rtf_maxIndentLevels-1) m_indentLevel++;
+  if (m_indentLevel<rtf_maxIndentLevels-1) m_indentLevel++; else m_extra++;
 }
 
 void RTFDocVisitor::decIndentLevel()
 {
-  if (m_indentLevel>0) m_indentLevel--;
+  if (m_extra) m_extra--; else if (m_indentLevel>0) m_indentLevel--;
 }
 
   //--------------------------------------
@@ -918,7 +918,7 @@ void RTFDocVisitor::visitPost(DocHtmlList *)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPre(DocHtmlListItem *)
+void RTFDocVisitor::visitPre(DocHtmlListItem *l)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlListItem)}\n");
@@ -926,6 +926,15 @@ void RTFDocVisitor::visitPre(DocHtmlListItem *)
   m_t << rtf_Style_Reset;
   if (rtf_listItemInfo[m_indentLevel].isEnum)
   {
+    for (const auto &opt : l->attribs())
+    {
+      if (opt.name=="value")
+      {
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok) rtf_listItemInfo[m_indentLevel].number = val;
+      }
+    }
     m_t << getStyle("ListEnum") << "\n";
     switch (rtf_listItemInfo[m_indentLevel].type)
     {

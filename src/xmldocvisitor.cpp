@@ -731,10 +731,18 @@ void XmlDocVisitor::visitPost(DocHtmlList *s)
     m_t << "</itemizedlist>\n";
 }
 
-void XmlDocVisitor::visitPre(DocHtmlListItem *)
+void XmlDocVisitor::visitPre(DocHtmlListItem *l)
 {
   if (m_hide) return;
-  m_t << "<listitem>\n";
+  m_t << "<listitem";
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="value")
+    {
+      m_t << " " << opt.name << "=\"" << opt.value << "\"";
+    }
+  }
+  m_t << ">\n";
 }
 
 void XmlDocVisitor::visitPost(DocHtmlListItem *)

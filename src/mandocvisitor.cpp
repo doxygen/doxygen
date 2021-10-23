@@ -685,6 +685,15 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   m_t << ".IP \"" << ws;
   if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
   {
+    for (const auto &opt : li->attribs())
+    {
+      if (opt.name=="value")
+      {
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok) man_listItemInfo[m_indent].number = val;
+      }
+    }
     switch (man_listItemInfo[m_indent].type)
     {
       case '1':
