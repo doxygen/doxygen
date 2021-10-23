@@ -474,7 +474,7 @@ WSopt [ \t\r]*
                                             BEGIN(CopyLine);
                                           }
                                         }
-<CopyLine,LexCopyLine>"extern"{BN}{0,80}"\"C\""*{BN}{0,80}"{"   {
+<CopyLine,LexCopyLine>"extern"{BN}*"\""[^\"]+"\""{BN}*("{")?  {
                                           QCString text=yytext;
                                           yyextra->yyLineNr+=text.contains('\n');
                                           outputArray(yyscanner,yytext,yyleng);

@@ -189,7 +189,7 @@ struct scannerYY_state
   bool             odlProp = false;
 
   bool             lexInit = false;
-  bool             externC = false;
+  bool             externLinkage = false;
 
   QCString         delimiter;
 
@@ -2347,7 +2347,7 @@ NONLopt [^\n]*
                                             }
                                             else
                                             {
-                                              yyextra->externC=FALSE; // see bug759247
+                                              yyextra->externLinkage=FALSE; // see bug759247
                                               BEGIN(FindMembers);
                                             }
                                           }
@@ -3471,7 +3471,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->current->args += yytext ;
                                             yyextra->squareCount=1;
-                                            yyextra->externC=FALSE; // see bug759247
+                                            yyextra->externLinkage=FALSE; // see bug759247
                                             BEGIN( Array ) ;
                                           }
                                         }
@@ -6325,14 +6325,14 @@ NONLopt [^\n]*
                                           startCommentBlock(yyscanner,yyextra->current->brief.isEmpty());
                                           BEGIN( DocLine );
                                         }
-<FindMembers>"extern"{BN}*"\"C"("++")?"\""{BN}*("{")?  {
+<FindMembers>"extern"{BN}*"\""[^\"]+"\""{BN}*("{")?  {
                                           lineCount(yyscanner);
-                                          yyextra->externC=TRUE;
+                                          yyextra->externLinkage=TRUE;
                                         }
 <FindMembers>"{"                        {
-                                          if (yyextra->externC)
+                                          if (yyextra->externLinkage)
                                           {
-                                            yyextra->externC=FALSE;
+                                            yyextra->externLinkage=FALSE;
                                           }
                                           else if (yyextra->insideCS &&
                                               !yyextra->current->name.isEmpty() &&
