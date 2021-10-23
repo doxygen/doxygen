@@ -43,8 +43,6 @@ const int maxLevels=5;
 static const char *secLabels[maxLevels] =
    { "doxysection","doxysubsection","doxysubsubsection","doxyparagraph","doxysubparagraph" };
 
-LatexListItemInfo latex_listItemInfo[latex_maxIndentLevels];
-
 static const char *getSectionName(int level)
 {
   static bool compactLatex = Config_getBool(COMPACT_LATEX);
@@ -181,8 +179,8 @@ QCString LatexDocVisitor::escapeMakeIndexChars(const char *s)
 LatexDocVisitor::LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
                                  const QCString &langExt,bool insideTabbing)
   : DocVisitor(DocVisitor_Latex), m_t(t), m_ci(ci), m_insidePre(FALSE),
-    m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE), m_insideTabbing(insideTabbing),
-    m_indentLevel(1), m_langExt(langExt)
+    m_insideItem(FALSE), m_hide(FALSE), m_hideCaption(FALSE),
+    m_insideTabbing(insideTabbing), m_langExt(langExt)
 {
 }
 
@@ -670,11 +668,11 @@ void LatexDocVisitor::visitPre(DocAutoList *l)
   if (l->isEnumList())
   {
     m_t << "\n\\begin{DoxyEnumerate}";
-    latex_listItemInfo[m_indentLevel].isEnum = true;
+    m_listItemInfo[indentLevel()].isEnum = true;
   }
   else
   {
-    latex_listItemInfo[m_indentLevel].isEnum = false;
+    m_listItemInfo[indentLevel()].isEnum = false;
     m_t << "\n\\begin{DoxyItemize}";
   }
 }
@@ -891,7 +889,7 @@ void LatexDocVisitor::visitPre(DocSimpleList *)
 {
   if (m_hide) return;
   m_t << "\\begin{DoxyItemize}\n";
-  latex_listItemInfo[m_indentLevel].isEnum = false;
+  m_listItemInfo[indentLevel()].isEnum = false;
 }
 
 void LatexDocVisitor::visitPost(DocSimpleList *)
@@ -931,7 +929,7 @@ void LatexDocVisitor::visitPost(DocSection *)
 void LatexDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
-  latex_listItemInfo[m_indentLevel].isEnum = s->type()==DocHtmlList::Ordered;
+  m_listItemInfo[indentLevel()].isEnum = s->type()==DocHtmlList::Ordered;
   if (s->type()==DocHtmlList::Ordered)
   {
     bool first = true;
@@ -976,7 +974,7 @@ void LatexDocVisitor::visitPre(DocHtmlList *s)
         m_t << (first ?  "[": ",");
         bool ok;
         int val = opt.value.toInt(&ok);
-        if (ok) m_t << "start=" << opt.value;
+        if (ok) m_t << "start=" << val;
         first = false;
       }
     }
@@ -998,7 +996,7 @@ void LatexDocVisitor::visitPost(DocHtmlList *s)
 void LatexDocVisitor::visitPre(DocHtmlListItem *l)
 {
   if (m_hide) return;
-  if (latex_listItemInfo[m_indentLevel].isEnum)
+  if (m_listItemInfo[indentLevel()].isEnum)
   {
     for (const auto &opt : l->attribs())
     {
@@ -1008,7 +1006,9 @@ void LatexDocVisitor::visitPre(DocHtmlListItem *l)
         int val = opt.value.toInt(&ok);
         if (ok)
         {
-          m_t << "\n\\setcounter{enum"<< integerToRoman(m_indentLevel,false).data() << "}{" << val - 1 << "}";
+          QCString id;
+          id.fill('i',indentLevel()+1);
+          m_t << "\n\\setcounter{DoxyEnumerate" << id << "}{" << (val - 1) << "}";
         }
       }
     }
@@ -2085,5 +2085,23 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
+}
+
+int LatexDocVisitor::indentLevel() const
+{
+  return std::min(m_indentLevel,maxIndentLevels-1);
+}
+
+void LatexDocVisitor::incIndentLevel()
+{
+  m_indentLevel++;
+}
+
+void LatexDocVisitor::decIndentLevel()
+{
+  if (m_indentLevel>0)
+  {
+    m_indentLevel--;
+  }
 }
 

@@ -35,17 +35,6 @@ extern QCString rtf_documentType;
 extern QCString rtf_documentId;
 extern QCString rtf_keywords;
 
-struct RTFListItemInfo
-{
-  bool isEnum;
-  int number;
-  char type;
-};
-
-const int rtf_maxIndentLevels = 13;
-
-extern RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
-
 struct Rtf_Style_Default
 {
   const char *name;

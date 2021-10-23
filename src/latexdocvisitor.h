@@ -25,15 +25,6 @@ class LatexCodeGenerator;
 class TextStream;
 
 
-struct LatexListItemInfo
-{
-  bool isEnum;
-};
-
-const int latex_maxIndentLevels = 5;
-
-extern LatexListItemInfo latex_listItemInfo[latex_maxIndentLevels];
-
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
@@ -186,8 +177,9 @@ class LatexDocVisitor : public DocVisitor
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
 
-    void incIndentLevel() {if (m_indentLevel<latex_maxIndentLevels-1) m_indentLevel++; else m_extra++;}
-    void decIndentLevel() {if (m_extra) {m_extra--;} else if (m_indentLevel>0) m_indentLevel--;}
+    void incIndentLevel();
+    void decIndentLevel();
+    int indentLevel() const;
 
     //--------------------------------------
     // state variables
@@ -200,9 +192,7 @@ class LatexDocVisitor : public DocVisitor
     bool m_hide;
     bool m_hideCaption;
     bool m_insideTabbing;
-    int m_indentLevel;
     QCString m_langExt;
-    int m_extra=0;
 
     struct TableState
     {
@@ -215,6 +205,16 @@ class LatexDocVisitor : public DocVisitor
     };
     std::stack<TableState> m_tableStateStack; // needed for nested tables
     RowSpanList m_emptyRowSpanList;
+
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+
+    struct LatexListItemInfo
+    {
+      bool isEnum = false;
+    };
+
+    LatexListItemInfo m_listItemInfo[maxIndentLevels];
 
     void pushTableState()
     {
