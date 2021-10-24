@@ -1006,9 +1006,7 @@ void LatexDocVisitor::visitPre(DocHtmlListItem *l)
         int val = opt.value.toInt(&ok);
         if (ok)
         {
-          QCString id;
-          id.fill('i',indentLevel()+1);
-          m_t << "\n\\setcounter{DoxyEnumerate" << id << "}{" << (val - 1) << "}";
+          m_t << "\n\\setcounter{DoxyEnumerate" << integerToRoman(indentLevel()+1,false) << "}{" << (val - 1) << "}";
         }
       }
     }
