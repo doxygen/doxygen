@@ -665,6 +665,7 @@ void LatexDocVisitor::visit(DocCite *cite)
 void LatexDocVisitor::visitPre(DocAutoList *l)
 {
   if (m_hide) return;
+  if (m_indentLevel>=maxIndentLevels-1) return;
   if (l->isEnumList())
   {
     m_t << "\n\\begin{DoxyEnumerate}";
@@ -680,6 +681,7 @@ void LatexDocVisitor::visitPre(DocAutoList *l)
 void LatexDocVisitor::visitPost(DocAutoList *l)
 {
   if (m_hide) return;
+  if (m_indentLevel>=maxIndentLevels-1) return;
   if (l->isEnumList())
   {
     m_t << "\n\\end{DoxyEnumerate}";
@@ -929,6 +931,7 @@ void LatexDocVisitor::visitPost(DocSection *)
 void LatexDocVisitor::visitPre(DocHtmlList *s)
 {
   if (m_hide) return;
+  if (m_indentLevel>=maxIndentLevels-1) return;
   m_listItemInfo[indentLevel()].isEnum = s->type()==DocHtmlList::Ordered;
   if (s->type()==DocHtmlList::Ordered)
   {
@@ -987,6 +990,7 @@ void LatexDocVisitor::visitPre(DocHtmlList *s)
 void LatexDocVisitor::visitPost(DocHtmlList *s)
 {
   if (m_hide) return;
+  if (m_indentLevel>=maxIndentLevels-1) return;
   if (s->type()==DocHtmlList::Ordered)
     m_t << "\n\\end{DoxyEnumerate}";
   else
@@ -2095,6 +2099,10 @@ int LatexDocVisitor::indentLevel() const
 void LatexDocVisitor::incIndentLevel()
 {
   m_indentLevel++;
+  if (m_indentLevel>=maxIndentLevels)
+  {
+    err("Maximum indent level (%d) exceeded while generating LaTeX output!\n",maxIndentLevels-1);
+  }
 }
 
 void LatexDocVisitor::decIndentLevel()
