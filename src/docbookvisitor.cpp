@@ -956,21 +956,20 @@ DB_VIS_C
   DocHtmlList *l = (DocHtmlList *)s->parent();
   if (l->type()==DocHtmlList::Ordered)
   {
-    bool isFirst = s->isFirst();
-    QCString value = "";
-    QCString start = "";
-    QCString type = "";
+    bool isFirst = l->children().front().get()==s;
+    int value = 0;
+    QCString type;
     for (const auto &opt : s->attribs())
     {
       if (opt.name=="value")
       {
         bool ok;
         int val = opt.value.toInt(&ok);
-        if (ok) value = opt.value;
+        if (ok) value = val;
       }
     }
 
-    if (!value.isEmpty() || isFirst) 
+    if (value>0 || isFirst)
     {
       for (const auto &opt : l->attribs())
       {
@@ -987,25 +986,24 @@ DB_VIS_C
           else if (opt.value=="I")
             type =  " numeration=\"upperroman\"";
         }
-        else if (opt.name=="start")
+        else if (value==0 && opt.name=="start")
         {
           bool ok;
           int val = opt.value.toInt(&ok);
-          if (ok) start = opt.value;
+          if (ok) value = val;
         }
       }
     }
 
-    if (!value.isEmpty() && !isFirst)
+    if (value>0 && !isFirst)
     {
       m_t << "</orderedlist>\n";
     }
-    if (!value.isEmpty() || isFirst)
+    if (value>0 || isFirst)
     {
       m_t << "<orderedlist";
       if (!type.isEmpty()) m_t << type.data();
-      if (!value.isEmpty()) m_t << " startingnumber=\"" << value.data() << "\"";
-      else if (!start.isEmpty()) m_t << " startingnumber=\"" << start.data() << "\"";
+      if (value>0)         m_t << " startingnumber=\"" << value << "\"";
       m_t << ">\n";
     }
   }

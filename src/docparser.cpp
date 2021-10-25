@@ -4066,7 +4066,7 @@ int DocHtmlList::parse()
             ) // found empty list
     {
       // add dummy item to obtain valid HTML
-      m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1,!m_children.size()));
+      m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1));
       warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"empty list!");
       retval = RetVal_EndList;
       goto endlist;
@@ -4074,7 +4074,7 @@ int DocHtmlList::parse()
     else // found some other tag
     {
       // add dummy item to obtain valid HTML
-      m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1,!m_children.size()));
+      m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1));
       warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected <li> tag but "
           "found <%s%s> instead!",m_parser.context.token->endTag?"/":"",qPrint(m_parser.context.token->name));
       m_parser.tokenizer.pushBackHtmlTag(m_parser.context.token->name);
@@ -4084,7 +4084,7 @@ int DocHtmlList::parse()
   else if (tok==0) // premature end of comment
   {
     // add dummy item to obtain valid HTML
-    m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1,!m_children.size()));
+    m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1));
     warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"unexpected end of comment while looking"
         " for a html list item");
     goto endlist;
@@ -4092,7 +4092,7 @@ int DocHtmlList::parse()
   else // token other than html token
   {
     // add dummy item to obtain valid HTML
-    m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1,!m_children.size()));
+    m_children.push_back(std::make_unique<DocHtmlListItem>(m_parser,this,HtmlAttribList(),1));
     warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"expected <li> tag but found %s token instead!",
         DocTokenizer::tokToString(tok));
     goto endlist;
@@ -4100,7 +4100,7 @@ int DocHtmlList::parse()
 
   do
   {
-    DocHtmlListItem *li=new DocHtmlListItem(m_parser,this,m_parser.context.token->attribs,num++,!m_children.size());
+    DocHtmlListItem *li=new DocHtmlListItem(m_parser,this,m_parser.context.token->attribs,num++);
     m_children.push_back(std::unique_ptr<DocHtmlListItem>(li));
     retval=li->parse();
   } while (retval==RetVal_ListItem);
@@ -4159,7 +4159,7 @@ int DocHtmlList::parseXml()
 
   do
   {
-    DocHtmlListItem *li=new DocHtmlListItem(m_parser,this,m_parser.context.token->attribs,num++,!m_children.size());
+    DocHtmlListItem *li=new DocHtmlListItem(m_parser,this,m_parser.context.token->attribs,num++);
     m_children.push_back(std::unique_ptr<DocHtmlListItem>(li));
     retval=li->parseXml();
     if (retval==0) break;
