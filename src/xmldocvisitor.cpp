@@ -965,7 +965,8 @@ void XmlDocVisitor::visitPost(DocImage *)
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDotFile *)
@@ -977,7 +978,8 @@ void XmlDocVisitor::visitPost(DocDotFile *)
 void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocMscFile *)
@@ -989,7 +991,8 @@ void XmlDocVisitor::visitPost(DocMscFile *)
 void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "diafile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDiaFile *)
