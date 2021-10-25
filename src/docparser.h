@@ -1286,17 +1286,20 @@ class DocSimpleListItem : public DocNode
 class DocHtmlListItem : public CompAccept<DocHtmlListItem>
 {
   public:
-    DocHtmlListItem(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,int num) :
-      CompAccept<DocHtmlListItem>(parser), m_attribs(attribs), m_itemNum(num) { m_parent = parent; }
+    DocHtmlListItem(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,int num,bool isFirst) :
+      CompAccept<DocHtmlListItem>(parser), m_attribs(attribs), m_itemNum(num) , m_isFirst(isFirst) { m_parent = parent; }
     Kind kind() const override                     { return Kind_HtmlListItem; }
     int itemNumber() const                { return m_itemNum; }
     const HtmlAttribList &attribs() const { return m_attribs; }
     int parse();
     int parseXml();
+    bool isFirst() const        { return m_isFirst; }
+    void markFirst(bool v=TRUE) { m_isFirst=v; }
 
   private:
     HtmlAttribList m_attribs;
     int            m_itemNum = 0;
+    bool           m_isFirst = false;
 };
 
 /** Node representing a HTML description data */
