@@ -936,33 +936,7 @@ void DocbookDocVisitor::visitPre(DocHtmlList *s)
 {
 DB_VIS_C
   if (m_hide) return;
-  if (s->type()==DocHtmlList::Ordered)
-  {
-    m_t << "<orderedlist";
-    for (const auto &opt : s->attribs())
-    {
-      if (opt.name=="type")
-      {
-        if (opt.value=="1")
-          m_t << " numeration=\"arabic\"";
-        else if (opt.value=="a")
-          m_t << " numeration=\"loweralpha\"";
-        else if (opt.value=="A")
-          m_t << " numeration=\"upperalpha\"";
-        else if (opt.value=="i")
-          m_t << " numeration=\"lowerroman\"";
-        else if (opt.value=="I")
-          m_t << " numeration=\"upperroman\"";
-      }
-      else if (opt.name=="start")
-      {
-        m_t << " startingnumber=\"" << opt.value << "\"";
-      }
-    }
-    m_t << ">\n";
-  }
-  else
-    m_t << "<itemizedlist>\n";
+  // This will be handled in DocHtmlListItem
 }
 
 void DocbookDocVisitor::visitPost(DocHtmlList *s)
@@ -975,10 +949,68 @@ DB_VIS_C
     m_t << "</itemizedlist>\n";
 }
 
-void DocbookDocVisitor::visitPre(DocHtmlListItem *)
+void DocbookDocVisitor::visitPre(DocHtmlListItem *s)
 {
 DB_VIS_C
   if (m_hide) return;
+  DocHtmlList *l = (DocHtmlList *)s->parent();
+  if (l->type()==DocHtmlList::Ordered)
+  {
+    bool isFirst = l->children().front().get()==s;
+    int value = 0;
+    QCString type;
+    for (const auto &opt : s->attribs())
+    {
+      if (opt.name=="value")
+      {
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok) value = val;
+      }
+    }
+
+    if (value>0 || isFirst)
+    {
+      for (const auto &opt : l->attribs())
+      {
+        if (opt.name=="type")
+        {
+          if (opt.value=="1")
+            type = " numeration=\"arabic\"";
+          else if (opt.value=="a")
+            type = " numeration=\"loweralpha\"";
+            else if (opt.value=="A")
+            type =  " numeration=\"upperalpha\"";
+          else if (opt.value=="i")
+            type =  " numeration=\"lowerroman\"";
+          else if (opt.value=="I")
+            type =  " numeration=\"upperroman\"";
+        }
+        else if (value==0 && opt.name=="start")
+        {
+          bool ok;
+          int val = opt.value.toInt(&ok);
+          if (ok) value = val;
+        }
+      }
+    }
+
+    if (value>0 && !isFirst)
+    {
+      m_t << "</orderedlist>\n";
+    }
+    if (value>0 || isFirst)
+    {
+      m_t << "<orderedlist";
+      if (!type.isEmpty()) m_t << type.data();
+      if (value>0)         m_t << " startingnumber=\"" << value << "\"";
+      m_t << ">\n";
+    }
+  }
+  else
+  {
+    m_t << "<itemizedlist>\n";
+  }
   m_t << "<listitem>\n";
 }
 
