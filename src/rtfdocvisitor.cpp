@@ -76,6 +76,10 @@ int RTFDocVisitor::indentLevel() const
 void RTFDocVisitor::incIndentLevel()
 {
   m_indentLevel++;
+  if (m_indentLevel>=maxIndentLevels)
+  {
+    err("Maximum indent level (%d) exceeded while generating RTF output!\n",maxIndentLevels-1);
+  }
 }
 
 void RTFDocVisitor::decIndentLevel()
