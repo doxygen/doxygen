@@ -1308,6 +1308,7 @@ void DocbookDocVisitor::visitPre(DocDotFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df->file()));
   startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
@@ -1322,6 +1323,7 @@ void DocbookDocVisitor::visitPre(DocMscFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df->file()));
   startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 
@@ -1335,6 +1337,7 @@ void DocbookDocVisitor::visitPre(DocDiaFile *df)
 {
 DB_VIS_C
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(DOCBOOK_OUTPUT)+"/"+stripPath(df->file()));
   startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->children(),df->srcFile(),df->srcLine());
 }
 

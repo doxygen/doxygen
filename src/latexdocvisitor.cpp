@@ -1501,6 +1501,7 @@ void LatexDocVisitor::visitPost(DocImage *img)
 void LatexDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df->file()));
   startDotFile(df->file(),df->width(),df->height(),df->hasCaption(),df->srcFile(),df->srcLine());
 }
 
@@ -1512,6 +1513,7 @@ void LatexDocVisitor::visitPost(DocDotFile *df)
 void LatexDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df->file()));
   startMscFile(df->file(),df->width(),df->height(),df->hasCaption(),df->srcFile(),df->srcLine());
 }
 
@@ -1524,6 +1526,7 @@ void LatexDocVisitor::visitPost(DocMscFile *df)
 void LatexDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(LATEX_OUTPUT)+"/"+stripPath(df->file()));
   startDiaFile(df->file(),df->width(),df->height(),df->hasCaption(),df->srcFile(),df->srcLine());
 }
 

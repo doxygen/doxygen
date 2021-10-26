@@ -1310,6 +1310,7 @@ void RTFDocVisitor::includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool 
 void RTFDocVisitor::visitPre(DocDotFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDotFile)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df->file()));
   writeDotFile(df);
 }
 
@@ -1321,6 +1322,7 @@ void RTFDocVisitor::visitPost(DocDotFile *df)
 void RTFDocVisitor::visitPre(DocMscFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocMscFile)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df->file()));
   writeMscFile(df);
 }
 
@@ -1333,6 +1335,7 @@ void RTFDocVisitor::visitPost(DocMscFile *df)
 void RTFDocVisitor::visitPre(DocDiaFile *df)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocDiaFile)}\n");
+  if (!Config_getBool(DOT_CLEANUP)) copyFile(df->file(),Config_getString(RTF_OUTPUT)+"/"+stripPath(df->file()));
   writeDiaFile(df);
 }
 
