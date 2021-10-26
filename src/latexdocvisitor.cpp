@@ -218,16 +218,31 @@ void LatexDocVisitor::visit(DocWhiteSpace *w)
 void LatexDocVisitor::visit(DocSymbol *s)
 {
   if (m_hide) return;
+  bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   const char *res = HtmlEntityMapper::instance()->latex(s->symbol());
   if (res)
   {
     if (((s->symbol() == DocSymbol::Sym_lt) || (s->symbol() == DocSymbol::Sym_Less))&& (!m_insidePre))
     {
-      m_t << "\\texorpdfstring{$<$}{<}";
+      if (pdfHyperlinks)
+      {
+        m_t << "\\texorpdfstring{$<$}{<}";
+      }
+      else
+      {
+        m_t << "$<$";
+      }
     }
     else if (((s->symbol() == DocSymbol::Sym_gt) || (s->symbol() == DocSymbol::Sym_Greater)) && (!m_insidePre))
     {
-      m_t << "\\texorpdfstring{$>$}{>}";
+      if (pdfHyperlinks)
+      {
+        m_t << "\\texorpdfstring{$>$}{>}";
+      }
+      else
+      {
+        m_t << "$>$";
+      }
     }
     else
     {
