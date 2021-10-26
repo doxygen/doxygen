@@ -771,7 +771,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>
 class DocImage : public CompAccept<DocImage>
 {
   public:
-    enum Type { Html, Latex, Rtf, DocBook };
+    enum Type { Html, Latex, Rtf, DocBook, Xml };
     DocImage(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,
              const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = TRUE);
     Kind kind() const override           { return Kind_Image; }

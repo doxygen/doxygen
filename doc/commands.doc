@@ -3356,7 +3356,7 @@ class Receiver
 
   The first argument specifies the output format in which the image should
   be embedded. Currently, the following values are supported:
-  \c html, \c latex, \c docbook and \c rtf.
+  \c html, \c latex, \c docbook, \c rtf and \c xml.
 
   The second argument specifies the file name of the image.
   doxygen will look for files in the paths (or files) that you specified
