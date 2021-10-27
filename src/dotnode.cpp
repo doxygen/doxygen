@@ -796,7 +796,11 @@ void DotNode::colorConnectedNodes(int curColor)
 
 void DotNode::renumberNodes(int &number)
 {
-  m_number = number++;
+  if (!m_renumbered)
+  {
+    m_renumbered = true;
+    m_number = number++;
+  }
   for (const auto &cn : m_children)
   {
     if (!cn->isRenumbered())
