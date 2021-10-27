@@ -50,6 +50,7 @@ static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
       case DocImage::Latex:   t << "latex"; break;
       case DocImage::Rtf:     t << "rtf"; break;
       case DocImage::DocBook: t << "docbook"; break;
+      case DocImage::Xml:     t << "xml"; break;
     }
     t << "\"";
   }

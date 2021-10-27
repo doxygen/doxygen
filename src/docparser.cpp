@@ -310,6 +310,10 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
 	  if (!Config_getBool(GENERATE_RTF)) return result;
 	  outputDir = Config_getString(RTF_OUTPUT);
 	  break;
+        case DocImage::Xml:
+	  if (!Config_getBool(GENERATE_XML)) return result;
+	  outputDir = Config_getString(XML_OUTPUT);
+	  break;
       }
       QCString outputFile = outputDir+"/"+result;
       FileInfo outfi(outputFile.str());
@@ -4992,9 +4996,10 @@ void DocPara::handleImage(const QCString &cmdName)
   else if (imgType=="latex")   t=DocImage::Latex;
   else if (imgType=="docbook") t=DocImage::DocBook;
   else if (imgType=="rtf")     t=DocImage::Rtf;
+  else if (imgType=="xml")     t=DocImage::Xml;
   else
   {
-    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"output format %s specified as the first argument of "
+    warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"output format `%s` specified as the first argument of "
         "%s command is not valid",
         qPrint(imgType),qPrint(saveCmdName));
     return;
