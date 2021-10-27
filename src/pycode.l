@@ -94,6 +94,7 @@ struct pycodeYY_state
   QCString      classScope;
   int           paramParens = 0;
 
+  bool          insideBody = false;
   bool          exampleBlock = FALSE;
   QCString      exampleName;
 
@@ -389,7 +390,9 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       // about what to accept.
 
                                       yyextra->curClassBases.push_back(yytext);
+                                      yyextra->insideBody = true;
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
+                                      yyextra->insideBody = false;
                                       // codify(yyscanner,yytext);
                                     }
 
@@ -506,10 +509,14 @@ TARGET            ({IDENTIFIER}|"("{TARGET_LIST}")"|"["{TARGET_LIST}"]"|{ATTRIBU
                                       endFontClass(yyscanner);
                                     }
     ({IDENTIFIER}".")*{IDENTIFIER}/"("  {
+                                      yyextra->insideBody = true;
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext);
+                                      yyextra->insideBody = false;
                                     }
     ({IDENTIFIER}".")+{IDENTIFIER}  {
+                                      yyextra->insideBody = true;
                                       generateClassOrGlobalLink(yyscanner,*yyextra->code,yytext,TRUE);
+                                      yyextra->insideBody = false;
                                     }
     {IDENTIFIER}                    { codify(yyscanner,yytext); }
 
@@ -1023,7 +1030,7 @@ static void startCodeLine(yyscan_t yyscanner)
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
-      //yyextra->insideBody = FALSE;
+      yyextra->insideBody = false;
       yyextra->endComment = FALSE;
       yyextra->searchingForBody = TRUE;
       yyextra->realScope = d->name();
@@ -1232,7 +1239,7 @@ static bool getLinkInScope(yyscan_t yyscanner,
       //printf("yyextra->currentDefinition=%p yyextra->currentMemberDef=%p\n",
       //        yyextra->currentDefinition,yyextra->currentMemberDef);
 
-      if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs)
+      if (yyextra->currentDefinition && yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -1343,7 +1350,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
                             md->getBodyDef() : md->getOuterScope();
       if (md->getGroupDef()) d = md->getGroupDef();
       if (d && d->isLinkable() && md->isLinkable() &&
-          yyextra->currentMemberDef && yyextra->collectXRefs)
+          yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -1371,7 +1378,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
                                 mmd->getBodyDef() : mmd->getOuterScope();
           if (mmd->getGroupDef()) d = mmd->getGroupDef();
           if (d && d->isLinkable() && mmd->isLinkable() &&
-              yyextra->currentMemberDef && yyextra->collectXRefs)
+              yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
           {
             std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
             addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
@@ -1395,7 +1402,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,
                                   mmd->getBodyDef() : mmd->getOuterScope();
             if (mmd->getGroupDef()) d = mmd->getGroupDef();
             if (d && d->isLinkable() && mmd->isLinkable() &&
-                yyextra->currentMemberDef && yyextra->collectXRefs)
+                yyextra->currentMemberDef && yyextra->collectXRefs && yyextra->insideBody)
             {
               std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
               addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(mmd));
