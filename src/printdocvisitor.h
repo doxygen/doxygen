@@ -540,6 +540,7 @@ class PrintDocVisitor : public DocVisitor
         case DocImage::Latex:   printf("latex"); break;
         case DocImage::Rtf:     printf("rtf"); break;
         case DocImage::DocBook: printf("docbook"); break;
+        case DocImage::Xml:     printf("xml"); break;
       }
       printf("\" %s %s inline=\"%s\">\n",qPrint(img->width()),qPrint(img->height()),img->isInlineImage() ? "yes" : "no");
     }
