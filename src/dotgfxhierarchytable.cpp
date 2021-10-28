@@ -260,7 +260,7 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::Comp
   }
 
   //printf("Number of independent subgraphs: %d\n",curColor);
-  for (auto n : m_rootSubgraphs)
+  for (auto n : m_rootNodes)
   {
     //printf("Node %s color=%d (c=%d,p=%d)\n",
     //    qPrint(n->label()),n->m_subgraphId,
