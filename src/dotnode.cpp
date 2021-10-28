@@ -796,11 +796,7 @@ void DotNode::colorConnectedNodes(int curColor)
 
 void DotNode::renumberNodes(int &number)
 {
-  if (!m_renumbered)
-  {
-    m_renumbered = true;
-    m_number = number++;
-  }
+  m_number = number++;
   for (const auto &cn : m_children)
   {
     if (!cn->isRenumbered())
@@ -811,30 +807,6 @@ void DotNode::renumberNodes(int &number)
   }
 }
 
-const DotNode *DotNode::findDocNode() const
-{
-  if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",qPrint(m_label));
-  for (const auto &pn : m_parents)
-  {
-    if (!pn->hasDocumentation())
-    {
-      pn->markHasDocumentation();
-      const DotNode *dn = pn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  for (const auto &cn : m_children)
-  {
-    if (!cn->hasDocumentation())
-    {
-      cn->markHasDocumentation();
-      const DotNode *dn = cn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  return 0;
-}
 
 
 
