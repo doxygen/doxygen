@@ -794,8 +794,17 @@ void DotNode::colorConnectedNodes(int curColor)
   }
 }
 
+#define DEBUG_RENUMBERING 0
+
 void DotNode::renumberNodes(int &number)
 {
+#if DEBUG_RENUMBERING
+  static int level = 0;
+  printf("%3d: ",subgraphId());
+  for (int i = 0; i < level; i++) printf("  ");
+  printf("> %s old = %d new = %d\n",qPrint(m_label),m_number,number+1);
+  level++;
+#endif
   m_number = number++;
   for (const auto &cn : m_children)
   {
@@ -805,6 +814,20 @@ void DotNode::renumberNodes(int &number)
       cn->renumberNodes(number);
     }
   }
+  for (const auto &pn : m_parents)
+  {
+    if (!pn->isRenumbered())
+    {
+      pn->markRenumbered();
+      pn->renumberNodes(number);
+    }
+  }
+#if DEBUG_RENUMBERING
+  level--;
+  printf("%3d: ",subgraphId());
+  for (int i = 0; i < level; i++) printf("  ");
+  printf("< %s current = %d\n",qPrint(m_label),m_number);
+#endif
 }
 
 
