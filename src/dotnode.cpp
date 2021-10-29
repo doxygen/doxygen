@@ -806,11 +806,11 @@ void DotNode::renumberNodes(int &number)
   level++;
 #endif
   m_number = number++;
+  markRenumbered();
   for (const auto &cn : m_children)
   {
     if (!cn->isRenumbered())
     {
-      cn->markRenumbered();
       cn->renumberNodes(number);
     }
   }
@@ -818,7 +818,6 @@ void DotNode::renumberNodes(int &number)
   {
     if (!pn->isRenumbered())
     {
-      pn->markRenumbered();
       pn->renumberNodes(number);
     }
   }
