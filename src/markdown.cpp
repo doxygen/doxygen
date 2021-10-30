@@ -2181,6 +2181,15 @@ int Markdown::writeTableBlock(const char *data,int size)
       {
         continue;
       }
+      if (tableContents[row][c].colSpan)
+      {
+        int cr = c;
+        while ( cr >= 0 && tableContents[row][cr].colSpan)
+        {
+          cr--;
+        };
+        if (cr >= 0 && tableContents[row][cr].cellText == "^") continue;
+      }
       unsigned rowSpan = 1, spanRow = row+1;
       while ((spanRow < tableContents.size()) &&
              (tableContents[spanRow][c].cellText == "^"))
