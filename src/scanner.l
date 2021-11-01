@@ -138,6 +138,7 @@ struct scannerYY_state
 
   bool             insideCppQuote = false;
   bool             insideProtocolList = false;
+  bool             doxygenComment = false;
 
   int              argRoundCount = 0;
   int              argSquareCount = 0;
@@ -270,8 +271,12 @@ CCS   "/\*"
 CCE   "*\/"
   // Cpp comment 
 CPPC  "/\/"
+  // doxygen C start comment
+DCOMMC ("/\*!"|"/\**")
+  // doxygen Cpp start comment
+DCOMMCPP ("/\/!"|"/\/\/")
   // doxygen start comment
-DCOMM ("/\*!"|"/\**"|"/\/!"|"/\/\/")
+DCOMM {DCOMMC}|{DCOMMCPP}
 
   // Optional any character
 ANYopt .*
@@ -3804,11 +3809,12 @@ NONLopt [^\n]*
                                           yyextra->lastStringContext=YY_START;
                                           BEGIN( CopyGString );
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>{CCS}{B}*              { yyextra->current->program << yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{DCOMMC}  { yyextra->doxygenComment=true; REJECT;}
+<ReadBody,ReadNSBody,ReadBodyIntf>{CCS}{B}* { yyextra->current->program << yytext ;
                                           yyextra->lastContext = YY_START ;
                                           BEGIN( Comment ) ;
                                         }
-<ReadBody,ReadNSBody,ReadBodyIntf>{CCS}{BL}              { yyextra->current->program << yytext ;
+<ReadBody,ReadNSBody,ReadBodyIntf>{CCS}{BL} { yyextra->current->program << yytext ;
                                           ++yyextra->yyLineNr ;
                                           yyextra->lastContext = YY_START ;
                                           BEGIN( Comment ) ;
@@ -6181,16 +6187,20 @@ NONLopt [^\n]*
 <Comment>{CCS}                           { yyextra->current->program << yytext ; }
 <Comment>{CPPC}                           { yyextra->current->program << yytext ; }
 <Comment>{CMD}("code"|"verbatim")       {
-                                          yyextra->insideCode=TRUE;
+                                          if (yyextra->doxygenComment) yyextra->insideCode=TRUE;
                                           yyextra->current->program << yytext ;
                                         }
 <Comment>{CMD}("endcode"|"endverbatim") {
-                                          yyextra->insideCode=FALSE;
+                                          if (yyextra->doxygenComment) yyextra->insideCode=FALSE;
                                           yyextra->current->program << yytext ;
                                         }
 <Comment>[^ \.\t\r\n\/\*]+              { yyextra->current->program << yytext ; }
-<Comment>{CCE}                           { yyextra->current->program << yytext ;
-                                          if (!yyextra->insideCode) BEGIN( yyextra->lastContext ) ;
+<Comment>{CCE}                          { yyextra->current->program << yytext ;
+                                          if (!yyextra->insideCode)
+                                          {
+                                            yyextra->doxygenComment=false;
+                                            BEGIN( yyextra->lastContext );
+                                          }
                                         }
 <Comment>.                              { yyextra->current->program << *yytext ; }
 
@@ -6263,6 +6273,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->current->program << yytext ;
                                             yyextra->lastContext = YY_START ;
+                                            yyextra->doxygenComment=true;
                                             BEGIN( Comment ) ;
                                           }
                                         }
