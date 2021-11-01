@@ -376,7 +376,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*>"import"{BS}/"\n"                    |
 <*>"import"{BS_}                        {
-                                          if (YY_START == String) REJECT;
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keywordtype");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -412,6 +412,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           BEGIN(ClassName);
                                         }
 <*>{LANGUAGE_BIND_SPEC}                 {  //
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -722,11 +723,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           endFontClass(yyscanner);
                                         }
 <*>"assignment"/{BS}"("{BS}"="{BS}")"   {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
 <*>"operator"/{BS}"("[^)]*")"           {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
