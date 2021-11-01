@@ -376,6 +376,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*>"import"{BS}/"\n"                    |
 <*>"import"{BS_}                        {
+                                          if (YY_START == String) REJECT;
                                           startFontClass(yyscanner,"keywordtype");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
