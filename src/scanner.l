@@ -6883,6 +6883,18 @@ NONLopt [^\n]*
                                             BEGIN(EndCppQuote);
                                           }
                                         }
+<*>^{B}*"#"                             {
+                                          if (!yyextra->insidePHP)
+                                          {
+                                            yyextra->lastCPPContext = YY_START;
+                                            BEGIN( SkipCPP ) ;
+                                          }
+                                          else
+                                          {
+                                            yyextra->lastCContext = YY_START ;
+                                            BEGIN( SkipCxxComment ) ;
+                                          }
+                                        }
 <*>"#"                                  {
                                           if (!yyextra->insidePHP)
                                             REJECT;
