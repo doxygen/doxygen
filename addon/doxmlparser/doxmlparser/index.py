@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 3.9.0 (default, Oct 27 2020, 14:15:17)  [Clang 12.0.0 (clang-1200.0.32.21)]
+# Python 3.9.7 (default, Sep  3 2021, 12:45:31)  [Clang 12.0.0 (clang-1200.0.32.29)]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -984,6 +984,7 @@ class CompoundKind(str, Enum):
     EXAMPLE='example'
     DIR='dir'
     TYPE='type'
+    CONCEPT='concept'
 
 
 class MemberKind(str, Enum):
@@ -1194,7 +1195,7 @@ class CompoundType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'type']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'type', 'concept']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on CompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )

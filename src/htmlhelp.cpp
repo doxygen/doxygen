@@ -248,7 +248,9 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       if (it_next!=std::end(m_map))
       {
         auto &fnext = *it_next;
-        nextLevel1 = fnext->name.left(fnext->name.find('?'));
+        int j = fnext->name.find('?');
+        if (j<0) j=0;
+        nextLevel1 = fnext->name.left(j);
       }
       if (!(level1 == prevLevel1 || level1 == nextLevel1))
       {
@@ -262,7 +264,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
         t << "  <LI><OBJECT type=\"text/sitemap\">";
         t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
         t << "\">";
-        t << "<param name=\"Name\" value=\"" << m_recoder.recode(level1) << "\">"
+        t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">"
            "</OBJECT>\n";
       }
       else
@@ -272,14 +274,14 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
           t << "  <LI><OBJECT type=\"text/sitemap\">";
           t << "<param name=\"Local\" value=\"" << field2URL(f.get(),TRUE);
           t << "\">";
-          t << "<param name=\"Name\" value=\"" << m_recoder.recode(level1) << "\">"
+          t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">"
                "</OBJECT>\n";
         }
         else
         {
           t << "  <LI><OBJECT type=\"text/sitemap\">";
-          t << "<param name=\"See Also\" value=\"" << m_recoder.recode(level1) << "\">";
-          t << "<param name=\"Name\" value=\"" << m_recoder.recode(level1) << "\">"
+          t << "<param name=\"See Also\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">";
+          t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level1),TRUE) << "\">"
                "</OBJECT>\n";
         }
       }
@@ -299,7 +301,7 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       t << "    <LI><OBJECT type=\"text/sitemap\">";
       t << "<param name=\"Local\" value=\"" << field2URL(f.get(),FALSE);
       t << "\">";
-      t << "<param name=\"Name\" value=\"" << m_recoder.recode(level2) << "\">"
+      t << "<param name=\"Name\" value=\"" << convertToHtml(m_recoder.recode(level2),TRUE) << "\">"
          "</OBJECT>\n";
     }
   }
@@ -318,8 +320,8 @@ class HtmlHelp::Private
     int dc = 0;
     StringSet indexFiles;
     StringSet imageFiles;
-    HtmlHelpIndex index;
     HtmlHelpRecoder recoder;
+    HtmlHelpIndex index;
 };
 
 
@@ -553,7 +555,7 @@ void HtmlHelp::Private::createProjectFile()
     }
     for (auto &s : imageFiles)
     {
-      t << FileInfo(s).fileName() << "\n";
+      t << s.c_str() << "\n";
     }
     t.close();
   }
@@ -634,6 +636,7 @@ void HtmlHelp::addContentsItem(bool isDir,
                                bool /* addToNavIndex */,
                                const Definition * /* def */)
 {
+  static bool binaryTOC = Config_getBool(BINARY_TOC);
   // If we're using a binary toc then folders cannot have links.
   // Tried this and I didn't see any problems, when not using
   // the resetting of file and anchor the TOC works better
@@ -655,14 +658,18 @@ void HtmlHelp::addContentsItem(bool isDir,
       if (file[0]=='^') p->cts << "URL"; else p->cts << "Local";
       p->cts << "\" value=\"";
       p->cts << &file[1];
+      p->cts << "\">";
     }
     else
     {
-      p->cts << "<param name=\"Local\" value=\"";
-      p->cts << file << Doxygen::htmlFileExtension;
-      if (!anchor.isEmpty()) p->cts << "#" << anchor;
+      if (!(binaryTOC && isDir))
+      {
+        p->cts << "<param name=\"Local\" value=\"";
+        p->cts << file << Doxygen::htmlFileExtension;
+        if (!anchor.isEmpty()) p->cts << "#" << anchor;
+        p->cts << "\">";
+      }
     }
-    p->cts << "\">";
   }
   p->cts << "<param name=\"ImageNumber\" value=\"";
   if (isDir)  // added - KPW

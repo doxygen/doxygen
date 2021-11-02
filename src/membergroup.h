@@ -1,8 +1,6 @@
 /******************************************************************************
  *
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation under the terms of the GNU General Public License is hereby
@@ -45,15 +43,15 @@ class MemberGroup
   public:
     //MemberGroup();
     MemberGroup(const Definition *container,int id,const QCString &header,
-                const QCString &docs,const QCString &docFile,int docLine);
+                const QCString &docs,const QCString &docFile,int docLine,MemberListContainer con);
    ~MemberGroup();
     QCString header() const { return grpHeader; }
     int groupId() const { return grpId; }
     void insertMember(const MemberDef *md);
     void setAnchors();
-    void writePlainDeclarations(OutputList &ol,
+    void writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               const ClassDef *inheritedFrom,const QCString &inheritId) const;
+               int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool showInline=FALSE) const;
@@ -82,7 +80,6 @@ class MemberGroup
     const Definition *container() const;
 
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
-    void setInGroup(bool b);
     void addListReferences(Definition *d);
     void setRefItems(const RefItemVector &sli);
     const MemberList &members() const { return *memberList.get(); }

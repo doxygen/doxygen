@@ -129,13 +129,6 @@ PlantumlManager &PlantumlManager::instance()
 
 PlantumlManager::PlantumlManager()
 {
-  QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
-  FileInfo fi(outputFilename.str());
-  if (fi.exists())
-  {
-    m_cachedPlantumlAllContent = fileToString(outputFilename);
-  }
-  Debug::print(Debug::Plantuml,0,"*** instance() : m_cachedPlantumlAllContent = [%s]\n",qPrint(m_cachedPlantumlAllContent));
 }
 
 static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
@@ -210,6 +203,8 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
     for (const auto &kv : plantumlContent)
     {
       const PlantumlContent &nb = kv.second;
+      if (nb.content.isEmpty()) continue;
+
       QCString pumlArguments = pumlArgs;
       msg("Generating PlantUML %s Files in %s\n",qPrint(pumlType),kv.first.c_str());
       pumlArguments+="-o \"";
@@ -232,6 +227,14 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       pumlArguments+=puFileName;
       pumlArguments+="\" ";
 
+
+      QCString cachedContent;
+      FileInfo fi(puFileName.str());
+      if (fi.exists())
+      {
+        cachedContent = fileToString(puFileName);
+      }
+
       std::ofstream file(puFileName.str(),std::ofstream::out | std::ofstream::binary);
       if (!file.is_open())
       {
@@ -241,16 +244,13 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       file.close();
       Debug::print(Debug::Plantuml,0,"*** %s Running Plantuml arguments:%s\n","PlantumlManager::runPlantumlContent",qPrint(pumlArguments));
 
+      if (cachedContent == nb.content) continue;
+
       Portable::sysTimerStart();
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
         err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
-      }
-      else if (Config_getBool(DOT_CLEANUP))
-      {
-        Debug::print(Debug::Plantuml,0,"*** %s Remove %s file\n","PlantumlManager::runPlantumlContent",qPrint(puFileName));
-        Dir().remove(puFileName.str());
       }
       Portable::sysTimerStop();
 
@@ -282,18 +282,9 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
 void PlantumlManager::run()
 {
   Debug::print(Debug::Plantuml,0,"*** %s\n","PlantumlManager::run");
-  if (m_currentPlantumlAllContent.isEmpty()) return;
   runPlantumlContent(m_pngPlantumlFiles, m_pngPlantumlContent, PUML_BITMAP);
   runPlantumlContent(m_svgPlantumlFiles, m_svgPlantumlContent, PUML_SVG);
   runPlantumlContent(m_epsPlantumlFiles, m_epsPlantumlContent, PUML_EPS);
-  QCString outputFilename = Config_getString(OUTPUT_DIRECTORY) + "/" + CACHE_FILENAME;
-  std::ofstream file(outputFilename.str(),std::ofstream::out | std::ofstream::binary);
-  if (!file.is_open())
-  {
-    err("Could not open file %s for writing\n",CACHE_FILENAME);
-  }
-  file.write( m_currentPlantumlAllContent.data(), m_currentPlantumlAllContent.length() );
-  file.close();
 }
 
 static void print(const PlantumlManager::FilesMap &plantumlFiles)
@@ -317,8 +308,8 @@ static void print(const PlantumlManager::ContentMap &plantumlContent)
   {
     for (const auto &kv : plantumlContent)
     {
-      Debug::print(Debug::Plantuml,0,"*** %s PlantumlContent key:%s\n","PlantumlManager::print Content",kv.first.c_str());
-      Debug::print(Debug::Plantuml,0,"*** %s                 Content :%s\n","PlantumlManager::print",kv.second.content.data());
+      Debug::print(Debug::Plantuml,0,"*** %s PlantumlContent key: %s\n","PlantumlManager::print Content",kv.first.c_str());
+      Debug::print(Debug::Plantuml,0,"*** %s                 Content:\n%s\n","PlantumlManager::print",kv.second.content.data());
     }
   }
 }
@@ -350,18 +341,7 @@ void PlantumlManager::insert(const std::string &key, const std::string &value,
                              const QCString &outDir,OutputFormat format,const QCString &puContent,
                              const QCString &srcFile,int srcLine)
 {
-  int find;
-
   Debug::print(Debug::Plantuml,0,"*** %s key:%s ,value:%s\n","PlantumlManager::insert",qPrint(key),qPrint(value));
-
-  m_currentPlantumlAllContent+=puContent;
-
-  find = m_cachedPlantumlAllContent.find(puContent);
-  Debug::print(Debug::Plantuml,0,"*** %s find: %d\n","PlantumlManager::addPlantumlContent",find);
-  if (find >=0)
-  {         // matched in cache. so we skip to run java for this plantuml
-      return ;
-  }
 
   switch (format)
   {

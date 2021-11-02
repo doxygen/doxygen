@@ -41,7 +41,7 @@
   <!-- Layout definition for a class page -->
   <class>
     <briefdescription visible="yes"/>
-    <includes visible="$SHOW_INCLUDE_FILES"/>
+    <includes visible="$SHOW_HEADERFILE"/>
     <inheritancegraph visible="$CLASS_GRAPH"/>
     <collaborationgraph visible="$COLLABORATION_GRAPH"/>
     <memberdecl>
@@ -132,7 +132,7 @@
   <!-- Layout definition for a concept page -->
   <concept>
     <briefdescription visible="yes"/>
-    <includes visible="$SHOW_INCLUDE_FILES"/>
+    <includes visible="$SHOW_HEADERFILE"/>
     <definition visible="yes" title=""/>
     <detaileddescription title=""/>
     <authorsection visible="yes"/>

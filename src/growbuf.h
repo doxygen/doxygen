@@ -25,6 +25,7 @@ class GrowBuf
     {
       if (this!=&other)
       {
+        free(m_str);
         m_len = other.m_len;
         m_pos = other.m_pos;
         m_str = (char*)malloc(m_len);
@@ -33,16 +34,18 @@ class GrowBuf
       return *this;
     }
     GrowBuf(GrowBuf &&other)
+      : m_str(std::exchange(other.m_str,(char*)0))
+      , m_pos(std::exchange(other.m_pos,0))
+      , m_len(std::exchange(other.m_len,0))
     {
-      m_len = std::move(other.m_len);
-      m_pos = std::move(other.m_pos);
-      m_str = std::move(other.m_str);
     }
     GrowBuf &operator=(GrowBuf &&other)
     {
-      m_len = std::move(other.m_len);
-      m_pos = std::move(other.m_pos);
-      m_str = std::move(other.m_str);
+      if (this==&other)
+        return *this;
+      m_len = std::exchange(other.m_len,0);
+      m_pos = std::exchange(other.m_pos,0);
+      m_str = std::exchange(other.m_str,(char*)0);
       return *this;
     }
     void reserve(uint size) { if (m_len<size) { m_len = size; m_str = (char*)realloc(m_str,m_len); } }

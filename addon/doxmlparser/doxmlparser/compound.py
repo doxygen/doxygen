@@ -3,7 +3,7 @@
 
 #
 # Generated  by generateDS.py.
-# Python 3.9.0 (default, Oct 27 2020, 14:15:17)  [Clang 12.0.0 (clang-1200.0.32.21)]
+# Python 3.9.7 (default, Sep  3 2021, 12:45:31)  [Clang 12.0.0 (clang-1200.0.32.29)]
 #
 # Command line options:
 #   ('--no-dates', '')
@@ -1007,6 +1007,7 @@ class DoxCompoundKind(str, Enum):
     PAGE='page'
     EXAMPLE='example'
     DIR='dir'
+    CONCEPT='concept'
 
 
 class DoxGraphRelation(str, Enum):
@@ -1039,6 +1040,7 @@ class DoxImageKind(str, Enum):
     LATEX='latex'
     DOCBOOK='docbook'
     RTF='rtf'
+    XML='xml'
 
 
 class DoxLanguage(str, Enum):
@@ -1074,6 +1076,14 @@ class DoxMemberKind(str, Enum):
     SLOT='slot'
     INTERFACE='interface'
     SERVICE='service'
+
+
+class DoxOlType(str, Enum):
+    _1='1'
+    A='a'
+    A_1='A'
+    I='i'
+    I_1='I'
 
 
 class DoxParamDir(str, Enum):
@@ -1319,7 +1329,7 @@ class compounddefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innernamespace=None, innerpage=None, innergroup=None, templateparamlist=None, sectiondef=None, tableofcontents=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
+    def __init__(self, id=None, kind=None, language=None, prot=None, final=None, inline=None, sealed=None, abstract=None, compoundname=None, title=None, basecompoundref=None, derivedcompoundref=None, includes=None, includedby=None, incdepgraph=None, invincdepgraph=None, innerdir=None, innerfile=None, innerclass=None, innernamespace=None, innerpage=None, innergroup=None, templateparamlist=None, sectiondef=None, tableofcontents=None, requiresclause=None, initializer=None, briefdescription=None, detaileddescription=None, inheritancegraph=None, collaborationgraph=None, programlisting=None, location=None, listofallmembers=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -1408,6 +1418,10 @@ class compounddefType(GeneratedsSuper):
         self.sectiondef_nsprefix_ = None
         self.tableofcontents = tableofcontents
         self.tableofcontents_nsprefix_ = None
+        self.requiresclause = requiresclause
+        self.requiresclause_nsprefix_ = None
+        self.initializer = initializer
+        self.initializer_nsprefix_ = None
         self.briefdescription = briefdescription
         self.briefdescription_nsprefix_ = None
         self.detaileddescription = detaileddescription
@@ -1571,6 +1585,14 @@ class compounddefType(GeneratedsSuper):
         return self.tableofcontents
     def set_tableofcontents(self, tableofcontents):
         self.tableofcontents = tableofcontents
+    def get_requiresclause(self):
+        return self.requiresclause
+    def set_requiresclause(self, requiresclause):
+        self.requiresclause = requiresclause
+    def get_initializer(self):
+        return self.initializer
+    def set_initializer(self, initializer):
+        self.initializer = initializer
     def get_briefdescription(self):
         return self.briefdescription
     def set_briefdescription(self, briefdescription):
@@ -1639,7 +1661,7 @@ class compounddefType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'service', 'singleton', 'module', 'type', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'concept']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxCompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )
@@ -1702,6 +1724,8 @@ class compounddefType(GeneratedsSuper):
             self.templateparamlist is not None or
             self.sectiondef or
             self.tableofcontents is not None or
+            self.requiresclause is not None or
+            self.initializer is not None or
             self.briefdescription is not None or
             self.detaileddescription is not None or
             self.inheritancegraph is not None or
@@ -1819,6 +1843,12 @@ class compounddefType(GeneratedsSuper):
         if self.tableofcontents is not None:
             namespaceprefix_ = self.tableofcontents_nsprefix_ + ':' if (UseCapturedNS_ and self.tableofcontents_nsprefix_) else ''
             self.tableofcontents.export(outfile, level, namespaceprefix_, namespacedef_='', name_='tableofcontents', pretty_print=pretty_print)
+        if self.requiresclause is not None:
+            namespaceprefix_ = self.requiresclause_nsprefix_ + ':' if (UseCapturedNS_ and self.requiresclause_nsprefix_) else ''
+            self.requiresclause.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requiresclause', pretty_print=pretty_print)
+        if self.initializer is not None:
+            namespaceprefix_ = self.initializer_nsprefix_ + ':' if (UseCapturedNS_ and self.initializer_nsprefix_) else ''
+            self.initializer.export(outfile, level, namespaceprefix_, namespacedef_='', name_='initializer', pretty_print=pretty_print)
         if self.briefdescription is not None:
             namespaceprefix_ = self.briefdescription_nsprefix_ + ':' if (UseCapturedNS_ and self.briefdescription_nsprefix_) else ''
             self.briefdescription.export(outfile, level, namespaceprefix_, namespacedef_='', name_='briefdescription', pretty_print=pretty_print)
@@ -1979,6 +2009,16 @@ class compounddefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.tableofcontents = obj_
             obj_.original_tagname_ = 'tableofcontents'
+        elif nodeName_ == 'requiresclause':
+            obj_ = linkedTextType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requiresclause = obj_
+            obj_.original_tagname_ = 'requiresclause'
+        elif nodeName_ == 'initializer':
+            obj_ = linkedTextType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.initializer = obj_
+            obj_.original_tagname_ = 'initializer'
         elif nodeName_ == 'briefdescription':
             obj_ = descriptionType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -3364,7 +3404,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3490,6 +3530,8 @@ class memberdefType(GeneratedsSuper):
         else:
             self.enumvalue = enumvalue
         self.enumvalue_nsprefix_ = None
+        self.requiresclause = requiresclause
+        self.requiresclause_nsprefix_ = None
         self.initializer = initializer
         self.initializer_nsprefix_ = None
         self.exceptions = exceptions
@@ -3599,6 +3641,10 @@ class memberdefType(GeneratedsSuper):
         self.enumvalue.insert(index, value)
     def replace_enumvalue_at(self, index, value):
         self.enumvalue[index] = value
+    def get_requiresclause(self):
+        return self.requiresclause
+    def set_requiresclause(self, requiresclause):
+        self.requiresclause = requiresclause
     def get_initializer(self):
         return self.initializer
     def set_initializer(self, initializer):
@@ -3903,6 +3949,7 @@ class memberdefType(GeneratedsSuper):
             self.reimplementedby or
             self.param or
             self.enumvalue or
+            self.requiresclause is not None or
             self.initializer is not None or
             self.exceptions is not None or
             self.briefdescription is not None or
@@ -4112,6 +4159,9 @@ class memberdefType(GeneratedsSuper):
         for enumvalue_ in self.enumvalue:
             namespaceprefix_ = self.enumvalue_nsprefix_ + ':' if (UseCapturedNS_ and self.enumvalue_nsprefix_) else ''
             enumvalue_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='enumvalue', pretty_print=pretty_print)
+        if self.requiresclause is not None:
+            namespaceprefix_ = self.requiresclause_nsprefix_ + ':' if (UseCapturedNS_ and self.requiresclause_nsprefix_) else ''
+            self.requiresclause.export(outfile, level, namespaceprefix_, namespacedef_='', name_='requiresclause', pretty_print=pretty_print)
         if self.initializer is not None:
             namespaceprefix_ = self.initializer_nsprefix_ + ':' if (UseCapturedNS_ and self.initializer_nsprefix_) else ''
             self.initializer.export(outfile, level, namespaceprefix_, namespacedef_='', name_='initializer', pretty_print=pretty_print)
@@ -4424,6 +4474,11 @@ class memberdefType(GeneratedsSuper):
             obj_.build(child_, gds_collector_=gds_collector_)
             self.enumvalue.append(obj_)
             obj_.original_tagname_ = 'enumvalue'
+        elif nodeName_ == 'requiresclause':
+            obj_ = linkedTextType.factory(parent_object_=self)
+            obj_.build(child_, gds_collector_=gds_collector_)
+            self.requiresclause = obj_
+            obj_.original_tagname_ = 'requiresclause'
         elif nodeName_ == 'initializer':
             obj_ = linkedTextType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -14483,12 +14538,16 @@ class docListType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, listitem=None, gds_collector_=None, **kwargs_):
+    def __init__(self, type_=None, start=None, listitem=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
         self.parent_object_ = kwargs_.get('parent_object_')
         self.ns_prefix_ = None
+        self.type_ = _cast(None, type_)
+        self.type__nsprefix_ = None
+        self.start = _cast(int, start)
+        self.start_nsprefix_ = None
         if listitem is None:
             self.listitem = []
         else:
@@ -14519,6 +14578,27 @@ class docListType(GeneratedsSuper):
         self.listitem.insert(index, value)
     def replace_listitem_at(self, index, value):
         self.listitem[index] = value
+    def get_type(self):
+        return self.type_
+    def set_type(self, type_):
+        self.type_ = type_
+    def get_start(self):
+        return self.start
+    def set_start(self, start):
+        self.start = start
+    def validate_DoxOlType(self, value):
+        # Validate type DoxOlType, a restriction on xsd:string.
+        if value is not None and Validate_simpletypes_ and self.gds_collector_ is not None:
+            if not isinstance(value, str):
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
+                return False
+            value = value
+            enumerations = ['1', 'a', 'A', 'i', 'I']
+            if value not in enumerations:
+                lineno = self.gds_get_node_lineno_()
+                self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxOlType' % {"value" : encode_str_2_3(value), "lineno": lineno} )
+                result = False
     def hasContent_(self):
         if (
             self.listitem
@@ -14550,7 +14630,12 @@ class docListType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='docListType'):
-        pass
+        if self.type_ is not None and 'type_' not in already_processed:
+            already_processed.add('type_')
+            outfile.write(' type=%s' % (self.gds_encode(self.gds_format_string(quote_attrib(self.type_), input_name='type')), ))
+        if self.start is not None and 'start' not in already_processed:
+            already_processed.add('start')
+            outfile.write(' start="%s"' % self.gds_format_integer(self.start, input_name='start'))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docListType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -14571,7 +14656,15 @@ class docListType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        value = find_attr_value_('type', node)
+        if value is not None and 'type' not in already_processed:
+            already_processed.add('type')
+            self.type_ = value
+            self.validate_DoxOlType(self.type_)    # validate type DoxOlType
+        value = find_attr_value_('start', node)
+        if value is not None and 'start' not in already_processed:
+            already_processed.add('start')
+            self.start = self.gds_parse_integer(value, node, 'start')
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'listitem':
             obj_ = docListItemType.factory(parent_object_=self)
@@ -14585,12 +14678,14 @@ class docListItemType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, para=None, gds_collector_=None, **kwargs_):
+    def __init__(self, value=None, para=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
         self.parent_object_ = kwargs_.get('parent_object_')
         self.ns_prefix_ = None
+        self.value = _cast(int, value)
+        self.value_nsprefix_ = None
         if para is None:
             self.para = []
         else:
@@ -14621,6 +14716,10 @@ class docListItemType(GeneratedsSuper):
         self.para.insert(index, value)
     def replace_para_at(self, index, value):
         self.para[index] = value
+    def get_value(self):
+        return self.value
+    def set_value(self, value):
+        self.value = value
     def hasContent_(self):
         if (
             self.para
@@ -14652,7 +14751,9 @@ class docListItemType(GeneratedsSuper):
         else:
             outfile.write('/>%s' % (eol_, ))
     def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='docListItemType'):
-        pass
+        if self.value is not None and 'value' not in already_processed:
+            already_processed.add('value')
+            outfile.write(' value="%s"' % self.gds_format_integer(self.value, input_name='value'))
     def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='docListItemType', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
@@ -14673,7 +14774,10 @@ class docListItemType(GeneratedsSuper):
             self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
         return self
     def buildAttributes(self, node, attrs, already_processed):
-        pass
+        value = find_attr_value_('value', node)
+        if value is not None and 'value' not in already_processed:
+            already_processed.add('value')
+            self.value = self.gds_parse_integer(value, node, 'value')
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         if nodeName_ == 'para':
             obj_ = docParaType.factory(parent_object_=self)
@@ -18873,7 +18977,7 @@ class docImageType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['html', 'latex', 'docbook', 'rtf']
+            enumerations = ['html', 'latex', 'docbook', 'rtf', 'xml']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on DoxImageKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )

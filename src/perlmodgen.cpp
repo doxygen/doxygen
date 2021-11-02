@@ -950,7 +950,17 @@ void PerlModDocVisitor::visitPost(DocHtmlList *)
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlListItem *) { openSubBlock(); }
+void PerlModDocVisitor::visitPre(DocHtmlListItem *l)
+{
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="value")
+    {
+      m_output.addFieldQuotedString("item_value", qPrint(opt.value));
+    }
+  }
+  openSubBlock();
+}
 void PerlModDocVisitor::visitPost(DocHtmlListItem *) { closeSubBlock(); }
 
 //void PerlModDocVisitor::visitPre(DocHtmlPre *)
@@ -1457,15 +1467,15 @@ static void addPerlModDocBlock(PerlModOutput &output,
   if (stext.isEmpty())
     output.addField(name).add("{}");
   else {
-    DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE,FALSE,
-                                       QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                         fileName,lineNr,scope,md,stext,FALSE,FALSE,
+                                         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     output.openHash(name);
-    PerlModDocVisitor *visitor = new PerlModDocVisitor(output);
-    root->accept(visitor);
+    auto visitor = std::make_unique<PerlModDocVisitor>(output);
+    root->accept(visitor.get());
     visitor->finish();
     output.closeHash();
-    delete visitor;
-    delete root;
   }
 }
 
@@ -1672,7 +1682,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList &enumFields = md->enumFieldList();
+    const MemberVector &enumFields = md->enumFieldList();
     if (!enumFields.empty())
     {
       m_output.openList("values");
@@ -1707,7 +1717,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       .addFieldQuotedString("name", rmd->name())
       .closeHash();
 
-  const MemberList &rbml = md->reimplementedBy();
+  const MemberVector &rbml = md->reimplementedBy();
   if (!rbml.empty())
   {
     m_output.openList("reimplemented_by");

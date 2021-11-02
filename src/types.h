@@ -193,6 +193,84 @@ enum MemberListType
   MemberListType_docDictionaryMembers    = 77 + MemberListType_documentationLists
 };
 
+enum class MemberListContainer
+{
+  File,
+  Namespace,
+  Group,
+  Class
+};
+
+enum class CodeSymbolType
+{
+  Default,
+  // Class types
+  Class,
+  Struct,
+  Union,
+  Interface,
+  Protocol,
+  Category,
+  Exception,
+  Service,
+  Singleton,
+  // Other container types
+  Concept,
+  Namespace,
+  Package,
+  // Member types
+  Define,
+  Function,
+  Variable,
+  Typedef,
+  EnumValue,
+  Enumeration,
+  Signal,
+  Slot,
+  Friend,
+  DCOP,
+  Property,
+  Event,
+  Sequence,
+  Dictionary
+};
+
+constexpr const char *codeSymbolType2Str(CodeSymbolType type)
+{
+  switch (type)
+  {
+    case CodeSymbolType::Class:       return "class";
+    case CodeSymbolType::Struct:      return "struct";
+    case CodeSymbolType::Union:       return "union";
+    case CodeSymbolType::Interface:   return "interface";
+    case CodeSymbolType::Protocol:    return "protocol";
+    case CodeSymbolType::Category:    return "category";
+    case CodeSymbolType::Exception:   return "exception";
+    case CodeSymbolType::Service:     return "service";
+    case CodeSymbolType::Singleton:   return "singleton";
+    case CodeSymbolType::Concept:     return "concept";
+    case CodeSymbolType::Namespace:   return "namespace";
+    case CodeSymbolType::Package:     return "package";
+    case CodeSymbolType::Define:      return "define";
+    case CodeSymbolType::Function:    return "function";
+    case CodeSymbolType::Variable:    return "variable";
+    case CodeSymbolType::Typedef:     return "typedef";
+    case CodeSymbolType::EnumValue:   return "enumvalue";
+    case CodeSymbolType::Enumeration: return "enumeration";
+    case CodeSymbolType::Signal:      return "signal";
+    case CodeSymbolType::Slot:        return "slot";
+    case CodeSymbolType::Friend:      return "friend";
+    case CodeSymbolType::DCOP:        return "dcop";
+    case CodeSymbolType::Property:    return "property";
+    case CodeSymbolType::Event:       return "event";
+    case CodeSymbolType::Sequence:    return "sequence";
+    case CodeSymbolType::Dictionary:  return "dictionary";
+    default:
+      return 0;
+  }
+}
+
+
 enum MemberType
 {
   MemberType_Define,
