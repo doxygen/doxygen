@@ -1,4 +1,5 @@
 {# input: si symbolIndex #}
+{% set symbolCount=0 %}
 var searchData =
 [
 {% for group in si.symbolGroups %}  ['{{ group.id }}_{{ symbolCount }}',['{{ group.name }}',{% spaceless %}{% for sym in group.symbols %}['{{ sym.relPath }}{{ sym.fileName }}{{ config.HTML_FILE_EXTENSION }}{% if sym.anchor %}#{{ sym.anchor }}{% endif %}',
@@ -6,7 +7,7 @@ var searchData =
 '{{ sym.scope|nowrap|escape }}']
 {% if not forloop.last %},{% endif %}
 {% endfor %}
-{% update symbolCount=symbolCount+1 %}
+{% set symbolCount=symbolCount+1 %}
 {% endspaceless %}
 ]]{% if not forloop.last %},{% endif %}
 {% endfor %}

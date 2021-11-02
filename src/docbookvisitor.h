@@ -13,8 +13,8 @@
 *
 */
 
-#ifndef _DOCBOOKDOCVISITOR_H
-#define _DOCBOOKDOCVISITOR_H
+#ifndef DOCBOOKDOCVISITOR_H
+#define DOCBOOKDOCVISITOR_H
 
 #include <iostream>
 

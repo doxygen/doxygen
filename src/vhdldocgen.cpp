@@ -81,6 +81,7 @@ static void writeTable(const std::vector<const MemberDef*> &portList,TextStream 
 static void endTable(TextStream &t);
 static void writeClassToDot(TextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(TextStream &t,const QCString &a,const QCString &b,const QCString &style);
+
 static const MemberDef *flowMember=0;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)
@@ -993,6 +994,7 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
   QCString temp;
 
   index=s1.find("(");
+  if (index<0) index=0;
   end=s1.findRev(")");
 
   if ((end-index)>0)
@@ -1785,7 +1787,7 @@ void VhdlDocGen::writeVHDLDeclaration(const MemberDefMutable* mdef,OutputList &o
    ol.startMemberItem( mdef->anchor(), isAnonymous ); //? 1 : m_impl->tArgList ? 3 : 0);
 
   // If there is no detailed description we need to write the anchor here.
-  bool detailsVisible = mdef->isDetailedSectionLinkable();
+  bool detailsVisible = mdef->hasDetailedDescription();
   if (!detailsVisible) // && !m_impl->annMemb)
   {
     QCString doxyName=mdef->name();
@@ -2302,6 +2304,7 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,const QCString &fil
         {
           static const reg::Ex ee(R"([\s=])");
           int in=findIndex(temp.str(),ee);
+          if (in<0) in=0;
           QCString ff=temp.left(in);
           temp.stripPrefix(ff);
           ff.append("#");
@@ -2463,7 +2466,7 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   {
     arch=ql[2];
   }
-  return label;
+  return QCString(label);
 }
 
 

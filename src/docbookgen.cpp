@@ -59,9 +59,9 @@
 //#define Docbook_DB(x) QCString __t;__t.sprintf x;m_t << __t
 
 #if 0
-#define DB_GEN_C DB_GEN_C1(t)
+#define DB_GEN_C DB_GEN_C1(m_t)
 #define DB_GEN_C1(x) x << "<!-- DB_GEN_C " << __LINE__ << " -->\n";
-#define DB_GEN_C2(y) DB_GEN_C2a(t,y)
+#define DB_GEN_C2(y) DB_GEN_C2a(m_t,y)
 #define DB_GEN_C2a(x,y) x << "<!-- DB_GEN_C " << __LINE__ << " " << y << " -->\n";
 #else
 #define DB_GEN_C
@@ -69,6 +69,7 @@
 #define DB_GEN_C2(y)
 #define DB_GEN_C2a(x,y)
 #endif
+
 //------------------
 
 inline void writeDocbookString(TextStream &t,const QCString &s)
@@ -144,7 +145,6 @@ void writeDocbookLink(TextStream &t,const QCString & /*extRef*/,const QCString &
 
 DocbookCodeGenerator::DocbookCodeGenerator(TextStream &t) : m_t(t)
 {
-  m_prettyCode=Config_getBool(DOCBOOK_PROGRAMLISTING);
 }
 
 DocbookCodeGenerator::~DocbookCodeGenerator() {}
@@ -155,7 +155,8 @@ void DocbookCodeGenerator::codify(const QCString &text)
   writeDocbookCodeString(m_t,text,m_col);
 }
 
-void DocbookCodeGenerator::writeCodeLink(const QCString &ref,const QCString &file,
+void DocbookCodeGenerator::writeCodeLink(CodeSymbolType,
+    const QCString &ref,const QCString &file,
     const QCString &anchor,const QCString &name,
     const QCString &tooltip)
 {
@@ -164,11 +165,13 @@ void DocbookCodeGenerator::writeCodeLink(const QCString &ref,const QCString &fil
   m_col+=name.length();
 }
 
-void DocbookCodeGenerator::writeCodeLinkLine(const QCString &,const QCString &file,
+void DocbookCodeGenerator::writeCodeLinkLine(CodeSymbolType,
+    const QCString &,const QCString &file,
     const QCString &,const QCString &name,
-    const QCString &)
+    const QCString &,bool writeLineAnchor)
 {
   Docbook_DB(("(writeCodeLinkLine)\n"));
+  if (!writeLineAnchor) return;
   m_t << "<anchor xml:id=\"_" << stripExtensionGeneral(stripPath(file),".xml");
   m_t << "_1l";
   writeDocbookString(m_t,name);
@@ -220,19 +223,22 @@ void DocbookCodeGenerator::writeCodeAnchor(const QCString &)
 }
 
 void DocbookCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,
-    const QCString &anchor,int l)
+    const QCString &anchor,int l,bool writeLineAnchor)
 {
   Docbook_DB(("(writeLineNumber)\n"));
   m_insideCodeLine = TRUE;
-  if (m_prettyCode)
+  if (Config_getBool(SOURCE_BROWSER))
   {
     QCString lineNumber;
     lineNumber.sprintf("%05d",l);
 
-    if (!fileName.isEmpty() && !m_sourceFileName.isEmpty())
+    if (!m_sourceFileName.isEmpty())
     {
-      writeCodeLinkLine(ref,m_sourceFileName,anchor,lineNumber,QCString());
-      writeCodeLink(ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLinkLine(CodeSymbolType::Default,ref,m_sourceFileName,anchor,lineNumber,QCString(),writeLineAnchor);
+    }
+    if (!fileName.isEmpty())
+    {
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {
@@ -263,7 +269,7 @@ void DocbookCodeGenerator::finish()
 void DocbookCodeGenerator::startCodeFragment(const QCString &)
 {
 DB_GEN_C1(m_t)
-  m_t << "<programlisting>";
+  m_t << "<programlisting linenumbering=\"unnumbered\">";
 }
 
 void DocbookCodeGenerator::endCodeFragment(const QCString &)
@@ -282,7 +288,7 @@ DocbookGenerator::DocbookGenerator() : OutputGenerator(Config_getString(DOCBOOK_
 DB_GEN_C
 }
 
-DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
+DocbookGenerator::DocbookGenerator(const DocbookGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 
@@ -313,6 +319,13 @@ void DocbookGenerator::init()
 
   createSubDirs(d);
 }
+void DocbookGenerator::cleanup()
+{
+  QCString dname = Config_getString(DOCBOOK_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 
 void DocbookGenerator::startFile(const QCString &name,const QCString &,const QCString &,int)
 {
@@ -347,14 +360,8 @@ DB_GEN_C
 void DocbookGenerator::endFile()
 {
 DB_GEN_C
-  if (m_inDetail) m_t << "</section>\n";
-  m_inDetail = FALSE;
-  while (m_inLevel != -1)
-  {
-    m_t << "</section>\n";
-    m_inLevel--;
-  }
-  if (m_inGroup) m_t << "</section>\n";
+  closeAllSections();
+  m_inLevel = -1;
   m_inGroup = FALSE;
 
   QCString fileType="section";
@@ -455,7 +462,6 @@ DB_GEN_C2("IndexSections " << is)
 void DocbookGenerator::endIndexSection(IndexSections is)
 {
 DB_GEN_C2("IndexSections " << is)
-  bool sourceBrowser = Config_getBool(SOURCE_BROWSER);
   switch (is)
   {
     case isTitlePageStart:
@@ -569,30 +575,17 @@ DB_GEN_C2("IndexSections " << is)
     case isFileDocumentation:
       {
         m_t << "</title>\n";
-        bool isFirst=TRUE;
         for (const auto &fn : *Doxygen::inputNameLinkedMap)
         {
           for (const auto &fd : *fn)
           {
             if (fd->isLinkableInProject())
             {
-              if (isFirst)
-              {
-                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                }
-                isFirst=FALSE;
-              }
-              else
-              {
-                m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                if (sourceBrowser && m_prettyCode && fd->generateSourceFile())
-                {
-                  m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
-                }
-              }
+              m_t << "    <xi:include href=\"" << fd->getOutputFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
+            }
+            if (fd->generateSourceFile())
+            {
+              m_t << "    <xi:include href=\"" << fd->getSourceFileBase() << ".xml\" xmlns:xi=\"http://www.w3.org/2001/XInclude\"/>\n";
             }
           }
         }
@@ -745,16 +738,16 @@ DB_GEN_C2("extraIndentLevel " << extraIndentLevel)
   if (m_inSimpleSect[m_levelListItem]) m_t << "</simplesect>\n";
   m_inSimpleSect[m_levelListItem] = FALSE;
   if (m_inLevel != -1) m_inGroup = TRUE;
-  if (m_inLevel == extraIndentLevel) m_t << "</section>\n";
+  if (m_inLevel == extraIndentLevel) closeSection();
   m_inLevel = extraIndentLevel;
-  m_t << "<section>\n";
+  openSection();
   m_t << "<title>";
 }
 void DocbookGenerator::writeRuler()
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
 DB_GEN_C2("m_inGroup " << m_inGroup)
-  if (m_inGroup) m_t << "</section>\n";
+  if (m_inGroup) closeSection();
   m_inGroup = FALSE;
 }
 
@@ -799,7 +792,7 @@ DB_GEN_C
   if (dense)
   {
     m_denseText = TRUE;
-    m_t << "<programlisting>";
+    m_t << "<programlisting linenumbering=\"unnumbered\">";
   }
 }
 void DocbookGenerator::endTextBlock(bool)
@@ -815,7 +808,7 @@ void DocbookGenerator::startMemberDoc(const QCString &clname, const QCString &me
                                       int memCount, int memTotal, bool)
 {
 DB_GEN_C2("m_inLevel " << m_inLevel)
-  m_t << "    <section>\n";
+  openSection();
   m_t << "    <title>" << convertToDocBook(title);
   if (memTotal>1)
   {
@@ -849,9 +842,9 @@ void DocbookGenerator::startDoxyAnchor(const QCString &fName,const QCString &,
                                  const QCString &)
 {
 DB_GEN_C
-  if (!m_inListItem[m_levelListItem] && !m_descTable)
+  if (!m_inListItem[m_levelListItem] && !m_descTable && !m_simpleTable)
   {
-    if (!m_firstMember) m_t << "    </section>";
+    if (!m_firstMember) closeSection();
     m_firstMember = FALSE;
   }
   if (!anchor.isEmpty())
@@ -1008,19 +1001,90 @@ DB_GEN_C
 void DocbookGenerator::startSection(const QCString &lab,const QCString &,SectionType)
 {
 DB_GEN_C
-  m_t << "    <section xml:id=\"_" << stripPath(lab) << "\">";
+  openSection("xml:id=\"_" + stripPath(lab) + "\"");
   m_t << "<title>";
 }
 void DocbookGenerator::endSection(const QCString &,SectionType)
 {
 DB_GEN_C
   m_t << "</title>";
-  m_t << "    </section>";
+  closeSection();
 }
 void DocbookGenerator::addIndexItem(const QCString &prim,const QCString &sec)
 {
 DB_GEN_C
   addIndexTerm(m_t, prim, sec);
+}
+
+void DocbookGenerator::startMemberDocSimple(bool isEnum)
+{
+DB_GEN_C
+  int ncols;
+  QCString title;
+  if (isEnum)
+  {
+    ncols = 2;
+    title = theTranslator->trEnumerationValues();
+  }
+  else
+  {
+    ncols = 3;
+    title = theTranslator->trCompoundMembers();
+  }
+  m_t << "<table frame=\"all\">\n";
+  if (!title.isEmpty()) m_t << "<title>" << convertToDocBook(title) << "</title>\n";
+  m_t << "    <tgroup cols=\"" << ncols << "\" align=\"left\" colsep=\"1\" rowsep=\"1\">\n";
+  for (int i = 0; i < ncols; i++)
+  {
+    m_t << "      <colspec colname='c" << i+1 << "'/>\n";
+  }
+  m_t << "<tbody>\n";
+  m_simpleTable = true;
+}
+
+void DocbookGenerator::endMemberDocSimple(bool isEnum)
+{
+DB_GEN_C
+  m_t << "    </tbody>\n";
+  m_t << "    </tgroup>\n";
+  m_t << "</table>\n";
+  m_simpleTable = false;
+}
+
+void DocbookGenerator::startInlineMemberType()
+{
+DB_GEN_C
+  m_t << "<row><entry>";
+}
+
+void DocbookGenerator::endInlineMemberType()
+{
+DB_GEN_C
+  m_t << "</entry>";
+}
+
+void DocbookGenerator::startInlineMemberName()
+{
+DB_GEN_C
+  m_t << "<entry>";
+}
+
+void DocbookGenerator::endInlineMemberName()
+{
+DB_GEN_C
+  m_t << "</entry>";
+}
+
+void DocbookGenerator::startInlineMemberDoc()
+{
+DB_GEN_C
+  m_t << "<entry>";
+}
+
+void DocbookGenerator::endInlineMemberDoc()
+{
+DB_GEN_C
+  m_t << "</entry></row>\n";
 }
 
 void DocbookGenerator::startDescTable(const QCString &title)
@@ -1174,3 +1238,26 @@ void DocbookGenerator::endConstraintList()
 DB_GEN_C
   m_t << "</simplesect>\n";
 }
+
+void DocbookGenerator::openSection(const QCString &attr)
+{
+   m_t << "<section";
+   if (!attr.isEmpty()) m_t << " " << attr;
+   m_t << ">\n";
+   m_openSectionCount++;
+}
+
+void DocbookGenerator::closeSection()
+{
+   m_t << "</section>\n";
+   m_openSectionCount--;
+}
+
+void DocbookGenerator::closeAllSections()
+{
+  while (m_openSectionCount>0)
+  {
+    closeSection();
+  }
+}
+

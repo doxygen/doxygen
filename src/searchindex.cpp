@@ -904,7 +904,6 @@ void createJavaScriptSearchIndex()
 
 void writeJavaScriptSearchIndex()
 {
-  int cnt = 0;
   // write index files
   QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
@@ -913,6 +912,7 @@ void writeJavaScriptSearchIndex()
     int p=0;
     for (const auto &kv : sii.symbolMap)
     {
+      int cnt = 0;
       QCString baseName;
       baseName.sprintf("%s_%x",sii.name.data(),p);
 
@@ -939,7 +939,7 @@ void writeJavaScriptSearchIndex()
           t << "<div class=\"SRStatus\" id=\"Loading\">" << theTranslator->trLoading() << "</div>\n";
           t << "<div id=\"SRResults\"></div>\n"; // here the results will be inserted
           t << "<script type=\"text/javascript\">\n";
-          t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+          t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
           t << "createResults();\n"; // this function will insert the results
           t << "/* @license-end */\n";
           t << "</script>\n";
@@ -949,7 +949,7 @@ void writeJavaScriptSearchIndex()
             << theTranslator->trNoMatches() << "</div>\n";
 
           t << "<script type=\"text/javascript\">\n";
-          t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+          t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
           t << "document.getElementById(\"Loading\").style.display=\"none\";\n";
           t << "document.getElementById(\"NoMatches\").style.display=\"none\";\n";
           t << "var searchResults = new SearchResults(\"searchResults\");\n";

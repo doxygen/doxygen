@@ -714,7 +714,7 @@ Structural indicators
   \ref cfg_force_local_includes "FORCE_LOCAL_INCLUDES" to \c YES.
 
   To disable the include information altogether set
-  \ref cfg_show_include_files "SHOW_INCLUDE_FILES" to \c NO.
+  \ref cfg_show_headerfile "SHOW_HEADERFILE" to \c NO.
 
 <hr>
 \section cmdhideinitializer \\hideinitializer
@@ -1336,6 +1336,9 @@ Section indicators
 
   For conditional sections within a comment block one should
   use a \ref cmdif "\\if" ... \ref cmdendif "\\endif" block.
+  When using \c \\cond and the condition is not satisfied the current comment block is
+  ended and everything until the matching \ref cmdendcond "\\endcond" is removed
+  and a new command block is started there.
 
   Conditional sections can be nested. In this case a nested section will only
   be shown if it and its containing section are included.
@@ -1385,7 +1388,10 @@ class Implementation : public Intf
 The output will be different depending on whether or not \ref cfg_enabled_sections "ENABLED_SECTIONS"
 contains \c TEST, or \c DEV
 
-  \sa sections \ref cmdendcond "\\endcond" and  \ref cfg_enabled_sections "ENABLED_SECTIONS".
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot",
+               \ref cmdelse "\\else", \ref cmdelseif "\\elseif",
+               \ref cmdendif "\\endif", \ref cmdendcond "\\endcond", and
+               \ref cfg_enabled_sections "ENABLED_SECTIONS".
   \note Due to the moment of parsing the \c \\cond and \ref cmdendcond "\\endcond" commands cannot
   be used in \ref cfg_aliases "ALIASES".
 
@@ -1445,7 +1451,7 @@ contains \c TEST, or \c DEV
   a \ref cmdif "\\if", \ref cmdifnot "\\ifnot", or \ref cmdelseif "\\elseif"
   command.
 
-  \sa \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelseif "\\elseif",
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelseif "\\elseif",
       \ref cmdendif "\\endif."
 
 <hr>
@@ -1461,8 +1467,8 @@ contains \c TEST, or \c DEV
   Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
 
-  \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
-              \ref cmdelse "\\else", and \ref cmdelseif "\\elseif".
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelse "\\else",
+      \ref cmdendif "\\endif."
 
 <hr>
 \section cmdendcond \\endcond
@@ -1482,7 +1488,8 @@ contains \c TEST, or \c DEV
   For each \ref cmdif "\\if" or \ref cmdifnot "\\ifnot" one and only one matching
   \ref cmdendif "\\endif" must follow.
 
-  \sa sections \ref cmdif "\\if" and \ref cmdifnot "\\ifnot".
+  \sa sections \ref cmdif "\\if", \ref cmdifnot "\\ifnot", \ref cmdelse "\\else",
+      \ref cmdelseif "\\elseif."
 
 <hr>
 \section cmdexception \\exception <exception-object> { exception description }
@@ -1512,10 +1519,14 @@ contains \c TEST, or \c DEV
   The section label can be a logical expression
   build of section names, round brackets, && (AND), || (OR) and ! (NOT).
   If you use an expression you need to wrap it in round brackets, i.e
-  <tt>\\cond (!LABEL1 && LABEL2)</tt>.
+  <tt>\\if (!LABEL1 && LABEL2)</tt>.
 
   Conditional blocks can be nested. A nested section is
   only enabled if all enclosing sections are enabled as well.
+
+  The \c \\if and corresponding \ref cmdendif "\\endif" have to be in the same comment block.
+  When a conditional block needs to span more than one comment block one has to use
+  \ref cmdcond "\\cond" ...  \ref cmdendcond "\\endcond".
 
   \par Example:
 \verbatim
@@ -1563,7 +1574,8 @@ ALIASES  = "english=\if english" \
   and \ref cfg_enabled_sections "ENABLED_SECTIONS" can be used to enable either \c english or \c dutch.
 
   \sa sections \ref cmdendif "\\endif", \ref cmdifnot "\\ifnot",
-               \ref cmdelse "\\else", \ref cmdelseif "\\elseif", and
+               \ref cmdelse "\\else", \ref cmdelseif "\\elseif",
+               \ref cmdcond "\\cond", \ref cmdendcond "\\endcond", and
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
 
 <hr>
@@ -1578,7 +1590,8 @@ ALIASES  = "english=\if english" \
   build of section names, round brackets, && (AND), || (OR) and ! (NOT).
 
   \sa sections \ref cmdendif "\\endif", \ref cmdif "\\if",
-               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif", and
+               \ref cmdelse "\\else", and \ref cmdelseif "\\elseif",
+               \ref cmdcond "\\cond", \ref cmdendcond "\\endcond", and
                \ref cfg_enabled_sections "ENABLED_SECTIONS".
 
 <hr>
@@ -2850,6 +2863,8 @@ only copy the detailed documentation, not the brief description.
   By using the command \ref cmdref "\\ref" inside the URL value you can conveniently
   link to an item inside doxygen. Here is an example:
 
+  \note usage of this command requires that \ref cfg_have_dot "HAVE_DOT" is set to \c YES
+
   \note doxygen creates a temporary file that is automatically removed unless
   the \ref cfg_dot_cleanup "DOT_CLEANUP" tag is set to `NO`.
 
@@ -2966,13 +2981,17 @@ class Receiver
   \note You need to install Java and the PlantUML's jar file,
   if you want to use this command. When using PlantUML in \LaTeX you have to download
   some more `jar` files, for details see the PlantUML documentation.
-  The location of the jar file should be specified using
-  \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH".
+  This also is valid for the `<engine>`s `latex` and `math`.
+  The location of the PlantUML file should be specified using
+  \ref cfg_plantuml_jar_path "PLANTUML_JAR_PATH". The other jar files should also reside
+  in this directory.
+  \note The use of the `<engine>` `ditaa` is not possible in \LaTeX as PlantUML only
+  supports the `png` format and doxygen requires, temporary, `eps` output.
 
   Not all diagrams can be created with the PlantUML `@startuml` command but need another
   PlantUML `@start...` command. This will look like `@start<engine>` where currently supported are
-  the following `<engine>`'s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
-  `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`a, `board` and `git`.s
+  the following `<engine>`s: `uml`, `bpm`, `wire`, `dot`, `ditaa`, `salt`, `math`, `latex`,
+  `gantt`, `mindmap`, `wbs`, `yaml`, `creole`, `json`, `flow`, `board` and `git`.
   By default the `<engine>` is `uml`. The `<engine>` can be specified as an option.
   Also the file to write the resulting image to can be specified by means of an option, see the
   description of the first (optional) argument for details.
@@ -3057,6 +3076,8 @@ class Receiver
   For a description of the possibilities see the paragraph
   \ref image_sizeindicator "Size indication" with the
   \ref cmdimage "\\image" command.
+
+  \note usage of this command requires that \ref cfg_have_dot "HAVE_DOT" is set to \c YES
 
   \sa section \ref cmddot "\\dot".
 
@@ -3326,7 +3347,7 @@ class Receiver
               \ref cmdhtmlinclude "\\htmlinclude".
 
 <hr>
-\section cmdimage \\image['{'option'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
+\section cmdimage \\image['{'option[,option]'}'] <format> <file> ["caption"] [<sizeindication>=<size>]
 
   \addindex \\image
   Inserts an image into the documentation. This command is format
@@ -3335,7 +3356,7 @@ class Receiver
 
   The first argument specifies the output format in which the image should
   be embedded. Currently, the following values are supported:
-  \c html, \c latex, \c docbook and \c rtf.
+  \c html, \c latex, \c docbook, \c rtf and \c xml.
 
   The second argument specifies the file name of the image.
   doxygen will look for files in the paths (or files) that you specified
@@ -3358,9 +3379,10 @@ class Receiver
   The size specifier in \LaTeX (for example `10cm` or
   `4in` or a symbolic width like `\textwidth`).
 
-  Currently only the option `inline` is supported. In case the option `inline` is
+  Currently only the options `inline` and `anchor` are supported. In case the option `inline` is
   specified the image is placed "in the line", when a caption s present it is shown
-  in HTML as tooltip (ignored for the other formats).
+  in HTML as tooltip (ignored for the other formats). For the `anchor` option the syntax is:
+  `anchor:<anchorId>`.
 
   Here is example of a comment block:
 

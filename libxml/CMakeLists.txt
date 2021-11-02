@@ -11,7 +11,7 @@ set_source_files_properties(${GENERATED_SRC}/xml.l.h PROPERTIES GENERATED 1)
 
 FLEX_TARGET(xml xml.l ${GENERATED_SRC}/xml.cpp COMPILE_FLAGS "${LEX_FLAGS}")
 
-add_library(xml
+add_library(xml STATIC
 ${GENERATED_SRC}/xml.cpp
 ${GENERATED_SRC}/xml.l.h
 )

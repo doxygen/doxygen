@@ -22,10 +22,10 @@ void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
                SrcLangExt,          // lang
                bool,                // isExampleBlock
                const QCString &,    // exampleName
-               FileDef *            fileDef,
+               const FileDef *      fileDef,
                int                  startLine,
                int                  endLine,
-               bool,                // inlineFragment
+               bool                 inlineFragment,
                const MemberDef *,   // memberDef
                bool                 showLineNumbers,
                const Definition *,  // searchCtx,
@@ -43,7 +43,7 @@ void FileCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     codeOutIntf.startCodeLine(fileDef != 0 && showLineNumbers);
     if (fileDef != 0 && showLineNumbers)
     {
-      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr);
+      codeOutIntf.writeLineNumber(QCString(),QCString(),QCString(),lineNr,!inlineFragment);
     }
     if (!lineStr.isEmpty()) codeOutIntf.codify(lineStr.data());
     codeOutIntf.endCodeLine();

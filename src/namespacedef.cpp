@@ -58,6 +58,8 @@ class NamespaceDefImpl : public DefinitionMixin<NamespaceDefMutable>
                  bool isPublished=false);
     virtual ~NamespaceDefImpl();
     virtual DefType definitionType() const { return TypeNamespace; }
+    virtual CodeSymbolType codeSymbolType() const
+    { return getLanguage()==SrcLangExt_Java ? CodeSymbolType::Package : CodeSymbolType::Namespace; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual void insertUsedFile(FileDef *fd);
@@ -179,6 +181,8 @@ class NamespaceDefAliasImpl : public DefinitionAliasMixin<NamespaceDef>
     const NamespaceDef *getNSAlias() const { return toNamespaceDef(getAlias()); }
 
     // ---- getters
+    virtual CodeSymbolType codeSymbolType() const
+    { return getNSAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getNSAlias()->getOutputFileBase(); }
     virtual QCString anchor() const
@@ -457,7 +461,7 @@ void NamespaceDefImpl::insertMember(MemberDef *md)
     MemberList *allMemberList = getMemberList(MemberListType_allMembersList);
     if (allMemberList==0)
     {
-      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList));
+      m_memberLists.emplace_back(std::make_unique<MemberList>(MemberListType_allMembersList,MemberListContainer::Namespace));
       allMemberList = m_memberLists.back().get();
     }
     allMemberList->push_back(md);
@@ -674,9 +678,11 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
-                        briefDescription(),TRUE,FALSE,
-                        QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                                         briefFile(),briefLine(),this,0,
+                                         briefDescription(),TRUE,FALSE,
+                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -684,7 +690,7 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -700,7 +706,6 @@ void NamespaceDefImpl::writeBriefDescription(OutputList &ol)
       ol.popGeneratorState();
       ol.endParagraph();
     }
-    delete rootNode;
 
     // FIXME:PARA
     //ol.pushGeneratorState();
@@ -940,13 +945,12 @@ void NamespaceDefImpl::writeDocumentation(OutputList &ol)
   endTitle(ol,getOutputFileBase(),displayName());
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
-
-  Doxygen::indexList->addIndexItem(this,0);
+  //if (Doxygen::searchIndex)
+  //{
+  //  Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
+  //  Doxygen::searchIndex->addWord(localName(),TRUE);
+  //}
+  //Doxygen::indexList->addIndexItem(this,0);
 
   //---------------------------------------- start flexible part -------------------------------
 
@@ -1368,7 +1372,7 @@ void NamespaceDefImpl::addMemberToList(MemberListType lt,MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_memberLists.get(lt);
+  const auto &ml = m_memberLists.get(lt,MemberListContainer::Namespace);
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));

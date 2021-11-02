@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _LATEXDOCVISITOR_H
-#define _LATEXDOCVISITOR_H
+#ifndef LATEXDOCVISITOR_H
+#define LATEXDOCVISITOR_H
 
 #include <stack>
 
@@ -23,6 +23,7 @@
 
 class LatexCodeGenerator;
 class TextStream;
+
 
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
@@ -176,6 +177,10 @@ class LatexDocVisitor : public DocVisitor
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
 
+    void incIndentLevel();
+    void decIndentLevel();
+    int indentLevel() const;
+
     //--------------------------------------
     // state variables
     //--------------------------------------
@@ -200,6 +205,16 @@ class LatexDocVisitor : public DocVisitor
     };
     std::stack<TableState> m_tableStateStack; // needed for nested tables
     RowSpanList m_emptyRowSpanList;
+
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+
+    struct LatexListItemInfo
+    {
+      bool isEnum = false;
+    };
+
+    LatexListItemInfo m_listItemInfo[maxIndentLevels];
 
     void pushTableState()
     {
@@ -263,5 +278,4 @@ class LatexDocVisitor : public DocVisitor
     }
 
 };
-
 #endif

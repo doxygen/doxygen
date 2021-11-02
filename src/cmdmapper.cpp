@@ -150,6 +150,7 @@ CommandMap cmdMap[] =
   { "docbookinclude",CMD_DOCBOOKINCLUDE },
   { "maninclude",    CMD_MANINCLUDE },
   { "xmlinclude",    CMD_XMLINCLUDE },
+  { "iline",         CMD_ILINE },
   { 0,               0 },
 };
 

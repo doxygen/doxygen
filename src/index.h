@@ -24,6 +24,7 @@
 
 class Definition;
 class DefinitionMutable;
+class NamespaceDef;
 class MemberDef;
 class OutputList;
 
@@ -248,7 +249,6 @@ extern int documentedClassMembers[CMHL_Total];
 extern int documentedFileMembers[FMHL_Total];
 extern int documentedNamespaceMembers[NMHL_Total];
 extern int documentedDirs;
-extern int documentedHtmlFiles;
 extern int documentedPages;
 
 void startTitle(OutputList &ol,const QCString &fileName,const DefinitionMutable *def=0);
@@ -268,5 +268,7 @@ void addFileMemberNameToIndex(const MemberDef *md);
 void addNamespaceMemberNameToIndex(const MemberDef *md);
 void sortMemberIndexLists();
 QCString fixSpaces(const QCString &s);
+
+int countVisibleMembers(const NamespaceDef *nd);
 
 #endif

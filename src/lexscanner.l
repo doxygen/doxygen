@@ -20,6 +20,10 @@
 
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -126,7 +130,7 @@ BN        [ \t\n\r]
 BL        [ \t\r]*"\n"
 B         [ \t]
 Bopt      {B}*
-ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 PRE       [pP][rR][eE]
 CODE      [cC][oO][dD][eE]
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("

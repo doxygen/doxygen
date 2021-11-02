@@ -20,6 +20,10 @@
 %option extra-type="struct commentcnvYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -48,9 +52,9 @@
 
 #define USE_STATE2STRING 0
   
-struct CondCtx
+struct commentcnvYY_CondCtx
 {
-  CondCtx(int line,QCString id,bool b) 
+  commentcnvYY_CondCtx(int line,QCString id,bool b) 
     : lineNr(line),sectionId(id), skip(b) {}
   int lineNr;
   QCString sectionId;
@@ -77,7 +81,7 @@ struct commentcnvYY_state
   QCString fileName;
   int      lineNr = 0;
   int      condCtx = 0;
-  std::stack<CondCtx> condStack;
+  std::stack<commentcnvYY_CondCtx> condStack;
   std::stack<int> commentStack;
   QCString blockName;
   int      lastCommentContext = 0;
@@ -1057,7 +1061,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(yyextra->fileName,yyextra->lineNr,sectId);
-  yyextra->condStack.push(CondCtx(yyextra->lineNr,sectId,yyextra->skip));
+  yyextra->condStack.push(commentcnvYY_CondCtx(yyextra->lineNr,sectId,yyextra->skip));
   if (!expResult) // not enabled
   {
     yyextra->skip=TRUE;
@@ -1074,7 +1078,7 @@ static void endCondSection(yyscan_t yyscanner)
   }
   else
   {
-    const CondCtx &ctx = yyextra->condStack.top();
+    const commentcnvYY_CondCtx &ctx = yyextra->condStack.top();
     yyextra->skip=ctx.skip;
     yyextra->condStack.pop();
   }
@@ -1205,7 +1209,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
   yylex(yyscanner);
   while (!yyextra->condStack.empty())
   {
-    const CondCtx &ctx = yyextra->condStack.top();
+    const commentcnvYY_CondCtx &ctx = yyextra->condStack.top();
     QCString sectionInfo(" ");
     if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
     warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "

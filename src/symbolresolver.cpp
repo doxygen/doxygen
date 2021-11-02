@@ -25,6 +25,7 @@
 #include "defargs.h"
 
 static std::mutex g_cacheMutex;
+static std::recursive_mutex g_cacheTypedefMutex;
 
 //--------------------------------------------------------------------------------------
 
@@ -202,12 +203,12 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   }
 
   //printf("Looking for symbol %s\n",qPrint(name));
-  auto range = Doxygen::symbolMap.find(name);
+  auto range = Doxygen::symbolMap->find(name);
   // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
   if (range.first==range.second)
   {
-    range = Doxygen::symbolMap.find(name+"-p");
+    range = Doxygen::symbolMap->find(name+"-p");
     if (range.first==range.second)
     {
       //fprintf(stderr,"%d ] no such symbol!\n",--level);
@@ -494,6 +495,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
                   QCString *pResolvedType,                             // out
                   const std::unique_ptr<ArgumentList> &actTemplParams) // in
 {
+  std::lock_guard<std::recursive_mutex> lock(g_cacheTypedefMutex);
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)
@@ -973,7 +975,7 @@ QCString SymbolResolver::Private::substTypedef(
   QCString result=name;
   if (name.isEmpty()) return result;
 
-  auto range = Doxygen::symbolMap.find(name);
+  auto range = Doxygen::symbolMap->find(name);
   if (range.first==range.second)
     return result; // no matches
 

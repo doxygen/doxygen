@@ -163,6 +163,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
 
     virtual ClassDef *resolveAlias() { return this; }
     virtual DefType definitionType() const { return TypeClass; }
+    virtual CodeSymbolType codeSymbolType() const;
     virtual QCString getOutputFileBase() const;
     virtual QCString getInstanceOutputFileBase() const;
     virtual QCString getSourceFileBase() const;
@@ -206,6 +207,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual QCString qualifiedNameWithTemplateParameters(
         const ArgumentLists *actualParams=0,uint *actualParamIndex=0) const;
     virtual bool isAbstract() const;
+    virtual bool isStatic() const;
     virtual bool isObjectiveC() const;
     virtual bool isFortran() const;
     virtual bool isCSharp() const;
@@ -261,6 +263,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void setCompoundType(CompoundType t);
     virtual void setClassName(const QCString &name);
     virtual void setClassSpecifier(uint64 spec);
+    virtual void setClassStatic(bool stat);
     virtual void setTemplateArguments(const ArgumentList &al);
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames);
     virtual void setTemplateMaster(const ClassDef *tm);
@@ -284,7 +287,7 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
     virtual void writeDocumentationForInnerClasses(OutputList &ol) const;
     virtual void writeMemberPages(OutputList &ol) const;
     virtual void writeMemberList(OutputList &ol) const;
-    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+    virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
                           const ClassDef *inheritedFrom,const QCString &inheritId) const;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const;
     virtual void writeSummaryLinks(OutputList &ol) const;
@@ -325,13 +328,13 @@ class ClassDefImpl : public DefinitionMixin<ClassDefMutable>
                                           bool showAlways) const;
     void writeMemberDocumentation(OutputList &ol,MemberListType lt,const QCString &title,bool showInline=FALSE) const;
     void writeSimpleMemberDocumentation(OutputList &ol,MemberListType lt) const;
-    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,const ClassDef *inheritedFrom,const QCString &inheritId) const;
+    void writePlainMemberDeclaration(OutputList &ol,MemberListType lt,bool inGroup,
+                                     int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeBriefDescription(OutputList &ol,bool exampleFlag) const;
     void writeDetailedDescription(OutputList &ol,const QCString &pageType,bool exampleFlag,
                                   const QCString &title,const QCString &anchor=QCString()) const;
     void writeIncludeFiles(OutputList &ol) const;
     void writeIncludeFilesForSlice(OutputList &ol) const;
-    //void writeAllMembersLink(OutputList &ol);
     void writeInheritanceGraph(OutputList &ol) const;
     void writeCollaborationGraph(OutputList &ol) const;
     void writeMemberGroups(OutputList &ol,bool showInline=FALSE) const;
@@ -384,6 +387,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     const ClassDef *getCdAlias() const { return toClassDef(getAlias()); }
     virtual ClassDef *resolveAlias() { return const_cast<ClassDef*>(getCdAlias()); }
 
+    virtual CodeSymbolType codeSymbolType() const
+    { return getCdAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getCdAlias()->getOutputFileBase(); }
     virtual QCString getInstanceOutputFileBase() const
@@ -467,6 +472,8 @@ class ClassDefAliasImpl : public DefinitionAliasMixin<ClassDef>
     { return makeQualifiedNameWithTemplateParameters(this,actualParams,actualParamIndex); }
     virtual bool isAbstract() const
     { return getCdAlias()->isAbstract(); }
+    virtual bool isStatic() const
+    { return getCdAlias()->isStatic(); }
     virtual bool isObjectiveC() const
     { return getCdAlias()->isObjectiveC(); }
     virtual bool isFortran() const
@@ -706,6 +713,7 @@ class ClassDefImpl::IMPL
     bool isJavaEnum = false;
 
     uint64 spec = 0;
+    bool stat = false;
 
     QCString metaData;
 
@@ -1077,7 +1085,7 @@ void ClassDefImpl::internalInsertMember(const MemberDef *md,
               case MemberType_Function:
                 if (md->isConstructor() || md->isDestructor())
                 {
-                  m_impl->memberLists.get(MemberListType_constructors)->push_back(md);
+                  m_impl->memberLists.get(MemberListType_constructors,MemberListContainer::Class)->push_back(md);
                 }
                 else
                 {
@@ -1602,12 +1610,15 @@ int ClassDefImpl::countInheritanceNodes() const
 
 void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
 {
+  static bool haveDot    = Config_getBool(HAVE_DOT);
+  static auto classGraph = Config_getEnum(CLASS_GRAPH);
+
+  if (classGraph == CLASS_GRAPH_t::NO) return;
   // count direct inheritance relations
   const int count=countInheritanceNodes();
 
   bool renderDiagram = FALSE;
-  if (Config_getBool(HAVE_DOT) &&
-      (Config_getBool(CLASS_DIAGRAMS) || Config_getBool(CLASS_GRAPH)))
+  if (haveDot && (classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH))
     // write class diagram using dot
   {
     DotClassGraph inheritanceGraph(this,Inheritance);
@@ -1627,7 +1638,7 @@ void ClassDefImpl::writeInheritanceGraph(OutputList &ol) const
       renderDiagram = TRUE;
     }
   }
-  else if (Config_getBool(CLASS_DIAGRAMS) && count>0)
+  else if ((classGraph==CLASS_GRAPH_t::YES || classGraph==CLASS_GRAPH_t::GRAPH) && count>0)
     // write class diagram using built-in generator
   {
     ClassDiagram diagram(this); // create a diagram of this class.
@@ -1889,7 +1900,7 @@ void ClassDefImpl::writeIncludeFilesForSlice(OutputList &ol) const
 
 void ClassDefImpl::writeIncludeFiles(OutputList &ol) const
 {
-  if (m_impl->incInfo /*&& Config_getBool(SHOW_INCLUDE_FILES)*/)
+  if (m_impl->incInfo /*&& Config_getBool(SHOW_HEADERFILE)*/)
   {
     SrcLangExt lang = getLanguage();
     QCString nm=m_impl->incInfo->includeName.isEmpty() ?
@@ -2431,20 +2442,21 @@ void ClassDefImpl::writeDeclarationLink(OutputList &ol,bool &found,const QCStrin
     // add the brief description if available
     if (!briefDescription().isEmpty() && Config_getBool(BRIEF_MEMBER_DESC))
     {
-      DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
+      std::unique_ptr<IDocParser> parser { createDocParser() };
+      std::unique_ptr<DocRoot> rootNode { validatingParseDoc(*parser.get(),
+                                briefFile(),briefLine(),this,0,
                                 briefDescription(),FALSE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
       if (rootNode && !rootNode->isEmpty())
       {
         ol.startMemberDescription(anchor());
-        ol.writeDoc(rootNode,this,0);
+        ol.writeDoc(rootNode.get(),this,0);
         if (isLinkableInProject())
         {
           writeMoreLink(ol,anchor());
         }
         ol.endMemberDescription();
       }
-      delete rootNode;
     }
     ol.endMemberDeclaration(anchor(),QCString());
   }
@@ -2456,6 +2468,7 @@ void ClassDefImpl::addClassAttributes(OutputList &ol) const
   if (isFinal())    sl.push_back("final");
   if (isSealed())   sl.push_back("sealed");
   if (isAbstract()) sl.push_back("abstract");
+  if (isStatic())   sl.push_back("static");
   if (getLanguage()==SrcLangExt_IDL && isPublished()) sl.push_back("published");
 
   ol.pushGeneratorState();
@@ -2481,13 +2494,6 @@ void ClassDefImpl::writeDocumentationContents(OutputList &ol,const QCString & /*
   QCString pageType = " ";
   pageType += compoundTypeString();
 
-  Doxygen::indexList->addIndexItem(this,0);
-
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
   bool exampleFlag=hasExamples();
 
   //---------------------------------------- start flexible part -------------------------------
@@ -3223,7 +3229,7 @@ void ClassDefImpl::setRequiresClause(const QCString &req)
 /*! called from MemberDef::writeDeclaration() to (recursively) write the
  *  definition of an anonymous struct, union or class.
  */
-void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
+void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,int indentLevel,
     const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("ClassName='%s' inGroup=%d\n",qPrint(name()),inGroup);
@@ -3250,8 +3256,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
   // write user defined member groups
   for (const auto &mg : m_impl->memberGroups)
   {
-    mg->setInGroup(inGroup);
-    mg->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
+    mg->writePlainDeclarations(ol,inGroup,this,0,0,0,indentLevel,inheritedFrom,inheritId);
   }
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Class))
@@ -3259,7 +3264,7 @@ void ClassDefImpl::writeDeclaration(OutputList &ol,const MemberDef *md,bool inGr
     if (lde->kind()==LayoutDocEntry::MemberDecl)
     {
       const LayoutDocEntryMemberDecl *lmd = (const LayoutDocEntryMemberDecl*)lde.get();
-      writePlainMemberDeclaration(ol,lmd->type,inGroup,inheritedFrom,inheritId);
+      writePlainMemberDeclaration(ol,lmd->type,inGroup,indentLevel,inheritedFrom,inheritId);
     }
   }
 }
@@ -4165,7 +4170,7 @@ void ClassDefImpl::addMemberToList(MemberListType lt,const MemberDef *md,bool is
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_impl->memberLists.get(lt);
+  const auto &ml = m_impl->memberLists.get(lt,MemberListContainer::Class);
   ml->setNeedsSorting((isBrief && sortBriefDocs) || (!isBrief && sortMemberDocs));
   ml->push_back(md);
 
@@ -4506,14 +4511,13 @@ void ClassDefImpl::writeSimpleMemberDocumentation(OutputList &ol,MemberListType 
 
 void ClassDefImpl::writePlainMemberDeclaration(OutputList &ol,
          MemberListType lt,bool inGroup,
-         const ClassDef *inheritedFrom,const QCString &inheritId) const
+         int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
   //printf("%s: ClassDefImpl::writePlainMemberDeclaration()\n",qPrint(name()));
   MemberList * ml = getMemberList(lt);
   if (ml)
   {
-    ml->setInGroup(inGroup);
-    ml->writePlainDeclarations(ol,this,0,0,0,inheritedFrom,inheritId);
+    ml->writePlainDeclarations(ol,inGroup,this,0,0,0,indentLevel,inheritedFrom,inheritId);
   }
 }
 
@@ -4630,6 +4634,11 @@ bool ClassDefImpl::isTemplateArgument() const
 bool ClassDefImpl::isAbstract() const
 {
   return m_impl->isAbstract || (m_impl->spec&Entry::Abstract);
+}
+
+bool ClassDefImpl::isStatic() const
+{
+  return m_impl->isStatic || m_impl->stat;
 }
 
 bool ClassDefImpl::isFinal() const
@@ -4833,6 +4842,11 @@ void ClassDefImpl::setClassSpecifier(uint64 spec)
   m_impl->spec = spec;
 }
 
+void ClassDefImpl::setClassStatic(bool stat)
+{
+  m_impl->stat = stat;
+}
+
 bool ClassDefImpl::isExtension() const
 {
   QCString n = name();
@@ -4885,6 +4899,23 @@ QCString ClassDefImpl::collaborationGraphFileName() const
 QCString ClassDefImpl::inheritanceGraphFileName() const
 {
   return m_impl->inheritFileName;
+}
+
+CodeSymbolType ClassDefImpl::codeSymbolType() const
+{
+  switch (compoundType())
+  {
+    case Class:     return CodeSymbolType::Class;     break;
+    case Struct:    return CodeSymbolType::Struct;    break;
+    case Union:     return CodeSymbolType::Union;     break;
+    case Interface: return CodeSymbolType::Interface; break;
+    case Protocol:  return CodeSymbolType::Protocol;  break;
+    case Category:  return CodeSymbolType::Category;  break;
+    case Exception: return CodeSymbolType::Exception; break;
+    case Service:   return CodeSymbolType::Service;   break;
+    case Singleton: return CodeSymbolType::Singleton; break;
+  }
+  return CodeSymbolType::Class;
 }
 
 // --- Cast functions
