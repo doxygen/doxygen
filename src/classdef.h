@@ -285,6 +285,9 @@ class ClassDef : public Definition
      */
     virtual bool isAbstract() const = 0;
 
+    /** Returns TRUE if this class is static */
+    virtual bool isStatic() const = 0;
+
     /** Returns TRUE if this class is implemented in Objective-C */
     virtual bool isObjectiveC() const = 0;
 
@@ -397,6 +400,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void setCompoundType(CompoundType t) = 0;
     virtual void setClassName(const QCString &name) = 0;
     virtual void setClassSpecifier(uint64 spec) = 0;
+    virtual void setClassStatic(bool stat) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
