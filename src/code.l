@@ -193,7 +193,7 @@ static bool isCastKeyword(const char *s);
 
 //-------------------------------------------------------------------
 #if USE_STATE2STRING
-static const char *stateToString(yyscan_t yyscanner,int state);
+static const char *stateToString(int state);
 #endif
 
 static void saveObjCContext(yyscan_t yyscanner);
@@ -1944,7 +1944,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN( yyextra->lastCContext ) ;
                                           }
                                         }
-<SkipCPP>\n/.*\n                        {
+<SkipCPP>\n/(.|\n)                      {
                                           endFontClass(yyscanner);
                                           BEGIN( yyextra->lastSkipCppContext ) ;
                                           unput('\n');
