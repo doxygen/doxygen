@@ -1061,15 +1061,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
       memcpy(tmp,sp,l);
       tmp[l]='\0';
       yyextra->code->codify(tmp);
-      if (p)
-      {
-        nextCodeLine(yyscanner);
-      }
-      else
-      {
-        endCodeLine(yyscanner);
-        done=true;
-      }
+      nextCodeLine(yyscanner);
       free(tmp);
     }
     else
