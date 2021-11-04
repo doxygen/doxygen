@@ -38,7 +38,7 @@ static void visitCaption(XmlDocVisitor *parent, const DocNodeList &children)
 static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
                           XmlDocVisitor *parent, const DocNodeList &children,
                           const QCString &name, bool writeType, DocImage::Type type, const QCString &width,
-                          const QCString &height, const QCString &alt = QCString(""), bool inlineImage = FALSE)
+                          const QCString &height, const QCString engine, const QCString &alt = QCString(""), bool inlineImage = FALSE)
 {
   t << "<" << cmd;
   if (writeType)
@@ -65,6 +65,10 @@ static void visitPreStart(TextStream &t, const char *cmd, bool doCaption,
   if (!height.isEmpty())
   {
     t << " height=\"" << convertToXML(height) << "\"";
+  }
+  if (!engine.isEmpty())
+  {
+    t << " engine=\"" << convertToXML(engine) << "\"";
   }
   if (!alt.isEmpty())
   {
@@ -300,17 +304,17 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       m_t << s->text();
       break;
     case DocVerbatim::Dot:
-      visitPreStart(m_t, "dot", s->hasCaption(), this, s->children(), QCString(""), FALSE, DocImage::Html, s->width(), s->height());
+      visitPreStart(m_t, "dot", s->hasCaption(), this, s->children(), QCString(""), FALSE, DocImage::Html, s->width(), s->height(), QCString());
       filter(s->text());
       visitPostEnd(m_t, "dot");
       break;
     case DocVerbatim::Msc:
-      visitPreStart(m_t, "msc", s->hasCaption(), this, s->children(),  QCString(""), FALSE, DocImage::Html, s->width(), s->height());
+      visitPreStart(m_t, "msc", s->hasCaption(), this, s->children(),  QCString(""), FALSE, DocImage::Html, s->width(), s->height(), QCString());
       filter(s->text());
       visitPostEnd(m_t, "msc");
       break;
     case DocVerbatim::PlantUML:
-      visitPreStart(m_t, "plantuml", s->hasCaption(), this, s->children(),  QCString(""), FALSE, DocImage::Html, s->width(), s->height());
+      visitPreStart(m_t, "plantuml", s->hasCaption(), this, s->children(),  QCString(""), FALSE, DocImage::Html, s->width(), s->height(), s->engine());
       filter(s->text());
       visitPostEnd(m_t, "plantuml");
       break;
@@ -945,7 +949,7 @@ void XmlDocVisitor::visitPre(DocImage *img)
                          [](const auto &att) { return att.name=="alt"; });
   QCString altValue = it!=attribs.end() ? it->value : "";
   visitPreStart(m_t, "image", FALSE, this, img->children(), baseName, TRUE,
-                img->type(), img->width(), img->height(),
+                img->type(), img->width(), img->height(), QCString(),
                 altValue, img->isInlineImage());
 
   // copy the image to the output dir
@@ -966,7 +970,7 @@ void XmlDocVisitor::visitPost(DocImage *)
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height(), QCString());
 }
 
 void XmlDocVisitor::visitPost(DocDotFile *)
@@ -978,7 +982,7 @@ void XmlDocVisitor::visitPost(DocDotFile *)
 void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height(), QCString());
 }
 
 void XmlDocVisitor::visitPost(DocMscFile *)
@@ -990,7 +994,7 @@ void XmlDocVisitor::visitPost(DocMscFile *)
 void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height(), QCString());
 }
 
 void XmlDocVisitor::visitPost(DocDiaFile *)
