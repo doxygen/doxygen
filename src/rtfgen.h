@@ -299,9 +299,9 @@ class RTFGenerator : public OutputGenerator
     int m_indentLevel = 0;
     struct RTFListItemInfo
     {
-      bool isEnum;
-      int number;
-      char type;
+      bool isEnum = false;
+      int number = 1;
+      char type = '1';
     };
     RTFListItemInfo m_listItemInfo[maxIndentLevels];
 };
