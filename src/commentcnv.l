@@ -883,7 +883,7 @@ SLASHopt [/]*
 <CondLine>\n			   |
 <CondLine>.			   { // forgot section id?
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
-				     if (*yytext=='\n') yyextra->lineNr++;
+				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,QCString(yytext));
