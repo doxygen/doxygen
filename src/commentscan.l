@@ -3206,6 +3206,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
       if (oldContext!=yyextra->inContext)
       {
         stripTrailingWhiteSpace(yyextra->current->doc);
+        if (yyextra->current->doc.isEmpty()) yyextra->current->docLine = yyextra->lineNr;
         if (yyextra->current->docFile.isEmpty())
         {
           yyextra->current->docFile = yyextra->fileName;
@@ -3217,6 +3218,7 @@ static inline void setOutput(yyscan_t yyscanner,OutputContext ctx)
     case OutputBrief:
       if (oldContext!=yyextra->inContext)
       {
+        if (yyextra->current->brief.isEmpty()) yyextra->current->briefLine = yyextra->lineNr;
         if (yyextra->current->briefFile.isEmpty())
         {
           yyextra->current->briefFile = yyextra->fileName;
