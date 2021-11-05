@@ -1007,7 +1007,8 @@ STopt  [^\n@\\]*
   /* ------------ handle argument of namespace command --------------- */
 
 <NameSpaceDocArg1>{SCOPENAME}           { // handle argument
-                                          yyextra->current->name = substitute(QCString(yytext),QCString("."),QCString("::"));
+                                          lineCount(yyscanner);
+                                          yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),QCString("."),QCString("::"));
                                           BEGIN( Comment );
                                         }
 <NameSpaceDocArg1>{LC}                  { // line continuation
@@ -1075,10 +1076,12 @@ STopt  [^\n@\\]*
   /* ------ handle argument of class/struct/union command --------------- */
 
 <ClassDocArg1>{SCOPENAME}{TMPLSPEC}     {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(removeRedundantWhiteSpace(QCString(yytext)),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
 <ClassDocArg1>{SCOPENAME}               { // first argument
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           if (yyextra->current->section==Entry::PROTOCOLDOC_SEC)
                                           {
@@ -1088,6 +1091,7 @@ STopt  [^\n@\\]*
                                           BEGIN( ClassDocArg2 );
                                         }
 <CategoryDocArg1>{SCOPENAME}{B}*"("[^\)]+")" {
+                                          lineCount(yyscanner);
                                           yyextra->current->name = substitute(QCString(yytext),".","::");
                                           BEGIN( ClassDocArg2 );
                                         }
