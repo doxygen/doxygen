@@ -880,6 +880,7 @@ SLASHopt [/]*
   				     yyextra->condCtx=YY_START;
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
                                    }
+<CondLine>\n			   |
 <CondLine>.			   { // forgot section id?
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
 				     if (*yytext=='\n') yyextra->lineNr++;
@@ -948,6 +949,9 @@ SLASHopt [/]*
 <*>.                               {
   				     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
+  /*
+<*>\n  { fprintf(stderr,"Lex scanner %s (%s) default rule newline for state %s.\n", __FILE__, qPrint(yyextra->fileName),stateToString(YY_START));}
+  */
 %%
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)
