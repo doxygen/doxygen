@@ -281,6 +281,7 @@ struct preYY_state
   QCString           guardExpr;
   int                curlyCount     = 0;
   bool               nospaces       = false; // add extra spaces during macro expansion
+  int                javaBlock      = 0;
 
   bool               macroExpansion = false; // from the configuration
   bool               expandOnlyPredef = false; // from the configuration
@@ -395,6 +396,7 @@ WSopt [ \t\r]*
 %x      CopyCComment
 %x      SkipVerbatim
 %x      SkipCPPComment
+%x      JavaDocVerbatimCode
 %x      RemoveCComment
 %x      RemoveCPPComment
 %x      Guard
@@ -1247,6 +1249,11 @@ WSopt [ \t\r]*
                                           }
                                           BEGIN(SkipVerbatim);
                                         }
+<SkipCComment>"{"[ \t]*"@code"/[ \t\n]  {
+                                          outputArray(yyscanner,"@code",5);
+                                          yyextra->javaBlock=1;
+                                          BEGIN(JavaDocVerbatimCode);
+                                        }
 <SkipCComment,SkipCPPComment>[\\@][\\@]"cond"[ \t]+ { // escaped @cond
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
@@ -1377,7 +1384,43 @@ WSopt [ \t\r]*
 <SkipVerbatim>{CCE}|{CCS}                       {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<SkipCComment,SkipVerbatim>[^*\\@\x06~`\n\/]+ {
+<JavaDocVerbatimCode>"{"                {
+                                          if (yyextra->javaBlock==0)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->javaBlock++;
+                                            outputArray(yyscanner,yytext,(int)yyleng);
+                                          }
+                                        }
+<JavaDocVerbatimCode>"}"                {
+                                          if (yyextra->javaBlock==0)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->javaBlock--;
+                                            if (yyextra->javaBlock==0)
+                                            {
+                                              outputArray(yyscanner," @endcode ",10);
+                                              BEGIN(SkipCComment);
+                                            }
+                                            else
+                                            {
+                                              outputArray(yyscanner,yytext,(int)yyleng);
+                                            }
+                                          }
+                                        }
+<JavaDocVerbatimCode>\n                 { /* new line in verbatim block */
+                                          outputArray(yyscanner,yytext,(int)yyleng);
+                                        }
+<JavaDocVerbatimCode>.                  { /* any other character */
+                                          outputArray(yyscanner,yytext,(int)yyleng);
+                                        }
+<SkipCComment,SkipVerbatim>[^{*\\@\x06~`\n\/]+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <SkipCComment,SkipVerbatim>\n           {
