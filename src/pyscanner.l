@@ -1283,7 +1283,14 @@ STARTDOCSYMS      "##"
 			          actualDoc.append("\\endverbatim ");
 			        }
 			      }
-			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+                              if (yyextra->moduleScope.startsWith("__") &&  yyextra->moduleScope.endsWith("__"))
+                              {
+			        actualDoc.prepend("\\namespace \\"+yyextra->moduleScope+" ");
+                              }
+                              else
+                              {
+			        actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+                              }
 			      handleCommentBlock(yyscanner, actualDoc, FALSE);
 			    }
 			    if ((yyextra->docBlockContext==ClassBody /*&& !yyextra->hideClassDocs*/) ||
