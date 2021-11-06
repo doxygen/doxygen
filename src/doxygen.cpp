@@ -12423,7 +12423,12 @@ void generateOutput()
     g_s.end();
   }
 
-  if (g_useOutputTemplate) generateOutputViaTemplate();
+  if (g_useOutputTemplate)
+  {
+    g_s.begin("Generating output via template engine...\n");
+    generateOutputViaTemplate();
+    g_s.end();
+  }
 
   warn_flush();
 

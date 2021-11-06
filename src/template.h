@@ -30,7 +30,6 @@ class TemplateEngine;
 class TextStream;
 
 using TemplateListIntfPtr       = std::shared_ptr<TemplateListIntf>;
-using TemplateListIntfWeakPtr   = std::weak_ptr<TemplateListIntf>;
 using TemplateStructIntfPtr     = std::shared_ptr<TemplateStructIntf>;
 using TemplateStructIntfWeakPtr = std::weak_ptr<TemplateStructIntf>;
 
@@ -135,11 +134,6 @@ class TemplateVariant
      */
     TemplateVariant(TemplateStructIntfWeakPtr s) { m_variant.set<TemplateStructIntfWeakPtr>(s); }
 
-    /** Constructs a new variant with a list value \a l.
-     *  @note. The variant will hold a non-counting reference to the object.
-     */
-    TemplateVariant(TemplateListIntfWeakPtr l) { m_variant.set<TemplateListIntfWeakPtr>(l); }
-
     /** Constructs a new variant which represents a method call
      *  @param[in] delegate FunctionDelegate object to invoke when
      *             calling call() on this variant.
@@ -150,7 +144,7 @@ class TemplateVariant
     TemplateVariant(FunctionDelegate delegate) { m_variant.set<FunctionDelegate>(delegate); }
 
     /** Destroys the Variant object */
-    ~TemplateVariant() = default;
+    ~TemplateVariant()  = default;
 
     /** Constructs a copy of the variant, \a v,
      *  passed as the argument to this constructor.
@@ -199,48 +193,23 @@ class TemplateVariant
     constexpr bool isFunction()   const { return m_variant.is<FunctionDelegate>(); }
     /** Returns TRUE if the variant holds a struct value */
     constexpr bool isWeakStruct() const { return m_variant.is<TemplateStructIntfWeakPtr>(); }
-    /** Returns TRUE if the variant holds a list value */
-    constexpr bool isWeakList()   const { return m_variant.is<TemplateListIntfWeakPtr>(); }
 
     /** Returns the pointer to list referenced by this variant
      *  or 0 if this variant does not have list type.
      */
-    TemplateListIntfPtr toList()
-    {
-      return isList()     ? m_variant.get<TemplateListIntfPtr>()            :
-             isWeakList() ? m_variant.get<TemplateListIntfWeakPtr>().lock() :
-             nullptr;
-    }
-    const TemplateListIntfPtr toList() const
-    {
-      return isList()     ? m_variant.get<TemplateListIntfPtr>()            :
-             isWeakList() ? m_variant.get<TemplateListIntfWeakPtr>().lock() :
-             nullptr;
-    }
+    TemplateListIntfPtr toList();
+    const TemplateListIntfPtr toList() const;
 
     /** Returns the pointer to struct referenced by this variant
      *  or 0 if this variant does not have struct type.
      */
-    TemplateStructIntfPtr toStruct()
-    {
-      return isStruct()     ? m_variant.get<TemplateStructIntfPtr>() :
-             isWeakStruct() ? m_variant.get<TemplateStructIntfWeakPtr>().lock() :
-             nullptr;
-    }
-    const TemplateStructIntfPtr toStruct() const
-    {
-      return isStruct()     ? m_variant.get<TemplateStructIntfPtr>() :
-             isWeakStruct() ? m_variant.get<TemplateStructIntfWeakPtr>().lock() :
-             nullptr;
-    }
+    TemplateStructIntfPtr toStruct();
+    const TemplateStructIntfPtr toStruct() const;
 
     /** Return the result of apply this function with \a args.
      *  Returns an empty string if the variant type is not a function.
      */
-    TemplateVariant call(const std::vector<TemplateVariant> &args)
-    {
-      return isFunction() ? m_variant.get<FunctionDelegate>()(args) : TemplateVariant();
-    }
+    TemplateVariant call(const std::vector<TemplateVariant> &args = std::vector<TemplateVariant>());
 
     /** Sets whether or not the value of the Variant should be
      *  escaped or written as-is (raw).
@@ -263,8 +232,7 @@ class TemplateVariant
       Struct     = 3,
       List       = 4,
       Function   = 5,
-      WeakStruct = 6,
-      WeakList   = 7
+      WeakStruct = 6
     };
 
     /** Returns the type held by this variant */
@@ -283,12 +251,13 @@ class TemplateVariant
                              TemplateStructIntfPtr,     // index==3: Type::Struct
                              TemplateListIntfPtr,       // index==4: Type::List
                              FunctionDelegate,          // index==5: Type::Function
-                             TemplateStructIntfWeakPtr, // index==6: Type::WeakStruct
-                             TemplateListIntfWeakPtr    // index==7: Type::WeakList
+                             TemplateStructIntfWeakPtr  // index==6: Type::WeakStruct
                             >;
     VariantT              m_variant;
     bool                  m_raw = false;
 };
+
+using TemplateVariantList = std::vector<TemplateVariant>;
 
 //------------------------------------------------------------------------
 
@@ -337,11 +306,8 @@ class TemplateListIntf
 
 };
 
-class TemplateList;
-using TemplateListPtr = std::shared_ptr<TemplateList>;
-
-/** @brief Default implementation of a context value of type list. */
-class TemplateList : public TemplateListIntf
+/** @brief Default implementation of a immutable context value of type list. */
+class TemplateImmutableList : public TemplateListIntf
 {
   public:
     // TemplateListIntf methods
@@ -349,20 +315,17 @@ class TemplateList : public TemplateListIntf
     virtual TemplateVariant at(uint index) const;
     virtual TemplateListIntf::ConstIteratorPtr createIterator() const;
 
-    /** Creates an instance with ref count set to 0 */
-    static TemplateListPtr alloc();
-
-    /** Appends element \a v to the end of the list */
-    virtual void append(const TemplateVariant &v);
+    /** Creates an instance and returns a shared pointer to it */
+    static TemplateListIntfPtr alloc(std::initializer_list<TemplateVariant> elements);
+    static TemplateListIntfPtr alloc(const std::vector<TemplateVariant> &elements);
 
     /** Creates a list */
-    TemplateList();
+    TemplateImmutableList(std::initializer_list<TemplateVariant> elements);
+    TemplateImmutableList(const std::vector<TemplateVariant> &elements);
     /** Destroys the list */
-    virtual ~TemplateList();
+    virtual ~TemplateImmutableList();
 
   private:
-
-    friend class TemplateListConstIterator;
     class Private;
     std::unique_ptr<Private> p;
 };
@@ -385,36 +348,34 @@ class TemplateStructIntf
     virtual StringVector fields() const = 0;
 };
 
-class TemplateStruct;
-using TemplateStructPtr = std::shared_ptr<TemplateStruct>;
+//------------------------------------------------------------------------
 
-/** @brief Default implementation of a context value of type struct. */
-class TemplateStruct : public TemplateStructIntf
+/** @brief Default implementation of an immutable context value of type struct. */
+class TemplateImmutableStruct : public TemplateStructIntf
 {
   public:
     // TemplateStructIntf methods
     virtual TemplateVariant get(const QCString &name) const;
     virtual StringVector fields() const;
 
-    /** Creates an instance with ref count set to 0. */
-    static TemplateStructPtr alloc();
+    using StructField = std::pair<const std::string,TemplateVariant>;
 
-    /** Sets the value the field of a struct
-     *  @param[in] name The name of the field.
-     *  @param[in] v The value to set.
+    /** Creates an instance and returns a shared pointer to it
+     *  @param fields the fields of the struct as key/value pairs.
      */
-    virtual void set(const QCString &name,const TemplateVariant &v);
+    static TemplateStructIntfPtr alloc(std::initializer_list<StructField> fields);
 
     /** Creates a struct */
-    TemplateStruct();
+    TemplateImmutableStruct(std::initializer_list<StructField> fields);
     /** Destroys the struct */
-    virtual ~TemplateStruct();
+    virtual ~TemplateImmutableStruct();
 
   private:
 
     class Private;
     std::unique_ptr<Private> p;
 };
+
 
 //------------------------------------------------------------------------
 
@@ -423,6 +384,8 @@ class TemplateEscapeIntf
 {
   public:
     virtual ~TemplateEscapeIntf() {}
+    /** Create a copy of the escape filter */
+    virtual std::unique_ptr<TemplateEscapeIntf> clone() = 0;
     /** Returns the \a input after escaping certain characters */
     virtual QCString escape(const QCString &input) = 0;
     /** Setting tabbing mode on or off (for LaTeX) */
@@ -436,6 +399,8 @@ class TemplateSpacelessIntf
 {
   public:
     virtual ~TemplateSpacelessIntf() {}
+    /** Create a copy of the spaceless filter */
+    virtual std::unique_ptr<TemplateSpacelessIntf> clone() = 0;
     /** Returns the \a input after removing redundant whitespace */
     virtual QCString remove(const QCString &input) = 0;
     /** Reset filter state */
@@ -493,12 +458,12 @@ class TemplateContext
     /** Sets the interface that will be used for escaping the result
      *  of variable expansion before writing it to the output.
      */
-    virtual void setEscapeIntf(const QCString &extension, TemplateEscapeIntf *intf) = 0;
+    virtual void setEscapeIntf(const QCString &extension, std::unique_ptr<TemplateEscapeIntf> intf) = 0;
 
     /** Sets the interface that will be used inside a spaceless block
      *  to remove any redundant whitespace.
      */
-    virtual void setSpacelessIntf(TemplateSpacelessIntf *intf) = 0;
+    virtual void setSpacelessIntf(std::unique_ptr<TemplateSpacelessIntf> intf) = 0;
 };
 
 //------------------------------------------------------------------------

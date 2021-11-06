@@ -117,8 +117,6 @@ class DefinitionImpl
     void setLocalName(const QCString &name);
     void addSectionsToIndex();
     void writeToc(OutputList &ol, const LocalToc &lt) const;
-    void setCookie(Definition::Cookie *cookie) const;
-    Definition::Cookie *cookie() const;
     void computeTooltip();
     void _setSymbolName(const QCString &name);
     QCString _symbolName() const;
@@ -275,10 +273,6 @@ class DefinitionMixin : public Base
     { m_impl.addSectionsToIndex(); }
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const
     { m_impl.writeToc(ol,lt); }
-    virtual void setCookie(Definition::Cookie *cookie) const
-    { m_impl.setCookie(cookie); }
-    virtual Definition::Cookie *cookie() const
-    { return m_impl.cookie(); }
     virtual void computeTooltip()
     { m_impl.computeTooltip(); }
     virtual void _setSymbolName(const QCString &name)
@@ -319,7 +313,7 @@ class DefinitionAliasMixin : public Base
 {
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
-      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias), m_cookie(0) {}
+      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias) {}
 
     void init() { m_impl.init(); }
     void deinit() { m_impl.deinit(); }
@@ -437,14 +431,11 @@ class DefinitionAliasMixin : public Base
     virtual DefinitionMutable *toDefinitionMutable_() { return 0; }
     virtual const DefinitionImpl *toDefinitionImpl_() const { return 0; }
 
-    virtual void setCookie(Definition::Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
-    virtual Definition::Cookie *cookie() const { return m_cookie; }
     virtual void _setSymbolName(const QCString &name) { m_symbolName = name; }
     virtual QCString _symbolName() const { return m_symbolName; }
     DefinitionAliasImpl m_impl;
     const Definition *m_scope;
     const Definition *m_alias;
-    mutable Definition::Cookie *m_cookie;
     QCString m_symbolName;
 };
 

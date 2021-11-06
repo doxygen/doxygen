@@ -85,7 +85,6 @@ class DefinitionImpl::IMPL
     QCString symbolName;
     int defLine;
     int defColumn;
-    Definition::Cookie *cookie;
 
     mutable MemberVector referencesMembers;
     mutable MemberVector referencedByMembers;
@@ -135,7 +134,6 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   hidden          = FALSE;
   isArtificial    = FALSE;
   lang            = SrcLangExt_Unknown;
-  cookie          = 0;
 }
 
 void DefinitionImpl::setDefFile(const QCString &df,int defLine,int defCol)
@@ -1895,17 +1893,6 @@ int DefinitionImpl::getDefLine() const
 int DefinitionImpl::getDefColumn() const
 {
   return m_impl->defColumn;
-}
-
-void DefinitionImpl::setCookie(Definition::Cookie *cookie) const
-{
-  delete m_impl->cookie;
-  m_impl->cookie = cookie;
-}
-
-Definition::Cookie *DefinitionImpl::cookie() const
-{
-  return m_impl->cookie;
 }
 
 void DefinitionImpl::writeQuickMemberLinks(OutputList &,const MemberDef *) const

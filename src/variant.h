@@ -189,8 +189,11 @@ struct Variant {
     //! The copy assignment operator
     Variant<Ts...>& operator= (const Variant<Ts...> &src)
     {
-      if (this!=&src)
+      if (this!=&src) // prevent self assignment
       {
+        // destroy the old value
+        if (valid()) HelperT::destroy(type_id,&data);
+        // and copy over the new one
         type_id = src.type_id;
         HelperT::copy(src.type_id, &src.data, &data);
       }
@@ -200,6 +203,9 @@ struct Variant {
     //! The move assignment operator
     Variant<Ts...>& operator= (Variant<Ts...> &&src)
     {
+      // destroy the old value
+      if (valid()) HelperT::destroy(type_id,&data);
+      // and move in the new one
       type_id = src.type_id;
       HelperT::move(src.type_id, &src.data, &data);
       return *this;
