@@ -3750,7 +3750,8 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "signed", "sizeof", "static_assert", "static_cast", "struct",
     "template", "thread_local", "typedef", "typeid", "typename",
     "union", "unsigned", "using", "virtual", "wchar_t",
-    "xor", "xor_eq"
+    "xor", "xor_eq",
+    "override"
   };
   bool retval;
   switch (yyextra->lang)
