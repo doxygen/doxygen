@@ -1078,7 +1078,8 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<FindMembers>{B}*"virtual"{BN}+         { yyextra->current->type += " virtual ";
+<FindMembers>{B}*"virtual"{BN}+         { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->type += " virtual ";
                                           yyextra->current->virt = Virtual;
                                           lineCount(yyscanner);
                                         }
@@ -1124,7 +1125,8 @@ NONLopt [^\n]*
                                           }
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"inline"{BN}+          { yyextra->current->spec|=Entry::Inline;
+<FindMembers>{B}*"inline"{BN}+          { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->spec|=Entry::Inline;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"mutable"{BN}+         { yyextra->current->spec|=Entry::Mutable;
@@ -2103,16 +2105,19 @@ NONLopt [^\n]*
                                           BEGIN(FindMembers);
                                         }
 <FindMembers>"requires"                 { // C++20 requires clause
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->current->req.resize(0);
                                           yyextra->requiresContext = YY_START;
                                           BEGIN(RequiresClause);
                                         }
 <RequiresClause>"requires"{BN}*/"{"     { // requires requires { ... }
+                                          if (yyextra->insideJava) REJECT;
                                           lineCount(yyscanner) ;
                                           yyextra->current->req+=yytext;
                                           BEGIN( RequiresExpression ) ;
                                         }
 <RequiresClause>"requires"{BN}*"("      { // requires requires(T x) { ... }
+                                          if (yyextra->insideJava) REJECT;
                                           lineCount(yyscanner) ;
                                           yyextra->current->req+=yytext;
                                           yyextra->lastRoundContext=RequiresExpression;
@@ -4839,6 +4844,7 @@ NONLopt [^\n]*
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>"requires"{BN}+         {
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->requiresContext = FuncQual;
                                           yyextra->current->req+=' ';
                                           BEGIN(RequiresClause);

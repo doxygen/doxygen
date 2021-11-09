@@ -3737,7 +3737,22 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "gcnew", "gcroot", "generic", "get",
     "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
-  return yyextra->lang==SrcLangExt_Cpp && (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+  static std::unordered_set<std::string> non_java_keywords = {
+    "inline", "requires", "virtual"};
+  bool retval;
+  switch (yyextra->lang)
+  {
+    case SrcLangExt_Cpp:
+      retval = (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+      break;
+    case SrcLangExt_Java:
+      retval = (non_java_keywords.find(keyword) != non_java_keywords.end());
+      break;
+    default: 
+      retval = false;
+      break;
+  }
+  return retval;
 }
 
 static bool isCastKeyword(const char *keyword)
