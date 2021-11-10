@@ -5844,7 +5844,6 @@ NONLopt [^\n]*
                                           }
                                         }
 <ClassVar>[;=*&]                        {
-                                          unput(*yytext);
                                           if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
                                           {
                                             yyextra->current->type.prepend("typedef");
@@ -5853,6 +5852,15 @@ NONLopt [^\n]*
                                               yyextra->current->section == Entry::ENUM_SEC)
                                           { // found "enum a *b" -> variable
                                             yyextra->current->section = Entry::VARIABLE_SEC ;
+                                          }
+                                          if (yytext[0]==';' && yyextra->current->section == Entry::ENUM_SEC)
+                                          {
+                                            yyextra->current->reset();
+                                            initEntry(yyscanner);
+                                          }
+                                          else
+                                          {
+                                            unput(*yytext);
                                           }
                                           BEGIN( FindMembers );
                                         }
