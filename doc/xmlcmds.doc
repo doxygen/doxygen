@@ -61,8 +61,12 @@ Here is the list of tags supported by doxygen:
 <li><tt>\<see cref="member"\></tt> Refers to a member. Similar to \ref cmdref "\\ref".
 <li><tt>\<seealso cref="member"\></tt> Starts a "See also" section referring
                          to "member". Similar to using \ref cmdsa "\\sa" member.
-<li><tt>\<summary\></tt> Identifies the brief description.
+<li><tt>\<summary\></tt>
+                         In case this tag is used outside a <tt>\<details\></tt> tag this ta
+                         identifies the brief description.
                          Similar to using \ref cmdbrief "\\brief".
+                         In case this tag is used inside a <tt>\<details\></tt> tag this tag
+                         identifies the heading of the <tt>\<details\></tt> tag.
 <li><tt>\<term\></tt>    Part of a <tt>\<list\></tt> command.
 <li><tt>\<typeparam name="paramName"\></tt> Marks a piece of text as the documentation
                          for type parameter "paramName". Similar to 

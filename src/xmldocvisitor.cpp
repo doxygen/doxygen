@@ -239,6 +239,12 @@ void XmlDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details:
+      if (s->enable()) m_t << "<details>";  else m_t << "</details>";
+      break;
+    case DocStyleChange::Summary:
+      if (s->enable()) m_t << "<summary>";  else m_t << "</summary>";
+      break;
   }
 }
 

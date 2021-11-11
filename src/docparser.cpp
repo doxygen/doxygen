@@ -92,7 +92,24 @@ static const std::set<std::string> g_plantumlEngine {
 
 using DefinitionStack = std::vector<const Definition *>;
 using DocNodeStack = std::stack<const DocNode *>;
-using DocStyleChangeStack = std::stack<const DocStyleChange *>;
+//using DocStyleChangeStack = std::stack<const DocStyleChange *>;
+
+template<typename T, typename Container = std::deque<T>>
+class iterable_stack
+: public std::stack<T, Container>
+{
+    using std::stack<T, Container>::c;
+
+public:
+
+    // expose just the iterators of the underlying container
+    auto begin() { return std::begin(c); }
+    auto end() { return std::end(c); }
+
+    auto begin() const { return std::begin(c); }
+    auto end() const { return std::end(c); }
+};
+using DocStyleChangeStack = iterable_stack<const DocStyleChange *>;
 
 /** Parser's context to store all global variables.
  */
@@ -618,6 +635,15 @@ static bool insideTable(DocNode *n)
   return FALSE;
 }
 
+static const DocStyleChange *insideDetails(DocStyleChangeStack styleStack)
+{
+  const DocStyleChange *retItem = NULL;
+  for (auto i : styleStack)
+  {
+     if (i->style() == DocStyleChange::Details) retItem = i;
+  }
+  return retItem;
+}
 //---------------------------------------------------------------------------
 /*! Looks for a documentation block with name commandName in the current
  *  context (g_parserContext.context). The resulting documentation string is
@@ -995,6 +1021,8 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Del:          return "del";
     case DocStyleChange::Underline:    return "u";
     case DocStyleChange::Ins:          return "ins";
+    case DocStyleChange::Details:      return "details";
+    case DocStyleChange::Summary:      return "summary";
   }
   return "<invalid>";
 }
@@ -1551,6 +1579,16 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Ins,tokenName);
+            }
+            break;
+          case HTML_DETAILS:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Details,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Details,tokenName);
             }
             break;
           case HTML_CODE:
@@ -2987,7 +3025,6 @@ endheader:
   DBG(("DocHtmlHeader::parse() end\n"));
   return retval;
 }
-
 //---------------------------------------------------------------------------
 
 int DocHRef::parse()
@@ -6020,6 +6057,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_INS:
       if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Ins,tagName,&m_parser.context.token->attribs);
       break;
+    case HTML_DETAILS:
+      if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Details,tagName,&m_parser.context.token->attribs);
+      break;
     case HTML_CODE:
       if (m_parser.context.token->emptyTag) break;
       if (/*getLanguageFromFileName(m_parser.context.fileName)==SrcLangExt_CSharp ||*/ m_parser.context.xmlComment)
@@ -6144,6 +6184,11 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
 
     case XML_SUMMARY:
+      if (insideDetails(m_parser.context.styleStack))
+      {
+        if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Summary,tagName,&m_parser.context.token->attribs);
+        break;
+      }
     case XML_REMARKS:
     case XML_EXAMPLE:
       m_parser.context.xmlComment=TRUE;
@@ -6445,6 +6490,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
     case HTML_INS:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Ins,tagName);
       break;
+    case HTML_DETAILS:
+      m_parser.handleStyleLeave(this,m_children,DocStyleChange::Details,tagName);
+      break;
     case HTML_CODE:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Code,tagName);
       break;
@@ -6537,6 +6585,11 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       //m_children.push_back(std::make_unique<DocStyleChange>(this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Bold,FALSE));
       break;
     case XML_SUMMARY:
+      if (insideDetails(m_parser.context.styleStack))
+      {
+        m_parser.handleStyleLeave(this,m_children,DocStyleChange::Summary,tagName);
+        break;
+      }
     case XML_REMARKS:
     case XML_PARA:
     case XML_VALUE:

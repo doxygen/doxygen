@@ -283,6 +283,22 @@ void RTFDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (s->enable())
+      {
+        m_t << "{\n";
+        m_t << "\\par\n";
+      }
+      else
+      {
+        m_t << "\\par";
+        m_t << "}\n";
+      }
+      m_lastIsPara=TRUE;
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "{\\b ";      else m_t << "} ";
+      break;
   }
 }
 

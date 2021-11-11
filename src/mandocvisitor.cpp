@@ -185,6 +185,18 @@ void ManDocVisitor::visit(DocStyleChange *s)
       break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (!s->enable())
+      {
+        if (!m_firstCol) m_t << "\n";
+        m_t << ".PP\n";
+        m_firstCol=TRUE;
+      }
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "\\fB";      else m_t << "\\fP";
+      m_firstCol=FALSE;
+      break;
   }
 }
 

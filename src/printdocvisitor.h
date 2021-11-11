@@ -146,6 +146,30 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Span:
           if (s->enable()) printf("<span>"); else printf("</span>");
           break;
+        case DocStyleChange::Details:
+          if (s->enable())
+          {
+            indent_pre();
+            printf("<details>\n"); 
+          }
+          else 
+          {
+            indent_post();
+            printf("</details>\n");
+          }
+          break;
+        case DocStyleChange::Summary:
+          if (s->enable())
+          {
+            indent_pre();
+            printf("<summary>\n"); 
+          }
+          else 
+          {
+            indent_post();
+            printf("</summary>\n");
+          }
+          break;
       }
     }
     void visit(DocVerbatim *s)

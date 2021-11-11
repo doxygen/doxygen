@@ -652,6 +652,12 @@ void PerlModDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Preformatted:  style = "preformatted"; break;
     case DocStyleChange::Div:           style = "div"; break;
     case DocStyleChange::Span:          style = "span"; break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      style = "details";
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      style = "summary";
+      break;
 
   }
   openItem("style");

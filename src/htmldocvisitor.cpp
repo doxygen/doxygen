@@ -252,6 +252,15 @@ static QCString htmlAttribsToString(const HtmlAttribList &attribs, QCString *pAl
         result+="=\""+convertToXML(att.value)+"\"";
       }
     }
+    else if (att.name=="open")
+    {
+        // The open attribute is a boolean attribute.
+        // Specifies that the details should be visible (open) to the user
+        // As it is a boolean attribute the initialisation value is of no interest
+        result+=" ";
+        result+=att.name;
+        result+="=\"true\"";
+    }
     else if (att.name=="nowrap") // In XHTML, attribute minimization is forbidden, and the nowrap attribute must be defined as <td nowrap="nowrap">.
     {
         result+=" ";
@@ -466,7 +475,12 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Span:
       if (s->enable()) m_t << "<span" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</span>";
       break;
-
+    case DocStyleChange::Details:
+      if (s->enable()) m_t << "<details" << htmlAttribsToString(s->attribs()) << ">\n"; else m_t << "</details>\n";
+      break;
+    case DocStyleChange::Summary:
+      if (s->enable()) m_t << "<summary" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</summary>";
+      break;
   }
 }
 

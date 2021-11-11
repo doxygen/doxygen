@@ -302,6 +302,21 @@ DB_VIS_C
     case DocStyleChange::Ins:        break;
     case DocStyleChange::Div:  /* HTML only */ break;
     case DocStyleChange::Span: /* HTML only */ break;
+    case DocStyleChange::Details: /* emulation of the <details> tag */
+      if (s->enable())
+      {
+        m_t << "\n";
+        m_t << "<para>";
+      }
+      else
+      {
+        m_t << "</para>";
+        m_t << "\n";
+      }
+      break;
+    case DocStyleChange::Summary: /* emulation of the <summary> tag inside a <details> tag */
+      if (s->enable()) m_t << "<emphasis role=\"bold\">";      else m_t << "</emphasis>";
+      break;
   }
 }
 

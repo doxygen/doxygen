@@ -49,6 +49,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\</DD\></tt>   Ends an item description.
 <li><tt>\<DEL\></tt>   Starts a section of deleted text, typically shown strike through text.
 <li><tt>\</DEL\></tt>  Ends a section of deleted text.
+<li><tt>\<DETAILS\></tt>  Starts a section of detailed text that the user can open and close (in HTML output))
+<li><tt>\</DETAILS\></tt> Ends a section of detailed text.
 <li><tt>\<DFN\></tt>   Starts a piece of text displayed in a typewriter font.
 <li><tt>\</DFN\></tt>  Ends a <tt>\<DFN\></tt> section.
 <li><tt>\<DIV></tt>    Starts a section with a specific style (HTML only)
