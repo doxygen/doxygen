@@ -347,11 +347,11 @@ bool TemplateVariant::operator==(TemplateVariant &other) const
   }
   if (isBool() && other.isBool())
   {
-    return m_variant.get<bool>() == other.m_variant.get<bool>();
+    return m_variant.get<static_cast<uint8_t>(Type::Bool)>() == other.m_variant.get<static_cast<uint8_t>(Type::Bool)>();
   }
   else if (isInt() && other.isInt())
   {
-    return m_variant.get<int>() == other.m_variant.get<int>();
+    return m_variant.get<static_cast<uint8_t>(Type::Int)>() == other.m_variant.get<static_cast<uint8_t>(Type::Int)>();
   }
   else if (isList() && other.isList())
   {
@@ -369,11 +369,11 @@ bool TemplateVariant::toBool() const
   switch (type())
   {
     case Type::None:       return false;
-    case Type::Bool:       return m_variant.get<bool>();
-    case Type::Int:        return m_variant.get<int>()!=0;
-    case Type::String:     return !m_variant.get<QCString>().isEmpty();
+    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>();
+    case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>()!=0;
+    case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().isEmpty();
     case Type::Struct:     return true;
-    case Type::List:       return m_variant.get<TemplateListIntfPtr>()->count()!=0;
+    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count()!=0;
     case Type::Function:   return false;
     case Type::WeakStruct: return true;
   }
@@ -385,11 +385,11 @@ int TemplateVariant::toInt() const
   switch (type())
   {
     case Type::None:       return 0;
-    case Type::Bool:       return m_variant.get<bool>() ? 1 : 0;
-    case Type::Int:        return m_variant.get<int>();
-    case Type::String:     return !m_variant.get<QCString>().toInt();
+    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>() ? 1 : 0;
+    case Type::Int:        return m_variant.get<static_cast<uint8_t>(Type::Int)>();
+    case Type::String:     return !m_variant.get<static_cast<uint8_t>(Type::String)>().toInt();
     case Type::Struct:     return 0;
-    case Type::List:       return m_variant.get<TemplateListIntfPtr>()->count();
+    case Type::List:       return m_variant.get<static_cast<uint8_t>(Type::List)>()->count();
     case Type::Function:   return 0;
     case Type::WeakStruct: return 0;
   }
@@ -401,9 +401,9 @@ QCString TemplateVariant::toString() const
   switch (type())
   {
     case Type::None:       return QCString();
-    case Type::Bool:       return m_variant.get<bool>() ? "true" : "false";
-    case Type::Int:        return QCString().setNum(m_variant.get<int>());
-    case Type::String:     return m_variant.get<QCString>();
+    case Type::Bool:       return m_variant.get<static_cast<uint8_t>(Type::Bool)>() ? "true" : "false";
+    case Type::Int:        return QCString().setNum(m_variant.get<static_cast<uint8_t>(Type::Int)>());
+    case Type::String:     return m_variant.get<static_cast<uint8_t>(Type::String)>();
     case Type::Struct:     return structToString();
     case Type::List:       return listToString();
     case Type::Function:   return "[function]";
@@ -431,29 +431,29 @@ const char *TemplateVariant::typeAsString() const
 
 TemplateListIntfPtr TemplateVariant::toList()
 {
-  return isList() ? m_variant.get<TemplateListIntfPtr>() : nullptr;
+  return isList() ? m_variant.get<static_cast<uint8_t>(Type::List)>() : nullptr;
 }
 const TemplateListIntfPtr TemplateVariant::toList() const
 {
-  return isList() ? m_variant.get<TemplateListIntfPtr>() : nullptr;
+  return isList() ? m_variant.get<static_cast<uint8_t>(Type::List)>() : nullptr;
 }
 
 TemplateStructIntfPtr TemplateVariant::toStruct()
 {
-  return isStruct()     ? m_variant.get<TemplateStructIntfPtr>() :
-         isWeakStruct() ? m_variant.get<TemplateStructIntfWeakPtr>().lock() :
+  return isStruct()     ? m_variant.get<static_cast<uint8_t>(Type::Struct)>() :
+         isWeakStruct() ? m_variant.get<static_cast<uint8_t>(Type::WeakStruct)>().lock() :
          nullptr;
 }
 const TemplateStructIntfPtr TemplateVariant::toStruct() const
 {
-  return isStruct()     ? m_variant.get<TemplateStructIntfPtr>() :
-         isWeakStruct() ? m_variant.get<TemplateStructIntfWeakPtr>().lock() :
+  return isStruct()     ? m_variant.get<static_cast<uint8_t>(Type::Struct)>() :
+         isWeakStruct() ? m_variant.get<static_cast<uint8_t>(Type::WeakStruct)>().lock() :
          nullptr;
 }
 
 TemplateVariant TemplateVariant::call(const std::vector<TemplateVariant> &args)
 {
-  return isFunction() ? m_variant.get<FunctionDelegate>()(args) : TemplateVariant();
+  return isFunction() ? m_variant.get<static_cast<uint8_t>(Type::Function)>()(args) : TemplateVariant();
 }
 
 //- Template struct implementation --------------------------------------------
@@ -2638,28 +2638,10 @@ void TemplateContextImpl::set(const QCString &name,const TemplateVariant &v)
     ctx.erase(it);
   }
   ctx.insert(std::make_pair(name.str(),v));
-  printf("TemplateContextImpl::set(%s) #stacks=%lu front().size()=%lu\n",
-      qPrint(name),m_contextStack.size(),m_contextStack.size()>0 ? m_contextStack.front().size() : 0);
+  //printf("TemplateContextImpl::set(%s) #stacks=%lu front().size()=%lu\n",
+  //    qPrint(name),m_contextStack.size(),m_contextStack.size()>0 ? m_contextStack.front().size() : 0);
 }
 
-#if 0
-void TemplateContextImpl::update(const QCString &name,const TemplateVariant &v)
-{
-  int depth=0;
-  for (auto &ctx : m_contextStack)
-  {
-    auto it = ctx.find(name.str());
-    if (it!=ctx.end())
-    {
-      ctx.erase(it);
-      ctx.insert(std::make_pair(name.str(),v));
-      return;
-    }
-    depth++;
-  }
-  warn(m_templateName,m_line,"requesting update for non-existing variable '%s'",qPrint(name));
-}
-#endif
 
 TemplateVariant TemplateContextImpl::get(const QCString &name) const
 {
@@ -2767,12 +2749,12 @@ TemplateVariant TemplateContextImpl::getPrimary(const QCString &name) const
 void TemplateContextImpl::push()
 {
   m_contextStack.push_front(std::unordered_map<std::string,TemplateVariant>());
-  printf("TemplateContextImpl::push() #stacks=%lu\n",m_contextStack.size());
+  //printf("TemplateContextImpl::push() #stacks=%lu\n",m_contextStack.size());
 }
 
 void TemplateContextImpl::pop()
 {
-  printf("TemplateContextImpl::pop() #stacks=%lu\n",m_contextStack.size());
+  //printf("TemplateContextImpl::pop() #stacks=%lu\n",m_contextStack.size());
   if (m_contextStack.empty())
   {
     warn(m_templateName,m_line,"pop() called on empty context stack!\n");
@@ -3824,16 +3806,17 @@ class TemplateNodeInclude : public TemplateNodeCreator<TemplateNodeInclude>
 
 static void stripLeadingWhiteSpace(QCString &s)
 {
-  uint i=0, dstIdx=0, l=s.length();
   bool skipSpaces=true;
-  while (i<l)
+  const char *src = s.data();
+  char *dst = s.rawData();
+  char c;
+  while ((c=*src++))
   {
-    char c = s[i++];
-    if (c=='\n') { s[dstIdx++]=c; skipSpaces=true; }
+    if (c=='\n') { *dst++=c; skipSpaces=true; }
     else if (c==' ' && skipSpaces) {}
-    else { s[dstIdx++] = c; skipSpaces=false; }
+    else { *dst++ = c; skipSpaces=false; }
   }
-  s.resize(dstIdx+1);
+  s.resize(dst-s.data()+1);
 }
 
 /** @brief Class representing an 'create' tag in a template */

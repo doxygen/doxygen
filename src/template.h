@@ -101,38 +101,60 @@ class TemplateVariant
     /** Type representing a function call in a template */
     using FunctionDelegate = std::function<TemplateVariant(const std::vector<TemplateVariant>&)>;
 
+    /** Symbolic names for the possible types that this variant can hold. */
+    using VariantT = Variant<bool,                      // index==0: Type::Bool
+                             int,                       // index==1: Type::Int
+                             QCString,                  // index==2: Type::String
+                             TemplateStructIntfPtr,     // index==3: Type::Struct
+                             TemplateListIntfPtr,       // index==4: Type::List
+                             FunctionDelegate,          // index==5: Type::Function
+                             TemplateStructIntfWeakPtr  // index==6: Type::WeakStruct
+                            >;
+
+    enum class Type : uint8_t
+    {
+      Bool       = 0,
+      Int        = 1,
+      String     = 2,
+      Struct     = 3,
+      List       = 4,
+      Function   = 5,
+      WeakStruct = 6,
+      None       = 255
+    };
+
     /** Constructs an invalid variant. */
     TemplateVariant() {}
 
     /** Constructs a new variant with a boolean value \a b. */
-    explicit TemplateVariant(bool b) { m_variant.set<bool>(b); }
+    explicit TemplateVariant(bool b) { m_variant.set<static_cast<uint8_t>(Type::Bool)>(b); }
 
     /** Constructs a new variant with a integer value \a v. */
-    TemplateVariant(int v) { m_variant.set<int>(v); }
+    TemplateVariant(int v) { m_variant.set<static_cast<uint8_t>(Type::Int)>(v); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant.set<QCString>(s); }
+    TemplateVariant(const char *s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const QCString &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<QCString>(s); }
+    TemplateVariant(const QCString &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s.str()); }
 
     /** Constructs a new variant with a string value \a s. */
-    TemplateVariant(const std::string &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<QCString>(s); }
+    TemplateVariant(const std::string &s,bool raw=FALSE) : m_raw(raw) { m_variant.set<static_cast<uint8_t>(Type::String)>(s); }
 
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a counting reference to the object.
      */
-    TemplateVariant(TemplateStructIntfPtr s) { m_variant.set<TemplateStructIntfPtr>(s); }
+    TemplateVariant(TemplateStructIntfPtr s) { m_variant.set<static_cast<uint8_t>(Type::Struct)>(s); }
 
     /** Constructs a new variant with a list value \a l.
      *  @note. The variant will hold a counting reference to the object.
      */
-    TemplateVariant(TemplateListIntfPtr l) { m_variant.set<TemplateListIntfPtr>(l); }
+    TemplateVariant(TemplateListIntfPtr l) { m_variant.set<static_cast<uint8_t>(Type::List)>(l); }
 
     /** Constructs a new variant with a struct value \a s.
      *  @note. The variant will hold a non-counting reference to the object.
      */
-    TemplateVariant(TemplateStructIntfWeakPtr s) { m_variant.set<TemplateStructIntfWeakPtr>(s); }
+    TemplateVariant(TemplateStructIntfWeakPtr s) { m_variant.set<static_cast<uint8_t>(Type::WeakStruct)>(s); }
 
     /** Constructs a new variant which represents a method call
      *  @param[in] delegate FunctionDelegate object to invoke when
@@ -141,7 +163,7 @@ class TemplateVariant
      *  TemplateVariant::FunctionDelegate::fromFunction() to create
      *  FunctionDelegate objects.
      */
-    TemplateVariant(FunctionDelegate delegate) { m_variant.set<FunctionDelegate>(delegate); }
+    TemplateVariant(FunctionDelegate delegate) { m_variant.set<static_cast<uint8_t>(Type::Function)>(delegate); }
 
     /** Destroys the Variant object */
     ~TemplateVariant()  = default;
@@ -180,19 +202,19 @@ class TemplateVariant
     /** Returns TRUE if the variant holds a valid value, or FALSE otherwise */
     constexpr bool isValid()      const { return m_variant.valid(); }
     /** Returns TRUE if the variant holds a boolean value */
-    constexpr bool isBool()       const { return m_variant.is<bool>(); }
+    constexpr bool isBool()       const { return m_variant.is<static_cast<uint8_t>(Type::Bool)>(); }
     /** Returns TRUE if the variant holds an integer value */
-    constexpr bool isInt()        const { return m_variant.is<int>(); }
+    constexpr bool isInt()        const { return m_variant.is<static_cast<uint8_t>(Type::Int)>(); }
     /** Returns TRUE if the variant holds a string value */
-    constexpr bool isString()     const { return m_variant.is<QCString>(); }
+    constexpr bool isString()     const { return m_variant.is<static_cast<uint8_t>(Type::String)>(); }
     /** Returns TRUE if the variant holds a struct value */
-    constexpr bool isStruct()     const { return m_variant.is<TemplateStructIntfPtr>(); }
+    constexpr bool isStruct()     const { return m_variant.is<static_cast<uint8_t>(Type::Struct)>(); }
     /** Returns TRUE if the variant holds a list value */
-    constexpr bool isList()       const { return m_variant.is<TemplateListIntfPtr>(); }
+    constexpr bool isList()       const { return m_variant.is<static_cast<uint8_t>(Type::List)>(); }
     /** Returns TRUE if the variant holds a function value */
-    constexpr bool isFunction()   const { return m_variant.is<FunctionDelegate>(); }
+    constexpr bool isFunction()   const { return m_variant.is<static_cast<uint8_t>(Type::Function)>(); }
     /** Returns TRUE if the variant holds a struct value */
-    constexpr bool isWeakStruct() const { return m_variant.is<TemplateStructIntfWeakPtr>(); }
+    constexpr bool isWeakStruct() const { return m_variant.is<static_cast<uint8_t>(Type::WeakStruct)>(); }
 
     /** Returns the pointer to list referenced by this variant
      *  or 0 if this variant does not have list type.
@@ -222,19 +244,6 @@ class TemplateVariant
      */
     constexpr bool raw() const { return m_raw; }
 
-    /** Symbolic names for the possible types that this variant can hold. */
-    enum class Type : size_t
-    {
-      None       = std::string::npos,
-      Bool       = 0,
-      Int        = 1,
-      String     = 2,
-      Struct     = 3,
-      List       = 4,
-      Function   = 5,
-      WeakStruct = 6
-    };
-
     /** Returns the type held by this variant */
     constexpr Type type() const { return static_cast<Type>(m_variant.index()); }
 
@@ -245,14 +254,6 @@ class TemplateVariant
     QCString listToString() const;
     QCString structToString() const;
 
-    using VariantT = Variant<bool,                      // index==0: Type::Bool
-                             int,                       // index==1: Type::Int
-                             QCString,                  // index==2: Type::String
-                             TemplateStructIntfPtr,     // index==3: Type::Struct
-                             TemplateListIntfPtr,       // index==4: Type::List
-                             FunctionDelegate,          // index==5: Type::Function
-                             TemplateStructIntfWeakPtr  // index==6: Type::WeakStruct
-                            >;
     VariantT              m_variant;
     bool                  m_raw = false;
 };
