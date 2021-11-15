@@ -1581,7 +1581,7 @@ tr.heading h2 {
 
 #powerTip {
 	cursor: default;
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 	background-color: white;
 	border: 1px solid gray;
 	border-radius: 4px 4px 4px 4px;
