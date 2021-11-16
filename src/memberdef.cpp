@@ -4368,7 +4368,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
   tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>\n";
+  tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
@@ -4382,7 +4382,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
     {
       if (!fmd->isReference())
       {
-        tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
+        tagFile << "      <enumvalue file=\"" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase()));
         tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
         idStr = fmd->id();
         if (!idStr.isEmpty())

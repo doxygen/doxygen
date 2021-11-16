@@ -2086,7 +2086,7 @@ void ClassDefImpl::writeTagFile(TextStream &tagFile)
   if (isObjectiveC()) { tagFile << " objc=\"yes\""; }
   tagFile << ">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase())) << "</filename>\n";
   if (!anchor().isEmpty())
   {
     tagFile << "    <anchor>" << convertToXML(anchor()) << "</anchor>\n";
@@ -2766,7 +2766,7 @@ void ClassDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
           ol.writeString("<a class=\"navtab\" ");
           ol.writeString("href=\"");
           if (createSubDirs) ol.writeString("../../");
-          ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+          ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
           ol.writeString("\">");
           ol.writeString(convertToHtml(md->name()));
           ol.writeString("</a>");

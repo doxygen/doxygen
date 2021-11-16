@@ -472,7 +472,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 {
   static QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
-  QCString url = baseName + Doxygen::htmlFileExtension;
+  QCString url = addHtmlExtensionIfMissing(baseName);
   if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
 

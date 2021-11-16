@@ -154,7 +154,7 @@ static void drawDirectory(TextStream &t, const DirDef *const directory, const Do
       "style=\""     << getDirectoryBorderStyle(property)                            << "\", "
       "fillcolor=\"" << getDirectoryBackgroundColor(directory->level()-startLevel)   << "\", "
       "color=\""     << getDirectoryBorderColor(property)                            << "\", "
-      "URL=\""       << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\""
+      "URL=\""       << addHtmlExtensionIfMissing(directory->getOutputFileBase())    << "\""
       "];\n";
   directoriesInGraph.insert(std::make_pair(directory->getOutputFileBase().str(), directory));
 }
@@ -187,7 +187,7 @@ static void drawClusterOpening(TextStream &outputStream, const DirDef *const dir
   outputStream << "\", "
       "fontname=\"" << Config_getString(DOT_FONTNAME) << "\", "
       "fontsize=\"" << Config_getInt(DOT_FONTSIZE) << "\", "
-      "URL=\"" << directory->getOutputFileBase() << Doxygen::htmlFileExtension << "\""
+      "URL=\"" << addHtmlExtensionIfMissing(directory->getOutputFileBase()) << "\""
       "]\n";
   if (!isAncestor)
   {
@@ -386,7 +386,7 @@ void writeDotDirDepGraph(TextStream &t,const DirDef *dd,bool linkRelations)
         t << " [headlabel=\"" << (uint)nrefs << "\", labeldistance=1.5";
         if (linkRelations)
         {
-          t << " headhref=\"" << relationName << Doxygen::htmlFileExtension << "\"";
+          t << " headhref=\"" << addHtmlExtensionIfMissing(relationName) << "\"";
         }
         t << "];\n";
       }

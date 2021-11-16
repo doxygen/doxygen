@@ -1823,7 +1823,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                             g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_classDef->getOutputFileBase()),
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -1914,7 +1914,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                              g_globals.outputDir,
-                             g_globals.outputDir+Portable::pathSeparator()+m_classDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                             g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_classDef->getOutputFileBase()),
                              relPathAsString(),TRUE,TRUE,g_globals.dynSectionId
                             );
             }
@@ -2800,7 +2800,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_fileDef->getOutputFileBase()),
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -2842,7 +2842,7 @@ class FileContext::Private : public DefinitionContext<FileContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+m_fileDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_fileDef->getOutputFileBase()),
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3163,7 +3163,7 @@ class DirContext::Private : public DefinitionContext<DirContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+Portable::pathSeparator()+m_dirDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                                g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_dirDef->getOutputFileBase()),
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId,
@@ -3460,7 +3460,7 @@ class TextGeneratorHtml : public TextGeneratorIntf
       }
       m_ts << "href=\"";
       m_ts << externalRef(m_relPath,ref,TRUE);
-      if (!f.isEmpty()) m_ts << f << Doxygen::htmlFileExtension;
+      if (!f.isEmpty()) m_ts << addHtmlExtensionIfMissing(f);
       if (!anchor.isEmpty()) m_ts << "#" << anchor;
       m_ts << "\">";
       m_ts << convertToHtml(name);
@@ -3747,7 +3747,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_memberDef->getOutputFileBase()),
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -3805,7 +3805,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
             {
               cg->writeGraph(t,GOF_BITMAP,EOF_Html,
                   g_globals.outputDir,
-                  g_globals.outputDir+Portable::pathSeparator()+m_memberDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                  g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_memberDef->getOutputFileBase()),
                   relPathAsString(),TRUE,g_globals.dynSectionId
                   );
             }
@@ -4614,7 +4614,7 @@ class ModuleContext::Private : public DefinitionContext<ModuleContext::Private>
               graph->writeGraph(t,GOF_BITMAP,
                                 EOF_Html,
                                 g_globals.outputDir,
-                                g_globals.outputDir+Portable::pathSeparator()+m_groupDef->getOutputFileBase()+Doxygen::htmlFileExtension,
+                                g_globals.outputDir+Portable::pathSeparator()+addHtmlExtensionIfMissing(m_groupDef->getOutputFileBase()),
                                 relPathAsString(),
                                 TRUE,
                                 g_globals.dynSectionId);
