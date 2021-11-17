@@ -66,6 +66,13 @@
 #define PRETTY_FUNC __PRETTY_FUNCTION__
 #endif
 
+enum class ExplicitPage
+{
+  notExplicit,
+  explicitPage,
+  explicitMainPage
+};
+
 class Trace
 {
   public:
@@ -135,6 +142,11 @@ class Trace
       m_resultSet = true;
       m_resultValue = b ? "true" : "false";
     }
+    void setResult(ExplicitPage ep)
+    {
+      m_resultSet = true;
+      m_resultValue = QCString().setNum(static_cast<int>(ep));
+    }
     void setResult(int i)
     {
       m_resultSet = true;
@@ -194,13 +206,6 @@ int Trace::s_indent = 0;
   (data[i]=='('  || data[i]=='{' || data[i]=='[' || (data[i]=='<' && data[i+1]!='/') || \
    data[i]=='\\' || \
    data[i]=='@')
-
-enum class ExplicitPage
-{
-  notExplicit,
-  explicitPage,
-  explicitMainPage
-};
 //----------
 
 struct TableCell
