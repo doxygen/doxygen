@@ -66,13 +66,6 @@
 #define PRETTY_FUNC __PRETTY_FUNCTION__
 #endif
 
-enum class ExplicitPage
-{
-  notExplicit,
-  explicitPage,
-  explicitMainPage
-};
-
 class Trace
 {
   public:
@@ -141,11 +134,6 @@ class Trace
     {
       m_resultSet = true;
       m_resultValue = b ? "true" : "false";
-    }
-    void setResult(ExplicitPage ep)
-    {
-      m_resultSet = true;
-      m_resultValue = QCString().setNum(static_cast<int>(ep));
     }
     void setResult(int i)
     {
@@ -2860,11 +2848,11 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   return m_out.get();
 }
 
-/** returns ExplicitPage::explicitPage in case input string docs starts with page command
- *  returns ExplicitPage::explicitMainPage in case input string docs starts with mainpage comand
- *  returns ExplicitPage::notExplicit otherwise
+/** returns 1 in case input string docs starts with page command
+ *  returns 2 in case input string docs starts with mainpage comand
+ *  returns 0 otherwise
  */
-static ExplicitPage isExplicitPage(const QCString &docs)
+static int isExplicitPage(const QCString &docs)
 {
   TRACE(docs);
   int i=0;
@@ -2883,18 +2871,18 @@ static ExplicitPage isExplicitPage(const QCString &docs)
     {
       if (qstrncmp(&data[i+1],"page ",5)==0)
       {
-        TRACE_RESULT(ExplicitPage::explicitPage);
-        return ExplicitPage::explicitPage;
+        TRACE_RESULT(1);
+        return 1;
       }
       else
       {
-        TRACE_RESULT(ExplicitPage::explicitMainPage);
-        return ExplicitPage::explicitMainPage;
+        TRACE_RESULT(2);
+        return 2;
       }
     }
   }
-  TRACE_RESULT(ExplicitPage::notExplicit);
-  return ExplicitPage::notExplicit;
+  TRACE_RESULT(0);
+  return 0;
 }
 
 QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
@@ -3139,7 +3127,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   std::string t1;
   switch (isExplicitPage(docs))
   {
-    case ExplicitPage::notExplicit:
+    case 0:
       if (!mdfileAsMainPage.isEmpty() &&
           (fn==mdfileAsMainPage || // name reference
            FileInfo(fileName.str()).absFilePath()==
@@ -3163,7 +3151,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       }
       for (int i = 0; i < prepend; i++) docs.prepend("\n");
       break;
-    case ExplicitPage::explicitPage:
+    case 1:
       t = docs.str();
       reg::search(t,match,re);
       t1 = match.suffix().str();
@@ -3186,7 +3174,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
         docs += match.suffix().str();
       }
       break;
-    case ExplicitPage::explicitMainPage:
+    case 2:
       break;
   }
   int lineNr=1;
