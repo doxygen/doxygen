@@ -53,6 +53,13 @@
 #include "fileinfo.h"
 #include "utf8.h"
 
+enum class ExplicitPage
+{
+  notExplicit,
+  explicitPage,
+  explicitMainPage
+};
+
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
 #endif
@@ -135,6 +142,11 @@ class Trace
       m_resultSet = true;
       m_resultValue = b ? "true" : "false";
     }
+    void setResult(ExplicitPage ep)
+    {
+      m_resultSet = true;
+      m_resultValue = QCString().setNum(static_cast<int>(ep));
+    }
     void setResult(int i)
     {
       m_resultSet = true;
@@ -194,7 +206,6 @@ int Trace::s_indent = 0;
   (data[i]=='('  || data[i]=='{' || data[i]=='[' || (data[i]=='<' && data[i+1]!='/') || \
    data[i]=='\\' || \
    data[i]=='@')
-
 //----------
 
 struct TableCell
@@ -2852,8 +2863,11 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   return m_out.get();
 }
 
-/** returns TRUE if input string docs starts with \@page or \@mainpage command */
-static bool isExplicitPage(const QCString &docs)
+/** returns ExplicitPage::explicitPage in case input string docs starts with page command
+ *  returns ExplicitPage::explicitMainPage in case input string docs starts with mainpage comand
+ *  returns ExplicitPage::notExplicit otherwise
+ */
+static ExplicitPage isExplicitPage(const QCString &docs)
 {
   TRACE(docs);
   int i=0;
@@ -2870,12 +2884,20 @@ static bool isExplicitPage(const QCString &docs)
         (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
        )
     {
-      TRACE_RESULT(TRUE);
-      return TRUE;
+      if (qstrncmp(&data[i+1],"page ",5)==0)
+      {
+        TRACE_RESULT(ExplicitPage::explicitPage);
+        return ExplicitPage::explicitPage;
+      }
+      else
+      {
+        TRACE_RESULT(ExplicitPage::explicitMainPage);
+        return ExplicitPage::explicitMainPage;
+      }
     }
   }
-  TRACE_RESULT(FALSE);
-  return FALSE;
+  TRACE_RESULT(ExplicitPage::notExplicit);
+  return ExplicitPage::notExplicit;
 }
 
 QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
@@ -3110,30 +3132,67 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = markdownFileNameToId(fileName);
-  if (!isExplicitPage(docs))
+  switch (isExplicitPage(docs))
   {
-    if (!mdfileAsMainPage.isEmpty() &&
-        (fn==mdfileAsMainPage || // name reference
-         FileInfo(fileName.str()).absFilePath()==
-         FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
-       )
-    {
-      docs.prepend("@anchor " + id + "\\ilinebr ");
-      docs.prepend("@mainpage "+title+"\\ilinebr ");
-    }
-    else if (id=="mainpage" || id=="index")
-    {
-      if (title.isEmpty()) title = titleFn;
-      docs.prepend("@anchor " + id + "\\ilinebr ");
-      docs.prepend("@mainpage "+title+"\\ilinebr ");
-    }
-    else
-    {
-      if (title.isEmpty()) {title = titleFn;prepend=0;}
-      if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
-      docs.prepend("@page "+id+" "+title+"\\ilinebr ");
-    }
-    for (int i = 0; i < prepend; i++) docs.prepend("\n");
+    case ExplicitPage::notExplicit:
+      if (!mdfileAsMainPage.isEmpty() &&
+          (fn==mdfileAsMainPage || // name reference
+           FileInfo(fileName.str()).absFilePath()==
+           FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
+         )
+      {
+        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@mainpage "+title+"\\ilinebr ");
+      }
+      else if (id=="mainpage" || id=="index")
+      {
+        if (title.isEmpty()) title = titleFn;
+        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@mainpage "+title+"\\ilinebr ");
+      }
+      else
+      {
+        if (title.isEmpty()) {title = titleFn;prepend=0;}
+        if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        docs.prepend("@page "+id+" "+title+"\\ilinebr ");
+      }
+      for (int i = 0; i < prepend; i++) docs.prepend("\n");
+      break;
+    case ExplicitPage::explicitPage:
+      {
+        static const reg::Ex re(R"([\\@]page[ \t]*)");
+        static const reg::Ex re0(R"(^[a-z_A-Z\x80-\xFF])"); // from LABELID, see commentscan.l
+        static const reg::Ex re1(R"([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*)"); // LABELID, see commentscan.l
+        static const reg::Ex re2(R"(\n)");
+        reg::Match match;
+        reg::Match match1;
+        std::string t;
+        std::string t1;
+        t = docs.str();
+        reg::search(t,match,re);
+        t1 = match.suffix().str();
+  
+        // check first character in [a-z_A-Z\x80-\xFF], so we have a potential label
+        if (reg::search(t1,match1,re0))
+        {
+          docs = match.prefix().str();
+          docs += match.str() + markdownFileNameToId(fileName);
+          t = match.suffix().str();
+  
+          reg::search(t,match,re1);
+          QCString saveAnchor = match.str();
+          t = match.suffix().str();
+          reg::search(t,match,re2);
+          docs += match.prefix().str();
+          docs += "\\ilinebr @anchor ";
+          docs += saveAnchor;
+          docs += match.str();
+          docs += match.suffix().str();
+        }
+      }
+      break;
+    case ExplicitPage::explicitMainPage:
+      break;
   }
   int lineNr=1;
 
