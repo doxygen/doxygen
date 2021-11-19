@@ -3129,14 +3129,6 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = markdownFileNameToId(fileName);
-  static const reg::Ex re(R"([\\@]page[ \t]*)");
-  static const reg::Ex re0(R"(^[a-z_A-Z\x80-\xFF])"); // from LABELID, see commentscan.l
-  static const reg::Ex re1(R"([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*)"); // LABELID, see commentscan.l
-  static const reg::Ex re2(R"(\n)");
-  reg::Match match;
-  reg::Match match1;
-  std::string t;
-  std::string t1;
   switch (isExplicitPage(docs))
   {
     case ExplicitPage::notExplicit:
@@ -3164,26 +3156,36 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
       for (int i = 0; i < prepend; i++) docs.prepend("\n");
       break;
     case ExplicitPage::explicitPage:
-      t = docs.str();
-      reg::search(t,match,re);
-      t1 = match.suffix().str();
-
-      // check first character in [a-z_A-Z\x80-\xFF], so we have a potential label
-      if (reg::search(t1,match1,re0))
       {
-        docs = match.prefix().str();
-        docs += match.str() + markdownFileNameToId(fileName);
-        t = match.suffix().str();
-
-        reg::search(t,match,re1);
-        QCString saveAnchor = match.str();
-        t = match.suffix().str();
-        reg::search(t,match,re2);
-        docs += match.prefix().str();
-        docs += "\\ilinebr @anchor ";
-        docs += saveAnchor;
-        docs += match.str();
-        docs += match.suffix().str();
+        static const reg::Ex re(R"([\\@]page[ \t]*)");
+        static const reg::Ex re0(R"(^[a-z_A-Z\x80-\xFF])"); // from LABELID, see commentscan.l
+        static const reg::Ex re1(R"([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*)"); // LABELID, see commentscan.l
+        static const reg::Ex re2(R"(\n)");
+        reg::Match match;
+        reg::Match match1;
+        std::string t;
+        std::string t1;
+        t = docs.str();
+        reg::search(t,match,re);
+        t1 = match.suffix().str();
+  
+        // check first character in [a-z_A-Z\x80-\xFF], so we have a potential label
+        if (reg::search(t1,match1,re0))
+        {
+          docs = match.prefix().str();
+          docs += match.str() + markdownFileNameToId(fileName);
+          t = match.suffix().str();
+  
+          reg::search(t,match,re1);
+          QCString saveAnchor = match.str();
+          t = match.suffix().str();
+          reg::search(t,match,re2);
+          docs += match.prefix().str();
+          docs += "\\ilinebr @anchor ";
+          docs += saveAnchor;
+          docs += match.str();
+          docs += match.suffix().str();
+        }
       }
       break;
     case ExplicitPage::explicitMainPage:
