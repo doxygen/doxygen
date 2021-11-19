@@ -130,7 +130,7 @@ QCString LayoutNavEntry::url() const
   if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
       (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
   {
-    url+=Doxygen::htmlFileExtension;
+    url = addHtmlExtensionIfMissing(url);
   }
   else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
   {
@@ -141,7 +141,7 @@ QCString LayoutNavEntry::url() const
     {
       if (d && d->isLinkable())
       {
-        url=d->getOutputFileBase()+Doxygen::htmlFileExtension;
+        url=addHtmlExtensionIfMissing(d->getOutputFileBase());
         if (!anchor.isEmpty())
         {
           url+="#"+anchor;

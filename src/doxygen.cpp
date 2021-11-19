@@ -10473,10 +10473,10 @@ static void dumpSymbol(TextStream &t,Definition *d)
   QCString scope;
   if (d->getOuterScope() && d->getOuterScope()!=Doxygen::globalScope)
   {
-    scope = d->getOuterScope()->getOutputFileBase()+Doxygen::htmlFileExtension;
+    scope = addHtmlExtensionIfMissing(d->getOuterScope()->getOutputFileBase());
   }
   t << "REPLACE INTO symbols (symbol_id,scope_id,name,file,line) VALUES('"
-    << d->getOutputFileBase()+Doxygen::htmlFileExtension+anchor << "','"
+    << addHtmlExtensionIfMissing(d->getOutputFileBase())+anchor << "','"
     << scope << "','"
     << d->name() << "','"
     << d->getDefFileName() << "','"

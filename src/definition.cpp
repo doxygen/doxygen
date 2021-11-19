@@ -1354,13 +1354,13 @@ QCString DefinitionImpl::navigationPathAsString() const
     if (m_impl->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(m_impl->def)->groupTitle().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
               convertToHtml(toGroupDef(m_impl->def)->groupTitle())+"</a>";
     }
     else if (m_impl->def->definitionType()==Definition::TypePage &&
              toPageDef(m_impl->def)->hasTitle())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
             convertToHtml((toPageDef(m_impl->def))->title())+"</a>";
     }
     else if (m_impl->def->definitionType()==Definition::TypeClass)
@@ -1370,13 +1370,13 @@ QCString DefinitionImpl::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase());
       if (!m_impl->def->anchor().isEmpty()) result+="#"+m_impl->def->anchor();
       result+="\">"+convertToHtml(name)+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
               convertToHtml(locName)+"</a>";
     }
   }
