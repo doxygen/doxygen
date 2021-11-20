@@ -1,10 +1,13 @@
 #ifndef PORTABLE_H
 #define PORTABLE_H
 
-#include <sys/types.h>
 #include <stdio.h>
-#include <qglobal.h>
-#include <qdir.h>
+#include <sys/types.h>
+#include <stdint.h>
+
+#include "qcstring.h"
+
+class Buf;
 
 #if defined(_WIN32)
 typedef __int64 portable_off_t;
@@ -16,33 +19,42 @@ typedef off_t portable_off_t;
  *  @brief Portable versions of functions that are platform dependent.
  */
 
-int            portable_system(const char *command,const char *args,bool commandHasConsole=TRUE);
-uint           portable_pid();
-const char *   portable_getenv(const char *variable);
-void           portable_setenv(const char *variable,const char *value);
-void           portable_unsetenv(const char *variable);
-portable_off_t portable_fseek(FILE *f,portable_off_t offset, int whence);
-portable_off_t portable_ftell(FILE *f);
-FILE *         portable_fopen(const char *fileName,const char *mode);
-void           portable_unlink(const char *fileName);
-char           portable_pathSeparator();
-char           portable_pathListSeparator();
-const char *   portable_ghostScriptCommand();
-const char *   portable_commandExtension();
-bool           portable_fileSystemIsCaseSensitive();
-FILE *         portable_popen(const char *name,const char *type);
-int            portable_pclose(FILE *stream);
-void           portable_sysTimerStart();
-void           portable_sysTimerStop();
-double         portable_getSysElapsedTime();
-void           portable_sleep(int ms);
-bool           portable_isAbsolutePath(const char *fileName);
-void           portable_correct_path(void);
-void           portable_setShortDir(void);
+namespace Portable
+{
+  int            system(const QCString &command,const QCString &args,bool commandHasConsole=true);
+  unsigned int   pid();
+  QCString       getenv(const QCString &variable);
+  void           setenv(const QCString &variable,const QCString &value);
+  void           unsetenv(const QCString &variable);
+  portable_off_t fseek(FILE *f,portable_off_t offset, int whence);
+  portable_off_t ftell(FILE *f);
+  FILE *         fopen(const QCString &fileName,const QCString &mode);
+  int            fclose(FILE *f);
+  void           unlink(const QCString &fileName);
+  QCString       pathSeparator();
+  QCString       pathListSeparator();
+  const char *   ghostScriptCommand();
+  const char *   commandExtension();
+  bool           fileSystemIsCaseSensitive();
+  FILE *         popen(const QCString &name,const QCString &type);
+  int            pclose(FILE *stream);
+  void           sysTimerStart();
+  void           sysTimerStop();
+  double         getSysElapsedTime();
+  void           sleep(int ms);
+  bool           isAbsolutePath(const QCString &fileName);
+  void           correct_path();
+  void           setShortDir();
+  const char *   strnstr(const char *haystack, const char *needle, size_t haystack_len);
+  const char *   devNull();
+  bool           checkForExecutable(const QCString &fileName);
+  size_t         recodeUtf8StringToW(const QCString &inputStr,uint16_t **buf);
+}
+
 
 extern "C" {
-  void *         portable_iconv_open(const char* tocode, const char* fromcode);
-  size_t         portable_iconv (void *cd, char** inbuf, size_t *inbytesleft, 
+  void *         portable_iconv_open(const char *tocode, const char *fromcode);
+  size_t         portable_iconv (void *cd, const char** inbuf, size_t *inbytesleft,
                                  char* * outbuf, size_t *outbytesleft);
   int            portable_iconv_close (void *cd);
 }

@@ -29,10 +29,9 @@ if (NOT Qt5Core_FOUND)
 endif()
 
 include_directories(
-	.
-        ${CMAKE_SOURCE_DIR}/libversion
-	${CMAKE_SOURCE_DIR}/qtools
-	${GENERATED_SRC}
+  .
+  ${PROJECT_SOURCE_DIR}/libversion
+  ${GENERATED_SRC}
 )
 
 set(GENERATED_SRC_WIZARD ${GENERATED_SRC}/doxywizard)
@@ -58,25 +57,26 @@ set_source_files_properties(${GENERATED_SRC_WIZARD}/settings.h PROPERTIES GENERA
 
 # generate version.cpp
 add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
-    DEPENDS ${CMAKE_SOURCE_DIR}/VERSION ${CMAKE_SOURCE_DIR}/src/version.py
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/version.py ${VERSION} > ${GENERATED_SRC_WIZARD}/version.cpp
+    DEPENDS ${PROJECT_SOURCE_DIR}/VERSION ${PROJECT_SOURCE_DIR}/src/version.py
     OUTPUT ${GENERATED_SRC_WIZARD}/version.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/version.cpp PROPERTIES GENERATED 1)
 
 # generate configdoc.cpp
 add_custom_command(
-COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/configgen.py -wiz ${CMAKE_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC_WIZARD}/configdoc.cpp
-OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
+    COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/configgen.py -wiz ${PROJECT_SOURCE_DIR}/src/config.xml > ${GENERATED_SRC_WIZARD}/configdoc.cpp
+    DEPENDS  ${PROJECT_SOURCE_DIR}/src/configgen.py ${PROJECT_SOURCE_DIR}/src/config.xml
+    OUTPUT ${GENERATED_SRC_WIZARD}/configdoc.cpp
 )
 set_source_files_properties(${GENERATED_SRC_WIZARD}/configdoc.cpp PROPERTIES GENERATED 1)
 
-set(LEX_FILES config_doxyw) 
+set(LEX_FILES config_doxyw)
 foreach(lex_file ${LEX_FILES})
     add_custom_command(
-	    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/addon/doxywizard/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
-        DEPENDS ${CMAKE_SOURCE_DIR}/src/scan_states.py ${CMAKE_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
-	OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l > ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
+        DEPENDS ${PROJECT_SOURCE_DIR}/src/scan_states.py ${PROJECT_SOURCE_DIR}/addon/doxywizard/${lex_file}.l
+        OUTPUT  ${GENERATED_SRC_WIZARD}/${lex_file}.l.h
     )
     set_source_files_properties(${GENERATED_SRC_WIZARD}/${lex_file}.l.h PROPERTIES GENERATED 1)
 
@@ -97,6 +97,7 @@ wizard.h
 qt_add_resources(doxywizard_RESOURCES_RCC doxywizard.qrc)
 
 add_executable(doxywizard WIN32
+config_msg.cpp
 doxywizard.cpp
 expert.cpp
 wizard.cpp

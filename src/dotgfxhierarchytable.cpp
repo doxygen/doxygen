@@ -13,15 +13,16 @@
 *
 */
 
-#include "dotgfxhierarchytable.h"
+#include <sstream>
 
+#include "dotgfxhierarchytable.h"
 #include "language.h"
 #include "util.h"
 #include "message.h"
 #include "doxygen.h"
 #include "classlist.h"
-
-#define OPTIMIZE_OUTPUT_SLICE Config_getBool(OPTIMIZE_OUTPUT_SLICE)
+#include "dir.h"
+#include "vhdldocgen.h"
 
 QCString DotGfxHierarchyTable::getBaseName() const
 {
@@ -29,34 +30,31 @@ QCString DotGfxHierarchyTable::getBaseName() const
   if (m_prefix.isEmpty())
     baseName.sprintf("inherit_graph_%d", m_graphId);
   else
-    baseName.sprintf("%sinherit_graph_%d",m_prefix.data(), m_graphId);
+    baseName.sprintf("%sinherit_graph_%d",qPrint(m_prefix), m_graphId);
   return baseName;
 }
 
 void DotGfxHierarchyTable::computeTheGraph()
 {
-  QListIterator<DotNode> dnli2(*m_rootNodes);
-  DotNode *node;
-
-  FTextStream md5stream(&m_theGraph);
+  TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trGraphicalHierarchy());
-  md5stream << "  rankdir=\"LR\";" << endl;
-  for (dnli2.toFirst();(node=dnli2.current());++dnli2)
+  md5stream << "  rankdir=\"LR\";\n";
+  for (auto node : m_rootNodes)
   {
-    if (node->subgraphId()==m_rootSubgraphNode->subgraphId()) 
+    if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
       node->clearWriteFlag();
     }
   }
-  for (dnli2.toFirst();(node=dnli2.current());++dnli2)
+  for (auto node : m_rootNodes)
   {
-    if (node->subgraphId()==m_rootSubgraphNode->subgraphId()) 
+    if (node->subgraphId()==m_rootSubgraphNode->subgraphId())
     {
       node->write(md5stream,Hierarchy,GOF_BITMAP,FALSE,TRUE,TRUE);
     }
   }
   writeGraphFooter(md5stream);
-
+  m_theGraph = md5stream.str();
 }
 
 QCString DotGfxHierarchyTable::getMapLabel() const
@@ -64,8 +62,8 @@ QCString DotGfxHierarchyTable::getMapLabel() const
   return escapeCharsInString(m_rootSubgraphNode->label(),FALSE);
 }
 
-void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
-  const char *path,const char *fileName,int id)
+void DotGfxHierarchyTable::createGraph(DotNode *n,TextStream &out,
+  const QCString &path,const QCString &fileName,int id)
 {
   m_rootSubgraphNode = n;
   m_graphId = id;
@@ -74,124 +72,122 @@ void DotGfxHierarchyTable::createGraph(DotNode *n,FTextStream &out,
   DotGraph::writeGraph(out, GOF_BITMAP, EOF_Html, path, fileName, "", TRUE, 0);
 }
 
-void DotGfxHierarchyTable::writeGraph(FTextStream &out,
-  const char *path,const char *fileName)
+void DotGfxHierarchyTable::writeGraph(TextStream &out,
+  const QCString &path,const QCString &fileName)
 {
   //printf("DotGfxHierarchyTable::writeGraph(%s)\n",name);
   //printf("m_rootNodes=%p count=%d\n",m_rootNodes,m_rootNodes->count());
 
-  if (m_rootSubgraphs->count()==0) return;
+  if (m_rootSubgraphs.empty()) return;
 
-  QDir d(path);
+  Dir d(path.str());
   // store the original directory
   if (!d.exists())
   {
-    err("Output dir %s does not exist!\n",path); exit(1);
+    term("Output dir %s does not exist!\n",qPrint(path));
   }
 
   // put each connected subgraph of the hierarchy in a row of the HTML output
-  out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">" << endl;
+  out << "<table border=\"0\" cellspacing=\"10\" cellpadding=\"0\">\n";
 
-  QListIterator<DotNode> dnli(*m_rootSubgraphs);
-  DotNode *n;
   int count=0;
-  for (dnli.toFirst();(n=dnli.current());++dnli)
+  std::sort(m_rootSubgraphs.begin(),m_rootSubgraphs.end(),
+            [](auto n1,auto n2) { return qstricmp(n1->label(),n2->label())<0; });
+  for (auto n : m_rootSubgraphs)
   {
     out << "<tr><td>";
     createGraph(n,out,path,fileName,count++);
-    out << "</td></tr>" << endl;
+    out << "</td></tr>\n";
   }
-  out << "</table>" << endl;
+  out << "</table>\n";
 }
 
-void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,bool hideSuper)
+void DotGfxHierarchyTable::addHierarchy(DotNode *n,const ClassDef *cd,ClassDefSet &visitedClasses)
 {
-  //printf("addHierarchy '%s' baseClasses=%d\n",cd->name().data(),cd->baseClasses()->count());
-  if (cd->subClasses())
+  //printf("addHierarchy '%s' baseClasses=%d\n",qPrint(cd->name()),cd->baseClasses()->count());
+  for (const auto &bcd : cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    BaseClassDef *bcd;
-    for ( ; (bcd=bcli.current()) ; ++bcli )
+    ClassDef *bClass=bcd.classDef;
+    //printf("  Trying sub class='%s' usedNodes=%d\n",qPrint(bClass->name()),m_usedNodes->count());
+    if (bClass && bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
     {
-      ClassDef *bClass=bcd->classDef; 
-      //printf("  Trying sub class='%s' usedNodes=%d\n",bClass->name().data(),m_usedNodes->count());
-      if (bClass->isVisibleInHierarchy() && hasVisibleRoot(bClass->baseClasses()))
+      auto it = m_usedNodes.find(bClass->name().str());
+      //printf("  Node '%s' Found visible class='%s'\n",qPrint(n->label()),
+      //                                              qPrint(bClass->name()));
+      DotNode *root = 0;
+      if (it!=m_usedNodes.end()) // node already present
       {
-        DotNode *bn;
-        //printf("  Node '%s' Found visible class='%s'\n",n->label().data(),
-        //                                              bClass->name().data());
-        if ((bn=m_usedNodes->find(bClass->name()))) // node already present 
+        const auto &bn = it->second;
+        root = bn.get();
+        const auto &children = n->children();
+        auto child_it = std::find(children.begin(),children.end(),bn.get());
+        if (child_it==children.end()) // no arrow yet
         {
-          if (n->children()==0 || n->children()->findRef(bn)==-1) // no arrow yet
-          {
-            n->addChild(bn,bcd->prot);
-            bn->addParent(n);
-            //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
-            //       n->label().data(),
-            //       bn->label().data(),
-            //       bn->children() ? bn->children()->count() : 0,
-            //       bn->parents()  ? bn->parents()->count()  : 0
-            //     );
-          }
-          //else
-          //{
-          //  printf("  Class already has an arrow!\n");
-          //}
+          n->addChild(bn.get(),bcd.prot);
+          bn->addParent(n);
+          //printf("  Adding node %s to existing base node %s (c=%d,p=%d)\n",
+          //       qPrint(n->label()),
+          //       qPrint(bn->label()),
+          //       bn->children() ? bn->children()->count() : 0,
+          //       bn->parents()  ? bn->parents()->count()  : 0
+          //     );
         }
-        else 
+        //else
+        //{
+        //  printf("  Class already has an arrow!\n");
+        //}
+      }
+      else
+      {
+        QCString tmp_url="";
+        if (bClass->isLinkable() && !bClass->isHidden())
         {
-          QCString tmp_url="";
-          if (bClass->isLinkable() && !bClass->isHidden())
+          tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
+          if (!bClass->anchor().isEmpty())
           {
-            tmp_url=bClass->getReference()+"$"+bClass->getOutputFileBase();
-            if (!bClass->anchor().isEmpty())
-            {
-              tmp_url+="#"+bClass->anchor();
-            }
+            tmp_url+="#"+bClass->anchor();
           }
-          QCString tooltip = bClass->briefDescriptionAsTooltip();
-          bn = new DotNode(getNextNodeNumber(),
+        }
+        QCString tooltip = bClass->briefDescriptionAsTooltip();
+        auto bn = std::make_unique<DotNode>(getNextNodeNumber(),
             bClass->displayName(),
             tooltip,
-            tmp_url.data()
-          );
-          n->addChild(bn,bcd->prot);
-          bn->addParent(n);
-          //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
-          //   n->label().data(),
-          //   bn->label().data(),
-          //   bn->children() ? bn->children()->count() : 0,
-          //   bn->parents()  ? bn->parents()->count()  : 0
-          //  );
-          //printf("  inserting %s (%p)\n",bClass->name().data(),bn);
-          m_usedNodes->insert(bClass->name(),bn); // add node to the used list
-        }
-        if (!bClass->isVisited() && !hideSuper && bClass->subClasses())
-        {
-          bool wasVisited=bClass->isVisited();
-          bClass->setVisited(TRUE);
-          addHierarchy(bn,bClass,wasVisited);
-        }
+            tmp_url
+            );
+        n->addChild(bn.get(),bcd.prot);
+        bn->addParent(n);
+        root = bn.get();
+        //printf("  Adding node %s to new base node %s (c=%d,p=%d)\n",
+        //   qPrint(n->label()),
+        //   qPrint(bn->label()),
+        //   bn->children() ? bn->children()->count() : 0,
+        //   bn->parents()  ? bn->parents()->count()  : 0
+        //  );
+        //printf("  inserting %s (%p)\n",qPrint(bClass->name()),bn);
+        m_usedNodes.insert(std::make_pair(bClass->name().str(),std::move(bn))); // add node to the used list
+      }
+      if (visitedClasses.find(bClass)==visitedClasses.end() && !bClass->subClasses().empty())
+      {
+        visitedClasses.insert(bClass);
+        addHierarchy(root,bClass,visitedClasses);
       }
     }
   }
   //printf("end addHierarchy\n");
 }
 
-void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
+void DotGfxHierarchyTable::addClassList(const ClassLinkedMap &cl,ClassDefSet &visitedClasses)
 {
-  ClassSDict::Iterator cli(*cl);
-  ClassDef *cd;
-  for (cli.toLast();(cd=cli.current());--cli)
+  for (const auto &cd : cl)
   {
-    //printf("Trying %s subClasses=%d\n",cd->name().data(),cd->subClasses()->count());
+    //printf("Trying %s subClasses=%d\n",qPrint(cd->name()),cd->subClasses()->count());
     if (cd->getLanguage()==SrcLangExt_VHDL &&
       (VhdlDocGen::VhdlClasses)cd->protection()!=VhdlDocGen::ENTITYCLASS
       )
     {
       continue;
     }
-    if (OPTIMIZE_OUTPUT_SLICE && cd->compoundType() != m_classType)
+    if (Config_getBool(OPTIMIZE_OUTPUT_SLICE) && cd->compoundType() != m_classType)
     {
       continue;
     }
@@ -200,7 +196,7 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
       ) // root node in the forest
     {
       QCString tmp_url="";
-      if (cd->isLinkable() && !cd->isHidden()) 
+      if (cd->isLinkable() && !cd->isHidden())
       {
         tmp_url=cd->getReference()+"$"+cd->getOutputFileBase();
         if (!cd->anchor().isEmpty())
@@ -208,76 +204,62 @@ void DotGfxHierarchyTable::addClassList(const ClassSDict *cl)
           tmp_url+="#"+cd->anchor();
         }
       }
-      //printf("Inserting root class %s\n",cd->name().data());
+      //printf("Inserting root class %s\n",qPrint(cd->name()));
       QCString tooltip = cd->briefDescriptionAsTooltip();
-      DotNode *n = new DotNode(getNextNodeNumber(),
+      auto n = std::make_unique<DotNode>(getNextNodeNumber(),
         cd->displayName(),
         tooltip,
-        tmp_url.data());
+        tmp_url);
+      DotNode *root = n.get();
 
-      //m_usedNodes->clear();
-      m_usedNodes->insert(cd->name(),n);
-      m_rootNodes->insert(0,n);   
-      if (!cd->isVisited() && cd->subClasses())
+      m_usedNodes.insert(std::make_pair(cd->name().str(),std::move(n)));
+      m_rootNodes.push_back(root);
+      if (visitedClasses.find(cd.get())==visitedClasses.end() && !cd->subClasses().empty())
       {
-        addHierarchy(n,cd,cd->isVisited());
-        cd->setVisited(TRUE);
+        addHierarchy(root,cd.get(),visitedClasses);
+        visitedClasses.insert(cd.get());
       }
     }
   }
 }
 
-DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::CompoundType ct)
+DotGfxHierarchyTable::DotGfxHierarchyTable(const QCString &prefix,ClassDef::CompoundType ct)
   : m_prefix(prefix)
   , m_classType(ct)
 {
-  m_rootNodes = new QList<DotNode>;
-  m_usedNodes = new QDict<DotNode>(1009); 
-  m_usedNodes->setAutoDelete(TRUE);
-  m_rootSubgraphs = new DotNodeList;
-
   // build a graph with each class as a node and the inheritance relations
   // as edges
-  initClassHierarchy(Doxygen::classSDict);
-  initClassHierarchy(Doxygen::hiddenClasses);
-  addClassList(Doxygen::classSDict);
-  addClassList(Doxygen::hiddenClasses);
+  ClassDefSet visitedClasses;
+  addClassList(*Doxygen::classLinkedMap,visitedClasses);
+  addClassList(*Doxygen::hiddenClassLinkedMap,visitedClasses);
   // m_usedNodes now contains all nodes in the graph
 
   // color the graph into a set of independent subgraphs
-  bool done=FALSE; 
+  bool done=FALSE;
   int curColor=0;
-  QListIterator<DotNode> dnli(*m_rootNodes);
   while (!done) // there are still nodes to color
   {
-    DotNode *n;
     done=TRUE; // we are done unless there are still uncolored nodes
-    for (dnli.toLast();(n=dnli.current());--dnli)
+    for (auto n : m_rootNodes)
     {
       if (n->subgraphId()==-1) // not yet colored
       {
-        //printf("Starting at node %s (%p): %d\n",n->label().data(),n,curColor);
+        //printf("Starting at node %s (%p): %d\n",qPrint(n->label()),n,curColor);
         done=FALSE; // still uncolored nodes
         n->setSubgraphId(curColor);
         n->markAsVisible();
         n->colorConnectedNodes(curColor);
         curColor++;
-        const DotNode *dn=n->findDocNode();
-        if (dn!=0) 
-          m_rootSubgraphs->inSort(dn);
-        else
-          m_rootSubgraphs->inSort(n);
+        m_rootSubgraphs.push_back(n);
       }
     }
   }
 
   //printf("Number of independent subgraphs: %d\n",curColor);
-  QListIterator<DotNode> dnli2(*m_rootSubgraphs);
-  DotNode *n;
-  for (dnli2.toFirst();(n=dnli2.current());++dnli2)
+  for (auto n : m_rootSubgraphs)
   {
     //printf("Node %s color=%d (c=%d,p=%d)\n",
-    //    n->label().data(),n->m_subgraphId,
+    //    qPrint(n->label()),n->m_subgraphId,
     //    n->children()?n->children()->count():0,
     //    n->parents()?n->parents()->count():0);
     int number=0;
@@ -285,18 +267,3 @@ DotGfxHierarchyTable::DotGfxHierarchyTable(const char *prefix,ClassDef::Compound
   }
 }
 
-DotGfxHierarchyTable::~DotGfxHierarchyTable()
-{
-  //printf("DotGfxHierarchyTable::~DotGfxHierarchyTable\n");
-
-  //QDictIterator<DotNode> di(*m_usedNodes);
-  //DotNode *n;
-  //for (;(n=di.current());++di)
-  //{
-  //  printf("Node %p: %s\n",n,n->label().data());
-  //}
-
-  delete m_rootNodes;
-  delete m_usedNodes;
-  delete m_rootSubgraphs;
-}

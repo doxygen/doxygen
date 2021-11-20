@@ -35,9 +35,9 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
      *  method is used to generate the command for using the babel package.
      */
     QCString latexLanguageSupportCommand()
-    {
-      return "\\usepackage[slovene]{babel}\n";
-    }
+    { return "\\usepackage[slovene]{babel}\n"; }
+    QCString trISOLang()
+    { return "sl"; }
     QCString trRelatedFunctions()
     { return "Povezane funkcije"; }
     QCString trRelatedSubscript()
@@ -64,9 +64,9 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Seznam metod razreda "; }
     QCString trIncludingInheritedMembers()
     { return ", vključujoč dedovane metode in atribute."; }
-    QCString trGeneratedAutomatically(const char *s)
+    QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="zgenerirano z Doxygen-om";
-      if (s) result+=(QCString)" za "+s;
+      if (!s.isEmpty()) result+=(QCString)" za "+s;
       result+=" iz izvorne kode.";
       return result;
     }
@@ -186,14 +186,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     { return "Opis spremenljivke"; }
     QCString trCompounds()
     { return "Strukture"; }
-    QCString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"Generirano "+date;
-      if (projName) result+=(QCString)" projekt: "+projName;
+      if (!projName.isEmpty()) result+=(QCString)" projekt: "+projName;
       result+=(QCString)" generator: ";
       return result;
     }
-    QCString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"Diagram razredov za "+clName;
     }
@@ -249,7 +249,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 // new since 0.49-990425
 //////////////////////////////////////////////////////////////////////////
 
-    QCString trCompoundReference(const char *clName,
+    QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool /*isTemplate*/)
       // used as the title of the HTML page of a class/struct/union
@@ -270,14 +270,14 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 
       return result;
     }
-    QCString trFileReference(const char *fileName)
+    QCString trFileReference(const QCString &fileName)
       // used as the title of the HTML page of a file
     {
       QCString result="Datoteka ";
 	  result+=fileName;
 	  return result;
     }
-    QCString trNamespaceReference(const char *namespaceName)
+    QCString trNamespaceReference(const QCString &namespaceName)
       // used as the title of the HTML page of a namespace
     {
       QCString result ="Imenski prostor ";
@@ -472,12 +472,12 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const char *clName)
+    QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"Kolaboracijski diagram razreda "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const char *fName)
+    QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"Graf prikazuje seznam datotek, "
           "ki jih datoteka \""+fName+"\" "
@@ -765,7 +765,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"JAVA paket "+name;
     }
@@ -1178,7 +1178,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName;
       result+=" imeniške reference"; /* not sure for context */
       return result;
@@ -1207,6 +1207,7 @@ class TranslatorSlovene : public TranslatorAdapter_1_4_6
              "podana je zaradi priročnosti. Metoda se od predhodnje razlikuje "
              "samo v številu in/ali tipu formalnih argumentov.";
     }
+
 };
 
 #endif

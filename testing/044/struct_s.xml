@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="struct_s" kind="struct" language="C++" prot="public">
     <compoundname>S</compoundname>
     <includes refid="044__section_8h" local="no">044_section.h</includes>
@@ -98,7 +98,7 @@
     <detaileddescription>
       <para>A struct </para>
     </detaileddescription>
-    <location file="044_section.h" line="6" column="1" bodyfile="044_section.h" bodystart="5" bodyend="27"/>
+    <location file="044_section.h" line="5" column="1" bodyfile="044_section.h" bodystart="6" bodyend="27"/>
     <listofallmembers>
       <member refid="struct_s_1ab754fee7e3500035f644d0ac528cbfc3" prot="private" virt="non-virtual">
         <scope>S</scope>

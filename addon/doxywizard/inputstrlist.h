@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _INPUTSTRLIST_H
-#define _INPUTSTRLIST_H
+#ifndef INPUTSTRLIST_H
+#define INPUTSTRLIST_H
 
 #include "input.h"
 
@@ -51,6 +51,7 @@ class InputStrList : public QObject, public Input
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
+    bool isDefault();
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty();

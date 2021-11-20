@@ -72,11 +72,15 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     virtual QCString latexLanguageSupportCommand()
     {
       return "\\usepackage[T2A]{fontenc}\n"
-             "\\usepackage[russian]{babel}\n";
+             "\\usepackage[serbianc]{babel}\n";
     }
     virtual QCString latexFontenc()
     {
       return "";
+    }
+    virtual QCString trISOLang()
+    {
+      return "sr-Cyrl";
     }
 
     // --- Language translation methods -------------------
@@ -141,9 +145,9 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    virtual QCString trGeneratedAutomatically(const char *s)
+    virtual QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Аутоматски направљено помоћу Doxygen-а";
-      if (s) result+=(QCString)" за "+s;
+      if (!s.isEmpty()) result+=(QCString)" за "+s;
       result+=" из изворног кода.";
       return result;
     }
@@ -249,6 +253,10 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Овде су структуре са кратким описима:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Овде су класе са кратким описима:";
       }
       else
       {
@@ -499,16 +507,16 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    virtual QCString trGeneratedAt(const char *date,const char *projName)
+    virtual QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"Направљено "+date;
-      if (projName) result+=(QCString)" за "+projName;
+      if (!projName.isEmpty()) result+=(QCString)" за "+projName;
       result+=(QCString)" помоћу";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    virtual QCString trClassDiagram(const char *clName)
+    virtual QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"Дијаграм наслеђивања за "+clName+":";
     }
@@ -587,7 +595,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    virtual QCString trCompoundReference(const char *clName,
+    virtual QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -626,7 +634,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a file */
-    virtual QCString trFileReference(const char *fileName)
+    virtual QCString trFileReference(const QCString &fileName)
     {
       QCString result=fileName;
       result+=" Референца датотеке";
@@ -634,7 +642,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a namespace */
-    virtual QCString trNamespaceReference(const char *namespaceName)
+    virtual QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Референца простора имена";
@@ -831,12 +839,12 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    virtual QCString trCollaborationDiagram(const char *clName)
+    virtual QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"Дијаграм сарадње за "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    virtual QCString trInclDepGraph(const char *fName)
+    virtual QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"Дијаграм зависности укључивања за "+fName+":";
     }
@@ -1117,7 +1125,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"Пакет "+name;
     }
@@ -1523,7 +1531,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result=dirName; result+=" Референца директоријума"; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1650,7 +1658,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1671,7 +1679,7 @@ class TranslatorSerbianCyrillic : public TranslatorAdapter_1_6_0
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result=namespaceName;
       result+=" Референца модула";

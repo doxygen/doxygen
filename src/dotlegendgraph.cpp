@@ -13,6 +13,8 @@
 *
 */
 
+#include <sstream>
+
 #include "dotlegendgraph.h"
 #include "util.h"
 #include "config.h"
@@ -21,9 +23,9 @@
 #include "language.h"
 #include "dotfilepatcher.h"
 
-void DotLegendGraph::writeGraph(const char *path)
+void DotLegendGraph::writeGraph(const QCString &path)
 {
-  FTextStream ts;
+  TextStream ts;
   DotGraph::writeGraph(ts, GOF_BITMAP, EOF_Html, path, "", "", FALSE, 0);
 
   if (getDotImageExtension()=="svg")
@@ -43,7 +45,7 @@ void DotLegendGraph::computeTheGraph()
 {
   int fontSize = Config_getInt(DOT_FONTSIZE);
   QCString fontName = Config_getString(DOT_FONTNAME);
-  FTextStream md5stream(&m_theGraph);
+  TextStream md5stream;
   writeGraphHeader(md5stream,theTranslator->trLegendTitle());
   md5stream << "  Node9 [shape=\"box\",label=\"Inherited\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",fillcolor=\"grey75\",style=\"filled\" fontcolor=\"black\"];\n";
   md5stream << "  Node10 -> Node9 [dir=\"back\",color=\"midnightblue\",fontsize=\"" << fontSize << "\",style=\"solid\",fontname=\"" << fontName << "\"];\n";
@@ -63,6 +65,7 @@ void DotLegendGraph::computeTheGraph()
   md5stream << "  Node18 -> Node9 [dir=\"back\",color=\"darkorchid3\",fontsize=\"" << fontSize << "\",style=\"dashed\",label=\"m_usedClass\",fontname=\"" << fontName << "\"];\n";
   md5stream << "  Node18 [shape=\"box\",label=\"Used\",fontsize=\"" << fontSize << "\",height=0.2,width=0.4,fontname=\"" << fontName << "\",color=\"black\"];\n";
   writeGraphFooter(md5stream);
+  m_theGraph = md5stream.str();
 }
 
 QCString DotLegendGraph::getMapLabel() const

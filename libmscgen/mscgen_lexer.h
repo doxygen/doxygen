@@ -56,6 +56,7 @@ Boolean        lex_getutf8(void);
 unsigned long  lex_getlinenum(void);
 char          *lex_getline(void);
 void           lex_destroy(void);
+void           lex_resetparser(void);
 
 #endif /* MSCGEN_LEXER_H */
 

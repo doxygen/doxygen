@@ -382,6 +382,8 @@ const  int LOWER_CASE_LETTER = 187;
 const  int QUOTE = 188;
   /** RegularExpression Id. */
 const  int VHDL2008TOOLDIR = 189;
+  /** RegularExpression Id. */
+const  int SPEC_ATTR = 190;
 
   /** Lexical state. */
 const  int DEFAULT = 0;
@@ -767,6 +769,8 @@ const  int DEFAULT = 0;
 {0x22, 0x3c, 0x51, 0x55, 0x4f, 0x54, 0x45, 0x3e, 0x22, 0};
   static const JJChar tokenImage_arr_189[] = 
 {0x22, 0x3c, 0x56, 0x48, 0x44, 0x4c, 0x32, 0x30, 0x30, 0x38, 0x54, 0x4f, 0x4f, 0x4c, 0x44, 0x49, 0x52, 0x3e, 0x22, 0};
+  static const JJChar tokenImage_arr_190[] = 
+{0x22, 0x3c, 0x53, 0x50, 0x45, 0x43, 0x5f, 0x41, 0x54, 0x54, 0x52, 0x3e, 0x22, 0};
   static const JJChar* const tokenImage[] = {
 tokenImage_arr_0, 
 tokenImage_arr_1, 
@@ -958,6 +962,7 @@ tokenImage_arr_186,
 tokenImage_arr_187, 
 tokenImage_arr_188, 
 tokenImage_arr_189, 
+tokenImage_arr_190, 
   };
 
 }

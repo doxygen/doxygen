@@ -180,7 +180,7 @@ unsigned int gdoTextWidth(struct ADrawTag *ctx,
                           const char *string)
 {
 #ifndef USE_FREETYPE
-    const unsigned int l = strlen(string);
+    const unsigned int l = (unsigned int)strlen(string);
 
     /* Remove 1 pixel since there is usually an uneven gap at
      *  the right of the last character for the fixed width

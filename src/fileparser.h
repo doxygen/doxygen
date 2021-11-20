@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,22 +18,18 @@
 
 #include "parserintf.h"
 
-/** @brief General file parser */
-class FileParser : public ParserInterface
+/** @brief Generic code parser */
+class FileCodeParser : public CodeParserInterface
 {
   public:
-    virtual ~FileParser() {}
-    void startTranslationUnit(const char *) {}
-    void finishTranslationUnit() {}
-    void parseInput(const char *, const char *,const std::unique_ptr<Entry> &, bool, QStrList &) {}
-    bool needsPreprocessing(const QCString &) const { return FALSE; }
+    virtual ~FileCodeParser() {}
     void parseCode(CodeOutputInterface &codeOutIntf,
-                   const char *scopeName,
+                   const QCString &scopeName,
                    const QCString &input,
                    SrcLangExt lang,
                    bool isExampleBlock,
-                   const char *exampleName=0,
-                   FileDef *fileDef=0,
+                   const QCString &exampleName=QCString(),
+                   const FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,
@@ -43,8 +39,6 @@ class FileParser : public ParserInterface
                    bool collectXRefs=TRUE
                   );
     void resetCodeParserState() {}
-    void parsePrototype(const char *) {}
 };
-
 
 #endif

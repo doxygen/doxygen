@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,26 +16,24 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <stdlib.h>
-#include <qfile.h>
+
 #include "entry.h"
 #include "util.h"
 #include "section.h"
 #include "doxygen.h"
 #include "arguments.h"
 #include "config.h"
-//------------------------------------------------------------------
-
-#define HEADER ('D'<<24)+('O'<<16)+('X'<<8)+'!'
 
 //------------------------------------------------------------------
 
-int Entry::num=0;
+static AtomicInt g_num;
 
 Entry::Entry()
 {
   //printf("Entry::Entry(%p)\n",this);
-  num++;
+  g_num++;
   m_parent=0;
   section = EMPTY_SEC;
   //printf("Entry::Entry() tArgList=0\n");
@@ -50,7 +48,7 @@ Entry::Entry()
 Entry::Entry(const Entry &e)
 {
   //printf("Entry::Entry(%p):copy\n",this);
-  num++;
+  g_num++;
   section     = e.section;
   type        = e.type;
   name        = e.name;
@@ -74,8 +72,8 @@ Entry::Entry(const Entry &e)
   bitfields   = e.bitfields;
   argList     = e.argList;
   tArgLists   = e.tArgLists;
-  program     = e.program;
-  initializer = e.initializer;
+  program.str(e.program.str());
+  initializer.str(e.initializer.str());
   includeFile = e.includeFile;
   includeName = e.includeName;
   doc         = e.doc;
@@ -95,6 +93,7 @@ Entry::Entry(const Entry &e)
   exception   = e.exception;
   typeConstr  = e.typeConstr;
   bodyLine    = e.bodyLine;
+  bodyColumn  = e.bodyColumn;
   endBodyLine = e.endBodyLine;
   mGrpId      = e.mGrpId;
   anchors     = e.anchors;
@@ -109,6 +108,7 @@ Entry::Entry(const Entry &e)
   id          = e.id;
   extends     = e.extends;
   groups      = e.groups;
+  req         = e.req;
   m_fileDef   = e.m_fileDef;
 
   m_parent    = e.m_parent;
@@ -116,17 +116,17 @@ Entry::Entry(const Entry &e)
   m_sublist.reserve(e.m_sublist.size());
   for (const auto &cur : e.m_sublist)
   {
-    m_sublist.push_back(std::make_unique<Entry>(*cur));
+    m_sublist.push_back(std::make_shared<Entry>(*cur));
   }
 }
 
 Entry::~Entry()
 {
-  //printf("Entry::~Entry(%p) num=%d\n",this,num);
+  //printf("Entry::~Entry(%p) num=%d\n",this,g_num);
   //printf("Deleting entry %d name %s type %x children %d\n",
-  //       num,name.data(),section,sublist->count());
+  //       num,qPrint(name),section,sublist->count());
 
-  num--;
+  g_num--;
 }
 
 void Entry::moveToSubEntryAndRefresh(Entry *&current)
@@ -136,11 +136,11 @@ void Entry::moveToSubEntryAndRefresh(Entry *&current)
   current = new Entry;
 }
 
-void Entry::moveToSubEntryAndRefresh(std::unique_ptr<Entry> &current)
+void Entry::moveToSubEntryAndRefresh(std::shared_ptr<Entry> &current)
 {
   current->m_parent=this;
-  m_sublist.push_back(std::move(current));
-  current = std::make_unique<Entry>();
+  m_sublist.push_back(current);
+  current = std::make_shared<Entry>();
 }
 
 void Entry::moveToSubEntryAndKeep(Entry *current)
@@ -149,10 +149,10 @@ void Entry::moveToSubEntryAndKeep(Entry *current)
   m_sublist.emplace_back(current);
 }
 
-void Entry::moveToSubEntryAndKeep(std::unique_ptr<Entry> &current)
+void Entry::moveToSubEntryAndKeep(std::shared_ptr<Entry> current)
 {
   current->m_parent=this;
-  m_sublist.push_back(std::move(current));
+  m_sublist.push_back(current);
 }
 
 void Entry::copyToSubEntry(Entry *current)
@@ -162,32 +162,17 @@ void Entry::copyToSubEntry(Entry *current)
   m_sublist.emplace_back(copy);
 }
 
-void Entry::copyToSubEntry(const std::unique_ptr<Entry> &current)
+void Entry::copyToSubEntry(const std::shared_ptr<Entry> &current)
 {
-  std::unique_ptr<Entry> copy = std::make_unique<Entry>(*current);
+  std::shared_ptr<Entry> copy = std::make_shared<Entry>(*current);
   copy->m_parent=this;
-  m_sublist.push_back(std::move(copy));
-}
-
-void Entry::moveFromSubEntry(const Entry *child,std::unique_ptr<Entry> &moveTo)
-{
-  auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [child](const std::unique_ptr<Entry>&elem) { return elem.get()==child; });
-  if (it!=m_sublist.end())
-  {
-    moveTo = std::move(*it);
-    m_sublist.erase(it);
-  }
-  else
-  {
-    moveTo.reset();
-  }
+  m_sublist.push_back(copy);
 }
 
 void Entry::removeSubEntry(const Entry *e)
 {
   auto it = std::find_if(m_sublist.begin(),m_sublist.end(),
-      [e](const std::unique_ptr<Entry>&elem) { return elem.get()==e; });
+      [e](const std::shared_ptr<Entry>&elem) { return elem.get()==e; });
   if (it!=m_sublist.end())
   {
     m_sublist.erase(it);
@@ -197,17 +182,17 @@ void Entry::removeSubEntry(const Entry *e)
 
 void Entry::reset()
 {
-  static bool entryCallGraph   = Config_getBool(CALL_GRAPH);
-  static bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
-  static bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
-  static bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
+  bool entryCallGraph   = Config_getBool(CALL_GRAPH);
+  bool entryCallerGraph = Config_getBool(CALLER_GRAPH);
+  bool entryReferencedByRelation = Config_getBool(REFERENCED_BY_RELATION);
+  bool entryReferencesRelation   = Config_getBool(REFERENCES_RELATION);
   //printf("Entry::reset()\n");
   name.resize(0);
   type.resize(0);
   args.resize(0);
   bitfields.resize(0);
   exception.resize(0);
-  program.resize(0);
+  program.str(std::string());
   includeFile.resize(0);
   includeName.resize(0);
   doc.resize(0);
@@ -223,11 +208,12 @@ void Entry::reset()
   inbodyLine=-1;
   inside.resize(0);
   fileName.resize(0);
-  initializer.resize(0);
+  initializer.str(std::string());
   initLines = -1;
   startLine = 1;
   startColumn = 1;
   bodyLine = -1;
+  bodyColumn = 1;
   endBodyLine = -1;
   mGrpId = -1;
   callGraph   = entryCallGraph;
@@ -253,11 +239,11 @@ void Entry::reset()
   extends.clear();
   groups.clear();
   anchors.clear();
-  argList.clear();
-  tArgLists.clear();
   argList.reset();
+  tArgLists.clear();
   typeConstr.reset();
   sli.clear();
+  req.resize(0);
   m_fileDef = 0;
 }
 
@@ -269,14 +255,5 @@ void Entry::setFileDef(FileDef *fd)
       childNode->setFileDef(fd);
   }
 }
-
-void Entry::addSpecialListItem(const char *listName,int itemId)
-{
-  ListItemInfo ili;
-  ili.type = listName;
-  ili.itemId = itemId;
-  sli.push_back(ili);
-}
-
 
 //------------------------------------------------------------------

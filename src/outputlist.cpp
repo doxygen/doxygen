@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -22,6 +22,8 @@
  *  the call to all output generators.
  */
 
+#include <atomic>
+
 #include "outputlist.h"
 #include "outputgen.h"
 #include "config.h"
@@ -29,11 +31,36 @@
 #include "definition.h"
 #include "docparser.h"
 #include "vhdldocgen.h"
+#include "doxygen.h"
 
-OutputList::OutputList(bool)
+static AtomicInt g_outId;
+
+OutputList::OutputList()
 {
+  newId();
   //printf("OutputList::OutputList()\n");
-  m_outputs.setAutoDelete(TRUE);
+}
+
+OutputList::OutputList(const OutputList &ol)
+{
+  m_id = ol.m_id;
+  for (const auto &og : ol.m_outputs)
+  {
+    m_outputs.emplace_back(og->clone());
+  }
+}
+
+OutputList &OutputList::operator=(const OutputList &ol)
+{
+  if (this!=&ol)
+  {
+    m_id = ol.m_id;
+    for (const auto &og : ol.m_outputs)
+    {
+      m_outputs.emplace_back(og->clone());
+    }
+  }
+  return *this;
 }
 
 OutputList::~OutputList()
@@ -41,16 +68,14 @@ OutputList::~OutputList()
   //printf("OutputList::~OutputList()\n");
 }
 
-void OutputList::add(const OutputGenerator *og)
+void OutputList::newId()
 {
-  if (og) m_outputs.append(og);
+  m_id = ++g_outId;
 }
 
 void OutputList::disableAllBut(OutputGenerator::OutputType o)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->disableIfNot(o);
   }
@@ -58,9 +83,7 @@ void OutputList::disableAllBut(OutputGenerator::OutputType o)
 
 void OutputList::enableAll()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->enable();
   }
@@ -68,9 +91,7 @@ void OutputList::enableAll()
 
 void OutputList::disableAll()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->disable();
   }
@@ -78,9 +99,7 @@ void OutputList::disableAll()
 
 void OutputList::disable(OutputGenerator::OutputType o)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->disableIf(o);
   }
@@ -88,9 +107,7 @@ void OutputList::disable(OutputGenerator::OutputType o)
 
 void OutputList::enable(OutputGenerator::OutputType o)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->enableIf(o);
   }
@@ -99,9 +116,7 @@ void OutputList::enable(OutputGenerator::OutputType o)
 bool OutputList::isEnabled(OutputGenerator::OutputType o)
 {
   bool result=FALSE;
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     result=result || og->isEnabled(o);
   }
@@ -110,9 +125,7 @@ bool OutputList::isEnabled(OutputGenerator::OutputType o)
 
 void OutputList::pushGeneratorState()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->pushGeneratorState();
   }
@@ -120,26 +133,23 @@ void OutputList::pushGeneratorState()
 
 void OutputList::popGeneratorState()
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     og->popGeneratorState();
   }
 }
 
-void OutputList::generateDoc(const char *fileName,int startLine,
+void OutputList::generateDoc(const QCString &fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,bool indexWords,
-                  bool isExample,const char *exampleName,
-                  bool singleLine,bool linkFromIndex)
+                  bool isExample,const QCString &exampleName,
+                  bool singleLine,bool linkFromIndex,
+                  bool markdownSupport)
 {
   int count=0;
   if (docStr.isEmpty()) return;
 
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     if (og->isEnabled()) count++;
   }
@@ -148,33 +158,28 @@ void OutputList::generateDoc(const char *fileName,int startLine,
   // specified as:
   // - when only XML format there should be warnings as well (XML has its own write routines)
   // - no formats there should be warnings as well
-  DocRoot *root=0;
-  root = validatingParseDoc(fileName,startLine,
-                            ctx,md,docStr,indexWords,isExample,exampleName,
-                            singleLine,linkFromIndex);
-  if (count>0) writeDoc(root,ctx,md);
-  delete root;
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                       fileName,startLine,
+                                       ctx,md,docStr,indexWords,isExample,exampleName,
+                                       singleLine,linkFromIndex,markdownSupport) };
+  if (count>0) writeDoc(root.get(),ctx,md,m_id);
 }
 
-void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md)
+void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int)
 {
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     //printf("og->printDoc(extension=%s)\n",
-    //    ctx?ctx->getDefFileExtension().data():"<null>");
-    if (og->isEnabled()) og->writeDoc(root,ctx,md);
+    //    ctx?qPrint(ctx->getDefFileExtension()):"<null>");
+    if (og->isEnabled()) og->writeDoc(root,ctx,md,m_id);
   }
-  VhdlDocGen::setFlowMember(0);
 }
 
 void OutputList::parseText(const QCString &textStr)
 {
   int count=0;
-  QListIterator<OutputGenerator> it(m_outputs);
-  OutputGenerator *og;
-  for (it.toFirst();(og=it.current());++it)
+  for (const auto &og : m_outputs)
   {
     if (og->isEnabled()) count++;
   }
@@ -183,17 +188,16 @@ void OutputList::parseText(const QCString &textStr)
   // specified as:
   // - when only XML format there should be warnings as well (XML has its own write routines)
   // - no formats there should be warnings as well
-  DocText *root = validatingParseText(textStr);
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), textStr) };
 
   if (count>0)
   {
-    for (it.toFirst();(og=it.current());++it)
+    for (const auto &og : m_outputs)
     {
-      if (og->isEnabled()) og->writeDoc(root,0,0);
+      if (og->isEnabled()) og->writeDoc(root.get(),0,0,m_id);
     }
   }
-
-  delete root;
 }
 
 //--------------------------------------------------------------------------

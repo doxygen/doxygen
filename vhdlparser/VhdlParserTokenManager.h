@@ -7,7 +7,7 @@
 #include "ErrorHandler.h"
 #include "TokenManager.h"
 #include "VhdlParserConstants.h"
-#include "VhdlParser.h"
+#include "vhdlstring.h"
 
 
 namespace vhdl {
@@ -15,7 +15,7 @@ namespace parser {
 class VhdlParser;
 
 /** Token Manager. */
-class VhdlParserTokenManager : public TokenManager {
+class VhdlParserTokenManager : public TokenManager, public TokenParser {
 public:
 
   FILE *debugStream;
@@ -98,8 +98,8 @@ public:
   const JJSimpleString jjKindsForStateVector(int lexState, int vec[], int start, int end);
 
   JAVACC_CHARSTREAM*        input_stream;
-  int                       jjrounds[77];
-  int                       jjstateSet[2 * 77];
+  int                       jjrounds[87];
+  int                       jjstateSet[2 * 87];
   JJString                  jjimage;
   JJString                  image;
   int                       jjimageLen;

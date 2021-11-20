@@ -32,7 +32,7 @@ set(DOC_INSTALL_DIR "share/doc/packages/doxygen" CACHE STRING "Relative path whe
 set(DOC_FILES
         arch.doc
         archoverview.eps
-        archoverview.gif
+        archoverview.svg
         autolink.doc
         changelog.doc
         commands.doc
@@ -44,14 +44,27 @@ set(DOC_FILES
         doxygen_manual.css
         doxygen_usage.doc
         doxywizard_expert.png
-        doxywizard.gif
         doxywizard_main.png
-        doxywizard_menu.png
+        doxywizard_menu_file.png
+        doxywizard_menu_settings.png
+        doxywizard_menu_help.png
         doxywizard_page1.png
         doxywizard_page2.png
         doxywizard_page3.png
         doxywizard_page4.png
+        doxywizard_run.png
         doxywizard_usage.doc
+        expert_bool.png
+        expert_enum.png
+        expert_int.png
+        expert_list_dir.png
+        expert_list_file.png
+        expert_list_filedir.png
+        expert_list_string.png
+        expert_string_dir.png
+        expert_string_file.png
+        expert_string_image.png
+        expert_string_string.png
         external.doc
         extsearch.doc
         extsearch_flow.dot
@@ -69,7 +82,11 @@ set(DOC_FILES
         infoflow.fig
         infoflow.png
         install.doc
-        install_prefix
+        layout_index_and_notreeview.png
+        layout_index_and_treeview.png
+        layout_noindex_and_notreeview.png
+        layout_noindex_and_treeview.png
+        layout_noindex_and_sidebar.png
         lists.doc
         markdown.doc
         output.doc
@@ -85,8 +102,15 @@ set(DOC_FILES
         maintainers.txt
         translator.py
         smile.png
-        doxygen_logo.gif
-        doxygen_logo_low.gif
+        doxygen_logo.svg
+)
+
+set(DOC_FILES_IMAGES
+        add.png
+        del.png
+        file.png
+        folder.png
+        refresh.png
 )
 
 if (build_doc_chm)
@@ -94,46 +118,57 @@ if (build_doc_chm)
         Doxyfile_chm
 )
 endif ()
-file(GLOB LANG_FILES "${TOP}/src/translator_??.h")
+
+if (${CMAKE_VERSION} VERSION_EQUAL "3.11.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.11.0")
+    file(GLOB LANG_FILES CONFIGURE_DEPENDS "${TOP}/src//translator_??.h")
+else()
+    file(GLOB LANG_FILES "${TOP}/src//translator_??.h")
+endif()
+
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/man
                     ${PROJECT_BINARY_DIR}/src
-                    ${PROJECT_BINARY_DIR}/doc)
-
-file(COPY ${TOP}/VERSION                  DESTINATION ${PROJECT_BINARY_DIR}/)
-file(COPY ${TOP}/src/translator.h         DESTINATION ${PROJECT_BINARY_DIR}/src/)
-file(COPY ${TOP}/src/translator_adapter.h DESTINATION ${PROJECT_BINARY_DIR}/src/)
-file(COPY ${LANG_FILES}                   DESTINATION ${PROJECT_BINARY_DIR}/src/)
+                    ${PROJECT_BINARY_DIR}/doc
+                    ${PROJECT_BINARY_DIR}/doc/images)
 
 foreach (f  ${DOC_FILES})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
-    DEPENDS ${CMAKE_SOURCE_DIR}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
+    DEPENDS ${PROJECT_SOURCE_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
 endforeach()
 
+foreach (f  ${DOC_FILES_IMAGES})
+add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/images/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/addon/doxywizard/images/${f} ${PROJECT_BINARY_DIR}/doc/images/
+    DEPENDS ${PROJECT_SOURCE_DIR}/addon/doxywizard/images/${f}
+    )
+set_source_files_properties(${PROJECT_BINARY_DIR}/doc/images/${f} PROPERTIES GENERATED 1)
+list(APPEND OUT_DOC_FILES "${PROJECT_BINARY_DIR}/doc/images/${f}")
+endforeach()
+
 foreach (f  ${DOC_FILES_CHM})
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/doc/${f}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
-    DEPENDS ${CMAKE_SOURCE_DIR}/doc/${f}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/${f} ${PROJECT_BINARY_DIR}/doc/
+    DEPENDS ${PROJECT_SOURCE_DIR}/doc/${f}
     )
 set_source_files_properties(${PROJECT_BINARY_DIR}/doc/${f} PROPERTIES GENERATED 1)
 list(APPEND OUT_DOC_CHM_FILES "${PROJECT_BINARY_DIR}/doc/${f}")
 endforeach()
 
-configure_file(${CMAKE_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty)
-configure_file(${CMAKE_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex)
-configure_file(${CMAKE_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
-configure_file(${CMAKE_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
-configure_file(${CMAKE_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
-configure_file(${CMAKE_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/manual.sty         ${PROJECT_BINARY_DIR}/doc/manual.sty)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen_manual.tex ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxygen.1          ${PROJECT_BINARY_DIR}/man/doxygen.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxywizard.1       ${PROJECT_BINARY_DIR}/man/doxywizard.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxysearch.1       ${PROJECT_BINARY_DIR}/man/doxysearch.1)
+configure_file(${PROJECT_SOURCE_DIR}/doc/doxyindexer.1      ${PROJECT_BINARY_DIR}/man/doxyindexer.1)
 
 # doc/language.doc (see tag Doxyfile:INPUT)
 add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} translator.py ${CMAKE_SOURCE_DIR}
-        DEPENDS ${PROJECT_BINARY_DIR}/doc/maintainers.txt ${PROJECT_BINARY_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py
+        COMMAND ${PYTHON_EXECUTABLE} translator.py ${PROJECT_SOURCE_DIR}
+        DEPENDS ${PROJECT_SOURCE_DIR}/doc/maintainers.txt ${PROJECT_SOURCE_DIR}/doc/language.tpl ${PROJECT_BINARY_DIR}/doc/translator.py ${LANG_FILES}
         OUTPUT language.doc
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/doc
 )
@@ -163,7 +198,7 @@ add_custom_target(doxygen_pdf
         COMMAND ${CMAKE_COMMAND} -E remove refman.tex
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/doxygen_manual.tex  .
         COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/doc/manual.sty  .
-        COMMAND ${EPSTOPDF} ${CMAKE_SOURCE_DIR}/doc/doxygen_logo.eps --outfile=doxygen_logo.pdf
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/doc/doxygen_logo.pdf  .
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
         COMMAND ${MAKEINDEX} doxygen_manual.idx
         COMMAND ${PDFLATEX}  -shell-escape doxygen_manual.tex
@@ -212,12 +247,22 @@ install(FILES
         DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 )
 
+install(CODE "if(NOT EXISTS \"${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf\")
+    message(FATAL_ERROR \"\nTerminating:\n    documentation has not been generated, \n    create documentation by using the 'docs' target followed by an 'install'\n\")
+endif()"
+)
+
 install(FILES
         "${PROJECT_BINARY_DIR}/latex/doxygen_manual.pdf"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"
 )
 
 if (build_doc_chm)
+install(CODE "if(NOT EXISTS \"${PROJECT_BINARY_DIR}/chm/doxygen_manual.chm\")
+    message(FATAL_ERROR \"\nTerminating:\n    CHM documentation has not been generated, \n    create CHM documentation by using the 'docs_chm' target followed by an 'install'\n\")
+endif()"
+)
+
 install(FILES
         "${PROJECT_BINARY_DIR}/chm/doxygen_manual.chm"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/${DOC_INSTALL_DIR}"

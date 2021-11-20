@@ -14,8 +14,6 @@
 */
 
 #include "dotnode.h"
-
-#include "ftextstream.h"
 #include "classdef.h"
 #include "config.h"
 #include "memberlist.h"
@@ -23,6 +21,7 @@
 #include "language.h"
 #include "doxygen.h"
 #include "util.h"
+#include "textstream.h"
 
 /** Helper struct holding the properties of a edge in a dot graph. */
 struct EdgeProperties
@@ -87,7 +86,7 @@ static const char *umlEdgeStyleMap[] =
   "solid"          // usage
 };
 
-static EdgeProperties normalEdgeProps = 
+static EdgeProperties normalEdgeProps =
 {
   normalEdgeColorMap, normalArrowStyleMap, normalEdgeStyleMap
 };
@@ -99,9 +98,9 @@ static EdgeProperties umlEdgeProps =
 
 static QCString escapeTooltip(const QCString &tooltip)
 {
+  if (tooltip.isEmpty()) return tooltip;
   QCString result;
   const char *p=tooltip.data();
-  if (p==0) return result;
   char c;
   while ((c=*p++))
   {
@@ -115,30 +114,28 @@ static QCString escapeTooltip(const QCString &tooltip)
   return result;
 }
 
-static void writeBoxMemberList(FTextStream &t,
-  char prot,MemberList *ml,const ClassDef *scope,
-  bool isStatic=FALSE,const QDict<void> *skipNames=0)
+static void writeBoxMemberList(TextStream &t,
+  char prot,const MemberList *ml,const ClassDef *scope,
+  bool isStatic=FALSE,const StringUnorderedSet *skipNames=nullptr)
 {
-  (void)isStatic;
   if (ml)
   {
-    MemberListIterator mlia(*ml);
-    MemberDef *mma;
     int totalCount=0;
-    for (mlia.toFirst();(mma = mlia.current());++mlia)
+    for (const auto &mma : *ml)
     {
-      if (mma->getClassDef()==scope && 
-        (skipNames==0 || skipNames->find(mma->name())==0))
+      if (mma->getClassDef()==scope &&
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
       {
         totalCount++;
       }
     }
 
     int count=0;
-    for (mlia.toFirst();(mma = mlia.current());++mlia)
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
-        (skipNames==0 || skipNames->find(mma->name())==0))
+        (skipNames==nullptr || skipNames->find(mma->name().str())==std::end(*skipNames)))
       {
         int numFields = Config_getInt(UML_LIMIT_NUM_FIELDS);
         if (numFields>0 && (totalCount>numFields*3/2 && count>=numFields))
@@ -149,26 +146,36 @@ static void writeBoxMemberList(FTextStream &t,
         else
         {
           t << prot << " ";
-          t << DotNode::convertLabel(mma->name());
-          if (!mma->isObjCMethod() && 
-            (mma->isFunction() || mma->isSlot() || mma->isSignal())) t << "()";
+          QCString label;
+          if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
+          {
+            label+=mma->typeString();
+            label+=" ";
+          }
+          label+=mma->name();
+          if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
+          {
+            if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
+            {
+              label+=mma->argsString();
+            }
+            else
+            {
+              label+="()";
+            }
+          }
+          t << DotNode::convertLabel(label);
           t << "\\l";
           count++;
         }
       }
     }
     // write member groups within the memberlist
-    MemberGroupList *mgl = ml->getMemberGroupList();
-    if (mgl)
+    for (const auto &mg : ml->getMemberGroupList())
     {
-      MemberGroupListIterator mgli(*mgl);
-      MemberGroup *mg;
-      for (mgli.toFirst();(mg=mgli.current());++mgli)
+      if (!mg->members().empty())
       {
-        if (mg->members())
-        {
-          writeBoxMemberList(t,prot,mg->members(),scope,isStatic,skipNames);
-        }
+        writeBoxMemberList(t,prot,&mg->members(),scope,isStatic,skipNames);
       }
     }
   }
@@ -186,7 +193,7 @@ QCString DotNode::convertLabel(const QCString &l)
   int len=p.length();
   int charsLeft=len;
   int sinceLast=0;
-  int foldLen=17; // ideal text length
+  int foldLen = Config_getInt(DOT_WRAP_THRESHOLD); // ideal text length
   while (idx < p.length())
   {
     c = p[idx++];
@@ -218,7 +225,7 @@ QCString DotNode::convertLabel(const QCString &l)
       foldLen = (foldLen+sinceLast+1)/2;
       sinceLast=1;
     }
-    else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 && 
+    else if (charsLeft>1+foldLen/4 && sinceLast>foldLen+foldLen/3 &&
       !isupper(c) && isupper(p[idx]))
     {
       result+=replacement;
@@ -256,109 +263,71 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
+DotNode::DotNode(int n,const QCString &lab,const QCString &tip, const QCString &url,
   bool isRoot,const ClassDef *cd)
-  : m_subgraphId(-1)
-  , m_number(n)
+  : m_number(n)
   , m_label(lab)
   , m_tooltip(tip)
   , m_url(url)
-  , m_parents(0)
-  , m_children(0)
-  , m_edgeInfo(0)
-  , m_deleted(FALSE)
-  , m_written(FALSE)
-  , m_hasDoc(FALSE)
   , m_isRoot(isRoot)
   , m_classDef(cd)
-  , m_visible(FALSE)
-  , m_truncated(Unknown)
-  , m_distance(1000)
-  , m_renumbered(false)
 {
 }
 
 DotNode::~DotNode()
 {
-  delete m_children;
-  delete m_parents;
-  delete m_edgeInfo;
 }
 
 void DotNode::addChild(DotNode *n,
   int edgeColor,
   int edgeStyle,
-  const char *edgeLab,
-  const char *edgeURL,
+  const QCString &edgeLab,
+  const QCString &edgeURL,
   int edgeLabCol
 )
 {
-  if (m_children==0)
-  {
-    m_children = new QList<DotNode>;
-    m_edgeInfo = new QList<EdgeInfo>;
-    m_edgeInfo->setAutoDelete(TRUE);
-  }
-  m_children->append(n);
-  EdgeInfo *ei = new EdgeInfo(
+  m_children.push_back(n);
+  m_edgeInfo.emplace_back(
       edgeColor,
       edgeStyle,
       edgeLab,
       edgeURL,
       edgeLabCol==-1 ? edgeColor : edgeLabCol);
-  m_edgeInfo->append(ei);
 }
 
 void DotNode::addParent(DotNode *n)
 {
-  if (m_parents==0)
-  {
-    m_parents = new QList<DotNode>;
-  }
-  m_parents->append(n);
+  m_parents.push_back(n);
 }
 
 void DotNode::removeChild(DotNode *n)
 {
-  if (m_children) m_children->remove(n);
+  auto it = std::find(m_children.begin(),m_children.end(),n);
+  if (it!=m_children.end()) m_children.erase(it);
 }
 
 void DotNode::removeParent(DotNode *n)
 {
-  if (m_parents) m_parents->remove(n);
+  auto it = std::find(m_parents.begin(),m_parents.end(),n);
+  if (it!=m_parents.end()) m_parents.erase(it);
 }
 
-void DotNode::deleteNode(DotNodeList &deletedList,SDict<DotNode> *skipNodes)
+void DotNode::deleteNode(DotNodeRefVector &deletedList)
 {
   if (m_deleted) return; // avoid recursive loops in case the graph has cycles
   m_deleted=TRUE;
-  if (m_parents!=0) // delete all parent nodes of this node
+  // delete all parent nodes of this node
+  for (const auto &pn : m_parents)
   {
-    QListIterator<DotNode> dnlip(*m_parents);
-    DotNode *pn;
-    for (dnlip.toFirst();(pn=dnlip.current());++dnlip)
-    {
-      //pn->removeChild(this);
-      pn->deleteNode(deletedList,skipNodes);
-    }
+    pn->deleteNode(deletedList);
   }
-  if (m_children!=0) // delete all child nodes of this node
+  // delete all child nodes of this node
+  for (const auto &cn : m_children)
   {
-    QListIterator<DotNode> dnlic(*m_children);
-    DotNode *cn;
-    for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
-    {
-      //cn->removeParent(this);
-      cn->deleteNode(deletedList,skipNodes);
-    }
+    cn->deleteNode(deletedList);
   }
   // add this node to the list of deleted nodes.
-  //printf("skipNodes=%p find(%p)=%p\n",skipNodes,this,skipNodes ? skipNodes->find((int)this) : 0);
-  if (skipNodes==0 || skipNodes->find((char*)this)==0)
-  {
-    //printf("deleting\n");
-    deletedList.append(this);
-  }
+  deletedList.push_back(this);
 }
 
 void DotNode::setDistance(int distance)
@@ -368,23 +337,24 @@ void DotNode::setDistance(int distance)
 
 inline int DotNode::findParent( DotNode *n )
 {
-  if ( !m_parents ) return -1;
-  return m_parents->find(n);
+  auto it = std::find(m_parents.begin(),m_parents.end(),n);
+  return it!=m_parents.end() ? static_cast<int>(it-m_parents.begin()) : -1;
 }
 
 /*! helper function that deletes all nodes in a connected graph, given
 *  one of the graph's nodes
 */
-void DotNode::deleteNodes(DotNode *node,SDict<DotNode> *skipNodes)
+void DotNode::deleteNodes(DotNode *node)
 {
-  //printf("deleteNodes skipNodes=%p\n",skipNodes);
-  static DotNodeList deletedNodes;
-  deletedNodes.setAutoDelete(TRUE);
-  node->deleteNode(deletedNodes,skipNodes); // collect nodes to be deleted.
-  deletedNodes.clear(); // actually remove the nodes.
+  DotNodeRefVector deletedNodes;
+  node->deleteNode(deletedNodes); // collect nodes to be deleted.
+  for (const auto &dotNode : deletedNodes)
+  {
+    delete dotNode;
+  }
 }
 
-void DotNode::writeBox(FTextStream &t,
+void DotNode::writeBox(TextStream &t,
                        GraphType gt,
                        GraphOutputFormat /*format*/,
                        bool hasNonReachableChildren) const
@@ -396,73 +366,69 @@ void DotNode::writeBox(FTextStream &t,
 
   if (m_classDef && Config_getBool(UML_LOOK) && (gt==Inheritance || gt==Collaboration))
   {
-    // add names shown as relations to a dictionary, so we don't show
+    // add names shown as relations to a set, so we don't show
     // them as attributes as well
-    QDict<void> arrowNames(17);
-    if (m_edgeInfo)
+    StringUnorderedSet arrowNames;
+    // for each edge
+    for (const auto &ei : m_edgeInfo)
     {
-      // for each edge
-      QListIterator<EdgeInfo> li(*m_edgeInfo);
-      EdgeInfo *ei;
-      for (li.toFirst();(ei=li.current());++li)
+      if (!ei.label().isEmpty()) // labels joined by \n
       {
-        if (!ei->label().isEmpty()) // labels joined by \n
+        int i=ei.label().find('\n');
+        int p=0;
+        QCString lab;
+        while ((i=ei.label().find('\n',p))!=-1)
         {
-          int li=ei->label().find('\n');
-          int p=0;
-          QCString lab;
-          while ((li=ei->label().find('\n',p))!=-1)
-          {
-            lab = stripProtectionPrefix(ei->label().mid(p,li-p));
-            arrowNames.insert(lab,(void*)0x8);
-            p=li+1;
-          }
-          lab = stripProtectionPrefix(ei->label().right(ei->label().length()-p));
-          arrowNames.insert(lab,(void*)0x8);
+          lab = stripProtectionPrefix(ei.label().mid(p,i-p));
+          arrowNames.insert(lab.str());
+          p=i+1;
         }
+        lab = stripProtectionPrefix(ei.label().right(ei.label().length()-p));
+        arrowNames.insert(lab.str());
       }
     }
 
-    //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
-    t << "{" << convertLabel(m_label);
-    t << "\\n|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,TRUE,&arrowNames);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,FALSE,&arrowNames);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,TRUE,&arrowNames);
-    if (Config_getBool(EXTRACT_PRIVATE))
+    //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
+    t << "{" << convertLabel(m_label) << "\\n";
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
-    }
-    t << "|";
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef);
-    writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,TRUE);
-    writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef);
-    if (Config_getBool(EXTRACT_PRIVATE))
-    {
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
-      writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
-    }
-    if (m_classDef->getLanguage()!=SrcLangExt_Fortran &&
-      m_classDef->getMemberGroupSDict())
-    {
-      MemberGroupSDict::Iterator mgdi(*m_classDef->getMemberGroupSDict());
-      MemberGroup *mg;
-      for (mgdi.toFirst();(mg=mgdi.current());++mgdi)
+      t << "|";
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticAttribs),m_classDef,TRUE,&arrowNames);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_properties),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticAttribs),m_classDef,TRUE,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proAttribs),m_classDef,FALSE,&arrowNames);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticAttribs),m_classDef,TRUE,&arrowNames);
+      if (Config_getBool(EXTRACT_PRIVATE))
       {
-        if (mg->members())
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priAttribs),m_classDef,FALSE,&arrowNames);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticAttribs),m_classDef,TRUE,&arrowNames);
+      }
+      t << "|";
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubMethods),m_classDef);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubSlots),m_classDef);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacMethods),m_classDef);
+      writeBoxMemberList(t,'~',m_classDef->getMemberList(MemberListType_pacStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proMethods),m_classDef);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proStaticMethods),m_classDef,TRUE);
+      writeBoxMemberList(t,'#',m_classDef->getMemberList(MemberListType_proSlots),m_classDef);
+      if (Config_getBool(EXTRACT_PRIVATE))
+      {
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priMethods),m_classDef);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priStaticMethods),m_classDef,TRUE);
+        writeBoxMemberList(t,'-',m_classDef->getMemberList(MemberListType_priSlots),m_classDef);
+      }
+      if (m_classDef->getLanguage()!=SrcLangExt_Fortran)
+      {
+        for (const auto &mg : m_classDef->getMemberGroups())
         {
-          writeBoxMemberList(t,'*',mg->members(),m_classDef,FALSE,&arrowNames);
+          if (!mg->members().empty())
+          {
+            writeBoxMemberList(t,'*',&mg->members(),m_classDef,FALSE,&arrowNames);
+          }
         }
       }
     }
@@ -494,11 +460,11 @@ void DotNode::writeBox(FTextStream &t,
       int anchorPos = m_url.findRev('#');
       if (anchorPos==-1)
       {
-        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
       }
       else
       {
-        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }
@@ -511,10 +477,10 @@ void DotNode::writeBox(FTextStream &t,
   {
     t << ",tooltip=\" \""; // space in tooltip is required otherwise still something like 'Node0' is used
   }
-  t << "];" << endl; 
+  t << "];\n";
 }
 
-void DotNode::writeArrow(FTextStream &t,
+void DotNode::writeArrow(TextStream &t,
                          GraphType gt,
                          GraphOutputFormat format,
                          const DotNode *cn,
@@ -547,257 +513,99 @@ void DotNode::writeArrow(FTextStream &t,
     t << ",label=\" " << convertLabel(ei->label()) << "\" ";
   }
   if (Config_getBool(UML_LOOK) &&
-    eProps->arrowStyleMap[ei->color()] && 
+    eProps->arrowStyleMap[ei->color()] &&
     (gt==Inheritance || gt==Collaboration)
     )
   {
     bool rev = pointBack;
     if (umlUseArrow) rev=!rev; // UML use relates has arrow on the start side
-    if (rev) 
-      t << ",arrowtail=\"" << eProps->arrowStyleMap[ei->color()] << "\""; 
-    else 
+    if (rev)
+      t << ",arrowtail=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
+    else
       t << ",arrowhead=\"" << eProps->arrowStyleMap[ei->color()] << "\"";
   }
 
   if (format==GOF_BITMAP) t << ",fontname=\"" << Config_getString(DOT_FONTNAME) << "\"";
-  t << "];" << endl; 
+  t << "];\n";
 }
 
-void DotNode::write(FTextStream &t,
+void DotNode::write(TextStream &t,
                     GraphType gt,
                     GraphOutputFormat format,
                     bool topDown,
                     bool toChildren,
                     bool backArrows) const
 {
-  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,m_label.data(),this,m_written,m_visible);
+  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,qPrint(m_label),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated);
   m_written=TRUE;
-  QList<DotNode> *nl = toChildren ? m_children : m_parents; 
-  if (nl)
+  if (toChildren)
   {
-    if (toChildren)
+    auto it = m_edgeInfo.begin();
+    for (const auto &cn : m_children)
     {
-      QListIterator<DotNode>  dnli1(*nl);
-      QListIterator<EdgeInfo> dnli2(*m_edgeInfo);
-      const DotNode *cn;
-      for (dnli1.toFirst();(cn=dnli1.current());++dnli1,++dnli2)
+      if (cn->isVisible())
       {
-        if (cn->isVisible())
-        {
-          //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
-          writeArrow(t,gt,format,cn,dnli2.current(),topDown,backArrows);
-        }
-        cn->write(t,gt,format,topDown,toChildren,backArrows);
+        //printf("write arrow %s%s%s\n",qPrint(label()),backArrows?"<-":"->",qPrint(cn->label()));
+        writeArrow(t,gt,format,cn,&(*it),topDown,backArrows);
       }
-    }
-    else // render parents
-    {
-      QListIterator<DotNode> dnli(*nl);
-      DotNode *pn;
-      for (dnli.toFirst();(pn=dnli.current());++dnli)
-      {
-        if (pn->isVisible())
-        {
-          //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",pn->label().data());
-          writeArrow(t,
-            gt,
-            format,
-            pn,
-            pn->edgeInfo()->at(pn->children()->findRef(this)),
-            FALSE,
-            backArrows
-          );
-        }
-        pn->write(t,gt,format,TRUE,FALSE,backArrows);
-      }
+      cn->write(t,gt,format,topDown,toChildren,backArrows);
+      ++it;
     }
   }
-  //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
+  else // render parents
+  {
+    for (const auto &pn : m_parents)
+    {
+      if (pn->isVisible())
+      {
+        const auto &children = pn->children();
+        auto child_it = std::find(children.begin(),children.end(),this);
+        size_t index = child_it - children.begin();
+        //printf("write arrow %s%s%s\n",qPrint(label()),backArrows?"<-":"->",qPrint(pn->label()));
+        writeArrow(t,
+          gt,
+          format,
+          pn,
+          &pn->edgeInfo()[index],
+          FALSE,
+          backArrows
+        );
+      }
+      pn->write(t,gt,format,TRUE,FALSE,backArrows);
+    }
+  }
+  //printf("end DotNode::write(%d) name=%s\n",distance,qPrint(m_label));
 }
 
-void DotNode::writeXML(FTextStream &t,bool isClassGraph) const
+void DotNode::writeXML(TextStream &t,bool isClassGraph) const
 {
-  t << "      <node id=\"" << m_number << "\">" << endl;
-  t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
+  t << "      <node id=\"" << m_number << "\">\n";
+  t << "        <label>" << convertToXML(m_label) << "</label>\n";
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
-      t << "/>" << endl;
+      t << "/>\n";
     }
   }
-  if (m_children)
+  auto it = m_edgeInfo.begin();
+  for (const auto &childNode : m_children)
   {
-    QListIterator<DotNode> nli(*m_children);
-    QListIterator<EdgeInfo> eli(*m_edgeInfo);
-    DotNode *childNode;
-    EdgeInfo *edgeInfo;
-    for (;(childNode=nli.current());++nli,++eli)
+    const EdgeInfo &edgeInfo = *it;
+    t << "        <childnode refid=\"" << childNode->number() << "\" relation=\"";
+    if (isClassGraph)
     {
-      edgeInfo=eli.current();
-      t << "        <childnode refid=\"" << childNode->number() << "\" relation=\"";
-      if (isClassGraph)
-      {
-        switch(edgeInfo->color())
-        {
-        case EdgeInfo::Blue:    t << "public-inheritance"; break;
-        case EdgeInfo::Green:   t << "protected-inheritance"; break;
-        case EdgeInfo::Red:     t << "private-inheritance"; break;
-        case EdgeInfo::Purple:  t << "usage"; break;
-        case EdgeInfo::Orange:  t << "template-instance"; break;
-        case EdgeInfo::Orange2: t << "type-constraint"; break;
-        case EdgeInfo::Grey:    ASSERT(0); break;
-        }
-      }
-      else // include graph
-      {
-        t << "include";
-      }
-      t << "\">" << endl;
-      if (!edgeInfo->label().isEmpty())
-      {
-        int p=0;
-        int ni;
-        while ((ni=edgeInfo->label().find('\n',p))!=-1)
-        {
-          t << "          <edgelabel>"
-            << convertToXML(edgeInfo->label().mid(p,ni-p))
-            << "</edgelabel>" << endl;
-          p=ni+1;
-        }
-        t << "          <edgelabel>"
-          << convertToXML(edgeInfo->label().right(edgeInfo->label().length()-p))
-          << "</edgelabel>" << endl;
-      }
-      t << "        </childnode>" << endl;
-    } 
-  }
-  t << "      </node>" << endl;
-}
-
-void DotNode::writeDocbook(FTextStream &t,bool isClassGraph) const
-{
-  t << "      <node id=\"" << m_number << "\">" << endl;
-  t << "        <label>" << convertToXML(m_label) << "</label>" << endl;
-  if (!m_url.isEmpty())
-  {
-    QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
-    {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
-      {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
-      }
-      t << "/>" << endl;
-    }
-  }
-  if (m_children)
-  {
-    QListIterator<DotNode> nli(*m_children);
-    QListIterator<EdgeInfo> eli(*m_edgeInfo);
-    DotNode *childNode;
-    EdgeInfo *edgeInfo;
-    for (;(childNode=nli.current());++nli,++eli)
-    {
-      edgeInfo=eli.current();
-      t << "        <childnode refid=\"" << childNode->number() << "\" relation=\"";
-      if (isClassGraph)
-      {
-        switch(edgeInfo->color())
-        {
-        case EdgeInfo::Blue:    t << "public-inheritance"; break;
-        case EdgeInfo::Green:   t << "protected-inheritance"; break;
-        case EdgeInfo::Red:     t << "private-inheritance"; break;
-        case EdgeInfo::Purple:  t << "usage"; break;
-        case EdgeInfo::Orange:  t << "template-instance"; break;
-        case EdgeInfo::Orange2: t << "type-constraint"; break;
-        case EdgeInfo::Grey:    ASSERT(0); break;
-        }
-      }
-      else // include graph
-      {
-        t << "include";
-      }
-      t << "\">" << endl;
-      if (!edgeInfo->label().isEmpty())
-      {
-        int p=0;
-        int ni;
-        while ((ni=edgeInfo->label().find('\n',p))!=-1)
-        {
-          t << "          <edgelabel>"
-            << convertToXML(edgeInfo->label().mid(p,ni-p))
-            << "</edgelabel>" << endl;
-          p=ni+1;
-        }
-        t << "          <edgelabel>"
-          << convertToXML(edgeInfo->label().right(edgeInfo->label().length()-p))
-          << "</edgelabel>" << endl;
-      }
-      t << "        </childnode>" << endl;
-    }
-  }
-  t << "      </node>" << endl;
-}
-
-
-void DotNode::writeDEF(FTextStream &t) const
-{
-  const char* nodePrefix = "        node-";
-
-  t << "      node = {" << endl;
-  t << nodePrefix << "id    = " << m_number << ';' << endl;
-  t << nodePrefix << "label = '" << m_label << "';" << endl;
-
-  if (!m_url.isEmpty())
-  {
-    QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
-    {
-      *urlPtr++='\0';
-      t << nodePrefix << "link = {" << endl << "  "
-        << nodePrefix << "link-id = '" << urlPtr << "';" << endl;
-
-      if (*refPtr!='\0')
-      {
-        t << "  " << nodePrefix << "link-external = '"
-          << refPtr << "';" << endl;
-      }
-      t << "        };" << endl;
-    }
-  }
-  if (m_children)
-  {
-    QListIterator<DotNode> nli(*m_children);
-    QListIterator<EdgeInfo> eli(*m_edgeInfo);
-    DotNode *childNode;
-    EdgeInfo *edgeInfo;
-    for (;(childNode=nli.current());++nli,++eli)
-    {
-      edgeInfo=eli.current();
-      t << "        node-child = {" << endl;
-      t << "          child-id = '" << childNode->number() << "';" << endl;
-      t << "          relation = ";
-
-      switch(edgeInfo->color())
+      switch(edgeInfo.color())
       {
       case EdgeInfo::Blue:    t << "public-inheritance"; break;
       case EdgeInfo::Green:   t << "protected-inheritance"; break;
@@ -807,144 +615,217 @@ void DotNode::writeDEF(FTextStream &t) const
       case EdgeInfo::Orange2: t << "type-constraint"; break;
       case EdgeInfo::Grey:    ASSERT(0); break;
       }
-      t << ';' << endl;
-
-      if (!edgeInfo->label().isEmpty())
+    }
+    else // include graph
+    {
+      t << "include";
+    }
+    t << "\">\n";
+    if (!edgeInfo.label().isEmpty())
+    {
+      int p=0;
+      int ni;
+      while ((ni=edgeInfo.label().find('\n',p))!=-1)
       {
-        t << "          edgelabel = <<_EnD_oF_dEf_TeXt_" << endl
-          << edgeInfo->label() << endl
-          << "_EnD_oF_dEf_TeXt_;" << endl;
+        t << "          <edgelabel>"
+          << convertToXML(edgeInfo.label().mid(p,ni-p))
+          << "</edgelabel>\n";
+        p=ni+1;
       }
-      t << "        }; /* node-child */" << endl;
-    } /* for (;childNode...) */
+      t << "          <edgelabel>"
+        << convertToXML(edgeInfo.label().right(edgeInfo.label().length()-p))
+        << "</edgelabel>\n";
+    }
+    t << "        </childnode>\n";
+    ++it;
   }
-  t << "      }; /* node */" << endl;
+  t << "      </node>\n";
+}
+
+void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
+{
+  t << "      <node id=\"" << m_number << "\">\n";
+  t << "        <label>" << convertToXML(m_label) << "</label>\n";
+  if (!m_url.isEmpty())
+  {
+    QCString url(m_url);
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
+    {
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
+      {
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
+      }
+      t << "/>\n";
+    }
+  }
+  auto it = m_edgeInfo.begin();
+  for (const auto &childNode : m_children)
+  {
+    const EdgeInfo &edgeInfo = *it;
+    t << "        <childnode refid=\"" << childNode->number() << "\" relation=\"";
+    if (isClassGraph)
+    {
+      switch(edgeInfo.color())
+      {
+      case EdgeInfo::Blue:    t << "public-inheritance"; break;
+      case EdgeInfo::Green:   t << "protected-inheritance"; break;
+      case EdgeInfo::Red:     t << "private-inheritance"; break;
+      case EdgeInfo::Purple:  t << "usage"; break;
+      case EdgeInfo::Orange:  t << "template-instance"; break;
+      case EdgeInfo::Orange2: t << "type-constraint"; break;
+      case EdgeInfo::Grey:    ASSERT(0); break;
+      }
+    }
+    else // include graph
+    {
+      t << "include";
+    }
+    t << "\">\n";
+    if (!edgeInfo.label().isEmpty())
+    {
+      int p=0;
+      int ni;
+      while ((ni=edgeInfo.label().find('\n',p))!=-1)
+      {
+        t << "          <edgelabel>"
+          << convertToXML(edgeInfo.label().mid(p,ni-p))
+          << "</edgelabel>\n";
+        p=ni+1;
+      }
+      t << "          <edgelabel>"
+        << convertToXML(edgeInfo.label().right(edgeInfo.label().length()-p))
+        << "</edgelabel>\n";
+    }
+    t << "        </childnode>\n";
+    ++it;
+  }
+  t << "      </node>\n";
+}
+
+
+void DotNode::writeDEF(TextStream &t) const
+{
+  const char* nodePrefix = "        node-";
+
+  t << "      node = {\n";
+  t << nodePrefix << "id    = " << m_number << ";\n";
+  t << nodePrefix << "label = '" << m_label << "';\n";
+
+  if (!m_url.isEmpty())
+  {
+    QCString url(m_url);
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
+    {
+      t << nodePrefix << "link = {\n" << "  "
+        << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";
+      if (dollarPos>0)
+      {
+        t << "  " << nodePrefix << "link-external = '"
+          << url.left(dollarPos) << "';\n";
+      }
+      t << "        };\n";
+    }
+  }
+  auto it = m_edgeInfo.begin();
+  for (const auto &childNode : m_children)
+  {
+    const EdgeInfo &edgeInfo = *it;
+    t << "        node-child = {\n";
+    t << "          child-id = '" << childNode->number() << "';\n";
+    t << "          relation = ";
+
+    switch (edgeInfo.color())
+    {
+      case EdgeInfo::Blue:    t << "public-inheritance"; break;
+      case EdgeInfo::Green:   t << "protected-inheritance"; break;
+      case EdgeInfo::Red:     t << "private-inheritance"; break;
+      case EdgeInfo::Purple:  t << "usage"; break;
+      case EdgeInfo::Orange:  t << "template-instance"; break;
+      case EdgeInfo::Orange2: t << "type-constraint"; break;
+      case EdgeInfo::Grey:    ASSERT(0); break;
+    }
+    t << ";\n";
+
+    if (!edgeInfo.label().isEmpty())
+    {
+      t << "          edgelabel = <<_EnD_oF_dEf_TeXt_\n"
+        << edgeInfo.label() << "\n"
+        << "_EnD_oF_dEf_TeXt_;\n";
+    }
+    t << "        }; /* node-child */\n";
+    ++it;
+  }
+  t << "      }; /* node */\n";
 }
 
 
 void DotNode::clearWriteFlag()
 {
   m_written=FALSE;
-  if (m_parents!=0)
-  {
-    QListIterator<DotNode> dnlip(*m_parents);
-    DotNode *pn;
-    for (dnlip.toFirst();(pn=dnlip.current());++dnlip)
-    {
-      if (pn->isWritten())
-      {
-        pn->clearWriteFlag();
-      }
-    }
-  }
-  if (m_children!=0)
-  {
-    QListIterator<DotNode> dnlic(*m_children);
-    DotNode *cn;
-    for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
-    {
-      if (cn->isWritten())
-      {
-        cn->clearWriteFlag();
-      }
-    }
-  }
+  for (const auto &pn : m_parents)  if (pn->isWritten()) pn->clearWriteFlag();
+  for (const auto &cn : m_children) if (cn->isWritten()) cn->clearWriteFlag();
 }
 
 void DotNode::colorConnectedNodes(int curColor)
-{ 
-  if (m_children)
+{
+  for (const auto &cn : m_children)
   {
-    QListIterator<DotNode> dnlic(*m_children);
-    DotNode *cn;
-    for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
+    if (cn->subgraphId()==-1) // uncolored child node
     {
-      if (cn->subgraphId()==-1) // uncolored child node
-      {
-        cn->setSubgraphId(curColor);
-        cn->markAsVisible();
-        cn->colorConnectedNodes(curColor);
-        //printf("coloring node %s (%p): %d\n",cn->label().data(),cn,cn->subgraphId());
-      }
+      cn->setSubgraphId(curColor);
+      cn->markAsVisible();
+      cn->colorConnectedNodes(curColor);
+      //printf("coloring node %s (%p): %d\n",qPrint(cn->label()),cn,cn->subgraphId());
     }
   }
 
-  if (m_parents)
+  for (const auto &pn : m_parents)
   {
-    QListIterator<DotNode> dnlip(*m_parents);
-    DotNode *pn;
-    for (dnlip.toFirst();(pn=dnlip.current());++dnlip)
+    if (pn->subgraphId()==-1) // uncolored parent node
     {
-      if (pn->subgraphId()==-1) // uncolored parent node
-      {
-        pn->setSubgraphId(curColor);
-        pn->markAsVisible();
-        pn->colorConnectedNodes(curColor);
-        //printf("coloring node %s (%p): %d\n",pn->label().data(),pn,pn->subgraphId());
-      }
+      pn->setSubgraphId(curColor);
+      pn->markAsVisible();
+      pn->colorConnectedNodes(curColor);
+      //printf("coloring node %s (%p): %d\n",qPrint(pn->label()),pn,pn->subgraphId());
     }
   }
 }
+
+#define DEBUG_RENUMBERING 0
 
 void DotNode::renumberNodes(int &number)
 {
-  m_number = number++;
-  if (m_children)
+  if (!isRenumbered())
   {
-    QListIterator<DotNode> dnlic(*m_children);
-    DotNode *cn;
-    for (dnlic.toFirst();(cn=dnlic.current());++dnlic)
+#if DEBUG_RENUMBERING
+    static int level = 0;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("> %s old = %d new = %d\n",qPrint(m_label),m_number,number);
+    level++;
+#endif
+    m_number = number++;
+    markRenumbered();
+    for (const auto &cn : m_children)
     {
-      if (!cn->isRenumbered())
-      {
-        cn->markRenumbered();
-        cn->renumberNodes(number);
-      }
+      cn->renumberNodes(number);
     }
+    for (const auto &pn : m_parents)
+    {
+      pn->renumberNodes(number);
+    }
+#if DEBUG_RENUMBERING
+    level--;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("< %s assigned = %d\n",qPrint(m_label),m_number);
+#endif
   }
 }
 
-const DotNode *DotNode::findDocNode() const
-{
-  if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",m_label.data());
-  if (m_parents)
-  {
-    QListIterator<DotNode> dnli(*m_parents);
-    DotNode *pn;
-    for (dnli.toFirst();(pn=dnli.current());++dnli)
-    {
-      if (!pn->hasDocumentation())
-      {
-        pn->markHasDocumentation();
-        const DotNode *dn = pn->findDocNode();
-        if (dn) return dn;
-      }
-    }
-  }
-  if (m_children)
-  {
-    QListIterator<DotNode> dnli(*m_children);
-    DotNode *cn;
-    for (dnli.toFirst();(cn=dnli.current());++dnli)
-    {
-      if (!cn->hasDocumentation())
-      {
-        cn->markHasDocumentation();
-        const DotNode *dn = cn->findDocNode();
-        if (dn) return dn;
-      }
-    }
-  }
-  return 0;
-}
-
-//--------------------------------------------------------------
-
-int DotNodeList::compareValues(const DotNode *n1,const DotNode *n2) const
-{
-  return qstricmp(n1->label(),n2->label());
-}
 
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="struct_truck" kind="struct" language="C++" prot="public">
     <compoundname>Truck</compoundname>
     <basecompoundref refid="struct_vehicle" prot="public" virt="non-virtual">Vehicle</basecompoundref>
@@ -27,6 +27,10 @@
       <para><ref refid="struct_truck" kindref="compound">Truck</ref> class. </para>
     </detaileddescription>
     <inheritancegraph>
+      <node id="3">
+        <label>Object</label>
+        <link refid="struct_object"/>
+      </node>
       <node id="1">
         <label>Truck</label>
         <link refid="struct_truck"/>
@@ -39,12 +43,12 @@
         <childnode refid="3" relation="public-inheritance">
         </childnode>
       </node>
+    </inheritancegraph>
+    <collaborationgraph>
       <node id="3">
         <label>Object</label>
         <link refid="struct_object"/>
       </node>
-    </inheritancegraph>
-    <collaborationgraph>
       <node id="1">
         <label>Truck</label>
         <link refid="struct_truck"/>
@@ -63,12 +67,8 @@
           <edgelabel>base</edgelabel>
         </childnode>
       </node>
-      <node id="3">
-        <label>Object</label>
-        <link refid="struct_object"/>
-      </node>
     </collaborationgraph>
-    <location file="027_extends.c" line="78" column="1" bodyfile="027_extends.c" bodystart="77" bodyend="80"/>
+    <location file="027_extends.c" line="77" column="1" bodyfile="027_extends.c" bodystart="78" bodyend="80"/>
     <listofallmembers>
       <member refid="struct_truck_1ad0ac321609dda1a6c552488b05ec7ac8" prot="protected" virt="non-virtual">
         <scope>Truck</scope>

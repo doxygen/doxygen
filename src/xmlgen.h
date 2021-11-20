@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -17,35 +15,39 @@
 
 #include "outputgen.h"
 
+class TextStream;
+
 class XMLCodeGenerator : public CodeOutputInterface
 {
   public:
 
-    XMLCodeGenerator(FTextStream &t) : m_t(t), m_lineNumber(-1), m_isMemberRef(FALSE), m_col(0),
-      m_insideCodeLine(FALSE), m_normalHLNeedStartTag(TRUE), m_insideSpecialHL(FALSE) {}
+    XMLCodeGenerator(TextStream &t);
     virtual ~XMLCodeGenerator() { }
 
-    void codify(const char *text);
-    void writeCodeLink(const char *ref,const char *file,
-                       const char *anchor,const char *name,
-                       const char *tooltip);
-    void writeTooltip(const char *, const DocLinkInfo &, const char *,
-                      const char *, const SourceLinkInfo &, const SourceLinkInfo &
-                     );
-    void startCodeLine(bool);
-    void endCodeLine();
-    void startFontClass(const char *colorClass);
-    void endFontClass();
-    void writeCodeAnchor(const char *);
-    void writeLineNumber(const char *extRef,const char *compId,
-                         const char *anchorId,int l);
-    void setCurrentDoc(const Definition *,const char *,bool){}
-    void addWord(const char *,bool){}
+    void codify(const QCString &text) override;
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
+                       const QCString &anchor,const QCString &name,
+                       const QCString &tooltip) override;
+    void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
+                      const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
+                     ) override;
+    void startCodeLine(bool) override;
+    void endCodeLine() override;
+    void startFontClass(const QCString &colorClass) override;
+    void endFontClass() override;
+    void writeCodeAnchor(const QCString &) override;
+    void writeLineNumber(const QCString &extRef,const QCString &compId,
+                         const QCString &anchorId,int l,bool writeLineAnchor) override;
+    void setCurrentDoc(const Definition *,const QCString &,bool) override {}
+    void addWord(const QCString &,bool) override {}
+    void startCodeFragment(const QCString &) override;
+    void endCodeFragment(const QCString &) override;
 
     void finish();
 
   private:
-    FTextStream &m_t;
+    TextStream &m_t;
     QCString m_refId;
     QCString m_external;
     int m_lineNumber;

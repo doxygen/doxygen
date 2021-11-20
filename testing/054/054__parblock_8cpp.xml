@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="054__parblock_8cpp" kind="file" language="C++">
     <compoundname>054_parblock.cpp</compoundname>
     <sectiondef kind="func">
@@ -170,8 +170,8 @@
                 <parameterdescription>
                   <para>
                     <parblock>
-                      <para>First paragraph of the param description. <verbatim>                  Second paragraph of the param description.
-</verbatim> </para>
+                      <para>First paragraph of the param description.</para>
+                      <para>Second paragraph of the param description. </para>
                     </parblock>
                   </para>
                 </parameterdescription>
@@ -181,7 +181,7 @@
         </detaileddescription>
         <inbodydescription>
         </inbodydescription>
-        <location file="054_parblock.cpp" line="60" column="6" declfile="054_parblock.cpp" declline="60" declcolumn="6"/>
+        <location file="054_parblock.cpp" line="61" column="6" declfile="054_parblock.cpp" declline="61" declcolumn="6"/>
       </memberdef>
     </sectiondef>
     <briefdescription>

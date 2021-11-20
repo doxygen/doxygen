@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,10 +13,12 @@
  *
  */
 
-#ifndef _CMDMAPPER_H
-#define _CMDMAPPER_H
+#ifndef CMDMAPPER_H
+#define CMDMAPPER_H
 
-#include <qdict.h>
+#include <map>
+#include <string>
+#include "qcstring.h"
 
 struct CommandMap;
 
@@ -28,9 +27,9 @@ const int SIMPLESECT_BIT = 0x1000;
 enum CommandType
 {
   CMD_UNKNOWN      = 0,
-  CMD_ADDINDEX     = 1,   
+  CMD_ADDINDEX     = 1,
   CMD_AMP          = 2,
-  CMD_ANCHOR       = 3,  
+  CMD_ANCHOR       = 3,
   CMD_AT           = 4,
   CMD_ATTENTION    = 5  | SIMPLESECT_BIT,
   CMD_AUTHOR       = 6  | SIMPLESECT_BIT,
@@ -38,18 +37,18 @@ enum CommandType
   CMD_BOLD         = 8,
   CMD_BSLASH       = 9,
   CMD_CODE         = 10,
-  CMD_COPYDOC      = 11,      
+  CMD_COPYDOC      = 11,
   CMD_DATE         = 12 | SIMPLESECT_BIT,
   CMD_DOLLAR       = 13,
-  CMD_DONTINCLUDE  = 14,   
-  CMD_DOTFILE      = 15,      
+  CMD_DONTINCLUDE  = 14,
+  CMD_DOTFILE      = 15,
   CMD_EMPHASIS     = 16,
-  CMD_ENDCODE      = 17,      
-  CMD_ENDHTMLONLY  = 18,  
-  CMD_ENDLATEXONLY = 19, 
-  CMD_ENDLINK      = 20,      
+  CMD_ENDCODE      = 17,
+  CMD_ENDHTMLONLY  = 18,
+  CMD_ENDLATEXONLY = 19,
+  CMD_ENDLINK      = 20,
   CMD_ENDSECREFLIST= 21,
-  CMD_ENDVERBATIM  = 22, 
+  CMD_ENDVERBATIM  = 22,
   CMD_ENDXMLONLY   = 23,
   CMD_EXCEPTION    = 24 | SIMPLESECT_BIT,
   CMD_FORMULA      = 25,
@@ -57,9 +56,9 @@ enum CommandType
   CMD_HASH         = 27,
   CMD_HTMLINCLUDE  = 28,
   CMD_HTMLONLY     = 29,
-  CMD_IMAGE        = 30,           
+  CMD_IMAGE        = 30,
   CMD_INCLUDE      = 31,
-  CMD_INTERNAL     = 32,         
+  CMD_INTERNAL     = 32,
   CMD_INTERNALREF  = 33,
   CMD_INVARIANT    = 34 | SIMPLESECT_BIT ,
   CMD_LATEXONLY    = 35,
@@ -67,11 +66,11 @@ enum CommandType
   CMD_LI           = 37,
   CMD_LINE         = 38,
   CMD_LINEBREAK    = 39,
-  CMD_LINK         = 40,             
+  CMD_LINK         = 40,
   CMD_NOTE         = 41 | SIMPLESECT_BIT,
   CMD_PAR          = 42 | SIMPLESECT_BIT,
   CMD_PARAM        = 43 | SIMPLESECT_BIT,
-  CMD_PERCENT      = 44, 
+  CMD_PERCENT      = 44,
   CMD_POST         = 45 | SIMPLESECT_BIT,
   CMD_PRE          = 46 | SIMPLESECT_BIT,
   CMD_REF          = 47,
@@ -115,7 +114,7 @@ enum CommandType
   CMD_COPYRIGHT    = 85 | SIMPLESECT_BIT,
   CMD_CITE         = 86,
   CMD_SNIPPET      = 87,
-  CMD_RTFONLY      = 88, 
+  CMD_RTFONLY      = 88,
   CMD_ENDRTFONLY   = 89,
   CMD_PIPE         = 90,
   CMD_VHDLFLOW     = 91,
@@ -138,7 +137,12 @@ enum CommandType
   CMD_SNIPPETDOC   = 108,
   CMD_SNIPWITHLINES= 109,
   CMD_EMOJI        = 110,
-  CMD_EQUAL        = 111
+  CMD_EQUAL        = 111,
+  CMD_RTFINCLUDE   = 112,
+  CMD_DOCBOOKINCLUDE= 113,
+  CMD_MANINCLUDE   = 114,
+  CMD_XMLINCLUDE   = 115,
+  CMD_ILINE        = 116,
 };
 
 enum HtmlTagType
@@ -181,6 +185,7 @@ enum HtmlTagType
   HTML_UNDERLINE = 35,
   HTML_INS       = 36,
   HTML_DEL       = 37,
+  HTML_S         = 38,
 
   XML_CmdMask    = 0x100,
 
@@ -209,15 +214,16 @@ enum HtmlTagType
   XML_INHERITDOC   = XML_CmdMask + 22
 };
 
+
 /** Class representing a mapping from command names to command IDs. */
 class Mapper
 {
   public:
-    int map(const char *n);
+    int map(const QCString &n);
     QCString find(const int n);
     Mapper(const CommandMap *cm,bool caseSensitive);
   private:
-    QDict<int> m_map;
+    std::map<std::string,int> m_map;
     bool m_cs;
 };
 

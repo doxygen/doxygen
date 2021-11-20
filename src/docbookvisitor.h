@@ -1,8 +1,6 @@
 /******************************************************************************
 *
-* 
-*
-* Copyright (C) 1997-2015 by Dimitri van Heesch.
+* Copyright (C) 1997-2020 by Dimitri van Heesch.
 *
 * Permission to use, copy, modify, and distribute this software and its
 * documentation under the terms of the GNU General Public License is hereby
@@ -15,24 +13,25 @@
 *
 */
 
-#ifndef _DOCBOOKDOCVISITOR_H
-#define _DOCBOOKDOCVISITOR_H
+#ifndef DOCBOOKDOCVISITOR_H
+#define DOCBOOKDOCVISITOR_H
 
+#include <iostream>
+
+#include "containers.h"
 #include "docvisitor.h"
-#include <qstack.h>
-#include <qlist.h>
-#include <qcstring.h>
-#include <docparser.h>
+#include "docparser.h"
+#include "qcstring.h"
 
-class FTextStream;
 class CodeOutputInterface;
 class QCString;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for Docbook output. */
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(FTextStream &t,CodeOutputInterface &ci);
+    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -140,43 +139,46 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const char *str);
+    void filter(const QCString &str);
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();
-    void pushEnabled();
-    void popEnabled();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const QList<DocNode> &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
-    void visitPreStart(FTextStream &t,
-                   const QList<DocNode> &children,
+    void visitPreStart(TextStream &t,
+                   const DocNodeList &children,
                    bool hasCaption,
                    const QCString &name,
                    const QCString &width,
                    const QCString &height,
                    bool inlineImage = FALSE);
-    void visitPostEnd(FTextStream &t, bool hasCaption, bool inlineImage = FALSE);
-    void visitCaption(const QList<DocNode> &children);
+    void visitPostEnd(TextStream &t, bool hasCaption, bool inlineImage = FALSE);
+    void visitCaption(const DocNodeList &children);
     //--------------------------------------
     // state variables
     //--------------------------------------
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
-    bool m_insidePre;
-    bool m_hide;
-    QStack<bool> m_enabled;
+    bool m_insidePre = false;
+    bool m_hide = false;
+    BoolStack m_enabled;
     QCString m_langExt;
+    int m_colCnt = 0;
+    BoolStack m_bodySet; // it is possible to have tables without a header, needs to be an array as we can have tables in tables
 };
 
 #endif

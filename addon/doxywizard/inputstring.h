@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _INPUTSTRING_H
-#define _INPUTSTRING_H
+#ifndef INPUTSTRING_H
+#define INPUTSTRING_H
 
 #include "input.h"
 
@@ -50,15 +50,18 @@ class InputString : public QObject, public Input
     QVariant &value();
     void update();
     Kind kind() const { return String; }
+    StringMode stringMode() const { return m_sm; }
     QString docs() const { return m_docs; }
     QString id() const { return m_id; }
     QString templateDocs() const { return m_tdocs; }
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
+    bool isDefault();
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty() { return m_str.isEmpty(); }
+    QString checkEnumVal(const QString &value);
 
   public slots:
     void reset();

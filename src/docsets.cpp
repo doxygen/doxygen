@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -13,7 +13,10 @@
  *
  */
 
-#include <qfile.h>
+#include <set>
+#include <stack>
+#include <fstream>
+
 #include "docsets.h"
 #include "config.h"
 #include "message.h"
@@ -24,20 +27,26 @@
 #include "memberdef.h"
 #include "namespacedef.h"
 #include "util.h"
+#include "textstream.h"
 
-DocSets::DocSets() : m_nodes(17), m_scopes(17)
+struct DocSets::Private
 {
-  m_nf = 0;
-  m_tf = 0;
-  m_dc = 0;
-  m_id = 0;
-  m_nodes.setAutoDelete(TRUE);
+  QCString indent();
+  std::ofstream ntf;
+  TextStream    nts;
+  std::ofstream ttf;
+  TextStream    tts;
+  std::stack<bool> indentStack;
+  std::set<std::string> scopes;
+};
+
+
+DocSets::DocSets() : p(std::make_unique<Private>())
+{
 }
 
 DocSets::~DocSets()
 {
-  delete m_nf;
-  delete m_tf;
 }
 
 void DocSets::initialize()
@@ -49,6 +58,8 @@ void DocSets::initialize()
   if (bundleId.isEmpty()) bundleId="org.doxygen.Project";
   QCString feedName = Config_getString(DOCSET_FEEDNAME);
   if (feedName.isEmpty()) feedName="FeedName";
+  QCString feedURL = Config_getString(DOCSET_FEEDURL);
+  if (feedURL.isEmpty()) feedURL="FeedUrl";
   QCString publisherId = Config_getString(DOCSET_PUBLISHER_ID);
   if (publisherId.isEmpty()) publisherId="PublisherId";
   QCString publisherName = Config_getString(DOCSET_PUBLISHER_NAME);
@@ -58,224 +69,211 @@ void DocSets::initialize()
 
   // -- write Makefile
   {
-  QCString mfName = Config_getString(HTML_OUTPUT) + "/Makefile";
-  QFile makefile(mfName);
-  if (!makefile.open(IO_WriteOnly))
-  {
-    err("Could not open file %s for writing\n",mfName.data());
-    exit(1);
-  }
-  FTextStream ts(&makefile);
+    QCString mfName = Config_getString(HTML_OUTPUT) + "/Makefile";
+    std::ofstream ts(mfName.str(),std::ofstream::out | std::ofstream::binary);
+    if (!ts.is_open())
+    {
+      term("Could not open file %s for writing\n",qPrint(mfName));
+    }
 
-  ts << "DOCSET_NAME=" << bundleId << ".docset\n" 
-        "DOCSET_CONTENTS=$(DOCSET_NAME)/Contents\n"
-        "DOCSET_RESOURCES=$(DOCSET_CONTENTS)/Resources\n"
-        "DOCSET_DOCUMENTS=$(DOCSET_RESOURCES)/Documents\n"
-        "DESTDIR=~/Library/Developer/Shared/Documentation/DocSets\n"
-        "XCODE_INSTALL=\"$(shell xcode-select -print-path)\"\n"
-        "\n"
-        "all: docset\n"
-        "\n"
-        "docset:\n"
-        "\tmkdir -p $(DOCSET_DOCUMENTS)\n"
-        "\tcp Nodes.xml $(DOCSET_RESOURCES)\n"
-        "\tcp Tokens.xml $(DOCSET_RESOURCES)\n"
-        "\tcp Info.plist $(DOCSET_CONTENTS)\n"
-        "\ttar --exclude $(DOCSET_NAME) \\\n"
-        "\t    --exclude Nodes.xml \\\n"
-        "\t    --exclude Tokens.xml \\\n"
-        "\t    --exclude Info.plist \\\n"
-        "\t    --exclude Makefile -c -f - . \\\n"
-        "\t    | (cd $(DOCSET_DOCUMENTS); tar xvf -)\n"
-        "\t$(XCODE_INSTALL)/usr/bin/docsetutil index $(DOCSET_NAME)\n"
-        "\trm -f $(DOCSET_DOCUMENTS)/Nodes.xml\n"
-        "\trm -f $(DOCSET_DOCUMENTS)/Info.plist\n"
-        "\trm -f $(DOCSET_DOCUMENTS)/Makefile\n"
-        "\trm -f $(DOCSET_RESOURCES)/Nodes.xml\n"
-        "\trm -f $(DOCSET_RESOURCES)/Tokens.xml\n"
-        "\n"
-        "clean:\n"
-        "\trm -rf $(DOCSET_NAME)\n"
-        "\n"
-        "install: docset\n"
-        "\tmkdir -p $(DESTDIR)\n"
-        "\tcp -R $(DOCSET_NAME) $(DESTDIR)\n"
-        "\n"
-        "uninstall:\n"
-        "\trm -rf $(DESTDIR)/$(DOCSET_NAME)\n"
-        "\n"
-        "always:\n";
+    ts << "DOCSET_NAME=" << bundleId << ".docset\n"
+          "DOCSET_CONTENTS=$(DOCSET_NAME)/Contents\n"
+          "DOCSET_RESOURCES=$(DOCSET_CONTENTS)/Resources\n"
+          "DOCSET_DOCUMENTS=$(DOCSET_RESOURCES)/Documents\n"
+          "DESTDIR=~/Library/Developer/Shared/Documentation/DocSets\n"
+          "XCODE_INSTALL=\"$(shell xcode-select -print-path)\"\n"
+          "\n"
+          "all: docset\n"
+          "\n"
+          "docset:\n"
+          "\tmkdir -p $(DOCSET_DOCUMENTS)\n"
+          "\tcp Nodes.xml $(DOCSET_RESOURCES)\n"
+          "\tcp Tokens.xml $(DOCSET_RESOURCES)\n"
+          "\tcp Info.plist $(DOCSET_CONTENTS)\n"
+          "\ttar --exclude $(DOCSET_NAME) \\\n"
+          "\t    --exclude Nodes.xml \\\n"
+          "\t    --exclude Tokens.xml \\\n"
+          "\t    --exclude Info.plist \\\n"
+          "\t    --exclude Makefile -c -f - . \\\n"
+          "\t    | (cd $(DOCSET_DOCUMENTS); tar xvf -)\n"
+          "\t$(XCODE_INSTALL)/usr/bin/docsetutil index $(DOCSET_NAME)\n"
+          "\trm -f $(DOCSET_DOCUMENTS)/Nodes.xml\n"
+          "\trm -f $(DOCSET_DOCUMENTS)/Info.plist\n"
+          "\trm -f $(DOCSET_DOCUMENTS)/Makefile\n"
+          "\trm -f $(DOCSET_RESOURCES)/Nodes.xml\n"
+          "\trm -f $(DOCSET_RESOURCES)/Tokens.xml\n"
+          "\n"
+          "clean:\n"
+          "\trm -rf $(DOCSET_NAME)\n"
+          "\n"
+          "install: docset\n"
+          "\tmkdir -p $(DESTDIR)\n"
+          "\tcp -R $(DOCSET_NAME) $(DESTDIR)\n"
+          "\n"
+          "uninstall:\n"
+          "\trm -rf $(DESTDIR)/$(DOCSET_NAME)\n"
+          "\n"
+          "always:\n";
   }
 
   // -- write Info.plist
   {
-  QCString plName = Config_getString(HTML_OUTPUT) + "/Info.plist";
-  QFile plist(plName);
-  if (!plist.open(IO_WriteOnly))
-  {
-    err("Could not open file %s for writing\n",plName.data());
-    exit(1);
-  }
-  FTextStream ts(&plist);
+    QCString plName = Config_getString(HTML_OUTPUT) + "/Info.plist";
+    std::ofstream ts(plName.str(),std::ofstream::out | std::ofstream::binary);
+    if (!ts.is_open())
+    {
+      term("Could not open file %s for writing\n",qPrint(plName));
+    }
 
-  ts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" 
-        "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\"\n" 
-        "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n" 
-        "<plist version=\"1.0\">\n" 
-        "<dict>\n" 
-        "     <key>CFBundleName</key>\n" 
-        "     <string>" << projectName << "</string>\n" 
-        "     <key>CFBundleIdentifier</key>\n"
-        "     <string>" << bundleId << "</string>\n" 
-        "     <key>CFBundleVersion</key>\n"
-        "     <string>" << projectNumber << "</string>\n"
-        "     <key>DocSetFeedName</key>\n" 
-        "     <string>" << feedName << "</string>\n"
-        "     <key>DocSetPublisherIdentifier</key>\n"
-        "     <string>" << publisherId << "</string>\n"
-        "     <key>DocSetPublisherName</key>\n"
-        "     <string>" << publisherName << "</string>\n"
-        // markers for Dash
-        "     <key>DashDocSetFamily</key>\n" 
-        "     <string>doxy</string>\n"
-        "     <key>DocSetPlatformFamily</key>\n"
-        "     <string>doxygen</string>\n"
-        "</dict>\n"
-        "</plist>\n";
+    ts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+          "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\"\n"
+          "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+          "<plist version=\"1.0\">\n"
+          "<dict>\n"
+          "     <key>CFBundleName</key>\n"
+          "     <string>" << projectName << "</string>\n"
+          "     <key>CFBundleIdentifier</key>\n"
+          "     <string>" << bundleId << "</string>\n"
+          "     <key>CFBundleVersion</key>\n"
+          "     <string>" << projectNumber << "</string>\n"
+          "     <key>DocSetFeedName</key>\n"
+          "     <string>" << feedName << "</string>\n"
+          "     <key>DocSetFeedUrl</key>\n"
+          "     <string>" << feedURL << "</string>\n"
+          "     <key>DocSetPublisherIdentifier</key>\n"
+          "     <string>" << publisherId << "</string>\n"
+          "     <key>DocSetPublisherName</key>\n"
+          "     <string>" << publisherName << "</string>\n"
+          // markers for Dash
+          "     <key>DashDocSetFamily</key>\n"
+          "     <string>doxy</string>\n"
+          "     <key>DocSetPlatformFamily</key>\n"
+          "     <string>doxygen</string>\n"
+          "</dict>\n"
+          "</plist>\n";
   }
 
   // -- start Nodes.xml
   QCString notes = Config_getString(HTML_OUTPUT) + "/Nodes.xml";
-  m_nf = new QFile(notes);
-  if (!m_nf->open(IO_WriteOnly))
+  p->ntf.open(notes.str(),std::ofstream::out | std::ofstream::binary);
+  if (!p->ntf.is_open())
   {
-    err("Could not open file %s for writing\n",notes.data());
-    exit(1);
+    term("Could not open file %s for writing\n",qPrint(notes));
   }
+  p->nts.setStream(&p->ntf);
   //QCString indexName=Config_getBool(GENERATE_TREEVIEW)?"main":"index";
   QCString indexName="index";
-  m_nts.setDevice(m_nf);
-  m_nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  m_nts << "<DocSetNodes version=\"1.0\">" << endl;
-  m_nts << "  <TOC>" << endl;
-  m_nts << "    <Node>" << endl;
-  m_nts << "      <Name>Root</Name>" << endl;
-  m_nts << "      <Path>" << indexName << Doxygen::htmlFileExtension << "</Path>" << endl;
-  m_nts << "      <Subnodes>" << endl;
-  m_dc = 1;
-  m_firstNode.resize(m_dc);
-  m_firstNode.at(0)=TRUE;
+  p->nts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  p->nts << "<DocSetNodes version=\"1.0\">\n";
+  p->nts << "  <TOC>\n";
+  p->nts << "    <Node>\n";
+  p->nts << "      <Name>Root</Name>\n";
+  p->nts << "      <Path>" << indexName << Doxygen::htmlFileExtension << "</Path>\n";
+  p->nts << "      <Subnodes>\n";
+  p->indentStack.push(true);
 
   QCString tokens = Config_getString(HTML_OUTPUT) + "/Tokens.xml";
-  m_tf = new QFile(tokens);
-  if (!m_tf->open(IO_WriteOnly))
+  p->ttf.open(tokens.str(),std::ofstream::out | std::ofstream::binary);
+  if (!p->ttf.is_open())
   {
-    err("Could not open file %s for writing\n",tokens.data());
-    exit(1);
+    term("Could not open file %s for writing\n",qPrint(tokens));
   }
-  m_tts.setDevice(m_tf);
-  m_tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl;
-  m_tts << "<Tokens version=\"1.0\">" << endl;
+  p->tts.setStream(&p->ttf);
+  p->tts << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+  p->tts << "<Tokens version=\"1.0\">\n";
 }
 
 void DocSets::finalize()
 {
-  if (!m_firstNode.at(m_dc-1))
+  if (!p->indentStack.top())
   {
-    m_nts << indent() << " </Node>" << endl;
+    p->nts << p->indent() << " </Node>\n";
   }
-  m_dc--;
-  m_nts << "      </Subnodes>" << endl;
-  m_nts << "    </Node>" << endl;
-  m_nts << "  </TOC>" << endl;
-  m_nts << "</DocSetNodes>" << endl;
-  m_nf->close();
-  delete m_nf;
-  m_nf=0;
+  p->indentStack.pop();
+  p->nts << "      </Subnodes>\n";
+  p->nts << "    </Node>\n";
+  p->nts << "  </TOC>\n";
+  p->nts << "</DocSetNodes>\n";
+  p->nts.flush();
+  p->ntf.close();
 
-  m_tts << "</Tokens>" << endl;
-  m_tf->close();
-  delete m_tf;
-  m_tf=0;
+  p->tts << "</Tokens>\n";
+  p->tts.flush();
+  p->ttf.close();
 }
 
-QCString DocSets::indent()
+QCString DocSets::Private::indent()
 {
   QCString result;
-  result.fill(' ',(m_dc+2)*2);
+  result.fill(' ',static_cast<int>(indentStack.size()+2)*2);
   return result;
 }
 
 void DocSets::incContentsDepth()
 {
-  //printf("DocSets::incContentsDepth() m_dc=%d\n",m_dc);
-  ++m_dc;
-  m_nts << indent() << "<Subnodes>" << endl;
-  m_firstNode.resize(m_dc);
-  if (m_dc>0)
-  {
-    m_firstNode.at(m_dc-1)=TRUE;
-  }
+  //printf("DocSets::incContentsDepth() depth=%zu\n",p->indentStack.size());
+  p->nts << p->indent() << "<Subnodes>\n";
+  p->indentStack.push(true);
 }
 
 void DocSets::decContentsDepth()
 {
-  if (!m_firstNode.at(m_dc-1))
+  if (!p->indentStack.top())
   {
-    m_nts << indent() << " </Node>" << endl;
+    p->nts << p->indent() << " </Node>\n";
   }
-  m_nts << indent() << "</Subnodes>" << endl;
-  --m_dc;
-  //printf("DocSets::decContentsDepth() m_dc=%d\n",m_dc);
+  p->nts << p->indent() << "</Subnodes>\n";
+  p->indentStack.pop();
+  //printf("DocSets::decContentsDepth() depth=%zu\n",p->indentStack.size());
 }
 
 void DocSets::addContentsItem(bool isDir,
-                              const char *name, 
-                              const char *ref, 
-                              const char *file,
-                              const char *anchor,
+                              const QCString &name,
+                              const QCString &ref,
+                              const QCString &file,
+                              const QCString &anchor,
                               bool /* separateIndex */,
                               bool /* addToNavIndex */,
                               const Definition * /*def*/)
 {
   (void)isDir;
-  //printf("DocSets::addContentsItem(%s) m_dc=%d\n",name,m_dc);
+  //printf("DocSets::addContentsItem(%s) depth=%zu\n",name,p->indentStack.size());
   if (ref==0)
   {
-    if (!m_firstNode.at(m_dc-1))
+    if (!p->indentStack.top())
     {
-      m_nts << indent() << " </Node>" << endl;
+      p->nts << p->indent() << " </Node>\n";
     }
-    m_firstNode.at(m_dc-1)=FALSE;
-    m_nts << indent() << " <Node>" << endl;
-    m_nts << indent() << "  <Name>" << convertToXML(name) << "</Name>" << endl;
-    if (file && file[0]=='^') // URL marker
+    p->indentStack.top()=false;
+    p->nts << p->indent() << " <Node>\n";
+    p->nts << p->indent() << "  <Name>" << convertToXML(name) << "</Name>\n";
+    if (!file.isEmpty() && file[0]=='^') // URL marker
     {
-      m_nts << indent() << "  <URL>" << convertToXML(&file[1]) 
-            << "</URL>" << endl;
+      p->nts << p->indent() << "  <URL>" << convertToXML(&file[1])
+            << "</URL>\n";
     }
     else // relative file
     {
-      m_nts << indent() << "  <Path>";
-      if (file && file[0]=='!') // user specified file
+      p->nts << p->indent() << "  <Path>";
+      if (!file.isEmpty() && file[0]=='!') // user specified file
       {
-        m_nts << convertToXML(&file[1]);
+        p->nts << convertToXML(&file[1]);
       }
-      else if (file) // doxygen generated file
+      else if (!file.isEmpty()) // doxygen generated file
       {
-        m_nts << file << Doxygen::htmlFileExtension;
+        p->nts << addHtmlExtensionIfMissing(file);
       }
-      m_nts << "</Path>" << endl;
-      if (file && anchor)
+      p->nts << "</Path>\n";
+      if (!file.isEmpty() && !anchor.isEmpty())
       {
-        m_nts << indent() << "  <Anchor>" << anchor << "</Anchor>" << endl;
+        p->nts << p->indent() << "  <Anchor>" << anchor << "</Anchor>\n";
       }
     }
   }
 }
 
 void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
-                           const char *,const char *)
+                           const QCString &,const QCString &)
 {
   if (md==0 && context==0) return;
 
@@ -298,11 +296,11 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
   // determine language
   QCString lang;
   SrcLangExt langExt = SrcLangExt_Cpp;
-  if (md) 
+  if (md)
   {
     langExt = md->getLanguage();
   }
-  else if (context) 
+  else if (context)
   {
     langExt = context->getLanguage();
   }
@@ -313,7 +311,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       {
         if (md && (md->isObjCMethod() || md->isObjCProperty()))
           lang="occ";  // Objective C/C++
-        else if (fd && fd->name().right(2).lower()==".c") 
+        else if (fd && fd->name().right(2).lower()==".c")
           lang="c";    // Plain C
         else if (cd==0 && nd==0)
           lang="c";    // Plain C symbol outside any class or namespace
@@ -326,15 +324,15 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     case SrcLangExt_PHP:     lang="php"; break;        // PHP4/5
     case SrcLangExt_D:       lang="d"; break;          // D
     case SrcLangExt_Java:    lang="java"; break;       // Java
-    case SrcLangExt_JS:      lang="javascript"; break; // Javascript
+    case SrcLangExt_JS:      lang="javascript"; break; // JavaScript
     case SrcLangExt_Python:  lang="python"; break;     // Python
     case SrcLangExt_Fortran: lang="fortran"; break;    // Fortran
     case SrcLangExt_VHDL:    lang="vhdl"; break;       // VHDL
     case SrcLangExt_XML:     lang="xml"; break;        // DBUS XML
     case SrcLangExt_SQL:     lang="sql"; break;        // Sql
-    case SrcLangExt_Tcl:     lang="tcl"; break;        // Tcl
     case SrcLangExt_Markdown:lang="markdown"; break;   // Markdown
     case SrcLangExt_Slice:   lang="slice"; break;      // Slice
+    case SrcLangExt_Lex:     lang="lex"; break;        // Lex
     case SrcLangExt_Unknown: lang="unknown"; break;    // should not happen!
   }
 
@@ -391,9 +389,9 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       case MemberType_DCOP:
         type="dcop"; break;
       case MemberType_Property:
-        if (cd && cd->compoundType()==ClassDef::Protocol) 
+        if (cd && cd->compoundType()==ClassDef::Protocol)
           type="intfp";         // interface property
-        else 
+        else
           type="instp";         // instance property
         break;
       case MemberType_Event:
@@ -409,7 +407,7 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
     }
     cd = md->getClassDef();
     nd = md->getNamespaceDef();
-    if (cd) 
+    if (cd)
     {
       scope = cd->qualifiedName();
     }
@@ -426,34 +424,34 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
         decl = fd->name();
       }
     }
-    writeToken(m_tts,md,type,lang,scope,md->anchor(),decl);
+    writeToken(p->tts,md,type,lang,scope,md->anchor(),decl);
   }
   else if (context && context->isLinkable())
   {
     if (fd==0 && context->definitionType()==Definition::TypeFile)
     {
-      fd = dynamic_cast<const FileDef*>(context);
+      fd = toFileDef(context);
     }
     if (cd==0 && context->definitionType()==Definition::TypeClass)
     {
-      cd = dynamic_cast<const ClassDef*>(context);
+      cd = toClassDef(context);
     }
     if (nd==0 && context->definitionType()==Definition::TypeNamespace)
     {
-      nd = dynamic_cast<const NamespaceDef*>(context);
+      nd = toNamespaceDef(context);
     }
     if (fd)
     {
       type="file";
     }
-    else if (cd) 
+    else if (cd)
     {
       scope = cd->qualifiedName();
       if (cd->isTemplate())
       {
         type="tmplt";
       }
-      else if (cd->compoundType()==ClassDef::Protocol) 
+      else if (cd->compoundType()==ClassDef::Protocol)
       {
         type="intf";
         if (scope.right(2)=="-p") scope=scope.left(scope.length()-2);
@@ -466,11 +464,11 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       {
         type="cat";
       }
-      else 
+      else
       {
         type = "cl";
       }
-      IncludeInfo *ii = cd->includeInfo();
+      const IncludeInfo *ii = cd->includeInfo();
       if (ii)
       {
         decl=ii->includeName;
@@ -481,59 +479,58 @@ void DocSets::addIndexItem(const Definition *context,const MemberDef *md,
       scope = nd->name();
       type = "ns";
     }
-    if (m_scopes.find(context->getOutputFileBase())==0)
+    if (p->scopes.find(context->getOutputFileBase().str())==p->scopes.end())
     {
-      writeToken(m_tts,context,type,lang,scope,0,decl);
-      m_scopes.append(context->getOutputFileBase(),(void*)0x8);
+      writeToken(p->tts,context,type,lang,scope,QCString(),decl);
+      p->scopes.insert(context->getOutputFileBase().str());
     }
   }
 }
 
-void DocSets::writeToken(FTextStream &t,
+void DocSets::writeToken(TextStream &t,
                          const Definition *d,
                          const QCString &type,
                          const QCString &lang,
-                         const char *scope,
-                         const char *anchor,
-                         const char *decl)
+                         const QCString &scope,
+                         const QCString &anchor,
+                         const QCString &decl)
 {
-  t << "  <Token>" << endl;
-  t << "    <TokenIdentifier>" << endl;
+  t << "  <Token>\n";
+  t << "    <TokenIdentifier>\n";
   QCString name = d->name();
   if (name.right(2)=="-p")  name=name.left(name.length()-2);
-  t << "      <Name>" << convertToXML(name) << "</Name>" << endl;
+  t << "      <Name>" << convertToXML(name) << "</Name>\n";
   if (!lang.isEmpty())
   {
-    t << "      <APILanguage>" << lang << "</APILanguage>" << endl;
+    t << "      <APILanguage>" << lang << "</APILanguage>\n";
   }
   if (!type.isEmpty())
   {
-    t << "      <Type>" << type << "</Type>" << endl;
+    t << "      <Type>" << type << "</Type>\n";
   }
-  if (scope)
+  if (!scope.isEmpty())
   {
-    t << "      <Scope>" << convertToXML(scope) << "</Scope>" << endl;
+    t << "      <Scope>" << convertToXML(scope) << "</Scope>\n";
   }
-  t << "    </TokenIdentifier>" << endl;
-  t << "    <Path>" << d->getOutputFileBase() 
-                    << Doxygen::htmlFileExtension << "</Path>" << endl;
-  if (anchor)
+  t << "    </TokenIdentifier>\n";
+  t << "    <Path>" << addHtmlExtensionIfMissing(d->getOutputFileBase()) << "</Path>\n";
+  if (!anchor.isEmpty())
   {
-    t << "    <Anchor>" << anchor << "</Anchor>" << endl;
+    t << "    <Anchor>" << anchor << "</Anchor>\n";
   }
   QCString tooltip = d->briefDescriptionAsTooltip();
   if (!tooltip.isEmpty())
   {
-    t << "    <Abstract>" << convertToXML(tooltip) << "</Abstract>" << endl;
+    t << "    <Abstract>" << convertToXML(tooltip) << "</Abstract>\n";
   }
-  if (decl)
+  if (!decl.isEmpty())
   {
-    t << "    <DeclaredIn>" << convertToXML(decl) << "</DeclaredIn>" << endl;
+    t << "    <DeclaredIn>" << convertToXML(decl) << "</DeclaredIn>\n";
   }
-  t << "  </Token>" << endl;
+  t << "  </Token>\n";
 }
 
-void DocSets::addIndexFile(const char *name)
+void DocSets::addIndexFile(const QCString &name)
 {
   (void)name;
 }

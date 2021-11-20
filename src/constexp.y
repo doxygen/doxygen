@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -28,8 +25,8 @@
 int constexpYYerror(yyscan_t yyscanner, const char *s)
 {
   struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
-  warn(yyextra->constExpFileName, yyextra->constExpLineNr,
-       "preprocessing issue while doing constant expression evaluation: %s",s);
+  warn(yyextra->constExpFileName.c_str(), yyextra->constExpLineNr,
+       "preprocessing issue while doing constant expression evaluation: %s: input='%s'",s,yyextra->inputString.c_str());
   return 0;
 }
 
@@ -67,6 +64,7 @@ int constexpYYerror(yyscan_t yyscanner, const char *s)
 %token TOK_OCTALINT
 %token TOK_DECIMALINT
 %token TOK_HEXADECIMALINT
+%token TOK_BINARYINT
 %token TOK_CHARACTER
 %token TOK_FLOAT
 
@@ -81,8 +79,8 @@ start: constant_expression
 
 constant_expression: logical_or_expression
                      { $$ = $1; }
-	           | logical_or_expression 
-                     TOK_QUESTIONMARK logical_or_expression 
+	           | logical_or_expression
+                     TOK_QUESTIONMARK logical_or_expression
                      TOK_COLON logical_or_expression
 		     {
 		       bool c = ($1.isInt() ? ((long)$1 != 0) : ((double)$1 != 0.0));
@@ -108,9 +106,9 @@ logical_and_expression: inclusive_or_expression
 
 inclusive_or_expression: exclusive_or_expression
 			 { $$ = $1; }
-		       | inclusive_or_expression TOK_BITWISEOR 
+		       | inclusive_or_expression TOK_BITWISEOR
                          exclusive_or_expression
-			 { 
+			 {
 			   $$ = CPPValue( (long)$1 | (long)$3 );
 			 }
 ;
@@ -126,7 +124,7 @@ exclusive_or_expression: and_expression
 and_expression:	equality_expression
 		{ $$ = $1; }
 	      | and_expression TOK_AMPERSAND equality_expression
-		{ 
+		{
 		  $$ = CPPValue( (long)$1 & (long)$3 );
 		}
 ;
@@ -134,7 +132,7 @@ and_expression:	equality_expression
 equality_expression: relational_expression
 		     { $$ = $1; }
 		   | equality_expression TOK_EQUAL relational_expression
-		     { 
+		     {
 		       $$ = CPPValue( (long)((double)$1 == (double)$3) );
 	             }
 		   | equality_expression TOK_NOTEQUAL relational_expression
@@ -146,7 +144,7 @@ equality_expression: relational_expression
 relational_expression: shift_expression
 		       { $$ = $1; }
 		     | relational_expression TOK_LESSTHAN shift_expression
-		       { 
+		       {
 			 $$ = CPPValue( (long)((double)$1 < (double)$3) );
 		       }
 		     | relational_expression TOK_GREATERTHAN shift_expression
@@ -169,7 +167,7 @@ shift_expression: additive_expression
 		  { $$ = $1; }
 		| shift_expression TOK_SHIFTLEFT additive_expression
 		  {
-		    $$ = CPPValue( (long)$1 << (long)$3 );	
+		    $$ = CPPValue( (long)$1 << (long)$3 );
 		  }
 		| shift_expression TOK_SHIFTRIGHT additive_expression
 		  {
@@ -185,7 +183,7 @@ additive_expression: multiplicative_expression
 		       {
 		         $$ = CPPValue( (double)$1 + (double)$3 );
 		       }
-		       else	
+		       else
 		       {
 		         $$ = CPPValue( (long)$1 + (long)$3 );
 		       }
@@ -196,7 +194,7 @@ additive_expression: multiplicative_expression
 		       {
 		         $$ = CPPValue( (double)$1 - (double)$3 );
 		       }
-		       else	
+		       else
 		       {
 		         $$ = CPPValue( (long)$1 - (long)$3 );
 		       }
@@ -206,7 +204,7 @@ additive_expression: multiplicative_expression
 multiplicative_expression: unary_expression
 			   { $$ = $1; }
 			 | multiplicative_expression TOK_STAR unary_expression
-			   { 
+			   {
 			     if (!$1.isInt() || !$3.isInt())
 			     {
 			       $$ = CPPValue( (double)$1 * (double)$3 );
@@ -217,7 +215,7 @@ multiplicative_expression: unary_expression
 			     }
 			   }
 			 | multiplicative_expression TOK_DIVIDE unary_expression
-			   { 
+			   {
 			     if (!$1.isInt() || !$3.isInt())
 			     {
 			       $$ = CPPValue( (double)$1 / (double)$3 );
@@ -230,7 +228,7 @@ multiplicative_expression: unary_expression
 			     }
 			   }
 			 | multiplicative_expression TOK_MOD unary_expression
-			   { 
+			   {
 			     long value = $3;
 			     if (value==0) value=1;
 			     $$ = CPPValue( (long)$1 % value );
@@ -242,8 +240,8 @@ unary_expression: primary_expression
 	        | TOK_PLUS unary_expression
 		  { $$ = $1; }
 		| TOK_MINUS unary_expression
-		  { 
-		    if ($2.isInt()) 
+		  {
+		    if ($2.isInt())
                       $$ = CPPValue(-(long)$2);
                     else
 		      $$ = CPPValue(-(double)$2);
@@ -278,6 +276,11 @@ constant: TOK_OCTALINT
 	  {
 	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
 	    $$ = parseHexadecimal(yyextra->strToken);
+	  }
+	| TOK_BINARYINT
+	  {
+	    struct constexpYY_state* yyextra = constexpYYget_extra(yyscanner);
+	    $$ = parseBinary(yyextra->strToken);
 	  }
 	| TOK_CHARACTER
 	  {

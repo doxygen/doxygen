@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="">
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="" xml:lang="en-US">
   <compounddef id="indexpage" kind="page">
     <compoundname>index</compoundname>
     <title>My Project</title>
@@ -11,5 +11,6 @@ No other types of alignment are supported.</para>
       <para><itemizedlist><listitem><para><computeroutput>AlignLeft</computeroutput> left alignment. </para></listitem><listitem><para><computeroutput>AlignCenter</computeroutput> center alignment. </para></listitem><listitem><para><computeroutput>AlignRight</computeroutput> right alignment</para></listitem></itemizedlist>
 No other types of alignment are supported. </para>
     </detaileddescription>
+    <location file="004_arg.dox"/>
   </compounddef>
 </doxygen>

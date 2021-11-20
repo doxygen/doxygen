@@ -1,12 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -18,33 +16,103 @@
 #ifndef DIRDEF_H
 #define DIRDEF_H
 
-#include "sortdict.h"
+
+#include <vector>
+#include <map>
+
+#include "qcstring.h"
+#include "linkedmap.h"
 #include "definition.h"
 
-#include <qlist.h>
-
 class FileList;
-class ClassSDict;
-class QStrList;
 class FileDef;
 class OutputList;
 class UsedDir;
-class FTextStream;
-
+class FilePair;
+class FilePairDict;
 class DirDef;
+class DirList;
 
-/** A list of directories. */
-class DirList : public QList<DirDef>
+bool compareDirDefs(const DirDef *item1, const DirDef *item2);
+
+// ------------------
+
+/** Class representing a pair of FileDef objects */
+class FilePair
 {
   public:
-   int compareValues(const DirDef *item1,const DirDef *item2) const;
+    FilePair(const FileDef *src,const FileDef *dst) : m_src(src), m_dst(dst) {}
+    const FileDef *source() const { return m_src; }
+    const FileDef *destination() const { return m_dst; }
+    static QCString key(const FileDef *srcFd,const FileDef *dstFd);
+  private:
+    const FileDef *m_src;
+    const FileDef *m_dst;
 };
 
+// ------------------
+
+/** A linked map of file pairs */
+class FilePairLinkedMap : public LinkedMap<FilePair>
+{
+};
+
+// ------------------
+
+/** Usage information of a directory. */
+class UsedDir
+{
+  public:
+    UsedDir(const DirDef *dir);
+    virtual ~UsedDir();
+
+    /**
+     * Take up dependency between files.
+     * @param[in] srcFd dependent file which depends on dstFd
+     * @param[in] dstFd dependee file on which srcFd depends on
+     * @param[in] srcDirect true iff the source dependency was the direct (not inherited from a sub dir)
+     * @param[in] dstDirect true iff the destination dependency was direct (not inherited from a sub dir)
+     */
+    void addFileDep(const FileDef *srcFd,const FileDef *dstFd, bool srcDirect, bool dstDirect);
+    FilePair *findFilePair(const QCString &name);
+    const FilePairLinkedMap &filePairs() const { return m_filePairs; }
+    const DirDef *dir() const { return m_dir; }
+
+    /** Returns true iff any of the dependencies between source and destination files are
+     *  direct (i.e. not "inherited" from sub directories)
+     */
+    bool hasDirectDeps() const { return m_hasDirectDeps; }
+
+    /** Returns true iff any of the dependencies from the source file to the destination file are
+     *  directly coming from a file in the source directory (i.e. not inherited via sub directories)
+     */
+    bool hasDirectSrcDeps() const { return m_hasDirectSrcDeps; }
+
+    /** Returns true iff any of the dependencies from the source file to the destination file are
+     *  directly targeting a file in the destination directory (i.e. not inherited via sub directories)
+     */
+    bool hasDirectDstDeps() const { return m_hasDirectDstDeps; }
+
+    void sort();
+
+  private:
+    const DirDef *m_dir;
+    FilePairLinkedMap m_filePairs;
+
+    bool m_hasDirectDeps    = false;
+    bool m_hasDirectSrcDeps = false;
+    bool m_hasDirectDstDeps = false;
+};
+
+// ------------------
+
 /** A model of a directory symbol. */
-class DirDef : virtual public Definition
+class DirDef : public DefinitionMutable, public Definition
 {
   public:
     virtual ~DirDef() {}
+
+    class UsedDirLinkedMap : public LinkedMap<UsedDir> {};
 
     // accessors
     virtual DefType definitionType() const = 0;
@@ -53,16 +121,16 @@ class DirDef : virtual public Definition
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual QCString displayName(bool=TRUE) const = 0;
-    virtual const QCString &shortName() const = 0;
+    virtual const QCString shortName() const = 0;
     virtual void addSubDir(DirDef *subdir) = 0;
-    virtual FileList *   getFiles() const = 0;
-    virtual void addFile(FileDef *fd) = 0;
+    virtual const FileList &getFiles() const = 0;
+    virtual void addFile(const FileDef *fd) = 0;
     virtual const DirList &subDirs() const = 0;
-    virtual bool isCluster() const = 0;
+    virtual bool hasSubdirs() const = 0;
     virtual int level() const = 0;
     virtual DirDef *parent() const = 0;
     virtual int dirCount() const = 0;
-    virtual const QDict<UsedDir> *usedDirs() const = 0;
+    virtual const UsedDirLinkedMap &usedDirs() const = 0;
     virtual bool isParentOf(const DirDef *dir) const = 0;
     virtual bool depGraphIsTrivial() const = 0;
     virtual QCString shortTitle() const = 0;
@@ -70,62 +138,28 @@ class DirDef : virtual public Definition
 
     // generate output
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void writeTagFile(FTextStream &t) = 0;
+    virtual void writeTagFile(TextStream &t) = 0;
 
     virtual void setDiskName(const QCString &name) = 0;
+    virtual void setDirCount(int count) = 0;
     virtual void sort() = 0;
     virtual void setParent(DirDef *parent) = 0;
     virtual void setLevel() = 0;
-    virtual void addUsesDependency(DirDef *usedDir,FileDef *srcFd,
-                           FileDef *dstFd,bool inherited) = 0;
+    virtual void addUsesDependency(const DirDef *usedDir,const FileDef *srcFd,
+                                   const FileDef *dstFd,bool srcDirect, bool dstDirect) = 0;
     virtual void computeDependencies() = 0;
 };
 
-/** Class representing a pair of FileDef objects */
-class FilePair 
-{
-  public:
-    FilePair(FileDef *src,FileDef *dst) : m_src(src), m_dst(dst) {}
-    const FileDef *source() const { return m_src; }
-    const FileDef *destination() const { return m_dst; }
-  private:
-    FileDef *m_src;
-    FileDef *m_dst;
-};
+// --- Cast functions
 
-/** A sorted dictionary of FilePair objects. */
-class FilePairDict : public SDict<FilePair>
-{
-  public:
-    FilePairDict(int size) : SDict<FilePair>(size) {}
-  private:
-    int compareValues(const FilePair *item1,const FilePair *item2) const;
-};
-
-/** Usage information of a directory. */
-class UsedDir
-{
-  public:
-    UsedDir(DirDef *dir,bool inherited);
-    virtual ~UsedDir();
-    void addFileDep(FileDef *srcFd,FileDef *dstFd);
-    FilePair *findFilePair(const char *name);
-    const FilePairDict &filePairs() const { return m_filePairs; }
-    const DirDef *dir() const { return m_dir; }
-    bool inherited() const { return m_inherited; }
-    void sort();
-
-  private:
-    DirDef *m_dir;
-    FilePairDict m_filePairs;
-    bool m_inherited;
-};
+DirDef            *toDirDef(Definition *d);
+const DirDef      *toDirDef(const Definition *d);
 
 /** A usage relation between two directories. */
 class DirRelation
 {
   public:
-    DirRelation(const QCString &name,const DirDef *src,UsedDir *dst) 
+    DirRelation(const QCString &name,const DirDef *src,UsedDir *dst)
       : m_name(name), m_src(src), m_dst(dst) {}
     const DirDef  *source() const      { return m_src; }
     UsedDir *destination() const { return m_dst; }
@@ -138,26 +172,24 @@ class DirRelation
     UsedDir *m_dst;
 };
 
-inline int DirList::compareValues(const DirDef *item1,const DirDef *item2) const
+/** A linked map of directories */
+class DirLinkedMap : public LinkedMap<DirDef>
 {
-  return qstricmp(item1->shortName(),item2->shortName());
-}
-
-/** A sorted dictionary of DirDef objects. */
-class DirSDict : public SDict<DirDef>
-{
-  public:
-    DirSDict(int size) : SDict<DirDef>(size) {}
-    int compareValues(const DirDef *item1,const DirDef *item2) const
-    {
-      return qstricmp(item1->shortName(),item2->shortName());
-    }
 };
 
+/** A list of directories. */
+class DirList : public std::vector<const DirDef*>
+{
+};
+
+class DirRelationLinkedMap : public LinkedMap<DirRelation>
+{
+};
+
+// ------------------
 
 void buildDirectories();
 void generateDirDocs(OutputList &ol);
 void computeDirDependencies();
-void writeDirDependencyGraph(const char *file);
 
 #endif

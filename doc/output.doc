@@ -33,7 +33,7 @@ The following output formats are \e directly supported by doxygen:
 <dt><b>XML</b>
 <dd>Generated if \ref cfg_generate_xml "GENERATE_XML" is set to \c YES in the configuration file.<p>
 <dt><b>DocBook</b>
-<dd>Generated if \ref cfg_generate_docbook "GENERATE_DOCBOOOK" is set to \c YES in the configuration file.<p>
+<dd>Generated if \ref cfg_generate_docbook "GENERATE_DOCBOOK" is set to \c YES in the configuration file.<p>
 </dl>
 
 The following output formats are \e indirectly supported by doxygen:

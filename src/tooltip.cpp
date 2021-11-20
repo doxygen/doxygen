@@ -1,10 +1,10 @@
 /******************************************************************************
  *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2020 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -13,7 +13,11 @@
  *
  */
 
-#include <qdict.h>
+#include <map>
+#include <memory>
+#include <unordered_map>
+#include <string>
+#include <mutex>
 
 #include "tooltip.h"
 #include "definition.h"
@@ -23,110 +27,116 @@
 #include "doxygen.h"
 #include "config.h"
 
+static std::mutex                                      g_tooltipsMutex;
+static std::unordered_map<int, std::set<std::string> > g_tooltipsWrittenPerFile;
+
 class TooltipManager::Private
 {
   public:
-    Private() : tooltipInfo(10007) {}
-    QDict<Definition> tooltipInfo;
+    std::map<std::string,const Definition*> tooltipInfo;
 };
 
-TooltipManager *TooltipManager::s_theInstance = 0;
-
-TooltipManager::TooltipManager() 
+TooltipManager::TooltipManager() : p(std::make_unique<Private>())
 {
-  p = new Private;
 }
 
 TooltipManager::~TooltipManager()
 {
-  delete p;
 }
 
-TooltipManager *TooltipManager::instance()
-{
-  if (!s_theInstance)
-  {
-    s_theInstance = new TooltipManager;
-  }
-  return s_theInstance;
-}
-
-void TooltipManager::clearTooltips()
-{
-  p->tooltipInfo.clear();
-}
-
-static QCString escapeId(const char *s)
+static QCString escapeId(const QCString &s)
 {
   QCString res=s;
-  char *p=res.rawData();
-  while (*p)
-  {
-    if (!isId(*p)) *p='_';
-    p++;
-  }
+  for (uint i=0;i<res.length();i++) if (!isId(res[i])) res[i]='_';
   return res;
 }
 
-void TooltipManager::addTooltip(const Definition *d)
+void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
 {
-  static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
+  bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
   if (!sourceTooltips) return;
+
   QCString id = d->getOutputFileBase();
   int i=id.findRev('/');
   if (i!=-1)
   {
     id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
   }
-  id+=escapeId(Doxygen::htmlFileExtension);
+  // In case an extension is present translate this extension to something understood by the tooltip handler
+  // otherwise extend t with a translated htmlFileExtension.
+  QCString currentExtension = getFileNameExtension(id);
+  if (currentExtension.isEmpty())
+  {
+    id += escapeId(Doxygen::htmlFileExtension);
+  }
+  else
+  {
+    id = stripExtensionGeneral(id,currentExtension) + escapeId(currentExtension);
+  }
+
   QCString anc = d->anchor();
   if (!anc.isEmpty())
   {
     id+="_"+anc;
   }
   id = "a" + id;
-  if (p->tooltipInfo.find(id)==0)
-  {
-    p->tooltipInfo.insert(id,d);
-  }
+  p->tooltipInfo.insert(std::make_pair(id.str(),d));
+  //printf("%p: addTooltip(%s) ol=%d\n",this,id.data(),ol.id());
 }
 
 void TooltipManager::writeTooltips(CodeOutputInterface &ol)
 {
-  QDictIterator<Definition> di(p->tooltipInfo);
-  Definition *d;
-  for (di.toFirst();(d=di.current());++di)
+  int id = ol.id();
+  std::unordered_map<int, std::set<std::string> >::iterator it;
+  // critical section
   {
-    DocLinkInfo docInfo;
-    docInfo.name   = d->qualifiedName();
-    docInfo.ref    = d->getReference();
-    docInfo.url    = d->getOutputFileBase();
-    docInfo.anchor = d->anchor();
-    SourceLinkInfo defInfo;
-    if (d->getBodyDef() && d->getStartBodyLine()!=-1)
+    std::lock_guard<std::mutex> lock(g_tooltipsMutex);
+    it = g_tooltipsWrittenPerFile.find(id);
+    if (it==g_tooltipsWrittenPerFile.end()) // new file
     {
-      defInfo.file    = d->getBodyDef()->name();
-      defInfo.line    = d->getStartBodyLine();
-      defInfo.url     = d->getSourceFileBase();
-      defInfo.anchor  = d->getSourceAnchor();
+      it = g_tooltipsWrittenPerFile.insert(std::make_pair(id,std::set<std::string>())).first;
     }
-    SourceLinkInfo declInfo; // TODO: fill in...
-    QCString decl;
-    if (d->definitionType()==Definition::TypeMember)
+  }
+
+  for (const auto &kv : p->tooltipInfo)
+  {
+    bool written = it->second.find(kv.first)!=it->second.end();
+    if (!written) // only write tooltips once
     {
-      MemberDef *md = dynamic_cast<MemberDef*>(d);
-      if (!md->isAnonymous())
+      //printf("%p: writeTooltips(%s) ol=%d\n",this,kv.first.c_str(),ol.id());
+      const Definition *d = kv.second;
+      DocLinkInfo docInfo;
+      docInfo.name   = d->qualifiedName();
+      docInfo.ref    = d->getReference();
+      docInfo.url    = d->getOutputFileBase();
+      docInfo.anchor = d->anchor();
+      SourceLinkInfo defInfo;
+      if (d->getBodyDef() && d->getStartBodyLine()!=-1)
       {
-        decl = md->declaration();
+        defInfo.file    = d->getBodyDef()->name();
+        defInfo.line    = d->getStartBodyLine();
+        defInfo.url     = d->getSourceFileBase();
+        defInfo.anchor  = d->getSourceAnchor();
       }
+      SourceLinkInfo declInfo; // TODO: fill in...
+      QCString decl;
+      if (d->definitionType()==Definition::TypeMember)
+      {
+        const MemberDef *md = toMemberDef(d);
+        if (!md->isAnonymous())
+        {
+          decl = md->declaration();
+        }
+      }
+      ol.writeTooltip(kv.first.c_str(),                // id
+          docInfo,                         // symName
+          decl,                            // decl
+          d->briefDescriptionAsTooltip(),  // desc
+          defInfo,
+          declInfo
+          );
+      it->second.insert(kv.first); // remember we wrote this tooltip for the given file id
     }
-    ol.writeTooltip(di.currentKey(),                 // id
-                    docInfo,                         // symName
-                    decl,                            // decl
-                    d->briefDescriptionAsTooltip(),  // desc
-                    defInfo,
-                    declInfo
-                   );
   }
 }
 

@@ -1,19 +1,19 @@
 Doxygen uses cmake (http://www.cmake.org/) to build executables for various platforms.
-It's required at least cmake version 3.1.3
+At least cmake version 3.3 is required.
 
 The first step is to create a build directory where the output should be stored.
-Doxygen can be fully build outside of the source tree.
+Doxygen can be fully built outside of the source tree.
 
 The second step is to invoke cmake from within the build directory with the desired generator.
 
-For Linux/Unix systems do the following
+For Linux/Unix systems do the following:
 
   mkdir build
   cd build
   cmake -G "Unix Makefiles" path/to/root/of/doxygen/source/tree
   make
 
-This also works for MacOSX, but if XCode is installed you can also generate an XCode project file
+This also works for MacOS, but if XCode is installed you can also generate an XCode project file
 
   cmake -G XCode path/to/root/of/doxygen/source/tree
 

@@ -1,12 +1,12 @@
 /******************************************************************************
  *
- * 
+ *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -14,13 +14,13 @@
  * input used in their production; they are not affected by this license.
  *
  */
-/*! 
-\mainpage 
+/*!
+\mainpage
 <!--Doxygen Manual-->
 \if logo_on
 <center>
 \htmlonly
-<img src="doxygen_logo.gif" width="634" height="197" alt="doxygen"/><br/>
+<img src="doxygen_logo.svg" width="634" height="197" alt="doxygen"/><br/>
 Version: $(VERSION)
 \endhtmlonly
 </center>
@@ -28,32 +28,32 @@ Version: $(VERSION)
 
 <h2>Introduction</h2>
 Doxygen is the de facto standard tool for generating documentation from
-annotated C++ sources, but it also supports other popular programming 
-languages such as C, Objective-C, C#, PHP, Java, Python, IDL 
-(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL, Tcl, and to some extent D.
+annotated C++ sources, but it also supports other popular programming
+languages such as C, Objective-C, C#, PHP, Java, Python, IDL
+(Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL and to some extent D.
 
 Doxygen can help you in three ways:
 <ol>
-<li> It can generate an on-line documentation browser (in HTML) and/or an 
-     off-line reference manual (in \LaTeX) from a set 
-     of documented source files. 
-     There is also support for generating output in RTF (MS-Word), 
+<li> It can generate an on-line documentation browser (in HTML) and/or an
+     off-line reference manual (in \LaTeX) from a set
+     of documented source files.
+     There is also support for generating output in RTF (MS-Word),
      PostScript, hyperlinked PDF, compressed HTML, and Unix man pages.
      The documentation is extracted directly from the sources, which
      makes it much easier to keep the documentation consistent with the
      source code.
-<li> You can \ref extract_all "configure" doxygen to extract the code structure 
-     from undocumented source files. This is very useful to quickly 
-     find your way in large source distributions. 
-     Doxygen can also visualize the relations between the various elements 
+<li> You can \ref extract_all "configure" doxygen to extract the code structure
+     from undocumented source files. This is very useful to quickly
+     find your way in large source distributions.
+     Doxygen can also visualize the relations between the various elements
      by means of include dependency graphs, inheritance diagrams,
      and collaboration diagrams, which are all generated automatically.
 <li> You can also use doxygen for creating normal documentation (as I did
      for the doxygen user manual and web-site).
 </ol>
 
-Doxygen is developed under Mac OS X and Linux, but is set-up to be highly 
-portable. As a result, it runs on most other Unix flavors as well. 
+Doxygen is developed under Mac OS X and Linux, but is set-up to be highly
+portable. As a result, it runs on most other Unix flavors as well.
 Furthermore, executables for Windows are available.
 
 \n
@@ -61,21 +61,21 @@ This manual is divided into three parts, each of which is divided into several s
 
 The first part forms a user manual:
 <ul>
-<li>Section \ref install discusses how to 
-      <a href="http://www.doxygen.org/download.html">download</a>, compile and install
+<li>Section \ref install discusses how to
+      <a href="https://www.doxygen.org/download.html">download</a>, compile and install
                      doxygen for your platform.
-<li>Section \ref starting tells you how to generate your first piece of 
-                     documentation quickly. 
+<li>Section \ref starting tells you how to generate your first piece of
+                     documentation quickly.
 <li>Section \ref docblocks demonstrates the various ways that code can
                  be documented.
 <li>Section \ref markdown show the Markdown formatting supported by doxygen.
 <li>Section \ref lists shows how to create lists.
-<li>Section \ref grouping shows how to group things together. 
+<li>Section \ref grouping shows how to group things together.
 <li>Section \ref tables shows how to insert tables in the documentation.
 <li>Section \ref formulas shows how to insert formulas in the documentation.
 <li>Section \ref diagrams describes the diagrams and graphs that doxygen can generate.
 <li>Section \ref preprocessing explains how doxygen deals with macro definitions.
-<li>Section \ref autolink shows how to put links to files, classes, 
+<li>Section \ref autolink shows how to put links to files, classes,
                  and members in the documentation.
 <li>Section \ref output shows how to generate the various output formats
                  supported by doxygen.
@@ -85,7 +85,7 @@ The first part forms a user manual:
                  by doxygen.
 <li>Section \ref custcmd show how to define and use custom commands in your comments.
 <li>Section \ref external explains how to let doxygen create links to externally generated documentation.
-<li>Section \ref faq gives answers to frequently asked questions. 
+<li>Section \ref faq gives answers to frequently asked questions.
 <li>Section \ref trouble tells you what to do when you have problems.
 </ul>
 
@@ -94,10 +94,10 @@ The second part forms a reference manual:
 <ul>
 <li>Section \ref features presents an overview of what doxygen can do.
 <li>Section \ref doxygen_usage shows how to use the \c doxygen program.
-<li>Section \ref doxywizard_usage shows how to use the \c doxywizard program. 
-<li>Section \ref config shows how to fine-tune doxygen, so it 
+<li>Section \ref doxywizard_usage shows how to use the \c doxywizard program.
+<li>Section \ref config shows how to fine-tune doxygen, so it
               generates the documentation you want.
-<li>Section \ref commands shows an overview of the special commands that can be 
+<li>Section \ref commands shows an overview of the special commands that can be
               used within the documentation.
 <li>Section \ref htmlcmds shows an overview of the HTML commands that
               can be used within the documentation.
@@ -121,14 +121,14 @@ The third part provides information for developers:
 \addindex license
 \addindex GPL
 
-Copyright &copy; 1997-2019 by 
+Copyright &copy; 1997-2019 by
 <a href="mailto:doxygen@gmail.com">Dimitri van Heesch</a>.<p>
 
 Permission to use, copy, modify, and distribute this software and its
-documentation under the terms of the GNU General Public License is hereby 
-granted. No representations are made about the suitability of this software 
+documentation under the terms of the GNU General Public License is hereby
+granted. No representations are made about the suitability of this software
 for any purpose. It is provided "as is" without express or implied warranty.
-See the 
+See the
 <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">
 GNU General Public License</a>
 for more details.
@@ -139,23 +139,22 @@ input used in their production; they are not affected by this license.
 <h2>User examples</h2>
 
 Doxygen supports a number of \ref output "output formats" where HTML is the
-most popular one. I've gathered 
-<a href="http://www.doxygen.org/results.html">some nice examples</a> 
+most popular one. I've gathered
+<a href="https://www.doxygen.org/results.html">some nice examples</a>
 of real-life projects using doxygen.
 
 These are part of a larger
-<a href="http://www.doxygen.org/projects.html">list of projects</a> 
+<a href="https://www.doxygen.org/projects.html">list of projects</a>
 that use doxygen.
-If you know other projects, let <a href="mailto:doxygen@gmail.com?subject=New%20project%20using%20Doxygen">me</a> 
-know and I'll add them. 
+If you know other projects, let <a href="mailto:doxygen@gmail.com?subject=New%20project%20using%20Doxygen">me</a>
+know and I'll add them.
 
 <h2>Future work</h2>
-Although doxygen is successfully used by large number of companies and 
-open source projects already, there is always room for improvement. 
+Although doxygen is successfully used by large number of companies and
+open source projects already, there is always room for improvement.
 <p>
-You can submit enhancement requests in
+You can also submit enhancement requests in
 <a href="https://github.com/doxygen/doxygen/issues">the bug tracker</a>.
-Make sure the severity of the bug report is set to "enhancement".
 
 <h2>Acknowledgments</h2>
 \addindex acknowledgments
@@ -163,19 +162,21 @@ Thanks go to:
 <ul>
 <li>\addindex Doc++
     Malte Z&ouml;ckler and Roland Wunderling, authors of DOC++.
-    The first version of doxygen borrowed some code of an old version of DOC++. 
-    Although I have rewritten practically all code since then, DOC++ has still 
+    The first version of doxygen borrowed some code of an old version of DOC++.
+    Although I have rewritten practically all code since then, DOC++ has still
     given me a good start in writing doxygen.
-<li>All people at Qt Software, for creating a beautiful GUI Toolkit
-    (which is very useful as a Windows/Unix platform abstraction layer :-)
+<li>All people at Qt Software, for creating a beautiful GUI Toolkit.
+<li>Steffen Schümann for creating ghc::filesystem which is used by doxygen.
+<li>Michael McTernan for creating mscgen which is now embedded in doxygen.
 <li>My brother Frank
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
-<li>Wouter Slegers of 
-    <a href="http://www.yourcreativesolutions.nl">Your Creative Solutions</a> 
+<li>Wouter Slegers of
+    <a href="http://www.yourcreativesolutions.nl">Your Creative Solutions</a>
     for registering the www.doxygen.org domain.
+<li>Martin Kreis for adding VHDL support.
 <li>Parker Waechter for adding the RTF output generator.
-<li>Joerg Baumann, for adding conditional documentation blocks, 
+<li>Joerg Baumann, for adding conditional documentation blocks,
     PDF links, and the configuration generator.
 <li>Tim Mensch for adding the todo command.
 <li>Christian Hammond for redesigning the web-site.
@@ -183,8 +184,6 @@ Thanks go to:
 <li>Talin for adding support for C# style comments with XML markup.
 <li>Petr Prikryl for coordinating the internationalization support.
     All language maintainers for providing translations into many languages.
-<li>The band <a href="http://www.porcupinetree.com/">Porcupine Tree</a> for 
-    providing hours of great music to listen to while coding.
 <li>many, many others for suggestions, patches and bug reports.
 </ul>
 
