@@ -1449,8 +1449,8 @@ bool isBlockQuote(const char *data,int size,int indent)
       i++;
     }
     // last characters should be a space or newline,
-    // so a line starting with >= does not match
-    bool res = level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n');
+    // so a line starting with >= does not match, but only when level equals 1
+    bool res = (level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n')) || (level > 1);
     TRACE_RESULT(res);
     return res;
   }
@@ -2346,14 +2346,17 @@ int Markdown::writeBlockQuote(const char *data,int size)
         !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
+      level--;
       j--;
     }
+    if (!level && data[j-1]!='\n') level=curLevel; // lazy
     if (level>curLevel) // quote level increased => add start markers
     {
-      for (l=curLevel;l<level;l++)
+      for (l=curLevel;l<level-1;l++)
       {
         m_out.addStr("<blockquote>");
       }
+      out.addStr("<blockquote>&zwj;"); // empty blockquotes are also shown
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
