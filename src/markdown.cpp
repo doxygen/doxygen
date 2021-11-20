@@ -2356,7 +2356,7 @@ int Markdown::writeBlockQuote(const char *data,int size)
       {
         m_out.addStr("<blockquote>");
       }
-      out.addStr("<blockquote>&zwj;"); // empty blockquotes are also shown
+      m_out.addStr("<blockquote>&zwj;"); // empty blockquotes are also shown
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
