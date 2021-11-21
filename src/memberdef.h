@@ -172,6 +172,7 @@ class MemberDef : public Definition
     virtual bool isTemplateSpecialization() const = 0;
     virtual bool isObjCMethod() const = 0;
     virtual bool isObjCProperty() const = 0;
+    virtual bool isCSharpProperty() const = 0;
     virtual bool isConstructor() const = 0;
     virtual bool isDestructor() const = 0;
     virtual bool hasOneLineInitializer() const = 0;

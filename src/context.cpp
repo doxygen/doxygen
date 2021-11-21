@@ -3590,6 +3590,7 @@ class MemberContext::Private : public DefinitionContext<MemberContext::Private>
     TemplateVariant isStatic() const                 { return m_memberDef->isStatic(); }
     TemplateVariant isObjCMethod() const             { return m_memberDef->isObjCMethod(); }
     TemplateVariant isObjCProperty() const           { return m_memberDef->isObjCProperty(); }
+    TemplateVariant isCSharpProperty() const         { return m_memberDef->isCSharpProperty(); }
     TemplateVariant isImplementation() const         { return m_memberDef->isImplementation(); }
     TemplateVariant isSignal() const                 { return m_memberDef->isSignal(); }
     TemplateVariant isSlot() const                   { return m_memberDef->isSlot(); }
@@ -4346,6 +4347,7 @@ const PropertyMap<MemberContext::Private> MemberContext::Private::s_inst {
   {  "isTemplateSpecialization",&Private::isTemplateSpecialization },
   {  "isObjCMethod",        &Private::isObjCMethod },
   {  "isObjCProperty",      &Private::isObjCProperty },
+  {  "isCSharpProperty",    &Private::isCSharpProperty },
   {  "isAnonymous",         &Private::isAnonymous },
   {  "hasParameters",       &Private::hasParameters },
   {  "declType",            &Private::declType },
