@@ -2402,8 +2402,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
          if (!first)
          {
            ol.docify(", ");
-           first=false;
          }
+         first=false;
          ol.docify(s.c_str());
       }
       ol.docify("]");
@@ -2425,8 +2425,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         if (!first)
         {
           ol.docify(", ");
-          first=false;
         }
+        first=false;
         ol.docify(s.c_str());
       }
       ol.docify("]");
