@@ -4003,8 +4003,12 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
             )
           )
   {
-    warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
+
+    if (!Config_getBool(EXTRACT_ALL) && Config_getBool(WARN_IF_UNDOCUMENTED))
+    {
+      warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
                           qPrint(qualifiedName()));
+    }
   }
   else if ( // see if return needs to documented
             m_impl->hasDocumentedReturnType ||
