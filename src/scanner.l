@@ -6625,7 +6625,7 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<DocBlock>[^@*~\/\\\n]+                 { // any character that isn't special
+<DocBlock>[^@*~`\/\\\n]+                { // any character that isn't special
                                           yyextra->docBlock << yytext;
                                         }
 <DocBlock>\n                            { // newline
