@@ -380,8 +380,10 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   }
   else if (blockName=="dot"         ||
            blockName=="code"        ||
+           blockName=="icode"       ||
            blockName=="msc"         ||
            blockName=="verbatim"    ||
+           blockName=="iverbatim"   ||
            blockName=="latexonly"   ||
            blockName=="htmlonly"    ||
            blockName=="xmlonly"     ||
@@ -2387,7 +2389,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
   int i=0,end;
   //printf("writeCodeBlock: data={%s}\n",qPrint(QCString(data).left(size)));
   // no need for \ilinebr here as the previous line was empty and was skipped
-  m_out.addStr("@verbatim\n");
+  m_out.addStr("@iverbatim\n");
   int emptyLines=0;
   while (i<size)
   {
@@ -2421,7 +2423,7 @@ int Markdown::writeCodeBlock(const char *data,int size,int refIndent)
       break;
     }
   }
-  m_out.addStr("@endverbatim\\ilinebr ");
+  m_out.addStr("@endiverbatim\\ilinebr ");
   while (emptyLines>0) // write skipped empty lines
   {
     // add empty line
@@ -2521,13 +2523,13 @@ void Markdown::writeFencedCodeBlock(const char *data,const char *lng,
     blockStart--;
     blockEnd--;
   }
-  m_out.addStr("@code");
+  m_out.addStr("@icode");
   if (!lang.isEmpty())
   {
     m_out.addStr("{"+lang+"}");
   }
   addStrEscapeUtf8Nbsp(data+blockStart,blockEnd-blockStart);
-  m_out.addStr("@endcode");
+  m_out.addStr("@endicode");
 }
 
 QCString Markdown::processQuotations(const QCString &s,int refIndent)

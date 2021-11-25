@@ -5516,6 +5516,12 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         retval = RetVal_Paragraph;
       }
       break;
+    case CMD_ISTARTCODE:
+      {
+        m_parser.tokenizer.setStateICode();
+        retval = handleStartCode();
+      }
+      break;
     case CMD_STARTCODE:
       {
         m_parser.tokenizer.setStateCode();
@@ -5576,9 +5582,17 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         m_parser.tokenizer.setStatePara();
       }
       break;
+    case CMD_IVERBATIM:
     case CMD_VERBATIM:
       {
-        m_parser.tokenizer.setStateVerbatim();
+        if (cmdId == CMD_VERBATIM)
+        {
+          m_parser.tokenizer.setStateVerbatim();
+        }
+        else
+        {
+          m_parser.tokenizer.setStateIVerbatim();
+        }
         retval = m_parser.tokenizer.lex();
         m_children.push_back(std::make_unique<DocVerbatim>(m_parser,this,m_parser.context.context,m_parser.context.token->verb,DocVerbatim::Verbatim,m_parser.context.isExample,m_parser.context.exampleName));
         if (retval==0) warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"verbatim section ended without end marker");
@@ -5726,6 +5740,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDPARBLOCK:
       retval=RetVal_EndParBlock;
       break;
+    case CMD_ENDICODE:
     case CMD_ENDCODE:
     case CMD_ENDHTMLONLY:
     case CMD_ENDMANONLY:
@@ -5734,6 +5749,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDXMLONLY:
     case CMD_ENDDBONLY:
     case CMD_ENDLINK:
+    case CMD_ENDIVERBATIM:
     case CMD_ENDVERBATIM:
     case CMD_ENDDOT:
     case CMD_ENDMSC:
@@ -7373,8 +7389,10 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
   if (i==0 || (data[i-1]!='@' && data[i-1]!='\\')) // not an escaped command
   {
     CHECK_FOR_COMMAND("dot",endMarker="enddot");
+    CHECK_FOR_COMMAND("icode",endMarker="endicode");
     CHECK_FOR_COMMAND("code",endMarker="endcode");
     CHECK_FOR_COMMAND("msc",endMarker="endmsc");
+    CHECK_FOR_COMMAND("iverbatim",endMarker="endiverbatim");
     CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
     CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
     CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");

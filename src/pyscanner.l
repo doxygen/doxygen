@@ -1264,8 +1264,8 @@ STARTDOCSYMS      "##"
                                 if (!actualDoc.isEmpty())
                                 {
                                   stripIndentation(actualDoc,yyextra->commentIndent);
-			          actualDoc.prepend("\\verbatim\n");
-			          actualDoc.append("\\endverbatim ");
+			          actualDoc.prepend("@iverbatim\n");
+			          actualDoc.append("@endiverbatim ");
 			        }
 			      }
 			      //printf("-------> yyextra->current=%p yyextra->bodyEntry=%p\n",yyextra->current,yyextra->bodyEntry);
@@ -1279,8 +1279,8 @@ STARTDOCSYMS      "##"
                                 if (!actualDoc.isEmpty())
                                 {
                                   stripIndentation(actualDoc,yyextra->commentIndent);
-			          actualDoc.prepend("\\verbatim\n");
-			          actualDoc.append("\\endverbatim ");
+			          actualDoc.prepend("@iverbatim\n");
+			          actualDoc.append("@endiverbatim ");
 			        }
 			      }
                               if (yyextra->moduleScope.startsWith("__") &&  yyextra->moduleScope.endsWith("__"))

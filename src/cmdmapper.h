@@ -143,6 +143,10 @@ enum CommandType
   CMD_MANINCLUDE   = 114,
   CMD_XMLINCLUDE   = 115,
   CMD_ILINE        = 116,
+  CMD_ISTARTCODE   = 117,
+  CMD_ENDICODE     = 118,
+  CMD_IVERBATIM    = 119,
+  CMD_ENDIVERBATIM = 120,
 };
 
 enum HtmlTagType
