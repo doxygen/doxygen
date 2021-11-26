@@ -59,7 +59,7 @@ class Markdown
     void processInline(const char *data,int size);
     void writeMarkdownImage(const char *fmt, bool explicitTitle,
                             const QCString &title, const QCString &content,
-                            const QCString &link, const FileDef *fd);
+                            const QCString &link, const FileDef *fd, const QCString &post);
     int isHeaderline(const char *data, int size, bool allowAdjustLevel);
     int isAtxHeader(const char *data,int size,
                        QCString &header,QCString &id,bool allowAdjustLevel);

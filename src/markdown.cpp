@@ -881,7 +881,7 @@ int Markdown::processEmphasis(const char *data,int offset,int size)
 
 void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
                                   const QCString &title, const QCString &content,
-                                  const QCString &link, const FileDef *fd)
+                                  const QCString &link, const FileDef *fd, const QCString &post)
 {
   m_out.addStr("@image{inline} ");
   m_out.addStr(fmt);
@@ -891,17 +891,20 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
   {
     m_out.addStr(" \"");
     m_out.addStr(escapeDoubleQuotes(content));
+    m_out.addStr(post);
     m_out.addStr("\"");
   }
   else if ((content.isEmpty() || explicitTitle) && !title.isEmpty())
   {
     m_out.addStr(" \"");
     m_out.addStr(escapeDoubleQuotes(title));
+    m_out.addStr(post);
     m_out.addStr("\"");
   }
   else
   {
     m_out.addStr(" ");// so the line break will not be part of the image name
+    m_out.addStr(post);
   }
   m_out.addStr("\\ilinebr");
 }
@@ -1138,10 +1141,19 @@ int Markdown::processLink(const char *data,int,int size)
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
     {
-      writeMarkdownImage("html",    explicitTitle, title, content, link, fd);
-      writeMarkdownImage("latex",   explicitTitle, title, content, link, fd);
-      writeMarkdownImage("rtf",     explicitTitle, title, content, link, fd);
-      writeMarkdownImage("docbook", explicitTitle, title, content, link, fd);
+      QCString post = "";
+      static const reg::Ex r(R"(^( *\.)\n)");
+      reg::Match match;
+      if (reg::search(data + i,match,r))
+      {
+        post = match[1].str();
+        i += match[1].length();
+      }
+
+      writeMarkdownImage("html",    explicitTitle, title, content, link, fd, post);
+      writeMarkdownImage("latex",   explicitTitle, title, content, link, fd, post);
+      writeMarkdownImage("rtf",     explicitTitle, title, content, link, fd, post);
+      writeMarkdownImage("docbook", explicitTitle, title, content, link, fd, post);
     }
     else
     {
