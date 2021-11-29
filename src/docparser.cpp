@@ -379,7 +379,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
  */
 void DocParser::checkArgumentName()
 {
-  if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
+  if (!(Config_getBool(WARN_IF_DOC_ERROR) || Config_getBool(WARN_IF_INCOMPLETE_DOC))) return;
   if (context.memberDef==0) return; // not a member
   std::string name = context.token->name.str();
   const ArgumentList &al=context.memberDef->isDocsForDefinition() ?
