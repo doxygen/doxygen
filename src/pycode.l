@@ -1520,16 +1520,17 @@ static void findMemberLink(yyscan_t yyscanner,
   //    yyextra->currentDefinition?qPrint(yyextra->currentDefinition->name()):"<none>",
   //    yyextra->currentMemberDef?qPrint(yyextra->currentMemberDef->name()):"<none>"
   //    );
+  bool found = false;
   if (yyextra->currentDefinition)
   {
     auto range = Doxygen::symbolMap->find(symName);
     for (auto it = range.first; it!=range.second; ++it)
     {
-      findMemberLink(yyscanner,ol,it->second,symName);
+      if (findMemberLink(yyscanner,ol,it->second,symName)) found = true;
     }
   }
   //printf("sym %s not found\n",&yytext[5]);
-  codify(yyscanner,symName);
+  if (!found) codify(yyscanner,symName);
 }
 
 
