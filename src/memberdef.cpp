@@ -3919,7 +3919,6 @@ static QCString stripTrailingReturn(const QCString &trailRet)
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
-  if (!Config_getBool(WARN_NO_PARAMDOC)) return;
   QCString returnType = typeString();
   bool isPython = getLanguage()==SrcLangExt_Python;
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
@@ -4003,6 +4002,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
             )
           )
   {
+
     warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
                           qPrint(qualifiedName()));
   }
