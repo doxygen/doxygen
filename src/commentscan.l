@@ -87,6 +87,7 @@ static bool handleFile(yyscan_t yyscanner,const QCString &, const StringVector &
 static bool handleDir(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleExample(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVector &);
+static bool handleRaiseWarning(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleNoop(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleName(yyscan_t yyscanner,const QCString &, const StringVector &);
 static bool handleTodo(yyscan_t yyscanner,const QCString &, const StringVector &);
@@ -259,6 +260,7 @@ static const std::map< std::string, DocCmdMap > docCmdMap =
   { "public",          { &handlePublic,           CommandSpacing::Invisible }},
   { "publicsection",   { &handlePublicSection,    CommandSpacing::Invisible }},
   { "pure",            { &handlePure,             CommandSpacing::Invisible }},
+  { "raisewarning",    { &handleRaiseWarning,     CommandSpacing::Invisible }},
   { "refitem",         { &handleRefItem,          CommandSpacing::Inline    }},
   { "related",         { &handleRelated,          CommandSpacing::Invisible }},
   { "relatedalso",     { &handleRelatedAlso,      CommandSpacing::Invisible }},
@@ -412,6 +414,8 @@ struct commentscanYY_state
   int              prevPosition = 0;
   DocGroup         docGroup;
   bool             markdownSupport = TRUE;
+
+  QCString         raiseWarning;
 };
 
 
@@ -557,6 +561,7 @@ STopt  [^\n@\\]*
 %x      GuardExpr
 %x      CdataSection
 %x      Noop
+%x      RaiseWarning
 
 %%
 
@@ -1764,6 +1769,18 @@ STopt  [^\n@\\]*
                                         }
 <Noop>.                                 { // ignore other stuff
                                         }
+  /* ----- handle argument of raisewarning command ------- */
+<RaiseWarning>{DOCNL}                   { // end of argument
+                                          warn_doc_error(yyextra->fileName,yyextra->lineNr,
+                                                         qPrint(yyextra->raiseWarning));
+                                          yyextra->raiseWarning = "";
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          addOutput(yyscanner,'\n');
+                                          BEGIN( Comment );
+                                        }
+<RaiseWarning>.                         { // ignore other stuff
+                                          yyextra->raiseWarning += yytext;
+                                        }
   /* ----- handle argument of ingroup command ------- */
 
 <InGroupParam>{LABELID}                 { // group id
@@ -2217,6 +2234,14 @@ static bool handleDetails(yyscan_t yyscanner,const QCString &, const StringVecto
                                                 // as a new paragraph
   }
   setOutput(yyscanner,OutputDoc);
+  return FALSE;
+}
+
+static bool handleRaiseWarning(yyscan_t yyscanner,const QCString &, const StringVector &)
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->raiseWarning = "";
+  BEGIN( RaiseWarning );
   return FALSE;
 }
 
