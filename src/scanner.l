@@ -3694,9 +3694,9 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name     = yytext;
                                         }
-<FindFields>"("                         {
+<FindFields>[({]                        {
                                           // Java enum initializer
-                                          unput('(');
+                                          unput(*yytext);
                                           yyextra->lastInitializerContext = YY_START;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->initializer.str("=");
