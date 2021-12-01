@@ -262,7 +262,7 @@ dl.el {
 }
 
 ul {
-  overflow: hidden; /*Fixed: list item bullets overlap floating elements*/
+  overflow: visible;
 }
 
 #side-nav ul {
