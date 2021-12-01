@@ -4928,7 +4928,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
             if (!url.isEmpty())
             {
-              if (url=="![none]")
+              if (url=="!") // result of a "[none]" url
               {
                 Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),QCString(),QCString(),FALSE,FALSE);
               }

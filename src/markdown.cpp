@@ -56,7 +56,7 @@
 enum class ExplicitPageResult
 {
   explicitPage,      /**< docs start with a page command */
-  explicitMainPage,  /**< docs start with a mainpage comand */
+  explicitMainPage,  /**< docs start with a mainpage command */
   notExplicit        /**< docs doesn't start with either page or mainpage */
 };
 
@@ -3171,7 +3171,7 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
           docs = docs.left(labelStartPos)+                     // part before label
                  newLabel+                                     // new label
                  docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
-                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add orginal anchor
+                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor
                  docs.right(docs.length()-match.length());     // add remainder of docs
         }
       }
