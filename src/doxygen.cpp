@@ -3571,6 +3571,11 @@ static void buildFunctionList(const Entry *root)
             MemberDefMutable *md = toMemberDefMutable(imd.get());
             if (md)
             {
+              ArgumentLists tParamLists = md->definitionTemplateParameterLists();
+              if (tParamLists.size() != root->tArgLists.size())
+              {
+                continue;
+              }
               const NamespaceDef *mnd = md->getNamespaceDef();
               NamespaceDef *rnd = 0;
               //printf("root namespace=%s\n",qPrint(rootNav->parent()->name()));
