@@ -972,10 +972,12 @@ int Markdown::processLink(const char *data,int,int size)
   if (!isImageLink && content.isEmpty()) { TRACE_RESULT(0); return 0; } // no link text
   i++; // skip over ]
 
+  bool whiteSpace = false;
   // skip whitespace
-  while (i<size && data[i]==' ') i++;
+  while (i<size && data[i]==' ') {whiteSpace = true; i++;}
   if (i<size && data[i]=='\n') // one newline allowed here
   {
+    whiteSpace = true;
     i++;
     nl++;
     // skip more whitespace
@@ -983,6 +985,7 @@ int Markdown::processLink(const char *data,int,int size)
   }
   nlTotal += nl;
   nl = 0;
+  if (whiteSpace && i<size && (data[i]=='(' || data[i]=='[')) return 0;
 
   bool explicitTitle=FALSE;
   if (i<size && data[i]=='(') // inline link
