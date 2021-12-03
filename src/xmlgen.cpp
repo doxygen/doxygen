@@ -1007,7 +1007,7 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
   if (md->getDefLine()!=-1)
   {
     t << "        <location file=\""
-      << convertToXML(stripFromPath(md->getDefFileName())) << "\" line=\""
+      << convertToXML(md->getDefFileName()) << "\" line=\""
       << md->getDefLine() << "\" column=\""
       << md->getDefColumn() << "\"" ;
     if (md->getStartBodyLine()!=-1)
@@ -1393,7 +1393,7 @@ static void generateXMLForClass(const ClassDef *cd,TextStream &ti)
     t << "    </collaborationgraph>\n";
   }
   t << "    <location file=\""
-    << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
+    << convertToXML(cd->getDefFileName()) << "\" line=\""
     << cd->getDefLine() << "\"" << " column=\""
     << cd->getDefColumn() << "\"" ;
     if (cd->getStartBodyLine()!=-1)
@@ -1449,7 +1449,7 @@ static void generateXMLForConcept(const ConceptDef *cd,TextStream &ti)
   writeXMLDocBlock(t,cd->docFile(),cd->docLine(),cd,0,cd->documentation());
   t << "    </detaileddescription>\n";
   t << "    <location file=\""
-    << convertToXML(stripFromPath(cd->getDefFileName())) << "\" line=\""
+    << convertToXML(cd->getDefFileName()) << "\" line=\""
     << cd->getDefLine() << "\"" << " column=\""
     << cd->getDefColumn() << "\"/>\n" ;
   t << "  </compounddef>\n";
@@ -1519,7 +1519,7 @@ static void generateXMLForNamespace(const NamespaceDef *nd,TextStream &ti)
   writeXMLDocBlock(t,nd->docFile(),nd->docLine(),nd,0,nd->documentation());
   t << "    </detaileddescription>\n";
   t << "    <location file=\""
-    << convertToXML(stripFromPath(nd->getDefFileName())) << "\" line=\""
+    << convertToXML(nd->getDefFileName()) << "\" line=\""
     << nd->getDefLine() << "\"" << " column=\""
     << nd->getDefColumn() << "\"/>\n" ;
   t << "  </compounddef>\n";
@@ -1635,7 +1635,7 @@ static void generateXMLForFile(FileDef *fd,TextStream &ti)
   {
     writeXMLCodeBlock(t,fd);
   }
-  t << "    <location file=\"" << convertToXML(stripFromPath(fd->getDefFileName())) << "\"/>\n";
+  t << "    <location file=\"" << convertToXML(fd->getDefFileName()) << "\"/>\n";
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
 
@@ -1740,7 +1740,7 @@ static void generateXMLForDir(DirDef *dd,TextStream &ti)
   t << "    <detaileddescription>\n";
   writeXMLDocBlock(t,dd->docFile(),dd->docLine(),dd,0,dd->documentation());
   t << "    </detaileddescription>\n";
-  t << "    <location file=\"" << convertToXML(stripFromPath(dd->name())) << "\"/>\n";
+  t << "    <location file=\"" << convertToXML(dd->name()) << "\"/>\n";
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
 
@@ -1877,7 +1877,7 @@ static void generateXMLForPage(PageDef *pd,TextStream &ti,bool isExample)
   }
   t << "    </detaileddescription>\n";
 
-  t << "    <location file=\"" << convertToXML(stripFromPath(pd->getDefFileName())) << "\"/>\n";
+  t << "    <location file=\"" << convertToXML(pd->getDefFileName()) << "\"/>\n";
 
   t << "  </compounddef>\n";
   t << "</doxygen>\n";
