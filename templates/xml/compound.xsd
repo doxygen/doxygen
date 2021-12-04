@@ -591,6 +591,7 @@
 
   <xsd:complexType name="docCaptionType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="id" type="xsd:string" /> 
   </xsd:complexType>
 
   <xsd:complexType name="docHeadingType" mixed="true">

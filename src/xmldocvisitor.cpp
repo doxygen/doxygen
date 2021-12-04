@@ -805,6 +805,16 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
     }
   }
   m_t << ">";
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "<caption";
+    if (!c->file().isEmpty())
+    {
+      m_t << " id=\""  << stripPath(c->file()) << "_1" << c->anchor() << "\"";
+    }
+    m_t << ">";
+  }
 }
 
 void XmlDocVisitor::visitPost(DocHtmlTable *)
@@ -885,7 +895,7 @@ void XmlDocVisitor::visitPost(DocHtmlCell *)
 void XmlDocVisitor::visitPre(DocHtmlCaption *)
 {
   if (m_hide) return;
-  m_t << "<caption>";
+  // start of caption is handled in the XmlDocVisitor::visitPre(DocHtmlTable *t)
 }
 
 void XmlDocVisitor::visitPost(DocHtmlCaption *)
