@@ -1085,14 +1085,9 @@ NONLopt [^\n]*
 <FindMembers>{B}*"constexpr"{BN}+       {
                                           if (yyextra->insideCpp)
                                           {
-                                            yyextra->current->type += " constexpr ";
                                             yyextra->current->spec |= Entry::ConstExpr;
-                                            lineCount(yyscanner);
                                           }
-                                          else
-                                          {
-                                            REJECT;
-                                          }
+                                          REJECT;
                                         }
 <FindMembers>{B}*"published"{BN}+       { // UNO IDL published keyword
                                           if (yyextra->insideIDL)
@@ -2314,6 +2309,18 @@ NONLopt [^\n]*
                                                   yyextra->current->type+="inline ";
                                                 }
                                                 yyextra->current->name= yyextra->current->name.mid(7);
+                                              }
+                                              else if (yyextra->current->name.left(10)=="constexpr ")
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="constexpr";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="constexpr ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(10);
                                               }
                                               else if (yyextra->current->name.left(6)=="const ")
                                               {
