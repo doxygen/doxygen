@@ -867,6 +867,16 @@ WSopt [ \t\r]*
 <Guard>"defined"/{B}+                   {
                                           BEGIN(DefinedExpr1);
                                         }
+<Guard>"true"/{B}|{B}*[\r]?\n           { yyextra->guardExpr+="1L"; }
+<Guard>"false"/{B}|{B}*[\r]?\n          { yyextra->guardExpr+="0L"; }
+<Guard>"not"/{B}                        { yyextra->guardExpr+='!'; }
+<Guard>"not_eq"/{B}                     { yyextra->guardExpr+="!="; }
+<Guard>"and"/{B}                        { yyextra->guardExpr+="&&"; }
+<Guard>"or"/{B}                         { yyextra->guardExpr+="||"; }
+<Guard>"bitand"/{B}                     { yyextra->guardExpr+="&"; }
+<Guard>"bitor"/{B}                      { yyextra->guardExpr+="|"; }
+<Guard>"xor"/{B}                        { yyextra->guardExpr+="^"; }
+<Guard>"compl"/{B}                      { yyextra->guardExpr+="~"; }
 <Guard>{ID}                             { yyextra->guardExpr+=yytext; }
 <Guard>"@"                              { yyextra->guardExpr+="@@"; }
 <Guard>.                                { yyextra->guardExpr+=*yytext; }
