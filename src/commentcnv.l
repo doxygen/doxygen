@@ -414,7 +414,7 @@ SLASHopt [/]*
 <CComment,CNComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment>"{"[ \t]*"@code"/[ \t\n] {
+<CComment,ReadLine>"{"[ \t]*"@code"/[ \t\n] {
                                      copyToOutput(yyscanner,"@code",5); 
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
