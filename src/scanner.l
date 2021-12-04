@@ -2310,7 +2310,7 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name= yyextra->current->name.mid(7);
                                               }
-                                              else if (yyextra->current->name.left(10)=="cconstexpr ")
+                                              else if (yyextra->current->name.left(10)=="constexpr ")
                                               {
                                                 if (yyextra->current->type.isEmpty())
                                                 {
