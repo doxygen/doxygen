@@ -1042,12 +1042,23 @@ void RTFDocVisitor::visitPost(DocHtmlDescData *)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPre(DocHtmlTable *)
+void RTFDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlTable)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
   m_lastIsPara=TRUE;
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "\\pard \\qc \\b";
+    if (!c->file().isEmpty())
+    {
+      m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(c->file())+"_"+c->anchor()) << "}\n";
+      m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(c->file())+"_"+c->anchor()) << "}\n";
+    }
+    m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  }
 }
 
 void RTFDocVisitor::visitPost(DocHtmlTable *)
@@ -1062,8 +1073,7 @@ void RTFDocVisitor::visitPost(DocHtmlTable *)
 void RTFDocVisitor::visitPre(DocHtmlCaption *)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlCaption)}\n");
-  m_t << "\\pard \\qc \\b";
-  m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  // start of caption is handled in the RTFDocVisitor::visitPre(DocHtmlTable *t)
 }
 
 void RTFDocVisitor::visitPost(DocHtmlCaption *)
