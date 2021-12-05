@@ -375,7 +375,7 @@ jobs:
       with:
         name: "Html documentation artifacts"
         path: build/html/
-      if: matrix.config.name != 'Ubuntu Latest GCC Release'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
 
     - name: Archive Latex documentation artifacts
@@ -383,5 +383,5 @@ jobs:
       with:
         name: "Latex documentation artifacts"
         path: build/latex/doxygen_manual.pdf
-      if: matrix.config.name != 'Ubuntu Latest GCC Release'
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
 
