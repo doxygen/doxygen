@@ -155,7 +155,7 @@ To change this just edit the Makefile.
 the coreutils package). Other install tools may put the binaries in
 the wrong directory!
 
-If you have a RPM or DEP package, then please follow the
+If you have a RPM or DEB package, then please follow the
 standard installation procedure that is required for these packages.
 
 \section install_src_windows Compiling from source on Windows
