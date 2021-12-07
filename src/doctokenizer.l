@@ -358,6 +358,8 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_XmlOnly
 %x St_DbOnly
 %x St_Verbatim
+%x St_ILiteral
+%x St_ILiteralOpt
 %x St_Dot
 %x St_Msc
 %x St_PlantUMLOpt
@@ -841,11 +843,27 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
                          return RetVal_OK;
                        }
-<St_Verbatim>[^\\@\n]+ |
-<St_Verbatim>\n        |
-<St_Verbatim>.         { /* Verbatim text */
+<St_ILiteral>{CMD}"endiliteral " { // note extra space as this is artificially added
+                         // remove spaces that have been added
+                         yyextra->token->verb=yyextra->token->verb.mid(1,yyextra->token->verb.length()-2);
+                         return RetVal_OK;
+                       }
+<St_Verbatim,St_ILiteral>[^\\@\n]+ |
+<St_Verbatim,St_ILiteral>\n        |
+<St_Verbatim,St_ILiteral>.         { /* Verbatim / javadac literal/code text */
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
+                       }
+<St_ILiteralOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // option(s) present
+                         yyextra->token->verb = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_ILiteralOpt>"\\ilinebr" |
+<St_ILiteralOpt>"\n"   |
+<St_ILiteralOpt>.      {
+                         yyextra->token->sectionId = "";
+                         unput_string(yytext,yyleng);
+                         return RetVal_OK;
                        }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
@@ -1312,6 +1330,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                       yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"iliteral"/[^a-z_A-Z0-9]  {
+                                      yyextra->endMarker="endiliteral";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
                                       yyextra->endMarker="enddot";
                                       BEGIN(St_SecSkip);
@@ -1760,6 +1782,22 @@ void DocTokenizer::setStateLatexOnly()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token->verb="";
   BEGIN(St_LatexOnly);
+}
+
+void DocTokenizer::setStateILiteral()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_ILiteral);
+}
+
+void DocTokenizer::setStateILiteralOpt()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_ILiteralOpt);
 }
 
 void DocTokenizer::setStateVerbatim()

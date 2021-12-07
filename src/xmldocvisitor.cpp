@@ -263,6 +263,16 @@ void XmlDocVisitor::visit(DocVerbatim *s)
                                     s->isExample(),s->exampleFile());
       m_t << "</programlisting>";
       break;
+    case DocVerbatim::JavaDocLiteral:
+      m_t << "<javadocliteral>";
+      filter(s->text());
+      m_t << "</javadocliteral>";
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<javadoccode>";
+      filter(s->text());
+      m_t << "</javadoccode>";
+      break;
     case DocVerbatim::Verbatim:
       m_t << "<verbatim>";
       filter(s->text());

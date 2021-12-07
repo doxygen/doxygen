@@ -367,6 +367,7 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \f[..\f]
 // \f{..\f}
 // \verbatim..\endverbatim
+// \iliteral..\endiliteral
 // \latexonly..\endlatexonly
 // \htmlonly..\endhtmlonly
 // \xmlonly..\endxmlonly
@@ -393,6 +394,7 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
            blockName=="code"        ||
            blockName=="msc"         ||
            blockName=="verbatim"    ||
+           blockName=="iliteral"    ||
            blockName=="latexonly"   ||
            blockName=="htmlonly"    ||
            blockName=="xmlonly"     ||

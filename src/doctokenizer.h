@@ -151,6 +151,8 @@ class DocTokenizer
     void setStateDbOnly();
     void setStateRtfOnly();
     void setStateVerbatim();
+    void setStateILiteral();
+    void setStateILiteralOpt();
     void setStateDot();
     void setStateMsc();
     void setStateParam();

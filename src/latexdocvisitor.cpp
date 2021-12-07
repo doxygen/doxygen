@@ -372,6 +372,14 @@ void LatexDocVisitor::visit(DocVerbatim *s)
         m_ci.endCodeFragment("DoxyCode");
       }
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "{\\ttfamily ";
+      filter(s->text(), true);
+      m_t << "}";
+      break;
     case DocVerbatim::Verbatim:
       m_t << "\\begin{DoxyVerb}";
       m_t << s->text();
@@ -1894,14 +1902,15 @@ void LatexDocVisitor::visitPost(DocParBlock *)
   if (m_hide) return;
 }
 
-void LatexDocVisitor::filter(const QCString &str)
+void LatexDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
   filterLatexString(m_t,str,
                     m_insideTabbing,
                     m_insidePre,
                     m_insideItem,
                     m_ci.usedTableLevel()>0,  // insideTable
-                    false                     // keepSpaces
+                    false, // keepSpaces
+                    retainNewLine
                    );
 }
 

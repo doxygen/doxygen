@@ -141,7 +141,9 @@ static bool mustBeOutsideParagraph(const DocNode *n)
         case DocNode::Kind_Verbatim:
           {
             DocVerbatim *dv = (DocVerbatim*)n;
-            return dv->type()!=DocVerbatim::HtmlOnly || dv->isBlock();
+            DocVerbatim::Type t = dv->type();
+            if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
+            return t!=DocVerbatim::HtmlOnly || dv->isBlock();
           }
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
@@ -531,6 +533,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       filter(s->text());
       m_t << "</pre>";
       forceStartParagraph(s);
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<code class=\"JavaDocCode\">";
+      filter(s->text(), true);
+      m_t << "</code>";
       break;
     case DocVerbatim::HtmlOnly:
       {
@@ -2148,7 +2158,7 @@ void HtmlDocVisitor::visitPost(DocParBlock *)
 
 
 
-void HtmlDocVisitor::filter(const QCString &str)
+void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   const char *p=str.data();
@@ -2158,6 +2168,7 @@ void HtmlDocVisitor::filter(const QCString &str)
     c=*p++;
     switch(c)
     {
+      case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;

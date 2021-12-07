@@ -618,11 +618,11 @@ NONLopt [^\n]*
                           }
 <Comment>{CCS}             { yyextra->cCodeBuffer += yytext ; }
 <Comment>{CPPC}             { yyextra->cCodeBuffer += yytext ; }
-<Comment>{CMD}("code"|"verbatim") {
+<Comment>{CMD}("code"|"verbatim"|"iliteral") {
                             yyextra->insideCode=TRUE;
                             yyextra->cCodeBuffer += yytext ;
                           }
-<Comment>{CMD}("endcode"|"endverbatim") {
+<Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
                             yyextra->insideCode=FALSE;
                             yyextra->cCodeBuffer += yytext ;
                           }
@@ -743,7 +743,7 @@ NONLopt [^\n]*
                             yyextra->nestedComment=FALSE;
                             BEGIN(DocCopyBlock);
                           }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->cCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
@@ -801,7 +801,7 @@ NONLopt [^\n]*
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->cCodeBuffer += yytext;
                             if (yyextra->docBlockName==&yytext[4])
                             {
@@ -810,11 +810,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^{B}*"*"+/{BN}+ { // start of a comment line
                             yyextra->cCodeBuffer += yytext;
-                            if (yyextra->docBlockName=="verbatim")
-                            {
-                              REJECT;
-                            }
-                            else if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="verbatim") || (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               REJECT;
                             }
@@ -824,7 +820,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/{B}+"*"{BN}* { // start of a comment line with two *'s
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               yyextra->cCodeBuffer += yytext;
                             }
@@ -834,7 +830,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/({ID}|"(") { // Assume *var or *(... is part of source code (see bug723516)
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               yyextra->cCodeBuffer += yytext;
                             }
@@ -844,7 +840,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/{BN}* { // start of a comment line with one *
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               if (yyextra->nestedComment) // keep * it is part of the code
                               {

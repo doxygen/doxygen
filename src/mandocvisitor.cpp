@@ -211,11 +211,19 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text());
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "\\fC\n";
+      filter(s->text());
+      m_t << "\\fP\n";
+      break;
     case DocVerbatim::Verbatim:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      m_t << s->text();
+      filter(s->text());
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";

@@ -312,6 +312,16 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       //m_t << "\\par\n";
       m_t << "}\n";
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(),TRUE);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "{\n";
+      m_t << "{\\f2 ";
+      filter(s->text(),TRUE);
+      m_t << "}";
+      m_t << "}\n";
+      break;
     case DocVerbatim::Verbatim:
       m_t << "{\n";
       m_t << "\\par\n";

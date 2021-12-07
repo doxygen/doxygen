@@ -459,6 +459,8 @@
       <xsd:element name="preformatted" type="docMarkupType" />
       <xsd:element name="programlisting" type="listingType" />
       <xsd:element name="verbatim" type="xsd:string" />
+      <xsd:element name="javadocliteral" type="xsd:string" />
+      <xsd:element name="javadoccode" type="xsd:string" />
       <xsd:element name="indexentry" type="docIndexEntryType" />
       <xsd:element name="orderedlist" type="docListType" />
       <xsd:element name="itemizedlist" type="docListType" />

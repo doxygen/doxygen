@@ -5576,6 +5576,54 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         m_parser.tokenizer.setStatePara();
       }
       break;
+    case CMD_ILITERAL:
+      {
+        DocVerbatim::Type t = DocVerbatim::JavaDocLiteral;
+        m_parser.tokenizer.setStateILiteralOpt();
+        retval = m_parser.tokenizer.lex();
+
+        QCString fullMatch = m_parser.context.token->verb;
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        StringVector optList;
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             bool found = false;
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (locOpt == "code")
+             {
+               t = DocVerbatim::JavaDocCode;
+             }
+             else if (!locOpt.isEmpty())
+             {
+               warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(), "Unknown option '%s' for '\\iliteral'",qPrint(opt));
+             }
+           }
+        }
+
+        m_parser.tokenizer.setStateILiteral();
+        retval = m_parser.tokenizer.lex();
+        m_children.push_back(std::make_unique<DocVerbatim>(m_parser,this,m_parser.context.context,m_parser.context.token->verb,t,m_parser.context.isExample,m_parser.context.exampleName));
+        if (retval==0)
+        {
+          if (t == DocVerbatim::JavaDocCode)
+          {
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"javadoc code section ended without end marker");
+          }
+          else
+          {
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"javadoc literal section ended without end marker");
+          }
+        }
+        m_parser.tokenizer.setStatePara();
+      }
+      break;
     case CMD_VERBATIM:
       {
         m_parser.tokenizer.setStateVerbatim();
@@ -5735,6 +5783,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDDBONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
+    case CMD_ENDILITERAL:
     case CMD_ENDDOT:
     case CMD_ENDMSC:
     case CMD_ENDUML:
@@ -7376,6 +7425,7 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
     CHECK_FOR_COMMAND("code",endMarker="endcode");
     CHECK_FOR_COMMAND("msc",endMarker="endmsc");
     CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
+    CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");
     CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
     CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");
     CHECK_FOR_COMMAND("xmlonly",endMarker="endxmlonly");

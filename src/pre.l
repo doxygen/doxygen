@@ -1238,11 +1238,11 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
+<SkipCComment>[\\@][\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
+<SkipCComment>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                           yyextra->fenceSize=0;
@@ -1260,7 +1260,12 @@ WSopt [ \t\r]*
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCComment>"{"[ \t]*"@code"/[ \t\n]  {
-                                          outputArray(yyscanner,"@code",5);
+                                          outputArray(yyscanner,"@iliteral{code}",15);
+                                          yyextra->javaBlock=1;
+                                          BEGIN(JavaDocVerbatimCode);
+                                        }
+<SkipCComment>"{"[ \t]*"@literal"/[ \t\n]  {
+                                          outputArray(yyscanner,"@iliteral",9);
                                           yyextra->javaBlock=1;
                                           BEGIN(JavaDocVerbatimCode);
                                         }
@@ -1366,7 +1371,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
                                           outputArray(yyscanner,yytext,yyleng);
                                           if (yytext[1]=='f' && yyextra->blockName=="f")
                                           {
@@ -1415,7 +1420,7 @@ WSopt [ \t\r]*
                                             yyextra->javaBlock--;
                                             if (yyextra->javaBlock==0)
                                             {
-                                              outputArray(yyscanner," @endcode ",10);
+                                              outputArray(yyscanner," @endiliteral ",14);
                                               BEGIN(SkipCComment);
                                             }
                                             else
