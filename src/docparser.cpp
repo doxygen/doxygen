@@ -5078,9 +5078,11 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
         DocTokenizer::tokToString(tok),qPrint(saveCmdName));
     return;
   }
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
   m_parser.tokenizer.setStatePara();
   DocLink *lnk = new DocLink(m_parser,this,m_parser.context.token->name);
   m_children.push_back(std::unique_ptr<DocLink>(lnk));
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
   QCString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {

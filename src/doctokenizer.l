@@ -515,6 +515,10 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->indent = computeIndent(text.data(),dotPos);
                          return TK_ENDLIST;
                        }
+<St_Para>"{"{BLANK}*"@linkplain"/{WS}+ {
+                         yyextra->token->name = "javalinkplain";
+                         return TK_COMMAND_AT;
+                       }
 <St_Para>"{"{BLANK}*"@link"/{WS}+ {
                          yyextra->token->name = "javalink";
                          return TK_COMMAND_AT;
