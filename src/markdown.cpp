@@ -892,11 +892,17 @@ int Markdown::processEmphasis(const char *data,int offset,int size)
   return 0;
 }
 
-void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
+void Markdown::writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
                                   const QCString &title, const QCString &content,
-                                  const QCString &link, const FileDef *fd)
+                                  const QCString &link, const QCString &attributes,
+                                  const FileDef *fd)
 {
-  m_out.addStr("@image{inline} ");
+  m_out.addStr("@image");
+  if (inline_img)
+  {
+    m_out.addStr("{inline}");
+  }
+  m_out.addStr(" ");
   m_out.addStr(fmt);
   m_out.addStr(" ");
   m_out.addStr(link.mid(fd ? 0 : 5));
@@ -916,17 +922,25 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
   {
     m_out.addStr(" ");// so the line break will not be part of the image name
   }
-  m_out.addStr("\\ilinebr");
+  if (!attributes.isEmpty())
+  {
+    m_out.addStr(" ");
+    m_out.addStr(attributes);
+    m_out.addStr(" ");
+  }
+  m_out.addStr("\\ilinebr ");
 }
 
-int Markdown::processLink(const char *data,int,int size)
+int Markdown::processLink(const char *data,int offset,int size)
 {
   TRACE(data);
   QCString content;
   QCString link;
   QCString title;
-  int contentStart,contentEnd,linkStart,titleStart,titleEnd;
+  QCString attributes;
+  int contentStart,contentEnd,linkStart,titleStart,titleEnd,attributesStart,attributesEnd;
   bool isImageLink = FALSE;
+  bool isImageInline = FALSE;
   bool isToc = FALSE;
   int i=1;
   if (data[0]=='!')
@@ -937,6 +951,22 @@ int Markdown::processLink(const char *data,int,int size)
       TRACE_RESULT(0);
       return 0;
     }
+    // check if there is text before '![' to know if the image needs to be inlined
+    int pos=-1;
+    while ((offset + pos) >= 0)
+    {
+      if (isNewline(&data[pos]))
+      {
+        break;
+      }
+      else if (data[pos]!=' ')
+      {
+        isImageInline = TRUE;
+        break;
+      }
+      pos--;
+    }
+    // skip '!['
     i++;
   }
   contentStart=i;
@@ -1136,6 +1166,64 @@ int Markdown::processLink(const char *data,int,int size)
   }
   nlTotal += nl;
   nl = 0;
+  // search for optional image attributes
+  if (isImageLink)
+  {
+    whiteSpace = false;
+    // skip whitespace
+    while (i<size && data[i]==' ') {whiteSpace = true; i++;}
+    if (i<size && data[i]=='{')
+    {
+      // skip over {
+      i++;
+      attributesStart=i;
+      nl=0;
+      // find the matching }
+      while (i<size)
+      {
+        if (data[i-1]=='\\') // skip escaped characters
+        {
+        }
+        else if (data[i]=='{')
+        {
+          level++;
+        }
+        else if (data[i]=='}')
+        {
+          level--;
+          if (level<=0) break;
+        }
+        else if (data[i]=='\n')
+        {
+          nl++;
+          if (nl>1) { TRACE_RESULT(0); return 0; } // only allow one newline in the content
+        }
+        i++;
+      }
+      nlTotal += nl;
+      nl = 0;
+      if (i>=size) return 0; // premature end of comment -> no attributes
+      attributesEnd=i;
+      convertStringFragment(attributes,data+attributesStart,attributesEnd-attributesStart);
+      i++; // skip over }
+      // check if there is text after image to know if the image needs to be inlined
+      int pos=i;
+      while (pos<size)
+      {
+        if (isNewline(&data[pos]))
+        {
+          break;
+        }
+        else if (data[pos]!=' ')
+        {
+          isImageInline = TRUE;
+          break;
+        }
+        pos++;
+      }
+    }
+  }
+
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
@@ -1154,10 +1242,10 @@ int Markdown::processLink(const char *data,int,int size)
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
     {
-      writeMarkdownImage("html",    explicitTitle, title, content, link, fd);
-      writeMarkdownImage("latex",   explicitTitle, title, content, link, fd);
-      writeMarkdownImage("rtf",     explicitTitle, title, content, link, fd);
-      writeMarkdownImage("docbook", explicitTitle, title, content, link, fd);
+      writeMarkdownImage("html",    isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("latex",   isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("rtf",     isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("docbook", isImageInline, explicitTitle, title, content, link, attributes, fd);
     }
     else
     {
