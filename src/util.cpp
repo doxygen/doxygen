@@ -3996,7 +3996,7 @@ QCString convertToXML(const QCString &s, bool keepEntities)
 }
 
 /*! Converts a string to an DocBook-encoded string */
-QCString convertToDocBook(const QCString &s)
+QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
@@ -4008,6 +4008,7 @@ QCString convertToDocBook(const QCString &s)
   {
     switch (c)
     {
+      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
       case '<':  growBuf.addStr("&lt;");   break;
       case '>':  growBuf.addStr("&gt;");   break;
       case '&':  // possibility to have a special symbol
@@ -4932,7 +4933,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
 }
 
 void filterLatexString(TextStream &t,const QCString &str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
+    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   //if (strlen(str)<2) stackTrace();
@@ -4971,6 +4972,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '-':  t << "-\\/"; break;
         case '^':  insideTable ? t << "\\string^" : t << (char)c;    break;
         case '~':  t << "\\string~";    break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+                   break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
         default:
@@ -5057,6 +5060,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '`':  t << "\\`{}";
                    break;
         case '\'': t << "\\textquotesingle{}";
+                   break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
                    break;
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;

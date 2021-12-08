@@ -331,6 +331,14 @@ DB_VIS_C
       filter(s->text());
       m_t << "</computeroutput></literallayout>";
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<computeroutput>";
+      filter(s->text(), true);
+      m_t << "</computeroutput>";
+      break;
     case DocVerbatim::HtmlOnly:
       break;
     case DocVerbatim::RtfOnly:
@@ -1648,10 +1656,10 @@ DB_VIS_C
 }
 
 
-void DocbookDocVisitor::filter(const QCString &str)
+void DocbookDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
 DB_VIS_C
-  m_t << convertToDocBook(str);
+  m_t << convertToDocBook(str, retainNewLine);
 }
 
 void DocbookDocVisitor::startLink(const QCString &file,const QCString &anchor)

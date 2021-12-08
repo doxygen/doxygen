@@ -4565,7 +4565,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
+<CopyArgCommentLine>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
@@ -4587,7 +4587,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
 					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
                                           {
@@ -6196,11 +6196,11 @@ NONLopt [^\n]*
                                         }
 <Comment>{CCS}                           { yyextra->current->program << yytext ; }
 <Comment>{CPPC}                           { yyextra->current->program << yytext ; }
-<Comment>{CMD}("code"|"verbatim")       {
+<Comment>{CMD}("code"|"verbatim"|"iliteral")       {
                                           yyextra->insideCode=TRUE;
                                           yyextra->current->program << yytext ;
                                         }
-<Comment>{CMD}("endcode"|"endverbatim") {
+<Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
                                           yyextra->insideCode=FALSE;
                                           yyextra->current->program << yytext ;
                                         }
@@ -6604,7 +6604,7 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
@@ -6677,7 +6677,7 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                                           yyextra->docBlock << yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
@@ -6685,11 +6685,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{BN}+           { // start of a comment line
-                                          if (yyextra->docBlockName=="verbatim")
-                                          {
-                                            REJECT;
-                                          }
-                                          else if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="verbatim") | (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             REJECT;
                                           }
@@ -6701,7 +6697,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{B}+"*"{BN}*    { // start of a comment line with two *'s
-                                          if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,0));
@@ -6713,7 +6709,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/({ID}|"(")      { // Assume *var or *(... is part of source code (see bug723516)
-                                          if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,-1));
@@ -6725,7 +6721,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{BN}*           { // start of a comment line with one *
-                                          if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
                                             if (yyextra->nestedComment) // keep * it is part of the code

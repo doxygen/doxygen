@@ -510,7 +510,7 @@ class DocSeparator : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser &parser,DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());

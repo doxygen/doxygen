@@ -1820,6 +1820,10 @@ table.DocNodeLTR {
    margin-left: 0;
 }
 
+code.JavaDocCode
+  direction:ltr;
+}
+
 tt, code, kbd, samp
 {
   display: inline-block;
