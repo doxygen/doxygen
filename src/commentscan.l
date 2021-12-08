@@ -2143,6 +2143,7 @@ static bool handleMainpage(yyscan_t yyscanner,const QCString &, const StringVect
   {
     yyextra->current->name = "mainpage";
   }
+  setOutput(yyscanner,OutputDoc);
   BEGIN( PageDocArg2 );
   return stop;
 }
