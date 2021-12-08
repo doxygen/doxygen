@@ -3891,7 +3891,7 @@ UML notation for the relationships.
 <![CDATA[
  If the \c GENERATE_LEGEND tag is set to \c YES doxygen will
  generate a legend page explaining the meaning of the various boxes and
- errows in the dot generated graphs.
+ arrows in the dot generated graphs.
  \note This tag requires that \ref cfg_uml_look "UML_LOOK" isn't set, i.e. the
  doxygen internal graphical representation for inheritance and collaboration diagrams
  is used.
