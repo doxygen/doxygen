@@ -10214,7 +10214,7 @@ class docParaType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -10380,6 +10380,16 @@ class docParaType(GeneratedsSuper):
         else:
             self.verbatim = verbatim
         self.verbatim_nsprefix_ = None
+        if javadocliteral is None:
+            self.javadocliteral = []
+        else:
+            self.javadocliteral = javadocliteral
+        self.javadocliteral_nsprefix_ = None
+        if javadoccode is None:
+            self.javadoccode = []
+        else:
+            self.javadoccode = javadoccode
+        self.javadoccode_nsprefix_ = None
         if indexentry is None:
             self.indexentry = []
         else:
@@ -10815,6 +10825,26 @@ class docParaType(GeneratedsSuper):
         self.verbatim.insert(index, value)
     def replace_verbatim_at(self, index, value):
         self.verbatim[index] = value
+    def get_javadocliteral(self):
+        return self.javadocliteral
+    def set_javadocliteral(self, javadocliteral):
+        self.javadocliteral = javadocliteral
+    def add_javadocliteral(self, value):
+        self.javadocliteral.append(value)
+    def insert_javadocliteral_at(self, index, value):
+        self.javadocliteral.insert(index, value)
+    def replace_javadocliteral_at(self, index, value):
+        self.javadocliteral[index] = value
+    def get_javadoccode(self):
+        return self.javadoccode
+    def set_javadoccode(self, javadoccode):
+        self.javadoccode = javadoccode
+    def add_javadoccode(self, value):
+        self.javadoccode.append(value)
+    def insert_javadoccode_at(self, index, value):
+        self.javadoccode.insert(index, value)
+    def replace_javadoccode_at(self, index, value):
+        self.javadoccode[index] = value
     def get_indexentry(self):
         return self.indexentry
     def set_indexentry(self, indexentry):
@@ -11031,6 +11061,8 @@ class docParaType(GeneratedsSuper):
             self.preformatted or
             self.programlisting or
             self.verbatim or
+            self.javadocliteral or
+            self.javadoccode or
             self.indexentry or
             self.orderedlist or
             self.itemizedlist or
@@ -11190,6 +11222,14 @@ class docParaType(GeneratedsSuper):
             namespaceprefix_ = self.verbatim_nsprefix_ + ':' if (UseCapturedNS_ and self.verbatim_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sverbatim>%s</%sverbatim>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(verbatim_), input_name='verbatim')), namespaceprefix_ , eol_))
+        for javadocliteral_ in self.javadocliteral:
+            namespaceprefix_ = self.javadocliteral_nsprefix_ + ':' if (UseCapturedNS_ and self.javadocliteral_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadocliteral>%s</%sjavadocliteral>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadocliteral_), input_name='javadocliteral')), namespaceprefix_ , eol_))
+        for javadoccode_ in self.javadoccode:
+            namespaceprefix_ = self.javadoccode_nsprefix_ + ':' if (UseCapturedNS_ and self.javadoccode_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadoccode>%s</%sjavadoccode>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadoccode_), input_name='javadoccode')), namespaceprefix_ , eol_))
         for indexentry_ in self.indexentry:
             namespaceprefix_ = self.indexentry_nsprefix_ + ':' if (UseCapturedNS_ and self.indexentry_nsprefix_) else ''
             indexentry_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='indexentry', pretty_print=pretty_print)
@@ -11571,6 +11611,22 @@ class docParaType(GeneratedsSuper):
                 MixedContainer.TypeString, 'verbatim', valuestr_)
             self.content_.append(obj_)
             self.verbatim_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadocliteral' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadocliteral')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadocliteral')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadocliteral', valuestr_)
+            self.content_.append(obj_)
+            self.javadocliteral_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadoccode' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadoccode')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadoccode')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadoccode', valuestr_)
+            self.content_.append(obj_)
+            self.javadoccode_nsprefix_ = child_.prefix
         elif nodeName_ == 'indexentry':
             obj_ = docIndexEntryType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
@@ -11762,7 +11818,7 @@ class docMarkupType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
+    def __init__(self, ulink=None, bold=None, s=None, strike=None, underline=None, emphasis=None, computeroutput=None, subscript=None, superscript=None, center=None, small=None, del_=None, ins=None, htmlonly=None, manonly=None, xmlonly=None, rtfonly=None, latexonly=None, docbookonly=None, image=None, dot=None, msc=None, plantuml=None, anchor=None, formula=None, ref=None, emoji=None, linebreak=None, hruler=None, preformatted=None, programlisting=None, verbatim=None, javadocliteral=None, javadoccode=None, indexentry=None, orderedlist=None, itemizedlist=None, simplesect=None, title=None, variablelist=None, table=None, heading=None, dotfile=None, mscfile=None, diafile=None, toclist=None, language=None, parameterlist=None, xrefsect=None, copydoc=None, blockquote=None, parblock=None, valueOf_=None, mixedclass_=None, content_=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -11928,6 +11984,16 @@ class docMarkupType(GeneratedsSuper):
         else:
             self.verbatim = verbatim
         self.verbatim_nsprefix_ = None
+        if javadocliteral is None:
+            self.javadocliteral = []
+        else:
+            self.javadocliteral = javadocliteral
+        self.javadocliteral_nsprefix_ = None
+        if javadoccode is None:
+            self.javadoccode = []
+        else:
+            self.javadoccode = javadoccode
+        self.javadoccode_nsprefix_ = None
         if indexentry is None:
             self.indexentry = []
         else:
@@ -12363,6 +12429,26 @@ class docMarkupType(GeneratedsSuper):
         self.verbatim.insert(index, value)
     def replace_verbatim_at(self, index, value):
         self.verbatim[index] = value
+    def get_javadocliteral(self):
+        return self.javadocliteral
+    def set_javadocliteral(self, javadocliteral):
+        self.javadocliteral = javadocliteral
+    def add_javadocliteral(self, value):
+        self.javadocliteral.append(value)
+    def insert_javadocliteral_at(self, index, value):
+        self.javadocliteral.insert(index, value)
+    def replace_javadocliteral_at(self, index, value):
+        self.javadocliteral[index] = value
+    def get_javadoccode(self):
+        return self.javadoccode
+    def set_javadoccode(self, javadoccode):
+        self.javadoccode = javadoccode
+    def add_javadoccode(self, value):
+        self.javadoccode.append(value)
+    def insert_javadoccode_at(self, index, value):
+        self.javadoccode.insert(index, value)
+    def replace_javadoccode_at(self, index, value):
+        self.javadoccode[index] = value
     def get_indexentry(self):
         return self.indexentry
     def set_indexentry(self, indexentry):
@@ -12579,6 +12665,8 @@ class docMarkupType(GeneratedsSuper):
             self.preformatted or
             self.programlisting or
             self.verbatim or
+            self.javadocliteral or
+            self.javadoccode or
             self.indexentry or
             self.orderedlist or
             self.itemizedlist or
@@ -12738,6 +12826,14 @@ class docMarkupType(GeneratedsSuper):
             namespaceprefix_ = self.verbatim_nsprefix_ + ':' if (UseCapturedNS_ and self.verbatim_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sverbatim>%s</%sverbatim>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(verbatim_), input_name='verbatim')), namespaceprefix_ , eol_))
+        for javadocliteral_ in self.javadocliteral:
+            namespaceprefix_ = self.javadocliteral_nsprefix_ + ':' if (UseCapturedNS_ and self.javadocliteral_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadocliteral>%s</%sjavadocliteral>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadocliteral_), input_name='javadocliteral')), namespaceprefix_ , eol_))
+        for javadoccode_ in self.javadoccode:
+            namespaceprefix_ = self.javadoccode_nsprefix_ + ':' if (UseCapturedNS_ and self.javadoccode_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%sjavadoccode>%s</%sjavadoccode>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(javadoccode_), input_name='javadoccode')), namespaceprefix_ , eol_))
         for indexentry_ in self.indexentry:
             namespaceprefix_ = self.indexentry_nsprefix_ + ':' if (UseCapturedNS_ and self.indexentry_nsprefix_) else ''
             indexentry_.export(outfile, level, namespaceprefix_, namespacedef_='', name_='indexentry', pretty_print=pretty_print)
@@ -13119,6 +13215,22 @@ class docMarkupType(GeneratedsSuper):
                 MixedContainer.TypeString, 'verbatim', valuestr_)
             self.content_.append(obj_)
             self.verbatim_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadocliteral' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadocliteral')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadocliteral')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadocliteral', valuestr_)
+            self.content_.append(obj_)
+            self.javadocliteral_nsprefix_ = child_.prefix
+        elif nodeName_ == 'javadoccode' and child_.text is not None:
+            valuestr_ = child_.text
+            valuestr_ = self.gds_parse_string(valuestr_, node, 'javadoccode')
+            valuestr_ = self.gds_validate_string(valuestr_, node, 'javadoccode')
+            obj_ = self.mixedclass_(MixedContainer.CategorySimple,
+                MixedContainer.TypeString, 'javadoccode', valuestr_)
+            self.content_.append(obj_)
+            self.javadoccode_nsprefix_ = child_.prefix
         elif nodeName_ == 'indexentry':
             obj_ = docIndexEntryType.factory(parent_object_=self)
             obj_.build(child_, gds_collector_=gds_collector_)
