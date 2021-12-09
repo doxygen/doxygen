@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _LATEXDOCVISITOR_H
-#define _LATEXDOCVISITOR_H
+#ifndef LATEXDOCVISITOR_H
+#define LATEXDOCVISITOR_H
 
 #include <stack>
 
@@ -24,12 +24,13 @@
 class LatexCodeGenerator;
 class TextStream;
 
+
 /*! @brief Concrete visitor implementation for LaTeX output. */
 class LatexDocVisitor : public DocVisitor
 {
   public:
     LatexDocVisitor(TextStream &t,LatexCodeGenerator &ci,
-                    const char *langExt,bool insideTabbing);
+                    const QCString &langExt,bool insideTabbing);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -152,26 +153,33 @@ class LatexDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor,bool refToTable=FALSE);
     void endLink(const QCString &ref,const QCString &file,
                  const QCString &anchor,bool refToTable=FALSE);
     QCString escapeMakeIndexChars(const char *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
     void endDotFile(bool hasCaption);
 
     void startMscFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
 
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption);
+                      const QCString &height, bool hasCaption,
+                      const QCString &srcFile,int srcLine);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);
+
+    void incIndentLevel();
+    void decIndentLevel();
+    int indentLevel() const;
 
     //--------------------------------------
     // state variables
@@ -197,6 +205,16 @@ class LatexDocVisitor : public DocVisitor
     };
     std::stack<TableState> m_tableStateStack; // needed for nested tables
     RowSpanList m_emptyRowSpanList;
+
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+
+    struct LatexListItemInfo
+    {
+      bool isEnum = false;
+    };
+
+    LatexListItemInfo m_listItemInfo[maxIndentLevels];
 
     void pushTableState()
     {
@@ -260,5 +278,4 @@ class LatexDocVisitor : public DocVisitor
     }
 
 };
-
 #endif

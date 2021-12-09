@@ -16,6 +16,8 @@
 #ifndef DOTGROUPCOLLABORATION_H
 #define DOTGROUPCOLLABORATION_H
 
+#include <memory>
+
 #include "dotnode.h"
 #include "dotgraph.h"
 #include "groupdef.h"
@@ -29,7 +31,7 @@ class DotGroupCollaboration : public DotGraph
     DotGroupCollaboration(const GroupDef* gd);
    ~DotGroupCollaboration();
     QCString writeGraph(TextStream &t, GraphOutputFormat gf,EmbeddedOutputFormat ef,
-                        const char *path,const char *fileName,const char *relPath,
+                        const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
 
@@ -52,7 +54,7 @@ class DotGroupCollaboration : public DotGraph
 
     struct Link
     {
-      Link(const QCString lab,const QCString &u) : label(lab), url(u) {}
+      Link(const QCString &lab,const QCString &u) : label(lab), url(u) {}
       QCString label;
       QCString url;
     };
@@ -82,5 +84,7 @@ class DotGroupCollaboration : public DotGraph
     QCString        m_diskName;
     std::vector< std::unique_ptr<Edge> >     m_edges;
 };
+
+using DotGroupCollaborationPtr = std::shared_ptr<DotGroupCollaboration>;
 
 #endif

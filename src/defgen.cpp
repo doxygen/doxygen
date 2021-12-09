@@ -40,17 +40,19 @@
 
 #define DEF_DB(x)
 
-static inline void writeDEFString(TextStream &t,const char *s)
+static inline void writeDEFString(TextStream &t,const QCString &s)
 {
-  const char* p=s;
-  char c;
-
   t << '\'';
-  while ((c = *(p++)))
+  if (!s.isEmpty())
   {
-    if (c == '\'')
-      t << '\\';
-    t << c;
+    const char* p=s.data();
+    char c;
+
+    while ((c = *(p++)))
+    {
+      if (c == '\'') t << '\\';
+      t << c;
+    }
   }
   t << '\'';
 }
@@ -58,7 +60,7 @@ static inline void writeDEFString(TextStream &t,const char *s)
 static void generateDEFForMember(const MemberDef *md,
     TextStream &t,
     const Definition *def,
-    const char* Prefix)
+    const QCString &prefix)
 {
   QCString memPrefix;
 
@@ -81,9 +83,9 @@ static void generateDEFForMember(const MemberDef *md,
   else if (md->getNamespaceDef())
     scopeName=md->getNamespaceDef()->name();
 
-  t << "    " << Prefix << "-member = {\n";
+  t << "    " << prefix << "-member = {\n";
   memPrefix = "      ";
-  memPrefix.append( Prefix );
+  memPrefix.append( prefix );
   memPrefix.append( "-mem-" );
 
   QCString memType;
@@ -291,14 +293,14 @@ static void generateDEFForMember(const MemberDef *md,
     }
   }
 
-  t << "    }; /* " << Prefix << "-member */\n";
+  t << "    }; /* " << prefix << "-member */\n";
 }
 
 
 static void generateDEFClassSection(const ClassDef *cd,
     TextStream &t,
     const MemberList *ml,
-    const char *kind)
+    const QCString &kind)
 {
   if (cd && ml && !ml->empty())
   {
@@ -448,7 +450,7 @@ static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 static void generateDEFSection(const Definition *d,
     TextStream &t,
     const MemberList *ml,
-    const char *kind)
+    const QCString &kind)
 {
   if (ml && !ml->empty())
   {
@@ -527,7 +529,7 @@ void generateDEF()
   Dir defDir(outputDirectory.str());
   if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
-    err("Could not create def directory in %s\n",outputDirectory.data());
+    err("Could not create def directory in %s\n",qPrint(outputDirectory));
     return;
   }
 
@@ -535,7 +537,7 @@ void generateDEF()
   std::ofstream f(fileName.str(),std::ostream::out | std::ostream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
   TextStream t(&f);

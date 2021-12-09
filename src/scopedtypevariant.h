@@ -278,7 +278,7 @@ class CallContext
     void clear()
     {
       m_stvList.clear();
-      m_stvList.push_back(Ctx("",""));
+      m_stvList.push_back(Ctx(QCString(),QCString()));
     }
     const ScopedTypeVariant getScope() const
     {

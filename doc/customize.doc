@@ -52,15 +52,34 @@ corresponding with the following settings:
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
 
+\image html layout_index_and_notreeview.png
+\image latex layout_index_and_notreeview.png width=8cm
+
 you can switch to an interactive navigation tree as sidebar using
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c YES
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_generate_treeview "FULL_SIDEBAR" = \c NO
+
+\image html layout_noindex_and_treeview.png
+\image latex layout_noindex_and_treeview.png width=8cm
+
+you can also make the content span the title area of the screen using
+
+- \ref cfg_disable_index "DISABLE_INDEX" = \c YES
+- \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+- \ref cfg_generate_treeview "FULL_SIDEBAR" = \c YES
+
+\image html layout_noindex_and_sidebar.png
+\image latex layout_noindex_and_sidebar.png width=8cm
 
 or even have both forms of navigation:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c NO
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c YES
+
+\image html layout_index_and_treeview.png
+\image latex layout_index_and_treeview.png width=8cm
 
 if you already use an external index (i.e. have one of the following
 options enabled
@@ -72,6 +91,9 @@ then you can also disable all indices, like so:
 
 - \ref cfg_disable_index "DISABLE_INDEX" = \c YES
 - \ref cfg_generate_treeview "GENERATE_TREEVIEW" = \c NO
+
+\image html layout_noindex_and_notreeview.png
+\image latex layout_noindex_and_notreeview.png width=8cm
 
 \subsection minor_tweaks_dynsection Dynamic Content
 
@@ -314,7 +336,7 @@ The class page has the following specific elements:
       this class.
 <dt>\c inheritancegraph
   <dd>Represents the inheritance relations for a class.
-      Note that the CLASS_DIAGRAM option determines
+      Note that the \ref cfg_class_graph "CLASS_GRAPH" option determines
       if the inheritance relation is a list of base and derived classes or
       a graph.
 <dt>\c collaborationgraph

@@ -67,8 +67,8 @@ const char *JAVASCRIPT_LICENSE_TEXT = R"LIC(/*
 
 struct FTVNode
 {
-  FTVNode(bool dir,const char *r,const char *f,const char *a,
-          const char *n,bool sepIndex,bool navIndex,const Definition *df)
+  FTVNode(bool dir,const QCString &r,const QCString &f,const QCString &a,
+          const QCString &n,bool sepIndex,bool navIndex,const Definition *df)
     : isLast(TRUE), isDir(dir),ref(r),file(f),anchor(a),name(n), index(0),
       parent(0), separateIndex(sepIndex), addToNavIndex(navIndex),
       def(df) {}
@@ -208,10 +208,10 @@ void FTVHelp::decContentsDepth()
  *  \param def Definition corresponding to this entry
  */
 void FTVHelp::addContentsItem(bool isDir,
-                              const char *name,
-                              const char *ref,
-                              const char *file,
-                              const char *anchor,
+                              const QCString &name,
+                              const QCString &ref,
+                              const QCString &file,
+                              const QCString &anchor,
                               bool separateIndex,
                               bool addToNavIndex,
                               const Definition *def
@@ -302,7 +302,7 @@ void FTVHelp::generateIndent(TextStream &t, FTVNode *n,bool opened)
 void FTVHelp::generateLink(TextStream &t,FTVNode *n)
 {
   //printf("FTVHelp::generateLink(ref=%s,file=%s,anchor=%s\n",
-  //    n->ref.data(),n->file.data(),n->anchor.data());
+  //    qPrint(n->ref),qPrint(n->file),qPrint(n->anchor));
   bool setTarget = FALSE;
   if (n->file.isEmpty()) // no link
   {
@@ -347,18 +347,18 @@ void FTVHelp::generateLink(TextStream &t,FTVNode *n)
 static void generateBriefDoc(TextStream &t,const Definition *def)
 {
   QCString brief = def->briefDescription(TRUE);
-  //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,def->name().data(),brief.data());
+  //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
   if (!brief.isEmpty())
   {
-    DocNode *root = validatingParseDoc(def->briefFile(),def->briefLine(),
-        def,0,brief,FALSE,FALSE,
-        0,TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                         def->briefFile(),def->briefLine(),
+                                         def,0,brief,FALSE,FALSE,
+                                         QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
     QCString relPath = relativePathToRoot(def->getOutputFileBase());
     HtmlCodeGenerator htmlGen(t,relPath);
-    HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,def);
-    root->accept(visitor);
-    delete visitor;
-    delete root;
+    auto visitor = std::make_unique<HtmlDocVisitor>(t,htmlGen,def);
+    root->accept(visitor.get());
   }
 }
 
@@ -451,8 +451,7 @@ void FTVHelp::generateTree(TextStream &t, const std::vector<FTVNode*> &nl,int le
       }
       if (srcRef)
       {
-        t << "<a href=\"" << srcRef->getSourceFileBase()
-          << Doxygen::htmlFileExtension
+        t << "<a href=\"" << addHtmlExtensionIfMissing(srcRef->getSourceFileBase())
           << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)
@@ -611,7 +610,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
       if (!n->children.empty()) // write children to separate file for dynamic loading
       {
         QCString fileId = n->file;
-        if (n->anchor)
+        if (!n->anchor.isEmpty())
         {
           fileId+="_"+n->anchor;
         }
@@ -620,7 +619,7 @@ static bool generateJSTree(NavIndexEntryList &navIndex,TextStream &t,
           fileId+="_dup";
         }
         QCString fileName = htmlOutput+"/"+fileId+".js";
-        std::ofstream f(fileName,std::ofstream::out | std::ofstream::binary);
+        std::ofstream f(fileName.str(),std::ofstream::out | std::ofstream::binary);
         if (f.is_open())
         {
           TextStream tt(&f);
@@ -701,7 +700,7 @@ static void generateJSNavTree(const std::vector<FTVNode*> &nodeList)
 
     // write the navigation index (and sub-indices)
     std::sort(navIndex.begin(),navIndex.end(),[](const auto &n1,const auto &n2)
-        { return qstrcmp(n1.url,n2.url)<0; });
+        { return !n1.url.isEmpty() && (n2.url.isEmpty() || (n1.url<n2.url)); });
 
     int subIndex=0;
     int elemCount=0;

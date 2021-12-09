@@ -101,7 +101,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add classes
   for (const auto &def : gd->getClasses())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     if (!def->anchor().isEmpty())
     {
       tmp_url+="#"+def->anchor();
@@ -112,21 +112,21 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   // Add namespaces
   for (const auto &def : gd->getNamespaces())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tnamespace );
   }
 
   // Add files
   for (const auto &def : gd->getFiles())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tfile );
   }
 
   // Add pages
   for (const auto &def : gd->getPages())
   {
-    tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+    tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tpages );
   }
 
@@ -135,7 +135,7 @@ void DotGroupCollaboration::buildGraph(const GroupDef* gd)
   {
     for(const auto def : gd->getDirs())
     {
-      tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
       addCollaborationMember( def, tmp_url, DotGroupCollaboration::tdir );
     }
   }
@@ -146,7 +146,7 @@ void DotGroupCollaboration::addMemberList( MemberList* ml )
   if ( ml==0 || ml->empty() ) return;
   for (const auto &def : *ml)
   {
-    QCString tmp_url = def->getReference()+"$"+def->getOutputFileBase()+Doxygen::htmlFileExtension
+    QCString tmp_url = def->getReference()+"$"+addHtmlExtensionIfMissing(def->getOutputFileBase());
       +"#"+def->anchor();
     addCollaborationMember( def, tmp_url, DotGroupCollaboration::tmember );
   }
@@ -241,7 +241,7 @@ QCString DotGroupCollaboration::getMapLabel() const
 
 QCString DotGroupCollaboration::writeGraph( TextStream &t,
   GraphOutputFormat graphFormat, EmbeddedOutputFormat textFormat,
-  const char *path, const char *fileName, const char *relPath,
+  const QCString &path, const QCString &fileName, const QCString &relPath,
   bool generateImageMap,int graphId)
 {
   m_doNotAddImageToIndex = TRUE;

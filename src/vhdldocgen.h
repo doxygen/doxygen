@@ -41,7 +41,7 @@ struct Argument;
 
 struct VhdlConfNode
 {
-  VhdlConfNode(const char*  a,const char*  b,const char* config,const char* cs,bool leaf)
+  VhdlConfNode(const QCString &a,const QCString &b,const QCString &config,const QCString &cs,bool leaf)
   {
     arch=a;              // architecture  e.g. for iobuffer
     arch=arch.lower();
@@ -116,10 +116,10 @@ class VhdlDocGen
 
     static bool isSubClass(ClassDef* cd,ClassDef *scd, bool followInstances,int level);
 
-    static QCString getIndexWord(const char* ,int index);
+    static QCString getIndexWord(const QCString &,int index);
     static bool     deleteCharRev(QCString &s,char c);
     static void     deleteAllChars(QCString &s,char c);
-    static void     parseFuncProto(const char* text,
+    static void     parseFuncProto(const QCString &text,
                                    QCString& name,
                                    QCString& ret,
                                    bool doc=false);
@@ -136,7 +136,7 @@ class VhdlDocGen
     static const MemberDef* findMemberDef(ClassDef* cd,
                                 const QCString& key,
                                 MemberListType type);
-    static ClassDef *getClass(const char *name);
+    static ClassDef *getClass(const QCString &name);
     static const MemberDef* findFunction(const QCString& name,
                                    const QCString& package);
     static QCString getClassTitle(const ClassDef*);
@@ -198,7 +198,7 @@ class VhdlDocGen
 
     static void writeVHDLDeclarations(const MemberList* ml,OutputList &ol,
         const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-        const char *title,const char *subtitle,bool showEnumValues,int type);
+        const QCString &title,const QCString &subtitle,bool showEnumValues,int type);
 
     static bool writeClassType(const ClassDef *,OutputList &ol ,QCString & cname);
 
@@ -210,10 +210,9 @@ class VhdlDocGen
     static bool isNumber(const std::string& s);
     static QCString getProtectionName(int prot);
 
-    static void parseUCF(const char*  input,Entry* entity,QCString f,bool vendor);
+    static void parseUCF(const char*  input,Entry* entity,const QCString &f,bool vendor);
 
     static const ClassDef*  findArchitecture(const ClassDef *cd);
-    //static const ClassDef*  findArchitecture(QCString identifier, QCString entity_name);
 
     static void correctMemberProperties(MemberDefMutable *md);
 
@@ -222,7 +221,7 @@ class VhdlDocGen
     static QCString  parseForConfig(QCString & entity,QCString & arch);
     static QCString  parseForBinding(QCString & entity,QCString & arch);
     static void addBaseClass(ClassDef* cd,ClassDef *ent);
-    static ClassDef* findVhdlClass(const char *className );
+    static ClassDef* findVhdlClass(const QCString &className );
 
     static void writeOverview(OutputList &ol);
     static void writeOverview();
@@ -291,7 +290,7 @@ class FlowChart
     static void createSVG();
     static void startDot(TextStream &t);
     static void endDot(TextStream &t);
-    static void codify(TextStream &t,const char *str);
+    static void codify(TextStream &t,const QCString &str);
     static void writeShape(TextStream &t,const FlowChart &fl);
     static void writeEdge(TextStream &t,int fl_from,int fl_to,int i,bool bFrom=FALSE,bool bTo=FALSE);
     static void writeEdge(TextStream &t,const FlowChart &fl_from,const FlowChart &fl_to,int i);
@@ -310,7 +309,7 @@ class FlowChart
     static void delFlowList();
     static const char* getNodeType(int c);
 
-    static void addFlowChart(int type,const char* text,const char* exp,const char * label=0);
+    static void addFlowChart(int type,const QCString &text,const QCString &exp,const QCString &label=QCString());
     static void moveToPrevLevel();
     static int getTimeStamp();
     static void writeFlowChart();
@@ -324,7 +323,7 @@ class FlowChart
     static void  printUmlTree();
     static QCString printPlantUmlNode(const FlowChart &flo,bool,bool);
 
-    FlowChart(int typ,const char*  t,const char* ex,const char* label=0);
+    FlowChart(int typ,const QCString &t,const QCString &ex,const QCString &label=QCString());
     ~FlowChart();
 
 private:

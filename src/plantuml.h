@@ -22,21 +22,18 @@
 #include "containers.h"
 #include "qcstring.h"
 
-#define CACHE_FILENAME          "inline_umlgraph_cache_all.pu"
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
 
 class QCString;
 struct PlantumlContent
 {
-  QCString outDir;
+  PlantumlContent(const QCString &content_, const QCString &outDir_, const QCString &srcFile_, int srcLine_)
+     : content(content_), outDir(outDir_), srcFile(srcFile_), srcLine(srcLine_) {}
   QCString content;
-  PlantumlContent(const QCString Content, const QCString OutDir)
-  {
-    outDir = OutDir;
-    content = Content;
-  };
-  ~PlantumlContent(){};
+  QCString outDir;
+  QCString srcFile;
+  int srcLine;
 };
 
 /** Singleton that manages plantuml relation actions */
@@ -56,16 +53,22 @@ class PlantumlManager
      *  @param[in] fileName the name of the file. If empty a name will be chosen automatically.
      *  @param[in] content  the contents of the PlantUML file.
      *  @param[in] format   the image format to generate.
+     *  @param[in] engine   the plantuml engine to use.
+     *  @param[in] srcFile  the source file resulting in the write command.
+     *  @param[in] srcLine  the line number resulting in the write command.
      *  @returns The name of the generated file.
      */
-    QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,const QCString &content, OutputFormat format);
+    QCString writePlantUMLSource(const QCString &outDir,const QCString &fileName,
+                                 const QCString &content, OutputFormat format,
+                                 const QCString &engine,const QCString &srcFile,
+                                 int srcLine);
 
     /** Convert a PlantUML file to an image.
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
      */
-    void generatePlantUMLOutput(const char *baseName,const char *outDir,OutputFormat format);
+    void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
 
     using FilesMap   = std::map< std::string, StringVector    >;
     using ContentMap = std::map< std::string, PlantumlContent >;
@@ -75,7 +78,9 @@ class PlantumlManager
                 const std::string &value,
                 const QCString &outDir,
                 OutputFormat format,
-                const QCString &puContent);
+                const QCString &puContent,
+                const QCString &srcFile,
+                int srcLine);
 
     FilesMap   m_pngPlantumlFiles;
     FilesMap   m_svgPlantumlFiles;
@@ -83,8 +88,6 @@ class PlantumlManager
     ContentMap m_pngPlantumlContent;               // use circular queue for using multi-processor (multi threading)
     ContentMap m_svgPlantumlContent;
     ContentMap m_epsPlantumlContent;
-    QCString   m_cachedPlantumlAllContent;         // read from CACHE_FILENAME file
-    QCString   m_currentPlantumlAllContent;        // processing plantuml then write it into CACHE_FILENAME to reuse the next time as cache information
 };
 
 #endif

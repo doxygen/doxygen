@@ -13,10 +13,12 @@
  *
  */
 
-#ifndef _DOCVISITOR_H
-#define _DOCVISITOR_H
+#ifndef DOCVISITOR_H
+#define DOCVISITOR_H
 
 #include <memory>
+
+#include "qcstring.h"
 
 // ids
 const int DocVisitor_Html  = 0;
@@ -95,7 +97,7 @@ class DocVisitor
     DocVisitor(int id);
     virtual ~DocVisitor();
     int id() const;
-    CodeParserInterface &getCodeParser(const char *langExt);
+    CodeParserInterface &getCodeParser(const QCString &langExt);
     void pushHidden(bool hide);
     bool popHidden();
 

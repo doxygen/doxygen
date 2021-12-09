@@ -23,7 +23,9 @@
  */
 #include "config.h"
 #include "input.h"
+#include "inputbool.h"
 #include "inputstring.h"
+#include "inputobsolete.h"
 #include "config_msg.h"
 
 #include <QString>
@@ -383,9 +385,7 @@ static void readIncludeFile(const QString &incName)
 %x      Start
 %x      SkipInvalid
 %x      GetString
-%x      GetEnum
 %x      GetStrList
-%x      GetQuotedString
 %x      Include
 
 %%
@@ -429,11 +429,29 @@ static void readIncludeFile(const QString &incName)
 					         BEGIN(GetString);
 						 break;
 					       case Input::Obsolete:
-					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n", qPrintable(g_cmd),
-							    yylineno,qPrintable(g_yyFileName));
-					         BEGIN(SkipInvalid);
+                                                 {
+                                                   config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
+                                                       "To avoid this warning please update your configuration "
+                                                       "file using \"doxygen -u\"\n", qPrintable(g_cmd),
+                                                       yylineno,qPrintable(g_yyFileName));
+                                                   InputObsolete *obsoleteOpt = dynamic_cast<InputObsolete*>(g_curOption);
+                                                   if (obsoleteOpt)
+                                                   {
+                                                     if (obsoleteOpt->orgKind()==Input::StrList)
+                                                     {
+                                                       *g_arg = QStringList();
+                                                       BEGIN(GetStrList);
+                                                     }
+                                                     else
+                                                     {
+                                                       BEGIN(GetString);
+                                                     }
+                                                   }
+                                                   else
+                                                   {
+                                                     BEGIN(SkipInvalid);
+                                                   }
+                                                 }
 						 break;
 					     }
 					   }
@@ -464,12 +482,24 @@ static void readIncludeFile(const QString &incName)
 					        BEGIN(SkipInvalid);
 						break;
 					      case Input::Obsolete:
-					         config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
-						            "To avoid this warning please update your configuration "
-							    "file using \"doxygen -u\"\n",
-							    qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
-					         BEGIN(SkipInvalid);
-						 break;
+                                                {
+					          config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
+						              "To avoid this warning please update your configuration "
+						  	      "file using \"doxygen -u\"\n",
+							      qPrintable(g_cmd),yylineno,qPrintable(g_yyFileName));
+                                                   InputObsolete *obsoleteOpt = dynamic_cast<InputObsolete*>(g_curOption);
+                                                   if (obsoleteOpt && obsoleteOpt->orgKind()==Input::StrList)
+                                                   {
+						     g_arg = &g_curOption->value();
+						     g_str=QByteArray();
+                                                     BEGIN(GetStrList);
+                                                   }
+					           else
+                                                   {
+                                                     BEGIN(SkipInvalid);
+                                                   }
+                                                }
+					        break;
 					     }
 					   }
 					}
@@ -662,6 +692,39 @@ static void substEnvVarsInStrList(QStringList &sl)
 
 //--------------------------------------------------------------------------
 
+static void upgradeConfig(const QHash<QString,Input*> &options)
+{
+  auto it1 = options.find(QString::fromLatin1("CLASS_DIAGRAMS"));
+  auto it2 = options.find(QString::fromLatin1("HAVE_DOT"));
+  auto it3 = options.find(QString::fromLatin1("CLASS_GRAPH"));
+  if (it1!=options.end() && it2!=options.end() && it3!=options.end())
+  {
+    if ((*it1)->kind()==Input::Obsolete)
+    {
+      InputObsolete *optClassDiagram = dynamic_cast<InputObsolete*>(*it1);
+      InputBool     *optHaveDot      = dynamic_cast<InputBool*>    (*it2);
+      InputString   *optClassGraph   = dynamic_cast<InputString*>  (*it3);
+      if (optClassDiagram->orgKind()==Input::Bool)
+      {
+        const QVariant &v1 = optClassDiagram->value();
+        const QVariant &v2 = optHaveDot->value();
+        QVariant &v3 = optClassGraph->value();
+        bool isValid1=false,isValid2=false,isValid3=false;
+        bool classDiagrams = InputBool::convertToBool(v1,isValid1);
+        bool haveDot       = InputBool::convertToBool(v2,isValid2);
+        bool classGraph    = InputBool::convertToBool(v3,isValid3);
+        if (isValid1 && isValid2 && isValid3 && !classDiagrams && !haveDot && classGraph)
+        {
+   	  config_warn("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
+          optClassGraph->setValue(QString::fromLatin1("TEXT"));
+        }
+      }
+    }
+  }
+}
+
+//--------------------------------------------------------------------------
+
 bool parseConfig(
       const QString &fileName,
       const QHash<QString,Input *> &options
@@ -692,6 +755,8 @@ bool parseConfig(
   config_doxywYYrestart( config_doxywYYin );
   BEGIN( Start );
   config_doxywYYlex();
+
+  upgradeConfig(options);
 
   // update the values in the UI
   i.toFront();

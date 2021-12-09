@@ -26,8 +26,7 @@ class TextStream;
 class DotFilePatcher
 {
   public:
-    DotFilePatcher(const char *patchFile);
-
+    DotFilePatcher(const QCString &patchFile);
     int addMap(const QCString &mapFile,const QCString &relPath,
                bool urlOnly,const QCString &context,const QCString &label);
 
@@ -42,8 +41,8 @@ class DotFilePatcher
     bool run() const;
     bool isSVGFile() const;
 
-    static bool convertMapFile(TextStream &t,const char *mapName,
-                               const QCString relPath, bool urlOnly=FALSE,
+    static bool convertMapFile(TextStream &t,const QCString &mapName,
+                               const QCString &relPath, bool urlOnly=FALSE,
                                const QCString &context=QCString());
 
     static bool writeSVGFigureLink(TextStream &out,const QCString &relPath,

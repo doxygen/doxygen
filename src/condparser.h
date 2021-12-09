@@ -29,7 +29,7 @@ class CondParser
   // public functions
   public:
     CondParser() : m_e(0), m_tokenType(NOTHING) {}
-    bool parse(const char *fileName,int lineNr,const char *expr);
+    bool parse(const QCString &fileName,int lineNr,const QCString &expr);
 
     // enumerations
   private:
@@ -68,7 +68,7 @@ class CondParser
     bool parseVar();
 
     bool evalOperator(const int opId, bool lhs, bool rhs);
-    bool evalVariable(const char *varName);
+    bool evalVariable(const QCString &varName);
     int getOperatorId(const QCString &opName);
 };
 

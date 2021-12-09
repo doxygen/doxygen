@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _RTFDOCVISITOR_H
-#define _RTFDOCVISITOR_H
+#ifndef RTFDOCVISITOR_H
+#define RTFDOCVISITOR_H
 
 #include <iostream>
 
@@ -31,7 +31,7 @@ class TextStream;
 class RTFDocVisitor : public DocVisitor
 {
   public:
-    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -142,19 +142,21 @@ class RTFDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str,bool verbatim=FALSE);
+    void filter(const QCString &str,bool verbatim=FALSE);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &anchor);
     void endLink(const QCString &ref);
-    QCString getStyle(const char *name);
+    QCString getStyle(const QCString &name);
+
+    int indentLevel() const;
     void incIndentLevel();
     void decIndentLevel();
 
-    void includePicturePreRTF(const QCString name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
+    void includePicturePreRTF(const QCString &name, bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
     void includePicturePostRTF(bool isTypeRTF, bool hasCaption, bool inlineImage = FALSE);
-    void writeDotFile(const QCString &fileName, bool hasCaption);
+    void writeDotFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
     void writeDotFile(DocDotFile *);
-    void writeMscFile(const QCString &fileName, bool hasCaption);
+    void writeMscFile(const QCString &fileName, bool hasCaption,const QCString &srcFile,int srcLine);
     void writeMscFile(DocMscFile *);
     void writeDiaFile(DocDiaFile *);
     void writePlantUMLFile(const QCString &fileName, bool hasCaption);
@@ -165,11 +167,20 @@ class RTFDocVisitor : public DocVisitor
 
     TextStream &m_t;
     CodeOutputInterface &m_ci;
-    bool m_insidePre;
-    bool m_hide;
-    int m_indentLevel;
-    bool m_lastIsPara;
+    bool m_insidePre = false;
+    bool m_hide = false;
+    bool m_lastIsPara = false;
     QCString m_langExt;
+
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+    struct RTFListItemInfo
+    {
+      bool isEnum = false;
+      int number = 1;
+      char type = '1';
+    };
+    RTFListItemInfo m_listItemInfo[maxIndentLevels];
 };
 
 #endif

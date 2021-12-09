@@ -45,8 +45,13 @@ the <code>+=</code> operator can be used instead of <code>=</code> to append
 new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
-as the last character of a line. Environment variables can be expanded
-using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+as the last character of a line.
+
+Environment variables can be expanded using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+A small example:
+\verbatim
+DOT_PATH      = $(YOUR_DOT_PATH)
+\endverbatim
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
@@ -430,7 +435,6 @@ Go to the <a href="commands.html">next</a> section or return to the
  started.
 ]]>
       </docs>
-      <value name=''/>
     </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
       <docs>
@@ -819,7 +823,7 @@ Go to the <a href="commands.html">next</a> section or return to the
  to get more control over the balance between CPU load and processing speed.
  At this moment only the input processing can be done using multiple threads.
  Since this is still an experimental feature the default is set to 1,
- which efficively disables parallel processing. Please report any issues you
+ which effectively disables parallel processing. Please report any issues you
  encounter.
  Generating dot graphs in parallel is controlled by the \c DOT_NUM_THREADS setting.
 ]]>
@@ -1000,6 +1004,14 @@ Go to the <a href="commands.html">next</a> section or return to the
  If the \c HIDE_COMPOUND_REFERENCE tag is set to \c NO (default) then
  doxygen will append additional text to a page's title, such as Class Reference.
  If set to \c YES the compound reference will be hidden.
+]]>
+      </docs>
+    </option>
+    <option type='bool' id='SHOW_HEADERFILE' defval='1'>
+      <docs>
+<![CDATA[
+ If the \c SHOW_HEADERFILE tag is set to \c YES then the documentation
+ for a class will show which file needs to be included to use the class.
 ]]>
       </docs>
     </option>
@@ -1249,6 +1261,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  doxygen's defaults, run doxygen with the `-l` option. You can optionally specify a
  file name after the option, if omitted \c DoxygenLayout.xml will be used as the name
  of the layout file.
+ See also section \ref layout for information.
  <br>Note that if you run doxygen from a directory containing
  a file called \c DoxygenLayout.xml, doxygen will parse it automatically even if
  the \c LAYOUT_FILE tag is left empty.
@@ -1388,7 +1401,6 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  \note If this tag is empty the current directory is searched.
 ]]>
       </docs>
-      <value name=''/>
     </option>
     <option type='string' id='INPUT_ENCODING' format='string' defval='UTF-8'>
       <docs>
@@ -1508,7 +1520,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  (namespaces, classes, functions, etc.) that should be excluded from the
  output. The symbol name can be a fully qualified name, a word, or if the
  wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`,
- `AClass::ANamespace`, `ANamespace::*Test`
+ `ANamespace::AClass`, `ANamespace::*Test`
  <br>Note that the wildcards are matched against the file with absolute path,
  so to exclude all test directories use the pattern
  `*``/test/``*`
@@ -1916,21 +1928,25 @@ doxygen -w html new_header.html new_footer.html new_stylesheet.css YourConfigFil
  The following block names are supported:
  <dl>
  <dt><code>DISABLE_INDEX</code><dd>Content within this block is copied to the output
-     when the \ref cfg_disable_index "DISABLE_INDEX" option is enabled (so when the index is disabled).
+     if the \ref cfg_disable_index "DISABLE_INDEX" option is enabled (so when the index is disabled).
  <dt><code>GENERATE_TREEVIEW</code><dd>Content within this block is copied to the output
-     when the \ref cfg_generate_treeview "GENERATE_TREEVIEW" option is enabled.
+     if the \ref cfg_generate_treeview "GENERATE_TREEVIEW" option is enabled.
  <dt><code>SEARCHENGINE</code><dd>Content within this block is copied to the output
-     when the \ref cfg_searchengine "SEARCHENGINE" option is enabled.
+     if the \ref cfg_searchengine "SEARCHENGINE" option is enabled.
  <dt><code>PROJECT_NAME</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_name "PROJECT_NAME" option is not empty.
+     if the \ref cfg_project_name "PROJECT_NAME" option is not empty.
  <dt><code>PROJECT_NUMBER</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_number "PROJECT_NUMBER" option is not empty.
+     if the \ref cfg_project_number "PROJECT_NUMBER" option is not empty.
  <dt><code>PROJECT_BRIEF</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_brief "PROJECT_BRIEF" option is not empty.
+     if the \ref cfg_project_brief "PROJECT_BRIEF" option is not empty.
  <dt><code>PROJECT_LOGO</code><dd>Content within the block is copied to the output
-      when the \ref cfg_project_logo "PROJECT_LOGO" option is not empty.
+     if the \ref cfg_project_logo "PROJECT_LOGO" option is not empty.
+ <dt><code>FULL_SIDEBAR</code><dd>Content within the block is copied to the output
+     if the \ref cfg_full_sidebar "FULL_SIDEBAR",
+     \ref cfg_disable_index "DISABLE_INDEX" and \ref cfg_generate_treeview "GENERATE_TREEVIEW"
+     options are all enabled.
  <dt><code>TITLEAREA</code><dd>Content within this block is copied to the output
-     when a title is visible at the top of each page. This is the case
+     if a title is visible at the top of each page. This is the case
      if either \ref cfg_project_name "PROJECT_NAME",
      \ref cfg_project_brief "PROJECT_BRIEF", \ref cfg_project_logo "PROJECT_LOGO"
      is filled in or if both \ref cfg_disable_index "DISABLE_INDEX" and
@@ -2051,7 +2067,7 @@ hr.footer {
 <![CDATA[
  The \c HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
  Doxygen will adjust the colors in the style sheet and background images
- according to this color. Hue is specified as an angle on a colorwheel,
+ according to this color. Hue is specified as an angle on a color-wheel,
  see https://en.wikipedia.org/wiki/Hue for more information.
  For instance the value 0 represents red, 60 is yellow, 120 is green,
  180 is cyan, 240 is blue, 300 purple, and 360 is red again.
@@ -2063,7 +2079,7 @@ hr.footer {
 <![CDATA[
  The \c HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of
  the colors in the HTML output. For a value of 0 the output will use
- grayscales only. A value of 255 will produce the most vivid colors.
+ gray-scales only. A value of 255 will produce the most vivid colors.
 ]]>
       </docs>
     </option>
@@ -2151,6 +2167,16 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='string' id='DOCSET_FEEDURL' format='string' depends='GENERATE_DOCSET'>
+      <docs>
+<![CDATA[
+ This tag determines the URL of the docset
+ feed. A documentation feed provides an umbrella under which multiple
+ documentation sets from a single provider (such as a company or product suite)
+ can be grouped.
+]]>
+      </docs>
+    </option>
     <option type='string' id='DOCSET_BUNDLE_ID' format='string' defval='org.doxygen.Project' depends='GENERATE_DOCSET'>
       <docs>
 <![CDATA[
@@ -2187,7 +2213,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  project file that can be read by Microsoft's HTML Help Workshop
  on Windows.
   In the beginning of 2021 Microsoft took the original page, with a.o. the download links,
-  offline the HTML help workshop was already many years in maintenance mode). 
+  offline the HTML help workshop was already many years in maintenance mode).
   You can download the HTML help workshop from the web archives at
   <a href="http://web.archive.org/web/20160201063255/http://download.microsoft.com/download/0/A/9/0A939EF6-E31C-430F-A3DF-DFAE7960D564/htmlhelp.exe">Installation executable</a>.
 <br>
@@ -2382,7 +2408,7 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  Windows users are probably better off using the HTML help feature.
 
  Via custom style sheets (see \ref cfg_html_extra_stylesheet "HTML_EXTRA_STYLESHEET")
- one can further \ref doxygen_finetune "fine-tune" the look of the index.
+ one can further fine tune the look of the index (see \ref doxygen_finetune).
  As an example, the default style sheet generated by doxygen has an
  example that shows how to put an image at the root of the tree instead of
  the \ref cfg_project_name "PROJECT_NAME".
@@ -2393,7 +2419,23 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='bool' id='FULL_SIDEBAR' defval='0' depends='GENERATE_HTML'>
+      <docs>
+<![CDATA[
+  When both \ref cfg_generate_treeview "GENERATE_TREEVIEW" and \ref cfg_disable_index "DISABLE_INDEX"
+  are set to \c YES, then the
+  \c FULL_SIDEBAR option determines if the side bar is limited to only the
+  treeview area (value \c NO) or if it should extend to the full height of the
+  window (value \c YES). Setting this to \c YES gives a layout similar to
+  https://docs.readthedocs.io with more room for contents,
+  but less room for the project logo, title, and description.
 
+  If either \ref cfg_generate_treeview "GENERATE_TREEVIEW" or \ref cfg_disable_index "DISABLE_INDEX"
+  is set to \c NO, this option
+  has no effect.
+]]>
+      </docs>
+    </option>
     <option type='int' id='ENUM_VALUES_PER_LINE' minval='0' maxval='20' defval='4' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
@@ -2478,20 +2520,33 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 ]]>
       </docs>
     </option>
+    <option type='enum' id='MATHJAX_VERSION' defval='MathJax_2' depends='USE_MATHJAX'>
+      <docs>
+<![CDATA[
+ With \c MATHJAX_VERSION it is possible to specify the MathJax version to be used.
+ Note that the different versions of MathJax have different requirements with regards to
+ the different settings, so it is possible that also other MathJax settings have to be changed
+ when switching between the different MathJax versions. 
+]]>
+      </docs>
+      <value name="MathJax_2"/>
+      <value name="MathJax_3"/>
+    </option>
     <option type='enum' id='MATHJAX_FORMAT' defval='HTML-CSS' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you can set the default output format to be used for
  the MathJax output.
- See <a href="http://docs.mathjax.org/en/v2.7-latest/output.html">the MathJax site</a>
- for more details.
+ For more details about the output format see <a href="http://docs.mathjax.org/en/v2.7-latest/output.html">MathJax version 2</a>
+ and <a href="http://docs.mathjax.org/en/latest/web/components/output.html">MathJax version 3</a>.
 ]]>
       </docs>
-      <value name="HTML-CSS" desc="(which is slower, but has the best compatibility)"/>
-      <value name="NativeMML" desc="(i.e. MathML)"/>
+      <value name="HTML-CSS" desc="(which is slower, but has the best compatibility. This is the name for Mathjax version 2, for MathJax version 3 this will be translated into \c chtml)"/>
+      <value name="NativeMML" desc="(i.e. MathML. Only supported for NathJax 2. For MathJax version 3 \c chtml will be used instead.)"/>
+      <value name="chtml" desc="(This is the name for Mathjax version 3, for MathJax version 2 this will be translated into \c HTML-CSS)"/>
       <value name="SVG"/>
     </option>
-    <option type='string' id='MATHJAX_RELPATH' format='string' defval='https://cdn.jsdelivr.net/npm/mathjax@2' depends='USE_MATHJAX'>
+    <option type='string' id='MATHJAX_RELPATH' format='string' depends='USE_MATHJAX'>
       <docs>
 <![CDATA[
  When MathJax is enabled you need to specify the location relative to the
@@ -2502,6 +2557,10 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
  the MathJax Content Delivery Network so you can quickly see the result without
  installing MathJax.  However, it is strongly recommended to install a local
  copy of MathJax from https://www.mathjax.org before deployment.
+
+ The default value is:
+ - in case of  MathJax version 2: https://cdn.jsdelivr.net/npm/mathjax@2
+ - in case of  MathJax version 3: https://cdn.jsdelivr.net/npm/mathjax@3
 ]]>
       </docs>
     </option>
@@ -2509,9 +2568,14 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
       <docs>
 <![CDATA[
  The \c MATHJAX_EXTENSIONS tag can be used to specify one or more MathJax extension
- names that should be enabled during MathJax rendering. For example
+ names that should be enabled during MathJax rendering. For example for MathJax version 2
+ (see https://docs.mathjax.org/en/v2.7-latest/tex.html#tex-and-latex-extensions):
 \verbatim
 MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
+\endverbatim
+For example for MathJax version 3 (see http://docs.mathjax.org/en/latest/input/tex/extensions/index.html):
+\verbatim
+MATHJAX_EXTENSIONS     = ams
 \endverbatim
 ]]>
       </docs>
@@ -2813,7 +2877,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            as set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
            `plain` is used.
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
- <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib. files
+ <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib`. files
            as set by \ref cfg_cite_bib_files "CITE_BIB_FILES" (when necessary a missing `.bib` is
            automatically added).
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
@@ -2972,8 +3036,7 @@ The following block name is set based on whether or not a feature is used in the
  If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \c \\batchmode
  command to the generated \f$\mbox{\LaTeX}\f$ files. This will
  instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of
- asking the user for help. This option is also used when generating formulas
- in HTML.
+ asking the user for help.
 ]]>
       </docs>
     </option>
@@ -2983,16 +3046,6 @@ The following block name is set based on whether or not a feature is used in the
  If the \c LATEX_HIDE_INDICES tag is set to \c YES then doxygen will not
  include the index chapters (such as File Index, Compound Index, etc.)
  in the output.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='LATEX_SOURCE_CODE' defval='0' depends='GENERATE_LATEX'>
-      <docs>
-<![CDATA[
- If the \c LATEX_SOURCE_CODE tag is set to \c YES then doxygen will include
- source code with syntax highlighting in the \f$\mbox{\LaTeX}\f$ output.
- <br>Note that which sources are shown also depends on other settings
- such as \ref cfg_source_browser "SOURCE_BROWSER".
 ]]>
       </docs>
     </option>
@@ -3088,16 +3141,6 @@ The following block name is set based on whether or not a feature is used in the
  Syntax is similar to doxygen's configuration file.
  A template extensions file can be generated using
  <code>doxygen -e rtf extensionFile</code>.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='RTF_SOURCE_CODE' defval='0' depends='GENERATE_RTF'>
-      <docs>
-<![CDATA[
- If the \c RTF_SOURCE_CODE tag is set to \c YES then doxygen will include
- source code with syntax highlighting in the RTF output.
- <br>Note that which sources are shown also depends on other settings
- such as \ref cfg_source_browser "SOURCE_BROWSER".
 ]]>
       </docs>
     </option>
@@ -3206,16 +3249,6 @@ that can be used to generate PDF.
 The \c DOCBOOK_OUTPUT tag is used to specify where the Docbook pages will be put.
 If a relative path is entered the value of \ref cfg_output_directory "OUTPUT_DIRECTORY" will be put in
 front of it.
-]]>
-      </docs>
-    </option>
-    <option type='bool' id='DOCBOOK_PROGRAMLISTING' defval='0' depends='GENERATE_DOCBOOK'>
-      <docs>
-<![CDATA[
- If the \c DOCBOOK_PROGRAMLISTING tag is set to \c YES, doxygen will
- include the program listings (including syntax highlighting
- and cross-referencing information) to the DOCBOOK output. Note that
- enabling this will significantly increase the size of the DOCBOOK output.
 ]]>
       </docs>
     </option>
@@ -3474,17 +3507,6 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
     </option>
   </group>
   <group name='Dot' docs='Configuration options related to the dot tool'>
-    <option type='bool' id='CLASS_DIAGRAMS' defval='1'>
-      <docs>
-<![CDATA[
- If the \c CLASS_DIAGRAMS tag is set to \c YES, doxygen will
- generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
- super classes. Setting the tag to \c NO turns the diagrams off. Note that
- this option also works with \ref cfg_have_dot "HAVE_DOT" disabled, but it is recommended to
- install and use \c dot, since it yields more powerful graphs.
-]]>
-      </docs>
-    </option>
     <option type='string' id='DIA_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
@@ -3555,15 +3577,21 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CLASS_GRAPH' defval='1' depends='HAVE_DOT'>
+    <option type='enum' id='CLASS_GRAPH' defval='YES'>
       <docs>
 <![CDATA[
- If the \c CLASS_GRAPH tag is set to \c YES then doxygen
+ If the \c CLASS_GRAPH tag is set to \c YES (or \c GRAPH) then doxygen
  will generate a graph for each documented class showing the direct and
- indirect inheritance relations. Setting this tag to \c YES will force
- the \ref cfg_class_diagrams "CLASS_DIAGRAMS" tag to \c NO.
+ indirect inheritance relations. In case \ref cfg_have_dot "HAVE_DOT" is set as well
+ `dot` will be used to draw the graph, otherwise the built-in generator will be used.
+ If the \c CLASS_GRAPH tag is set to \c TEXT the direct and indirect inheritance relations
+ will be shown as texts / links.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="TEXT" />
+      <value name="GRAPH" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
@@ -3703,6 +3731,14 @@ UML notation for the relationships.
  to \c YES then doxygen will show the dependencies a directory has on other directories
  in a graphical way. The dependency relations are determined by the \c \#include
  relations between the files in the directories.
+]]>
+      </docs>
+    </option>
+    <option type='int' id='DIR_GRAPH_MAX_DEPTH' minval='1' maxval='25' defval='1' depends='DIRECTORY_GRAPH'>
+      <docs>
+<![CDATA[
+ The \c DIR_GRAPH_MAX_DEPTH tag can be used to limit the maximum number of
+ levels of child directories generated in directory dependency graphs by \c dot.
 ]]>
       </docs>
     </option>
@@ -3868,34 +3904,37 @@ UML notation for the relationships.
 If the \c DOT_CLEANUP tag is set to \c YES, doxygen will
 remove the intermediate files that are used to generate the various graphs.
  <br>Note:
-This setting is not only used for dot files but also for msc and plantuml
-temporary files.
+This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
-    <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
-    <option type='obsolete' id='DETAILS_AT_TOP'/>
-    <option type='obsolete' id='QTHELP_FILE'/>
-    <option type='obsolete' id='QTHELP_CONFIG'/>
-    <option type='obsolete' id='DOXYGEN2QTHELP_LOC'/>
-    <option type='obsolete' id='MAX_DOT_GRAPH_WIDTH'/>
-    <option type='obsolete' id='MAX_DOT_GRAPH_HEIGHT'/>
-    <option type='obsolete' id='CGI_NAME'/>
-    <option type='obsolete' id='CGI_URL'/>
-    <option type='obsolete' id='DOC_URL'/>
-    <option type='obsolete' id='DOC_ABSPATH'/>
-    <option type='obsolete' id='BIN_ABSPATH'/>
-    <option type='obsolete' id='EXT_DOC_PATHS'/>
-    <option type='obsolete' id='USE_INLINE_TREES'/>
-    <option type='obsolete' id='SHOW_DIRECTORIES'/>
-    <option type='obsolete' id='HTML_ALIGN_MEMBERS'/>
-    <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
-    <option type='obsolete' id='XML_SCHEMA'/>
-    <option type='obsolete' id='XML_DTD'/>
-    <option type='obsolete' id='PERL_PATH'/>
-    <option type='obsolete' id='MSCGEN_PATH'/>
-    <option type='obsolete' id='TCL_SUBST'/>
-    <option type='obsolete' id='COLS_IN_ALPHA_INDEX'/>
-    <option type='obsolete' id='OUTPUT_TEXT_DIRECTION'/>
+    <option type='obsolete' orgtype='bool' id='USE_WINDOWS_ENCODING'/>
+    <option type='obsolete' orgtype='bool' id='DETAILS_AT_TOP'/>
+    <option type='obsolete' orgtype='string' id='QTHELP_FILE'/>
+    <option type='obsolete' orgtype='string' id='QTHELP_CONFIG'/>
+    <option type='obsolete' orgtype='string' id='DOXYGEN2QTHELP_LOC'/>
+    <option type='obsolete' orgtype='int' id='MAX_DOT_GRAPH_WIDTH'/>
+    <option type='obsolete' orgtype='int' id='MAX_DOT_GRAPH_HEIGHT'/>
+    <option type='obsolete' orgtype='string' id='CGI_NAME'/>
+    <option type='obsolete' orgtype='string' id='CGI_URL'/>
+    <option type='obsolete' orgtype='string' id='DOC_URL'/>
+    <option type='obsolete' orgtype='string' id='DOC_ABSPATH'/>
+    <option type='obsolete' orgtype='string' id='BIN_ABSPATH'/>
+    <option type='obsolete' orgtype='list' id='EXT_DOC_PATHS'/>
+    <option type='obsolete' orgtype='bool' id='USE_INLINE_TREES'/>
+    <option type='obsolete' orgtype='bool' id='SHOW_DIRECTORIES'/>
+    <option type='obsolete' orgtype='bool' id='HTML_ALIGN_MEMBERS'/>
+    <option type='obsolete' orgtype='int' id='SYMBOL_CACHE_SIZE'/>
+    <option type='obsolete' orgtype='string' id='XML_SCHEMA'/>
+    <option type='obsolete' orgtype='string' id='XML_DTD'/>
+    <option type='obsolete' orgtype='string' id='PERL_PATH'/>
+    <option type='obsolete' orgtype='string' id='MSCGEN_PATH'/>
+    <option type='obsolete' orgtype='list' id='TCL_SUBST'/>
+    <option type='obsolete' orgtype='int' id='COLS_IN_ALPHA_INDEX'/>
+    <option type='obsolete' orgtype='enum' id='OUTPUT_TEXT_DIRECTION'/>
+    <option type='obsolete' orgtype='bool' id='DOCBOOK_PROGRAMLISTING'/>
+    <option type='obsolete' orgtype='bool' id='RTF_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='LATEX_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='CLASS_DIAGRAMS'/>
   </group>
 </doxygenconfig>

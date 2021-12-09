@@ -15,15 +15,16 @@
  *
  */
 
-#ifndef _DIA_H
-#define _DIA_H
+#ifndef DIA_H
+#define DIA_H
 
 class QCString;
 
 enum DiaOutputFormat { DIA_BITMAP , DIA_EPS };
 
-void writeDiaGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,DiaOutputFormat format);
+void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,DiaOutputFormat format,
+                           const QCString &srcFile,int srcLine);
 
 #endif
 

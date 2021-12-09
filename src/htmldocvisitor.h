@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _HTMLDOCVISITOR_H
-#define _HTMLDOCVISITOR_H
+#ifndef HTMLDOCVISITOR_H
+#define HTMLDOCVISITOR_H
 
 #include "docvisitor.h"
 #include "qcstring.h"
@@ -139,16 +139,20 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
 
     void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const char *str);
-    void filterQuotedCdataAttr(const char* str);
+    void filter(const QCString &str, const bool retainNewline = false);
+    void filterQuotedCdataAttr(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &relPath,const QCString &anchor,
                    const QCString &tooltip = "");
     void endLink();
-    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-    void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context);
+    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                      const QCString &srcFile,int srcLine);
+    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                      const QCString &srcFile,int srcLine);
+    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                      const QCString &srcFile,int srcLine);
+    void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                           const QCString &srcFile,int srcLine);
 
     void forceEndParagraph(DocNode *n);
     void forceStartParagraph(DocNode *n);

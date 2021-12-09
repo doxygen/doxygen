@@ -22,7 +22,7 @@
 
 static std::atomic_int g_groupId;
 
-void DocGroup::enterFile(const char *fileName,int)
+void DocGroup::enterFile(const QCString &fileName,int)
 {
   m_openCount = 0;
   m_autoGroupStack.clear();
@@ -32,7 +32,7 @@ void DocGroup::enterFile(const char *fileName,int)
   m_compoundName=fileName;
 }
 
-void DocGroup::leaveFile(const char *fileName,int line)
+void DocGroup::leaveFile(const QCString &fileName,int line)
 {
   //if (m_memberGroupId!=DOX_NOGROUP)
   //{
@@ -51,11 +51,11 @@ void DocGroup::leaveFile(const char *fileName,int line)
   }
 }
 
-void DocGroup::enterCompound(const char *fileName,int line,const char *name)
+void DocGroup::enterCompound(const QCString &fileName,int line,const QCString &name)
 {
   if (m_memberGroupId!=DOX_NOGROUP)
   {
-    warn(fileName,line,"try to put compound %s inside a member group\n",name);
+    warn(fileName,line,"try to put compound %s inside a member group\n",qPrint(name));
   }
   m_memberGroupId=DOX_NOGROUP;
   m_memberGroupRelates.resize(0);
@@ -73,12 +73,12 @@ void DocGroup::enterCompound(const char *fileName,int line,const char *name)
   //printf("groupEnterCompound(%s)\n",name);
 }
 
-void DocGroup::leaveCompound(const char *,int,const char * /*name*/)
+void DocGroup::leaveCompound(const QCString &,int,const QCString & /*name*/)
 {
   //printf("groupLeaveCompound(%s)\n",name);
   //if (m_memberGroupId!=DOX_NOGROUP)
   //{
-  //  warn(fileName,line,"end of compound %s while inside a member group\n",name);
+  //  warn(fileName,line,"end of compound %s while inside a member group\n",qPrint(name));
   //}
   m_memberGroupId=DOX_NOGROUP;
   m_memberGroupRelates.resize(0);
@@ -88,7 +88,7 @@ void DocGroup::leaveCompound(const char *,int,const char * /*name*/)
 
 int DocGroup::findExistingGroup(const MemberGroupInfo *info)
 {
-  //printf("findExistingGroup %s:%s\n",info->header.data(),info->compoundName.data());
+  //printf("findExistingGroup %s:%s\n",qPrint(info->header),qPrint(info->compoundName));
   for (const auto &kv : Doxygen::memberGroupInfoMap)
   {
     if (m_compoundName==kv.second->compoundName &&  // same file or scope
@@ -103,18 +103,18 @@ int DocGroup::findExistingGroup(const MemberGroupInfo *info)
   return ++g_groupId; // start new group
 }
 
-void DocGroup::open(Entry *e,const char *,int, bool implicit)
+void DocGroup::open(Entry *e,const QCString &,int, bool implicit)
 {
   if (!implicit) m_openCount++;
   //printf("==> openGroup(name=%s,sec=%x) m_autoGroupStack=%d\n",
-  //  	e->name.data(),e->section,m_autoGroupStack.size());
+  //  	qPrint(e->name),e->section,m_autoGroupStack.size());
   if (e->section==Entry::GROUPDOC_SEC) // auto group
   {
     m_autoGroupStack.push_back(Grouping(e->name,e->groupingPri()));
   }
   else // start of a member group
   {
-    //printf("    membergroup id=%d %s\n",m_memberGroupId,m_memberGroupHeader.data());
+    //printf("    membergroup id=%d %s\n",m_memberGroupId,qPrint(m_memberGroupHeader));
     if (m_memberGroupId==DOX_NOGROUP) // no group started yet
     {
       auto info = std::make_unique<MemberGroupInfo>();
@@ -133,7 +133,7 @@ void DocGroup::open(Entry *e,const char *,int, bool implicit)
   }
 }
 
-void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,bool implicit)
+void DocGroup::close(Entry *e,const QCString &fileName,int line,bool foundInline,bool implicit)
 {
   if (!implicit)
   {
@@ -147,7 +147,7 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,boo
     }
   }
   //printf("==> closeGroup(name=%s,sec=%x,file=%s,line=%d) m_autoGroupStack=%d\n",
-  //    e->name.data(),e->section,fileName,line,m_autoGroupStack.size());
+  //    qPrint(e->name),e->section,fileName,line,m_autoGroupStack.size());
   if (m_memberGroupId!=DOX_NOGROUP) // end of member group
   {
     auto it = Doxygen::memberGroupInfoMap.find(m_memberGroupId);
@@ -170,7 +170,7 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,boo
     m_autoGroupStack.pop_back();
     // see bug577005: we should not remove the last group for e
     if (!foundInline && !e->groups.empty()) e->groups.pop_back();
-    //printf("Removing %s e=%p\n",grp->groupname.data(),e);
+    //printf("Removing %s e=%p\n",qPrint(grp->groupname),e);
     if (!foundInline) initGroupInfo(e);
   }
 }
@@ -178,14 +178,14 @@ void DocGroup::close(Entry *e,const char *fileName,int line,bool foundInline,boo
 void DocGroup::initGroupInfo(Entry *e)
 {
   //printf("==> initGroup(id=%d,related=%s,e=%p)\n",m_memberGroupId,
-  //       m_memberGroupRelates.data(),e);
+  //       qPrint(m_memberGroupRelates),e);
   e->mGrpId     = m_memberGroupId;
   e->relates    = m_memberGroupRelates;
   if (!m_autoGroupStack.empty())
   {
     //printf("Appending group %s to %s: count=%d entry=%p\n",
-    //	m_autoGroupStack.top()->groupname.data(),
-    //	e->name.data(),e->groups->count(),e);
+    //	qPrint(m_autoGroupStack.top()->groupname),
+    //	qPrint(e->name),e->groups->count(),e);
     e->groups.push_back(Grouping(m_autoGroupStack.back()));
   }
 }

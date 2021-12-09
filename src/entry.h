@@ -35,7 +35,7 @@ class FileDef;
 struct BaseInfo
 {
   /*! Creates an object representing an inheritance relation */
-  BaseInfo(const char *n,Protection p,Specifier v) :
+  BaseInfo(const QCString &n,Protection p,Specifier v) :
     name(n),prot(p),virt(v) {}
   QCString   name; //!< the name of the base class
   Protection prot; //!< inheritance type
@@ -138,6 +138,7 @@ class Entry
     static const uint64 Local           = (1ULL<<16); // for Slice types
 
     // member specifiers (add new items to the beginning)
+    static const uint64 EnumStruct      = (1ULL<<18);
     static const uint64 ConstExpr       = (1ULL<<19); // C++11 constexpr
     static const uint64 PrivateGettable     = (1ULL<<20); // C# private getter
     static const uint64 ProtectedGettable   = (1ULL<<21); // C# protected getter

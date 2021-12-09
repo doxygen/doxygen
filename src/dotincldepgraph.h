@@ -16,6 +16,8 @@
 #ifndef DOTINCLDEPGRAPH_H
 #define DOTINCLDEPGRAPH_H
 
+#include <memory>
+
 #include "qcstring.h"
 #include "filedef.h"
 
@@ -31,7 +33,7 @@ class DotInclDepGraph : public DotGraph
     DotInclDepGraph(const FileDef *fd,bool inverse);
     ~DotInclDepGraph();
     QCString writeGraph(TextStream &t, GraphOutputFormat gf, EmbeddedOutputFormat ef,
-                        const char *path,const char *fileName,const char *relPath,
+                        const QCString &path,const QCString &fileName,const QCString &relPath,
                         bool writeImageMap=TRUE,int graphId=-1);
     bool isTrivial() const;
     bool isTooBig() const;
@@ -56,5 +58,7 @@ class DotInclDepGraph : public DotGraph
     QCString        m_inclByDepFileName;
     bool            m_inverse;
 };
+
+using DotInclDepGraphPtr = std::shared_ptr<DotInclDepGraph>;
 
 #endif

@@ -35,16 +35,6 @@ extern QCString rtf_documentType;
 extern QCString rtf_documentId;
 extern QCString rtf_keywords;
 
-struct RTFListItemInfo
-{
-  bool isEnum;
-  int number;
-};
-
-const int rtf_maxIndentLevels = 13;
-
-extern RTFListItemInfo rtf_listItemInfo[rtf_maxIndentLevels];
-
 struct Rtf_Style_Default
 {
   const char *name;
@@ -80,7 +70,7 @@ using StyleDataMap = std::map<std::string,StyleData>;
 
 extern StyleDataMap rtf_Style;
 
-void loadExtensions(const char *name);
-void loadStylesheet(const char *name, StyleDataMap& map);
+void loadExtensions(const QCString &name);
+void loadStylesheet(const QCString &name, StyleDataMap& map);
 
 #endif

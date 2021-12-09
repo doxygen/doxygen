@@ -33,27 +33,28 @@ class ConceptDef : public Definition
     virtual bool isLinkable() const = 0;
     virtual QCString initializer() const = 0;
     virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                              const char *header,bool localNames) const = 0;
+                              const QCString &header,bool localNames) const = 0;
     virtual const NamespaceDef *getNamespaceDef() const = 0;
     virtual const FileDef *getFileDef() const = 0;
+    virtual QCString title() const = 0;
 };
 
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef
 {
   public:
-    virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force) = 0;
+    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
     virtual void setNamespace(NamespaceDef *nd) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
     virtual void writeTagFile(TextStream &) = 0;
     virtual void writeDocumentation(OutputList &ol) = 0;
-    virtual void setInitializer(const char *init) = 0;
+    virtual void setInitializer(const QCString &init) = 0;
     virtual void findSectionsInDocumentation() = 0;
 };
 
 ConceptDefMutable *createConceptDef(
-    const char *fileName,int startLine,int startColumn,const char *name,
-    const char *tagRef=0,const char *tagFile=0);
+    const QCString &fileName,int startLine,int startColumn,const QCString &name,
+    const QCString &tagRef=QCString(),const QCString &tagFile=QCString());
 
 ConceptDef *createConceptDefAlias(const Definition *newScope,const ConceptDef *cd);
 
@@ -67,7 +68,7 @@ class ConceptLinkedRefMap : public LinkedRefMap<const ConceptDef>
 {
   public:
     bool declVisible() const;
-    void writeDeclaration(OutputList &ol,const char *header,bool localNames) const;
+    void writeDeclaration(OutputList &ol,const QCString &header,bool localNames) const;
     void writeDocumentation(OutputList &ol,const Definition * container=0) const;
 };
 
@@ -78,5 +79,15 @@ ConceptDef        *toConceptDef(DefinitionMutable *d);
 const ConceptDef  *toConceptDef(const Definition *d);
 ConceptDefMutable *toConceptDefMutable(Definition *d);
 ConceptDefMutable *toConceptDefMutable(const Definition *d);
+
+// --- Helpers
+
+ConceptDef *getConcept(const QCString &key);
+inline ConceptDefMutable *getConceptMutable(const QCString &key)
+{
+  return toConceptDefMutable(getConcept(key));
+}
+ConceptDef *getResolvedConcept(const Definition *scope,const QCString &name);
+
 
 #endif

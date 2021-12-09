@@ -55,8 +55,7 @@ class PerlModOutputStream
     PerlModOutputStream(std::ostream &t) : m_t(t) { }
 
     void add(char c);
-    void add(const char *s);
-    void add(QCString &s);
+    void add(const QCString &s);
     void add(int n);
     void add(unsigned int n);
 };
@@ -70,18 +69,9 @@ void PerlModOutputStream::add(char c)
   //  m_s += c;
 }
 
-void PerlModOutputStream::add(const char *s)
+void PerlModOutputStream::add(const QCString &s)
 {
   m_t << s;
-  //if (m_t != 0)
-  //  (*m_t) << s;
-  //else
-  //  m_s += s;
-}
-
-void PerlModOutputStream::add(QCString &s)
-{
-  m_t << s.str();
   //if (m_t != 0)
   //  (*m_t) << s;
   //else
@@ -136,12 +126,12 @@ public:
   }
 
   inline PerlModOutput &add(char c) { m_stream->add(c); return *this; }
-  inline PerlModOutput &add(const char *s) { m_stream->add(s); return *this; }
+  inline PerlModOutput &add(const QCString &s) { m_stream->add(s); return *this; }
   inline PerlModOutput &add(QCString &s) { m_stream->add(s); return *this; }
   inline PerlModOutput &add(int n) { m_stream->add(n); return *this; }
   inline PerlModOutput &add(unsigned int n) { m_stream->add(n); return *this; }
 
-  PerlModOutput &addQuoted(const char *s) { iaddQuoted(s); return *this; }
+  PerlModOutput &addQuoted(const QCString &s) { iaddQuoted(s); return *this; }
 
   inline PerlModOutput &indent()
   {
@@ -152,25 +142,25 @@ public:
     return *this;
   }
 
-  inline PerlModOutput &open(char c, const char *s = 0) { iopen(c, s); return *this; }
+  inline PerlModOutput &open(char c, const QCString &s = QCString()) { iopen(c, s); return *this; }
   inline PerlModOutput &close(char c = 0) { iclose(c); return *this; }
 
-  inline PerlModOutput &addField(const char *s) { iaddField(s); return *this; }
-  inline PerlModOutput &addFieldQuotedChar(const char *field, char content)
+  inline PerlModOutput &addField(const QCString &s) { iaddField(s); return *this; }
+  inline PerlModOutput &addFieldQuotedChar(const QCString &field, char content)
   {
     iaddFieldQuotedChar(field, content); return *this;
   }
-  inline PerlModOutput &addFieldQuotedString(const char *field, const char *content)
+  inline PerlModOutput &addFieldQuotedString(const QCString &field, const QCString &content)
   {
     iaddFieldQuotedString(field, content); return *this;
   }
-  inline PerlModOutput &addFieldBoolean(const char *field, bool content)
+  inline PerlModOutput &addFieldBoolean(const QCString &field, bool content)
   {
     return addFieldQuotedString(field, content ? "yes" : "no");
   }
-  inline PerlModOutput &openList(const char *s = 0) { open('[', s); return *this; }
+  inline PerlModOutput &openList(const QCString &s = QCString()) { open('[', s); return *this; }
   inline PerlModOutput &closeList() { close(']'); return *this; }
-  inline PerlModOutput &openHash(const char *s = 0 ) { open('{', s); return *this; }
+  inline PerlModOutput &openHash(const QCString &s = QCString() ) { open('{', s); return *this; }
   inline PerlModOutput &closeHash() { close('}'); return *this; }
 
 protected:
@@ -181,12 +171,12 @@ protected:
   void incIndent();
   void decIndent();
 
-  void iaddQuoted(const char *);
-  void iaddFieldQuotedChar(const char *, char);
-  void iaddFieldQuotedString(const char *, const char *);
-  void iaddField(const char *);
+  void iaddQuoted(const QCString &);
+  void iaddFieldQuotedChar(const QCString &, char);
+  void iaddFieldQuotedString(const QCString &, const QCString &);
+  void iaddField(const QCString &);
 
-  void iopen(char, const char *);
+  void iopen(char, const QCString &);
   void iclose(char);
 
 private:
@@ -230,24 +220,29 @@ void PerlModOutput::decIndent()
     m_spaces[m_indentation * 2] = 0;
 }
 
-void PerlModOutput::iaddQuoted(const char *s)
+void PerlModOutput::iaddQuoted(const QCString &str)
 {
+  if (str.isEmpty()) return;
+  const char *s = str.data();
   char c;
-  while ((c = *s++) != 0) {
+  while ((c = *s++) != 0)
+  {
     if ((c == '\'') || (c == '\\'))
+    {
       m_stream->add('\\');
+    }
     m_stream->add(c);
   }
 }
 
-void PerlModOutput::iaddField(const char *s)
+void PerlModOutput::iaddField(const QCString &s)
 {
   continueBlock();
   m_stream->add(s);
   m_stream->add(m_pretty ? " => " : "=>");
 }
 
-void PerlModOutput::iaddFieldQuotedChar(const char *field, char content)
+void PerlModOutput::iaddFieldQuotedChar(const QCString &field, char content)
 {
   iaddField(field);
   m_stream->add('\'');
@@ -257,7 +252,7 @@ void PerlModOutput::iaddFieldQuotedChar(const char *field, char content)
   m_stream->add('\'');
 }
 
-void PerlModOutput::iaddFieldQuotedString(const char *field, const char *content)
+void PerlModOutput::iaddFieldQuotedString(const QCString &field, const QCString &content)
 {
   if (content == 0)
     return;
@@ -267,7 +262,7 @@ void PerlModOutput::iaddFieldQuotedString(const char *field, const char *content
   m_stream->add('\'');
 }
 
-void PerlModOutput::iopen(char c, const char *s)
+void PerlModOutput::iopen(char c, const QCString &s)
 {
   if (s != 0)
     iaddField(s);
@@ -413,10 +408,10 @@ private:
   void enterText();
   void leaveText();
 
-  void openItem(const char *);
+  void openItem(const QCString &);
   void closeItem();
-  void singleItem(const char *);
-  void openSubBlock(const char * = 0);
+  void singleItem(const QCString &);
+  void openSubBlock(const QCString & = QCString());
   void closeSubBlock();
   //void openOther();
   //void closeOther();
@@ -452,7 +447,7 @@ void PerlModDocVisitor::addLink(const QCString &,const QCString &file,const QCSt
   m_output.addFieldQuotedString("link", link);
 }
 
-void PerlModDocVisitor::openItem(const char *name)
+void PerlModDocVisitor::openItem(const QCString &name)
 {
   leaveText();
   m_output.openHash().addFieldQuotedString("type", name);
@@ -483,13 +478,13 @@ void PerlModDocVisitor::leaveText()
     .closeHash();
 }
 
-void PerlModDocVisitor::singleItem(const char *name)
+void PerlModDocVisitor::singleItem(const QCString &name)
 {
   openItem(name);
   closeItem();
 }
 
-void PerlModDocVisitor::openSubBlock(const char *s)
+void PerlModDocVisitor::openSubBlock(const QCString &s)
 {
   leaveText();
   m_output.openList(s);
@@ -677,6 +672,8 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
       m_output.add("</programlisting>");
       return;
 #endif
+    case DocVerbatim::JavaDocCode:
+    case DocVerbatim::JavaDocLiteral:
     case DocVerbatim::Verbatim:  type = "preformatted"; break;
     case DocVerbatim::HtmlOnly:  type = "htmlonly";     break;
     case DocVerbatim::RtfOnly:   type = "rtfonly";      break;
@@ -935,6 +932,17 @@ void PerlModDocVisitor::visitPre(DocHtmlList *l)
 {
   openItem("list");
   m_output.addFieldQuotedString("style", (l->type() == DocHtmlList::Ordered) ? "ordered" : "itemized");
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="type")
+    {
+      m_output.addFieldQuotedString("list_type", qPrint(opt.value));
+    }
+    if (opt.name=="start")
+    {
+      m_output.addFieldQuotedString("start", qPrint(opt.value));
+    }
+  }
   openSubBlock("content");
 }
 
@@ -944,7 +952,17 @@ void PerlModDocVisitor::visitPost(DocHtmlList *)
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlListItem *) { openSubBlock(); }
+void PerlModDocVisitor::visitPre(DocHtmlListItem *l)
+{
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="value")
+    {
+      m_output.addFieldQuotedString("item_value", qPrint(opt.value));
+    }
+  }
+  openSubBlock();
+}
 void PerlModDocVisitor::visitPost(DocHtmlListItem *) { closeSubBlock(); }
 
 //void PerlModDocVisitor::visitPre(DocHtmlPre *)
@@ -1363,7 +1381,7 @@ void PerlModDocVisitor::visitPost(DocXRefItem *x)
 void PerlModDocVisitor::visitPre(DocInternalRef *ref)
 {
   openItem("ref");
-  addLink(0,ref->file(),ref->anchor());
+  addLink(QCString(),ref->file(),ref->anchor());
   openSubBlock("content");
 }
 
@@ -1410,7 +1428,7 @@ void PerlModDocVisitor::visitPost(DocParBlock *)
 }
 
 
-static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const char *)
+static void addTemplateArgumentList(const ArgumentList &al,PerlModOutput &output,const QCString &)
 {
   if (!al.hasParameters()) return;
   output.openList("template_parameters");
@@ -1440,7 +1458,7 @@ static void addTemplateList(const ConceptDef *cd,PerlModOutput &output)
 }
 
 static void addPerlModDocBlock(PerlModOutput &output,
-			    const char *name,
+			    const QCString &name,
 			    const QCString &fileName,
 			    int lineNr,
 			    const Definition *scope,
@@ -1451,15 +1469,15 @@ static void addPerlModDocBlock(PerlModOutput &output,
   if (stext.isEmpty())
     output.addField(name).add("{}");
   else {
-    DocNode *root = validatingParseDoc(fileName,lineNr,scope,md,stext,FALSE,FALSE,
-                                       0,FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                         fileName,lineNr,scope,md,stext,FALSE,FALSE,
+                                         QCString(),FALSE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     output.openHash(name);
-    PerlModDocVisitor *visitor = new PerlModDocVisitor(output);
-    root->accept(visitor);
+    auto visitor = std::make_unique<PerlModDocVisitor>(output);
+    root->accept(visitor.get());
     visitor->finish();
     output.closeHash();
-    delete visitor;
-    delete root;
   }
 }
 
@@ -1519,7 +1537,7 @@ public:
   void generatePerlModForMember(const MemberDef *md, const Definition *);
   void generatePerlUserDefinedSection(const Definition *d, const MemberGroupList &mgl);
   void generatePerlModSection(const Definition *d, MemberList *ml,
-			      const char *name, const char *header=0);
+			      const QCString &name, const QCString &header=QCString());
   void addListOfAllMembers(const ClassDef *cd);
   void addIncludeInfo(const IncludeInfo *ii);
   void generatePerlModForClass(const ClassDef *cd);
@@ -1529,7 +1547,7 @@ public:
   void generatePerlModForGroup(const GroupDef *gd);
   void generatePerlModForPage(PageDef *pi);
 
-  bool createOutputFile(std::ofstream &f, const char *s);
+  bool createOutputFile(std::ofstream &f, const QCString &s);
   bool createOutputDir(Dir &perlModDir);
   bool generateDoxyLatexTex();
   bool generateDoxyFormatTex();
@@ -1661,12 +1679,12 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
   if (!md->initializer().isEmpty())
     m_output.addFieldQuotedString("initializer", md->initializer());
 
-  if (md->excpString())
+  if (!md->excpString().isEmpty())
     m_output.addFieldQuotedString("exceptions", md->excpString());
 
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList &enumFields = md->enumFieldList();
+    const MemberVector &enumFields = md->enumFieldList();
     if (!enumFields.empty())
     {
       m_output.openList("values");
@@ -1688,7 +1706,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
     }
   }
 
-  if (md->memberType() == MemberType_Variable && md->bitfieldString())
+  if (md->memberType() == MemberType_Variable && !md->bitfieldString().isEmpty())
   {
     QCString bitfield = md->bitfieldString();
     if (bitfield.at(0) == ':') bitfield = bitfield.mid(1);
@@ -1701,7 +1719,7 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
       .addFieldQuotedString("name", rmd->name())
       .closeHash();
 
-  const MemberList &rbml = md->reimplementedBy();
+  const MemberVector &rbml = md->reimplementedBy();
   if (!rbml.empty())
   {
     m_output.openList("reimplemented_by");
@@ -1716,13 +1734,13 @@ void PerlModGenerator::generatePerlModForMember(const MemberDef *md,const Defini
 }
 
 void PerlModGenerator::generatePerlModSection(const Definition *d,
-					      MemberList *ml,const char *name,const char *header)
+					      MemberList *ml,const QCString &name,const QCString &header)
 {
   if (ml==0) return; // empty list
 
   m_output.openHash(name);
 
-  if (header)
+  if (!header.isEmpty())
     m_output.addFieldQuotedString("header", header);
 
   m_output.openList("members");
@@ -1769,8 +1787,10 @@ void PerlModGenerator::generatePerlUserDefinedSection(const Definition *d, const
     for (const auto &mg : mgl)
     {
       m_output.openHash();
-      if (mg->header())
+      if (!mg->header().isEmpty())
+      {
         m_output.addFieldQuotedString("header", mg->header());
+      }
 
       if (!mg->members().empty())
       {
@@ -2219,12 +2239,12 @@ bool PerlModGenerator::generatePerlModOutput()
   return true;
 }
 
-bool PerlModGenerator::createOutputFile(std::ofstream &f, const char *s)
+bool PerlModGenerator::createOutputFile(std::ofstream &f, const QCString &s)
 {
-  f.open(s,std::ofstream::out | std::ofstream::binary);
+  f.open(s.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n", s);
+    err("Cannot open file %s for writing!\n", qPrint(s));
     return false;
   }
   return true;

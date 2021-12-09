@@ -92,7 +92,7 @@ static QCString detab(const QCString &s)
   return out.get();
 }
 
-static QCString keywordToType(const char *keyword)
+static const char * keywordToType(const char *keyword)
 {
   static const StringUnorderedSet flowKeywords({
     "break", "case", "catch", "continue", "default", "do",
@@ -130,6 +130,7 @@ class ClangTUParser::Private
     CXToken *tokens = 0;
     uint numTokens = 0;
     StringVector filesInSameTU;
+    TooltipManager tooltipManager;
 
     // state while parsing sources
     const MemberDef  *currentMemberDef=0;
@@ -263,7 +264,7 @@ void ClangTUParser::parse()
 
     // provide the input and and its dependencies as unsaved files so we can
     // pass the filtered versions
-    argv[argc++]=qstrdup(fileName);
+    argv[argc++]=qstrdup(fileName.data());
   }
   //printf("source %s ----------\n%s\n-------------\n\n",
   //    fileName,p->source.data());
@@ -272,7 +273,7 @@ void ClangTUParser::parse()
   p->sources.resize(numUnsavedFiles);
   p->ufs.resize(numUnsavedFiles);
   p->sources[0]      = detab(fileToString(fileName,filterSourceFiles,TRUE));
-  p->ufs[0].Filename = qstrdup(fileName);
+  p->ufs[0].Filename = qstrdup(fileName.data());
   p->ufs[0].Contents = p->sources[0].data();
   p->ufs[0].Length   = p->sources[0].length();
   p->fileMapping.insert({fileName.data(),0});
@@ -355,7 +356,7 @@ void ClangTUParser::switchToFile(const FileDef *fd)
     p->tokens    = 0;
     p->numTokens = 0;
 
-    CXFile f = clang_getFile(p->tu, fd->absFilePath());
+    CXFile f = clang_getFile(p->tu, fd->absFilePath().data());
     auto it = p->fileMapping.find(fd->absFilePath().data());
     if (it!=p->fileMapping.end() && it->second < p->numFiles)
     {
@@ -485,7 +486,7 @@ std::string ClangTUParser::lookup(uint line,const char *symbol)
 }
 
 
-void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line)
+void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool writeLineAnchor)
 {
   const Definition *d = fd ? fd->getSourceDefinition(line) : 0;
   if (d && d->isLinkable())
@@ -504,7 +505,7 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
       ol.writeLineNumber(md->getReference(),
                          md->getOutputFileBase(),
                          md->anchor(),
-                         line);
+                         line,writeLineAnchor);
     }
     else // link to compound
     {
@@ -512,12 +513,12 @@ void ClangTUParser::writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,ui
       ol.writeLineNumber(d->getReference(),
                          d->getOutputFileBase(),
                          d->anchor(),
-                         line);
+                         line,writeLineAnchor);
     }
   }
   else // no link
   {
-    ol.writeLineNumber(0,0,0,line);
+    ol.writeLineNumber(QCString(),QCString(),QCString(),line,writeLineAnchor);
   }
 
   // set search page target
@@ -537,6 +538,7 @@ void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const 
   if (fontClass) ol.startFontClass(fontClass);
   const char *p=text,*sp=p;
   char c;
+  bool inlineCodeFragment = false;
   bool done=FALSE;
   while (!done)
   {
@@ -555,7 +557,7 @@ void ClangTUParser::codifyLines(CodeOutputInterface &ol,const FileDef *fd,const 
       if (fontClass) ol.endFontClass();
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line);
+      writeLineNumber(ol,fd,line,inlineCodeFragment);
       if (fontClass) ol.startFontClass(fontClass);
     }
     else
@@ -573,7 +575,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
                   const char *text)
 {
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  TooltipManager::instance().addTooltip(ol,d);
+  p->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -582,6 +584,7 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
   {
    tooltip = d->briefDescriptionAsTooltip();
   }
+  bool inlineCodeFragment = false;
   bool done=FALSE;
   char *p=(char *)text;
   while (!done)
@@ -594,15 +597,15 @@ void ClangTUParser::writeMultiLineCodeLink(CodeOutputInterface &ol,
       line++;
       *(p-1)='\0';
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line);
+      writeLineNumber(ol,fd,line,inlineCodeFragment);
     }
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
@@ -634,7 +637,12 @@ void ClangTUParser::linkInclude(CodeOutputInterface &ol,const FileDef *fd,
   }
   if (ifd)
   {
-    ol.writeCodeLink(ifd->getReference(),ifd->getOutputFileBase(),0,text,ifd->briefDescriptionAsTooltip());
+    ol.writeCodeLink(ifd->codeSymbolType(),
+                     ifd->getReference(),
+                     ifd->getOutputFileBase(),
+                     QCString(),
+                     text,
+                     ifd->briefDescriptionAsTooltip());
   }
   else
   {
@@ -754,8 +762,9 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
 
   unsigned int line=1,column=1;
   QCString lineNumber,lineAnchor;
+  bool inlineCodeFragment = false;
   ol.startCodeLine(TRUE);
-  writeLineNumber(ol,fd,line);
+  writeLineNumber(ol,fd,line,inlineCodeFragment);
   for (unsigned int i=0;i<p->numTokens;i++)
   {
     CXSourceLocation start = clang_getTokenLocation(p->tu, p->tokens[i]);
@@ -767,7 +776,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
       line++;
       ol.endCodeLine();
       ol.startCodeLine(TRUE);
-      writeLineNumber(ol,fd,line);
+      writeLineNumber(ol,fd,line,inlineCodeFragment);
     }
     while (column<c) { ol.codify(" "); column++; }
     CXString tokenString = clang_getTokenSpelling(p->tu, p->tokens[i]);
@@ -852,6 +861,7 @@ void ClangTUParser::writeSources(CodeOutputInterface &ol,const FileDef *fd)
     clang_disposeString(tokenString);
   }
   ol.endCodeLine();
+  p->tooltipManager.writeTooltips(ol);
 }
 
 //--------------------------------------------------------------------------

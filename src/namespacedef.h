@@ -45,9 +45,9 @@ class NamespaceLinkedMap : public LinkedMap<NamespaceDef>
 class NamespaceLinkedRefMap : public LinkedRefMap<const NamespaceDef>
 {
   public:
-    void writeDeclaration(OutputList &ol,const char *title,
+    void writeDeclaration(OutputList &ol,const QCString &title,
             bool isConstantGroup=false, bool localName=FALSE);
-    bool declVisible() const;
+    bool declVisible(bool isContantGroup) const;
 };
 
 /** An abstract interface of a namespace symbol. */
@@ -72,7 +72,7 @@ class NamespaceDef : public Definition
     virtual bool isLinkableInProject() const = 0;
     virtual bool isLinkable() const = 0;
     virtual bool hasDetailedDescription() const = 0;
-    virtual const Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual bool subGrouping() const = 0;
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
     virtual const MemberLists &getMemberLists() const = 0;
@@ -134,9 +134,9 @@ class NamespaceDefMutable : public DefinitionMutable, public NamespaceDef
 };
 
 /** Factory method to create new NamespaceDef instance */
-NamespaceDefMutable *createNamespaceDef(const char *defFileName,int defLine,int defColumn,
-                 const char *name,const char *ref=0,
-                 const char *refFile=0,const char*type=0,
+NamespaceDefMutable *createNamespaceDef(const QCString &defFileName,int defLine,int defColumn,
+                 const QCString &name,const QCString &ref=QCString(),
+                 const QCString &refFile=QCString(),const QCString &type=QCString(),
                  bool isPublished=false);
 
 /** Factory method to create an alias of an existing namespace. Used for inline namespaces. */
@@ -150,6 +150,17 @@ NamespaceDef            *toNamespaceDef(DefinitionMutable *d);
 const NamespaceDef      *toNamespaceDef(const Definition *d);
 NamespaceDefMutable     *toNamespaceDefMutable(Definition *d);
 NamespaceDefMutable     *toNamespaceDefMutable(const Definition *d);
+
+// --- Helpers
+
+NamespaceDef *getResolvedNamespace(const QCString &key);
+inline NamespaceDefMutable *getResolvedNamespaceMutable(const QCString &key)
+{
+  return toNamespaceDefMutable(getResolvedNamespace(key));
+}
+bool namespaceHasNestedNamespace(const NamespaceDef *nd);
+bool namespaceHasNestedConcept(const NamespaceDef *nd);
+bool namespaceHasNestedClass(const NamespaceDef *nd,bool filterClasses,ClassDef::CompoundType ct);
 
 //------------------------------------------------------------------------
 

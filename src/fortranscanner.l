@@ -44,6 +44,10 @@
 %option extra-type="struct fortranscannerYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -206,8 +210,8 @@ struct fortranscannerYY_state
 //-----------------------------------------------------------------------------
 static int getAmpersandAtTheStart(const char *buf, int length);
 static int getAmpOrExclAtTheEnd(const char *buf, int length, char ch);
-static QCString extractFromParens(const QCString name);
-static QCString extractBind(const QCString name);
+static QCString extractFromParens(const QCString &name);
+static QCString extractBind(const QCString &name);
 
 
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
@@ -216,8 +220,8 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief);
 static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,bool brief);
 static void addCurrentEntry(yyscan_t yyscanner,bool case_insens);
-static void addModule(yyscan_t yyscanner,const char *name, bool isModule=FALSE);
-static void addSubprogram(yyscan_t yyscanner,const char *text);
+static void addModule(yyscan_t yyscanner,const QCString &name=QCString(), bool isModule=FALSE);
+static void addSubprogram(yyscan_t yyscanner,const QCString &text);
 static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type);
 static Argument *getParameter(yyscan_t yyscanner,const QCString &name);
 static void scanner_abort(yyscan_t yyscanner);
@@ -226,7 +230,7 @@ static void startScope(yyscan_t yyscanner,Entry *scope);
 static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot=FALSE);
 static void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root);
 static void truncatePrepass(yyscan_t yyscanner,int index);
-static void pushBuffer(yyscan_t yyscanner,QCString &buffer);
+static void pushBuffer(yyscan_t yyscanner,const QCString &buffer);
 static void popBuffer(yyscan_t yyscanner);
 static const CommentInPrepass* locatePrepassComment(yyscan_t yyscanner,int from, int to);
 static void updateVariablePrepassComment(yyscan_t yyscanner,int from, int to);
@@ -323,7 +327,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
  /** comment parsing states */
 %x      DocBlock
 %x      DocBackLine
-%x      EndDoc
 
 %x      BlockData
 
@@ -378,6 +381,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                             if (YY_START != Prepass)
                                             {
                                               yyextra->comments.clear();
+                                              yyextra->inputStringPrepass=QCString();
                                               yy_push_state(Prepass,yyscanner);
                                             }
 
@@ -445,7 +449,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                            }
                                         }
 <StrIgnore>.?/\n                        { yy_pop_state(yyscanner); // comment ends with endline character
-                                          DBG_CTX((stderr,"end comment %d %s\n",yyextra->lineNr,yyextra->debugStr.data()));
+                                          DBG_CTX((stderr,"end comment %d %s\n",yyextra->lineNr,qPrint(yyextra->debugStr)));
                                         } // comment line ends
 <StrIgnore>.                            { yyextra->debugStr+=yytext; }
 
@@ -455,7 +459,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Start,ModuleBody,SubprogBody>"use"{BS_} {
                                           if (YY_START == Start)
                                           {
-                                            addModule(yyscanner,NULL);
+                                            addModule(yyscanner);
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           yy_push_state(Use,yyscanner);
@@ -555,7 +559,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Start>^{BS}{CONTAINS}/({BS}|\n|!|;)    {
                                           if (YY_START == Start)
                                           {
-                                            addModule(yyscanner,NULL);
+                                            addModule(yyscanner);
                                             yy_push_state(ModuleBodyContains,yyscanner); //anon program
                                           }
                                         }
@@ -612,11 +616,11 @@ SCOPENAME ({ID}{BS}"::"{BS})*
                                           }
                                         }
 <Module>{ID}                            {
-                                          addModule(yyscanner,yytext, TRUE);
+                                          addModule(yyscanner, QCString(yytext), TRUE);
                                           BEGIN(ModuleBody);
                                         }
 <Program>{ID}                           {
-                                            addModule(yyscanner,yytext, FALSE);
+                                            addModule(yyscanner, QCString(yytext), FALSE);
                                             BEGIN(ModuleBody);
                                         }
 
@@ -634,7 +638,7 @@ SCOPENAME ({ID}{BS}"::"{BS})*
 <Start,ModuleBody>^{BS}type/[^a-z0-9_]  {
                                           if (YY_START == Start)
                                           {
-                                            addModule(yyscanner,NULL);
+                                            addModule(yyscanner,QCString());
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
 
@@ -793,7 +797,7 @@ private                                 {
                                           /* variable declaration starts */
                                           if (YY_START == Start)
                                           {
-                                            addModule(yyscanner,NULL);
+                                            addModule(yyscanner);
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           yy_push_state(AttributeList,yyscanner);
@@ -802,7 +806,7 @@ private                                 {
                                           /* external can be a "type" or an attribute */
                                           if (YY_START == Start)
                                           {
-                                            addModule(yyscanner,NULL);
+                                            addModule(yyscanner);
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
                                           QCString tmp = yytext;
@@ -990,7 +994,7 @@ private                                 {
 <Variable>";".*"\n"                     { yyextra->currentModifiers = SymbolModifiers();
                                           yy_pop_state(yyscanner); // end variable declaration list
                                           yyextra->docBlock.resize(0);
-                                          yyextra->inputStringSemi =(const char*)(QCString(" \n") + QCString(yytext+1)).data();
+                                          yyextra->inputStringSemi = " \n"+QCString(yytext+1);
                                           yyextra->lineNr--;
                                           pushBuffer(yyscanner,yyextra->inputStringSemi);
                                         }
@@ -998,7 +1002,7 @@ private                                 {
                                           if (YY_START == Variable) REJECT; // Just be on the safe side
                                           if (YY_START == String) REJECT; // ";" ignored in strings
                                           if (YY_START == StrIgnore) REJECT; // ";" ignored in regular yyextra->comments
-                                          yyextra->inputStringSemi =(const char*)(QCString(" \n") + QCString(yytext+1)).data();
+                                          yyextra->inputStringSemi = " \n"+QCString(yytext+1);
                                           yyextra->lineNr--;
                                           pushBuffer(yyscanner,yyextra->inputStringSemi);
                                         }
@@ -1060,7 +1064,7 @@ private                                 {
 <*>{BS}"enum"{BS}","{BS}"bind"{BS}"("{BS}"c"{BS}")"{BS} {
                                           if (YY_START == Start)
                                           {
-                                            addModule(yyscanner,NULL);
+                                            addModule(yyscanner);
                                             yy_push_state(ModuleBody,yyscanner); //anon program
                                           }
 
@@ -1753,7 +1757,7 @@ const char* prepassFixedForm(const char* contents, int *hasContLine)
   return newContents;
 }
 
-static void pushBuffer(yyscan_t yyscanner,QCString& buffer)
+static void pushBuffer(yyscan_t yyscanner,const QCString &buffer)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->includeStackCnt <= yyextra->includeStackPtr)
@@ -1762,10 +1766,9 @@ static void pushBuffer(yyscan_t yyscanner,QCString& buffer)
      yyextra->includeStack = (YY_BUFFER_STATE *)realloc(yyextra->includeStack, yyextra->includeStackCnt * sizeof(YY_BUFFER_STATE));
   }
   yyextra->includeStack[yyextra->includeStackPtr++] = YY_CURRENT_BUFFER;
-  yy_switch_to_buffer(yy_scan_string(buffer,yyscanner),yyscanner);
+  yy_switch_to_buffer(yy_scan_string(buffer.data(),yyscanner),yyscanner);
 
-  DBG_CTX((stderr, "--PUSH--%s", (const char *)buffer));
-  buffer = NULL;
+  DBG_CTX((stderr, "--PUSH--%s", qPrint(buffer)));
 }
 
 static void popBuffer(yyscan_t yyscanner)
@@ -1814,7 +1817,7 @@ void resolveModuleProcedures(yyscan_t yyscanner,Entry *current_root)
 }
 
 /*! Extracts string which resides within parentheses of provided string. */
-static QCString extractFromParens(const QCString name)
+static QCString extractFromParens(const QCString &name)
 {
   QCString extracted = name;
   int start = extracted.find("(");
@@ -1834,7 +1837,7 @@ static QCString extractFromParens(const QCString name)
 }
 
 /*! remove useless spaces from bind statement */
-static QCString extractBind(const QCString name)
+static QCString extractBind(const QCString &name)
 {
   QCString parensPart = extractFromParens(name);
   if (parensPart.length() == 1)
@@ -2199,8 +2202,8 @@ static bool endScope(yyscan_t yyscanner,Entry *scope, bool isGlobalRoot)
     // iterate all symbol yyextra->modifiers of the scope
     for (const auto &kv : mdfsMap)
     {
-      //cout<<it.key()<<": "<<it.data()<<endl;
-      Argument *arg = findArgument(scope, kv.first);
+      //cout<<it.key()<<": "<<qPrint(it)<<endl;
+      Argument *arg = findArgument(scope, QCString(kv.first));
 
       if (arg)
       {
@@ -2315,23 +2318,23 @@ static void addCurrentEntry(yyscan_t yyscanner,bool case_insens)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (case_insens) yyextra->current->name = yyextra->current->name.lower();
-  //printf("===Adding entry %s to %s\n", yyextra->current->name.data(), yyextra->current_root->name.data());
+  //printf("===Adding entry %s to %s\n", qPrint(yyextra->current->name), qPrint(yyextra->current_root->name));
   yyextra->last_entry = yyextra->current;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   initEntry(yyscanner);
 }
 
-static void addModule(yyscan_t yyscanner,const char *name, bool isModule)
+static void addModule(yyscan_t yyscanner,const QCString &name, bool isModule)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  DBG_CTX((stderr, "0=========> got module %s\n", name));
+  DBG_CTX((stderr, "0=========> got module %s\n", qPrint(name)));
 
   if (isModule)
     yyextra->current->section = Entry::NAMESPACE_SEC;
   else
     yyextra->current->section = Entry::FUNCTION_SEC;
 
-  if (name!=NULL)
+  if (!name.isEmpty())
   {
     yyextra->current->name = name;
   }
@@ -2353,10 +2356,10 @@ static void addModule(yyscan_t yyscanner,const char *name, bool isModule)
 }
 
 
-static void addSubprogram(yyscan_t yyscanner,const char *text)
+static void addSubprogram(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  DBG_CTX((stderr,"1=========> got subprog, type: %s\n",text));
+  DBG_CTX((stderr,"1=========> got subprog, type: %s\n",qPrint(text)));
   yyextra->subrCurrent.push_back(yyextra->current);
   yyextra->current->section = Entry::FUNCTION_SEC ;
   QCString subtype = text; subtype=subtype.lower().stripWhiteSpace();
@@ -2380,7 +2383,7 @@ static void addInterface(yyscan_t yyscanner,QCString name, InterfaceType type)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (YY_START == Start)
   {
-    addModule(yyscanner,NULL);
+    addModule(yyscanner);
     yy_push_state(ModuleBody,yyscanner); //anon program
   }
 
@@ -2467,7 +2470,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
     yyextra->docBlockInBody = FALSE;
     return;
   }
-  DBG_CTX((stderr,"call parseCommentBlock [%s]\n",doc.data()));
+  DBG_CTX((stderr,"call parseCommentBlock [%s]\n",qPrint(doc)));
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
   int position=0;
   bool needsEntry = FALSE;
@@ -2539,8 +2542,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     else
     {
       // something different specified, give warning and leave error.
-      warn(yyextra->fileName,yyextra->lineNr, "%s", ("Routine: " + yyextra->current->name + yyextra->current->args +
-           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName).data());
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
+             qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -2563,8 +2566,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "%s", ("Routine: " + yyextra->current->name + yyextra->current->args +
-           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName).data());
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
+             qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -2585,8 +2588,8 @@ static void subrHandleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool b
     }
     else
     {
-      warn(yyextra->fileName,yyextra->lineNr, "%s", ("Routine: " + yyextra->current->name + yyextra->current->args +
-           " inconsistency between intent attribute and documentation for parameter: " + yyextra->argName).data());
+      warn(yyextra->fileName,yyextra->lineNr, "Routine: %s%s inconsistency between intent attribute and documentation for parameter %s:", 
+             qPrint(yyextra->current->name),qPrint(yyextra->current->args),qPrint(yyextra->argName));
       handleCommentBlock(yyscanner,QCString("\n\n@param ") + directionParam[dir1] + " " +
                          yyextra->argName + " " + loc_doc,brief);
     }
@@ -2634,20 +2637,19 @@ static void subrHandleCommentBlockResult(yyscan_t yyscanner,const QCString &doc,
 
 //----------------------------------------------------------------------------
 
-static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileBuf,
+static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *fileBuf,
                       const std::shared_ptr<Entry> &rt, FortranFormat format)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  char *tmpBuf = NULL;
+  char *tmpBuf = nullptr;
   initParser(yyscanner);
-
 
   if (fileBuf==0 || fileBuf[0]=='\0') return;
 
   yyextra->defaultProtection = Public;
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
-  yyextra->inputStringPrepass = NULL;
+  yyextra->inputStringPrepass = nullptr;
   yyextra->inputPositionPrepass = 0;
 
   //yyextra->anonCount     = 0;  // don't reset per file
@@ -2658,13 +2660,13 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
 
   if (yyextra->isFixedForm)
   {
-    msg("Prepassing fixed form of %s\n", fileName);
+    msg("Prepassing fixed form of %s\n", qPrint(fileName));
     //printf("---strlen=%d\n", strlen(fileBuf));
     //clock_t start=clock();
 
     //printf("Input fixed form string:\n%s\n", fileBuf);
     //printf("===========================\n");
-    yyextra->inputString = prepassFixedForm(fileBuf, NULL);
+    yyextra->inputString = prepassFixedForm(fileBuf, nullptr);
     Debug::print(Debug::FortranFixed2Free,0,"======== Fixed to Free format  =========\n---- Input fixed form string ------- \n%s\n", fileBuf);
     Debug::print(Debug::FortranFixed2Free,0,"---- Resulting free form string ------- \n%s\n", yyextra->inputString);
     //printf("Resulting free form string:\n%s\n", yyextra->inputString);
@@ -2684,7 +2686,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
 
   yyextra->lineNr= 1 ;
   yyextra->fileName = fileName;
-  msg("Parsing file %s...\n",yyextra->fileName.data());
+  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
 
   yyextra->global_scope = rt.get();
   startScope(yyscanner,rt.get()); // implies yyextra->current_root = rt
@@ -2760,19 +2762,19 @@ FortranOutlineParser::~FortranOutlineParser()
 {
 }
 
-void FortranOutlineParser::parseInput(const char *fileName,
-                                        const char *fileBuf,
-                                        const std::shared_ptr<Entry> &root,
-                                        ClangTUParser * /*clangParser*/)
+void FortranOutlineParser::parseInput(const QCString &fileName,
+                                      const char *fileBuf,
+                                      const std::shared_ptr<Entry> &root,
+                                      ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
 
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
 
   ::parseMain(p->yyscanner,fileName,fileBuf,root,p->format);
 
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
+  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
 bool FortranOutlineParser::needsPreprocessing(const QCString &extension) const
@@ -2780,11 +2782,10 @@ bool FortranOutlineParser::needsPreprocessing(const QCString &extension) const
   return extension!=extension.lower(); // use preprocessor only for upper case extensions
 }
 
-void FortranOutlineParser::parsePrototype(const char *text)
+void FortranOutlineParser::parsePrototype(const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  QCString buffer = QCString(text);
-  pushBuffer(p->yyscanner,buffer);
+  pushBuffer(p->yyscanner,text);
   yyextra->parsingPrototype = TRUE;
   BEGIN(Prototype);
   fortranscannerYYlex(p->yyscanner);
@@ -2798,7 +2799,7 @@ static void scanner_abort(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   fprintf(stderr,"********************************************************************\n");
-  fprintf(stderr,"Error in file %s line: %d, state: %d(%s)\n",yyextra->fileName.data(),yyextra->lineNr,YY_START,stateToString(YY_START));
+  fprintf(stderr,"Error in file %s line: %d, state: %d(%s)\n",qPrint(yyextra->fileName),yyextra->lineNr,YY_START,stateToString(YY_START));
   fprintf(stderr,"********************************************************************\n");
 
   bool start=FALSE;

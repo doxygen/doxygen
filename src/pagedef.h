@@ -28,9 +28,10 @@ class PageDef : public DefinitionMutable, public Definition
     virtual ~PageDef() {}
 
     // setters
-    virtual void setFileName(const char *name) = 0;
+    virtual void setFileName(const QCString &name) = 0;
     virtual void setLocalToc(const LocalToc &tl) = 0;
     virtual void setShowLineNo(bool) = 0;
+    virtual void setTitle(const QCString &title) = 0;
 
     // getters
     virtual DefType definitionType() const = 0;
@@ -61,7 +62,7 @@ class PageDef : public DefinitionMutable, public Definition
 
 };
 
-PageDef *createPageDef(const char *f,int l,const char *n,const char *d,const char *t);
+PageDef *createPageDef(const QCString &f,int l,const QCString &n,const QCString &d,const QCString &t);
 
 // --- Cast functions
 

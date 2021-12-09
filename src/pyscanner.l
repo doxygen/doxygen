@@ -25,6 +25,10 @@
 %option extra-type="struct pyscannerYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -134,7 +138,7 @@ static void initTriSingleQuoteBlock(yyscan_t yyscanner);
 static void initSpecialBlock(yyscan_t yyscanner);
 static void searchFoundDef(yyscan_t yyscanner);
 static void searchFoundClass(yyscan_t yyscanner);
-static QCString findPackageScope(yyscan_t yyscanner,const char *fileName);
+static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName);
 
 static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
@@ -180,7 +184,7 @@ LONGSTRINGCHAR    [^\\"']
 ESCAPESEQ         ("\\")(.)
 LONGSTRINGITEM    ({LONGSTRINGCHAR}|{ESCAPESEQ})
 SMALLQUOTE        ("\"\""|"\""|"'"|"''")
-LONGSTRINGBLOCK   ({LONGSTRINGITEM}+|{SMALLQUOTE})
+LONGSTRINGBLOCK   ({LONGSTRINGITEM}|{SMALLQUOTE})
 
 SHORTSTRING       ("'"{SHORTSTRINGITEM}*"'"|'"'{SHORTSTRINGITEM}*'"')
 SHORTSTRINGITEM   ({SHORTSTRINGCHAR}|{ESCAPESEQ})
@@ -204,7 +208,6 @@ STARTDOCSYMS      "##"
 
   /* %x FuncDoubleComment */
   /* %x ClassDoubleComment */
-%x TryClassDocString
 %x TripleComment
 %x SpecialComment
 
@@ -254,7 +257,17 @@ STARTDOCSYMS      "##"
 			  searchFoundDef(yyscanner);
 			  BEGIN( FunctionDec );
       			}
+    ^{B}"async"{BB}"def"{BB} { // start of an async function/method definition with indent
+      			  DBG_CTX((stderr,"Found async def at %d\n",yyextra->yyLineNr));
+      			  yyextra->indent=computeIndent(yytext);
+			  searchFoundDef(yyscanner);
+			  BEGIN( FunctionDec );
+      			}
     "def"{BB}           { // start of a function/method definition
+			  searchFoundDef(yyscanner);
+			  BEGIN( FunctionDec );
+                        }
+    "async"{BB}"def"{BB} { // start of a function/method definition
 			  searchFoundDef(yyscanner);
 			  BEGIN( FunctionDec );
                         }
@@ -331,6 +344,7 @@ STARTDOCSYMS      "##"
        			yyextra->stat=TRUE;
       		      }
     "@"{SCOPE}{CALL}? { // decorator
+                        lineCount(yyscanner);
                       }
     {SCRIPTCOMMENT}   { // Unix type script comment
                         if (yyextra->yyLineNr != 1) REJECT;
@@ -448,7 +462,7 @@ STARTDOCSYMS      "##"
   {IDENTIFIER}({B}"."{B}{IDENTIFIER})* {
 			yyextra->current->name=removeRedundantWhiteSpace(substitute(yytext,".","::"));
 			yyextra->current->fileName = yyextra->yyFileName; 
-			//printf("Adding using declaration: found:%s:%d name=%s\n",yyextra->yyFileName.data(),yyextra->yyLineNr,yyextra->current->name.data());
+			//printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->yyFileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
 			yyextra->current->section=Entry::USINGDECL_SEC;
 			yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
 			initEntry(yyscanner);
@@ -468,7 +482,7 @@ STARTDOCSYMS      "##"
 
 <SearchMemVars>{
     "self."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],yyextra->current_root->name.data(),yyextra->yyLineNr));
+                        DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
 			yyextra->current->name=&yytext[5];
 			yyextra->current->section=Entry::VARIABLE_SEC;
 			yyextra->current->fileName  = yyextra->yyFileName;
@@ -482,7 +496,7 @@ STARTDOCSYMS      "##"
 			newEntry(yyscanner);
                       }
     "cls."{IDENTIFIER}/{B}"=" {
-                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],yyextra->current_root->name.data(),yyextra->yyLineNr));
+                        DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
 			yyextra->current->name=&yytext[4];
 			yyextra->current->section=Entry::VARIABLE_SEC;
 			yyextra->current->fileName  = yyextra->yyFileName;
@@ -954,7 +968,7 @@ STARTDOCSYMS      "##"
 			  // prepend scope in case of nested classes
 			  if (yyextra->current_root->section&Entry::SCOPE_MASK)
 			  {
-			    //printf("*** Prepending scope %s to class %s\n",yyextra->current_root->name.data(),yyextra->current->name.data());
+			    //printf("*** Prepending scope %s to class %s\n",qPrint(yyextra->current_root->name),qPrint(yyextra->current->name));
 			    yyextra->current->name.prepend(yyextra->current_root->name+"::");
 			  }
 			  
@@ -1037,7 +1051,7 @@ STARTDOCSYMS      "##"
 				 yyextra->curIndent=computeIndent(yytext);
 				 yyextra->bodyEntry = yyextra->current;
 				 DBG_CTX((stderr,"setting indent %d\n",yyextra->curIndent));
-				 //printf("yyextra->current->program=[%s]\n",yyextra->current->program.data());
+				 //printf("yyextra->current->program=[%s]\n",qPrint(yyextra->current->program));
 				 //yyextra->hideClassDocs = TRUE;
 			         BEGIN(ClassBody);
                                }
@@ -1269,7 +1283,14 @@ STARTDOCSYMS      "##"
 			          actualDoc.append("\\endverbatim ");
 			        }
 			      }
-			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+                              if (yyextra->moduleScope.startsWith("__") &&  yyextra->moduleScope.endsWith("__"))
+                              {
+			        actualDoc.prepend("\\namespace \\"+yyextra->moduleScope+" ");
+                              }
+                              else
+                              {
+			        actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+                              }
 			      handleCommentBlock(yyscanner, actualDoc, FALSE);
 			    }
 			    if ((yyextra->docBlockContext==ClassBody /*&& !yyextra->hideClassDocs*/) ||
@@ -1526,7 +1547,7 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
   auto it = yyextra->packageNameCache.find(path.str());
   if (it!=yyextra->packageNameCache.end())
   {
-    return it->second;
+    return QCString(it->second);
   }
   FileInfo pf(path.str()+"/__init__.py"); // found package initialization file
   if (pf.exists())
@@ -1546,11 +1567,11 @@ static QCString findPackageScopeFromPath(yyscan_t yyscanner,const QCString &path
   }
   return "";
 }
-  
-static QCString findPackageScope(yyscan_t yyscanner,const char *fileName)
+
+static QCString findPackageScope(yyscan_t yyscanner,const QCString &fileName)
 {
-  if (fileName==0) return "";
-  FileInfo fi(fileName);
+  if (fileName.isEmpty()) return fileName;
+  FileInfo fi(fileName.str());
   return findPackageScopeFromPath(yyscanner,fi.dirPath(true).c_str());
 }
 
@@ -1560,7 +1581,7 @@ static void addFrom(yyscan_t yyscanner,bool all)
   QCString item=all ? yyextra->packageName : yyextra->packageName+"."+yytext;
   yyextra->current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
   yyextra->current->fileName = yyextra->yyFileName; 
-  //printf("Adding using declaration: found:%s:%d name=%s\n",yyextra->yyFileName.data(),yyextra->yyLineNr,yyextra->current->name.data());
+  //printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->yyFileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
   yyextra->current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   initEntry(yyscanner);
@@ -1604,7 +1625,7 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //printf("handleCommentBlock(doc=[%s] brief=%d yyextra->docBlockInBody=%d yyextra->docBlockJavaStyle=%d\n",
-  //    doc.data(),brief,yyextra->docBlockInBody,yyextra->docBlockJavaStyle);
+  //    qPrint(doc),brief,yyextra->docBlockInBody,yyextra->docBlockJavaStyle);
 
   // TODO: Fix me
   yyextra->docBlockInBody=FALSE;
@@ -1744,17 +1765,17 @@ static void searchFoundClass(yyscan_t yyscanner)
 static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("parseCompounds(%s)\n",rt->name.data());
+  //printf("parseCompounds(%s)\n",qPrint(rt->name));
   for (size_t i=0; i<rt->children().size(); ++i)
   {
     std::shared_ptr<Entry> ce = rt->children()[i];
     if (!ce->program.empty())
     {
       //fprintf(stderr,"parseCompounds: -- %s (line %d) ---------\n%s\n---------------\n",
-      //  ce->name.data(), ce->bodyLine, ce->program.data());
+      //  qPrint(ce->name), ce->bodyLine, qPrint(ce->program));
       // init scanner state
       yyextra->programStr = ce->program.str();
-      yyextra->inputString = yyextra->programStr;
+      yyextra->inputString = yyextra->programStr.data();
       yyextra->inputPosition = 0;
       pyscannerYYrestart( 0, yyscanner );
       if (ce->section&Entry::COMPOUND_MASK)
@@ -1766,7 +1787,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       {
         yyextra->current_root = rt;
 	//printf("Searching for member variables in %s parent=%s\n",
-	//    ce->name.data(),ce->parent->name.data());
+	//    qPrint(ce->name),qPrint(ce->parent->name));
 	BEGIN( SearchMemVars );
       }
       yyextra->yyFileName = ce->fileName;
@@ -1793,10 +1814,12 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
 //----------------------------------------------------------------------------
 
 
-static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileBuf,const std::shared_ptr<Entry> &rt)
+static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *fileBuf,const std::shared_ptr<Entry> &rt)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   initParser(yyscanner);
+
+  if (fileBuf==0 || fileBuf[0]=='\0') return;
 
   yyextra->inputString = fileBuf;
   yyextra->inputPosition = 0;
@@ -1808,13 +1831,12 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
   yyextra->current_root  = rt;
   yyextra->specialBlock = FALSE;
 
-
   yyextra->yyLineNr= 1 ; 
   yyextra->yyFileName = fileName;
   //setContext();
-  msg("Parsing file %s...\n",yyextra->yyFileName.data());
+  msg("Parsing file %s...\n",qPrint(yyextra->yyFileName));
 
-  FileInfo fi(fileName);
+  FileInfo fi(fileName.str());
   yyextra->moduleScope = findPackageScope(yyscanner,fileName);
   QCString baseName=fi.baseName();
   if (baseName!="__init__") // package initializer file is not a package itself
@@ -1826,18 +1848,26 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
     yyextra->moduleScope+=baseName;
   }
 
-  yyextra->current            = std::make_shared<Entry>();
-  initEntry(yyscanner);
-  yyextra->current->name      = yyextra->moduleScope;
-  yyextra->current->section   = Entry::NAMESPACE_SEC;
-  yyextra->current->type      = "namespace";
-  yyextra->current->fileName  = yyextra->yyFileName;
-  yyextra->current->startLine = yyextra->yyLineNr;
-  yyextra->current->bodyLine  = yyextra->yyLineNr;
-
-  yyextra->current_root  = yyextra->current;
-
-  rt->moveToSubEntryAndRefresh(yyextra->current);
+  // add namespaces for each scope
+  QCString scope = yyextra->moduleScope;
+  int startPos = 0;
+  int pos;
+  do
+  {
+    pos = scope.find("::",startPos);
+    startPos=pos+2;
+    if (pos==-1) pos=(int)scope.length();
+    yyextra->current            = std::make_shared<Entry>();
+    initEntry(yyscanner);
+    yyextra->current->name      = scope.left(pos);
+    yyextra->current->section   = Entry::NAMESPACE_SEC;
+    yyextra->current->type      = "namespace";
+    yyextra->current->fileName  = yyextra->yyFileName;
+    yyextra->current->startLine = yyextra->yyLineNr;
+    yyextra->current->bodyLine  = yyextra->yyLineNr;
+    yyextra->current_root       = yyextra->current;
+    rt->moveToSubEntryAndRefresh(yyextra->current);
+  } while (pos<(int)scope.length());
 
   initParser(yyscanner);
 
@@ -1863,7 +1893,7 @@ static void parseMain(yyscan_t yyscanner, const char *fileName,const char *fileB
 static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  //printf("**** parsePrototype(%s) begin\n",text.data());
+  //printf("**** parsePrototype(%s) begin\n",qPrint(text));
   if (text.isEmpty()) 
   {
     warn(yyextra->yyFileName,yyextra->yyLineNr,"Empty prototype found!");
@@ -1884,7 +1914,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   orgInputPosition = yyextra->inputPosition;
 
   // set new string
-  yyextra->inputString = text;
+  yyextra->inputString = text.data();
   yyextra->inputPosition = 0;
   pyscannerYYrestart( 0, yyscanner );
 
@@ -1899,9 +1929,8 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
   // restore original scanner state
 
-  YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
+  yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
   yy_switch_to_buffer(orgState, yyscanner);
-  yy_delete_buffer(tmpBuf, yyscanner);
 
   yyextra->inputString = orgInputString; 
   yyextra->inputPosition = orgInputPosition;
@@ -1931,16 +1960,16 @@ PythonOutlineParser::~PythonOutlineParser()
 }
 
 
-void PythonOutlineParser::parseInput(const char *fileName,
-                                       const char *fileBuf,
-                                       const std::shared_ptr<Entry> &root,
-                                       ClangTUParser * /*clangParser*/)
+void PythonOutlineParser::parseInput(const QCString &fileName,
+                                     const char *fileBuf,
+                                     const std::shared_ptr<Entry> &root,
+                                     ClangTUParser * /*clangParser*/)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
   yyextra->thisParser = this;
-  printlex(yy_flex_debug, TRUE, __FILE__, fileName);
+  printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
   ::parseMain(p->yyscanner, fileName,fileBuf,root);
-  printlex(yy_flex_debug, FALSE, __FILE__, fileName);
+  printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 
   // May print the AST for debugging purposes
   // printAST(global_root);
@@ -1951,10 +1980,9 @@ bool PythonOutlineParser::needsPreprocessing(const QCString &) const
   return FALSE;
 }
 
-void PythonOutlineParser::parsePrototype(const char *text)
+void PythonOutlineParser::parsePrototype(const QCString &text)
 {
   ::parsePrototype(p->yyscanner,text);
-
 }
 
 //----------------------------------------------------------------------------

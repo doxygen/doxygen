@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _MANDOCVISITOR_H
-#define _MANDOCVISITOR_H
+#ifndef MANDOCVISITOR_H
+#define MANDOCVISITOR_H
 
 #include <iostream>
 
@@ -31,7 +31,7 @@ class TextStream;
 class ManDocVisitor : public DocVisitor
 {
   public:
-    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    ManDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
 
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -144,7 +144,7 @@ class ManDocVisitor : public DocVisitor
     // helper functions
     //--------------------------------------
 
-    void filter(const char *str);
+    void filter(const QCString &str);
 
     //--------------------------------------
     // state variables
@@ -159,4 +159,13 @@ class ManDocVisitor : public DocVisitor
     QCString m_langExt;
 };
 
+struct ManListItemInfo
+{
+  int number;
+  char type;
+};
+
+const int man_maxIndentLevels = 13;
+
+extern ManListItemInfo man_listItemInfo[man_maxIndentLevels];
 #endif

@@ -41,7 +41,7 @@ class DiagramItem
 {
   public:
     DiagramItem(DiagramItem *p,uint number,const ClassDef *cd,
-                Protection prot,Specifier virt,const char *ts);
+                Protection prot,Specifier virt,const QCString &ts);
     QCString label() const;
     QCString fileName() const;
     DiagramItem *parentItem() { return m_parent; }
@@ -81,7 +81,7 @@ class DiagramRow
     using reverse_iterator = typename Vec::reverse_iterator;
     DiagramRow(TreeDiagram *d,uint l) : m_diagram(d), m_level(l) {}
     void insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
-                     Protection prot,Specifier virt,const char *ts);
+                     Protection prot,Specifier virt,const QCString &ts);
     uint number() { return m_level; }
 
     DiagramItem *item(int index) { return m_items.at(index).get(); }
@@ -177,7 +177,7 @@ static QCString protToString(Protection p)
     case Protected: return "dashed";
     case Private:   return "dotted";
   }
-  return 0;
+  return QCString();
 }
 
 static uint virtToMask(Specifier p)
@@ -255,7 +255,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
-    t << cd->getOutputFileBase() << Doxygen::htmlFileExtension;
+    t << addHtmlExtensionIfMissing(cd->getOutputFileBase());
     if (!cd->anchor().isEmpty())
     {
       t << "#" << cd->anchor();
@@ -274,7 +274,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
 //-----------------------------------------------------------------------------
 
 DiagramItem::DiagramItem(DiagramItem *p,uint number,const ClassDef *cd,
-                         Protection pr,Specifier vi,const char *ts)
+                         Protection pr,Specifier vi,const QCString &ts)
   : m_parent(p), m_num(number), m_prot(pr), m_virt(vi), m_templSpec(ts), m_classDef(cd)
 {
 }
@@ -333,7 +333,7 @@ void DiagramItem::addChild(DiagramItem *di)
 //---------------------------------------------------------------------------
 
 void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases,
-                             Protection prot,Specifier virt,const char *ts)
+                             Protection prot,Specifier virt,const QCString &ts)
 {
   auto di = std::make_unique<DiagramItem>(parent, m_diagram->row(m_level)->numItems(),
                                           cd,prot,virt,ts);
@@ -366,7 +366,7 @@ void DiagramRow::insertClass(DiagramItem *parent,const ClassDef *cd,bool doBases
       {
         row->insertClass(di_ptr,ccd,doBases,bcd.prot,
             doBases?bcd.virt:Normal,
-            doBases?bcd.templSpecifiers.data():"");
+            doBases?bcd.templSpecifiers:QCString());
       }
     }
   }
@@ -379,7 +379,7 @@ TreeDiagram::TreeDiagram(const ClassDef *root,bool doBases)
   auto row = std::make_unique<DiagramRow>(this,0);
   DiagramRow *row_ptr = row.get();
   m_rows.push_back(std::move(row));
-  row_ptr->insertClass(0,root,doBases,Public,Normal,0);
+  row_ptr->insertClass(0,root,doBases,Public,Normal,QCString());
 }
 
 void TreeDiagram::moveChildren(DiagramItem *root,int dx)
@@ -394,7 +394,7 @@ void TreeDiagram::moveChildren(DiagramItem *root,int dx)
 bool TreeDiagram::layoutTree(DiagramItem *root,uint r)
 {
   bool moved=FALSE;
-  //printf("layoutTree(%s,%d)\n",root->label().data(),r);
+  //printf("layoutTree(%s,%d)\n",qPrint(root->label()),r);
 
   if (root->numChildren()>0)
   {
@@ -1044,8 +1044,8 @@ ClassDiagram::~ClassDiagram()
 {
 }
 
-void ClassDiagram::writeFigure(TextStream &output,const char *path,
-                               const char *fileName) const
+void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
+                               const QCString &fileName) const
 {
   uint baseRows=p->base.computeRows();
   uint superRows=p->super.computeRows();
@@ -1071,7 +1071,6 @@ void ClassDiagram::writeFigure(TextStream &output,const char *path,
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
-    realWidth=pageWidth;
   }
 
   //output << "}\n";
@@ -1090,7 +1089,7 @@ void ClassDiagram::writeFigure(TextStream &output,const char *path,
   std::ofstream f(epsName.str(),std::ofstream::out | std::ofstream::binary);
   if (!f.is_open())
   {
-    term("Could not open file %s for writing\n",epsName.data());
+    term("Could not open file %s for writing\n",qPrint(epsName));
   }
   else
   {
@@ -1326,8 +1325,8 @@ void ClassDiagram::writeFigure(TextStream &output,const char *path,
   {
     QCString epstopdfArgs(4096);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                   epsBaseName.data(),epsBaseName.data());
-    //printf("Converting eps using '%s'\n",epstopdfArgs.data());
+                   qPrint(epsBaseName),qPrint(epsBaseName));
+    //printf("Converting eps using '%s'\n",qPrint(epstopdfArgs));
     Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {
@@ -1340,8 +1339,8 @@ void ClassDiagram::writeFigure(TextStream &output,const char *path,
 }
 
 
-void ClassDiagram::writeImage(TextStream &t,const char *path,
-                              const char *relPath,const char *fileName,
+void ClassDiagram::writeImage(TextStream &t,const QCString &path,
+                              const QCString &relPath,const QCString &fileName,
                               bool generateMap) const
 {
   uint baseRows=p->base.computeRows();

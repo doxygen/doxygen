@@ -22,6 +22,7 @@
 
 #include "debug.h"
 #include "message.h"
+#include "qcstring.h"
 
 //------------------------------------------------------------------------
 
@@ -44,7 +45,8 @@ static std::map< std::string, Debug::DebugMask > s_labels =
   { "lex",               Debug::Lex               },
   { "plantuml",          Debug::Plantuml          },
   { "fortranfixed2free", Debug::FortranFixed2Free },
-  { "cite",              Debug::Cite              }
+  { "cite",              Debug::Cite              },
+  { "rtf",               Debug::Rtf               }
 };
 
 //------------------------------------------------------------------------
@@ -69,22 +71,22 @@ static char asciiToLower(char in) {
     return in;
 }
 
-static int labelToEnumValue(const char *l)
+static int labelToEnumValue(const QCString &l)
 {
-  std::string s = l;
+  std::string s = l.str();
   std::transform(s.begin(),s.end(),s.begin(),asciiToLower);
   auto it = s_labels.find(s);
   return (it!=s_labels.end()) ? it->second : 0;
 }
 
-int Debug::setFlag(const char *lab)
+int Debug::setFlag(const QCString &lab)
 {
   int retVal = labelToEnumValue(lab);
   curMask = (DebugMask)(curMask | retVal);
   return retVal;
 }
 
-void Debug::clearFlag(const char *lab)
+void Debug::clearFlag(const QCString &lab)
 {
   curMask = (DebugMask)(curMask & ~labelToEnumValue(lab));
 }

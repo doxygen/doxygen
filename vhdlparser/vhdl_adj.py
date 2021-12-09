@@ -18,7 +18,7 @@ def main():
     inputFile = open(sys.argv[1], 'r')
     outputFile = open(sys.argv[2], 'w')
     for line in inputFile:
-        outputFile.write(line.replace("assert(false);","assert(false);return \"\";"))
+        outputFile.write(line.replace("assert(false);","assert(false);return QCString();"))
 
 if __name__ == '__main__':
     main()

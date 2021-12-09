@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -36,7 +36,7 @@ class NoWheelComboBox : public QComboBox
 
 
 InputString::InputString( QGridLayout *layout,int &row,
-                          const QString & id, const QString &s, 
+                          const QString & id, const QString &s,
                           StringMode m, const QString &docs,
                           const QString &absPath )
   : m_default(s), m_sm(m), m_index(0), m_docs(docs), m_id(id),
@@ -46,7 +46,7 @@ InputString::InputString( QGridLayout *layout,int &row,
   if (m==StringFixed)
   {
     layout->addWidget( m_lab, row, 0 );
-    m_com = new NoWheelComboBox; 
+    m_com = new NoWheelComboBox;
     layout->addWidget( m_com, row, 1, 1, 3, Qt::AlignLeft );
     m_le=0;
     m_br=0;
@@ -65,12 +65,12 @@ InputString::InputString( QGridLayout *layout,int &row,
       layout->addWidget( m_le, row, 1 );
       m_br = new QToolBar;
       m_br->setIconSize(QSize(24,24));
-      if (m==StringFile || m==StringImage) 
+      if (m==StringFile || m==StringImage)
       {
         QAction *file = m_br->addAction(QIcon(QString::fromLatin1(":/images/file.png")),QString(),this,SLOT(browse()));
         file->setToolTip(tr("Browse to a file"));
         layout->addWidget( m_br,row,2 );
-        if (m==StringImage) 
+        if (m==StringImage)
         {
           m_im = new QLabel;
           m_im->setMinimumSize(1,55);
@@ -79,7 +79,7 @@ InputString::InputString( QGridLayout *layout,int &row,
           layout->addWidget( m_im,row,1 );
         }
       }
-      else 
+      else
       {
         QAction *dir = m_br->addAction(QIcon(QString::fromLatin1(":/images/folder.png")),QString(),this,SLOT(browse()));
         dir->setToolTip(tr("Browse to a folder"));
@@ -96,9 +96,9 @@ InputString::InputString( QGridLayout *layout,int &row,
     row++;
   }
 
-  if (m_le)  connect( m_le,   SIGNAL(textChanged(const QString&)), 
+  if (m_le)  connect( m_le,   SIGNAL(textChanged(const QString&)),
                       this,   SLOT(setValue(const QString&)) );
-  if (m_com) connect( m_com,  SIGNAL(activated(const QString &)), 
+  if (m_com) connect( m_com,  SIGNAL(activated(const QString &)),
                       this,   SLOT(setValue(const QString &)) );
   m_str = s+QChar::fromLatin1('!'); // force update
   setValue(s);
@@ -146,7 +146,7 @@ void InputString::updateDefault()
       else
       {
         QFile Fout(m_str);
-        if(!Fout.exists()) 
+        if(!Fout.exists())
         {
           m_im->setText(tr("Sorry, cannot find file(")+m_str+QString::fromLatin1(");"));
         }
@@ -186,7 +186,7 @@ void InputString::browse()
   {
     QString fileName = QFileDialog::getOpenFileName(&MainWindow::instance(),
         tr("Select file"),path);
-    if (!fileName.isNull()) 
+    if (!fileName.isNull())
     {
       QDir dir(path);
       if (!MainWindow::instance().configFileName().isEmpty() && dir.exists())
@@ -232,7 +232,7 @@ void InputString::setDefault()
   if (index!=-1 && m_com) m_com->setCurrentIndex(index);
 }
 
-QVariant &InputString::value() 
+QVariant &InputString::value()
 {
   return m_value;
 }

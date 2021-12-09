@@ -74,6 +74,11 @@ static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,i
     return 0;
   }
   unsigned char uc = static_cast<unsigned char>(*s);
+  if (uc<128) // ASCII case
+  {
+    len=1;
+    return uc;
+  }
   switch (bytesLeft)
   {
     default:
@@ -117,8 +122,6 @@ static inline uint32_t convertUTF8CharToUnicode(const char *s,size_t bytesLeft,i
         return uc;
       }
   }
-  len=0;
-  return 0;
 }
 
 std::string getUTF8CharAt(const std::string &input,size_t pos)
@@ -136,39 +139,59 @@ uint32_t getUnicodeForUTF8CharAt(const std::string &input,size_t pos)
   return convertUTF8CharToUnicode(charS.c_str(),charS.length(),len);
 }
 
+static inline char asciiToLower(uint32_t code)
+{
+  return code>='A' && code<='Z' ? (char)(code+'a'-'A') : (char)code;
+}
+
+static inline char asciiToUpper(uint32_t code)
+{
+  return code>='a' && code<='z' ? (char)(code+'A'-'a') : (char)code;
+}
+
 static inline std::string caseConvert(const std::string &input,
+                                      char (*asciiConversionFunc)(uint32_t code),
                                       const char *(*conversionFunc)(uint32_t code))
 {
   uint32_t code;
-  TextStream result;
+  std::string result;
+  result.reserve(input.length()); // assume all ASCII characters
   int len;
   size_t bytesLeft = input.length();
   const char *p = input.c_str();
   while ((code=convertUTF8CharToUnicode(p,bytesLeft,len)))
   {
-    const char *conv = conversionFunc(code);
-    if (conv==nullptr) // no difference between lower and upper case
+    if (code<128) // ASCII case
     {
-      result.write(p,len);
+      char c = asciiConversionFunc(code);
+      result+=c;
     }
-    else // replace the input character with the conversion result
+    else // generic case
     {
-      result << conv;
+      const char *conv = conversionFunc(code);
+      if (conv==nullptr) // no difference between lower and upper case
+      {
+        result.append(p,len);
+      }
+      else // replace the input character with the conversion result
+      {
+        result.append(conv);
+      }
     }
     p+=len;
     bytesLeft-=len;
   }
-  return result.str();
+  return result;
 }
 
 std::string convertUTF8ToLower(const std::string &input)
 {
-  return caseConvert(input,convertUnicodeToLower);
+  return caseConvert(input,asciiToLower,convertUnicodeToLower);
 }
 
 std::string convertUTF8ToUpper(const std::string &input)
 {
-  return caseConvert(input,convertUnicodeToUpper);
+  return caseConvert(input,asciiToUpper,convertUnicodeToUpper);
 }
 
 const char *writeUTF8Char(TextStream &t,const char *s)

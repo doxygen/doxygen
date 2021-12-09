@@ -96,35 +96,11 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-// Extracted from config setting "DOT_UML_DETAILS"
-enum class UmlDetailLevel
-{
-  Default, // == NO, the default setting
-  Full,    // == YES, include type and arguments
-  None     // == NONE, don't include compartments for attributes and methods
-};
-
-// Local helper function for extracting the configured detail level
-static UmlDetailLevel getUmlDetailLevelFromConfig()
-{
-  UmlDetailLevel result = UmlDetailLevel::Default;
-  QCString umlDetailsStr = Config_getEnum(DOT_UML_DETAILS).upper();
-  if (umlDetailsStr == "YES")
-  {
-    result=UmlDetailLevel::Full;
-  }
-  else if (umlDetailsStr == "NONE")
-  {
-    result=UmlDetailLevel::None;
-  }
-  return result;
-}
-
 static QCString escapeTooltip(const QCString &tooltip)
 {
+  if (tooltip.isEmpty()) return tooltip;
   QCString result;
   const char *p=tooltip.data();
-  if (p==0) return result;
   char c;
   while ((c=*p++))
   {
@@ -155,6 +131,7 @@ static void writeBoxMemberList(TextStream &t,
     }
 
     int count=0;
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
@@ -170,7 +147,7 @@ static void writeBoxMemberList(TextStream &t,
         {
           t << prot << " ";
           QCString label;
-          if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+          if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
             label+=mma->typeString();
             label+=" ";
@@ -178,7 +155,7 @@ static void writeBoxMemberList(TextStream &t,
           label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-            if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+            if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
             {
               label+=mma->argsString();
             }
@@ -286,7 +263,7 @@ static QCString stripProtectionPrefix(const QCString &s)
   }
 }
 
-DotNode::DotNode(int n,const char *lab,const char *tip, const char *url,
+DotNode::DotNode(int n,const QCString &lab,const QCString &tip, const QCString &url,
   bool isRoot,const ClassDef *cd)
   : m_number(n)
   , m_label(lab)
@@ -304,8 +281,8 @@ DotNode::~DotNode()
 void DotNode::addChild(DotNode *n,
   int edgeColor,
   int edgeStyle,
-  const char *edgeLab,
-  const char *edgeURL,
+  const QCString &edgeLab,
+  const QCString &edgeURL,
   int edgeLabCol
 )
 {
@@ -411,9 +388,10 @@ void DotNode::writeBox(TextStream &t,
       }
     }
 
-    //printf("DotNode::writeBox for %s\n",m_classDef->name().data());
+    //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "{" << convertLabel(m_label) << "\\n";
-    if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
       t << "|";
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
@@ -482,11 +460,11 @@ void DotNode::writeBox(TextStream &t,
       int anchorPos = m_url.findRev('#');
       if (anchorPos==-1)
       {
-        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
       }
       else
       {
-        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }
@@ -558,7 +536,7 @@ void DotNode::write(TextStream &t,
                     bool toChildren,
                     bool backArrows) const
 {
-  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,m_label.data(),this,m_written,m_visible);
+  //printf("DotNode::write(%d) name=%s this=%p written=%d visible=%d\n",m_distance,qPrint(m_label),this,m_written,m_visible);
   if (m_written) return; // node already written to the output
   if (!m_visible) return; // node is not visible
   writeBox(t,gt,format,m_truncated==Truncated);
@@ -570,7 +548,7 @@ void DotNode::write(TextStream &t,
     {
       if (cn->isVisible())
       {
-        //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",cn->label().data());
+        //printf("write arrow %s%s%s\n",qPrint(label()),backArrows?"<-":"->",qPrint(cn->label()));
         writeArrow(t,gt,format,cn,&(*it),topDown,backArrows);
       }
       cn->write(t,gt,format,topDown,toChildren,backArrows);
@@ -586,7 +564,7 @@ void DotNode::write(TextStream &t,
         const auto &children = pn->children();
         auto child_it = std::find(children.begin(),children.end(),this);
         size_t index = child_it - children.begin();
-        //printf("write arrow %s%s%s\n",label().data(),backArrows?"<-":"->",pn->label().data());
+        //printf("write arrow %s%s%s\n",qPrint(label()),backArrows?"<-":"->",qPrint(pn->label()));
         writeArrow(t,
           gt,
           format,
@@ -599,7 +577,7 @@ void DotNode::write(TextStream &t,
       pn->write(t,gt,format,TRUE,FALSE,backArrows);
     }
   }
-  //printf("end DotNode::write(%d) name=%s\n",distance,m_label.data());
+  //printf("end DotNode::write(%d) name=%s\n",distance,qPrint(m_label));
 }
 
 void DotNode::writeXML(TextStream &t,bool isClassGraph) const
@@ -609,15 +587,13 @@ void DotNode::writeXML(TextStream &t,bool isClassGraph) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
       t << "/>\n";
     }
@@ -673,15 +649,13 @@ void DotNode::writeDocbook(TextStream &t,bool isClassGraph) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
-      t << "        <link refid=\"" << convertToXML(urlPtr) << "\"";
-      if (*refPtr!='\0')
+      t << "        <link refid=\"" << convertToXML(url.mid(dollarPos+1)) << "\"";
+      if (dollarPos>0)
       {
-        t << " external=\"" << convertToXML(refPtr) << "\"";
+        t << " external=\"" << convertToXML(url.left(dollarPos)) << "\"";
       }
       t << "/>\n";
     }
@@ -742,18 +716,15 @@ void DotNode::writeDEF(TextStream &t) const
   if (!m_url.isEmpty())
   {
     QCString url(m_url);
-    const char *refPtr = url.data();
-    char *urlPtr = strchr(url.rawData(),'$');
-    if (urlPtr)
+    int dollarPos = url.find('$');
+    if (dollarPos!=-1)
     {
-      *urlPtr++='\0';
       t << nodePrefix << "link = {\n" << "  "
-        << nodePrefix << "link-id = '" << urlPtr << "';\n";
-
-      if (*refPtr!='\0')
+        << nodePrefix << "link-id = '" << url.mid(dollarPos+1) << "';\n";
+      if (dollarPos>0)
       {
         t << "  " << nodePrefix << "link-external = '"
-          << refPtr << "';\n";
+          << url.left(dollarPos) << "';\n";
       }
       t << "        };\n";
     }
@@ -807,7 +778,7 @@ void DotNode::colorConnectedNodes(int curColor)
       cn->setSubgraphId(curColor);
       cn->markAsVisible();
       cn->colorConnectedNodes(curColor);
-      //printf("coloring node %s (%p): %d\n",cn->label().data(),cn,cn->subgraphId());
+      //printf("coloring node %s (%p): %d\n",qPrint(cn->label()),cn,cn->subgraphId());
     }
   }
 
@@ -818,48 +789,43 @@ void DotNode::colorConnectedNodes(int curColor)
       pn->setSubgraphId(curColor);
       pn->markAsVisible();
       pn->colorConnectedNodes(curColor);
-      //printf("coloring node %s (%p): %d\n",pn->label().data(),pn,pn->subgraphId());
+      //printf("coloring node %s (%p): %d\n",qPrint(pn->label()),pn,pn->subgraphId());
     }
   }
 }
+
+#define DEBUG_RENUMBERING 0
 
 void DotNode::renumberNodes(int &number)
 {
-  m_number = number++;
-  for (const auto &cn : m_children)
+  if (!isRenumbered())
   {
-    if (!cn->isRenumbered())
+#if DEBUG_RENUMBERING
+    static int level = 0;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("> %s old = %d new = %d\n",qPrint(m_label),m_number,number);
+    level++;
+#endif
+    m_number = number++;
+    markRenumbered();
+    for (const auto &cn : m_children)
     {
-      cn->markRenumbered();
       cn->renumberNodes(number);
     }
+    for (const auto &pn : m_parents)
+    {
+      pn->renumberNodes(number);
+    }
+#if DEBUG_RENUMBERING
+    level--;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("< %s assigned = %d\n",qPrint(m_label),m_number);
+#endif
   }
 }
 
-const DotNode *DotNode::findDocNode() const
-{
-  if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",m_label.data());
-  for (const auto &pn : m_parents)
-  {
-    if (!pn->hasDocumentation())
-    {
-      pn->markHasDocumentation();
-      const DotNode *dn = pn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  for (const auto &cn : m_children)
-  {
-    if (!cn->hasDocumentation())
-    {
-      cn->markHasDocumentation();
-      const DotNode *dn = cn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  return 0;
-}
 
 
 

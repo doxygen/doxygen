@@ -141,7 +141,9 @@ static bool mustBeOutsideParagraph(const DocNode *n)
         case DocNode::Kind_Verbatim:
           {
             DocVerbatim *dv = (DocVerbatim*)n;
-            return dv->type()!=DocVerbatim::HtmlOnly || dv->isBlock();
+            DocVerbatim::Type t = dv->type();
+            if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
+            return t!=DocVerbatim::HtmlOnly || dv->isBlock();
           }
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
@@ -278,7 +280,7 @@ HtmlDocVisitor::HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,
 
 void HtmlDocVisitor::visit(DocWord *w)
 {
-  //printf("word: %s\n",w->word().data());
+  //printf("word: %s\n",qPrint(w->word()));
   if (m_hide) return;
   filter(w->word());
 }
@@ -286,7 +288,7 @@ void HtmlDocVisitor::visit(DocWord *w)
 void HtmlDocVisitor::visit(DocLinkedWord *w)
 {
   if (m_hide) return;
-  //printf("linked word: %s\n",w->word().data());
+  //printf("linked word: %s\n",qPrint(w->word()));
   startLink(w->ref(),w->file(),w->relPath(),w->anchor(),w->tooltip());
   filter(w->word());
   endLink();
@@ -502,7 +504,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
-  SrcLangExt langExt = getLanguageFromFileName(lang);
+  SrcLangExt langExt = getLanguageFromCodeLang(lang);
   switch(s->type())
   {
     case DocVerbatim::Code:
@@ -532,6 +534,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       m_t << "</pre>";
       forceStartParagraph(s);
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<code class=\"JavaDocCode\">";
+      filter(s->text(), true);
+      m_t << "</code>";
+      break;
     case DocVerbatim::HtmlOnly:
       {
         if (s->isBlock()) forceEndParagraph(s);
@@ -554,14 +564,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
 
         forceEndParagraph(s);
         fileName.sprintf("%s%d%s",
-            (Config_getString(HTML_OUTPUT)+"/inline_dotgraph_").data(),
+            qPrint(Config_getString(HTML_OUTPUT)+"/inline_dotgraph_"),
             dotindex++,
             ".dot"
            );
         std::ofstream file(fileName.str(),std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
-          err("Could not open file %s for writing\n",fileName.data());
+          err("Could not open file %s for writing\n",qPrint(fileName));
         }
         else
         {
@@ -570,7 +580,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           file.close();
 
           m_t << "<div class=\"dotgraph\">\n";
-          writeDotFile(fileName,s->relPath(),s->context());
+          writeDotFile(fileName,s->relPath(),s->context(),s->srcFile(),s->srcLine());
           visitPreCaption(m_t, s);
           visitCaption(this, s->children());
           visitPostCaption(m_t, s);
@@ -589,13 +599,13 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         QCString baseName(4096);
 
         baseName.sprintf("%s%d",
-            (Config_getString(HTML_OUTPUT)+"/inline_mscgraph_").data(),
+            qPrint(Config_getString(HTML_OUTPUT)+"/inline_mscgraph_"),
             mscindex++
             );
         std::ofstream file(baseName.str()+".msc",std::ofstream::out | std::ofstream::binary);
         if (!file.is_open())
         {
-          err("Could not open file %s.msc for writing\n",baseName.data());
+          err("Could not open file %s.msc for writing\n",qPrint(baseName));
         }
         else
         {
@@ -607,7 +617,7 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
           file.close();
 
           m_t << "<div class=\"mscgraph\">\n";
-          writeMscFile(baseName+".msc",s->relPath(),s->context());
+          writeMscFile(baseName+".msc",s->relPath(),s->context(),s->srcFile(),s->srcLine());
           visitPreCaption(m_t, s);
           visitCaption(this, s->children());
           visitPostCaption(m_t, s);
@@ -628,9 +638,11 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
         {
           format = PlantumlManager::PUML_SVG;
         }
-        QCString baseName = PlantumlManager::instance().writePlantUMLSource(htmlOutput,s->exampleFile(),s->text(),format);
+        QCString baseName = PlantumlManager::instance().writePlantUMLSource(
+                                    htmlOutput,s->exampleFile(),
+                                    s->text(),format,s->engine(),s->srcFile(),s->srcLine());
         m_t << "<div class=\"plantumlgraph\">\n";
-        writePlantUMLFile(baseName,s->relPath(),s->context());
+        writePlantUMLFile(baseName,s->relPath(),s->context(),s->srcFile(),s->srcLine());
         visitPreCaption(m_t, s);
         visitCaption(this, s->children());
         visitPostCaption(m_t, s);
@@ -778,7 +790,7 @@ void HtmlDocVisitor::visit(DocInclude *inc)
 void HtmlDocVisitor::visit(DocIncOperator *op)
 {
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     forceEndParagraph(op);
@@ -853,6 +865,11 @@ void HtmlDocVisitor::visit(DocFormula *f)
       text = text.mid(1,text.length()-2);
       m_t << "\\(";
     }
+    else if (!bDisplay && !text.isEmpty())
+    {
+      closeInline=TRUE;
+      m_t << "\\(";
+    }
     m_t << convertToHtml(text);
     if (closeInline)
     {
@@ -867,7 +884,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
     filterQuotedCdataAttr(f->text());
     m_t << "\"";
     m_t << " src=\"" << f->relPath() << f->name();
-    if (Config_getEnum(HTML_FORMULA_FORMAT)=="svg")
+    if (Config_getEnum(HTML_FORMULA_FORMAT)==HTML_FORMULA_FORMAT_t::svg)
     {
       m_t << ".svg";
     }
@@ -900,11 +917,11 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   {
     anchor.prepend(e->member()->anchor()+"_");
   }
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
   //printf("*** DocIndexEntry: word='%s' scope='%s' member='%s'\n",
-  //       e->entry().data(),
-  //       e->scope()  ? e->scope()->name().data()  : "<null>",
-  //       e->member() ? e->member()->name().data() : "<null>"
+  //       qPrint(e->entry()),
+  //       e->scope()  ? qPrint(e->scope()->name())  : "<null>",
+  //       e->member() ? qPrint(e->member()->name()) : "<null>"
   //      );
   Doxygen::indexList->addIndexItem(e->scope(),e->member(),anchor,e->entry());
 }
@@ -1259,7 +1276,12 @@ void HtmlDocVisitor::visitPre(DocPara *p)
   //printf("  needsTag=%d\n",needsTag);
   // write the paragraph tag (if needed)
   if (needsTag)
-    m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p->attribs()) << ">";
+  {
+    if (strlen(contexts[t]))
+      m_t << "<p class=\"" << contexts[t] << "\"" << htmlAttribsToString(p->attribs()) << ">";
+    else
+      m_t << "<p " << htmlAttribsToString(p->attribs()) << ">";
+  }
 }
 
 void HtmlDocVisitor::visitPost(DocPara *p)
@@ -1438,7 +1460,7 @@ void HtmlDocVisitor::visitPre(DocSection *s)
   m_t << "<h" << s->level() << ">";
   m_t << "<a class=\"anchor\" id=\"" << s->anchor();
   m_t << "\"></a>\n";
-  filter(convertCharEntitiesToUTF8(s->title().data()));
+  filter(convertCharEntitiesToUTF8(s->title()));
   m_t << "</h" << s->level() << ">\n";
 }
 
@@ -1784,7 +1806,7 @@ void HtmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"dotgraph\">\n";
-  writeDotFile(df->file(),df->relPath(),df->context());
+  writeDotFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1805,7 +1827,7 @@ void HtmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"mscgraph\">\n";
-  writeMscFile(df->file(),df->relPath(),df->context());
+  writeMscFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1825,7 +1847,7 @@ void HtmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
   m_t << "<div class=\"diagraph\">\n";
-  writeDiaFile(df->file(),df->relPath(),df->context());
+  writeDiaFile(df->file(),df->relPath(),df->context(),df->srcFile(),df->srcLine());
   if (df->hasCaption())
   {
     m_t << "<div class=\"caption\">\n";
@@ -1875,15 +1897,21 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  QCString refName=addHtmlExtensionIfMissing(ref->file());
-  m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
-
+  if (!ref->file().isEmpty())
+  {
+    m_t << "<li>";
+    startLink(ref->ref(),ref->file(),ref->relPath(),ref->isSubPage() ? QCString() : ref->anchor());
+  }
 }
 
-void HtmlDocVisitor::visitPost(DocSecRefItem *)
+void HtmlDocVisitor::visitPost(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  m_t << "</a></li>\n";
+  if (!ref->file().isEmpty())
+  {
+    endLink();
+    m_t << "</li>\n";
+  }
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefList *s)
@@ -2054,7 +2082,7 @@ void HtmlDocVisitor::visitPost(DocXRefItem *x)
 void HtmlDocVisitor::visitPre(DocInternalRef *ref)
 {
   if (m_hide) return;
-  startLink(0,ref->file(),ref->relPath(),ref->anchor());
+  startLink(QCString(),ref->file(),ref->relPath(),ref->anchor());
 }
 
 void HtmlDocVisitor::visitPost(DocInternalRef *)
@@ -2097,9 +2125,9 @@ void HtmlDocVisitor::visitPre(DocVhdlFlow *vf)
     m_t << "<p>";
     m_t << "flowchart: " ; // TODO: translate me
     m_t << "<a href=\"";
-    m_t << fname.data();
+    m_t << fname;
     m_t << ".svg\">";
-    m_t << VhdlDocGen::getFlowMember()->name().data();
+    m_t << VhdlDocGen::getFlowMember()->name();
     m_t << "</a>";
     if (vf->hasCaption())
     {
@@ -2130,16 +2158,17 @@ void HtmlDocVisitor::visitPost(DocParBlock *)
 
 
 
-void HtmlDocVisitor::filter(const char *str)
+void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 {
-  if (str==0) return;
-  const char *p=str;
+  if (str.isEmpty()) return;
+  const char *p=str.data();
   char c;
   while (*p)
   {
     c=*p++;
     switch(c)
     {
+      case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;
@@ -2167,10 +2196,10 @@ void HtmlDocVisitor::filter(const char *str)
 
 /// Escape basic entities to produce a valid CDATA attribute value,
 /// assume that the outer quoting will be using the double quote &quot;
-void HtmlDocVisitor::filterQuotedCdataAttr(const char* str)
+void HtmlDocVisitor::filterQuotedCdataAttr(const QCString &str)
 {
-  if (str==0) return;
-  const char *p=str;
+  if (str.isEmpty()) return;
+  const char *p=str.data();
   char c;
   while (*p)
   {
@@ -2207,7 +2236,7 @@ void HtmlDocVisitor::startLink(const QCString &ref,const QCString &file,
                                const QCString &relPath,const QCString &anchor,
                                const QCString &tooltip)
 {
-  //printf("HtmlDocVisitor: file=%s anchor=%s\n",file.data(),anchor.data());
+  //printf("HtmlDocVisitor: file=%s anchor=%s\n",qPrint(file),qPrint(anchor));
   if (!ref.isEmpty()) // link to entity imported via tag file
   {
     m_t << "<a class=\"elRef\" ";
@@ -2235,7 +2264,7 @@ void HtmlDocVisitor::endLink()
 }
 
 void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
-                                  const QCString &context)
+                                  const QCString &context,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fn;
   int i;
@@ -2249,13 +2278,12 @@ void HtmlDocVisitor::writeDotFile(const QCString &fn,const QCString &relPath,
   }
   baseName.prepend("dot_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP);
-  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context);
+  writeDotGraphFromFile(fn,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotImageMapFromFile(m_t,fn,outDir,relPath,baseName,context,-1,srcFile,srcLine);
 }
 
-void HtmlDocVisitor::writeMscFile(const QCString &fileName,
-                                  const QCString &relPath,
-                                  const QCString &context)
+void HtmlDocVisitor::writeMscFile(const QCString &fileName,const QCString &relPath,
+                                  const QCString &context,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fileName;
   int i;
@@ -2273,13 +2301,12 @@ void HtmlDocVisitor::writeMscFile(const QCString &fileName,
   MscOutputFormat mscFormat = MSC_BITMAP;
   if ("svg" == imgExt)
     mscFormat = MSC_SVG;
-  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat);
-  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat);
+  writeMscGraphFromFile(fileName,outDir,baseName,mscFormat,srcFile,srcLine);
+  writeMscImageMapFromFile(m_t,fileName,outDir,relPath,baseName,context,mscFormat,srcFile,srcLine);
 }
 
-void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
-                                  const QCString &relPath,
-                                  const QCString &)
+void HtmlDocVisitor::writeDiaFile(const QCString &fileName, const QCString &relPath,
+                                  const QCString &,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fileName;
   int i;
@@ -2293,14 +2320,13 @@ void HtmlDocVisitor::writeDiaFile(const QCString &fileName,
   }
   baseName.prepend("dia_");
   QCString outDir = Config_getString(HTML_OUTPUT);
-  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP);
+  writeDiaGraphFromFile(fileName,outDir,baseName,DIA_BITMAP,srcFile,srcLine);
 
   m_t << "<img src=\"" << relPath << baseName << ".png" << "\" />\n";
 }
 
-void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName,
-                                       const QCString &relPath,
-                                       const QCString &)
+void HtmlDocVisitor::writePlantUMLFile(const QCString &fileName, const QCString &relPath,
+                                       const QCString &,const QCString &srcFile,int srcLine)
 {
   QCString baseName=fileName;
   int i;

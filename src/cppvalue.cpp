@@ -47,7 +47,17 @@ CPPValue parseHexadecimal(const std::string& token)
     else if (*p >= 'a' && *p <= 'f') val = val * 16 + *p - 'a' + 10;
     else if (*p >= 'A' && *p <= 'F') val = val * 16 + *p - 'A' + 10;
   }
-  //printf("parseHexadecimal %s->%x\n",token.data(),val);
+  //printf("parseHexadecimal %s->%x\n",qPrint(token),val);
+  return CPPValue(val);
+}
+
+CPPValue parseBinary(const std::string& token)
+{
+  long val = 0;
+  for (const char *p = token.c_str(); *p != 0; p++)
+  {
+    if (*p >= '0' && *p <= '1') val = val * 2 + *p - '0';
+  }
   return CPPValue(val);
 }
 
@@ -79,7 +89,7 @@ CPPValue parseCharacter(const std::string& token) // does not work for '\n' and 
                  return parseOctal(token);
       case 'x':
       case 'X':  return parseHexadecimal(token);
-      default:   printf("Invalid escape sequence %s found!\n",token.data());
+      default:   printf("Invalid escape sequence %s found!\n",token.c_str());
                  return CPPValue(0L);
     }
   }

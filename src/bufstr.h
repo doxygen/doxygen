@@ -15,8 +15,8 @@
  * input used in their production; they are not affected by this license.
  *
  */
-#ifndef _BUFSTR_H
-#define _BUFSTR_H
+#ifndef BUFSTR_H
+#define BUFSTR_H
 
 #include <cstdlib>
 #include "qcstring.h"

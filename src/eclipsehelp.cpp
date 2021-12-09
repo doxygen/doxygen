@@ -71,7 +71,7 @@ void EclipseHelp::initialize()
   m_tocstream.open(name.str(), std::ofstream::out | std::ofstream::binary);
   if (!m_tocstream.is_open())
   {
-    term("Could not open file %s for writing\n", name.data());
+    term("Could not open file %s for writing\n", qPrint(name));
   }
 
   // -- write the opening tag
@@ -159,17 +159,17 @@ void EclipseHelp::decContentsDepth()
  */
 void EclipseHelp::addContentsItem(
     bool /* isDir */,
-    const char *name,
-    const char * /* ref */,
-    const char *file,
-    const char *anchor,
+    const QCString &name,
+    const QCString & /* ref */,
+    const QCString &file,
+    const QCString &anchor,
     bool /* separateIndex */,
     bool /* addToNavIndex */,
     const Definition * /*def*/)
 {
   // -- write the topic tag
   closedTag();
-  if (file)
+  if (!file.isEmpty())
   {
     switch (file[0]) // check for special markers (user defined URLs)
     {
@@ -188,8 +188,8 @@ void EclipseHelp::addContentsItem(
         indent();
         m_tocstream << "<topic label=\"" << convertToXML(name) << "\"";
         m_tocstream << " href=\"" << convertToXML(m_pathprefix)
-                    << file << Doxygen::htmlFileExtension;
-        if (anchor)
+                    << addHtmlExtensionIfMissing(file);
+        if (!anchor.isEmpty())
         {
           m_tocstream << "#" << anchor;
         }
@@ -209,20 +209,20 @@ void EclipseHelp::addContentsItem(
 void EclipseHelp::addIndexItem(
     const Definition * /* context */,
     const MemberDef * /* md */,
-    const char * /* sectionAnchor */,
-    const char * /* title */)
+    const QCString & /* sectionAnchor */,
+    const QCString & /* title */)
 {
 }
 
-void EclipseHelp::addIndexFile(const char * /* name */)
+void EclipseHelp::addIndexFile(const QCString & /* name */)
 {
 }
 
-void EclipseHelp::addImageFile(const char * /* name */)
+void EclipseHelp::addImageFile(const QCString & /* name */)
 {
 }
 
-void EclipseHelp::addStyleSheetFile(const char * /* name */)
+void EclipseHelp::addStyleSheetFile(const QCString & /* name */)
 {
 }
 

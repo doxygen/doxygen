@@ -51,7 +51,7 @@ bool ClassLinkedRefMap::declVisible(const ClassDef::CompoundType *filter) const
 }
 
 void ClassLinkedRefMap::writeDeclaration(OutputList &ol,const ClassDef::CompoundType *filter,
-                                      const char *header,bool localNames) const
+                                      const QCString &header,bool localNames) const
 {
   static bool extractPrivate = Config_getBool(EXTRACT_PRIVATE);
   bool found=FALSE;

@@ -28,8 +28,10 @@
 #include "emoji.h"
 #include "fileinfo.h"
 
+ManListItemInfo man_listItemInfo[man_maxIndentLevels];
+
 ManDocVisitor::ManDocVisitor(TextStream &t,CodeOutputInterface &ci,
-                             const char *langExt)
+                             const QCString &langExt)
   : DocVisitor(DocVisitor_Man), m_t(t), m_ci(ci), m_insidePre(FALSE), m_hide(FALSE), m_firstCol(FALSE),
     m_indent(0), m_langExt(langExt)
 {
@@ -194,10 +196,10 @@ void ManDocVisitor::visit(DocVerbatim *s)
   {
     lang = s->language();
   }
-  SrcLangExt langExt = getLanguageFromFileName(lang);
+  SrcLangExt langExt = getLanguageFromCodeLang(lang);
   switch (s->type())
   {
-    case DocVerbatim::Code: // fall though
+    case DocVerbatim::Code:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
@@ -209,11 +211,19 @@ void ManDocVisitor::visit(DocVerbatim *s)
       m_t << ".PP\n";
       m_firstCol=TRUE;
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text());
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "\\fC\n";
+      filter(s->text());
+      m_t << "\\fP\n";
+      break;
     case DocVerbatim::Verbatim:
       if (!m_firstCol) m_t << "\n";
       m_t << ".PP\n";
       m_t << ".nf\n";
-      m_t << s->text();
+      filter(s->text());
       if (!m_firstCol) m_t << "\n";
       m_t << ".fi\n";
       m_t << ".PP\n";
@@ -371,7 +381,7 @@ void ManDocVisitor::visit(DocIncOperator *op)
   if (locLangExt.isEmpty()) locLangExt = m_langExt;
   SrcLangExt langExt = getLanguageFromFileName(locLangExt);
   //printf("DocIncOperator: type=%d first=%d, last=%d text='%s'\n",
-  //    op->type(),op->isFirst(),op->isLast(),op->text().data());
+  //    op->type(),op->isFirst(),op->isLast(),qPrint(op->text()));
   if (op->isFirst())
   {
     if (!m_hide)
@@ -643,12 +653,27 @@ void ManDocVisitor::visitPost(DocSection *)
 {
 }
 
-void ManDocVisitor::visitPre(DocHtmlList *)
+void ManDocVisitor::visitPre(DocHtmlList *l)
 {
   if (m_hide) return;
   m_indent+=2;
   if (!m_firstCol) m_t << "\n";
   m_t << ".PD 0\n";
+  man_listItemInfo[m_indent].number = 1;
+  man_listItemInfo[m_indent].type   = '1';
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="type")
+    {
+      man_listItemInfo[m_indent].type = opt.value[0];
+    }
+    if (opt.name=="start")
+    {
+      bool ok;
+      int val = opt.value.toInt(&ok);
+      if (ok) man_listItemInfo[m_indent].number = val;
+    }
+  }
 }
 
 void ManDocVisitor::visitPost(DocHtmlList *)
@@ -668,7 +693,38 @@ void ManDocVisitor::visitPre(DocHtmlListItem *li)
   m_t << ".IP \"" << ws;
   if (((DocHtmlList *)li->parent())->type()==DocHtmlList::Ordered)
   {
-    m_t << li->itemNumber() << ".\" " << m_indent+2;
+    for (const auto &opt : li->attribs())
+    {
+      if (opt.name=="value")
+      {
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok) man_listItemInfo[m_indent].number = val;
+      }
+    }
+    switch (man_listItemInfo[m_indent].type)
+    {
+      case '1':
+        m_t << man_listItemInfo[m_indent].number;
+        break;
+      case 'a':
+        m_t << integerToAlpha(man_listItemInfo[m_indent].number,false);
+        break;
+      case 'A':
+        m_t << integerToAlpha(man_listItemInfo[m_indent].number);
+        break;
+      case 'i':
+        m_t << integerToRoman(man_listItemInfo[m_indent].number,false);
+        break;
+      case 'I':
+        m_t << integerToRoman(man_listItemInfo[m_indent].number);
+        break;
+      default:
+        m_t << man_listItemInfo[m_indent].number;
+        break;
+    }
+    m_t << ".\" " << m_indent+2;
+    man_listItemInfo[m_indent].number++;
   }
   else // bullet list
   {
@@ -1049,11 +1105,11 @@ void ManDocVisitor::visitPost(DocParBlock *)
 }
 
 
-void ManDocVisitor::filter(const char *str)
+void ManDocVisitor::filter(const QCString &str)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const char *p=str;
+    const char *p=str.data();
     char c=0;
     while ((c=*p++))
     {

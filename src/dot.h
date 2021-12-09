@@ -33,8 +33,8 @@ class DotManager
   public:
     static DotManager *instance();
     static void deleteInstance();
-    DotRunner*      createRunner(const std::string& absDotName, const std::string& md5Hash);
-    DotFilePatcher *createFilePatcher(const std::string &fileName);
+    DotRunner*      createRunner(const QCString& absDotName, const QCString& md5Hash);
+    DotFilePatcher *createFilePatcher(const QCString &fileName);
     bool run() const;
 
   private:
@@ -48,11 +48,13 @@ class DotManager
     std::vector< std::unique_ptr<DotWorkerThread> > m_workers;
 };
 
-void writeDotGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,GraphOutputFormat format);
+void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,GraphOutputFormat format,
+                           const QCString &srcFile,int srcLine);
 void writeDotImageMapFromFile(TextStream &t,
-                              const QCString& inFile, const QCString& outDir,
-                              const QCString& relPath,const QCString& baseName,
-                              const QCString& context,int graphId=-1);
+                              const QCString &inFile, const QCString& outDir,
+                              const QCString &relPath,const QCString& baseName,
+                              const QCString &context,int graphId,
+                              const QCString &srcFile,int srcLine);
 
 #endif

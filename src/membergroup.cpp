@@ -29,14 +29,16 @@
 #include "entry.h"
 #include "md5.h"
 
-MemberGroup::MemberGroup(const Definition *container,int id,const char *hdr,const char *d,const char *docFile,int docLine)
+MemberGroup::MemberGroup(const Definition *container,int id,const QCString &hdr,
+                         const QCString &d,const QCString &docFile,int docLine,
+                         MemberListContainer con)
   : m_container(container),
-    memberList(std::make_unique<MemberList>(MemberListType_memberGroup)),
+    memberList(std::make_unique<MemberList>(MemberListType_memberGroup,con)),
     grpId(id), grpHeader(hdr), doc(d), m_docFile(docFile), m_docLine(docLine)
 {
   //printf("New member group id=%d header=%s desc=%s\n",id,hdr,d);
   memberList->setNeedsSorting(Config_getBool(SORT_BRIEF_DOCS)); // detailed sections are already sorted elsewhere.
-  //printf("Member group docs='%s'\n",doc.data());
+  //printf("Member group docs='%s'\n",qPrint(doc));
 }
 
 MemberGroup::~MemberGroup()
@@ -50,7 +52,7 @@ void MemberGroup::insertMember(const MemberDef *md)
   //       memberList->first() ? memberList->first()->getSectionList() : 0,
   //       memberList->count(),
   //       md->getSectionList(),
-  //       md,md->name().data());
+  //       md,qPrint(md->name()));
 
   const MemberDef *firstMd = memberList->empty() ? 0 : memberList->front();
   if (inSameSection && firstMd &&
@@ -91,29 +93,29 @@ void MemberGroup::writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                bool showInline) const
 {
-  //printf("MemberGroup::writeDeclarations() %s\n",grpHeader.data());
+  //printf("MemberGroup::writeDeclarations() %s\n",qPrint(grpHeader));
   QCString ldoc = doc;
   if (!ldoc.isEmpty()) ldoc.prepend("<a name=\""+anchor()+"\" id=\""+anchor()+"\"></a>");
   memberList->writeDeclarations(ol,cd,nd,fd,gd,grpHeader,ldoc,FALSE,showInline);
 }
 
-void MemberGroup::writePlainDeclarations(OutputList &ol,
+void MemberGroup::writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               const ClassDef *inheritedFrom,const char *inheritId
+               int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId
               ) const
 {
   //printf("MemberGroup::writePlainDeclarations() memberList->count()=%d\n",memberList->count());
-  memberList->writePlainDeclarations(ol,cd,nd,fd,gd,inheritedFrom,inheritId);
+  memberList->writePlainDeclarations(ol,inGroup,cd,nd,fd,gd,indentLevel,inheritedFrom,inheritId);
 }
 
-void MemberGroup::writeDocumentation(OutputList &ol,const char *scopeName,
+void MemberGroup::writeDocumentation(OutputList &ol,const QCString &scopeName,
                const Definition *container,bool showEnumValues,bool showInline) const
 {
-  //printf("MemberGroup::writeDocumentation() %s\n",grpHeader.data());
-  memberList->writeDocumentation(ol,scopeName,container,0,showEnumValues,showInline);
+  //printf("MemberGroup::writeDocumentation() %s\n",qPrint(grpHeader));
+  memberList->writeDocumentation(ol,scopeName,container,QCString(),showEnumValues,showInline);
 }
 
-void MemberGroup::writeDocumentationPage(OutputList &ol,const char *scopeName,
+void MemberGroup::writeDocumentationPage(OutputList &ol,const QCString &scopeName,
                const DefinitionMutable *container) const
 {
   memberList->writeDocumentationPage(ol,scopeName,container);
@@ -135,10 +137,10 @@ void MemberGroup::addGroupedInheritedMembers(OutputList &ol,const ClassDef *cd,
     const MemberList *ml = md->getSectionList(m_container);
     if (ml && lt==ml->listType())
     {
-      MemberList mml(lt);
+      MemberList mml(lt,MemberListContainer::Class);
       mml.push_back(md);
       mml.countDecMembers();
-      mml.writePlainDeclarations(ol,cd,0,0,0,inheritedFrom,inheritId);
+      mml.writePlainDeclarations(ol,false,cd,0,0,0,0,inheritedFrom,inheritId);
     }
   }
 }
@@ -196,11 +198,11 @@ int MemberGroup::countInheritableMembers(const ClassDef *inheritedFrom) const
 
 void MemberGroup::distributeMemberGroupDocumentation()
 {
-  //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",grpHeader.data());
+  //printf("MemberGroup::distributeMemberGroupDocumentation() %s\n",qPrint(grpHeader));
   const MemberDef *md = 0;
   for (const auto &smd : *memberList)
   {
-    //printf("checking md=%s\n",md->name().data());
+    //printf("checking md=%s\n",qPrint(md->name()));
     // find the first member of the group with documentation
     if (!smd->documentation().isEmpty()       ||
         !smd->briefDescription().isEmpty()    ||
@@ -214,7 +216,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
   }
   if (md) // distribute docs of md to other members of the list
   {
-    //printf("Member %s has documentation!\n",md->name().data());
+    //printf("Member %s has documentation!\n",qPrint(md->name()));
     for (const auto &iomd : *memberList)
     {
       MemberDefMutable *omd = toMemberDefMutable(iomd);
@@ -223,7 +225,7 @@ void MemberGroup::distributeMemberGroupDocumentation()
                             omd->inbodyDocumentation().isEmpty()
          )
       {
-        //printf("Copying documentation to member %s\n",omd->name().data());
+        //printf("Copying documentation to member %s\n",qPrint(omd->name()));
         omd->setBriefDescription(md->briefDescription(),md->briefFile(),md->briefLine());
         omd->setDocumentation(md->documentation(),md->docFile(),md->docLine());
         omd->setInbodyDocumentation(md->inbodyDocumentation(),md->inbodyFile(),md->inbodyLine());
@@ -253,21 +255,15 @@ int MemberGroup::numDocEnumValues() const
   return memberList->numDocEnumValues();
 }
 
-void MemberGroup::setInGroup(bool b)
-{
-  memberList->setInGroup(b);
-}
-
-
 QCString MemberGroup::anchor() const
 {
   uchar md5_sig[16];
-  QCString sigStr(33);
+  char sigStr[33];
   QCString locHeader = grpHeader;
   if (locHeader.isEmpty()) locHeader="[NOHEADER]";
   MD5Buffer((const unsigned char *)locHeader.data(),locHeader.length(),md5_sig);
-  MD5SigToString(md5_sig,sigStr.rawData(),33);
-  return "amgrp"+sigStr;
+  MD5SigToString(md5_sig,sigStr);
+  return QCString("amgrp")+sigStr;
 }
 
 void MemberGroup::addListReferences(Definition *def)
@@ -280,7 +276,7 @@ void MemberGroup::addListReferences(Definition *def)
         name,
         theTranslator->trGroup(TRUE,TRUE),
         name,
-        grpHeader,0,def);
+        grpHeader,QCString(),def);
   }
 }
 

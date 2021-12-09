@@ -40,12 +40,12 @@ class CitationManager
     static CitationManager &instance();
 
     /** Insert a citation identified by \a label into the database */
-    void insert(const char *label);
+    void insert(const QCString &label);
 
     /** Return the citation info for a given \a label.
      *  Ownership of the info stays with the manager.
      */
-    const CiteInfo *find(const char *label) const;
+    const CiteInfo *find(const QCString &label) const;
 
     /** Generate the citations page */
     void generatePage();
@@ -61,8 +61,8 @@ class CitationManager
      */
     QCString latexBibFiles();
 
-    const char *fileName() const;
-    const char *anchorPrefix() const;
+    QCString fileName() const;
+    QCString anchorPrefix() const;
 
   private:
     /** Create the database, with an expected maximum of \a size entries */

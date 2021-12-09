@@ -23,8 +23,9 @@
 
 static const int maxCmdLine = 40960;
 
-void writeDiaGraphFromFile(const char *inFile,const char *outDir,
-                           const char *outFile,DiaOutputFormat format)
+void writeDiaGraphFromFile(const QCString &inFile,const QCString &outDir,
+                           const QCString &outFile,DiaOutputFormat format,
+                           const QCString &srcFile,int srcLine)
 {
   QCString absOutFile = outDir;
   absOutFile+=Portable::pathSeparator();
@@ -33,7 +34,7 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   // chdir to the output dir, so dot can find the font file.
   std::string oldDir = Dir::currentDirPath();
   // go to the html output directory (i.e. path)
-  Dir::setCurrent(outDir);
+  Dir::setCurrent(outDir.str());
   //printf("Going to dir %s\n",Dir::currentDirPath().c_str());
   QCString diaExe = Config_getString(DIA_PATH)+"dia"+Portable::commandExtension();
   QCString diaArgs;
@@ -59,12 +60,12 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   diaArgs+="\"";
 
   int exitCode;
-  //printf("*** running: %s %s outDir:%s %s\n",diaExe.data(),diaArgs.data(),outDir,outFile);
+  //printf("*** running: %s %s outDir:%s %s\n",qPrint(diaExe),qPrint(diaArgs),outDir,outFile);
   Portable::sysTimerStart();
   if ((exitCode=Portable::system(diaExe,diaArgs,FALSE))!=0)
   {
-    err("Problems running %s. Check your installation or look typos in you dia file %s\n",
-        diaExe.data(),inFile);
+    err_full(srcFile,srcLine,"Problems running %s. Check your installation or look typos in you dia file %s\n",
+        qPrint(diaExe),qPrint(inFile));
     Portable::sysTimerStop();
     goto error;
   }
@@ -73,7 +74,7 @@ void writeDiaGraphFromFile(const char *inFile,const char *outDir,
   {
     QCString epstopdfArgs(maxCmdLine);
     epstopdfArgs.sprintf("\"%s.eps\" --outfile=\"%s.pdf\"",
-                         outFile,outFile);
+                         qPrint(outFile),qPrint(outFile));
     Portable::sysTimerStart();
     if (Portable::system("epstopdf",epstopdfArgs)!=0)
     {

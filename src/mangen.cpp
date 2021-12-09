@@ -105,22 +105,29 @@ void ManGenerator::init()
   Dir d(manOutput.str());
   if (!d.exists() && !d.mkdir(manOutput.str()))
   {
-    term("Could not create output directory %s\n",manOutput.data());
+    term("Could not create output directory %s\n",qPrint(manOutput));
   }
   std::string manDir = manOutput.str()+"/"+getSubdir().str();
   if (!d.exists(manDir) && !d.mkdir(manDir))
   {
-    term("Could not create output directory %s/%s\n",manOutput.data(), getSubdir().data());
+    term("Could not create output directory %s/%s\n",qPrint(manOutput), qPrint(getSubdir()));
   }
   createSubDirs(d);
 }
 
-static QCString buildFileName(const char *name)
+void ManGenerator::cleanup()
+{
+  QCString dname = Config_getString(MAN_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
+static QCString buildFileName(const QCString &name)
 {
   QCString fileName;
-  if (name==0) return "noname";
+  if (name.isEmpty()) return "noname";
 
-  const char *p=name;
+  const char *p=name.data();
   char c;
   while ((c=*p++))
   {
@@ -156,7 +163,7 @@ static QCString buildFileName(const char *name)
   return fileName;
 }
 
-void ManGenerator::startFile(const char *,const char *manName,const char *,int)
+void ManGenerator::startFile(const QCString &,const QCString &manName,const QCString &,int)
 {
   startPlainFile( buildFileName( manName ) );
   m_firstCol=TRUE;
@@ -168,7 +175,7 @@ void ManGenerator::endFile()
   endPlainFile();
 }
 
-void ManGenerator::endTitleHead(const char *,const char *name)
+void ManGenerator::endTitleHead(const QCString &,const QCString &name)
 {
   m_t << ".TH \"" << name << "\" " << getExtension() << " \""
     << dateToString(FALSE) << "\" \"";
@@ -199,7 +206,7 @@ void ManGenerator::newParagraph()
   m_paragraph=TRUE;
 }
 
-void ManGenerator::startParagraph(const char *)
+void ManGenerator::startParagraph(const QCString &)
 {
   if (!m_paragraph)
   {
@@ -214,49 +221,45 @@ void ManGenerator::endParagraph()
 {
 }
 
-void ManGenerator::writeString(const char *text)
+void ManGenerator::writeString(const QCString &text)
 {
   docify(text);
 }
 
-void ManGenerator::startIndexItem(const char *,const char *)
+void ManGenerator::startIndexItem(const QCString &,const QCString &)
 {
 }
 
-void ManGenerator::endIndexItem(const char *,const char *)
+void ManGenerator::endIndexItem(const QCString &,const QCString &)
 {
 }
 
-void ManGenerator::writeStartAnnoItem(const char *,const char *,
-                                       const char *,const char *)
+void ManGenerator::writeStartAnnoItem(const QCString &,const QCString &,
+                                       const QCString &,const QCString &)
 {
 }
 
-void ManGenerator::writeObjectLink(const char *,const char *,
-                                    const char *, const char *name)
+void ManGenerator::writeObjectLink(const QCString &,const QCString &,
+                                    const QCString &, const QCString &name)
 {
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::writeCodeLink(const char *,const char *,
-                                 const char *, const char *name,
-                                 const char *)
+void ManGenerator::writeCodeLink(CodeSymbolType,
+                                 const QCString &,const QCString &,
+                                 const QCString &, const QCString &name,
+                                 const QCString &)
 {
   docify(name);
 }
 
-void ManGenerator::startHtmlLink(const char *)
+void ManGenerator::startHtmlLink(const QCString &)
 {
 }
 
 void ManGenerator::endHtmlLink()
 {
 }
-
-//void ManGenerator::writeMailLink(const char *url)
-//{
-//  docify(url);
-//}
 
 void ManGenerator::startGroupHeader(int)
 {
@@ -274,7 +277,7 @@ void ManGenerator::endGroupHeader(int)
   m_upperCase=FALSE;
 }
 
-void ManGenerator::startMemberHeader(const char *,int)
+void ManGenerator::startMemberHeader(const QCString &,int)
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".SS \"";
@@ -287,11 +290,11 @@ void ManGenerator::endMemberHeader()
   m_paragraph=FALSE;
 }
 
-void ManGenerator::docify(const char *str)
+void ManGenerator::docify(const QCString &str)
 {
-  if (str)
+  if (!str.isEmpty())
   {
-    const char *p=str;
+    const char *p=str.data();
     char c=0;
     while ((c=*p++))
     {
@@ -311,12 +314,12 @@ void ManGenerator::docify(const char *str)
   m_paragraph=FALSE;
 }
 
-void ManGenerator::codify(const char *str)
+void ManGenerator::codify(const QCString &str)
 {
   //static char spaces[]="        ";
-  if (str)
+  if (!str.isEmpty())
   {
-    const char *p=str;
+    const char *p=str.data();
     char c;
     int spacesToNextTabStop;
     while (*p)
@@ -392,7 +395,7 @@ void ManGenerator::endItemListItem()
 {
 }
 
-void ManGenerator::startCodeFragment(const char *)
+void ManGenerator::startCodeFragment(const QCString &)
 {
   newParagraph();
   m_t << ".nf\n";
@@ -400,7 +403,7 @@ void ManGenerator::startCodeFragment(const char *)
   m_paragraph=FALSE;
 }
 
-void ManGenerator::endCodeFragment(const char *)
+void ManGenerator::endCodeFragment(const QCString &)
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".fi\n";
@@ -409,7 +412,7 @@ void ManGenerator::endCodeFragment(const char *)
   m_col=0;
 }
 
-void ManGenerator::startMemberDoc(const char *,const char *,const char *,const char *,int,int,bool)
+void ManGenerator::startMemberDoc(const QCString &,const QCString &,const QCString &,const QCString &,int,int,bool)
 {
   if (!m_firstCol) m_t << "\n";
   m_t << ".SS \"";
@@ -417,9 +420,9 @@ void ManGenerator::startMemberDoc(const char *,const char *,const char *,const c
   m_paragraph=FALSE;
 }
 
-void ManGenerator::startDoxyAnchor(const char *,const char *manName,
-                                   const char *, const char *name,
-                                   const char *)
+void ManGenerator::startDoxyAnchor(const QCString &,const QCString &manName,
+                                   const QCString &, const QCString &name,
+                                   const QCString &)
 {
     // something to be done?
     if( !Config_getBool(MAN_LINKS) )
@@ -434,7 +437,7 @@ void ManGenerator::startDoxyAnchor(const char *,const char *manName,
     if (i!=-1) baseName=baseName.right(baseName.length()-i-2);
 
     //printf("Converting man link '%s'->'%s'->'%s'\n",
-    //       name,baseName.data(),buildFileName(baseName).data());
+    //       name,qPrint(baseName),qPrint(buildFileName(baseName)));
 
     // - remove dangerous characters and append suffix, then add dir prefix
     QCString fileName=dir()+"/"+buildFileName( baseName );
@@ -496,12 +499,6 @@ void ManGenerator::startDescItem()
   m_firstCol=FALSE;
 }
 
-//void ManGenerator::endDescTitle()
-//{
-//  endBold();
-//  m_paragraph=TRUE;
-//}
-
 void ManGenerator::startDescForItem()
 {
   if (!m_firstCol) m_t << "\n";
@@ -539,7 +536,7 @@ void ManGenerator::endAnonTypeScope(int indentLevel)
 }
 
 
-void ManGenerator::startMemberItem(const char *,int,const char *)
+void ManGenerator::startMemberItem(const QCString &,int,const QCString &)
 {
   if (m_firstCol && !m_insideTabbing) m_t << ".in +1c\n";
   m_t << "\n.ti -1c\n.RI \"";
@@ -598,7 +595,7 @@ void ManGenerator::endMemberGroup(bool)
   m_firstCol=FALSE;
 }
 
-void ManGenerator::startSection(const char *,const char *,SectionType type)
+void ManGenerator::startSection(const QCString &,const QCString &,SectionType type)
 {
   if( !m_inHeader )
   {
@@ -606,15 +603,15 @@ void ManGenerator::startSection(const char *,const char *,SectionType type)
     {
       case SectionType::Page:          startGroupHeader(FALSE); break;
       case SectionType::Section:       startGroupHeader(FALSE); break;
-      case SectionType::Subsection:    startMemberHeader(0, -1); break;
-      case SectionType::Subsubsection: startMemberHeader(0, -1); break;
-      case SectionType::Paragraph:     startMemberHeader(0, -1); break;
+      case SectionType::Subsection:    startMemberHeader(QCString(), -1); break;
+      case SectionType::Subsubsection: startMemberHeader(QCString(), -1); break;
+      case SectionType::Paragraph:     startMemberHeader(QCString(), -1); break;
       default: ASSERT(0); break;
     }
   }
 }
 
-void ManGenerator::endSection(const char *,SectionType type)
+void ManGenerator::endSection(const QCString &,SectionType type)
 {
   if( !m_inHeader )
   {
@@ -655,7 +652,7 @@ void ManGenerator::endExamples()
 {
 }
 
-void ManGenerator::startDescTable(const char *title)
+void ManGenerator::startDescTable(const QCString &title)
 {
   if (!m_firstCol)
   { m_t << "\n.PP\n";
@@ -675,7 +672,7 @@ void ManGenerator::endDescTable()
   endDescForItem();
 }
 
-void ManGenerator::startParamList(ParamListTypes,const char *title)
+void ManGenerator::startParamList(ParamListTypes,const QCString &title)
 {
   if (!m_firstCol)
   { m_t << "\n.PP\n";
@@ -702,7 +699,7 @@ void ManGenerator::writeDoc(DocNode *n,const Definition *ctx,const MemberDef *,i
   m_paragraph = FALSE;
 }
 
-void ManGenerator::startConstraintList(const char *header)
+void ManGenerator::startConstraintList(const QCString &header)
 {
   if (!m_firstCol)
   { m_t << "\n.PP\n";
@@ -830,7 +827,7 @@ void ManGenerator::startLabels()
 {
 }
 
-void ManGenerator::writeLabel(const char *l,bool isLast)
+void ManGenerator::writeLabel(const QCString &l,bool isLast)
 {
   m_t << "\\fC [" << l << "]\\fP";
   if (!isLast) m_t << ", ";

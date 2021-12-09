@@ -27,7 +27,7 @@
 #include <fstream>
 #include <string.h>
 
-static QCString makeFileName(const char * withoutExtension)
+static QCString makeFileName(const QCString & withoutExtension)
 {
   QCString result=withoutExtension;
   if (!result.isEmpty())
@@ -38,22 +38,22 @@ static QCString makeFileName(const char * withoutExtension)
     }
     else // add specified HTML extension
     {
-      result+=Doxygen::htmlFileExtension;
+      addHtmlExtensionIfMissing(result);
     }
   }
   return result;
 }
 
-static QCString makeRef(const char * withoutExtension, const char * anchor)
+static QCString makeRef(const QCString & withoutExtension, const QCString & anchor)
 {
   //printf("QHP::makeRef(%s,%s)\n",withoutExtension,anchor);
-  if (!withoutExtension) return QCString();
+  if (withoutExtension.isEmpty()) return QCString();
   QCString result = makeFileName(withoutExtension);
-  if (!anchor) return result;
+  if (anchor.isEmpty()) return result;
   return result+"#"+anchor;
 }
 
-Qhp::Qhp() : m_prevSectionLevel(0), m_sectionLevel(0), m_skipMainPageSection(FALSE)
+Qhp::Qhp()
 {
   m_doc.setIndentLevel(0);
   m_toc.setIndentLevel(2);
@@ -98,7 +98,7 @@ void Qhp::initialize()
   if (!filterName.isEmpty())
   {
     const char * tagAttributes[] =
-    { "name", filterName, 0 };
+    { "name", filterName.data(), 0 };
     m_doc.open("customFilter", tagAttributes);
 
     StringVector customFilterAttributes =
@@ -131,11 +131,12 @@ void Qhp::initialize()
   QCString fullProjectname = getFullProjectName();
   QCString indexFile = "index"+Doxygen::htmlFileExtension;
   const char * const attributes[] =
-  { "title", fullProjectname,
-    "ref",   indexFile,
+  { "title", fullProjectname.data(),
+    "ref",   indexFile.data(),
     NULL
   };
   m_toc.open("section", attributes);
+  m_openCount=1;
   m_prevSectionTitle = getFullProjectName();
   m_prevSectionLevel = 1;
   m_sectionLevel = 1;
@@ -148,9 +149,10 @@ void Qhp::finalize()
 {
   // Finish TOC
   handlePrevSection();
-  for (int i = m_prevSectionLevel; i > 0; i--)
+  while (m_openCount>0)
   {
     m_toc.close("section");
+    m_openCount--;
   }
   m_toc.close("toc");
   m_doc.insert(m_toc);
@@ -191,9 +193,9 @@ void Qhp::decContentsDepth()
   m_sectionLevel--;
 }
 
-void Qhp::addContentsItem(bool /*isDir*/, const char * name,
-                          const char * /*ref*/, const char * file,
-                          const char *anchor, bool /* separateIndex */,
+void Qhp::addContentsItem(bool /*isDir*/, const QCString & name,
+                          const QCString & /*ref*/, const QCString & file,
+                          const QCString &anchor, bool /* separateIndex */,
                           bool /* addToNavIndex */,
                           const Definition * /*def*/)
 {
@@ -210,20 +212,22 @@ void Qhp::addContentsItem(bool /*isDir*/, const char * name,
 
   // Close sections as needed
   //printf("Qhp::addContentsItem() closing %d sections\n",diff);
-  for (; diff > 0; diff--)
+  while (diff>0)
   {
     m_toc.close("section");
+    m_openCount--;
+    diff--;
   }
 }
 
 void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
-                       const char *sectionAnchor,const char *word)
+                       const QCString &sectionAnchor,const QCString &word)
 {
   (void)word;
   //printf("addIndexItem(%s %s %s\n",
   //       context?context->name().data():"<none>",
   //       md?md->name().data():"<none>",
-  //       word);
+  //       qPrint(word));
 
   if (md) // member
   {
@@ -239,9 +243,9 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString cfname  = md->getOutputFileBase();
     QCString cfiname = context->getOutputFileBase();
     QCString level1  = context->name();
-    QCString level2  = word ? QCString(word) : md->name();
+    QCString level2  = !word.isEmpty() ? word : md->name();
     QCString contRef = separateMemberPages ? cfname : cfiname;
-    QCString anchor  = sectionAnchor ? QCString(sectionAnchor) : md->anchor();
+    QCString anchor  = !sectionAnchor.isEmpty() ? sectionAnchor : md->anchor();
 
     QCString ref;
 
@@ -250,9 +254,9 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
     QCString id = level1+"::"+level2;
     const char * attributes[] =
     {
-      "name", level2,
-      "id",   id,
-      "ref",  ref,
+      "name", level2.data(),
+      "id",   id.data(),
+      "ref",  ref.data(),
       0
     };
     m_index.openClose("keyword", attributes);
@@ -261,20 +265,20 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   {
     // <keyword name="Foo" id="Foo" ref="doc.html#Foo"/>
     QCString contRef = context->getOutputFileBase();
-    QCString level1  = word ? QCString(word) : context->name();
+    QCString level1  = !word.isEmpty() ? word : context->name();
     QCString ref = makeRef(contRef,sectionAnchor);
     const char * attributes[] =
     {
-      "name", level1,
-      "id",   level1,
-      "ref",  ref,
+      "name", level1.data(),
+      "id",   level1.data(),
+      "ref",  ref.data(),
       0
     };
     m_index.openClose("keyword", attributes);
   }
 }
 
-void Qhp::addIndexFile(const char * name)
+void Qhp::addIndexFile(const QCString & name)
 {
   addFile(name);
 }
@@ -317,8 +321,8 @@ void Qhp::handlePrevSection()
     QCString finalRef = makeRef(m_prevSectionBaseName, m_prevSectionAnchor);
 
     const char * const attributes[] =
-    { "title", m_prevSectionTitle,
-      "ref",   finalRef,
+    { "title", m_prevSectionTitle.data(),
+      "ref",   finalRef.data(),
       NULL
     };
 
@@ -326,6 +330,7 @@ void Qhp::handlePrevSection()
     {
       // Section with children
       m_toc.open("section", attributes);
+      m_openCount++;
     }
     else
     {
@@ -341,7 +346,7 @@ void Qhp::handlePrevSection()
   clearPrevSection();
 }
 
-void Qhp::setPrevSection(const char * title, const char * basename, const char * anchor, int level)
+void Qhp::setPrevSection(const QCString & title, const QCString & basename, const QCString & anchor, int level)
 {
   m_prevSectionTitle = title;
   m_prevSectionBaseName = basename;
@@ -356,17 +361,17 @@ void Qhp::clearPrevSection()
   m_prevSectionAnchor.resize(0);
 }
 
-void Qhp::addFile(const char * fileName)
+void Qhp::addFile(const QCString & fileName)
 {
   m_files.openCloseContent("file", fileName);
 }
 
-void Qhp::addImageFile(const char *fileName)
+void Qhp::addImageFile(const QCString &fileName)
 {
   addFile(fileName);
 }
 
-void Qhp::addStyleSheetFile(const char *fileName)
+void Qhp::addStyleSheetFile(const QCString &fileName)
 {
   addFile(fileName);
 }

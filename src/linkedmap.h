@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <cctype>
 
+#include "qcstring.h"
+
 //! @brief Container class representing a vector of objects with keys.
 //! @details Objects can efficiently be looked up given the key.
 //! Objects are owned by the container.
@@ -50,6 +52,14 @@ class LinkedMap
 
     //! Find an object given the key.
     //! Returns a pointer to the element if found or nullptr if it is not found.
+    const T *find(const QCString &key) const
+    {
+      auto it = m_lookup.find(key.str());
+      return it!=m_lookup.end() ? it->second : nullptr;
+    }
+
+    //! Find an object given the key.
+    //! Returns a pointer to the element if found or nullptr if it is not found.
     const T *find(const char *key) const
     {
       return find(std::string(key ? key : ""));
@@ -57,6 +67,12 @@ class LinkedMap
 
     //! A non-const wrapper for find() const
     T* find(const char *key)
+    {
+      return const_cast<T*>(static_cast<const LinkedMap&>(*this).find(key));
+    }
+
+    //! A non-const wrapper for find() const
+    T* find(const QCString &key)
     {
       return const_cast<T*>(static_cast<const LinkedMap&>(*this).find(key));
     }
@@ -77,7 +93,22 @@ class LinkedMap
       if (result==nullptr)
       {
         std::string key(k ? k : "");
-        Ptr ptr = std::make_unique<T>(key.c_str(),std::forward<Args>(args)...);
+        Ptr ptr = std::make_unique<T>(QCString(k),std::forward<Args>(args)...);
+        result = ptr.get();
+        m_lookup.insert({key,result});
+        m_entries.push_back(std::move(ptr));
+      }
+      return result;
+    }
+
+    template<class...Args>
+    T *add(const QCString &k, Args&&... args)
+    {
+      std::string key = k.str();
+      T *result = find(key);
+      if (result==nullptr)
+      {
+        Ptr ptr = std::make_unique<T>(k,std::forward<Args>(args)...);
         result = ptr.get();
         m_lookup.insert({key,result});
         m_entries.push_back(std::move(ptr));
@@ -95,6 +126,19 @@ class LinkedMap
       if (result==nullptr)
       {
         std::string key(k ? k : "");
+        result = ptr.get();
+        m_lookup.insert({key,result});
+        m_entries.push_back(std::move(ptr));
+      }
+      return result;
+    }
+
+    T *add(const QCString &k, Ptr &&ptr)
+    {
+      std::string key = k.str();
+      T *result = find(key);
+      if (result==nullptr)
+      {
         result = ptr.get();
         m_lookup.insert({key,result});
         m_entries.push_back(std::move(ptr));
@@ -120,12 +164,25 @@ class LinkedMap
       return result;
     }
 
+    template<class...Args>
+    T *prepend(const QCString &key, Args&&... args)
+    {
+      T *result = find(key);
+      if (result==nullptr)
+      {
+        Ptr ptr = std::make_unique<T>(key,std::forward<Args>(args)...);
+        result = ptr.get();
+        m_lookup.insert({key.str(),result});
+        m_entries.push_front(std::move(ptr));
+      }
+      return result;
+    }
+
     //! Removes an object from the container and deletes it.
     //! Returns true if the object was deleted or false it is was not found.
-    bool del(const char *key_)
+    bool del(const QCString &key)
     {
-      std::string key(key_ ? key_ : "");
-      auto it = m_lookup.find(key);
+      auto it = m_lookup.find(key.str());
       if (it!=m_lookup.end())
       {
         auto vecit = std::find_if(m_entries.begin(),m_entries.end(),[obj=it->second](auto &el) { return el.get()==obj; });
@@ -191,6 +248,14 @@ class LinkedRefMap
 
     //! find an object given the key.
     //! Returns a pointer to the object if found or nullptr if it is not found.
+    const T *find(const QCString &key) const
+    {
+      auto it = m_lookup.find(key.str());
+      return it!=m_lookup.end() ? it->second : nullptr;
+    }
+
+    //! find an object given the key.
+    //! Returns a pointer to the object if found or nullptr if it is not found.
     const T *find(const char *key) const
     {
       return find(std::string(key ? key : ""));
@@ -198,6 +263,11 @@ class LinkedRefMap
 
     //! non-const wrapper for find() const
     T* find(const char *key)
+    {
+      return const_cast<T*>(static_cast<const LinkedRefMap&>(*this).find(key));
+    }
+
+    T* find(const QCString &key)
     {
       return const_cast<T*>(static_cast<const LinkedRefMap&>(*this).find(key));
     }
@@ -226,6 +296,21 @@ class LinkedRefMap
       }
     }
 
+    bool add(const QCString &k, T* obj)
+    {
+      std::string key = k.str();
+      if (find(key)==nullptr) // new element
+      {
+        m_lookup.insert({key,obj});
+        m_entries.push_back(obj);
+        return true;
+      }
+      else // already existing, don't add
+      {
+        return false;
+      }
+    }
+
     //! Prepends an object reference to the ordered vector if it was not added already.
     //! Return true if the reference was added, and false if an object with the same key
     //! was already added before
@@ -244,12 +329,25 @@ class LinkedRefMap
       }
     }
 
+    bool prepend(const QCString &key, T* obj)
+    {
+      if (find(key)==nullptr) // new element
+      {
+        m_lookup.insert({key.str(),obj});
+        m_entries.insert(m_entries.begin(),obj);
+        return true;
+      }
+      else // already existing, don't add
+      {
+        return false;
+      }
+    }
+
     //! Removes an object from the container and deletes it.
     //! Returns true if the object was deleted or false it is was not found.
-    bool del(const char *key_)
+    bool del(const QCString &key)
     {
-      std::string key(key_ ? key_ : "");
-      auto it = m_lookup.find(key);
+      auto it = m_lookup.find(key.str());
       if (it!=m_lookup.end())
       {
         auto vecit = std::find_if(m_entries.begin(),m_entries.end(),[obj=it->second](auto &el) { return el.get()==obj; });

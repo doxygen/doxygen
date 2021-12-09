@@ -13,8 +13,8 @@
 *
 */
 
-#ifndef _DOCBOOKDOCVISITOR_H
-#define _DOCBOOKDOCVISITOR_H
+#ifndef DOCBOOKDOCVISITOR_H
+#define DOCBOOKDOCVISITOR_H
 
 #include <iostream>
 
@@ -31,7 +31,7 @@ class TextStream;
 class DocbookDocVisitor : public DocVisitor
 {
     public:
-    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const char *langExt);
+    DocbookDocVisitor(TextStream &t,CodeOutputInterface &ci,const QCString &langExt);
     ~DocbookDocVisitor();
     //--------------------------------------
     // visitor functions for leaf nodes
@@ -139,20 +139,23 @@ class DocbookDocVisitor : public DocVisitor
     //--------------------------------------
     // helper functions
     //--------------------------------------
-    void filter(const char *str);
+    void filter(const QCString &str, const bool retainNewLine = false);
     void startLink(const QCString &file,
     const QCString &anchor);
     void endLink();
     void startMscFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const DocNodeList &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endMscFile(bool hasCaption);
     void writeMscFile(const QCString &fileName, DocVerbatim *s);
     void startDiaFile(const QCString &fileName,const QCString &width,
-                      const QCString &height, bool hasCaption,const DocNodeList &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endDiaFile(bool hasCaption);
     void writeDiaFile(const QCString &fileName, DocVerbatim *s);
     void startDotFile(const QCString &fileName,const QCString &width,
-    const QCString &height, bool hasCaption,const DocNodeList &children);
+                      const QCString &height, bool hasCaption,const DocNodeList &children,
+                      const QCString &srcFile, int srcLine);
     void endDotFile(bool hasCaption);
     void writeDotFile(const QCString &fileName, DocVerbatim *s);
     void writePlantUMLFile(const QCString &fileName, DocVerbatim *s);

@@ -52,7 +52,7 @@ class OutlineParserInterface
      *  @param[in] clangParser The clang translation unit parser object
      *                         or nullptr if disabled.
      */
-    virtual void parseInput(const char *fileName,
+    virtual void parseInput(const QCString &fileName,
                             const char *fileBuf,
                             const std::shared_ptr<Entry> &root,
                             ClangTUParser *clangParser) = 0;
@@ -70,7 +70,7 @@ class OutlineParserInterface
      *  in the Entry node that corresponds with the node for which the
      *  comment block parser was invoked.
      */
-    virtual void parsePrototype(const char *text) = 0;
+    virtual void parsePrototype(const QCString &text) = 0;
 
 };
 
@@ -108,12 +108,12 @@ class CodeParserInterface
      *  @param[in] collectXRefs collect cross-reference relations.
      */
     virtual void parseCode(CodeOutputInterface &codeOutIntf,
-                           const char *scopeName,
+                           const QCString &scopeName,
                            const QCString &input,
                            SrcLangExt lang,
                            bool isExampleBlock,
-                           const char *exampleName=0,
-                           FileDef *fileDef=0,
+                           const QCString &exampleName=QCString(),
+                           const FileDef *fileDef=0,
                            int startLine=-1,
                            int endLine=-1,
                            bool inlineFragment=FALSE,
@@ -147,7 +147,7 @@ class ParserManager
 
     struct ParserPair
     {
-      ParserPair(OutlineParserFactory opf, CodeParserFactory cpf, const QCString pn)
+      ParserPair(OutlineParserFactory opf, CodeParserFactory cpf, const QCString &pn)
         : outlineParserFactory(opf), codeParserFactory(cpf), parserName(pn)
       {
       }
@@ -164,7 +164,7 @@ class ParserManager
      */
     ParserManager(OutlineParserFactory outlineParserFactory,
                   CodeParserFactory    codeParserFactory)
-      : m_defaultParsers(outlineParserFactory,codeParserFactory, "")
+      : m_defaultParsers(outlineParserFactory,codeParserFactory, QCString())
     {
     }
 
@@ -176,28 +176,28 @@ class ParserManager
      *  @param[in] codeParserFactory    A factory method to create a code parser that is to be used
      *                           for the given name.
      */
-    void registerParser(const char *name,OutlineParserFactory outlineParserFactory,
+    void registerParser(const QCString &name,OutlineParserFactory outlineParserFactory,
                                          CodeParserFactory    codeParserFactory)
     {
-      m_parsers.emplace(std::string(name),ParserPair(outlineParserFactory,codeParserFactory,name));
+      m_parsers.emplace(name.str(),ParserPair(outlineParserFactory,codeParserFactory,name));
     }
 
     /** Registers a file \a extension with a parser with name \a parserName.
      *  Returns TRUE if the extension was successfully registered.
      */
-    bool registerExtension(const char *extension, const char *parserName)
+    bool registerExtension(const QCString &extension, const QCString &parserName)
     {
-      if (parserName==0 || extension==0) return FALSE;
+      if (parserName.isEmpty() || extension.isEmpty()) return FALSE;
 
-      const auto &parserIt = m_parsers.find(parserName);
+      const auto &parserIt = m_parsers.find(parserName.str());
       if (parserIt == m_parsers.end()) return FALSE;
 
-      auto extensionIt = m_extensions.find(extension);
+      auto extensionIt = m_extensions.find(extension.str());
       if (extensionIt != m_extensions.end()) // extension already exists
       {
         m_extensions.erase(extensionIt); // remove it (e.g. user specified extension overrules built in one)
       }
-      m_extensions.emplace(std::string(extension),parserIt->second); // add new mapping
+      m_extensions.emplace(extension.str(),parserIt->second); // add new mapping
       return TRUE;
     }
 
@@ -205,7 +205,7 @@ class ParserManager
      *  If there is no parser explicitly registered for the supplied extension,
      *  the interface to the default parser will be returned.
      */
-    std::unique_ptr<OutlineParserInterface> getOutlineParser(const char *extension)
+    std::unique_ptr<OutlineParserInterface> getOutlineParser(const QCString &extension)
     {
       return getParsers(extension).outlineParserFactory();
     }
@@ -214,14 +214,14 @@ class ParserManager
      *  If there is no parser explicitly registered for the supplied extension,
      *  the interface to the default parser will be returned.
      */
-    std::unique_ptr<CodeParserInterface> getCodeParser(const char *extension)
+    std::unique_ptr<CodeParserInterface> getCodeParser(const QCString &extension)
     {
       auto factory = getCodeParserFactory(extension);
       return factory();
     }
 
     /** Get the factory for create code parser objects with a given \a extension. */
-    CodeParserFactory &getCodeParserFactory(const char *extension)
+    CodeParserFactory &getCodeParserFactory(const QCString &extension)
     {
       return getParsers(extension).codeParserFactory;
     }
@@ -230,15 +230,15 @@ class ParserManager
      *  If there is no parser explicitly registered for the supplied extension,
      *  te empty string  will be reurned.
      */
-    QCString getParserName(const char *extension)
+    QCString getParserName(const QCString &extension)
     {
       return getParsers(extension).parserName;
     }
 
   private:
-    ParserPair &getParsers(const char *extension)
+    ParserPair &getParsers(const QCString &extension)
     {
-      QCString ext = QCString(extension).lower().data();
+      QCString ext = extension.lower();
       if (ext.isEmpty()) ext=".no_extension";
       auto it = m_extensions.find(ext.data());
       if (it==m_extensions.end() && ext.length()>4)
