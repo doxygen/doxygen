@@ -3,19 +3,19 @@
 
 #
 # Generated  by generateDS.py.
-# Python 3.9.7 (default, Sep  3 2021, 12:45:31)  [Clang 12.0.0 (clang-1200.0.32.29)]
+#
 #
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
 #   ('-f', '')
-#   ('-o', '/Users/dimitri/doxygen.git/addon/doxmlparser/doxmlparser/compound.py')
+#   ('-o', '.../addon/doxmlparser/doxmlparser/compound.py')
 #
 # Command line arguments:
-#   /Users/dimitri/doxygen.git/templates/xml/compound.xsd
+#  .../templates/xml/compound.xsd
 #
 # Command line:
-#   /usr/local/bin/generateDS --no-dates --no-versions -f -o "/Users/dimitri/doxygen.git/addon/doxmlparser/doxmlparser/compound.py" /Users/dimitri/doxygen.git/templates/xml/compound.xsd
+#  .../generateDS --no-dates --no-versions -f -o ".../addon/doxmlparser/doxmlparser/compound.py" .../templates/xml/compound.xsd
 #
 # Current working directory (os.getcwd()):
 #   doxmlparser
@@ -175,7 +175,7 @@ except ModulenotfoundExp_ :
 try:
     from generatedssuper import GeneratedsSuper
 except ModulenotfoundExp_ as exp:
-    
+
     class GeneratedsSuper(object):
         __hash__ = object.__hash__
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -657,8 +657,8 @@ except ModulenotfoundExp_ as exp:
                     self.gds_elementtree_node_.sourceline)
             else:
                 return ""
-    
-    
+
+
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
