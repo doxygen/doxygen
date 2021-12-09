@@ -5595,7 +5595,6 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
            for (const auto &opt : optList)
            {
              if (opt.empty()) continue;
-             bool found = false;
              QCString locOpt(opt);
              locOpt = locOpt.stripWhiteSpace().lower();
              if (locOpt == "code")

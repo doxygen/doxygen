@@ -4400,13 +4400,13 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
         pos=i+l;
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
-      //    type,pos,qPrint(name),qPrint(templSpec),i);
+      //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
       return i;
     }
   }
   pos = typeLen;
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
-  //       type,pos,qPrint(name),qPrint(templSpec));
+  //       qPrint(type),pos,qPrint(name),qPrint(templSpec));
   return -1;
 }
 
@@ -4421,7 +4421,7 @@ QCString normalizeNonTemplateArgumentsInString(
   p++;
   QCString result = name.left(p);
 
-  std::string s = result.mid(p).str();
+  std::string s = name.mid(p).str();
   static const reg::Ex re(R"([\a:][\w:]*)");
   reg::Iterator it(s,re);
   reg::Iterator end;
@@ -4481,7 +4481,7 @@ QCString substituteTemplateArgumentsInString(
     const std::unique_ptr<ArgumentList> &actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
-  //    qPrint(name),qPrint(argListToString(formalArgs)),qPrint(argListToString(actualArgs)));
+  //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
   if (formalArgs.empty()) return nm;
   QCString result;
 

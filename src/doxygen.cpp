@@ -4101,7 +4101,7 @@ static void findUsedClassesForClass(const Entry *root,
           }
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
-          //printf("    usedName=%s\n",qPrint(usedName));
+          //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
 
           TemplateNameMap formTemplateNames;
           if (templateNames.empty())

@@ -122,7 +122,7 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   {
     localName=n;
   }
-  //printf("m_localName=%s\n",qPrint(m_localName));
+  //printf("localName=%s\n",qPrint(localName));
 
   brief           = 0;
   details         = 0;
