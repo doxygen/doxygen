@@ -940,11 +940,11 @@ void LatexDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   if (Config_getBool(PDF_HYPERLINKS))
   {
-    m_t << "\\hypertarget{" << stripPath(s->file()) << "_" << s->anchor() << "}{}";
+    m_t << "\\hypertarget{" << s->anchor() << "}{}";
   }
   m_t << "\\" << getSectionName(s->level()) << "{";
   filter(convertCharEntitiesToUTF8(s->title()));
-  m_t << "}\\label{" << stripPath(s->file()) << "_" << s->anchor() << "}\n";
+  m_t << "}\\label{" << s->anchor() << "}\n";
 }
 
 void LatexDocVisitor::visitPost(DocSection *)
