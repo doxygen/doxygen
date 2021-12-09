@@ -1379,7 +1379,10 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 <![CDATA[
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written
- to standard error (`stderr`).
+ to standard error (`stderr`). In case the file specified cannot be opened for
+ writing the warning and error messages are written to standard error. When as 
+ file `-` is specified the warning and error messages are written to standard output
+ (`stdout`).
 ]]>
       </docs>
     </option>
