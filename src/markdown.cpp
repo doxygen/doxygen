@@ -352,6 +352,37 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
   }
 }
 
+/** parse the image attributes and return attributes for given format */
+static QCString getImageAttributes(const char *fmt, const StringVector &attrList)
+{
+  QCString retval;
+  for (const auto &attr_ : attrList)
+  {
+    QCString attr = QCString(attr_).stripWhiteSpace().lower();
+    int i = attr.find(':');
+    if (i>0)
+    {
+      // multiple formats
+      QCString format = attr.left(i).stripWhiteSpace();
+      if (!format.isEmpty())
+      {
+        if (format == fmt)
+        {
+          retval = attr.right(attr.length() - i - 1).data();
+          break;
+        }
+      }
+    }
+    else
+    {
+      // no format given
+      retval = attr;
+      break;
+    }
+  }
+  return retval;
+}
+
 
 // Check if data contains a block command. If so returned the command
 // that ends the block. If not an empty string is returned.
@@ -1242,10 +1273,12 @@ int Markdown::processLink(const char *data,int offset,int size)
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
     {
-      writeMarkdownImage("html",    isImageInline, explicitTitle, title, content, link, attributes, fd);
-      writeMarkdownImage("latex",   isImageInline, explicitTitle, title, content, link, attributes, fd);
-      writeMarkdownImage("rtf",     isImageInline, explicitTitle, title, content, link, attributes, fd);
-      writeMarkdownImage("docbook", isImageInline, explicitTitle, title, content, link, attributes, fd);
+      // check if different handling is needed per format
+      StringVector attrList = split(attributes.str(),",");
+      writeMarkdownImage("html",    isImageInline, explicitTitle, title, content, link, getImageAttributes("html", attrList), fd);
+      writeMarkdownImage("latex",   isImageInline, explicitTitle, title, content, link, getImageAttributes("latex", attrList), fd);
+      writeMarkdownImage("rtf",     isImageInline, explicitTitle, title, content, link, getImageAttributes("rtf", attrList), fd);
+      writeMarkdownImage("docbook", isImageInline, explicitTitle, title, content, link, getImageAttributes("docbook", attrList), fd);
     }
     else
     {
