@@ -1208,32 +1208,44 @@ int Markdown::processLink(const char *data,int,int size)
       m_out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
       {
-        m_out.addStr(title);
+        m_out.addStr(substitute(title,"\"","&quot;"));
       }
       else
       {
-        m_out.addStr(content);
+        m_out.addStr(substitute(content,"\"","&quot;"));
       }
       m_out.addStr("\"");
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
     { // file/url link
-      m_out.addStr("<a href=\"");
-      m_out.addStr(link);
-      m_out.addStr("\"");
-      for (int ii = 0; ii < nlTotal; ii++) m_out.addStr("\n");
-      if (!title.isEmpty())
+      if (link.at(0) == '#')
       {
-        m_out.addStr(" title=\"");
-        m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+        m_out.addStr("@ref ");
+        m_out.addStr(link.mid(1));
+        m_out.addStr(" \"");
+        m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");
+
       }
-      m_out.addStr(" ");
-      m_out.addStr(externalLinkTarget());
-      m_out.addStr(">");
-      content = content.simplifyWhiteSpace();
-      processInline(content.data(),content.length());
-      m_out.addStr("</a>");
+      else
+      {
+        m_out.addStr("<a href=\"");
+        m_out.addStr(link);
+        m_out.addStr("\"");
+        for (int ii = 0; ii < nlTotal; ii++) m_out.addStr("\n");
+        if (!title.isEmpty())
+        {
+          m_out.addStr(" title=\"");
+          m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+          m_out.addStr("\"");
+        }
+        m_out.addStr(" ");
+        m_out.addStr(externalLinkTarget());
+        m_out.addStr(">");
+        content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
+        processInline(content.data(),content.length());
+        m_out.addStr("</a>");
+      }
     }
     else // avoid link to e.g. F[x](y)
     {

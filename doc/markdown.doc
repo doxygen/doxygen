@@ -227,6 +227,16 @@ In addition doxygen provides a similar way to link a documented entity:
 
     [The link text](@ref MyClass)
 
+in case the first non whitespace character of the reference is a \c # this
+is interpreted as a doxygen link and replaced as a \ref cmdref "\@ref" command:
+
+    [The link text](#MyClass)
+
+will be interpreted as:
+
+    @ref MyClass "The link text"
+
+
 \subsubsection md_reflinks Reference Links
 
 Instead of putting the URL inline, you can also define the link separately
@@ -466,7 +476,7 @@ To link to a section in the same comment block you can use
 
     [Link text](#labelid)
 
-to link to a section in general, doxygen allows you to use \@ref
+to link to a section in general, doxygen allows you to use \ref cmdref "\@ref"
 
     [Link text](@ref labelid)
 
