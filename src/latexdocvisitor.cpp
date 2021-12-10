@@ -52,6 +52,32 @@ static const char *getSectionName(int level)
   return secLabels[std::min(maxLevels-1,l)];
 }
 
+static void insertDimension(TextStream &t, QCString dimension, const char *percentString)
+{
+  // dimensions for latex images can be procentual, in this case they need some extra
+  // handling as the % symbol is used for comments
+  int i = dimension.find('%');
+  if (i > 0)
+  {
+    QCString value = dimension.left(i).stripWhiteSpace();
+    int number = 0;
+    if (sscanf(value.data(),"%d",&number) != 0)
+    {
+      t << (double)number / 100;
+      t << "\\text";
+      t << percentString;
+    }
+    else
+    {
+      t << dimension;
+    }
+  }
+  else
+  {
+    t << dimension;
+  }
+}
+
 static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
 {
     if (inlineImage)
@@ -78,7 +104,8 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     }
     if (!width.isEmpty())
     {
-      t << "width=" << width;
+      t << "width=";
+      insertDimension(t, width, "width");
     }
     if (!width.isEmpty() && !height.isEmpty())
     {
@@ -86,7 +113,8 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     }
     if (!height.isEmpty())
     {
-      t << "height=" << height;
+      t << "height=";
+      insertDimension(t, height, "height");
     }
     if (width.isEmpty() && height.isEmpty())
     {
