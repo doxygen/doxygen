@@ -6918,7 +6918,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <*>\?                                   {
-                                          if (yyextra->insideCS && (YY_START != SkipRound))
+                                          if (yyextra->insideCS && (YY_START != SkipRound) && (YY_START != CSAccessorDecl))
                                           {
                                             if (yyextra->current->type.isEmpty())
                                             {
