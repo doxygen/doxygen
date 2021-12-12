@@ -3967,9 +3967,9 @@ ClassDef *ClassDefImpl::insertTemplateInstance(const QCString &fileName,
           innerClass->setOuterScope(templateClass);
           innerClass->setHidden(isHidden());
           innerClass->setArtificial(TRUE);
-          freshInstance=TRUE;
         }
       }
+      freshInstance=TRUE;
     }
   }
   return templateClass;
