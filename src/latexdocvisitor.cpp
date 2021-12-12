@@ -38,6 +38,7 @@
 #include "emoji.h"
 #include "plantuml.h"
 #include "fileinfo.h"
+#include "regex.h"
 
 const int maxLevels=5;
 static const char *secLabels[maxLevels] =
@@ -50,6 +51,26 @@ static const char *getSectionName(int level)
   if (compactLatex) l++;
   if (Doxygen::insideMainPage) l--;
   return secLabels[std::min(maxLevels-1,l)];
+}
+
+static void insertDimension(TextStream &t, QCString dimension, const char *orientationString)
+{
+  // dimensions for latex images can be procentual, in this case they need some extra
+  // handling as the % symbol is used for comments
+  static const reg::Ex re(R"((\d+)%)");
+  std::string s = dimension.str();
+  reg::Match match;
+  if (reg::search(s,match,re))
+  {
+    bool ok;
+    double percent = QCString(match[1].str()).toInt(&ok);
+    if (ok)
+    {
+      t << percent/100.0 << "\\text" << orientationString;
+      return;
+    }
+  }
+  t << dimension;
 }
 
 static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCString width,  QCString height, bool inlineImage = FALSE)
@@ -78,7 +99,8 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     }
     if (!width.isEmpty())
     {
-      t << "width=" << width;
+      t << "width=";
+      insertDimension(t, width, "width");
     }
     if (!width.isEmpty() && !height.isEmpty())
     {
@@ -86,7 +108,8 @@ static void visitPreStart(TextStream &t, bool hasCaption, QCString name,  QCStri
     }
     if (!height.isEmpty())
     {
-      t << "height=" << height;
+      t << "height=";
+      insertDimension(t, height, "height");
     }
     if (width.isEmpty() && height.isEmpty())
     {
