@@ -55,7 +55,7 @@ static const char *getSectionName(int level)
 
 static void insertDimension(TextStream &t, QCString dimension, const char *orientationString)
 {
-  // dimensions for latex images can be procentual, in this case they need some extra
+  // dimensions for latex images can be a percentage, in this case they need some extra
   // handling as the % symbol is used for comments
   static const reg::Ex re(R"((\d+)%)");
   std::string s = dimension.str();
