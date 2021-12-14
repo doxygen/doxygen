@@ -75,4 +75,4 @@ Example to update the reference files for a test
 There is also a CMakeLists.txt, which can be used from the build directory
 to run all tests by simply invoking 'make tests', to use the specific options use
 the flag TEST_FLAGS with make
-  e.g. make tests TEST_FLAGS="--id=5 ---id=10 --pdf --xhtml"
+  e.g. make tests TEST_FLAGS="--id=5 --id=10 --pdf --xhtml"
