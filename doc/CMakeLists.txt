@@ -63,6 +63,7 @@ set(DOC_FILES
         expert_list_string.png
         expert_string_dir.png
         expert_string_file.png
+        expert_string_filedir.png
         expert_string_image.png
         expert_string_string.png
         external.doc
