@@ -352,6 +352,21 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
   }
 }
 
+/** scan through data and return position of first non whitespace or newline */
+static int searchForNonWhitespaceOrNewline(const char *data,int start,int offset,int size,int step)
+{
+  int pos=start;
+  while (((offset + pos) >= 0) && (pos < size))
+  {
+    if (isNewline(&data[pos]) || data[pos] != ' ')
+    {
+      break;
+    }
+    pos += step;
+  }
+  return pos;
+}
+
 /** parse the image attributes and return attributes for given format */
 static QCString getImageAttributes(const char *fmt, const StringVector &attrList)
 {
@@ -983,19 +998,20 @@ int Markdown::processLink(const char *data,int offset,int size)
       return 0;
     }
     // check if there is text before '![' to know if the image needs to be inlined
-    int pos=-1;
-    while ((offset + pos) >= 0)
+    // when 2 newlines are found without text between them or between image and newline
+    // we start considering the image as non-inlined.
+    int pos = searchForNonWhitespaceOrNewline(data,-1,offset,size,-1);
+    if (isNewline(&data[pos]))
     {
-      if (isNewline(&data[pos]))
-      {
-        break;
-      }
-      else if (data[pos]!=' ')
+      pos = searchForNonWhitespaceOrNewline(data,pos-1,offset,size,-1);
+      if (!isNewline(&data[pos]))
       {
         isImageInline = TRUE;
-        break;
       }
-      pos--;
+    }
+    else
+    {
+      isImageInline = TRUE;
     }
     // skip '!['
     i++;
@@ -1237,20 +1253,24 @@ int Markdown::processLink(const char *data,int offset,int size)
       attributesEnd=i;
       convertStringFragment(attributes,data+attributesStart,attributesEnd-attributesStart);
       i++; // skip over }
-      // check if there is text after image to know if the image needs to be inlined
-      int pos=i;
-      while (pos<size)
+      if (!isImageInline)
       {
+        // check if there is text after image to know if the image needs to be inlined
+        // when 2 newlines are found without text between them or between image and newline
+        // we consider the image as non-inlined.
+        int pos = searchForNonWhitespaceOrNewline(data,i,offset,size,1);
         if (isNewline(&data[pos]))
         {
-          break;
+          pos = searchForNonWhitespaceOrNewline(data,pos+1,offset,size,1);
+          if (!isNewline(&data[pos]))
+          {
+            isImageInline = TRUE;
+          }
         }
-        else if (data[pos]!=' ')
+        else
         {
           isImageInline = TRUE;
-          break;
         }
-        pos++;
       }
     }
   }
