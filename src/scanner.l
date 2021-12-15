@@ -2346,6 +2346,18 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(9);
                                               }
+                                              else if (yyextra->current->name.left(8)=="typedef ")
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="typedef";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="typedef ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(8);
+                                              }
                                             }
                                             QCString tmp=yytext;
                                             if (nameIsOperator(tmp))
