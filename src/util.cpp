@@ -889,12 +889,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool keepSpaces,int indentLevel)
 {
   if (text.isEmpty()) return;
-  //printf("linkify='%s'\n",text);
+  //printf("linkify='%s'\n",qPrint(text));
   std::string txtStr=text.str();
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static const reg::Ex regExp(R"(\a[\w~!\\.:$]*)");
+  static const reg::Ex regExp(R"(:?:?\a[\w~!\\.:$]*)");
   reg::Iterator it(txtStr,regExp);
   reg::Iterator end;
 
