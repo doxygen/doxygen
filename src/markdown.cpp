@@ -1216,11 +1216,12 @@ int Markdown::processLink(const char *data,int offset,int size)
   // search for optional image attributes
   if (isImageLink)
   {
-    whiteSpace = false;
+    int j = i;
     // skip whitespace
-    while (i<size && data[i]==' ') {whiteSpace = true; i++;}
-    if (i<size && data[i]=='{')
+    while (j<size && data[j]==' ') {j++;}
+    if (j<size && data[j]=='{')
     {
+      i = j;
       // skip over {
       i++;
       attributesStart=i;
