@@ -894,7 +894,7 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static const reg::Ex regExp(R"(:?:?\a[\w~!\\.:$]*)");
+  static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$]*)");
   reg::Iterator it(txtStr,regExp);
   reg::Iterator end;
 
