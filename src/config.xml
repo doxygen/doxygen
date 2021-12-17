@@ -668,6 +668,18 @@ Go to the <a href="commands.html">next</a> section or return to the
 ]]>
       </docs>
     </option>
+    <option type='list' id='MARKDOWN_EXCLUDE' format='string' depends='MARKDOWN_SUPPORT'>
+      <docs>
+<![CDATA[
+ The strings as supplied in the \c MARKDOWN_EXCLUDE tag will be excluded from the
+ markdown processing. It might be necessary to exclude strings from the processing
+ as they are e.g. the name of a structure but start and end with an underscore,
+ meaning that they would by handled by the markdown processor as an italic string.
+ \note The order of the excluded patterns is of importance. When one needs to
+ exclude `_A_` and `__A__` one has to place the `__A__` before `_A_` in the list.
+]]>
+      </docs>
+    </option>
     <option type='int' id='TOC_INCLUDE_HEADINGS' minval='0' maxval='99' defval='5' depends='MARKDOWN_SUPPORT'>
       <docs>
 <![CDATA[

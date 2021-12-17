@@ -36,6 +36,7 @@
 #include <unordered_map>
 #include <functional>
 #include <atomic>
+#include <mutex>
 
 #include "markdown.h"
 #include "growbuf.h"
@@ -52,6 +53,8 @@
 #include "regex.h"
 #include "fileinfo.h"
 #include "utf8.h"
+
+static std::mutex g_markdownExcludeMutex;
 
 enum class ExplicitPageResult
 {
@@ -3035,13 +3038,54 @@ QCString Markdown::detab(const QCString &s,int &refIndent)
 
 //---------------------------------------------------------------------------
 
+class MarkdownExclude
+{
+  public:
+    QCString exclude;
+    QCString replacement;
+};
+typedef std::vector<MarkdownExclude> MarkdownExcludeVector;
+
 QCString Markdown::process(const QCString &input, int &startNewlines, bool fromParseInput)
 {
   if (input.isEmpty()) return input;
   int refIndent;
+  static bool first = true;
+  static MarkdownExcludeVector markdownExcludeVector;
 
-  // for replace tabs by spaces
+  {
+    std::unique_lock<std::mutex> lock(g_markdownExcludeMutex);
+    if (first)
+    {
+      const StringVector &list = Config_getList(MARKDOWN_EXCLUDE);
+      for (const auto &l : list)
+      {
+        MarkdownExclude markdownExcludeItem;
+        markdownExcludeItem.exclude = l.c_str();
+        GrowBuf growBuf;
+        signed char c;
+        const char *p=l.c_str();
+        while ((c=*p++)!=0)
+        {
+          growBuf.addChar('$');
+          growBuf.addChar(c);
+        }
+        growBuf.addChar(0);
+        markdownExcludeItem.replacement= growBuf.get();
+        markdownExcludeVector.push_back(markdownExcludeItem);
+      }
+      first = false;
+    }
+  }
+
   QCString s = input;
+  // for replacement of excluded strings in markdown
+  for (const auto &l : markdownExcludeVector)
+  {
+    s = substitute(s,l.exclude,l.replacement);
+  }
+  //printf("======== Replacement =========\n---- output -----\n%s\n---------\n",qPrint(s));
+  // for replace tabs by spaces
   if (s.at(s.length()-1)!='\n') s += "\n"; // see PR #6766
   s = detab(s,refIndent);
   //printf("======== DeTab =========\n---- output -----\n%s\n---------\n",qPrint(s));
@@ -3058,17 +3102,24 @@ QCString Markdown::process(const QCString &input, int &startNewlines, bool fromP
   m_out.clear();
   processInline(s.data(),s.length());
   m_out.addChar(0);
+  //
+  // replacement post processing
+  QCString result = substitute(m_out.get(),g_doxy_nsbp,"&nbsp;");
+  for (const auto &l : markdownExcludeVector)
+  {
+    result = substitute(result,l.replacement,l.exclude);
+  }
+  //printf("======== Back replacement =========\n---- output -----\n%s\n---------\n",qPrint(result));
   if (fromParseInput)
   {
-    Debug::print(Debug::Markdown,0,"---- output -----\n%s\n=========\n",qPrint(m_out.get()));
+    Debug::print(Debug::Markdown,0,"---- output -----\n%s\n=========\n",qPrint(result));
   }
   else
   {
-    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(m_out.get()));
+    Debug::print(Debug::Markdown,0,"======== Markdown =========\n---- input ------- \n%s\n---- output -----\n%s\n=========\n",qPrint(input),qPrint(result));
   }
 
   // post processing
-  QCString result = substitute(m_out.get(),g_doxy_nsbp,"&nbsp;");
   const char *p = result.data();
   if (p)
   {
