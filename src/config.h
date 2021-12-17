@@ -83,7 +83,7 @@ namespace Config
 
   /*! Check the validity of the parsed options and correct or warn the user where needed.
    * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)
-   * \param check check  HTML / LaTeX header file etc. on existance (and terminate when not present)
+   * \param check check  HTML / LaTeX header file etc. on existence (and terminate when not present)
    */
   void checkAndCorrect(bool quiet, const bool check);
 
