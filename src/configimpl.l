@@ -1873,22 +1873,22 @@ void Config::checkAndCorrect(bool quiet)
       FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
+        plantumlJarPath = plantumlJar;
       }
       else
       {
-        err("Jar file plantuml.jar not found at location "
+        err("Jar file 'plantuml.jar' not found at location "
                    "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
-    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    else if (pu.exists() && pu.isFile()) // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
+      // Nothing to be done
     }
     else
     {
-      err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+      err("PLANTUML_JAR_PATH is not a directory with a 'plantuml.jar' file or is not an existing file: %s\n",
                  qPrint(plantumlJarPath));
       plantumlJarPath="";
     }

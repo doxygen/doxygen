@@ -182,7 +182,7 @@ class ConfigEnum : public ConfigOption
 class ConfigString : public ConfigOption
 {
   public:
-    enum WidgetType { String, File, Dir, Image };
+    enum WidgetType { String, File, Dir, Image, FileAndDir };
     ConfigString(const char *name,const char *doc)
       : ConfigOption(O_String)
     {
