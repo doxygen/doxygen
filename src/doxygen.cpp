@@ -10909,7 +10909,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -10955,7 +10955,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -11145,7 +11145,7 @@ void checkConfiguration()
 
   Config::postProcess(FALSE);
   Config::updateObsolete();
-  Config::checkAndCorrect(Config_getBool(QUIET));
+  Config::checkAndCorrect(Config_getBool(QUIET), true);
   initWarningFormat();
 }
 
