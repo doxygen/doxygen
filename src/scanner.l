@@ -213,6 +213,7 @@ static inline int computeIndent(const char *s,int startIndent);
 static QCString stripQuotes(const char *s);
 static bool nameIsOperator(QCString &name);
 void fixArgumentListForJavaScript(ArgumentList &al);
+static bool startOfRequiresExpression(const QCString &req);
 
 // forward declarations for statefull functions
 static void initParser(yyscan_t yyscanner);
@@ -2137,7 +2138,7 @@ NONLopt [^\n]*
                                           BEGIN( CopyRound ) ;
                                         }
 <RequiresClause>{ID}                    { // something like "requires true"
-                                          if (yyextra->current->req.stripWhiteSpace().isEmpty())
+                                          if (startOfRequiresExpression(yyextra->current->req))
                                           {
                                             yyextra->current->req=yytext;
                                             BEGIN(yyextra->requiresContext);
@@ -2148,18 +2149,32 @@ NONLopt [^\n]*
                                           }
                                         }
 <RequiresClause>{SCOPENAME}{BNopt}"("   { // "requires func(x)"
-                                          yyextra->current->req+=yytext;
-                                          yyextra->lastRoundContext=RequiresClause;
-                                          yyextra->pCopyRoundString=&yyextra->current->req;
-                                          yyextra->roundCount=0;
-                                          BEGIN( CopyRound );
+                                          if (startOfRequiresExpression(yyextra->current->req))
+                                          {
+                                            yyextra->current->req+=yytext;
+                                            yyextra->lastRoundContext=RequiresClause;
+                                            yyextra->pCopyRoundString=&yyextra->current->req;
+                                            yyextra->roundCount=0;
+                                            BEGIN( CopyRound );
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
                                         }
 <RequiresClause>{SCOPENAME}{BNopt}"<"   { // "requires C<S,T>"
-                                          yyextra->current->req+=yytext;
-                                          yyextra->lastSharpContext=RequiresClause;
-                                          yyextra->pCopySharpString=&yyextra->current->req;
-                                          yyextra->sharpCount=0;
-                                          BEGIN( CopySharp );
+                                          if (startOfRequiresExpression(yyextra->current->req))
+                                          {
+                                            yyextra->current->req+=yytext;
+                                            yyextra->lastSharpContext=RequiresClause;
+                                            yyextra->pCopySharpString=&yyextra->current->req;
+                                            yyextra->sharpCount=0;
+                                            BEGIN( CopySharp );
+                                          }
+                                          else
+                                          {
+                                            REJECT
+                                          }
                                         }
 <RequiresClause>"||"|"&&"             { // "requires A || B" or "requires A && B"
                                           yyextra->current->req+=yytext;
@@ -7085,6 +7100,16 @@ static QCString stripQuotes(const char *s)
     name=name.mid(1,name.length()-2);
   }
   return name;
+}
+
+//-----------------------------------------------------------------
+
+// return TRUE iff req holds the start of a requires expression
+// or sub-expression without parenthesis, i.e. req is empty or ends with || or &&
+static bool startOfRequiresExpression(const QCString &req)
+{
+  QCString r = req.stripWhiteSpace();
+  return r.isEmpty() || r.endsWith("&&") || r.endsWith("||");
 }
 
 //-----------------------------------------------------------------
