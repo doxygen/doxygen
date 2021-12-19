@@ -932,14 +932,14 @@ INTRINSIC_DERIVED_TYPE          (C_FUNPTR|C_PTR|EVENT_TYPE|LOCK_TYPE|TEAM_TYPE)
                                                             codifyLines(yyscanner,yytext);
                                                             endFontClass(yyscanner);
                                                         }
-
+ /*
 <*>^[Cc*].*                                             {   // normal comment
                                                             if(! yyextra->isFixedForm) YY_FTN_REJECT;
                                                             startFontClass(yyscanner,"fortran_comment");
                                                             codifyLines(yyscanner,yytext);
                                                             endFontClass(yyscanner);
                                                         }
-
+ */
 <*>"assignment"/{BS}"("{BS}"="{BS}")"   {
                                           startFontClass(yyscanner,"fortran_statement");
                                           codifyLines(yyscanner,yytext);
