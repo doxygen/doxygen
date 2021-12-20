@@ -3,19 +3,19 @@
 
 #
 # Generated  by generateDS.py.
-# Python 3.9.0 (default, Oct 27 2020, 14:15:17)  [Clang 12.0.0 (clang-1200.0.32.21)]
+#
 #
 # Command line options:
 #   ('--no-dates', '')
 #   ('--no-versions', '')
 #   ('-f', '')
-#   ('-o', '/Users/dimitri/doxygen.git/addon/doxmlparser/doxmlparser/index.py')
+#   ('-o', '.../addon/doxmlparser/doxmlparser/index.py')
 #
 # Command line arguments:
-#   /Users/dimitri/doxygen.git/templates/xml/index.xsd
+#  .../templates/xml/index.xsd
 #
 # Command line:
-#   /usr/local/bin/generateDS --no-dates --no-versions -f -o "/Users/dimitri/doxygen.git/addon/doxmlparser/doxmlparser/index.py" /Users/dimitri/doxygen.git/templates/xml/index.xsd
+#  .../generateDS --no-dates --no-versions -f -o ".../addon/doxmlparser/doxmlparser/index.py" .../templates/xml/index.xsd
 #
 # Current working directory (os.getcwd()):
 #   doxmlparser
@@ -175,7 +175,7 @@ except ModulenotfoundExp_ :
 try:
     from generatedssuper import GeneratedsSuper
 except ModulenotfoundExp_ as exp:
-    
+
     class GeneratedsSuper(object):
         __hash__ = object.__hash__
         tzoff_pattern = re_.compile(r'(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$')
@@ -657,8 +657,8 @@ except ModulenotfoundExp_ as exp:
                     self.gds_elementtree_node_.sourceline)
             else:
                 return ""
-    
-    
+
+
     def getSubclassFromModule_(module, class_):
         '''Get the subclass of a class from a specific module.'''
         name = class_.__name__ + 'Sub'
@@ -984,6 +984,7 @@ class CompoundKind(str, Enum):
     EXAMPLE='example'
     DIR='dir'
     TYPE='type'
+    CONCEPT='concept'
 
 
 class MemberKind(str, Enum):
@@ -1194,7 +1195,7 @@ class CompoundType(GeneratedsSuper):
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s is not of the correct base simple type (str)' % {"value": value, "lineno": lineno, })
                 return False
             value = value
-            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'type']
+            enumerations = ['class', 'struct', 'union', 'interface', 'protocol', 'category', 'exception', 'file', 'namespace', 'group', 'page', 'example', 'dir', 'type', 'concept']
             if value not in enumerations:
                 lineno = self.gds_get_node_lineno_()
                 self.gds_collector_.add_message('Value "%(value)s"%(lineno)s does not match xsd enumeration restriction on CompoundKind' % {"value" : encode_str_2_3(value), "lineno": lineno} )

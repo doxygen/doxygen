@@ -672,6 +672,8 @@ void PerlModDocVisitor::visit(DocVerbatim *s)
       m_output.add("</programlisting>");
       return;
 #endif
+    case DocVerbatim::JavaDocCode:
+    case DocVerbatim::JavaDocLiteral:
     case DocVerbatim::Verbatim:  type = "preformatted"; break;
     case DocVerbatim::HtmlOnly:  type = "htmlonly";     break;
     case DocVerbatim::RtfOnly:   type = "rtfonly";      break;
@@ -950,7 +952,17 @@ void PerlModDocVisitor::visitPost(DocHtmlList *)
   closeItem();
 }
 
-void PerlModDocVisitor::visitPre(DocHtmlListItem *) { openSubBlock(); }
+void PerlModDocVisitor::visitPre(DocHtmlListItem *l)
+{
+  for (const auto &opt : l->attribs())
+  {
+    if (opt.name=="value")
+    {
+      m_output.addFieldQuotedString("item_value", qPrint(opt.value));
+    }
+  }
+  openSubBlock();
+}
 void PerlModDocVisitor::visitPost(DocHtmlListItem *) { closeSubBlock(); }
 
 //void PerlModDocVisitor::visitPre(DocHtmlPre *)

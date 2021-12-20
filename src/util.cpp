@@ -166,7 +166,7 @@ const int maxInheritanceDepth = 100000;
 QCString removeAnonymousScopes(const QCString &str)
 {
   std::string result;
-  if (str.isEmpty()) return result;
+  if (str.isEmpty()) return QCString(result);
 
   // helper to check if the found delimiter starts with a colon
   auto startsWithColon = [](const std::string &del)
@@ -227,7 +227,7 @@ QCString replaceAnonymousScopes(const QCString &s,const QCString &replacement)
   std::string result = reg::replace(s.str(),marker,
                                     replacement.isEmpty() ? replacement.data() : "__anonymous__");
   //printf("replaceAnonymousScopes('%s')='%s'\n",qPrint(s),qPrint(result));
-  return result;
+  return QCString(result);
 }
 
 
@@ -662,7 +662,7 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         break;
       case '>': // current char is a >
         if (i>0 && !isspace((uchar)pc) &&
-            (isId(pc) || pc=='*' || pc=='&' || pc=='.') && // prev char is an id char or space or *&.
+            (isId(pc) || pc=='*' || pc=='&' || pc=='.' || pc=='>') && // prev char is an id char or space or *&.
             (osp<8 || (osp==8 && pc!='-')) // string in front is not "operator>" or "operator->"
            )
         {
@@ -723,8 +723,15 @@ QCString removeRedundantWhiteSpace(const QCString &s)
         }
         *dst++=c;
         break;
-      case '@':  // '@name' -> ' @name'
       case '$':  // '$name' -> ' $name'
+                 // 'name$name' -> 'name$name'
+        if (isId(pc))
+        {
+          *dst++=c;
+          break;
+        }
+        // else fallthrough
+      case '@':  // '@name' -> ' @name'
       case '\'': // ''name' -> '' name'
         if (i>0 && i<l-1 && pc!='=' && pc!=':' && !isspace((uchar)pc) &&
             isId(nc) && osp<8) // ")id" -> ") id"
@@ -882,12 +889,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool keepSpaces,int indentLevel)
 {
   if (text.isEmpty()) return;
-  //printf("linkify='%s'\n",text);
+  //printf("linkify='%s'\n",qPrint(text));
   std::string txtStr=text.str();
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static const reg::Ex regExp(R"(\a[\w~!\\.:$]*)");
+  static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$]*)");
   reg::Iterator it(txtStr,regExp);
   reg::Iterator end;
 
@@ -1197,14 +1204,6 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
       if (!first) result+=", ";
       if (!a.name.isEmpty()) // add template argument name
       {
-        if (a.type.left(4)=="out") // C# covariance
-        {
-          result+="out ";
-        }
-        else if (a.type.left(3)=="in") // C# contravariance
-        {
-          result+="in ";
-        }
         if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
         {
           result+=a.type+" ";
@@ -1405,7 +1404,7 @@ QCString fileToString(const QCString &name,bool filter,bool isSourceCode)
     {
       contents+=line+'\n';
     }
-    return contents;
+    return QCString(contents);
   }
   else // read from file
   {
@@ -2575,7 +2574,7 @@ bool getDefs(const QCString &scName,
           int ni=namespaceName.findRev("::");
           //printf("namespaceName=%s ni=%d\n",qPrint(namespaceName),ni);
           bool notInNS = tmd && ni==-1 && tmd->getNamespaceDef()==0 && (mScope.isEmpty() || mScope==tmd->name());
-          bool sameNS  = tmd && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name() && namespaceName.mid(ni+2)==tmd->name();
+          bool sameNS  = tmd && ni>=0 && tmd->getNamespaceDef() && namespaceName.left(ni)==tmd->getNamespaceDef()->name() && namespaceName.mid(ni+2)==tmd->name();
           //printf("notInNS=%d sameNS=%d\n",notInNS,sameNS);
           if (tmd && tmd->isStrong() && // C++11 enum class
               (notInNS || sameNS) &&
@@ -3650,7 +3649,7 @@ QCString convertNameToFile(const QCString &name,bool allowDots,bool allowUndersc
 
     result.prepend(QCString().sprintf("d%x/d%02x/",l1Dir,l2Dir));
   }
-  //printf("*** convertNameToFile(%s)->%s\n",name,qPrint(result));
+  //printf("*** convertNameToFile(%s)->%s\n",qPrint(name),qPrint(result));
   return result;
 }
 
@@ -3997,7 +3996,7 @@ QCString convertToXML(const QCString &s, bool keepEntities)
 }
 
 /*! Converts a string to an DocBook-encoded string */
-QCString convertToDocBook(const QCString &s)
+QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
@@ -4009,6 +4008,7 @@ QCString convertToDocBook(const QCString &s)
   {
     switch (c)
     {
+      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
       case '<':  growBuf.addStr("&lt;");   break;
       case '>':  growBuf.addStr("&gt;");   break;
       case '&':  // possibility to have a special symbol
@@ -4400,13 +4400,13 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
         pos=i+l;
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
-      //    type,pos,qPrint(name),qPrint(templSpec),i);
+      //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
       return i;
     }
   }
   pos = typeLen;
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
-  //       type,pos,qPrint(name),qPrint(templSpec));
+  //       qPrint(type),pos,qPrint(name),qPrint(templSpec));
   return -1;
 }
 
@@ -4421,7 +4421,7 @@ QCString normalizeNonTemplateArgumentsInString(
   p++;
   QCString result = name.left(p);
 
-  std::string s = result.mid(p).str();
+  std::string s = name.mid(p).str();
   static const reg::Ex re(R"([\a:][\w:]*)");
   reg::Iterator it(s,re);
   reg::Iterator end;
@@ -4481,7 +4481,7 @@ QCString substituteTemplateArgumentsInString(
     const std::unique_ptr<ArgumentList> &actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
-  //    qPrint(name),qPrint(argListToString(formalArgs)),qPrint(argListToString(actualArgs)));
+  //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
   if (formalArgs.empty()) return nm;
   QCString result;
 
@@ -4760,22 +4760,34 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     )
 {
   PageDef *pd=0;
-  //printf("addRelatedPage(name=%s gd=%p)\n",name,gd);
+  //printf("addRelatedPage(name=%s gd=%p)\n",qPrint(name),gd);
   QCString title=ptitle.stripWhiteSpace();
-  if ((pd=Doxygen::pageLinkedMap->find(name)) && !tagInfo)
+  bool newPage = true;
+  if ((pd=Doxygen::pageLinkedMap->find(name)) && !pd->isReference())
   {
-    if (!xref && !title.isEmpty() && pd->title()!=title)
+    if (!xref && !title.isEmpty() && pd->title()!=pd->name() && pd->title()!=title)
     {
-      warn(fileName,startLine,"multiple use of page label '%s', (other occurrence: %s, line: %d)",
+      warn(fileName,startLine,"multiple use of page label '%s' with different titles, (other occurrence: %s, line: %d)",
          qPrint(name),qPrint(pd->docFile()),pd->getStartBodyLine());
+    }
+    if (!title.isEmpty() && pd->title()==pd->name()) // pd has no real title yet
+    {
+      pd->setTitle(title);
+      SectionInfo *si = SectionManager::instance().find(pd->name());
+      if (si)
+      {
+        si->setTitle(title);
+      }
     }
     // append documentation block to the page.
     pd->setDocumentation(doc,fileName,docLine);
     //printf("Adding page docs '%s' pi=%p name=%s\n",qPrint(doc),pd,name);
     // append (x)refitems to the page.
     pd->setRefItems(sli);
+    newPage = false;
   }
-  else // new page
+
+  if (newPage) // new page
   {
     QCString baseName=name;
     if (baseName.right(4)==".tex")
@@ -4784,9 +4796,21 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
 
     //printf("Appending page '%s'\n",qPrint(baseName));
-    pd = Doxygen::pageLinkedMap->add(baseName,
-        std::unique_ptr<PageDef>(
-           createPageDef(fileName,docLine,baseName,doc,title)));
+    if (pd) // replace existing page
+    {
+      pd->setDocumentation(doc,fileName,docLine);
+      pd->setFileName(::convertNameToFile(baseName,FALSE,TRUE));
+      pd->setShowLineNo(FALSE);
+      pd->setNestingLevel(0);
+      pd->setPageScope(0);
+      pd->setTitle(title);
+    }
+    else // newPage
+    {
+      pd = Doxygen::pageLinkedMap->add(baseName,
+          std::unique_ptr<PageDef>(
+             createPageDef(fileName,docLine,baseName,doc,title)));
+    }
     pd->setBodySegment(startLine,startLine,-1);
 
     pd->setRefItems(sli);
@@ -4823,7 +4847,12 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       const SectionInfo *si = SectionManager::instance().find(pd->name());
       if (si)
       {
-        if (si->lineNr() != -1)
+        if (!si->ref().isEmpty()) // we are from a tag file
+        {
+          SectionManager::instance().replace(pd->name(),
+              file,-1,pd->title(),SectionType::Page,0,pd->getReference());
+        }
+        else if (si->lineNr() != -1)
         {
           warn(orgFile,line,"multiple use of section label '%s', (first occurrence: %s, line %d)",qPrint(pd->name()),qPrint(si->fileName()),si->lineNr());
         }
@@ -4904,7 +4933,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
 }
 
 void filterLatexString(TextStream &t,const QCString &str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
+    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   //if (strlen(str)<2) stackTrace();
@@ -4943,6 +4972,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '-':  t << "-\\/"; break;
         case '^':  insideTable ? t << "\\string^" : t << (char)c;    break;
         case '~':  t << "\\string~";    break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+                   break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
         default:
@@ -5029,6 +5060,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '`':  t << "\\`{}";
                    break;
         case '\'': t << "\\textquotesingle{}";
+                   break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
                    break;
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;
@@ -5235,7 +5268,7 @@ QCString rtfFormatBmkStr(const QCString &name)
     }
   }
 
-  //printf("Name = %s RTF_tag = %s\n",name,qPrint(*tag)));
+  Debug::print(Debug::Rtf,0,"Name = %s RTF_tag = %s\n",qPrint(name),qPrint(tag));
   return tag;
 }
 
@@ -6241,7 +6274,7 @@ QCString filterTitle(const QCString &title)
     p=i+l;
   }
   tf+=t.substr(p);
-  return tf;
+  return QCString(tf);
 }
 
 //----------------------------------------------------------------------------
@@ -6402,7 +6435,7 @@ QCString replaceColorMarkers(const QCString &str)
     p=i+l;
   }
   if (p<sl) result+=s.substr(p);
-  return result;
+  return QCString(result);
 }
 
 /** Copies the contents of file with name \a src to the newly created
@@ -7003,7 +7036,7 @@ bool mainPageHasTitle()
 
 QCString getDotImageExtension()
 {
-  QCString imgExt = Config_getEnum(DOT_IMAGE_FORMAT);
+  QCString imgExt = Config_getEnumAsString(DOT_IMAGE_FORMAT);
   int i= imgExt.find(':'); // strip renderer part when using e.g. 'png:cairo:gd' as format
   return i==-1 ? imgExt : imgExt.left(i);
 }

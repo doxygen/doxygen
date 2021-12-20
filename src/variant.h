@@ -16,8 +16,6 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
-#include <typeinfo>
-#include <type_traits>
 #include <string>
 #include <utility>
 
@@ -50,92 +48,118 @@ struct TMax<arg1, arg2, others...>
 
 //------ helper class to deal with memory management of an array of template types
 
-//! generic declaration of a template to handle copyin, moving, deleting, and computing the
-//! index for a type that matches one in the set of template parameters.
-template<typename... Ts>
-struct HelperT;
-
-//! specialization to stop the recursion for an empty list.
-template<>
-struct HelperT<>
-{
-  inline static void   copy(size_t src_t, const void * src_v, void * dst_v) { }
-  inline static void   move(size_t src_t, void * src_v, void * dst_v) { }
-  inline static void   destroy(size_t id, void * data) { }
-  inline static size_t index(size_t id, size_t index) { return std::string::npos; }
-};
+//! generic declaration of a template to handle copying, moving, and deleting
+//! type that matches a given index in the list of variant parameters.
+template<uint8_t n,typename... Ts>
+struct HelperRecT;
 
 //! Recursive template definition for multiple arguments.
-//! Each function check the first parameter, and if the type matches does the action.
-//! If not, the same function is called without this template parameters.
-template<typename F, typename... Ts>
-struct HelperT<F, Ts...>
+//! Each function checks for a matching index, and if found does the action.
+//! If not, the same function is called with the next index and one less type argument.
+template<uint8_t n, typename F, typename... Ts>
+struct HelperRecT<n, F, Ts...>
 {
   //! Helper function to copy an instance of a type by performing a placement new.
-  //! @param src_t The id if the type to search for in the template parameter list
+  //! @param id The id if the type to search for in the template parameter list
   //! @param src_v A pointer to the value of the type to copy from.
   //! @param dst_v A pointer to the variable to copy to.
-  inline static void copy(size_t src_t, const void * src_v, void * dst_v)
+  inline static void copy(uint8_t id, const void * src_v, void * dst_v)
   {
-    if (src_t == typeid(F).hash_code()) // found it
+    if (n==id) // found it
     {
       new (dst_v) F(*reinterpret_cast<const F*>(src_v));
     }
     else // continue searching
     {
-      HelperT<Ts...>::copy(src_t, src_v, dst_v);
+      HelperRecT<n+1,Ts...>::copy(id, src_v, dst_v);
     }
   }
 
   //! Helper function to move an instance of a type by calling the move constructor on it.
-  //! @param src_t The id if the type to search for in the template parameter list
+  //! @param id The id if the type to search for in the template parameter list
   //! @param src_v A pointer to the value of the type to copy from.
   //! @param dst_v A pointer to the variable to copy to.
-  inline static void move(size_t src_t, void * src_v, void * dst_v)
+  inline static void move(uint8_t id, void * src_v, void * dst_v)
   {
-    if (src_t == typeid(F).hash_code()) // found it
+    if (n==id) // found it
     {
       new (dst_v) F(std::move(*reinterpret_cast<F*>(src_v)));
     }
     else // continue searching
     {
-      HelperT<Ts...>::move(src_t, src_v, dst_v);
+      HelperRecT<n+1,Ts...>::move(id, src_v, dst_v);
     }
   }
 
   //! Helper function to destroy an object of a given type by calling its destructor.
   //! @param id The id if the type to search for in the template parameter list
   //! @param data A pointer to the object to destroy
-  inline static void destroy(size_t id, void * data)
+  inline static void destroy(uint8_t id, void * data)
   {
-    if (id == typeid(F).hash_code()) // found it
+    if (n==id) // found it
     {
       reinterpret_cast<F*>(data)->~F();
     }
     else // continue searching
     {
-      HelperT<Ts...>::destroy(id, data);
-    }
-  }
-
-  //! Helper function to returns the index of a given type within the template parameter list
-  //! @param id The id to search for
-  //! @param index The index into the original template list
-  inline static size_t index(size_t id,size_t index)
-  {
-    if (id == typeid(F).hash_code()) // found it
-    {
-      return index;
-    }
-    else // continue searching
-    {
-      return HelperT<Ts...>::index(id,index+1);
+      HelperRecT<n+1,Ts...>::destroy(id, data);
     }
   }
 
 };
 
+//! Specialization to stop the recursion when the end of the list has reached
+template<uint8_t n>
+struct HelperRecT<n>
+{
+  inline static void copy(uint8_t id, const void * src_v, void * dst_v) { }
+  inline static void move(uint8_t id, void * src_v, void * dst_v) { }
+  inline static void destroy(uint8_t id, void * data) { }
+};
+
+//! Helper to kickstart the recursive search
+template<typename ...Ts>
+struct HelperT
+{
+  inline static void copy(uint8_t id, const void *src_v, void *dst_v)
+  { HelperRecT<0, Ts...>::copy(id, src_v, dst_v); }
+  inline static void move(uint8_t id, void *src_v, void *dst_v)
+  { HelperRecT<0, Ts...>::move(id, src_v, dst_v); }
+  inline static void destroy(uint8_t id,void *data)
+  { HelperRecT<0, Ts...>::destroy(id, data); }
+};
+
+//! Specialization to end the recursion
+template<>
+struct HelperT<>
+{
+  inline static void copy(uint8_t id, const void * src_v, void * dst_v) { }
+  inline static void move(uint8_t id, void * src_v, void * dst_v) { }
+  inline static void destroy(uint8_t id, void * data) { }
+};
+
 } // namespace details
+
+//! Generic declaration of a template type wrapper where VariantType<index,...>::type
+//! represents the type of the variant at the given index.
+//! The first type of the variant has index 0, the second has
+//! index 1, etc.
+template<uint8_t index, typename... Items>
+struct VariantType;
+
+//! specialization to stop the recursion when arrived at index 0 and type F
+template<typename F,typename...Ts>
+struct VariantType<0, F, Ts...>
+{
+  using type = F;
+};
+
+//! recursive definition of the type wrapper
+template<uint8_t index, typename F, typename... Ts>
+struct VariantType<index, F, Ts...>
+{
+  using type = typename VariantType<index-1,Ts...>::type;
+};
 
 //------------------------------------------------------------------
 
@@ -143,6 +167,7 @@ struct HelperT<F, Ts...>
 //! It can hold either no instances (e.g. initially or after calling invalidate()),
 //! or hold exactly one instance of an object (after calling set())
 //! whose type is one of the variant's template parameters.
+//! Each parameter has an index, the first parameter has index 0.
 //! It behaves similar to a C union, in that the memory of all
 //! possible object types is shared, but unlike a C union
 //! it does allow C++ objects with constructors and destructors to be stored and
@@ -157,42 +182,49 @@ struct Variant {
 
     //! the data type for the Variant's internal memory
     using Data   = typename std::aligned_storage<data_size, data_align>::type;
+
     //! a short hand name for the helper class
     using HelperT = details::HelperT<Ts...>;
 
-    //! The id that represents an invalid type
-    static inline size_t invalid_type() { return typeid(void).hash_code(); }
+    template<uint8_t index>
+    using Type = typename VariantType<index,Ts...>::type;
 
-    //! a unique identifier for the type held by this variant
-    size_t type_id;
+    //! The id that represents an invalid type
+    static inline uint8_t invalid_id() { return 255; }
+
     //! the actual data
-    Data data;
+    Data m_data;
+    //! a unique identifier for the type held by this variant
+    uint8_t m_id;
 
   public:
     //! The default constructor
-    Variant() : type_id(invalid_type())
+    Variant() : m_id(invalid_id())
     {
     }
 
     //! The copy constructor
-    Variant(const Variant<Ts...>& src) : type_id(src.type_id)
+    Variant(const Variant<Ts...>& src) : m_id(src.m_id)
     {
-      HelperT::copy(src.type_id, &src.data, &data);
+      HelperT::copy(src.m_id, &src.m_data, &m_data);
     }
 
     //! The move constructor
-    Variant(Variant<Ts...>&& src) : type_id(src.type_id)
+    Variant(Variant<Ts...>&& src) : m_id(src.m_id)
     {
-      HelperT::move(src.type_id, &src.data, &data);
+      HelperT::move(src.m_id, &src.m_data, &m_data);
     }
 
     //! The copy assignment operator
     Variant<Ts...>& operator= (const Variant<Ts...> &src)
     {
-      if (this!=&src)
+      if (this!=&src) // prevent self assignment
       {
-        type_id = src.type_id;
-        HelperT::copy(src.type_id, &src.data, &data);
+        // destroy the old value
+        if (valid()) HelperT::destroy(m_id,&m_data);
+        // and copy over the new one
+        m_id = src.m_id;
+        HelperT::copy(src.m_id, &src.m_data, &m_data);
       }
       return *this;
     }
@@ -200,66 +232,70 @@ struct Variant {
     //! The move assignment operator
     Variant<Ts...>& operator= (Variant<Ts...> &&src)
     {
-      type_id = src.type_id;
-      HelperT::move(src.type_id, &src.data, &data);
+      // destroy the old value
+      if (valid()) HelperT::destroy(m_id,&m_data);
+      // and move in the new one
+      m_id = src.m_id;
+      HelperT::move(src.m_id, &src.m_data, &m_data);
       return *this;
     }
 
     //! The destructor
     ~Variant()
     {
-      HelperT::destroy(type_id, &data);
+      HelperT::destroy(m_id, &m_data);
     }
 
     //! Returns true iff the variant container holds a specific type.
     //! @tparam T the type to search for.
-    template<typename T>
-    constexpr bool is() const { return (type_id==typeid(T).hash_code()); }
+    template<uint8_t index>
+    constexpr bool is() const { return m_id==index; }
 
     //! Returns true iff the Variant holds a valid type.
-    constexpr bool valid() const { return (type_id!=invalid_type()); }
+    constexpr bool valid() const { return m_id!=invalid_id(); }
 
     //! Invalidate the variant. Will destroy any object that is held.
     void invalidate()
     {
-      HelperT::destroy(type_id,&data);
-      type_id = invalid_type();
+      HelperT::destroy(m_id,&m_data);
+      m_id = invalid_id();
     }
 
-    //! Returns the index of the type held by this variant, or std::string::npos if the
+    //! Returns the index of the type held by this variant, or invalid_id() if the
     //! variant does not hold any type (i.e. valid() returns false).
-    constexpr size_t index() const { return HelperT::index(type_id, 0); }
+    constexpr uint8_t index() const { return m_id; }
 
     //! Replaces the contents of the variant container by constructing a type T calling
     //! the constructor with Args
-    //! @param T the type to make the variant hold an instance of.
-    //! @param Args The arguments to pass to the constructor of T.
-    template<typename T, typename... Args>
+    //! @tparam index the type to make the variant hold an instance of.
+    //! @tparam Args The arguments types to pass to the constructor of T.
+    //! @param args The argument values
+    template<uint8_t index, typename... Args>
     void set(Args&&... args)
     {
-      HelperT::destroy(type_id, &data);
-      new (&data) T(std::forward<Args>(args)...);
-      type_id = typeid(T).hash_code();
+      HelperT::destroy(m_id, &m_data);
+      m_id = index;
+      new (&m_data) Type<index>(std::forward<Args>(args)...);
     }
 
     //! Return a non-constant reference to the value held by the variant container.
     //! @throw std::bad_cast() if called on a variant container that does not hold
-    //! an instance of the specified type.
-    template<typename T>
-    T& get()
+    //! an instance of the type of the variant at index.
+    template<uint8_t index>
+    Type<index>& get()
     {
-      if (type_id != typeid(T).hash_code()) throw std::bad_cast();
-      return *reinterpret_cast<T*>(&data);
+      if (m_id != index) throw std::bad_cast();
+      return *reinterpret_cast<Type<index>*>(&m_data);
     }
 
     //! Returns a constant reference to the value held by the variant container.
     //! @throw std::bad_cast() if called on a variant container that does not hold
-    //! an instance of the specified type.
-    template<typename T>
-    const T& get() const
+    //! an instance of the type of the variant at index.
+    template<uint8_t index>
+    const Type<index>& get() const
     {
-      if (type_id != typeid(T).hash_code()) throw std::bad_cast();
-      return *reinterpret_cast<const T*>(&data);
+      if (m_id != index) throw std::bad_cast();
+      return *reinterpret_cast<const Type<index>*>(&m_data);
     }
 
 };

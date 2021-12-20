@@ -45,6 +45,10 @@
 %option extra-type="struct defargsYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -115,7 +119,7 @@ static bool nameIsActuallyPartOfType(QCString &name);
 
 B       [ \t]
 Bopt    {B}*
-ID	[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+ID	[$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 RAWBEGIN  (u|U|L|u8)?R\"[^ \t\(\)\\]{0,16}"("
 RAWEND    ")"[^ \t\(\)\\]{0,16}\"
 

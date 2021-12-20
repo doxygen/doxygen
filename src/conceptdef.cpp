@@ -39,6 +39,7 @@ class ConceptDefImpl : public DefinitionMixin<ConceptDefMutable>
 
     //---------- ConceptDef
     virtual DefType definitionType() const;
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Concept; }
     virtual QCString getOutputFileBase() const;
     virtual bool hasDetailedDescription() const;
     virtual QCString displayName(bool includeScope=true) const;
@@ -100,6 +101,8 @@ class ConceptDefAliasImpl : public DefinitionAliasMixin<ConceptDef>
     virtual ConceptDef *resolveAlias() { return const_cast<ConceptDef*>(getCdAlias()); }
 
     virtual DefType definitionType() const { return TypeConcept; }
+    virtual CodeSymbolType codeSymbolType() const
+    { return getCdAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getCdAlias()->getOutputFileBase(); }
     virtual QCString getReference() const
@@ -267,7 +270,7 @@ void ConceptDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"concept\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase())) << "</filename>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
   {
@@ -491,13 +494,6 @@ void ConceptDefImpl::writeDocumentation(OutputList &ol)
 
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
-
-  Doxygen::indexList->addIndexItem(this,0);
   //---------------------------------------- start flexible part -------------------------------
 
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Concept))

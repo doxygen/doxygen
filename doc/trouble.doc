@@ -34,7 +34,7 @@
     or unions with the same name in your code. It should not crash however,
     rather it should ignore all of the classes with the same name except one.
 <li>Some commands do not work inside the arguments of other commands.
-    Inside a HTML link (i.e. \<a&nbsp;href="..."\>...\</a\>) for instance 
+    Inside a HTML link (i.e. \ref htmltag_A_HREF "\<A HREF=\"...\"\>"...\ref htmltag_endA "\</A\>") for instance 
     other commands (including other HTML commands) do not work!
     The sectioning commands are an important exception. 
 <li>Redundant braces can confuse doxygen in some cases. 
@@ -97,9 +97,11 @@ through the database if the same bug has already been submitted by others.
 If you believe you have found a new bug, 
 please <a href="https://github.com/doxygen/doxygen/issues/new">report it</a>.
 
-If you are unsure whether or not something is a bug, please ask help
-on the <a href="http://sourceforge.net/mail/?group_id=5971">users mailing list</a> 
-first (subscription is required).
+If you are unsure whether or not something is a bug, please ask help first
+(subscription is required)
+on the <a href="http://sourceforge.net/mail/?group_id=5971">users mailing list</a> or
+at <a href="https://stackoverflow.com/questions/tagged/doxygen">Stack Overflow</a>
+using the `doxygen` label.
 
 If you send only a (vague) description of a bug, you are usually not very 
 helpful and it will cost me much more time to figure out what you mean. 

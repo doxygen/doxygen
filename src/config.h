@@ -33,6 +33,7 @@
 #define Config_getBool(name)   (ConfigValues::instance().name())
 #define Config_getInt(name)    (ConfigValues::instance().name())
 #define Config_getEnum(name)   (ConfigValues::instance().name())
+#define Config_getEnumAsString(name)   (ConfigValues::instance().name##_str())
 #define Config_getList(name)   (ConfigValues::instance().name())
 #define Config_updateString(name,value) (ConfigValues::instance().update_##name(value));
 #define Config_updateBool(name,value)   (ConfigValues::instance().update_##name(value));
@@ -82,8 +83,12 @@ namespace Config
 
   /*! Check the validity of the parsed options and correct or warn the user where needed.
    * \param quiet setting for the QUIET option (can have been overruled by means of a command line option)
+   * \param check check  HTML / LaTeX header file etc. on existence (and terminate when not present)
    */
-  void checkAndCorrect(bool quiet);
+  void checkAndCorrect(bool quiet, const bool check);
+
+  /*! Adjust any configuration values based on the value of obsolete options. */
+  void updateObsolete();
 
   /*! Clean up any data */
   void deinit();

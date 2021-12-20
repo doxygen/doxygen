@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _CMDMAPPER_H
-#define _CMDMAPPER_H
+#ifndef CMDMAPPER_H
+#define CMDMAPPER_H
 
 #include <map>
 #include <string>
@@ -143,6 +143,8 @@ enum CommandType
   CMD_MANINCLUDE   = 114,
   CMD_XMLINCLUDE   = 115,
   CMD_ILINE        = 116,
+  CMD_ILITERAL     = 117,
+  CMD_ENDILITERAL  = 118,
 };
 
 enum HtmlTagType

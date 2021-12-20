@@ -173,7 +173,7 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
 
 static QCString field2URL(const IndexField *f,bool checkReversed)
 {
-  QCString result = f->url + Doxygen::htmlFileExtension;
+  QCString result = addHtmlExtensionIfMissing(f->url);
   if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
   {
     // HTML Help needs colons in link anchors to be escaped in the .hhk file.
@@ -247,7 +247,9 @@ void HtmlHelpIndex::writeFields(std::ostream &t)
       if (it_next!=std::end(m_map))
       {
         auto &fnext = *it_next;
-        nextLevel1 = fnext->name.left(fnext->name.find('?'));
+        int j = fnext->name.find('?');
+        if (j<0) j=0;
+        nextLevel1 = fnext->name.left(j);
       }
       if (!(level1 == prevLevel1 || level1 == nextLevel1))
       {
@@ -552,7 +554,7 @@ void HtmlHelp::Private::createProjectFile()
     }
     for (auto &s : imageFiles)
     {
-      t << s << "\n";
+      t << s.c_str() << "\n";
     }
     t.close();
   }
@@ -633,6 +635,7 @@ void HtmlHelp::addContentsItem(bool isDir,
                                bool /* addToNavIndex */,
                                const Definition * /* def */)
 {
+  static bool binaryTOC = Config_getBool(BINARY_TOC);
   // If we're using a binary toc then folders cannot have links.
   // Tried this and I didn't see any problems, when not using
   // the resetting of file and anchor the TOC works better
@@ -654,14 +657,18 @@ void HtmlHelp::addContentsItem(bool isDir,
       if (file[0]=='^') p->cts << "URL"; else p->cts << "Local";
       p->cts << "\" value=\"";
       p->cts << &file[1];
+      p->cts << "\">";
     }
     else
     {
-      p->cts << "<param name=\"Local\" value=\"";
-      p->cts << file << Doxygen::htmlFileExtension;
-      if (!anchor.isEmpty()) p->cts << "#" << anchor;
+      if (!(binaryTOC && isDir))
+      {
+        p->cts << "<param name=\"Local\" value=\"";
+        p->cts << addHtmlExtensionIfMissing(file);
+        if (!anchor.isEmpty()) p->cts << "#" << anchor;
+        p->cts << "\">";
+      }
     }
-    p->cts << "\">";
   }
   p->cts << "<param name=\"ImageNumber\" value=\"";
   if (isDir)  // added - KPW

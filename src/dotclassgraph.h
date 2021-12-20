@@ -16,6 +16,8 @@
 #ifndef DOTCLASSGRAPH_H
 #define DOTCLASSGRAPH_H
 
+#include <memory>
+
 #include "classdef.h"
 #include "dotnode.h"
 #include "dotgraph.h"
@@ -61,5 +63,6 @@ private:
   bool               m_lrRank;
 };
 
+using DotClassGraphPtr = std::shared_ptr<DotClassGraph>;
 
 #endif

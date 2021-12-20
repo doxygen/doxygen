@@ -155,7 +155,6 @@ void FormulaManager::generateImages(const QCString &path,Format format,DocFormat
   if (f.is_open())
   {
     TextStream t(&f);
-    if (Config_getBool(LATEX_BATCHMODE)) t << "\\batchmode\n";
     t << "\\documentclass{article}\n";
     t << "\\usepackage{ifthen}\n";
     t << "\\usepackage{epsfig}\n"; // for those who want to include images
@@ -189,19 +188,30 @@ void FormulaManager::generateImages(const QCString &path,Format format,DocFormat
   }
   if (!formulasToGenerate.empty()) // there are new formulas
   {
-    //printf("Running latex...\n");
-    //system("latex _formulas.tex </dev/null >/dev/null");
     QCString latexCmd = "latex";
-    Portable::sysTimerStart();
     char args[4096];
-    sprintf(args,"-interaction=batchmode _formulas.tex >%s",Portable::devNull());
-    if (Portable::system(latexCmd,args)!=0)
+    Portable::sysTimerStart();
+    int rerunCount=1;
+    while (rerunCount<8)
     {
-      err("Problems running latex. Check your installation or look "
-          "for typos in _formulas.tex and check _formulas.log!\n");
-      Portable::sysTimerStop();
-      Dir::setCurrent(oldDir);
-      return;
+      //printf("Running latex...\n");
+      sprintf(args,"-interaction=batchmode _formulas.tex >%s",Portable::devNull());
+      if ((Portable::system(latexCmd,args)!=0) || (Portable::system(latexCmd,args)!=0))
+      {
+        err("Problems running latex. Check your installation or look "
+            "for typos in _formulas.tex and check _formulas.log!\n");
+        Portable::sysTimerStop();
+        Dir::setCurrent(oldDir);
+        return;
+      }
+      // check the log file if we need to run latex again to resolve references
+      QCString logFile = fileToString("_formulas.log");
+      if (logFile.isEmpty() ||
+          (logFile.find("Rerun to get cross-references right")==-1 && logFile.find("Rerun LaTeX")==-1))
+      {
+        break;
+      }
+      rerunCount++;
     }
     Portable::sysTimerStop();
     //printf("Running dvips...\n");

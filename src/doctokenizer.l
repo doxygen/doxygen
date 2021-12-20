@@ -22,6 +22,10 @@
 %option extra-type="struct doctokenizerYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -142,6 +146,32 @@ const char *DocTokenizer::tokToString(int token)
   return "ERROR";
 }
 
+const char *DocTokenizer::retvalToString(int retval)
+{
+  switch (retval)
+  {
+    case RetVal_OK:            return "RetVal_OK";
+    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
+    case RetVal_ListItem:      return "RetVal_ListItem";
+    case RetVal_Section:       return "RetVal_Section";
+    case RetVal_Subsection:    return "RetVal_Subsection";
+    case RetVal_Subsubsection: return "RetVal_Subsubsection";
+    case RetVal_Paragraph:     return "RetVal_Paragraph";
+    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
+    case RetVal_EndList:       return "RetVal_EndList";
+    case RetVal_EndPre:        return "RetVal_EndPre";
+    case RetVal_DescData:      return "RetVal_DescData";
+    case RetVal_DescTitle :    return "RetVal_DescTitle";
+    case RetVal_EndDesc:       return "RetVal_EndDesc";
+    case RetVal_TableRow:      return "RetVal_TableRow";
+    case RetVal_TableCell:     return "RetVal_TableCell";
+    case RetVal_TableHCell:    return "RetVal_TableHCell";
+    case RetVal_EndTable:      return "RetVal_EndTable";
+    case RetVal_Internal:      return "RetVal_Internal";
+  }
+  return "ERROR";
+}
+
 static int computeIndent(const char *str,size_t length)
 {
   if (str==0 || length==std::string::npos) return 0;
@@ -226,7 +256,7 @@ WS        [ \t\r\n]
 NONWS     [^ \t\r\n]
 BLANK     [ \t\r]
 BLANKopt  {BLANK}*
-ID        "$"?[a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*
+ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
 PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
@@ -245,10 +275,12 @@ ATTRIB    {ATTRNAME}{WS}*("="{WS}*(("\""[^\"]*"\"")|("'"[^\']*"'")|[^ \t\r\n'"><
 URLCHAR   [a-z_A-Z0-9\!\~\,\:\;\'\$\?\@\&\%\#\.\-\+\/\=\x80-\xFF]
 URLMASK   ({URLCHAR}+([({]{URLCHAR}*[)}])?)+
 URLPROTOCOL ("http:"|"https:"|"ftp:"|"ftps:"|"sftp:"|"file:"|"news:"|"irc:"|"ircs:")
-FILESCHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
+FILEICHAR [a-z_A-Z0-9\\:\\\/\-\+&#@]
 FILEECHAR [a-z_A-Z0-9\-\+&#@]
-HFILEMASK ("."{FILESCHAR}*{FILEECHAR}+)+
-FILEMASK  ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|{HFILEMASK}
+FILECHARS {FILEICHAR}*{FILEECHAR}+
+HFILEMASK {FILEICHAR}*("."{FILEICHAR}+)+{FILECHARS}*
+VFILEMASK {FILECHARS}("."{FILECHARS})*
+FILEMASK  {VFILEMASK}|{HFILEMASK}
 LINKMASK  [^ \t\n\r\\@<&${}]+("("[^\n)]*")")?({BLANK}*("const"|"volatile"){BLANK}+)?
 VERBATIM  "verbatim"{BLANK}*
 SPCMD1    {CMD}([a-z_A-Z][a-z_A-Z0-9]*|{VERBATIM}|"--"|"---")
@@ -263,7 +295,7 @@ TEMPCHAR  [a-z_A-Z0-9.,: \t\*\&\(\)\[\]]
 FUNCCHAR  [a-z_A-Z0-9,:\<\> \t\^\*\&\[\]]|{VARARGS}
 FUNCPART  {FUNCCHAR}*("("{FUNCCHAR}*")"{FUNCCHAR}*)?
 SCOPESEP  "::"|"#"|"."
-TEMPLPART "<"{TEMPCHAR}*">"
+TEMPLPART "<"{TEMPCHAR}*("<"{TEMPCHAR}*("<"{TEMPCHAR}*">")?">")?">"
 ANONNS    "anonymous_namespace{"[^}]*"}"
 SCOPEPRE  (({ID}{TEMPLPART}?)|{ANONNS}){SCOPESEP}
 SCOPEKEYS ":"({ID}":")*
@@ -326,6 +358,8 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_XmlOnly
 %x St_DbOnly
 %x St_Verbatim
+%x St_ILiteral
+%x St_ILiteralOpt
 %x St_Dot
 %x St_Msc
 %x St_PlantUMLOpt
@@ -483,6 +517,10 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->indent = computeIndent(text.data(),dotPos);
                          return TK_ENDLIST;
                        }
+<St_Para>"{"{BLANK}*"@linkplain"/{WS}+ {
+                         yyextra->token->name = "javalinkplain";
+                         return TK_COMMAND_AT;
+                       }
 <St_Para>"{"{BLANK}*"@link"/{WS}+ {
                          yyextra->token->name = "javalink";
                          return TK_COMMAND_AT;
@@ -582,6 +620,7 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Para>{RCSID} { /* RCS tag */
                          QCString tagName(yytext+1);
                          int index=tagName.find(':');
+                         if (index<0) index=0; // should never happen
                          yyextra->token->name = tagName.left(index);
                          int text_begin = index+2;
                          int text_end = tagName.length()-1;
@@ -619,6 +658,10 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->name = yytext;
                          return TK_LNKWORD;
                         }
+<St_Para>{LNKWORD1}/"<tt>" { // prevent <tt> html tag to be parsed as template arguments
+                         yyextra->token->name = yytext;
+                         return TK_LNKWORD;
+                       }
 <St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
@@ -645,12 +688,6 @@ LINENR {BLANK}*[1-9][0-9]*
                          else
                            yyextra->token->name = yytext;
                          return TK_WORD;
-
-                         /* the following is dummy code to please the
-                          * compiler, removing this results in a warning
-                          * on my machine
-                          */
-                         goto find_rule;
                        }
 <St_Text>({ID}".")+{ID} {
                           yyextra->token->name = yytext;
@@ -814,11 +851,27 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
                          return RetVal_OK;
                        }
-<St_Verbatim>[^\\@\n]+ |
-<St_Verbatim>\n        |
-<St_Verbatim>.         { /* Verbatim text */
+<St_ILiteral>{CMD}"endiliteral " { // note extra space as this is artificially added
+                         // remove spaces that have been added
+                         yyextra->token->verb=yyextra->token->verb.mid(1,yyextra->token->verb.length()-2);
+                         return RetVal_OK;
+                       }
+<St_Verbatim,St_ILiteral>[^\\@\n]+ |
+<St_Verbatim,St_ILiteral>\n        |
+<St_Verbatim,St_ILiteral>.         { /* Verbatim / javadac literal/code text */
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
+                       }
+<St_ILiteralOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // option(s) present
+                         yyextra->token->verb = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_ILiteralOpt>"\\ilinebr" |
+<St_ILiteralOpt>"\n"   |
+<St_ILiteralOpt>.      {
+                         yyextra->token->sectionId = "";
+                         unput_string(yytext,yyleng);
+                         return RetVal_OK;
                        }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
@@ -965,7 +1018,9 @@ LINENR {BLANK}*[1-9][0-9]*
                        }
 <St_TitleA>{BLANK}*{ID}{BLANK}*"="{BLANK}* { // title attribute
                          yyextra->token->name = yytext;
-                         yyextra->token->name = yyextra->token->name.left(yyextra->token->name.find('=')).stripWhiteSpace();
+                         int pos = yyextra->token->name.find('=');
+                         if (pos<0) pos=0; // should never happen
+                         yyextra->token->name = yyextra->token->name.left(pos).stripWhiteSpace();
                          BEGIN(St_TitleV);
                        }
 <St_TitleV>[^ \t\r\n]+ { // attribute value
@@ -1129,7 +1184,8 @@ LINENR {BLANK}*[1-9][0-9]*
                          QCString params(yytext);
                          int j = params.find('&');
                          int i = params.find('$');
-                         if (j<i && j!=-1) i=j;
+                         if (i<0) i=0; // should never happen
+                         if (j<i && j>=0) i=j;
                          QCString types = params.left(i).stripWhiteSpace();
                          yyextra->token->name = types+"#"+params.mid(i);
                          return TK_WORD;
@@ -1151,7 +1207,11 @@ LINENR {BLANK}*[1-9][0-9]*
 <St_Options>{ID}       {
                          yyextra->token->name+=yytext;
                        }
-<St_Options>{WS}*","{WS}*
+<St_Options>{WS}*":"{WS}* {
+                         lineCount(yytext,yyleng);
+                         yyextra->token->name+=":";
+                       }
+<St_Options>{WS}*","{WS}* |
 <St_Options>{WS}       { /* option separator */
                          lineCount(yytext,yyleng);
                          yyextra->token->name+=",";
@@ -1276,6 +1336,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                     }
 <St_Sections>{CMD}"verbatim"/[^a-z_A-Z0-9]  {
                                       yyextra->endMarker="endverbatim";
+                                      BEGIN(St_SecSkip);
+                                    }
+<St_Sections>{CMD}"iliteral"/[^a-z_A-Z0-9]  {
+                                      yyextra->endMarker="endiliteral";
                                       BEGIN(St_SecSkip);
                                     }
 <St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
@@ -1726,6 +1790,22 @@ void DocTokenizer::setStateLatexOnly()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token->verb="";
   BEGIN(St_LatexOnly);
+}
+
+void DocTokenizer::setStateILiteral()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_ILiteral);
+}
+
+void DocTokenizer::setStateILiteralOpt()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_ILiteralOpt);
 }
 
 void DocTokenizer::setStateVerbatim()

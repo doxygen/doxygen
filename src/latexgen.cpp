@@ -146,7 +146,8 @@ void LatexCodeGenerator::codify(const QCString &str)
 }
 
 
-void LatexCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+void LatexCodeGenerator::writeCodeLink(CodeSymbolType,
+                                   const QCString &ref,const QCString &f,
                                    const QCString &anchor,const QCString &name,
                                    const QCString &)
 {
@@ -170,7 +171,7 @@ void LatexCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
   m_col+=l;
 }
 
-void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l)
+void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fileName,const QCString &anchor,int l,bool writeLineAnchor)
 {
   bool usePDFLatex = Config_getBool(USE_PDFLATEX);
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
@@ -190,14 +191,14 @@ void LatexCodeGenerator::writeLineNumber(const QCString &ref,const QCString &fil
       lineAnchor.sprintf("_l%05d",l);
       lineAnchor.prepend(stripExtensionGeneral(m_sourceFileName, ".tex"));
     }
-    bool showTarget = usePDFLatex && pdfHyperlinks && !lineAnchor.isEmpty();
+    bool showTarget = usePDFLatex && pdfHyperlinks && !lineAnchor.isEmpty() && writeLineAnchor;
     if (showTarget)
     {
       m_t << "\\Hypertarget{" << stripPath(lineAnchor) << "}";
     }
     if (!fileName.isEmpty())
     {
-      writeCodeLink(ref,fileName,anchor,lineNumber,QCString());
+      writeCodeLink(CodeSymbolType::Default,ref,fileName,anchor,lineNumber,QCString());
     }
     else
     {
@@ -607,7 +608,7 @@ static QCString substituteLatexKeywords(const QCString &str,
   bool pdfHyperlinks = Config_getBool(PDF_HYPERLINKS);
   bool usePdfLatex = Config_getBool(USE_PDFLATEX);
   bool latexBatchmode = Config_getBool(LATEX_BATCHMODE);
-  QCString paperType = Config_getString(PAPER_TYPE);
+  QCString paperType = Config_getEnumAsString(PAPER_TYPE);
 
   QCString style = Config_getString(LATEX_BIB_STYLE);
   if (style.isEmpty())

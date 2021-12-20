@@ -150,7 +150,7 @@ struct WordPosition
 /** Class representing the '<' operator for WordPosition objects based on position. */
 struct WordPosition_less
 {
-  bool operator()(const WordPosition &p1,const WordPosition &p2)
+  bool operator()(const WordPosition &p1,const WordPosition &p2) const
   {
     return p1.start<p2.start;
   }
@@ -167,7 +167,7 @@ struct Fragment
 /** Class representing the '>' operator for Fragment objects based on occurrence. */
 struct Fragment_greater
 {
-  bool operator()(const Fragment &p1,const Fragment &p2)
+  bool operator()(const Fragment &p1,const Fragment &p2) const
   {
     return p1.occurrences>p2.occurrences;
   }

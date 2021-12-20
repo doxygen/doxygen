@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _DOCTOKENIZER_H
-#define _DOCTOKENIZER_H
+#ifndef DOCTOKENIZER_H
+#define DOCTOKENIZER_H
 
 #include <stdio.h>
 #include <memory>
@@ -126,6 +126,7 @@ class DocTokenizer
 
     // helper functions
     static const char *tokToString(int token);
+    static const char *retvalToString(int retval);
 
     void setLineNr(int lineno);
     int getLineNr(void);
@@ -150,6 +151,8 @@ class DocTokenizer
     void setStateDbOnly();
     void setStateRtfOnly();
     void setStateVerbatim();
+    void setStateILiteral();
+    void setStateILiteralOpt();
     void setStateDot();
     void setStateMsc();
     void setStateParam();

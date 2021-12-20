@@ -81,6 +81,7 @@ static void writeTable(const std::vector<const MemberDef*> &portList,TextStream 
 static void endTable(TextStream &t);
 static void writeClassToDot(TextStream &t,ClassDef* cd);
 static void writeVhdlDotLink(TextStream &t,const QCString &a,const QCString &b,const QCString &style);
+
 static const MemberDef *flowMember=0;
 
 void VhdlDocGen::setFlowMember( const MemberDef* mem)
@@ -335,7 +336,7 @@ static void writeColumn(TextStream &t,const MemberDef *md,bool start)
   if (md)
   {
     t << "href=\"";
-    t << md->getOutputFileBase()<< Doxygen::htmlFileExtension;
+    t << addHtmlExtensionIfMissing(md->getOutputFileBase());
     t << "#" << md->anchor();
     t<<"\" ";
 
@@ -405,7 +406,7 @@ static void writeClassToDot(TextStream &t,ClassDef* cd)
   t << cd->name();
   t << "\" ";
   t << "href=\"";
-  t << cd->getOutputFileBase() << Doxygen::htmlFileExtension;
+  t << addHtmlExtensionIfMissing(cd->getOutputFileBase());
   t << "\" ";
   t << ">";
   t << cd->name();
@@ -993,6 +994,7 @@ void VhdlDocGen::parseFuncProto(const QCString &text,QCString& name,QCString& re
   QCString temp;
 
   index=s1.find("(");
+  if (index<0) index=0;
   end=s1.findRev(")");
 
   if ((end-index)>0)
@@ -1725,7 +1727,7 @@ void VhdlDocGen::writeTagFile(MemberDefMutable *mdef,TextStream &tagFile)
   tagFile << "\">\n";
   tagFile << "      <type>" << convertToXML(mdef->typeString()) << "</type>\n";
   tagFile << "      <name>" << convertToXML(mdef->name()) << "</name>\n";
-  tagFile << "      <anchorfile>" << convertToXML(mdef->getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>\n";
+  tagFile << "      <anchorfile>" << convertToXML(addHtmlExtensionIfMissing(mdef->getOutputFileBase())) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(mdef->anchor()) << "</anchor>\n";
 
   if (VhdlDocGen::isVhdlFunction(mdef))
@@ -2302,6 +2304,7 @@ void VhdlDocGen::parseUCF(const char*  input,  Entry* entity,const QCString &fil
         {
           static const reg::Ex ee(R"([\s=])");
           int in=findIndex(temp.str(),ee);
+          if (in<0) in=0;
           QCString ff=temp.left(in);
           temp.stripPrefix(ff);
           ff.append("#");
@@ -2463,7 +2466,7 @@ QCString  VhdlDocGen::parseForBinding(QCString & entity,QCString & arch)
   {
     arch=ql[2];
   }
-  return label;
+  return QCString(label);
 }
 
 

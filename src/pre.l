@@ -18,6 +18,10 @@
 %option extra-type="struct preYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -73,9 +77,9 @@
 static const char *stateToString(int state);
 #endif
 
-struct CondCtx
+struct preYY_CondCtx
 {
-  CondCtx(int line,QCString id,bool b)
+  preYY_CondCtx(int line,QCString id,bool b)
     : lineNr(line),sectionId(id), skip(b) {}
   int lineNr;
   QCString sectionId;
@@ -84,7 +88,7 @@ struct CondCtx
 
 struct FileState
 {
-  FileState(int size) : fileBuf(size) {}
+  FileState(uint size) : fileBuf(size) {}
   int lineNr = 1;
   int curlyCount = 0;
   BufStr fileBuf;
@@ -268,6 +272,7 @@ struct preYY_state
   BufStr            *outputBuf      = 0;
   int                roundCount     = 0;
   bool               quoteArg       = false;
+  bool               idStart        = false;
   int                findDefArgContext = 0;
   bool               expectGuard    = false;
   QCString           guardName;
@@ -276,6 +281,7 @@ struct preYY_state
   QCString           guardExpr;
   int                curlyCount     = 0;
   bool               nospaces       = false; // add extra spaces during macro expansion
+  int                javaBlock      = 0;
 
   bool               macroExpansion = false; // from the configuration
   bool               expandOnlyPredef = false; // from the configuration
@@ -297,7 +303,7 @@ struct preYY_state
   StringVector                             pathList;
   IntMap                                   argMap;
   BoolStack                                levelGuard;
-  std::stack< std::unique_ptr<CondCtx> >   condStack;
+  std::stack< std::unique_ptr<preYY_CondCtx> >   condStack;
   std::deque< std::unique_ptr<FileState> > includeStack;
   std::unordered_map<std::string,Define*>  expandedDict;
   StringUnorderedSet                       expanded;
@@ -385,13 +391,12 @@ WSopt [ \t\r]*
 %x      DefineArg
 %x      DefineText
 %x      SkipCPPBlock
-%x      Ifdef
-%x      Ifndef
 %x      SkipCComment
 %x      ArgCopyCComment
 %x      CopyCComment
 %x      SkipVerbatim
 %x      SkipCPPComment
+%x      JavaDocVerbatimCode
 %x      RemoveCComment
 %x      RemoveCPPComment
 %x      Guard
@@ -442,7 +447,9 @@ WSopt [ \t\r]*
 <Start>^{B}*[_A-Z][_A-Z0-9]+{B}*"("[^\)\n]*")"{B}*\n { // function like macro
                                           bool skipFuncMacros = Config_getBool(SKIP_FUNCTION_MACROS);
                                           QCString name(yytext);
-                                          name=name.left(name.find('(')).stripWhiteSpace();
+                                          int pos = name.find('(');
+                                          if (pos<0) pos=0; // should never happen
+                                          name=name.left(pos).stripWhiteSpace();
 
                                           Define *def=0;
                                           if (skipFuncMacros && !yyextra->insideFtn &&
@@ -469,7 +476,7 @@ WSopt [ \t\r]*
                                             BEGIN(CopyLine);
                                           }
                                         }
-<CopyLine,LexCopyLine>"extern"{BN}{0,80}"\"C\""*{BN}{0,80}"{"   {
+<CopyLine,LexCopyLine>"extern"{BN}*"\""[^\"]+"\""{BN}*("{")?  {
                                           QCString text=yytext;
                                           yyextra->yyLineNr+=text.contains('\n');
                                           outputArray(yyscanner,yytext,yyleng);
@@ -860,6 +867,16 @@ WSopt [ \t\r]*
 <Guard>"defined"/{B}+                   {
                                           BEGIN(DefinedExpr1);
                                         }
+<Guard>"true"/{B}|{B}*[\r]?\n           { yyextra->guardExpr+="1L"; }
+<Guard>"false"/{B}|{B}*[\r]?\n          { yyextra->guardExpr+="0L"; }
+<Guard>"not"/{B}                        { yyextra->guardExpr+='!'; }
+<Guard>"not_eq"/{B}                     { yyextra->guardExpr+="!="; }
+<Guard>"and"/{B}                        { yyextra->guardExpr+="&&"; }
+<Guard>"or"/{B}                         { yyextra->guardExpr+="||"; }
+<Guard>"bitand"/{B}                     { yyextra->guardExpr+="&"; }
+<Guard>"bitor"/{B}                      { yyextra->guardExpr+="|"; }
+<Guard>"xor"/{B}                        { yyextra->guardExpr+="^"; }
+<Guard>"compl"/{B}                      { yyextra->guardExpr+="~"; }
 <Guard>{ID}                             { yyextra->guardExpr+=yytext; }
 <Guard>"@"                              { yyextra->guardExpr+="@@"; }
 <Guard>.                                { yyextra->guardExpr+=*yytext; }
@@ -1221,11 +1238,11 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
+<SkipCComment>[\\@][\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
+<SkipCComment>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                           yyextra->fenceSize=0;
@@ -1241,6 +1258,16 @@ WSopt [ \t\r]*
                                             yyextra->blockName=bn.stripWhiteSpace();
                                           }
                                           BEGIN(SkipVerbatim);
+                                        }
+<SkipCComment>"{"[ \t]*"@code"/[ \t\n]  {
+                                          outputArray(yyscanner,"@iliteral{code}",15);
+                                          yyextra->javaBlock=1;
+                                          BEGIN(JavaDocVerbatimCode);
+                                        }
+<SkipCComment>"{"[ \t]*"@literal"/[ \t\n]  {
+                                          outputArray(yyscanner,"@iliteral",9);
+                                          yyextra->javaBlock=1;
+                                          BEGIN(JavaDocVerbatimCode);
                                         }
 <SkipCComment,SkipCPPComment>[\\@][\\@]"cond"[ \t]+ { // escaped @cond
                                           outputArray(yyscanner,yytext,yyleng);
@@ -1344,7 +1371,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
                                           outputArray(yyscanner,yytext,yyleng);
                                           if (yytext[1]=='f' && yyextra->blockName=="f")
                                           {
@@ -1372,7 +1399,43 @@ WSopt [ \t\r]*
 <SkipVerbatim>{CCE}|{CCS}                       {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
-<SkipCComment,SkipVerbatim>[^*\\@\x06~`\n\/]+ {
+<JavaDocVerbatimCode>"{"                {
+                                          if (yyextra->javaBlock==0)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->javaBlock++;
+                                            outputArray(yyscanner,yytext,(int)yyleng);
+                                          }
+                                        }
+<JavaDocVerbatimCode>"}"                {
+                                          if (yyextra->javaBlock==0)
+                                          {
+                                            REJECT;
+                                          }
+                                          else
+                                          {
+                                            yyextra->javaBlock--;
+                                            if (yyextra->javaBlock==0)
+                                            {
+                                              outputArray(yyscanner," @endiliteral ",14);
+                                              BEGIN(SkipCComment);
+                                            }
+                                            else
+                                            {
+                                              outputArray(yyscanner,yytext,(int)yyleng);
+                                            }
+                                          }
+                                        }
+<JavaDocVerbatimCode>\n                 { /* new line in verbatim block */
+                                          outputArray(yyscanner,yytext,(int)yyleng);
+                                        }
+<JavaDocVerbatimCode>.                  { /* any other character */
+                                          outputArray(yyscanner,yytext,(int)yyleng);
+                                        }
+<SkipCComment,SkipVerbatim>[^{*\\@\x06~`\n\/]+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                         }
 <SkipCComment,SkipVerbatim>\n           {
@@ -1444,6 +1507,7 @@ WSopt [ \t\r]*
 <DefineText>"#"/{IDSTART}               {
                                           outputChar(yyscanner,' ');
                                           yyextra->quoteArg=TRUE;
+                                          yyextra->idStart=true;
                                           yyextra->defLitText+=yytext;
                                         }
 <DefineText,CopyCComment>{ID}           {
@@ -1464,6 +1528,12 @@ WSopt [ \t\r]*
                                             }
                                             else
                                             {
+                                              if (yyextra->idStart)
+                                              {
+                                                warn(yyextra->yyFileName,yyextra->yyLineNr,
+                                                  "'#' is not followed by a macro parameter '%s': '%s'",
+                                                  qPrint(yyextra->defName),qPrint(yyextra->defLitText.stripWhiteSpace()));
+                                              }
                                               yyextra->defText+=yytext;
                                             }
                                           }
@@ -1476,6 +1546,7 @@ WSopt [ \t\r]*
                                             yyextra->defText+="\"";
                                           }
                                           yyextra->quoteArg=FALSE;
+                                          yyextra->idStart=false;
                                         }
 <CopyCComment>.                         {
                                           yyextra->defLitText+=yytext;
@@ -1852,7 +1923,7 @@ static FileState *checkAndOpenFile(yyscan_t yyscanner,const QCString &fileName,b
     }
     //printf("#include %s\n",qPrint(absName));
 
-    fs = new FileState(fi.size()+4096);
+    fs = new FileState(static_cast<uint>(fi.size())+4096);
     if (!readInputFile(absName,fs->fileBuf))
     { // error
       //printf("  error reading\n");
@@ -2920,7 +2991,7 @@ static inline void outputChar(yyscan_t yyscanner,char c)
 static inline void outputArray(yyscan_t yyscanner,const char *a,yy_size_t len)
 {
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
-  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,len);
+  if (state->includeStack.empty() || state->curlyCount>0) state->outputBuf->addArray(a,static_cast<uint>(len));
 }
 
 static inline void outputString(yyscan_t yyscanner,const QCString &a)
@@ -3153,7 +3224,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",state->skip,state->condStack.size());
   CondParser prs;
   bool expResult = prs.parse(state->yyFileName.data(),state->yyLineNr,sectId.data());
-  state->condStack.emplace(std::make_unique<CondCtx>(state->yyLineNr,sectId,state->skip));
+  state->condStack.emplace(std::make_unique<preYY_CondCtx>(state->yyLineNr,sectId,state->skip));
   if (!expResult)
   {
     state->skip=TRUE;
@@ -3170,7 +3241,7 @@ static void endCondSection(yyscan_t yyscanner)
   }
   else
   {
-    const std::unique_ptr<CondCtx> &ctx = state->condStack.top();
+    const std::unique_ptr<preYY_CondCtx> &ctx = state->condStack.top();
     state->skip=ctx->skip;
     state->condStack.pop();
   }
@@ -3517,7 +3588,7 @@ void Preprocessor::processFile(const QCString &fileName,BufStr &input,BufStr &ou
 
   while (!state->condStack.empty())
   {
-    const std::unique_ptr<CondCtx> &ctx = state->condStack.top();
+    const std::unique_ptr<preYY_CondCtx> &ctx = state->condStack.top();
     QCString sectionInfo = " ";
     if (ctx->sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",qPrint(ctx->sectionId.stripWhiteSpace()));
     warn(fileName,ctx->lineNr,"Conditional section%sdoes not have "

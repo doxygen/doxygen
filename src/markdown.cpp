@@ -53,6 +53,13 @@
 #include "fileinfo.h"
 #include "utf8.h"
 
+enum class ExplicitPageResult
+{
+  explicitPage,      /**< docs start with a page command */
+  explicitMainPage,  /**< docs start with a mainpage command */
+  notExplicit        /**< docs doesn't start with either page or mainpage */
+};
+
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
 #endif
@@ -135,6 +142,11 @@ class Trace
       m_resultSet = true;
       m_resultValue = b ? "true" : "false";
     }
+    void setResult(ExplicitPageResult ep)
+    {
+      m_resultSet = true;
+      m_resultValue = QCString().setNum(static_cast<int>(ep));
+    }
     void setResult(int i)
     {
       m_resultSet = true;
@@ -194,7 +206,6 @@ int Trace::s_indent = 0;
   (data[i]=='('  || data[i]=='{' || data[i]=='[' || (data[i]=='<' && data[i+1]!='/') || \
    data[i]=='\\' || \
    data[i]=='@')
-
 //----------
 
 struct TableCell
@@ -280,8 +291,23 @@ static QCString escapeSpecialChars(const QCString &s)
     switch (c)
     {
       case '"':  if (pc!='\\')  { insideQuote=!insideQuote; } growBuf.addChar(c);   break;
-      case '<':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('<'); break;
-      case '>':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('>'); break;
+      case '<':
+      case '>':  if (!insideQuote)
+                 {
+                   growBuf.addChar('\\');
+                   growBuf.addChar(c);
+                   if ((p[0] == ':') && (p[1] == ':'))
+                   {
+                     growBuf.addChar('\\');
+                     growBuf.addChar(':');
+                     p++;
+                   }
+                 }
+                 else
+                 {
+                   growBuf.addChar(c);
+                 }
+                 break;
       case '\\': if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('\\'); break;
       case '@':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('@'); break;
       case '#':  if (!insideQuote) { growBuf.addChar('\\'); } growBuf.addChar('#'); break;
@@ -341,6 +367,7 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \f[..\f]
 // \f{..\f}
 // \verbatim..\endverbatim
+// \iliteral..\endiliteral
 // \latexonly..\endlatexonly
 // \htmlonly..\endhtmlonly
 // \xmlonly..\endxmlonly
@@ -367,6 +394,7 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
            blockName=="code"        ||
            blockName=="msc"         ||
            blockName=="verbatim"    ||
+           blockName=="iliteral"    ||
            blockName=="latexonly"   ||
            blockName=="htmlonly"    ||
            blockName=="xmlonly"     ||
@@ -946,10 +974,12 @@ int Markdown::processLink(const char *data,int,int size)
   if (!isImageLink && content.isEmpty()) { TRACE_RESULT(0); return 0; } // no link text
   i++; // skip over ]
 
+  bool whiteSpace = false;
   // skip whitespace
-  while (i<size && data[i]==' ') i++;
+  while (i<size && data[i]==' ') {whiteSpace = true; i++;}
   if (i<size && data[i]=='\n') // one newline allowed here
   {
+    whiteSpace = true;
     i++;
     nl++;
     // skip more whitespace
@@ -957,13 +987,15 @@ int Markdown::processLink(const char *data,int,int size)
   }
   nlTotal += nl;
   nl = 0;
+  if (whiteSpace && i<size && (data[i]=='(' || data[i]=='[')) return 0;
 
   bool explicitTitle=FALSE;
   if (i<size && data[i]=='(') // inline link
   {
     i++;
     while (i<size && data[i]==' ') i++;
-    if (i<size && data[i]=='<') i++;
+    bool uriFormat=false;
+    if (i<size && data[i]=='<') { i++; uriFormat=true; }
     linkStart=i;
     int braceCount=1;
     while (i<size && data[i]!='\'' && data[i]!='"' && braceCount>0)
@@ -993,7 +1025,7 @@ int Markdown::processLink(const char *data,int,int size)
     link = link.stripWhiteSpace();
     //printf("processLink: link={%s}\n",qPrint(link));
     if (link.isEmpty()) { TRACE_RESULT(0); return 0; }
-    if (link.at(link.length()-1)=='>') link=link.left(link.length()-1);
+    if (uriFormat && link.at(link.length()-1)=='>') link=link.left(link.length()-1);
 
     // optional title
     if (data[i]=='\'' || data[i]=='"')
@@ -1176,30 +1208,44 @@ int Markdown::processLink(const char *data,int,int size)
       m_out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
       {
-        m_out.addStr(title);
+        m_out.addStr(substitute(title,"\"","&quot;"));
       }
       else
       {
-        m_out.addStr(content);
+        m_out.addStr(substitute(content,"\"","&quot;"));
       }
       m_out.addStr("\"");
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
     { // file/url link
-      m_out.addStr("<a href=\"");
-      m_out.addStr(link);
-      m_out.addStr("\"");
-      for (int ii = 0; ii < nlTotal; ii++) m_out.addStr("\n");
-      if (!title.isEmpty())
+      if (link.at(0) == '#')
       {
-        m_out.addStr(" title=\"");
-        m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+        m_out.addStr("@ref ");
+        m_out.addStr(link.mid(1));
+        m_out.addStr(" \"");
+        m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");
+
       }
-      m_out.addStr(">");
-      content = content.simplifyWhiteSpace();
-      processInline(content.data(),content.length());
-      m_out.addStr("</a>");
+      else
+      {
+        m_out.addStr("<a href=\"");
+        m_out.addStr(link);
+        m_out.addStr("\"");
+        for (int ii = 0; ii < nlTotal; ii++) m_out.addStr("\n");
+        if (!title.isEmpty())
+        {
+          m_out.addStr(" title=\"");
+          m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+          m_out.addStr("\"");
+        }
+        m_out.addStr(" ");
+        m_out.addStr(externalLinkTarget());
+        m_out.addStr(">");
+        content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
+        processInline(content.data(),content.length());
+        m_out.addStr("</a>");
+      }
     }
     else // avoid link to e.g. F[x](y)
     {
@@ -1431,8 +1477,8 @@ bool isBlockQuote(const char *data,int size,int indent)
       i++;
     }
     // last characters should be a space or newline,
-    // so a line starting with >= does not match
-    bool res = level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n');
+    // so a line starting with >= does not match, but only when level equals 1
+    bool res = (level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n')) || (level > 1);
     TRACE_RESULT(res);
     return res;
   }
@@ -1581,7 +1627,7 @@ static QCString extractTitleId(QCString &title, int level)
     title = title.left((int)match.position());
     //printf("found match id='%s' title=%s\n",id.c_str(),qPrint(title));
     TRACE_RESULT(QCString(id));
-    return id;
+    return QCString(id);
   }
   if ((level > 0) && (level <= Config_getInt(TOC_INCLUDE_HEADINGS)))
   {
@@ -2163,6 +2209,15 @@ int Markdown::writeTableBlock(const char *data,int size)
       {
         continue;
       }
+      if (tableContents[row][c].colSpan)
+      {
+        int cr = c;
+        while ( cr >= 0 && tableContents[row][cr].colSpan)
+        {
+          cr--;
+        };
+        if (cr >= 0 && tableContents[row][cr].cellText == "^") continue;
+      }
       unsigned rowSpan = 1, spanRow = row+1;
       while ((spanRow < tableContents.size()) &&
              (tableContents[spanRow][c].cellText == "^"))
@@ -2319,14 +2374,17 @@ int Markdown::writeBlockQuote(const char *data,int size)
         !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
+      level--;
       j--;
     }
+    if (!level && data[j-1]!='\n') level=curLevel; // lazy
     if (level>curLevel) // quote level increased => add start markers
     {
-      for (l=curLevel;l<level;l++)
+      for (l=curLevel;l<level-1;l++)
       {
         m_out.addStr("<blockquote>");
       }
+      m_out.addStr("<blockquote>&zwj;"); // empty blockquotes are also shown
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
@@ -2449,7 +2507,7 @@ void Markdown::findEndOfLine(const char *data,int size,
             )
     {
       if (tolower(data[end])=='p' && tolower(data[end+1])=='r' &&
-          tolower(data[end+2])=='e' && data[end+3]=='>') // <pre> tag
+          tolower(data[end+2])=='e' && (data[end+3]=='>' || data[end+3]==' ')) // <pre> tag
       {
         // skip part until including </pre>
         end  = end + processHtmlTagWrite(data+end-1,end-1,size-end+1,false) + 2;
@@ -2822,8 +2880,8 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   return m_out.get();
 }
 
-/** returns TRUE if input string docs starts with \@page or \@mainpage command */
-static bool isExplicitPage(const QCString &docs)
+
+static ExplicitPageResult isExplicitPage(const QCString &docs)
 {
   TRACE(docs);
   int i=0;
@@ -2840,12 +2898,20 @@ static bool isExplicitPage(const QCString &docs)
         (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
        )
     {
-      TRACE_RESULT(TRUE);
-      return TRUE;
+      if (qstrncmp(&data[i+1],"page ",5)==0)
+      {
+        TRACE_RESULT(ExplicitPageResult::explicitPage);
+        return ExplicitPageResult::explicitPage;
+      }
+      else
+      {
+        TRACE_RESULT(ExplicitPageResult::explicitMainPage);
+        return ExplicitPageResult::explicitMainPage;
+      }
     }
   }
-  TRACE_RESULT(FALSE);
-  return FALSE;
+  TRACE_RESULT(ExplicitPageResult::notExplicit);
+  return ExplicitPageResult::notExplicit;
 }
 
 QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
@@ -3080,30 +3146,55 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = markdownFileNameToId(fileName);
-  if (!isExplicitPage(docs))
+  switch (isExplicitPage(docs))
   {
-    if (!mdfileAsMainPage.isEmpty() &&
-        (fn==mdfileAsMainPage || // name reference
-         FileInfo(fileName.str()).absFilePath()==
-         FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
-       )
-    {
-      docs.prepend("@anchor " + id + "\\ilinebr ");
-      docs.prepend("@mainpage "+title+"\\ilinebr ");
-    }
-    else if (id=="mainpage" || id=="index")
-    {
-      if (title.isEmpty()) title = titleFn;
-      docs.prepend("@anchor " + id + "\\ilinebr ");
-      docs.prepend("@mainpage "+title+"\\ilinebr ");
-    }
-    else
-    {
-      if (title.isEmpty()) {title = titleFn;prepend=0;}
-      if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
-      docs.prepend("@page "+id+" "+title+"\\ilinebr ");
-    }
-    for (int i = 0; i < prepend; i++) docs.prepend("\n");
+    case ExplicitPageResult::notExplicit:
+      if (!mdfileAsMainPage.isEmpty() &&
+          (fn==mdfileAsMainPage || // name reference
+           FileInfo(fileName.str()).absFilePath()==
+           FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
+         )
+      {
+        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@mainpage "+title+"\\ilinebr ");
+      }
+      else if (id=="mainpage" || id=="index")
+      {
+        if (title.isEmpty()) title = titleFn;
+        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@mainpage "+title+"\\ilinebr ");
+      }
+      else
+      {
+        if (title.isEmpty()) {title = titleFn;prepend=0;}
+        if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        docs.prepend("@page "+id+" "+title+"\\ilinebr ");
+      }
+      for (int i = 0; i < prepend; i++) docs.prepend("\n");
+      break;
+    case ExplicitPageResult::explicitPage:
+      {
+        // look for `@page label Title\n` and capture `label`
+        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)\s*[^\n]*\n)");
+        reg::Match match;
+        std::string s = docs.str();
+        if (reg::search(s,match,re))
+        {
+          QCString orgLabel    = match[1].str();
+          QCString newLabel    = markdownFileNameToId(fileName);
+          size_t labelStartPos = match[1].position();
+          size_t labelEndPos   = labelStartPos+match[1].length();
+          size_t lineLen       = match.length();
+          docs = docs.left(labelStartPos)+                     // part before label
+                 newLabel+                                     // new label
+                 docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
+                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor
+                 docs.right(docs.length()-match.length());     // add remainder of docs
+        }
+      }
+      break;
+    case ExplicitPageResult::explicitMainPage:
+      break;
   }
   int lineNr=1;
 

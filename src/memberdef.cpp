@@ -61,6 +61,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual DefType definitionType() const        { return TypeMember; }
     virtual       MemberDef *resolveAlias()       { return this; }
     virtual const MemberDef *resolveAlias() const { return this; }
+    virtual CodeSymbolType codeSymbolType() const;
     virtual MemberDef *deepCopy() const;
     virtual void moveTo(Definition *);
     virtual QCString getOutputFileBase() const;
@@ -311,7 +312,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void incrementFlowKeyWordCount();
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                   bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const;
+                   bool inGroup, int indentLevel,const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const;
     virtual void writeDocumentation(const MemberList *ml,int memCount,int memTotal,OutputList &ol,
                             const QCString &scopeName,const Definition *container,
                             bool inGroup,bool showEnumValues=FALSE,bool
@@ -330,7 +331,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual void writeLink(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                    bool onlyText=FALSE) const;
-    virtual void addToSearchIndex() const;
     virtual void resolveUnnamedParameters(const MemberDef *md);
 
   private:
@@ -356,8 +356,6 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
                               const ArgumentList &al, bool writeReqClause=true) const;
     bool _hasVisibleCallGraph() const;
     bool _hasVisibleCallerGraph() const;
-
-    static int s_indentLevel;
 
     // disable copying of member defs
     MemberDefImpl(const MemberDefImpl &);
@@ -403,6 +401,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
     virtual QCString name() const
     { return getMdAlias()->name(); }
+    virtual CodeSymbolType codeSymbolType() const
+    { return getMdAlias()->codeSymbolType(); }
     virtual QCString getOutputFileBase() const
     { return getMdAlias()->getOutputFileBase(); }
     virtual QCString getReference() const
@@ -764,9 +764,9 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
 
     virtual void writeDeclaration(OutputList &ol,
                    const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                   bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const
+                   bool inGroup, int indentLevel, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const
     {
-      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,inGroup,inheritFrom,inheritId);
+      getMdAlias()->writeDeclaration(ol,cd,nd,fd,gd,inGroup,indentLevel,inheritFrom,inheritId);
     }
     virtual void writeEnumDeclaration(OutputList &typeDecl,
             const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const
@@ -784,10 +784,6 @@ MemberDef *createMemberDefAlias(const Definition *newScope,const MemberDef *alia
   //printf("amd: name=%s displayName=%s\n",qPrint(amd->name()),qPrint(amd->displayName()));
   return amd;
 }
-
-//-----------------------------------------------------------------------------
-
-int MemberDefImpl::s_indentLevel = 0;
 
 //-----------------------------------------------------------------------------
 
@@ -1823,11 +1819,14 @@ void MemberDefImpl::writeLink(OutputList &ol,
   }
 }
 
+static std::mutex g_cachedAnonymousTypeMutex;
+
 /*! If this member has an anonymous class/struct/union as its type, then
  *  this method will return the ClassDef that describes this return type.
  */
 ClassDef *MemberDefImpl::getClassDefOfAnonymousType() const
 {
+  std::lock_guard<std::mutex> lock(g_cachedAnonymousTypeMutex);
   //printf("%s:getClassDefOfAnonymousType() cache=%s\n",qPrint(name()),
   //                   m_impl->cachedAnonymousType?qPrint(m_impl->cachedAnonymousType->name()):"<empty>");
   if (m_impl->cachedAnonymousType) return m_impl->cachedAnonymousType;
@@ -2063,9 +2062,9 @@ void MemberDefImpl::_writeTemplatePrefix(OutputList &ol, const Definition *def,
 
 void MemberDefImpl::writeDeclaration(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-               bool inGroup, const ClassDef *inheritedFrom,const QCString &inheritId) const
+               bool inGroup, int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const
 {
-  //printf("%s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
+  //printf("> %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
 
   // hide enum value, since they appear already as part of the enum, unless they
   // are explicitly grouped.
@@ -2081,8 +2080,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     else if (getNamespaceDef()) d = getNamespaceDef();
     else if (getFileDef())      d = getFileDef();
   }
-
-  addToSearchIndex();
 
   QCString cname  = d->name();
   QCString cdname = d->displayName();
@@ -2128,7 +2125,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   if (annoClassDef || m_impl->annMemb)
   {
     int j;
-    for (j=0;j<s_indentLevel;j++)
+    for (j=0;j<indentLevel;j++)
     {
       ol.writeNonBreakableSpace(3);
     }
@@ -2170,12 +2167,12 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     {
       int ir=i+l;
       //printf("<<<<<<<<<<<<<<\n");
-      ol.startAnonTypeScope(s_indentLevel++);
-      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,inheritedFrom,inheritId);
+      ol.startAnonTypeScope(indentLevel);
+      annoClassDef->writeDeclaration(ol,m_impl->annMemb,inGroup,indentLevel+1,inheritedFrom,inheritId);
       //printf(">>>>>>>>>>>>>> startMemberItem(2)\n");
       ol.startMemberItem(anchor(),2,inheritId);
       int j;
-      for (j=0;j< s_indentLevel-1;j++)
+      for (j=0;j< indentLevel;j++)
       {
         ol.writeNonBreakableSpace(3);
       }
@@ -2317,26 +2314,6 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
     }
   }
 
-  // add to index
-  if (isEnumerate() && isAnonymous())
-  {
-    // don't add to index
-  }
-  else // index member
-  {
-    //static bool separateMemPages = Config_getBool(SEPARATE_MEMBER_PAGES);
-    //QCString cfname = getOutputFileBase();
-    //QCString cfiname = d->getOutputFileBase();
-    //Doxygen::indexList->addIndexItem(
-    //    cname,                                 // level1
-    //    name(),                                // level2
-    //    separateMemPages ? cfname : cfiname,   // contRef
-    //    cfname,                                // memRef
-    //    anchor(),                              // anchor
-    //    this);                                 // memberdef
-    Doxygen::indexList->addIndexItem(d,this);
-  }
-
   // *** write arguments
   if (!argsString().isEmpty() && !isObjCMethod())
   {
@@ -2353,7 +2330,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
                 m_impl->annMemb,         // autoBreak
                 TRUE,                    // external
                 FALSE,                   // keepSpaces
-                s_indentLevel
+                indentLevel
                );
   }
   // *** write exceptions
@@ -2425,8 +2402,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
          if (!first)
          {
            ol.docify(", ");
-           first=false;
          }
+         first=false;
          ol.docify(s.c_str());
       }
       ol.docify("]");
@@ -2448,8 +2425,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         if (!first)
         {
           ol.docify(", ");
-          first=false;
         }
+        first=false;
         ol.docify(s.c_str());
       }
       ol.docify("]");
@@ -2466,7 +2443,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.endMemberItem();
   if (endAnonScopeNeeded)
   {
-    ol.endAnonTypeScope(--s_indentLevel);
+    ol.endAnonTypeScope(indentLevel);
   }
 
   // write brief description
@@ -2508,6 +2485,7 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
   ol.endMemberDeclaration(anchor(),inheritId);
 
   warnIfUndocumented();
+  //printf("< %s MemberDefImpl::writeDeclaration() inGroup=%d\n",qPrint(qualifiedName()),inGroup);
 }
 
 bool MemberDefImpl::hasDetailedDescription() const
@@ -2515,6 +2493,7 @@ bool MemberDefImpl::hasDetailedDescription() const
   //printf(">hasDetailedDescription(cached=%d)\n",m_impl->hasDetailedDescriptionCached);
   if (!m_impl->hasDetailedDescriptionCached)
   {
+    static bool extractAll            = Config_getBool(EXTRACT_ALL);
     static bool alwaysDetailedSec     = Config_getBool(ALWAYS_DETAILED_SEC);
     static bool repeatBrief           = Config_getBool(REPEAT_BRIEF);
     static bool briefMemberDesc       = Config_getBool(BRIEF_MEMBER_DESC);
@@ -2525,6 +2504,8 @@ bool MemberDefImpl::hasDetailedDescription() const
 
     // the member has detailed documentation because the user added some comments
     bool docFilter =
+           // extract all is enabled
+           extractAll ||
            // has detailed docs
            !documentation().isEmpty() ||
            // has inbody docs
@@ -3041,8 +3022,6 @@ void MemberDefImpl::_writeEnumValues(OutputList &ol,const Definition *container,
         ol.addIndexItem(fmd->name(),ciname);
         ol.addIndexItem(ciname,fmd->name());
 
-        Doxygen::indexList->addIndexItem(container,fmd);
-
         ol.startDescTableTitle();
         ol.startDoxyAnchor(cfname,cname,fmd->anchor(),fmd->name(),fmd->argsString());
         first=FALSE;
@@ -3501,12 +3480,16 @@ void MemberDefImpl::writeDocumentation(const MemberList *ml,
     {
       // Eliminate the self-reference.
       int pos = ldef.findRev(' ');
-      linkifyText(TextGeneratorOLImpl(ol),
-                  scopedContainer,
-                  getBodyDef(),
-                  this,
-                  ldef.left(pos)
-                 );
+      if (pos<0) pos=0;
+      if (pos>0)
+      {
+        linkifyText(TextGeneratorOLImpl(ol),
+                    scopedContainer,
+                    getBodyDef(),
+                    this,
+                    ldef.left(pos)
+                   );
+      }
       ol.docify(ldef.mid(pos));
       const Definition *scope = cd;
       if (scope==0) scope = nd;
@@ -3724,7 +3707,7 @@ static QCString simplifyTypeForTable(const QCString &s)
     t = match.prefix().str() + match.suffix().str(); // remove the matched part
   }
   //printf("simplifyTypeForTable(%s)->%s\n",qPrint(s),t.c_str());
-  return t;
+  return QCString(t);
 }
 
 QCString MemberDefImpl::fieldType() const
@@ -3936,7 +3919,6 @@ static QCString stripTrailingReturn(const QCString &trailRet)
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
-  if (!Config_getBool(WARN_NO_PARAMDOC)) return;
   QCString returnType = typeString();
   bool isPython = getLanguage()==SrcLangExt_Python;
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
@@ -4020,6 +4002,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
             )
           )
   {
+
     warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
                           qPrint(qualifiedName()));
   }
@@ -4385,7 +4368,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
   tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>\n";
+  tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
@@ -4399,7 +4382,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
     {
       if (!fmd->isReference())
       {
-        tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
+        tagFile << "      <enumvalue file=\"" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase()));
         tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
         idStr = fmd->id();
         if (!idStr.isEmpty())
@@ -4523,7 +4506,6 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
     if (isLinkableInProject() || hasDocumentedEnumValues())
     {
       //_writeTagData(compoundType);
-      addToSearchIndex();
       writeLink(typeDecl,cd,nd,fd,gd);
     }
     else
@@ -4580,7 +4562,6 @@ void MemberDefImpl::writeEnumDeclaration(OutputList &typeDecl,
           MemberDefMutable *fmdm = toMemberDefMutable(fmd);
           if (fmdm && fmd->hasDocumentation()) // enum value has docs
           {
-            fmdm->addToSearchIndex();
             fmdm->writeLink(typeDecl,cd,nd,fd,gd);
           }
           else // no docs for this enum value
@@ -5391,7 +5372,8 @@ bool MemberDefImpl::_hasVisibleCallGraph() const
          Config_getBool(HAVE_DOT);
   if (enabled)
   {
-    return DotCallGraph::isTrivial(this,FALSE);
+    bool trivial = DotCallGraph::isTrivial(this,FALSE);
+    return !trivial;
   }
   return FALSE;
 }
@@ -5408,7 +5390,8 @@ bool MemberDefImpl::_hasVisibleCallerGraph() const
          Config_getBool(HAVE_DOT);
   if (enabled)
   {
-    return DotCallGraph::isTrivial(this,TRUE);
+    bool trivial = DotCallGraph::isTrivial(this,TRUE);
+    return !trivial;
   }
   return FALSE;
 }
@@ -5800,31 +5783,6 @@ QCString MemberDefImpl::displayName(bool) const
   return DefinitionMixin::name();
 }
 
-void MemberDefImpl::addToSearchIndex() const
-{
-  // write search index info
-  if (Doxygen::searchIndex && isLinkableInProject())
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    QCString ln=localName(),qn=qualifiedName();
-    Doxygen::searchIndex->addWord(ln,TRUE);
-    if (ln!=qn)
-    {
-      Doxygen::searchIndex->addWord(qn,TRUE);
-      if (getClassDef())
-      {
-        Doxygen::searchIndex->addWord(getClassDef()->displayName(),TRUE);
-      }
-      else if (getNamespaceDef())
-      {
-        Doxygen::searchIndex->addWord(getNamespaceDef()->displayName(),TRUE);
-      }
-    }
-  }
-}
-
-
-
 //----------------
 
 static void transferArgumentDocumentation(ArgumentList &decAl,ArgumentList &defAl)
@@ -5869,9 +5827,12 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     //    mdef, mdef ? qPrint(mdef->name()) : "",
     //    mdec, mdec ? qPrint(mdec->name()) : "");
 
+    bool sameNumTemplateArgs = mdef->templateArguments().size()==mdec->templateArguments().size();
+
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
     ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
-    if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
+    if (sameNumTemplateArgs &&
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
                         mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
                         TRUE
                        )
@@ -6057,6 +6018,30 @@ bool MemberDefImpl::isReference() const
 {
   return DefinitionMixin::isReference() ||
          (m_impl->templateMaster && m_impl->templateMaster->isReference());
+}
+
+CodeSymbolType MemberDefImpl::codeSymbolType() const
+{
+  switch (memberType())
+  {
+    case MemberType_Define:      return CodeSymbolType::Define;
+    case MemberType_Function:    return CodeSymbolType::Function;
+    case MemberType_Variable:    return CodeSymbolType::Variable;
+    case MemberType_Typedef:     return CodeSymbolType::Typedef;
+    case MemberType_Enumeration: return CodeSymbolType::Enumeration;
+    case MemberType_EnumValue:   return CodeSymbolType::EnumValue;
+    case MemberType_Signal:      return CodeSymbolType::Signal;
+    case MemberType_Slot:        return CodeSymbolType::Slot;
+    case MemberType_Friend:      return CodeSymbolType::Friend;
+    case MemberType_DCOP:        return CodeSymbolType::DCOP;
+    case MemberType_Property:    return CodeSymbolType::Property;
+    case MemberType_Event:       return CodeSymbolType::Event;
+    case MemberType_Interface:   return CodeSymbolType::Interface;
+    case MemberType_Service:     return CodeSymbolType::Service;
+    case MemberType_Sequence:    return CodeSymbolType::Sequence;
+    case MemberType_Dictionary:  return CodeSymbolType::Dictionary;
+  }
+  return CodeSymbolType::Default;
 }
 
 //-------------------------------------------------------------------------------

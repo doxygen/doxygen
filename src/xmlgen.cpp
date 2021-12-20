@@ -241,7 +241,8 @@ void XMLCodeGenerator::codify(const QCString &text)
   }
   writeXMLCodeString(m_t,text,m_col);
 }
-void XMLCodeGenerator::writeCodeLink(const QCString &ref,const QCString &file,
+void XMLCodeGenerator::writeCodeLink(CodeSymbolType,
+                   const QCString &ref,const QCString &file,
                    const QCString &anchor,const QCString &name,
                    const QCString &tooltip)
 {
@@ -324,7 +325,7 @@ void XMLCodeGenerator::writeCodeAnchor(const QCString &)
   XML_DB(("(writeCodeAnchor)\n"));
 }
 void XMLCodeGenerator::writeLineNumber(const QCString &extRef,const QCString &compId,
-                     const QCString &anchorId,int l)
+                     const QCString &anchorId,int l,bool)
 {
   XML_DB(("(writeLineNumber)\n"));
   // we remember the information provided here to use it

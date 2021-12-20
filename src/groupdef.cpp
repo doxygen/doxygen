@@ -56,6 +56,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual ~GroupDefImpl();
 
     virtual DefType definitionType() const { return TypeGroup; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual QCString displayName(bool=TRUE) const { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }
@@ -612,7 +613,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "  <compound kind=\"group\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   tagFile << "    <title>" << convertToXML(m_title) << "</title>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
@@ -1118,23 +1119,6 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.endHeaderSection();
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    std::string title = m_title.str();
-    static const reg::Ex re(R"(\a[\w-]*)");
-    reg::Iterator it(title,re);
-    reg::Iterator end;
-    for (; it!=end ; ++it)
-    {
-      const auto &match = *it;
-      std::string matchStr = match.str();
-      Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
-    }
-  }
-
-  Doxygen::indexList->addIndexItem(this,0,QCString(),m_title);
-
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang=getLanguage();
@@ -1319,7 +1303,7 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
         ol.writeString("<a class=\"navtab\" ");
         ol.writeString("href=\"");
         if (createSubDirs) ol.writeString("../../");
-        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+        ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(convertToHtml(md->localName()));
         ol.writeString("</a>");

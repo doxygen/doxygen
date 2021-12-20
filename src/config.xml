@@ -45,8 +45,13 @@ the <code>+=</code> operator can be used instead of <code>=</code> to append
 new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
-as the last character of a line. Environment variables can be expanded
-using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+as the last character of a line.
+
+Environment variables can be expanded using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+A small example:
+\verbatim
+DOT_PATH      = $(YOUR_DOT_PATH)
+\endverbatim
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
@@ -430,7 +435,6 @@ Go to the <a href="commands.html">next</a> section or return to the
  started.
 ]]>
       </docs>
-      <value name=''/>
     </option>
     <option type='list' id='STRIP_FROM_INC_PATH' format='string'>
       <docs>
@@ -1375,7 +1379,10 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 <![CDATA[
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written
- to standard error (`stderr`).
+ to standard error (`stderr`). In case the file specified cannot be opened for
+ writing the warning and error messages are written to standard error. When as 
+ file `-` is specified the warning and error messages are written to standard output
+ (`stdout`).
 ]]>
       </docs>
     </option>
@@ -1394,7 +1401,6 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  \note If this tag is empty the current directory is searched.
 ]]>
       </docs>
-      <value name=''/>
     </option>
     <option type='string' id='INPUT_ENCODING' format='string' defval='UTF-8'>
       <docs>
@@ -1514,7 +1520,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  (namespaces, classes, functions, etc.) that should be excluded from the
  output. The symbol name can be a fully qualified name, a word, or if the
  wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`,
- `AClass::ANamespace`, `ANamespace::*Test`
+ `ANamespace::AClass`, `ANamespace::*Test`
  <br>Note that the wildcards are matched against the file with absolute path,
  so to exclude all test directories use the pattern
  `*``/test/``*`
@@ -2161,6 +2167,16 @@ hr.footer {
 ]]>
       </docs>
     </option>
+    <option type='string' id='DOCSET_FEEDURL' format='string' depends='GENERATE_DOCSET'>
+      <docs>
+<![CDATA[
+ This tag determines the URL of the docset
+ feed. A documentation feed provides an umbrella under which multiple
+ documentation sets from a single provider (such as a company or product suite)
+ can be grouped.
+]]>
+      </docs>
+    </option>
     <option type='string' id='DOCSET_BUNDLE_ID' format='string' defval='org.doxygen.Project' depends='GENERATE_DOCSET'>
       <docs>
 <![CDATA[
@@ -2406,14 +2422,16 @@ The \c DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
     <option type='bool' id='FULL_SIDEBAR' defval='0' depends='GENERATE_HTML'>
       <docs>
 <![CDATA[
-  When both \c GENERATE_TREEVIEW and \c DISABLE_INDEX are set to YES, then the
+  When both \ref cfg_generate_treeview "GENERATE_TREEVIEW" and \ref cfg_disable_index "DISABLE_INDEX"
+  are set to \c YES, then the
   \c FULL_SIDEBAR option determines if the side bar is limited to only the
   treeview area (value \c NO) or if it should extend to the full height of the
   window (value \c YES). Setting this to \c YES gives a layout similar to
   https://docs.readthedocs.io with more room for contents,
   but less room for the project logo, title, and description.
 
-  If either \c GENERATOR_TREEVIEW or \c DISABLE_INDEX is set to \c NO, this option
+  If either \ref cfg_generate_treeview "GENERATE_TREEVIEW" or \ref cfg_disable_index "DISABLE_INDEX"
+  is set to \c NO, this option
   has no effect.
 ]]>
       </docs>
@@ -2859,7 +2877,7 @@ doxygen -w latex new_header.tex new_footer.tex new_stylesheet.sty
            as set by \ref cfg_latex_bib_style "LATEX_BIB_STYLE", in case nothing is set the bib style
            `plain` is used.
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
- <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib. files
+ <dt><code>$latexbibfiles</code><dd>will be replaced by the comma separated list of `bib`. files
            as set by \ref cfg_cite_bib_files "CITE_BIB_FILES" (when necessary a missing `.bib` is
            automatically added).
            This setting is typically used in combination with the block name `CITATIONS_PRESENT`.
@@ -3018,8 +3036,7 @@ The following block name is set based on whether or not a feature is used in the
  If the \c LATEX_BATCHMODE tag is set to \c YES, doxygen will add the \c \\batchmode
  command to the generated \f$\mbox{\LaTeX}\f$ files. This will
  instruct \f$\mbox{\LaTeX}\f$ to keep running if errors occur, instead of
- asking the user for help. This option is also used when generating formulas
- in HTML.
+ asking the user for help.
 ]]>
       </docs>
     </option>
@@ -3490,17 +3507,6 @@ where `loc1` and `loc2` can be relative or absolute paths or URLs.
     </option>
   </group>
   <group name='Dot' docs='Configuration options related to the dot tool'>
-    <option type='bool' id='CLASS_DIAGRAMS' defval='1'>
-      <docs>
-<![CDATA[
- If the \c CLASS_DIAGRAMS tag is set to \c YES, doxygen will
- generate a class diagram (in HTML and \f$\mbox{\LaTeX}\f$) for classes with base or
- super classes. Setting the tag to \c NO turns the diagrams off. Note that
- this option also works with \ref cfg_have_dot "HAVE_DOT" disabled, but it is recommended to
- install and use \c dot, since it yields more powerful graphs.
-]]>
-      </docs>
-    </option>
     <option type='string' id='DIA_PATH' format='dir' defval=''>
       <docs>
 <![CDATA[
@@ -3571,15 +3577,21 @@ to be found in the default search path.
 ]]>
       </docs>
     </option>
-    <option type='bool' id='CLASS_GRAPH' defval='1' depends='HAVE_DOT'>
+    <option type='enum' id='CLASS_GRAPH' defval='YES'>
       <docs>
 <![CDATA[
- If the \c CLASS_GRAPH tag is set to \c YES then doxygen
+ If the \c CLASS_GRAPH tag is set to \c YES (or \c GRAPH) then doxygen
  will generate a graph for each documented class showing the direct and
- indirect inheritance relations. Setting this tag to \c YES will force
- the \ref cfg_class_diagrams "CLASS_DIAGRAMS" tag to \c NO.
+ indirect inheritance relations. In case \ref cfg_have_dot "HAVE_DOT" is set as well
+ `dot` will be used to draw the graph, otherwise the built-in generator will be used.
+ If the \c CLASS_GRAPH tag is set to \c TEXT the direct and indirect inheritance relations
+ will be shown as texts / links.
 ]]>
       </docs>
+      <value name="NO" />
+      <value name="YES" />
+      <value name="TEXT" />
+      <value name="GRAPH" />
     </option>
     <option type='bool' id='COLLABORATION_GRAPH' defval='1' depends='HAVE_DOT'>
       <docs>
@@ -3722,6 +3734,14 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
+    <option type='int' id='DIR_GRAPH_MAX_DEPTH' minval='1' maxval='25' defval='1' depends='DIRECTORY_GRAPH'>
+      <docs>
+<![CDATA[
+ The \c DIR_GRAPH_MAX_DEPTH tag can be used to limit the maximum number of
+ levels of child directories generated in directory dependency graphs by \c dot.
+]]>
+      </docs>
+    </option>
     <option type='enum' id='DOT_IMAGE_FORMAT' defval='png' depends='HAVE_DOT'>
       <docs>
 <![CDATA[
@@ -3794,11 +3814,12 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval=''>
+    <option type='string' id='PLANTUML_JAR_PATH' format='filedir' defval=''>
       <docs>
 <![CDATA[
  When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
- java can find the \c plantuml.jar file. If left blank, it is assumed PlantUML is not used or
+ java can find the \c plantuml.jar file or to the filename of \c jar file to be used.
+ If left blank, it is assumed PlantUML is not used or
  called during a preprocessing step. Doxygen will generate a warning when it encounters a
  \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
 ]]>
@@ -3875,6 +3896,9 @@ UML notation for the relationships.
  If the \c GENERATE_LEGEND tag is set to \c YES doxygen will
  generate a legend page explaining the meaning of the various boxes and
  arrows in the dot generated graphs.
+ \note This tag requires that \ref cfg_uml_look "UML_LOOK" isn't set, i.e. the
+ doxygen internal graphical representation for inheritance and collaboration diagrams
+ is used.
 ]]>
       </docs>
     </option>
@@ -3888,32 +3912,33 @@ This setting is not only used for dot files but also for msc temporary files.
 ]]>
       </docs>
     </option>
-    <option type='obsolete' id='USE_WINDOWS_ENCODING'/>
-    <option type='obsolete' id='DETAILS_AT_TOP'/>
-    <option type='obsolete' id='QTHELP_FILE'/>
-    <option type='obsolete' id='QTHELP_CONFIG'/>
-    <option type='obsolete' id='DOXYGEN2QTHELP_LOC'/>
-    <option type='obsolete' id='MAX_DOT_GRAPH_WIDTH'/>
-    <option type='obsolete' id='MAX_DOT_GRAPH_HEIGHT'/>
-    <option type='obsolete' id='CGI_NAME'/>
-    <option type='obsolete' id='CGI_URL'/>
-    <option type='obsolete' id='DOC_URL'/>
-    <option type='obsolete' id='DOC_ABSPATH'/>
-    <option type='obsolete' id='BIN_ABSPATH'/>
-    <option type='obsolete' id='EXT_DOC_PATHS'/>
-    <option type='obsolete' id='USE_INLINE_TREES'/>
-    <option type='obsolete' id='SHOW_DIRECTORIES'/>
-    <option type='obsolete' id='HTML_ALIGN_MEMBERS'/>
-    <option type='obsolete' id='SYMBOL_CACHE_SIZE'/>
-    <option type='obsolete' id='XML_SCHEMA'/>
-    <option type='obsolete' id='XML_DTD'/>
-    <option type='obsolete' id='PERL_PATH'/>
-    <option type='obsolete' id='MSCGEN_PATH'/>
-    <option type='obsolete' id='TCL_SUBST'/>
-    <option type='obsolete' id='COLS_IN_ALPHA_INDEX'/>
-    <option type='obsolete' id='OUTPUT_TEXT_DIRECTION'/>
-    <option type='obsolete' id='DOCBOOK_PROGRAMLISTING'/>
-    <option type='obsolete' id='RTF_SOURCE_CODE'/>
-    <option type='obsolete' id='LATEX_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='USE_WINDOWS_ENCODING'/>
+    <option type='obsolete' orgtype='bool' id='DETAILS_AT_TOP'/>
+    <option type='obsolete' orgtype='string' id='QTHELP_FILE'/>
+    <option type='obsolete' orgtype='string' id='QTHELP_CONFIG'/>
+    <option type='obsolete' orgtype='string' id='DOXYGEN2QTHELP_LOC'/>
+    <option type='obsolete' orgtype='int' id='MAX_DOT_GRAPH_WIDTH'/>
+    <option type='obsolete' orgtype='int' id='MAX_DOT_GRAPH_HEIGHT'/>
+    <option type='obsolete' orgtype='string' id='CGI_NAME'/>
+    <option type='obsolete' orgtype='string' id='CGI_URL'/>
+    <option type='obsolete' orgtype='string' id='DOC_URL'/>
+    <option type='obsolete' orgtype='string' id='DOC_ABSPATH'/>
+    <option type='obsolete' orgtype='string' id='BIN_ABSPATH'/>
+    <option type='obsolete' orgtype='list' id='EXT_DOC_PATHS'/>
+    <option type='obsolete' orgtype='bool' id='USE_INLINE_TREES'/>
+    <option type='obsolete' orgtype='bool' id='SHOW_DIRECTORIES'/>
+    <option type='obsolete' orgtype='bool' id='HTML_ALIGN_MEMBERS'/>
+    <option type='obsolete' orgtype='int' id='SYMBOL_CACHE_SIZE'/>
+    <option type='obsolete' orgtype='string' id='XML_SCHEMA'/>
+    <option type='obsolete' orgtype='string' id='XML_DTD'/>
+    <option type='obsolete' orgtype='string' id='PERL_PATH'/>
+    <option type='obsolete' orgtype='string' id='MSCGEN_PATH'/>
+    <option type='obsolete' orgtype='list' id='TCL_SUBST'/>
+    <option type='obsolete' orgtype='int' id='COLS_IN_ALPHA_INDEX'/>
+    <option type='obsolete' orgtype='enum' id='OUTPUT_TEXT_DIRECTION'/>
+    <option type='obsolete' orgtype='bool' id='DOCBOOK_PROGRAMLISTING'/>
+    <option type='obsolete' orgtype='bool' id='RTF_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='LATEX_SOURCE_CODE'/>
+    <option type='obsolete' orgtype='bool' id='CLASS_DIAGRAMS'/>
   </group>
 </doxygenconfig>

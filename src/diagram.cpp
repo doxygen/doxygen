@@ -255,7 +255,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
-    t << cd->getOutputFileBase() << Doxygen::htmlFileExtension;
+    t << addHtmlExtensionIfMissing(cd->getOutputFileBase());
     if (!cd->anchor().isEmpty())
     {
       t << "#" << cd->anchor();
@@ -1071,7 +1071,6 @@ void ClassDiagram::writeFigure(TextStream &output,const QCString &path,
   if (realWidth>pageWidth) // assume that the page width is about 15 cm
   {
     realHeight*=pageWidth/realWidth;
-    realWidth=pageWidth;
   }
 
   //output << "}\n";

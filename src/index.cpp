@@ -721,16 +721,12 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Html);
   }
-  bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
   startIndexHierarchy(ol,0);
-  if (fullPathNames)
+  for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    for (const auto &dd : *Doxygen::dirLinkedMap)
+    if (dd->getOuterScope()==Doxygen::globalScope)
     {
-      if (dd->getOuterScope()==Doxygen::globalScope)
-      {
-        writeDirTreeNode(ol,dd.get(),0,ftv,addToIndex);
-      }
+      writeDirTreeNode(ol,dd.get(),0,ftv,addToIndex);
     }
   }
   if (ftv)
@@ -739,7 +735,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     {
       for (const auto &fd : *fn)
       {
-        if (!fullPathNames || fd->getDirDef()==0) // top level file
+        if (fd->getDirDef()==0) // top level file
         {
           bool src;
           bool doc = fileVisibleInIndex(fd.get(),src);
@@ -1320,16 +1316,6 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
     else if (src)
     {
       ol.writeObjectLink(QCString(),fd->getSourceFileBase(),QCString(),fd->name());
-    }
-    else
-    {
-      ol.startBold();
-      ol.docify(fd->name());
-      ol.endBold();
-      //if (addToIndex)
-      //{
-      //  Doxygen::indexList->addContentsItem(FALSE,fullName,QCString(),QCString(),QCString());
-      //}
     }
     if (doc && src)
     {
@@ -4155,12 +4141,12 @@ static void writeConceptRootList(FTVHelp *ftv,bool addToIndex)
       //printf("*** adding %s hasSubPages=%d hasSections=%d\n",qPrint(pageTitle),hasSubPages,hasSections);
       ftv->addContentsItem(
           false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
-          QCString(),false,true,cd.get());
+          QCString(),false,cd->partOfGroups().empty(),cd.get());
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(
             false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
-            QCString(),false,true);
+            QCString(),false,cd->partOfGroups().empty(),cd.get());
       }
     }
   }
@@ -4942,7 +4928,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
             if (!url.isEmpty())
             {
-              if (url=="![none]")
+              if (url=="!") // result of a "[none]" url
               {
                 Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),QCString(),QCString(),FALSE,FALSE);
               }

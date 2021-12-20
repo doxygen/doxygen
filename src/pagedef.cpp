@@ -37,6 +37,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual void setLocalToc(const LocalToc &tl);
     virtual void setShowLineNo(bool);
     virtual DefType definitionType() const { return TypePage; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual bool isLinkableInProject() const { return /*hasDocumentation() &&*/ !isReference(); }
     virtual bool isLinkable() const { return isLinkableInProject() || isReference(); }
     virtual QCString getOutputFileBase() const;
@@ -56,6 +57,7 @@ class PageDefImpl : public DefinitionMixin<PageDef>
     virtual Definition *getPageScope() const { return m_pageScope; }
     virtual QCString displayName(bool=TRUE) const { return hasTitle() ? m_title : DefinitionMixin::name(); }
     virtual bool showLineNo() const;
+    virtual void setTitle(const QCString &title);
     virtual void writeDocumentation(OutputList &ol);
     virtual void writeTagFile(TextStream &);
     virtual void setNestingLevel(int l);
@@ -160,7 +162,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
     tagFile << "  <compound kind=\"page\">\n";
     tagFile << "    <name>" << name() << "</name>\n";
     tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
-    tagFile << "    <filename>" << convertToXML(getOutputFileBase())<< Doxygen::htmlFileExtension << "</filename>\n";
+    tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
     writeDocAnchorsToTagFile(tagFile);
     tagFile << "  </compound>\n";
   }
@@ -285,8 +287,6 @@ void PageDefImpl::writeDocumentation(OutputList &ol)
 
   ol.popGeneratorState();
   //1.}
-
-  Doxygen::indexList->addIndexItem(this,0,QCString(),filterTitle(title().str()));
 }
 
 void PageDefImpl::writePageDocumentation(OutputList &ol) const
@@ -396,6 +396,11 @@ bool PageDefImpl::showLineNo() const
 bool PageDefImpl::hasTitle() const
 {
   return !m_title.isEmpty() && m_title.lower()!="notitle";
+}
+
+void PageDefImpl::setTitle(const QCString &title)
+{
+  m_title = title;
 }
 
 // --- Cast functions

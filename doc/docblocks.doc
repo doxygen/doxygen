@@ -459,7 +459,7 @@ the script can be found in the path set via \ref cfg_example_path "EXAMPLE_PATH"
 \subsection pythonblocks Comment blocks in Python
 
 For Python there is a standard way of documenting the code using
-so called documentation strings (<tt>"""</tt>). Such strings are stored in \c __doc__
+so called documentation strings (<tt>\"\"\"</tt>). Such strings are stored in \c __doc__
 and can be retrieved at runtime. Doxygen will extract such comments
 and assume they have to be represented in a preformatted way.
 

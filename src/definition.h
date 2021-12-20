@@ -23,8 +23,8 @@
 #include "types.h"
 #include "reflist.h"
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-// To disable 'inherits via dominance' warnings.
+#ifdef _MSC_VER
+// To disable 'inherits via dominance' warnings with MSVC.
 // See also https://stackoverflow.com/a/14487243/784672
 #pragma warning( disable: 4250 )
 #endif
@@ -102,6 +102,9 @@ class Definition
 
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() const = 0;
+
+    /*! Used for syntax highlighting symbol class */
+    virtual CodeSymbolType codeSymbolType() const = 0;
 
     /*! Returns TRUE if this is an alias of another definition */
     virtual bool isAlias() const = 0;
@@ -284,12 +287,6 @@ class Definition
 
     virtual QCString navigationPathAsString() const = 0;
     virtual QCString pathFragment() const = 0;
-
-    //-----------------------------------------------------------------------------------
-    // --- cookie storage ----
-    //-----------------------------------------------------------------------------------
-    virtual void setCookie(Cookie *cookie) const = 0;
-    virtual Cookie *cookie() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- symbol name ----

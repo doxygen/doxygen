@@ -91,10 +91,6 @@ QCString PlantumlManager::writePlantUMLSource(const QCString &outDirArg,const QC
 void PlantumlManager::generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,
                                              OutputFormat format,PumlDocOutputFormat docFormat)
 {
-  QCString plantumlJarPath = Config_getString(PLANTUML_JAR_PATH);
-  QCString plantumlConfigFile = Config_getString(PLANTUML_CFG_FILE);
-  QCString dotPath = Config_getString(DOT_PATH);
-
   QCString imgName = baseName;
   // The basename contains path, we need to strip the path from the filename in order
   // to create the image file name which should be included in the index.qhp (Qt help index file).
@@ -172,7 +168,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
     }
   }
   if (!pumlIncludePathList.empty()) pumlArgs += "\" ";
-  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"plantuml.jar\" ";
+  pumlArgs += "-Djava.awt.headless=true -jar \""+plantumlJarPath+"\" ";
   if (!plantumlConfigFile.isEmpty())
   {
     pumlArgs += "-config \"";
@@ -250,7 +246,7 @@ static void runPlantumlContent(const PlantumlManager::FilesMap &plantumlFiles,
       Portable::sysTimerStart();
       if ((exitCode=Portable::system(pumlExe.data(),pumlArguments.data(),TRUE))!=0)
       {
-        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%splantuml.jar\" -h' works from the command line. Exit code: %d\n",
+        err_full(nb.srcFile,nb.srcLine,"Problems running PlantUML. Verify that the command 'java -jar \"%s\" -h' works from the command line. Exit code: %d\n",
             plantumlJarPath.data(),exitCode);
       }
       Portable::sysTimerStop();

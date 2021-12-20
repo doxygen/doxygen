@@ -60,6 +60,7 @@ class FileDefImpl : public DefinitionMixin<FileDef>
     virtual ~FileDefImpl();
 
     virtual DefType definitionType() const { return TypeFile; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual QCString name() const;
 
     virtual QCString displayName(bool=TRUE) const { return name(); }
@@ -199,14 +200,15 @@ class DevNullCodeDocInterface : public CodeOutputInterface
 {
   public:
     virtual void codify(const QCString &) override {}
-    virtual void writeCodeLink(const QCString &,const QCString &,
+    virtual void writeCodeLink(CodeSymbolType,
+                               const QCString &,const QCString &,
                                const QCString &,const QCString &,
                                const QCString &) override {}
     virtual void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                               const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                              ) override {}
     virtual void writeLineNumber(const QCString &,const QCString &,
-                                 const QCString &,int) override {}
+                                 const QCString &,int,bool) override {}
     virtual void startCodeLine(bool) override {}
     virtual void endCodeLine() override {}
     virtual void startFontClass(const QCString &) override {}
@@ -316,7 +318,7 @@ void FileDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "  <compound kind=\"file\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   tagFile << "    <path>" << convertToXML(getPath()) << "</path>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &ii : m_includeList)
   {
     const FileDef *fd=ii.fileDef;
@@ -874,13 +876,6 @@ void FileDefImpl::writeDocumentation(OutputList &ol)
     ol.enableAll();
   }
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    Doxygen::searchIndex->addWord(localName(),TRUE);
-  }
-
-
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang = getLanguage();
@@ -1075,7 +1070,7 @@ void FileDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *currentM
           ol.writeString("<a class=\"navtab\" ");
           ol.writeString("href=\"");
           if (createSubDirs) ol.writeString("../../");
-          ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+          ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
           ol.writeString("\">");
           ol.writeString(convertToHtml(md->localName()));
           ol.writeString("</a>");

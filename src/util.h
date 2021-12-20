@@ -171,7 +171,7 @@ int guessSection(const QCString &name);
 
 inline bool isId(int c)
 {
-  return c=='_' || c>=128 || c<0 || isalnum(c);
+  return c=='_' || c>=128 || c<0 || isalnum(c) || c=='$';
 }
 inline bool isIdJS(int c)
 {
@@ -226,7 +226,7 @@ QCString convertToLaTeX(const QCString &s,bool insideTabbing=FALSE,bool keepSpac
 
 QCString convertToXML(const QCString &s, bool keepEntities=FALSE);
 
-QCString convertToDocBook(const QCString &s);
+QCString convertToDocBook(const QCString &s, const bool retainNewline = false);
 
 QCString convertToJSString(const QCString &s);
 
@@ -293,7 +293,8 @@ void filterLatexString(TextStream &t,const QCString &str,
                        bool insidePre,
                        bool insideItem,
                        bool insideTable,
-                       bool keepSpaces);
+                       bool keepSpaces,
+                       const bool retainNewline = false);
 
 QCString latexEscapeLabelName(const QCString &s);
 QCString latexEscapeIndexChars(const QCString &s);

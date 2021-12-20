@@ -174,7 +174,6 @@ void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *m
     //    ctx?qPrint(ctx->getDefFileExtension()):"<null>");
     if (og->isEnabled()) og->writeDoc(root,ctx,md,m_id);
   }
-  VhdlDocGen::setFlowMember(0);
 }
 
 void OutputList::parseText(const QCString &textStr)

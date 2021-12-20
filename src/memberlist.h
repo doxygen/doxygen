@@ -97,7 +97,7 @@ class MemberList : public MemberVector
     int countInheritableMembers(const ClassDef *inheritedFrom) const;
     void writePlainDeclarations(OutputList &ol,bool inGroup,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd, const GroupDef *gd,
-               const ClassDef *inheritedFrom,const QCString &inheritId) const;
+               int indentLevel,const ClassDef *inheritedFrom,const QCString &inheritId) const;
     void writeDeclarations(OutputList &ol,
                const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
                const QCString &title,const QCString &subtitle,
