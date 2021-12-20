@@ -357,7 +357,8 @@ class DocStyleChange : public DocNode
                  Underline     = (1<<11),
                  Del           = (1<<12),
                  Ins           = (1<<13),
-                 S             = (1<<14)
+                 S             = (1<<14),
+                 Cite          = (1<<15)
                };
 
     DocStyleChange(DocParser &parser,DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,

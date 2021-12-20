@@ -166,6 +166,9 @@ void ManDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       /* not supported */
       break;
+    case DocStyleChange::Cite:
+      /* not supported */
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {

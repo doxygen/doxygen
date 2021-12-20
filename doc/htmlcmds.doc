@@ -39,6 +39,8 @@ of a HTML tag are passed on to the HTML output only
 <li><tt>\anchor htmltag_endCENTER \addindex "\</CENTER\>"\</CENTER\></tt> ends a section of centered text.
 <li><tt>\anchor htmltag_CAPTION \addindex "\<CAPTION\>"\<CAPTION\></tt> Starts a caption. Use within a table only.
 <li><tt>\anchor htmltag_endCAPTION \addindex "\</CAPTION\>"\</CAPTION\></tt> Ends a caption. Use within a table only.
+<li><tt>\anchor htmltag_CITE \addindex "\<CITE\>"\<CITE\></tt> Starts a section of text displayed in a font specific for citations.
+<li><tt>\anchor htmltag_endCITE \addindex "\</CITE\>"\</CITE\></tt> Ends a \ref htmltag_CITE "\<CITE\>" section.
 <li><tt>\anchor htmltag_CODE \addindex "\<CODE\>"\<CODE\></tt>  Starts a piece of text displayed in a typewriter font.
                        Note that only for C# code, this command is equivalent to 
                        \ref cmdcode "\\code" (see \ref xmltag_code "\<code\>"). 

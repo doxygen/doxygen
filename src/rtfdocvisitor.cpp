@@ -265,6 +265,9 @@ void RTFDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "{\\sub ";  else m_t << "} ";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "{\\i ";     else m_t << "} ";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
