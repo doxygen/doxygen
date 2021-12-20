@@ -78,8 +78,10 @@ struct doctokenizerYY_state
   const char *inputString = 0;
   QCString fileName;
   bool insidePre = false;
+  bool insideQuot = false;
   int sharpCount=0;
   bool markdownSupport=TRUE;
+  bool quotSupport=TRUE;
 
   // context for section finding phase
   const Definition  *definition = 0;
@@ -318,7 +320,8 @@ LNKWORD3  ([0-9a-z_A-Z\-]+("/"|"\\"))*[0-9a-z_A-Z\-]+("."[0-9a-z_A-Z]+)+
 CHARWORDQ [^ \t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
 ESCWORD   ("%"{ID}(("::"|"."){ID})*)|("%'")
 CHARWORDQ1 [^ \-+0-9\t\n\r\\@<>()\[\]:;\?{}&%$#,."=']
-WORD1     {ESCWORD}|{CHARWORDQ1}{CHARWORDQ}*|"{"|"}"|"'\"'"|("\""([^"\n]*\n?)*[^"\n]*"\"")
+WORD1     {ESCWORD}|{CHARWORDQ1}{CHARWORDQ}*|"{"|"}"|"'\"'"
+WORD1QU   ("\""([^"\n]*\n?)*[^"\n]*"\"")
 WORD2     "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
 WORD1NQ   {ESCWORD}|{CHARWORDQ}+|"{"|"}"
 WORD2NQ   "."|","|"("|")"|"["|"]"|"::"|":"|";"|"\?"|"="|"'"
@@ -341,6 +344,7 @@ LINENR {BLANK}*[1-9][0-9]*
 %option noyywrap
 
 %x St_Para
+%x St_Para_Quot
 %x St_Comment
 %x St_Title
 %x St_TitleN
@@ -677,10 +681,27 @@ LINENR {BLANK}*[1-9][0-9]*
                          return TK_LNKWORD;
                        }
   /********* patterns for normal words ******************/
-
+<St_Para>"\""          {
+                         yyextra->insideQuot = !yyextra->insideQuot;
+                         if (yyextra->quotSupport)
+                         {
+                           assert(yyextra->insideQuot);
+                           unput('\"');
+                           BEGIN(St_Para_Quot);
+                         } else
+                         {
+                           unput_string("&quot;", 6);
+                         }
+                       }
 <St_Para,St_Text>[\-+0-9] |
-<St_Para,St_Text>{WORD1} |
-<St_Para,St_Text>{WORD2} { /* function call */
+<St_Para,St_Text>{WORD1}  |
+<St_Para,St_Text>{WORD2}  |
+<St_Para_Quot,St_Text>{WORD1QU} { /* function call */
+                         if (yyextra->quotSupport && yyextra->insideQuot)
+                         {
+                           yyextra->insideQuot = FALSE;
+                           BEGIN(St_Para);
+                         }
                          if (QCString(yytext).find("\\ilinebr")!=-1) REJECT; // see issue #8311
                          lineCount(yytext,yyleng);
                          if (yytext[0]=='%') // strip % if present
@@ -688,6 +709,16 @@ LINENR {BLANK}*[1-9][0-9]*
                          else
                            yyextra->token->name = yytext;
                          return TK_WORD;
+                       }
+<St_Para_Quot>"\""     {
+                         warn(g_fileName,g_yyLineNr,"Unclosed quotation (not formatting remaining text)",yytext);
+                         unput_string("&quot;", 6);
+                         BEGIN(St_Para);
+                       }
+<St_Para_Quot>.        {
+                         warn(g_fileName,g_yyLineNr,"Unexpected character in quotation '%s'",yytext);
+                         unput(yytext[0]);
+                         BEGIN(St_Para);
                        }
 <St_Text>({ID}".")+{ID} {
                           yyextra->token->name = yytext;
@@ -1458,6 +1489,11 @@ LINENR {BLANK}*[1-9][0-9]*
 <*>.                   {
                          warn(yyextra->fileName,yyextra->yyLineNr,"Unexpected character '%s'",yytext);
                        }
+<*><<EOF>>             {
+                         if (yyextra->insideQuot)
+                           warn(yyextra->fileName,yyextra->yyLineNr,"Unclosed quotation");
+                         return 0;
+                       }
 %%
 
 //--------------------------------------------------------------------------
@@ -1676,7 +1712,8 @@ void DocTokenizer::findSections(const QCString &input,const Definition *d,
   printlex(yy_flex_debug, FALSE, __FILE__, qPrint(fileName));
 }
 
-void DocTokenizer::init(const char *input,const QCString &fileName,bool markdownSupport)
+void DocTokenizer::init(const char *input,const QCString &fileName,
+                        bool markdownSupport,bool quotSupport)
 {
   yyscan_t yyscanner = p->yyscanner;
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
@@ -1685,7 +1722,9 @@ void DocTokenizer::init(const char *input,const QCString &fileName,bool markdown
   yyextra->inputPos    = 0;
   yyextra->fileName    = fileName;
   yyextra->insidePre   = FALSE;
+  yyextra->insideQuot  = FALSE;
   yyextra->markdownSupport = markdownSupport;
+  yyextra->quotSupport = quotSupport;
   BEGIN(St_Para);
 }
 

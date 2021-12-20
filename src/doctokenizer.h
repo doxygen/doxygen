@@ -134,7 +134,8 @@ class DocTokenizer
     // operations on the scanner
     void findSections(const QCString &input,const Definition *d,
         const QCString &fileName);
-    void init(const char *input,const QCString &fileName,bool markdownSupport);
+    void init(const char *input,const QCString &fileName,
+              bool markdownSupport,bool quotSupport);
     void cleanup();
     void pushContext();
     bool popContext();
@@ -186,6 +187,5 @@ class DocTokenizer
 
 // globals
 //extern TokenInfo *g_token;
-
 
 #endif
