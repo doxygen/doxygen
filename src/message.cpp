@@ -185,7 +185,7 @@ void warn_undoc(const QCString &file,int line,const char *fmt, ...)
   static bool warnExtractAll = Config_getBool(WARN_EXTRACT_ALL);
   va_list args;
   va_start(args, fmt);
-  do_warn(warnIfUndocumented || (extractAll && warnExtractAll), file, line, warning_str, fmt, args);
+  do_warn(warnIfUndocumented || (extractAll && warnExtractAll), file, line, g_warningStr, fmt, args);
   va_end(args);
 }
 
