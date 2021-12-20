@@ -16,6 +16,8 @@
 #ifndef DOTGROUPCOLLABORATION_H
 #define DOTGROUPCOLLABORATION_H
 
+#include <memory>
+
 #include "dotnode.h"
 #include "dotgraph.h"
 #include "groupdef.h"
@@ -82,5 +84,7 @@ class DotGroupCollaboration : public DotGraph
     QCString        m_diskName;
     std::vector< std::unique_ptr<Edge> >     m_edges;
 };
+
+using DotGroupCollaborationPtr = std::shared_ptr<DotGroupCollaboration>;
 
 #endif

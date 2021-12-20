@@ -36,6 +36,7 @@ class ConceptDef : public Definition
                               const QCString &header,bool localNames) const = 0;
     virtual const NamespaceDef *getNamespaceDef() const = 0;
     virtual const FileDef *getFileDef() const = 0;
+    virtual QCString title() const = 0;
 };
 
 class ConceptDefMutable : public DefinitionMutable, public ConceptDef

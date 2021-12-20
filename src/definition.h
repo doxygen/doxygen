@@ -23,8 +23,8 @@
 #include "types.h"
 #include "reflist.h"
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-// To disable 'inherits via dominance' warnings.
+#ifdef _MSC_VER
+// To disable 'inherits via dominance' warnings with MSVC.
 // See also https://stackoverflow.com/a/14487243/784672
 #pragma warning( disable: 4250 )
 #endif
@@ -33,6 +33,7 @@ class FileDef;
 class OutputList;
 class SectionRefs;
 class MemberDef;
+class MemberVector;
 class GroupDef;
 class GroupList;
 class SectionInfo;
@@ -64,7 +65,7 @@ struct BodyInfo
     int      defLine = -1;     //!< line number of the start of the definition
     int      startLine = -1;   //!< line number of the start of the definition's body
     int      endLine = -1;     //!< line number of the end of the definition's body
-    FileDef *fileDef = 0;      //!< file definition containing the function body
+    const FileDef *fileDef = 0;      //!< file definition containing the function body
 };
 
 /** The common base class of all entity definitions found in the sources.
@@ -101,6 +102,9 @@ class Definition
 
     /*! Use this for dynamic inspection of the type of the derived class */
     virtual DefType definitionType() const = 0;
+
+    /*! Used for syntax highlighting symbol class */
+    virtual CodeSymbolType codeSymbolType() const = 0;
 
     /*! Returns TRUE if this is an alias of another definition */
     virtual bool isAlias() const = 0;
@@ -254,7 +258,7 @@ class Definition
     /*! Returns the file in which the body of this item is located or 0 if no
      *  body is available.
      */
-    virtual FileDef *getBodyDef() const = 0;
+    virtual const FileDef *getBodyDef() const = 0;
 
     /** Returns the programming language this definition was written in. */
     virtual SrcLangExt getLanguage() const = 0;
@@ -267,8 +271,8 @@ class Definition
     virtual const Definition *findInnerCompound(const QCString &name) const = 0;
     virtual Definition *getOuterScope() const = 0;
 
-    virtual std::vector<const MemberDef *> getReferencesMembers() const = 0;
-    virtual std::vector<const MemberDef *> getReferencedByMembers() const = 0;
+    virtual const MemberVector &getReferencesMembers() const = 0;
+    virtual const MemberVector &getReferencedByMembers() const = 0;
 
     virtual bool hasSections() const = 0;
     virtual bool hasSources() const = 0;
@@ -283,12 +287,6 @@ class Definition
 
     virtual QCString navigationPathAsString() const = 0;
     virtual QCString pathFragment() const = 0;
-
-    //-----------------------------------------------------------------------------------
-    // --- cookie storage ----
-    //-----------------------------------------------------------------------------------
-    virtual void setCookie(Cookie *cookie) const = 0;
-    virtual Cookie *cookie() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- symbol name ----
@@ -344,7 +342,7 @@ class DefinitionMutable
 
     // source references
     virtual void setBodySegment(int defLine, int bls,int ble) = 0;
-    virtual void setBodyDef(FileDef *fd) = 0;
+    virtual void setBodyDef(const FileDef *fd) = 0;
 
     virtual void setRefItems(const RefItemVector &sli) = 0;
     virtual void setOuterScope(Definition *d) = 0;
@@ -379,6 +377,8 @@ class DefinitionMutable
     //-----------------------------------------------------------------------------------
     virtual void writeSourceDef(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeInlineCode(OutputList &ol,const QCString &scopeName) const = 0;
+    virtual bool hasSourceRefs() const = 0;
+    virtual bool hasSourceReffedBy() const = 0;
     virtual void writeSourceRefs(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeSourceReffedBy(OutputList &ol,const QCString &scopeName) const = 0;
     virtual void writeNavigationPath(OutputList &ol) const = 0;

@@ -104,7 +104,6 @@ class DotNode
 
     void colorConnectedNodes(int curColor);
     void setDistance(int distance);
-    const DotNode *findDocNode() const; // only works for acyclic graphs!
     void markAsVisible(bool b=TRUE) { m_visible=b; }
     void markAsTruncated(bool b=TRUE) { m_truncated=b ? Truncated : Untruncated; }
     const DotNodeRefVector &children() const { return m_children; }

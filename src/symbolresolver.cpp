@@ -25,6 +25,7 @@
 #include "defargs.h"
 
 static std::mutex g_cacheMutex;
+static std::recursive_mutex g_cacheTypedefMutex;
 
 //--------------------------------------------------------------------------------------
 
@@ -202,12 +203,12 @@ const ClassDef *SymbolResolver::Private::getResolvedClassRec(
   }
 
   //printf("Looking for symbol %s\n",qPrint(name));
-  auto range = Doxygen::symbolMap.find(name);
+  auto range = Doxygen::symbolMap->find(name);
   // the -g (for C# generics) and -p (for ObjC protocols) are now already
   // stripped from the key used in the symbolMap, so that is not needed here.
   if (range.first==range.second)
   {
-    range = Doxygen::symbolMap.find(name+"-p");
+    range = Doxygen::symbolMap->find(name+"-p");
     if (range.first==range.second)
     {
       //fprintf(stderr,"%d ] no such symbol!\n",--level);
@@ -494,6 +495,7 @@ const ClassDef *SymbolResolver::Private::newResolveTypedef(
                   QCString *pResolvedType,                             // out
                   const std::unique_ptr<ArgumentList> &actTemplParams) // in
 {
+  std::lock_guard<std::recursive_mutex> lock(g_cacheTypedefMutex);
   //printf("newResolveTypedef(md=%p,cachedVal=%p)\n",md,md->getCachedTypedefVal());
   bool isCached = md->isTypedefValCached(); // value already cached
   if (isCached)
@@ -973,7 +975,7 @@ QCString SymbolResolver::Private::substTypedef(
   QCString result=name;
   if (name.isEmpty()) return result;
 
-  auto range = Doxygen::symbolMap.find(name);
+  auto range = Doxygen::symbolMap->find(name);
   if (range.first==range.second)
     return result; // no matches
 
@@ -1039,6 +1041,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
       (scope->definitionType()!=Definition::TypeClass &&
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
+      (name.stripWhiteSpace().startsWith("::")) ||
       (scope->getLanguage()==SrcLangExt_Java && QCString(name).find("::")!=-1)
      )
   {
@@ -1046,7 +1049,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   }
   //fprintf(stderr,"------------ resolveClass(scope=%s,name=%s,mayUnlinkable=%d)\n",
   //    scope?qPrint(scope->name()):"<global>",
-  //    name,
+  //    qPrint(name),
   //    mayBeUnlinkable
   //   );
   const ClassDef *result;
@@ -1068,12 +1071,12 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   {
     if (!mayBeHidden || !result->isHidden())
     {
-      //printf("result was %s\n",result?qPrint(result->name()):"<none>");
+      //fprintf(stderr,"result was %s\n",result?qPrint(result->name()):"<none>");
       result=0; // don't link to artificial/hidden classes unless explicitly allowed
     }
   }
   //fprintf(stderr,"ResolvedClass(%s,%s)=%s\n",scope?qPrint(scope->name()):"<global>",
-  //                                  name,result?qPrint(result->name()):"<none>");
+  //                                  qPrint(name),result?qPrint(result->name()):"<none>");
   return result;
 }
 

@@ -37,7 +37,7 @@ class FortranCodeParser : public CodeParserInterface
                    SrcLangExt lang,
                    bool isExampleBlock,
                    const QCString &exampleName=QCString(),
-                   FileDef *fileDef=0,
+                   const FileDef *fileDef=0,
                    int startLine=-1,
                    int endLine=-1,
                    bool inlineFragment=FALSE,

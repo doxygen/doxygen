@@ -22,6 +22,10 @@
 %option extra-type="struct declinfoYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -61,6 +65,7 @@ struct declinfoYY_state
      QCString     name;
      QCString     args;
      int          sharpCount;
+     int          roundCount;
      bool         classTempListFound;
      bool         funcTempListFound;
      QCString     exceptionString;
@@ -84,17 +89,14 @@ static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
 
 B       [ \t]
 Bopt    {B}*
-ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
+ID	([$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 
-%x      Start
+%x  Start
 %x	Template
 %x	ReadArgs
 %x	Operator
-%x	FuncPtr
-%x	EndTemplate
-%x	StripTempArgs
-%x	SkipSharp
-%x      ReadExceptions
+%x	DeclType
+%x  ReadExceptions
 
 %%
 
@@ -158,10 +160,28 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*")"			{
   				  yyextra->type+=")";
   				}
+<Start>{B}*"decltype"/{B}*"("	{
+					  yyextra->roundCount=0;
+					  yyextra->type="decltype";
+					  BEGIN(DeclType);
+					}
+<DeclType>{B}*"("	{
+						++yyextra->roundCount;
+						yyextra->type+="(";
+					}
+<DeclType>{B}*")"	{
+						yyextra->type+=")";
+						if (--yyextra->roundCount == 0) {
+							BEGIN(Start);
+						}
+					}
+<DeclType>.	{
+						yyextra->type+=yytext;
+					}
 <Start>{B}*"("			{ // TODO: function pointers
-  				  yyextra->args+="(";
-  				  BEGIN(ReadArgs);
-  				}
+						yyextra->args+="(";
+						BEGIN(ReadArgs);
+					}
 <Start>{B}*"["			{
   				  yyextra->args+="[";
 				  BEGIN(ReadArgs);
@@ -169,22 +189,38 @@ ID	"$"?([a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF]*)|(@[0-9]+)
 <Start>{B}*"<"			{
   				  yyextra->name+="<";
 				  yyextra->sharpCount=0;
+                                  yyextra->roundCount=0;
   				  BEGIN(Template);
   				}
 <Template>"<<"			{ yyextra->name+="<<"; }
 <Template>">>"			{ yyextra->name+=">>"; }
+<Template>"("                   { yyextra->name+="(";
+                                  yyextra->roundCount++;
+                                }
+<Template>")"                   { yyextra->name+=")";
+                                  if (yyextra->roundCount>0)
+                                  {
+                                    yyextra->roundCount--;
+                                  }
+                                }
 <Template>"<"			{
   				  yyextra->name+="<";
-  				  yyextra->sharpCount++;
+                                  if (yyextra->roundCount==0)
+                                  {
+  				    yyextra->sharpCount++;
+                                  }
   				}
 <Template>">"			{
   				  yyextra->name+=">";
-  				  if (yyextra->sharpCount)
-				    --yyextra->sharpCount;
-				  else
-				  {
-				    BEGIN(Start);
-				  }
+                                  if (yyextra->roundCount==0)
+                                  {
+                                    if (yyextra->sharpCount)
+                                      --yyextra->sharpCount;
+                                    else
+                                    {
+                                      BEGIN(Start);
+                                    }
+                                  }
   				}
 <Template>.			{
   				  yyextra->name+=*yytext;
@@ -344,7 +380,7 @@ void parseFuncDecl(const QCString &decl,const SrcLangExt lang,QCString &cl,QCStr
   a=removeRedundantWhiteSpace(yyextra->args);
   exc=removeRedundantWhiteSpace(yyextra->exceptionString);
   
-  if (!t.isEmpty() && t.at(t.length()-1)==')') // for function pointers
+  if (!t.isEmpty() && !t.startsWith("decltype") && t.at(t.length()-1)==')') // for function pointers
   {
     a.prepend(")");
     t=t.left(t.length()-1);

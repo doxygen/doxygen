@@ -89,6 +89,10 @@ static bool elemIsVisible(const XMLHandlers::Attributes &attrib,bool defVal=TRUE
     {
       return ConfigValues::instance().*(opt->value.b);
     }
+    else if (opt && opt->type==ConfigValues::Info::String)
+    {
+      return ConfigValues::instance().*(opt->value.s) != "NO";
+    }
     else if (!opt)
     {
       err("found unsupported value %s for visible attribute in layout file\n",
@@ -126,7 +130,7 @@ QCString LayoutNavEntry::url() const
   if ((kind()!=LayoutNavEntry::User && kind()!=LayoutNavEntry::UserGroup) ||
       (kind()==LayoutNavEntry::UserGroup && url.left(9)=="usergroup"))
   {
-    url+=Doxygen::htmlFileExtension;
+    url = addHtmlExtensionIfMissing(url);
   }
   else if (url.left(5)=="@ref " || url.left(5)=="\\ref ")
   {
@@ -137,7 +141,7 @@ QCString LayoutNavEntry::url() const
     {
       if (d && d->isLinkable())
       {
-        url=d->getOutputFileBase()+Doxygen::htmlFileExtension;
+        url=addHtmlExtensionIfMissing(d->getOutputFileBase());
         if (!anchor.isEmpty())
         {
           url+="#"+anchor;
@@ -548,7 +552,14 @@ class LayoutParser
       {
         if (!url.isEmpty())
         {
-          baseFile=url;
+          if (url == "[none]")
+          {
+            baseFile = QCString();
+          }
+          else
+          {
+            baseFile=url;
+          }
         }
         else
         {

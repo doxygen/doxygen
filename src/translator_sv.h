@@ -95,6 +95,11 @@ I left use clause untouched as I didn't find a suitable translation for it.
 English:
 * Updated the language translation to 1.8.19
 
+2020/08/19
+* Uppdaterat översättningarna till 1.9.2
+English:
+* Updated the language translation to 1.9.2
+
 ===================================================================================
   Ordlista
 ===================================================================================
@@ -151,7 +156,7 @@ English:
 #ifndef TRANSLATOR_SE_H
 #define TRANSLATOR_SE_H
 
-class TranslatorSwedish : public TranslatorAdapter_1_9_2
+class TranslatorSwedish : public Translator
 {
   public:
 
@@ -2354,5 +2359,49 @@ class TranslatorSwedish : public TranslatorAdapter_1_9_2
     virtual QCString trDesignUnitDocumentation()
     { return "Designenhetsdokumentation"; }
 
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      QCString result((first_capital ? "Koncept" : "koncept"));
+      return result;
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result=conceptName;
+      result+=" Konceptreferens";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "Konceptlista"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "Konceptindex"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "Konceptdokumentation"; }
+
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      QCString result="Här är listan över alla ";
+      if (!extractAll) result+="dokumenterade ";
+      result+="koncept med en kort beskrivning:";
+      return result;
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "Konceptdefinition";
+    }
 };
 #endif

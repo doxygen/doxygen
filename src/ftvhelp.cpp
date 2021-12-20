@@ -350,15 +350,15 @@ static void generateBriefDoc(TextStream &t,const Definition *def)
   //printf("*** %p: generateBriefDoc(%s)='%s'\n",def,qPrint(def->name()),qPrint(brief));
   if (!brief.isEmpty())
   {
-    DocNode *root = validatingParseDoc(def->briefFile(),def->briefLine(),
-        def,0,brief,FALSE,FALSE,
-        QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                         def->briefFile(),def->briefLine(),
+                                         def,0,brief,FALSE,FALSE,
+                                         QCString(),TRUE,TRUE,Config_getBool(MARKDOWN_SUPPORT)) };
     QCString relPath = relativePathToRoot(def->getOutputFileBase());
     HtmlCodeGenerator htmlGen(t,relPath);
-    HtmlDocVisitor *visitor = new HtmlDocVisitor(t,htmlGen,def);
-    root->accept(visitor);
-    delete visitor;
-    delete root;
+    auto visitor = std::make_unique<HtmlDocVisitor>(t,htmlGen,def);
+    root->accept(visitor.get());
   }
 }
 
@@ -451,8 +451,7 @@ void FTVHelp::generateTree(TextStream &t, const std::vector<FTVNode*> &nl,int le
       }
       if (srcRef)
       {
-        t << "<a href=\"" << srcRef->getSourceFileBase()
-          << Doxygen::htmlFileExtension
+        t << "<a href=\"" << addHtmlExtensionIfMissing(srcRef->getSourceFileBase())
           << "\">";
       }
       if (n->def && n->def->definitionType()==Definition::TypeGroup)

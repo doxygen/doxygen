@@ -39,6 +39,7 @@ class GroupDef;
 struct TagInfo;
 class MemberDefMutable;
 class MemberGroupList;
+class MemberVector;
 
 /** A model of a class/file/namespace member symbol. */
 class MemberDef : public Definition
@@ -195,13 +196,13 @@ class MemberDef : public Definition
     //bool hasUserDocumentation() const = 0; // overrides hasUserDocumentation
     virtual bool isDeleted() const = 0;
     virtual bool isBriefSectionVisible() const = 0;
-    virtual bool isDetailedSectionVisible(bool inGroup,bool inFile) const = 0;
-    virtual bool isDetailedSectionLinkable() const = 0;
+    virtual bool isDetailedSectionVisible(MemberListContainer container) const = 0;
+    virtual bool hasDetailedDescription() const = 0;
     virtual bool isFriendClass() const = 0;
     virtual bool isDocumentedFriendClass() const = 0;
 
     virtual const MemberDef *reimplements() const = 0;
-    virtual const MemberList &reimplementedBy() const = 0;
+    virtual const MemberVector &reimplementedBy() const = 0;
     virtual bool isReimplementedBy(const ClassDef *cd) const = 0;
 
     virtual ClassDef *relatedAlso() const = 0;
@@ -210,7 +211,7 @@ class MemberDef : public Definition
     virtual const MemberDef *getAnonymousEnumType() const = 0;
     virtual bool isDocsForDefinition() const = 0;
     virtual const MemberDef *getEnumScope() const = 0;
-    virtual const MemberList &enumFieldList() const = 0;
+    virtual const MemberVector &enumFieldList() const = 0;
     virtual QCString enumBaseType() const = 0;
 
     virtual bool hasExamples() const = 0;
@@ -279,7 +280,7 @@ class MemberDef : public Definition
                const std::unique_ptr<ArgumentList> &actualArgs) const = 0;
     virtual void writeDeclaration(OutputList &ol,
                  const ClassDef *cd,const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd,
-                 bool inGroup, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
+                 bool inGroup, int indentLevel=0, const ClassDef *inheritFrom=0,const QCString &inheritId=QCString()) const = 0;
     virtual void writeEnumDeclaration(OutputList &typeDecl, const ClassDef *cd,
                 const NamespaceDef *nd,const FileDef *fd,const GroupDef *gd) const = 0;
     virtual void detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const = 0;
@@ -406,7 +407,7 @@ class MemberDefMutable : public DefinitionMutable, public MemberDef
     //-----------------------------------------------------------------------------------
 
     virtual void findSectionsInDocumentation() = 0;
-    virtual void addToSearchIndex() const = 0;
+    //virtual void addToSearchIndex() const = 0;
 
     //-----------------------------------------------------------------------------------
     // --- write output ----

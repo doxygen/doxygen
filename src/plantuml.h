@@ -22,7 +22,6 @@
 #include "containers.h"
 #include "qcstring.h"
 
-#define CACHE_FILENAME          "inline_umlgraph_cache_all.pu"
 #define DIVIDE_COUNT            4
 #define MIN_PLANTUML_COUNT      8
 
@@ -68,7 +67,6 @@ class PlantumlManager
      *  @param[in] baseName the name of the generated file (as returned by writePlantUMLSource())
      *  @param[in] outDir   the directory to write the resulting image into.
      *  @param[in] format   the image format to generate.
-     *  @param[in] engine   the plantuml engine to be used so the start command will be `@start<engine>`
      */
     void generatePlantUMLOutput(const QCString &baseName,const QCString &outDir,OutputFormat format);
 
@@ -90,8 +88,6 @@ class PlantumlManager
     ContentMap m_pngPlantumlContent;               // use circular queue for using multi-processor (multi threading)
     ContentMap m_svgPlantumlContent;
     ContentMap m_epsPlantumlContent;
-    QCString   m_cachedPlantumlAllContent;         // read from CACHE_FILENAME file
-    QCString   m_currentPlantumlAllContent;        // processing plantuml then write it into CACHE_FILENAME to reuse the next time as cache information
 };
 
 #endif

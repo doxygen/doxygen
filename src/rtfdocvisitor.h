@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _RTFDOCVISITOR_H
-#define _RTFDOCVISITOR_H
+#ifndef RTFDOCVISITOR_H
+#define RTFDOCVISITOR_H
 
 #include <iostream>
 
@@ -147,6 +147,8 @@ class RTFDocVisitor : public DocVisitor
                    const QCString &anchor);
     void endLink(const QCString &ref);
     QCString getStyle(const QCString &name);
+
+    int indentLevel() const;
     void incIndentLevel();
     void decIndentLevel();
 
@@ -165,11 +167,20 @@ class RTFDocVisitor : public DocVisitor
 
     TextStream &m_t;
     CodeOutputInterface &m_ci;
-    bool m_insidePre;
-    bool m_hide;
-    int m_indentLevel;
-    bool m_lastIsPara;
+    bool m_insidePre = false;
+    bool m_hide = false;
+    bool m_lastIsPara = false;
     QCString m_langExt;
+
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+    struct RTFListItemInfo
+    {
+      bool isEnum = false;
+      int number = 1;
+      char type = '1';
+    };
+    RTFListItemInfo m_listItemInfo[maxIndentLevels];
 };
 
 #endif

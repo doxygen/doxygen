@@ -48,8 +48,8 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     // these are just null functions, they can be used to produce a syntax highlighted
     // and cross-linked version of the source code, but who needs that anyway ;-)
     void codify(const QCString &) override {}
-    void writeCodeLink(const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}
@@ -146,7 +146,7 @@ static void listSymbol(Definition *d)
 
 static void listSymbols()
 {
-  for (const auto &kv : Doxygen::symbolMap)
+  for (const auto &kv : *Doxygen::symbolMap)
   {
     listSymbol(kv.second);
   }
@@ -205,7 +205,7 @@ static void lookupSymbols(const QCString &sym)
 {
   if (!sym.isEmpty())
   {
-    auto range = Doxygen::symbolMap.find(sym);
+    auto range = Doxygen::symbolMap->find(sym);
     bool found=false;
     for (auto it=range.first; it!=range.second; ++it)
     {

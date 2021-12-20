@@ -25,6 +25,10 @@
 %option extra-type="struct pyscannerYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -204,7 +208,6 @@ STARTDOCSYMS      "##"
 
   /* %x FuncDoubleComment */
   /* %x ClassDoubleComment */
-%x TryClassDocString
 %x TripleComment
 %x SpecialComment
 
@@ -1280,7 +1283,14 @@ STARTDOCSYMS      "##"
 			          actualDoc.append("\\endverbatim ");
 			        }
 			      }
-			      actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+                              if (yyextra->moduleScope.startsWith("__") &&  yyextra->moduleScope.endsWith("__"))
+                              {
+			        actualDoc.prepend("\\namespace \\"+yyextra->moduleScope+" ");
+                              }
+                              else
+                              {
+			        actualDoc.prepend("\\namespace "+yyextra->moduleScope+" ");
+                              }
 			      handleCommentBlock(yyscanner, actualDoc, FALSE);
 			    }
 			    if ((yyextra->docBlockContext==ClassBody /*&& !yyextra->hideClassDocs*/) ||
@@ -1919,9 +1929,8 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
 
   // restore original scanner state
 
-  YY_BUFFER_STATE tmpBuf = YY_CURRENT_BUFFER;
+  yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
   yy_switch_to_buffer(orgState, yyscanner);
-  yy_delete_buffer(tmpBuf, yyscanner);
 
   yyextra->inputString = orgInputString; 
   yyextra->inputPosition = orgInputPosition;

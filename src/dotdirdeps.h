@@ -16,6 +16,8 @@
 #ifndef DOTDIRDEPS_H
 #define DOTDIRDEPS_H
 
+#include <memory>
+
 #include "dotgraph.h"
 #include "dirdef.h"
 
@@ -47,5 +49,7 @@ class DotDirDeps : public DotGraph
 
     bool m_linkRelations = false;
 };
+
+using DotDirDepsPtr = std::shared_ptr<DotDirDeps>;
 
 #endif

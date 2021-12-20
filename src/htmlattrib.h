@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef _HTMLATTRIB_H
-#define _HTMLATTRIB_H
+#ifndef HTMLATTRIB_H
+#define HTMLATTRIB_H
 
 #include <vector>
 
