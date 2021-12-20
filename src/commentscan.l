@@ -2334,6 +2334,7 @@ static bool handleRelated(yyscan_t yyscanner,const QCString &cmd, const StringVe
         "found multiple \\relates, \\relatesalso or \\memberof commands in a comment block, using last definition");
   }
   yyextra->current->relatesType = Simple;
+  yyextra->currentCmd = cmd;
   BEGIN(RelatesParam1);
   return FALSE;
 }
