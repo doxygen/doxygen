@@ -658,6 +658,10 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->name = yytext;
                          return TK_LNKWORD;
                         }
+<St_Para>{LNKWORD1}/"<tt>" { // prevent <tt> html tag to be parsed as template arguments
+                         yyextra->token->name = yytext;
+                         return TK_LNKWORD;
+                       }
 <St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
