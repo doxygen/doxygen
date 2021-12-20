@@ -24,6 +24,10 @@
 %option extra-type="struct vhdlcodeYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -108,6 +112,7 @@ struct vhdlcodeYY_state
 
   bool          lexInit = false;
   int           braceCount = 0;
+  TooltipManager tooltipManager;
 };
 
 
@@ -206,13 +211,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 %x ParseComponent
 %x ParsePackage
 %x ParseProcessProto
-%x ClassName
-%x PackageName
-%x ClassVar
 %x ClassesName
 %x Map
 %x End
-%x Body
 
 %%
 
@@ -616,9 +617,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
                                         left=VhdlDocGen::getIndexWord(tt,0);
                                         if (!left.isEmpty())
                                         {
-                                          if (left.contains('('))
+                                          j=left.find('(',false);
+                                          if (j>=0)
                                           {
-                                            j=left.find('(',false);
                                             QCString name=left.left(j);
                                             generateClassOrGlobalLink(yyscanner,*yyextra->code,name);
                                             yyextra->PortMapComp=name;
@@ -1038,20 +1039,23 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
-                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
-                                QCString(),yyextra->yyLineNr);
+                                QCString(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
@@ -1234,7 +1238,7 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (text.isEmpty()) return;
   static bool sourceTooltips = Config_getBool(SOURCE_TOOLTIPS);
-  TooltipManager::instance().addTooltip(ol,d);
+  yyextra->tooltipManager.addTooltip(ol,d);
   QCString ref  = d->getReference();
   QCString file = d->getOutputFileBase();
   QCString anchor = d->anchor();
@@ -1254,12 +1258,12 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
     {
       yyextra->yyLineNr++;
       // printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,QCString(sp,p-sp-1),tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       nextCodeLine(yyscanner);
     }
     else
     {
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
       done=true;
     }
   }
@@ -1584,7 +1588,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
                                SrcLangExt,
                                bool exBlock,
                                const QCString &exName,
-                               FileDef *fd,
+                               const FileDef *fd,
                                int startLine,
                                int endLine,
                                bool inlineFragment,
@@ -1669,7 +1673,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   yyextra->startCode=false;
 
   // write the tooltips
-  TooltipManager::instance().writeTooltips(od);
+  yyextra->tooltipManager.writeTooltips(od);
 
   printlex(yy_flex_debug, false, __FILE__, fd ? qPrint(fd->fileName()): NULL);
 }

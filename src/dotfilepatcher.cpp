@@ -149,13 +149,13 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
       {
         result=href+"=\"";
         // fake ref node to resolve the url
-        DocRef *df = new DocRef( (DocNode*) 0, link.mid(5), context );
+        std::unique_ptr<IDocParser> parser { createDocParser() };
+        std::unique_ptr<DocRef>     df     { createRef( *parser.get(), link.mid(5), context ) };
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
-          result += df->file() + Doxygen::htmlFileExtension;
+          result += addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty())
           result += "#" + df->anchor();
-        delete df;
         result += "\"";
       }
       else
@@ -334,6 +334,10 @@ bool DotFilePatcher::run() const
   bool foundSize=FALSE;
   int lineNr=1;
   std::string lineStr;
+  static const reg::Ex reSVG(R"([\[<]!-- SVG [0-9]+)");
+  static const reg::Ex reMAP(R"(<!-- MAP [0-9]+)");
+  static const reg::Ex reFIG(R"(% FIG [0-9]+)");
+
   while (getline(fi,lineStr))
   {
     QCString line = lineStr+'\n';
@@ -381,7 +385,7 @@ bool DotFilePatcher::run() const
         t << replaceRef(line,map.relPath,map.urlOnly,map.context,"_top");
       }
     }
-    else if ((i=line.find("<!-- SVG"))!=-1 || (i=line.find("[!-- SVG"))!=-1)
+    else if ((i=findIndex(line.str(),reSVG))!=-1)
     {
       //printf("Found marker at %d\n",i);
       int mapId=-1;
@@ -405,7 +409,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=line.find("<!-- MAP"))!=-1)
+    else if ((i=findIndex(line.str(),reMAP))!=-1)
     {
       int mapId=-1;
       t << line.left(i);
@@ -430,7 +434,7 @@ bool DotFilePatcher::run() const
         t << line.mid(i);
       }
     }
-    else if ((i=line.find("% FIG"))!=-1)
+    else if ((i=findIndex(line.str(),reFIG))!=-1)
     {
       int mapId=-1;
       int n = sscanf(line.data()+i+2,"FIG %d",&mapId);

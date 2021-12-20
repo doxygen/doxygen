@@ -30,12 +30,14 @@ class DocbookCodeGenerator : public CodeOutputInterface
     QCString sourceFileName() { return m_sourceFileName; }
 
     void codify(const QCString &text);
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+        const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
         const QCString &tooltip);
-    void writeCodeLinkLine(const QCString &ref,const QCString &file,
+    void writeCodeLinkLine(CodeSymbolType type,
+        const QCString &ref,const QCString &file,
         const QCString &anchor,const QCString &name,
-        const QCString &tooltip);
+        const QCString &tooltip, bool);
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
                       const QCString &, const SourceLinkInfo &, const SourceLinkInfo &
                      );
@@ -45,7 +47,7 @@ class DocbookCodeGenerator : public CodeOutputInterface
     void endFontClass();
     void writeCodeAnchor(const QCString &);
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-        const QCString &anchorId,int l);
+        const QCString &anchorId,int l, bool writeLineAnchor);
     void setCurrentDoc(const Definition *,const QCString &,bool);
     void addWord(const QCString &,bool);
     void finish();
@@ -62,22 +64,21 @@ class DocbookCodeGenerator : public CodeOutputInterface
     bool m_insideSpecialHL = false;
     QCString m_relPath;
     QCString m_sourceFileName;
-    bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
 };
 
 
 #if 0
 // define for cases that have been implemented with an empty body
-#define DB_GEN_EMPTY  t << "<!-- DBG_GEN_head_check " << __LINE__ << " -->\n";
+#define DB_GEN_EMPTY  m_t << "<!-- DBG_GEN_head_check " << __LINE__ << " -->\n";
 #else
 #define DB_GEN_EMPTY
 #endif
 
 #if 0
 // Generic debug statements
-#define DB_GEN_H DB_GEN_H1(t)
+#define DB_GEN_H DB_GEN_H1(m_t)
 #define DB_GEN_H1(x) x << "<!-- DBG_GEN_head " << __LINE__ << " -->\n";
-#define DB_GEN_H2(y) DB_GEN_H2a(t,y)
+#define DB_GEN_H2(y) DB_GEN_H2a(m_t,y)
 #define DB_GEN_H2a(x,y) x << "<!-- DBG_GEN_head " << __LINE__ << " " << y << " -->\n";
 // define for cases that have NOT yet been implemented / considered
 #define DB_GEN_NEW fprintf(stderr,"DBG_GEN_head %d\n",__LINE__); DB_GEN_H
@@ -99,18 +100,20 @@ class DocbookGenerator : public OutputGenerator
     virtual std::unique_ptr<OutputGenerator> clone() const;
 
     static void init();
+    void cleanup();
 
     OutputType type() const { return Docbook; }
 
     // --- CodeOutputInterface
     void codify(const QCString &text)
     { m_codeGen.codify(text); }
-    void writeCodeLink(const QCString &ref, const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref, const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { m_codeGen.writeCodeLink(ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
                      )
@@ -320,14 +323,14 @@ class DocbookGenerator : public OutputGenerator
     void endConstraintDocs();
     void endConstraintList();
 
-    void startMemberDocSimple(bool){DB_GEN_NEW};
-    void endMemberDocSimple(bool){DB_GEN_NEW};
-    void startInlineMemberType(){DB_GEN_NEW};
-    void endInlineMemberType(){DB_GEN_NEW};
-    void startInlineMemberName(){DB_GEN_NEW};
-    void endInlineMemberName(){DB_GEN_NEW};
-    void startInlineMemberDoc(){DB_GEN_NEW};
-    void endInlineMemberDoc(){DB_GEN_NEW};
+    void startMemberDocSimple(bool);
+    void endMemberDocSimple(bool);
+    void startInlineMemberType();
+    void endInlineMemberType();
+    void startInlineMemberName();
+    void endInlineMemberName();
+    void startInlineMemberDoc();
+    void endInlineMemberDoc();
 
     void startLabels();
     void writeLabel(const QCString &,bool);
@@ -337,19 +340,22 @@ class DocbookGenerator : public OutputGenerator
     void addWord(const QCString &,bool) {DB_GEN_EMPTY}
 
 private:
+    void openSection(const QCString &attr=QCString());
+    void closeSection();
+    void closeAllSections();
 
     QCString relPath;
     DocbookCodeGenerator m_codeGen;
-    bool m_prettyCode = Config_getBool(DOCBOOK_PROGRAMLISTING);
     bool m_denseText = false;
     bool m_inGroup = false;
-    bool m_inDetail = false;
     int  m_levelListItem = 0;
     bool m_inListItem[20] = { false, };
     bool m_inSimpleSect[20] = { false, };
     bool m_descTable = false;
+    bool m_simpleTable = false;
     int m_inLevel = -1;
     bool m_firstMember = false;
+    int m_openSectionCount = 0;
 };
 
 #endif

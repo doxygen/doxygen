@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "types.h"
 #include "index.h"
 #include "section.h"
 #include "textstream.h"
@@ -61,6 +62,9 @@ class CodeOutputInterface
 {
   public:
     virtual ~CodeOutputInterface() {}
+    CodeOutputInterface() {}
+    CodeOutputInterface(const CodeOutputInterface &) = delete;
+    CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
 
     /** Identifier for the output file */
     virtual int id() const { return 0; }
@@ -72,6 +76,8 @@ class CodeOutputInterface
     virtual void codify(const QCString &s) = 0;
 
     /*! Writes a link to an object in a code fragment.
+     *  \param type     The type of symbol, used for semantic syntax
+     *                  highlighting, may be Default is no info is available.
      *  \param ref      If this is non-zero, the object is to be found in
      *                  an external documentation file.
      *  \param file     The file in which the object is located.
@@ -80,7 +86,8 @@ class CodeOutputInterface
      *  \param name     The text to display as a placeholder for the link.
      *  \param tooltip  The tooltip to display when the mouse is on the link.
      */
-    virtual void writeCodeLink(const QCString &ref,const QCString &file,
+    virtual void writeCodeLink(CodeSymbolType type,
+                               const QCString &ref,const QCString &file,
                                const QCString &anchor,const QCString &name,
                                const QCString &tooltip) = 0;
 
@@ -89,9 +96,10 @@ class CodeOutputInterface
      *  \param file       The file part of the URL pointing to the docs.
      *  \param anchor     The anchor part of the URL pointing to the docs.
      *  \param lineNumber The line number to write
+     *  \param writeLineAnchor Indicates if an anchor for the line number needs to be written
      */
     virtual void writeLineNumber(const QCString &ref,const QCString &file,
-                                 const QCString &anchor,int lineNumber) = 0;
+                                 const QCString &anchor,int lineNumber, bool writeLineAnchor) = 0;
 
     /*! Writes a tool tip definition
      *  \param id       unique identifier for the tooltip
@@ -496,6 +504,8 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startLabels() = 0;
     virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
+
+    virtual void cleanup() = 0;
 
   protected:
     TextStream m_t;

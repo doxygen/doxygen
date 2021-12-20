@@ -146,7 +146,7 @@ DotFilePatcher *DotManager::createFilePatcher(const QCString &fileName)
 
   if (patcher != m_filePatchers.end()) return &(patcher->second);
 
-  auto rv = m_filePatchers.emplace(fileName.str(), fileName.data());
+  auto rv = m_filePatchers.emplace(std::make_pair(fileName.str(), fileName));
   assert(rv.second);
   return &(rv.first->second);
 }
@@ -287,7 +287,7 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
   DotRunner dotRun(inFile);
   if (format==GOF_BITMAP)
   {
-    dotRun.addJob(Config_getEnum(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
+    dotRun.addJob(Config_getEnumAsString(DOT_IMAGE_FORMAT),absImgName,srcFile,srcLine);
   }
   else // format==GOF_EPS
   {
@@ -319,6 +319,8 @@ void writeDotGraphFromFile(const QCString &inFile,const QCString &outDir,
  *  \param baseName the base name of the output files
  *  \param context the scope in which this graph is found (for resolving links)
  *  \param graphId a unique id for this graph, use for dynamic sections
+ *  \param srcFile the source file
+ *  \param srcLine the line number in the source file
  */
 void writeDotImageMapFromFile(TextStream &t,
                             const QCString &inFile, const QCString &outDir,

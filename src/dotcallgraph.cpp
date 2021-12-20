@@ -22,9 +22,11 @@
 
 static QCString getUniqueId(const MemberDef *md)
 {
-  QCString result = md->getReference()+"$"+
-         md->getOutputFileBase()+"#"+
-         md->anchor();
+  const MemberDef *def = md->memberDefinition();
+  if (def==0) def = md;
+  QCString result = def->getReference()+"$"+
+         def->getOutputFileBase()+"#"+
+         def->anchor();
   return result;
 }
 
@@ -203,5 +205,18 @@ bool DotCallGraph::isTooBig() const
 int DotCallGraph::numNodes() const
 {
   return (int)m_startNode->children().size();
+}
+
+bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
+{
+  auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
+  {
+    if (rmd->showInCallGraph())
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 

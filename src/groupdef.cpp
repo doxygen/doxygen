@@ -56,6 +56,7 @@ class GroupDefImpl : public DefinitionMixin<GroupDef>
     virtual ~GroupDefImpl();
 
     virtual DefType definitionType() const { return TypeGroup; }
+    virtual CodeSymbolType codeSymbolType() const { return CodeSymbolType::Default; }
     virtual QCString getOutputFileBase() const;
     virtual QCString anchor() const { return QCString(); }
     virtual QCString displayName(bool=TRUE) const { return hasGroupTitle() ? m_title : DefinitionMixin::name(); }
@@ -169,7 +170,7 @@ GroupDef *createGroupDef(const QCString &fileName,int line,const QCString &name,
 
 GroupDefImpl::GroupDefImpl(const QCString &df,int dl,const QCString &na,const QCString &t,
                    const QCString &refFileName) : DefinitionMixin(df,dl,1,na),
-                    m_allMemberList(MemberListType_allMembersList)
+                    m_allMemberList(MemberListType_allMembersList,MemberListContainer::Group)
 {
   if (!refFileName.isEmpty())
   {
@@ -314,12 +315,6 @@ void GroupDefImpl::addMembersToMemberGroup()
     {
       ::addMembersToMemberGroup(ml.get(),&m_memberGroups,this);
     }
-  }
-
-  //printf("GroupDefImpl::addMembersToMemberGroup() memberGroupList=%d\n",memberGroupList->count());
-  for (const auto &mg : m_memberGroups)
-  {
-    mg->setInGroup(TRUE);
   }
 }
 
@@ -618,7 +613,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "  <compound kind=\"group\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   tagFile << "    <title>" << convertToXML(m_title) << "</title>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
@@ -798,9 +793,11 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
 {
   if (hasBriefDescription())
   {
-    DocRoot *rootNode = validatingParseDoc(briefFile(),briefLine(),this,0,
-                                briefDescription(),TRUE,FALSE,
-                                QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT));
+    std::unique_ptr<IDocParser> parser { createDocParser() };
+    std::unique_ptr<DocRoot>  rootNode { validatingParseDoc(*parser.get(),
+                                         briefFile(),briefLine(),this,0,
+                                         briefDescription(),TRUE,FALSE,
+                                         QCString(),TRUE,FALSE,Config_getBool(MARKDOWN_SUPPORT)) };
     if (rootNode && !rootNode->isEmpty())
     {
       ol.startParagraph();
@@ -808,7 +805,7 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
       ol.disableAllBut(OutputGenerator::Man);
       ol.writeString(" - ");
       ol.popGeneratorState();
-      ol.writeDoc(rootNode,this,0);
+      ol.writeDoc(rootNode.get(),this,0);
       ol.pushGeneratorState();
       ol.disable(OutputGenerator::RTF);
       ol.writeString(" \n");
@@ -824,7 +821,6 @@ void GroupDefImpl::writeBriefDescription(OutputList &ol)
       ol.popGeneratorState();
       ol.endParagraph();
     }
-    delete rootNode;
   }
   ol.writeSynopsis();
 }
@@ -1123,23 +1119,6 @@ void GroupDefImpl::writeDocumentation(OutputList &ol)
   ol.endHeaderSection();
   ol.startContents();
 
-  if (Doxygen::searchIndex)
-  {
-    Doxygen::searchIndex->setCurrentDoc(this,anchor(),FALSE);
-    std::string title = m_title.str();
-    static const reg::Ex re(R"(\a[\w-]*)");
-    reg::Iterator it(title,re);
-    reg::Iterator end;
-    for (; it!=end ; ++it)
-    {
-      const auto &match = *it;
-      std::string matchStr = match.str();
-      Doxygen::searchIndex->addWord(matchStr.c_str(),TRUE);
-    }
-  }
-
-  Doxygen::indexList->addIndexItem(this,0,QCString(),m_title);
-
   //---------------------------------------- start flexible part -------------------------------
 
   SrcLangExt lang=getLanguage();
@@ -1324,7 +1303,7 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
         ol.writeString("<a class=\"navtab\" ");
         ol.writeString("href=\"");
         if (createSubDirs) ol.writeString("../../");
-        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+        ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(convertToHtml(md->localName()));
         ol.writeString("</a>");
@@ -1538,6 +1517,19 @@ void addMemberToGroups(const Entry *root,MemberDef *md)
           {
             cdm->setGroupDefForAllMembers(fgd,pri,root->fileName,root->startLine,root->doc.length() != 0);
           }
+          if (mdm->isEnumerate() && mdm->getGroupDef() && md->isStrong())
+          {
+            for (const auto &emd : mdm->enumFieldList())
+            {
+              MemberDefMutable *emdm = toMemberDefMutable(emd);
+              if (emdm && emdm->getGroupDef()==0)
+              {
+                emdm->setGroupDef(mdm->getGroupDef(),mdm->getGroupPri(),
+                                 mdm->getGroupFileName(),mdm->getGroupStartLine(),
+                                 mdm->getGroupHasDocs());
+              }
+            }
+          }
         }
       }
     }
@@ -1593,8 +1585,7 @@ void GroupDefImpl::addMemberToList(MemberListType lt,const MemberDef *md)
 {
   static bool sortBriefDocs = Config_getBool(SORT_BRIEF_DOCS);
   static bool sortMemberDocs = Config_getBool(SORT_MEMBER_DOCS);
-  const auto &ml = m_memberLists.get(lt);
-  ml->setInGroup(true);
+  const auto &ml = m_memberLists.get(lt,MemberListContainer::Group);
   ml->setNeedsSorting(
       ((ml->listType()&MemberListType_declarationLists) && sortBriefDocs) ||
       ((ml->listType()&MemberListType_documentationLists) && sortMemberDocs));

@@ -22,12 +22,13 @@
 %option extra-type="struct constexpYY_state *"
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve typesafety
+#include "constexp_p.h"  
 }
 
 %{
 
 #include "constexp.h"  
-#include "constexp_p.h"  
 #include "cppvalue.h"
 #include "ce_parse.hpp" // generated header file
 #include "message.h"

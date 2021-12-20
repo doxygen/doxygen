@@ -332,7 +332,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
   bool searchEngine = Config_getBool(SEARCHENGINE);
   bool serverBasedSearch = Config_getBool(SERVER_BASED_SEARCH);
   bool mathJax = Config_getBool(USE_MATHJAX);
-  QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
+  QCString mathJaxFormat = Config_getEnumAsString(MATHJAX_FORMAT);
   bool disableIndex = Config_getBool(DISABLE_INDEX);
   bool hasProjectName = !projectName.isEmpty();
   bool hasProjectNumber = !Config_getString(PROJECT_NUMBER).isEmpty();
@@ -408,7 +408,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 				"  $(document).ready(function() { init_search(); });\n"
 					"/* @license-end */\n"
 					"</script>";
@@ -419,7 +419,7 @@ static QCString substituteHtmlKeywords(const QCString &str,
       if (disableIndex || !Config_getBool(HTML_DYNAMIC_MENUS))
       {
         searchCssJs += "<script type=\"text/javascript\">\n"
-					"/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+					"/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
 					"  $(document).ready(function() {\n"
 					"    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }\n"
 					"  });\n"
@@ -440,93 +440,97 @@ static QCString substituteHtmlKeywords(const QCString &str,
 
   if (mathJax)
   {
-    QCString mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
+    auto mathJaxVersion = Config_getEnum(MATHJAX_VERSION);
     QCString path = Config_getString(MATHJAX_RELPATH);
     if (path.isEmpty() || path.left(2)=="..") // relative path
     {
       path.prepend(relPath);
     }
 
-    if (mathJaxVersion == "MathJax_3")
+    switch (mathJaxVersion)
     {
-       mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"
-                    "<script type=\"text/javascript\">\n"
-                    "window.MathJax = {\n"
-                    "  options: {\n"
-                    "    ignoreHtmlClass: 'tex2jax_ignore',\n"
-                    "    processHtmlClass: 'tex2jax_process'\n"
-                    "  }";
-      const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
-      if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
-      {
-        mathJaxJs+= ",\n"
-                    "  tex: {\n"
-                    "    macros: {";
-        if (!g_latex_macro.isEmpty())
+      case MATHJAX_VERSION_t::MathJax_3:
         {
-          mathJaxJs += g_latex_macro+"    ";
+          mathJaxJs += "<script src=\"https://polyfill.io/v3/polyfill.min.js?features=es6\"></script>\n"
+                       "<script type=\"text/javascript\">\n"
+                       "window.MathJax = {\n"
+                       "  options: {\n"
+                       "    ignoreHtmlClass: 'tex2jax_ignore',\n"
+                       "    processHtmlClass: 'tex2jax_process'\n"
+                       "  }";
+         const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+         if (!mathJaxExtensions.empty() || !g_latex_macro.isEmpty())
+         {
+           mathJaxJs+= ",\n"
+                       "  tex: {\n"
+                       "    macros: {";
+           if (!g_latex_macro.isEmpty())
+           {
+             mathJaxJs += g_latex_macro+"    ";
+           }
+           mathJaxJs+="},\n"
+                       "    packages: ['base','configmacros'";
+           if (!g_latex_macro.isEmpty())
+           {
+             mathJaxJs+= ",'newcommand'";
+           }
+           for (const auto &s : mathJaxExtensions)
+           {
+             mathJaxJs+= ",'"+QCString(s.c_str())+"'";
+           }
+           mathJaxJs += "]\n"
+                         "  }\n";
+         }
+         else
+         {
+           mathJaxJs += "\n";
+         }
+         mathJaxJs += "};\n";
+         // MATHJAX_CODEFILE
+         if (!g_mathjax_code.isEmpty())
+         {
+           mathJaxJs += g_mathjax_code;
+           mathJaxJs += "\n";
+         }
+         mathJaxJs += "</script>\n";
+         mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" +
+                      path + "es5/tex-" + mathJaxFormat.lower() + ".js\">";
+         mathJaxJs+="</script>\n";
         }
-        mathJaxJs+="},\n"
-                    "    packages: ['base','configmacros'";
-        if (!g_latex_macro.isEmpty())
+        break;
+      case MATHJAX_VERSION_t::MathJax_2:
         {
-          mathJaxJs+= ",'newcommand'";
+          mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
+                      "MathJax.Hub.Config({\n"
+                      "  extensions: [\"tex2jax.js\"";
+          const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
+          for (const auto &s : mathJaxExtensions)
+          {
+            mathJaxJs+= ", \""+QCString(s.c_str())+".js\"";
+          }
+          if (mathJaxFormat.isEmpty())
+          {
+            mathJaxFormat = "HTML-CSS";
+          }
+          mathJaxJs += "],\n"
+                       "  jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n";
+          if (!g_latex_macro.isEmpty())
+          {
+            mathJaxJs += "   TeX: { Macros: {\n";
+            mathJaxJs += g_latex_macro;
+            mathJaxJs += "\n"
+                         "  } }\n";
+          }
+          mathJaxJs +=   "});\n";
+          if (!g_mathjax_code.isEmpty())
+          {
+            mathJaxJs += g_mathjax_code;
+            mathJaxJs += "\n";
+          }
+          mathJaxJs += "</script>\n";
+          mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
         }
-        for (const auto &s : mathJaxExtensions)
-        {
-          mathJaxJs+= ",'"+QCString(s.c_str())+"'";
-        }
-        mathJaxJs += "]\n"
-                      "  }\n";
-      }
-      else
-      {
-        mathJaxJs += "\n";
-      }
-      mathJaxJs += "};\n";
-      // MATHJAX_CODEFILE
-      if (!g_mathjax_code.isEmpty())
-      {
-        mathJaxJs += g_mathjax_code;
-        mathJaxJs += "\n";
-      }
-      mathJaxJs += "</script>\n";
-
-      mathJaxJs += "<script type=\"text/javascript\" id=\"MathJax-script\" async=\"async\" src=\"" +
-                   path + "es5/tex-" + mathJaxFormat.lower() + ".js\">";
-      mathJaxJs+="</script>\n";
-    }
-    else // MathJax v2
-    {
-      mathJaxJs = "<script type=\"text/x-mathjax-config\">\n"
-                  "MathJax.Hub.Config({\n"
-                  "  extensions: [\"tex2jax.js\"";
-      const StringVector &mathJaxExtensions = Config_getList(MATHJAX_EXTENSIONS);
-      for (const auto &s : mathJaxExtensions)
-      {
-        mathJaxJs+= ", \""+QCString(s.c_str())+".js\"";
-      }
-      if (mathJaxFormat.isEmpty())
-      {
-        mathJaxFormat = "HTML-CSS";
-      }
-      mathJaxJs += "],\n"
-                   "  jax: [\"input/TeX\",\"output/"+mathJaxFormat+"\"],\n";
-      if (!g_latex_macro.isEmpty())
-      {
-        mathJaxJs += "   TeX: { Macros: {\n";
-        mathJaxJs += g_latex_macro;
-        mathJaxJs += "\n"
-                     "  } }\n";
-      }
-      mathJaxJs +=   "});\n";
-      if (!g_mathjax_code.isEmpty())
-      {
-        mathJaxJs += g_mathjax_code;
-        mathJaxJs += "\n";
-      }
-      mathJaxJs += "</script>\n";
-      mathJaxJs += "<script type=\"text/javascript\" async=\"async\" src=\"" + path + "MathJax.js\"></script>\n";
+        break;
     }
   }
 
@@ -692,7 +696,7 @@ void HtmlCodeGenerator::docify(const QCString &str)
 }
 
 void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &filename,
-                                    const QCString &anchor,int l)
+                                    const QCString &anchor,int l,bool writeLineAnchor)
 {
   const int maxLineNrStr = 10;
   char lineNumber[maxLineNrStr];
@@ -706,7 +710,8 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     m_lineOpen = TRUE;
   }
 
-  m_t << "<a name=\"" << lineAnchor << "\"></a><span class=\"lineno\">";
+  if (writeLineAnchor) m_t << "<a id=\"" << lineAnchor << "\" name=\"" << lineAnchor << "\"></a>";
+  m_t << "<span class=\"lineno\">";
   if (!filename.isEmpty())
   {
     _writeCodeLink("line",ref,filename,anchor,lineNumber,QCString());
@@ -716,16 +721,22 @@ void HtmlCodeGenerator::writeLineNumber(const QCString &ref,const QCString &file
     codify(lineNumber);
   }
   m_t << "</span>";
-  m_t << "&#160;";
   m_col=0;
 }
 
-void HtmlCodeGenerator::writeCodeLink(const QCString &ref,const QCString &f,
+void HtmlCodeGenerator::writeCodeLink(CodeSymbolType type,
+                                      const QCString &ref,const QCString &f,
                                       const QCString &anchor, const QCString &name,
                                       const QCString &tooltip)
 {
-  //printf("writeCodeLink(ref=%s,f=%s,anchor=%s,name=%s,tooltip=%s)\n",ref,f,anchor,name,tooltip);
-  _writeCodeLink("code",ref,f,anchor,name,tooltip);
+  const char *hl = codeSymbolType2Str(type);
+  QCString hlClass = "code";
+  if (hl)
+  {
+    hlClass+=" hl_";
+    hlClass+=hl;
+  }
+  _writeCodeLink(hlClass,ref,f,anchor,name,tooltip);
 }
 
 void HtmlCodeGenerator::_writeCodeLink(const QCString &className,
@@ -872,7 +883,7 @@ void HtmlCodeGenerator::endFontClass()
 
 void HtmlCodeGenerator::writeCodeAnchor(const QCString &anchor)
 {
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlCodeGenerator::startCodeFragment(const QCString &)
@@ -895,7 +906,7 @@ HtmlGenerator::HtmlGenerator() : OutputGenerator(Config_getString(HTML_OUTPUT)),
 {
 }
 
-HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(og.m_codeGen)
+HtmlGenerator::HtmlGenerator(const HtmlGenerator &og) : OutputGenerator(og), m_codeGen(m_t)
 {
 }
 
@@ -971,6 +982,7 @@ void HtmlGenerator::init()
   {
     mgr.copyResource("svgpan.js",dname);
   }
+
   if (!Config_getBool(DISABLE_INDEX) && Config_getBool(HTML_DYNAMIC_MENUS))
   {
     mgr.copyResource("menu.js",dname);
@@ -990,6 +1002,13 @@ void HtmlGenerator::init()
   }
 }
 
+void HtmlGenerator::cleanup()
+{
+  QCString dname = Config_getString(HTML_OUTPUT);
+  Dir d(dname.str());
+  clearSubDirs(d);
+}
+
 /// Additional initialization after indices have been created
 void HtmlGenerator::writeTabData()
 {
@@ -1005,6 +1024,7 @@ void HtmlGenerator::writeTabData()
   mgr.copyResource("nav_f.lum",dname);
   mgr.copyResource("bc_s.luma",dname);
   mgr.copyResource("doxygen.svg",dname);
+  Doxygen::indexList->addImageFile("doxygen.svg");
   mgr.copyResource("closed.luma",dname);
   mgr.copyResource("open.luma",dname);
   mgr.copyResource("bdwn.luma",dname);
@@ -1018,6 +1038,7 @@ void HtmlGenerator::writeTabData()
   //  img.save(dname+"/nav_g.png");
   //}
   mgr.copyResource("nav_g.png",dname);
+  Doxygen::indexList->addImageFile("nav_g.png");
 }
 
 void HtmlGenerator::writeSearchData(const QCString &dname)
@@ -1122,9 +1143,9 @@ void HtmlGenerator::startFile(const QCString &name,const QCString &,
   if (searchEngine /*&& !generateTreeView*/)
   {
     m_t << "<script type=\"text/javascript\">\n";
-    m_t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+    m_t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     m_t << "var searchBox = new SearchBox(\"searchBox\", \""
-        << m_relPath<< "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+        << m_relPath<< "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
     m_t << "/* @license-end */\n";
     m_t << "</script>\n";
   }
@@ -1279,7 +1300,7 @@ void HtmlGenerator::startDoxyAnchor(const QCString &,const QCString &,
                                     const QCString &anchor, const QCString &,
                                     const QCString &)
 {
-  m_t << "<a id=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
 }
 
 void HtmlGenerator::endDoxyAnchor(const QCString &,const QCString &)
@@ -1459,7 +1480,7 @@ void HtmlGenerator::startSection(const QCString &lab,const QCString &,SectionTyp
     case SectionType::Paragraph:     m_t << "\n\n<h5>"; break;
     default: ASSERT(0); break;
   }
-  m_t << "<a id=\"" << lab << "\"></a>";
+  m_t << "<a id=\"" << lab << "\" name=\"" << lab << "\"></a>";
 }
 
 void HtmlGenerator::endSection(const QCString &,SectionType type)
@@ -1773,7 +1794,7 @@ void HtmlGenerator::startMemberHeader(const QCString &anchor, int typ)
   m_t << "<tr class=\"heading\"><td colspan=\"" << typ << "\"><h2 class=\"groupheader\">";
   if (!anchor.isEmpty())
   {
-    m_t << "<a name=\"" << anchor << "\"></a>\n";
+    m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>\n";
   }
 }
 
@@ -2273,7 +2294,6 @@ static void endQuickIndexItem(TextStream &t,const QCString &l)
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
-  bool showFiles = Config_getBool(SHOW_FILES);
   bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
   switch (kind)
   {
@@ -2291,8 +2311,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ClassIndex:         return annotatedClasses>0;
     case LayoutNavEntry::ClassHierarchy:     return hierarchyClasses>0;
     case LayoutNavEntry::ClassMembers:       return documentedClassMembers[CMHL_All]>0;
-    case LayoutNavEntry::Files:              return documentedHtmlFiles>0 && showFiles;
-    case LayoutNavEntry::FileList:           return documentedHtmlFiles>0 && showFiles;
+    case LayoutNavEntry::Files:              return documentedFiles>0;
+    case LayoutNavEntry::FileList:           return documentedFiles>0;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::Interfaces:         return annotatedInterfaces>0;
@@ -2480,7 +2500,7 @@ static void writeDefaultQuickLinks(TextStream &t,bool compact,
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menudata.js\"></script>\n";
     t << "<script type=\"text/javascript\" src=\"" << relPath << "menu.js\"></script>\n";
     t << "<script type=\"text/javascript\">\n";
-    t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+    t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
     t << "$(function() {\n";
     t << "  initMenu('" << relPath << "',"
       << (searchEngine?"true":"false") << ","
@@ -2563,7 +2583,7 @@ QCString HtmlGenerator::writeSplitBarAsString(const QCString &name,const QCStrin
      "  </div>\n"
      "</div>\n"
      "<script type=\"text/javascript\">\n"
-     "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n"
+     "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n"
      "$(document).ready(function(){initNavTree('") +
      QCString(addHtmlExtensionIfMissing(name)) +
      QCString("','") + relpath +
@@ -2660,9 +2680,9 @@ void HtmlGenerator::writeSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+      << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))
@@ -2716,9 +2736,9 @@ void HtmlGenerator::writeExternalSearchPage()
     t << "<!-- " << theTranslator->trGeneratedBy() << " Doxygen "
       << getDoxygenVersion() << " -->\n";
     t << "<script type=\"text/javascript\">\n";
-		t << "/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */\n";
+		t << "/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */\n";
 		t << "var searchBox = new SearchBox(\"searchBox\", \""
-      << "search\",false,'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
+      << "search\",'" << theTranslator->trSearch() << "','" << Doxygen::htmlFileExtension << "');\n";
 		t << "/* @license-end */\n";
     t << "</script>\n";
     if (!Config_getBool(DISABLE_INDEX))

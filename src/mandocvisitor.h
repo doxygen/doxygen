@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef _MANDOCVISITOR_H
-#define _MANDOCVISITOR_H
+#ifndef MANDOCVISITOR_H
+#define MANDOCVISITOR_H
 
 #include <iostream>
 

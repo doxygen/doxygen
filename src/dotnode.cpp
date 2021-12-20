@@ -96,30 +96,6 @@ static EdgeProperties umlEdgeProps =
   umlEdgeColorMap, umlArrowStyleMap, umlEdgeStyleMap
 };
 
-// Extracted from config setting "DOT_UML_DETAILS"
-enum class UmlDetailLevel
-{
-  Default, // == NO, the default setting
-  Full,    // == YES, include type and arguments
-  None     // == NONE, don't include compartments for attributes and methods
-};
-
-// Local helper function for extracting the configured detail level
-static UmlDetailLevel getUmlDetailLevelFromConfig()
-{
-  UmlDetailLevel result = UmlDetailLevel::Default;
-  QCString umlDetailsStr = Config_getEnum(DOT_UML_DETAILS).upper();
-  if (umlDetailsStr == "YES")
-  {
-    result=UmlDetailLevel::Full;
-  }
-  else if (umlDetailsStr == "NONE")
-  {
-    result=UmlDetailLevel::None;
-  }
-  return result;
-}
-
 static QCString escapeTooltip(const QCString &tooltip)
 {
   if (tooltip.isEmpty()) return tooltip;
@@ -155,6 +131,7 @@ static void writeBoxMemberList(TextStream &t,
     }
 
     int count=0;
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
     for (const auto &mma : *ml)
     {
       if (mma->getClassDef() == scope &&
@@ -170,7 +147,7 @@ static void writeBoxMemberList(TextStream &t,
         {
           t << prot << " ";
           QCString label;
-          if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+          if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
           {
             label+=mma->typeString();
             label+=" ";
@@ -178,7 +155,7 @@ static void writeBoxMemberList(TextStream &t,
           label+=mma->name();
           if (!mma->isObjCMethod() && (mma->isFunction() || mma->isSlot() || mma->isSignal()))
           {
-            if(getUmlDetailLevelFromConfig()==UmlDetailLevel::Full)
+            if (dotUmlDetails==DOT_UML_DETAILS_t::YES)
             {
               label+=mma->argsString();
             }
@@ -413,7 +390,8 @@ void DotNode::writeBox(TextStream &t,
 
     //printf("DotNode::writeBox for %s\n",qPrint(m_classDef->name()));
     t << "{" << convertLabel(m_label) << "\\n";
-    if (getUmlDetailLevelFromConfig()!=UmlDetailLevel::None)
+    static auto dotUmlDetails = Config_getEnum(DOT_UML_DETAILS);
+    if (dotUmlDetails!=DOT_UML_DETAILS_t::NONE)
     {
       t << "|";
       writeBoxMemberList(t,'+',m_classDef->getMemberList(MemberListType_pubAttribs),m_classDef,FALSE,&arrowNames);
@@ -482,11 +460,11 @@ void DotNode::writeBox(TextStream &t,
       int anchorPos = m_url.findRev('#');
       if (anchorPos==-1)
       {
-        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
       }
       else
       {
-        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }
@@ -816,43 +794,38 @@ void DotNode::colorConnectedNodes(int curColor)
   }
 }
 
+#define DEBUG_RENUMBERING 0
+
 void DotNode::renumberNodes(int &number)
 {
-  m_number = number++;
-  for (const auto &cn : m_children)
+  if (!isRenumbered())
   {
-    if (!cn->isRenumbered())
+#if DEBUG_RENUMBERING
+    static int level = 0;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("> %s old = %d new = %d\n",qPrint(m_label),m_number,number);
+    level++;
+#endif
+    m_number = number++;
+    markRenumbered();
+    for (const auto &cn : m_children)
     {
-      cn->markRenumbered();
       cn->renumberNodes(number);
     }
+    for (const auto &pn : m_parents)
+    {
+      pn->renumberNodes(number);
+    }
+#if DEBUG_RENUMBERING
+    level--;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("< %s assigned = %d\n",qPrint(m_label),m_number);
+#endif
   }
 }
 
-const DotNode *DotNode::findDocNode() const
-{
-  if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",qPrint(m_label));
-  for (const auto &pn : m_parents)
-  {
-    if (!pn->hasDocumentation())
-    {
-      pn->markHasDocumentation();
-      const DotNode *dn = pn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  for (const auto &cn : m_children)
-  {
-    if (!cn->hasDocumentation())
-    {
-      cn->markHasDocumentation();
-      const DotNode *dn = cn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  return 0;
-}
 
 
 

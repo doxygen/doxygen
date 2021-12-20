@@ -89,18 +89,35 @@ QVariant &InputBool::value()
   return m_value;
 }
 
-void InputBool::update()
+bool InputBool::convertToBool(const QVariant &value,bool &isValid)
 {
-  QString v = m_value.toString().toLower();
+  QString v = value.toString().toLower();
   if (v==QString::fromLatin1("yes") || v==QString::fromLatin1("true") ||
       v==QString::fromLatin1("1")   || v==QString::fromLatin1("all"))
   {
-    m_state = true;
+    isValid = true;
+    return true;
   }
   else if (v==QString::fromLatin1("no") || v==QString::fromLatin1("false") ||
            v==QString::fromLatin1("0")  || v==QString::fromLatin1("none"))
   {
-    m_state = false;
+    isValid = true;
+    return false;
+  }
+  else
+  {
+    isValid = false;
+    return false;
+  }
+}
+
+void InputBool::update()
+{
+  bool isValid=false;
+  bool b = convertToBool(m_value,isValid);
+  if (isValid)
+  {
+    m_state = b;
   }
   else
   {

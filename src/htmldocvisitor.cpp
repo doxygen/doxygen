@@ -141,7 +141,9 @@ static bool mustBeOutsideParagraph(const DocNode *n)
         case DocNode::Kind_Verbatim:
           {
             DocVerbatim *dv = (DocVerbatim*)n;
-            return dv->type()!=DocVerbatim::HtmlOnly || dv->isBlock();
+            DocVerbatim::Type t = dv->type();
+            if (t == DocVerbatim::JavaDocCode || t == DocVerbatim::JavaDocLiteral) return FALSE;
+            return t!=DocVerbatim::HtmlOnly || dv->isBlock();
           }
         case DocNode::Kind_StyleChange:
           return ((DocStyleChange*)n)->style()==DocStyleChange::Preformatted ||
@@ -532,6 +534,14 @@ void HtmlDocVisitor::visit(DocVerbatim *s)
       m_t << "</pre>";
       forceStartParagraph(s);
       break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<code class=\"JavaDocCode\">";
+      filter(s->text(), true);
+      m_t << "</code>";
+      break;
     case DocVerbatim::HtmlOnly:
       {
         if (s->isBlock()) forceEndParagraph(s);
@@ -874,7 +884,7 @@ void HtmlDocVisitor::visit(DocFormula *f)
     filterQuotedCdataAttr(f->text());
     m_t << "\"";
     m_t << " src=\"" << f->relPath() << f->name();
-    if (Config_getEnum(HTML_FORMULA_FORMAT)=="svg")
+    if (Config_getEnum(HTML_FORMULA_FORMAT)==HTML_FORMULA_FORMAT_t::svg)
     {
       m_t << ".svg";
     }
@@ -907,7 +917,7 @@ void HtmlDocVisitor::visit(DocIndexEntry *e)
   {
     anchor.prepend(e->member()->anchor()+"_");
   }
-  m_t << "<a name=\"" << anchor << "\"></a>";
+  m_t << "<a id=\"" << anchor << "\" name=\"" << anchor << "\"></a>";
   //printf("*** DocIndexEntry: word='%s' scope='%s' member='%s'\n",
   //       qPrint(e->entry()),
   //       e->scope()  ? qPrint(e->scope()->name())  : "<null>",
@@ -1887,15 +1897,21 @@ void HtmlDocVisitor::visitPost(DocRef *ref)
 void HtmlDocVisitor::visitPre(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  QCString refName=addHtmlExtensionIfMissing(ref->file());
-  m_t << "<li><a href=\"" << refName << "#" << ref->anchor() << "\">";
-
+  if (!ref->file().isEmpty())
+  {
+    m_t << "<li>";
+    startLink(ref->ref(),ref->file(),ref->relPath(),ref->isSubPage() ? QCString() : ref->anchor());
+  }
 }
 
-void HtmlDocVisitor::visitPost(DocSecRefItem *)
+void HtmlDocVisitor::visitPost(DocSecRefItem *ref)
 {
   if (m_hide) return;
-  m_t << "</a></li>\n";
+  if (!ref->file().isEmpty())
+  {
+    endLink();
+    m_t << "</li>\n";
+  }
 }
 
 void HtmlDocVisitor::visitPre(DocSecRefList *s)
@@ -2142,7 +2158,7 @@ void HtmlDocVisitor::visitPost(DocParBlock *)
 
 
 
-void HtmlDocVisitor::filter(const QCString &str)
+void HtmlDocVisitor::filter(const QCString &str, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   const char *p=str.data();
@@ -2152,6 +2168,7 @@ void HtmlDocVisitor::filter(const QCString &str)
     c=*p++;
     switch(c)
     {
+      case '\n': if(retainNewline) m_t << "<br/>"; m_t << c; break;
       case '<':  m_t << "&lt;"; break;
       case '>':  m_t << "&gt;"; break;
       case '&':  m_t << "&amp;"; break;

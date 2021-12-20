@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef _MSC_H
-#define _MSC_H
+#ifndef MSC_H
+#define MSC_H
 
 class QCString;
 class TextStream;

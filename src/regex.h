@@ -162,11 +162,11 @@ class Match
     /** Return a string representing the matching part. */
     std::string str() const { return m_subMatches[0].str(); }
 
-    /** Return the part of the string after the match */
-    SubMatch suffix() const { SubMatch m(m_str); m.setMatch(0,position()); return m; }
-
     /** Return the part of the string before the match */
-    SubMatch prefix() const
+    SubMatch prefix() const { SubMatch m(m_str); m.setMatch(0,position()); return m; }
+
+    /** Return the part of the string after the match */
+    SubMatch suffix() const
     {
       SubMatch m(m_str);
       if (m_str)
