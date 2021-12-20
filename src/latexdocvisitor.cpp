@@ -2011,7 +2011,7 @@ void LatexDocVisitor::startDotFile(const QCString &fileName,
   baseName.prepend("dot_");
   QCString outDir = Config_getString(LATEX_OUTPUT);
   QCString name = fileName;
-  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS,srcFile,srcLine);
+  writeDotGraphFromFile(name,outDir,baseName,GOF_EPS,EOF_LaTeX,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -2042,7 +2042,7 @@ void LatexDocVisitor::startMscFile(const QCString &fileName,
   baseName.prepend("msc_");
 
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS,srcFile,srcLine);
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_EPS,MSC_LATEX,srcFile,srcLine);
   visitPreStart(m_t,hasCaption, baseName, width, height);
 }
 
@@ -2062,7 +2062,7 @@ void LatexDocVisitor::writeMscFile(const QCString &baseName, DocVerbatim *s)
     shortName=shortName.right(shortName.length()-i-1);
   }
   QCString outDir = Config_getString(LATEX_OUTPUT);
-  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS,s->srcFile(),s->srcLine());
+  writeMscGraphFromFile(baseName+".msc",outDir,shortName,MSC_EPS,MSC_LATEX,s->srcFile(),s->srcLine());
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(),s->height());
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());
@@ -2130,7 +2130,8 @@ void LatexDocVisitor::writePlantUMLFile(const QCString &baseName, DocVerbatim *s
   }
   QCString outDir = Config_getString(LATEX_OUTPUT);
   PlantumlManager::instance().generatePlantUMLOutput(baseName,outDir,
-                              s->useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS);
+                              s->useBitmap() ? PlantumlManager::PUML_BITMAP : PlantumlManager::PUML_EPS,
+                              PlantumlManager::PUML_LATEX);
   visitPreStart(m_t, s->hasCaption(), shortName, s->width(), s->height());
   visitCaption(this, s->children());
   visitPostEnd(m_t, s->hasCaption());

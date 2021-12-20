@@ -133,7 +133,7 @@ QCString DotGraph::writeGraph(
 
   m_regenerate = prepareDotFile();
 
-  if (!m_doNotAddImageToIndex) Doxygen::indexList->addImageFile(imgName());
+  if (!m_doNotAddImageToIndex && ef == EOF_Html) Doxygen::indexList->addImageFile(imgName());
 
   generateCode(t);
 

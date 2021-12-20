@@ -1890,7 +1890,7 @@ void RTFDocVisitor::writeDotFile(const QCString &filename, bool hasCaption,
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,srcFile,srcLine);
+  writeDotGraphFromFile(filename,outDir,baseName,GOF_BITMAP,EOF_Rtf,srcFile,srcLine);
   QCString imgExt = getDotImageExtension();
   includePicturePreRTF(baseName + "." + imgExt, true, hasCaption);
 }
@@ -1909,7 +1909,7 @@ void RTFDocVisitor::writeMscFile(const QCString &fileName, bool hasCaption,
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString(RTF_OUTPUT);
-  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP,srcFile,srcLine);
+  writeMscGraphFromFile(fileName,outDir,baseName,MSC_BITMAP,MSC_RTF,srcFile,srcLine);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }
 
@@ -1935,6 +1935,6 @@ void RTFDocVisitor::writePlantUMLFile(const QCString &fileName, bool hasCaption)
     baseName=baseName.right(baseName.length()-i-1);
   }
   QCString outDir = Config_getString(RTF_OUTPUT);
-  PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP);
+  PlantumlManager::instance().generatePlantUMLOutput(fileName,outDir,PlantumlManager::PUML_BITMAP,PlantumlManager::PUML_RTF);
   includePicturePreRTF(baseName + ".png", true, hasCaption);
 }

@@ -1856,7 +1856,7 @@ class ClassContext::Private : public DefinitionContext<ClassContext::Private>
               QCString name = convertToHtml(m_classDef->displayName());
               d.writeImage(tt,g_globals.outputDir,
                            relPathAsString(),
-                           m_classDef->getOutputFileBase());
+                           m_classDef->getOutputFileBase(),ClassDiagram::DIAG_HTML);
               if (!tt.empty())
               {
                 t << "<div class=\"center\">\n";

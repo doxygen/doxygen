@@ -1776,10 +1776,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // check if GENERATE_TREEVIEW and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool(GENERATE_TREEVIEW) && Config_getBool(GENERATE_HTMLHELP))
+  // check if GENERATE_TREEVIEW is not used in combination with GENERATE_HTMLHELP or GENERATE_QHP
+  if (Config_getBool(GENERATE_TREEVIEW) && (Config_getBool(GENERATE_HTMLHELP) || Config_getBool(GENERATE_QHP)))
   {
-    err("When enabling GENERATE_HTMLHELP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
+    err("When enabling GENERATE_HTMLHELP or GENERATE_QHP the tree view (GENERATE_TREEVIEW) should be disabled. I'll do it for you.\n");
     Config_updateBool(GENERATE_TREEVIEW,FALSE);
   }
 
@@ -1792,10 +1792,10 @@ void Config::checkAndCorrect(bool quiet, const bool check)
   }
 
   //------------------------
-  // check if SEARCHENGINE and GENERATE_HTMLHELP are both enabled
-  if (Config_getBool(SEARCHENGINE) && Config_getBool(GENERATE_HTMLHELP))
+  // check if SEARCHENGINE is not used in combination with GENERATE_HTMLHELP or GENERATE_QHP
+  if (Config_getBool(SEARCHENGINE) && (Config_getBool(GENERATE_HTMLHELP) || Config_getBool(GENERATE_QHP)))
   {
-    err("When enabling GENERATE_HTMLHELP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
+    err("When enabling GENERATE_HTMLHELP or GENERATE_QHP the search engine (SEARCHENGINE) should be disabled. I'll do it for you.\n");
     Config_updateBool(SEARCHENGINE,FALSE);
   }
 

@@ -32,7 +32,6 @@
 #include "util.h"
 #include "linkedmap.h"
 #include "regex.h"
-#include "fileinfo.h"
 
 //----------------------------------------------------------------------------
 
