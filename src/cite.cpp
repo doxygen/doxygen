@@ -24,6 +24,7 @@
 #include "debug.h"
 #include "fileinfo.h"
 #include "dir.h"
+#include "markdown.h"
 
 #include <map>
 #include <string>
@@ -135,7 +136,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
     {
       // assumption entry like: "@book { name," or "@book { name" (spaces optional)
       int j = line.find('{');
-      // when no {, go hunting for it
+      // when no '{', go hunting for it
       while (j==-1 && getline(f,lineStr))
       {
         line = lineStr;
@@ -143,7 +144,7 @@ void CitationManager::insertCrossReferencesForBibFile(const QCString &bibFile)
       }
       // search for the name
       citeName = "";
-      if (!f.eof() && j!=-1) // to prevent something like "@manual ," and no { found
+      if (!f.eof() && j!=-1) // to prevent something like "@manual ," and no '{' found
       {
         int k = line.find(',',j);
         j++;
@@ -304,7 +305,7 @@ void CitationManager::generatePage()
       if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
       else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
       // determine text to use at the location of the @cite command
-      if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
+      if (insideBib && ((i=line.find("name=\"CITEREF_"))!=-1 || (i=line.find("href=\"#CITEREF_"))!=-1))
       {
         int j=line.find("\">[");
         int k=line.find("]</a>");
@@ -315,7 +316,7 @@ void CitationManager::generatePage()
           uint uk=(uint)k;
           QCString label = line.mid(ui+14,uj-ui-14);
           QCString number = line.mid(uj+2,uk-uj-1);
-          label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
+          label = undoMarkdown(label);
           line = line.left(ui+14) + label + line.right(line.length()-uj);
           auto it = p->entries.find(label.str());
           //printf("label='%s' number='%s' => %p\n",qPrint(label),qPrint(number),it->second.get());

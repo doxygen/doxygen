@@ -3107,6 +3107,15 @@ QCString markdownFileNameToId(const QCString &fileName)
   return res;
 }
 
+QCString undoMarkdown(const QCString &name)
+{
+  static bool markdownSupport = Config_getBool(MARKDOWN_SUPPORT);
+  if (!markdownSupport) return name;
+  QCString localName = substitute(name,"&ndash;","--");
+  localName = substitute(localName,"&mdash;","---");
+  return localName;
+}
+
 //---------------------------------------------------------------------------
 
 struct MarkdownOutlineParser::Private

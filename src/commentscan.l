@@ -58,6 +58,7 @@ typedef yyguts_t *yyscan_t;
 #include "section.h"
 #include "util.h"
 #include "reflist.h"
+#include "markdown.h"
 
 #define USE_STATE2STRING 0
 
@@ -488,8 +489,8 @@ FILEECHAR [a-z_A-Z0-9\x80-\xFF\-\+@&#]
 FILE      ({FILESCHAR}*{FILEECHAR}+("."{FILESCHAR}*{FILEECHAR}+)*)|("\""[^\n\"]*"\"")
 ID        [$a-z_A-Z\x80-\xFF][$a-z_A-Z0-9\x80-\xFF]*
 LABELID   [a-z_A-Z\x80-\xFF][a-z_A-Z0-9\x80-\xFF\-]*
-CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
-CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]*
+CITESCHAR [&;a-z_A-Z0-9\x80-\xFF\-\?]
+CITEECHAR [&;a-z_A-Z0-9\x80-\xFF\-\+:\/\?]*
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
 SCOPEID   {ID}({ID}*{BN}*"::"{BN}*)*({ID}?)
 SCOPENAME "$"?(({ID}?{BN}*("::"|"."){BN}*)*)((~{BN}*)?{ID})
@@ -1919,7 +1920,7 @@ STopt  [^\n@\\]*
 
 <CiteLabel>{CITEID}                     { // found argument
                                           addCite(yyscanner);
-                                          addOutput(yyscanner,yytext);
+                                          //addOutput(yyscanner,yytext); // will be done in addCite
                                           BEGIN(Comment);
                                         }
 <CiteLabel>{DOCNL}                      { // missing argument
@@ -3100,6 +3101,8 @@ static void addCite(yyscan_t yyscanner)
     name=yytext+1;
     name=name.left((int)yyleng-2);
   }
+  name = undoMarkdown(name);
+  addOutput(yyscanner,name.data()); 
   CitationManager::instance().insert(name);
 }
 

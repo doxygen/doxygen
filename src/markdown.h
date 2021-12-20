@@ -28,6 +28,9 @@ class Entry;
 //QCString processMarkdown(const QCString &fileName,const int lineNr,Entry *e,const QCString &s);
 QCString markdownFileNameToId(const QCString &fileName);
 
+/* undo part of the markdown settings e.g.g for the \cite command */
+QCString undoMarkdown(const QCString &name);
+
 /// Helper class to process markdown formatted text
 class Markdown
 {
