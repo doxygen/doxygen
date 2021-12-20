@@ -178,7 +178,7 @@ CCS   "/\*"
   // C end comment
 CCE   "*\/"
   // Cpp comment 
-CPPC  "/\/"
+CPPC  "//"
 
   // Optional any character
 ANYopt .*
@@ -327,13 +327,16 @@ SLASHopt [/]*
 				     yyextra->inRoseComment=TRUE;
 				     BEGIN(SComment);
   				   }
-<Scan>{CPPC}[!\/]/.*\n[ \t]*{CPPC}[|\/][ \t]*[@\\]"}" { // next line contains an end marker, see bug 752712
+<Scan>{CPPC}[!\/]/.*\n[ \t]*{CPPC}[!\/][ \t]*[@\\]"}" { // next line contains an end marker, see bug 752712
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->readLineCtx=YY_START;
 				     BEGIN(ReadLine);
                                    }
-<Scan>{CPPC}/.*\n	                   { /* one line C++ comment */ 
+<Scan>{CPPC}[^!/].*\n              { /* one line normal C++ comment */
+                                     copyToOutput(yyscanner,yytext,(int)yyleng);
+                                   }
+<Scan>{CPPC}/.*\n	           { /* one line doxygen C++ comment */
 				     yyextra->inSpecialComment=yytext[2]=='/' || yytext[2]=='!';
   				     copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->readLineCtx=YY_START;
