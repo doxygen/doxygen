@@ -352,7 +352,6 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
   }
 }
 
-
 // Check if data contains a block command. If so returned the command
 // that ends the block. If not an empty string is returned.
 // Note When offset>0 character position -1 will be inspected.
@@ -373,9 +372,55 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \xmlonly..\endxmlonly
 // \rtfonly..\endrtfonly
 // \manonly..\endmanonly
+// \startuml..\enduml
 QCString Markdown::isBlockCommand(const char *data,int offset,int size)
 {
   TRACE(data);
+
+  using EndBlockFunc = QCString(*)(const std::string &blockName,bool openBracket,char nextChar);
+
+  static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
+  {
+    return "end"+blockName;
+  };
+  static const auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
+  {
+    return openBracket ? QCString("}") : "end"+blockName;
+  };
+  static const auto getEndUml     = [](const std::string &blockName,bool,char) -> QCString
+  {
+    return "enduml";
+  };
+  static const auto getEndFormula = [](const std::string &blockName,bool,char nextChar) -> QCString
+  {
+    switch (nextChar)
+    {
+      case '$': return "f$";
+      case '(': return "f)";
+      case '[': return "f]";
+      case '{': return "f}";
+    }
+    return "";
+  };
+
+  // table mapping a block start command to a function that can return the matching end block string
+  static const std::unordered_map<std::string,EndBlockFunc> blockNames =
+  {
+    { "dot",         getEndBlock   },
+    { "code",        getEndCode    },
+    { "msc",         getEndBlock   },
+    { "verbatim",    getEndBlock   },
+    { "iliteral",    getEndBlock   },
+    { "latexonly",   getEndBlock   },
+    { "htmlonly",    getEndBlock   },
+    { "xmlonly",     getEndBlock   },
+    { "rtfonly",     getEndBlock   },
+    { "manonly",     getEndBlock   },
+    { "docbookonly", getEndBlock   },
+    { "startuml",    getEndUml     },
+    { "f",           getEndFormula }
+  };
+
   bool openBracket = offset>0 && data[-1]=='{';
   bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
   if (isEscaped) return QCString();
@@ -383,59 +428,15 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   int end=1;
   while (end<size && (data[end]>='a' && data[end]<='z')) end++;
   if (end==1) return QCString();
-  QCString blockName;
-  convertStringFragment(blockName,data+1,end-1);
-  if (blockName=="code" && openBracket)
+  std::string blockName(data+1,end-1);
+  auto it = blockNames.find(blockName);
+  QCString result;
+  if (it!=blockNames.end()) // there is a function assigned
   {
-    TRACE_RESULT("}");
-    return "}";
+    result = it->second(blockName, openBracket, end<size ? data[end] : 0);
   }
-  else if (blockName=="dot"         ||
-           blockName=="code"        ||
-           blockName=="msc"         ||
-           blockName=="verbatim"    ||
-           blockName=="iliteral"    ||
-           blockName=="latexonly"   ||
-           blockName=="htmlonly"    ||
-           blockName=="xmlonly"     ||
-           blockName=="rtfonly"     ||
-           blockName=="manonly"     ||
-           blockName=="docbookonly"
-     )
-  {
-    QCString result = "end"+blockName;
-    TRACE_RESULT(result);
-    return result;
-  }
-  else if (blockName=="startuml")
-  {
-    TRACE_RESULT("enduml");
-    return "enduml";
-  }
-  else if (blockName=="f" && end<size)
-  {
-    if (data[end]=='$')
-    {
-      TRACE_RESULT("f$");
-      return "f$";
-    }
-    else if (data[end]=='(')
-    {
-      TRACE_RESULT("f)");
-      return "f)";
-    }
-    else if (data[end]=='[')
-    {
-      TRACE_RESULT("f]");
-      return "f]";
-    }
-    else if (data[end]=='{')
-    {
-      TRACE_RESULT("f}");
-      return "f}";
-    }
-  }
-  return QCString();
+  TRACE_RESULT(result)
+  return result;
 }
 
 /** looks for the next emph char, skipping other constructs, and
@@ -1375,7 +1376,7 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
       i++;
     }
   }
-  if (size>1 && data[0]=='\\')
+  if (size>1 && data[0]=='\\') // escaped characters
   {
     char c=data[1];
     if (c=='[' || c==']' || c=='*' || c=='!' || c=='(' || c==')' || c=='`' || c=='_')
@@ -1408,16 +1409,19 @@ void Markdown::processInline(const char *data,int size)
   Action_t action;
   while (i<size)
   {
+    // skip over character that do not trigger a specific action
     while (end<size && ((action=m_actions[(uchar)data[end]])==0)) end++;
+    // and add them to the output
     m_out.addStr(data+i,end-i);
     if (end>=size) break;
     i=end;
+    // do the action matching a special character at i
     end = action(data+i,i,size-i);
-    if (end<=0)
+    if (end<=0) // update end
     {
       end=i+1-end;
     }
-    else
+    else // skip until end
     {
       i+=end;
       end=i;
