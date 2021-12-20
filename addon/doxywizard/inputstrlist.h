@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _INPUTSTRLIST_H
-#define _INPUTSTRLIST_H
+#ifndef INPUTSTRLIST_H
+#define INPUTSTRLIST_H
 
 #include "input.h"
 

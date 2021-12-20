@@ -25,7 +25,8 @@ class XMLCodeGenerator : public CodeOutputInterface
     virtual ~XMLCodeGenerator() { }
 
     void codify(const QCString &text) override;
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip) override;
     void writeTooltip(const QCString &, const DocLinkInfo &, const QCString &,
@@ -37,7 +38,7 @@ class XMLCodeGenerator : public CodeOutputInterface
     void endFontClass() override;
     void writeCodeAnchor(const QCString &) override;
     void writeLineNumber(const QCString &extRef,const QCString &compId,
-                         const QCString &anchorId,int l) override;
+                         const QCString &anchorId,int l,bool writeLineAnchor) override;
     void setCurrentDoc(const Definition *,const QCString &,bool) override {}
     void addWord(const QCString &,bool) override {}
     void startCodeFragment(const QCString &) override;

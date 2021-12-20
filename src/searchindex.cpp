@@ -472,7 +472,7 @@ void SearchIndexExternal::setCurrentDoc(const Definition *ctx,const QCString &an
 {
   static QCString extId = stripPath(Config_getString(EXTERNAL_SEARCH_ID));
   QCString baseName = isSourceFile ? (toFileDef(ctx))->getSourceFileBase() : ctx->getOutputFileBase();
-  QCString url = baseName + Doxygen::htmlFileExtension;
+  QCString url = addHtmlExtensionIfMissing(baseName);
   if (!anchor.isEmpty()) url+=QCString("#")+anchor;
   QCString key = extId+";"+url;
 
@@ -904,7 +904,6 @@ void createJavaScriptSearchIndex()
 
 void writeJavaScriptSearchIndex()
 {
-  int cnt = 0;
   // write index files
   QCString searchDirName = Config_getString(HTML_OUTPUT)+"/search";
 
@@ -913,6 +912,7 @@ void writeJavaScriptSearchIndex()
     int p=0;
     for (const auto &kv : sii.symbolMap)
     {
+      int cnt = 0;
       QCString baseName;
       baseName.sprintf("%s_%x",sii.name.data(),p);
 

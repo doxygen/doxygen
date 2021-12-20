@@ -436,9 +436,9 @@
       <xsd:element name="latexonly" type="xsd:string" />
       <xsd:element name="docbookonly" type="xsd:string" />
       <xsd:element name="image" type="docImageType" />
-      <xsd:element name="dot" type="docImageType" />
-      <xsd:element name="msc" type="docImageType" />
-      <xsd:element name="plantuml" type="docImageType" />
+      <xsd:element name="dot" type="docDotMscType" />
+      <xsd:element name="msc" type="docDotMscType" />
+      <xsd:element name="plantuml" type="docPlantumlType" />
       <xsd:element name="anchor" type="docAnchorType" />
       <xsd:element name="formula" type="docFormulaType" />
       <xsd:element name="ref" type="docRefTextType" />
@@ -459,6 +459,8 @@
       <xsd:element name="preformatted" type="docMarkupType" />
       <xsd:element name="programlisting" type="listingType" />
       <xsd:element name="verbatim" type="xsd:string" />
+      <xsd:element name="javadocliteral" type="xsd:string" />
+      <xsd:element name="javadoccode" type="xsd:string" />
       <xsd:element name="indexentry" type="docIndexEntryType" />
       <xsd:element name="orderedlist" type="docListType" />
       <xsd:element name="itemizedlist" type="docListType" />
@@ -467,9 +469,9 @@
       <xsd:element name="variablelist" type="docVariableListType" />
       <xsd:element name="table" type="docTableType" />
       <xsd:element name="heading" type="docHeadingType" />
-      <xsd:element name="dotfile" type="docImageType" />
-      <xsd:element name="mscfile" type="docImageType" />
-      <xsd:element name="diafile" type="docImageType" />
+      <xsd:element name="dotfile" type="docImageFileType" />
+      <xsd:element name="mscfile" type="docImageFileType" />
+      <xsd:element name="diafile" type="docImageFileType" />
       <xsd:element name="toclist" type="docTocListType" />
       <xsd:element name="language" type="docLanguageType" />
       <xsd:element name="parameterlist" type="docParamListType" />
@@ -520,6 +522,7 @@
     <xsd:sequence>
       <xsd:element name="para" type="docParaType" minOccurs="0" maxOccurs="unbounded" />
     </xsd:sequence>
+    <xsd:attribute name="value" type="xsd:integer" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docSimpleSectType">
@@ -590,6 +593,7 @@
 
   <xsd:complexType name="docCaptionType" mixed="true">
     <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="id" type="xsd:string" /> 
   </xsd:complexType>
 
   <xsd:complexType name="docHeadingType" mixed="true">
@@ -606,6 +610,30 @@
     <xsd:attribute name="alt" type="xsd:string" use="optional"/>
     <xsd:attribute name="inline" type="DoxBool" use="optional"/>
     <xsd:attribute name="caption" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="docDotMscType" mixed="true">
+    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="width" type="xsd:string" use="optional"/>
+    <xsd:attribute name="height" type="xsd:string" use="optional"/>
+    <xsd:attribute name="caption" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="docImageFileType" mixed="true">
+    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="width" type="xsd:string" use="optional"/>
+    <xsd:attribute name="height" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="docPlantumlType" mixed="true">
+    <xsd:group ref="docTitleCmdGroup" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="name" type="xsd:string" use="optional"/>
+    <xsd:attribute name="width" type="xsd:string" use="optional"/>
+    <xsd:attribute name="height" type="xsd:string" use="optional"/>
+    <xsd:attribute name="caption" type="xsd:string" use="optional"/>
+    <xsd:attribute name="engine" type="DoxPlantumlEngine" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="docTocItemType" mixed="true">
@@ -916,6 +944,29 @@
       <xsd:enumeration value="latex" />
       <xsd:enumeration value="docbook" />
       <xsd:enumeration value="rtf" />
+      <xsd:enumeration value="xml" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="DoxPlantumlEngine">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="uml"/>
+      <xsd:enumeration value="bpm"/>
+      <xsd:enumeration value="wire"/>
+      <xsd:enumeration value="dot"/>
+      <xsd:enumeration value="ditaa"/>
+      <xsd:enumeration value="salt"/>
+      <xsd:enumeration value="math"/>
+      <xsd:enumeration value="latex"/>
+      <xsd:enumeration value="gantt"/>
+      <xsd:enumeration value="mindmap"/>
+      <xsd:enumeration value="wbs"/>
+      <xsd:enumeration value="yaml"/>
+      <xsd:enumeration value="creole"/>
+      <xsd:enumeration value="json"/>
+      <xsd:enumeration value="flow"/>
+      <xsd:enumeration value="board"/>
+      <xsd:enumeration value="git"/>
     </xsd:restriction>
   </xsd:simpleType>
 

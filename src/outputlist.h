@@ -141,10 +141,11 @@ class OutputList : public OutputDocInterface
     void writeObjectLink(const QCString &ref,const QCString &file,
                          const QCString &anchor, const QCString &name)
     { forall(&OutputGenerator::writeObjectLink,ref,file,anchor,name); }
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { forall(&OutputGenerator::writeCodeLink,ref,file,anchor,name,tooltip); }
+    { forall(&OutputGenerator::writeCodeLink,type,ref,file,anchor,name,tooltip); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo)
     { forall(&OutputGenerator::writeTooltip,id,docInfo,decl,desc,defInfo,declInfo); }
@@ -246,8 +247,8 @@ class OutputList : public OutputDocInterface
     void endCodeLine()
     { forall(&OutputGenerator::endCodeLine); }
     void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,
-                         int lineNumber)
-    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber); }
+                         int lineNumber, bool writeLineAnchor)
+    { forall(&OutputGenerator::writeLineNumber,ref,file,anchor,lineNumber,writeLineAnchor); }
     void startEmphasis()
     { forall(&OutputGenerator::startEmphasis); }
     void endEmphasis()

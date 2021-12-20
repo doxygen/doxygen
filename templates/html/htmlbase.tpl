@@ -91,11 +91,11 @@ MathJax.Hub.Config({
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
  <tbody>
- <tr style="height: 56px;">
+ <tr id="projectrow">
  {% if config.PROJECT_LOGO %}
   <td id="projectlogo"><img alt="Logo" src="{{ page.relPath }}{{ config.PROJECT_LOGO|stripPath }}"/></td>
  {% endif %}
-  <td id="projectalign" style="padding-left: 0.5em;">
+  <td id="projectalign">
  {% if config.PROJECT_NAME %}
    <div id="projectname">{{ config.PROJECT_NAME }}{% if config.PROJECT_NUMBER %}<span id="projectnumber">&#160;{{ config.PROJECT_NUMBER }}</span>{% endif %}
    </div>
@@ -156,7 +156,7 @@ MathJax.Hub.Config({
 {% if config.SEARCHENGINE %}
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",false,'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
+	var searchBox = new SearchBox("searchBox", "{{ page.relPath }}search",'{{ tr.search }}','{{ config.HTML_FILE_EXTENSION }}');
 /* @license-end */
 </script>
 {% endif %}
@@ -233,7 +233,10 @@ $(document).ready(function(){initNavTree('{{ page.fileName }}{% if page_postfix 
 {% block title %}
 {% if page.title %}
   <div class="headertitle">
-  <div class="title">{{ page.title }}</div></div>
+  <div class="title">{{ page.title }}
+  {% block ingroups %}
+  {% endblock %}
+  </div></div>
 {% endif %}
 {% endblock %}
 </div><!-- header -->

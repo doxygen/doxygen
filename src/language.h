@@ -19,8 +19,9 @@
 #define LANGUAGE_H
 
 #include "translator.h"
+#include "configvalues.h"
 
 extern Translator *theTranslator;
-extern bool setTranslator(const QCString &languageName);
+extern void setTranslator(OUTPUT_LANGUAGE_t languageName);
 
 #endif

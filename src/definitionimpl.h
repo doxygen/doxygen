@@ -66,15 +66,15 @@ class DefinitionImpl
     int getStartDefLine() const;
     int getStartBodyLine() const;
     int getEndBodyLine() const;
-    FileDef *getBodyDef() const;
+    const FileDef *getBodyDef() const;
     SrcLangExt getLanguage() const;
     const GroupList &partOfGroups() const;
     bool isLinkableViaGroup() const;
     const RefItemVector &xrefListItems() const;
     const Definition *findInnerCompound(const QCString &name) const;
     Definition *getOuterScope() const;
-    std::vector<const MemberDef *> getReferencesMembers() const;
-    std::vector<const MemberDef *> getReferencedByMembers() const;
+    const MemberVector &getReferencesMembers() const;
+    const MemberVector &getReferencedByMembers() const;
     bool hasSections() const;
     bool hasSources() const;
     bool hasBriefDescription() const;
@@ -89,7 +89,7 @@ class DefinitionImpl
     void setReference(const QCString &r);
     void addSectionsToDefinition(const std::vector<const SectionInfo*> &anchorList);
     void setBodySegment(int defLine,int bls,int ble);
-    void setBodyDef(FileDef *fd);
+    void setBodyDef(const FileDef *fd);
     void addSourceReferencedBy(const MemberDef *d);
     void addSourceReferences(const MemberDef *d);
     void setRefItems(const RefItemVector &sli);
@@ -117,8 +117,6 @@ class DefinitionImpl
     void setLocalName(const QCString &name);
     void addSectionsToIndex();
     void writeToc(OutputList &ol, const LocalToc &lt) const;
-    void setCookie(Definition::Cookie *cookie) const;
-    Definition::Cookie *cookie() const;
     void computeTooltip();
     void _setSymbolName(const QCString &name);
     QCString _symbolName() const;
@@ -187,15 +185,15 @@ class DefinitionMixin : public Base
     virtual int getStartDefLine() const { return m_impl.getStartDefLine(); }
     virtual int getStartBodyLine() const { return m_impl.getStartBodyLine(); }
     virtual int getEndBodyLine() const { return m_impl.getEndBodyLine(); }
-    virtual FileDef *getBodyDef() const { return m_impl.getBodyDef(); }
+    virtual const FileDef *getBodyDef() const { return m_impl.getBodyDef(); }
     virtual SrcLangExt getLanguage() const { return m_impl.getLanguage(); }
     virtual const GroupList &partOfGroups() const { return m_impl.partOfGroups(); }
     virtual bool isLinkableViaGroup() const { return m_impl.isLinkableViaGroup(); }
     virtual const RefItemVector &xrefListItems() const { return m_impl.xrefListItems(); }
     virtual const Definition *findInnerCompound(const QCString &name) const { return m_impl.findInnerCompound(name); }
     virtual Definition *getOuterScope() const { return m_impl.getOuterScope(); }
-    virtual std::vector<const MemberDef *> getReferencesMembers() const { return m_impl.getReferencesMembers(); }
-    virtual std::vector<const MemberDef *> getReferencedByMembers() const { return m_impl.getReferencedByMembers(); }
+    virtual const MemberVector &getReferencesMembers() const { return m_impl.getReferencesMembers(); }
+    virtual const MemberVector &getReferencedByMembers() const { return m_impl.getReferencedByMembers(); }
     virtual bool hasSections() const { return m_impl.hasSections(); }
     virtual bool hasSources() const { return m_impl.hasSources(); }
     virtual bool hasBriefDescription() const { return m_impl.hasBriefDescription(); }
@@ -219,7 +217,7 @@ class DefinitionMixin : public Base
     { m_impl.addSectionsToDefinition(anchorList); }
     virtual void setBodySegment(int defLine,int bls,int ble)
     { m_impl.setBodySegment(defLine,bls,ble); }
-    virtual void setBodyDef(FileDef *fd)
+    virtual void setBodyDef(const FileDef *fd)
     { m_impl.setBodyDef(fd); }
     virtual void addSourceReferencedBy(const MemberDef *md)
     { m_impl.addSourceReferencedBy(md); }
@@ -275,10 +273,6 @@ class DefinitionMixin : public Base
     { m_impl.addSectionsToIndex(); }
     virtual void writeToc(OutputList &ol, const LocalToc &lt) const
     { m_impl.writeToc(ol,lt); }
-    virtual void setCookie(Definition::Cookie *cookie) const
-    { m_impl.setCookie(cookie); }
-    virtual Definition::Cookie *cookie() const
-    { return m_impl.cookie(); }
     virtual void computeTooltip()
     { m_impl.computeTooltip(); }
     virtual void _setSymbolName(const QCString &name)
@@ -319,7 +313,7 @@ class DefinitionAliasMixin : public Base
 {
   public:
     DefinitionAliasMixin(const Definition *scope,const Definition *alias)
-      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias), m_cookie(0) {}
+      : m_impl(this,scope,alias), m_scope(scope), m_alias(alias) {}
 
     void init() { m_impl.init(); }
     void deinit() { m_impl.deinit(); }
@@ -395,7 +389,7 @@ class DefinitionAliasMixin : public Base
     { return m_alias->getStartBodyLine(); }
     virtual int getEndBodyLine() const
     { return m_alias->getEndBodyLine(); }
-    virtual FileDef *getBodyDef() const
+    virtual const FileDef *getBodyDef() const
     { return m_alias->getBodyDef(); }
     virtual SrcLangExt getLanguage() const
     { return m_alias->getLanguage(); }
@@ -409,9 +403,9 @@ class DefinitionAliasMixin : public Base
     { return m_alias->findInnerCompound(name); }
     virtual Definition *getOuterScope() const
     { return const_cast<Definition*>(m_scope); }
-    virtual std::vector<const MemberDef *> getReferencesMembers() const
+    virtual const MemberVector &getReferencesMembers() const
     { return m_alias->getReferencesMembers(); }
-    virtual std::vector<const MemberDef *> getReferencedByMembers() const
+    virtual const MemberVector &getReferencedByMembers() const
     { return m_alias->getReferencedByMembers(); }
     virtual bool hasSections() const
     { return m_alias->hasSections(); }
@@ -437,14 +431,11 @@ class DefinitionAliasMixin : public Base
     virtual DefinitionMutable *toDefinitionMutable_() { return 0; }
     virtual const DefinitionImpl *toDefinitionImpl_() const { return 0; }
 
-    virtual void setCookie(Definition::Cookie *cookie) const { delete m_cookie; m_cookie = cookie; }
-    virtual Definition::Cookie *cookie() const { return m_cookie; }
     virtual void _setSymbolName(const QCString &name) { m_symbolName = name; }
     virtual QCString _symbolName() const { return m_symbolName; }
     DefinitionAliasImpl m_impl;
     const Definition *m_scope;
     const Definition *m_alias;
-    mutable Definition::Cookie *m_cookie;
     QCString m_symbolName;
 };
 

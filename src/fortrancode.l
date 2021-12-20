@@ -32,6 +32,10 @@
 %option noyy_top_state
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -151,7 +155,7 @@ struct fortrancodeYY_state
   QCString      exampleName;
   QCString      exampleFile;
 
-  FileDef *     sourceFileDef = 0;
+  const FileDef *    sourceFileDef = 0;
   const Definition * currentDefinition = 0;
   const MemberDef *  currentMemberDef = 0;
   bool          includeCodeFragment = false;
@@ -258,9 +262,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 
 %x Start
 %x SubCall
-%x FuncDef
 %x ClassName
-%x ClassVar
 %x Subprog
 %x DocBlock
 %x Use
@@ -269,7 +271,6 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 %x Declaration
 %x DeclarationBinding
 %x DeclContLine
-%x Parameterlist
 %x String
 %x Subprogend
 
@@ -375,6 +376,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*>"import"{BS}/"\n"                    |
 <*>"import"{BS_}                        {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keywordtype");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -410,6 +412,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           BEGIN(ClassName);
                                         }
 <*>{LANGUAGE_BIND_SPEC}                 {  //
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -720,11 +723,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           endFontClass(yyscanner);
                                         }
 <*>"assignment"/{BS}"("{BS}"="{BS}")"   {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
 <*>"operator"/{BS}"("[^)]*")"           {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -929,20 +934,23 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
-                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
-                                QCString(),yyextra->yyLineNr);
+                                QCString(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
@@ -1035,13 +1043,13 @@ static void writeMultiLineCodeLink(yyscan_t yyscanner,CodeOutputInterface &ol,
     {
       yyextra->yyLineNr++;
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,QCString(sp,p-sp-1),tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,QCString(sp,p-sp-1),tooltip);
       nextCodeLine(yyscanner);
     }
     else
     {
       //printf("writeCodeLink(%s,%s,%s,%s)\n",ref,file,anchor,sp);
-      ol.writeCodeLink(ref,file,anchor,sp,tooltip);
+      ol.writeCodeLink(d->codeSymbolType(),ref,file,anchor,sp,tooltip);
       done=TRUE;
     }
   }
@@ -1231,7 +1239,7 @@ static bool getLink(yyscan_t yyscanner,const UseMap &useMap, // dictionary with 
     if (d && d->isLinkable())
     {
       if (yyextra->currentDefinition && yyextra->currentMemberDef &&
-          md!=yyextra->currentMemberDef && yyextra->insideBody && yyextra->collectXRefs)
+          yyextra->insideBody && yyextra->collectXRefs)
       {
         std::lock_guard<std::mutex> lock(g_docCrossReferenceMutex);
         addDocCrossReference(toMemberDefMutable(yyextra->currentMemberDef),toMemberDefMutable(md));
@@ -1385,7 +1393,7 @@ static void checkContLines(yyscan_t yyscanner,const char *s)
 }
 
 void parseFortranCode(CodeOutputInterface &od,const char *,const QCString &s,
-                  bool exBlock, const char *exName,FileDef *fd,
+                  bool exBlock, const char *exName,const FileDef *fd,
                   int startLine,int endLine,bool inlineFragment,
                   const MemberDef *,bool,const Definition *searchCtx,
                   bool collectXRefs, FortranFormat format)
@@ -1435,7 +1443,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
                    SrcLangExt /*lang*/,
                    bool isExampleBlock,
                    const QCString & exampleName,
-                   FileDef * fileDef,
+                   const FileDef * fileDef,
                    int startLine,
                    int endLine,
                    bool inlineFragment,

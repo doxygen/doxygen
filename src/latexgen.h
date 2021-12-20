@@ -33,7 +33,8 @@ class LatexCodeGenerator : public CodeOutputInterface
     void setRelativePath(const QCString &path);
     void setSourceFileName(const QCString &sourceFileName);
     void codify(const QCString &text) override;
-    void writeCodeLink(const QCString &ref,const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref,const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip) override;
     void writeTooltip(const QCString &,
@@ -43,7 +44,7 @@ class LatexCodeGenerator : public CodeOutputInterface
                       const SourceLinkInfo &,
                       const SourceLinkInfo &
                      )  override{}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override;
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override;
     void startCodeLine(bool) override;
     void endCodeLine() override;
     void startFontClass(const QCString &) override;
@@ -70,7 +71,6 @@ class LatexCodeGenerator : public CodeOutputInterface
     QCString m_relPath;
     QCString m_sourceFileName;
     int m_col = 0;
-    bool m_prettyCode = false;
     bool m_doxyCodeLineOpen = false;
     int m_usedTableLevel = 0;
 };
@@ -96,12 +96,13 @@ class LatexGenerator : public OutputGenerator
     // --- CodeOutputInterface
     void codify(const QCString &text)
     { m_codeGen.codify(text); }
-    void writeCodeLink(const QCString &ref, const QCString &file,
+    void writeCodeLink(CodeSymbolType type,
+                       const QCString &ref, const QCString &file,
                        const QCString &anchor,const QCString &name,
                        const QCString &tooltip)
-    { m_codeGen.writeCodeLink(ref,file,anchor,name,tooltip); }
-    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber)
-    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber); }
+    { m_codeGen.writeCodeLink(type,ref,file,anchor,name,tooltip); }
+    void writeLineNumber(const QCString &ref,const QCString &file,const QCString &anchor,int lineNumber, bool writeLineAnchor)
+    { m_codeGen.writeLineNumber(ref,file,anchor,lineNumber,writeLineAnchor); }
     void writeTooltip(const QCString &id, const DocLinkInfo &docInfo, const QCString &decl,
                       const QCString &desc, const SourceLinkInfo &defInfo, const SourceLinkInfo &declInfo
                      )
@@ -339,7 +340,6 @@ class LatexGenerator : public OutputGenerator
     QCString m_relPath;
     int m_indent = 0;
     bool templateMemberItem = false;
-    bool m_prettyCode = Config_getBool(LATEX_SOURCE_CODE);
     LatexCodeGenerator m_codeGen;
 };
 

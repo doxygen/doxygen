@@ -24,7 +24,7 @@
 */
 #define CN_SPC " "
 
-class TranslatorChinese : public TranslatorAdapter_1_8_15
+class TranslatorChinese : public Translator
 {
   public:
     /*! Used for identification of the language. The identification
@@ -65,7 +65,7 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     }
     virtual QCString latexDocumentPre()
     {
-      return "\\begin{CJK}{UTF8}{min}\n";
+      return "\\begin{CJK}{UTF8}{gbsn}\n";
     }
     virtual QCString latexDocumentPost()
     {
@@ -1914,6 +1914,281 @@ class TranslatorChinese : public TranslatorAdapter_1_8_15
     {
       // single is true implies a single file
       return "该单例的文档由下列文件生成:";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.15
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit hierarchy */
+    virtual QCString trDesignUnitHierarchy()
+    { return "设计单元层次结构"; }
+    /** VHDL design unit list */
+    virtual QCString trDesignUnitList()
+    { return "设计单元列表"; }
+    /** VHDL design unit members */
+    virtual QCString trDesignUnitMembers()
+    { return "设计单元成员"; }
+    /** VHDL design unit list description */
+    virtual QCString trDesignUnitListDescription()
+    {
+        return "这是所有设计单元成员的列表，以及指向他们所属实体的链接:";
+    }
+    /** VHDL design unit index */
+    virtual QCString trDesignUnitIndex()
+    { return "设计单元索引"; }
+    /** VHDL design units */
+    virtual QCString trDesignUnits()
+    { return "设计单元"; }
+    /** VHDL functions/procedures/processes */
+    virtual QCString trFunctionAndProc()
+    { return "函数/调用过程/进程语句"; }
+    /** VHDL type */
+    virtual QCString trVhdlType(uint64 type,bool single)
+    {
+      switch(type)
+      {
+        case VhdlDocGen::LIBRARY:
+          return "库";
+        case VhdlDocGen::PACKAGE:
+          return "包";
+        case VhdlDocGen::SIGNAL:
+          return "信号";
+        case VhdlDocGen::COMPONENT:
+          return "元件";
+        case VhdlDocGen::CONSTANT:
+          return "常量";
+        case VhdlDocGen::ENTITY:
+          return "实体";
+        case VhdlDocGen::TYPE:
+          return "类型";
+        case VhdlDocGen::SUBTYPE:
+          return "子类型";
+        case VhdlDocGen::FUNCTION:
+          return "函数";
+        case VhdlDocGen::RECORD:
+          return "记录";
+        case VhdlDocGen::PROCEDURE:
+          return "过程";
+        case VhdlDocGen::ARCHITECTURE:
+          return "结构体";
+        case VhdlDocGen::ATTRIBUTE:
+          return "属性";
+        case VhdlDocGen::PROCESS:
+          return "进程语句";
+        case VhdlDocGen::PORT:
+          return "端口";
+        case VhdlDocGen::USE:
+          if (single) return "使用语句";
+          else        return "使用语句";
+        case VhdlDocGen::GENERIC:
+          return "类属";
+        case VhdlDocGen::PACKAGE_BODY:
+          return "包体";
+        case VhdlDocGen::UNITS:
+          return "单元";
+        case VhdlDocGen::SHAREDVARIABLE:
+          return "共享变量";
+        case VhdlDocGen::VFILE:
+          return "文件";
+        case VhdlDocGen::GROUP:
+          return "组";
+        case VhdlDocGen::INSTANTIATION:
+          return "实例化";
+        case VhdlDocGen::ALIAS:
+          return "别名";
+        case VhdlDocGen::CONFIG:
+          return " 配置";
+        case VhdlDocGen::MISCELLANEOUS:
+          return "混合运算";
+        case VhdlDocGen::UCF_CONST:
+          return "约束";
+        default:
+          return "类";
+      }
+    }
+    virtual QCString trCustomReference(const QCString &name)
+    { return QCString(name)+" 引用"; }
+
+    /* Slice */
+    virtual QCString trConstants()
+    {
+        return "常量";
+    }
+    virtual QCString trConstantDocumentation()
+    {
+        return "常量文档";
+    }
+    virtual QCString trSequences()
+    {
+        return "序列";
+    }
+    virtual QCString trSequenceDocumentation()
+    {
+        return "序列文档";
+    }
+    virtual QCString trDictionaries()
+    {
+        return "字典";
+    }
+    virtual QCString trDictionaryDocumentation()
+    {
+        return "字典文档";
+    }
+    virtual QCString trSliceInterfaces()
+    {
+        return "接口";
+    }
+    virtual QCString trInterfaceIndex()
+    {
+        return "接口索引";
+    }
+    virtual QCString trInterfaceList()
+    {
+        return "接口列表";
+    }
+    virtual QCString trInterfaceListDescription()
+    {
+        return "以下是带有简要说明的接口:";
+    }
+    virtual QCString trInterfaceHierarchy()
+    {
+        return "接口层次结构";
+    }
+    virtual QCString trInterfaceHierarchyDescription()
+    {
+        return "此继承列表按字母顺序粗略排序:";
+    }
+    virtual QCString trInterfaceDocumentation()
+    {
+        return "接口文档";
+    }
+    virtual QCString trStructs()
+    {
+        return "结构";
+    }
+    virtual QCString trStructIndex()
+    {
+        return "结构索引";
+    }
+    virtual QCString trStructList()
+    {
+        return "结构列表";
+    }
+    virtual QCString trStructListDescription()
+    {
+        return "以下是带有简要说明的结构:";
+    }
+    virtual QCString trStructDocumentation()
+    {
+        return "结构文档";
+    }
+    virtual QCString trExceptionIndex()
+    {
+        return "异常索引";
+    }
+    virtual QCString trExceptionList()
+    {
+        return "异常列表";
+    }
+    virtual QCString trExceptionListDescription()
+    {
+        return "以下是带有简要说明的异常:";
+    }
+    virtual QCString trExceptionHierarchy()
+    {
+        return "异常层次结构";
+    }
+    virtual QCString trExceptionHierarchyDescription()
+    {
+        return "此继承列表按字母顺序粗略排序:";
+    }
+    virtual QCString trExceptionDocumentation()
+    {
+        return "异常文档";
+    }
+    virtual QCString trCompoundReferenceSlice(const QCString &clName, ClassDef::CompoundType compType, bool isLocal)
+    {
+      QCString result=(QCString)clName;
+      if (isLocal) result+=" 局部";
+      switch(compType)
+      {
+        case ClassDef::Class:      result+=" 类"; break;
+        case ClassDef::Struct:     result+=" 结构"; break;
+        case ClassDef::Union:      result+=" 联合"; break;
+        case ClassDef::Interface:  result+=" 接口"; break;
+        case ClassDef::Protocol:   result+=" 协议"; break;
+        case ClassDef::Category:   result+=" 类别"; break;
+        case ClassDef::Exception:  result+=" 异常"; break;
+        default: break;
+      }
+      result+=" 引用";
+      return result;
+    }
+    virtual QCString trOperations()
+    {
+        return "操作";
+    }
+    virtual QCString trOperationDocumentation()
+    {
+        return "操作文档";
+    }
+    virtual QCString trDataMembers()
+    {
+        return "数据成员";
+    }
+    virtual QCString trDataMemberDocumentation()
+    {
+        return "数据成员文档";
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.8.19
+//////////////////////////////////////////////////////////////////////////
+
+    /** VHDL design unit documentation */
+    virtual QCString trDesignUnitDocumentation()
+    { return "设计单元文档"; }
+
+//////////////////////////////////////////////////////////////////////////
+// new since 1.9.2
+//////////////////////////////////////////////////////////////////////////
+
+    /** C++20 concept */
+    virtual QCString trConcept(bool first_capital, bool singular)
+    {
+      return "概念";
+    }
+    /*! used as the title of the HTML page of a C++20 concept page */
+    virtual QCString trConceptReference(const QCString &conceptName)
+    {
+      QCString result=conceptName;
+      result+=" 概念引用";
+      return result;
+    }
+
+    /*! used as the title of page containing all the index of all concepts. */
+    virtual QCString trConceptList()
+    { return "概念列表"; }
+
+    /*! used as the title of chapter containing the index listing all concepts. */
+    virtual QCString trConceptIndex()
+    { return "概念索引"; }
+
+    /*! used as the title of chapter containing all information about concepts. */
+    virtual QCString trConceptDocumentation()
+    { return "概念文档"; }
+
+    /*! used as an introduction to the concept list */
+    virtual QCString trConceptListDescription(bool extractAll)
+    {
+      return "以下是带有简要说明的概念";
+    }
+
+    /*! used to introduce the definition of the C++20 concept */
+    virtual QCString trConceptDefinition()
+    {
+      return "概念定义";
     }
 
 };

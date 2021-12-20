@@ -245,7 +245,8 @@ void ManGenerator::writeObjectLink(const QCString &,const QCString &,
   startBold(); docify(name); endBold();
 }
 
-void ManGenerator::writeCodeLink(const QCString &,const QCString &,
+void ManGenerator::writeCodeLink(CodeSymbolType,
+                                 const QCString &,const QCString &,
                                  const QCString &, const QCString &name,
                                  const QCString &)
 {
@@ -259,11 +260,6 @@ void ManGenerator::startHtmlLink(const QCString &)
 void ManGenerator::endHtmlLink()
 {
 }
-
-//void ManGenerator::writeMailLink(const QCString &url)
-//{
-//  docify(url);
-//}
 
 void ManGenerator::startGroupHeader(int)
 {
@@ -502,12 +498,6 @@ void ManGenerator::startDescItem()
   m_t << ".IP \"";
   m_firstCol=FALSE;
 }
-
-//void ManGenerator::endDescTitle()
-//{
-//  endBold();
-//  m_paragraph=TRUE;
-//}
 
 void ManGenerator::startDescForItem()
 {

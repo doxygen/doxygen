@@ -210,23 +210,40 @@ void ConfigInt::convertStrToVal()
   }
 }
 
-void ConfigBool::convertStrToVal()
+static bool convertStringToBool(const QCString &str,bool &isValid)
 {
-  QCString val = m_valueString.stripWhiteSpace().lower();
+  isValid=false;
+  QCString val = str.stripWhiteSpace().lower();
   if (!val.isEmpty())
   {
     if (val=="yes" || val=="true" || val=="1" || val=="all")
     {
-      m_value=TRUE;
+      isValid=true;
+      return true;
     }
     else if (val=="no" || val=="false" || val=="0" || val=="none")
     {
-      m_value=FALSE;
+      isValid=true;
+      return false;
+    }
+  }
+  return false;
+}
+
+void ConfigBool::convertStrToVal()
+{
+  if (!m_valueString.stripWhiteSpace().isEmpty())
+  {
+    bool isValid=false;
+    bool b = convertStringToBool(m_valueString,isValid);
+    if (isValid)
+    {
+      m_value=b;
     }
     else
     {
       config_warn("argument '%s' for option %s is not a valid boolean value\n"
-                "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
+          "Using the default: %s!\n",qPrint(m_valueString),qPrint(m_name),m_value?"YES":"NO");
     }
   }
 }
@@ -1004,7 +1021,20 @@ static void readIncludeFile(const QCString &incName)
                                                               "         To avoid this warning please remove this line from your configuration "
                                                               "file or upgrade it using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
                                                  }
-                                                 BEGIN(SkipInvalid);
+                                                 ((ConfigObsolete*)option)->markAsPresent();
+                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 {
+                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_list->clear();
+                                                   g_listStr="";
+                                                   BEGIN(GetStrList);
+                                                 }
+                                                 else
+                                                 {
+                                                   g_string = ((ConfigObsolete*)option)->valueStringRef();
+                                                   g_string->resize(0);
+                                                   BEGIN(GetString);
+                                                 }
                                                  break;
                                                case ConfigOption::O_Disabled:
                                                  if (g_configUpdate)
@@ -1058,7 +1088,16 @@ static void readIncludeFile(const QCString &incName)
                                                  config_warn("Tag '%s' at line %d of file %s has become obsolete.\n"
                                                             "To avoid this warning please update your configuration "
                                                             "file using \"doxygen -u\"\n", qPrint(g_cmd),g_yyLineNr,qPrint(g_yyFileName));
-                                                 BEGIN(SkipInvalid);
+                                                 if (((ConfigObsolete*)option)->orgType()==ConfigOption::O_List)
+                                                 {
+                                                   g_list = ((ConfigObsolete*)option)->valueListRef();
+                                                   g_listStr="";
+                                                   BEGIN(GetStrList);
+                                                 }
+                                                 else
+                                                 {
+                                                   BEGIN(SkipInvalid);
+                                                 }
                                                  break;
                                                case ConfigOption::O_Disabled:
                                                  config_warn("Tag '%s' at line %d of file %s belongs to an option that was not enabled at compile time.\n"
@@ -1512,76 +1551,42 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
   }
 }
 
-void Config::checkAndCorrect()
+void Config::checkAndCorrect(bool quiet, const bool check)
 {
   ConfigValues::instance().init();
 
+  Config_updateBool(QUIET,quiet || Config_getBool(QUIET));
   //------------------------
   // check WARN_FORMAT
   QCString warnFormat = Config_getString(WARN_FORMAT);
-  if (warnFormat.stripWhiteSpace().isEmpty())
+  if (warnFormat.find("$file")==-1)
   {
-    Config_updateString(WARN_FORMAT,"$file:$line $text");
+    warn_uncond("warning format does not contain a $file tag!\n");
   }
-  else
+  if (warnFormat.find("$line")==-1)
   {
-    if (warnFormat.find("$file")==-1)
-    {
-      warn_uncond("warning format does not contain a $file tag!\n");
-    }
-    if (warnFormat.find("$line")==-1)
-    {
-      warn_uncond("warning format does not contain a $line tag!\n");
-    }
-    if (warnFormat.find("$text")==-1)
-    {
-      warn_uncond("warning format foes not contain a $text tag!\n");
-    }
+    warn_uncond("warning format does not contain a $line tag!\n");
   }
-
-  //------------------------
-  // set default man page extension if non is given by the user
-  QCString manExtension = Config_getString(MAN_EXTENSION);
-  if (manExtension.isEmpty())
+  if (warnFormat.find("$text")==-1)
   {
-    Config_updateString(MAN_EXTENSION,".3");
+    warn_uncond("warning format foes not contain a $text tag!\n");
   }
 
   //------------------------
   // check and correct PAPER_TYPE
-  QCString paperType = Config_getEnum(PAPER_TYPE);
+  QCString paperType = Config_getEnumAsString(PAPER_TYPE);
   paperType=paperType.lower().stripWhiteSpace();
   if (paperType.isEmpty() || paperType=="a4wide")
   {
-    paperType = "a4";
+    // use a4
+    Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
   }
-  if (paperType!="a4" && paperType!="letter" &&
-      paperType!="legal" && paperType!="executive")
+  else if (paperType!="a4" && paperType!="letter" &&
+           paperType!="legal" && paperType!="executive")
   {
-    err("Unknown page type specified\n");
-    paperType="a4";
+    err("Unknown page type '%s' specified\n",qPrint(paperType));
+    Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
   }
-  Config_updateEnum(PAPER_TYPE,paperType);
-
-  //------------------------
-  // check & correct OUTPUT_LANGUAGE
-  QCString outputLanguage=Config_getEnum(OUTPUT_LANGUAGE);
-  outputLanguage=outputLanguage.stripWhiteSpace();
-  if (outputLanguage.isEmpty())
-  {
-    outputLanguage = "English";
-  }
-  Config_updateEnum(OUTPUT_LANGUAGE,outputLanguage);
-
-  //------------------------
-  // check & correct HTML_FILE_EXTENSION
-  QCString htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
-  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
-  if (htmlFileExtension.isEmpty())
-  {
-    htmlFileExtension = ".html";
-  }
-  Config_updateString(HTML_FILE_EXTENSION,htmlFileExtension);
 
   //------------------------
   // check & correct STRIP_FROM_PATH
@@ -1606,7 +1611,7 @@ void Config::checkAndCorrect()
   //------------------------
   // Test to see if HTML header is valid
   QCString headerFile = Config_getString(HTML_HEADER);
-  if (!headerFile.isEmpty())
+  if (check && !headerFile.isEmpty())
   {
     FileInfo fi(headerFile.str());
     if (!fi.exists())
@@ -1619,7 +1624,7 @@ void Config::checkAndCorrect()
   //------------------------
   // Test to see if HTML footer is valid
   QCString footerFile = Config_getString(HTML_FOOTER);
-  if (!footerFile.isEmpty())
+  if (check && !footerFile.isEmpty())
   {
     FileInfo fi(footerFile.str());
     if (!fi.exists())
@@ -1633,25 +1638,25 @@ void Config::checkAndCorrect()
   // Test to see if MathJax code file is valid
   if (Config_getBool(USE_MATHJAX))
   {
-    QCString mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
-    QCString mathjaxVersion = Config_getEnum(MATHJAX_VERSION);
-    if (!mathJaxFormat.isEmpty())
+    auto mathJaxFormat = Config_getEnum(MATHJAX_FORMAT);
+    auto mathjaxVersion = Config_getEnum(MATHJAX_VERSION);
+    if (mathjaxVersion == MATHJAX_VERSION_t::MathJax_2)
     {
-      if (mathjaxVersion == "MathJax_2")
+      if (mathJaxFormat==MATHJAX_FORMAT_t::chtml)
       {
-        if (mathJaxFormat=="chtml") Config_updateEnum(MATHJAX_FORMAT,"HTML-CSS");
+        Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::HTML_CSS);
       }
-      else
+    }
+    else
+    {
+      if (mathJaxFormat==MATHJAX_FORMAT_t::HTML_CSS || mathJaxFormat==MATHJAX_FORMAT_t::NativeMML)
       {
-        if (mathJaxFormat=="HTML-CSS" || mathJaxFormat=="NativeMML")
-        {
-          Config_updateEnum(MATHJAX_FORMAT,"chtml");
-        }
+        Config_updateEnum(MATHJAX_FORMAT,MATHJAX_FORMAT_t::chtml);
       }
     }
 
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
-    if (!mathJaxCodefile.isEmpty())
+    if (check && !mathJaxCodefile.isEmpty())
     {
       FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
@@ -1663,13 +1668,11 @@ void Config::checkAndCorrect()
     QCString path = Config_getString(MATHJAX_RELPATH);
     if (path.isEmpty())
     {
-      if (mathjaxVersion == "MathJax_2")
+      path = "https://cdn.jsdelivr.net/npm/mathjax@";
+      switch (mathjaxVersion)
       {
-        path = "https://cdn.jsdelivr.net/npm/mathjax@2";
-      }
-      else
-      {
-        path = "https://cdn.jsdelivr.net/npm/mathjax@3";
+        case MATHJAX_VERSION_t::MathJax_2: path += "2"; break;
+        case MATHJAX_VERSION_t::MathJax_3: path += "3"; break;
       }
     }
 
@@ -1683,7 +1686,7 @@ void Config::checkAndCorrect()
   //------------------------
   // Test to see if LaTeX header is valid
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
-  if (!latexHeaderFile.isEmpty())
+  if (check && !latexHeaderFile.isEmpty())
   {
     FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
@@ -1696,7 +1699,7 @@ void Config::checkAndCorrect()
   //------------------------
   // Test to see if LaTeX footer is valid
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
-  if (!latexFooterFile.isEmpty())
+  if (check && !latexFooterFile.isEmpty())
   {
     FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
@@ -1805,42 +1808,14 @@ void Config::checkAndCorrect()
   }
 
   //------------------------
-  // check and correct DOT_IMAGE_FORMAT
-  QCString dotImageFormat=Config_getEnum(DOT_IMAGE_FORMAT);
-  dotImageFormat=dotImageFormat.stripWhiteSpace();
-  if (dotImageFormat.isEmpty())
-  {
-    dotImageFormat = "png";
-  }
-  Config_updateEnum(DOT_IMAGE_FORMAT,dotImageFormat);
-
-  //------------------------
   // correct DOT_FONTNAME if needed
   QCString dotFontName=Config_getString(DOT_FONTNAME);
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTNAME.\n"
-               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+               "  You may want to clear or change DOT_FONTNAME.\n"
+               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
-  else if (dotFontName.isEmpty())
-  {
-    dotFontName = "Helvetica";
-  }
-  Config_updateString(DOT_FONTNAME,dotFontName);
-
-  //------------------------
-  // clip dotFontSize against the maximum bounds
-  int dotFontSize = Config_getInt(DOT_FONTSIZE);
-  if (dotFontSize<4)
-  {
-    dotFontSize=4;
-  }
-  else if (dotFontSize>24)
-  {
-    dotFontSize=24;
-  }
-  Config_updateInt(DOT_FONTSIZE,dotFontSize);
 
   //------------------------
   // clip number of threads
@@ -1883,12 +1858,8 @@ void Config::checkAndCorrect()
     uint i=0,l=dotPath.length();
     for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
 #endif
+    Config_updateString(DOT_PATH,dotPath);
   }
-  else // make sure the string is empty but not null!
-  {
-    dotPath="";
-  }
-  Config_updateString(DOT_PATH,dotPath);
 
   //------------------------
   // check plantuml path
@@ -1902,27 +1873,27 @@ void Config::checkAndCorrect()
       FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
+        plantumlJarPath = plantumlJar;
       }
       else
       {
-        err("Jar file plantuml.jar not found at location "
+        err("Jar file 'plantuml.jar' not found at location "
                    "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
-    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    else if (pu.exists() && pu.isFile()) // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
+      // Nothing to be done
     }
     else
     {
-      err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+      err("PLANTUML_JAR_PATH is not a directory with a 'plantuml.jar' file or is not an existing file: %s\n",
                  qPrint(plantumlJarPath));
       plantumlJarPath="";
     }
+    Config_updateString(PLANTUML_JAR_PATH,plantumlJarPath);
   }
-  Config_updateString(PLANTUML_JAR_PATH,plantumlJarPath);
 
   //------------------------
   // check dia path
@@ -1944,12 +1915,8 @@ void Config::checkAndCorrect()
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }
+    Config_updateString(DIA_PATH,diaPath);
   }
-  else // make sure the string is empty but not null!
-  {
-    diaPath="";
-  }
-  Config_updateString(DIA_PATH,diaPath);
 
   //------------------------
   // check INPUT
@@ -1971,28 +1938,6 @@ void Config::checkAndCorrect()
     }
   }
   Config_updateList(INPUT,inputSources);
-
-  //------------------------
-  // add default file patterns if needed
-  StringVector filePatternList = Config_getList(FILE_PATTERNS);
-  if (filePatternList.empty())
-  {
-    ConfigOption * opt = ConfigImpl::instance()->get("FILE_PATTERNS");
-    if (opt->kind()==ConfigOption::O_List)
-    {
-      filePatternList = ((ConfigList*)opt)->getDefault();
-    }
-  }
-  Config_updateList(FILE_PATTERNS,filePatternList);
-
-  //------------------------
-  // add default pattern if needed
-  StringVector examplePatternList = Config_getList(EXAMPLE_PATTERNS);
-  if (examplePatternList.empty())
-  {
-    examplePatternList.push_back("*");
-    Config_updateList(EXAMPLE_PATTERNS,examplePatternList);
-  }
 
   //------------------------
   // if no output format is enabled, warn the user
@@ -2049,55 +1994,6 @@ void Config::checkAndCorrect()
   if (depth==0)
   {
     Config_updateInt(MAX_DOT_GRAPH_DEPTH,1000);
-  }
-
-  //------------------------
-  int hue = Config_getInt(HTML_COLORSTYLE_HUE);
-  if (hue<0)
-  {
-    hue=0;
-  }
-  else if (hue>=360)
-  {
-    hue=hue%360;
-  }
-  Config_updateInt(HTML_COLORSTYLE_HUE,hue);
-
-  //------------------------
-  int sat = Config_getInt(HTML_COLORSTYLE_SAT);
-  if (sat<0)
-  {
-    sat=0;
-  }
-  else if (sat>255)
-  {
-    sat=255;
-  }
-  Config_updateInt(HTML_COLORSTYLE_SAT,sat);
-
-
-  //------------------------
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  if (gamma<40)
-  {
-    gamma=40;
-  }
-  else if (gamma>240)
-  {
-    gamma=240;
-  }
-  Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
-
-  //------------------------
-  // add default words if needed
-  const StringVector &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
-  if (annotationFromBrief.empty())
-  {
-    Config_updateList(ABBREVIATE_BRIEF,
-                      { "The $name class", "The $name widget",
-                        "The $name file", "is", "provides", "specifies",
-                        "contains", "represents", "a", "an", "the"
-                      });
   }
 
   //------------------------
@@ -2165,7 +2061,36 @@ void Config::checkAndCorrect()
   }
 #endif
 
+}
 
+void Config::updateObsolete()
+{
+  //------------------------
+  // check for presence of obsolete CLASS_DIAGRAM option and correct CLASS_GRAPH if needed
+  ConfigOption *classDiagramsOpt = ConfigImpl::instance()->get("CLASS_DIAGRAMS");
+  ConfigOption *haveDotOpt       = ConfigImpl::instance()->get("HAVE_DOT");
+  ConfigOption *classGraphOpt    = ConfigImpl::instance()->get("CLASS_GRAPH");
+  if (classDiagramsOpt && classDiagramsOpt->kind()==ConfigOption::O_Obsolete &&
+      haveDotOpt && classGraphOpt)
+  {
+    ConfigObsolete *classDiagramsOpt_ = dynamic_cast<ConfigObsolete*>(classDiagramsOpt);
+    ConfigBool     *haveDotOpt_       = dynamic_cast<ConfigBool*>(haveDotOpt);
+    ConfigEnum     *classGraphOpt_    = dynamic_cast<ConfigEnum*>(classGraphOpt);
+    if (classDiagramsOpt_->isPresent() && classDiagramsOpt_->orgType()==ConfigOption::O_Bool)
+    {
+      QCString classDiagramValue = *classDiagramsOpt_->valueStringRef();
+      QCString haveDotValue      = *haveDotOpt_->valueStringRef();
+      QCString &classGraphValue  = *classGraphOpt_->valueRef();
+      bool isValid1=true, isValid2=true;
+      bool bClassDiagrams = convertStringToBool(classDiagramValue,isValid1);
+      bool bHaveDot       = haveDotValue.isEmpty() ? false : convertStringToBool(haveDotValue,     isValid2);
+      if (isValid1 && isValid2 && !bClassDiagrams && !bHaveDot && classGraphValue.lower()=="yes")
+      {
+        warn_uncond("Changing CLASS_GRAPH option to TEXT because obsolete option CLASS_DIAGRAM was found and set to NO.\n");
+        classGraphValue="TEXT";
+      }
+    }
+  }
 }
 
 void Config::writeTemplate(TextStream &t,bool shortList,bool update)
@@ -2193,6 +2118,7 @@ bool Config::parse(const QCString &fileName,bool update)
   // when updating etc. the output is in this format as well and not in the read format
   ConfigString *option = (ConfigString*)g_config->get("DOXYFILE_ENCODING");
   option->init();
+
   return parseRes;
 }
 

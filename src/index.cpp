@@ -64,7 +64,6 @@ int annotatedStructsPrinted;
 int annotatedExceptions;
 int annotatedExceptionsPrinted;
 int hierarchyExceptions;
-int documentedFiles;
 int documentedGroups;
 int documentedNamespaces;
 int documentedConcepts;
@@ -72,7 +71,7 @@ int indexedPages;
 int documentedClassMembers[CMHL_Total];
 int documentedFileMembers[FMHL_Total];
 int documentedNamespaceMembers[NMHL_Total];
-int documentedHtmlFiles;
+int documentedFiles;
 int documentedPages;
 int documentedDirs;
 
@@ -100,7 +99,7 @@ void countDataStructures()
   annotatedExceptions        = sliceOpt ? countAnnotatedClasses(&annotatedExceptionsPrinted, ClassDef::Exception) : 0;
   // "exceptionhierarchy"
   hierarchyExceptions        = sliceOpt ? countClassHierarchy(ClassDef::Exception) : 0;
-  countFiles(documentedHtmlFiles,documentedFiles);        // "files"
+  countFiles(documentedFiles,documentedFiles);        // "files"
   countRelatedPages(documentedPages,indexedPages);        // "pages"
   documentedGroups           = countGroups();             // "modules"
   documentedNamespaces       = countNamespaces();         // "namespaces"
@@ -293,7 +292,7 @@ static void writeMemberToIndex(const Definition *def,const MemberDef *md,bool ad
 {
   bool isAnonymous = md->isAnonymous();
   bool hideUndocMembers = Config_getBool(HIDE_UNDOC_MEMBERS);
-  const MemberList &enumList = md->enumFieldList();
+  const MemberVector &enumList = md->enumFieldList();
   bool isDir = !enumList.empty() && md->isEnumerate();
   if (md->getOuterScope()==def || md->getOuterScope()==Doxygen::globalScope)
   {
@@ -722,16 +721,12 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     ol.pushGeneratorState();
     ol.disable(OutputGenerator::Html);
   }
-  bool fullPathNames = Config_getBool(FULL_PATH_NAMES);
   startIndexHierarchy(ol,0);
-  if (fullPathNames)
+  for (const auto &dd : *Doxygen::dirLinkedMap)
   {
-    for (const auto &dd : *Doxygen::dirLinkedMap)
+    if (dd->getOuterScope()==Doxygen::globalScope)
     {
-      if (dd->getOuterScope()==Doxygen::globalScope)
-      {
-        writeDirTreeNode(ol,dd.get(),0,ftv,addToIndex);
-      }
+      writeDirTreeNode(ol,dd.get(),0,ftv,addToIndex);
     }
   }
   if (ftv)
@@ -740,7 +735,7 @@ static void writeDirHierarchy(OutputList &ol, FTVHelp* ftv,bool addToIndex)
     {
       for (const auto &fd : *fn)
       {
-        if (!fullPathNames || fd->getDirDef()==0) // top level file
+        if (fd->getDirDef()==0) // top level file
         {
           bool src;
           bool doc = fileVisibleInIndex(fd.get(),src);
@@ -1263,23 +1258,26 @@ static void writeGraphicalExceptionHierarchy(OutputList &ol)
 
 //----------------------------------------------------------------------------
 
-static void countFiles(int &htmlFiles,int &files)
+static void countFiles(int &allFiles,int &docFiles)
 {
-  htmlFiles=0;
-  files=0;
-  for (const auto &fn : *Doxygen::inputNameLinkedMap)
+  allFiles=0;
+  docFiles=0;
+  if (Config_getBool(SHOW_FILES))
   {
-    for (const auto &fd: *fn)
+    for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
-      bool doc,src;
-      doc = fileVisibleInIndex(fd.get(),src);
-      if (doc || src)
+      for (const auto &fd: *fn)
       {
-        htmlFiles++;
-      }
-      if (doc)
-      {
-        files++;
+        bool doc,src;
+        doc = fileVisibleInIndex(fd.get(),src);
+        if (doc || src)
+        {
+          allFiles++;
+        }
+        if (doc)
+        {
+          docFiles++;
+        }
       }
     }
   }
@@ -1315,17 +1313,11 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
       //  addMembersToIndex(fd,LayoutDocManager::File,fullName,QCString());
       //}
     }
-    else
+    else if (src)
     {
-      ol.startBold();
-      ol.docify(fd->name());
-      ol.endBold();
-      //if (addToIndex)
-      //{
-      //  Doxygen::indexList->addContentsItem(FALSE,fullName,QCString(),QCString(),QCString());
-      //}
+      ol.writeObjectLink(QCString(),fd->getSourceFileBase(),QCString(),fd->name());
     }
-    if (src)
+    if (doc && src)
     {
       ol.pushGeneratorState();
       ol.disableAllBut(OutputGenerator::Html);
@@ -1356,7 +1348,14 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
           );
       //ol.docify(")");
     }
-    ol.endIndexValue(fd->getOutputFileBase(),hasBrief);
+    if (doc)
+    {
+      ol.endIndexValue(fd->getOutputFileBase(),hasBrief);
+    }
+    else // src
+    {
+      ol.endIndexValue(fd->getSourceFileBase(),hasBrief);
+    }
     //ol.popGeneratorState();
     // --------------------------------------------------------
   }
@@ -1366,12 +1365,11 @@ static void writeSingleFileIndex(OutputList &ol,const FileDef *fd)
 
 static void writeFileIndex(OutputList &ol)
 {
-  if (documentedHtmlFiles==0) return;
+  if (documentedFiles==0) return;
 
   ol.pushGeneratorState();
   ol.disable(OutputGenerator::Man);
   ol.disable(OutputGenerator::Docbook);
-  if (documentedFiles==0) ol.disableAllBut(OutputGenerator::Html);
 
   LayoutNavEntry *lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::FileList);
   if (lne==0) lne = LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files); // fall back
@@ -3814,7 +3812,7 @@ static void writeGroupTreeNode(OutputList &ol, const GroupDef *gd, int level, FT
         {
           for (const auto &md : *ml)
           {
-            const MemberList &enumList = md->enumFieldList();
+            const MemberVector &enumList = md->enumFieldList();
             isDir = !enumList.empty() && md->isEnumerate();
             if (md->isVisible() && !md->isAnonymous())
             {
@@ -4143,12 +4141,12 @@ static void writeConceptRootList(FTVHelp *ftv,bool addToIndex)
       //printf("*** adding %s hasSubPages=%d hasSections=%d\n",qPrint(pageTitle),hasSubPages,hasSections);
       ftv->addContentsItem(
           false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
-          QCString(),false,true,cd.get());
+          QCString(),false,cd->partOfGroups().empty(),cd.get());
       if (addToIndex)
       {
         Doxygen::indexList->addContentsItem(
             false,cd->localName(),cd->getReference(),cd->getOutputFileBase(),
-            QCString(),false,true);
+            QCString(),false,cd->partOfGroups().empty(),cd.get());
       }
     }
   }
@@ -4598,7 +4596,7 @@ static void writeIndex(OutputList &ol)
       ol.parseText(/*projPrefix+*/theTranslator->trExceptionIndex());
       ol.endIndexSection(isCompoundIndex);
     }
-    if (Config_getBool(SHOW_FILES) && (documentedFiles>0))
+    if (documentedFiles>0)
     {
       ol.startIndexSection(isFileIndex);
       ol.parseText(/*projPrefix+*/theTranslator->trFileIndex());
@@ -4886,32 +4884,22 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
           break;
         case LayoutNavEntry::Files:
           {
-            static bool showFiles = Config_getBool(SHOW_FILES);
-            if (showFiles)
+            if (documentedFiles>0 && addToIndex)
             {
-              if (documentedHtmlFiles>0 && addToIndex)
-              {
-                Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),lne->baseFile(),QCString());
-                Doxygen::indexList->incContentsDepth();
-                needsClosing=TRUE;
-              }
-              if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files)!=lne.get()) // for backward compatibility with old layout file
-              {
-                msg("Generating file index...\n");
-                writeFileIndex(ol);
-              }
+              Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),lne->baseFile(),QCString());
+              Doxygen::indexList->incContentsDepth();
+              needsClosing=TRUE;
             }
-          }
-          break;
-        case LayoutNavEntry::FileList:
-          {
-            static bool showFiles = Config_getBool(SHOW_FILES);
-            if (showFiles)
+            if (LayoutDocManager::instance().rootNavEntry()->find(LayoutNavEntry::Files)!=lne.get()) // for backward compatibility with old layout file
             {
               msg("Generating file index...\n");
               writeFileIndex(ol);
             }
           }
+          break;
+        case LayoutNavEntry::FileList:
+          msg("Generating file index...\n");
+          writeFileIndex(ol);
           break;
         case LayoutNavEntry::FileGlobals:
           msg("Generating file member index...\n");
@@ -4940,7 +4928,7 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
             QCString url = correctURL(lne->url(),"!"); // add ! to relative URL
             if (!url.isEmpty())
             {
-              if (url=="![none]")
+              if (url=="!") // result of a "[none]" url
               {
                 Doxygen::indexList->addContentsItem(TRUE,lne->title(),QCString(),QCString(),QCString(),FALSE,FALSE);
               }
@@ -4994,7 +4982,6 @@ static void writeIndexHierarchyEntries(OutputList &ol,const LayoutNavEntryList &
 
 static bool quickLinkVisible(LayoutNavEntry::Kind kind)
 {
-  static bool showFiles = Config_getBool(SHOW_FILES);
   static bool showNamespaces = Config_getBool(SHOW_NAMESPACES);
   static bool sliceOpt = Config_getBool(OPTIMIZE_OUTPUT_SLICE);
   switch (kind)
@@ -5024,8 +5011,8 @@ static bool quickLinkVisible(LayoutNavEntry::Kind kind)
     case LayoutNavEntry::ExceptionList:      return annotatedExceptions>0;
     case LayoutNavEntry::ExceptionIndex:     return annotatedExceptions>0;
     case LayoutNavEntry::ExceptionHierarchy: return hierarchyExceptions>0;
-    case LayoutNavEntry::Files:              return documentedHtmlFiles>0 && showFiles;
-    case LayoutNavEntry::FileList:           return documentedHtmlFiles>0 && showFiles;
+    case LayoutNavEntry::Files:              return documentedFiles>0;
+    case LayoutNavEntry::FileList:           return documentedFiles>0;
     case LayoutNavEntry::FileGlobals:        return documentedFileMembers[FMHL_All]>0;
     case LayoutNavEntry::Examples:           return !Doxygen::exampleLinkedMap->empty();
     case LayoutNavEntry::None:             // should never happen, means not properly initialized

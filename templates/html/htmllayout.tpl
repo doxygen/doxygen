@@ -297,7 +297,6 @@
 {# write search data #}
 {% if config.SEARCHENGINE and not config.SERVER_BASED_SEARCH %}
   {% create 'search/searchdata.js' from 'htmljssearchdata.tpl' %}
-  {% set symbolCount=0 %}
   {% for idx in searchIndices %}
     {% for si in idx.symbolIndices %}
       {% with hexCount=forloop.counter0|hex baseName=si.name|append:'_'|append:hexCount %}

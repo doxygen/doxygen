@@ -446,7 +446,7 @@ class ClassDefMutable : public DefinitionMutable, public ClassDef
     virtual void writeMemberPages(OutputList &ol) const = 0;
     virtual void writeMemberList(OutputList &ol) const = 0;
     virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
-                 const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
+                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;

@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef _COMMENTCNV_H
-#define _COMMENTCNV_H
+#ifndef COMMENTCNV_H
+#define COMMENTCNV_H
 
 class BufStr;
 class QCString;

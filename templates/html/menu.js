@@ -83,6 +83,7 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     $('#main-menu').append('<li id="searchBoxPos2" style="float:right"></li>');
   }
   var $mainMenuState = $('#main-menu-state');
+  var prevWidth = 0;
   if ($mainMenuState.length) {
     function initResizableIfExists() {
       if (typeof initResizable==='function') initResizable();
@@ -103,14 +104,19 @@ function initMenu(relPath,searchEnabled,serverSide,searchPage,search) {
     function resetState() {
       var $menu = $('#main-menu');
       var $mainMenuState = $('#main-menu-state');
-      if ($(window).outerWidth()<768) {
-        $mainMenuState.prop('checked',false); $menu.hide();
-        $('#searchBoxPos1').html(searchBox);
-        $('#searchBoxPos2').empty();
-      } else {
-        $menu.show();
-        $('#searchBoxPos1').empty();
-        $('#searchBoxPos2').html(searchBox);
+      var newWidth = $(window).outerWidth();
+      if (newWidth!=prevWidth) {
+        if ($(window).outerWidth()<768) {
+          $mainMenuState.prop('checked',false); $menu.hide();
+          $('#searchBoxPos1').html(searchBox);
+          $('#searchBoxPos2').hide();
+        } else {
+          $menu.show();
+          $('#searchBoxPos1').empty();
+          $('#searchBoxPos2').html(searchBox);
+          $('#searchBoxPos2').show();
+        }
+        prevWidth = newWidth;
       }
     }
     $(window).ready(function() { resetState(); initResizableIfExists(); });
