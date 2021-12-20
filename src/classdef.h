@@ -19,46 +19,88 @@
 #define CLASSDEF_H
 
 #include <vector>
-
-#include <qlist.h>
-#include <qdict.h>
-#include <qptrdict.h>
+#include <set>
 
 #include "containers.h"
 #include "definition.h"
 #include "arguments.h"
+#include "membergroup.h"
 
 struct Argument;
 class MemberDef;
+class MemberDefMutable;
 class MemberList;
-class MemberDict;
-class ClassList;
-class ClassSDict;
+class MemberLists;
+class ClassLinkedRefMap;
 class OutputList;
 class FileDef;
 class FileList;
-class BaseClassList;
 class NamespaceDef;
 class MemberDef;
-class ExampleSDict;
+class ExampleList;
 class MemberNameInfoLinkedMap;
-class UsesClassDict;
-class ConstraintClassDict;
-class MemberGroupSDict;
-class QTextStream;
 class PackageDef;
 class GroupDef;
-class StringDict;
 struct IncludeInfo;
 class ClassDefImpl;
-class FTextStream;
+class ClassDef;
+class ClassDefMutable;
+class UsesClassList;
+class ConstraintClassList;
+class MemberGroupList;
+
+/** Class that contains information about an inheritance relation.
+ */
+struct BaseClassDef
+{
+  BaseClassDef(ClassDef *cd,const QCString &n,Protection p, Specifier v,const QCString &t) :
+        classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
+
+  /** Class definition that this relation inherits from. */
+  ClassDef *classDef;
+
+  /** name used in the inheritance list
+   * (may be a typedef name instead of the class name)
+   */
+  QCString   usedName;
+
+  /** Protection level of the inheritance relation:
+   *  Public, Protected, or Private
+   */
+  Protection prot;
+
+  /** Virtualness of the inheritance relation:
+   *  Normal, or Virtual
+   */
+  Specifier  virt;
+
+  /** Template arguments used for the base class */
+  QCString templSpecifiers;
+};
+
+using BaseClassList = std::vector<BaseClassDef>;
+
+/** Class that contains information about a template instance relation */
+struct TemplateInstanceDef
+{
+  TemplateInstanceDef(const QCString &ts,const ClassDef *cd) : templSpec(ts), classDef(cd) {}
+  QCString templSpec;
+  const ClassDef *classDef;
+};
+
+using TemplateInstanceList = std::vector<TemplateInstanceDef>;
+
+using TemplateNameMap = std::map<std::string,int>;
+
+using ClassDefSet = std::set<const ClassDef*>;
+
 
 /** A abstract class representing of a compound symbol.
  *
  *  A compound can be a class, struct, union, interface, service, singleton,
  *  or exception.
  */
-class ClassDef : virtual public Definition
+class ClassDef : public Definition
 {
   public:
     /** The various compound types */
@@ -74,7 +116,6 @@ class ClassDef : virtual public Definition
                       };
 
     virtual ~ClassDef() {}
-
 
     //-----------------------------------------------------------------------------------
     // --- getters
@@ -100,7 +141,7 @@ class ClassDef : virtual public Definition
     virtual bool isLocal() const = 0;
 
     /** returns the classes nested into this class */
-    virtual ClassSDict *getClassSDict() const = 0;
+    virtual ClassLinkedRefMap getClasses() const = 0;
 
     /** returns TRUE if this class has documentation */
     virtual bool hasDocumentation() const = 0;
@@ -126,11 +167,17 @@ class ClassDef : virtual public Definition
     /** Returns the list of base classes from which this class directly
      *  inherits.
      */
-    virtual BaseClassList *baseClasses() const = 0;
+    virtual const BaseClassList &baseClasses() const = 0;
+
+    /** Update the list of base classes to the one passed */
+    virtual void updateBaseClasses(const BaseClassList &bcd) = 0;
 
     /** Returns the list of sub classes that directly derive from this class
      */
-    virtual BaseClassList *subClasses() const = 0;
+    virtual const BaseClassList &subClasses() const = 0;
+
+    /** Update the list of sub classes to the one passed */
+    virtual void updateSubClasses(const BaseClassList &bcd) = 0;
 
     /** Returns a dictionary of all members. This includes any inherited
      *  members. Members are sorted alphabetically.
@@ -164,7 +211,7 @@ class ClassDef : virtual public Definition
     /** Returns the namespace this compound is in, or 0 if it has a global
      *  scope.
      */
-    virtual NamespaceDef *getNamespaceDef() const = 0;
+    //virtual NamespaceDef *getNamespaceDef() const = 0;
 
     /** Returns the file in which this compound's definition can be found.
      *  Should not return 0 (but it might be a good idea to check anyway).
@@ -174,7 +221,7 @@ class ClassDef : virtual public Definition
     /** Returns the Java package this class is in or 0 if not applicable.
      */
 
-    virtual MemberDef    *getMemberByName(const QCString &) const = 0;
+    virtual const MemberDef *getMemberByName(const QCString &) const = 0;
 
     /** Returns TRUE iff \a bcd is a direct or indirect base class of this
      *  class. This function will recursively traverse all branches of the
@@ -195,7 +242,7 @@ class ClassDef : virtual public Definition
     /** Returns a sorted dictionary with all template instances found for
      *  this template class. Returns 0 if not a template or no instances.
      */
-    virtual QDict<ClassDef> *getTemplateInstances() const = 0;
+    virtual const TemplateInstanceList &getTemplateInstances() const = 0;
 
     /** Returns the template master of which this class is an instance.
      *  Returns 0 if not applicable.
@@ -205,15 +252,13 @@ class ClassDef : virtual public Definition
     /** Returns TRUE if this class is a template */
     virtual bool isTemplate() const = 0;
 
-    virtual IncludeInfo *includeInfo() const = 0;
+    virtual const IncludeInfo *includeInfo() const = 0;
 
-    virtual UsesClassDict *usedImplementationClasses() const = 0;
+    virtual const UsesClassList &usedImplementationClasses() const = 0;
 
-    virtual UsesClassDict *usedByImplementationClasses() const = 0;
+    virtual const UsesClassList &usedByImplementationClasses() const = 0;
 
-    virtual UsesClassDict *usedInterfaceClasses() const = 0;
-
-    virtual ConstraintClassDict *templateTypeConstraints() const = 0;
+    virtual const ConstraintClassList &templateTypeConstraints() const = 0;
 
     virtual bool isTemplateArgument() const = 0;
 
@@ -221,7 +266,7 @@ class ClassDef : virtual public Definition
      *  available, or 0 otherwise.
      *  @param name The name of the nested compound
      */
-    virtual Definition *findInnerCompound(const char *name) const = 0;
+    virtual const Definition *findInnerCompound(const QCString &name) const = 0;
 
     /** Returns the template parameter lists that form the template
      *  declaration of this class.
@@ -279,14 +324,12 @@ class ClassDef : virtual public Definition
     virtual MemberList *getMemberList(MemberListType lt) const = 0;
 
     /** Returns the list containing the list of members sorted per type */
-    virtual const QList<MemberList> &getMemberLists() const = 0;
+    virtual const MemberLists &getMemberLists() const = 0;
 
     /** Returns the member groups defined for this class */
-    virtual MemberGroupSDict *getMemberGroupSDict() const = 0;
+    virtual const MemberGroupList &getMemberGroups() const = 0;
 
-    virtual QDict<int> *getTemplateBaseClassNames() const = 0;
-
-    virtual ClassDef *getVariableInstance(const char *templSpec) const = 0;
+    virtual const TemplateNameMap &getTemplateBaseClassNames() const = 0;
 
     virtual bool isUsedOnly() const = 0;
 
@@ -295,22 +338,19 @@ class ClassDef : virtual public Definition
 
     virtual bool isSimple() const = 0;
 
-    virtual const ClassList *taggedInnerClasses() const = 0;
-    virtual ClassDef *tagLessReference() const = 0;
+    virtual const ClassDef *tagLessReference() const = 0;
 
-    virtual MemberDef *isSmartPointer() const = 0;
+    virtual const MemberDef *isSmartPointer() const = 0;
 
     virtual bool isJavaEnum() const = 0;
 
-    virtual bool isGeneric() const = 0;
-    virtual const ClassSDict *innerClasses() const = 0;
     virtual QCString title() const = 0;
 
     virtual QCString generatedFromFiles() const = 0;
     virtual const FileList &usedFiles() const = 0;
 
     virtual const ArgumentList &typeConstraints() const = 0;
-    virtual const ExampleSDict *exampleList() const = 0;
+    virtual const ExampleList &getExamples() const = 0;
     virtual bool hasExamples() const = 0;
     virtual QCString getMemberListFileName() const = 0;
     virtual bool subGrouping() const = 0;
@@ -318,46 +358,69 @@ class ClassDef : virtual public Definition
     virtual bool isSliceLocal() const = 0;
     virtual bool hasNonReferenceSuperClass() const = 0;
 
+    virtual QCString requiresClause() const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- count members ----
+    //-----------------------------------------------------------------------------------
+
+    virtual int countMembersIncludingGrouped(MemberListType lt,
+                const ClassDef *inheritedFrom,bool additional) const = 0;
+    virtual int countInheritanceNodes() const = 0;
+    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
+                int lt2,bool invert,bool showAlways,ClassDefSet &visitedClasses) const = 0;
+
+    //-----------------------------------------------------------------------------------
+    // --- helpers ----
+    //-----------------------------------------------------------------------------------
+
+    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
+                                const QCString &templSpec,bool &freshInstance) const = 0;
+    virtual void writeDeclarationLink(OutputList &ol,bool &found,
+                 const QCString &header,bool localNames) const = 0;
+
+};
+
+class ClassDefMutable : public DefinitionMutable, public ClassDef
+{
+  public:
     //-----------------------------------------------------------------------------------
     // --- setters ----
     //-----------------------------------------------------------------------------------
 
-    virtual void setIncludeFile(FileDef *fd,const char *incName,bool local,bool force) = 0;
-    virtual void setNamespace(NamespaceDef *nd) = 0;
+    virtual void setIncludeFile(FileDef *fd,const QCString &incName,bool local,bool force) = 0;
     virtual void setFileDef(FileDef *fd) = 0;
     virtual void setSubGrouping(bool enabled) = 0;
     virtual void setProtection(Protection p) = 0;
     virtual void setGroupDefForAllMembers(GroupDef *g,Grouping::GroupPri_t pri,const QCString &fileName,int startLine,bool hasDocs) = 0;
     virtual void setIsStatic(bool b) = 0;
     virtual void setCompoundType(CompoundType t) = 0;
-    virtual void setClassName(const char *name) = 0;
+    virtual void setClassName(const QCString &name) = 0;
     virtual void setClassSpecifier(uint64 spec) = 0;
     virtual void setTemplateArguments(const ArgumentList &al) = 0;
-    virtual void setTemplateBaseClassNames(QDict<int> *templateNames) = 0;
+    virtual void setTemplateBaseClassNames(const TemplateNameMap &templateNames) = 0;
     virtual void setTemplateMaster(const ClassDef *tm) = 0;
     virtual void setTypeConstraints(const ArgumentList &al) = 0;
     virtual void setCategoryOf(ClassDef *cd) = 0;
     virtual void setUsedOnly(bool b) = 0;
-    virtual void setTagLessReference(ClassDef *cd) = 0;
-    virtual void setName(const char *name) = 0;
-    virtual void setMetaData(const char *md) = 0;
+    virtual void setTagLessReference(const ClassDef *cd) = 0;
+    virtual void setName(const QCString &name) = 0;
+    virtual void setMetaData(const QCString &md) = 0;
+    virtual void setRequiresClause(const QCString &req) = 0;
 
     //-----------------------------------------------------------------------------------
     // --- actions ----
     //-----------------------------------------------------------------------------------
 
-    virtual void insertBaseClass(ClassDef *,const char *name,Protection p,Specifier s,const char *t=0) = 0;
-    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const char *t=0) = 0;
+    virtual void insertBaseClass(ClassDef *,const QCString &name,Protection p,Specifier s,const QCString &t=QCString()) = 0;
+    virtual void insertSubClass(ClassDef *,Protection p,Specifier s,const QCString &t=QCString()) = 0;
     virtual void insertMember(MemberDef *) = 0;
-    virtual void insertUsedFile(FileDef *) = 0;
-    virtual void addMembersToTemplateInstance(const ClassDef *cd,const char *templSpec) = 0;
-    virtual void addTaggedInnerClass(ClassDef *cd) = 0;
+    virtual void insertUsedFile(const FileDef *) = 0;
+    virtual void addMembersToTemplateInstance(const ClassDef *cd,const ArgumentList &templateArguments,const QCString &templSpec) = 0;
     virtual void addInnerCompound(const Definition *d) = 0;
-    virtual bool addExample(const char *anchor,const char *name, const char *file) = 0;
-    virtual ClassDef *insertTemplateInstance(const QCString &fileName,int startLine,int startColumn,
-                                const QCString &templSpec,bool &freshInstance) const = 0;
-    virtual void addUsedClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
-    virtual void addUsedByClass(ClassDef *cd,const char *accessName,Protection prot) = 0;
+    virtual bool addExample(const QCString &anchor,const QCString &name, const QCString &file) = 0;
+    virtual void addUsedClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
+    virtual void addUsedByClass(ClassDef *cd,const QCString &accessName,Protection prot) = 0;
     virtual void makeTemplateArgument(bool b=TRUE) = 0;
     virtual void mergeCategory(ClassDef *category) = 0;
     virtual void findSectionsInDocumentation() = 0;
@@ -368,7 +431,7 @@ class ClassDef : virtual public Definition
     virtual void mergeMembers() = 0;
     virtual void sortMemberLists() = 0;
     virtual void distributeMemberGroupDocumentation() = 0;
-    virtual void reclassifyMember(MemberDef *md,MemberType t) = 0;
+    virtual void reclassifyMember(MemberDefMutable *md,MemberType t) = 0;
     virtual void removeMemberFromLists(MemberDef *md) = 0;
     virtual void setAnonymousEnumType() = 0;
     virtual void countMembers() = 0;
@@ -383,48 +446,51 @@ class ClassDef : virtual public Definition
     virtual void writeMemberPages(OutputList &ol) const = 0;
     virtual void writeMemberList(OutputList &ol) const = 0;
     virtual void writeDeclaration(OutputList &ol,const MemberDef *md,bool inGroup,
-                 const ClassDef *inheritedFrom,const char *inheritId) const = 0;
+                 int indentLevel, const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
     virtual void writeQuickMemberLinks(OutputList &ol,const MemberDef *md) const = 0;
     virtual void writeSummaryLinks(OutputList &ol) const = 0;
     virtual void writeInlineDocumentation(OutputList &ol) const = 0;
-    virtual void writeDeclarationLink(OutputList &ol,bool &found,
-                 const char *header,bool localNames) const = 0;
-    virtual void writeTagFile(FTextStream &) = 0;
-    virtual void writeMemberDeclarations(OutputList &ol,MemberListType lt,const QCString &title,
-                 const char *subTitle=0,bool showInline=FALSE,const ClassDef *inheritedFrom=0,
-                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE,
-                 QPtrDict<void> *visitedClasses=0) const = 0;
+    virtual void writeTagFile(TextStream &) = 0;
+    virtual void writeMemberDeclarations(OutputList &ol,ClassDefSet &visitedClasses,
+                 MemberListType lt,const QCString &title,
+                 const QCString &subTitle=QCString(),
+                 bool showInline=FALSE,const ClassDef *inheritedFrom=0,
+                 int lt2=-1,bool invert=FALSE,bool showAlways=FALSE) const = 0;
     virtual void addGroupedInheritedMembers(OutputList &ol,MemberListType lt,
                  const ClassDef *inheritedFrom,const QCString &inheritId) const = 0;
 
-    //-----------------------------------------------------------------------------------
-    // --- count members ----
-    //-----------------------------------------------------------------------------------
 
-    virtual int countMembersIncludingGrouped(MemberListType lt,
-                const ClassDef *inheritedFrom,bool additional) const = 0;
-    virtual int countInheritanceNodes() const = 0;
-    virtual int countMemberDeclarations(MemberListType lt,const ClassDef *inheritedFrom,
-                int lt2,bool invert,bool showAlways,QPtrDict<void> *visitedClasses) const = 0;
-
-
-    //-----------------------------------------------------------------------------------
-    // --- visiting administration ----
-    //-----------------------------------------------------------------------------------
-
-    virtual void setVisited(bool visited) const = 0;
-    virtual bool isVisited() const = 0;
 };
 
 /** Factory method to create a new ClassDef object */
-ClassDef *createClassDef(
-             const char *fileName,int startLine,int startColumn,
-             const char *name,ClassDef::CompoundType ct,
-             const char *ref=0,const char *fName=0,
+ClassDefMutable *createClassDef(
+             const QCString &fileName,int startLine,int startColumn,
+             const QCString &name,ClassDef::CompoundType ct,
+             const QCString &ref=QCString(),const QCString &fName=QCString(),
              bool isSymbol=TRUE,bool isJavaEnum=FALSE);
 
 ClassDef *createClassDefAlias(const Definition *newScope,const ClassDef *cd);
 
+// --- Cast functions
+
+ClassDef            *toClassDef(Definition *d);
+ClassDef            *toClassDef(DefinitionMutable *d);
+const ClassDef      *toClassDef(const Definition *d);
+ClassDefMutable     *toClassDefMutable(Definition *d);
+ClassDefMutable     *toClassDefMutable(const Definition *d);
+
+// --- Helpers
+//
+ClassDef *getClass(const QCString &key);
+inline ClassDefMutable *getClassMutable(const QCString &key)
+{
+  return toClassDefMutable(getClass(key));
+}
+bool hasVisibleRoot(const BaseClassList &bcl);
+bool classHasVisibleChildren(const ClassDef *cd);
+bool classVisibleInIndex(const ClassDef *cd);
+int minClassDistance(const ClassDef *cd,const ClassDef *bcd,int level=0);
+Protection classInheritedProtectionLevel(const ClassDef *cd,const ClassDef *bcd,Protection prot=Public,int level=0);
 
 //------------------------------------------------------------------------
 
@@ -438,11 +504,11 @@ struct UsesClassDef
  ~UsesClassDef()
   {
   }
-  void addAccessor(const char *s)
+  void addAccessor(const QCString &s)
   {
-    if (accessors.find(s)==accessors.end())
+    if (accessors.find(s.str())==accessors.end())
     {
-      accessors.insert(s);
+      accessors.insert(s.str());
     }
   }
   /** Class definition that this relation uses. */
@@ -459,86 +525,11 @@ struct UsesClassDef
   bool containment = true;
 };
 
-/** Dictionary of usage relations.
- */
-class UsesClassDict : public QDict<UsesClassDef>
+class UsesClassList : public std::vector<UsesClassDef>
 {
-  public:
-    UsesClassDict(uint size) : QDict<UsesClassDef>(size) {}
-   ~UsesClassDict() {}
-};
-
-/** Iterator class to iterate over a dictionary of usage relations.
- */
-class UsesClassDictIterator : public QDictIterator<UsesClassDef>
-{
-  public:
-    UsesClassDictIterator(const QDict<UsesClassDef> &d)
-      : QDictIterator<UsesClassDef>(d) {}
-   ~UsesClassDictIterator() {}
 };
 
 //------------------------------------------------------------------------
-
-/** Class that contains information about an inheritance relation.
- */
-struct BaseClassDef
-{
-  BaseClassDef(ClassDef *cd,const char *n,Protection p, Specifier v,const char *t) :
-        classDef(cd), usedName(n), prot(p), virt(v), templSpecifiers(t) {}
-
-  /** Class definition that this relation inherits from. */
-  ClassDef *classDef;
-
-  /** name used in the inheritance list
-   * (may be a typedef name instead of the class name)
-   */
-  QCString   usedName;
-
-  /** Protection level of the inheritance relation:
-   *  Public, Protected, or Private
-   */
-  Protection prot;
-
-  /** Virtualness of the inheritance relation:
-   *  Normal, or Virtual
-   */
-  Specifier  virt;
-
-  /** Template arguments used for the base class */
-  QCString templSpecifiers;
-};
-
-/** List of base classes.
- *
- *  The classes are alphabetically sorted on name if inSort() is used.
- */
-class BaseClassList : public QList<BaseClassDef>
-{
-  public:
-   ~BaseClassList() {}
-    int compareValues(const BaseClassDef *item1,const BaseClassDef *item2) const
-    {
-      const ClassDef *c1=item1->classDef;
-      const ClassDef *c2=item2->classDef;
-      if (c1==0 || c2==0)
-        return FALSE;
-      else
-        return qstricmp(c1->name(),c2->name());
-    }
-};
-
-/** Iterator for a list of base classes.
- */
-class BaseClassListIterator : public QListIterator<BaseClassDef>
-{
-  public:
-    BaseClassListIterator(const BaseClassList &bcl) :
-      QListIterator<BaseClassDef>(bcl) {}
-};
-
-//------------------------------------------------------------------------
-
 
 /** Class that contains information about a type constraint relations.
  */
@@ -550,11 +541,11 @@ struct ConstraintClassDef
  ~ConstraintClassDef()
   {
   }
-  void addAccessor(const char *s)
+  void addAccessor(const QCString &s)
   {
-    if (accessors.find(s)==accessors.end())
+    if (accessors.find(s.str())==accessors.end())
     {
-      accessors.insert(s);
+      accessors.insert(s.str());
     }
   }
   /** Class definition that this relation uses. */
@@ -566,23 +557,8 @@ struct ConstraintClassDef
   StringSet accessors;
 };
 
-/** Dictionary of constraint relations.
- */
-class ConstraintClassDict : public QDict<ConstraintClassDef>
+class ConstraintClassList : public std::vector<ConstraintClassDef>
 {
-  public:
-    ConstraintClassDict(uint size) : QDict<ConstraintClassDef>(size) {}
-   ~ConstraintClassDict() {}
-};
-
-/** Iterator class to iterate over a dictionary of constraint relations.
- */
-class ConstraintClassDictIterator : public QDictIterator<ConstraintClassDef>
-{
-  public:
-    ConstraintClassDictIterator(const QDict<ConstraintClassDef> &d)
-      : QDictIterator<ConstraintClassDef>(d) {}
-   ~ConstraintClassDictIterator() {}
 };
 
 //------------------------------------------------------------------------

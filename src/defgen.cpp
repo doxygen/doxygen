@@ -18,6 +18,8 @@
 
 #include <stdlib.h>
 
+#include <fstream>
+
 #include "defgen.h"
 #include "doxygen.h"
 #include "message.h"
@@ -33,32 +35,32 @@
 #include "namespacedef.h"
 #include "filedef.h"
 #include "filename.h"
-
-#include <qdir.h>
-#include <qfile.h>
-#include <qtextstream.h>
+#include "dir.h"
+#include "textstream.h"
 
 #define DEF_DB(x)
 
-inline void writeDEFString(FTextStream &t,const char *s)
+static inline void writeDEFString(TextStream &t,const QCString &s)
 {
-  const char* p=s;
-  char c;
-
   t << '\'';
-  while ((c = *(p++)))
+  if (!s.isEmpty())
   {
-    if (c == '\'')
-      t << '\\';
-    t << c;
+    const char* p=s.data();
+    char c;
+
+    while ((c = *(p++)))
+    {
+      if (c == '\'') t << '\\';
+      t << c;
+    }
   }
   t << '\'';
 }
 
-void generateDEFForMember(MemberDef *md,
-    FTextStream &t,
-    Definition *def,
-    const char* Prefix)
+static void generateDEFForMember(const MemberDef *md,
+    TextStream &t,
+    const Definition *def,
+    const QCString &prefix)
 {
   QCString memPrefix;
 
@@ -81,9 +83,9 @@ void generateDEFForMember(MemberDef *md,
   else if (md->getNamespaceDef())
     scopeName=md->getNamespaceDef()->name();
 
-  t << "    " << Prefix << "-member = {" << endl;
+  t << "    " << prefix << "-member = {\n";
   memPrefix = "      ";
-  memPrefix.append( Prefix );
+  memPrefix.append( prefix );
   memPrefix.append( "-mem-" );
 
   QCString memType;
@@ -108,27 +110,27 @@ void generateDEFForMember(MemberDef *md,
     case MemberType_Slot:        memType="slot";       isFunc=TRUE; break;
   }
 
-  t << memPrefix << "kind = '" << memType << "';" << endl;
+  t << memPrefix << "kind = '" << memType << "';\n";
   t << memPrefix << "id   = '"
     << md->getOutputFileBase() << "_1" << md->anchor()
-    << "';" << endl;
+    << "';\n";
 
   t << memPrefix << "virt = ";
   switch (md->virtualness())
   {
-    case Normal:  t << "normal;"       << endl; break;
-    case Virtual: t << "virtual;"      << endl; break;
-    case Pure:    t << "pure-virtual;" << endl; break;
+    case Normal:  t << "normal;\n"; break;
+    case Virtual: t << "virtual;\n"; break;
+    case Pure:    t << "pure-virtual;\n"; break;
     default: ASSERT(0);
   }
 
   t << memPrefix << "prot = ";
   switch(md->protection())
   {
-    case Public:    t << "public;"    << endl; break;
-    case Protected: t << "protected;" << endl; break;
-    case Private:   t << "private;"   << endl; break;
-    case Package:   t << "package;"   << endl; break;
+    case Public:    t << "public;\n"; break;
+    case Protected: t << "protected;\n"; break;
+    case Private:   t << "private;\n"; break;
+    case Package:   t << "package;\n"; break;
   }
 
   if (md->memberType()!=MemberType_Define &&
@@ -136,11 +138,11 @@ void generateDEFForMember(MemberDef *md,
      )
   {
     QCString typeStr = replaceAnonymousScopes(md->typeString());
-    t << memPrefix << "type = <<_EnD_oF_dEf_TeXt_" << endl << typeStr << endl
-      << "_EnD_oF_dEf_TeXt_;" << endl;
+    t << memPrefix << "type = <<_EnD_oF_dEf_TeXt_\n" << typeStr << "\n"
+      << "_EnD_oF_dEf_TeXt_;\n";
   }
 
-  t << memPrefix << "name = '" << md->name() << "';" << endl;
+  t << memPrefix << "name = '" << md->name() << "';\n";
 
   if (isFunc) //function
   {
@@ -157,42 +159,42 @@ void generateDEFForMember(MemberDef *md,
         defArg = &(*defIt);
         ++defIt;
       }
-      t << memPrefix << "param = {" << endl;
+      t << memPrefix << "param = {\n";
       if (!a.attrib.isEmpty())
       {
         t << fcnPrefix << "attributes = ";
         writeDEFString(t,a.attrib);
-        t << ';' << endl;
+        t << ";\n";
       }
       if (!a.type.isEmpty())
       {
-        t << fcnPrefix << "type = <<_EnD_oF_dEf_TeXt_" << endl
-          << a.type << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+        t << fcnPrefix << "type = <<_EnD_oF_dEf_TeXt_\n"
+          << a.type << "\n_EnD_oF_dEf_TeXt_;\n";
       }
       if (!a.name.isEmpty())
       {
         t << fcnPrefix << "declname = ";
         writeDEFString(t,a.name);
-        t << ';' << endl;
+        t << ";\n";
       }
       if (defArg && !defArg->name.isEmpty() && defArg->name!=a.name)
       {
         t << fcnPrefix << "defname = ";
         writeDEFString(t,defArg->name);
-        t << ';' << endl;
+        t << ";\n";
       }
       if (!a.array.isEmpty())
       {
         t << fcnPrefix << "array = ";
         writeDEFString(t,a.array);
-        t << ';' << endl;
+        t << ";\n";
       }
       if (!a.defval.isEmpty())
       {
-        t << fcnPrefix << "defval = <<_EnD_oF_dEf_TeXt_" << endl
-          << a.defval << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+        t << fcnPrefix << "defval = <<_EnD_oF_dEf_TeXt_\n"
+          << a.defval << "\n_EnD_oF_dEf_TeXt_;\n";
       }
-      t << "      }; /*" << fcnPrefix << "-param */" << endl;
+      t << "      }; /*" << fcnPrefix << "-param */\n";
     }
   }
   else if (  md->memberType()==MemberType_Define
@@ -201,140 +203,119 @@ void generateDEFForMember(MemberDef *md,
     QCString defPrefix = "  " + memPrefix + "def-";
     for (const Argument &a : md->argumentList())
     {
-      t << memPrefix << "param  = {" << endl;
-      t << defPrefix << "name = '" << a.type << "';" << endl;
-      t << "      }; /*" << defPrefix << "-param */" << endl;
+      t << memPrefix << "param  = {\n";
+      t << defPrefix << "name = '" << a.type << "';\n";
+      t << "      }; /*" << defPrefix << "-param */\n";
     }
   }
 
   if (!md->initializer().isEmpty())
   {
-    t << memPrefix << "initializer = <<_EnD_oF_dEf_TeXt_" << endl
-      << md->initializer() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+    t << memPrefix << "initializer = <<_EnD_oF_dEf_TeXt_\n"
+      << md->initializer() << "\n_EnD_oF_dEf_TeXt_;\n";
   }
   // TODO: exceptions, const volatile
   if (md->memberType()==MemberType_Enumeration) // enum
   {
-    const MemberList *enumList = md->enumFieldList();
-    if (enumList!=0)
+    for (const auto &emd : md->enumFieldList())
     {
-      MemberListIterator emli(*enumList);
-      MemberDef *emd;
-      for (emli.toFirst();(emd=emli.current());++emli)
+      t << memPrefix << "enum = { enum-name = " << emd->name() << ';';
+      if (!emd->initializer().isEmpty())
       {
-        t << memPrefix << "enum = { enum-name = " << emd->name() << ';';
-        if (!emd->initializer().isEmpty())
-        {
-          t << " enum-value = ";
-          writeDEFString(t,emd->initializer());
-          t << ';';
-        }
-        t << " };" << endl;
+        t << " enum-value = ";
+        writeDEFString(t,emd->initializer());
+        t << ';';
       }
+      t << " };\n";
     }
   }
 
-  t << memPrefix << "desc-file = '" << md->getDefFileName() << "';" << endl;
-  t << memPrefix << "desc-line = '" << md->getDefLine()     << "';" << endl;
-  t << memPrefix << "briefdesc =    <<_EnD_oF_dEf_TeXt_"    << endl
-    << md->briefDescription() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
-  t << memPrefix << "documentation = <<_EnD_oF_dEf_TeXt_"   << endl
-    << md->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+  t << memPrefix << "desc-file = '" << md->getDefFileName() << "';\n";
+  t << memPrefix << "desc-line = '" << md->getDefLine()     << "';\n";
+  t << memPrefix << "briefdesc =    <<_EnD_oF_dEf_TeXt_\n"
+    << md->briefDescription() << "\n_EnD_oF_dEf_TeXt_;\n";
+  t << memPrefix << "documentation = <<_EnD_oF_dEf_TeXt_\n"
+    << md->documentation() << "\n_EnD_oF_dEf_TeXt_;\n";
 
   //printf("md->getReferencesMembers()=%p\n",md->getReferencesMembers());
 
-  MemberSDict *mdict = md->getReferencesMembers();
-  if (mdict)
+  QCString refPrefix = "  " + memPrefix + "ref-";
+  auto refList = md->getReferencesMembers();
+  for (const auto &rmd : refList)
   {
-    MemberSDict::Iterator mdi(*mdict);
-    MemberDef *rmd;
-    QCString refPrefix = "  " + memPrefix + "ref-";
-
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
+    if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
     {
-      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
+      t << memPrefix << "referenceto = {\n";
+      t << refPrefix << "id = '"
+        << rmd->getBodyDef()->getOutputFileBase()
+        << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
+        << rmd->anchor() << "';\n";
+
+      t << refPrefix << "line = '"
+        << rmd->getStartBodyLine() << "';\n";
+
+      QCString scope = rmd->getScopeString();
+      QCString name = rmd->name();
+      if (!scope.isEmpty() && scope!=def->name())
       {
-        t << memPrefix << "referenceto = {" << endl;
-        t << refPrefix << "id = '"
-          << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
-          << rmd->anchor() << "';" << endl;
-
-        t << refPrefix << "line = '"
-          << rmd->getStartBodyLine() << "';" << endl;
-
-        QCString scope = rmd->getScopeString();
-        QCString name = rmd->name();
-        if (!scope.isEmpty() && scope!=def->name())
-        {
-          name.prepend(scope+"::");
-        }
-
-        t << refPrefix << "name = ";
-        writeDEFString(t,name);
-        t << ';' << endl << "    };" << endl;
+        name.prepend(scope+"::");
       }
-    } /* for (mdi.toFirst...) */
+
+      t << refPrefix << "name = ";
+      writeDEFString(t,name);
+      t << ';' << "\n    };\n";
+    }
   }
-  mdict = md->getReferencedByMembers();
-  if (mdict)
+  auto refByList = md->getReferencedByMembers();
+  for (const auto &rmd : refByList)
   {
-    MemberSDict::Iterator mdi(*mdict);
-    MemberDef *rmd;
-    QCString refPrefix = "  " + memPrefix + "ref-";
-
-    for (mdi.toFirst();(rmd=mdi.current());++mdi)
+    if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
     {
-      if (rmd->getStartBodyLine()!=-1 && rmd->getBodyDef())
+      t << memPrefix << "referencedby = {\n";
+      t << refPrefix << "id = '"
+        << rmd->getBodyDef()->getOutputFileBase()
+        << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
+        << rmd->anchor() << "';\n";
+
+      t << refPrefix << "line = '"
+        << rmd->getStartBodyLine() << "';\n";
+
+      QCString scope = rmd->getScopeString();
+      QCString name = rmd->name();
+      if (!scope.isEmpty() && scope!=def->name())
       {
-        t << memPrefix << "referencedby = {" << endl;
-        t << refPrefix << "id = '"
-          << rmd->getBodyDef()->getOutputFileBase()
-          << "_1"   // encoded ':' character (see util.cpp:convertNameToFile)
-          << rmd->anchor() << "';" << endl;
-
-        t << refPrefix << "line = '"
-          << rmd->getStartBodyLine() << "';" << endl;
-
-        QCString scope = rmd->getScopeString();
-        QCString name = rmd->name();
-        if (!scope.isEmpty() && scope!=def->name())
-        {
-          name.prepend(scope+"::");
-        }
-
-        t << refPrefix << "name = ";
-        writeDEFString(t,name);
-        t << ';' << endl << "    };" << endl;
+        name.prepend(scope+"::");
       }
-    } /* for (mdi.toFirst...) */
+
+      t << refPrefix << "name = ";
+      writeDEFString(t,name);
+      t << ';' << "\n    };\n";
+    }
   }
 
-  t << "    }; /* " << Prefix << "-member */" << endl;
+  t << "    }; /* " << prefix << "-member */\n";
 }
 
 
-void generateDEFClassSection(ClassDef *cd,
-    FTextStream &t,
-    MemberList *ml,
-    const char *kind)
+static void generateDEFClassSection(const ClassDef *cd,
+    TextStream &t,
+    const MemberList *ml,
+    const QCString &kind)
 {
-  if (cd && ml && ml->count()>0)
+  if (cd && ml && !ml->empty())
   {
-    t << "  cp-section = {" << endl;
-    t << "    sec-kind = '" << kind << "';" << endl;
+    t << "  cp-section = {\n";
+    t << "    sec-kind = '" << kind << "';\n";
 
-    MemberListIterator mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    for (const auto &md : *ml)
     {
       generateDEFForMember(md,t,cd,"sec");
     }
-    t << "  }; /* cp-section */" << endl;
+    t << "  }; /* cp-section */\n";
   }
 }
 
-void generateDEFForClass(ClassDef *cd,FTextStream &t)
+static void generateDEFForClass(const ClassDef *cd,TextStream &t)
 {
   // + brief description
   // + detailed description
@@ -354,74 +335,62 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
   if (cd->name().find('@')!=-1) return; // skip anonymous compounds.
   if (cd->templateMaster()!=0) return; // skip generated template instances.
 
-  t << cd->compoundTypeString() << " = {" << endl;
-  t << "  cp-id     = '" << cd->getOutputFileBase() << "';" << endl;
-  t << "  cp-name   = '" << cd->name() << "';" << endl;
+  t << cd->compoundTypeString() << " = {\n";
+  t << "  cp-id     = '" << cd->getOutputFileBase() << "';\n";
+  t << "  cp-name   = '" << cd->name() << "';\n";
 
-  if (cd->baseClasses())
+  for (const auto &bcd : cd->baseClasses())
   {
-    BaseClassListIterator bcli(*cd->baseClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    t << "  cp-ref     = {\n" << "    ref-type = base;\n";
+    t << "    ref-id   = '"
+      << bcd.classDef->getOutputFileBase() << "';\n";
+    t << "    ref-prot = ";
+    switch (bcd.prot)
     {
-      t << "  cp-ref     = {" << endl << "    ref-type = base;" << endl;
-      t << "    ref-id   = '"
-        << bcd->classDef->getOutputFileBase() << "';" << endl;
-      t << "    ref-prot = ";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public;"    << endl; break;
-        case Package: // package scope is not possible
-        case Protected: t << "protected;" << endl; break;
-        case Private:   t << "private;"   << endl; break;
-      }
-      t << "    ref-virt = ";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual;";  break;
-        case Virtual: t << "virtual;";      break;
-        case Pure:    t << "pure-virtual;"; break;
-      }
-      t << endl << "  };" << endl;
+      case Public:    t << "public;\n"; break;
+      case Package: // package scope is not possible
+      case Protected: t << "protected;\n"; break;
+      case Private:   t << "private;\n"; break;
     }
+    t << "    ref-virt = ";
+    switch(bcd.virt)
+    {
+      case Normal:  t << "non-virtual;";  break;
+      case Virtual: t << "virtual;";      break;
+      case Pure:    t << "pure-virtual;"; break;
+    }
+    t << "\n  };\n";
   }
 
-  if (cd->subClasses())
+  for (const auto &bcd : cd->subClasses())
   {
-    BaseClassListIterator bcli(*cd->subClasses());
-    BaseClassDef *bcd;
-    for (bcli.toFirst();(bcd=bcli.current());++bcli)
+    t << "  cp-ref     = {\n" << "    ref-type = derived;\n";
+    t << "    ref-id   = '"
+      << bcd.classDef->getOutputFileBase() << "';\n";
+    t << "    ref-prot = ";
+    switch (bcd.prot)
     {
-      t << "  cp-ref     = {" << endl << "    ref-type = derived;" << endl;
-      t << "    ref-id   = '"
-        << bcd->classDef->getOutputFileBase() << "';" << endl;
-      t << "    ref-prot = ";
-      switch (bcd->prot)
-      {
-        case Public:    t << "public;"    << endl; break;
-        case Package: // packet scope is not possible!
-        case Protected: t << "protected;" << endl; break;
-        case Private:   t << "private;"   << endl; break;
-      }
-      t << "    ref-virt = ";
-      switch(bcd->virt)
-      {
-        case Normal:  t << "non-virtual;";  break;
-        case Virtual: t << "virtual;";      break;
-        case Pure:    t << "pure-virtual;"; break;
-      }
-      t << endl << "  };" << endl;
+      case Public:    t << "public;\n"; break;
+      case Package: // packet scope is not possible!
+      case Protected: t << "protected;\n"; break;
+      case Private:   t << "private;\n"; break;
     }
+    t << "    ref-virt = ";
+    switch (bcd.virt)
+    {
+      case Normal:  t << "non-virtual;";  break;
+      case Virtual: t << "virtual;";      break;
+      case Pure:    t << "pure-virtual;"; break;
+    }
+    t << "\n  };\n";
   }
 
-  int numMembers = 0;
-  QListIterator<MemberList> mli(cd->getMemberLists());
-  MemberList *ml;
-  for (mli.toFirst();(ml=mli.current());++mli)
+  size_t numMembers = 0;
+  for (const auto &ml : cd->getMemberLists())
   {
     if ((ml->listType()&MemberListType_detailedLists)==0)
     {
-      numMembers+=ml->count();
+      numMembers+=ml->size();
     }
   }
   if (numMembers>0)
@@ -453,57 +422,55 @@ void generateDEFForClass(ClassDef *cd,FTextStream &t)
     generateDEFClassSection(cd,t,cd->getMemberList(MemberListType_related),"related");
   }
 
-  t << "  cp-filename  = '" << cd->getDefFileName() << "';" << endl;
-  t << "  cp-fileline  = '" << cd->getDefLine()     << "';" << endl;
-  t << "  cp-briefdesc = <<_EnD_oF_dEf_TeXt_" << endl
-    << cd->briefDescription() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+  t << "  cp-filename  = '" << cd->getDefFileName() << "';\n";
+  t << "  cp-fileline  = '" << cd->getDefLine()     << "';\n";
+  t << "  cp-briefdesc = <<_EnD_oF_dEf_TeXt_\n"
+    << cd->briefDescription() << "\n_EnD_oF_dEf_TeXt_;\n";
 
-  t << "  cp-documentation = <<_EnD_oF_dEf_TeXt_" << endl
-    << cd->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+  t << "  cp-documentation = <<_EnD_oF_dEf_TeXt_\n"
+    << cd->documentation() << "\n_EnD_oF_dEf_TeXt_;\n";
 
   DotClassGraph inheritanceGraph(cd,Inheritance);
   if (!inheritanceGraph.isTrivial())
   {
-    t << "  cp-inheritancegraph = <<_EnD_oF_dEf_TeXt_" << endl;
+    t << "  cp-inheritancegraph = <<_EnD_oF_dEf_TeXt_\n";
     inheritanceGraph.writeDEF(t);
-    t << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+    t << "\n_EnD_oF_dEf_TeXt_;\n";
   }
   DotClassGraph collaborationGraph(cd,Collaboration);
   if (!collaborationGraph.isTrivial())
   {
-    t << "  cp-collaborationgraph = <<_EnD_oF_dEf_TeXt_" << endl;
+    t << "  cp-collaborationgraph = <<_EnD_oF_dEf_TeXt_\n";
     collaborationGraph.writeDEF(t);
-    t << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+    t << "\n_EnD_oF_dEf_TeXt_;\n";
   }
-  t << "}; /* " <<  cd->compoundTypeString() << " */" << endl;
+  t << "}; /* " <<  cd->compoundTypeString() << " */\n";
 }
 
-void generateDEFSection(Definition *d,
-    FTextStream &t,
-    MemberList *ml,
-    const char *kind)
+static void generateDEFSection(const Definition *d,
+    TextStream &t,
+    const MemberList *ml,
+    const QCString &kind)
 {
-  if (ml && ml->count()>0)
+  if (ml && !ml->empty())
   {
-    t << "    " << kind << " = {" << endl;
-    MemberListIterator mli(*ml);
-    MemberDef *md;
-    for (mli.toFirst();(md=mli.current());++mli)
+    t << "    " << kind << " = {\n";
+    for (const auto &md : *ml)
     {
       generateDEFForMember(md,t,d,kind);
     }
-    t << "    };" << endl;
+    t << "    };\n";
   }
 }
 
-void generateDEFForNamespace(NamespaceDef *nd,FTextStream &t)
+static void generateDEFForNamespace(const NamespaceDef *nd,TextStream &t)
 {
   if (nd->isReference()) return; // skip external references
-  t << "  namespace = {" << endl;
-  t << "    ns-id   = '" << nd->getOutputFileBase() << "';" << endl;
+  t << "  namespace = {\n";
+  t << "    ns-id   = '" << nd->getOutputFileBase() << "';\n";
   t << "    ns-name = ";
   writeDEFString(t,nd->name());
-  t << ';' << endl;
+  t << ";\n";
 
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decDefineMembers),"define");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decProtoMembers),"prototype");
@@ -514,25 +481,25 @@ void generateDEFForNamespace(NamespaceDef *nd,FTextStream &t)
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decFuncMembers),"func");
   generateDEFSection(nd,t,nd->getMemberList(MemberListType_decVarMembers),"var");
 
-  t << "  ns-filename  = '" << nd->getDefFileName() << "';" << endl;
-  t << "  ns-fileline  = '" << nd->getDefLine()     << "';" << endl;
-  t << "  ns-briefdesc = <<_EnD_oF_dEf_TeXt_" << endl
-    << nd->briefDescription() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+  t << "  ns-filename  = '" << nd->getDefFileName() << "';\n";
+  t << "  ns-fileline  = '" << nd->getDefLine()     << "';\n";
+  t << "  ns-briefdesc = <<_EnD_oF_dEf_TeXt_\n"
+    << nd->briefDescription() << "\n_EnD_oF_dEf_TeXt_;\n";
 
-  t << "  ns-documentation = <<_EnD_oF_dEf_TeXt_" << endl
-    << nd->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
-  t << "  };" << endl;
+  t << "  ns-documentation = <<_EnD_oF_dEf_TeXt_\n"
+    << nd->documentation() << "\n_EnD_oF_dEf_TeXt_;\n";
+  t << "  };\n";
 }
 
-void generateDEFForFile(FileDef *fd,FTextStream &t)
+static void generateDEFForFile(const FileDef *fd,TextStream &t)
 {
   if (fd->isReference()) return; // skip external references
 
-  t << "file = {" << endl;
-  t << "  file-id   = '" << fd->getOutputFileBase() << "';" << endl;
+  t << "file = {\n";
+  t << "  file-id   = '" << fd->getOutputFileBase() << "';\n";
   t << "  file-name = ";
   writeDEFString(t,fd->name());
-  t << ';' << endl;
+  t << ";\n";
 
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decDefineMembers),"define");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decProtoMembers),"prototype");
@@ -543,81 +510,46 @@ void generateDEFForFile(FileDef *fd,FTextStream &t)
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decFuncMembers),"func");
   generateDEFSection(fd,t,fd->getMemberList(MemberListType_decVarMembers),"var");
 
-  t << "  file-full-name  = '" << fd->getDefFileName() << "';" << endl;
-  t << "  file-first-line = '" << fd->getDefLine()     << "';" << endl;
+  t << "  file-full-name  = '" << fd->getDefFileName() << "';\n";
+  t << "  file-first-line = '" << fd->getDefLine()     << "';\n";
 
-  t << "  file-briefdesc  = <<_EnD_oF_dEf_TeXt_" << endl
-    << fd->briefDescription() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+  t << "  file-briefdesc  = <<_EnD_oF_dEf_TeXt_\n"
+    << fd->briefDescription() << "\n_EnD_oF_dEf_TeXt_;\n";
 
-  t << "  file-documentation = <<_EnD_oF_dEf_TeXt_" << endl
-    << fd->documentation() << endl << "_EnD_oF_dEf_TeXt_;" << endl;
+  t << "  file-documentation = <<_EnD_oF_dEf_TeXt_\n"
+    << fd->documentation() << "\n_EnD_oF_dEf_TeXt_;\n";
 
-  t << "}; /* file */" << endl;
+  t << "}; /* file */\n";
 }
 
 
 void generateDEF()
 {
-  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY);
-  if (outputDirectory.isEmpty())
+  QCString outputDirectory = Config_getString(OUTPUT_DIRECTORY)+"/def";
+  Dir defDir(outputDirectory.str());
+  if (!defDir.exists() && !defDir.mkdir(outputDirectory.str()))
   {
-    outputDirectory=QDir::currentDirPath().utf8();
-  }
-  else
-  {
-    QDir dir(outputDirectory);
-    if (!dir.exists())
-    {
-      dir.setPath(QDir::currentDirPath());
-      if (!dir.mkdir(outputDirectory))
-      {
-        term("tag OUTPUT_DIRECTORY: Output directory '%s' does not "
-            "exist and cannot be created\n",outputDirectory.data());
-      }
-      else
-      {
-        msg("Notice: Output directory '%s' does not exist. "
-            "I have created it for you.\n", outputDirectory.data());
-      }
-      dir.cd(outputDirectory);
-    }
-    outputDirectory=dir.absPath().utf8();
-  }
-
-  QDir dir(outputDirectory);
-  if (!dir.exists())
-  {
-    dir.setPath(QDir::currentDirPath());
-    if (!dir.mkdir(outputDirectory))
-    {
-      err("Cannot create directory %s\n",outputDirectory.data());
-      return;
-    }
-  }
-  QDir defDir(outputDirectory+"/def");
-  if (!defDir.exists() && !defDir.mkdir(outputDirectory+"/def"))
-  {
-    err("Could not create def directory in %s\n",outputDirectory.data());
+    err("Could not create def directory in %s\n",qPrint(outputDirectory));
     return;
   }
 
-  QCString fileName=outputDirectory+"/def/doxygen.def";
-  QFile f(fileName);
-  if (!f.open(IO_WriteOnly))
+  QCString fileName=outputDirectory+"/doxygen.def";
+  std::ofstream f(fileName.str(),std::ostream::out | std::ostream::binary);
+  if (!f.is_open())
   {
-    err("Cannot open file %s for writing!\n",fileName.data());
+    err("Cannot open file %s for writing!\n",qPrint(fileName));
     return;
   }
-  FTextStream t(&f);
-  t << "AutoGen Definitions dummy;" << endl;
+  TextStream t(&f);
+  t << "AutoGen Definitions dummy;\n";
 
-  if (Doxygen::classSDict->count()+Doxygen::inputNameLinkedMap->size()>0)
+  if (Doxygen::classLinkedMap->size()+
+      Doxygen::inputNameLinkedMap->size()+
+      Doxygen::namespaceLinkedMap->size()>0)
   {
-    ClassSDict::Iterator cli(*Doxygen::classSDict);
-    ClassDef *cd;
-    for (cli.toFirst();(cd=cli.current());++cli)
+    for (const auto &cd : *Doxygen::classLinkedMap)
     {
-      generateDEFForClass(cd,t);
+      generateDEFForClass(cd.get(),t);
     }
     for (const auto &fn : *Doxygen::inputNameLinkedMap)
     {
@@ -626,9 +558,13 @@ void generateDEF()
         generateDEFForFile(fd.get(),t);
       }
     }
+    for (const auto &nd : *Doxygen::namespaceLinkedMap)
+    {
+      generateDEFForNamespace(nd.get(),t);
+    }
   }
   else
   {
-    t << "dummy_value = true;" << endl;
+    t << "dummy_value = true;\n";
   }
 }

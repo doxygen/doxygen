@@ -1,5 +1,5 @@
 Doxygen regression test suite
-============================
+=============================
 
 This directory contains a set of regression tests. Each test consists of a
 file starting with a 3 digit number and a corresponding directory whose name
@@ -9,32 +9,44 @@ result is the same, there is no regression and the test passes. If there is a
 difference the test fails and the difference (in diff -u format) will be shown.
 It is also possible to see whether or not the test can be built to a xhtml set
 of files (and tested against a DTD), it is also possible to create a pdf file
-for each test to see if the LaTeX / pdf generation is possible.
+for each test to see if the LaTeX / pdf generation is possible, similar for
+rtf and docbook output.
 
 The runtest.py script responsible for running the tests takes a number of
 optional parameters:
-  --updateref           update the reference data for a test
+  --updateref           update the reference files. Should be used in
+                        combination with -id to update the reference file(s)
+                        for the given test
   --doxygen [DOXYGEN]   path/name of the doxygen executable
   --xmllint [XMLLINT]   path/name of the xmllint executable
-  --id IDS [IDS ...]    id of the test to perform
+  --id IDS [IDS ...]    run test with number n only (the option can be
+                        specified to run test with number n only (the option
+                        can be specified multiple times
   --start_id START_ID   run tests starting with number n
   --end_id END_ID       run tests ending with number n
-  --all                 perform all tests
+  --all                 can be used in combination with -updateref to update
+                        the reference files for all tests.
   --inputdir [INPUTDIR]
                         input directory containing the tests
   --outputdir [OUTPUTDIR]
                         output directory to write the doxygen output to
   --noredir             disable redirection of doxygen warnings
+  --pool [POOL]         pool size of multiprocess tests
   --xml                 create xml output and check
   --rtf                 create rtf output
   --docbook             create docbook output and check with xmllint
   --xhtml               create xhtml output and check with xmllint
+  --xmlxsd              create xml output and check with xmllint against xsd
   --pdf                 create LaTeX output and create pdf from it
   --subdirs             use the configuration parameter CREATE_SUBDIRS=YES
+  --clang               use CLANG_ASSISTED_PARSING, works only when doxygen
+                        has been compiled with "use_libclang"
   --keep                keep result directories
-  --cfg CFGS [CFGS ...] run test with extra doxygen configuration settings
+  --cfg CFGS [CFGS ...]
+                        run test with extra doxygen configuration settings
                         (the option may be specified multiple times
-In case neither --xml, --pdf, --rtf, --docbook or --xhtml is used the default is set to --xml.
+In case neither --xml, --xmlxsd, --pdf, --rtf, --docbook or --xhtml is used the
+default is set to --xml.
 
 The runtest.pl has the following dependencies on 3rd party tools:
 - python  to run the script

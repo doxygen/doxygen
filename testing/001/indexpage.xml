@@ -8,5 +8,6 @@
     <detaileddescription>
       <para>Text <emphasis>argument</emphasis> more text. </para>
     </detaileddescription>
+    <location file="001_a.dox"/>
   </compounddef>
 </doxygen>

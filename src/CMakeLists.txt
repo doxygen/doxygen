@@ -1,11 +1,12 @@
 # vim:ts=4:sw=4:expandtab:autoindent:
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/qtools
+    ${PROJECT_SOURCE_DIR}/filesystem
     ${PROJECT_SOURCE_DIR}/libmd5
     ${PROJECT_SOURCE_DIR}/liblodepng
     ${PROJECT_SOURCE_DIR}/libmscgen
     ${PROJECT_SOURCE_DIR}/libversion
+    ${PROJECT_SOURCE_DIR}/libxml
     ${PROJECT_SOURCE_DIR}/vhdlparser
     ${PROJECT_SOURCE_DIR}/src
     ${CLANG_INCLUDEDIR}
@@ -100,14 +101,6 @@ add_custom_command(
 )
 set_source_files_properties(${GENERATED_SRC}/resources.cpp PROPERTIES GENERATED 1)
 
-# layout_default.xml
-add_custom_command(
-    COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/to_c_cmd.py < ${CMAKE_CURRENT_LIST_DIR}/layout_default.xml > ${GENERATED_SRC}/layout_default.xml.h
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/layout_default.xml ${CMAKE_CURRENT_LIST_DIR}/to_c_cmd.py
-    OUTPUT  ${GENERATED_SRC}/layout_default.xml.h
-)
-set_source_files_properties(${GENERATED_SRC}/layout_default.xml.h PROPERTIES GENERATED 1)
-
 set(LEX_FILES scanner 
     code
     pyscanner
@@ -124,6 +117,8 @@ set(LEX_FILES scanner
     constexp
     xmlcode
     sqlcode
+    lexcode
+    lexscanner
     configimpl)
 
 # unfortunately ${LEX_FILES_H} and ${LEX_FILES_CPP} don't work in older versions of CMake (like 3.6.2) for add_library
@@ -171,7 +166,6 @@ add_library(doxycfg STATIC
     ${GENERATED_SRC}/settings.h
     portable.cpp
     portable_c.c
-    ftextstream.cpp
     message.cpp
     debug.cpp
 )
@@ -191,6 +185,8 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/doctokenizer.l.h
     ${GENERATED_SRC}/fortrancode.l.h
     ${GENERATED_SRC}/fortranscanner.l.h
+    ${GENERATED_SRC}/lexcode.l.h
+    ${GENERATED_SRC}/lexscanner.l.h
     ${GENERATED_SRC}/pre.l.h
     ${GENERATED_SRC}/pycode.l.h
     ${GENERATED_SRC}/pyscanner.l.h
@@ -206,6 +202,8 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/doctokenizer.cpp
     ${GENERATED_SRC}/fortrancode.cpp
     ${GENERATED_SRC}/fortranscanner.cpp
+    ${GENERATED_SRC}/lexcode.cpp
+    ${GENERATED_SRC}/lexscanner.cpp
     ${GENERATED_SRC}/pre.cpp
     ${GENERATED_SRC}/pycode.cpp
     ${GENERATED_SRC}/pyscanner.cpp
@@ -217,7 +215,7 @@ add_library(doxymain STATIC
     ${GENERATED_SRC}/ce_parse.cpp
     # custom generated files
     ${GENERATED_SRC}/lang_cfg.h
-    ${GENERATED_SRC}/layout_default.xml.h
+    ${GENERATED_SRC}/configvalues.h
     ${GENERATED_SRC}/ce_parse.h
     ${GENERATED_SRC}/resources.cpp
     #
@@ -227,6 +225,7 @@ add_library(doxymain STATIC
     classdef.cpp
     classlist.cpp
     cmdmapper.cpp
+    conceptdef.cpp
     condparser.cpp
     context.cpp
     cppvalue.cpp
@@ -234,6 +233,7 @@ add_library(doxymain STATIC
     definition.cpp
     dia.cpp
     diagram.cpp
+    dir.cpp
     dirdef.cpp
     docbookgen.cpp
     docbookvisitor.cpp
@@ -258,6 +258,7 @@ add_library(doxymain STATIC
     emoji.cpp
     entry.cpp
     filedef.cpp
+    fileinfo.cpp
     fileparser.cpp
     formula.cpp
     ftvhelp.cpp
@@ -286,9 +287,11 @@ add_library(doxymain STATIC
     pagedef.cpp
     perlmodgen.cpp
     plantuml.cpp
+    qcstring.cpp
     qhp.cpp
     qhpxmlwriter.cpp
     reflist.cpp
+    regex.cpp
     resourcemgr.cpp
     rtfdocvisitor.cpp
     rtfgen.cpp
@@ -296,10 +299,12 @@ add_library(doxymain STATIC
     searchindex.cpp
     sqlite3gen.cpp
     stlsupport.cpp
+    symbolresolver.cpp
     tagreader.cpp
     template.cpp
     textdocvisitor.cpp
     tooltip.cpp
+    utf8.cpp
     util.cpp
     vhdldocgen.cpp
     vhdljjparser.cpp
@@ -328,7 +333,6 @@ if (use_libclang)
     find_package(LLVM REQUIRED CONFIG)
     find_package(Clang REQUIRED CONFIG)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        cmake_minimum_required(VERSION 3.1)
         target_compile_features(doxymain PRIVATE cxx_alignof)
         target_compile_features(doxygen PRIVATE cxx_alignof)
         if (use_libc++)
@@ -350,10 +354,10 @@ endif()
 target_link_libraries(doxygen PRIVATE
     doxymain
     doxycfg
-    qtools
     md5
     lodepng
     mscgen
+    xml
     doxygen_version
     vhdlparser
     ${SQLITE3_LIBRARIES}
@@ -369,7 +373,6 @@ set_project_warnings(doxycfg)
 set_project_warnings(doxymain)
 set_project_warnings(doxygen)
 
-set_project_coverage(qtools)
 set_project_coverage(doxycfg)
 set_project_coverage(doxymain)
 set_project_coverage(doxygen)

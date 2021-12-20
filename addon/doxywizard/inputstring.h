@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _INPUTSTRING_H
-#define _INPUTSTRING_H
+#ifndef INPUTSTRING_H
+#define INPUTSTRING_H
 
 #include "input.h"
 
@@ -24,6 +24,7 @@ class QLineEdit;
 class QToolBar;
 class QComboBox;
 class QGridLayout;
+class QAction;
 
 class InputString : public QObject, public Input
 {
@@ -34,7 +35,8 @@ class InputString : public QObject, public Input
                       StringFile=1, 
                       StringDir=2, 
                       StringFixed=3,
-                      StringImage=4
+                      StringImage=4,
+                      StringFileDir=5
                     };
 
     InputString( QGridLayout *layout,int &row,
@@ -57,6 +59,7 @@ class InputString : public QObject, public Input
     void addDependency(Input *) { Q_ASSERT(false); }
     void setEnabled(bool);
     void updateDependencies() {}
+    bool isDefault();
     void writeValue(QTextStream &t,QTextCodec *codec);
     void setTemplateDocs(const QString &docs) { m_tdocs = docs; }
     bool isEmpty() { return m_str.isEmpty(); }
@@ -71,7 +74,8 @@ class InputString : public QObject, public Input
     void showHelp(Input *);
 
   private slots:
-    void browse();
+    void browseFile();
+    void browseDir();
     void clear();
     void help();
 
@@ -81,6 +85,8 @@ class InputString : public QObject, public Input
     QLineEdit    *m_le;
     QLabel       *m_im;
     QToolBar     *m_br;
+    QAction      *m_brFile;
+    QAction      *m_brDir;
     QComboBox    *m_com;
     QString       m_str;
     QString       m_default;

@@ -14,7 +14,7 @@
       {% endif %}
     {# write optional indent #}
     {% repeat anonymousNestingLevel %}&#160;&#160;&#160;{% endrepeat %}
-    enum&#160;</td><td class="memTemplItemRight" valign="bottom">
+    enum{% if member.isStrong %}{%if member.isEnumStruct %}&#160;struct{%else%}&#160;class{% endif %}{% endif %}&#160;</td><td class="memTemplItemRight" valign="bottom">
     {# write name #}
     {% if not member.isAnonymous %}
       {% with obj=member text=member.nameWithContextFor:compound.compoundKind %}
@@ -29,7 +29,7 @@
             <br/>&#160;&#160;
           {% endif %}
           {% spaceless %}
-            {% with obj=enumVal text=enumVal.name %}
+            {% with obj=enumVal text=enumVal.nameWithContextFor:compound.compoundKind %}
               {% include 'htmlobjlink.tpl' %}
               {% if enumVal.hasOneLineInitializer %}
                 {{ member.initializer }}
@@ -64,7 +64,7 @@
         {% spaceless %}
           template&lt;
           {% for targ in member.templateArgs %}
-            {{ targ.type }} {{ targ.name }}{% if targ.defVal %} = {{ targ.defval }}{% endif %}{% if not forloop.last %}, {% endif %}
+            {{ targ.type }} {{ targ.name }}{% if targ.defVal %} = {{ targ.defVal }}{% endif %}{% if not forloop.last %}, {% endif %}
           {% endfor %}
         {% endspaceless %} &gt;
         </td></tr><tr class="memitem:{{ member.anchor }}{% if inheritId %} inherit {{ inheritId }}{% endif %}"><td class="memTemplItemLeft" align="right" valign="top">

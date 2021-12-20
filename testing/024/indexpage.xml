@@ -22,5 +22,6 @@
         <para>test1test3. </para>
       </sect1>
     </detaileddescription>
+    <location file="024_if.dox"/>
   </compounddef>
 </doxygen>

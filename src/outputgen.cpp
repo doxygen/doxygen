@@ -19,13 +19,12 @@
 
 #include <stdlib.h>
 
-#include <qfile.h>
-
+#include "doxygen.h"
 #include "outputgen.h"
 #include "message.h"
 #include "portable.h"
 
-OutputGenerator::OutputGenerator(const char *dir) : m_dir(dir)
+OutputGenerator::OutputGenerator(const QCString &dir) : m_t(nullptr), m_dir(dir)
 {
   //printf("OutputGenerator::OutputGenerator()\n");
 }
@@ -35,12 +34,12 @@ OutputGenerator::~OutputGenerator()
   //printf("OutputGenerator::~OutputGenerator()\n");
 }
 
-OutputGenerator::OutputGenerator(const OutputGenerator &og)
+OutputGenerator::OutputGenerator(const OutputGenerator &og) : m_t(nullptr)
 {
   m_dir = og.m_dir;
   // we don't copy the other fields.
   // after copying startPlainFile() should be called
-  if (og.t.device()!=nullptr)
+  if (og.m_t.stream()!=nullptr)
   {
     throw std::runtime_error("OutputGenerator copy constructor called while a file is processing");
   }
@@ -51,29 +50,30 @@ OutputGenerator &OutputGenerator::operator=(const OutputGenerator &og)
   m_dir = og.m_dir;
   // we don't copy the other fields.
   // after assignment startPlainFile() should be called
-  if (og.t.device()!=nullptr)
+  if (og.m_t.stream()!=nullptr)
   {
     throw std::runtime_error("OutputGenerator assignment operator called while a file is processing");
   }
   return *this;
 }
 
-void OutputGenerator::startPlainFile(const char *name)
+void OutputGenerator::startPlainFile(const QCString &name)
 {
-  //printf("startPlainFile(%s)\n",name);
+  //printf("startPlainFile(%s)\n",qPrint(name));
   m_fileName=m_dir+"/"+name;
-  m_file.setName(m_fileName);
-  if (!m_file.open(IO_WriteOnly))
+  m_file = Portable::fopen(m_fileName.data(),"wb");
+  if (m_file==0)
   {
-    term("Could not open file %s for writing\n",m_fileName.data());
+    term("Could not open file %s for writing\n",qPrint(m_fileName));
   }
-  t.setDevice(&m_file);
+  m_t.setFile(m_file);
 }
 
 void OutputGenerator::endPlainFile()
 {
-  t.unsetDevice();
-  m_file.close();
+  m_t.flush();
+  m_t.setStream(nullptr);
+  Portable::fclose(m_file);
   m_fileName.resize(0);
 }
 

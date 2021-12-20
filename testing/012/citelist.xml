@@ -12,14 +12,14 @@
             <term><anchor id="citelist_1CITEREF_Be09"/>[1]</term>
           </varlistentry>
           <listitem>
-            <para>P.<nonbreakablespace/>Belotti. <ulink url="http://doi.org/10.1007/978-1-4614-1927-3_5">Disjunctive cuts for non-convex MINLP</ulink>. In <ulink url="#CITEREF_LeLe12">Lee and Leyffer</ulink> <ulink url="#CITEREF_LeLe12">[4]</ulink>, pages 117<ndash/>144.</para>
+            <para>P.<nonbreakablespace/>Belotti. <ulink url="https://link.springer.com/10.1007/978-1-4614-1927-3_5">Disjunctive cuts for non-convex MINLP</ulink>. In <ulink url="#CITEREF_LeLe12">Lee and Leyffer</ulink> <ulink url="#CITEREF_LeLe12">[4]</ulink>, pages 117<ndash/>144.</para>
             <para/>
           </listitem>
           <varlistentry>
             <term><anchor id="citelist_1CITEREF_BertholdHeinzVigerske2009"/>[2]</term>
           </varlistentry>
           <listitem>
-            <para>T.<nonbreakablespace/>Berthold, S.<nonbreakablespace/>Heinz, and S.<nonbreakablespace/>Vigerske. <ulink url="http://doi.org/10.1007/978-1-4614-1927-3_15">Extending a CIP framework to solve MIQCPs</ulink>. In <ulink url="#CITEREF_LeLe12">Lee and Leyffer</ulink> <ulink url="#CITEREF_LeLe12">[4]</ulink>, pages 427<ndash/>444.</para>
+            <para>T.<nonbreakablespace/>Berthold, S.<nonbreakablespace/>Heinz, and S.<nonbreakablespace/>Vigerske. <ulink url="https://link.springer.com/10.1007/978-1-4614-1927-3_15">Extending a CIP framework to solve MIQCPs</ulink>. In <ulink url="#CITEREF_LeLe12">Lee and Leyffer</ulink> <ulink url="#CITEREF_LeLe12">[4]</ulink>, pages 427<ndash/>444.</para>
             <para/>
           </listitem>
           <varlistentry>
@@ -33,11 +33,12 @@
             <term><anchor id="citelist_1CITEREF_LeLe12"/>[4]</term>
           </varlistentry>
           <listitem>
-            <para>Jon Lee and Sven Leyffer, editors. <ulink url="http://doi.org/10.1007/978-1-4614-1927-3"><emphasis>Mixed Integer Nonlinear Programming</emphasis></ulink>, volume 154 of <emphasis>The IMA Volumes in Mathematics and its Applications</emphasis>. Springer, 2012.</para>
+            <para>Jon Lee and Sven Leyffer, editors. <ulink url="https://link.springer.com/10.1007/978-1-4614-1927-3"><emphasis>Mixed Integer Nonlinear Programming</emphasis></ulink>, volume 154 of <emphasis>The IMA Volumes in Mathematics and its Applications</emphasis>. Springer, 2012.</para>
             <para/>
           </listitem>
         </variablelist>
       </para>
     </detaileddescription>
+    <location file="citelist"/>
   </compounddef>
 </doxygen>

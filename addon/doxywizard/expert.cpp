@@ -3,8 +3,8 @@
  * Copyright (C) 1997-2019 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,6 +16,7 @@
 #include "inputint.h"
 #include "inputstring.h"
 #include "inputstrlist.h"
+#include "inputobsolete.h"
 #include "config.h"
 #include "version.h"
 #include "configdoc.h"
@@ -40,7 +41,7 @@
 
 static QString convertToComment(const QString &s)
 {
-  if (s.isEmpty()) 
+  if (s.isEmpty())
   {
     return QString();
   }
@@ -122,7 +123,7 @@ Expert::Expert()
 Expert::~Expert()
 {
   QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext()) 
+  while (i.hasNext())
   {
     i.next();
     delete i.value();
@@ -139,10 +140,14 @@ void Expert::createTopics(const QDomElement &rootElem)
     {
       // Remove _ from a group name like: Source_Browser
       QString name = childElem.attribute(SA("name")).replace(SA("_"),SA(" "));
-      items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
-      QWidget *widget = createTopicWidget(childElem);
-      m_topics[name] = widget;
-      m_topicStack->addWidget(widget);
+      QString setting = childElem.attribute(SA("setting"));
+      if (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1()))
+      {
+        items.append(new QTreeWidgetItem((QTreeWidget*)0,QStringList(name)));
+        QWidget *widget = createTopicWidget(childElem);
+        m_topics[name] = widget;
+        m_topicStack->addWidget(widget);
+      }
     }
     childElem = childElem.nextSiblingElement();
   }
@@ -384,7 +389,7 @@ static QString getDocsForNode(const QDomElement &child)
       }
     }
   }
-  
+
   if (child.hasAttribute(SA("depends")))
   {
     QString dependsOn = child.attribute(SA("depends"));
@@ -423,7 +428,7 @@ static QString getDocsForNode(const QDomElement &child)
   regexp.setPattern(SA("`([^`]+)`"));
   docs.replace(regexp,SA("<code>\\1</code>"));
   // \ref key "desc" -> <code>desc</code>
-  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^ ]+)\""));
+  regexp.setPattern(SA("\\\\ref[ ]+[^ ]+[ ]+\"([^\"]+)\""));
   docs.replace(regexp,SA("<code>\\1</code> "));
   //\ref specials
   // \ref <key> -> description
@@ -505,7 +510,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
       QString docs = getDocsForNode(child);
       if (type==SA("bool"))
       {
-        InputBool *boolOption = 
+        InputBool *boolOption =
           new InputBool(
               layout,row,
               child.attribute(SA("id")),
@@ -531,6 +536,10 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         {
           mode = InputString::StringFile;
         }
+        else if (format==SA("filedir"))
+        {
+          mode = InputString::StringFileDir;
+        }
         else if (format==SA("image"))
         {
           mode = InputString::StringImage;
@@ -539,7 +548,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         {
           mode = InputString::StringFree;
         }
-        InputString *stringOption = 
+        InputString *stringOption =
           new InputString(
               layout,row,
               child.attribute(SA("id")),
@@ -581,7 +590,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
       }
       else if (type==SA("int"))
       {
-        InputInt *intOption = 
+        InputInt *intOption =
           new InputInt(
               layout,row,
               child.attribute(SA("id")),
@@ -627,7 +636,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
           }
           listVal = listVal.nextSiblingElement();
         }
-        InputStrList *listOption = 
+        InputStrList *listOption =
           new InputStrList(
               layout,row,
               child.attribute(SA("id")),
@@ -644,6 +653,31 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
       }
       else if (type==SA("obsolete"))
       {
+        Input::Kind orgKind;
+        QString orgKindStr = child.attribute(SA("orgtype"));
+        if (orgKindStr==SA("int"))
+        {
+          orgKind = Input::Int;
+        }
+        else if (orgKindStr==SA("bool"))
+        {
+          orgKind = Input::Bool;
+        }
+        else if (orgKindStr==SA("string") || orgKindStr==SA("enum"))
+        {
+          orgKind = Input::String;
+        }
+        else if (orgKindStr==SA("strlist"))
+        {
+          orgKind = Input::StrList;
+        }
+        else
+        {
+          orgKind = Input::Obsolete;
+        }
+        InputObsolete *obsoleteOption =
+          new InputObsolete(child.attribute(SA("id")),orgKind);
+        m_options.insert(child.attribute(SA("id")),obsoleteOption);
         // ignore
       }
       else // should not happen
@@ -661,7 +695,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
     QString setting = child.attribute(SA("setting"));
     QString dependsOn = child.attribute(SA("depends"));
     QString id        = child.attribute(SA("id"));
-    if (!dependsOn.isEmpty() && 
+    if (!dependsOn.isEmpty() &&
         (setting.isEmpty() || IS_SUPPORTED(setting.toLatin1())))
     {
        Input *parentOption = m_options[dependsOn];
@@ -686,7 +720,7 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
 
   // set initial dependencies
   QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext()) 
+  while (i.hasNext())
   {
     i.next();
     if (i.value())
@@ -710,7 +744,7 @@ void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
   {
     QWidget *w = m_topics[item->text(0)];
     m_topicStack->setCurrentWidget(w);
-    m_prev->setEnabled(m_topicStack->currentIndex()!=0); 
+    m_prev->setEnabled(m_topicStack->currentIndex()!=0);
     m_next->setEnabled(true);
   }
 }
@@ -718,7 +752,7 @@ void Expert::activateTopic(QTreeWidgetItem *item,QTreeWidgetItem *)
 void Expert::loadSettings(QSettings *s)
 {
   QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext()) 
+  while (i.hasNext())
   {
     i.next();
     QVariant var = s->value(SA("config/")+i.key());
@@ -734,7 +768,7 @@ void Expert::loadSettings(QSettings *s)
 void Expert::saveSettings(QSettings *s)
 {
   QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext()) 
+  while (i.hasNext())
   {
     i.next();
     //printf("Saving key %s: type=%d value='%s'\n",qPrintable(i.key()),i.value()->value().type(),qPrintable(i.value()->value().toString()));
@@ -752,15 +786,18 @@ void Expert::loadConfig(const QString &fileName)
 }
 
 void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
-                       bool brief)
+                       bool brief,bool condensed)
 {
   if (!brief)
   {
-    t << endl;
+    t << "\n";
   }
-  t << "#---------------------------------------------------------------------------" << endl;
-  t << "# " << elem.attribute(SA("docs")) << endl;
-  t << "#---------------------------------------------------------------------------" << endl;
+  if (!condensed)
+  {
+    t << "#---------------------------------------------------------------------------\n";
+    t << "# " << elem.attribute(SA("docs")) << "\n";
+    t << "#---------------------------------------------------------------------------\n";
+  }
   // write options...
   QDomElement childElem = elem.firstChildElement();
   while (!childElem.isNull())
@@ -774,30 +811,38 @@ void Expert::saveTopic(QTextStream &t,QDomElement &elem,QTextCodec *codec,
       if (i!=m_options.end())
       {
         Input *option = i.value();
-        if (option && !brief)
+        if (option->kind()!=Input::Obsolete)
         {
-          t << endl;
-          t << convertToComment(option->templateDocs());
-          t << endl;
+          if (option && !brief)
+          {
+            t << "\n";
+            t << convertToComment(option->templateDocs());
+            t << "\n";
+          }
+          bool toPrint = true;
+          if (option && condensed) toPrint = !option->isDefault();
+          if (toPrint)
+          {
+            t << name.leftJustified(MAX_OPTION_LENGTH) << "=";
+            if (option && !option->isEmpty())
+            {
+              t << " ";
+              option->writeValue(t,codec);
+            }
+            t << "\n";
+          }
         }
-        t << name.leftJustified(MAX_OPTION_LENGTH) << "=";
-        if (option && !option->isEmpty())
-        {
-          t << " ";
-          option->writeValue(t,codec);
-        }
-        t << endl;
       }
     }
     childElem = childElem.nextSiblingElement();
   }
 }
 
-bool Expert::writeConfig(QTextStream &t,bool brief)
+bool Expert::writeConfig(QTextStream &t,bool brief, bool condensed)
 {
   // write global header
-  t << "# Doxyfile " << getDoxygenVersion() << endl << endl;
-  if (!brief)
+  t << "# Doxyfile " << getDoxygenVersion() << "\n\n";
+  if (!brief && !condensed)
   {
     t << convertToComment(m_header);
   }
@@ -817,7 +862,7 @@ bool Expert::writeConfig(QTextStream &t,bool brief)
   {
     if (childElem.tagName()==SA("group"))
     {
-      saveTopic(t,childElem,codec,brief);
+      saveTopic(t,childElem,codec,brief,condensed);
     }
     childElem = childElem.nextSiblingElement();
   }
@@ -878,7 +923,7 @@ void Expert::resetToDefaults()
 {
   //printf("Expert::makeDefaults()\n");
   QHashIterator<QString,Input*> i(m_options);
-  while (i.hasNext()) 
+  while (i.hasNext())
   {
     i.next();
     if (i.value())
@@ -892,7 +937,7 @@ static bool stringVariantToBool(const QVariant &v)
 {
   QString s = v.toString().toLower();
   return s==QString::fromLatin1("yes") || s==QString::fromLatin1("true") || s==QString::fromLatin1("1");
-} 
+}
 
 static bool getBoolOption(
     const QHash<QString,Input*>&model,const QString &name)
@@ -900,7 +945,7 @@ static bool getBoolOption(
   Input *option = model[name];
   Q_ASSERT(option!=0);
   return stringVariantToBool(option->value());
-} 
+}
 
 static QString getStringOption(
     const QHash<QString,Input*>&model,const QString &name)
@@ -932,7 +977,7 @@ QString Expert::getHtmlOutputIndex(const QString &workingDir) const
     indexFile = outputDir;
   }
   else // append
-  { 
+  {
     indexFile += QString::fromLatin1("/")+outputDir;
   }
   if (QFileInfo(htmlOutputDir).isAbsolute()) // override

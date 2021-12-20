@@ -42,10 +42,11 @@
       <para>
         <programlisting>
           <codeline>
-            <highlight class="normal">//<sp/>implicit<sp/>code<sp/>language</highlight>
+            <highlight class="comment">//<sp/>implicit<sp/>code<sp/>language</highlight>
           </codeline>
         </programlisting>
       </para>
     </detaileddescription>
+    <location file="014_code.dox"/>
   </compounddef>
 </doxygen>

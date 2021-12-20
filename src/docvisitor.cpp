@@ -14,6 +14,7 @@
 
 
 #include <unordered_map>
+#include <stack>
 
 #include "parserintf.h"
 #include "docvisitor.h"
@@ -25,6 +26,7 @@ struct DocVisitor::Private
 {
   int id;
   std::unordered_map< std::string, std::unique_ptr<CodeParserInterface> > parserFactoryMap;
+  std::stack<bool> hidden;
 };
 
 DocVisitor::DocVisitor(int id) : m_p(std::make_unique<Private>())
@@ -36,11 +38,11 @@ DocVisitor::~DocVisitor()
 {
 }
 
-CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
+CodeParserInterface &DocVisitor::getCodeParser(const QCString &extension)
 {
-  std::string ext(extension?extension:"");
+  std::string ext = extension.str();
   // for each extension we create a code parser once per visitor, so that
-  // the context of the same parser object is reused thoughout multiple passes for instance
+  // the context of the same parser object is reused throughout multiple passes for instance
   // for code fragments shown via dontinclude.
   auto it = m_p->parserFactoryMap.find(ext);
   if (it==m_p->parserFactoryMap.end())
@@ -55,4 +57,17 @@ CodeParserInterface &DocVisitor::getCodeParser(const char *extension)
 int DocVisitor::id() const
 {
   return m_p->id;
+}
+
+void DocVisitor::pushHidden(bool hide)
+{
+  m_p->hidden.push(hide);
+}
+
+bool DocVisitor::popHidden()
+{
+  if (m_p->hidden.empty()) return false;
+  bool v = m_p->hidden.top();
+  m_p->hidden.pop();
+  return v;
 }

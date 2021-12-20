@@ -62,7 +62,7 @@ This manual is divided into three parts, each of which is divided into several s
 The first part forms a user manual:
 <ul>
 <li>Section \ref install discusses how to
-      <a href="http://www.doxygen.org/download.html">download</a>, compile and install
+      <a href="https://www.doxygen.org/download.html">download</a>, compile and install
                      doxygen for your platform.
 <li>Section \ref starting tells you how to generate your first piece of
                      documentation quickly.
@@ -140,11 +140,11 @@ input used in their production; they are not affected by this license.
 
 Doxygen supports a number of \ref output "output formats" where HTML is the
 most popular one. I've gathered
-<a href="http://www.doxygen.org/results.html">some nice examples</a>
+<a href="https://www.doxygen.org/results.html">some nice examples</a>
 of real-life projects using doxygen.
 
 These are part of a larger
-<a href="http://www.doxygen.org/projects.html">list of projects</a>
+<a href="https://www.doxygen.org/projects.html">list of projects</a>
 that use doxygen.
 If you know other projects, let <a href="mailto:doxygen@gmail.com?subject=New%20project%20using%20Doxygen">me</a>
 know and I'll add them.
@@ -165,14 +165,16 @@ Thanks go to:
     The first version of doxygen borrowed some code of an old version of DOC++.
     Although I have rewritten practically all code since then, DOC++ has still
     given me a good start in writing doxygen.
-<li>All people at Qt Software, for creating a beautiful GUI Toolkit
-    (which is very useful as a Windows/Unix platform abstraction layer :-)
+<li>All people at Qt Software, for creating a beautiful GUI Toolkit.
+<li>Steffen Schümann for creating ghc::filesystem which is used by doxygen.
+<li>Michael McTernan for creating mscgen which is now embedded in doxygen.
 <li>My brother Frank
     for rendering the logos.
 <li>Harm van der Heijden for adding HTML help support.
 <li>Wouter Slegers of
     <a href="http://www.yourcreativesolutions.nl">Your Creative Solutions</a>
     for registering the www.doxygen.org domain.
+<li>Martin Kreis for adding VHDL support.
 <li>Parker Waechter for adding the RTF output generator.
 <li>Joerg Baumann, for adding conditional documentation blocks,
     PDF links, and the configuration generator.
@@ -182,8 +184,6 @@ Thanks go to:
 <li>Talin for adding support for C# style comments with XML markup.
 <li>Petr Prikryl for coordinating the internationalization support.
     All language maintainers for providing translations into many languages.
-<li>The band <a href="http://www.porcupinetree.com/">Porcupine Tree</a> for
-    providing hours of great music to listen to while coding.
 <li>many, many others for suggestions, patches and bug reports.
 </ul>
 

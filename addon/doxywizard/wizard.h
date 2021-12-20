@@ -162,6 +162,7 @@ class Step3 : public QWidget
     void setManEnabled(int);
     void setRtfEnabled(int);
     void setXmlEnabled(int);
+    void setDocbookEnabled(int);
     void setSearchEnabled(int);
     void setHtmlOptions(int);
     void setLatexOptions(int);
@@ -177,6 +178,7 @@ class Step3 : public QWidget
     QCheckBox *m_manEnabled = 0;
     QCheckBox *m_rtfEnabled = 0;
     QCheckBox *m_xmlEnabled = 0;
+    QCheckBox *m_docbookEnabled = 0;
     QCheckBox *m_searchEnabled = 0;
     QPushButton *m_tuneColor = 0;
     Wizard    *m_wizard = 0;

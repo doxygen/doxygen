@@ -14,15 +14,12 @@
  */
 
 #include <map>
-#include <qfile.h>
-#include <qcstring.h>
-#include <qglobal.h>
 #include <string.h>
+#include <fstream>
 
 #include "resourcemgr.h"
 #include "util.h"
 #include "version.h"
-#include "ftextstream.h"
 #include "message.h"
 #include "config.h"
 
@@ -54,18 +51,24 @@ void ResourceMgr::registerResources(std::initializer_list<Resource> resources)
   }
 }
 
-bool ResourceMgr::writeCategory(const char *categoryName,const char *targetDir) const
+bool ResourceMgr::writeCategory(const QCString &categoryName,const QCString &targetDir) const
 {
   for (auto &kv : p->resources)
   {
     Resource &res = kv.second;
-    if (qstrcmp(res.category,categoryName)==0)
+    if (res.category==categoryName)
     {
-      QCString pathName = QCString(targetDir)+"/"+res.name;
-      QFile f(pathName);
-      if (!f.open(IO_WriteOnly) || f.writeBlock((const char *)res.data,res.size)!=res.size)
+      std::string pathName = targetDir.str()+"/"+res.name;
+      std::ofstream f(pathName,std::ofstream::out | std::ofstream::binary);
+      bool ok=false;
+      if (f.is_open())
       {
-        err("Failed to write resource '%s' to directory '%s'\n",res.name,targetDir);
+        f.write(reinterpret_cast<const char *>(res.data),res.size);
+        ok = !f.fail();
+      }
+      if (!ok)
+      {
+        err("Failed to write resource '%s' to directory '%s'\n",res.name,qPrint(targetDir));
         return FALSE;
       }
     }
@@ -73,9 +76,11 @@ bool ResourceMgr::writeCategory(const char *categoryName,const char *targetDir) 
   return TRUE;
 }
 
-bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const char *targetName) const
+bool ResourceMgr::copyResourceAs(const QCString &name,const QCString &targetDir,const QCString &targetName,bool append) const
 {
-  QCString pathName = QCString(targetDir)+"/"+targetName;
+  std::string pathName = targetDir.str()+"/"+targetName.str();
+  std::ios_base::openmode mode = std::ofstream::out | std::ofstream::binary;
+  if (append) mode |= std::ofstream::app;
   const Resource *res = get(name);
   if (res)
   {
@@ -83,8 +88,14 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
     {
       case Resource::Verbatim:
         {
-          QFile f(pathName);
-          if (f.open(IO_WriteOnly) && f.writeBlock((const char *)res->data,res->size)==res->size)
+          std::ofstream f(pathName,mode);
+          bool ok=false;
+          if (f.is_open())
+          {
+            f.write(reinterpret_cast<const char *>(res->data),res->size);
+            ok = !f.fail();
+          }
+          if (ok)
           {
             return TRUE;
           }
@@ -98,7 +109,7 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
           ushort width   = (data[0]<<8)+data[1];
           ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
-          images[0].name    = n;
+          images[0].name    = n.data();
           images[0].width   = width;
           images[0].height  = height;
           images[0].content = &data[4];
@@ -116,7 +127,7 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
           ushort width   = (data[0]<<8)+data[1];
           ushort height  = (data[2]<<8)+data[3];
           ColoredImgDataItem images[2];
-          images[0].name    = n;
+          images[0].name    = n.data();
           images[0].width   = width;
           images[0].height  = height;
           images[0].content = &data[4];
@@ -128,14 +139,13 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
         break;
       case Resource::CSS:
         {
-          QFile f(pathName);
-          if (f.open(IO_WriteOnly))
+          std::ofstream t(pathName,mode);
+          if (t.is_open())
           {
             QCString buf(res->size+1);
             memcpy(buf.rawData(),res->data,res->size);
-            FTextStream t(&f);
             buf = replaceColorMarkers(buf);
-            if (qstrcmp(name,"navtree.css")==0)
+            if (name=="navtree.css")
             {
               t << substitute(buf,"$width",QCString().setNum(Config_getInt(TREEVIEW_WIDTH))+"px");
             }
@@ -149,12 +159,11 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
         break;
       case Resource::SVG:
         {
-          QFile f(pathName);
-          if (f.open(IO_WriteOnly))
+          std::ofstream t(pathName,mode);
+          if (t.is_open())
           {
             QCString buf(res->size+1);
             memcpy(buf.rawData(),res->data,res->size);
-            FTextStream t(&f);
             t << replaceColorMarkers(buf);
             return TRUE;
           }
@@ -163,24 +172,24 @@ bool ResourceMgr::copyResourceAs(const char *name,const char *targetDir,const ch
   }
   else
   {
-    err("requested resource '%s' not compiled in!\n",name);
+    err("requested resource '%s' not compiled in!\n",qPrint(name));
   }
   return FALSE;
 }
 
-bool ResourceMgr::copyResource(const char *name,const char *targetDir) const
+bool ResourceMgr::copyResource(const QCString &name,const QCString &targetDir) const
 {
   return copyResourceAs(name,targetDir,name);
 }
 
-const Resource *ResourceMgr::get(const char *name) const
+const Resource *ResourceMgr::get(const QCString &name) const
 {
-  auto it = p->resources.find(name);
+  auto it = p->resources.find(name.str());
   if (it!=p->resources.end()) return &it->second;
   return 0;
 }
 
-QCString ResourceMgr::getAsString(const char *name) const
+QCString ResourceMgr::getAsString(const QCString &name) const
 {
   const Resource *res = get(name);
   if (res)

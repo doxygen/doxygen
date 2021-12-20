@@ -1,10 +1,10 @@
 #ifndef CLANGPARSER_H
 #define CLANGPARSER_H
 
-#include <qcstring.h>
-#include <qstrlist.h>
 #include "containers.h"
+#include "types.h"
 #include <memory>
+#include <string>
 
 class CodeOutputInterface;
 class FileDef;
@@ -32,7 +32,7 @@ class ClangTUParser
     /** Switches to another file within the translation unit started with start().
      *  @param[in] fd The file definition with the name of the file to switch to.
      */
-    void switchToFile(FileDef *fd);
+    void switchToFile(const FileDef *fd);
 
     /** Returns the list of files for this translation unit */
     StringVector filesInSameTU() const;
@@ -40,29 +40,29 @@ class ClangTUParser
     /** Looks for \a symbol which should be found at \a line.
      *  returns a clang unique reference to the symbol.
      */
-    QCString lookup(uint line,const char *symbol);
+    std::string lookup(uint line,const char *symbol);
 
     /** writes the syntax highlighted source code for a file
      *  @param[out] ol The output generator list to write to.
      *  @param[in]  fd The file to write sources for.
      */
-    void writeSources(CodeOutputInterface &ol,FileDef *fd);
+    void writeSources(CodeOutputInterface &ol,const FileDef *fd);
 
   private:
     void detectFunctionBody(const char *s);
-    void writeLineNumber(CodeOutputInterface &ol,FileDef *fd,uint line);
-    void codifyLines(CodeOutputInterface &ol,FileDef *fd,const char *text,
+    void writeLineNumber(CodeOutputInterface &ol,const FileDef *fd,uint line,bool writeLineAnchor);
+    void codifyLines(CodeOutputInterface &ol,const FileDef *fd,const char *text,
                      uint &line,uint &column,const char *fontClass=0);
     void writeMultiLineCodeLink(CodeOutputInterface &ol,
-                                FileDef *fd,uint &line,uint &column,
-                                Definition *d, const char *text);
-    void linkIdentifier(CodeOutputInterface &ol,FileDef *fd,
+                                const FileDef *fd,uint &line,uint &column,
+                                const Definition *d, const char *text);
+    void linkIdentifier(CodeOutputInterface &ol,const FileDef *fd,
                         uint &line,uint &column,
                         const char *text,int tokenIndex);
-    void linkMacro(CodeOutputInterface &ol,FileDef *fd,
+    void linkMacro(CodeOutputInterface &ol,const FileDef *fd,
                    uint &line,uint &column,
                    const char *text);
-    void linkInclude(CodeOutputInterface &ol,FileDef *fd,
+    void linkInclude(CodeOutputInterface &ol,const FileDef *fd,
                    uint &line,uint &column,
                    const char *text);
     ClangTUParser(const ClangTUParser &) = delete;

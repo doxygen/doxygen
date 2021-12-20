@@ -18,7 +18,7 @@
 
 #include <functional>
 
-#include <qcstring.h>
+#include "qcstring.h"
 #include "parserintf.h"
 #include "growbuf.h"
 
@@ -32,9 +32,9 @@ QCString markdownFileNameToId(const QCString &fileName);
 class Markdown
 {
   public:
-    Markdown(const char *fileName,int lineNr,int indentLevel=0);
-    QCString process(const QCString &input, int &startNewlines);
-    QCString extractPageTitle(QCString &docs,QCString &id);
+    Markdown(const QCString &fileName,int lineNr,int indentLevel=0);
+    QCString process(const QCString &input, int &startNewlines, bool fromParseInput = false);
+    QCString extractPageTitle(QCString &docs,QCString &id,int &prepend);
     void setIndentLevel(int level) { m_indentLevel = level; }
 
   private:
@@ -73,7 +73,7 @@ class Markdown
   private:
     struct LinkRef
     {
-      LinkRef(const char *l,const char *t) : link(l), title(t) {}
+      LinkRef(const QCString &l,const QCString &t) : link(l), title(t) {}
       QCString link;
       QCString title;
     };
@@ -93,12 +93,12 @@ class MarkdownOutlineParser : public OutlineParserInterface
   public:
     MarkdownOutlineParser();
     virtual ~MarkdownOutlineParser();
-    void parseInput(const char *fileName,
+    void parseInput(const QCString &fileName,
                     const char *fileBuf,
                     const std::shared_ptr<Entry> &root,
                     ClangTUParser *clangParser);
     bool needsPreprocessing(const QCString &) const { return FALSE; }
-    void parsePrototype(const char *text);
+    void parsePrototype(const QCString &text);
   private:
     struct Private;
     std::unique_ptr<Private> p;

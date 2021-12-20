@@ -26,6 +26,10 @@
 %option noyywrap
 %top{
 #include <stdint.h>
+// forward declare yyscan_t to improve type safety
+#define YY_TYPEDEF_YY_SCANNER_T
+struct yyguts_t;
+typedef yyguts_t *yyscan_t;
 }
 
 %{
@@ -56,7 +60,7 @@ struct xmlcodeYY_state
   QCString      parmType;
   QCString      parmName;
   const char *  inputString = 0;     //!< the code fragment as text
-  int           inputPosition = 0;   //!< read offset during parsing
+  yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   bool          needsTermination = false;
@@ -239,34 +243,37 @@ static void startCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->sourceFileDef)
   {
-    Definition *d   = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
+    const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
 
     if (!yyextra->includeCodeFragment && d && d->isLinkableInProject())
     {
       yyextra->currentDefinition = d;
       yyextra->currentMemberDef = yyextra->sourceFileDef->getSourceMember(yyextra->yyLineNr);
       //yyextra->insideBody = false;
-      yyextra->classScope = d->name().copy();
+      yyextra->classScope = d->name();
       QCString lineAnchor;
       lineAnchor.sprintf("l%05d",yyextra->yyLineNr);
       if (yyextra->currentMemberDef)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                             yyextra->currentMemberDef->getOutputFileBase(),
-                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else
       {
         yyextra->code->writeLineNumber(d->getReference(),
                             d->getOutputFileBase(),
-                            0,yyextra->yyLineNr);
+                            QCString(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(0,0,0,yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
 
@@ -322,6 +329,7 @@ static void codifyLines(yyscan_t yyscanner,const char *text)
       yyextra->yyLineNr++;
       int l = (int)(p-sp-1);
       char *tmp = (char*)malloc(l+1);
+      strncpy(tmp,sp,l);
       tmp[l]='\0';
       yyextra->code->codify(tmp);
       free(tmp);
@@ -376,7 +384,7 @@ XMLCodeParser::XMLCodeParser() : p(std::make_unique<Private>())
 {
   xmlcodeYYlex_init_extra(&p->state,&p->yyscanner);
 #ifdef FLEX_DEBUG
-  xmlcodeYYset_debug(1,yyscanner);
+  xmlcodeYYset_debug(1,p->yyscanner);
 #endif
   resetCodeParserState();
 }
@@ -394,12 +402,12 @@ void XMLCodeParser::resetCodeParserState()
 }
 
 void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
-               const char *scopeName,
+               const QCString &scopeName,
                const QCString &input,
                SrcLangExt,
                bool isExampleBlock,
-               const char *exampleName,
-               FileDef *fileDef,
+               const QCString &exampleName,
+               const FileDef *fileDef,
                int startLine,
                int endLine,
                bool inlineFragment,
@@ -414,10 +422,10 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   if (input.isEmpty()) return;
 
-  printlex(yy_flex_debug, true, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
+  printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 
   yyextra->code = &codeOutIntf;
-  yyextra->inputString   = input;
+  yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
   yyextra->needsTermination = false;
@@ -442,7 +450,7 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   if (isExampleBlock && fileDef==0)
   {
     // create a dummy filedef for the example
-    yyextra->sourceFileDef = createFileDef("",(exampleName?exampleName:"generated"));
+    yyextra->sourceFileDef = createFileDef("",(!exampleName.isEmpty()?exampleName:QCString("generated")));
     cleanupSourceDef = true;
   }
 
@@ -470,7 +478,7 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     yyextra->sourceFileDef=0;
   }
 
-  printlex(yy_flex_debug, false, __FILE__, fileDef ? fileDef->fileName().data(): NULL);
+  printlex(yy_flex_debug, false, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
 }
 
 

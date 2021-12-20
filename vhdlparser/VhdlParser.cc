@@ -28,7 +28,7 @@ QCString VhdlParser::abstract_literal() {Token *tok;
       tok = jj_consume_token(DECIMAL_LITERAL);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -37,7 +37,7 @@ return tok->image.c_str();
       tok = jj_consume_token(INTEGER);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -46,7 +46,7 @@ return tok->image.c_str();
       tok = jj_consume_token(BASED_LITERAL);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -66,7 +66,7 @@ QCString VhdlParser::access_type_definition() {Token *tok=0;QCString str,str1;
     if (!hasError) {
     str1 = subtype_indication();
     }
-str=tok->image.c_str(); return str+str1;
+str=tok->image; return str+str1;
 assert(false);
 }
 
@@ -78,7 +78,7 @@ QCString VhdlParser::actual_designator() {QCString str;Token *t=0;
       t = jj_consume_token(OPEN_T);
       }
       if (!hasError) {
-return t->image.c_str();
+return QCString(t->image);
       }
       break;
       }
@@ -241,7 +241,7 @@ s+=","+s1;
     if (!hasError) {
     jj_consume_token(RPAREN_T);
     }
-return "("+s+")";
+return QCString("("+s+")");
 assert(false);
 }
 
@@ -330,7 +330,7 @@ return s;
       tok = jj_consume_token(CHARACTER_LITERAL);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -401,7 +401,7 @@ QCString t=s1+"::"+s;
     m_sharedState->genLabels.resize(0);
     outlineParser()->pushLabel(m_sharedState->genLabels,s1);
     m_sharedState->lastCompound=m_sharedState->current;
-    outlineParser()->addVhdlType(t,outlineParser()->getLine(ARCHITECTURE_T),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
+    outlineParser()->addVhdlType(t.data(),outlineParser()->getLine(ARCHITECTURE_T),Entry::CLASS_SEC,VhdlDocGen::ARCHITECTURE,0,0,Private);
     }
     if (!hasError) {
     try {
@@ -724,7 +724,7 @@ return s;
       tok = jj_consume_token(RANGE_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -830,7 +830,7 @@ QCString VhdlParser::base() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(INTEGER);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -839,7 +839,7 @@ QCString VhdlParser::base_specifier() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -857,7 +857,7 @@ QCString VhdlParser::based_integer() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -866,7 +866,7 @@ QCString VhdlParser::based_literal() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(BASED_LITERAL);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -875,7 +875,7 @@ QCString VhdlParser::basic_identifier() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -930,7 +930,7 @@ QCString VhdlParser::bit_string_literal() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(BIT_STRING_LITERAL);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -939,7 +939,7 @@ QCString VhdlParser::bit_value() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(BASIC_IDENTIFIER);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -1391,7 +1391,7 @@ void VhdlParser::case_statement() {QCString s;
     }
     if (!hasError) {
 QCString ca="case "+s;
-     FlowChart::addFlowChart(FlowChart::CASE_NO,0,ca);
+     FlowChart::addFlowChart(FlowChart::CASE_NO,QCString(),ca);
     }
     if (!hasError) {
     jj_consume_token(IS_T);
@@ -1440,7 +1440,7 @@ QCString ca="case "+s;
     jj_consume_token(SEMI_T);
     }
 FlowChart::moveToPrevLevel();
-         FlowChart::addFlowChart(FlowChart::END_CASE,"end case",0);
+         FlowChart::addFlowChart(FlowChart::END_CASE,"end case",QCString());
 }
 
 
@@ -1455,9 +1455,9 @@ void VhdlParser::case_statement_alternative() {QCString s;
     jj_consume_token(ARROW_T);
     }
     if (!hasError) {
-QCString t="when ";
+QCString t("when ");
     t+=s+"=> ";
-    FlowChart::addFlowChart(FlowChart::WHEN_NO,s.data(),t);
+    FlowChart::addFlowChart(FlowChart::WHEN_NO,s,t);
     }
     if (!hasError) {
     sequence_of_statement();
@@ -1470,7 +1470,7 @@ QCString VhdlParser::character_literal() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(CHARACTER_LITERAL);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -1703,8 +1703,8 @@ void VhdlParser::component_instantiation_statement() {QCString s,s1;
     if (!hasError) {
 QCString s3;
        if (s1.contains("|")) {
-         s3=VhdlDocGen::getIndexWord(s1.data(),0);
-         s1=VhdlDocGen::getIndexWord(s1.data(),1);
+         s3=VhdlDocGen::getIndexWord(s1,0);
+         s1=VhdlDocGen::getIndexWord(s1,1);
        }
 
        outlineParser()->addCompInst(s.lower().data(),s1.lower().data(),s3.data(),outlineParser()->getLine());
@@ -2337,7 +2337,7 @@ QCString VhdlParser::decimal_literal() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(DECIMAL_LITERAL);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -2489,7 +2489,7 @@ QCString VhdlParser::direction() {Token *tok=0;
       tok = jj_consume_token(TO_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -2498,7 +2498,7 @@ return tok->image.c_str();
       tok = jj_consume_token(DOWNTO_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -2602,16 +2602,20 @@ QCString VhdlParser::element_declaration() {QCString rec_name,s1,s2;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-QCString name;
-   QCStringList ql=QCStringList::split(",",rec_name);
-   for (uint j=0;j<ql.count();j++)
-   {
-    name=ql[j]+"~";
-    name+=outlineParser()->getNameID().data();;
-    outlineParser()->addVhdlType(name.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::RECORD,0,s1.data(),Public);
-   }
-   s2=rec_name+":"+s1;
-   return s2;
+auto ql = split(rec_name.str(),",");
+    for (const auto &n : ql)
+    {
+      std::string name=n+"~";
+      name+=outlineParser()->getNameID().data();
+      outlineParser()->addVhdlType(
+          name.c_str(),outlineParser()->getLine(),
+          Entry::VARIABLE_SEC,
+          VhdlDocGen::RECORD,0,
+          s1.data(),
+          Public);
+    }
+    s2=rec_name+":"+s1;
+    return s2;
 assert(false);
 }
 
@@ -2660,7 +2664,7 @@ return s;
       s = name();
       }
       if (!hasError) {
-return tok->image.c_str()+s;
+return QCString(tok->image)+s;
       }
       break;
       }
@@ -2669,7 +2673,7 @@ return tok->image.c_str()+s;
       tok = jj_consume_token(OPEN_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -3504,7 +3508,7 @@ QCString VhdlParser::exit_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
 m_sharedState->lab.resize(0);
   if(t) s+=":";
   if(t1) s2.prepend(" when ");
-   FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2.data(),s1.data());
+   FlowChart::addFlowChart(FlowChart::EXIT_NO,"exit",s2,s1);
 
   return s+s1+s2+";";
 assert(false);
@@ -3617,7 +3621,7 @@ QCString VhdlParser::extended_identifier() {Token *t;
     if (!hasError) {
     t = jj_consume_token(EXTENDED_CHARACTER);
     }
-return t->image.c_str();
+return QCString(t->image);
 assert(false);
 }
 
@@ -3856,7 +3860,7 @@ return s;
       tok = jj_consume_token(INTEGER);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -4254,7 +4258,7 @@ QCString VhdlParser::identifier() {Token *tok=0;
       tok = jj_consume_token(EXTENDED_CHARACTER);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -4263,7 +4267,7 @@ return tok->image.c_str();
       tok = jj_consume_token(BASIC_IDENTIFIER);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -4337,7 +4341,7 @@ void VhdlParser::if_statement() {QCString s,s1;
     }
     if (!hasError) {
 s.prepend("if ");
-      FlowChart::addFlowChart(FlowChart::IF_NO,0,s);
+      FlowChart::addFlowChart(FlowChart::IF_NO,QCString(),s);
     }
     if (!hasError) {
     sequence_of_statement();
@@ -4364,7 +4368,7 @@ s.prepend("if ");
       }
       if (!hasError) {
 s1.prepend("elsif ");
-     FlowChart::addFlowChart(FlowChart::ELSIF_NO,0,s1.data());
+     FlowChart::addFlowChart(FlowChart::ELSIF_NO,QCString(),s1);
       }
       if (!hasError) {
       sequence_of_statement();
@@ -4379,7 +4383,7 @@ s1.prepend("elsif ");
       jj_consume_token(ELSE_T);
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::ELSE_NO,0,0);
+FlowChart::addFlowChart(FlowChart::ELSE_NO,QCString(),QCString());
       }
       if (!hasError) {
       sequence_of_statement();
@@ -4415,7 +4419,7 @@ FlowChart::addFlowChart(FlowChart::ELSE_NO,0,0);
     jj_consume_token(SEMI_T);
     }
 FlowChart::moveToPrevLevel();
-    FlowChart::addFlowChart(FlowChart::ENDIF_NO,0,0);
+    FlowChart::addFlowChart(FlowChart::ENDIF_NO,QCString(),QCString());
 }
 
 
@@ -4434,7 +4438,7 @@ assert(false);
 }
 
 
-QCString VhdlParser::index_constraint() {QCString s="("; QCString s1,s2;
+QCString VhdlParser::index_constraint() {QCString s("("); QCString s1,s2;
     if (!hasError) {
     jj_consume_token(LPAREN_T);
     }
@@ -4541,7 +4545,7 @@ assert(false);
 }
 
 
-QCString VhdlParser::instantiation_unit() {QCString s,s1,s2;Token *tok;
+QCString VhdlParser::instantiation_unit() {QCString s,s1,s2;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case COMPONENT_T:
     case BASIC_IDENTIFIER:
@@ -4656,7 +4660,7 @@ return s;
       tok = jj_consume_token(OTHER_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -4665,7 +4669,7 @@ return tok->image.c_str();
       tok = jj_consume_token(ALL_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -4682,7 +4686,7 @@ QCString VhdlParser::integer() {Token *t;
     if (!hasError) {
     t = jj_consume_token(INTEGER);
     }
-return t->image.c_str();
+return QCString(t->image);
 assert(false);
 }
 
@@ -4786,7 +4790,7 @@ QCString VhdlParser::interface_file_declaration() {QCString s,s1;
     s1 = subtype_indication();
     }
 outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::VFILE,0,s1.data(),Public);
-    return " file "+s+":"+s1;
+    return QCString(" file "+s+":"+s1);
 assert(false);
 }
 
@@ -4925,7 +4929,7 @@ QCString VhdlParser::interface_variable_declaration() {Token *tok=0;Token *tok1=
     }
     }
 if(tok)
-        s5=tok->image.c_str();
+        s5=QCString(tok->image);
 
       if(tok1)
         s3=tok1->image.data();
@@ -4966,7 +4970,7 @@ QCString VhdlParser::iteration_scheme() {QCString s;
       }
       if (!hasError) {
 s.prepend("while ");
-   FlowChart::addFlowChart(FlowChart::WHILE_NO,0,s.data(),m_sharedState->lab.data());
+   FlowChart::addFlowChart(FlowChart::WHILE_NO,QCString(),s,m_sharedState->lab);
    m_sharedState->lab="";
   return s;
       }
@@ -4981,7 +4985,7 @@ s.prepend("while ");
       }
       if (!hasError) {
 QCString q=m_sharedState->lab+" for "+s;
-    FlowChart::addFlowChart(FlowChart::FOR_NO,0,q.data(),m_sharedState->lab.data());
+    FlowChart::addFlowChart(FlowChart::FOR_NO,QCString(),q,m_sharedState->lab);
     m_sharedState->lab="";
     return q;
       }
@@ -5155,7 +5159,7 @@ s+=":";
     }
     if (!hasError) {
 if(s1.isEmpty())
-        FlowChart::addFlowChart(FlowChart::LOOP_NO,0,"infinite");
+        FlowChart::addFlowChart(FlowChart::LOOP_NO,QCString(),"infinite");
     }
     if (!hasError) {
     jj_consume_token(LOOP_T);
@@ -5189,7 +5193,7 @@ if(s1.isEmpty())
 QCString q = s+" loop "+s2+" end loop" +s3;
          QCString endLoop="end loop" + s3;
          FlowChart::moveToPrevLevel();
-         FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop.data(),0);
+         FlowChart::addFlowChart(FlowChart::END_LOOP,endLoop,QCString());
         return q;
 assert(false);
 }
@@ -5296,7 +5300,7 @@ QCString VhdlParser::multiplying_operation() {Token *tok=0;
       tok = jj_consume_token(MULT_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -5305,7 +5309,7 @@ return tok->image.c_str();
       tok = jj_consume_token(SLASH_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -5314,7 +5318,7 @@ return tok->image.c_str();
       tok = jj_consume_token(MOD_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -5323,7 +5327,7 @@ return tok->image.c_str();
       tok = jj_consume_token(REM_T);
       }
       if (!hasError) {
-return tok->image.c_str();
+return QCString(tok->image);
       }
       break;
       }
@@ -5676,7 +5680,7 @@ QCString VhdlParser::next_statement() {QCString s,s1,s2;Token *t=0;Token *t1=0;
     jj_consume_token(SEMI_T);
     }
 if(t) s+=":";
-   FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2.data(),s1.data());
+   FlowChart::addFlowChart(FlowChart::NEXT_NO,"next ",s2,s1);
     m_sharedState->lab.resize(0);
   if(t1) s2.prepend("when ");
   return s+s1+s2+";";
@@ -5819,7 +5823,7 @@ QCString VhdlParser::operator_symbol() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(STRINGLITERAL);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -5872,7 +5876,7 @@ void VhdlParser::package_body() {QCString s;
     if (!hasError) {
 m_sharedState->lastCompound=m_sharedState->current;
                         s.prepend("_");
-                        outlineParser()->addVhdlType(s,outlineParser()->getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
+                        outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(),Entry::CLASS_SEC,VhdlDocGen::PACKAGE_BODY,0,0,Protected);
     }
     if (!hasError) {
     package_body_declarative_part();
@@ -6083,7 +6087,7 @@ m_sharedState->lastCompound=m_sharedState->current;
                           clone->bodyLine=outlineParser()->getLine(PACKAGE_T);
                           clone->protection=Package;
                           m_sharedState->current_root->moveToSubEntryAndKeep(clone);
-                          outlineParser()->addVhdlType(s,outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
+                          outlineParser()->addVhdlType(s.data(),outlineParser()->getLine(PACKAGE_T),Entry::CLASS_SEC,VhdlDocGen::PACKAGE,0,0,Package);
     }
     if (!hasError) {
     package_header();
@@ -6525,7 +6529,7 @@ return s;
       allocator();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -6664,7 +6668,7 @@ QCString VhdlParser::process_declarative_item() {QCString s;
       subprogram_declaration();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
       break;
       }
@@ -6902,8 +6906,8 @@ m_sharedState->currP=VhdlDocGen::PROCESS;
     }
     if (!hasError) {
 if (s2.data())
-                FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2.data(),0);
-                FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
+                FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s2,QCString());
+                FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",QCString());
     }
     if (!hasError) {
     jj_consume_token(BEGIN_T);
@@ -6957,8 +6961,8 @@ if(s.isEmpty())
           m_sharedState->current->endBodyLine=outlineParser()->getLine();
           m_sharedState->currP=0;
           if(tok)
-            s1=tok->image.data();
-          outlineParser()->createFunction(m_sharedState->currName,VhdlDocGen::PROCESS,s1.data());
+            s1=tok->image;
+          outlineParser()->createFunction(m_sharedState->currName.data(),VhdlDocGen::PROCESS,s1.data());
           outlineParser()->createFlow();
           m_sharedState->currName="";
           outlineParser()->newEntry();
@@ -7282,7 +7286,7 @@ return "?=";
       jj_consume_token(QNEQU_T);
       }
       if (!hasError) {
-return  "?/=";
+return "?/=";
       }
       break;
       }
@@ -7674,42 +7678,42 @@ QCString VhdlParser::sequential_statement() {QCString s;
       s = signal_assignment_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
     } else if (jj_2_85(3)) {
       if (!hasError) {
       s = assertion_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
     } else if (jj_2_86(3)) {
       if (!hasError) {
       s = report_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
     } else if (jj_2_87(3)) {
       if (!hasError) {
       s = wait_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
     } else if (jj_2_88(2147483647)) {
       if (!hasError) {
       s = variable_assignment_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
     } else if (jj_2_89(3)) {
       if (!hasError) {
       s = procedure_call_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
       }
     } else if (jj_2_90(3)) {
       if (!hasError) {
@@ -7751,7 +7755,7 @@ return s;
       s = return_statement();
       }
       if (!hasError) {
-FlowChart::addFlowChart(FlowChart::RETURN_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::RETURN_NO,s,QCString());return s;
       }
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -7762,7 +7766,7 @@ FlowChart::addFlowChart(FlowChart::RETURN_NO,s.data(),0);return s;
         s = null_statement();
         }
         if (!hasError) {
-FlowChart::addFlowChart(FlowChart::TEXT_NO,s.data(),0);return s;
+FlowChart::addFlowChart(FlowChart::TEXT_NO,s,QCString());return s;
         }
         break;
         }
@@ -7906,14 +7910,14 @@ QCString VhdlParser::signal_assignment_statement() {QCString s,s1,s2,s3;
       conditional_signal_assignment_wave();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
     } else if (jj_2_98(2147483647)) {
       if (!hasError) {
       selected_signal_assignment_wave();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -8273,7 +8277,7 @@ QCString VhdlParser::string_literal() {Token *tok=0;
     if (!hasError) {
     tok = jj_consume_token(STRINGLITERAL);
     }
-return tok->image.c_str();
+return QCString(tok->image);
 assert(false);
 }
 
@@ -8289,9 +8293,9 @@ void VhdlParser::subprogram_body() {QCString s;
     if (!hasError) {
 if (s.data())
       {
-        FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s,0);
+        FlowChart::addFlowChart(FlowChart::VARIABLE_NO,s,QCString());
       }
-      FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",0);
+      FlowChart::addFlowChart(FlowChart::BEGIN_NO,"BEGIN",QCString());
     }
     if (!hasError) {
     jj_consume_token(BEGIN_T);
@@ -8403,7 +8407,7 @@ QCString VhdlParser::subprogram_declarative_item() {QCString s;
       subprogram_declaration();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
       break;
       }
@@ -8421,7 +8425,7 @@ return s;
       subprogram_body();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
       break;
       }
@@ -9048,7 +9052,6 @@ QCString VhdlParser::type_definition() {QCString s;
     case RANGE_T:
     case LPAREN_T:{
       if (!hasError) {
-      //try{
       s = scalar_type_definition();
       }
       if (!hasError) {
@@ -9091,7 +9094,7 @@ return s;
         protected_type_body();
         }
         if (!hasError) {
-return "";
+return QCString();
         }
       } else {
         switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -9100,7 +9103,7 @@ return "";
           protected_type_declaration();
           }
           if (!hasError) {
-return "";
+return QCString();
           }
           break;
           }
@@ -9204,14 +9207,22 @@ s+=",";s+=s1;
     if (!hasError) {
     jj_consume_token(SEMI_T);
     }
-QCStringList ql1=QCStringList::split(",",s);
-                   for (uint j=0;j<ql1.count();j++)
+auto ql1=split(s.str(),",");
+                   for (const auto &name : ql1)
                    {
-                     QCStringList ql=QCStringList::split(".",ql1[j]);
-                     QCString it=ql[1];
-                     if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
+                     auto ql2=split(name,".");
+                     if (ql2.size()>1)
                      {
-                       outlineParser()->addVhdlType(it.data(),outlineParser()->getLine(),Entry::VARIABLE_SEC,VhdlDocGen::USE,it.data(),"_use_",Public);
+                       std::string it=ql2[1];
+                       if ( m_sharedState->parse_sec==0 && Config_getBool(SHOW_INCLUDE_FILES) )
+                       {
+                         outlineParser()->addVhdlType(it.c_str(),
+                                                      outlineParser()->getLine(),
+                                                      Entry::VARIABLE_SEC,
+                                                      VhdlDocGen::USE,
+                                                      it.c_str(),
+                                                      "_use_",Public);
+                       }
                      }
                    }
                    s1="use "+s;
@@ -9264,7 +9275,7 @@ return s+s1+":="+s2+";";
       selected_variable_assignment();
       }
       if (!hasError) {
-return "";
+return QCString();
       }
       break;
       }
@@ -9551,7 +9562,7 @@ QCString VhdlParser::protected_type_body() {
       ;
     }
     }
-return "";
+return QCString();
 assert(false);
 }
 
@@ -9724,7 +9735,7 @@ outlineParser()->error_skipto(END_T);
       ;
     }
     }
-return "";
+return QCString();
 assert(false);
 }
 
@@ -10403,7 +10414,7 @@ QCString VhdlParser::sig_stat() {Token *t;
       t = jj_consume_token(CONSTANT_T);
       }
       if (!hasError) {
-return t->image.data();
+return QCString(t->image);
       }
       break;
       }
@@ -10412,7 +10423,7 @@ return t->image.data();
       t = jj_consume_token(SIGNAL_T);
       }
       if (!hasError) {
-return t->image.data();
+return QCString(t->image);
       }
       break;
       }
@@ -10421,7 +10432,7 @@ return t->image.data();
       t = jj_consume_token(VARIABLE_T);
       }
       if (!hasError) {
-return t->image.data();
+return QCString(t->image);
       }
       break;
       }
@@ -11314,7 +11325,7 @@ QCString q;
      if (a>b) b=a;
      outlineParser()->addVhdlType(m_sharedState->current->name.data(),b,Entry::VARIABLE_SEC,VhdlDocGen::GENERIC,ss.data(),0,Public);
    }
-   m_sharedState->currP=0;return "";
+   m_sharedState->currP=0;return QCString();
 assert(false);
 }
 

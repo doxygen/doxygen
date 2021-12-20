@@ -1,6 +1,6 @@
 /******************************************************************************
 *
-* Copyright (C) 1997-2019 by Dimitri van Heesch.
+* Copyright (C) 1997-2020 by Dimitri van Heesch.
 *
 * Permission to use, copy, modify, and distribute this software and its
 * documentation under the terms of the GNU General Public License is hereby
@@ -20,112 +20,97 @@
 #include "config.h"
 #include "util.h"
 
-#define HIDE_SCOPE_NAMES      Config_getBool(HIDE_SCOPE_NAMES)
-#define DOT_GRAPH_MAX_NODES   Config_getInt(DOT_GRAPH_MAX_NODES)
-#define MAX_DOT_GRAPH_DEPTH   Config_getInt(MAX_DOT_GRAPH_DEPTH)
-
 static QCString getUniqueId(const MemberDef *md)
 {
-  QCString result = md->getReference()+"$"+
-         md->getOutputFileBase()+"#"+
-         md->anchor();
+  const MemberDef *def = md->memberDefinition();
+  if (def==0) def = md;
+  QCString result = def->getReference()+"$"+
+         def->getOutputFileBase()+"#"+
+         def->anchor();
   return result;
 }
 
 void DotCallGraph::buildGraph(DotNode *n,const MemberDef *md,int distance)
 {
-  MemberSDict *refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
-  if (refs)
+  auto refs = m_inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
   {
-    refs->sort();
-    MemberSDict::Iterator mri(*refs);
-    MemberDef *rmd;
-    for (;(rmd=mri.current());++mri)
+    if (rmd->showInCallGraph())
     {
-      if (rmd->showInCallGraph())
+      QCString uniqueId = getUniqueId(rmd);
+      auto it = m_usedNodes.find(uniqueId.str());
+      if (it!=m_usedNodes.end()) // file is already a node in the graph
       {
-        QCString uniqueId = getUniqueId(rmd);
-        DotNode *bn  = m_usedNodes->find(uniqueId);
-        if (bn) // file is already a node in the graph
+        DotNode *bn = it->second;
+        n->addChild(bn,0,0);
+        bn->addParent(n);
+        bn->setDistance(distance);
+      }
+      else
+      {
+        QCString name;
+        if (Config_getBool(HIDE_SCOPE_NAMES))
         {
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
+          name  = rmd->getOuterScope()==m_scope ?
+            rmd->name() : rmd->qualifiedName();
         }
         else
         {
-          QCString name;
-          if (HIDE_SCOPE_NAMES)
-          {
-            name  = rmd->getOuterScope()==m_scope ? 
-              rmd->name() : rmd->qualifiedName();
-          }
-          else
-          {
-            name = rmd->qualifiedName();
-          }
-          QCString tooltip = rmd->briefDescriptionAsTooltip();
-          bn = new DotNode(
+          name = rmd->qualifiedName();
+        }
+        QCString tooltip = rmd->briefDescriptionAsTooltip();
+        DotNode *bn = new DotNode(
             getNextNodeNumber(),
             linkToText(rmd->getLanguage(),name,FALSE),
             tooltip,
             uniqueId,
             0 //distance
-          );
-          n->addChild(bn,0,0,0);
-          bn->addParent(n);
-          bn->setDistance(distance);
-          m_usedNodes->insert(uniqueId,bn);
+            );
+        n->addChild(bn,0,0);
+        bn->addParent(n);
+        bn->setDistance(distance);
+        m_usedNodes.insert(std::make_pair(uniqueId.str(),bn));
 
-          buildGraph(bn,rmd,distance+1);
-        }
+        buildGraph(bn,rmd,distance+1);
       }
     }
   }
 }
 
-void DotCallGraph::determineVisibleNodes(QList<DotNode> &queue, int &maxNodes)
+void DotCallGraph::determineVisibleNodes(DotNodeDeque &queue, int &maxNodes)
 {
-  while (queue.count()>0 && maxNodes>0)
+  while (!queue.empty() && maxNodes>0)
   {
-    DotNode *n = queue.take(0);
-    if (!n->isVisible() && n->distance()<=MAX_DOT_GRAPH_DEPTH) // not yet processed
+    DotNode *n = queue.front();
+    queue.pop_front();
+    if (!n->isVisible() && n->distance()<=Config_getInt(MAX_DOT_GRAPH_DEPTH)) // not yet processed
     {
       n->markAsVisible();
       maxNodes--;
       // add direct children
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          queue.append(dn);
-        }
+        queue.push_back(dn);
       }
     }
   }
 }
 
-void DotCallGraph::determineTruncatedNodes(QList<DotNode> &queue)
+void DotCallGraph::determineTruncatedNodes(DotNodeDeque &queue)
 {
-  while (queue.count()>0)
+  while (!queue.empty())
   {
-    DotNode *n = queue.take(0);
+    DotNode *n = queue.front();
+    queue.pop_front();
     if (n->isVisible() && n->isTruncated()==DotNode::Unknown)
     {
       bool truncated = FALSE;
-      if (n->children())
+      for (const auto &dn : n->children())
       {
-        QListIterator<DotNode> li(*n->children());
-        const DotNode *dn;
-        for (li.toFirst();(dn=li.current());++li)
-        {
-          if (!dn->isVisible()) 
-            truncated = TRUE;
-          else 
-            queue.append(dn);
-        }
+        if (!dn->isVisible())
+          truncated = TRUE;
+        else
+          queue.push_back(dn);
       }
       n->markAsTruncated(truncated);
     }
@@ -139,7 +124,7 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_scope    = md->getOuterScope();
   QCString uniqueId = getUniqueId(md);
   QCString name;
-  if (HIDE_SCOPE_NAMES)
+  if (Config_getBool(HIDE_SCOPE_NAMES))
   {
     name = md->name();
   }
@@ -151,27 +136,25 @@ DotCallGraph::DotCallGraph(const MemberDef *md,bool inverse)
   m_startNode = new DotNode(getNextNodeNumber(),
     linkToText(md->getLanguage(),name,FALSE),
     tooltip,
-    uniqueId.data(),
+    uniqueId,
     TRUE     // root node
   );
   m_startNode->setDistance(0);
-  m_usedNodes = new QDict<DotNode>(1009);
-  m_usedNodes->insert(uniqueId,m_startNode);
+  m_usedNodes.insert(std::make_pair(uniqueId.str(),m_startNode));
   buildGraph(m_startNode,md,1);
 
-  int maxNodes = DOT_GRAPH_MAX_NODES;
-  QList<DotNode> openNodeQueue;
-  openNodeQueue.append(m_startNode);
+  int maxNodes = Config_getInt(DOT_GRAPH_MAX_NODES);
+  DotNodeDeque openNodeQueue;
+  openNodeQueue.push_back(m_startNode);
   determineVisibleNodes(openNodeQueue,maxNodes);
   openNodeQueue.clear();
-  openNodeQueue.append(m_startNode);
+  openNodeQueue.push_back(m_startNode);
   determineTruncatedNodes(openNodeQueue);
 }
 
 DotCallGraph::~DotCallGraph()
 {
   DotNode::deleteNodes(m_startNode);
-  delete m_usedNodes;
 }
 
 QCString DotCallGraph::getBaseName() const
@@ -198,12 +181,12 @@ QCString DotCallGraph::getMapLabel() const
 }
 
 QCString DotCallGraph::writeGraph(
-        FTextStream &out, 
+        TextStream &out,
         GraphOutputFormat graphFormat,
         EmbeddedOutputFormat textFormat,
-        const char *path,
-        const char *fileName,
-        const char *relPath,bool generateImageMap,
+        const QCString &path,
+        const QCString &fileName,
+        const QCString &relPath,bool generateImageMap,
         int graphId)
 {
   return DotGraph::writeGraph(out, graphFormat, textFormat, path, fileName, relPath, generateImageMap, graphId);
@@ -211,16 +194,29 @@ QCString DotCallGraph::writeGraph(
 
 bool DotCallGraph::isTrivial() const
 {
-  return m_startNode->children()==0;
+  return m_startNode->children().empty();
 }
 
 bool DotCallGraph::isTooBig() const
 {
-  return numNodes()>=DOT_GRAPH_MAX_NODES;
+  return numNodes()>=Config_getInt(DOT_GRAPH_MAX_NODES);
 }
 
 int DotCallGraph::numNodes() const
 {
-  return m_startNode->children() ? m_startNode->children()->count() : 0;
+  return (int)m_startNode->children().size();
+}
+
+bool DotCallGraph::isTrivial(const MemberDef *md,bool inverse)
+{
+  auto refs = inverse ? md->getReferencedByMembers() : md->getReferencesMembers();
+  for (const auto &rmd : refs)
+  {
+    if (rmd->showInCallGraph())
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
 

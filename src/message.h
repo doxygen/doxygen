@@ -17,6 +17,7 @@
 #define MESSAGE_H
 
 #include <cstdarg>
+#include "qcstring.h"
 
 #ifdef __GNUC__
 #define PRINTFLIKE(FORMAT, PARAM ) __attribute__((format(printf, FORMAT, PARAM)))
@@ -25,16 +26,19 @@
 #endif
 
 extern void msg(const char *fmt, ...) PRINTFLIKE(1,2);
-extern void warn(const char *file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
-extern void va_warn(const char* file, int line, const char* fmt, va_list args);
-extern void warn_simple(const char *file,int line,const char *text);
-extern void warn_undoc(const char *file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
-extern void warn_doc_error(const char *file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
+extern void warn(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
+extern void va_warn(const QCString &file, int line, const char* fmt, va_list args);
+extern void warn_simple(const QCString &file,int line,const char *text);
+extern void warn_undoc(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
+extern void warn_incomplete_doc(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
+extern void warn_doc_error(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void warn_uncond(const char *fmt, ...) PRINTFLIKE(1, 2);
 extern void err(const char *fmt, ...) PRINTFLIKE(1, 2);
-extern void err_full(const char *file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
+extern void err_full(const QCString &file,int line,const char *fmt, ...) PRINTFLIKE(3, 4);
 extern void term(const char *fmt, ...) PRINTFLIKE(1, 2);
 void initWarningFormat();
+void warn_flush();
+extern void finishWarnExit();
 
 extern void printlex(int dbg, bool enter, const char *lexName, const char *fileName);
 

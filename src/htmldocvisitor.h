@@ -1,13 +1,10 @@
 /******************************************************************************
  *
- * 
- *
- *
- * Copyright (C) 1997-2015 by Dimitri van Heesch.
+ * Copyright (C) 1997-2021 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -16,29 +13,28 @@
  *
  */
 
-#ifndef _HTMLDOCVISITOR_H
-#define _HTMLDOCVISITOR_H
+#ifndef HTMLDOCVISITOR_H
+#define HTMLDOCVISITOR_H
 
 #include "docvisitor.h"
-#include <qstack.h>
-#include <qcstring.h>
+#include "qcstring.h"
 
 class Definition;
 class MemberDef;
 class DocNode;
-class FTextStream;
 class CodeOutputInterface;
+class TextStream;
 
 /*! @brief Concrete visitor implementation for HTML output. */
 class HtmlDocVisitor : public DocVisitor
 {
   public:
-    HtmlDocVisitor(FTextStream &t,CodeOutputInterface &ci,const Definition *ctx);
-    
+    HtmlDocVisitor(TextStream &t,CodeOutputInterface &ci,const Definition *ctx);
+
     //--------------------------------------
     // visitor functions for leaf nodes
     //--------------------------------------
-    
+
     void visit(DocWord *);
     void visit(DocLinkedWord *);
     void visit(DocWhiteSpace *);
@@ -60,7 +56,7 @@ class HtmlDocVisitor : public DocVisitor
     //--------------------------------------
     // visitor functions for compound nodes
     //--------------------------------------
-    
+
     void visitPre(DocAutoList *);
     void visitPost(DocAutoList *);
     void visitPre(DocAutoListItem *);
@@ -139,23 +135,24 @@ class HtmlDocVisitor : public DocVisitor
   private:
 
     //--------------------------------------
-    // helper functions 
+    // helper functions
     //--------------------------------------
-    
+
     void writeObfuscatedMailAddress(const QCString &url);
-    void filter(const char *str);
-    void filterQuotedCdataAttr(const char* str);
+    void filter(const QCString &str, const bool retainNewline = false);
+    void filterQuotedCdataAttr(const QCString &str);
     void startLink(const QCString &ref,const QCString &file,
                    const QCString &relPath,const QCString &anchor,
                    const QCString &tooltip = "");
     void endLink();
-    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-    void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context);
-
-    void pushEnabled();
-    void popEnabled();
+    void writeDotFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                      const QCString &srcFile,int srcLine);
+    void writeMscFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                      const QCString &srcFile,int srcLine);
+    void writeDiaFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                      const QCString &srcFile,int srcLine);
+    void writePlantUMLFile(const QCString &fileName,const QCString &relPath,const QCString &context,
+                           const QCString &srcFile,int srcLine);
 
     void forceEndParagraph(DocNode *n);
     void forceStartParagraph(DocNode *n);
@@ -164,11 +161,10 @@ class HtmlDocVisitor : public DocVisitor
     // state variables
     //--------------------------------------
 
-    FTextStream &m_t;
+    TextStream &m_t;
     CodeOutputInterface &m_ci;
     bool m_insidePre;
     bool m_hide;
-    QStack<bool> m_enabled;
     const Definition *m_ctx;
     QCString m_langExt;
 };

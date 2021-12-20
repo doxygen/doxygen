@@ -27,6 +27,8 @@
 // Xapian includes
 #include <xapian.h>
 
+#include "version.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -148,7 +150,7 @@ struct WordPosition
 /** Class representing the '<' operator for WordPosition objects based on position. */
 struct WordPosition_less
 {
-  bool operator()(const WordPosition &p1,const WordPosition &p2)
+  bool operator()(const WordPosition &p1,const WordPosition &p2) const
   {
     return p1.start<p2.start;
   }
@@ -165,7 +167,7 @@ struct Fragment
 /** Class representing the '>' operator for Fragment objects based on occurrence. */
 struct Fragment_greater
 {
-  bool operator()(const Fragment &p1,const Fragment &p2)
+  bool operator()(const Fragment &p1,const Fragment &p2) const
   {
     return p1.occurrences>p2.occurrences;
   }
@@ -306,31 +308,55 @@ static void showError(const std::string &callback,const std::string &error)
   exit(0);
 }
 
+static void usage(const char *name, int exitVal = 1)
+{
+  std::cerr << "Usage: " << name << "[query_string]" << std::endl;
+  std::cerr << "       " << "alternatively the query string can be given by the environment variable QUERY_STRING" << std::endl;
+  exit(exitVal);
+}
+
 /** Main routine */
 int main(int argc,char **argv)
 {
   // process inputs that were passed to us via QUERY_STRING
-  std::cout << "Content-Type:application/javascript;charset=utf-8\r\n\n";
   std::string callback;
   try
   {
-    // get input parameters
-    const char *queryEnv = getenv("QUERY_STRING");
     std::string queryString;
-    if (queryEnv)
+    if (argc == 1)
     {
-      queryString = queryEnv;
+      const char *queryEnv = getenv("QUERY_STRING");
+      if (queryEnv)
+      {
+        queryString = queryEnv;
+      }
+      else
+      {
+        usage(argv[0]);
+      }
     }
-    else if (argc>=2)
+    else if (argc == 2)
     {
-      queryString = argv[1];
+      if (std::string(argv[1])=="-h" || std::string(argv[1])=="--help")
+      {
+        usage(argv[0],0);
+      }
+      else if (std::string(argv[1])=="-v" || std::string(argv[1])=="--version")
+      {
+        std::cerr << argv[0] << " version: " << getFullVersion() << std::endl;
+        exit(0);
+      }
+      else
+      {
+        queryString = argv[1];
+      }
     }
     else
     {
-      std::cout << "No input!\n";
-      exit(1);
+      usage(argv[0]);
     }
 
+    std::cout << "Content-Type:application/javascript;charset=utf-8\r\n\n";
     // parse query string
     std::vector<std::string> parts = split(queryString,'&');
     std::string searchFor,callback;

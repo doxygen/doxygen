@@ -22,6 +22,8 @@
  *  the call to all output generators.
  */
 
+#include <atomic>
+
 #include "outputlist.h"
 #include "outputgen.h"
 #include "config.h"
@@ -29,15 +31,19 @@
 #include "definition.h"
 #include "docparser.h"
 #include "vhdldocgen.h"
+#include "doxygen.h"
 
+static AtomicInt g_outId;
 
 OutputList::OutputList()
 {
+  newId();
   //printf("OutputList::OutputList()\n");
 }
 
 OutputList::OutputList(const OutputList &ol)
 {
+  m_id = ol.m_id;
   for (const auto &og : ol.m_outputs)
   {
     m_outputs.emplace_back(og->clone());
@@ -48,6 +54,7 @@ OutputList &OutputList::operator=(const OutputList &ol)
 {
   if (this!=&ol)
   {
+    m_id = ol.m_id;
     for (const auto &og : ol.m_outputs)
     {
       m_outputs.emplace_back(og->clone());
@@ -59,6 +66,11 @@ OutputList &OutputList::operator=(const OutputList &ol)
 OutputList::~OutputList()
 {
   //printf("OutputList::~OutputList()\n");
+}
+
+void OutputList::newId()
+{
+  m_id = ++g_outId;
 }
 
 void OutputList::disableAllBut(OutputGenerator::OutputType o)
@@ -127,10 +139,10 @@ void OutputList::popGeneratorState()
   }
 }
 
-void OutputList::generateDoc(const char *fileName,int startLine,
+void OutputList::generateDoc(const QCString &fileName,int startLine,
                   const Definition *ctx,const MemberDef * md,
                   const QCString &docStr,bool indexWords,
-                  bool isExample,const char *exampleName,
+                  bool isExample,const QCString &exampleName,
                   bool singleLine,bool linkFromIndex,
                   bool markdownSupport)
 {
@@ -146,23 +158,22 @@ void OutputList::generateDoc(const char *fileName,int startLine,
   // specified as:
   // - when only XML format there should be warnings as well (XML has its own write routines)
   // - no formats there should be warnings as well
-  DocRoot *root=0;
-  root = validatingParseDoc(fileName,startLine,
-                            ctx,md,docStr,indexWords,isExample,exampleName,
-                            singleLine,linkFromIndex,markdownSupport);
-  if (count>0) writeDoc(root,ctx,md);
-  delete root;
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocRoot>    root   { validatingParseDoc(*parser.get(),
+                                       fileName,startLine,
+                                       ctx,md,docStr,indexWords,isExample,exampleName,
+                                       singleLine,linkFromIndex,markdownSupport) };
+  if (count>0) writeDoc(root.get(),ctx,md,m_id);
 }
 
-void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md)
+void OutputList::writeDoc(DocRoot *root,const Definition *ctx,const MemberDef *md,int)
 {
   for (const auto &og : m_outputs)
   {
     //printf("og->printDoc(extension=%s)\n",
-    //    ctx?ctx->getDefFileExtension().data():"<null>");
-    if (og->isEnabled()) og->writeDoc(root,ctx,md);
+    //    ctx?qPrint(ctx->getDefFileExtension()):"<null>");
+    if (og->isEnabled()) og->writeDoc(root,ctx,md,m_id);
   }
-  VhdlDocGen::setFlowMember(0);
 }
 
 void OutputList::parseText(const QCString &textStr)
@@ -177,17 +188,16 @@ void OutputList::parseText(const QCString &textStr)
   // specified as:
   // - when only XML format there should be warnings as well (XML has its own write routines)
   // - no formats there should be warnings as well
-  DocText *root = validatingParseText(textStr);
+  std::unique_ptr<IDocParser> parser { createDocParser() };
+  std::unique_ptr<DocText>    root   { validatingParseText(*parser.get(), textStr) };
 
   if (count>0)
   {
     for (const auto &og : m_outputs)
     {
-      if (og->isEnabled()) og->writeDoc(root,0,0);
+      if (og->isEnabled()) og->writeDoc(root.get(),0,0,m_id);
     }
   }
-
-  delete root;
 }
 
 //--------------------------------------------------------------------------

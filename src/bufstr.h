@@ -1,13 +1,13 @@
 /******************************************************************************
  *
- * 
+ *
  *
  *
  * Copyright (C) 1997-2015 by Dimitri van Heesch.
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation under the terms of the GNU General Public License is hereby 
- * granted. No representations are made about the suitability of this software 
+ * documentation under the terms of the GNU General Public License is hereby
+ * granted. No representations are made about the suitability of this software
  * for any purpose. It is provided "as is" without express or implied warranty.
  * See the GNU General Public License for more details.
  *
@@ -15,23 +15,22 @@
  * input used in their production; they are not affected by this license.
  *
  */
-#ifndef _BUFSTR_H
-#define _BUFSTR_H
+#ifndef BUFSTR_H
+#define BUFSTR_H
 
-#include <qglobal.h>
-#include <qcstring.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include "qcstring.h"
 
 /*! @brief Buffer used to store strings
- *  
+ *
  *  This buffer is used append characters and strings. It will automatically
  *  resize itself, yet provide efficient random access to the content.
  */
-class BufStr 
+class BufStr
 {
   public:
-    BufStr(uint size) 
-      : m_size(size), m_writeOffset(0), m_spareRoom(10240), m_buf(0) 
+    BufStr(uint size)
+      : m_size(size), m_writeOffset(0), m_spareRoom(10240), m_buf(0)
     {
       m_buf = (char *)calloc(size,1);
     }
@@ -95,8 +94,8 @@ class BufStr
       return m_buf;
     }
     uint curPos() const
-    { 
-      return m_writeOffset; 
+    {
+      return m_writeOffset;
     }
     void dropFromStart(uint bytes)
     {
@@ -108,7 +107,7 @@ class BufStr
   private:
     void makeRoomFor(uint size)
     {
-      if (m_writeOffset+size>=m_size) 
+      if (m_writeOffset+size>=m_size)
       {
         resize(m_size+size+m_spareRoom);
       }

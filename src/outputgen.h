@@ -20,12 +20,13 @@
 
 #include <memory>
 #include <stack>
+#include <iostream>
+#include <fstream>
 
-#include <qfile.h>
-
+#include "types.h"
 #include "index.h"
 #include "section.h"
-#include "ftextstream.h"
+#include "textstream.h"
 
 class ClassDiagram;
 class DotClassGraph;
@@ -61,14 +62,22 @@ class CodeOutputInterface
 {
   public:
     virtual ~CodeOutputInterface() {}
+    CodeOutputInterface() {}
+    CodeOutputInterface(const CodeOutputInterface &) = delete;
+    CodeOutputInterface &operator=(const CodeOutputInterface &) = delete;
+
+    /** Identifier for the output file */
+    virtual int id() const { return 0; }
 
     /*! Writes an code fragment to the output. This function should keep
      *  spaces visible, should break lines at a newline and should convert
      *  tabs to the right number of spaces.
      */
-    virtual void codify(const char *s) = 0;
+    virtual void codify(const QCString &s) = 0;
 
     /*! Writes a link to an object in a code fragment.
+     *  \param type     The type of symbol, used for semantic syntax
+     *                  highlighting, may be Default is no info is available.
      *  \param ref      If this is non-zero, the object is to be found in
      *                  an external documentation file.
      *  \param file     The file in which the object is located.
@@ -77,18 +86,20 @@ class CodeOutputInterface
      *  \param name     The text to display as a placeholder for the link.
      *  \param tooltip  The tooltip to display when the mouse is on the link.
      */
-    virtual void writeCodeLink(const char *ref,const char *file,
-                               const char *anchor,const char *name,
-                               const char *tooltip) = 0;
+    virtual void writeCodeLink(CodeSymbolType type,
+                               const QCString &ref,const QCString &file,
+                               const QCString &anchor,const QCString &name,
+                               const QCString &tooltip) = 0;
 
     /*! Writes the line number of a source listing
      *  \param ref        External reference (when imported from a tag file)
      *  \param file       The file part of the URL pointing to the docs.
      *  \param anchor     The anchor part of the URL pointing to the docs.
      *  \param lineNumber The line number to write
+     *  \param writeLineAnchor Indicates if an anchor for the line number needs to be written
      */
-    virtual void writeLineNumber(const char *ref,const char *file,
-                                 const char *anchor,int lineNumber) = 0;
+    virtual void writeLineNumber(const QCString &ref,const QCString &file,
+                                 const QCString &anchor,int lineNumber, bool writeLineAnchor) = 0;
 
     /*! Writes a tool tip definition
      *  \param id       unique identifier for the tooltip
@@ -98,10 +109,10 @@ class CodeOutputInterface
      *  \param defInfo  Info about the symbol's definition in the source code
      *  \param declInfo Info about the symbol's declaration in the source code
      */
-    virtual void writeTooltip(const char *id,
+    virtual void writeTooltip(const QCString &id,
                               const DocLinkInfo &docInfo,
-                              const char *decl,
-                              const char *desc,
+                              const QCString &decl,
+                              const QCString &desc,
                               const SourceLinkInfo &defInfo,
                               const SourceLinkInfo &declInfo
                              ) = 0;
@@ -115,7 +126,7 @@ class CodeOutputInterface
      *  which elements of the same type are rendered using the same 'font class'.
      *  \param clsName The category name.
      */
-    virtual void startFontClass(const char *clsName) = 0;
+    virtual void startFontClass(const QCString &clsName) = 0;
 
     /*! Ends a block started with startFontClass() */
     virtual void endFontClass() = 0;
@@ -123,10 +134,10 @@ class CodeOutputInterface
     /*! Write an anchor to a source listing.
      *  \param name The name of the anchor.
      */
-    virtual void writeCodeAnchor(const char *name) = 0;
+    virtual void writeCodeAnchor(const QCString &name) = 0;
 
-    virtual void setCurrentDoc(const Definition *context,const char *anchor,bool isSourceFile) = 0;
-    virtual void addWord(const char *word,bool hiPriority) = 0;
+    virtual void setCurrentDoc(const Definition *context,const QCString &anchor,bool isSourceFile) = 0;
+    virtual void addWord(const QCString &word,bool hiPriority) = 0;
 
     /*! Starts a source code fragment. The fragment will be
      *  fed to the code parser (see code.h) for syntax highlighting
@@ -134,9 +145,9 @@ class CodeOutputInterface
      *  endCodeFragment()
      *  @param style The kind of code fragment.
      */
-    virtual void startCodeFragment(const char *style) = 0;
+    virtual void startCodeFragment(const QCString &style) = 0;
     /*! Ends a block of code */
-    virtual void endCodeFragment(const char *style) = 0;
+    virtual void endCodeFragment(const QCString &style) = 0;
 };
 
 /** Base Interface used for generating output outside of the
@@ -184,7 +195,7 @@ class BaseOutputDocInterface : public CodeOutputInterface
     /*! Writes an ASCII string to the output. Converts characters that have
      *  A special meaning, like \c & in html.
      */
-    virtual void docify(const char *s) = 0;
+    virtual void docify(const QCString &s) = 0;
 
     /*! Writes a single ASCII character to the output. Converts characters
      *  that have a special meaning.
@@ -194,13 +205,13 @@ class BaseOutputDocInterface : public CodeOutputInterface
     /*! Writes an ASCII string to the output, \e without converting
      *  special characters.
      */
-    virtual void writeString(const char *text) = 0;
+    virtual void writeString(const QCString &text) = 0;
 
     /*! Starts a new paragraph */
     //virtual void newParagraph()   = 0;
 
     /*! Starts a new paragraph */
-    virtual void startParagraph(const char *classDef) = 0;
+    virtual void startParagraph(const QCString &classDef) = 0;
     /*! Ends a paragraph */
     virtual void endParagraph() = 0;
 
@@ -212,14 +223,14 @@ class BaseOutputDocInterface : public CodeOutputInterface
      *                the file.
      *  \param name   The text to display as a placeholder for the link.
      */
-    virtual void writeObjectLink(const char *ref,const char *file,
-                                 const char *anchor, const char *name) = 0;
+    virtual void writeObjectLink(const QCString &ref,const QCString &file,
+                                 const QCString &anchor, const QCString &name) = 0;
 
 
     /*! Starts a (link to an) URL found in the documentation.
      *  \param url    The URL to link to.
      */
-    virtual void startHtmlLink(const char *url) = 0;
+    virtual void startHtmlLink(const QCString &url) = 0;
 
     /*! Ends a link started by startHtmlLink().
      */
@@ -279,22 +290,22 @@ class BaseOutputDocInterface : public CodeOutputInterface
 
     virtual void startExamples() = 0;
     virtual void endExamples() = 0;
-    virtual void startParamList(ParamListTypes t,const char *title) = 0;
+    virtual void startParamList(ParamListTypes t,const QCString &title) = 0;
     virtual void endParamList() = 0;
 
     //virtual void writeDescItem() = 0;
     virtual void startTitle() = 0;
     virtual void endTitle()   = 0;
 
-    virtual void writeAnchor(const char *fileName,const char *name) = 0;
-    virtual void startSection(const char *,const char *,SectionType) = 0;
-    virtual void endSection(const char *,SectionType) = 0;
+    virtual void writeAnchor(const QCString &fileName,const QCString &name) = 0;
+    virtual void startSection(const QCString &,const QCString &,SectionType) = 0;
+    virtual void endSection(const QCString &,SectionType) = 0;
 
-    virtual void lineBreak(const char *style) = 0;
-    virtual void addIndexItem(const char *s1,const char *s2) = 0;
+    virtual void lineBreak(const QCString &style) = 0;
+    virtual void addIndexItem(const QCString &s1,const QCString &s2) = 0;
 
     virtual void writeNonBreakableSpace(int) = 0;
-    virtual void startDescTable(const char *title) = 0;
+    virtual void startDescTable(const QCString &title) = 0;
     virtual void endDescTable() = 0;
     virtual void startDescTableRow() = 0;
     virtual void endDescTableRow() = 0;
@@ -302,10 +313,10 @@ class BaseOutputDocInterface : public CodeOutputInterface
     virtual void endDescTableTitle() = 0;
     virtual void startDescTableData() = 0;
     virtual void endDescTableData() = 0;
-    virtual void startTextLink(const char *file,const char *anchor) = 0;
+    virtual void startTextLink(const QCString &file,const QCString &anchor) = 0;
     virtual void endTextLink() = 0;
     virtual void startPageRef() = 0;
-    virtual void endPageRef(const char *,const char *) = 0;
+    virtual void endPageRef(const QCString &,const QCString &) = 0;
     virtual void startSubsection() = 0;
     virtual void endSubsection() = 0;
     virtual void startSubsubsection() = 0;
@@ -321,7 +332,7 @@ class OutputGenerator : public BaseOutputDocInterface
   public:
     enum OutputType { Html, Latex, Man, RTF, XML, DEF, Perl , Docbook};
 
-    OutputGenerator(const char *dir);
+    OutputGenerator(const QCString &dir);
     OutputGenerator(const OutputGenerator &o);
     OutputGenerator &operator=(const OutputGenerator &o);
     virtual ~OutputGenerator();
@@ -342,7 +353,7 @@ class OutputGenerator : public BaseOutputDocInterface
     QCString dir() const;
     QCString fileName() const;
 
-    void startPlainFile(const char *name);
+    void startPlainFile(const QCString &name);
     void endPlainFile();
     //QCString getContents() const;
     bool isEnabled() const { return m_active; }
@@ -351,24 +362,24 @@ class OutputGenerator : public BaseOutputDocInterface
     //void setEncoding(const QCString &enc) { encoding = enc; }
     //virtual void postProcess(QByteArray &) { }
 
-    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md) = 0;
+    virtual void writeDoc(DocNode *,const Definition *ctx,const MemberDef *md,int id) = 0;
 
     ///////////////////////////////////////////////////////////////
     // structural output interface
     ///////////////////////////////////////////////////////////////
-    virtual void startFile(const char *name,const char *manName,
-                           const char *title) = 0;
+    virtual void startFile(const QCString &name,const QCString &manName,
+                           const QCString &title,int id=0) = 0;
     virtual void writeSearchInfo() = 0;
-    virtual void writeFooter(const char *navPath) = 0;
+    virtual void writeFooter(const QCString &navPath) = 0;
     virtual void endFile() = 0;
     virtual void startIndexSection(IndexSections) = 0;
     virtual void endIndexSection(IndexSections) = 0;
-    virtual void writePageLink(const char *,bool) = 0;
+    virtual void writePageLink(const QCString &,bool) = 0;
     virtual void startProjectNumber() = 0;
     virtual void endProjectNumber() = 0;
     virtual void writeStyleInfo(int part) = 0;
-    virtual void startTitleHead(const char *) = 0;
-    virtual void endTitleHead(const char *fileName,const char *name) = 0;
+    virtual void startTitleHead(const QCString &) = 0;
+    virtual void endTitleHead(const QCString &fileName,const QCString &name) = 0;
     virtual void startIndexListItem() = 0;
     virtual void endIndexListItem()   = 0;
     virtual void startIndexList() = 0;
@@ -376,16 +387,16 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void startIndexKey() = 0;
     virtual void endIndexKey()   = 0;
     virtual void startIndexValue(bool) = 0;
-    virtual void endIndexValue(const char *,bool) = 0;
-    virtual void startIndexItem(const char *ref,const char *file) = 0;
-    virtual void endIndexItem(const char *ref,const char *file) = 0;
+    virtual void endIndexValue(const QCString &,bool) = 0;
+    virtual void startIndexItem(const QCString &ref,const QCString &file) = 0;
+    virtual void endIndexItem(const QCString &ref,const QCString &file) = 0;
     virtual void startGroupHeader(int) = 0;
     virtual void endGroupHeader(int) = 0;
     virtual void startMemberSections() = 0;
     virtual void endMemberSections() = 0;
     virtual void startHeaderSection() = 0;
     virtual void endHeaderSection() = 0;
-    virtual void startMemberHeader(const char *anchor, int typ) = 0;
+    virtual void startMemberHeader(const QCString &anchor, int typ) = 0;
     virtual void endMemberHeader() = 0;
     virtual void startMemberSubtitle() = 0;
     virtual void endMemberSubtitle() = 0;
@@ -397,10 +408,12 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endInlineHeader() = 0;
     virtual void startAnonTypeScope(int) = 0;
     virtual void endAnonTypeScope(int) = 0;
-    virtual void startMemberItem(const char *,int,const char *) = 0;
+    virtual void startMemberItem(const QCString &,int,const QCString &) = 0;
     virtual void endMemberItem() = 0;
     virtual void startMemberTemplateParams() = 0;
-    virtual void endMemberTemplateParams(const char *,const char *) = 0;
+    virtual void endMemberTemplateParams(const QCString &,const QCString &) = 0;
+    virtual void startCompoundTemplateParams() = 0;
+    virtual void endCompoundTemplateParams() = 0;
     virtual void startMemberGroupHeader(bool) = 0;
     virtual void endMemberGroupHeader() = 0;
     virtual void startMemberGroupDocs() = 0;
@@ -409,29 +422,29 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberGroup(bool) = 0;
     virtual void insertMemberAlign(bool) = 0;
     virtual void insertMemberAlignLeft(int,bool) = 0;
-    virtual void startMemberDoc(const char *,const char *,
-                                const char *,const char *,int,int,bool) = 0;
+    virtual void startMemberDoc(const QCString &,const QCString &,
+                                const QCString &,const QCString &,int,int,bool) = 0;
     virtual void endMemberDoc(bool) = 0;
-    virtual void startDoxyAnchor(const char *fName,const char *manName,
-                                 const char *anchor,const char *name,
-                                 const char *args) = 0;
-    virtual void endDoxyAnchor(const char *fileName,const char *anchor) = 0;
+    virtual void startDoxyAnchor(const QCString &fName,const QCString &manName,
+                                 const QCString &anchor,const QCString &name,
+                                 const QCString &args) = 0;
+    virtual void endDoxyAnchor(const QCString &fileName,const QCString &anchor) = 0;
     virtual void writeLatexSpacing() = 0;
-    virtual void writeStartAnnoItem(const char *type,const char *file,
-                                    const char *path,const char *name) = 0;
-    virtual void writeEndAnnoItem(const char *name) = 0;
-    virtual void startMemberDescription(const char *anchor,const char *inheritId, bool typ) = 0;
+    virtual void writeStartAnnoItem(const QCString &type,const QCString &file,
+                                    const QCString &path,const QCString &name) = 0;
+    virtual void writeEndAnnoItem(const QCString &name) = 0;
+    virtual void startMemberDescription(const QCString &anchor,const QCString &inheritId, bool typ) = 0;
     virtual void endMemberDescription() = 0;
     virtual void startMemberDeclaration() = 0;
-    virtual void endMemberDeclaration(const char *anchor,const char *inheritId) = 0;
-    virtual void writeInheritedSectionTitle(const char *id,const char *ref,
-                                            const char *file,const char *anchor,
-                                            const char *title,const char *name) = 0;
+    virtual void endMemberDeclaration(const QCString &anchor,const QCString &inheritId) = 0;
+    virtual void writeInheritedSectionTitle(const QCString &id,const QCString &ref,
+                                            const QCString &file,const QCString &anchor,
+                                            const QCString &title,const QCString &name) = 0;
     virtual void startIndent() = 0;
     virtual void endIndent() = 0;
     virtual void writeSynopsis() = 0;
     virtual void startClassDiagram() = 0;
-    virtual void endClassDiagram(const ClassDiagram &,const char *,const char *) = 0;
+    virtual void endClassDiagram(const ClassDiagram &,const QCString &,const QCString &) = 0;
     virtual void startDotGraph() = 0;
     virtual void endDotGraph(DotClassGraph &g) = 0;
     virtual void startInclDepGraph() = 0;
@@ -445,14 +458,14 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void writeGraphicalHierarchy(DotGfxHierarchyTable &g) = 0;
     virtual void startQuickIndices() = 0;
     virtual void endQuickIndices() = 0;
-    virtual void writeSplitBar(const char *) = 0;
-    virtual void writeNavigationPath(const char *) = 0;
+    virtual void writeSplitBar(const QCString &) = 0;
+    virtual void writeNavigationPath(const QCString &) = 0;
     virtual void writeLogo() = 0;
-    virtual void writeQuickLinks(bool compact,HighlightedItem hli,const char *file) = 0;
-    virtual void writeSummaryLink(const char *file,const char *anchor,const char *title,bool first) = 0;
+    virtual void writeQuickLinks(bool compact,HighlightedItem hli,const QCString &file) = 0;
+    virtual void writeSummaryLink(const QCString &file,const QCString &anchor,const QCString &title,bool first) = 0;
     virtual void startContents() = 0;
     virtual void endContents() = 0;
-    virtual void startPageDoc(const char *) {}
+    virtual void startPageDoc(const QCString &) {}
     virtual void endPageDoc() {}
     virtual void startTextBlock(bool) = 0;
     virtual void endTextBlock(bool) = 0;
@@ -461,15 +474,15 @@ class OutputGenerator : public BaseOutputDocInterface
     virtual void endMemberDocPrefixItem() = 0;
     virtual void startMemberDocName(bool) = 0;
     virtual void endMemberDocName() = 0;
-    virtual void startParameterType(bool,const char *key) = 0;
+    virtual void startParameterType(bool,const QCString &key) = 0;
     virtual void endParameterType() = 0;
     virtual void startParameterName(bool) = 0;
     virtual void endParameterName(bool,bool,bool) = 0;
     virtual void startParameterList(bool) = 0;
     virtual void endParameterList() = 0;
-    virtual void exceptionEntry(const char*,bool) = 0;
+    virtual void exceptionEntry(const QCString &,bool) = 0;
 
-    virtual void startConstraintList(const char *) = 0;
+    virtual void startConstraintList(const QCString &) = 0;
     virtual void startConstraintParam() = 0;
     virtual void endConstraintParam() = 0;
     virtual void startConstraintType() = 0;
@@ -489,15 +502,17 @@ class OutputGenerator : public BaseOutputDocInterface
 
 
     virtual void startLabels() = 0;
-    virtual void writeLabel(const char *,bool) = 0;
+    virtual void writeLabel(const QCString &,bool) = 0;
     virtual void endLabels() = 0;
 
+    virtual void cleanup() = 0;
+
   protected:
-    FTextStream t;
+    TextStream m_t;
   private:
     QCString m_dir;
     QCString m_fileName;
-    QFile m_file;
+    FILE *m_file;
     bool m_active = true;
     std::stack<bool> m_genStack;
 };

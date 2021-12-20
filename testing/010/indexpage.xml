@@ -9,5 +9,6 @@
       <para>Text <computeroutput>code</computeroutput> normal text.</para>
       <para>Text <computeroutput>code</computeroutput> normal text. </para>
     </detaileddescription>
+    <location file="010_c.dox"/>
   </compounddef>
 </doxygen>

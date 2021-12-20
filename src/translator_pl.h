@@ -121,9 +121,9 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! this is put at the author sections at the bottom of man pages.
      *  parameter s is name of the project name.
      */
-    QCString trGeneratedAutomatically(const char *s)
+    QCString trGeneratedAutomatically(const QCString &s)
     { QCString result="Wygenerowano automatycznie z kodu źródłowego programem Doxygen";
-      if (s) result+=(QCString)" dla "+s;
+      if (!s.isEmpty()) result+=(QCString)" dla "+s;
       result+=".";
       return result;
     }
@@ -233,6 +233,10 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       if (Config_getBool(OPTIMIZE_OUTPUT_FOR_C))
       {
         return "Tutaj znajdują się struktury danych wraz z ich krótkimi opisami:";
+      }
+      else if (Config_getBool(OPTIMIZE_OUTPUT_SLICE))
+      {
+        return "Tutaj znajdują się klasy wraz z ich krótkimi opisami:";
       }
       else
       {
@@ -493,16 +497,16 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! This is used in the standard footer of each page and indicates when
      *  the page was generated
      */
-    QCString trGeneratedAt(const char *date,const char *projName)
+    QCString trGeneratedAt(const QCString &date,const QCString &projName)
     {
       QCString result=(QCString)"Wygenerowano "+date;
-      if (projName) result+=(QCString)" dla "+projName;
+      if (!projName.isEmpty()) result+=(QCString)" dla "+projName;
       result+=(QCString)" programem";
       return result;
     }
 
     /*! this text is put before a class diagram */
-    QCString trClassDiagram(const char *clName)
+    QCString trClassDiagram(const QCString &clName)
     {
       return (QCString)"Diagram dziedziczenia dla "+clName;
     }
@@ -587,7 +591,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 
     /*! used as the title of the HTML page of a class/struct/union */
-    QCString trCompoundReference(const char *clName,
+    QCString trCompoundReference(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -609,7 +613,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     }
 
     /*! used as the title of the HTML page of a file */
-    QCString trFileReference(const char *fileName)
+    QCString trFileReference(const QCString &fileName)
     {
       QCString result="Dokumentacja pliku ";
       result+=fileName;
@@ -617,7 +621,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     }
 
     /*! used as the title of the HTML page of a namespace */
-    QCString trNamespaceReference(const char *namespaceName)
+    QCString trNamespaceReference(const QCString &namespaceName)
     {
       QCString result="Dokumentacja przestrzeni nazw ";
       result+=namespaceName;
@@ -819,12 +823,12 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 
     /*! this text is put before a collaboration diagram */
-    QCString trCollaborationDiagram(const char *clName)
+    QCString trCollaborationDiagram(const QCString &clName)
     {
       return (QCString)"Diagram współpracy dla "+clName+":";
     }
     /*! this text is put before an include dependency graph */
-    QCString trInclDepGraph(const char *fName)
+    QCString trInclDepGraph(const QCString &fName)
     {
       return (QCString)"Wykres zależności załączania dla "+fName+":";
     }
@@ -1106,7 +1110,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       }
     }
     /*! Used as the title of a Java package */
-    virtual QCString trPackage(const char *name)
+    virtual QCString trPackage(const QCString &name)
     {
       return (QCString)"Pakiet "+name;
     }
@@ -1493,7 +1497,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     /*! This returns the title of a directory page. The name of the
      *  directory is passed via \a dirName.
      */
-    virtual QCString trDirReference(const char *dirName)
+    virtual QCString trDirReference(const QCString &dirName)
     { QCString result="Dokumentacja katalogu "; result+=dirName; return result; }
 
     /*! This returns the word directory with or without starting capital
@@ -1620,7 +1624,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     }
 
     /*! used as the title of the HTML page of a module/type (Fortran) */
-    virtual QCString trCompoundReferenceFortran(const char *clName,
+    virtual QCString trCompoundReferenceFortran(const QCString &clName,
                                     ClassDef::CompoundType compType,
                                     bool isTemplate)
     {
@@ -1641,7 +1645,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
       return result;
     }
     /*! used as the title of the HTML page of a module (Fortran) */
-    virtual QCString trModuleReference(const char *namespaceName)
+    virtual QCString trModuleReference(const QCString &namespaceName)
     {
       QCString result="Dokumentacja modułu ";
       result+=namespaceName;
@@ -1740,7 +1744,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
 //////////////////////////////////////////////////////////////////////////
 
     /*! directory relation for \a name */
-    virtual QCString trDirRelation(const char *name)
+    virtual QCString trDirRelation(const QCString &name)
     {
       return "Relacja "+ QCString(name);
     }
@@ -1777,7 +1781,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      *  table is shown. The heading for the first column mentions the
      *  source file that has a relation to another file.
      */
-    virtual QCString trFileIn(const char *name)
+    virtual QCString trFileIn(const QCString &name)
     {
       return (QCString)"Plik w "+name;
     }
@@ -1786,7 +1790,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
      *  table is shown. The heading for the second column mentions the
      *  destination file that is included.
      */
-    virtual QCString trIncludesFileIn(const char *name)
+    virtual QCString trIncludesFileIn(const QCString &name)
     {
       return (QCString)"Zawiera plik w "+name;
     }
@@ -1831,7 +1835,7 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     { return "Copyright"; }
 
     /*! Header for the graph showing the directory dependencies */
-    virtual QCString trDirDepGraph(const char *name)
+    virtual QCString trDirDepGraph(const QCString &name)
     { return QCString("Wykres zależności katalogu dla ")+name+":"; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1858,11 +1862,11 @@ class TranslatorPolish : public TranslatorAdapter_1_8_2
     }
 
     /*! Header of a Java enum page (Java enums are represented as classes). */
-    virtual QCString trEnumReference(const char *name)
+    virtual QCString trEnumReference(const QCString &name)
     { QCString result="Dokumentacja wyliczenia "; result+=name; return result; }
 
     /*! Used for a section containing inherited members */
-    virtual QCString trInheritedFrom(const char *members,const char *what)
+    virtual QCString trInheritedFrom(const QCString &members,const QCString &what)
     { return QCString(members)+" dziedziczone z "+what; }
 
     /*! Header of the sections with inherited members specific for the
