@@ -369,3 +369,19 @@ jobs:
           message(FATAL_ERROR "Building documentation failed")
         endif()
       if: matrix.config.os != 'windows-latest'
+
+    - name: Archive html documentation artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: "Html documentation artifacts"
+        path: build/html/
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+
+
+    - name: Archive Latex documentation artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: "Latex documentation artifacts"
+        path: build/latex/doxygen_manual.pdf
+      if: matrix.config.name == 'Ubuntu Latest GCC Release'
+
