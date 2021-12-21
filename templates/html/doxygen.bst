@@ -556,7 +556,7 @@ FUNCTION {format.article.crossref}
 	  warning$
 	  ""
 	}
-        { journal * }
+        { "<cite>" * journal * "</cite>" * }
       if$
     }
     { key * }
@@ -600,7 +600,7 @@ FUNCTION {format.book.crossref}
 	      crossref * warning$
 	      "" *
 	    }
-            { series * }
+            { "<cite>" * series * "</cite>" * }
 	  if$
 	}
 	{ key * }
@@ -623,7 +623,7 @@ FUNCTION {format.incoll.inproc.crossref}
 	      crossref * warning$
 	      ""
 	    }
-            { booktitle * }
+            { "<cite>" * booktitle * "</cite>" * }
 	  if$
 	}
         { key * }
