@@ -42,6 +42,7 @@ class Markdown
     QCString processQuotations(const QCString &s,int refIndent);
     QCString processBlocks(const QCString &s,int indent);
     QCString isBlockCommand(const char *data,int offset,int size);
+    int isSpecialCommand(const char *data,int offset,int size);
     void findEndOfLine(const char *data,int size,int &pi,int&i,int &end);
     int processHtmlTagWrite(const char *data,int offset,int size,bool doWrite);
     int processHtmlTag(const char *data,int offset,int size);

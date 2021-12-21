@@ -377,7 +377,7 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
 {
   TRACE(data);
 
-  using EndBlockFunc = QCString(*)(const std::string &blockName,bool openBracket,char nextChar);
+  using EndBlockFunc = QCString (*)(const std::string &blockName,bool openBracket,char nextChar);
 
   static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
   {
@@ -436,6 +436,52 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
     result = it->second(blockName, openBracket, end<size ? data[end] : 0);
   }
   TRACE_RESULT(result)
+  return result;
+}
+
+int Markdown::isSpecialCommand(const char *data,int offset,int size)
+{
+  TRACE(data);
+
+  using EndCmdFunc = int (*)(const std::string &cmdName,const char *data,int offset,int size);
+
+  auto endOfLine = [](const std::string &cmdName,const char *data,int offset,int size) -> int
+  {
+    // skip until the end of line (allowing line continuation characters)
+    char lc = 0;
+    char c;
+    while (offset<size && ((c=data[offset])!='\n' || lc=='\\'))
+    {
+      if (c=='\\')     lc='\\'; // last character was a line continuation
+      else if (c!=' ') lc=0;    // rest line continuation
+      offset++;
+    }
+    return offset;
+  };
+
+  static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
+  {
+    { "concept",   endOfLine  },
+    { "idlexcept", endOfLine  },
+    { "interface", endOfLine  },
+    { "protocol",  endOfLine  },
+    { "struct",    endOfLine  },
+    { "union",     endOfLine  },
+  };
+
+  bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
+  if (isEscaped) return 0;
+
+  int end=1;
+  while (end<size && (data[end]>='a' && data[end]<='z')) end++;
+  if (end==1) return 0;
+  std::string cmdName(data+1,end-1);
+  auto it = cmdNames.find(cmdName);
+  int result=0;
+  if (it!=cmdNames.end())
+  {
+    result = it->second(cmdName,data,end,size);
+  }
   return result;
 }
 
@@ -1375,6 +1421,12 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
       }
       i++;
     }
+  }
+  int endPos = isSpecialCommand(data,offset,size);
+  if (endPos>0)
+  {
+    m_out.addStr(data,endPos);
+    return endPos;
   }
   if (size>1 && data[0]=='\\') // escaped characters
   {
