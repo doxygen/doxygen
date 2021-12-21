@@ -398,7 +398,6 @@ static QCString getImageAttributes(const char *fmt, const StringVector &attrList
   return retval;
 }
 
-
 // Check if data contains a block command. If so returned the command
 // that ends the block. If not an empty string is returned.
 // Note When offset>0 character position -1 will be inspected.
@@ -419,9 +418,55 @@ static QCString getImageAttributes(const char *fmt, const StringVector &attrList
 // \xmlonly..\endxmlonly
 // \rtfonly..\endrtfonly
 // \manonly..\endmanonly
+// \startuml..\enduml
 QCString Markdown::isBlockCommand(const char *data,int offset,int size)
 {
   TRACE(data);
+
+  using EndBlockFunc = QCString (*)(const std::string &,bool,char);
+
+  static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
+  {
+    return "end"+blockName;
+  };
+  static const auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
+  {
+    return openBracket ? QCString("}") : "end"+blockName;
+  };
+  static const auto getEndUml     = [](const std::string &blockName,bool,char) -> QCString
+  {
+    return "enduml";
+  };
+  static const auto getEndFormula = [](const std::string &blockName,bool,char nextChar) -> QCString
+  {
+    switch (nextChar)
+    {
+      case '$': return "f$";
+      case '(': return "f)";
+      case '[': return "f]";
+      case '{': return "f}";
+    }
+    return "";
+  };
+
+  // table mapping a block start command to a function that can return the matching end block string
+  static const std::unordered_map<std::string,EndBlockFunc> blockNames =
+  {
+    { "dot",         getEndBlock   },
+    { "code",        getEndCode    },
+    { "msc",         getEndBlock   },
+    { "verbatim",    getEndBlock   },
+    { "iliteral",    getEndBlock   },
+    { "latexonly",   getEndBlock   },
+    { "htmlonly",    getEndBlock   },
+    { "xmlonly",     getEndBlock   },
+    { "rtfonly",     getEndBlock   },
+    { "manonly",     getEndBlock   },
+    { "docbookonly", getEndBlock   },
+    { "startuml",    getEndUml     },
+    { "f",           getEndFormula }
+  };
+
   bool openBracket = offset>0 && data[-1]=='{';
   bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
   if (isEscaped) return QCString();
@@ -429,59 +474,177 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   int end=1;
   while (end<size && (data[end]>='a' && data[end]<='z')) end++;
   if (end==1) return QCString();
-  QCString blockName;
-  convertStringFragment(blockName,data+1,end-1);
-  if (blockName=="code" && openBracket)
+  std::string blockName(data+1,end-1);
+  auto it = blockNames.find(blockName);
+  QCString result;
+  if (it!=blockNames.end()) // there is a function assigned
   {
-    TRACE_RESULT("}");
-    return "}";
+    result = it->second(blockName, openBracket, end<size ? data[end] : 0);
   }
-  else if (blockName=="dot"         ||
-           blockName=="code"        ||
-           blockName=="msc"         ||
-           blockName=="verbatim"    ||
-           blockName=="iliteral"    ||
-           blockName=="latexonly"   ||
-           blockName=="htmlonly"    ||
-           blockName=="xmlonly"     ||
-           blockName=="rtfonly"     ||
-           blockName=="manonly"     ||
-           blockName=="docbookonly"
-     )
+  TRACE_RESULT(result)
+  return result;
+}
+
+int Markdown::isSpecialCommand(const char *data,int offset,int size)
+{
+  TRACE(data);
+
+  using EndCmdFunc = int (*)(const char *,int,int);
+
+  static const auto endOfLine = [](const char *data,int offset,int size) -> int
   {
-    QCString result = "end"+blockName;
-    TRACE_RESULT(result);
-    return result;
-  }
-  else if (blockName=="startuml")
+    // skip until the end of line (allowing line continuation characters)
+    char lc = 0;
+    char c;
+    while (offset<size && ((c=data[offset])!='\n' || lc=='\\'))
+    {
+      if (c=='\\')     lc='\\'; // last character was a line continuation
+      else if (c!=' ') lc=0;    // rest line continuation
+      offset++;
+    }
+    return offset;
+  };
+
+  static const auto endOfLabel = [](const char *data,int offset,int size) -> int
   {
-    TRACE_RESULT("enduml");
-    return "enduml";
-  }
-  else if (blockName=="f" && end<size)
+    if (offset<size && data[offset]==' ') // we expect a space before the label
+    {
+      char c;
+      offset++;
+      // skip over spaces
+      while (offset<size && data[offset]==' ') offset++;
+      // skip over label
+      while (offset<size && (c=data[offset])!=' ' && c!='\n') offset++;
+      return offset;
+    }
+    return 0;
+  };
+
+  static const auto endOfParam = [](const char *data,int offset,int size) -> int
   {
-    if (data[end]=='$')
+    int index=offset;
+    if (index<size && data[index]==' ') // skip over optional spaces
     {
-      TRACE_RESULT("f$");
-      return "f$";
+      index++;
+      while (index<size && data[index]==' ') index++;
     }
-    else if (data[end]=='(')
+    if (index<size && data[index]=='[') // find matching ']'
     {
-      TRACE_RESULT("f)");
-      return "f)";
+      index++;
+      char c;
+      while (index<size && (c=data[index])!=']' && c!='\n') index++;
+      if (index==size || data[index]!=']') return 0; // invalid parameter
+      offset=index+1; // part after [...] is the parameter name
     }
-    else if (data[end]=='[')
-    {
-      TRACE_RESULT("f]");
-      return "f]";
-    }
-    else if (data[end]=='{')
-    {
-      TRACE_RESULT("f}");
-      return "f}";
-    }
+    return endOfLabel(data,offset,size);
+  };
+
+  static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
+  {
+    { "a",              endOfLabel },
+    { "addindex",       endOfLine  },
+    { "addtogroup",     endOfLabel },
+    { "anchor",         endOfLabel },
+    { "b",              endOfLabel },
+    { "c",              endOfLabel },
+    { "category",       endOfLine  },
+    { "cite",           endOfLabel },
+    { "class",          endOfLine  },
+    { "concept",        endOfLine  },
+    { "copybrief",      endOfLine  },
+    { "copydetails",    endOfLine  },
+    { "copydoc",        endOfLine  },
+    { "def",            endOfLine  },
+    { "defgroup",       endOfLabel },
+    { "diafile",        endOfLine  },
+    { "dir",            endOfLine  },
+    { "dockbookinclude",endOfLine  },
+    { "dontinclude",    endOfLine  },
+    { "dotfile",        endOfLine  },
+    { "dotfile",        endOfLine  },
+    { "e",              endOfLabel },
+    { "elseif",         endOfLine  },
+    { "em",             endOfLabel },
+    { "emoji",          endOfLabel },
+    { "enum",           endOfLabel },
+    { "example",        endOfLine  },
+    { "exception",      endOfLine  },
+    { "extends",        endOfLabel },
+    { "file",           endOfLine  },
+    { "fn",             endOfLine  },
+    { "headerfile",     endOfLine  },
+    { "htmlinclude",    endOfLine  },
+    { "idlexcept",      endOfLine  },
+    { "if",             endOfLine  },
+    { "ifnot",          endOfLine  },
+    { "image",          endOfLine  },
+    { "implements",     endOfLine  },
+    { "include",        endOfLine  },
+    { "includedoc",     endOfLine  },
+    { "includelineno",  endOfLine  },
+    { "ingroup",        endOfLabel },
+    { "interface",      endOfLine  },
+    { "interface",      endOfLine  },
+    { "latexinclude",   endOfLine  },
+    { "maninclude",     endOfLine  },
+    { "memberof",       endOfLabel },
+    { "mscfile",        endOfLine  },
+    { "namespace",      endOfLabel },
+    { "noop",           endOfLine  },
+    { "overload",       endOfLine  },
+    { "p",              endOfLabel },
+    { "package",        endOfLabel },
+    { "page",           endOfLabel },
+    { "paragraph",      endOfLabel },
+    { "param",          endOfParam },
+    { "property",       endOfLine  },
+    { "protocol",       endOfLine  },
+    { "ref",            endOfLabel },
+    { "refitem",        endOfLabel },
+    { "related",        endOfLabel },
+    { "relatedalso",    endOfLabel },
+    { "relates",        endOfLabel },
+    { "relatesalso",    endOfLabel },
+    { "retval",         endOfLabel },
+    { "rtfinclude",     endOfLine  },
+    { "section",        endOfLabel },
+    { "skip",           endOfLine  },
+    { "skipline",       endOfLine  },
+    { "snippet",        endOfLine  },
+    { "snippetdoc",     endOfLine  },
+    { "snippetlineno",  endOfLine  },
+    { "struct",         endOfLine  },
+    { "subpage",        endOfLabel },
+    { "subsection",     endOfLabel },
+    { "subsubsection",  endOfLabel },
+    { "throw",          endOfLabel },
+    { "throws",         endOfLabel },
+    { "tparam",         endOfLabel },
+    { "typedef",        endOfLine  },
+    { "union",          endOfLine  },
+    { "until",          endOfLine  },
+    { "var",            endOfLine  },
+    { "verbinclude",    endOfLine  },
+    { "weakgroup",      endOfLabel },
+    { "xmlinclude",     endOfLine  },
+    { "xrefitem",       endOfLabel }
+  };
+
+  bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
+  if (isEscaped) return 0;
+
+  int end=1;
+  while (end<size && (data[end]>='a' && data[end]<='z')) end++;
+  if (end==1) return 0;
+  std::string cmdName(data+1,end-1);
+  int result=0;
+  auto it = cmdNames.find(cmdName);
+  if (it!=cmdNames.end()) // command with parameters that should be ignored by markdown
+  {
+    // find the end of the parameters
+    result = it->second(data,end,size);
   }
-  return QCString();
+  return result;
 }
 
 /** looks for the next emph char, skipping other constructs, and
@@ -1517,7 +1680,13 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
       i++;
     }
   }
-  if (size>1 && data[0]=='\\')
+  int endPos = isSpecialCommand(data,offset,size);
+  if (endPos>0)
+  {
+    m_out.addStr(data,endPos);
+    return endPos;
+  }
+  if (size>1 && data[0]=='\\') // escaped characters
   {
     char c=data[1];
     if (c=='[' || c==']' || c=='*' || c=='!' || c=='(' || c==')' || c=='`' || c=='_')
@@ -1550,16 +1719,19 @@ void Markdown::processInline(const char *data,int size)
   Action_t action;
   while (i<size)
   {
+    // skip over character that do not trigger a specific action
     while (end<size && ((action=m_actions[(uchar)data[end]])==0)) end++;
+    // and add them to the output
     m_out.addStr(data+i,end-i);
     if (end>=size) break;
     i=end;
+    // do the action matching a special character at i
     end = action(data+i,i,size-i);
-    if (end<=0)
+    if (end<=0) // update end
     {
       end=i+1-end;
     }
-    else
+    else // skip until end
     {
       i+=end;
       end=i;

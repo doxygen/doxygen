@@ -5827,9 +5827,12 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     //    mdef, mdef ? qPrint(mdef->name()) : "",
     //    mdec, mdec ? qPrint(mdec->name()) : "");
 
+    bool sameNumTemplateArgs = mdef->templateArguments().size()==mdec->templateArguments().size();
+
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
     ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
-    if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
+    if (sameNumTemplateArgs &&
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
                         mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
                         TRUE
                        )
