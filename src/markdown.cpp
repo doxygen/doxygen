@@ -352,6 +352,30 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
   }
 }
 
+/** parse the image attributes and return attributes for given format */
+static QCString getFilteredImageAttributes(const char *fmt, const QCString &attrs)
+{
+  StringVector attrList = split(attrs.str(),",");
+  for (const auto &attr_ : attrList)
+  {
+    QCString attr = QCString(attr_).stripWhiteSpace();
+    int i = attr.find(':');
+    if (i>0) // has format
+    {
+      QCString format = attr.left(i).stripWhiteSpace().lower();
+      if (format == fmt) // matching format
+      {
+        return attr.mid(i+1); // keep part after :
+      }
+    }
+    else // option that applies to all formats
+    {
+      return attr;
+    }
+  }
+  return QCString();
+}
+
 // Check if data contains a block command. If so returned the command
 // that ends the block. If not an empty string is returned.
 // Note When offset>0 character position -1 will be inspected.
@@ -1055,11 +1079,18 @@ int Markdown::processEmphasis(const char *data,int offset,int size)
   return 0;
 }
 
-void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
+void Markdown::writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
                                   const QCString &title, const QCString &content,
-                                  const QCString &link, const FileDef *fd)
+                                  const QCString &link, const QCString &attrs,
+                                  const FileDef *fd)
 {
-  m_out.addStr("@image{inline} ");
+  QCString attributes = getFilteredImageAttributes(fmt, attrs);
+  m_out.addStr("@image");
+  if (inline_img)
+  {
+    m_out.addStr("{inline}");
+  }
+  m_out.addStr(" ");
   m_out.addStr(fmt);
   m_out.addStr(" ");
   m_out.addStr(link.mid(fd ? 0 : 5));
@@ -1079,10 +1110,16 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
   {
     m_out.addStr(" ");// so the line break will not be part of the image name
   }
-  m_out.addStr("\\ilinebr");
+  if (!attributes.isEmpty())
+  {
+    m_out.addStr(" ");
+    m_out.addStr(attributes);
+    m_out.addStr(" ");
+  }
+  m_out.addStr("\\ilinebr ");
 }
 
-int Markdown::processLink(const char *data,int,int size)
+int Markdown::processLink(const char *data,int offset,int size)
 {
   TRACE(data);
   QCString content;
@@ -1090,6 +1127,7 @@ int Markdown::processLink(const char *data,int,int size)
   QCString title;
   int contentStart,contentEnd,linkStart,titleStart,titleEnd;
   bool isImageLink = FALSE;
+  bool isImageInline = FALSE;
   bool isToc = FALSE;
   int i=1;
   if (data[0]=='!')
@@ -1100,6 +1138,22 @@ int Markdown::processLink(const char *data,int,int size)
       TRACE_RESULT(0);
       return 0;
     }
+
+    // if there is non-whitespace before the ![ within the scope of two new lines, the image
+    // is considered inlined, i.e. the image is not preceeded by an empty line
+    int numNLsNeeded=2;
+    int pos = offset-1;
+    while (pos>=0 && numNLsNeeded>0)
+    {
+      if (data[pos]=='\n') numNLsNeeded--;
+      else if (data[pos]!=' ') // found non-whitespace, stop searching
+      {
+        isImageInline=true;
+        break;
+      }
+      pos--;
+    }
+    // skip '!['
     i++;
   }
   contentStart=i;
@@ -1299,6 +1353,69 @@ int Markdown::processLink(const char *data,int,int size)
   }
   nlTotal += nl;
   nl = 0;
+
+  // search for optional image attributes
+  QCString attributes;
+  if (isImageLink)
+  {
+    int j = i;
+    // skip over whitespace
+    while (j<size && data[j]==' ') { j++; }
+    if (j<size && data[j]=='{') // we have attributes
+    {
+      i = j;
+      // skip over '{'
+      i++;
+      int attributesStart=i;
+      nl=0;
+      // find the matching '}'
+      while (i<size)
+      {
+        if (data[i-1]=='\\') // skip escaped characters
+        {
+        }
+        else if (data[i]=='{')
+        {
+          level++;
+        }
+        else if (data[i]=='}')
+        {
+          level--;
+          if (level<=0) break;
+        }
+        else if (data[i]=='\n')
+        {
+          nl++;
+          if (nl>1) { TRACE_RESULT(0); return 0; } // only allow one newline in the content
+        }
+        i++;
+      }
+      nlTotal += nl;
+      nl = 0;
+      if (i>=size) return 0; // premature end of comment -> no attributes
+      int attributesEnd=i;
+      convertStringFragment(attributes,data+attributesStart,attributesEnd-attributesStart);
+      i++; // skip over '}'
+    }
+    if (!isImageInline)
+    {
+      // if there is non-whitespace after the image within the scope of two new lines, the image
+      // is considered inlined, i.e. the image is not followed by an empty line
+      int numNLsNeeded=2;
+      int pos = i;
+      while (pos<size && numNLsNeeded>0)
+      {
+        if (data[pos]=='\n') numNLsNeeded--;
+        else if (data[pos]!=' ') // found non-whitespace, stop searching
+        {
+          isImageInline=true;
+          break;
+        }
+        pos++;
+      }
+    }
+  }
+
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
@@ -1317,10 +1434,11 @@ int Markdown::processLink(const char *data,int,int size)
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
     {
-      writeMarkdownImage("html",    explicitTitle, title, content, link, fd);
-      writeMarkdownImage("latex",   explicitTitle, title, content, link, fd);
-      writeMarkdownImage("rtf",     explicitTitle, title, content, link, fd);
-      writeMarkdownImage("docbook", explicitTitle, title, content, link, fd);
+      // check if different handling is needed per format
+      writeMarkdownImage("html",    isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("latex",   isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("rtf",     isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("docbook", isImageInline, explicitTitle, title, content, link, attributes, fd);
     }
     else
     {

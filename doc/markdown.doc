@@ -482,6 +482,27 @@ to link to a section in general, doxygen allows you to use \ref cmdref "\@ref"
 
 Note this only works for the headers of level 1 to 4.
 
+\subsection md_image_attributes Image Attributes
+
+Standard Markdown has no support for controlling image dimensions
+which results in less flexibility when writing docs.
+
+PHP Markdown Extra allows you to add extra attributes to an
+image as in:
+
+    ![Caption text](/path/to/img.jpg){attributes}
+
+To allow for output format specific attributes the following syntax is supported
+
+    ![Caption text](/path/to/img.jpg){format: attributes, format: attributes}
+
+For a description of the possibilities see the paragraph
+\ref image_sizeindicator "Size indication" for the \ref cmdimage "\\image" command.
+
+For example:
+
+    ![Doxygen Logo](https://www.doxygen.org/images/doxygen.png){html: width=50%, latex: width=5cm}
+
 \section markdown_dox Doxygen specifics
 
 Even though doxygen tries to following the Markdown standard as closely as
