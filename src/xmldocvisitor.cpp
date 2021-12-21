@@ -225,6 +225,9 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small>";  else m_t << "</small>";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "<cite>";  else m_t << "</cite>";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {

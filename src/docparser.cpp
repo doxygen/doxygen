@@ -985,6 +985,7 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Code:         return "code";
     case DocStyleChange::Center:       return "center";
     case DocStyleChange::Small:        return "small";
+    case DocStyleChange::Cite:         return "cite";
     case DocStyleChange::Subscript:    return "subscript";
     case DocStyleChange::Superscript:  return "superscript";
     case DocStyleChange::Preformatted: return "pre";
@@ -1612,6 +1613,15 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
+            }
+          case HTML_CITE:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Cite,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Cite,tokenName);
             }
             break;
           case HTML_IMG:
@@ -6105,6 +6115,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
     case HTML_SMALL:
       if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Small,tagName,&m_parser.context.token->attribs);
       break;
+    case HTML_CITE:
+      if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Cite,tagName,&m_parser.context.token->attribs);
+      break;
     case HTML_PRE:
       if (m_parser.context.token->emptyTag) break;
       m_parser.handleStyleEnter(this,m_children,DocStyleChange::Preformatted,tagName,&m_parser.context.token->attribs);
@@ -6518,6 +6531,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_SMALL:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Small,tagName);
+      break;
+    case HTML_CITE:
+      m_parser.handleStyleLeave(this,m_children,DocStyleChange::Cite,tagName);
       break;
     case HTML_PRE:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Preformatted,tagName);

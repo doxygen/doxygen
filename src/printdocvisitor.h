@@ -137,6 +137,9 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Small:
           if (s->enable()) printf("<small>"); else printf("</small>");
           break;
+        case DocStyleChange::Cite:
+          if (s->enable()) printf("<cite>"); else printf("</cite>");
+          break;
         case DocStyleChange::Preformatted:
           if (s->enable()) printf("<pre>"); else printf("</pre>");
           break;

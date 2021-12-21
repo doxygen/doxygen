@@ -359,6 +359,9 @@ void LatexDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "\n\\footnotesize ";  else m_t << "\n\\normalsize ";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "{\\itshape ";     else m_t << "}";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {

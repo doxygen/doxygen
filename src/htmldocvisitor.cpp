@@ -439,6 +439,9 @@ void HtmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</small>";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "<cite" << htmlAttribsToString(s->attribs()) << ">";  else m_t << "</cite>";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {

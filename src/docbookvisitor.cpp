@@ -295,6 +295,7 @@ DB_VIS_C
       /* There is no equivalent Docbook tag for rendering Small text */
     case DocStyleChange::Small: /* XSLT Stylesheets can be used */ break;
                                                                    /* HTML only */
+    case DocStyleChange::Cite:  break;
     case DocStyleChange::S:  break;
     case DocStyleChange::Strike:  break;
     case DocStyleChange::Del:        break;
