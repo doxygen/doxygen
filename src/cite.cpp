@@ -304,7 +304,7 @@ void CitationManager::generatePage()
       if      (line.find("<!-- BEGIN BIBLIOGRAPHY")!=-1) insideBib=TRUE;
       else if (line.find("<!-- END BIBLIOGRAPH")!=-1)    insideBib=FALSE;
       // determine text to use at the location of the @cite command
-      if (insideBib && (i=line.find("name=\"CITEREF_"))!=-1)
+      if (insideBib && ((i=line.find("name=\"CITEREF_"))!=-1 || (i=line.find("name=\"#CITEREF_"))!=-1))
       {
         int j=line.find("\">[");
         int k=line.find("]</a>");
@@ -315,7 +315,6 @@ void CitationManager::generatePage()
           uint uk=(uint)k;
           QCString label = line.mid(ui+14,uj-ui-14);
           QCString number = line.mid(uj+2,uk-uj-1);
-          label = substitute(substitute(label,"&ndash;","--"),"&mdash;","---");
           line = line.left(ui+14) + label + line.right(line.length()-uj);
           auto it = p->entries.find(label.str());
           //printf("label='%s' number='%s' => %p\n",qPrint(label),qPrint(number),it->second.get());

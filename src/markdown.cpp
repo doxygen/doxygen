@@ -459,6 +459,21 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return offset;
   };
 
+  auto endAtLabel = [](const std::string &cmdName,const char *data,int offset,int size) -> int
+  {
+    if (offset<size && data[offset]==' ') // we expect a space before the label
+    {
+      char c;
+      offset++;
+      // skip over spaces
+      while (offset<size && data[offset]==' ') offset++;
+      // skip over label
+      while (offset<size && (c=data[offset])!=' ' && c!='\n') offset++;
+      return offset;
+    }
+    return 0;
+  };
+
   static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
   {
     { "concept",   endOfLine  },
@@ -467,6 +482,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "protocol",  endOfLine  },
     { "struct",    endOfLine  },
     { "union",     endOfLine  },
+    { "cite",      endAtLabel }
   };
 
   bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
