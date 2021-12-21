@@ -435,7 +435,7 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   {
     result = it->second(blockName, openBracket, end<size ? data[end] : 0);
   }
-  TRACE_RESULT(result)
+  TRACE_RESULT(result);
   return result;
 }
 
@@ -445,52 +445,52 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
 
   using EndCmdFunc = int (*)(const char *,int,int);
 
-  static const auto endOfLine = [](const char *data,int offset,int size) -> int
+  static const auto endOfLine = [](const char *data_,int offset_,int size_) -> int
   {
     // skip until the end of line (allowing line continuation characters)
     char lc = 0;
     char c;
-    while (offset<size && ((c=data[offset])!='\n' || lc=='\\'))
+    while (offset_<size_ && ((c=data_[offset_])!='\n' || lc=='\\'))
     {
       if (c=='\\')     lc='\\'; // last character was a line continuation
       else if (c!=' ') lc=0;    // rest line continuation
-      offset++;
+      offset_++;
     }
-    return offset;
+    return offset_;
   };
 
-  static const auto endOfLabel = [](const char *data,int offset,int size) -> int
+  static const auto endOfLabel = [](const char *data_,int offset_,int size_) -> int
   {
-    if (offset<size && data[offset]==' ') // we expect a space before the label
+    if (offset_<size_ && data_[offset_]==' ') // we expect a space before the label
     {
       char c;
-      offset++;
+      offset_++;
       // skip over spaces
-      while (offset<size && data[offset]==' ') offset++;
+      while (offset_<size_ && data_[offset_]==' ') offset_++;
       // skip over label
-      while (offset<size && (c=data[offset])!=' ' && c!='\n') offset++;
-      return offset;
+      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\n') offset_++;
+      return offset_;
     }
     return 0;
   };
 
-  static const auto endOfParam = [](const char *data,int offset,int size) -> int
+  static const auto endOfParam = [](const char *data_,int offset_,int size_) -> int
   {
-    int index=offset;
-    if (index<size && data[index]==' ') // skip over optional spaces
+    int index=offset_;
+    if (index<size_ && data_[index]==' ') // skip over optional spaces
     {
       index++;
-      while (index<size && data[index]==' ') index++;
+      while (index<size_ && data_[index]==' ') index++;
     }
-    if (index<size && data[index]=='[') // find matching ']'
+    if (index<size_ && data_[index]=='[') // find matching ']'
     {
       index++;
       char c;
-      while (index<size && (c=data[index])!=']' && c!='\n') index++;
-      if (index==size || data[index]!=']') return 0; // invalid parameter
-      offset=index+1; // part after [...] is the parameter name
+      while (index<size_ && (c=data_[index])!=']' && c!='\n') index++;
+      if (index==size_ || data_[index]!=']') return 0; // invalid parameter
+      offset_=index+1; // part after [...] is the parameter name
     }
-    return endOfLabel(data,offset,size);
+    return endOfLabel(data_,offset_,size_);
   };
 
   static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
