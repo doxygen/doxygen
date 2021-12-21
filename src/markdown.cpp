@@ -377,7 +377,7 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
 {
   TRACE(data);
 
-  using EndBlockFunc = QCString (*)(const std::string &blockName,bool openBracket,char nextChar);
+  using EndBlockFunc = QCString (*)(const std::string &,bool,char);
 
   static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
   {
@@ -443,9 +443,9 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
 {
   TRACE(data);
 
-  using EndCmdFunc = int (*)(const std::string &cmdName,const char *data,int offset,int size);
+  using EndCmdFunc = int (*)(const char *,int,int);
 
-  auto endOfLine = [](const std::string &cmdName,const char *data,int offset,int size) -> int
+  static const auto endOfLine = [](const char *data,int offset,int size) -> int
   {
     // skip until the end of line (allowing line continuation characters)
     char lc = 0;
@@ -459,7 +459,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return offset;
   };
 
-  auto endAtLabel = [](const std::string &cmdName,const char *data,int offset,int size) -> int
+  static const auto endOfLabel = [](const char *data,int offset,int size) -> int
   {
     if (offset<size && data[offset]==' ') // we expect a space before the label
     {
@@ -474,15 +474,114 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return 0;
   };
 
+  static const auto endOfParam = [](const char *data,int offset,int size) -> int
+  {
+    int index=offset;
+    if (index<size && data[index]==' ') // skip over optional spaces
+    {
+      index++;
+      while (index<size && data[index]==' ') index++;
+    }
+    if (index<size && data[index]=='[') // find matching ']'
+    {
+      index++;
+      char c;
+      while (index<size && (c=data[index])!=']' && c!='\n') index++;
+      if (index==size || data[index]!=']') return 0; // invalid parameter
+      offset=index+1; // part after [...] is the parameter name
+    }
+    return endOfLabel(data,offset,size);
+  };
+
   static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
   {
-    { "concept",   endOfLine  },
-    { "idlexcept", endOfLine  },
-    { "interface", endOfLine  },
-    { "protocol",  endOfLine  },
-    { "struct",    endOfLine  },
-    { "union",     endOfLine  },
-    { "cite",      endAtLabel }
+    { "a",              endOfLabel },
+    { "addindex",       endOfLine  },
+    { "addtogroup",     endOfLabel },
+    { "anchor",         endOfLabel },
+    { "b",              endOfLabel },
+    { "c",              endOfLabel },
+    { "category",       endOfLine  },
+    { "cite",           endOfLabel },
+    { "class",          endOfLine  },
+    { "concept",        endOfLine  },
+    { "copybrief",      endOfLine  },
+    { "copydetails",    endOfLine  },
+    { "copydoc",        endOfLine  },
+    { "def",            endOfLine  },
+    { "defgroup",       endOfLabel },
+    { "diafile",        endOfLine  },
+    { "dir",            endOfLine  },
+    { "dockbookinclude",endOfLine  },
+    { "dontinclude",    endOfLine  },
+    { "dotfile",        endOfLine  },
+    { "dotfile",        endOfLine  },
+    { "e",              endOfLabel },
+    { "elseif",         endOfLine  },
+    { "em",             endOfLabel },
+    { "emoji",          endOfLabel },
+    { "enum",           endOfLabel },
+    { "example",        endOfLine  },
+    { "exception",      endOfLine  },
+    { "extends",        endOfLabel },
+    { "file",           endOfLine  },
+    { "fn",             endOfLine  },
+    { "headerfile",     endOfLine  },
+    { "htmlinclude",    endOfLine  },
+    { "idlexcept",      endOfLine  },
+    { "if",             endOfLine  },
+    { "ifnot",          endOfLine  },
+    { "image",          endOfLine  },
+    { "implements",     endOfLine  },
+    { "include",        endOfLine  },
+    { "includedoc",     endOfLine  },
+    { "includelineno",  endOfLine  },
+    { "ingroup",        endOfLabel },
+    { "interface",      endOfLine  },
+    { "interface",      endOfLine  },
+    { "latexinclude",   endOfLine  },
+    { "maninclude",     endOfLine  },
+    { "memberof",       endOfLabel },
+    { "mscfile",        endOfLine  },
+    { "namespace",      endOfLabel },
+    { "noop",           endOfLine  },
+    { "overload",       endOfLine  },
+    { "p",              endOfLabel },
+    { "package",        endOfLabel },
+    { "page",           endOfLabel },
+    { "paragraph",      endOfLabel },
+    { "param",          endOfParam },
+    { "property",       endOfLine  },
+    { "protocol",       endOfLine  },
+    { "ref",            endOfLabel },
+    { "refitem",        endOfLabel },
+    { "related",        endOfLabel },
+    { "relatedalso",    endOfLabel },
+    { "relates",        endOfLabel },
+    { "relatesalso",    endOfLabel },
+    { "retval",         endOfLabel },
+    { "rtfinclude",     endOfLine  },
+    { "section",        endOfLabel },
+    { "skip",           endOfLine  },
+    { "skipline",       endOfLine  },
+    { "snippet",        endOfLine  },
+    { "snippetdoc",     endOfLine  },
+    { "snippetlineno",  endOfLine  },
+    { "struct",         endOfLine  },
+    { "subpage",        endOfLabel },
+    { "subsection",     endOfLabel },
+    { "subsubsection",  endOfLabel },
+    { "throw",          endOfLabel },
+    { "throws",         endOfLabel },
+    { "tparam",         endOfLabel },
+    { "typedef",        endOfLine  },
+    { "union",          endOfLine  },
+    { "until",          endOfLine  },
+    { "var",            endOfLine  },
+    { "verbinclude",    endOfLine  },
+    { "weakgroup",      endOfLabel },
+    { "xmlinclude",     endOfLine  },
+    { "xrefitem",       endOfLabel }
   };
 
   bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
@@ -492,11 +591,12 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
   while (end<size && (data[end]>='a' && data[end]<='z')) end++;
   if (end==1) return 0;
   std::string cmdName(data+1,end-1);
-  auto it = cmdNames.find(cmdName);
   int result=0;
-  if (it!=cmdNames.end())
+  auto it = cmdNames.find(cmdName);
+  if (it!=cmdNames.end()) // command with parameters that should be ignored by markdown
   {
-    result = it->second(cmdName,data,end,size);
+    // find the end of the parameters
+    result = it->second(data,end,size);
   }
   return result;
 }

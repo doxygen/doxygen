@@ -716,7 +716,7 @@ new lines are allowed.
 Also for links there are limits; the link text, and link title each can
 contain only one new line, the URL may not contain any newlines.
 
-\section markdown_debug Debugging of problems
+\section markdown_debug Debugging problems
 
 When doxygen parses the source code it first extracts the comments blocks,
 then passes these through the Markdown preprocessor. The output of the
