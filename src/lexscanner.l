@@ -82,7 +82,7 @@ struct lexscannerYY_state
   QCString         cCodeBuffer;
   int              roundCount = 0;
 
-  QCString         yyFileName;
+  QCString         fileName;
   ClangTUParser   *clangParser = 0;
 
   std::shared_ptr<Entry> current;
@@ -102,6 +102,10 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 /* ----------------------------------------------------------------- */
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -953,18 +957,18 @@ static void parseMain(yyscan_t yyscanner,
   lexscannerYYrestart(0,yyscanner);
 
   yyextra->current_root  = rt;
-  yyextra->yyFileName = fileName;
+  yyextra->fileName = fileName;
   yyextra->clangParser = clangParser;
-  yyextra->language    = getLanguageFromFileName(yyextra->yyFileName);
+  yyextra->language    = getLanguageFromFileName(yyextra->fileName);
   rt->lang = yyextra->language;
-  msg("Parsing file %s...\n",qPrint(yyextra->yyFileName));
+  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
 
   yyextra->current_root  = rt;
   yyextra->current = std::make_shared<Entry>();
-  int sec=guessSection(yyextra->yyFileName);
+  int sec=guessSection(yyextra->fileName);
   if (sec)
   {
-    yyextra->current->name    = yyextra->yyFileName;
+    yyextra->current->name    = yyextra->fileName;
     yyextra->current->section = sec;
     yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   }
@@ -984,7 +988,7 @@ static void handleCCode(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
 
   if (yyextra->cCodeBuffer.isEmpty()) return;
-  yyextra->cOutlineParser.parseInput(yyextra->yyFileName,
+  yyextra->cOutlineParser.parseInput(yyextra->fileName,
                                      yyextra->cCodeBuffer.data(),
                                      yyextra->current_root,
                                      yyextra->clangParser);
@@ -1019,6 +1023,7 @@ void LexOutlineParser::parseInput(const QCString &fileName,
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
 
+  yyextra->fileName      = fileName;
   printlex(yy_flex_debug, TRUE, __FILE__, qPrint(fileName));
 
   ::parseMain(p->yyscanner,fileName,fileBuf,root,clangParser);

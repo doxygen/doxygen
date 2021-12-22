@@ -55,6 +55,7 @@ struct sqlcodeYY_state
      CodeOutputInterface * code;
      const char   *inputString;     //!< the code fragment as text
      yy_size_t     inputPosition;   //!< read offset during parsing
+     QCString      fileName;
      int           inputLines;      //!< number of line in the code fragment
      int           yyLineNr;        //!< current line number
      bool          needsTermination;
@@ -87,6 +88,10 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -424,6 +429,7 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   if (input.isEmpty()) return;
 
   printlex(yy_flex_debug, true, __FILE__, fileDef ? qPrint(fileDef->fileName()): NULL);
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
 
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();

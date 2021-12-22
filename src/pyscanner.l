@@ -77,7 +77,7 @@ struct pyscannerYY_state
   std::shared_ptr<Entry>  previous;
   std::shared_ptr<Entry>  bodyEntry;
   int                     yyLineNr = 1 ;
-  QCString                yyFileName;
+  QCString                fileName;
   MethodTypes             mtype = Method;
   bool                    stat = FALSE;
   Specifier               virt = Normal;
@@ -146,6 +146,10 @@ static yy_size_t yyread(yyscan_t yyscanner,char *buf,yy_size_t max_size);
 /* ----------------------------------------------------------------- */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -297,7 +301,7 @@ STARTDOCSYMS      "##"
       			yyextra->current->section   = Entry::VARIABLE_SEC;
   			yyextra->current->mtype     = Property;
 			yyextra->current->name      = QCString(yytext).stripWhiteSpace();
-			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->fileName  = yyextra->fileName;
 			yyextra->current->startLine = yyextra->yyLineNr;
 			yyextra->current->bodyLine  = yyextra->yyLineNr;
 			yyextra->packageCommentAllowed = FALSE;
@@ -308,7 +312,7 @@ STARTDOCSYMS      "##"
       			yyextra->indent=computeIndent(yytext);
       			yyextra->current->section   = Entry::VARIABLE_SEC;
 			yyextra->current->name      = QCString(yytext).stripWhiteSpace();
-			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->fileName  = yyextra->fileName;
 			yyextra->current->startLine = yyextra->yyLineNr;
 			yyextra->current->bodyLine  = yyextra->yyLineNr;
 			yyextra->packageCommentAllowed = FALSE;
@@ -322,7 +326,7 @@ STARTDOCSYMS      "##"
       			yyextra->indent=computeIndent(yytext);
       			yyextra->current->section   = Entry::VARIABLE_SEC;
 			yyextra->current->name      = QCString(yytext).stripWhiteSpace();
-			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->fileName  = yyextra->fileName;
 			yyextra->current->startLine = yyextra->yyLineNr;
 			yyextra->current->bodyLine  = yyextra->yyLineNr;
 			yyextra->packageCommentAllowed = FALSE;
@@ -461,8 +465,8 @@ STARTDOCSYMS      "##"
 <Import>{
   {IDENTIFIER}({B}"."{B}{IDENTIFIER})* {
 			yyextra->current->name=removeRedundantWhiteSpace(substitute(yytext,".","::"));
-			yyextra->current->fileName = yyextra->yyFileName; 
-			//printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->yyFileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
+			yyextra->current->fileName = yyextra->fileName; 
+			//printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->fileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
 			yyextra->current->section=Entry::USINGDECL_SEC;
 			yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
 			initEntry(yyscanner);
@@ -485,7 +489,7 @@ STARTDOCSYMS      "##"
                         DBG_CTX((stderr,"Found instance method variable %s in %s at %d\n",&yytext[5],qPrint(yyextra->current_root->name.data(),yyextra->yyLineNr)));
 			yyextra->current->name=&yytext[5];
 			yyextra->current->section=Entry::VARIABLE_SEC;
-			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->fileName  = yyextra->fileName;
 			yyextra->current->startLine = yyextra->yyLineNr;
 			yyextra->current->bodyLine  = yyextra->yyLineNr;
 			yyextra->current->type.resize(0);
@@ -499,7 +503,7 @@ STARTDOCSYMS      "##"
                         DBG_CTX((stderr,"Found class method variable %s in %s at %d\n",&yytext[4],qPrint(yyextra->current_root->name),yyextra->yyLineNr));
 			yyextra->current->name=&yytext[4];
 			yyextra->current->section=Entry::VARIABLE_SEC;
-			yyextra->current->fileName  = yyextra->yyFileName;
+			yyextra->current->fileName  = yyextra->fileName;
 			yyextra->current->startLine = yyextra->yyLineNr;
 			yyextra->current->bodyLine  = yyextra->yyLineNr;
 			yyextra->current->type.resize(0);
@@ -973,7 +977,7 @@ STARTDOCSYMS      "##"
 			  }
 			  
 			  yyextra->current->name = yyextra->current->name.stripWhiteSpace();
-			  yyextra->current->fileName = yyextra->yyFileName;        
+			  yyextra->current->fileName = yyextra->fileName;        
 			  yyextra->docBlockContext   = YY_START;
 			  yyextra->docBlockInBody    = FALSE;
 			  yyextra->docBlockJavaStyle = FALSE;
@@ -1580,8 +1584,8 @@ static void addFrom(yyscan_t yyscanner,bool all)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   QCString item=all ? yyextra->packageName : yyextra->packageName+"."+yytext;
   yyextra->current->name=removeRedundantWhiteSpace(substitute(item,".","::"));
-  yyextra->current->fileName = yyextra->yyFileName; 
-  //printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->yyFileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
+  yyextra->current->fileName = yyextra->fileName; 
+  //printf("Adding using declaration: found:%s:%d name=%s\n",qPrint(yyextra->fileName),yyextra->yyLineNr,qPrint(yyextra->current->name));
   yyextra->current->section=all ? Entry::USINGDIR_SEC : Entry::USINGDECL_SEC;
   yyextra->current_root->moveToSubEntryAndRefresh(yyextra->current);
   initEntry(yyscanner);
@@ -1611,12 +1615,12 @@ static void startCommentBlock(yyscan_t yyscanner,bool brief)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (brief)
   {
-    yyextra->current->briefFile = yyextra->yyFileName;
+    yyextra->current->briefFile = yyextra->fileName;
     yyextra->current->briefLine = yyextra->yyLineNr;
   }
   else
   {
-    yyextra->current->docFile = yyextra->yyFileName;
+    yyextra->current->docFile = yyextra->fileName;
     yyextra->current->docLine = yyextra->yyLineNr;
   }
 }
@@ -1642,13 +1646,13 @@ static void handleCommentBlock(yyscan_t yyscanner,const QCString &doc,bool brief
   int position = 0;
   bool needsEntry = false;
   int lineNr = brief ? yyextra->current->briefLine : yyextra->current->docLine;
-  Markdown markdown(yyextra->yyFileName,lineNr);
+  Markdown markdown(yyextra->fileName,lineNr);
   QCString processedDoc = Config_getBool(MARKDOWN_SUPPORT) ? markdown.process(doc,lineNr) : doc;
   while (yyextra->commentScanner.parseCommentBlock(
         yyextra->thisParser,
         (yyextra->docBlockInBody && yyextra->previous) ? yyextra->previous.get() : yyextra->current.get(),
         processedDoc, // text
-        yyextra->yyFileName,   // file
+        yyextra->fileName,   // file
         lineNr,
         yyextra->docBlockInBody ? FALSE : brief, 
         yyextra->docBlockJavaStyle, // javadoc style // or FALSE,
@@ -1731,7 +1735,7 @@ static void initSpecialBlock(yyscan_t yyscanner)
 static void searchFoundDef(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  yyextra->current->fileName  = yyextra->yyFileName;
+  yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->startLine = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->current->section = Entry::FUNCTION_SEC;
@@ -1754,7 +1758,7 @@ static void searchFoundClass(yyscan_t yyscanner)
   yyextra->current->section = Entry::CLASS_SEC;
   yyextra->current->argList.clear();
   yyextra->current->type += "class" ;
-  yyextra->current->fileName  = yyextra->yyFileName;
+  yyextra->current->fileName  = yyextra->fileName;
   yyextra->current->startLine  = yyextra->yyLineNr;
   yyextra->current->bodyLine  = yyextra->yyLineNr;
   yyextra->packageCommentAllowed = FALSE;
@@ -1790,13 +1794,13 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
 	//    qPrint(ce->name),qPrint(ce->parent->name));
 	BEGIN( SearchMemVars );
       }
-      yyextra->yyFileName = ce->fileName;
+      yyextra->fileName = ce->fileName;
       yyextra->yyLineNr   = ce->bodyLine ;
       yyextra->current = std::make_shared<Entry>();
       initEntry(yyscanner);
 
       QCString name = ce->name;
-      yyextra->commentScanner.enterCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.enterCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
       pyscannerYYlex(yyscanner) ;
       yyextra->lexInit=TRUE;
@@ -1804,7 +1808,7 @@ static void parseCompounds(yyscan_t yyscanner,std::shared_ptr<Entry> rt)
       yyextra->programStr.resize(0);
       ce->program.str(std::string());
 
-      yyextra->commentScanner.leaveCompound(yyextra->yyFileName,yyextra->yyLineNr,name);
+      yyextra->commentScanner.leaveCompound(yyextra->fileName,yyextra->yyLineNr,name);
 
     }
     parseCompounds(yyscanner,ce);
@@ -1832,9 +1836,9 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   yyextra->specialBlock = FALSE;
 
   yyextra->yyLineNr= 1 ; 
-  yyextra->yyFileName = fileName;
+  yyextra->fileName = fileName;
   //setContext();
-  msg("Parsing file %s...\n",qPrint(yyextra->yyFileName));
+  msg("Parsing file %s...\n",qPrint(yyextra->fileName));
 
   FileInfo fi(fileName.str());
   yyextra->moduleScope = findPackageScope(yyscanner,fileName);
@@ -1862,7 +1866,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
     yyextra->current->name      = scope.left(pos);
     yyextra->current->section   = Entry::NAMESPACE_SEC;
     yyextra->current->type      = "namespace";
-    yyextra->current->fileName  = yyextra->yyFileName;
+    yyextra->current->fileName  = yyextra->fileName;
     yyextra->current->startLine = yyextra->yyLineNr;
     yyextra->current->bodyLine  = yyextra->yyLineNr;
     yyextra->current_root       = yyextra->current;
@@ -1871,7 +1875,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
 
   initParser(yyscanner);
 
-  yyextra->commentScanner.enterFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.enterFile(yyextra->fileName,yyextra->yyLineNr);
 
   yyextra->current->reset();
   initEntry(yyscanner);
@@ -1880,7 +1884,7 @@ static void parseMain(yyscan_t yyscanner, const QCString &fileName,const char *f
   pyscannerYYlex(yyscanner);
   yyextra->lexInit=TRUE;
 
-  yyextra->commentScanner.leaveFile(yyextra->yyFileName,yyextra->yyLineNr);
+  yyextra->commentScanner.leaveFile(yyextra->fileName,yyextra->yyLineNr);
 
   yyextra->programStr.resize(0);
   yyextra->current_root->program.str(std::string());
@@ -1896,7 +1900,7 @@ static void parsePrototype(yyscan_t yyscanner,const QCString &text)
   //printf("**** parsePrototype(%s) begin\n",qPrint(text));
   if (text.isEmpty()) 
   {
-    warn(yyextra->yyFileName,yyextra->yyLineNr,"Empty prototype found!");
+    warn(yyextra->fileName,yyextra->yyLineNr,"Empty prototype found!");
     return;
   }
 

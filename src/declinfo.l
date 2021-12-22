@@ -85,6 +85,11 @@ static yy_size_t yyread(char *buf,yy_size_t max_size, yyscan_t yyscanner);
  */
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(buf,max_size,yyscanner);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
 %}
 
 B       [ \t]

@@ -92,6 +92,7 @@ struct vhdlcodeYY_state
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   bool          needsTermination = false;
@@ -148,6 +149,10 @@ static const char *stateToString(int state);
 
 #undef        YY_INPUT
 #define       YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -1597,6 +1602,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
   printlex(yy_flex_debug, true, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  yyextra->fileName      = fd ? fd->fileName():"";
   if (memberDef)
   {
     const ClassDef *dd=memberDef->getClassDef();

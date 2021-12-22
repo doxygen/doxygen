@@ -51,6 +51,7 @@ struct lexcodeYY_state
      const char   *inputString;     //!< the code fragment as text
      yy_size_t     inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
+     QCString      fileName;
      int           yyLineNr;        //!< current line number
      bool          needsTermination;
 
@@ -105,6 +106,10 @@ static void handleCCode(yyscan_t yyscanner);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -1213,6 +1218,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->currentFontClass = 0;
   yyextra->needsTermination = false;
 
