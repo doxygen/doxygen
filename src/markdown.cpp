@@ -1140,7 +1140,7 @@ int Markdown::processLink(const char *data,int offset,int size)
     }
 
     // if there is non-whitespace before the ![ within the scope of two new lines, the image
-    // is considered inlined, i.e. the image is not preceeded by an empty line
+    // is considered inlined, i.e. the image is not preceded by an empty line
     int numNLsNeeded=2;
     int pos = offset-1;
     while (pos>=0 && numNLsNeeded>0)
