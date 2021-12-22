@@ -1001,6 +1001,16 @@ NONLopt [^\n]*
 <ObjCPropAttr>")"                       {
                                           BEGIN(FindMembers);
                                         }
+<FindMembers>"@"{ID}("."{ID})+          {
+                                          if (yyextra->insideJava) // Java annotation
+                                          {
+                                            // skip annotation
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <FindMembers>"@"{ID}                    {
                                           if (yyextra->insideJava) // Java annotation
                                           {
