@@ -1940,9 +1940,7 @@ STopt  [^\n@\\]*
 
   /* ----- handle argument of the copydoc command ------- */
 
-<CopyDoc><<EOF>>                        |
-<CopyDoc>{DOCNL}                        {
-                                          if (*yytext=='\n') yyextra->lineNr++;
+<CopyDoc><<EOF>>                        {
                                           addOutput(yyscanner,'\n');
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner," \\copydetails ");
@@ -1950,9 +1948,34 @@ STopt  [^\n@\\]*
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
                                         }
-<CopyDoc>[^\n\\]+                       {
+<CopyDoc>{DOCNL}                        {
+                                          if (*yytext=='\n') yyextra->lineNr++;
+                                          if (yyextra->braceCount==0)
+                                          {
+                                            addOutput(yyscanner,'\n');
+                                            setOutput(yyscanner,OutputDoc);
+                                            addOutput(yyscanner," \\copydetails ");
+                                            addOutput(yyscanner,yyextra->copyDocArg);
+                                            addOutput(yyscanner,"\n");
+                                            BEGIN(Comment);
+                                          }
+                                        }
+<CopyDoc>{LC}                           { // line continuation
+                                          yyextra->lineNr++;
+                                        }
+<CopyDoc>[^@\\\n()]+                    { // non-special characters
                                           yyextra->copyDocArg+=yytext;
                                           addOutput(yyscanner,yytext);
+                                        }
+<CopyDoc>"("                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount++;
+                                        }
+<CopyDoc>")"                            {
+                                          yyextra->copyDocArg+=yytext;
+                                          addOutput(yyscanner,yytext);
+                                          yyextra->braceCount--;
                                         }
 <CopyDoc>.                              {
                                           yyextra->copyDocArg+=yytext;
@@ -2842,6 +2865,7 @@ static bool handleCopyDoc(yyscan_t yyscanner,const QCString &, const StringVecto
   }
   addOutput(yyscanner,"\\copybrief ");
   yyextra->copyDocArg.resize(0);
+  yyextra->braceCount = 0;
   BEGIN(CopyDoc);
   return FALSE;
 }
