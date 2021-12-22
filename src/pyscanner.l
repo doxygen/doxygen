@@ -877,18 +877,40 @@ STARTDOCSYMS      "##"
 
 <ClassBody>{
     \n/{IDENTIFIER}{BB}  { // new def at indent 0
-                        incLineNr(yyscanner);
-			endOfDef(yyscanner);
-			//yyextra->hideClassDocs = FALSE;
-			//YY_CURRENT_BUFFER->yy_at_bol=TRUE;
-                        BEGIN(Search);
+                        if (computeIndent(&yytext[1])<=yyextra->indent) 
+			{
+			  int i;
+			  for (i=(int)yyleng-1;i>=0;i--)
+			  {
+			    unput(yytext[i]);
+			  }
+			  endOfDef(yyscanner);
+			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+                          BEGIN(Search);
+			}
+			else
+			{
+                          incLineNr(yyscanner);
+      		          yyextra->current->program << yytext;
+			}
                       }
     \n/"##"[^#]       {  // start of a special comment at indent 0
-                        incLineNr(yyscanner);
-			endOfDef(yyscanner);
-			//yyextra->hideClassDocs = FALSE;
-			//YY_CURRENT_BUFFER->yy_at_bol=TRUE;
-                        BEGIN(Search);
+                        if (computeIndent(&yytext[1])<=yyextra->indent)
+			{
+			  int i;
+			  for (i=(int)yyleng-1;i>=0;i--)
+			  {
+			    unput(yytext[i]);
+			  }
+			  endOfDef(yyscanner);
+			  //YY_CURRENT_BUFFER->yy_at_bol=TRUE;
+                          BEGIN(Search);
+			}
+			else
+			{
+			  incLineNr(yyscanner);
+      		          yyextra->current->program << yytext;
+			}
                       }
     ^{BB}/\n	      { // skip empty line
       		        yyextra->current->program << yytext;
