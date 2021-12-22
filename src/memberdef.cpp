@@ -163,6 +163,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isTemplateSpecialization() const;
     virtual bool isObjCMethod() const;
     virtual bool isObjCProperty() const;
+    virtual bool isCSharpProperty() const;
     virtual bool isConstructor() const;
     virtual bool isDestructor() const;
     virtual bool hasOneLineInitializer() const;
@@ -601,6 +602,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isObjCMethod(); }
     virtual bool isObjCProperty() const
     { return getMdAlias()->isObjCProperty(); }
+    virtual bool isCSharpProperty() const
+    { return getMdAlias()->isCSharpProperty(); }
     virtual bool isConstructor() const
     { return getMdAlias()->isConstructor(); }
     virtual bool isDestructor() const
@@ -4700,6 +4703,12 @@ bool MemberDefImpl::isObjCMethod() const
 bool MemberDefImpl::isObjCProperty() const
 {
   if (getClassDef() && getClassDef()->isObjectiveC() && isProperty()) return TRUE;
+  return FALSE;
+}
+
+bool MemberDefImpl::isCSharpProperty() const
+{
+  if (getClassDef() && getClassDef()->isCSharp() && isProperty()) return TRUE;
   return FALSE;
 }
 

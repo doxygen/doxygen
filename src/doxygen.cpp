@@ -7833,7 +7833,7 @@ static void computeMemberRelations()
                    bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
                    bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
                   ) &&
-                  md->isFunction() &&
+                  (md->isFunction() || md->isCSharpProperty()) &&
                   mcd->isLinkable() &&
                   bmcd->isLinkable() &&
                   mcd->isBaseClass(bmcd,TRUE))
