@@ -85,7 +85,6 @@ class DefinitionImpl::IMPL
     QCString symbolName;
     int defLine;
     int defColumn;
-    Definition::Cookie *cookie;
 
     mutable MemberVector referencesMembers;
     mutable MemberVector referencedByMembers;
@@ -123,7 +122,7 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   {
     localName=n;
   }
-  //printf("m_localName=%s\n",qPrint(m_localName));
+  //printf("localName=%s\n",qPrint(localName));
 
   brief           = 0;
   details         = 0;
@@ -135,7 +134,6 @@ void DefinitionImpl::IMPL::init(const QCString &df, const QCString &n)
   hidden          = FALSE;
   isArtificial    = FALSE;
   lang            = SrcLangExt_Unknown;
-  cookie          = 0;
 }
 
 void DefinitionImpl::setDefFile(const QCString &df,int defLine,int defCol)
@@ -1356,13 +1354,13 @@ QCString DefinitionImpl::navigationPathAsString() const
     if (m_impl->def->definitionType()==Definition::TypeGroup &&
         !toGroupDef(m_impl->def)->groupTitle().isEmpty())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
               convertToHtml(toGroupDef(m_impl->def)->groupTitle())+"</a>";
     }
     else if (m_impl->def->definitionType()==Definition::TypePage &&
              toPageDef(m_impl->def)->hasTitle())
     {
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
             convertToHtml((toPageDef(m_impl->def))->title())+"</a>";
     }
     else if (m_impl->def->definitionType()==Definition::TypeClass)
@@ -1372,13 +1370,13 @@ QCString DefinitionImpl::navigationPathAsString() const
       {
         name = name.left(name.length()-2);
       }
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension;
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase());
       if (!m_impl->def->anchor().isEmpty()) result+="#"+m_impl->def->anchor();
       result+="\">"+convertToHtml(name)+"</a>";
     }
     else
     {
-      result+="<a class=\"el\" href=\"$relpath^"+m_impl->def->getOutputFileBase()+Doxygen::htmlFileExtension+"\">"+
+      result+="<a class=\"el\" href=\"$relpath^"+addHtmlExtensionIfMissing(m_impl->def->getOutputFileBase())+"\">"+
               convertToHtml(locName)+"</a>";
     }
   }
@@ -1895,17 +1893,6 @@ int DefinitionImpl::getDefLine() const
 int DefinitionImpl::getDefColumn() const
 {
   return m_impl->defColumn;
-}
-
-void DefinitionImpl::setCookie(Definition::Cookie *cookie) const
-{
-  delete m_impl->cookie;
-  m_impl->cookie = cookie;
-}
-
-Definition::Cookie *DefinitionImpl::cookie() const
-{
-  return m_impl->cookie;
 }
 
 void DefinitionImpl::writeQuickMemberLinks(OutputList &,const MemberDef *) const

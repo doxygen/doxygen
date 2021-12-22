@@ -295,6 +295,7 @@ DB_VIS_C
       /* There is no equivalent Docbook tag for rendering Small text */
     case DocStyleChange::Small: /* XSLT Stylesheets can be used */ break;
                                                                    /* HTML only */
+    case DocStyleChange::Cite:  break;
     case DocStyleChange::S:  break;
     case DocStyleChange::Strike:  break;
     case DocStyleChange::Del:        break;
@@ -345,6 +346,14 @@ DB_VIS_C
       m_t << "<literallayout><computeroutput>";
       filter(s->text());
       m_t << "</computeroutput></literallayout>";
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(), true);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<computeroutput>";
+      filter(s->text(), true);
+      m_t << "</computeroutput>";
       break;
     case DocVerbatim::HtmlOnly:
       break;
@@ -1090,6 +1099,15 @@ DB_VIS_C
     // do something with colwidth based of cell width specification (be aware of possible colspan in the header)?
     m_t << "      <colspec colname='c" << i+1 << "'/>\n";
   }
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "<caption>";
+    if (!c->file().isEmpty())
+    {
+      m_t << "<anchor xml:id=\"_" <<  stripPath(c->file()) << "_1" << filterId(c->anchor()) << "\"/>";
+    }
+  }
 }
 
 void DocbookDocVisitor::visitPost(DocHtmlTable *)
@@ -1209,7 +1227,7 @@ void DocbookDocVisitor::visitPre(DocHtmlCaption *)
 {
 DB_VIS_C
   if (m_hide) return;
-   m_t << "<caption>";
+  // start of caption is handled in the DocbookDocVisitor::visitPre(DocHtmlTable *t)
 }
 
 void DocbookDocVisitor::visitPost(DocHtmlCaption *)
@@ -1654,10 +1672,10 @@ DB_VIS_C
 }
 
 
-void DocbookDocVisitor::filter(const QCString &str)
+void DocbookDocVisitor::filter(const QCString &str, const bool retainNewLine)
 {
 DB_VIS_C
-  m_t << convertToDocBook(str);
+  m_t << convertToDocBook(str, retainNewLine);
 }
 
 void DocbookDocVisitor::startLink(const QCString &file,const QCString &anchor)

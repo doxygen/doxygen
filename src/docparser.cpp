@@ -396,7 +396,7 @@ QCString DocParser::findAndCopyImage(const QCString &fileName, DocImage::Type ty
  */
 void DocParser::checkArgumentName()
 {
-  if (!Config_getBool(WARN_IF_DOC_ERROR)) return;
+  if (!(Config_getBool(WARN_IF_DOC_ERROR) || Config_getBool(WARN_IF_INCOMPLETE_DOC))) return;
   if (context.memberDef==0) return; // not a member
   std::string name = context.token->name.str();
   const ArgumentList &al=context.memberDef->isDocsForDefinition() ?
@@ -1011,6 +1011,7 @@ const char *DocStyleChange::styleString() const
     case DocStyleChange::Code:         return "code";
     case DocStyleChange::Center:       return "center";
     case DocStyleChange::Small:        return "small";
+    case DocStyleChange::Cite:         return "cite";
     case DocStyleChange::Subscript:    return "subscript";
     case DocStyleChange::Superscript:  return "superscript";
     case DocStyleChange::Preformatted: return "pre";
@@ -1650,6 +1651,15 @@ reparsetoken:
             else
             {
               handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
+            }
+          case HTML_CITE:
+            if (!context.token->endTag)
+            {
+              handleStyleEnter(parent,children,DocStyleChange::Cite,tokenName,&context.token->attribs);
+            }
+            else
+            {
+              handleStyleLeave(parent,children,DocStyleChange::Cite,tokenName);
             }
             break;
           case HTML_IMG:
@@ -5115,9 +5125,11 @@ void DocPara::handleLink(const QCString &cmdName,bool isJavaLink)
         DocTokenizer::tokToString(tok),qPrint(saveCmdName));
     return;
   }
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,TRUE));
   m_parser.tokenizer.setStatePara();
   DocLink *lnk = new DocLink(m_parser,this,m_parser.context.token->name);
   m_children.push_back(std::unique_ptr<DocLink>(lnk));
+  if (saveCmdName == "javalink") m_children.push_back(std::make_unique<DocStyleChange>(m_parser,this,(uint)m_parser.context.nodeStack.size(),DocStyleChange::Code,cmdName,FALSE));
   QCString leftOver = lnk->parse(isJavaLink);
   if (!leftOver.isEmpty())
   {
@@ -5613,6 +5625,53 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
         m_parser.tokenizer.setStatePara();
       }
       break;
+    case CMD_ILITERAL:
+      {
+        DocVerbatim::Type t = DocVerbatim::JavaDocLiteral;
+        m_parser.tokenizer.setStateILiteralOpt();
+        retval = m_parser.tokenizer.lex();
+
+        QCString fullMatch = m_parser.context.token->verb;
+        int idx = fullMatch.find('{');
+        int idxEnd = fullMatch.find("}",idx+1);
+        StringVector optList;
+        if (idx != -1) // options present
+        {
+           QCString optStr = fullMatch.mid(idx+1,idxEnd-idx-1).stripWhiteSpace();
+           optList = split(optStr.str(),",");
+           for (const auto &opt : optList)
+           {
+             if (opt.empty()) continue;
+             QCString locOpt(opt);
+             locOpt = locOpt.stripWhiteSpace().lower();
+             if (locOpt == "code")
+             {
+               t = DocVerbatim::JavaDocCode;
+             }
+             else if (!locOpt.isEmpty())
+             {
+               warn(m_parser.context.fileName,m_parser.tokenizer.getLineNr(), "Unknown option '%s' for '\\iliteral'",qPrint(opt));
+             }
+           }
+        }
+
+        m_parser.tokenizer.setStateILiteral();
+        retval = m_parser.tokenizer.lex();
+        m_children.push_back(std::make_unique<DocVerbatim>(m_parser,this,m_parser.context.context,m_parser.context.token->verb,t,m_parser.context.isExample,m_parser.context.exampleName));
+        if (retval==0)
+        {
+          if (t == DocVerbatim::JavaDocCode)
+          {
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"javadoc code section ended without end marker");
+          }
+          else
+          {
+            warn_doc_error(m_parser.context.fileName,m_parser.tokenizer.getLineNr(),"javadoc literal section ended without end marker");
+          }
+        }
+        m_parser.tokenizer.setStatePara();
+      }
+      break;
     case CMD_VERBATIM:
       {
         m_parser.tokenizer.setStateVerbatim();
@@ -5772,6 +5831,7 @@ int DocPara::handleCommand(const QCString &cmdName, const int tok)
     case CMD_ENDDBONLY:
     case CMD_ENDLINK:
     case CMD_ENDVERBATIM:
+    case CMD_ENDILITERAL:
     case CMD_ENDDOT:
     case CMD_ENDMSC:
     case CMD_ENDUML:
@@ -6094,6 +6154,9 @@ int DocPara::handleHtmlStartTag(const QCString &tagName,const HtmlAttribList &ta
       break;
     case HTML_SMALL:
       if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Small,tagName,&m_parser.context.token->attribs);
+      break;
+    case HTML_CITE:
+      if (!m_parser.context.token->emptyTag) m_parser.handleStyleEnter(this,m_children,DocStyleChange::Cite,tagName,&m_parser.context.token->attribs);
       break;
     case HTML_PRE:
       if (m_parser.context.token->emptyTag) break;
@@ -6516,6 +6579,9 @@ int DocPara::handleHtmlEndTag(const QCString &tagName)
       break;
     case HTML_SMALL:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Small,tagName);
+      break;
+    case HTML_CITE:
+      m_parser.handleStyleLeave(this,m_children,DocStyleChange::Cite,tagName);
       break;
     case HTML_PRE:
       m_parser.handleStyleLeave(this,m_children,DocStyleChange::Preformatted,tagName);
@@ -7429,6 +7495,7 @@ static uint isVerbatimSection(const char *data,uint i,uint len,QCString &endMark
     CHECK_FOR_COMMAND("code",endMarker="endcode");
     CHECK_FOR_COMMAND("msc",endMarker="endmsc");
     CHECK_FOR_COMMAND("verbatim",endMarker="endverbatim");
+    CHECK_FOR_COMMAND("iliteral",endMarker="endiliteral");
     CHECK_FOR_COMMAND("latexonly",endMarker="endlatexonly");
     CHECK_FOR_COMMAND("htmlonly",endMarker="endhtmlonly");
     CHECK_FOR_COMMAND("xmlonly",endMarker="endxmlonly");

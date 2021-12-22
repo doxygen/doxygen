@@ -2653,7 +2653,7 @@ Commands for visual enhancements
   ... the \a x and \a y coordinates are used to ...
 
   Equivalent to \ref cmde "\\e" and \ref cmdem "\\em".
-  To emphasize multiple words use \<em\>multiple words\</em\>.
+  To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
 \section cmdarg \\arg { item-description }
@@ -2693,8 +2693,8 @@ Commands for visual enhancements
 
   \addindex \\b
   Displays the argument \<word\> using a bold font.
-  Equivalent to \<b\>word\</b\>.
-  To put multiple words in bold use \<b\>multiple words\</b\>.
+  Equivalent to \ref htmltag_B "\<b\>"word\ref htmltag_endB "\</b\>".
+  To put multiple words in bold use \ref htmltag_B "\<b\>"multiple words\ref htmltag_endB "\</b\>".
 
 <hr>
 \section cmdc \\c <word>
@@ -2702,7 +2702,7 @@ Commands for visual enhancements
   \addindex \\c
   Displays the argument \<word\> using a typewriter font.
   Use this to refer to a word of code.
-  Equivalent to \<tt\>word\</tt\>.
+  Equivalent to \ref htmltag_TT "\<tt\>"word\ref htmltag_endTT "\</tt\>".
 
   \par Example:
   Typing:
@@ -2713,7 +2713,7 @@ Commands for visual enhancements
      ... This function returns \c void and not \c int ...
 
   Equivalent to \ref cmdp "\\p"
-  To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
+  To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
 \section cmdcode \\code['{'<word>'}']
@@ -3152,7 +3152,7 @@ class Receiver
   ... this is a \e really good example ...
 
   Equivalent to \ref cmda "\\a" and \ref cmdem "\\em".
-  To emphasize multiple words use \<em\>multiple words\</em\>.
+  To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
 \section cmdem \\em <word>
@@ -3170,7 +3170,7 @@ class Receiver
   ... this is a \em really good example ...
 
   Equivalent to \ref cmda "\\a" and \ref cmde "\\e".
-  To emphasize multiple words use \<em\>multiple words\</em\>.
+  To emphasize multiple words use \ref htmltag_EM "\<em\>"multiple words\ref htmltag_endEM "\</em\>".
 
 <hr>
 \section cmdendcode \\endcode
@@ -3493,7 +3493,7 @@ class Receiver
 \section cmdn \\n
 
   \addindex \\n
-  Forces a new line. Equivalent to \<br\> and inspired by
+  Forces a new line. Equivalent to \ref htmltag_BR "\<br\>" and inspired by
   the \c printf function.
 
 <hr>
@@ -3512,7 +3512,7 @@ class Receiver
   ... the \p x and \p y coordinates are used to ...
 
   Equivalent to \ref cmdc "\\c"
-  To have multiple words in typewriter font use \<tt\>multiple words\</tt\>.
+  To have multiple words in typewriter font use \ref htmltag_TT "\<tt\>"multiple words\ref htmltag_endTT "\</tt\>".
 
 <hr>
 \section cmdrtfonly \\rtfonly

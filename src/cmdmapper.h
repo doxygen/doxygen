@@ -143,6 +143,8 @@ enum CommandType
   CMD_MANINCLUDE   = 114,
   CMD_XMLINCLUDE   = 115,
   CMD_ILINE        = 116,
+  CMD_ILITERAL     = 117,
+  CMD_ENDILITERAL  = 118,
 };
 
 enum HtmlTagType
@@ -187,6 +189,7 @@ enum HtmlTagType
   HTML_DEL       = 37,
   HTML_S         = 38,
   HTML_DETAILS   = 39,
+  HTML_CITE      = 40,
 
   XML_CmdMask    = 0x100,
 

@@ -415,7 +415,14 @@ SLASHopt [/]*
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"{"[ \t]*"@code"/[ \t\n] {
-                                     copyToOutput(yyscanner,"@code",5); 
+                                     copyToOutput(yyscanner,"@iliteral{code}",15); 
+				     yyextra->lastCommentContext = YY_START;
+				     yyextra->javaBlock=1;
+				     yyextra->blockName=&yytext[1];
+                                     BEGIN(VerbatimCode);
+  				   }
+<CComment>"{"[ \t]*"@literal"/[ \t\n] {
+                                     copyToOutput(yyscanner,"@iliteral",9); 
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=&yytext[1];
@@ -464,7 +471,7 @@ SLASHopt [/]*
 				     yyextra->lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
   			           }
-<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->blockName=&yytext[1];
 				     yyextra->lastCommentContext = YY_START;
@@ -479,7 +486,7 @@ SLASHopt [/]*
 <Scan>.                            { /* any other character */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     if (&yytext[1]==yyextra->blockName) // end of formula
 				     {
@@ -511,7 +518,7 @@ SLASHopt [/]*
 				       yyextra->javaBlock--;
 				       if (yyextra->javaBlock==0)
 				       {
-                                         copyToOutput(yyscanner," @endcode ",10);
+                                         copyToOutput(yyscanner," @endiliteral ",14);
 				         BEGIN(yyextra->lastCommentContext);
 				       }
 				       else
@@ -880,9 +887,10 @@ SLASHopt [/]*
   				     yyextra->condCtx=YY_START;
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
                                    }
+<CondLine>\n			   |
 <CondLine>.			   { // forgot section id?
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
-				     if (*yytext=='\n') yyextra->lineNr++;
+				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,QCString(yytext));
@@ -948,6 +956,9 @@ SLASHopt [/]*
 <*>.                               {
   				     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
+  /*
+<*>\n  { fprintf(stderr,"Lex scanner %s (%s) default rule newline for state %s.\n", __FILE__, qPrint(yyextra->fileName),stateToString(YY_START));}
+  */
 %%
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)

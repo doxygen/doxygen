@@ -213,6 +213,7 @@ static inline int computeIndent(const char *s,int startIndent);
 static QCString stripQuotes(const char *s);
 static bool nameIsOperator(QCString &name);
 void fixArgumentListForJavaScript(ArgumentList &al);
+static bool startOfRequiresExpression(const QCString &req);
 
 // forward declarations for statefull functions
 static void initParser(yyscan_t yyscanner);
@@ -1000,6 +1001,16 @@ NONLopt [^\n]*
 <ObjCPropAttr>")"                       {
                                           BEGIN(FindMembers);
                                         }
+<FindMembers>"@"{ID}("."{ID})+          {
+                                          if (yyextra->insideJava) // Java annotation
+                                          {
+                                            // skip annotation
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
+                                        }
 <FindMembers>"@"{ID}                    {
                                           if (yyextra->insideJava) // Java annotation
                                           {
@@ -1085,14 +1096,9 @@ NONLopt [^\n]*
 <FindMembers>{B}*"constexpr"{BN}+       {
                                           if (yyextra->insideCpp)
                                           {
-                                            yyextra->current->type += " constexpr ";
                                             yyextra->current->spec |= Entry::ConstExpr;
-                                            lineCount(yyscanner);
                                           }
-                                          else
-                                          {
-                                            REJECT;
-                                          }
+                                          REJECT;
                                         }
 <FindMembers>{B}*"published"{BN}+       { // UNO IDL published keyword
                                           if (yyextra->insideIDL)
@@ -2142,7 +2148,7 @@ NONLopt [^\n]*
                                           BEGIN( CopyRound ) ;
                                         }
 <RequiresClause>{ID}                    { // something like "requires true"
-                                          if (yyextra->current->req.stripWhiteSpace().isEmpty())
+                                          if (startOfRequiresExpression(yyextra->current->req))
                                           {
                                             yyextra->current->req=yytext;
                                             BEGIN(yyextra->requiresContext);
@@ -2153,18 +2159,32 @@ NONLopt [^\n]*
                                           }
                                         }
 <RequiresClause>{SCOPENAME}{BNopt}"("   { // "requires func(x)"
-                                          yyextra->current->req+=yytext;
-                                          yyextra->lastRoundContext=RequiresClause;
-                                          yyextra->pCopyRoundString=&yyextra->current->req;
-                                          yyextra->roundCount=0;
-                                          BEGIN( CopyRound );
+                                          if (startOfRequiresExpression(yyextra->current->req))
+                                          {
+                                            yyextra->current->req+=yytext;
+                                            yyextra->lastRoundContext=RequiresClause;
+                                            yyextra->pCopyRoundString=&yyextra->current->req;
+                                            yyextra->roundCount=0;
+                                            BEGIN( CopyRound );
+                                          }
+                                          else
+                                          {
+                                            REJECT;
+                                          }
                                         }
 <RequiresClause>{SCOPENAME}{BNopt}"<"   { // "requires C<S,T>"
-                                          yyextra->current->req+=yytext;
-                                          yyextra->lastSharpContext=RequiresClause;
-                                          yyextra->pCopySharpString=&yyextra->current->req;
-                                          yyextra->sharpCount=0;
-                                          BEGIN( CopySharp );
+                                          if (startOfRequiresExpression(yyextra->current->req))
+                                          {
+                                            yyextra->current->req+=yytext;
+                                            yyextra->lastSharpContext=RequiresClause;
+                                            yyextra->pCopySharpString=&yyextra->current->req;
+                                            yyextra->sharpCount=0;
+                                            BEGIN( CopySharp );
+                                          }
+                                          else
+                                          {
+                                            REJECT
+                                          }
                                         }
 <RequiresClause>"||"|"&&"             { // "requires A || B" or "requires A && B"
                                           yyextra->current->req+=yytext;
@@ -2315,6 +2335,18 @@ NONLopt [^\n]*
                                                 }
                                                 yyextra->current->name= yyextra->current->name.mid(7);
                                               }
+                                              else if (yyextra->current->name.left(10)=="constexpr ")
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="constexpr";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="constexpr ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(10);
+                                              }
                                               else if (yyextra->current->name.left(6)=="const ")
                                               {
                                                 if (yyextra->current->type.isEmpty())
@@ -2338,6 +2370,18 @@ NONLopt [^\n]*
                                                   yyextra->current->type+="volatile ";
                                                 }
                                                 yyextra->current->name=yyextra->current->name.mid(9);
+                                              }
+                                              else if (yyextra->current->name.left(8)=="typedef ")
+                                              {
+                                                if (yyextra->current->type.isEmpty())
+                                                {
+                                                  yyextra->current->type="typedef";
+                                                }
+                                                else
+                                                {
+                                                  yyextra->current->type+="typedef ";
+                                                }
+                                                yyextra->current->name=yyextra->current->name.mid(8);
                                               }
                                             }
                                             QCString tmp=yytext;
@@ -3694,9 +3738,9 @@ NONLopt [^\n]*
                                           yyextra->current->bodyColumn = yyextra->yyColNr;
                                           yyextra->current->name     = yytext;
                                         }
-<FindFields>"("                         {
+<FindFields>[({]                        {
                                           // Java enum initializer
-                                          unput('(');
+                                          unput(*yytext);
                                           yyextra->lastInitializerContext = YY_START;
                                           yyextra->initBracketCount=0;
                                           yyextra->current->initializer.str("=");
@@ -4558,7 +4602,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgCommentLine>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
+<CopyArgCommentLine>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]   { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
@@ -4580,7 +4624,7 @@ NONLopt [^\n]*
                                           yyextra->fullArgString+=yytext;
                                           BEGIN(CopyArgVerbatim);
                                         }
-<CopyArgVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
+<CopyArgVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode"|"f$"|"f]"|"f}"|"f)")/[^a-z_A-Z0-9\-] { // end of verbatim block
                                           yyextra->fullArgString+=yytext;
 					  if (yytext[1]=='f' && yyextra->docBlockName==&yytext[1])
                                           {
@@ -5383,6 +5427,7 @@ NONLopt [^\n]*
 <SkipString,SkipPHPString>\n            {
                                           lineCount(yyscanner);
                                         }
+<SkipString>"[["                        { }
 <SkipString,SkipPHPString>.             { }
 <CompoundName>":"                       { // for "class : public base {} var;" construct, see bug 608359
                                           unput(':');
@@ -5844,7 +5889,6 @@ NONLopt [^\n]*
                                           }
                                         }
 <ClassVar>[;=*&]                        {
-                                          unput(*yytext);
                                           if (yyextra->isTypedef) // typedef of a class, put typedef keyword back
                                           {
                                             yyextra->current->type.prepend("typedef");
@@ -5853,6 +5897,15 @@ NONLopt [^\n]*
                                               yyextra->current->section == Entry::ENUM_SEC)
                                           { // found "enum a *b" -> variable
                                             yyextra->current->section = Entry::VARIABLE_SEC ;
+                                          }
+                                          if (yytext[0]==';' && yyextra->current->section == Entry::ENUM_SEC)
+                                          {
+                                            yyextra->current->reset();
+                                            initEntry(yyscanner);
+                                          }
+                                          else
+                                          {
+                                            unput(*yytext);
                                           }
                                           BEGIN( FindMembers );
                                         }
@@ -6180,11 +6233,11 @@ NONLopt [^\n]*
                                         }
 <Comment>{CCS}                           { yyextra->current->program << yytext ; }
 <Comment>{CPPC}                           { yyextra->current->program << yytext ; }
-<Comment>{CMD}("code"|"verbatim")       {
+<Comment>{CMD}("code"|"verbatim"|"iliteral")       {
                                           yyextra->insideCode=TRUE;
                                           yyextra->current->program << yytext ;
                                         }
-<Comment>{CMD}("endcode"|"endverbatim") {
+<Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
                                           yyextra->insideCode=FALSE;
                                           yyextra->current->program << yytext ;
                                         }
@@ -6588,7 +6641,7 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-]     { // verbatim command (which could contain nested comments!)
                                           yyextra->docBlock << yytext;
                                           yyextra->docBlockName=&yytext[1];
                                           yyextra->fencedSize=0;
@@ -6604,7 +6657,9 @@ NONLopt [^\n]*
                                           yyextra->nestedComment=FALSE;
                                           BEGIN(DocCopyBlock);
                                         }
-<DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*                {
+<DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/(".")?[a-zA-Z0-9#_-]+ |
+<DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]*/"{"[^}]+"}" |
+<DocBlock>^({B}*"*"+)?{B}{0,3}"```"[`]* {
                                           QCString pat = substitute(yytext,"*"," ");
                                           yyextra->docBlock << pat;
                                           yyextra->docBlockName="```";
@@ -6659,7 +6714,7 @@ NONLopt [^\n]*
                                             BEGIN(DocBlock);
                                           }
                                         }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                                           yyextra->docBlock << yytext;
                                           if (&yytext[4]==yyextra->docBlockName)
                                           {
@@ -6667,11 +6722,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{BN}+           { // start of a comment line
-                                          if (yyextra->docBlockName=="verbatim")
-                                          {
-                                            REJECT;
-                                          }
-                                          else if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="verbatim") | (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             REJECT;
                                           }
@@ -6683,7 +6734,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{B}+"*"{BN}*    { // start of a comment line with two *'s
-                                          if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,0));
@@ -6695,7 +6746,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/({ID}|"(")      { // Assume *var or *(... is part of source code (see bug723516)
-                                          if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
                                             indent.fill(' ',computeIndent(yytext,-1));
@@ -6707,7 +6758,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <DocCopyBlock>^{B}*"*"+/{BN}*           { // start of a comment line with one *
-                                          if (yyextra->docBlockName=="code")
+                                          if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                                           {
                                             QCString indent;
                                             if (yyextra->nestedComment) // keep * it is part of the code
@@ -6904,7 +6955,7 @@ NONLopt [^\n]*
                                           }
                                         }
 <*>\?                                   {
-                                          if (yyextra->insideCS && (YY_START != SkipRound))
+                                          if (yyextra->insideCS && (YY_START != SkipRound) && (YY_START != CSAccessorDecl))
                                           {
                                             if (yyextra->current->type.isEmpty())
                                             {
@@ -7059,6 +7110,16 @@ static QCString stripQuotes(const char *s)
     name=name.mid(1,name.length()-2);
   }
   return name;
+}
+
+//-----------------------------------------------------------------
+
+// return TRUE iff req holds the start of a requires expression
+// or sub-expression without parenthesis, i.e. req is empty or ends with || or &&
+static bool startOfRequiresExpression(const QCString &req)
+{
+  QCString r = req.stripWhiteSpace();
+  return r.isEmpty() || r.endsWith("&&") || r.endsWith("||");
 }
 
 //-----------------------------------------------------------------

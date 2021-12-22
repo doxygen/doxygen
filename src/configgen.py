@@ -285,6 +285,8 @@ def parseOption(node):
             print("  cs->setWidgetType(ConfigString::Image);")
         elif format == 'dir':
             print("  cs->setWidgetType(ConfigString::Dir);")
+        elif format == 'filedir':
+            print("  cs->setWidgetType(ConfigString::FileAndDir);")
         if depends != '':
             print("  cs->addDependency(\"%s\");" % (depends))
     elif type == 'enum':

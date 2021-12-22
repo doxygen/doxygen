@@ -162,7 +162,7 @@ void PageDefImpl::writeTagFile(TextStream &tagFile)
     tagFile << "  <compound kind=\"page\">\n";
     tagFile << "    <name>" << name() << "</name>\n";
     tagFile << "    <title>" << convertToXML(title()) << "</title>\n";
-    tagFile << "    <filename>" << convertToXML(getOutputFileBase())<< Doxygen::htmlFileExtension << "</filename>\n";
+    tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
     writeDocAnchorsToTagFile(tagFile);
     tagFile << "  </compound>\n";
   }

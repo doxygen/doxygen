@@ -174,7 +174,7 @@ void HtmlHelpIndex::addItem(const QCString &level1,const QCString &level2,
 
 static QCString field2URL(const IndexField *f,bool checkReversed)
 {
-  QCString result = f->url + Doxygen::htmlFileExtension;
+  QCString result = addHtmlExtensionIfMissing(f->url);
   if (!f->anchor.isEmpty() && (!checkReversed || f->reversed))
   {
     // HTML Help needs colons in link anchors to be escaped in the .hhk file.
@@ -665,7 +665,7 @@ void HtmlHelp::addContentsItem(bool isDir,
       if (!(binaryTOC && isDir))
       {
         p->cts << "<param name=\"Local\" value=\"";
-        p->cts << file << Doxygen::htmlFileExtension;
+        p->cts << addHtmlExtensionIfMissing(file);
         if (!anchor.isEmpty()) p->cts << "#" << anchor;
         p->cts << "\">";
       }

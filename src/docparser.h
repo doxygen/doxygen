@@ -359,7 +359,8 @@ class DocStyleChange : public DocNode
                  Ins           = (1<<13),
                  S             = (1<<14),
                  Details       = (1<<15),
-                 Summary       = (1<<16)
+                 Summary       = (1<<16),
+                 Cite          = (1<<17)
                };
 
     DocStyleChange(DocParser &parser,DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,
@@ -512,7 +513,7 @@ class DocSeparator : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser &parser,DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());

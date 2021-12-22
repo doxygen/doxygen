@@ -225,6 +225,9 @@ void XmlDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "<small>";  else m_t << "</small>";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "<cite>";  else m_t << "</cite>";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -268,6 +271,16 @@ void XmlDocVisitor::visit(DocVerbatim *s)
       getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
                                     s->isExample(),s->exampleFile());
       m_t << "</programlisting>";
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      m_t << "<javadocliteral>";
+      filter(s->text());
+      m_t << "</javadocliteral>";
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "<javadoccode>";
+      filter(s->text());
+      m_t << "</javadoccode>";
       break;
     case DocVerbatim::Verbatim:
       m_t << "<verbatim>";
@@ -811,6 +824,16 @@ void XmlDocVisitor::visitPre(DocHtmlTable *t)
     }
   }
   m_t << ">";
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "<caption";
+    if (!c->file().isEmpty())
+    {
+      m_t << " id=\""  << stripPath(c->file()) << "_1" << c->anchor() << "\"";
+    }
+    m_t << ">";
+  }
 }
 
 void XmlDocVisitor::visitPost(DocHtmlTable *)
@@ -891,7 +914,7 @@ void XmlDocVisitor::visitPost(DocHtmlCell *)
 void XmlDocVisitor::visitPre(DocHtmlCaption *)
 {
   if (m_hide) return;
-  m_t << "<caption>";
+  // start of caption is handled in the XmlDocVisitor::visitPre(DocHtmlTable *t)
 }
 
 void XmlDocVisitor::visitPost(DocHtmlCaption *)
@@ -976,7 +999,8 @@ void XmlDocVisitor::visitPost(DocImage *)
 void XmlDocVisitor::visitPre(DocDotFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "dotfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDotFile *)
@@ -988,7 +1012,8 @@ void XmlDocVisitor::visitPost(DocDotFile *)
 void XmlDocVisitor::visitPre(DocMscFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "mscfile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocMscFile *)
@@ -1000,7 +1025,8 @@ void XmlDocVisitor::visitPost(DocMscFile *)
 void XmlDocVisitor::visitPre(DocDiaFile *df)
 {
   if (m_hide) return;
-  visitPreStart(m_t, "diafile", FALSE, this, df->children(), df->file(), FALSE, DocImage::Html, df->width(), df->height());
+  copyFile(df->file(),Config_getString(XML_OUTPUT)+"/"+stripPath(df->file()));
+  visitPreStart(m_t, "diafile", FALSE, this, df->children(), stripPath(df->file()), FALSE, DocImage::Html, df->width(), df->height());
 }
 
 void XmlDocVisitor::visitPost(DocDiaFile *)

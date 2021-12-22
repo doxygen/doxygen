@@ -3612,6 +3612,11 @@ static void buildFunctionList(const Entry *root)
                   sameRequiresClause = FALSE;
                 }
               }
+              else if (!mdTempl.empty() || !root->tArgLists.empty())
+              { // if one has template parameters and the other doesn't then that also counts as a
+                // difference
+                sameNumTemplateArgs = FALSE;
+              }
 
               bool staticsInDifferentFiles =
                 root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
@@ -4101,7 +4106,7 @@ static void findUsedClassesForClass(const Entry *root,
           }
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
-          //printf("    usedName=%s\n",qPrint(usedName));
+          //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
 
           TemplateNameMap formTemplateNames;
           if (templateNames.empty())
@@ -5114,7 +5119,7 @@ static void addMemberDocs(const Entry *root,
 {
   if (md==0) return;
   //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%lld\n",
-  //     qPrint(root->parent()->name),qPrint(md->name()),md->argsString(),funcDecl,spec);
+  //     qPrint(root->parent()->name),qPrint(md->name()),qPrint(md->argsString()),qPrint(funcDecl),spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -6642,7 +6647,7 @@ static void findMember(const Entry *root,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
-              root->stat && !isMemberOf,
+              root->stat,
               isMemberOf ? Foreign : Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -10473,10 +10478,10 @@ static void dumpSymbol(TextStream &t,Definition *d)
   QCString scope;
   if (d->getOuterScope() && d->getOuterScope()!=Doxygen::globalScope)
   {
-    scope = d->getOuterScope()->getOutputFileBase()+Doxygen::htmlFileExtension;
+    scope = addHtmlExtensionIfMissing(d->getOuterScope()->getOutputFileBase());
   }
   t << "REPLACE INTO symbols (symbol_id,scope_id,name,file,line) VALUES('"
-    << d->getOutputFileBase()+Doxygen::htmlFileExtension+anchor << "','"
+    << addHtmlExtensionIfMissing(d->getOutputFileBase())+anchor << "','"
     << scope << "','"
     << d->name() << "','"
     << d->getDefFileName() << "','"
@@ -10909,7 +10914,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -10955,7 +10960,7 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
@@ -11145,7 +11150,7 @@ void checkConfiguration()
 
   Config::postProcess(FALSE);
   Config::updateObsolete();
-  Config::checkAndCorrect(Config_getBool(QUIET));
+  Config::checkAndCorrect(Config_getBool(QUIET), true);
   initWarningFormat();
 }
 
@@ -12423,7 +12428,12 @@ void generateOutput()
     g_s.end();
   }
 
-  if (g_useOutputTemplate) generateOutputViaTemplate();
+  if (g_useOutputTemplate)
+  {
+    g_s.begin("Generating output via template engine...\n");
+    generateOutputViaTemplate();
+    g_s.end();
+  }
 
   warn_flush();
 

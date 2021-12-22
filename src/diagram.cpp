@@ -255,7 +255,7 @@ static void writeMapArea(TextStream &t,const ClassDef *cd,QCString relPath,
     }
     t << "href=\"";
     t << externalRef(relPath,ref,TRUE);
-    t << cd->getOutputFileBase() << Doxygen::htmlFileExtension;
+    t << addHtmlExtensionIfMissing(cd->getOutputFileBase());
     if (!cd->anchor().isEmpty())
     {
       t << "#" << cd->anchor();

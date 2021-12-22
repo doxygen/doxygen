@@ -867,6 +867,16 @@ WSopt [ \t\r]*
 <Guard>"defined"/{B}+                   {
                                           BEGIN(DefinedExpr1);
                                         }
+<Guard>"true"/{B}|{B}*[\r]?\n           { yyextra->guardExpr+="1L"; }
+<Guard>"false"/{B}|{B}*[\r]?\n          { yyextra->guardExpr+="0L"; }
+<Guard>"not"/{B}                        { yyextra->guardExpr+='!'; }
+<Guard>"not_eq"/{B}                     { yyextra->guardExpr+="!="; }
+<Guard>"and"/{B}                        { yyextra->guardExpr+="&&"; }
+<Guard>"or"/{B}                         { yyextra->guardExpr+="||"; }
+<Guard>"bitand"/{B}                     { yyextra->guardExpr+="&"; }
+<Guard>"bitor"/{B}                      { yyextra->guardExpr+="|"; }
+<Guard>"xor"/{B}                        { yyextra->guardExpr+="^"; }
+<Guard>"compl"/{B}                      { yyextra->guardExpr+="~"; }
 <Guard>{ID}                             { yyextra->guardExpr+=yytext; }
 <Guard>"@"                              { yyextra->guardExpr+="@@"; }
 <Guard>.                                { yyextra->guardExpr+=*yytext; }
@@ -1228,11 +1238,11 @@ WSopt [ \t\r]*
                                             BEGIN(SkipVerbatim);
                                           }
                                         }
-<SkipCComment>[\\@][\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
+<SkipCComment>[\\@][\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+ {
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                         }
-<SkipCComment>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
+<SkipCComment>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly"|"dot"|"code"("{"[^}]*"}")?){BN}+      {
                                           outputArray(yyscanner,yytext,yyleng);
                                           yyextra->yyLineNr+=QCString(yytext).contains('\n');
                                           yyextra->fenceSize=0;
@@ -1250,7 +1260,12 @@ WSopt [ \t\r]*
                                           BEGIN(SkipVerbatim);
                                         }
 <SkipCComment>"{"[ \t]*"@code"/[ \t\n]  {
-                                          outputArray(yyscanner,"@code",5);
+                                          outputArray(yyscanner,"@iliteral{code}",15);
+                                          yyextra->javaBlock=1;
+                                          BEGIN(JavaDocVerbatimCode);
+                                        }
+<SkipCComment>"{"[ \t]*"@literal"/[ \t\n]  {
+                                          outputArray(yyscanner,"@iliteral",9);
                                           yyextra->javaBlock=1;
                                           BEGIN(JavaDocVerbatimCode);
                                         }
@@ -1356,7 +1371,7 @@ WSopt [ \t\r]*
                                             BEGIN(yyextra->condCtx);
                                           }
                                         }
-<SkipVerbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
+<SkipVerbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"enddot"|"endcode"|"f$"|"f]"|"f}""f}") { /* end of verbatim block */
                                           outputArray(yyscanner,yytext,yyleng);
                                           if (yytext[1]=='f' && yyextra->blockName=="f")
                                           {
@@ -1405,7 +1420,7 @@ WSopt [ \t\r]*
                                             yyextra->javaBlock--;
                                             if (yyextra->javaBlock==0)
                                             {
-                                              outputArray(yyscanner," @endcode ",10);
+                                              outputArray(yyscanner," @endiliteral ",14);
                                               BEGIN(SkipCComment);
                                             }
                                             else

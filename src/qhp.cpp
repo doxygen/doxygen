@@ -38,7 +38,7 @@ static QCString makeFileName(const QCString & withoutExtension)
     }
     else // add specified HTML extension
     {
-      result+=Doxygen::htmlFileExtension;
+      addHtmlExtensionIfMissing(result);
     }
   }
   return result;
