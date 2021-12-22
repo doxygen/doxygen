@@ -1064,7 +1064,7 @@ NONLopt [^\n]*
                                           yyextra->curlyCount=0;
                                           BEGIN( ReadNSBody );
                                         }
-<FindMembers>{B}*"initonly"{BN}+        {
+<FindMembers>{B}*"initonly"{BN}+        { if (yyextra->insideJava) REJECT;
                                           yyextra->current->type += " initonly ";
                                           if (yyextra->insideCli) yyextra->current->spec |= Entry::Initonly;
                                           lineCount(yyscanner);
@@ -1073,7 +1073,7 @@ NONLopt [^\n]*
                                           yyextra->current->stat = TRUE;
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"extern"{BN}+          {
+<FindMembers>{B}*"extern"{BN}+          { if (yyextra->insideJava) REJECT;
                                           yyextra->current->stat = FALSE;
                                           yyextra->current->explicitExternal = TRUE;
                                           lineCount(yyscanner);
@@ -1089,7 +1089,8 @@ NONLopt [^\n]*
                                             REJECT;
                                           }
                                         }
-<FindMembers>{B}*"virtual"{BN}+         { yyextra->current->type += " virtual ";
+<FindMembers>{B}*"virtual"{BN}+         { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->type += " virtual ";
                                           yyextra->current->virt = Virtual;
                                           lineCount(yyscanner);
                                         }
@@ -1130,16 +1131,20 @@ NONLopt [^\n]*
                                           }
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"inline"{BN}+          { yyextra->current->spec|=Entry::Inline;
+<FindMembers>{B}*"inline"{BN}+          { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->spec|=Entry::Inline;
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"mutable"{BN}+         { yyextra->current->spec|=Entry::Mutable;
+<FindMembers>{B}*"mutable"{BN}+         { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->spec|=Entry::Mutable;
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"explicit"{BN}+        { yyextra->current->spec|=Entry::Explicit;
+<FindMembers>{B}*"explicit"{BN}+        { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->spec|=Entry::Explicit;
                                           lineCount(yyscanner);
                                         }
-<FindMembers>{B}*"local"{BN}+           { yyextra->current->spec|=Entry::Local;
+<FindMembers>{B}*"local"{BN}+           { if (yyextra->insideJava) REJECT;
+                                          yyextra->current->spec|=Entry::Local;
                                           lineCount(yyscanner);
                                         }
 <FindMembers>{B}*"@required"{BN}+       { // Objective C 2.0 protocol required section
@@ -1156,7 +1161,7 @@ NONLopt [^\n]*
                                         }
   */
 <FindMembers>{B}*"typename"{BN}+        { lineCount(yyscanner); }
-<FindMembers>{B}*"namespace"{BNopt}/[^a-z_A-Z0-9] {
+<FindMembers>{B}*"namespace"{BNopt}/[^a-z_A-Z0-9] { if (yyextra->insideJava) REJECT;
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::NAMESPACE_SEC;
                                           yyextra->current->type = "namespace" ;
@@ -1362,6 +1367,7 @@ NONLopt [^\n]*
                                           BEGIN( CompoundName );
                                         }
 <FindMembers>{B}*"exception"{BN}+       { // Corba IDL/Slice exception
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CLASS_SEC;
                                           // preserve UNO IDL, Slice local
@@ -1493,6 +1499,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"struct"/{BN}+ {
+                                          if (yyextra->insideJava) REJECT;
                                           QCString decl = yytext;
                                           yyextra->isTypedef=decl.find("typedef")!=-1;
                                           bool isConst=decl.find("const")!=-1;
@@ -1574,6 +1581,7 @@ NONLopt [^\n]*
                                         }
 <FindMembers>{B}*{TYPEDEFPREFIX}"union{" |
 <FindMembers>{B}*{TYPEDEFPREFIX}"union"{BN}+ {
+                                          if (yyextra->insideJava) REJECT;
                                           QCString decl=yytext;
                                           yyextra->isTypedef=decl.find("typedef")!=-1;
                                           bool isConst=decl.find("const")!=-1;
@@ -1637,6 +1645,7 @@ NONLopt [^\n]*
                                           BEGIN( CompoundName ) ;
                                         }
 <FindMembers>{B}*"concept"{BN}+         { // C++20 concept
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->isTypedef=FALSE;
                                           yyextra->current->section = Entry::CONCEPT_SEC;
                                           addType(yyscanner);
@@ -1687,6 +1696,7 @@ NONLopt [^\n]*
                                           BEGIN( ReadTempArgs );
                                         }
 <FindMembers>"namespace"{BN}+/{ID}{BN}*"=" { // namespace alias
+                                          if (yyextra->insideJava) REJECT;
                                           lineCount(yyscanner);
                                           BEGIN( NSAliasName );
                                         }
@@ -1777,6 +1787,7 @@ NONLopt [^\n]*
                                           BEGIN(Using);
                                         }
 <FindMembers>"using"{BN}+               {
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->current->startLine=yyextra->yyLineNr;
                                           yyextra->current->startColumn = yyextra->yyColNr;
                                           lineCount(yyscanner);
@@ -2109,16 +2120,19 @@ NONLopt [^\n]*
                                           BEGIN(FindMembers);
                                         }
 <FindMembers>"requires"                 { // C++20 requires clause
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->current->req.resize(0);
                                           yyextra->requiresContext = YY_START;
                                           BEGIN(RequiresClause);
                                         }
 <RequiresClause>"requires"{BN}*/"{"     { // requires requires { ... }
+                                          if (yyextra->insideJava) REJECT;
                                           lineCount(yyscanner) ;
                                           yyextra->current->req+=yytext;
                                           BEGIN( RequiresExpression ) ;
                                         }
 <RequiresClause>"requires"{BN}*"("      { // requires requires(T x) { ... }
+                                          if (yyextra->insideJava) REJECT;
                                           lineCount(yyscanner) ;
                                           yyextra->current->req+=yytext;
                                           yyextra->lastRoundContext=RequiresExpression;
@@ -4883,6 +4897,7 @@ NONLopt [^\n]*
                                           BEGIN(FuncQual);
                                         }
 <TrailingReturn>"requires"{BN}+         {
+                                          if (yyextra->insideJava) REJECT;
                                           yyextra->requiresContext = FuncQual;
                                           yyextra->current->req+=' ';
                                           BEGIN(RequiresClause);

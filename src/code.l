@@ -3737,7 +3737,36 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "gcnew", "gcroot", "generic", "get",
     "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
-  return yyextra->lang==SrcLangExt_Cpp && (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+  static std::unordered_set<std::string> non_java_keywords = {
+    "alignas", "alignof", "and", "and_eq", "asm",
+    "atomic_cancel", "atomic_commit", "atomic_noexcept", "auto", "bitand",
+    "bitor", "bool", "char8_t", "char16_t", "char32_t",
+    "compl", "concept", "consteval", "constexpr", "constinit",
+    "const_cast", "co_await", "co_return", "co_yield", "decltype",
+    "delete", "dynamic_cast", "explicit", "export", "extern",
+    "friend", "inline", "mutable", "namespace", "noexcept",
+    "not", "not_eq", "nullptr", "operator", "or",
+    "or_eq", "reflexpr", "register", "reinterpret_cast", "requires",
+    "signed", "sizeof", "static_assert", "static_cast", "struct",
+    "template", "thread_local", "typedef", "typeid", "typename",
+    "union", "unsigned", "using", "virtual", "wchar_t",
+    "xor", "xor_eq",
+    "override"
+  };
+  bool retval;
+  switch (yyextra->lang)
+  {
+    case SrcLangExt_Cpp:
+      retval = (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+      break;
+    case SrcLangExt_Java:
+      retval = (non_java_keywords.find(keyword) != non_java_keywords.end());
+      break;
+    default: 
+      retval = false;
+      break;
+  }
+  return retval;
 }
 
 static bool isCastKeyword(const char *keyword)
