@@ -140,6 +140,7 @@ struct fortrancodeYY_state
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   int           inputLines = 0;      //!< number of line in the code fragment
+  QCString      fileName;
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
   int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
@@ -221,6 +222,10 @@ static std::mutex g_countFlowKeywordsMutex;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
+
 %}
 
 IDSYM     [a-z_A-Z0-9]
@@ -262,9 +267,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 
 %x Start
 %x SubCall
-%x FuncDef
 %x ClassName
-%x ClassVar
 %x Subprog
 %x DocBlock
 %x Use
@@ -273,7 +276,6 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
 %x Declaration
 %x DeclarationBinding
 %x DeclContLine
-%x Parameterlist
 %x String
 %x Subprogend
 
@@ -379,6 +381,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                         }
 <*>"import"{BS}/"\n"                    |
 <*>"import"{BS_}                        {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keywordtype");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -414,6 +417,7 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           BEGIN(ClassName);
                                         }
 <*>{LANGUAGE_BIND_SPEC}                 {  //
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -724,11 +728,13 @@ LANGUAGE_BIND_SPEC BIND{BS}"("{BS}C{BS}(,{BS}NAME{BS}"="{BS}"\""(.*)"\""{BS})?")
                                           endFontClass(yyscanner);
                                         }
 <*>"assignment"/{BS}"("{BS}"="{BS}")"   {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
                                         }
 <*>"operator"/{BS}"("[^)]*")"           {
+                                          if(YY_START == String) YY_FTN_REJECT; // ignore in strings
                                           startFontClass(yyscanner,"keyword");
                                           codifyLines(yyscanner,yytext);
                                           endFontClass(yyscanner);
@@ -933,20 +939,23 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
-                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
-                                QCString(),yyextra->yyLineNr);
+                                QCString(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
@@ -1464,6 +1473,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->isFixedForm = recognizeFixedForm(input,p->format);
   yyextra->contLineNr = 1;
   yyextra->hasContLine = NULL;

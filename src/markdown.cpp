@@ -53,6 +53,13 @@
 #include "fileinfo.h"
 #include "utf8.h"
 
+enum class ExplicitPageResult
+{
+  explicitPage,      /**< docs start with a page command */
+  explicitMainPage,  /**< docs start with a mainpage command */
+  notExplicit        /**< docs doesn't start with either page or mainpage */
+};
+
 #if !defined(NDEBUG)
 #define ENABLE_TRACING
 #endif
@@ -135,6 +142,11 @@ class Trace
       m_resultSet = true;
       m_resultValue = b ? "true" : "false";
     }
+    void setResult(ExplicitPageResult ep)
+    {
+      m_resultSet = true;
+      m_resultValue = QCString().setNum(static_cast<int>(ep));
+    }
     void setResult(int i)
     {
       m_resultSet = true;
@@ -194,7 +206,6 @@ int Trace::s_indent = 0;
   (data[i]=='('  || data[i]=='{' || data[i]=='[' || (data[i]=='<' && data[i+1]!='/') || \
    data[i]=='\\' || \
    data[i]=='@')
-
 //----------
 
 struct TableCell
@@ -341,6 +352,29 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
   }
 }
 
+/** parse the image attributes and return attributes for given format */
+static QCString getFilteredImageAttributes(const char *fmt, const QCString &attrs)
+{
+  StringVector attrList = split(attrs.str(),",");
+  for (const auto &attr_ : attrList)
+  {
+    QCString attr = QCString(attr_).stripWhiteSpace();
+    int i = attr.find(':');
+    if (i>0) // has format
+    {
+      QCString format = attr.left(i).stripWhiteSpace().lower();
+      if (format == fmt) // matching format
+      {
+        return attr.mid(i+1); // keep part after :
+      }
+    }
+    else // option that applies to all formats
+    {
+      return attr;
+    }
+  }
+  return QCString();
+}
 
 // Check if data contains a block command. If so returned the command
 // that ends the block. If not an empty string is returned.
@@ -356,14 +390,61 @@ static Alignment markersToAlignment(bool leftMarker,bool rightMarker)
 // \f[..\f]
 // \f{..\f}
 // \verbatim..\endverbatim
+// \iliteral..\endiliteral
 // \latexonly..\endlatexonly
 // \htmlonly..\endhtmlonly
 // \xmlonly..\endxmlonly
 // \rtfonly..\endrtfonly
 // \manonly..\endmanonly
+// \startuml..\enduml
 QCString Markdown::isBlockCommand(const char *data,int offset,int size)
 {
   TRACE(data);
+
+  using EndBlockFunc = QCString (*)(const std::string &,bool,char);
+
+  static const auto getEndBlock   = [](const std::string &blockName,bool,char) -> QCString
+  {
+    return "end"+blockName;
+  };
+  static const auto getEndCode    = [](const std::string &blockName,bool openBracket,char) -> QCString
+  {
+    return openBracket ? QCString("}") : "end"+blockName;
+  };
+  static const auto getEndUml     = [](const std::string &blockName,bool,char) -> QCString
+  {
+    return "enduml";
+  };
+  static const auto getEndFormula = [](const std::string &blockName,bool,char nextChar) -> QCString
+  {
+    switch (nextChar)
+    {
+      case '$': return "f$";
+      case '(': return "f)";
+      case '[': return "f]";
+      case '{': return "f}";
+    }
+    return "";
+  };
+
+  // table mapping a block start command to a function that can return the matching end block string
+  static const std::unordered_map<std::string,EndBlockFunc> blockNames =
+  {
+    { "dot",         getEndBlock   },
+    { "code",        getEndCode    },
+    { "msc",         getEndBlock   },
+    { "verbatim",    getEndBlock   },
+    { "iliteral",    getEndBlock   },
+    { "latexonly",   getEndBlock   },
+    { "htmlonly",    getEndBlock   },
+    { "xmlonly",     getEndBlock   },
+    { "rtfonly",     getEndBlock   },
+    { "manonly",     getEndBlock   },
+    { "docbookonly", getEndBlock   },
+    { "startuml",    getEndUml     },
+    { "f",           getEndFormula }
+  };
+
   bool openBracket = offset>0 && data[-1]=='{';
   bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
   if (isEscaped) return QCString();
@@ -371,58 +452,208 @@ QCString Markdown::isBlockCommand(const char *data,int offset,int size)
   int end=1;
   while (end<size && (data[end]>='a' && data[end]<='z')) end++;
   if (end==1) return QCString();
-  QCString blockName;
-  convertStringFragment(blockName,data+1,end-1);
-  if (blockName=="code" && openBracket)
+  std::string blockName(data+1,end-1);
+  auto it = blockNames.find(blockName);
+  QCString result;
+  if (it!=blockNames.end()) // there is a function assigned
   {
-    TRACE_RESULT("}");
-    return "}";
+    result = it->second(blockName, openBracket, end<size ? data[end] : 0);
   }
-  else if (blockName=="dot"         ||
-           blockName=="code"        ||
-           blockName=="msc"         ||
-           blockName=="verbatim"    ||
-           blockName=="latexonly"   ||
-           blockName=="htmlonly"    ||
-           blockName=="xmlonly"     ||
-           blockName=="rtfonly"     ||
-           blockName=="manonly"     ||
-           blockName=="docbookonly"
-     )
+  TRACE_RESULT(result);
+  return result;
+}
+
+int Markdown::isSpecialCommand(const char *data,int offset,int size)
+{
+  TRACE(data);
+
+  using EndCmdFunc = int (*)(const char *,int,int);
+
+  static const auto endOfLine = [](const char *data_,int offset_,int size_) -> int
   {
-    QCString result = "end"+blockName;
-    TRACE_RESULT(result);
-    return result;
-  }
-  else if (blockName=="startuml")
+    // skip until the end of line (allowing line continuation characters)
+    char lc = 0;
+    char c;
+    while (offset_<size_ && ((c=data_[offset_])!='\n' || lc=='\\'))
+    {
+      if (c=='\\')     lc='\\'; // last character was a line continuation
+      else if (c!=' ') lc=0;    // rest line continuation
+      offset_++;
+    }
+    return offset_;
+  };
+
+  static const auto endOfLabel = [](const char *data_,int offset_,int size_) -> int
   {
-    TRACE_RESULT("enduml");
-    return "enduml";
-  }
-  else if (blockName=="f" && end<size)
+    if (offset_<size_ && data_[offset_]==' ') // we expect a space before the label
+    {
+      char c;
+      offset_++;
+      // skip over spaces
+      while (offset_<size_ && data_[offset_]==' ') offset_++;
+      // skip over label
+      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\n') offset_++;
+      return offset_;
+    }
+    return 0;
+  };
+
+  static const auto endOfParam = [](const char *data_,int offset_,int size_) -> int
   {
-    if (data[end]=='$')
+    int index=offset_;
+    if (index<size_ && data_[index]==' ') // skip over optional spaces
     {
-      TRACE_RESULT("f$");
-      return "f$";
+      index++;
+      while (index<size_ && data_[index]==' ') index++;
     }
-    else if (data[end]=='(')
+    if (index<size_ && data_[index]=='[') // find matching ']'
     {
-      TRACE_RESULT("f)");
-      return "f)";
+      index++;
+      char c;
+      while (index<size_ && (c=data_[index])!=']' && c!='\n') index++;
+      if (index==size_ || data_[index]!=']') return 0; // invalid parameter
+      offset_=index+1; // part after [...] is the parameter name
     }
-    else if (data[end]=='[')
+    return endOfLabel(data_,offset_,size_);
+  };
+
+  static const auto endOfFunc = [](const char *data_,int offset_,int size_) -> int
+  {
+    if (offset_<size_ && data_[offset_]==' ') // we expect a space before the name
     {
-      TRACE_RESULT("f]");
-      return "f]";
+      char c;
+      offset_++;
+      // skip over spaces
+      while (offset_<size_ && data_[offset_]==' ') offset_++;
+      // skip over name
+      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\n' && c!='(') offset_++;
+      if (c=='(') // find the end of the function
+      {
+        int count=1;
+        offset_++;
+        while (offset_<size_ && (c=data_[offset_++]))
+        {
+          if      (c=='(') count++;
+          else if (c==')') count--;
+          if (count==0) return offset_;
+        }
+      }
+      return offset_;
     }
-    else if (data[end]=='{')
-    {
-      TRACE_RESULT("f}");
-      return "f}";
-    }
+    return 0;
+  };
+
+  static const auto endOfGuard = [](const char *data_,int offset_,int size_) -> int
+  {
+    return endOfFunc(data_,offset_,size_);
+  };
+
+  static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
+  {
+    { "a",              endOfLabel },
+    { "addindex",       endOfLine  },
+    { "addtogroup",     endOfLabel },
+    { "anchor",         endOfLabel },
+    { "b",              endOfLabel },
+    { "c",              endOfLabel },
+    { "category",       endOfLine  },
+    { "cite",           endOfLabel },
+    { "class",          endOfLine  },
+    { "concept",        endOfLine  },
+    { "copybrief",      endOfFunc  },
+    { "copydetails",    endOfFunc  },
+    { "copydoc",        endOfFunc  },
+    { "def",            endOfFunc  },
+    { "defgroup",       endOfLabel },
+    { "diafile",        endOfLine  },
+    { "dir",            endOfLine  },
+    { "dockbookinclude",endOfLine  },
+    { "dontinclude",    endOfLine  },
+    { "dotfile",        endOfLine  },
+    { "dotfile",        endOfLine  },
+    { "e",              endOfLabel },
+    { "elseif",         endOfGuard },
+    { "em",             endOfLabel },
+    { "emoji",          endOfLabel },
+    { "enum",           endOfLabel },
+    { "example",        endOfLine  },
+    { "exception",      endOfLine  },
+    { "extends",        endOfLabel },
+    { "file",           endOfLine  },
+    { "fn",             endOfFunc  },
+    { "headerfile",     endOfLine  },
+    { "htmlinclude",    endOfLine  },
+    { "idlexcept",      endOfLine  },
+    { "if",             endOfGuard },
+    { "ifnot",          endOfGuard },
+    { "image",          endOfLine  },
+    { "implements",     endOfLine  },
+    { "include",        endOfLine  },
+    { "includedoc",     endOfLine  },
+    { "includelineno",  endOfLine  },
+    { "ingroup",        endOfLabel },
+    { "interface",      endOfLine  },
+    { "interface",      endOfLine  },
+    { "latexinclude",   endOfLine  },
+    { "maninclude",     endOfLine  },
+    { "memberof",       endOfLabel },
+    { "mscfile",        endOfLine  },
+    { "namespace",      endOfLabel },
+    { "noop",           endOfLine  },
+    { "overload",       endOfLine  },
+    { "p",              endOfLabel },
+    { "package",        endOfLabel },
+    { "page",           endOfLabel },
+    { "paragraph",      endOfLabel },
+    { "param",          endOfParam },
+    { "property",       endOfLine  },
+    { "protocol",       endOfLine  },
+    { "ref",            endOfLabel },
+    { "refitem",        endOfLabel },
+    { "related",        endOfLabel },
+    { "relatedalso",    endOfLabel },
+    { "relates",        endOfLabel },
+    { "relatesalso",    endOfLabel },
+    { "retval",         endOfLabel },
+    { "rtfinclude",     endOfLine  },
+    { "section",        endOfLabel },
+    { "skip",           endOfLine  },
+    { "skipline",       endOfLine  },
+    { "snippet",        endOfLine  },
+    { "snippetdoc",     endOfLine  },
+    { "snippetlineno",  endOfLine  },
+    { "struct",         endOfLine  },
+    { "subpage",        endOfLabel },
+    { "subsection",     endOfLabel },
+    { "subsubsection",  endOfLabel },
+    { "throw",          endOfLabel },
+    { "throws",         endOfLabel },
+    { "tparam",         endOfLabel },
+    { "typedef",        endOfLine  },
+    { "union",          endOfLine  },
+    { "until",          endOfLine  },
+    { "var",            endOfLine  },
+    { "verbinclude",    endOfLine  },
+    { "weakgroup",      endOfLabel },
+    { "xmlinclude",     endOfLine  },
+    { "xrefitem",       endOfLabel }
+  };
+
+  bool isEscaped = offset>0 && (data[-1]=='\\' || data[-1]=='@');
+  if (isEscaped) return 0;
+
+  int end=1;
+  while (end<size && (data[end]>='a' && data[end]<='z')) end++;
+  if (end==1) return 0;
+  std::string cmdName(data+1,end-1);
+  int result=0;
+  auto it = cmdNames.find(cmdName);
+  if (it!=cmdNames.end()) // command with parameters that should be ignored by markdown
+  {
+    // find the end of the parameters
+    result = it->second(data,end,size);
   }
-  return QCString();
+  return result;
 }
 
 /** looks for the next emph char, skipping other constructs, and
@@ -879,11 +1110,18 @@ int Markdown::processEmphasis(const char *data,int offset,int size)
   return 0;
 }
 
-void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
+void Markdown::writeMarkdownImage(const char *fmt, bool inline_img, bool explicitTitle,
                                   const QCString &title, const QCString &content,
-                                  const QCString &link, const FileDef *fd)
+                                  const QCString &link, const QCString &attrs,
+                                  const FileDef *fd)
 {
-  m_out.addStr("@image{inline} ");
+  QCString attributes = getFilteredImageAttributes(fmt, attrs);
+  m_out.addStr("@image");
+  if (inline_img)
+  {
+    m_out.addStr("{inline}");
+  }
+  m_out.addStr(" ");
   m_out.addStr(fmt);
   m_out.addStr(" ");
   m_out.addStr(link.mid(fd ? 0 : 5));
@@ -903,10 +1141,16 @@ void Markdown::writeMarkdownImage(const char *fmt, bool explicitTitle,
   {
     m_out.addStr(" ");// so the line break will not be part of the image name
   }
-  m_out.addStr("\\ilinebr");
+  if (!attributes.isEmpty())
+  {
+    m_out.addStr(" ");
+    m_out.addStr(attributes);
+    m_out.addStr(" ");
+  }
+  m_out.addStr("\\ilinebr ");
 }
 
-int Markdown::processLink(const char *data,int,int size)
+int Markdown::processLink(const char *data,int offset,int size)
 {
   TRACE(data);
   QCString content;
@@ -914,6 +1158,7 @@ int Markdown::processLink(const char *data,int,int size)
   QCString title;
   int contentStart,contentEnd,linkStart,titleStart,titleEnd;
   bool isImageLink = FALSE;
+  bool isImageInline = FALSE;
   bool isToc = FALSE;
   int i=1;
   if (data[0]=='!')
@@ -924,6 +1169,22 @@ int Markdown::processLink(const char *data,int,int size)
       TRACE_RESULT(0);
       return 0;
     }
+
+    // if there is non-whitespace before the ![ within the scope of two new lines, the image
+    // is considered inlined, i.e. the image is not preceded by an empty line
+    int numNLsNeeded=2;
+    int pos = -1;
+    while (pos>=-offset && numNLsNeeded>0)
+    {
+      if (data[pos]=='\n') numNLsNeeded--;
+      else if (data[pos]!=' ') // found non-whitespace, stop searching
+      {
+        isImageInline=true;
+        break;
+      }
+      pos--;
+    }
+    // skip '!['
     i++;
   }
   contentStart=i;
@@ -961,10 +1222,12 @@ int Markdown::processLink(const char *data,int,int size)
   if (!isImageLink && content.isEmpty()) { TRACE_RESULT(0); return 0; } // no link text
   i++; // skip over ]
 
+  bool whiteSpace = false;
   // skip whitespace
-  while (i<size && data[i]==' ') i++;
+  while (i<size && data[i]==' ') {whiteSpace = true; i++;}
   if (i<size && data[i]=='\n') // one newline allowed here
   {
+    whiteSpace = true;
     i++;
     nl++;
     // skip more whitespace
@@ -972,6 +1235,7 @@ int Markdown::processLink(const char *data,int,int size)
   }
   nlTotal += nl;
   nl = 0;
+  if (whiteSpace && i<size && (data[i]=='(' || data[i]=='[')) return 0;
 
   bool explicitTitle=FALSE;
   if (i<size && data[i]=='(') // inline link
@@ -1120,6 +1384,69 @@ int Markdown::processLink(const char *data,int,int size)
   }
   nlTotal += nl;
   nl = 0;
+
+  // search for optional image attributes
+  QCString attributes;
+  if (isImageLink)
+  {
+    int j = i;
+    // skip over whitespace
+    while (j<size && data[j]==' ') { j++; }
+    if (j<size && data[j]=='{') // we have attributes
+    {
+      i = j;
+      // skip over '{'
+      i++;
+      int attributesStart=i;
+      nl=0;
+      // find the matching '}'
+      while (i<size)
+      {
+        if (data[i-1]=='\\') // skip escaped characters
+        {
+        }
+        else if (data[i]=='{')
+        {
+          level++;
+        }
+        else if (data[i]=='}')
+        {
+          level--;
+          if (level<=0) break;
+        }
+        else if (data[i]=='\n')
+        {
+          nl++;
+          if (nl>1) { TRACE_RESULT(0); return 0; } // only allow one newline in the content
+        }
+        i++;
+      }
+      nlTotal += nl;
+      nl = 0;
+      if (i>=size) return 0; // premature end of comment -> no attributes
+      int attributesEnd=i;
+      convertStringFragment(attributes,data+attributesStart,attributesEnd-attributesStart);
+      i++; // skip over '}'
+    }
+    if (!isImageInline)
+    {
+      // if there is non-whitespace after the image within the scope of two new lines, the image
+      // is considered inlined, i.e. the image is not followed by an empty line
+      int numNLsNeeded=2;
+      int pos = i;
+      while (pos<size && numNLsNeeded>0)
+      {
+        if (data[pos]=='\n') numNLsNeeded--;
+        else if (data[pos]!=' ') // found non-whitespace, stop searching
+        {
+          isImageInline=true;
+          break;
+        }
+        pos++;
+      }
+    }
+  }
+
   if (isToc) // special case for [TOC]
   {
     int toc_level = Config_getInt(TOC_INCLUDE_HEADINGS);
@@ -1138,10 +1465,11 @@ int Markdown::processLink(const char *data,int,int size)
         (fd=findFileDef(Doxygen::imageNameLinkedMap,link,ambig)))
         // assume doxygen symbol link or local image link
     {
-      writeMarkdownImage("html",    explicitTitle, title, content, link, fd);
-      writeMarkdownImage("latex",   explicitTitle, title, content, link, fd);
-      writeMarkdownImage("rtf",     explicitTitle, title, content, link, fd);
-      writeMarkdownImage("docbook", explicitTitle, title, content, link, fd);
+      // check if different handling is needed per format
+      writeMarkdownImage("html",    isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("latex",   isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("rtf",     isImageInline, explicitTitle, title, content, link, attributes, fd);
+      writeMarkdownImage("docbook", isImageInline, explicitTitle, title, content, link, attributes, fd);
     }
     else
     {
@@ -1192,32 +1520,44 @@ int Markdown::processLink(const char *data,int,int size)
       m_out.addStr(" \"");
       if (explicitTitle && !title.isEmpty())
       {
-        m_out.addStr(title);
+        m_out.addStr(substitute(title,"\"","&quot;"));
       }
       else
       {
-        m_out.addStr(content);
+        m_out.addStr(substitute(content,"\"","&quot;"));
       }
       m_out.addStr("\"");
     }
     else if (link.find('/')!=-1 || link.find('.')!=-1 || link.find('#')!=-1)
     { // file/url link
-      m_out.addStr("<a href=\"");
-      m_out.addStr(link);
-      m_out.addStr("\"");
-      for (int ii = 0; ii < nlTotal; ii++) m_out.addStr("\n");
-      if (!title.isEmpty())
+      if (link.at(0) == '#')
       {
-        m_out.addStr(" title=\"");
-        m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+        m_out.addStr("@ref ");
+        m_out.addStr(link.mid(1));
+        m_out.addStr(" \"");
+        m_out.addStr(substitute(content.simplifyWhiteSpace(),"\"","&quot;"));
         m_out.addStr("\"");
+
       }
-      m_out.addStr(" ");
-      m_out.addStr(externalLinkTarget());
-      m_out.addStr(">");
-      content = content.simplifyWhiteSpace();
-      processInline(content.data(),content.length());
-      m_out.addStr("</a>");
+      else
+      {
+        m_out.addStr("<a href=\"");
+        m_out.addStr(link);
+        m_out.addStr("\"");
+        for (int ii = 0; ii < nlTotal; ii++) m_out.addStr("\n");
+        if (!title.isEmpty())
+        {
+          m_out.addStr(" title=\"");
+          m_out.addStr(substitute(title.simplifyWhiteSpace(),"\"","&quot;"));
+          m_out.addStr("\"");
+        }
+        m_out.addStr(" ");
+        m_out.addStr(externalLinkTarget());
+        m_out.addStr(">");
+        content = substitute(content.simplifyWhiteSpace(),"\"","\\\"");
+        processInline(content.data(),content.length());
+        m_out.addStr("</a>");
+      }
     }
     else // avoid link to e.g. F[x](y)
     {
@@ -1347,7 +1687,13 @@ int Markdown::processSpecialCommand(const char *data, int offset, int size)
       i++;
     }
   }
-  if (size>1 && data[0]=='\\')
+  int endPos = isSpecialCommand(data,offset,size);
+  if (endPos>0)
+  {
+    m_out.addStr(data,endPos);
+    return endPos;
+  }
+  if (size>1 && data[0]=='\\') // escaped characters
   {
     char c=data[1];
     if (c=='[' || c==']' || c=='*' || c=='!' || c=='(' || c==')' || c=='`' || c=='_')
@@ -1380,16 +1726,19 @@ void Markdown::processInline(const char *data,int size)
   Action_t action;
   while (i<size)
   {
+    // skip over character that do not trigger a specific action
     while (end<size && ((action=m_actions[(uchar)data[end]])==0)) end++;
+    // and add them to the output
     m_out.addStr(data+i,end-i);
     if (end>=size) break;
     i=end;
+    // do the action matching a special character at i
     end = action(data+i,i,size-i);
-    if (end<=0)
+    if (end<=0) // update end
     {
       end=i+1-end;
     }
-    else
+    else // skip until end
     {
       i+=end;
       end=i;
@@ -1449,8 +1798,8 @@ bool isBlockQuote(const char *data,int size,int indent)
       i++;
     }
     // last characters should be a space or newline,
-    // so a line starting with >= does not match
-    bool res = level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n');
+    // so a line starting with >= does not match, but only when level equals 1
+    bool res = (level>0 && i<size && ((data[i-1]==' ') || data[i]=='\n')) || (level > 1);
     TRACE_RESULT(res);
     return res;
   }
@@ -2181,6 +2530,15 @@ int Markdown::writeTableBlock(const char *data,int size)
       {
         continue;
       }
+      if (tableContents[row][c].colSpan)
+      {
+        int cr = c;
+        while ( cr >= 0 && tableContents[row][cr].colSpan)
+        {
+          cr--;
+        };
+        if (cr >= 0 && tableContents[row][cr].cellText == "^") continue;
+      }
       unsigned rowSpan = 1, spanRow = row+1;
       while ((spanRow < tableContents.size()) &&
              (tableContents[spanRow][c].cellText == "^"))
@@ -2337,14 +2695,17 @@ int Markdown::writeBlockQuote(const char *data,int size)
         !(j==size || data[j]=='\n')) // disqualify last > if not followed by space
     {
       indent--;
+      level--;
       j--;
     }
+    if (!level && data[j-1]!='\n') level=curLevel; // lazy
     if (level>curLevel) // quote level increased => add start markers
     {
-      for (l=curLevel;l<level;l++)
+      for (l=curLevel;l<level-1;l++)
       {
         m_out.addStr("<blockquote>");
       }
+      m_out.addStr("<blockquote>&zwj;"); // empty blockquotes are also shown
     }
     else if (level<curLevel) // quote level decreased => add end markers
     {
@@ -2840,8 +3201,8 @@ QCString Markdown::processBlocks(const QCString &s,const int indent)
   return m_out.get();
 }
 
-/** returns TRUE if input string docs starts with \@page or \@mainpage command */
-static bool isExplicitPage(const QCString &docs)
+
+static ExplicitPageResult isExplicitPage(const QCString &docs)
 {
   TRACE(docs);
   int i=0;
@@ -2858,12 +3219,20 @@ static bool isExplicitPage(const QCString &docs)
         (qstrncmp(&data[i+1],"page ",5)==0 || qstrncmp(&data[i+1],"mainpage",8)==0)
        )
     {
-      TRACE_RESULT(TRUE);
-      return TRUE;
+      if (qstrncmp(&data[i+1],"page ",5)==0)
+      {
+        TRACE_RESULT(ExplicitPageResult::explicitPage);
+        return ExplicitPageResult::explicitPage;
+      }
+      else
+      {
+        TRACE_RESULT(ExplicitPageResult::explicitMainPage);
+        return ExplicitPageResult::explicitMainPage;
+      }
     }
   }
-  TRACE_RESULT(FALSE);
-  return FALSE;
+  TRACE_RESULT(ExplicitPageResult::notExplicit);
+  return ExplicitPageResult::notExplicit;
 }
 
 QCString Markdown::extractPageTitle(QCString &docs,QCString &id, int &prepend)
@@ -3098,30 +3467,55 @@ void MarkdownOutlineParser::parseInput(const QCString &fileName,
   QCString mdfileAsMainPage = Config_getString(USE_MDFILE_AS_MAINPAGE);
   bool wasEmpty = id.isEmpty();
   if (wasEmpty) id = markdownFileNameToId(fileName);
-  if (!isExplicitPage(docs))
+  switch (isExplicitPage(docs))
   {
-    if (!mdfileAsMainPage.isEmpty() &&
-        (fn==mdfileAsMainPage || // name reference
-         FileInfo(fileName.str()).absFilePath()==
-         FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
-       )
-    {
-      docs.prepend("@anchor " + id + "\\ilinebr ");
-      docs.prepend("@mainpage "+title+"\\ilinebr ");
-    }
-    else if (id=="mainpage" || id=="index")
-    {
-      if (title.isEmpty()) title = titleFn;
-      docs.prepend("@anchor " + id + "\\ilinebr ");
-      docs.prepend("@mainpage "+title+"\\ilinebr ");
-    }
-    else
-    {
-      if (title.isEmpty()) {title = titleFn;prepend=0;}
-      if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
-      docs.prepend("@page "+id+" "+title+"\\ilinebr ");
-    }
-    for (int i = 0; i < prepend; i++) docs.prepend("\n");
+    case ExplicitPageResult::notExplicit:
+      if (!mdfileAsMainPage.isEmpty() &&
+          (fn==mdfileAsMainPage || // name reference
+           FileInfo(fileName.str()).absFilePath()==
+           FileInfo(mdfileAsMainPage.str()).absFilePath()) // file reference with path
+         )
+      {
+        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@mainpage "+title+"\\ilinebr ");
+      }
+      else if (id=="mainpage" || id=="index")
+      {
+        if (title.isEmpty()) title = titleFn;
+        docs.prepend("@anchor " + id + "\\ilinebr ");
+        docs.prepend("@mainpage "+title+"\\ilinebr ");
+      }
+      else
+      {
+        if (title.isEmpty()) {title = titleFn;prepend=0;}
+        if (!wasEmpty) docs.prepend("@anchor " +  markdownFileNameToId(fileName) + "\\ilinebr ");
+        docs.prepend("@page "+id+" "+title+"\\ilinebr ");
+      }
+      for (int i = 0; i < prepend; i++) docs.prepend("\n");
+      break;
+    case ExplicitPageResult::explicitPage:
+      {
+        // look for `@page label Title\n` and capture `label`
+        static const reg::Ex re(R"([\\@]page\s+(\a[\w-]*)\s*[^\n]*\n)");
+        reg::Match match;
+        std::string s = docs.str();
+        if (reg::search(s,match,re))
+        {
+          QCString orgLabel    = match[1].str();
+          QCString newLabel    = markdownFileNameToId(fileName);
+          size_t labelStartPos = match[1].position();
+          size_t labelEndPos   = labelStartPos+match[1].length();
+          size_t lineLen       = match.length();
+          docs = docs.left(labelStartPos)+                     // part before label
+                 newLabel+                                     // new label
+                 docs.mid(labelEndPos,lineLen-labelEndPos-1)+  // part between orgLabel and \n
+                 "\\ilinebr @anchor "+orgLabel+"\n"+           // add original anchor
+                 docs.right(docs.length()-match.length());     // add remainder of docs
+        }
+      }
+      break;
+    case ExplicitPageResult::explicitMainPage:
+      break;
   }
   int lineNr=1;
 

@@ -615,6 +615,11 @@ static ConfigImpl       *g_config;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_REENTRANT
+#include "doxygen_lex.h"
+
 static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
   // no file included
@@ -1551,7 +1556,7 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
   }
 }
 
-void Config::checkAndCorrect(bool quiet)
+void Config::checkAndCorrect(bool quiet, const bool check)
 {
   ConfigValues::instance().init();
 
@@ -1611,7 +1616,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if HTML header is valid
   QCString headerFile = Config_getString(HTML_HEADER);
-  if (!headerFile.isEmpty())
+  if (check && !headerFile.isEmpty())
   {
     FileInfo fi(headerFile.str());
     if (!fi.exists())
@@ -1624,7 +1629,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if HTML footer is valid
   QCString footerFile = Config_getString(HTML_FOOTER);
-  if (!footerFile.isEmpty())
+  if (check && !footerFile.isEmpty())
   {
     FileInfo fi(footerFile.str());
     if (!fi.exists())
@@ -1656,7 +1661,7 @@ void Config::checkAndCorrect(bool quiet)
     }
 
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
-    if (!mathJaxCodefile.isEmpty())
+    if (check && !mathJaxCodefile.isEmpty())
     {
       FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
@@ -1686,7 +1691,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if LaTeX header is valid
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
-  if (!latexHeaderFile.isEmpty())
+  if (check && !latexHeaderFile.isEmpty())
   {
     FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
@@ -1699,7 +1704,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if LaTeX footer is valid
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
-  if (!latexFooterFile.isEmpty())
+  if (check && !latexFooterFile.isEmpty())
   {
     FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
@@ -1873,22 +1878,22 @@ void Config::checkAndCorrect(bool quiet)
       FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
+        plantumlJarPath = plantumlJar;
       }
       else
       {
-        err("Jar file plantuml.jar not found at location "
+        err("Jar file 'plantuml.jar' not found at location "
                    "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
-    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    else if (pu.exists() && pu.isFile()) // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
+      // Nothing to be done
     }
     else
     {
-      err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+      err("PLANTUML_JAR_PATH is not a directory with a 'plantuml.jar' file or is not an existing file: %s\n",
                  qPrint(plantumlJarPath));
       plantumlJarPath="";
     }

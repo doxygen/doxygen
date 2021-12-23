@@ -89,7 +89,7 @@ class UsedDir
     bool hasDirectSrcDeps() const { return m_hasDirectSrcDeps; }
 
     /** Returns true iff any of the dependencies from the source file to the destination file are
-     *  directly targetting a file in the destination directory (i.e. not inherited via sub directories)
+     *  directly targeting a file in the destination directory (i.e. not inherited via sub directories)
      */
     bool hasDirectDstDeps() const { return m_hasDirectDstDeps; }
 

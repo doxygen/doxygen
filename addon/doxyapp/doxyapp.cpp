@@ -49,7 +49,7 @@ class XRefDummyCodeGenerator : public CodeOutputInterface
     // and cross-linked version of the source code, but who needs that anyway ;-)
     void codify(const QCString &) override {}
     void writeCodeLink(CodeSymbolType,const QCString &,const QCString &,const QCString &,const QCString &,const QCString &) override  {}
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int) override {}
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int,bool) override {}
     virtual void writeTooltip(const QCString &,const DocLinkInfo &,
                               const QCString &,const QCString &,const SourceLinkInfo &,
                               const SourceLinkInfo &) override {}

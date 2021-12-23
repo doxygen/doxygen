@@ -357,7 +357,8 @@ class DocStyleChange : public DocNode
                  Underline     = (1<<11),
                  Del           = (1<<12),
                  Ins           = (1<<13),
-                 S             = (1<<14)
+                 S             = (1<<14),
+                 Cite          = (1<<15)
                };
 
     DocStyleChange(DocParser &parser,DocNode *parent,uint position,Style s,const QCString &tagName,bool enable,
@@ -510,7 +511,7 @@ class DocSeparator : public DocNode
 class DocVerbatim : public DocNode
 {
   public:
-    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML };
+    enum Type { Code, HtmlOnly, ManOnly, LatexOnly, RtfOnly, XmlOnly, Verbatim, Dot, Msc, DocbookOnly, PlantUML, JavaDocCode, JavaDocLiteral };
     DocVerbatim(DocParser &parser,DocNode *parent,const QCString &context,
                 const QCString &text, Type t,bool isExample,
                 const QCString &exampleFile,bool isBlock=FALSE,const QCString &lang=QCString());
@@ -771,7 +772,7 @@ class DocXRefItem : public CompAccept<DocXRefItem>
 class DocImage : public CompAccept<DocImage>
 {
   public:
-    enum Type { Html, Latex, Rtf, DocBook };
+    enum Type { Html, Latex, Rtf, DocBook, Xml };
     DocImage(DocParser &parser,DocNode *parent,const HtmlAttribList &attribs,
              const QCString &name,Type t,const QCString &url=QCString(), bool inlineImage = TRUE);
     Kind kind() const override           { return Kind_Image; }

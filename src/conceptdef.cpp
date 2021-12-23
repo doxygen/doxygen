@@ -270,7 +270,7 @@ void ConceptDefImpl::writeTagFile(TextStream &tagFile)
 {
   tagFile << "  <compound kind=\"concept\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase())) << "</filename>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
   {

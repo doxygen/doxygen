@@ -1041,6 +1041,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
       (scope->definitionType()!=Definition::TypeClass &&
        scope->definitionType()!=Definition::TypeNamespace
       ) ||
+      (name.stripWhiteSpace().startsWith("::")) ||
       (scope->getLanguage()==SrcLangExt_Java && QCString(name).find("::")!=-1)
      )
   {
@@ -1048,7 +1049,7 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   }
   //fprintf(stderr,"------------ resolveClass(scope=%s,name=%s,mayUnlinkable=%d)\n",
   //    scope?qPrint(scope->name()):"<global>",
-  //    name,
+  //    qPrint(name),
   //    mayBeUnlinkable
   //   );
   const ClassDef *result;
@@ -1070,12 +1071,12 @@ const ClassDef *SymbolResolver::resolveClass(const Definition *scope,
   {
     if (!mayBeHidden || !result->isHidden())
     {
-      //printf("result was %s\n",result?qPrint(result->name()):"<none>");
+      //fprintf(stderr,"result was %s\n",result?qPrint(result->name()):"<none>");
       result=0; // don't link to artificial/hidden classes unless explicitly allowed
     }
   }
   //fprintf(stderr,"ResolvedClass(%s,%s)=%s\n",scope?qPrint(scope->name()):"<global>",
-  //                                  name,result?qPrint(result->name()):"<none>");
+  //                                  qPrint(name),result?qPrint(result->name()):"<none>");
   return result;
 }
 

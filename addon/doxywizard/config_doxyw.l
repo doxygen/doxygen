@@ -385,9 +385,7 @@ static void readIncludeFile(const QString &incName)
 %x      Start
 %x      SkipInvalid
 %x      GetString
-%x      GetEnum
 %x      GetStrList
-%x      GetQuotedString
 %x      Include
 
 %%

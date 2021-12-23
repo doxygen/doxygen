@@ -460,11 +460,11 @@ void DotNode::writeBox(TextStream &t,
       int anchorPos = m_url.findRev('#');
       if (anchorPos==-1)
       {
-        t << ",URL=\"" << m_url << Doxygen::htmlFileExtension << "\"";
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url) << "\"";
       }
       else
       {
-        t << ",URL=\"" << m_url.left(anchorPos) << Doxygen::htmlFileExtension
+        t << ",URL=\"" << addHtmlExtensionIfMissing(m_url.left(anchorPos))
           << m_url.right(m_url.length()-anchorPos) << "\"";
       }
     }
@@ -794,43 +794,38 @@ void DotNode::colorConnectedNodes(int curColor)
   }
 }
 
+#define DEBUG_RENUMBERING 0
+
 void DotNode::renumberNodes(int &number)
 {
-  m_number = number++;
-  for (const auto &cn : m_children)
+  if (!isRenumbered())
   {
-    if (!cn->isRenumbered())
+#if DEBUG_RENUMBERING
+    static int level = 0;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("> %s old = %d new = %d\n",qPrint(m_label),m_number,number);
+    level++;
+#endif
+    m_number = number++;
+    markRenumbered();
+    for (const auto &cn : m_children)
     {
-      cn->markRenumbered();
       cn->renumberNodes(number);
     }
+    for (const auto &pn : m_parents)
+    {
+      pn->renumberNodes(number);
+    }
+#if DEBUG_RENUMBERING
+    level--;
+    printf("%3d: ",subgraphId());
+    for (int i = 0; i < level; i++) printf("  ");
+    printf("< %s assigned = %d\n",qPrint(m_label),m_number);
+#endif
   }
 }
 
-const DotNode *DotNode::findDocNode() const
-{
-  if (!m_url.isEmpty()) return this;
-  //printf("findDocNode(): '%s'\n",qPrint(m_label));
-  for (const auto &pn : m_parents)
-  {
-    if (!pn->hasDocumentation())
-    {
-      pn->markHasDocumentation();
-      const DotNode *dn = pn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  for (const auto &cn : m_children)
-  {
-    if (!cn->hasDocumentation())
-    {
-      cn->markHasDocumentation();
-      const DotNode *dn = cn->findDocNode();
-      if (dn) return dn;
-    }
-  }
-  return 0;
-}
 
 
 

@@ -51,6 +51,7 @@ struct lexcodeYY_state
      const char   *inputString;     //!< the code fragment as text
      yy_size_t     inputPosition;   //!< read offset during parsing
      int           inputLines;      //!< number of line in the code fragment
+     QCString      fileName;
      int           yyLineNr;        //!< current line number
      bool          needsTermination;
 
@@ -105,6 +106,10 @@ static void handleCCode(yyscan_t yyscanner);
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -632,11 +637,11 @@ NONLopt [^\n]*
                           }
 <Comment>{CCS}             { yyextra->CCodeBuffer += yytext ; }
 <Comment>{CPPC}             { yyextra->CCodeBuffer += yytext ; }
-<Comment>{CMD}("code"|"verbatim")       {
+<Comment>{CMD}("code"|"verbatim"|"iliteral")       {
                             yyextra->insideCode=TRUE;
                             yyextra->CCodeBuffer += yytext ;
                           }
-<Comment>{CMD}("endcode"|"endverbatim") {
+<Comment>{CMD}("endcode"|"endverbatim"|"endiliteral") {
                             yyextra->insideCode=FALSE;
                             yyextra->CCodeBuffer += yytext ;
                           }
@@ -761,7 +766,7 @@ NONLopt [^\n]*
                             yyextra->nestedComment=FALSE;
                             BEGIN(DocCopyBlock);
                           }
-<DocBlock>{CMD}("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
+<DocBlock>{CMD}("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"manonly"|"rtfonly"|"docbookonly"|"dot"|"msc"|"code")/[^a-z_A-Z0-9\-] { // verbatim command (which could contain nested comments!)
                             yyextra->CCodeBuffer += yytext;
                             yyextra->docBlockName=&yytext[1];
                             yyextra->fencedSize=0;
@@ -820,7 +825,7 @@ NONLopt [^\n]*
                               BEGIN(DocBlock);
                             }
                           }
-<DocCopyBlock>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
+<DocCopyBlock>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endmanonly"|"endrtfonly"|"enddot"|"endmsc"|"enduml"|"endcode")/[^a-z_A-Z0-9] { // end of verbatim block
                             yyextra->CCodeBuffer += yytext;
                             if (&yytext[4]==yyextra->docBlockName)
                             {
@@ -829,11 +834,7 @@ NONLopt [^\n]*
                           }
 <DocCopyBlock>^{B}*"*"+/{BN}+ { // start of a comment line
                             yyextra->CCodeBuffer += yytext;
-                            if (yyextra->docBlockName=="verbatim")
-                            {
-                              REJECT;
-                            }
-                            else if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="verbatim") || (yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               REJECT;
                             }
@@ -843,7 +844,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/{B}+"*"{BN}* { // start of a comment line with two *'s
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               yyextra->CCodeBuffer += yytext;
                             }
@@ -853,7 +854,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/({ID}|"(") { // Assume *var or *(... is part of source code (see bug723516)
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               yyextra->CCodeBuffer += yytext;
                             }
@@ -863,7 +864,7 @@ NONLopt [^\n]*
                             }
                           }
 <DocCopyBlock>^{B}*"*"+/{BN}* { // start of a comment line with one *
-                            if (yyextra->docBlockName=="code")
+                            if ((yyextra->docBlockName=="code") || (yyextra->docBlockName=="iliteral"))
                             {
                               if (yyextra->nestedComment) // keep * it is part of the code
                               {
@@ -985,20 +986,23 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                             yyextra->currentMemberDef->getOutputFileBase(),
-                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                            yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else
       {
         yyextra->code->writeLineNumber(d->getReference(),
                             d->getOutputFileBase(),
-                            QCString(),yyextra->yyLineNr);
+                            QCString(),yyextra->yyLineNr,
+                            !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
 
@@ -1058,15 +1062,7 @@ static void codifyLines(yyscan_t yyscanner,const QCString &text)
       memcpy(tmp,sp,l);
       tmp[l]='\0';
       yyextra->code->codify(tmp);
-      if (p)
-      {
-        nextCodeLine(yyscanner);
-      }
-      else
-      {
-        endCodeLine(yyscanner);
-        done=true;
-      }
+      nextCodeLine(yyscanner);
       free(tmp);
     }
     else
@@ -1222,6 +1218,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->code = &codeOutIntf;
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
+  yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->currentFontClass = 0;
   yyextra->needsTermination = false;
 

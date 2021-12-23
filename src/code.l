@@ -110,6 +110,7 @@ struct codeYY_state
 
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   yy_size_t     yyColNr = 0;         //!< current column number
@@ -193,7 +194,7 @@ static bool isCastKeyword(const char *s);
 
 //-------------------------------------------------------------------
 #if USE_STATE2STRING
-static const char *stateToString(yyscan_t yyscanner,int state);
+static const char *stateToString(int state);
 #endif
 
 static void saveObjCContext(yyscan_t yyscanner);
@@ -269,6 +270,9 @@ static std::mutex g_usingDirectiveMutex;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -283,10 +287,10 @@ SCOPETNAME (((({ID}{TEMPLIST}?){BN}*)?{SEP}{BN}*)*)((~{BN}*)?{ID})
 SCOPEPREFIX ({ID}{TEMPLIST}?{BN}*{SEP}{BN}*)+
 KEYWORD_OBJC ("@public"|"@private"|"@protected"|"@class"|"@implementation"|"@interface"|"@end"|"@selector"|"@protocol"|"@optional"|"@required"|"@throw"|"@synthesize"|"@property")
   /* please also pay attention to skipLanguageSpecificKeyword when changing the list of keywords. */
-KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|"decltype"|{KEYWORD_OBJC}|"constexpr"|"consteval"|"constinit"|"co_await"|"co_return"|"co_yield"|"static_assert"|"noexcept"|"thread_local")
+KEYWORD ("asm"|"__assume"|"auto"|"class"|"const"|"delete"|"enum"|"explicit"|"extern"|"false"|"friend"|"gcnew"|"gcroot"|"set"|"get"|"inline"|"internal"|"mutable"|"namespace"|"new"|"null"|"nullptr"|"override"|"operator"|"pin_ptr"|"private"|"protected"|"public"|"raise"|"register"|"remove"|"self"|"sizeof"|"static"|"struct"|"__super"|"function"|"template"|"generic"|"this"|"true"|"typedef"|"typeid"|"typename"|"union"|"using"|"virtual"|"volatile"|"abstract"|"final"|"import"|"synchronized"|"transient"|"alignas"|"alignof"|"concept"|"requires"|"decltype"|{KEYWORD_OBJC}|"constexpr"|"consteval"|"constinit"|"co_await"|"co_return"|"co_yield"|"static_assert"|"noexcept"|"thread_local"|"enum"{B}+("class"|"struct"))
 FLOWKW  ("break"|"catch"|"continue"|"default"|"do"|"else"|"finally"|"return"|"switch"|"throw"|"throws"|"@catch"|"@finally")
 FLOWCONDITION  ("case"|"for"|"foreach"|"for each"|"goto"|"if"|"try"|"while"|"@try")
-TYPEKW  ("bool"|"byte"|"char"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
+TYPEKW  ("bool"|"byte"|"char"|"char8_t"|"char16_t"|"char32_t"|"double"|"float"|"int"|"long"|"object"|"short"|"signed"|"unsigned"|"void"|"wchar_t"|"size_t"|"boolean"|"id"|"SEL"|"string"|"nullptr")
 TYPEKWSL ("LocalObject"|"Object"|"Value")
 CASTKW ("const_cast"|"dynamic_cast"|"reinterpret_cast"|"static_cast")
 CHARLIT   (("'"\\[0-7]{1,3}"'")|("'"\\."'")|("'"[^' \\\n]{1,4}"'"))
@@ -349,7 +353,6 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
 %x      SkipComment
 %x      SkipCxxComment
 %x      RemoveSpecialCComment
-%x      StripSpecialCComment
 %x      Body
 %x      FuncCall
 %x      MemberCall
@@ -1535,7 +1538,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                           yyextra->code->codify(yytext);
                                           endFontClass(yyscanner);
                                         }
-<MemberCall2,FuncCall>{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
+<MemberCall2,FuncCall>("::")?{ID}(({B}*"<"[^\n\[\](){}<>]*">")?({B}*"::"{B}*{ID})?)* {
                                           if (isCastKeyword(yytext))
                                           {
                                             REJECT;
@@ -1945,7 +1948,7 @@ ENDQopt ("const"|"volatile"|"sealed"|"override")({BN}+("const"|"volatile"|"seale
                                             BEGIN( yyextra->lastCContext ) ;
                                           }
                                         }
-<SkipCPP>\n/.*\n                        {
+<SkipCPP>\n/(.|\n)                      {
                                           endFontClass(yyscanner);
                                           BEGIN( yyextra->lastSkipCppContext ) ;
                                           unput('\n');
@@ -2377,20 +2380,21 @@ static void startCodeLine(yyscan_t yyscanner)
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
                                 yyextra->currentMemberDef->anchor(),
-                                yyextra->yyLineNr);
+                                yyextra->yyLineNr,!yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
-                                QCString(),yyextra->yyLineNr);
+                                QCString(),yyextra->yyLineNr,!yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
   DBG_CTX((stderr,"startCodeLine(%d)\n",yyextra->yyLineNr));
@@ -3737,7 +3741,36 @@ static bool skipLanguageSpecificKeyword(yyscan_t yyscanner,const char *keyword)
     "gcnew", "gcroot", "generic", "get",
     "internal", "null", "pin_ptr", "raise",
     "remove", "self", "set", "transient"};
-  return yyextra->lang==SrcLangExt_Cpp && (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+  static std::unordered_set<std::string> non_java_keywords = {
+    "alignas", "alignof", "and", "and_eq", "asm",
+    "atomic_cancel", "atomic_commit", "atomic_noexcept", "auto", "bitand",
+    "bitor", "bool", "char8_t", "char16_t", "char32_t",
+    "compl", "concept", "consteval", "constexpr", "constinit",
+    "const_cast", "co_await", "co_return", "co_yield", "decltype",
+    "delete", "dynamic_cast", "explicit", "export", "extern",
+    "friend", "inline", "mutable", "namespace", "noexcept",
+    "not", "not_eq", "nullptr", "operator", "or",
+    "or_eq", "reflexpr", "register", "reinterpret_cast", "requires",
+    "signed", "sizeof", "static_assert", "static_cast", "struct",
+    "template", "thread_local", "typedef", "typeid", "typename",
+    "union", "unsigned", "using", "virtual", "wchar_t",
+    "xor", "xor_eq",
+    "override"
+  };
+  bool retval;
+  switch (yyextra->lang)
+  {
+    case SrcLangExt_Cpp:
+      retval = (non_cpp_keywords.find(keyword) != non_cpp_keywords.end());
+      break;
+    case SrcLangExt_Java:
+      retval = (non_java_keywords.find(keyword) != non_java_keywords.end());
+      break;
+    default: 
+      retval = false;
+      break;
+  }
+  return retval;
 }
 
 static bool isCastKeyword(const char *keyword)
@@ -3868,6 +3901,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
 
   yyextra->code = &od;
   yyextra->inputString   = s.data();
+  yyextra->fileName      = fd ? fd->fileName():"";
   yyextra->inputPosition = 0;
   codeYYrestart(0,yyscanner);
   yyextra->currentFontClass = 0;

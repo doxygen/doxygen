@@ -73,7 +73,7 @@ static bool convertMapFile(TextStream &t,const QCString &mapName,const QCString 
         std::unique_ptr<IDocParser> parser { createDocParser() };
         std::unique_ptr<DocRef>     df     { createRef( *parser.get(), url, context ) };
         t << externalRef(relPath,df->ref(),TRUE);
-        if (!df->file().isEmpty()) t << df->file() << Doxygen::htmlFileExtension;
+        if (!df->file().isEmpty()) t << addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty()) t << "#" << df->anchor();
       }
       else

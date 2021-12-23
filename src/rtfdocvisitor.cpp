@@ -57,21 +57,29 @@ static QCString align(DocHtmlCell *cell)
 
 RTFDocVisitor::RTFDocVisitor(TextStream &t,CodeOutputInterface &ci,
                              const QCString &langExt)
-  : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_insidePre(FALSE),
-    m_hide(FALSE), m_indentLevel(0), m_lastIsPara(FALSE), m_langExt(langExt)
+  : DocVisitor(DocVisitor_RTF), m_t(t), m_ci(ci), m_langExt(langExt)
 {
 }
 
 QCString RTFDocVisitor::getStyle(const QCString &name)
 {
-  QCString n = name + QCString().setNum(m_indentLevel);
+  QCString n = name + QCString().setNum(indentLevel());
   StyleData &sd = rtf_Style[n.str()];
   return sd.reference();
 }
 
+int RTFDocVisitor::indentLevel() const
+{
+  return std::min(m_indentLevel,maxIndentLevels-1);
+}
+
 void RTFDocVisitor::incIndentLevel()
 {
-  if (m_indentLevel<rtf_maxIndentLevels-1) m_indentLevel++;
+  m_indentLevel++;
+  if (m_indentLevel>=maxIndentLevels)
+  {
+    err("Maximum indent level (%d) exceeded while generating RTF output!\n",maxIndentLevels-1);
+  }
 }
 
 void RTFDocVisitor::decIndentLevel()
@@ -79,7 +87,7 @@ void RTFDocVisitor::decIndentLevel()
   if (m_indentLevel>0) m_indentLevel--;
 }
 
-  //--------------------------------------
+  //------------------------------------
   // visitor functions for leaf nodes
   //--------------------------------------
 
@@ -257,6 +265,9 @@ void RTFDocVisitor::visit(DocStyleChange *s)
     case DocStyleChange::Small:
       if (s->enable()) m_t << "{\\sub ";  else m_t << "} ";
       break;
+    case DocStyleChange::Cite:
+      if (s->enable()) m_t << "{\\i ";     else m_t << "} ";
+      break;
     case DocStyleChange::Preformatted:
       if (s->enable())
       {
@@ -302,6 +313,16 @@ void RTFDocVisitor::visit(DocVerbatim *s)
       getCodeParser(lang).parseCode(m_ci,s->context(),s->text(),langExt,
                                     s->isExample(),s->exampleFile());
       //m_t << "\\par\n";
+      m_t << "}\n";
+      break;
+    case DocVerbatim::JavaDocLiteral:
+      filter(s->text(),TRUE);
+      break;
+    case DocVerbatim::JavaDocCode:
+      m_t << "{\n";
+      m_t << "{\\f2 ";
+      filter(s->text(),TRUE);
+      m_t << "}";
       m_t << "}\n";
       break;
     case DocVerbatim::Verbatim:
@@ -402,7 +423,7 @@ void RTFDocVisitor::visit(DocAnchor *anc)
   QCString anchor;
   if (!anc->file().isEmpty())
   {
-    anchor+=anc->file();
+    anchor+=stripPath(anc->file());
   }
   if (!anc->file().isEmpty() && !anc->anchor().isEmpty())
   {
@@ -658,8 +679,10 @@ void RTFDocVisitor::visitPre(DocAutoList *l)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocAutoList)}\n");
   m_t << "{\n";
-  rtf_listItemInfo[m_indentLevel].isEnum = l->isEnumList();
-  rtf_listItemInfo[m_indentLevel].number = 1;
+  int level = indentLevel();
+  m_listItemInfo[level].isEnum = l->isEnumList();
+  m_listItemInfo[level].type   = '1';
+  m_listItemInfo[level].number = 1;
   m_lastIsPara=FALSE;
 }
 
@@ -670,7 +693,7 @@ void RTFDocVisitor::visitPost(DocAutoList *)
   if (!m_lastIsPara) m_t << "\\par";
   m_t << "}\n";
   m_lastIsPara=TRUE;
-  if (!m_indentLevel) m_t << "\\par\n";
+  if (indentLevel()==0) m_t << "\\par\n";
 }
 
 void RTFDocVisitor::visitPre(DocAutoListItem *)
@@ -679,11 +702,12 @@ void RTFDocVisitor::visitPre(DocAutoListItem *)
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocAutoListItem)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
   m_t << rtf_Style_Reset;
-  if (rtf_listItemInfo[m_indentLevel].isEnum)
+  int level = indentLevel();
+  if (m_listItemInfo[level].isEnum)
   {
     m_t << getStyle("ListEnum") << "\n";
-    m_t << rtf_listItemInfo[m_indentLevel].number << ".\\tab ";
-    rtf_listItemInfo[m_indentLevel].number++;
+    m_t << m_listItemInfo[level].number << ".\\tab ";
+    m_listItemInfo[level].number++;
   }
   else
   {
@@ -827,7 +851,7 @@ void RTFDocVisitor::visitPre(DocSimpleList *)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocSimpleSect)}\n");
   m_t << "{\n";
-  rtf_listItemInfo[m_indentLevel].isEnum = FALSE;
+  m_listItemInfo[indentLevel()].isEnum = FALSE;
   m_lastIsPara=FALSE;
 }
 
@@ -860,8 +884,8 @@ void RTFDocVisitor::visitPre(DocSection *s)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocSection)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
-  m_t << "{\\bkmkstart " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}\n";
-  m_t << "{\\bkmkend " << rtfFormatBmkStr(s->file()+"_"+s->anchor()) << "}\n";
+  m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(s->file())+"_"+s->anchor()) << "}\n";
+  m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(s->file())+"_"+s->anchor()) << "}\n";
   m_t << "{{" // start section
       << rtf_Style_Reset;
   QCString heading;
@@ -891,20 +915,21 @@ void RTFDocVisitor::visitPre(DocHtmlList *l)
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlList)}\n");
   m_t << "{\n";
-  rtf_listItemInfo[m_indentLevel].isEnum = l->type()==DocHtmlList::Ordered;
-  rtf_listItemInfo[m_indentLevel].number = 1;
-  rtf_listItemInfo[m_indentLevel].type   = '1';
+  int level = indentLevel();
+  m_listItemInfo[level].isEnum = l->type()==DocHtmlList::Ordered;
+  m_listItemInfo[level].number = 1;
+  m_listItemInfo[level].type   = '1';
   for (const auto &opt : l->attribs())
   {
     if (opt.name=="type")
     {
-      rtf_listItemInfo[m_indentLevel].type = opt.value[0];
+      m_listItemInfo[level].type = opt.value[0];
     }
     if (opt.name=="start")
     {
       bool ok;
       int val = opt.value.toInt(&ok);
-      if (ok) rtf_listItemInfo[m_indentLevel].number = val;
+      if (ok) m_listItemInfo[level].number = val;
     }
   }
   m_lastIsPara=FALSE;
@@ -918,38 +943,48 @@ void RTFDocVisitor::visitPost(DocHtmlList *)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPre(DocHtmlListItem *)
+void RTFDocVisitor::visitPre(DocHtmlListItem *l)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlListItem)}\n");
   m_t << "\\par\n";
   m_t << rtf_Style_Reset;
-  if (rtf_listItemInfo[m_indentLevel].isEnum)
+  int level = indentLevel();
+  if (m_listItemInfo[level].isEnum)
   {
+    for (const auto &opt : l->attribs())
+    {
+      if (opt.name=="value")
+      {
+        bool ok;
+        int val = opt.value.toInt(&ok);
+        if (ok) m_listItemInfo[level].number = val;
+      }
+    }
     m_t << getStyle("ListEnum") << "\n";
-    switch (rtf_listItemInfo[m_indentLevel].type)
+    switch (m_listItemInfo[level].type)
     {
       case '1':
-        m_t << rtf_listItemInfo[m_indentLevel].number;
+        m_t << m_listItemInfo[level].number;
         break;
       case 'a':
-        m_t << integerToAlpha(rtf_listItemInfo[m_indentLevel].number,false);
+        m_t << integerToAlpha(m_listItemInfo[level].number,false);
         break;
       case 'A':
-        m_t << integerToAlpha(rtf_listItemInfo[m_indentLevel].number);
+        m_t << integerToAlpha(m_listItemInfo[level].number);
         break;
       case 'i':
-        m_t << integerToRoman(rtf_listItemInfo[m_indentLevel].number,false);
+        m_t << integerToRoman(m_listItemInfo[level].number,false);
         break;
       case 'I':
-        m_t << integerToRoman(rtf_listItemInfo[m_indentLevel].number);
+        m_t << integerToRoman(m_listItemInfo[level].number);
         break;
       default:
-        m_t << rtf_listItemInfo[m_indentLevel].number;
+        m_t << m_listItemInfo[level].number;
         break;
     }
     m_t << ".\\tab ";
-    rtf_listItemInfo[m_indentLevel].number++;
+    m_listItemInfo[level].number++;
   }
   else
   {
@@ -1020,12 +1055,23 @@ void RTFDocVisitor::visitPost(DocHtmlDescData *)
   m_lastIsPara=TRUE;
 }
 
-void RTFDocVisitor::visitPre(DocHtmlTable *)
+void RTFDocVisitor::visitPre(DocHtmlTable *t)
 {
   if (m_hide) return;
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlTable)}\n");
   if (!m_lastIsPara) m_t << "\\par\n";
   m_lastIsPara=TRUE;
+  if (t->hasCaption())
+  {
+    DocHtmlCaption *c = t->caption();
+    m_t << "\\pard \\qc \\b";
+    if (!c->file().isEmpty())
+    {
+      m_t << "{\\bkmkstart " << rtfFormatBmkStr(stripPath(c->file())+"_"+c->anchor()) << "}\n";
+      m_t << "{\\bkmkend " << rtfFormatBmkStr(stripPath(c->file())+"_"+c->anchor()) << "}\n";
+    }
+    m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  }
 }
 
 void RTFDocVisitor::visitPost(DocHtmlTable *)
@@ -1040,8 +1086,7 @@ void RTFDocVisitor::visitPost(DocHtmlTable *)
 void RTFDocVisitor::visitPre(DocHtmlCaption *)
 {
   DBG_RTF("{\\comment RTFDocVisitor::visitPre(DocHtmlCaption)}\n");
-  m_t << "\\pard \\qc \\b";
-  m_t << "{Table \\field\\flddirty{\\*\\fldinst { SEQ Table \\\\*Arabic }}{\\fldrslt {\\noproof 1}} ";
+  // start of caption is handled in the RTFDocVisitor::visitPre(DocHtmlTable *t)
 }
 
 void RTFDocVisitor::visitPost(DocHtmlCaption *)
@@ -1624,7 +1669,7 @@ void RTFDocVisitor::visitPre(DocXRefItem *x)
     QCString refName;
     if (!x->file().isEmpty())
     {
-      refName+=x->file();
+      refName+=stripPath(x->file());
     }
     if (!x->file().isEmpty() && !x->anchor().isEmpty())
     {
@@ -1798,7 +1843,7 @@ void RTFDocVisitor::startLink(const QCString &ref,const QCString &file,const QCS
     QCString refName;
     if (!file.isEmpty())
     {
-      refName+=file;
+      refName+=stripPath(file);
     }
     if (!file.isEmpty() && !anchor.isEmpty())
     {

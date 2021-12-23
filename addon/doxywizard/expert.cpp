@@ -536,6 +536,10 @@ QWidget *Expert::createTopicWidget(QDomElement &elem)
         {
           mode = InputString::StringFile;
         }
+        else if (format==SA("filedir"))
+        {
+          mode = InputString::StringFileDir;
+        }
         else if (format==SA("image"))
         {
           mode = InputString::StringImage;

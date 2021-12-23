@@ -242,6 +242,10 @@ static const char *stateToString(int state);
 //-----------------------------------------------------------------------------
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 #define YY_USER_ACTION yyextra->colNr+=(int)yyleng;
 #define INVALID_ENTRY ((Entry*)0x8)
 //-----------------------------------------------------------------------------
@@ -327,7 +331,6 @@ SCOPENAME ({ID}{BS}"::"{BS})*
  /** comment parsing states */
 %x      DocBlock
 %x      DocBackLine
-%x      EndDoc
 
 %x      BlockData
 

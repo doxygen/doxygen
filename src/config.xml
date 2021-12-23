@@ -45,8 +45,13 @@ the <code>+=</code> operator can be used instead of <code>=</code> to append
 new values to the list. Values are sequences of non-blanks. If the value should
 contain one or more blanks it must be surrounded by quotes (<code>&quot;...&quot;</code>).
 Multiple lines can be concatenated by inserting a backslash (\c \\)
-as the last character of a line. Environment variables can be expanded
-using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+as the last character of a line.
+
+Environment variables can be expanded using the pattern <code>\$(ENV_VARIABLE_NAME)</code>.
+A small example:
+\verbatim
+DOT_PATH      = $(YOUR_DOT_PATH)
+\endverbatim
 
 You can also include part of a configuration file from another configuration
 file using a <code>\@INCLUDE</code> tag as follows:
@@ -1374,7 +1379,10 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
 <![CDATA[
  The \c WARN_LOGFILE tag can be used to specify a file to which warning
  and error messages should be written. If left blank the output is written
- to standard error (`stderr`).
+ to standard error (`stderr`). In case the file specified cannot be opened for
+ writing the warning and error messages are written to standard error. When as 
+ file `-` is specified the warning and error messages are written to standard output
+ (`stdout`).
 ]]>
       </docs>
     </option>
@@ -1512,7 +1520,7 @@ FILE_VERSION_FILTER = "cleartool desc -fmt \%Vn"
  (namespaces, classes, functions, etc.) that should be excluded from the
  output. The symbol name can be a fully qualified name, a word, or if the
  wildcard `*` is used, a substring. Examples: `ANamespace`, `AClass`,
- `AClass::ANamespace`, `ANamespace::*Test`
+ `ANamespace::AClass`, `ANamespace::*Test`
  <br>Note that the wildcards are matched against the file with absolute path,
  so to exclude all test directories use the pattern
  `*``/test/``*`
@@ -3806,11 +3814,12 @@ UML notation for the relationships.
 ]]>
       </docs>
     </option>
-    <option type='string' id='PLANTUML_JAR_PATH' format='dir' defval=''>
+    <option type='string' id='PLANTUML_JAR_PATH' format='filedir' defval=''>
       <docs>
 <![CDATA[
  When using plantuml, the \c PLANTUML_JAR_PATH tag should be used to specify the path where
- java can find the \c plantuml.jar file. If left blank, it is assumed PlantUML is not used or
+ java can find the \c plantuml.jar file or to the filename of \c jar file to be used.
+ If left blank, it is assumed PlantUML is not used or
  called during a preprocessing step. Doxygen will generate a warning when it encounters a
  \ref cmdstartuml "\\startuml" command in this case and will not generate output for the diagram.
 ]]>
@@ -3887,6 +3896,9 @@ UML notation for the relationships.
  If the \c GENERATE_LEGEND tag is set to \c YES doxygen will
  generate a legend page explaining the meaning of the various boxes and
  arrows in the dot generated graphs.
+ \note This tag requires that \ref cfg_uml_look "UML_LOOK" isn't set, i.e. the
+ doxygen internal graphical representation for inheritance and collaboration diagrams
+ is used.
 ]]>
       </docs>
     </option>

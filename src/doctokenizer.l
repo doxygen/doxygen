@@ -146,6 +146,32 @@ const char *DocTokenizer::tokToString(int token)
   return "ERROR";
 }
 
+const char *DocTokenizer::retvalToString(int retval)
+{
+  switch (retval)
+  {
+    case RetVal_OK:            return "RetVal_OK";
+    case RetVal_SimpleSec:     return "RetVal_SimpleSec";
+    case RetVal_ListItem:      return "RetVal_ListItem";
+    case RetVal_Section:       return "RetVal_Section";
+    case RetVal_Subsection:    return "RetVal_Subsection";
+    case RetVal_Subsubsection: return "RetVal_Subsubsection";
+    case RetVal_Paragraph:     return "RetVal_Paragraph";
+    case RetVal_SubParagraph:  return "RetVal_SubParagraph";
+    case RetVal_EndList:       return "RetVal_EndList";
+    case RetVal_EndPre:        return "RetVal_EndPre";
+    case RetVal_DescData:      return "RetVal_DescData";
+    case RetVal_DescTitle :    return "RetVal_DescTitle";
+    case RetVal_EndDesc:       return "RetVal_EndDesc";
+    case RetVal_TableRow:      return "RetVal_TableRow";
+    case RetVal_TableCell:     return "RetVal_TableCell";
+    case RetVal_TableHCell:    return "RetVal_TableHCell";
+    case RetVal_EndTable:      return "RetVal_EndTable";
+    case RetVal_Internal:      return "RetVal_Internal";
+  }
+  return "ERROR";
+}
+
 static int computeIndent(const char *str,size_t length)
 {
   if (str==0 || length==std::string::npos) return 0;
@@ -218,6 +244,10 @@ static QCString stripEmptyLines(const QCString &s)
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
+
 //--------------------------------------------------------------------------
 //#define REAL_YY_DECL int doctokenizerYYlex (void)
 //#define YY_DECL static int local_doctokenizer(void)
@@ -236,8 +266,8 @@ PHPTYPE   [\\:a-z_A-Z0-9\x80-\xFF\-]+
 CITESCHAR [a-z_A-Z0-9\x80-\xFF\-\?]
 CITEECHAR [a-z_A-Z0-9\x80-\xFF\-\+:\/\?]
 CITEID    {CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*|"\""{CITESCHAR}{CITEECHAR}*("."{CITESCHAR}{CITEECHAR}*)*"\""
-MAILADDR  ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
-MAILWS    [\t a-z_A-Z0-9+-]
+MAILADDR  ("mailto:")?[a-z_A-Z0-9\x80-\xFF.+-]+"@"[a-z_A-Z0-9\x80-\xFf-]+("."[a-z_A-Z0-9\x80-\xFf\-]+)+[a-z_A-Z0-9\x80-\xFf\-]+
+MAILWS    [\t a-z_A-Z0-9\x80-\xFF+-]
 MAILADDR2 {MAILWS}+{BLANK}+("at"|"AT"|"_at_"|"_AT_"){BLANK}+{MAILWS}+("dot"|"DOT"|"_dot_"|"_DOT_"){BLANK}+{MAILWS}+
 OPTSTARS  ("/""/"{BLANK}*)?"*"*{BLANK}*
 LISTITEM  {BLANK}*[-]("#")?{WS}
@@ -332,6 +362,8 @@ LINENR {BLANK}*[1-9][0-9]*
 %x St_XmlOnly
 %x St_DbOnly
 %x St_Verbatim
+%x St_ILiteral
+%x St_ILiteralOpt
 %x St_Dot
 %x St_Msc
 %x St_PlantUMLOpt
@@ -489,6 +521,10 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->indent = computeIndent(text.data(),dotPos);
                          return TK_ENDLIST;
                        }
+<St_Para>"{"{BLANK}*"@linkplain"/{WS}+ {
+                         yyextra->token->name = "javalinkplain";
+                         return TK_COMMAND_AT;
+                       }
 <St_Para>"{"{BLANK}*"@link"/{WS}+ {
                          yyextra->token->name = "javalink";
                          return TK_COMMAND_AT;
@@ -626,6 +662,10 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->name = yytext;
                          return TK_LNKWORD;
                         }
+<St_Para>{LNKWORD1}/"<tt>" { // prevent <tt> html tag to be parsed as template arguments
+                         yyextra->token->name = yytext;
+                         return TK_LNKWORD;
+                       }
 <St_Para>{LNKWORD1}/"<br>"           | // prevent <br> html tag to be parsed as template arguments
 <St_Para>{LNKWORD1}                  |
 <St_Para>{LNKWORD1}{FUNCARG}         |
@@ -815,11 +855,27 @@ LINENR {BLANK}*[1-9][0-9]*
                          yyextra->token->verb=stripEmptyLines(yyextra->token->verb);
                          return RetVal_OK;
                        }
-<St_Verbatim>[^\\@\n]+ |
-<St_Verbatim>\n        |
-<St_Verbatim>.         { /* Verbatim text */
+<St_ILiteral>{CMD}"endiliteral " { // note extra space as this is artificially added
+                         // remove spaces that have been added
+                         yyextra->token->verb=yyextra->token->verb.mid(1,yyextra->token->verb.length()-2);
+                         return RetVal_OK;
+                       }
+<St_Verbatim,St_ILiteral>[^\\@\n]+ |
+<St_Verbatim,St_ILiteral>\n        |
+<St_Verbatim,St_ILiteral>.         { /* Verbatim / javadac literal/code text */
                          lineCount(yytext,yyleng);
                          yyextra->token->verb+=yytext;
+                       }
+<St_ILiteralOpt>{BLANK}*"{"[a-zA-Z_,:0-9\. ]*"}" { // option(s) present
+                         yyextra->token->verb = QCString(yytext).stripWhiteSpace();
+                         return RetVal_OK;
+                       }
+<St_ILiteralOpt>"\\ilinebr" |
+<St_ILiteralOpt>"\n"   |
+<St_ILiteralOpt>.      {
+                         yyextra->token->sectionId = "";
+                         unput_string(yytext,yyleng);
+                         return RetVal_OK;
                        }
 <St_Dot>{CMD}"enddot"  {
                          return RetVal_OK;
@@ -1286,6 +1342,10 @@ LINENR {BLANK}*[1-9][0-9]*
                                       yyextra->endMarker="endverbatim";
                                       BEGIN(St_SecSkip);
                                     }
+<St_Sections>{CMD}"iliteral"/[^a-z_A-Z0-9]  {
+                                      yyextra->endMarker="endiliteral";
+                                      BEGIN(St_SecSkip);
+                                    }
 <St_Sections>{CMD}"dot"/[^a-z_A-Z0-9] {
                                       yyextra->endMarker="enddot";
                                       BEGIN(St_SecSkip);
@@ -1734,6 +1794,22 @@ void DocTokenizer::setStateLatexOnly()
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   yyextra->token->verb="";
   BEGIN(St_LatexOnly);
+}
+
+void DocTokenizer::setStateILiteral()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_ILiteral);
+}
+
+void DocTokenizer::setStateILiteralOpt()
+{
+  yyscan_t yyscanner = p->yyscanner;
+  struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
+  yyextra->token->verb="";
+  BEGIN(St_ILiteralOpt);
 }
 
 void DocTokenizer::setStateVerbatim()

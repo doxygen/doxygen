@@ -613,7 +613,7 @@ void GroupDefImpl::writeTagFile(TextStream &tagFile)
   tagFile << "  <compound kind=\"group\">\n";
   tagFile << "    <name>" << convertToXML(name()) << "</name>\n";
   tagFile << "    <title>" << convertToXML(m_title) << "</title>\n";
-  tagFile << "    <filename>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</filename>\n";
+  tagFile << "    <filename>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</filename>\n";
   for (const auto &lde : LayoutDocManager::instance().docEntries(LayoutDocManager::Group))
   {
     switch (lde->kind())
@@ -1303,7 +1303,7 @@ void GroupDefImpl::writeQuickMemberLinks(OutputList &ol,const MemberDef *current
         ol.writeString("<a class=\"navtab\" ");
         ol.writeString("href=\"");
         if (createSubDirs) ol.writeString("../../");
-        ol.writeString(md->getOutputFileBase()+Doxygen::htmlFileExtension+"#"+md->anchor());
+        ol.writeString(addHtmlExtensionIfMissing(md->getOutputFileBase())+"#"+md->anchor());
         ol.writeString("\">");
         ol.writeString(convertToHtml(md->localName()));
         ol.writeString("</a>");

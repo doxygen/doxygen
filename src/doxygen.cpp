@@ -3612,6 +3612,11 @@ static void buildFunctionList(const Entry *root)
                   sameRequiresClause = FALSE;
                 }
               }
+              else if (!mdTempl.empty() || !root->tArgLists.empty())
+              { // if one has template parameters and the other doesn't then that also counts as a
+                // difference
+                sameNumTemplateArgs = FALSE;
+              }
 
               bool staticsInDifferentFiles =
                 root->stat && md->isStatic() && root->fileName!=md->getDefFileName();
@@ -4101,7 +4106,7 @@ static void findUsedClassesForClass(const Entry *root,
           }
           // add any template arguments to the class
           QCString usedName = removeRedundantWhiteSpace(usedClassName+templSpec);
-          //printf("    usedName=%s\n",qPrint(usedName));
+          //printf("    usedName=%s usedClassName=%s templSpec=%s\n",qPrint(usedName),qPrint(usedClassName),qPrint(templSpec));
 
           TemplateNameMap formTemplateNames;
           if (templateNames.empty())
@@ -5114,7 +5119,7 @@ static void addMemberDocs(const Entry *root,
 {
   if (md==0) return;
   //printf("addMemberDocs: '%s'::'%s' '%s' funcDecl='%s' mSpec=%lld\n",
-  //     qPrint(root->parent()->name),qPrint(md->name()),md->argsString(),funcDecl,spec);
+  //     qPrint(root->parent()->name),qPrint(md->name()),qPrint(md->argsString()),qPrint(funcDecl),spec);
   QCString fDecl=funcDecl;
   // strip extern specifier
   fDecl.stripPrefix("extern ");
@@ -6642,7 +6647,7 @@ static void findMember(const Entry *root,
               root->fileName,root->startLine,root->startColumn,
               funcType,funcName,funcArgs,exceptions,
               root->protection,root->virt,
-              root->stat && !isMemberOf,
+              root->stat,
               isMemberOf ? Foreign : Related,
               mtype,
               (!root->tArgLists.empty() ? root->tArgLists.back() : ArgumentList()),
@@ -7711,20 +7716,30 @@ static void addToIndices()
     }
   };
 
-  auto addMemberToIndices = [addMemberToSearchIndex](const MemberDef *md)
+  auto getScope = [](const MemberDef *md)
+  {
+    const Definition *scope = 0;
+    if (md->getGroupDef())          scope = md->getGroupDef();
+    else if (md->getClassDef())     scope = md->getClassDef();
+    else if (md->getNamespaceDef()) scope = md->getNamespaceDef();
+    else if (md->getFileDef())      scope = md->getFileDef();
+    return scope;
+  };
+
+  auto addMemberToIndices = [addMemberToSearchIndex,getScope](const MemberDef *md)
   {
     if (md->isLinkableInProject())
     {
       if (!(md->isEnumerate() && md->isAnonymous()))
       {
-        Doxygen::indexList->addIndexItem(md->getOuterScope(),md);
+        Doxygen::indexList->addIndexItem(getScope(md),md);
         addMemberToSearchIndex(md);
       }
       if (md->isEnumerate())
       {
         for (const auto &fmd : md->enumFieldList())
         {
-          Doxygen::indexList->addIndexItem(md->getOuterScope(),fmd);
+          Doxygen::indexList->addIndexItem(getScope(fmd),fmd);
           addMemberToSearchIndex(fmd);
         }
       }
@@ -7818,7 +7833,7 @@ static void computeMemberRelations()
                    bmd->getLanguage()==SrcLangExt_Python || bmd->getLanguage()==SrcLangExt_Java || bmd->getLanguage()==SrcLangExt_PHP ||
                    bmcd->compoundType()==ClassDef::Interface || bmcd->compoundType()==ClassDef::Protocol
                   ) &&
-                  md->isFunction() &&
+                  (md->isFunction() || md->isCSharpProperty()) &&
                   mcd->isLinkable() &&
                   bmcd->isLinkable() &&
                   mcd->isBaseClass(bmcd,TRUE))
@@ -10463,10 +10478,10 @@ static void dumpSymbol(TextStream &t,Definition *d)
   QCString scope;
   if (d->getOuterScope() && d->getOuterScope()!=Doxygen::globalScope)
   {
-    scope = d->getOuterScope()->getOutputFileBase()+Doxygen::htmlFileExtension;
+    scope = addHtmlExtensionIfMissing(d->getOuterScope()->getOutputFileBase());
   }
   t << "REPLACE INTO symbols (symbol_id,scope_id,name,file,line) VALUES('"
-    << d->getOutputFileBase()+Doxygen::htmlFileExtension+anchor << "','"
+    << addHtmlExtensionIfMissing(d->getOutputFileBase())+anchor << "','"
     << scope << "','"
     << d->name() << "','"
     << d->getDefFileName() << "','"
@@ -10568,15 +10583,15 @@ static void usage(const QCString &name,const QCString &versionString)
 
 //----------------------------------------------------------------------------
 // read the argument of option 'c' from the comment argument list and
-// update the option index 'optind'.
+// update the option index 'optInd'.
 
-static const char *getArg(int argc,char **argv,int &optind)
+static const char *getArg(int argc,char **argv,int &optInd)
 {
   char *s=0;
-  if (qstrlen(&argv[optind][2])>0)
-    s=&argv[optind][2];
-  else if (optind+1<argc && argv[optind+1][0]!='-')
-    s=argv[++optind];
+  if (qstrlen(&argv[optInd][2])>0)
+    s=&argv[optInd][2];
+  else if (optInd+1<argc && argv[optInd+1][0]!='-')
+    s=argv[++optInd];
   return s;
 }
 
@@ -10733,7 +10748,7 @@ void readConfiguration(int argc, char **argv)
    *             Handle arguments                                           *
    **************************************************************************/
 
-  int optind=1;
+  int optInd=1;
   QCString configName;
   QCString layoutName;
   QCString debugLabel;
@@ -10745,31 +10760,31 @@ void readConfiguration(int argc, char **argv)
   bool updateConfig=FALSE;
   int retVal;
   bool quiet = false;
-  while (optind<argc && argv[optind][0]=='-' &&
-               (isalpha(argv[optind][1]) || argv[optind][1]=='?' ||
-                argv[optind][1]=='-')
+  while (optInd<argc && argv[optInd][0]=='-' &&
+               (isalpha(argv[optInd][1]) || argv[optInd][1]=='?' ||
+                argv[optInd][1]=='-')
         )
   {
-    switch(argv[optind][1])
+    switch(argv[optInd][1])
     {
       case 'g':
         genConfig=TRUE;
         break;
       case 'l':
-        if (optind+1>=argc)
+        if (optInd+1>=argc)
         {
           layoutName="DoxygenLayout.xml";
         }
         else
         {
-          layoutName=argv[optind+1];
+          layoutName=argv[optInd+1];
         }
         writeDefaultLayoutFile(layoutName);
         cleanUpDoxygen();
         exit(0);
         break;
       case 'd':
-        debugLabel=getArg(argc,argv,optind);
+        debugLabel=getArg(argc,argv,optInd);
         if (debugLabel.isEmpty())
         {
           devUsage();
@@ -10795,7 +10810,7 @@ void readConfiguration(int argc, char **argv)
         updateConfig=TRUE;
         break;
       case 'e':
-        formatName=getArg(argc,argv,optind);
+        formatName=getArg(argc,argv,optInd);
         if (formatName.isEmpty())
         {
           err("option \"-e\" is missing format specifier rtf.\n");
@@ -10804,14 +10819,14 @@ void readConfiguration(int argc, char **argv)
         }
         if (qstricmp(formatName.data(),"rtf")==0)
         {
-          if (optind+1>=argc)
+          if (optInd+1>=argc)
           {
             err("option \"-e rtf\" is missing an extensions file name\n");
             cleanUpDoxygen();
             exit(1);
           }
           std::ofstream f;
-          if (openOutputFile(argv[optind+1],f))
+          if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
             RTFGenerator::writeExtensionsFile(t);
@@ -10824,7 +10839,7 @@ void readConfiguration(int argc, char **argv)
         exit(1);
         break;
       case 'f':
-        listName=getArg(argc,argv,optind);
+        listName=getArg(argc,argv,optInd);
         if (listName.isEmpty())
         {
           err("option \"-f\" is missing list specifier.\n");
@@ -10833,14 +10848,14 @@ void readConfiguration(int argc, char **argv)
         }
         if (qstricmp(listName.data(),"emoji")==0)
         {
-          if (optind+1>=argc)
+          if (optInd+1>=argc)
           {
             err("option \"-f emoji\" is missing an output file name\n");
             cleanUpDoxygen();
             exit(1);
           }
           std::ofstream f;
-          if (openOutputFile(argv[optind+1],f))
+          if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
             EmojiEntityMapper::instance()->writeEmojiFile(t);
@@ -10853,7 +10868,7 @@ void readConfiguration(int argc, char **argv)
         exit(1);
         break;
       case 'w':
-        formatName=getArg(argc,argv,optind);
+        formatName=getArg(argc,argv,optInd);
         if (formatName.isEmpty())
         {
           err("option \"-w\" is missing format specifier rtf, html or latex\n");
@@ -10862,14 +10877,14 @@ void readConfiguration(int argc, char **argv)
         }
         if (qstricmp(formatName.data(),"rtf")==0)
         {
-          if (optind+1>=argc)
+          if (optInd+1>=argc)
           {
             err("option \"-w rtf\" is missing a style sheet file name\n");
             cleanUpDoxygen();
             exit(1);
           }
           std::ofstream f;
-          if (openOutputFile(argv[optind+1],f))
+          if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
             RTFGenerator::writeStyleSheetFile(t);
@@ -10880,18 +10895,18 @@ void readConfiguration(int argc, char **argv)
         else if (qstricmp(formatName.data(),"html")==0)
         {
           Config::init();
-          if (optind+4<argc || FileInfo("Doxyfile").exists())
+          if (optInd+4<argc || FileInfo("Doxyfile").exists())
              // explicit config file mentioned or default found on disk
           {
-            QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
+            QCString df = optInd+4<argc ? argv[optInd+4] : QCString("Doxyfile");
             if (!Config::parse(df)) // parse the config file
             {
-              err("error opening or reading configuration file %s!\n",argv[optind+4]);
+              err("error opening or reading configuration file %s!\n",argv[optInd+4]);
               cleanUpDoxygen();
               exit(1);
             }
           }
-          if (optind+3>=argc)
+          if (optInd+3>=argc)
           {
             err("option \"-w html\" does not have enough arguments\n");
             cleanUpDoxygen();
@@ -10899,24 +10914,24 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
           std::ofstream f;
-          if (openOutputFile(argv[optind+1],f))
+          if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
-            HtmlGenerator::writeHeaderFile(t, argv[optind+3]);
+            HtmlGenerator::writeHeaderFile(t, argv[optInd+3]);
           }
           f.close();
-          if (openOutputFile(argv[optind+2],f))
+          if (openOutputFile(argv[optInd+2],f))
           {
             TextStream t(&f);
             HtmlGenerator::writeFooterFile(t);
           }
           f.close();
-          if (openOutputFile(argv[optind+3],f))
+          if (openOutputFile(argv[optInd+3],f))
           {
             TextStream t(&f);
             HtmlGenerator::writeStyleSheetFile(t);
@@ -10927,17 +10942,17 @@ void readConfiguration(int argc, char **argv)
         else if (qstricmp(formatName.data(),"latex")==0)
         {
           Config::init();
-          if (optind+4<argc || FileInfo("Doxyfile").exists())
+          if (optInd+4<argc || FileInfo("Doxyfile").exists())
           {
-            QCString df = optind+4<argc ? argv[optind+4] : QCString("Doxyfile");
+            QCString df = optInd+4<argc ? argv[optInd+4] : QCString("Doxyfile");
             if (!Config::parse(df))
             {
-              err("error opening or reading configuration file %s!\n",argv[optind+4]);
+              err("error opening or reading configuration file %s!\n",argv[optInd+4]);
               cleanUpDoxygen();
               exit(1);
             }
           }
-          if (optind+3>=argc)
+          if (optInd+3>=argc)
           {
             err("option \"-w latex\" does not have enough arguments\n");
             cleanUpDoxygen();
@@ -10945,24 +10960,24 @@ void readConfiguration(int argc, char **argv)
           }
           Config::postProcess(TRUE);
           Config::updateObsolete();
-          Config::checkAndCorrect(Config_getBool(QUIET));
+          Config::checkAndCorrect(Config_getBool(QUIET), false);
 
           setTranslator(Config_getEnum(OUTPUT_LANGUAGE));
 
           std::ofstream f;
-          if (openOutputFile(argv[optind+1],f))
+          if (openOutputFile(argv[optInd+1],f))
           {
             TextStream t(&f);
             LatexGenerator::writeHeaderFile(t);
           }
           f.close();
-          if (openOutputFile(argv[optind+2],f))
+          if (openOutputFile(argv[optInd+2],f))
           {
             TextStream t(&f);
             LatexGenerator::writeFooterFile(t);
           }
           f.close();
-          if (openOutputFile(argv[optind+3],f))
+          if (openOutputFile(argv[optInd+3],f))
           {
             TextStream t(&f);
             LatexGenerator::writeStyleSheetFile(t);
@@ -10991,19 +11006,19 @@ void readConfiguration(int argc, char **argv)
         exit(0);
         break;
       case '-':
-        if (qstrcmp(&argv[optind][2],"help")==0)
+        if (qstrcmp(&argv[optInd][2],"help")==0)
         {
           usage(argv[0],versionString);
           exit(0);
         }
-        else if (qstrcmp(&argv[optind][2],"version")==0)
+        else if (qstrcmp(&argv[optInd][2],"version")==0)
         {
           version(false);
           cleanUpDoxygen();
           exit(0);
         }
-        else if ((qstrcmp(&argv[optind][2],"Version")==0) ||
-                 (qstrcmp(&argv[optind][2],"VERSION")==0))
+        else if ((qstrcmp(&argv[optInd][2],"Version")==0) ||
+                 (qstrcmp(&argv[optInd][2],"VERSION")==0))
         {
           version(true);
           cleanUpDoxygen();
@@ -11011,7 +11026,7 @@ void readConfiguration(int argc, char **argv)
         }
         else
         {
-          err("Unknown option \"-%s\"\n",&argv[optind][1]);
+          err("Unknown option \"-%s\"\n",&argv[optInd][1]);
           usage(argv[0],versionString);
           exit(1);
         }
@@ -11034,11 +11049,11 @@ void readConfiguration(int argc, char **argv)
         exit(0);
         break;
       default:
-        err("Unknown option \"-%c\"\n",argv[optind][1]);
+        err("Unknown option \"-%c\"\n",argv[optInd][1]);
         usage(argv[0],versionString);
         exit(1);
     }
-    optind++;
+    optInd++;
   }
 
   /**************************************************************************
@@ -11048,7 +11063,7 @@ void readConfiguration(int argc, char **argv)
   Config::init();
 
   FileInfo configFileInfo1("Doxyfile"),configFileInfo2("doxyfile");
-  if (optind>=argc)
+  if (optInd>=argc)
   {
     if (configFileInfo1.exists())
     {
@@ -11071,14 +11086,14 @@ void readConfiguration(int argc, char **argv)
   }
   else
   {
-    FileInfo fi(argv[optind]);
-    if (fi.exists() || qstrcmp(argv[optind],"-")==0 || genConfig)
+    FileInfo fi(argv[optInd]);
+    if (fi.exists() || qstrcmp(argv[optInd],"-")==0 || genConfig)
     {
-      configName=argv[optind];
+      configName=argv[optInd];
     }
     else
     {
-      err("configuration file %s not found!\n",argv[optind]);
+      err("configuration file %s not found!\n",argv[optInd]);
       usage(argv[0],versionString);
       exit(1);
     }
@@ -11135,7 +11150,7 @@ void checkConfiguration()
 
   Config::postProcess(FALSE);
   Config::updateObsolete();
-  Config::checkAndCorrect(Config_getBool(QUIET));
+  Config::checkAndCorrect(Config_getBool(QUIET), true);
   initWarningFormat();
 }
 
@@ -11618,6 +11633,19 @@ void parseInput()
   {
     htmlOutput = createOutputDirectory(outputDirectory,Config_getString(HTML_OUTPUT),"/html");
     Config_updateString(HTML_OUTPUT,htmlOutput);
+
+    // add HTML indexers that are enabled
+    bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
+    bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
+    bool generateQhp         = Config_getBool(GENERATE_QHP);
+    bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
+    bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
+    if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
+    if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
+    if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
+    if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
+    if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
+    Doxygen::indexList->initialize();
   }
 
   QCString docbookOutput;
@@ -12172,19 +12200,6 @@ void generateOutput()
   {
     g_outputList->add<HtmlGenerator>();
     HtmlGenerator::init();
-
-    // add HTML indexers that are enabled
-    bool generateHtmlHelp    = Config_getBool(GENERATE_HTMLHELP);
-    bool generateEclipseHelp = Config_getBool(GENERATE_ECLIPSEHELP);
-    bool generateQhp         = Config_getBool(GENERATE_QHP);
-    bool generateTreeView    = Config_getBool(GENERATE_TREEVIEW);
-    bool generateDocSet      = Config_getBool(GENERATE_DOCSET);
-    if (generateEclipseHelp) Doxygen::indexList->addIndex<EclipseHelp>();
-    if (generateHtmlHelp)    Doxygen::indexList->addIndex<HtmlHelp>();
-    if (generateQhp)         Doxygen::indexList->addIndex<Qhp>();
-    if (generateTreeView)    Doxygen::indexList->addIndex<FTVHelp>(TRUE);
-    if (generateDocSet)      Doxygen::indexList->addIndex<DocSets>();
-    Doxygen::indexList->initialize();
     HtmlGenerator::writeTabData();
   }
   if (generateLatex)
@@ -12413,7 +12428,12 @@ void generateOutput()
     g_s.end();
   }
 
-  if (g_useOutputTemplate) generateOutputViaTemplate();
+  if (g_useOutputTemplate)
+  {
+    g_s.begin("Generating output via template engine...\n");
+    generateOutputViaTemplate();
+    g_s.end();
+  }
 
   warn_flush();
 
