@@ -3348,8 +3348,8 @@ static inline void addOutput(yyscan_t yyscanner,char c)
 
 static void addIline(yyscan_t yyscanner,int lineNr)
 {
-  char cmd[20];
-  sprintf(cmd,"\\iline %d ",lineNr);
+  char cmd[30];
+  sprintf(cmd,"\\iline %d \\ilinebr ",lineNr);
   addOutput(yyscanner, cmd);
 }
 
