@@ -1267,6 +1267,7 @@ WSopt [ \t\r]*
 <SkipCond>[\\@]"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
                                           // but has to be recorded to match the endcond command
                                           startCondSection(yyscanner," ");
+                                        }
 <SkipCComment>"{"[ \t]*"@code"/[ \t\n]  {
                                           outputArray(yyscanner,"@iliteral{code}",15);
                                           yyextra->javaBlock=1;
