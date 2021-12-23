@@ -1614,6 +1614,7 @@ reparsetoken:
             {
               handleStyleLeave(parent,children,DocStyleChange::Small,tokenName);
             }
+            break;
           case HTML_CITE:
             if (!context.token->endTag)
             {
