@@ -3246,7 +3246,7 @@ static void endCondSection(yyscan_t yyscanner)
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   if (state->condStack.empty())
   {
-    warn(state->yyFileName,state->yyLineNr,"the \\endcond does not have a corresponding \\cond in this file");
+    warn(state->fileName,state->yyLineNr,"the \\endcond does not have a corresponding \\cond in this file");
     state->skip=FALSE;
   }
   else
