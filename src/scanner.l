@@ -3485,6 +3485,7 @@ NONLopt [^\n]*
                                           {
                                             yyextra->mtype = Method;
                                             yyextra->virt = Normal;
+                                            yyextra->current->groups.clear();
                                             initEntry(yyscanner);
                                           }
                                         }
