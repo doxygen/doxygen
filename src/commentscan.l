@@ -1947,7 +1947,6 @@ STopt  [^\n@\\]*
 <CopyDoc><<EOF>>                        |
 <CopyDoc>{DOCNL}                        {
                                           if (*yytext=='\n') yyextra->lineNr++;
-                                          addOutput(yyscanner,'\n');
                                           setOutput(yyscanner,OutputDoc);
                                           addOutput(yyscanner," \\copydetails ");
                                           addOutput(yyscanner,yyextra->copyDocArg);
