@@ -338,13 +338,20 @@ void HtmlDocVisitor::visit(DocEmoji *s)
 void HtmlDocVisitor::writeObfuscatedMailAddress(const QCString &url)
 {
   m_t << "<a href=\"#\" onclick=\"location.href='mai'+'lto:'";
-  uint i;
-  int size=3;
-  for (i=0;i<url.length();)
+  if (!url.isEmpty())
   {
-    m_t << "+'" << url.mid(i,size) << "'";
-    i+=size;
-    if (size==3) size=2; else size=3;
+    const char *p = url.data();
+    uint size=3;
+    while (*p)
+    {
+      m_t << "+'";
+      for (uint j=0;j<size && *p;j++)
+      {
+        p = writeUTF8Char(m_t,p);
+      }
+      m_t << "'";
+      if (size==3) size=2; else size=3;
+    }
   }
   m_t << "; return false;\">";
 }
@@ -355,13 +362,18 @@ void HtmlDocVisitor::visit(DocURL *u)
   if (u->isEmail()) // mail address
   {
     QCString url = u->url();
+    // obfuscate the mail address link
     writeObfuscatedMailAddress(url);
-    uint size=5,i;
-    for (i=0;i<url.length();)
+    const char *p = url.data();
+    // also obfuscate the address as shown on the web page
+    uint size=5;
+    while (*p)
     {
-      filter(url.mid(i,size));
-      if (i<url.length()-size) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
-      i+=size;
+      for (uint j=0;j<size && *p;j++)
+      {
+        p = writeUTF8Char(m_t,p);
+      }
+      if (*p) m_t << "<span style=\"display: none;\">.nosp@m.</span>";
       if (size==5) size=4; else size=5;
     }
     m_t << "</a>";
