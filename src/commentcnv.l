@@ -132,7 +132,7 @@ static inline const char *getLexerFILE() {return __FILE__;}
 
 %}
 
-MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 
 %option noyywrap
 
@@ -413,8 +413,8 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
-<CComment,CNComment,ReadLine>{MAILADR}      |
-<CComment,CNComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
+<CComment,CNComment,ReadLine>{MAILADDR}       |
+<CComment,CNComment,ReadLine>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
 <CComment>"{"[ \t]*"@code"/[ \t\n] {
