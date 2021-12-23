@@ -517,6 +517,37 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     return endOfLabel(data_,offset_,size_);
   };
 
+  static const auto endOfFunc = [](const char *data_,int offset_,int size_) -> int
+  {
+    if (offset_<size_ && data_[offset_]==' ') // we expect a space before the name
+    {
+      char c;
+      offset_++;
+      // skip over spaces
+      while (offset_<size_ && data_[offset_]==' ') offset_++;
+      // skip over name
+      while (offset_<size_ && (c=data_[offset_])!=' ' && c!='\n' && c!='(') offset_++;
+      if (c=='(') // find the end of the function
+      {
+        int count=1;
+        offset_++;
+        while (offset_<size_ && (c=data_[offset_++]))
+        {
+          if      (c=='(') count++;
+          else if (c==')') count--;
+          if (count==0) return offset_;
+        }
+      }
+      return offset_;
+    }
+    return 0;
+  };
+
+  static const auto endOfGuard = [](const char *data_,int offset_,int size_) -> int
+  {
+    return endOfFunc(data_,offset_,size_);
+  };
+
   static const std::unordered_map<std::string,EndCmdFunc> cmdNames =
   {
     { "a",              endOfLabel },
@@ -532,7 +563,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "copybrief",      endOfLine  },
     { "copydetails",    endOfLine  },
     { "copydoc",        endOfLine  },
-    { "def",            endOfLine  },
+    { "def",            endOfFunc  },
     { "defgroup",       endOfLabel },
     { "diafile",        endOfLine  },
     { "dir",            endOfLine  },
@@ -541,7 +572,7 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "dotfile",        endOfLine  },
     { "dotfile",        endOfLine  },
     { "e",              endOfLabel },
-    { "elseif",         endOfLine  },
+    { "elseif",         endOfGuard },
     { "em",             endOfLabel },
     { "emoji",          endOfLabel },
     { "enum",           endOfLabel },
@@ -549,12 +580,12 @@ int Markdown::isSpecialCommand(const char *data,int offset,int size)
     { "exception",      endOfLine  },
     { "extends",        endOfLabel },
     { "file",           endOfLine  },
-    { "fn",             endOfLine  },
+    { "fn",             endOfFunc  },
     { "headerfile",     endOfLine  },
     { "htmlinclude",    endOfLine  },
     { "idlexcept",      endOfLine  },
-    { "if",             endOfLine  },
-    { "ifnot",          endOfLine  },
+    { "if",             endOfGuard },
+    { "ifnot",          endOfGuard },
     { "image",          endOfLine  },
     { "implements",     endOfLine  },
     { "include",        endOfLine  },
