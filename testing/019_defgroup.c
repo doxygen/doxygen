@@ -2,6 +2,10 @@
 // check: group__g1.xml
 // check: group__g2.xml
 // check: group__g3.xml
+// check: group___a.xml
+// check: group___b.xml
+// check: group___c.xml
+// check: group___d.xml
 
 /** \defgroup g1 First Group
  *  Text for first group.
@@ -45,11 +49,6 @@ void func_g3();
 void func_g3_add();
 
 /** \} */
-
-// check: group___a.xml
-// check: group___b.xml
-// check: group___c.xml
-// check: group___d.xml
 
 /**
   @defgroup A A

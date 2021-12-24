@@ -3444,11 +3444,10 @@ NONLopt [^\n]*
                                           }
                                           bool stat = yyextra->current->stat;
                                           Protection prot = yyextra->current->protection;
-                                          if (yyextra->current->section==Entry::CONCEPT_SEC) // C++20 concept
+                                          bool isConcept = yyextra->current->section==Entry::CONCEPT_SEC;
+                                          if (isConcept) // C++20 concept
                                           {
-                                            auto groups = yyextra->current->groups;
                                             yyextra->current_root->moveToSubEntryAndRefresh( yyextra->current ) ;
-                                            yyextra->current->groups = groups;
                                             initEntry(yyscanner);
                                           }
                                           else if (!yyextra->current->name.isEmpty() && yyextra->current->section!=Entry::ENUM_SEC)

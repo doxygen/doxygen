@@ -1244,6 +1244,7 @@ static void addConceptToContext(const Entry *root)
       cd->setLanguage(root->lang);
       cd->setId(root->id);
       cd->setHidden(root->hidden);
+      cd->setGroupId(root->mGrpId);
       if (tArgList)
       {
         cd->setTemplateArguments(*tArgList);
@@ -1305,6 +1306,37 @@ static void buildConceptDocList(const Entry *root)
     addConceptToContext(root);
   }
   for (const auto &e : root->children()) buildConceptDocList(e.get());
+}
+
+// This routine is to allow @ingroup X @{ concept A; concept B; @} to work
+// (same also works for variable and functions because of logic in MemberGroup::insertMember)
+static void distributeConceptGroups()
+{
+  for (const auto &cd : *Doxygen::conceptLinkedMap)
+  {
+    if (cd->groupId()!=DOX_NOGROUP)
+    {
+      for (const auto &ocd : *Doxygen::conceptLinkedMap)
+      {
+        if (cd!=ocd && cd->groupId()==ocd->groupId() &&
+            !cd->partOfGroups().empty() && ocd->partOfGroups().empty())
+        {
+          ConceptDefMutable *ocdm = toConceptDefMutable(ocd.get());
+          if (ocdm)
+          {
+            for (const auto &gd : cd->partOfGroups())
+            {
+              if (gd)
+              {
+                ocdm->makePartOfGroup(gd);
+                const_cast<GroupDef*>(gd)->addConcept(ocd.get());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------
@@ -11870,6 +11902,7 @@ void parseInput()
 
   g_s.begin("Associating documentation with concepts...\n");
   buildConceptDocList(root.get());
+  distributeConceptGroups();
   g_s.end();
 
   g_s.begin("Building example list...\n");
