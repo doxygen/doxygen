@@ -308,15 +308,7 @@ static void addRelatedPage(Entry *root)
     if (!g.groupname.isEmpty() && (gd=Doxygen::groupLinkedMap->find(g.groupname))) break;
   }
   //printf("---> addRelatedPage() %s gd=%p\n",qPrint(root->name),gd);
-  QCString doc;
-  if (root->brief.isEmpty())
-  {
-    doc=root->doc+root->inbodyDocs;
-  }
-  else
-  {
-    doc=root->brief+"\n\n"+root->doc+root->inbodyDocs;
-  }
+  QCString doc=root->doc+root->inbodyDocs;
 
   PageDef *pd = addRelatedPage(root->name,root->args,doc,
       root->docFile,
@@ -9363,6 +9355,7 @@ static void generateExampleDocs()
                          pd->docLine(),                            // startLine
                          pd.get(),                                 // context
                          0,                                        // memberDef
+                         (pd->briefDescription().isEmpty()?"":pd->briefDescription()+"\n\n")+
                          pd->documentation()+"\n\n\\include"+lineNoOptStr+" "+pd->name(), // docs
                          TRUE,                                     // index words
                          TRUE,                                     // is example
