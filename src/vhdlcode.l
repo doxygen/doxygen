@@ -80,7 +80,6 @@ struct vhdlcodeYY_state
   bool          isComponent = false;
   bool          isPackageBody = false;
   bool          isProto = false;
-  bool          startCode = false;
   QCString      prevString;
   QCString      currClass;
   std::unordered_set<std::string> vhdlKeyDict;
@@ -92,9 +91,10 @@ struct vhdlcodeYY_state
   CodeOutputInterface * code = 0;
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
+  QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  bool          needsTermination = false;
+  bool          insideCodeLine = false;
   const Definition *searchCtx = 0;
 
   bool          exampleBlock = false;
@@ -122,7 +122,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static bool checkVhdlString(yyscan_t yyscanner,QCString &name);
 static void addToSearchIndex(yyscan_t yyscanner,const QCString &text);
-static void startCodeLine(yyscan_t yyscanner);
+static void startCodeLineLine(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
 static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &curr_class=QCString(),bool classLink=false);
@@ -148,6 +148,10 @@ static const char *stateToString(int state);
 
 #undef        YY_INPUT
 #define       YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
+
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
@@ -206,13 +210,9 @@ XILINX      "INST"|"NET"|"PIN"|"BLKNM"|"BUFG"|"COLLAPSE"|"CPLD"|"COMPGRP"|"CONFI
 %x ParseComponent
 %x ParsePackage
 %x ParseProcessProto
-%x ClassName
-%x PackageName
-%x ClassVar
 %x ClassesName
 %x Map
 %x End
-%x Body
 
 %%
 
@@ -1004,7 +1004,7 @@ static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
  * is true. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
  */
-static void startCodeLine(yyscan_t yyscanner)
+static void startCodeLineLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //if (yyextra->currentFontClass) { yyextra->code->endFontClass(); }
@@ -1016,7 +1016,7 @@ static void startCodeLine(yyscan_t yyscanner)
     //  if ((yyextra->yyLineNr % 500) == 0)
     //         fprintf(stderr,"\n starting Line %d:",yyextra->yyLineNr);
     const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
-    //printf("startCodeLine %d d=%s\n", yyextra->yyLineNr,qPrint(d ? d->name()) : "<null>");
+    //printf("startCodeLineLine %d d=%s\n", yyextra->yyLineNr,qPrint(d ? d->name()) : "<null>");
     if (!yyextra->includeCodeFragment && d)
     {
       yyextra->currentDefinition = d;
@@ -1038,24 +1038,27 @@ static void startCodeLine(yyscan_t yyscanner)
       {
         yyextra->code->writeLineNumber(yyextra->currentMemberDef->getReference(),
                                 yyextra->currentMemberDef->getOutputFileBase(),
-                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr);
+                                yyextra->currentMemberDef->anchor(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
       else if (d->isLinkableInProject())
       {
         yyextra->code->writeLineNumber(d->getReference(),
                                 d->getOutputFileBase(),
-                                QCString(),yyextra->yyLineNr);
+                                QCString(),yyextra->yyLineNr,
+                                !yyextra->includeCodeFragment);
         setCurrentDoc(yyscanner,lineAnchor);
       }
     }
     else
     {
-      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr);
+      yyextra->code->writeLineNumber(QCString(),QCString(),QCString(),yyextra->yyLineNr,
+                                     !yyextra->includeCodeFragment);
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
-  yyextra->startCode=true;
+  yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(yyextra->currentFontClass);
@@ -1067,12 +1070,13 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
-  if (yyextra->startCode)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);    // </div>
   }
@@ -1080,7 +1084,7 @@ static void nextCodeLine(yyscan_t yyscanner)
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
-    startCodeLine(yyscanner);  //<div>
+    startCodeLineLine(yyscanner);  //<div>
   }
 }
 
@@ -1390,8 +1394,7 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=true;
+    count++;
   }
   return count;
 }
@@ -1598,6 +1601,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   //printf("***parseCode() exBlock=%d exName=%s fd=%p\n",exBlock,exName,fd);
   if (s.isEmpty()) return;
   printlex(yy_flex_debug, true, __FILE__, fd ? qPrint(fd->fileName()): NULL);
+  yyextra->fileName      = fd ? fd->fileName():"";
   if (memberDef)
   {
     const ClassDef *dd=memberDef->getClassDef();
@@ -1608,7 +1612,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   yyextra->inputString   = s.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = false;
+  yyextra->insideCodeLine = false;
   yyextra->searchCtx = searchCtx;
 
   if (startLine!=-1)
@@ -1645,7 +1649,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }
   yyextra->includeCodeFragment = inlineFragment;
-  startCodeLine(yyscanner);
+  startCodeLineLine(yyscanner);
   if (!yyextra->lexInit)
   {
     VhdlDocGen::init();
@@ -1655,7 +1659,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
   vhdlcodeYYrestart( 0, yyscanner );
   BEGIN( Bases );
   vhdlcodeYYlex(yyscanner);
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }
@@ -1665,7 +1669,6 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
     delete yyextra->sourceFileDef;
     yyextra->sourceFileDef=0;
   }
-  yyextra->startCode=false;
 
   // write the tooltips
   yyextra->tooltipManager.writeTooltips(od);

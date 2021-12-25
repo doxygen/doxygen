@@ -163,6 +163,7 @@ class MemberDefImpl : public DefinitionMixin<MemberDefMutable>
     virtual bool isTemplateSpecialization() const;
     virtual bool isObjCMethod() const;
     virtual bool isObjCProperty() const;
+    virtual bool isCSharpProperty() const;
     virtual bool isConstructor() const;
     virtual bool isDestructor() const;
     virtual bool hasOneLineInitializer() const;
@@ -601,6 +602,8 @@ class MemberDefAliasImpl : public DefinitionAliasMixin<MemberDef>
     { return getMdAlias()->isObjCMethod(); }
     virtual bool isObjCProperty() const
     { return getMdAlias()->isObjCProperty(); }
+    virtual bool isCSharpProperty() const
+    { return getMdAlias()->isCSharpProperty(); }
     virtual bool isConstructor() const
     { return getMdAlias()->isConstructor(); }
     virtual bool isDestructor() const
@@ -2402,8 +2405,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
          if (!first)
          {
            ol.docify(", ");
-           first=false;
          }
+         first=false;
          ol.docify(s.c_str());
       }
       ol.docify("]");
@@ -2425,8 +2428,8 @@ void MemberDefImpl::writeDeclaration(OutputList &ol,
         if (!first)
         {
           ol.docify(", ");
-          first=false;
         }
+        first=false;
         ol.docify(s.c_str());
       }
       ol.docify("]");
@@ -3919,7 +3922,6 @@ static QCString stripTrailingReturn(const QCString &trailRet)
 
 void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturnCommand) const
 {
-  if (!Config_getBool(WARN_NO_PARAMDOC)) return;
   QCString returnType = typeString();
   bool isPython = getLanguage()==SrcLangExt_Python;
   bool isFortran = getLanguage()==SrcLangExt_Fortran;
@@ -4003,6 +4005,7 @@ void MemberDefImpl::detectUndocumentedParams(bool hasParamCommand,bool hasReturn
             )
           )
   {
+
     warn_doc_error(getDefFileName(),getDefLine(),"documented empty return type of %s",
                           qPrint(qualifiedName()));
   }
@@ -4368,7 +4371,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
     tagFile << "      <type>" << convertToXML(typeString()) << "</type>\n";
   }
   tagFile << "      <name>" << convertToXML(name()) << "</name>\n";
-  tagFile << "      <anchorfile>" << convertToXML(getOutputFileBase()) << Doxygen::htmlFileExtension << "</anchorfile>\n";
+  tagFile << "      <anchorfile>" << addHtmlExtensionIfMissing(getOutputFileBase()) << "</anchorfile>\n";
   tagFile << "      <anchor>" << convertToXML(anchor()) << "</anchor>\n";
   QCString idStr = id();
   if (!idStr.isEmpty())
@@ -4382,7 +4385,7 @@ void MemberDefImpl::writeTagFile(TextStream &tagFile) const
     {
       if (!fmd->isReference())
       {
-        tagFile << "      <enumvalue file=\"" << convertToXML(getOutputFileBase()+Doxygen::htmlFileExtension);
+        tagFile << "      <enumvalue file=\"" << convertToXML(addHtmlExtensionIfMissing(getOutputFileBase()));
         tagFile << "\" anchor=\"" << convertToXML(fmd->anchor());
         idStr = fmd->id();
         if (!idStr.isEmpty())
@@ -4700,6 +4703,12 @@ bool MemberDefImpl::isObjCMethod() const
 bool MemberDefImpl::isObjCProperty() const
 {
   if (getClassDef() && getClassDef()->isObjectiveC() && isProperty()) return TRUE;
+  return FALSE;
+}
+
+bool MemberDefImpl::isCSharpProperty() const
+{
+  if (getClassDef() && getClassDef()->isCSharp() && isProperty()) return TRUE;
   return FALSE;
 }
 
@@ -5827,9 +5836,12 @@ void combineDeclarationAndDefinition(MemberDefMutable *mdec,MemberDefMutable *md
     //    mdef, mdef ? qPrint(mdef->name()) : "",
     //    mdec, mdec ? qPrint(mdec->name()) : "");
 
+    bool sameNumTemplateArgs = mdef->templateArguments().size()==mdec->templateArguments().size();
+
     ArgumentList &mdefAl = const_cast<ArgumentList&>(mdef->argumentList());
     ArgumentList &mdecAl = const_cast<ArgumentList&>(mdec->argumentList());
-    if (matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
+    if (sameNumTemplateArgs &&
+        matchArguments2(mdef->getOuterScope(),mdef->getFileDef(),&mdefAl,
                         mdec->getOuterScope(),mdec->getFileDef(),&mdecAl,
                         TRUE
                        )

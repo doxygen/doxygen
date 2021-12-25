@@ -889,12 +889,12 @@ void linkifyText(const TextGeneratorIntf &out, const Definition *scope,
     bool keepSpaces,int indentLevel)
 {
   if (text.isEmpty()) return;
-  //printf("linkify='%s'\n",text);
+  //printf("linkify='%s'\n",qPrint(text));
   std::string txtStr=text.str();
   size_t strLen = txtStr.length();
   if (strLen==0) return;
 
-  static const reg::Ex regExp(R"(\a[\w~!\\.:$]*)");
+  static const reg::Ex regExp(R"((::)?\a[\w~!\\.:$]*)");
   reg::Iterator it(txtStr,regExp);
   reg::Iterator end;
 
@@ -1204,14 +1204,6 @@ QCString tempArgListToString(const ArgumentList &al,SrcLangExt lang,bool include
       if (!first) result+=", ";
       if (!a.name.isEmpty()) // add template argument name
       {
-        if (a.type.left(4)=="out") // C# covariance
-        {
-          result+="out ";
-        }
-        else if (a.type.left(3)=="in") // C# contravariance
-        {
-          result+="in ";
-        }
         if (lang==SrcLangExt_Java || lang==SrcLangExt_CSharp)
         {
           result+=a.type+" ";
@@ -4004,7 +3996,7 @@ QCString convertToXML(const QCString &s, bool keepEntities)
 }
 
 /*! Converts a string to an DocBook-encoded string */
-QCString convertToDocBook(const QCString &s)
+QCString convertToDocBook(const QCString &s, const bool retainNewline)
 {
   if (s.isEmpty()) return s;
   GrowBuf growBuf;
@@ -4016,6 +4008,7 @@ QCString convertToDocBook(const QCString &s)
   {
     switch (c)
     {
+      case '\n': if (retainNewline) growBuf.addStr("<literallayout>&#160;&#xa;</literallayout>"); growBuf.addChar(c);   break;
       case '<':  growBuf.addStr("&lt;");   break;
       case '>':  growBuf.addStr("&gt;");   break;
       case '&':  // possibility to have a special symbol
@@ -4407,13 +4400,13 @@ int extractClassNameFromType(const QCString &type,int &pos,QCString &name,QCStri
         pos=i+l;
       }
       //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=TRUE i=%d\n",
-      //    type,pos,qPrint(name),qPrint(templSpec),i);
+      //    qPrint(type),pos,qPrint(name),qPrint(templSpec),i);
       return i;
     }
   }
   pos = typeLen;
   //printf("extractClassNameFromType([in] type=%s,[out] pos=%d,[out] name=%s,[out] templ=%s)=FALSE\n",
-  //       type,pos,qPrint(name),qPrint(templSpec));
+  //       qPrint(type),pos,qPrint(name),qPrint(templSpec));
   return -1;
 }
 
@@ -4428,7 +4421,7 @@ QCString normalizeNonTemplateArgumentsInString(
   p++;
   QCString result = name.left(p);
 
-  std::string s = result.mid(p).str();
+  std::string s = name.mid(p).str();
   static const reg::Ex re(R"([\a:][\w:]*)");
   reg::Iterator it(s,re);
   reg::Iterator end;
@@ -4488,7 +4481,7 @@ QCString substituteTemplateArgumentsInString(
     const std::unique_ptr<ArgumentList> &actualArgs)
 {
   //printf("substituteTemplateArgumentsInString(name=%s formal=%s actualArg=%s)\n",
-  //    qPrint(name),qPrint(argListToString(formalArgs)),qPrint(argListToString(actualArgs)));
+  //    qPrint(nm),qPrint(argListToString(formalArgs)),actualArgs ? qPrint(argListToString(*actualArgs)): "");
   if (formalArgs.empty()) return nm;
   QCString result;
 
@@ -4793,10 +4786,6 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
     pd->setRefItems(sli);
     newPage = false;
   }
-  else if (pd) // we are from a tag file
-  {
-    Doxygen::pageLinkedMap->del(name);
-  }
 
   if (newPage) // new page
   {
@@ -4807,9 +4796,21 @@ PageDef *addRelatedPage(const QCString &name,const QCString &ptitle,
       baseName=baseName.left(baseName.length()-Doxygen::htmlFileExtension.length());
 
     //printf("Appending page '%s'\n",qPrint(baseName));
-    pd = Doxygen::pageLinkedMap->add(baseName,
-        std::unique_ptr<PageDef>(
-           createPageDef(fileName,docLine,baseName,doc,title)));
+    if (pd) // replace existing page
+    {
+      pd->setDocumentation(doc,fileName,docLine);
+      pd->setFileName(::convertNameToFile(baseName,FALSE,TRUE));
+      pd->setShowLineNo(FALSE);
+      pd->setNestingLevel(0);
+      pd->setPageScope(0);
+      pd->setTitle(title);
+    }
+    else // newPage
+    {
+      pd = Doxygen::pageLinkedMap->add(baseName,
+          std::unique_ptr<PageDef>(
+             createPageDef(fileName,docLine,baseName,doc,title)));
+    }
     pd->setBodySegment(startLine,startLine,-1);
 
     pd->setRefItems(sli);
@@ -4932,7 +4933,7 @@ void addGroupListToTitle(OutputList &ol,const Definition *d)
 }
 
 void filterLatexString(TextStream &t,const QCString &str,
-    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces)
+    bool insideTabbing,bool insidePre,bool insideItem,bool insideTable,bool keepSpaces, const bool retainNewline)
 {
   if (str.isEmpty()) return;
   //if (strlen(str)<2) stackTrace();
@@ -4971,6 +4972,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '-':  t << "-\\/"; break;
         case '^':  insideTable ? t << "\\string^" : t << (char)c;    break;
         case '~':  t << "\\string~";    break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
+                   break;
         case ' ':  if (keepSpaces) t << "~"; else t << ' ';
                    break;
         default:
@@ -5057,6 +5060,8 @@ void filterLatexString(TextStream &t,const QCString &str,
         case '`':  t << "\\`{}";
                    break;
         case '\'': t << "\\textquotesingle{}";
+                   break;
+        case '\n':  if (retainNewline) t << "\\newline"; else t << ' ';
                    break;
         case ' ':  if (keepSpaces) { if (insideTabbing) t << "\\>"; else t << '~'; } else t << ' ';
                    break;

@@ -262,7 +262,7 @@ dl.el {
 }
 
 ul {
-  overflow: hidden; /*Fixed: list item bullets overlap floating elements*/
+  overflow: visible;
 }
 
 #side-nav ul {
@@ -1581,7 +1581,7 @@ tr.heading h2 {
 
 #powerTip {
 	cursor: default;
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 	background-color: white;
 	border: 1px solid gray;
 	border-radius: 4px 4px 4px 4px;
@@ -1818,6 +1818,10 @@ table.DocNodeLTR {
    width: auto;
    margin-right: auto;
    margin-left: 0;
+}
+
+code.JavaDocCode
+  direction:ltr;
 }
 
 tt, code, kbd, samp

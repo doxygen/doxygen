@@ -127,7 +127,7 @@ class RTFGenerator : public OutputGenerator
     void writeAnchor(const QCString &fileName,const QCString &name);
     void startCodeFragment(const QCString &style);
     void endCodeFragment(const QCString &style);
-    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l);
+    void writeLineNumber(const QCString &,const QCString &,const QCString &,int l, bool);
     void startCodeLine(bool);
     void endCodeLine();
     void startEmphasis() { m_t << "{\\i ";  }
@@ -273,8 +273,6 @@ class RTFGenerator : public OutputGenerator
     QCString rtf_LCList_DepthStyle();
     QCString rtf_DList_DepthStyle();
     QCString rtf_Code_DepthStyle();
-    void incrementIndentLevel();
-    void decrementIndentLevel();
     void beginRTFDocument();
     void beginRTFChapter();
     void beginRTFSection();
@@ -284,14 +282,28 @@ class RTFGenerator : public OutputGenerator
     void rtfwriteRuler_thin();
     void writeRTFReference(const QCString &label);
 
+    int indentLevel() const;
+    void incIndentLevel();
+    void decIndentLevel();
+
     QCString m_sourceFileName;
     int  m_col = 0;
     bool m_bstartedBody = false;  // has startbody been called yet?
-    int  m_listLevel = 0; // // RTF does not really have a additive indent...manually set list level.
     bool m_omitParagraph = false; // should a the next paragraph command be ignored?
     int  m_numCols = 0; // number of columns in a table
     QCString m_relPath;
     bool m_doxyCodeLineOpen = false;
+
+    // RTF does not really have a additive indent...manually set list level.
+    static const int maxIndentLevels = 13;
+    int m_indentLevel = 0;
+    struct RTFListItemInfo
+    {
+      bool isEnum = false;
+      int number = 1;
+      char type = '1';
+    };
+    RTFListItemInfo m_listItemInfo[maxIndentLevels];
 };
 
 #endif

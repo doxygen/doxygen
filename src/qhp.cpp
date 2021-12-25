@@ -38,7 +38,7 @@ static QCString makeFileName(const QCString & withoutExtension)
     }
     else // add specified HTML extension
     {
-      result+=Doxygen::htmlFileExtension;
+      addHtmlExtensionIfMissing(result);
     }
   }
   return result;
@@ -227,7 +227,7 @@ void Qhp::addIndexItem(const Definition *context,const MemberDef *md,
   //printf("addIndexItem(%s %s %s\n",
   //       context?context->name().data():"<none>",
   //       md?md->name().data():"<none>",
-  //       word);
+  //       qPrint(word));
 
   if (md) // member
   {

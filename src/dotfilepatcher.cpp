@@ -153,7 +153,7 @@ static QCString replaceRef(const QCString &buf,const QCString &relPath,
         std::unique_ptr<DocRef>     df     { createRef( *parser.get(), link.mid(5), context ) };
         result+=externalRef(relPath,df->ref(),TRUE);
         if (!df->file().isEmpty())
-          result += df->file() + Doxygen::htmlFileExtension;
+          result += addHtmlExtensionIfMissing(df->file());
         if (!df->anchor().isEmpty())
           result += "#" + df->anchor();
         result += "\"";

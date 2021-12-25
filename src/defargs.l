@@ -115,6 +115,11 @@ static bool nameIsActuallyPartOfType(QCString &name);
 #undef	YY_INPUT
 #define	YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_INPUT_FILENAME
+#include "doxygen_lex.h"
+
 %}
 
 B       [ \t]

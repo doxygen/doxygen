@@ -615,6 +615,11 @@ static ConfigImpl       *g_config;
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#define LEX_NO_REENTRANT
+#include "doxygen_lex.h"
+
 static yy_size_t yyread(char *buf,yy_size_t max_size)
 {
   // no file included
@@ -1551,7 +1556,7 @@ static void checkList(const StringVector &list,const char *name, bool equalRequi
   }
 }
 
-void Config::checkAndCorrect(bool quiet)
+void Config::checkAndCorrect(bool quiet, const bool check)
 {
   ConfigValues::instance().init();
 
@@ -1559,32 +1564,17 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // check WARN_FORMAT
   QCString warnFormat = Config_getString(WARN_FORMAT);
-  if (warnFormat.stripWhiteSpace().isEmpty())
+  if (warnFormat.find("$file")==-1)
   {
-    Config_updateString(WARN_FORMAT,"$file:$line $text");
+    warn_uncond("warning format does not contain a $file tag!\n");
   }
-  else
+  if (warnFormat.find("$line")==-1)
   {
-    if (warnFormat.find("$file")==-1)
-    {
-      warn_uncond("warning format does not contain a $file tag!\n");
-    }
-    if (warnFormat.find("$line")==-1)
-    {
-      warn_uncond("warning format does not contain a $line tag!\n");
-    }
-    if (warnFormat.find("$text")==-1)
-    {
-      warn_uncond("warning format foes not contain a $text tag!\n");
-    }
+    warn_uncond("warning format does not contain a $line tag!\n");
   }
-
-  //------------------------
-  // set default man page extension if non is given by the user
-  QCString manExtension = Config_getString(MAN_EXTENSION);
-  if (manExtension.isEmpty())
+  if (warnFormat.find("$text")==-1)
   {
-    Config_updateString(MAN_EXTENSION,".3");
+    warn_uncond("warning format foes not contain a $text tag!\n");
   }
 
   //------------------------
@@ -1602,17 +1592,6 @@ void Config::checkAndCorrect(bool quiet)
     err("Unknown page type '%s' specified\n",qPrint(paperType));
     Config_updateEnum(PAPER_TYPE,PAPER_TYPE_t::a4);
   }
-
-
-  //------------------------
-  // check & correct HTML_FILE_EXTENSION
-  QCString htmlFileExtension=Config_getString(HTML_FILE_EXTENSION);
-  htmlFileExtension=htmlFileExtension.stripWhiteSpace();
-  if (htmlFileExtension.isEmpty())
-  {
-    htmlFileExtension = ".html";
-  }
-  Config_updateString(HTML_FILE_EXTENSION,htmlFileExtension);
 
   //------------------------
   // check & correct STRIP_FROM_PATH
@@ -1637,7 +1616,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if HTML header is valid
   QCString headerFile = Config_getString(HTML_HEADER);
-  if (!headerFile.isEmpty())
+  if (check && !headerFile.isEmpty())
   {
     FileInfo fi(headerFile.str());
     if (!fi.exists())
@@ -1650,7 +1629,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if HTML footer is valid
   QCString footerFile = Config_getString(HTML_FOOTER);
-  if (!footerFile.isEmpty())
+  if (check && !footerFile.isEmpty())
   {
     FileInfo fi(footerFile.str());
     if (!fi.exists())
@@ -1682,7 +1661,7 @@ void Config::checkAndCorrect(bool quiet)
     }
 
     QCString mathJaxCodefile = Config_getString(MATHJAX_CODEFILE);
-    if (!mathJaxCodefile.isEmpty())
+    if (check && !mathJaxCodefile.isEmpty())
     {
       FileInfo fi(mathJaxCodefile.str());
       if (!fi.exists())
@@ -1712,7 +1691,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if LaTeX header is valid
   QCString latexHeaderFile = Config_getString(LATEX_HEADER);
-  if (!latexHeaderFile.isEmpty())
+  if (check && !latexHeaderFile.isEmpty())
   {
     FileInfo fi(latexHeaderFile.str());
     if (!fi.exists())
@@ -1725,7 +1704,7 @@ void Config::checkAndCorrect(bool quiet)
   //------------------------
   // Test to see if LaTeX footer is valid
   QCString latexFooterFile = Config_getString(LATEX_FOOTER);
-  if (!latexFooterFile.isEmpty())
+  if (check && !latexFooterFile.isEmpty())
   {
     FileInfo fi(latexFooterFile.str());
     if (!fi.exists())
@@ -1839,27 +1818,9 @@ void Config::checkAndCorrect(bool quiet)
   if (dotFontName=="FreeSans" || dotFontName=="FreeSans.ttf")
   {
     warn_uncond("doxygen no longer ships with the FreeSans font.\n"
-               "You may want to clear or change DOT_FONTNAME.\n"
-               "Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
+               "  You may want to clear or change DOT_FONTNAME.\n"
+               "  Otherwise you run the risk that the wrong font is being used for dot generated graphs.\n");
   }
-  else if (dotFontName.isEmpty())
-  {
-    dotFontName = "Helvetica";
-  }
-  Config_updateString(DOT_FONTNAME,dotFontName);
-
-  //------------------------
-  // clip dotFontSize against the maximum bounds
-  int dotFontSize = Config_getInt(DOT_FONTSIZE);
-  if (dotFontSize<4)
-  {
-    dotFontSize=4;
-  }
-  else if (dotFontSize>24)
-  {
-    dotFontSize=24;
-  }
-  Config_updateInt(DOT_FONTSIZE,dotFontSize);
 
   //------------------------
   // clip number of threads
@@ -1902,12 +1863,8 @@ void Config::checkAndCorrect(bool quiet)
     uint i=0,l=dotPath.length();
     for (i=0;i<l;i++) if (dotPath.at(i)=='/') dotPath.at(i)='\\';
 #endif
+    Config_updateString(DOT_PATH,dotPath);
   }
-  else // make sure the string is empty but not null!
-  {
-    dotPath="";
-  }
-  Config_updateString(DOT_PATH,dotPath);
 
   //------------------------
   // check plantuml path
@@ -1921,27 +1878,27 @@ void Config::checkAndCorrect(bool quiet)
       FileInfo jar(plantumlJar.str());
       if (jar.exists() && jar.isFile())
       {
-        plantumlJarPath = jar.dirPath(TRUE)+Portable::pathSeparator();
+        plantumlJarPath = plantumlJar;
       }
       else
       {
-        err("Jar file plantuml.jar not found at location "
+        err("Jar file 'plantuml.jar' not found at location "
                    "specified via PLANTUML_JAR_PATH: '%s'\n",qPrint(plantumlJarPath));
         plantumlJarPath="";
       }
     }
-    else if (pu.exists() && pu.isFile() && plantumlJarPath.right(4)==".jar") // PLANTUML_JAR_PATH is file
+    else if (pu.exists() && pu.isFile()) // PLANTUML_JAR_PATH is file
     {
-      plantumlJarPath = pu.dirPath(TRUE)+Portable::pathSeparator();
+      // Nothing to be done
     }
     else
     {
-      err("path specified via PLANTUML_JAR_PATH does not exist or not a directory: %s\n",
+      err("PLANTUML_JAR_PATH is not a directory with a 'plantuml.jar' file or is not an existing file: %s\n",
                  qPrint(plantumlJarPath));
       plantumlJarPath="";
     }
+    Config_updateString(PLANTUML_JAR_PATH,plantumlJarPath);
   }
-  Config_updateString(PLANTUML_JAR_PATH,plantumlJarPath);
 
   //------------------------
   // check dia path
@@ -1963,12 +1920,8 @@ void Config::checkAndCorrect(bool quiet)
       for (i=0;i<l;i++) if (diaPath.at(i)=='/') diaPath.at(i)='\\';
 #endif
     }
+    Config_updateString(DIA_PATH,diaPath);
   }
-  else // make sure the string is empty but not null!
-  {
-    diaPath="";
-  }
-  Config_updateString(DIA_PATH,diaPath);
 
   //------------------------
   // check INPUT
@@ -1990,28 +1943,6 @@ void Config::checkAndCorrect(bool quiet)
     }
   }
   Config_updateList(INPUT,inputSources);
-
-  //------------------------
-  // add default file patterns if needed
-  StringVector filePatternList = Config_getList(FILE_PATTERNS);
-  if (filePatternList.empty())
-  {
-    ConfigOption * opt = ConfigImpl::instance()->get("FILE_PATTERNS");
-    if (opt->kind()==ConfigOption::O_List)
-    {
-      filePatternList = ((ConfigList*)opt)->getDefault();
-    }
-  }
-  Config_updateList(FILE_PATTERNS,filePatternList);
-
-  //------------------------
-  // add default pattern if needed
-  StringVector examplePatternList = Config_getList(EXAMPLE_PATTERNS);
-  if (examplePatternList.empty())
-  {
-    examplePatternList.push_back("*");
-    Config_updateList(EXAMPLE_PATTERNS,examplePatternList);
-  }
 
   //------------------------
   // if no output format is enabled, warn the user
@@ -2068,55 +1999,6 @@ void Config::checkAndCorrect(bool quiet)
   if (depth==0)
   {
     Config_updateInt(MAX_DOT_GRAPH_DEPTH,1000);
-  }
-
-  //------------------------
-  int hue = Config_getInt(HTML_COLORSTYLE_HUE);
-  if (hue<0)
-  {
-    hue=0;
-  }
-  else if (hue>=360)
-  {
-    hue=hue%360;
-  }
-  Config_updateInt(HTML_COLORSTYLE_HUE,hue);
-
-  //------------------------
-  int sat = Config_getInt(HTML_COLORSTYLE_SAT);
-  if (sat<0)
-  {
-    sat=0;
-  }
-  else if (sat>255)
-  {
-    sat=255;
-  }
-  Config_updateInt(HTML_COLORSTYLE_SAT,sat);
-
-
-  //------------------------
-  int gamma = Config_getInt(HTML_COLORSTYLE_GAMMA);
-  if (gamma<40)
-  {
-    gamma=40;
-  }
-  else if (gamma>240)
-  {
-    gamma=240;
-  }
-  Config_updateInt(HTML_COLORSTYLE_GAMMA,gamma);
-
-  //------------------------
-  // add default words if needed
-  const StringVector &annotationFromBrief = Config_getList(ABBREVIATE_BRIEF);
-  if (annotationFromBrief.empty())
-  {
-    Config_updateList(ABBREVIATE_BRIEF,
-                      { "The $name class", "The $name widget",
-                        "The $name file", "is", "provides", "specifies",
-                        "contains", "represents", "a", "an", "the"
-                      });
   }
 
   //------------------------

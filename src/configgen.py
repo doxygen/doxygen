@@ -285,6 +285,8 @@ def parseOption(node):
             print("  cs->setWidgetType(ConfigString::Image);")
         elif format == 'dir':
             print("  cs->setWidgetType(ConfigString::Dir);")
+        elif format == 'filedir':
+            print("  cs->setWidgetType(ConfigString::FileAndDir);")
         if depends != '':
             print("  cs->addDependency(\"%s\");" % (depends))
     elif type == 'enum':
@@ -357,12 +359,12 @@ def parseGroups(node):
     print("  cfg->addInfo(\"%s\",\"%s\");" % (name, doc))
     print("%s%s" % ("  //-----------------------------------------",
                     "----------------------------------"))
+    if len(setting) > 0:
+        print("#endif")
     print("")
     for n in node.childNodes:
         if n.nodeType == Node.ELEMENT_NODE:
             parseOption(n)
-    if len(setting) > 0:
-        print("#endif")
 
 def parseGroupMapEnums(node):
     def escape(value):

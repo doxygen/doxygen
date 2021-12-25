@@ -137,6 +137,9 @@ class PrintDocVisitor : public DocVisitor
         case DocStyleChange::Small:
           if (s->enable()) printf("<small>"); else printf("</small>");
           break;
+        case DocStyleChange::Cite:
+          if (s->enable()) printf("<cite>"); else printf("</cite>");
+          break;
         case DocStyleChange::Preformatted:
           if (s->enable()) printf("<pre>"); else printf("</pre>");
           break;
@@ -155,6 +158,8 @@ class PrintDocVisitor : public DocVisitor
       {
         case DocVerbatim::Code: printf("<code>"); break;
         case DocVerbatim::Verbatim: printf("<verbatim>"); break;
+        case DocVerbatim::JavaDocLiteral: printf("<javadocliteral>"); break;
+        case DocVerbatim::JavaDocCode: printf("<javadoccode>"); break;
         case DocVerbatim::HtmlOnly: printf("<htmlonly>"); break;
         case DocVerbatim::RtfOnly: printf("<rtfonly>"); break;
         case DocVerbatim::ManOnly: printf("<manonly>"); break;
@@ -170,6 +175,8 @@ class PrintDocVisitor : public DocVisitor
       {
         case DocVerbatim::Code: printf("</code>"); break;
         case DocVerbatim::Verbatim: printf("</verbatim>"); break;
+        case DocVerbatim::JavaDocLiteral: printf("</javadocliteral>"); break;
+        case DocVerbatim::JavaDocCode: printf("</javadoccode>"); break;
         case DocVerbatim::HtmlOnly: printf("</htmlonly>"); break;
         case DocVerbatim::RtfOnly: printf("</rtfonly>"); break;
         case DocVerbatim::ManOnly: printf("</manonly>"); break;
@@ -402,10 +409,15 @@ class PrintDocVisitor : public DocVisitor
       indent_post();
       if (s->type()==DocHtmlList::Ordered) printf("</ol>\n"); else printf("</ul>\n");
     }
-    void visitPre(DocHtmlListItem *)
+    void visitPre(DocHtmlListItem *s)
     {
       indent_pre();
-      printf("<li>\n");
+      printf("<li");
+      for (const auto &opt : s->attribs())
+      {
+        printf(" %s=\"%s\"",qPrint(opt.name),qPrint(opt.value));
+      }
+      printf(">\n");
     }
     void visitPost(DocHtmlListItem *)
     {
@@ -535,6 +547,7 @@ class PrintDocVisitor : public DocVisitor
         case DocImage::Latex:   printf("latex"); break;
         case DocImage::Rtf:     printf("rtf"); break;
         case DocImage::DocBook: printf("docbook"); break;
+        case DocImage::Xml:     printf("xml"); break;
       }
       printf("\" %s %s inline=\"%s\">\n",qPrint(img->width()),qPrint(img->height()),img->isInlineImage() ? "yes" : "no");
     }

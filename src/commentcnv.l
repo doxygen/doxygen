@@ -52,9 +52,9 @@ typedef yyguts_t *yyscan_t;
 
 #define USE_STATE2STRING 0
   
-struct CondCtx
+struct commentcnvYY_CondCtx
 {
-  CondCtx(int line,QCString id,bool b) 
+  commentcnvYY_CondCtx(int line,QCString id,bool b) 
     : lineNr(line),sectionId(id), skip(b) {}
   int lineNr;
   QCString sectionId;
@@ -81,7 +81,7 @@ struct commentcnvYY_state
   QCString fileName;
   int      lineNr = 0;
   int      condCtx = 0;
-  std::stack<CondCtx> condStack;
+  std::stack<commentcnvYY_CondCtx> condStack;
   std::stack<int> commentStack;
   QCString blockName;
   int      lastCommentContext = 0;
@@ -126,10 +126,13 @@ static void clearCommentStack(yyscan_t yyscanner);
 #undef  YY_INPUT
 #define YY_INPUT(buf,result,max_size) result=yyread(yyscanner,buf,max_size);
 
+// otherwise the filename would be the name of the converted file (*.cpp instead of *.l)
+static inline const char *getLexerFILE() {return __FILE__;}
+#include "doxygen_lex.h"
 
 %}
 
-MAILADR   ("mailto:")?[a-z_A-Z0-9.+-]+"@"[a-z_A-Z0-9-]+("."[a-z_A-Z0-9\-]+)+[a-z_A-Z0-9\-]+
+MAILADDR   ("mailto:")?[a-z_A-Z0-9\x80-\xff.+-]+"@"[a-z_A-Z0-9\x80-\xff-]+("."[a-z_A-Z0-9\x80-\xff\-]+)+[a-z_A-Z0-9\x80-\xff\-]+
 
 %option noyywrap
 
@@ -410,12 +413,19 @@ SLASHopt [/]*
                                        yyextra->commentStack.push(yyextra->lineNr);
 				     }
   				   }
-<CComment,CNComment,ReadLine>{MAILADR}      |
-<CComment,CNComment,ReadLine>"<"{MAILADR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
+<CComment,CNComment,ReadLine>{MAILADDR}       |
+<CComment,CNComment,ReadLine>"<"{MAILADDR}">" { // Mail address, to prevent seeing e.g x@code-factory.org as start of a code block
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<CComment>"{@code"/[ \t\n]	   {
-                                     copyToOutput(yyscanner,"@code",5); 
+<CComment>"{"[ \t]*"@code"/[ \t\n] {
+                                     copyToOutput(yyscanner,"@iliteral{code}",15); 
+				     yyextra->lastCommentContext = YY_START;
+				     yyextra->javaBlock=1;
+				     yyextra->blockName=&yytext[1];
+                                     BEGIN(VerbatimCode);
+  				   }
+<CComment>"{"[ \t]*"@literal"/[ \t\n] {
+                                     copyToOutput(yyscanner,"@iliteral",9); 
 				     yyextra->lastCommentContext = YY_START;
 				     yyextra->javaBlock=1;
 				     yyextra->blockName=&yytext[1];
@@ -464,7 +474,7 @@ SLASHopt [/]*
 				     yyextra->lastCommentContext = YY_START;
 				     BEGIN(Verbatim);
   			           }
-<CComment,ReadLine>[\\@]("verbatim"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
+<CComment,ReadLine>[\\@]("verbatim"|"iliteral"|"latexonly"|"htmlonly"|"xmlonly"|"docbookonly"|"rtfonly"|"manonly")/[^a-z_A-Z0-9] { /* start of a verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng); 
 				     yyextra->blockName=&yytext[1];
 				     yyextra->lastCommentContext = YY_START;
@@ -479,7 +489,7 @@ SLASHopt [/]*
 <Scan>.                            { /* any other character */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
-<Verbatim>[\\@]("endverbatim"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
+<Verbatim>[\\@]("endverbatim"|"endiliteral"|"endlatexonly"|"endhtmlonly"|"endxmlonly"|"enddocbookonly"|"endrtfonly"|"endmanonly"|"f$"|"f]"|"f}"|"f)") { /* end of verbatim block */
                                      copyToOutput(yyscanner,yytext,(int)yyleng);
 				     if (&yytext[1]==yyextra->blockName) // end of formula
 				     {
@@ -511,7 +521,7 @@ SLASHopt [/]*
 				       yyextra->javaBlock--;
 				       if (yyextra->javaBlock==0)
 				       {
-                                         copyToOutput(yyscanner," @endcode ",10);
+                                         copyToOutput(yyscanner," @endiliteral ",14);
 				         BEGIN(yyextra->lastCommentContext);
 				       }
 				       else
@@ -880,9 +890,10 @@ SLASHopt [/]*
   				     yyextra->condCtx=YY_START;
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
                                    }
+<CondLine>\n			   |
 <CondLine>.			   { // forgot section id?
                                      handleCondSectionId(yyscanner," "); // fake section id causing the section to be hidden unconditionally
-				     if (*yytext=='\n') yyextra->lineNr++;
+				     if (*yytext=='\n') { yyextra->lineNr++; copyToOutput(yyscanner,"\n",1);}
   				   }
 <CComment,ReadLine>[\\@][a-z_A-Z][a-z_A-Z0-9]*  { // expand alias without arguments
 				     replaceAliases(yyscanner,QCString(yytext));
@@ -948,6 +959,9 @@ SLASHopt [/]*
 <*>.                               {
   				     copyToOutput(yyscanner,yytext,(int)yyleng);
                                    }
+  /*
+<*>\n  { fprintf(stderr,"Lex scanner %s (%s) default rule newline for state %s.\n", __FILE__, qPrint(yyextra->fileName),stateToString(YY_START));}
+  */
 %%
 
 static void replaceCommentMarker(yyscan_t yyscanner,const char *s,int len)
@@ -1061,7 +1075,7 @@ static void startCondSection(yyscan_t yyscanner,const QCString &sectId)
   //printf("startCondSection: skip=%d stack=%d\n",g_skip,g_condStack.count());
   CondParser prs;
   bool expResult = prs.parse(yyextra->fileName,yyextra->lineNr,sectId);
-  yyextra->condStack.push(CondCtx(yyextra->lineNr,sectId,yyextra->skip));
+  yyextra->condStack.push(commentcnvYY_CondCtx(yyextra->lineNr,sectId,yyextra->skip));
   if (!expResult) // not enabled
   {
     yyextra->skip=TRUE;
@@ -1078,7 +1092,7 @@ static void endCondSection(yyscan_t yyscanner)
   }
   else
   {
-    const CondCtx &ctx = yyextra->condStack.top();
+    const commentcnvYY_CondCtx &ctx = yyextra->condStack.top();
     yyextra->skip=ctx.skip;
     yyextra->condStack.pop();
   }
@@ -1209,7 +1223,7 @@ void convertCppComments(BufStr *inBuf,BufStr *outBuf,const QCString &fileName)
   yylex(yyscanner);
   while (!yyextra->condStack.empty())
   {
-    const CondCtx &ctx = yyextra->condStack.top();
+    const commentcnvYY_CondCtx &ctx = yyextra->condStack.top();
     QCString sectionInfo(" ");
     if (ctx.sectionId!=" ") sectionInfo.sprintf(" with label '%s' ",ctx.sectionId.stripWhiteSpace().data());
     warn(yyextra->fileName,ctx.lineNr,"Conditional section%sdoes not have "

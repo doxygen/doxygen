@@ -62,7 +62,18 @@ void TooltipManager::addTooltip(CodeOutputInterface &ol,const Definition *d)
   {
     id = id.right(id.length()-i-1); // strip path (for CREATE_SUBDIRS=YES)
   }
-  id+=escapeId(Doxygen::htmlFileExtension);
+  // In case an extension is present translate this extension to something understood by the tooltip handler
+  // otherwise extend t with a translated htmlFileExtension.
+  QCString currentExtension = getFileNameExtension(id);
+  if (currentExtension.isEmpty())
+  {
+    id += escapeId(Doxygen::htmlFileExtension);
+  }
+  else
+  {
+    id = stripExtensionGeneral(id,currentExtension) + escapeId(currentExtension);
+  }
+
   QCString anc = d->anchor();
   if (!anc.isEmpty())
   {
