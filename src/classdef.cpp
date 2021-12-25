@@ -4220,7 +4220,7 @@ int ClassDefImpl::countMemberDeclarations(MemberListType lt,const ClassDef *inhe
       for (const auto &mg : m_impl->memberGroups)
       {
         count+=mg->countGroupedInheritedMembers(lt);
-        if (lt2!=1) count+=mg->countGroupedInheritedMembers((MemberListType)lt2);
+        if (lt2!=-1) count+=mg->countGroupedInheritedMembers((MemberListType)lt2);
       }
     }
     static bool inlineInheritedMembers = Config_getBool(INLINE_INHERITED_MEMB);
