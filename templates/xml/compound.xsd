@@ -142,6 +142,7 @@
       <xsd:element name="definition" minOccurs="0" />
       <xsd:element name="argsstring" minOccurs="0" />
       <xsd:element name="name" />
+      <xsd:element name="qualifiedname" minOccurs="0"/>
       <xsd:element name="read" minOccurs="0" />
       <xsd:element name="write" minOccurs="0" />
       <xsd:element name="bitfield" minOccurs="0" />

@@ -813,8 +813,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</type>\n";
   }
 
-  t << "        <name>" << convertToXML(md->name()) << "</name>\n";
-  t << "        <qualifiedname>" << convertToXML(md->qualifiedName()) << "</qualifiedname>\n";
+  QCString name = md->name();
+  QCString qualifiedName = md->qualifiedName();;
+  t << "        <name>" << convertToXML(name) << "</name>\n";
+  if (name!=qualifiedName)
+  {
+    t << "        <qualifiedname>" << convertToXML(qualifiedName) << "</qualifiedname>\n";
+  }
 
   if (md->memberType() == MemberType_Property)
   {

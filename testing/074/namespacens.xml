@@ -8,6 +8,7 @@
         <definition>int ns::operator""_op</definition>
         <argsstring>(unsigned long long)</argsstring>
         <name>operator""_op</name>
+        <qualifiedname>ns::operator""_op</qualifiedname>
         <param>
           <type>unsigned long long</type>
         </param>
@@ -25,6 +26,7 @@
         <definition>int ns::operator""_oq</definition>
         <argsstring>(unsigned long long)</argsstring>
         <name>operator""_oq</name>
+        <qualifiedname>ns::operator""_oq</qualifiedname>
         <param>
           <type>unsigned long long</type>
         </param>
@@ -42,6 +44,7 @@
         <definition>void ns::foo</definition>
         <argsstring>(std::initializer_list&lt; int * &gt;)</argsstring>
         <name>foo</name>
+        <qualifiedname>ns::foo</qualifiedname>
         <param>
           <type>std::initializer_list&lt; int * &gt;</type>
         </param>

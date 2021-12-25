@@ -13,6 +13,7 @@
         <definition>Object Vehicle::base</definition>
         <argsstring/>
         <name>base</name>
+        <qualifiedname>Vehicle::base</qualifiedname>
         <briefdescription>
           <para>Base class. </para>
         </briefdescription>
@@ -29,6 +30,7 @@
         <definition>void vehicleStart</definition>
         <argsstring>(Vehicle *obj)</argsstring>
         <name>vehicleStart</name>
+        <qualifiedname>Vehicle::vehicleStart</qualifiedname>
         <param>
           <type><ref refid="struct_vehicle" kindref="compound">Vehicle</ref> *</type>
           <declname>obj</declname>
@@ -47,6 +49,7 @@
         <definition>void vehicleStop</definition>
         <argsstring>(Vehicle *obj)</argsstring>
         <name>vehicleStop</name>
+        <qualifiedname>Vehicle::vehicleStop</qualifiedname>
         <param>
           <type><ref refid="struct_vehicle" kindref="compound">Vehicle</ref> *</type>
           <declname>obj</declname>
