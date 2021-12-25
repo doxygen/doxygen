@@ -568,12 +568,6 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
      << "_1" << md->anchor() << "\" kind=\"" << memType << "\"><name>"
      << convertToXML(md->name()) << "</name></member>\n";
 
-  QCString scopeName;
-  if (md->getClassDef())
-    scopeName=md->getClassDef()->name();
-  else if (md->getNamespaceDef())
-    scopeName=md->getNamespaceDef()->name();
-
   t << "      <memberdef kind=\"";
   //enum { define_t,variable_t,typedef_t,enum_t,function_t } xmlType = function_t;
   t << memType << "\" id=\"";
@@ -819,7 +813,13 @@ static void generateXMLForMember(const MemberDef *md,TextStream &ti,TextStream &
     t << "</type>\n";
   }
 
-  t << "        <name>" << convertToXML(md->name()) << "</name>\n";
+  QCString name = md->name();
+  QCString qualifiedName = md->qualifiedName();;
+  t << "        <name>" << convertToXML(name) << "</name>\n";
+  if (name!=qualifiedName)
+  {
+    t << "        <qualifiedname>" << convertToXML(qualifiedName) << "</qualifiedname>\n";
+  }
 
   if (md->memberType() == MemberType_Property)
   {

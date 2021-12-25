@@ -9,6 +9,7 @@
         <definition>void Test::foo</definition>
         <argsstring>()</argsstring>
         <name>foo</name>
+        <qualifiedname>Test::foo</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -23,6 +24,7 @@
         <definition>void Test::bar</definition>
         <argsstring>()</argsstring>
         <name>bar</name>
+        <qualifiedname>Test::bar</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>
@@ -39,6 +41,7 @@
         <definition>void Test::ungrouped</definition>
         <argsstring>()</argsstring>
         <name>ungrouped</name>
+        <qualifiedname>Test::ungrouped</qualifiedname>
         <briefdescription>
         </briefdescription>
         <detaileddescription>

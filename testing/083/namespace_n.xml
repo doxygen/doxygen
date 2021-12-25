@@ -8,6 +8,7 @@
         <definition>int N::var</definition>
         <argsstring/>
         <name>var</name>
+        <qualifiedname>N::var</qualifiedname>
         <briefdescription>
           <para>variable declaration </para>
         </briefdescription>
@@ -25,6 +26,7 @@
         <definition>void N::foo</definition>
         <argsstring>(int param)</argsstring>
         <name>foo</name>
+        <qualifiedname>N::foo</qualifiedname>
         <param>
           <type>int</type>
           <declname>param</declname>
