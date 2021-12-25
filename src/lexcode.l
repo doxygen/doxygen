@@ -53,7 +53,7 @@ struct lexcodeYY_state
      int           inputLines;      //!< number of line in the code fragment
      QCString      fileName;
      int           yyLineNr;        //!< current line number
-     bool          needsTermination;
+     bool          insideCodeLine = false;
 
      bool          lineNumbers = FALSE;
      const Definition   *searchCtx;
@@ -1007,6 +1007,7 @@ static void startCodeLine(yyscan_t yyscanner)
   }
 
   yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
+  yyextra->insideCodeLine = true;
 
   if (yyextra->currentFontClass)
   {
@@ -1029,13 +1030,17 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine = false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -1100,9 +1105,7 @@ static int countLines(yyscan_t yyscanner)
   }
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
-    // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=true;
+    count++;
   }
   return count;
 }
@@ -1140,7 +1143,7 @@ static void handleCCode(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   if (yyextra->CCodeBuffer.isEmpty()) return;
 
-  yyextra->ccodeParser.setStartCodeLine(false);
+  yyextra->ccodeParser.setInsideCodeLine(yyextra->insideCodeLine);
   yyextra->ccodeParser.parseCode(*yyextra->code,
                yyextra->classScope,
                yyextra->CCodeBuffer,
@@ -1157,10 +1160,9 @@ static void handleCCode(yyscan_t yyscanner)
                yyextra->collectXRefs
               );
   yyextra->CCodeBuffer.resize(0);
-  yyextra->ccodeParser.setStartCodeLine(true);
+  yyextra->insideCodeLine = yyextra->ccodeParser.insideCodeLine();
   yyextra->yyLineNr--;
   codifyLines(yyscanner,"\n");
-  return;
 }
 
 // public interface -----------------------------------------------------------
@@ -1220,7 +1222,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->inputPosition = 0;
   yyextra->fileName      = fileDef ? fileDef->fileName():"";
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = false;
+  yyextra->insideCodeLine = false;
 
   yyextra->classScope=scopeName;
   yyextra->currentMemberDef=memberDef;
@@ -1265,7 +1267,7 @@ void LexCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   BEGIN( DefSection );
   lexcodeYYlex(yyscanner);
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }

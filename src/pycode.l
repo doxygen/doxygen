@@ -80,7 +80,7 @@ struct pycodeYY_state
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   const char *  currentFontClass = 0;
-  bool          needsTermination = FALSE;
+  bool          insideCodeLine = FALSE;
   const Definition *searchCtx = 0;
   bool          collectXRefs = FALSE;
   int           inputLines = 0;      //!< number of line in the code fragment
@@ -945,7 +945,6 @@ static int countLines(yyscan_t yyscanner)
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
     count++;
-    yyextra->needsTermination=TRUE;
   }
   return count;
 }
@@ -1068,6 +1067,8 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine=true;
+
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(yyextra->currentFontClass);
@@ -1089,6 +1090,7 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 //-------------------------------------------------------------------------------
@@ -1097,7 +1099,10 @@ static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -1601,7 +1606,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx=searchCtx;
   yyextra->collectXRefs=collectXRefs;
   if (startLine!=-1)
@@ -1644,7 +1649,7 @@ void PythonCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
     // printf("Exited pysourceparser in inconsistent state!\n");
   }
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }

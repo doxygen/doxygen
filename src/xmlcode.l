@@ -64,7 +64,7 @@ struct xmlcodeYY_state
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
-  bool          needsTermination = false;
+  bool          insideCodeLine = false;
   const Definition   *searchCtx = 0;
 
   bool          exampleBlock = false;
@@ -283,6 +283,7 @@ static void startCodeLine(yyscan_t yyscanner)
   }
 
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine = true;
 
   if (yyextra->currentFontClass)
   {
@@ -305,13 +306,17 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine = false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -371,8 +376,7 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=true;
+    count++;
   }
   return count;
 }
@@ -434,7 +438,7 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = false;
+  yyextra->insideCodeLine = false;
   yyextra->searchCtx = searchCtx;
 
   if (startLine!=-1)
@@ -473,7 +477,7 @@ void XMLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   xmlcodeYYlex(yyscanner);
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }

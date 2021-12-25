@@ -58,7 +58,7 @@ struct sqlcodeYY_state
      QCString      fileName;
      int           inputLines;      //!< number of line in the code fragment
      int           yyLineNr;        //!< current line number
-     bool          needsTermination;
+     bool          insideCodeLine;
      const Definition   *searchCtx;
 
      bool          exampleBlock;
@@ -268,6 +268,7 @@ static void startCodeLine(yyscan_t yyscanner)
   }
 
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine=true;
 
   if (yyextra->currentFontClass)
   {
@@ -290,13 +291,17 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char *fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -356,8 +361,7 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=true;
+    count++;
   }
   return count;
 }
@@ -435,7 +439,7 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
   yyextra->inputString   = input.data();
   yyextra->inputPosition = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = false;
+  yyextra->insideCodeLine = false;
   yyextra->searchCtx=searchCtx;
 
   if (startLine!=-1)
@@ -474,7 +478,7 @@ void SQLCodeParser::parseCode(CodeOutputInterface &codeOutIntf,
 
   sqlcodeYYlex(yyscanner);
 
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endCodeLine(yyscanner);
   }

@@ -297,7 +297,7 @@ void XMLCodeGenerator::endCodeLine()
     m_t << "</highlight>";
     m_normalHLNeedStartTag=TRUE;
   }
-  if (m_insideCodeLine) m_t << "</codeline>\n"; // non DocBook
+  m_t << "</codeline>\n"; // non DocBook
   m_lineNumber = -1;
   m_refId.resize(0);
   m_external.resize(0);

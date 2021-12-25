@@ -144,7 +144,7 @@ struct fortrancodeYY_state
   int           yyLineNr = 0;        //!< current line number
   int           contLineNr = 0;      //!< current, local, line number for continuation determination
   int          *hasContLine = 0;     //!< signals whether or not a line has a continuation line (fixed source form)
-  bool          needsTermination = false;
+  bool          insideCodeLine = false;
   const Definition *searchCtx = 0;
   bool          collectXRefs = false;
   bool          isFixedForm = false;
@@ -959,6 +959,7 @@ static void startCodeLine(yyscan_t yyscanner)
     }
   }
   yyextra->code->startCodeLine(yyextra->sourceFileDef);
+  yyextra->insideCodeLine=true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
@@ -971,6 +972,7 @@ static void endCodeLine(yyscan_t yyscanner)
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine=false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
@@ -1321,8 +1323,7 @@ static int countLines(yyscan_t yyscanner)
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
     // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=TRUE;
+    count++;
   }
   return count;
 }
@@ -1438,7 +1439,7 @@ void FortranCodeParser::resetCodeParserState()
   yyextra->currentDefinition = 0;
   yyextra->currentMemberDef = 0;
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   BEGIN( Start );
 }
 
@@ -1482,7 +1483,7 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
     checkContLines(yyscanner,yyextra->inputString);
   }
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
+  yyextra->insideCodeLine = FALSE;
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
   if (startLine!=-1)
@@ -1518,10 +1519,9 @@ void FortranCodeParser::parseCode(CodeOutputInterface & codeOutIntf,
   fortrancodeYYrestart(0, yyscanner);
   BEGIN( Start );
   fortrancodeYYlex(yyscanner);
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
-    endFontClass(yyscanner);
-    yyextra->code->endCodeLine();
+    endCodeLine(yyscanner);
   }
   if (isExampleBlock && yyextra->sourceFileDef)
   {

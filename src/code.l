@@ -103,18 +103,13 @@ struct codeYY_state
   QCString      parmType;
   QCString      parmName;
 
-  bool          beginCodeLine = true; //!< signals whether or not we should with the first line
-                                      //!< write a start line code or not. Essential
-                                      //!< when this code parser is called from another 
-                                      //!< code parser.
-
   const char *  inputString = 0;     //!< the code fragment as text
   yy_size_t     inputPosition = 0;   //!< read offset during parsing
   QCString      fileName;
   int           inputLines = 0;      //!< number of line in the code fragment
   int           yyLineNr = 0;        //!< current line number
   yy_size_t     yyColNr = 0;         //!< current column number
-  bool          needsTermination = FALSE;
+  bool          insideCodeLine = FALSE;
 
   bool          exampleBlock = FALSE;
   QCString      exampleName;
@@ -2399,6 +2394,7 @@ static void startCodeLine(yyscan_t yyscanner)
   }
   DBG_CTX((stderr,"startCodeLine(%d)\n",yyextra->yyLineNr));
   yyextra->code->startCodeLine(yyextra->sourceFileDef && yyextra->lineNumbers);
+  yyextra->insideCodeLine = true;
   if (yyextra->currentFontClass)
   {
     yyextra->code->startFontClass(QCString(yyextra->currentFontClass));
@@ -2413,13 +2409,17 @@ static void endCodeLine(yyscan_t yyscanner)
   DBG_CTX((stderr,"endCodeLine(%d)\n",yyextra->yyLineNr));
   endFontClass(yyscanner);
   yyextra->code->endCodeLine();
+  yyextra->insideCodeLine = false;
 }
 
 static void nextCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   const char * fc = yyextra->currentFontClass;
-  endCodeLine(yyscanner);
+  if (yyextra->insideCodeLine)
+  {
+    endCodeLine(yyscanner);
+  }
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
@@ -3359,9 +3359,7 @@ static int countLines(yyscan_t yyscanner)
   }
   if (p>yyextra->inputString && *(p-1)!='\n')
   { // last line does not end with a \n, so we add an extra
-    // line and explicitly terminate the line after parsing.
-    count++,
-    yyextra->needsTermination=TRUE;
+    count++;
   }
   return count;
 }
@@ -3876,12 +3874,19 @@ void CCodeParser::resetCodeParserState()
   yyextra->codeClassMap.clear();
   yyextra->curClassBases.clear();
   yyextra->anchorCount = 0;
+  yyextra->insideCodeLine = false;
 }
 
-void CCodeParser::setStartCodeLine(const bool inp)
+void CCodeParser::setInsideCodeLine(bool inp)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
-  yyextra->beginCodeLine = inp;
+  yyextra->insideCodeLine = inp;
+}
+
+bool CCodeParser::insideCodeLine() const
+{
+  struct yyguts_t *yyg = (struct yyguts_t*)p->yyscanner;
+  return yyextra->insideCodeLine;
 }
 
 void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,const QCString &s,
@@ -3905,7 +3910,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   yyextra->inputPosition = 0;
   codeYYrestart(0,yyscanner);
   yyextra->currentFontClass = 0;
-  yyextra->needsTermination = FALSE;
   yyextra->searchCtx = searchCtx;
   yyextra->collectXRefs = collectXRefs;
   yyextra->inFunctionTryBlock = FALSE;
@@ -3959,7 +3963,10 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   }
   yyextra->includeCodeFragment = inlineFragment;
   DBG_CTX((stderr,"** exBlock=%d exName=%s include=%d\n",exBlock,qPrint(exName),inlineFragment));
-  if (yyextra->beginCodeLine) startCodeLine(yyscanner);
+  if (!yyextra->insideCodeLine)
+  {
+    startCodeLine(yyscanner);
+  }
   yyextra->type.resize(0);
   yyextra->name.resize(0);
   yyextra->args.resize(0);
@@ -3969,11 +3976,12 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   BEGIN( Body );
   codeYYlex(yyscanner);
   yyextra->lexInit=TRUE;
-  if (yyextra->needsTermination)
+  if (yyextra->insideCodeLine)
   {
     endFontClass(yyscanner);
     DBG_CTX((stderr,"endCodeLine(%d)\n",yyextra->yyLineNr));
     yyextra->code->endCodeLine();
+    yyextra->insideCodeLine = false;
   }
   if (cleanupSourceDef)
   {
@@ -3985,7 +3993,6 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   yyextra->tooltipManager.writeTooltips(od);
 
   printlex(yy_flex_debug, FALSE, __FILE__, fd ? qPrint(fd->fileName()): NULL);
-  return;
 }
 
 #if USE_STATE2STRING
