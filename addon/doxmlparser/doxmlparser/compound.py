@@ -3424,7 +3424,7 @@ class memberdefType(GeneratedsSuper):
     __hash__ = GeneratedsSuper.__hash__
     subclass = None
     superclass = None
-    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
+    def __init__(self, kind=None, id=None, prot=None, static=None, strong=None, const=None, explicit=None, inline=None, refqual=None, virt=None, volatile=None, mutable=None, noexcept=None, constexpr=None, readable=None, writable=None, initonly=None, settable=None, privatesettable=None, protectedsettable=None, gettable=None, privategettable=None, protectedgettable=None, final=None, sealed=None, new=None, add=None, remove=None, raise_=None, optional=None, required=None, accessor=None, attribute=None, property=None, readonly=None, bound=None, removable=None, constrained=None, transient=None, maybevoid=None, maybedefault=None, maybeambiguous=None, templateparamlist=None, type_=None, definition=None, argsstring=None, name=None, qualifiedname=None, read=None, write=None, bitfield=None, reimplements=None, reimplementedby=None, param=None, enumvalue=None, requiresclause=None, initializer=None, exceptions=None, briefdescription=None, detaileddescription=None, inbodydescription=None, location=None, references=None, referencedby=None, gds_collector_=None, **kwargs_):
         self.gds_collector_ = gds_collector_
         self.gds_elementtree_node_ = None
         self.original_tagname_ = None
@@ -3524,6 +3524,8 @@ class memberdefType(GeneratedsSuper):
         self.argsstring_nsprefix_ = None
         self.name = name
         self.name_nsprefix_ = None
+        self.qualifiedname = qualifiedname
+        self.qualifiedname_nsprefix_ = None
         self.read = read
         self.read_nsprefix_ = None
         self.write = write
@@ -3609,6 +3611,10 @@ class memberdefType(GeneratedsSuper):
         return self.name
     def set_name(self, name):
         self.name = name
+    def get_qualifiedname(self):
+        return self.qualifiedname
+    def set_qualifiedname(self, qualifiedname):
+        self.qualifiedname = qualifiedname
     def get_read(self):
         return self.read
     def set_read(self, read):
@@ -3962,6 +3968,7 @@ class memberdefType(GeneratedsSuper):
             self.definition is not None or
             self.argsstring is not None or
             self.name is not None or
+            self.qualifiedname is not None or
             self.read is not None or
             self.write is not None or
             self.bitfield is not None or
@@ -4155,6 +4162,10 @@ class memberdefType(GeneratedsSuper):
             namespaceprefix_ = self.name_nsprefix_ + ':' if (UseCapturedNS_ and self.name_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
             outfile.write('<%sname>%s</%sname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.name), input_name='name')), namespaceprefix_ , eol_))
+        if self.qualifiedname is not None:
+            namespaceprefix_ = self.qualifiedname_nsprefix_ + ':' if (UseCapturedNS_ and self.qualifiedname_nsprefix_) else ''
+            showIndent(outfile, level, pretty_print)
+            outfile.write('<%squalifiedname>%s</%squalifiedname>%s' % (namespaceprefix_ , self.gds_encode(self.gds_format_string(quote_xml(self.qualifiedname), input_name='qualifiedname')), namespaceprefix_ , eol_))
         if self.read is not None:
             namespaceprefix_ = self.read_nsprefix_ + ':' if (UseCapturedNS_ and self.read_nsprefix_) else ''
             showIndent(outfile, level, pretty_print)
@@ -4456,6 +4467,12 @@ class memberdefType(GeneratedsSuper):
             value_ = self.gds_validate_string(value_, node, 'name')
             self.name = value_
             self.name_nsprefix_ = child_.prefix
+        elif nodeName_ == 'qualifiedname':
+            value_ = child_.text
+            value_ = self.gds_parse_string(value_, node, 'qualifiedname')
+            value_ = self.gds_validate_string(value_, node, 'qualifiedname')
+            self.qualifiedname = value_
+            self.qualifiedname_nsprefix_ = child_.prefix
         elif nodeName_ == 'read':
             value_ = child_.text
             value_ = self.gds_parse_string(value_, node, 'read')
@@ -4692,6 +4709,82 @@ class argsstring(GeneratedsSuper):
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
         pass
 # end class argsstring
+
+
+class qualifiedname(GeneratedsSuper):
+    __hash__ = GeneratedsSuper.__hash__
+    subclass = None
+    superclass = None
+    def __init__(self, gds_collector_=None, **kwargs_):
+        self.gds_collector_ = gds_collector_
+        self.gds_elementtree_node_ = None
+        self.original_tagname_ = None
+        self.parent_object_ = kwargs_.get('parent_object_')
+        self.ns_prefix_ = None
+    def factory(*args_, **kwargs_):
+        if CurrentSubclassModule_ is not None:
+            subclass = getSubclassFromModule_(
+                CurrentSubclassModule_, qualifiedname)
+            if subclass is not None:
+                return subclass(*args_, **kwargs_)
+        if qualifiedname.subclass:
+            return qualifiedname.subclass(*args_, **kwargs_)
+        else:
+            return qualifiedname(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def get_ns_prefix_(self):
+        return self.ns_prefix_
+    def set_ns_prefix_(self, ns_prefix):
+        self.ns_prefix_ = ns_prefix
+    def hasContent_(self):
+        if (
+
+        ):
+            return True
+        else:
+            return False
+    def export(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='qualifiedname', pretty_print=True):
+        imported_ns_def_ = GenerateDSNamespaceDefs_.get('qualifiedname')
+        if imported_ns_def_ is not None:
+            namespacedef_ = imported_ns_def_
+        if pretty_print:
+            eol_ = '\n'
+        else:
+            eol_ = ''
+        if self.original_tagname_ is not None and name_ == 'qualifiedname':
+            name_ = self.original_tagname_
+        if UseCapturedNS_ and self.ns_prefix_:
+            namespaceprefix_ = self.ns_prefix_ + ':'
+        showIndent(outfile, level, pretty_print)
+        outfile.write('<%s%s%s' % (namespaceprefix_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = set()
+        self.exportAttributes(outfile, level, already_processed, namespaceprefix_, name_='qualifiedname')
+        if self.hasContent_():
+            outfile.write('>%s' % (eol_, ))
+            self.exportChildren(outfile, level + 1, namespaceprefix_, namespacedef_, name_='qualifiedname', pretty_print=pretty_print)
+            outfile.write('</%s%s>%s' % (namespaceprefix_, name_, eol_))
+        else:
+            outfile.write('/>%s' % (eol_, ))
+    def exportAttributes(self, outfile, level, already_processed, namespaceprefix_='', name_='qualifiedname'):
+        pass
+    def exportChildren(self, outfile, level, namespaceprefix_='', namespacedef_='', name_='qualifiedname', fromsubclass_=False, pretty_print=True):
+        pass
+    def build(self, node, gds_collector_=None):
+        self.gds_collector_ = gds_collector_
+        if SaveElementTreeNode:
+            self.gds_elementtree_node_ = node
+        already_processed = set()
+        self.ns_prefix_ = node.prefix
+        self.buildAttributes(node, node.attrib, already_processed)
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+        return self
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None):
+        pass
+# end class qualifiedname
 
 
 class read(GeneratedsSuper):
@@ -25838,6 +25931,7 @@ __all__ = [
     "name",
     "nodeType",
     "paramType",
+    "qualifiedname",
     "read",
     "refTextType",
     "refType",
