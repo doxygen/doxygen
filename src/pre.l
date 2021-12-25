@@ -1263,6 +1263,11 @@ WSopt [ \t\r]*
                                           }
                                           BEGIN(SkipVerbatim);
                                         }
+<SkipCond>[\\@][\\@]"cond"[ \t]+        {}// escaped cond command
+<SkipCond>[\\@]"cond"[ \t]+             { // cond command in a skipped cond section, this section has to be skipped as well
+                                          // but has to be recorded to match the endcond command
+                                          startCondSection(yyscanner," ");
+                                        }
 <SkipCComment>"{"[ \t]*"@code"/[ \t\n]  {
                                           outputArray(yyscanner,"@iliteral{code}",15);
                                           yyextra->javaBlock=1;
@@ -3241,6 +3246,7 @@ static void endCondSection(yyscan_t yyscanner)
   YY_EXTRA_TYPE state = preYYget_extra(yyscanner);
   if (state->condStack.empty())
   {
+    warn(state->fileName,state->yyLineNr,"the \\endcond does not have a corresponding \\cond in this file");
     state->skip=FALSE;
   }
   else
