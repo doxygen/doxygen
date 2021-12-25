@@ -3978,10 +3978,7 @@ void CCodeParser::parseCode(CodeOutputInterface &od,const QCString &className,co
   yyextra->lexInit=TRUE;
   if (yyextra->insideCodeLine)
   {
-    endFontClass(yyscanner);
-    DBG_CTX((stderr,"endCodeLine(%d)\n",yyextra->yyLineNr));
-    yyextra->code->endCodeLine();
-    yyextra->insideCodeLine = false;
+    endCodeLine(yyscanner);
   }
   if (cleanupSourceDef)
   {

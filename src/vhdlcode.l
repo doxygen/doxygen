@@ -122,7 +122,7 @@ static void generateClassOrGlobalLink(yyscan_t yyscanner,CodeOutputInterface &ol
 static void setCurrentDoc(yyscan_t yyscanner,const QCString &anchor);
 static bool checkVhdlString(yyscan_t yyscanner,QCString &name);
 static void addToSearchIndex(yyscan_t yyscanner,const QCString &text);
-static void startCodeLineLine(yyscan_t yyscanner);
+static void startCodeLine(yyscan_t yyscanner);
 static void endCodeLine(yyscan_t yyscanner);
 static void nextCodeLine(yyscan_t yyscanner);
 static void writeWord(yyscan_t yyscanner,const QCString &word,const QCString &curr_class=QCString(),bool classLink=false);
@@ -1004,7 +1004,7 @@ static void addToSearchIndex(yyscan_t yyscanner,const QCString &text)
  * is true. If a definition starts at the current line, then the line
  * number is linked to the documentation of that definition.
  */
-static void startCodeLineLine(yyscan_t yyscanner)
+static void startCodeLine(yyscan_t yyscanner)
 {
   struct yyguts_t *yyg = (struct yyguts_t*)yyscanner;
   //if (yyextra->currentFontClass) { yyextra->code->endFontClass(); }
@@ -1016,7 +1016,7 @@ static void startCodeLineLine(yyscan_t yyscanner)
     //  if ((yyextra->yyLineNr % 500) == 0)
     //         fprintf(stderr,"\n starting Line %d:",yyextra->yyLineNr);
     const Definition *d = yyextra->sourceFileDef->getSourceDefinition(yyextra->yyLineNr);
-    //printf("startCodeLineLine %d d=%s\n", yyextra->yyLineNr,qPrint(d ? d->name()) : "<null>");
+    //printf("startCodeLine %d d=%s\n", yyextra->yyLineNr,qPrint(d ? d->name()) : "<null>");
     if (!yyextra->includeCodeFragment && d)
     {
       yyextra->currentDefinition = d;
@@ -1084,7 +1084,7 @@ static void nextCodeLine(yyscan_t yyscanner)
   if (yyextra->yyLineNr<yyextra->inputLines)
   {
     yyextra->currentFontClass = fc;
-    startCodeLineLine(yyscanner);  //<div>
+    startCodeLine(yyscanner);  //<div>
   }
 }
 
@@ -1649,7 +1649,7 @@ void VHDLCodeParser::parseCode(CodeOutputInterface &od,
     yyextra->exampleFile = convertNameToFile(yyextra->exampleName+"-example");
   }
   yyextra->includeCodeFragment = inlineFragment;
-  startCodeLineLine(yyscanner);
+  startCodeLine(yyscanner);
   if (!yyextra->lexInit)
   {
     VhdlDocGen::init();
