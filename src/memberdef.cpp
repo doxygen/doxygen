@@ -4114,7 +4114,7 @@ void MemberDefImpl::warnIfUndocumented() const
     t="file", d=fd;
   static bool extractAll = Config_getBool(EXTRACT_ALL);
 
-  //printf("  %s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d isFiend=%d protection=%d isRef=%d isDel=%d\n",
+  //printf("  %s:warnIfUndoc: hasUserDocs=%d isFriendClass=%d isFriend=%d protection=%d isRef=%d isDel=%d\n",
   //    name().data(),
   //    hasUserDocumentation(),isFriendClass(),isFriend(),protectionLevelVisible(m_impl->prot),isReference(),isDeleted());
   if ((!hasUserDocumentation() && !extractAll) &&
