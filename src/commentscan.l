@@ -1959,7 +1959,7 @@ STopt  [^\n@\\]*
 
 <CopyDoc><<EOF>>                        {
                                           setOutput(yyscanner,OutputDoc);
-                                          addOutput(yyscanner," \\copydetails ");
+                                          addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
                                           addOutput(yyscanner,yyextra->copyDocArg);
                                           addOutput(yyscanner,"\n");
                                           BEGIN(Comment);
@@ -1969,7 +1969,7 @@ STopt  [^\n@\\]*
                                           if (yyextra->braceCount==0)
                                           {
                                             setOutput(yyscanner,OutputDoc);
-                                            addOutput(yyscanner," \\copydetails ");
+                                            addOutput(yyscanner," \\ilinebr\\ilinebr\\copydetails ");
                                             addOutput(yyscanner,yyextra->copyDocArg);
                                             addOutput(yyscanner,"\n");
                                             BEGIN(Comment);
